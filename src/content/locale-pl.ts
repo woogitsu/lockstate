@@ -1070,6 +1070,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.template-y': 'Początek wzoru Y',
   'hud.build.template-mirror': 'Odbij poziomo',
   'hud.build.template-place': 'Postaw wzór pomieszczenia',
+  'hud.build.template-map': 'Postaw na mapie',
   'hud.build.template-invalid-position': 'Wpisz całkowite współrzędne.',
   'hud.build.template-ready': 'Cały obrys jest wolny.',
   'hud.build.template-blocked': 'Obrys jest zajęty. Wybierz inne miejsce.',

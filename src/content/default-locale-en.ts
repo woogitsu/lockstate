@@ -2306,6 +2306,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.template-y': 'Plan origin Y',
   'hud.build.template-mirror': 'Mirror horizontally',
   'hud.build.template-place': 'Place room plan',
+  'hud.build.template-map': 'Place on map',
   'hud.build.template-invalid-position': 'Enter whole-number coordinates.',
   'hud.build.template-ready': 'This footprint is clear.',
   'hud.build.template-blocked': 'This footprint is blocked. Choose another position.',

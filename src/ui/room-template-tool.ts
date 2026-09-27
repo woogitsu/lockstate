@@ -26,6 +26,7 @@ export class RoomTemplateTool {
   private selected: RoomTemplateId = 'cell-basic';
   private mirrorX = false;
   private busy = false;
+  private armed = false;
 
   public constructor(private readonly port: RoomTemplatePlacementPort) {}
 
@@ -33,6 +34,10 @@ export class RoomTemplateTool {
     this.selected = templateId;
     this.mirrorX = mirrorX;
   }
+
+  public arm(): void { this.armed = true; }
+  public standDown(): void { this.armed = false; }
+  public isArmed(): boolean { return this.armed; }
 
   public planAt(origin: TemplateSquare): RoomTemplatePlan {
     return instantiateRoomTemplate(this.selected, origin, { mirrorX: this.mirrorX });

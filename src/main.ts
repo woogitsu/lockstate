@@ -3878,6 +3878,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
   });
   // The renderer owns the projection and camera; the HUD only paints it.
   worldScene.setMinimapSink((view) => hud?.updateMinimap(view));
+  worldScene.setTemplateGhostPort(hud.roomTemplateTool);
 
   /*
    * The build identity, in the corner, from first paint.

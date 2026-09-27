@@ -33,6 +33,8 @@ import { ActorLayer } from '../phaser/actor-layer';
 import { registerAtlasTextures } from '../phaser/atlas-textures';
 import { loadEnvironmentAtlas } from '../phaser/environment-textures';
 import { BuildOverlay } from '../phaser/build-overlay';
+import type { TemplateGhostPort, TemplateGhostVerdict } from '../build/template-ghost';
+import type { RoomTemplatePlan, TemplateSquare } from '../../content/room-template-catalog';
 import { AreaOverlay } from '../phaser/area-overlay';
 import {
   footprintRectAt,
@@ -308,6 +310,12 @@ export class WorldScene extends Phaser.Scene {
   private roomConditions: RoomConditionLayer | undefined;
   private actors: ActorLayer | undefined;
   private buildOverlay: BuildOverlay | undefined;
+  private templateGhostPort: TemplateGhostPort | undefined;
+  private templatePointerId: number | undefined;
+  private templateOrigin: TemplateSquare | undefined;
+  private templatePlan: RoomTemplatePlan | undefined;
+  private templateVerdict: TemplateGhostVerdict | undefined;
+  private templateRevision = 0;
 
   /*
    * The area gesture's state, mirroring the three fields above it rather than
@@ -358,6 +366,10 @@ export class WorldScene extends Phaser.Scene {
   /** Connects the HUD after it mounts; neither side sends a simulation command. */
   public setMinimapSink(sink: (view: MinimapView | undefined) => void): void {
     this.minimapSink = sink;
+  }
+
+  public setTemplateGhostPort(port: TemplateGhostPort | undefined): void {
+    this.templateGhostPort = port;
   }
 
   public constructor(options: WorldSceneOptions) {
@@ -623,7 +635,8 @@ export class WorldScene extends Phaser.Scene {
         // finger down; a second finger arriving hands the gesture back to the
         // camera before either finger can commit a placement on release.
         if (this.activeTouchCount() === 1) {
-          if (this.isBuildArmed()) this.beginBuild(pointer);
+          if (this.isTemplateArmed()) this.beginTemplate(pointer);
+          else if (this.isBuildArmed()) this.beginBuild(pointer);
           else if (this.isObjectArmed()) this.beginObject(pointer);
           else if (this.isRoomArmed()) this.beginArea(pointer);
         } else {
@@ -631,6 +644,10 @@ export class WorldScene extends Phaser.Scene {
           // lift before moving, and its release must not place the old preview.
           this.cancelAllGestures();
         }
+        return;
+      }
+      if (pointer.button === 0 && this.isTemplateArmed()) {
+        this.beginTemplate(pointer);
         return;
       }
       if (pointer.button === 0 && this.isBuildArmed()) {
@@ -687,13 +704,15 @@ export class WorldScene extends Phaser.Scene {
         }
         return;
       }
+      if (this.templatePointerId === pointer.id) return;
       if (this.extendBuild(pointer)) return;
       if (this.extendObject(pointer)) return;
       if (this.extendArea(pointer)) return;
       // Nothing is being built and no button is down: keep the ghost under
       // the cursor so the edge rule is legible before the first click. Touch
       // never reaches here, which is why the drag preview exists as well.
-      if (this.panPointerId === undefined && this.isBuildArmed()) this.previewHover(pointer);
+      if (this.panPointerId === undefined && this.isTemplateArmed()) this.previewTemplateHover(pointer);
+      else if (this.panPointerId === undefined && this.isBuildArmed()) this.previewHover(pointer);
       // The same, one tool over, and here the preview says something the other
       // two cannot: a bed is 1x2, so the footprint rectangle is how the player
       // learns which *two* tiles a press will claim before they press.
@@ -711,6 +730,7 @@ export class WorldScene extends Phaser.Scene {
     });
     const finishPointer = (pointer: Phaser.Input.Pointer): void => {
       if (pointer.wasTouch) this.touchGestures.end(pointer.id);
+      if (this.commitTemplate(pointer)) return;
       if (this.commitBuild(pointer)) return;
       if (this.commitObject(pointer)) return;
       if (this.commitArea(pointer)) return;
@@ -783,6 +803,14 @@ export class WorldScene extends Phaser.Scene {
       this.objectRect = undefined;
       this.hoveredObjectTile = undefined;
       this.objectOverlay?.clear();
+    }
+    if (!this.isTemplateArmed() && this.templatePlan !== undefined) {
+      this.templatePointerId = undefined;
+      this.templateOrigin = undefined;
+      this.templatePlan = undefined;
+      this.templateVerdict = undefined;
+      this.templateRevision += 1;
+      this.buildOverlay?.clear();
     }
 
     const nowSeconds = time / 1000;
@@ -1042,6 +1070,10 @@ export class WorldScene extends Phaser.Scene {
 
   private isBuildArmed(): boolean {
     return this.buildTool?.isArmed() === true;
+  }
+
+  private isTemplateArmed(): boolean {
+    return this.templateGhostPort?.isArmed() === true;
   }
 
   /**
@@ -1365,6 +1397,7 @@ export class WorldScene extends Phaser.Scene {
    * `isObjectArmed` already arbitrate the rest.
    */
   private cancelAllGestures(): void {
+    this.templatePointerId = undefined;
     this.cancelBuild();
     this.cancelObject();
     this.cancelArea();
@@ -1390,7 +1423,60 @@ export class WorldScene extends Phaser.Scene {
    * disagreement #200 wrote its hover assertion to prevent.
    */
   private gestureInProgress(): boolean {
-    return this.buildPointerId !== undefined || this.objectPointerId !== undefined || this.areaPointerId !== undefined;
+    return this.templatePointerId !== undefined || this.buildPointerId !== undefined || this.objectPointerId !== undefined || this.areaPointerId !== undefined;
+  }
+
+  private previewTemplateHover(pointer: Phaser.Input.Pointer): void {
+    const port = this.templateGhostPort;
+    if (port === undefined) return;
+    const tile = this.squareAt(this.worldPointOf(pointer));
+    const plan = port.planAt(tile);
+    const oldDoor = this.templatePlan?.doorSquares[0];
+    const newDoor = plan.doorSquares[0];
+    if (this.templateOrigin?.x === tile.x && this.templateOrigin.y === tile.y &&
+        this.templatePlan?.id === plan.id && oldDoor?.x === newDoor?.x && oldDoor?.y === newDoor?.y) return;
+    this.templateOrigin = tile;
+    this.templatePlan = plan;
+    this.templateVerdict = undefined;
+    this.buildOverlay?.updateTemplate(plan, undefined);
+    const revision = ++this.templateRevision;
+    void port.inspectAt(tile).then(({ plan: checked, verdict }) => {
+      if (revision !== this.templateRevision || !this.isTemplateArmed()) return;
+      this.templatePlan = checked;
+      this.templateVerdict = verdict;
+      this.buildOverlay?.updateTemplate(checked, verdict);
+    }).catch((error: unknown) => {
+      if (revision === this.templateRevision) this.onError(error instanceof Error ? error : new Error(String(error)));
+    });
+  }
+
+  private beginTemplate(pointer: Phaser.Input.Pointer): void {
+    this.templatePointerId = pointer.id;
+    this.previewTemplateHover(pointer);
+  }
+
+  private commitTemplate(pointer: Phaser.Input.Pointer): boolean {
+    if (this.templatePointerId !== pointer.id) return false;
+    this.templatePointerId = undefined;
+    const tile = this.squareAt(this.worldPointOf(pointer));
+    const origin = this.templateOrigin;
+    const port = this.templateGhostPort;
+    if (origin === undefined || port === undefined || this.templateVerdict?.ok !== true ||
+        origin.x !== tile.x || origin.y !== tile.y) return true;
+    void port.placeAt(origin).then((verdict) => {
+      if (!verdict.ok) {
+        this.templateVerdict = verdict;
+        if (this.templatePlan !== undefined) this.buildOverlay?.updateTemplate(this.templatePlan, verdict);
+        return;
+      }
+      port.standDown();
+      this.templateRevision += 1;
+      this.templatePlan = undefined;
+      this.templateOrigin = undefined;
+      this.templateVerdict = undefined;
+      this.buildOverlay?.clear();
+    }).catch((error: unknown) => this.onError(error instanceof Error ? error : new Error(String(error))));
+    return true;
   }
 
   /**

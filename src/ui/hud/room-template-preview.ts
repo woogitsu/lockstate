@@ -11,7 +11,7 @@ const NAME_KEYS: Record<RoomTemplateId, LocalizationKey> = {
 };
 
 /** A catalogue of authored plans. Selection previews geometry; it never places an order. */
-export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTemplateTool): { readonly openButton: HTMLButtonElement; readonly dialog: HTMLDialogElement } {
+export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTemplateTool, onArmMap?: () => void): { readonly openButton: HTMLButtonElement; readonly dialog: HTMLDialogElement } {
   const t = (key: LocalizationKey): string => localizer.format(key);
   const openButton = element('button', {
     className: 'hud-build__template-open',
@@ -91,6 +91,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
     const y = element('input', { attributes: { type: 'number', step: '1', value: '0', 'aria-label': t('hud.build.template-y') } });
     const mirror = element('input', { attributes: { type: 'checkbox' } });
     const place = element('button', { text: t('hud.build.template-place'), attributes: { type: 'button' } });
+    const map = element('button', { text: t('hud.build.template-map'), attributes: { type: 'button' } });
     const status = element('p', { className: 'hud-template__status', attributes: { role: 'status' } });
     place.disabled = true;
     const origin = (): { x: number; y: number } | undefined => {
@@ -143,9 +144,13 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
       // command yet, so an immediate read can still say "clear" and allow a
       // second press. Editing the origin or choice asks for a fresh verdict.
     });
+    map.addEventListener('click', () => {
+      onArmMap?.();
+      dialog.close();
+    });
     dialog.append(element('div', {
       className: 'hud-template__placement',
-      children: [x, y, element('label', { children: [mirror, element('span', { text: t('hud.build.template-mirror') })] }), place, status],
+      children: [x, y, element('label', { children: [mirror, element('span', { text: t('hud.build.template-mirror') })] }), place, map, status],
     }));
   }
   for (const id of ROOM_TEMPLATE_IDS) {
