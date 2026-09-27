@@ -64,6 +64,7 @@ describe('art pipeline contract', () => {
       'actor.prisoner.assault',
       'actor.prisoner.base',
       'actor.prisoner.classroom',
+      'actor.prisoner.laundry',
       'actor.prisoner.riot',
       'actor.prisoner.shower',
       'actor.prisoner.treatment',
@@ -71,7 +72,7 @@ describe('art pipeline contract', () => {
       'actor.staff.base',
     ]);
     expect(registry.assets.every((asset) => asset.clips.join('|') ===
-      (asset.assetId === 'actor.guard.response' ? 'idle|respond' : asset.assetId === 'actor.guard.search' ? 'idle|search' : asset.assetId === 'actor.prisoner.riot' ? 'agitate|idle' : asset.assetId === 'actor.prisoner.assault' ? 'idle|struggle' : asset.assetId === 'actor.prisoner.shower' ? 'idle|wash' : asset.assetId === 'actor.prisoner.treatment' ? 'idle|recover' : asset.assetId === 'actor.prisoner.yard' ? 'exercise|idle' : asset.assetId === 'actor.prisoner.classroom' ? 'idle|study' : 'idle|walk'))).toBe(true);
+      (asset.assetId === 'actor.guard.response' ? 'idle|respond' : asset.assetId === 'actor.guard.search' ? 'idle|search' : asset.assetId === 'actor.prisoner.riot' ? 'agitate|idle' : asset.assetId === 'actor.prisoner.assault' ? 'idle|struggle' : asset.assetId === 'actor.prisoner.shower' ? 'idle|wash' : asset.assetId === 'actor.prisoner.treatment' ? 'idle|recover' : asset.assetId === 'actor.prisoner.yard' ? 'exercise|idle' : asset.assetId === 'actor.prisoner.classroom' ? 'idle|study' : asset.assetId === 'actor.prisoner.laundry' ? 'fold|idle' : 'idle|walk'))).toBe(true);
   });
 
   /**

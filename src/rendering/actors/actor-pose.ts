@@ -24,6 +24,7 @@ export const RECOVER_CLIP_ID = 'recover';
 export const WASH_CLIP_ID = 'wash';
 export const EXERCISE_CLIP_ID = 'exercise';
 export const STUDY_CLIP_ID = 'study';
+export const FOLD_CLIP_ID = 'fold';
 
 /**
  * Speed below which an actor is drawn idle rather than walking, in world
@@ -50,6 +51,7 @@ export interface ActorMotion {
   readonly showering?: boolean;
   readonly exercising?: boolean;
   readonly studying?: boolean;
+  readonly laundryWork?: boolean;
 }
 
 /**
@@ -110,6 +112,11 @@ export function selectActorPose(motion: ActorMotion, out: ActorPose = createActo
   }
   if (motion.studying) {
     out.clipId = STUDY_CLIP_ID;
+    out.direction = facing;
+    return out;
+  }
+  if (motion.laundryWork) {
+    out.clipId = FOLD_CLIP_ID;
     out.direction = facing;
     return out;
   }
