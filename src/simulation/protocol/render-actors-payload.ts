@@ -154,6 +154,12 @@ import { LOCOMOTION_SUBTILE_UNITS } from '../locomotion';
  * Bit 15 marks prisoners named in an open assault. The worker projects the
  * existing incident records once per publication. It does not decide who
  * attacked whom; both participants receive the same visual state.
+ *
+ * ### Layout 8: performing prisoner actions
+ *
+ * Bits 16, 17 and 18 identify infirmary treatment, showering and sleep while
+ * their existing actions are performing. These use reserved bits in the
+ * existing record word, so the byte layout and schema version remain 8.
  */
 
 /** The payload's `schemaId`, checked by the receiver before it reads a byte. */
@@ -370,8 +376,10 @@ const OPEN_ASSAULT_SHIFT = 15;
 const TREATMENT_SHIFT = 16;
 /** Bit 17: this prisoner is performing the existing shower action. */
 const SHOWER_SHIFT = 17;
+/** Bit 18: this prisoner is performing the existing sleep action. */
+const SLEEP_SHIFT = 18;
 
-export function packRenderActorFields(population: number, headingX = 0, headingY = 0, incidentResponse = false, contrabandSearch = false, openRiot = false, openAssault = false, treatment = false, shower = false): number {
+export function packRenderActorFields(population: number, headingX = 0, headingY = 0, incidentResponse = false, contrabandSearch = false, openRiot = false, openAssault = false, treatment = false, shower = false, sleep = false): number {
   return (
     (population & RENDER_ACTOR_POPULATION_MASK) |
     (((headingX + HEADING_BIAS) & HEADING_MASK) << HEADING_X_SHIFT) |
@@ -381,7 +389,8 @@ export function packRenderActorFields(population: number, headingX = 0, headingY
     (openRiot ? 1 << OPEN_RIOT_SHIFT : 0) |
     (openAssault ? 1 << OPEN_ASSAULT_SHIFT : 0) |
     (treatment ? 1 << TREATMENT_SHIFT : 0) |
-    (shower ? 1 << SHOWER_SHIFT : 0)
+    (shower ? 1 << SHOWER_SHIFT : 0) |
+    (sleep ? 1 << SLEEP_SHIFT : 0)
   );
 }
 
@@ -407,6 +416,10 @@ export function renderActorTreatment(packedFields: number): boolean {
 
 export function renderActorShower(packedFields: number): boolean {
   return ((packedFields >>> SHOWER_SHIFT) & 1) === 1;
+}
+
+export function renderActorSleep(packedFields: number): boolean {
+  return ((packedFields >>> SLEEP_SHIFT) & 1) === 1;
 }
 
 export function renderActorPopulation(packedFields: number): number {

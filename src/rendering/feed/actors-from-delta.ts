@@ -11,6 +11,7 @@ import {
   renderActorOpenAssault,
   renderActorTreatment,
   renderActorShower,
+  renderActorSleep,
   renderActorPopulation,
   type RenderActorsPayload,
 } from '../../simulation/protocol/render-actors-payload';
@@ -94,6 +95,8 @@ export function actorsFromDelta(payload: RenderActorsPayload): MutableRenderActo
         ? 'actor.prisoner.treatment'
       : population === RENDER_ACTOR_POPULATION_PRISONER && renderActorShower(packedFields)
         ? 'actor.prisoner.shower'
+      : population === RENDER_ACTOR_POPULATION_PRISONER && renderActorSleep(packedFields)
+        ? 'actor.prisoner.sleep'
       : population === RENDER_ACTOR_POPULATION_GUARD && renderActorIncidentResponse(packedFields)
       ? 'actor.guard.response'
       : population === RENDER_ACTOR_POPULATION_GUARD && renderActorContrabandSearch(packedFields)
@@ -119,6 +122,7 @@ export function actorsFromDelta(payload: RenderActorsPayload): MutableRenderActo
       ...(population === RENDER_ACTOR_POPULATION_PRISONER && !renderActorOpenRiot(packedFields) && renderActorOpenAssault(packedFields) ? { openAssault: true } : {}),
       ...(population === RENDER_ACTOR_POPULATION_PRISONER && !renderActorOpenRiot(packedFields) && !renderActorOpenAssault(packedFields) && renderActorTreatment(packedFields) ? { infirmaryTreatment: true } : {}),
       ...(population === RENDER_ACTOR_POPULATION_PRISONER && !renderActorOpenRiot(packedFields) && !renderActorOpenAssault(packedFields) && !renderActorTreatment(packedFields) && renderActorShower(packedFields) ? { showering: true } : {}),
+      ...(population === RENDER_ACTOR_POPULATION_PRISONER && !renderActorOpenRiot(packedFields) && !renderActorOpenAssault(packedFields) && !renderActorTreatment(packedFields) && !renderActorShower(packedFields) && renderActorSleep(packedFields) ? { sleeping: true } : {}),
       // `exactOptionalPropertyTypes` is on, so "no facing" has to be an absent
       // key rather than an explicit `undefined`.
       ...(headingX === 0 && headingY === 0 ? {} : { facing: directionFromMovement(headingX, headingY, DEFAULT_FACING) }),

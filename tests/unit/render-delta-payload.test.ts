@@ -54,6 +54,7 @@ function sourceOf(
     readonly walk?: { readonly offsetX?: number; readonly offsetY?: number; readonly velocityX?: number; readonly velocityY?: number; readonly headingX?: number; readonly headingY?: number };
     readonly treatmentPhase?: 'travelling' | 'performing';
     readonly showerPhase?: 'travelling' | 'performing';
+    readonly sleepPhase?: 'travelling' | 'performing';
   }[],
   alive?: readonly boolean[],
 ) {
@@ -71,6 +72,10 @@ function sourceOf(
     if (actor.showerPhase !== undefined) {
       actionIndex[index] = actionIndexOf('action.shower');
       phase[index] = ACTION_PHASES.indexOf(actor.showerPhase);
+    }
+    if (actor.sleepPhase !== undefined) {
+      actionIndex[index] = actionIndexOf('action.sleep');
+      phase[index] = ACTION_PHASES.indexOf(actor.sleepPhase);
     }
   });
   const byKey = new Map(actors.map((actor, index) => [index, actor]));
@@ -543,6 +548,20 @@ describe('the render delta payload matches the layout ADR 0040 specifies', () =>
     )));
     expect(render().map((actor) => actor.assetId)).toEqual(['actor.prisoner.shower', 'actor.prisoner.base']);
     expect(selectActorPose(render()[0]!)).toMatchObject({ clipId: 'wash' });
+    source.currentAction.phase[0] = ACTION_PHASES.indexOf('idle');
+    expect(render().map((actor) => actor.assetId)).toEqual(['actor.prisoner.base', 'actor.prisoner.base']);
+  });
+
+  it('shows sleep only during the existing performing phase and restores calm art', () => {
+    const source = sourceOf([
+      { id: 10, x: 2, y: 3, sleepPhase: 'performing' },
+      { id: 11, x: 4, y: 5, sleepPhase: 'travelling' },
+    ]);
+    const render = () => actorsFromDelta(decodeRenderActorsPayload(encodeRenderActorsKeyframe(
+      source, TICKS_PER_SECOND, NO_WORLD_CHANGE,
+    )));
+    expect(render().map((actor) => actor.assetId)).toEqual(['actor.prisoner.sleep', 'actor.prisoner.base']);
+    expect(selectActorPose(render()[0]!)).toMatchObject({ clipId: 'sleep' });
     source.currentAction.phase[0] = ACTION_PHASES.indexOf('idle');
     expect(render().map((actor) => actor.assetId)).toEqual(['actor.prisoner.base', 'actor.prisoner.base']);
   });
