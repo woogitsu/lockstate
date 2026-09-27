@@ -59,7 +59,7 @@ written into the code, by the author of the code, as a known gap.** The issue
 found the sentence that admits it and read it as the gate.
 
 The actual gate is `tryOpenRetaliation`, at
-`src/simulation/incidents/trigger-system.ts:510`:
+`src/simulation/incidents/trigger-system.ts:524`:
 
 ```ts
   private tryOpenRetaliation(sectorId: string, tick: number): void {
@@ -229,7 +229,7 @@ Shapes, as #642 defines them:
 
 | # | Item | `file:line` | Shape | Producer's status |
 | --- | --- | --- | --- | --- |
-| 1 | `'gang-retaliation'` + `GangRegistry` | `src/simulation/incidents/incident.ts:6`; gate `src/simulation/incidents/trigger-system.ts:510`, constructed `:522`; `src/simulation/incidents/gangs.ts:37` (`addMember`), `:86` (`addGrudge`); constructed empty `src/simulation/runtime/new-session.ts:458` | **A** | Deferred to [#39](https://github.com/matmaxalez/lockstate/issues/39) by [#28](https://github.com/matmaxalez/lockstate/issues/28)'s dependency list. Open. |
+| 1 | `'gang-retaliation'` + `GangRegistry` | `src/simulation/incidents/incident.ts:6`; gate `src/simulation/incidents/trigger-system.ts:524`, constructed `:522`; `src/simulation/incidents/gangs.ts:37` (`addMember`), `:86` (`addGrudge`); constructed empty `src/simulation/runtime/new-session.ts:458` | **A** | Deferred to [#39](https://github.com/matmaxalez/lockstate/issues/39) by [#28](https://github.com/matmaxalez/lockstate/issues/28)'s dependency list. Open. |
 | 2 | `TunnelRegistry` | `src/simulation/incidents/escape.ts:19`, `start` at `:22`, `advance` at `:27`; constructed empty `src/simulation/runtime/new-session.ts:855` | **A** | None named. `src/simulation/incidents/flashpoint.ts:213` states it: *"`TunnelRegistry` has no producer."* |
 | 3 | `resolveEscapeOpportunity` | `src/simulation/incidents/escape.ts:76` | **A** | No caller in `src/`. Superseded rather than forgotten: ADR 0061's escape producer (`trigger-system.ts:357`) reads `PrisonerFlashpointSampler` instead, for the reason `flashpoint.ts:209-212` gives — the derived sector has no doors, so this function *"scores 0 for every prison in this repository"*. |
 | 4 | `summarizeIncidents` | `src/simulation/incidents/incident-summary.ts:50` | **A** | No caller in `src/`. Its own docblock (`:7-14`) records that its file-mate `toIncidentAlert` was **deleted** in #555 for the same absence. |

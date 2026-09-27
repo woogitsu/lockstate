@@ -437,7 +437,7 @@ grep -rn "introduce(\|submitOrder(\|applyRiotRegimeOverride\|resolveEscapeOpport
   resolved` pipeline, plus `lapse`, lockdown, responder claims and restore-time
   re-dispatch (`src/simulation/incidents/response-system.ts:476-494`; the anchor
   read `:227-249`), registered
-  at `src/simulation/runtime/new-session.ts:1617` (the anchor read `:662`). Its `update` iterates
+  at `src/simulation/runtime/new-session.ts:1625` (the anchor read `:662`). Its `update` iterates
   `this.incidents.openIncidents()` and does nothing when that is empty.
 - `ClassificationReviewSystem` — registered via
   `PrisonerOperationsRuntime.registerOn`
@@ -484,7 +484,7 @@ grep -rn "introduce(\|submitOrder(\|applyRiotRegimeOverride\|resolveEscapeOpport
 - `GangRegistry.register` / `.addMember` / `.addGrudge` — written only by
   `loadSnapshot` (`src/simulation/incidents/gangs.ts:123-124`), so a live
   session's registry is empty and `tryOpenRetaliation`
-  (`src/simulation/incidents/trigger-system.ts:587`; the anchor read `:108-137`)
+  (`src/simulation/incidents/trigger-system.ts:601`; the anchor read `:108-137`)
   iterates nothing.
 
 **Decided and unbuilt, rather than undecided:**
@@ -529,7 +529,7 @@ grep -rn "introduce(\|submitOrder(\|applyRiotRegimeOverride\|resolveEscapeOpport
 >   `src/simulation/security/sector-occupancy.ts:132`.
 > - **Step 3** *(one recurring debit)* — taken. `src/simulation/economy/payroll.ts`
 >   exists, `insolvencyRungs` is registered on the kernel
->   (`src/simulation/runtime/new-session.ts:1605`), and the save carries
+>   (`src/simulation/runtime/new-session.ts:1613`), and the save carries
 >   `unpaidWagesMinorUnits` (`src/persistence/save-schema.ts:1220`,
 >   `.object({ unpaidWagesMinorUnits: z.number().int().nonnegative().safe() })`;
 >   this branch wrote `:1209` on 2026-09-15 and it was ten lines high by
@@ -771,7 +771,7 @@ constrained by it identically:
   (`src/simulation/security/sector-occupancy.ts:132`; the anchor read
   `src/simulation/runtime/new-session.ts:603`),
   `IncidentTriggerSystem.update` sorts its sector ids
-  (`src/simulation/incidents/trigger-system.ts:360`; the anchor read `:63`), and
+  (`src/simulation/incidents/trigger-system.ts:362`; the anchor read `:63`), and
   `SectorRiskTracker.getSnapshot` sorts
   (`src/simulation/incidents/sector-risk.ts:217`; the anchor read `:97-99`).
   A richer occupancy model replaces the *contents* of that list, never its

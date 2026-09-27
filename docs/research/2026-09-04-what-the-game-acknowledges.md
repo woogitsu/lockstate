@@ -226,7 +226,7 @@ for — and lengthening it is not this record's business (§5).
 
 `incidents.gang-retaliation-opened` has no producer.
 `IncidentTriggerSystem.tryOpenRetaliation`
-(`src/simulation/incidents/trigger-system.ts:523`) begins
+(`src/simulation/incidents/trigger-system.ts:537`) begins
 `this.gangs.gangsClaiming(sectorId)` and iterates
 `this.gangs.allGrudges()`; both are empty for the life of every session,
 because **nothing in `src/` ever registers a gang**:

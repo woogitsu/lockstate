@@ -39,6 +39,7 @@ function buildHarness(options: {
   readonly quietTicksAfterIncident?: number;
   /** ADR 0061's per-occupant sampler. Omitted, the system opens riots and gang retaliations exactly as it did before. */
   readonly sampleFlashpoints?: PrisonerFlashpointSampler;
+  readonly canObserveSectorRisk?: (sectorId: string) => boolean;
 }) {
   const incidents = new IncidentLog();
   const events = new SimulationEventLog();
@@ -56,6 +57,12 @@ function buildHarness(options: {
     options.quietTicksAfterIncident,
     undefined,
     options.sampleFlashpoints,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    options.canObserveSectorRisk,
   );
   const kernel = new Kernel();
   kernel.registerSystem(trigger);
@@ -69,6 +76,38 @@ function stepSamples(kernel: Kernel, count: number): void {
 }
 
 describe('IncidentTriggerSystem: sustained conditions, never a one-sample spike', () => {
+  it('warns on the first hot sample only when surveillance is available, without suppressing the later riot', () => {
+    let surveillance = false;
+    const { incidents, events, kernel } = buildHarness({
+      sectorIds: ['block-a'],
+      sampleFor: () => HOT,
+      canObserveSectorRisk: () => surveillance,
+    });
+
+    stepSamples(kernel, 1);
+    expect(events.getSnapshot().records).toEqual([]);
+    surveillance = true;
+    stepSamples(kernel, DEFAULT_SECTOR_RISK_POLICY.sustainedSamplesRequired - 1);
+    expect(events.getSnapshot().records.map((event) => event.type)).toEqual(['incidents.riot-opened']);
+    expect(incidents.all()).toHaveLength(1);
+
+    const observed = buildHarness({
+      sectorIds: ['block-a'],
+      sampleFor: () => HOT,
+      canObserveSectorRisk: () => true,
+    });
+    stepSamples(observed.kernel, 1);
+    expect(observed.events.getSnapshot().records).toMatchObject([
+      { type: 'incidents.sector-risk-warning', sectorId: 'block-a' },
+    ]);
+    stepSamples(observed.kernel, DEFAULT_SECTOR_RISK_POLICY.sustainedSamplesRequired - 1);
+    expect(observed.events.getSnapshot().records.map((event) => event.type)).toEqual([
+      'incidents.sector-risk-warning',
+      'incidents.riot-opened',
+    ]);
+    expect(observed.incidents.all()).toHaveLength(1);
+  });
+
   it('a single hot sampling point does not open a riot', () => {
     let hot = true;
     const { incidents, kernel } = buildHarness({

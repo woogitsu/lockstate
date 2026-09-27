@@ -338,6 +338,8 @@ export class IncidentTriggerSystem implements SystemRegistration {
     private readonly quietTicksAfterEscapeAttempt: number = DEFAULT_SECTOR_QUIET_TICKS_AFTER_ESCAPE_ATTEMPT,
     /** How long after a gang retaliation opens this sector may not open another. See `DEFAULT_SECTOR_QUIET_TICKS_AFTER_RETALIATION`. */
     private readonly quietTicksAfterRetaliation: number = DEFAULT_SECTOR_QUIET_TICKS_AFTER_RETALIATION,
+    /** A furnished security office can observe the first hot sample before a riot's sustained window completes. */
+    private readonly canObserveSectorRisk?: (sectorId: string) => boolean,
   ) {}
 
   /**
@@ -370,6 +372,18 @@ export class IncidentTriggerSystem implements SystemRegistration {
       // assault can delay a riot by at most `responseDeadlineTicks` (600), and
       // that is the whole of it -- the quiet periods below are per type, so
       // nothing is silenced for a window.
+      // A live warning at the first hot sample leaves eleven more 50-tick
+      // samples before the default riot gate. Conditions may cool in between;
+      // the notice says risk is rising, never that a riot is certain.
+      if (
+        this.risk.getConsecutiveHotSamples(sectorId) === 1 &&
+        this.canObserveSectorRisk?.(sectorId) === true &&
+        !this.isQuiet(sectorId, context.tick, 'riot', this.quietTicksAfterIncident) &&
+        this.resolveOccupants(sectorId).length >= this.minimumRiotParticipants
+      ) {
+        this.events.recordSectorRiskWarning(sectorId, context.tick);
+      }
+
       if (this.incidents.openIncidentsInSector(sectorId).length > 0) continue;
 
       if (this.risk.isSustainedHot(sectorId) && !this.isQuiet(sectorId, context.tick, 'riot', this.quietTicksAfterIncident)) {

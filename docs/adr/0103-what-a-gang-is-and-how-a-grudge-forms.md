@@ -497,11 +497,11 @@ yet to decide, not a property of there being one sector.
 
 ### 4. A retaliation is the last gate in the update loop, behind three others — VERIFIED, read
 
-`IncidentTriggerSystem.update` (`src/simulation/incidents/trigger-system.ts:346-385`)
+`IncidentTriggerSystem.update` (`src/simulation/incidents/trigger-system.ts:348-399`)
 runs, per sector, in this order: bail out if any incident is open in the sector
 at all; try a riot; try an escape attempt; try an assault; and only then, last,
 `this.tryOpenRetaliation(sectorId, context.tick);`
-(`src/simulation/incidents/trigger-system.ts:397`; the anchor read `:333`, a
+(`src/simulation/incidents/trigger-system.ts:411`; the anchor read `:333`, a
 blank line). The system's cadence is
 `intervalTicks: 50` (`src/simulation/incidents/trigger-system.ts:294`; the anchor
 read `:232`).
@@ -558,7 +558,7 @@ finding was made against, and a reader has to be able to see the defect as it
 was:
 
 > `const participants = [...this.gangs.membersOf(offended), ...this.gangs.membersOf(offending)].sort((a, b) => a - b);`
-> at `src/simulation/incidents/trigger-system.ts:583`
+> at `src/simulation/incidents/trigger-system.ts:597`
 
 What stands there now is the same union off two locals the guard has just
 read: `const participants = [...offendedMembers, ...offendingMembers].sort((a, b) => a - b);`
@@ -577,7 +577,7 @@ on one side only and replays it for determinism
 > the finding (2026-09-17).** That spec's title today is *"refuses a
 > retaliation nobody is in, on either side, and opens one the moment both sides
 > have a member"* — the opposite of what this sentence concluded. The guard
-> that closed it is `src/simulation/incidents/trigger-system.ts:613-615`, which
+> that closed it is `src/simulation/incidents/trigger-system.ts:627-629`, which
 > this document already cites in *Decision 6*'s own landing note; the two
 > passages disagreed with each other inside one file, which is the check
 > `docs/AGENT_WORKFLOW.md` §4 says no diff performs. The sentence is kept
@@ -730,13 +730,13 @@ relying on it.
 
 **It does, and the worry that it might not is closed rather than carried.** An
 assault is an `IncidentType` opened by `IncidentTriggerSystem.tryOpenAssault`
-(`src/simulation/incidents/trigger-system.ts:454`), and the record it opens
+(`src/simulation/incidents/trigger-system.ts:468`), and the record it opens
 carries three things a grudge producer needs:
 
 - **Exactly two participants.**
   `export const ASSAULT_PARTICIPANT_COUNT = 2;` (verbatim in
   `src/simulation/incidents/flashpoint.ts`), at `:343`, sliced off the ranked
-  flashpoints at `src/simulation/incidents/trigger-system.ts:486` and sorted
+  flashpoints at `src/simulation/incidents/trigger-system.ts:500` and sorted
   into the list at `:441`.
 - **One of the two named separately.** `instigatorId: worst.entityId,`
   (verbatim in `src/simulation/incidents/trigger-system.ts`), at `:450`.
@@ -758,7 +758,7 @@ struck first"* (`src/simulation/incidents/incident.ts:95-97`). The comment at
 the write site says the same thing from the other end — *"`worst` is
 `ranked[0]` -- the entity `scoreAssaultPressure` finds a reason for -- not a
 struck-first determination"*
-(`src/simulation/incidents/trigger-system.ts:496-501`) — and two more modules
+(`src/simulation/incidents/trigger-system.ts:510-515`) — and two more modules
 say it independently: an assault's participants are *"who was in it"*, and
 *"Distinguishing an aggressor from a victim is adjudication, which is issue
 #80's and needs a command type"*
@@ -869,7 +869,7 @@ on the alerts channel.**
 
 **Recorded is not the same as delivered, and the gap is small but real.** The
 buffer trims to `MAX_BUFFERED_SIMULATION_EVENTS` on append
-(`src/simulation/events/event-log.ts:871-874`) and the publisher reads it on a
+(`src/simulation/events/event-log.ts:877-880`) and the publisher reads it on a
 timer, so a burst of more than that many events between two publications would
 drop the oldest before anyone saw them. Nothing in this repository has measured
 that happening, and the dwell module's own event-spacing runs — 64 events in
@@ -1430,7 +1430,7 @@ can check against the code above rather than as an assertion:**
 1. **A grudge is a directional, single-use ledger entry, not a standing
    relationship.** `grudges` is keyed `offended->offending`
    (`src/simulation/incidents/gangs.ts:82`) and is *cleared on use*
-   (`src/simulation/incidents/trigger-system.ts:632`, re-aimed 2026-09-15 from
+   (`src/simulation/incidents/trigger-system.ts:646`, re-aimed 2026-09-15 from
    `:546`). The genre's usual model
    is a persistent inter-gang hostility that modulates a probability; ours is a
    debt that is created by one identifiable event and discharged by one
@@ -1567,7 +1567,7 @@ and re-checked one bullet at a time on 2026-09-15 against `main` at `e044a3e8`:
   Decision 6 named, and `src/simulation/incidents/default-gangs.ts:313-314` add
   the grudge pair. The count was the claim and the count has moved.
 - *"No guard against a retaliation with an empty participant list"* — **the
-  guard is `src/simulation/incidents/trigger-system.ts:613-615`**, which is
+  guard is `src/simulation/incidents/trigger-system.ts:627-629`**, which is
   Decision 4 built. This bullet called it *"the one defect in existing code this
   document asks to close"*; it is closed.
 - *"No way for the adjudication seam to name the victim"* — **the seam carries

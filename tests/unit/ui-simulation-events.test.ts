@@ -82,6 +82,7 @@ const SAMPLE: { readonly [K in SimulationEvent['type']]: (sequence: number) => E
   'economy.construction-restored': (sequence) => ({ sequence, tick: 100, type: 'economy.construction-restored' }),
   'prisoners.discharged': (sequence) => ({ sequence, tick: 100, type: 'prisoners.discharged', count: 2 }),
   'incidents.riot-opened': (sequence) => ({ sequence, tick: 100, type: 'incidents.riot-opened', participantCount: 12 }),
+  'incidents.sector-risk-warning': (sequence) => ({ sequence, tick: 100, type: 'incidents.sector-risk-warning', sectorId: 'sector.a' }),
   'incidents.assault-opened': (sequence) => ({ sequence, tick: 100, type: 'incidents.assault-opened' }),
   'incidents.escape-attempt-opened': (sequence) => ({ sequence, tick: 100, type: 'incidents.escape-attempt-opened' }),
   'incidents.escape-succeeded': (sequence) => ({

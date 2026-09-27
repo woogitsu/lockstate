@@ -1010,6 +1010,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   // ruling: narration, and the noun is unavoidable because the sentence is
   // about who is fighting.
   'hud.alert.event.incidents.assault-opened': 'Doszło do bójki między dwoma więźniami.',
+  'hud.alert.event.incidents.sector-risk-warning': 'Rośnie ryzyko buntu w sektorze {sector}.',
   // Narration, so *więzień* -- and it works here where it would not in a past
   // tense, because a Polish present-tense verb carries no gender.
   'hud.alert.event.incidents.escape-attempt-opened': 'Więzień próbuje się stąd wydostać.',

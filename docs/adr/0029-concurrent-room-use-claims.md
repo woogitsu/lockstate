@@ -869,7 +869,7 @@ round after it, and the two point the same way. So the losing set is not merely
 > (`src/simulation/runtime/new-session.ts:1387`) and the sector sample averages
 > it over the sector's occupants (`:1420`–`:1424`), which
 > `IncidentTriggerSystem` reads as `{ kind: 'needs-pressure' }`
-> (`src/simulation/incidents/trigger-system.ts:515`). So **`hunger` does have a
+> (`src/simulation/incidents/trigger-system.ts:529`). So **`hunger` does have a
 > downstream reader**, and starving three quarters of a prison now raises its
 > riot risk. The old anchor `new-session.ts:598` is a constructor argument in an
 > unrelated block today.

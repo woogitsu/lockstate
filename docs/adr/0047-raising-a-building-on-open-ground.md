@@ -141,7 +141,7 @@ exposes no enclosure query, that its `update()` has no caller, and that the
 topological reading of `enclosed` therefore is not implementable today. The
 first two claims hold — `TopologyManager.update`
 (`src/simulation/rooms/topology.ts:55`) is absent from the `registerSystem`
-block, where `navigation` is present (`src/simulation/runtime/new-session.ts:1607`).
+block, where `navigation` is present (`src/simulation/runtime/new-session.ts:1615`).
 
 **But the same flood fill runs every tick, in navigation, and is registered.**
 `buildNavigationGraph` (`src/simulation/navigation/region-graph.ts:99`)

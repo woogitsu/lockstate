@@ -2135,6 +2135,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   // A four-line entry pushes the next key out of that window and spends the
   // document's pinned budget, which may not be raised.
   'hud.alert.event.incidents.riot-opened': { one: 'A riot has broken out — {count} prisoner has stopped taking orders.', other: 'A riot has broken out — {count} prisoners have stopped taking orders.' },
+  'hud.alert.event.incidents.sector-risk-warning': 'Riot risk is rising in sector {sector}.',
   'hud.alert.event.incidents.assault-opened': 'A fight has broken out between two prisoners.',
   'hud.alert.event.incidents.escape-attempt-opened': 'A prisoner is trying to break out.',
   'hud.alert.event.incidents.gang-retaliation-opened': 'Two gangs are settling a score.',

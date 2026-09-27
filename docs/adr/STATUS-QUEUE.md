@@ -14564,7 +14564,7 @@ ruling's third clause constrains nothing today, because `openIncident` is
 said there to record every assault unconditionally. **That last clause is
 quoted from that document and is not re-verified here** — `openIncident` is a
 private method of `IncidentTriggerSystem` with **four** call sites in its own
-file (`src/simulation/incidents/trigger-system.ts:542` declares it; `:367`,
+file (`src/simulation/incidents/trigger-system.ts:556` declares it; `:367`,
 `:436`, `:507` and `:532` call it), and reading
 whether every assault path reaches it is that document's work rather than
 this file's. **A ruling on one decision inside a `Proposed`
@@ -19257,7 +19257,7 @@ of the pass.
 
 The sharpest thing in this window is not a coordinate. `9792fe27`/#1284
 implements ADR 0116's ruling under `src/` — `SIMULATION_EVENT_TYPES` **27 →
-28**, a producer at `src/simulation/events/event-log.ts:858` (`type: 'construction.order-completed'`), a presentation
+28**, a producer at `src/simulation/events/event-log.ts:864` (`type: 'construction.order-completed'`), a presentation
 entry at `src/ui/simulation-events.ts:515-519` graded `'info'` and routed
 `'log-only'` exactly as ruled, and a player-visible sentence authored in both
 locales — and does not touch `docs/adr/0116-…md`, whose Status block still
@@ -23380,7 +23380,7 @@ one direction.
   from **27 members to 28** with `'construction.order-completed'` added
   (counted out of `src/simulation/protocol/types.ts` at both ends of the window
   rather than off the diff), the producer is
-  `src/simulation/events/event-log.ts:858` —
+  `src/simulation/events/event-log.ts:864` —
   `this.append({ sequence: this._sequence + 1, tick, type: 'construction.order-completed' });`
   — the presentation entry is `src/ui/simulation-events.ts:515-519`
   (`severity: 'info'`, `surfaces: 'log-only'`), and a
@@ -23691,7 +23691,7 @@ one direction.
   `3399b1f9` — the ADR gained a 46-line `IMPLEMENTED 2026-09-09` block above
   it in this window; found by
   `grep -n 'gains one guard'`, not by offsetting the hunk).
-  `src/simulation/incidents/trigger-system.ts:577-584` has exactly one guard,
+  `src/simulation/incidents/trigger-system.ts:591-598` has exactly one guard,
   `:529`'s `if (risk < this.retaliationThreshold) continue;`, and then `:531`
   builds `participants` from both `membersOf` calls straight into
   `openIncident` with no emptiness check between them. That file's own comment
@@ -23733,7 +23733,7 @@ one direction.
   > - **Decision 4's missing guard** — present. The ADR asked that
   >   *"`tryOpenRetaliation` gains one guard: skip the pair unless both"*
   >   members lists are non-empty, and
-  >   `src/simulation/incidents/trigger-system.ts:615` is
+  >   `src/simulation/incidents/trigger-system.ts:629` is
   >   `if (offendedMembers.length === 0 || offendingMembers.length === 0) continue;`,
   >   **both sides**, which is what the ADR asked for rather than one of them.
   >   The cited span widens with the implementation, `:525-532` → **`:537-566`**.

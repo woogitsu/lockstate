@@ -334,7 +334,7 @@ dispatches on the schedule the system declares
   nothing here reads it.
 - **`sequence` is the log's own monotonic counter** (`this._sequence + 1`, the
   shape every `record*` method uses, e.g.
-  `src/simulation/events/event-log.ts:798-799`), not an ordering the command
+  `src/simulation/events/event-log.ts:804-805`), not an ordering the command
   queue has to supply. `(executeAtTick, sequence)` in `docs/DETERMINISM.md:33-36`
   governs *commands*; a completion is not a command and enters no queue.
 - **No RNG stream is needed**, named or otherwise, so
@@ -381,7 +381,7 @@ records.** `construction-projection.ts:53-59` states it:
 So an event that names *what* finished carries `definitionId`, a stable content
 id — never `BuildableDefinition.name`, which is English text and which ADR 0011
 forbids on a projection outright. That is the same discipline `rooms.zoned`'s
-`roomNameKey: identifierSchema` (`src/simulation/protocol/types.ts:2443`) is
+`roomNameKey: identifierSchema` (`src/simulation/protocol/types.ts:2444`) is
 under, and `types.ts:1012-1014` already says so: *"A key is not text: ADR 0011 keeps
 translated text off the wire, and the HUD still resolves this one."*
 
@@ -571,7 +571,7 @@ and is not proposed here.
    `ConstructionSystem` holds at `system.ts:1746`; none needs a mechanism that
    does not exist.
 2. **Whether a *cancelled-into-completed* order should say anything different.**
-   `recordBuildOrderCancelled` (`src/simulation/events/event-log.ts:798-815`)
+   `recordBuildOrderCancelled` (`src/simulation/events/event-log.ts:804-821`)
    already routes `'completed'` to `construction.order-cancelled-underway`, so
    taking a finished wall down is spoken for. Nothing here touches it.
 3. **Whether the queue going empty is its own event.** Named in option 4 and
