@@ -82,10 +82,11 @@ def torus(name, x, y, z, radius, thickness, mat):
 
 
 def crumpled_paper(name, x, y, z, scale, mat, angle):
-    # Flat icosphere facets hold a folded-paper silhouette after downsampling.
-    bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=1, radius=1,
-        location=(ORIGIN.location.x + x, ORIGIN.location.y + y, z))
-    obj = bpy.context.object
+    # Fixed vertex and face order makes both the fold offsets and rendered
+    # pixels reproducible. The ico-sphere operator reorders faces between runs.
+    mesh = pipeline_common.uv_sphere_mesh(name, segments=8, ring_count=4)
+    obj = pipeline_common.add_mesh_object(name, mesh,
+        (ORIGIN.location.x + x, ORIGIN.location.y + y, z))
     for index, vertex in enumerate(obj.data.vertices):
         vertex.co.x *= 1 + 0.19 * math.sin(index * 2.41 + angle)
         vertex.co.y *= 1 + 0.16 * math.cos(index * 1.73 - angle)

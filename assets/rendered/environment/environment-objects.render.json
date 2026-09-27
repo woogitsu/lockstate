@@ -147,8 +147,8 @@
     {
       "assetId": "fixture.cell.waste_bin",
       "image": "fixture.cell.waste_bin.png",
-      "sha256": "624b3df727da0d51e65d6c942f66f531d1663322bab0aee13a03be8e4957a9c3",
-      "pixelSha256": "13e4a01007e4345f63141cfdd11516a202e6391479525ad117a966211387dd23",
+      "sha256": "3343b09b3b49bfc8631dadd435949571a1477ebcdf91442fcbecc9c39420abcb",
+      "pixelSha256": "ec2f4c1c9493370bdcbded68c57882cabf336afeb79db5919b33a9f0f2695072",
       "footprintTiles": {
         "width": 1.0,
         "height": 1.0
