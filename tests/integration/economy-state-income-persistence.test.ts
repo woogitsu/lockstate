@@ -245,8 +245,10 @@ const SCENARIO_JUST_IN_TIME_MATERIALS_SETTLED = 320;
 const BALANCE_AT_TICK_40 = 25_000 - SCENARIO_JUST_IN_TIME_MATERIALS_BY_TICK_40;
 /** What the scenario holds once every wall has paid for itself. */
 const OPENING_BALANCE = 25_000 - SCENARIO_JUST_IN_TIME_MATERIALS_SETTLED;
-/** What one settled in-game day actually moves the balance by: 1,200 in, 400 out. */
-const ONE_DAY_NET = ONE_DAY_PAYMENT - ONE_DAY_WAGES;
+/** Four kitchen/canteen users lose one 40-unit share each day, even with a bin: cleaning runs after settlement. */
+const ONE_DAY_SANITATION_WITHHOLD = 4 * 40;
+/** What one settled in-game day actually moves the balance by: 1,200 in, 160 withheld, 400 in wages. */
+const ONE_DAY_NET = ONE_DAY_PAYMENT - ONE_DAY_SANITATION_WITHHOLD - ONE_DAY_WAGES;
 
 describe('a mid-day save neither loses the partial day nor pays for it twice', () => {
   it('settles at the occupied places intake actually produced, which is fewer than the prisoners admitted', () => {
@@ -279,12 +281,11 @@ describe('a mid-day save neither loses the partial day nor pays for it twice', (
   it('restores the same accrual it had mid-day, because the accrual is recomputed from the tick', () => {
     const original = sessionAtTick(1_200);
     const accruedBefore = original.stateIncome.accruedThisDay(original.kernel.tick);
-    // Half a day at four places: `floor(300 x 4 x 1,201 / 2,400)`. Not half of
-    // `ONE_DAY_PAYMENT` exactly, because the day is prorated by ticks *served*
-    // including the one in progress, and the floor takes the trailing half
-    // minor unit -- which is the arithmetic the unit test pins and the reason
-    // this figure is spelled out rather than computed here.
-    expect(accruedBefore).toBe(600);
+    // Four occupied places earn 1,200 before sanitation. At this tick one
+    // prisoner has already used a dirty room, docking 40 for the day; half of
+    // the resulting 1,160 grant has accrued. Cleaning at the boundary cannot
+    // retroactively erase this use.
+    expect(accruedBefore).toBe(580);
 
     const { restored } = saveAndLoad(original);
     expect(restored.kernel.tick).toBe(1_200);

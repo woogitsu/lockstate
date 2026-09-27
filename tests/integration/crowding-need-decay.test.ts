@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createSaveEnvelope, decodeSaveEnvelope } from '../../src/persistence/save-schema';
-import { STATE_INCOME_UNMET_NEED_LEVEL, stateIncomeForCompletedDay } from '../../src/simulation/economy/income';
+import { STATE_INCOME_UNMET_NEED_LEVEL, STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS, stateIncomeForCompletedDay } from '../../src/simulation/economy/income';
 import { placedObjectAt } from '../../src/simulation/objects';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { packCommand } from '../../src/simulation/protocol/commands';
@@ -143,7 +143,13 @@ function dailyIncome(runtime: SimulationRuntime, days: number): number[] {
   const income: number[] = [];
   for (let day = 1; day <= days; day += 1) {
     stepTo(runtime, endOfDay(day));
-    income.push(stateIncomeForCompletedDay(runtime.prisoners));
+    // This suite isolates safety decay from the later sanitation reader (#595).
+    // Count today's dirty-room users before the boundary clears the ledger,
+    // and add only that independent 40-share back to the observed grant.
+    const sanitationWithheld = runtime.prisoners.roomInstances.residentIdsWithExistingPlace()
+      .filter((id) => runtime.roomFilth.hasDirtyRoomUse(id)).length
+      * STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS;
+    income.push(stateIncomeForCompletedDay(runtime.prisoners) + sanitationWithheld);
   }
   return income;
 }
