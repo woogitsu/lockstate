@@ -1328,6 +1328,10 @@ const economySectionSchema = z
       .object({ unpaidWagesMinorUnits: z.number().int().nonnegative().safe() })
       .strict()
       .optional(),
+    roomFilth: z.object({
+      rooms: z.array(z.tuple([z.string().min(1), z.number().int().nonnegative().safe()])),
+      uses: z.array(z.tuple([entityIdSchema, z.array(z.string().min(1))])),
+    }).strict().optional(),
   })
   .strict();
 

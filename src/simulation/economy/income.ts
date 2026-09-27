@@ -4,6 +4,7 @@ import type { LoanBook } from './loans';
 import { NEED_IDS, NEED_MAX, type NeedsComponent } from '../prisoners/needs';
 import { DAY_LENGTH_TICKS } from '../prisoners/regime';
 import type { Treasury } from './treasury';
+import type { RoomFilthLedger } from './room-filth';
 
 /**
  * What the state pays for operating the facility (ADR 0017 decision 3 and
@@ -266,6 +267,8 @@ export interface PrisonerDayGrantSource {
   readonly roomInstances: OccupiedPlaceSource;
   readonly entityStore: { getIndex(entityId: EntityId): number };
   readonly needs: NeedsComponent;
+  readonly roomFilth?: RoomFilthLedger | undefined;
+  readonly wasteDisposalAvailable?: () => boolean;
 }
 
 /**
@@ -716,8 +719,11 @@ export function stateIncomeForOccupiedPlaces(
   occupiedPlaceIds: readonly EntityId[],
 ): number {
   let total = 0;
+  const wasteDisposalAvailable = source.wasteDisposalAvailable?.() === true;
   for (const entityId of occupiedPlaceIds) {
-    total += stateIncomeForPrisonerDay(unmetNeedCount(source.needs, source.entityStore.getIndex(entityId)));
+    const unmet = unmetNeedCount(source.needs, source.entityStore.getIndex(entityId));
+    const filthyUse = !wasteDisposalAvailable && source.roomFilth?.hasDirtyRoomUse(entityId);
+    total += stateIncomeForPrisonerDay(unmet) - (filthyUse ? STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS : 0);
   }
   return total;
 }

@@ -2,6 +2,7 @@ import { EntityStore, type EntityId } from '../entity/entity-store';
 import { ComponentBitset } from '../entity/component';
 import { EntityQuery } from '../entity/query';
 import type { SimulationEventLog } from '../events';
+import type { RoomFilthLedger } from '../economy/room-filth';
 import type { ActorIdentityLifecycle } from '../identity/actor-identity';
 import type { Kernel } from '../kernel/kernel';
 import { LocomotionStore, LocomotionSystem, type LocomotionSnapshot } from '../locomotion';
@@ -144,6 +145,7 @@ export interface ExcessResidentRelocation {
 
 export interface PrisonerOperationsRuntimeOptions {
   readonly capacity: number;
+  readonly roomFilth?: RoomFilthLedger;
   readonly navigation: NavigationSystem;
   /**
    * Where `PrisonerDischargeSystem` says that a sentence ended (issue #507).
@@ -312,6 +314,12 @@ export interface PrisonerOperationsRuntimeOptions {
 export class PrisonerOperationsRuntime {
   public readonly entityStore: EntityStore;
   public readonly roomInstances = new RoomInstanceRegistry();
+  public readonly roomFilth: RoomFilthLedger | undefined;
+
+  public wasteDisposalAvailable(): boolean {
+    return this.roomInstances.allByRoomCatalogId('room.garbage-room')
+      .some((room) => room.objectCapabilities.includes('waste-disposal'));
+  }
   public readonly records: PrisonerRecordComponent;
   public readonly needs: NeedsComponent;
   public readonly currentAction: CurrentActionComponent;
@@ -432,6 +440,7 @@ export class PrisonerOperationsRuntime {
   private readonly query: EntityQuery;
 
   public constructor(options: PrisonerOperationsRuntimeOptions) {
+    this.roomFilth = options.roomFilth;
     this.entityStore = new EntityStore(options.capacity);
     this.bitset = new ComponentBitset(options.capacity);
     this.query = new EntityQuery(this.entityStore, this.bitset);
@@ -508,6 +517,9 @@ export class PrisonerOperationsRuntime {
       // (`PrisonerRegimeOverrideResolver`'s own contract).
       combineRegimeOverrides(options.regimeOverride, (entityId) => (this.isServingSolitarySanction(entityId) ? HIGH_RISK_REGIME : undefined)),
       options.carryJobs,
+      options.roomFilth === undefined
+        ? undefined
+        : (roomCatalogId, roomInstanceId, entityId) => options.roomFilth!.recordCompletedUse(roomCatalogId, roomInstanceId, entityId),
     );
     this.locomotionSystem = new LocomotionSystem('prisoners.locomotion', (ticks, tick) =>
       this.locomotion.advance(

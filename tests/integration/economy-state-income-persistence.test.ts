@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { createSaveEnvelope, decodeSaveEnvelope, SAVE_SCHEMA_VERSION } from '../../src/persistence/save-schema';
 import { STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS } from '../../src/simulation/economy';
+import { placedObjectAt } from '../../src/simulation/objects';
+import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { DAY_LENGTH_TICKS } from '../../src/simulation/prisoners/regime';
 import {
   captureSessionSnapshot,
@@ -117,6 +119,21 @@ function saveAndLoad(runtime: SimulationRuntime): { restored: SimulationRuntime;
 /** A scenario stepped to `tick`, with intake having had time to house its arrivals. */
 function sessionAtTick(tick: number): SimulationRuntime {
   const runtime = buildDeterminismScenario();
+  // Keep the sanitation modifier serviced: this suite isolates accrual and
+  // save cadence, while economy-room-filth tests the withholding itself.
+  runtime.prisoners.roomInstances.register({
+    instanceId: 'income-test-garbage', roomCatalogId: 'room.garbage-room',
+    anchorTile: { x: tileCoordinate(20), y: tileCoordinate(20) }, width: 2, height: 2,
+    residentCapacity: 0, concurrentUseCapacity: 0, concurrentUseCapacityByCapability: [],
+    objectCapabilities: [], openArea: false,
+  });
+  for (const x of [20, 21]) {
+    if (!runtime.placedObjects.place(placedObjectAt('object.waste-bin', { x: tileCoordinate(x), y: tileCoordinate(20) }, 0))) {
+      throw new Error('income fixture could not place a waste bin');
+    }
+  }
+  runtime.roomCapacity.resolveAll();
+  expect(runtime.prisoners.wasteDisposalAvailable()).toBe(true);
   submitScenarioCommands(runtime);
   for (let index = 0; index < tick; index += 1) runtime.kernel.step();
   expect(runtime.kernel.tick).toBe(tick);
