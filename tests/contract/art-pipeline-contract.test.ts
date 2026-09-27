@@ -66,10 +66,11 @@ describe('art pipeline contract', () => {
       'actor.prisoner.riot',
       'actor.prisoner.shower',
       'actor.prisoner.treatment',
+      'actor.prisoner.yard',
       'actor.staff.base',
     ]);
     expect(registry.assets.every((asset) => asset.clips.join('|') ===
-      (asset.assetId === 'actor.guard.response' ? 'idle|respond' : asset.assetId === 'actor.guard.search' ? 'idle|search' : asset.assetId === 'actor.prisoner.riot' ? 'agitate|idle' : asset.assetId === 'actor.prisoner.assault' ? 'idle|struggle' : asset.assetId === 'actor.prisoner.shower' ? 'idle|wash' : asset.assetId === 'actor.prisoner.treatment' ? 'idle|recover' : 'idle|walk'))).toBe(true);
+      (asset.assetId === 'actor.guard.response' ? 'idle|respond' : asset.assetId === 'actor.guard.search' ? 'idle|search' : asset.assetId === 'actor.prisoner.riot' ? 'agitate|idle' : asset.assetId === 'actor.prisoner.assault' ? 'idle|struggle' : asset.assetId === 'actor.prisoner.shower' ? 'idle|wash' : asset.assetId === 'actor.prisoner.treatment' ? 'idle|recover' : asset.assetId === 'actor.prisoner.yard' ? 'exercise|idle' : 'idle|walk'))).toBe(true);
   });
 
   /**

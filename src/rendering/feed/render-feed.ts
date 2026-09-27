@@ -36,6 +36,8 @@ export interface RenderActor {
   readonly infirmaryTreatment?: boolean;
   /** This prisoner is performing the existing shower action. */
   readonly showering?: boolean;
+  /** This prisoner is performing yard recreation. */
+  readonly exercising?: boolean;
 }
 
 /**
