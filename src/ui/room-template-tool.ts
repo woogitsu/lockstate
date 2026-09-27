@@ -13,7 +13,7 @@ export type RoomTemplatePreflight =
 
 export interface RoomTemplatePlacementPort {
   /** Read-only worker query over every square, including the room's future objects. */
-  preflight(plan: RoomTemplatePlan): Promise<RoomTemplatePreflight>;
+  preflight(request: RoomTemplatePlacementRequest): Promise<RoomTemplatePreflight>;
   /** Backend must validate again and commit atomically; preflight can become stale. */
   place(request: RoomTemplatePlacementRequest): Promise<void>;
 }
@@ -40,20 +40,23 @@ export class RoomTemplateTool {
 
   public async inspectAt(origin: TemplateSquare): Promise<{ readonly plan: RoomTemplatePlan; readonly verdict: RoomTemplatePreflight }> {
     const plan = this.planAt(origin);
-    return { plan, verdict: await this.port.preflight(plan) };
+    return { plan, verdict: await this.port.preflight(this.requestAt(origin)) };
+  }
+
+  private requestAt(origin: TemplateSquare): RoomTemplatePlacementRequest {
+    return {
+      templateId: this.selected,
+      origin: { x: origin.x, y: origin.y },
+      ...(this.mirrorX ? { mirrorX: true } : {}),
+    };
   }
 
   public async placeAt(origin: TemplateSquare): Promise<RoomTemplatePreflight | { readonly ok: false; readonly reason: 'busy' }> {
     if (this.busy) return { ok: false, reason: 'busy' };
     this.busy = true;
     try {
-      const request: RoomTemplatePlacementRequest = {
-        templateId: this.selected,
-        origin: { x: origin.x, y: origin.y },
-        ...(this.mirrorX ? { mirrorX: true } : {}),
-      };
-      const plan = instantiateRoomTemplate(request.templateId, request.origin, { mirrorX: this.mirrorX });
-      const verdict = await this.port.preflight(plan);
+      const request = this.requestAt(origin);
+      const verdict = await this.port.preflight(request);
       if (!verdict.ok) return verdict;
       await this.port.place(request);
       return verdict;
