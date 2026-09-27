@@ -21,6 +21,7 @@ test('template placement UI checks every square before enabling one submit', asy
   await dialog.getByRole('checkbox', { name: 'Mirror horizontally' }).check();
   expect(await dialog.locator('.hud-template__diagram').evaluate((grid) => grid.children[39]?.classList.contains('hud-template__tile--door'))).toBe(true);
   await expect(place).toBeEnabled();
+  await page.screenshot({ path: 'test-results/room-template-placement-ui-fullhd.png' });
   await place.click();
   expect(await page.evaluate(() => (window as unknown as { templateRequests: unknown[] }).templateRequests)).toEqual([
     { templateId: 'cell-large', origin: { x: 10, y: 7 }, mirrorX: true },
