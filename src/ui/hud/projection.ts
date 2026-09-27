@@ -818,7 +818,7 @@ function overdraftDescription(counts: HudCountsViewModel): HudMetricText | undef
  * rule: a chip that carries the same sentence in every screenshot is one
  * nobody reads in the screenshot it matters in. Absent and `0` are different
  * facts -- a payload written before the field existed against a prison
- * meeting every need -- and both correctly draw nothing.
+ * with no share currently withheld -- and both correctly draw nothing.
  *
  * **It reads the published figure and does not derive one.** The undiminished
  * per-place rate is in `src/simulation/economy/income.ts`, which this module

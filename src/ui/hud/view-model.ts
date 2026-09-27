@@ -499,8 +499,8 @@ export interface HudCountsViewModel {
    */
   readonly stateIncomeAccruedTodayMinorUnits: number;
   /**
-   * How much of today's grant has been withheld so far because residents have
-   * needs going unmet, in the same minor units -- or **absent because nothing
+   * How much of today's grant has been withheld for unmet needs or use of
+   * dirty rooms, in the same minor units -- or **absent because nothing
    * has published it** (issue #890).
    *
    * Published, never computed here, and the reason is sharper than for the
@@ -512,7 +512,7 @@ export interface HudCountsViewModel {
    *
    * **Optional, and absent is not `0`.** Absent is a payload written before
    * this field existed -- every fixture in `tests/browser/` is one -- and `0`
-   * is a prison meeting every resident's needs. `earnedWithheldDescription`
+   * means no share is currently withheld. `earnedWithheldDescription`
    * draws nothing in either case, so the two agree on screen and are still
    * different facts.
    */

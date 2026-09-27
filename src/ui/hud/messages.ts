@@ -245,7 +245,7 @@ export const HUD_MESSAGE_KEY = {
   earnedToday: 'hud.status.earned-today',
   /**
    * The `Earned today` chip's tooltip and screen-reader text while some of
-   * today's grant is being withheld for unmet needs (issue #890).
+   * today's grant is being withheld for unmet needs or dirty rooms (#595).
    *
    * **The same shape as `fundsBeforeDeliveriesStop` above, and for the same
    * reason.** A badge would cost chip width on a row whose overflow is

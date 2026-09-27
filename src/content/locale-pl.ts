@@ -542,7 +542,10 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
    * carries the proof of each clause; this note records only where the Polish
    * departs from word order, and it departs in three places.
    *
-   *  - **The cause keeps the subject position.** *Niezaspokojone potrzeby
+   *  - **Historical claim, superseded by #595.** The paragraph below
+   *    described the sole cause before room filth also reduced income.
+   *    The replacement sentence names both causes and the cleanup boundary.
+   *  - **The cause kept the subject position.** *Niezaspokojone potrzeby
    *    wstrzymały...* — the claim the English makes without hedging is that
    *    unmet needs are the *whole* of the difference between the two figures,
    *    which holds because `stateIncomeForPrisonerDayAt` is the only term
@@ -577,7 +580,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
    * 2026-08-30: this is a status chip's own description, not event flavour.
    */
   'hud.status.earned-withheld':
-    'Niezaspokojone potrzeby wstrzymały jak dotąd {withheld} z dzisiejszej dotacji — państwo płaci mniej za osadzonego, którego potrzeby nie są zaspokajane, a zaspokojenie jednej z nich przywraca tę część.',
+    'Z dzisiejszej dotacji wstrzymano dotąd {withheld}. Niezaspokojone potrzeby i korzystanie z brudnych pomieszczeń zmniejszają wypłatę; zaspokojenie potrzeby przywraca jej część, a śmietnik z koszem na odpady usuwa zabrudzenie na koniec dnia.',
   'hud.status.occupancy': 'Zajętość cel',
   'hud.status.occupancy-value': '{value} z {capacity}',
   'hud.status.incidents-clear': 'Spokój',
