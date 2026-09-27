@@ -41,3 +41,23 @@ test.describe('Polish Full HD work rail', () => {
     await expect(page.locator('.save-panel').getByRole('button', { name: 'Eksportuj' })).toBeVisible();
   });
 });
+
+test('Build and Saves remain separate reachable scroll areas at 200% interface scale', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/');
+  await page.locator('.empty-world-prompt').getByRole('button', { name: 'Create a prison' }).click();
+  await page.locator('.ui-tab[data-tab="build"]').click();
+  for (let press = 0; press < 4; press += 1) await page.locator('.display-scale__cycle').click();
+  await expect(page.locator('.display-scale__value')).toHaveText('200%');
+
+  const build = await page.locator('.ui-panel.hud-build').boundingBox();
+  const saves = await page.locator('.save-panel').boundingBox();
+  expect(build).not.toBeNull();
+  expect(saves).not.toBeNull();
+  expect(build!.y + build!.height).toBeLessThanOrEqual(saves!.y + 1);
+  expect(saves!.y + saves!.height).toBeLessThanOrEqual(1080);
+  const exportButton = page.locator('.save-panel').getByRole('button', { name: 'Export' });
+  await expect(exportButton).toBeEnabled();
+  await exportButton.focus();
+  await expect(exportButton).toBeFocused();
+});
