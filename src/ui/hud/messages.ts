@@ -394,6 +394,7 @@ export const HUD_MESSAGE_KEY = {
 
   minimapTitle: 'hud.minimap.title',
     minimapPlaceholder: 'hud.minimap.placeholder',
+    minimapNoPrison: 'hud.minimap.no-prison',
     /**
      * Historical fallback for a navigation press that succeeds before the
      * first map frame paints. Once the renderer supplies its projection,

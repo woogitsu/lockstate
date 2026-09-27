@@ -6,6 +6,7 @@ for (const uiScale of [100, 200] as const) {
     await page.goto('/index.html');
     await page.locator('#game-root canvas').waitFor();
     await page.getByRole('button', { name: /New prison|Nowe więzienie/ }).click();
+    await expect(page.locator('.empty-world-prompt')).toBeHidden();
     if (uiScale === 200) {
       for (let step = 0; step < 4; step += 1) await page.locator('.display-scale__cycle').click();
     }
