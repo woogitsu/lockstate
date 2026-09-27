@@ -100,7 +100,7 @@ import { describe, expect, it } from 'vitest';
 
 const ROOT = join(__dirname, '../..');
 
-const RESEARCH = join('docs', 'research');
+const RESEARCH = 'docs/research';
 
 /** Markdown under `docs/`, plus the markdown at the repository root. */
 function collectMarkdownFiles(directory: string): readonly string[] {
@@ -143,7 +143,7 @@ interface Anchor {
 }
 
 function anchorsIn(file: string): readonly Anchor[] {
-  const source = relative(ROOT, file);
+  const source = relative(ROOT, file).replaceAll('\\', '/');
   const anchors: Anchor[] = [];
   for (const match of readFileSync(file, 'utf8').matchAll(/`([^`\n]+)`/g)) {
     // Trailing sentence punctuation is the sentence's, not the anchor's.
