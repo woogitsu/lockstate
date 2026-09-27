@@ -918,7 +918,11 @@
 }
 
 .ui-toggles__legend { color: var(--text-muted); }
-.ui-toggles__reason { color: var(--text-muted); }
+.ui-toggles__reason {
+  color: var(--text-muted);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
 
 .ui-toggles__options {
   display: flex;

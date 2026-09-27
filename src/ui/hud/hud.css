@@ -2615,6 +2615,17 @@
   color: var(--text-subtle);
 }
 
+/* At the supported Full HD width the Polish refund sentence needs a second
+   line. Keep the compact rail's existing height budget below that width. */
+@media (min-width: 1920px) {
+  .hud-build__deliveries-header { flex-wrap: wrap; }
+  .hud-build__deliveries-count {
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}
+
 .hud-build__delivery-list:not([hidden]) {
   display: flex;
   flex-direction: column;

@@ -205,6 +205,20 @@ async function buyMaterialsByBuildingAWall(page: Page): Promise<void> {
 }
 
 test.describe('the money the game spent for the player', () => {
+  test('keeps the complete Polish refundable total inside the Full HD Build rail (#1519)', async ({ page }) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await openApp(page);
+    await buyMaterialsByBuildingAWall(page);
+    const fit = await page.locator('.hud-build__deliveries-count').evaluate((count) => {
+      const text = count as HTMLElement;
+      text.textContent = 'Kupione: 6 · Zwrot przy anulowaniu: 480';
+      const header = text.closest('.hud-build__deliveries-header');
+      return header !== null && text.scrollWidth <= text.clientWidth + 1 &&
+        text.getBoundingClientRect().right <= header.getBoundingClientRect().right + 1;
+    });
+    expect(fit, 'the refund amount runs past the Build rail at 1920×1080').toBe(true);
+  });
+
   test('is reported with a box, and so is its Cancel, with the Buy fold never opened (#703)', async ({ page }) => {
     await page.setViewportSize({ width: VIEWPORTS[0][0], height: VIEWPORTS[0][1] });
     await openApp(page);

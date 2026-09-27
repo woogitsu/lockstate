@@ -148,6 +148,7 @@ test.describe('the Regime panel can change the day it reports', () => {
   test('the last remaining category cannot be switched off, and the panel says why rather than going quiet', async ({
     page,
   }) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
     await page.goto(HARNESS_URL);
     await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
     expect(await page.evaluate(() => window.lockstateUiHarness.clickTab('day-plan'))).toBe(true);
@@ -165,6 +166,13 @@ test.describe('the Regime panel can change the day it reports', () => {
     await expect(highRisk.locator('.ui-toggles__reason')).toHaveText(
       'A block has to allow at least one thing, so the last one cannot be switched off.',
     );
+    const reasonFits = await highRisk.locator('.ui-toggles__reason').evaluate((reason) => {
+      const text = reason as HTMLElement;
+      const panel = text.closest('.hud-regime');
+      return panel !== null && text.scrollWidth <= text.clientWidth + 1 &&
+        text.getBoundingClientRect().right <= panel.getBoundingClientRect().right + 1;
+    });
+    expect(reasonFits, 'the locked-category explanation is clipped by the Full HD rail (#1514)').toBe(true);
 
     // And the lock is per block rather than per panel: the other group has
     // three categories and every one of them is pressable.
