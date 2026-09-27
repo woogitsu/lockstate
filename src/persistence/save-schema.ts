@@ -185,6 +185,7 @@ const buildOrderSchema = z
      * so no migration step is needed and none is added.
      */
     edge: z.enum(['north', 'west']).optional(),
+    footprint: z.literal('square').optional(),
     /**
      * Where the order sits in the sequence of gestures the player made
      * ([ADR 0082](../../docs/adr/0082-what-order-build-orders-are-carried-out-in.md),
