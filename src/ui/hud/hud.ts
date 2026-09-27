@@ -129,10 +129,9 @@ export interface HudBuildEdgeTarget {
  * covers a run. See the `place-build-order` intent for why the run stays
  * whole.
  */
-export interface HudBuildOrder {
-  readonly definitionId: string;
-  readonly edges: readonly HudBuildEdgeTarget[];
-}
+export type HudBuildOrder =
+  | { readonly definitionId: string; readonly edges: readonly HudBuildEdgeTarget[]; readonly squares?: never; readonly footprint?: never }
+  | { readonly definitionId: string; readonly footprint: 'square'; readonly squares: readonly { readonly x: number; readonly y: number }[]; readonly edges?: never };
 
 /**
  * The world's build gesture, as the HUD is willing to know it (issue #225).
@@ -2324,6 +2323,14 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       if (intent.placesObject) {
         dispatchCommand(
           { kind: 'place-object', definitionId: intent.definitionId, x: intent.x, y: intent.y },
+          buildPanel.submitControl,
+        );
+        return;
+      }
+      if (intent.definitionId === 'wall-brick') {
+        dispatchCommand(
+          { kind: 'place-build-order', definitionId: intent.definitionId,
+            footprint: 'square', squares: [{ x: intent.x, y: intent.y }] },
           buildPanel.submitControl,
         );
         return;

@@ -212,6 +212,10 @@ export class WorldRenderView {
     return this.chunks.get(this.chunkKeyFor(tile.x, tile.y))?.leftEdge?.[this.indexInChunk(tile.x, tile.y)] ?? 0;
   }
 
+  public getSquareStructure(tile: TilePosition): number {
+    return this.chunks.get(this.chunkKeyFor(tile.x, tile.y))?.squareStructure?.[this.indexInChunk(tile.x, tile.y)] ?? 0;
+  }
+
   private chunkKeyFor(tileX: number, tileY: number): string {
     return layerKey(Math.floor(tileX / this.chunkSize), Math.floor(tileY / this.chunkSize));
   }

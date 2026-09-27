@@ -1,5 +1,8 @@
 import type { TilePosition } from './coordinates';
-import type { SparseWorld } from './sparse-world';
+
+export interface SquareStructureReader {
+  getSquareStructure(tile: TilePosition): number;
+}
 
 /** The physical face between neighboring ground squares in the new construction model. */
 type SquareBoundary = 'open' | 'wall' | 'door';
@@ -16,7 +19,7 @@ function face(value: number, axis: 'horizontal' | 'vertical'): SquareBoundary {
  * excludes the historical edge layers: a caller combines that independent
  * geometry with this answer, so old prison walls never move on restore.
  */
-export function squareBoundary(world: SparseWorld, from: TilePosition, to: TilePosition): SquareBoundary {
+export function squareBoundary(world: SquareStructureReader, from: TilePosition, to: TilePosition): SquareBoundary {
   const dx = to.x - from.x;
   const dy = to.y - from.y;
   if (Math.abs(dx) + Math.abs(dy) !== 1) {
