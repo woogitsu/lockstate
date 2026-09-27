@@ -1687,10 +1687,10 @@ test.describe('the environment artwork', () => {
       const tile = fixture.tileSizePx;
       const [tileX, tileY] = tileOf(fixture);
 
-      // Dead centre of the object's north-west tile: inside every one of
-      // these footprints (1x1 or 2x1) regardless of which case is running.
+      // The wall-mounted shower fixture has a deliberately pale centre stem.
+      // Sample its darker lower rim within the fallback slab's centre area.
       const worldX = (tileX + 0.5) * tile;
-      const worldY = (tileY + 0.5) * tile;
+      const worldY = (tileY + (catalogueId === 'object.shower-head' ? 0.54 : 0.5)) * tile;
 
       const read = async (): Promise<HarnessPixel> =>
         page.evaluate(async (point) => {
