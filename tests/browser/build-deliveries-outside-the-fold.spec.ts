@@ -414,3 +414,41 @@ test.describe('the money the game spent for the player', () => {
     await expect(page.locator('.hud-build__buy')).toBeHidden();
   });
 });
+
+test.describe('Full HD refundable total', () => {
+  test.use({ viewport: { width: 1920, height: 1080 }, locale: 'pl-PL' });
+
+  test('keeps the complete Polish amount inside the Build rail', async ({ page }) => {
+    await openApp(page);
+    await page.locator('.save-panel__button').first().click();
+    await expect(page.locator('.save-panel__item-label').first()).toBeVisible();
+    await page.locator('.ui-tab[data-tab="build"]').click();
+    const coordinates = page.locator('.hud-build__coordinates > .ui-section__header');
+    await coordinates.click();
+    const fields = page.locator('.hud-build__coordinates input');
+    const submit = page.locator('.hud-build__coordinates .ui-action');
+    for (const y of [5, 6, 7, 8, 9, 10]) {
+      await fields.nth(0).fill('5');
+      await fields.nth(1).fill(String(y));
+      await submit.click();
+    }
+    await coordinates.click();
+
+    const count = page.locator('.hud-build__deliveries-count');
+    await expect(count).toContainText('Zwrot przy anulowaniu: 480');
+    const layout = await count.evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      const header = element.closest('.hud-build__deliveries-header')?.getBoundingClientRect();
+      const panel = element.closest('.hud-build');
+      const firstCancel = panel?.querySelector('.hud-build__delivery-row .ui-action')?.getBoundingClientRect();
+      return {
+        right: rect.right,
+        headerRight: header?.right ?? 0,
+        firstCancelBottom: firstCancel?.bottom ?? Number.POSITIVE_INFINITY,
+        panelFold: panel ? panel.getBoundingClientRect().top + panel.clientTop + panel.clientHeight : 0,
+      };
+    });
+    expect(layout.right).toBeLessThanOrEqual(layout.headerRight + 0.5);
+    expect(layout.firstCancelBottom).toBeLessThanOrEqual(layout.panelFold + 0.5);
+  });
+});
