@@ -1205,6 +1205,18 @@ describe('actors from a session snapshot', () => {
     expect(selectActorPose(actors[0]!)).toMatchObject({ clipId: 'wash' });
   });
 
+  it('uses yard exercise art only for a prisoner performing yard recreation', () => {
+    const runtime = prisonWith([[1, 1], [2, 1]]);
+    runtime.prisoners.currentAction.actionIndex[0] = actionIndexOf('action.yard-recreation');
+    runtime.prisoners.currentAction.phase[0] = ACTION_PHASES.indexOf('performing');
+    runtime.prisoners.currentAction.actionIndex[1] = actionIndexOf('action.yard-recreation');
+    runtime.prisoners.currentAction.phase[1] = ACTION_PHASES.indexOf('travelling');
+    const bundle = captureSessionSnapshot(runtime);
+    const actors = actorsFromSnapshot(bundle.simulation, bundle.entities);
+    expect(actors.map((actor) => actor.assetId)).toEqual(['actor.prisoner.yard', PRISONER_ACTOR_ASSET_ID]);
+    expect(selectActorPose(actors[0]!)).toMatchObject({ clipId: 'exercise' });
+  });
+
   it('publishes no movement and no facing, because the snapshot carries neither', () => {
     const bundle = captureSessionSnapshot(prisonWith([[6, 6]]));
     const actor = actorsFromSnapshot(bundle.simulation, bundle.entities)[0];

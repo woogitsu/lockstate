@@ -357,6 +357,19 @@ const harness: LockstateActorMotionHarness = {
     }
     emitKeyframe(tick, writer.finish());
   },
+  publishYardPair: (tick, active) => {
+    const writer = new RenderActorsKeyframeWriter(2, UNCHANGED_WORLD);
+    for (const [id, x, exercising] of [[84, 8, active], [85, 10, false]] as const) {
+      writer.writeRecord(
+        id,
+        packRenderActorFields(RENDER_ACTOR_POPULATION_PRISONER, 0, 0, false, false, false, false, false, false, exercising),
+        x * LOCOMOTION_SUBTILE_UNITS,
+        4 * LOCOMOTION_SUBTILE_UNITS,
+        0, 0,
+      );
+    }
+    emitKeyframe(tick, writer.finish());
+  },
   publishCrowd: (tick, records) => {
     const writer = new RenderActorsKeyframeWriter(records.length, UNCHANGED_WORLD);
     for (const record of records) {
