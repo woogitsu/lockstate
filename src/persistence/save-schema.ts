@@ -126,6 +126,7 @@ const serializedChunkStateSchema = z
     terrain: terrainRleSchema.optional(),
     topEdge: terrainRleSchema.optional(),
     leftEdge: terrainRleSchema.optional(),
+    squareStructure: z.array(z.tuple([z.number().int().min(0).max(2), z.number().int().positive()])).optional(),
     zoning: terrainRleSchema.optional(),
   })
   .strict();
