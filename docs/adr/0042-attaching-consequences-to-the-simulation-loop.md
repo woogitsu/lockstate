@@ -288,7 +288,7 @@ docblock quoting a design note).
 (`src/simulation/security/default-sector.ts:113`; the anchor read `:99`).
 `contrabandPressure` is read
 from `intelligence.forTarget('sector', sectorId)`
-(`src/simulation/runtime/new-session.ts:1428`; the anchor read `:622`), and the
+(`src/simulation/runtime/new-session.ts:1434`; the anchor read `:622`), and the
 only writer of that
 ledger is `IntelligenceLedger.report`, whose one caller in `src/` is
 `reportInformantTip` (`src/simulation/contraband/informants.ts:87`), which has
@@ -642,9 +642,9 @@ revisited to connect it.
 
 *Persistence:* **this is the step with a save-format cost, and it is the reason
 it is not first.** `Treasury` validates non-negative in four places
-(`src/simulation/economy/treasury.ts:707`, `:790`, `:840`, `:864`; those four
-anchors read `:73`, `:83`, `:120` and `:134`, all docblock lines in what is now a
-900-line file) and the save
+(`src/simulation/economy/treasury.ts`, constructor, credit and restore; the
+old anchors read `:73`, `:83`, `:120` and `:134`, all docblock lines in what is
+now a 900-line file) and the save
 schema pins it: `balanceMinorUnits: z.number().int().nonnegative().safe()`
 (`src/persistence/save-schema.ts:955`). A debt state is either a sign change on
 a persisted field or a new persisted arrears field, and both are `AGENTS.md`

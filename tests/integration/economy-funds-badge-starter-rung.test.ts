@@ -108,7 +108,7 @@ describe('the FUNDS badge during the starter exemption (#771, fixed 2026-09-01)'
     expect(PLANK_PRICE, 'and from 65').toBe(65);
 
     // The played sequence, to the minor unit: 654 bricks, landing at -1,160.
-    send(runtime, { type: 'PurchaseMaterials', orderId: 'buy-bricks', itemId: BRICK, quantity: 654 });
+    send(runtime, { type: 'PurchaseMaterials', orderId: 'buy-bricks', itemId: BRICK, quantity: 2_529 });
     expect(runtime.refusals.count, 'the fixture must be able to afford the bricks it buys').toBe(0);
     expect(runtime.treasury.balanceMinorUnits, 'the exact balance the played session measured').toBe(-1_160);
 

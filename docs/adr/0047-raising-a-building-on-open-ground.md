@@ -201,7 +201,7 @@ Every anchor below was opened.
 
 - A new session owns exactly one chunk: `new SparseWorld(32)`, `world.load(...)`,
   `world.setOwned(initialChunk, true)`
-  (`src/simulation/runtime/new-session.ts:436-438`). Chunk size 32, so the playable
+  (`src/simulation/runtime/new-session.ts:443-445`). Chunk size 32, so the playable
   world is tiles `0..31` square.
 - **Nothing in `src/` can buy land.** `canPurchaseParcel`
   (`src/simulation/world/sparse-world.ts:702`) and `getParcelPrice` (`:711`) have no
