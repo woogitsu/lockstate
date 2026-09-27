@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { captureSessionSnapshot, restoreSimulationRuntime } from '../../src/simulation/runtime/restore-session';
 import { BARE_GATE_CAPACITY, deliveryCapacity, occupiedDeliveryUnits } from '../../src/simulation/economy/delivery-capacity';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
+import { addBulkPurchaseStorage } from '../helpers/storage-capacity-fixture';
+import { reportMaterialsFunding } from '../../src/simulation/construction/handler';
 
 describe('delivery gate capacity (#587)', () => {
   it('refuses a bulk purchase before charging a fresh prison', () => {
@@ -57,5 +60,52 @@ describe('delivery gate capacity (#587)', () => {
     expect(runtime.procurement.purchase('bulk', 'item.brick', 654, 0, 'deliveries').ok).toBe(true);
     runtime.containers.require('construction-materials').deposit('item.brick', 446);
     expect(runtime.procurement.purchase('overflow', 'item.brick', 1, 0, 'deliveries')).toEqual({ ok: false, reason: 'storage-full' });
+  });
+
+  it('derives two real racks and preserves reserved space across save and reload', () => {
+    const runtime = createNewSimulationRuntime(590);
+    addBulkPurchaseStorage(runtime);
+    expect(deliveryCapacity(runtime.prisoners.roomInstances)).toBe(1_000);
+    expect(runtime.procurement.purchase('ordinary', 'item.brick', 400, 0, 'deliveries').ok).toBe(true);
+    const restored = restoreSimulationRuntime(captureSessionSnapshot(runtime), 590).runtime;
+    expect(deliveryCapacity(restored.prisoners.roomInstances)).toBe(1_000);
+    expect(restored.procurement.pendingDeliveries.map((delivery) => delivery.quantity)).toEqual([400]);
+    restored.treasury.credit(20_000);
+    expect(restored.procurement.purchase('fits', 'item.brick', 200, 0, 'deliveries').ok).toBe(true);
+    expect(restored.procurement.purchase('over', 'item.brick', 401, 0, 'deliveries'))
+      .toEqual({ ok: false, reason: 'storage-full' });
+  });
+
+  it('explains a just-in-time build stalled on full storage without calling it poverty', () => {
+    const runtime = createNewSimulationRuntime(591);
+    runtime.containers.require('construction-materials').deposit('item.brick', BARE_GATE_CAPACITY);
+    const before = runtime.treasury.balanceMinorUnits;
+    const report = runtime.justInTimeMaterials.procureForPendingOrders([
+      { orderId: 'bed', requirements: [{ itemId: 'item.wood-plank', quantity: 1 }] },
+    ], runtime.kernel.tick);
+    reportMaterialsFunding(report, runtime.refusals, runtime.kernel.tick);
+    expect(report.unfunded).toEqual([]);
+    expect(report.unprocurable).toEqual([{ itemId: 'item.wood-plank', quantity: 1, reason: 'storage-full' }]);
+    expect(runtime.refusals.last?.reason).toBe('purchase.storage-full');
+    expect(runtime.treasury.balanceMinorUnits).toBe(before);
+  });
+
+  it('keeps a two-material build order atomic when only one delivery slot remains', () => {
+    const runtime = createNewSimulationRuntime(592);
+    runtime.containers.require('construction-materials').deposit('item.brick', BARE_GATE_CAPACITY - 1);
+    const before = runtime.treasury.balanceMinorUnits;
+    const report = runtime.justInTimeMaterials.procureForPendingOrders([
+      { orderId: 'door', requirements: [
+        { itemId: 'item.brick', quantity: BARE_GATE_CAPACITY },
+        { itemId: 'item.wood-plank', quantity: 1 },
+      ] },
+    ], 0);
+    expect(report.purchased).toEqual([]);
+    expect(report.unprocurable).toEqual([
+      { itemId: 'item.brick', quantity: 1, reason: 'storage-full' },
+      { itemId: 'item.wood-plank', quantity: 1, reason: 'storage-full' },
+    ]);
+    expect(runtime.procurement.pendingDeliveries).toEqual([]);
+    expect(runtime.treasury.balanceMinorUnits).toBe(before);
   });
 });

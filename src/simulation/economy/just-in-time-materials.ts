@@ -717,6 +717,16 @@ export class JustInTimeMaterialsService implements ConstructionProcurementSink {
         continue;
       }
 
+      // Ruling 12's whole-order funding also applies to physical space. A
+      // two-line order must not buy its bricks and then discover there is no
+      // delivery slot for its plank.
+      if (!this.procurement.canReserveDeliverySpace(lines.reduce((sum, line) => sum + line.quantity, 0))) {
+        for (const line of lines) {
+          unprocurable.push({ itemId: line.itemId, quantity: line.quantity, reason: 'storage-full' });
+        }
+        continue;
+      }
+
       for (const line of lines) {
         const inFlightBefore = this.inFlightOf(line.itemId);
         const outcome = this.procurement.purchase(
@@ -743,6 +753,9 @@ export class JustInTimeMaterialsService implements ConstructionProcurementSink {
             break;
           case 'invalid-quantity':
             unprocurable.push({ itemId: line.itemId, quantity: line.quantity, reason: 'quantity-refused' });
+            break;
+          case 'storage-full':
+            unprocurable.push({ itemId: line.itemId, quantity: line.quantity, reason: 'storage-full' });
             break;
           case 'unknown-material':
             // Unreachable while `procurableMaterial` above is the same table

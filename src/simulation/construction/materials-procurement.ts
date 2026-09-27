@@ -27,11 +27,13 @@ export interface UnfundedMaterial {
  * `src/content/procurement-catalog.ts`, so a buildable requiring `item.sink`
  * lands here. `'quantity-refused'` means the deficit failed
  * `ProcurementSystem`'s own bound, `MAX_PURCHASE_QUANTITY`.
+ * `'storage-full'` is a temporary physical-capacity block; the queue retries
+ * after space frees, and it is never reported as a shortage of money.
  */
 export interface UnprocurableMaterial {
   readonly itemId: string;
   readonly quantity: number;
-  readonly reason: 'unpurchasable' | 'quantity-refused';
+  readonly reason: 'unpurchasable' | 'quantity-refused' | 'storage-full';
 }
 
 /**
@@ -88,7 +90,7 @@ export interface MaterialsProcurementReport {
    * number the player reads without anybody deciding that it should.
    */
   readonly unfunded: readonly UnfundedMaterial[];
-  /** Wanted and not buyable at all, for a reason that is not money. */
+  /** Wanted and not bought for a reason other than money; storage can unblock later. */
   readonly unprocurable: readonly UnprocurableMaterial[];
   /**
    * What it would take to fund the **earliest order in the walk** this pass

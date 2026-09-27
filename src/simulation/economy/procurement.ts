@@ -391,13 +391,7 @@ export class ProcurementSystem implements SystemRegistration {
       return { ok: false, reason: 'insufficient-funds' };
     }
 
-    if (this.deliverySpace !== undefined) {
-      const space = this.deliverySpace();
-      const pendingUnits = this.pending.reduce((sum, delivery) => sum + delivery.quantity, 0);
-      if (space.occupied + pendingUnits + quantity > space.capacity) {
-        return { ok: false, reason: 'storage-full' };
-      }
-    }
+    if (!this.canReserveDeliverySpace(quantity)) return { ok: false, reason: 'storage-full' };
 
     if (!this.treasury.spend(paidMinorUnits, spendClass, isFreshUnfurnishedPrison)) {
       return { ok: false, reason: 'insufficient-funds' };
@@ -589,6 +583,14 @@ export class ProcurementSystem implements SystemRegistration {
   /** Deliveries not yet arrived, in the order they will arrive. */
   public get pendingDeliveries(): readonly PendingDelivery[] {
     return this.pending;
+  }
+
+  /** Read-only preflight shared with the per-order just-in-time atomicity guard. */
+  public canReserveDeliverySpace(quantity: number): boolean {
+    if (this.deliverySpace === undefined) return true;
+    const space = this.deliverySpace();
+    const pendingUnits = this.pending.reduce((sum, delivery) => sum + delivery.quantity, 0);
+    return space.occupied + pendingUnits + quantity <= space.capacity;
   }
 
   public update(context: SimulationContext): void {
