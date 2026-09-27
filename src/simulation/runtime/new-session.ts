@@ -37,6 +37,7 @@ import {
   type SectorRiskSampler,
 } from '../incidents';
 import { InsolvencyRungSystem, JustInTimeMaterialsService, LoanBook, PayrollSystem, ProcurementSystem, StateIncomeSystem, Treasury, TREASURY_STARTING_BALANCE_MINOR_UNITS, overdraftFloorForOpeningBalance, type LoanTerms } from '../economy';
+import { deliveryCapacity, occupiedDeliveryUnits } from '../economy/delivery-capacity';
 import { SimulationEventLog } from '../events';
 import { createIntakeHousedNotice } from '../events/intake-housed-notice';
 import { createResidentRelocationNotice } from '../events/resident-relocation-notice';
@@ -840,7 +841,10 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    * `ContainerMaterialsProvider` and `ConstructionSystem` are untouched.
    */
   const deliveryCarryRoute = new DeliveryBayCarryRoute(prisoners.roomInstances, containers, jobs, CONSTRUCTION_MATERIALS_CONTAINER_ID);
-  const procurement = new ProcurementSystem(treasury, constructionMaterials, deliveryCarryRoute);
+  const procurement = new ProcurementSystem(treasury, constructionMaterials, deliveryCarryRoute, () => ({
+    capacity: deliveryCapacity(prisoners.roomInstances),
+    occupied: occupiedDeliveryUnits(containers, jobs),
+  }));
   /*
    * The treasury is the third argument since #703 ruling 12: an order is funded
    * whole or not at all, so the service has to ask whether the *order's* cost is

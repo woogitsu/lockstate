@@ -244,6 +244,7 @@ describe('the wire vocabulary is exactly what the sixteen domains can produce', 
       'duplicate-order': 'purchase.duplicate-order',
       'insufficient-funds': 'purchase.insufficient-funds',
       'invalid-quantity': 'purchase.invalid-quantity',
+      'storage-full': 'purchase.storage-full',
       'unknown-material': 'purchase.unknown-material',
     });
     expect(RELEASE_GUARD_REFUSAL_REASONS).toEqual({

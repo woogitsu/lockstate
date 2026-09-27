@@ -1277,6 +1277,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   // false"* -- so the tail of this sentence is true on both routes.
   'hud.alert.refusal.purchase.insufficient-funds': 'Nothing was bought — deliveries are refused until the prison earns the money.',
   'hud.alert.refusal.purchase.invalid-quantity': 'The materials were not ordered — that quantity cannot be bought.',
+  'hud.alert.refusal.purchase.storage-full': 'The materials were not ordered — there is no room for the delivery. Use or sell stock, or expand storage.',
   'hud.alert.refusal.purchase.unknown-material': 'The materials were not ordered — that material is not for sale.',
   /*
    * `sell.*`, the third namespace beside `purchase.*` and `cancel-purchase.*`
