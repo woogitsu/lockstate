@@ -2829,6 +2829,15 @@ const NEVER_LAID_OUT_WITHOUT_A_HELD_GUARD = [
 const NEVER_LAID_OUT_WITHOUT_ZOOM_DRAWER =
   'hud > hud__tabs > button.ui-icon-button ui-icon-button--bordered hud-navigation-drawer__trigger "Show the sections"';
 
+// This sweep deliberately creates a prison before walking the controls. The
+// empty-session route is consequently hidden throughout it, and on these
+// sub-Full-HD viewports its card is suppressed even before creation. Its own
+// browser test presses Create and Load while the empty session is visible.
+const NEVER_LAID_OUT_WITHOUT_EMPTY_SESSION = [
+  'empty-world-prompt > empty-world-prompt__actions > button.save-panel__button "Create a prison"',
+  'empty-world-prompt > empty-world-prompt__actions > button.save-panel__button "Load a saved prison"',
+] as const;
+
 const NEVER_LAID_OUT_BELOW_720 = [
   'hud > hud__corner > ui-panel hud-minimap > ui-panel__header > ' +
     'button.ui-icon-button ui-icon-button--quiet ui-panel__toggle "Collapse"',
@@ -3440,13 +3449,16 @@ test.describe('the assembled application', () => {
   });
 
   test('a click in the middle of the screen reaches the world, not the HUD', async ({ page }) => {
-    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.setViewportSize({ width: 1920, height: 1080 });
     await openApp(page);
+    // The empty-session route intentionally occupies the centre until a
+    // prison exists. Measure world input in the playable state.
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.empty-world-prompt')).toBeHidden();
 
     for (const [width, height] of [
-      [1280, 800],
-      [768, 1024],
-      [375, 812],
+      [1920, 1080],
+      [2560, 1440],
     ] as const) {
       await page.setViewportSize({ width, height });
       await expect
@@ -3769,6 +3781,7 @@ test.describe('the assembled application', () => {
     // buttons on the page at all.
     await page.getByRole('button', { name: 'New prison' }).click();
     await expect(page.locator('.save-panel__item-label').first()).toContainText('New Prison');
+    await expect(page.locator('.empty-world-prompt')).toBeHidden();
 
     /*
      * ---- where #174's own gate lives, and why not here (2026-08-31) --------
@@ -4092,7 +4105,10 @@ test.describe('the assembled application', () => {
      * The count is the guard against a vacuous pass.
      */
     await page.locator('.ui-tab[data-tab="build"]').click();
-    const saveButtons = await controlReachability(page, '.save-panel__button');
+    // The central empty-session routes reuse this button style but are
+    // intentionally hidden once a prison is active. This check inventories
+    // the save rail itself.
+    const saveButtons = await controlReachability(page, '.save-panel .save-panel__button');
     expect(
       saveButtons.measured.length,
       `save-panel buttons with a box to hit-test at ${width}x${height}, of ${saveButtons.controls.length} matched`,
@@ -5033,6 +5049,7 @@ test.describe('the assembled application', () => {
     const exempt = [
       ...(width <= 720 ? NEVER_LAID_OUT_BELOW_720 : []),
       ...NEVER_LAID_OUT_WITHOUT_A_HELD_GUARD,
+      ...NEVER_LAID_OUT_WITHOUT_EMPTY_SESSION,
       NEVER_LAID_OUT_WITHOUT_ZOOM_DRAWER,
     ];
     const neverLaidOut = inventory.controls.filter(

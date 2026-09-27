@@ -32,6 +32,57 @@ canvas {
   display: block;
 }
 
+.empty-world-prompt:not([hidden]) {
+  position: fixed;
+  /* The route belongs to the world, below the HUD's interactive chrome.
+     At narrow or zoomed layouts its card can geometrically cross a tab or
+     resize handle; those controls must still win the press. */
+  z-index: calc(var(--hud-layer) - 1);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  box-sizing: border-box;
+  width: min(520px, calc(100vw - 2 * var(--space-4)));
+  padding: var(--space-5);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+  color: var(--text-body);
+  text-align: center;
+  /* Only the actions take input. The card itself may cross the map or a
+     compact HUD rail, and its empty area must not swallow those controls. */
+  pointer-events: none;
+  touch-action: auto;
+}
+
+.empty-world-prompt__actions button {
+  pointer-events: auto;
+}
+
+.empty-world-prompt h2 {
+  margin: 0 0 var(--space-3);
+}
+
+.empty-world-prompt p {
+  margin: 0 0 var(--space-4);
+}
+
+.empty-world-prompt__actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+/* The start card is a Full HD affordance. Below that usable CSS viewport,
+   its action buttons cover navigation and display controls; the save rail
+   already provides the same create and load routes without an overlay. */
+@media (max-width: 1919px), (max-height: 1079px) {
+  .empty-world-prompt:not([hidden]) {
+    display: none;
+  }
+}
+
 /*
  * Save/load panel (issue #19) — plain DOM browser UI beside the Phaser
  * canvas, never inside the renderer's scene graph.

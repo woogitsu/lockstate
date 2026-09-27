@@ -27,6 +27,11 @@ export const SAVE_PANEL_MESSAGE_KEY = {
   panelTitle: 'save.panel.title',
 
   actionCreate: 'save.action.create',
+  emptyWorldTitle: 'save.empty-world.title',
+  emptyWorldDescription: 'save.empty-world.description',
+  emptyWorldCreate: 'save.empty-world.create',
+  emptyWorldChoose: 'save.empty-world.choose',
+  emptyWorldRestore: 'save.empty-world.restore',
   defaultPrisonName: 'save.default-prison-name',
   actionSave: 'save.action.save',
   actionExport: 'save.action.export',
