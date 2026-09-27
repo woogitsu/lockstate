@@ -9,6 +9,7 @@ import type { SearchPolicyDefinition } from '../contraband/search-policy';
 import type { SearchInFlightSnapshot, SearchSystem } from '../contraband/search-system';
 import { decodeEntityStoreSnapshot, encodeEntityStoreSnapshot, type EncodedEntityStoreSnapshot } from '../entity/entity-codec';
 import { SnapshotRefusedError } from './restore-refusal';
+import type { RoomTemplateCoordinatorSnapshot } from '../construction/room-template-coordinator';
 import { applyDefaultGangs } from '../incidents/default-gangs';
 import type { TunnelRecord } from '../incidents/escape';
 import type { GangRegistry } from '../incidents/gangs';
@@ -447,6 +448,8 @@ export interface EncodedSessionSystems {
    * `sessionSystemsShapeFor`, and this section is declared on V6 alone.
    */
   readonly inFlight?: EncodedInFlightWork;
+  /** Versioned pending template gestures. Absent V7 saves had none. */
+  readonly roomTemplates?: RoomTemplateCoordinatorSnapshot;
 }
 
 /** See `EncodedSessionSystems.inFlight`. */
@@ -785,6 +788,7 @@ export function captureSessionSystems(runtime: SimulationRuntime): EncodedSessio
       },
       search: runtime.searchSystem.getInFlightSnapshot(),
     },
+    roomTemplates: runtime.roomTemplates.snapshot(),
     incidents: {
       log: runtime.incidents.getSnapshot(),
       sectorRisk: runtime.sectorRisk.getSnapshot(),
@@ -827,6 +831,7 @@ export function restoreSessionSystems(
   systems: EncodedSessionSystems,
   entityStore: ReturnType<typeof decodeEntityStoreSnapshot>,
 ): void {
+  runtime.roomTemplates.loadSnapshot(systems.roomTemplates);
   // 1. Navigation doors at baseline, then sectors (which snapshot that
   //    baseline), then the control states that cascade onto the doors.
   for (const door of systems.navigation.doors) runtime.navigation.doors.register({ ...door });
