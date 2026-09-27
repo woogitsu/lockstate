@@ -555,22 +555,35 @@ export class SearchSystem implements SystemRegistration {
     this.queue.length = 0;
     this.queue.push(...snapshot.queue.map((order) => ({ ...order })));
     this.active.clear();
+    // A saved guard can appear on more than one active job. Keep the first
+    // canonical claimant and put a job with no guards back in the queue so it
+    // can claim a real free guard on a later tick.
+    const claimedGuards = new Set<EntityId>();
     const resumable = new Map<string, SearchJobInFlightSnapshot>();
     if (inFlight !== undefined) {
       this.requestSequence = inFlight.snapshot.requestSequence;
       for (const job of inFlight.snapshot.jobs) resumable.set(job.id, job);
     }
-    for (const [id, job] of snapshot.active) {
+    for (const [id, job] of [...snapshot.active].sort(([left], [right]) => left < right ? -1 : left > right ? 1 : 0)) {
       const progress = resumable.get(id);
+      const guardIds = [...new Set(job.guardIds)].filter((guardId) => !claimedGuards.has(guardId));
+      if (guardIds.length === 0) {
+        for (const [, requestId] of progress?.pathRequestIdsByGuard ?? []) this.navigation.abandonRequest(requestId);
+        this.queue.push({ id, scope: job.scope, targets: job.targets });
+        continue;
+      }
+      for (const guardId of guardIds) claimedGuards.add(guardId);
       // Resumed only when every request the job names is one the restored
       // queue holds -- which is every job a save this build writes can carry.
       // Otherwise the paragraph above applies to this job as it always did.
-      const resume = progress !== undefined && progress.pathRequestIdsByGuard.every(([, requestId]) => inFlight!.knowsRequest(requestId));
+      const resume = progress !== undefined && guardIds.length === job.guardIds.length
+        && progress.pathRequestIdsByGuard.every(([, requestId]) => inFlight!.knowsRequest(requestId));
+      if (!resume) for (const [, requestId] of progress?.pathRequestIdsByGuard ?? []) this.navigation.abandonRequest(requestId);
       this.active.set(id, {
         id,
         scope: job.scope,
         targets: job.targets,
-        guardIds: [...job.guardIds],
+        guardIds,
         currentTargetIndex: job.currentTargetIndex,
         state: resume ? progress.state : 'travelling',
         travelInFlight: resume ? progress.travelInFlight : false,
