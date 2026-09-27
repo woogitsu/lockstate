@@ -9853,7 +9853,7 @@ test.describe('the assembled application', () => {
       })
       .toBe(1);
 
-    // Nothing was refused: the starting balance is 25,000 and this costs 120.
+    // Nothing was refused: the approved starting balance is 100,000 and this costs 120.
     await expect(page.locator('.hud__refusal')).toBeHidden();
 
     const [purchase] = await purchases();
@@ -9884,13 +9884,13 @@ test.describe('the assembled application', () => {
      * reads the balance the worker published, which is why it needs a real
      * session and a real page.
      *
-     * 1,000 bricks at 40 is 40,000 against a 25,000 starting balance, less
-     * the 200 already spent above.
+     * 3,000 bricks at 40 is 120,000 against a 100,000 starting balance, less
+     * the 240 already spent above.
      */
     const sentBefore = (await purchases()).length;
-    await page.locator('.hud-build__buy .ui-number__input').fill('1000');
+    await page.locator('.hud-build__buy .ui-number__input').fill('3000');
     await page.locator('.hud-build__buy .ui-number__input').press('Enter');
-    await expect(buy).toHaveText('Buy 1000 × Brick · 40,000');
+    await expect(buy).toHaveText('Buy 3000 × Brick · 120,000');
     // Which the control now says before it is pressed, and is still pressed --
     // see `pressBuyExpectingRefusal` for why both halves matter and why the
     // press is forced.
