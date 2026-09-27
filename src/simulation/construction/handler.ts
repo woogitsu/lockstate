@@ -473,6 +473,10 @@ export function reportMaterialsFunding(
   if (report === undefined) return;
   const unfunded = report.unfunded[0];
   if (unfunded === undefined) {
+    if (report.unprocurable.some((line) => line.reason === 'storage-full')) {
+      refusals.record('purchase.storage-full', tick, materialsFundingSupersessionKey());
+      return;
+    }
     refusals.supersede(materialsFundingSupersessionKey());
     return;
   }

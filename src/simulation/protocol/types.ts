@@ -1483,6 +1483,7 @@ export const REFUSAL_REASONS = [
   'purchase.duplicate-order',
   'purchase.insufficient-funds',
   'purchase.invalid-quantity',
+  'purchase.storage-full',
   'purchase.unknown-material',
   'release-guard.not-held',
   'release-guard.unknown-guard',

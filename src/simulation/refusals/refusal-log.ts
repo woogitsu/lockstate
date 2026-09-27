@@ -493,6 +493,7 @@ export const CANCEL_BUILD_ORDER_REFUSAL_REASONS: Readonly<Record<CancelBuildOrde
 export const PURCHASE_REFUSAL_REASONS: Readonly<Record<PurchaseRefusalReason, RefusalReason>> = {
   'duplicate-order': 'purchase.duplicate-order',
   'insufficient-funds': 'purchase.insufficient-funds',
+  'storage-full': 'purchase.storage-full',
   'invalid-quantity': 'purchase.invalid-quantity',
   'unknown-material': 'purchase.unknown-material',
 };

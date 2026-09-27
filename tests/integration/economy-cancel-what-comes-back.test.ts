@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { addBulkPurchaseStorage } from '../helpers/storage-capacity-fixture';
 import { PROCUREMENT_DELIVERY_DELAY_TICKS, PROCURABLE_MATERIALS } from '../../src/content/procurement-catalog';
 import { BUILDABLE_REGISTRY } from '../../src/simulation/construction';
 import {
@@ -135,6 +136,7 @@ function edges(count: number): readonly Edge[] {
  */
 function createSession(seed = 0x717) {
   const runtime = createNewSimulationRuntime(seed);
+  addBulkPurchaseStorage(runtime);
   let sequence = 0;
 
   const atOneTick = (commands: readonly SimulationCommand[]): void => {

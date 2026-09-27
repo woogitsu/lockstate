@@ -92,7 +92,7 @@ export interface ProcurementSnapshot {
  * fails to compile until somebody decides what the player is told. Inline, it
  * could only have been mapped with a fallback.
  */
-export type PurchaseRefusalReason = 'unknown-material' | 'invalid-quantity' | 'duplicate-order' | 'insufficient-funds';
+export type PurchaseRefusalReason = 'unknown-material' | 'invalid-quantity' | 'duplicate-order' | 'insufficient-funds' | 'storage-full';
 
 /** What a purchase did. `ok` is not a refusal. */
 export type PurchaseOutcome =
@@ -288,6 +288,8 @@ export class ProcurementSystem implements SystemRegistration {
      * takes its answer rather than branching on whether it exists.
      */
     private readonly carryRoute?: DeliveryCarryRoute,
+    /** Live physical capacity and occupied stock, excluding this system's pending orders. */
+    private readonly deliverySpace?: () => { readonly capacity: number; readonly occupied: number },
   ) {}
 
   /**
@@ -383,6 +385,14 @@ export class ProcurementSystem implements SystemRegistration {
     if (material === undefined) return { ok: false, reason: 'unknown-material' };
 
     const paidMinorUnits = purchaseChargeMinorUnits(material.unitPriceMinorUnits, quantity);
+    // Preserve the existing affordability refusal when both money and space
+    // are lacking; the storage guard still runs before any treasury mutation.
+    if (!this.treasury.canAfford(paidMinorUnits, spendClass, isFreshUnfurnishedPrison)) {
+      return { ok: false, reason: 'insufficient-funds' };
+    }
+
+    if (!this.canReserveDeliverySpace(quantity)) return { ok: false, reason: 'storage-full' };
+
     if (!this.treasury.spend(paidMinorUnits, spendClass, isFreshUnfurnishedPrison)) {
       return { ok: false, reason: 'insufficient-funds' };
     }
@@ -573,6 +583,14 @@ export class ProcurementSystem implements SystemRegistration {
   /** Deliveries not yet arrived, in the order they will arrive. */
   public get pendingDeliveries(): readonly PendingDelivery[] {
     return this.pending;
+  }
+
+  /** Read-only preflight shared with the per-order just-in-time atomicity guard. */
+  public canReserveDeliverySpace(quantity: number): boolean {
+    if (this.deliverySpace === undefined) return true;
+    const space = this.deliverySpace();
+    const pendingUnits = this.pending.reduce((sum, delivery) => sum + delivery.quantity, 0);
+    return space.occupied + pendingUnits + quantity <= space.capacity;
   }
 
   public update(context: SimulationContext): void {
