@@ -20,6 +20,7 @@ export * from './prisoner-projection';
 export * from './guard-release-projection';
 export * from './procurement-projection';
 export * from './room-projection';
+export * from './room-template-preflight';
 export * from './security-projection';
 export * from './staff-projection';
 export * from './status-strip-projection';
