@@ -1369,6 +1369,34 @@
   display: none;
 }
 
+/* The active Build panel is the task in this rail. On the Full HD layout,
+   keep the shared preferences first, then Build, then the host's save card.
+   `display: contents` only flattens the host slot for this one ordering; the
+   cards keep their own scroll containers and their existing width bounds. */
+@media (min-width: 1920px) and (min-height: 1080px) {
+  .hud__rail:has(.hud-build:not([hidden])) .hud__aside {
+    display: contents;
+  }
+
+  .hud__rail:has(.hud-build:not([hidden])) .hud-chrome-prefs {
+    order: 0;
+    margin: var(--space-3) var(--space-3) 0;
+  }
+
+  .hud__rail:has(.hud-build:not([hidden])) .hud__side {
+    order: 1;
+    margin-top: 0;
+    padding-block: 0;
+  }
+
+  .hud__rail:has(.hud-build:not([hidden])) .save-panel {
+    order: 2;
+    flex: 0 1 auto;
+    min-height: 25%;
+    margin: 0 var(--space-3) var(--space-3);
+  }
+}
+
 /*
  * `overflow-y: auto` makes the Build panel responsible for its own excess
  * rather than handing it to the rail. Being a scroll container also gives it
