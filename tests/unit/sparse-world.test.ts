@@ -44,10 +44,12 @@ describe('square construction geometry (#1585)', () => {
     const restored = SparseWorld.fromSnapshot(oldSave);
     expect(restored.getSquareStructure(wall)).toBe(0);
     expect(restored.getLeftEdge(wall)).toBe(1);
-    expect(() => restored.setSquareStructure(wall, 3 as 1)).toThrow(RangeError);
+    restored.setSquareStructure(wall, 3);
+    expect(restored.getSquareStructure(wall)).toBe(3);
+    expect(() => restored.setSquareStructure(wall, 4 as 1)).toThrow(RangeError);
     const damaged = {
       ...oldSave,
-      chunks: oldSave.chunks.map((chunk) => ({ ...chunk, squareStructure: [[3, 32 * 32]] })),
+      chunks: oldSave.chunks.map((chunk) => ({ ...chunk, squareStructure: [[4, 32 * 32]] })),
     };
     expect(() => SparseWorld.fromSnapshot(damaged)).toThrow(WorldSnapshotError);
   });
