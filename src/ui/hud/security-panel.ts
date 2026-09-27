@@ -231,6 +231,12 @@ export function createSecurityPanel(options: SecurityPanelOptions): SecurityPane
         if (sector.shortage > 0) {
           lines.push(eyebrowText(t(HUD_MESSAGE_KEY.sectionSecuritySectorShort, { count: n(sector.shortage) }), 'hud-security__note'));
         }
+        if (sector.concealedContrabandCount !== undefined) {
+          lines.push(eyebrowText(
+            t(HUD_MESSAGE_KEY.sectionSecuritySectorConcealed, { count: n(sector.concealedContrabandCount) }),
+            'hud-security__note',
+          ));
+        }
         if (sector.openIncidentCount > 0) {
           lines.push(
             eyebrowText(

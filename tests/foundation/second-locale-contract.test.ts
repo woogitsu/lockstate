@@ -407,6 +407,10 @@ const FLAT_MESSAGES_WITH_COUNT = [
   'hud.security-section.incident-people',
   'hud.security-section.incident-responders',
   'hud.security-section.search-progress',
+  // #595 adds a seventh Security count. "Concealed contraband in sector: {count}"
+  // and "Ukryta kontrabanda w sektorze: {count}" put the figure after a colon;
+  // neither sentence has a noun that changes with the number.
+  'hud.security-section.sector-concealed',
   'hud.security-section.sector-open-incidents',
   'hud.security-section.sector-short',
   'hud.security.coverage-short-hint',

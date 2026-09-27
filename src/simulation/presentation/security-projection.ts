@@ -32,6 +32,8 @@ export interface SecurityIncidentSource {
 
 export interface SecurityProjectionSource {
   readonly sectors: SecuritySectorSource;
+  /** A console may reveal counts for sectors with a defined area. Absent means no surveillance, not zero contraband. */
+  readonly observedContrabandBySector?: ReadonlyMap<string, number> | undefined;
   readonly doors?: SecurityDoorSource;
   readonly staff?: StaffRosterSource;
   readonly deployment?: StaffCoverageSource;
@@ -76,6 +78,8 @@ export interface SectorStaffingViewModel {
 
 export interface SecuritySectorViewModel {
   readonly sectorId: string;
+  /** Absent until a surveillance source can truthfully observe this sector. Zero is an observed clear sector. */
+  readonly concealedContrabandCount?: number;
   readonly gradeId: string;
   readonly gradeNameKey?: string;
   readonly minSecurityClearance?: number;
@@ -218,6 +222,9 @@ export function projectSecurity(
 
     return {
       sectorId: sector.id,
+      ...(source.observedContrabandBySector?.has(sector.id)
+        ? { concealedContrabandCount: source.observedContrabandBySector.get(sector.id)! }
+        : {}),
       gradeId: sector.gradeId,
       ...(grade !== undefined
         ? {

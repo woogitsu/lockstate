@@ -750,6 +750,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.security-section.sectors-empty': 'Na tym terenie nie wyznaczono jeszcze sektora.',
   'hud.security-section.sector-staffing': 'Przydzielono {assigned} z {required} strażników',
   'hud.security-section.sector-short': 'Brakuje {count}',
+  'hud.security-section.sector-concealed': 'Ukryta kontrabanda w sektorze: {count}',
   'hud.security-section.sector-open-incidents': 'Otwartych tutaj: {count}',
   'hud.security-section.lockdown': 'Blokada',
 

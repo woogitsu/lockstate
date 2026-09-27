@@ -478,7 +478,7 @@ makes it a **painted set of squares** with no order (research record §6,
 SEARCH-SUMMARY). A painted region cannot produce an order, so it cannot produce
 a loop, a `expectedPatrolLoopTicks` budget, or the on-time/late/missed counters
 `PatrolSystem` already keeps and `projectSecurity` already publishes
-(`src/simulation/presentation/security-projection.ts:229-236`).
+(`src/simulation/presentation/security-projection.ts:239-244`).
 
 **Options.**
 

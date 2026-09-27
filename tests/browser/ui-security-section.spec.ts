@@ -226,6 +226,20 @@ test.describe('the Security section', () => {
     await page.goto(HARNESS_URL);
   });
 
+  test('shows a console-observed sector count, including zero, and hides it without surveillance', async ({ page }) => {
+    await openSection(page, { security: SECURITY });
+    expect(await sectionText(page)).not.toContain('Concealed contraband in sector');
+
+    const securityWithCount = (count: number): HudSecurityViewModel => ({
+      ...SECURITY,
+      sectors: [{ ...SECURITY.sectors[0]!, concealedContrabandCount: count }],
+    });
+    await feed(page, { security: securityWithCount(0) });
+    expect(await sectionText(page)).toContain('Concealed contraband in sector: 0');
+    await feed(page, { security: securityWithCount(2) });
+    expect(await sectionText(page)).toContain('Concealed contraband in sector: 2');
+  });
+
   /**
    * The state a player arrives in on a page whose worker has not answered yet.
    *

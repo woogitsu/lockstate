@@ -2534,6 +2534,8 @@ export interface HudStaffCoverageViewModel {
 export interface HudSecuritySectorRowViewModel {
   /** The sector's stable id, which is also the row's browser handle. */
   readonly sectorId: string;
+  /** Only present when an equipped security office observes this sector. */
+  readonly concealedContrabandCount?: number;
   /**
    * The grade's word, from the content catalog's own `nameKey` -- absent when
    * the sector names a grade the catalog does not define, which
