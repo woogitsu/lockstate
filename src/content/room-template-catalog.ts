@@ -6,6 +6,7 @@ export interface TemplateSquare {
 
 export interface RoomTemplatePlan {
   readonly id: 'cell-basic';
+  readonly origin: TemplateSquare;
   readonly width: number;
   readonly height: number;
   readonly wallSquares: readonly TemplateSquare[];
@@ -45,6 +46,7 @@ export function instantiateRoomTemplate(
 
   return {
     id,
+    origin: { x: origin.x, y: origin.y },
     width: CELL_WIDTH,
     height: CELL_HEIGHT,
     wallSquares,
