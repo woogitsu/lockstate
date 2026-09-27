@@ -23,7 +23,6 @@ describe('room filth', () => {
     const source = { roomInstances: { residentIdsWithExistingPlace: () => [id] }, entityStore: store, needs, roomFilth: ledger };
     const clean = stateIncomeForOccupiedPlaces({ ...source, roomFilth: undefined }, [id]);
     expect(stateIncomeForOccupiedPlaces(source, [id])).toBe(clean - STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS);
-    // A bin clears the ledger at the day boundary; it does not erase today's use early.
   });
 
   it('keeps filth without disposal, clears it with a bin, and forgets deleted rooms', () => {
@@ -57,5 +56,26 @@ describe('room filth', () => {
     const restored = restoreSimulationRuntime(decoded.value.payload as unknown as typeof bundle).runtime;
     expect(restored.roomFilth.snapshot()).toEqual(runtime.roomFilth.snapshot());
     expect(restored.roomFilth.hasDirtyRoomUse(7)).toBe(true);
+  });
+
+  it('accepts an older save without the optional field and starts with empty filth', () => {
+    const runtime = createNewSimulationRuntime(595);
+    runtime.roomFilth.recordCompletedUse('room.kitchen', 'kitchen-1', 7);
+    const bundle = captureSessionSnapshot(runtime);
+    const { roomFilth: _omitted, ...legacyEconomy } = bundle.simulation!.economy!;
+    const legacySimulation = { ...bundle.simulation!, economy: legacyEconomy };
+    const encoded = createSaveEnvelope({
+      gameVersion: 'lockstate-0.0.796', prisonId: 'legacy-filth-prison', revision: 1,
+      createdAt: 1_700_000_000_000, updatedAt: 1_700_000_000_001,
+      kernel: bundle.kernel, world: bundle.world, construction: bundle.construction,
+      ...(bundle.entities === undefined ? {} : { entities: bundle.entities }),
+      simulation: legacySimulation,
+      ...(bundle.identity === undefined ? {} : { identity: bundle.identity }),
+    });
+    const decoded = decodeSaveEnvelope(encoded);
+    expect(decoded.ok).toBe(true);
+    if (!decoded.ok) return;
+    const restored = restoreSimulationRuntime(decoded.value.payload as unknown as typeof bundle).runtime;
+    expect(restored.roomFilth.snapshot()).toEqual({ rooms: [], uses: [] });
   });
 });
