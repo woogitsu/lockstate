@@ -215,7 +215,7 @@ not a projection detail: it is a destructive control aimed by a hidden number.
 
 > **Both numbers in that paragraph have since moved, and both moved away from
 > it — so the paragraph is dated rather than rewritten.** `BUILD_QUEUE_ROW_LIMIT`
-> is **64** today (`src/ui/hud/build-panel.ts:740`), not three, and
+> is **64** today (`src/ui/hud/build-panel.ts:744`), not three, and
 > `build-panel.ts:2445-2455` records the change in its own words — *"which was
 > free while the limit was three and is not free at sixty-four"*. And the order
 > the fold lays out is no longer ascending id: `projectBuildQueue` sorts the
@@ -235,7 +235,7 @@ not a projection detail: it is a destructive control aimed by a hidden number.
 > **What survives is the last sentence and it survives unweakened.** A row in
 > that fold is still a *Cancel* button and a player still aims a destructive
 > control at a place in a list — `BUILD_QUEUE_ROW_SETTLE_MS`
-> (`build-panel.ts:787`, docblock from `:742`) exists for precisely that, and
+> (`build-panel.ts:791`, docblock from `:746`) exists for precisely that, and
 > records *"Two presses of three still cancelled a different wall"* as a
 > measurement. What
 > this ADR removed is the hidden number, not the aiming problem.
