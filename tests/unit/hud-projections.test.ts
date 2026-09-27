@@ -1164,6 +1164,19 @@ describe('staff', () => {
 });
 
 describe('security', () => {
+  it('reveals observed contraband only in sectors supplied by surveillance', () => {
+    const runtime = runScenario();
+    const coarse = projectSecurity({ sectors: runtime.securitySectors }, runtime.kernel.tick);
+    expect(coarse.sectors.every((sector) => sector.concealedContrabandCount === undefined)).toBe(true);
+
+    const observed = projectSecurity({
+      sectors: runtime.securitySectors,
+      observedContrabandBySector: new Map([['security-sector.prison', 3]]),
+    }, runtime.kernel.tick);
+    expect(observed.sectors.find((sector) => sector.sectorId === 'security-sector.prison')?.concealedContrabandCount).toBe(3);
+    expect(observed.sectors.find((sector) => sector.sectorId === 'sector-a')?.concealedContrabandCount).toBeUndefined();
+  });
+
   it('projects sectors, their doors, patrol routes and staffing', () => {
     const runtime = runScenario();
     const security = projectSecurity(
