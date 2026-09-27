@@ -518,7 +518,7 @@ what #1021 raised, and the render view could not answer it anyway — the tile
 layer is handed the room catalogue id and no instance identity at all, and the
 constructor for a tile sample enumerates its whole vocabulary in one line:
 
-`return { loaded: false, terrainNumericId: 0, topEdge: 0, leftEdge: 0, zoning: 0, owned: false };`
+`return { loaded: false, terrainNumericId: 0, topEdge: 0, leftEdge: 0, squareStructure: 0, zoning: 0, owned: false };`
 (verbatim in `src/rendering/world/world-view.ts`)
 
 ### 2. The tint channel is accepted as identity's, on ADR 0097's decision 3
