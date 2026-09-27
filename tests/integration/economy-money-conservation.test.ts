@@ -753,9 +753,10 @@ describe('money is conserved across build orders and undo (#285)', () => {
     const wholeBalance = TREASURY_STARTING_BALANCE_MINOR_UNITS / price;
 
     const session = createSession();
-    // This treasury boundary fixture needs enough pre-existing storage to
-    // isolate exact affordability from the independent #587 gate limit.
-    addBulkPurchaseStorage(session.runtime);
+    // Five furnished rooms give 2,600 units of capacity. The three orders
+    // below total 2,529, so they exercise the treasury boundary without
+    // hitting the independent delivery gate.
+    addBulkPurchaseStorage(session.runtime, 5);
     session.buy('order-buy-everything', WALL_REQUIREMENT.itemId, wholeBalance, 'a purchase for the exact balance');
 
     expect(
