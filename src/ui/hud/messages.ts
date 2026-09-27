@@ -1753,6 +1753,7 @@ export const HUD_MESSAGE_KEY = {
   sectionSecuritySectorsEmpty: 'hud.security-section.sectors-empty',
   sectionSecuritySectorStaffing: 'hud.security-section.sector-staffing',
   sectionSecuritySectorShort: 'hud.security-section.sector-short',
+  sectionSecuritySectorConcealed: 'hud.security-section.sector-concealed',
   sectionSecuritySectorOpenIncidents: 'hud.security-section.sector-open-incidents',
   sectionSecurityLockdown: 'hud.security-section.lockdown',
 

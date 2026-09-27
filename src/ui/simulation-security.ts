@@ -57,6 +57,7 @@ import {
 export function securityFromProjection(view: SecurityViewModel): HudSecurityViewModel {
   const sectors: HudSecuritySectorRowViewModel[] = view.sectors.map((sector) => ({
     sectorId: sector.sectorId,
+    ...(sector.concealedContrabandCount === undefined ? {} : { concealedContrabandCount: sector.concealedContrabandCount }),
     // Derived, never hand-authored (ADR 0011). The grade's own `nameKey` is
     // content and arrives on the projection; the control state is an enum and
     // its word is derived from the namespace `simulation-message-keys.ts`

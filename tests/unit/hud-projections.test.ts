@@ -1177,6 +1177,30 @@ describe('security', () => {
     expect(observed.sectors.find((sector) => sector.sectorId === 'sector-a')?.concealedContrabandCount).toBeUndefined();
   });
 
+  it('wires a furnished security office to the live concealed ledger in the worker projection', () => {
+    const runtime = runScenario();
+    const read = () => PROJECTION_CATALOG['hud/security'].project(runtime, runtime.kernel.tick, {}).view as unknown as ReturnType<typeof projectSecurity>;
+    const prisonSector = () => read().sectors.find((sector) => sector.sectorId === 'security-sector.prison');
+    expect(prisonSector()?.concealedContrabandCount).toBeUndefined();
+    const concealedBefore = runtime.contraband.all().filter((item) => item.state === 'concealed').length;
+
+    runtime.contraband.introduce('observed-item', 'contraband.blade', { kind: 'prisoner', id: '1' }, {
+      sourceType: 'prisoner', sourceId: '1', introducedAtTick: runtime.kernel.tick,
+    });
+    const anchor = { x: tileCoordinate(100), y: tileCoordinate(100) };
+    runtime.prisoners.roomInstances.register({
+      instanceId: 'security-office-surveillance', roomCatalogId: 'room.security-office',
+      anchorTile: anchor, width: 3, height: 3, residentCapacity: 0,
+      concurrentUseCapacity: 0, objectCapabilities: [],
+    });
+    expect(runtime.placedObjects.place(placedObjectAt('object.security-console', anchor, 0))).toBe(true);
+    runtime.roomCapacity.resolveAll();
+    expect(prisonSector()?.concealedContrabandCount).toBe(concealedBefore + 1);
+
+    runtime.contraband.confiscate('observed-item');
+    expect(prisonSector()?.concealedContrabandCount).toBe(concealedBefore);
+  });
+
   it('projects sectors, their doors, patrol routes and staffing', () => {
     const runtime = runScenario();
     const security = projectSecurity(

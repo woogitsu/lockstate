@@ -33,7 +33,7 @@ export interface SecurityIncidentSource {
 export interface SecurityProjectionSource {
   readonly sectors: SecuritySectorSource;
   /** A console may reveal counts for sectors with a defined area. Absent means no surveillance, not zero contraband. */
-  readonly observedContrabandBySector?: ReadonlyMap<string, number>;
+  readonly observedContrabandBySector?: ReadonlyMap<string, number> | undefined;
   readonly doors?: SecurityDoorSource;
   readonly staff?: StaffRosterSource;
   readonly deployment?: StaffCoverageSource;

@@ -24,6 +24,7 @@ import { HUD_VIEW_MODEL_SCHEMA_ID } from '../presentation/view-model';
 import type { EntityId } from '../entity/entity-store';
 import { PROJECTION_IDS, type ProjectionId, type ProjectionTarget } from '../protocol/types';
 import type { SimulationRuntime } from '../runtime/new-session';
+import { observedContrabandBySecurityOffice } from '../security/office-surveillance';
 
 /**
  * Which registry of a real session answers which read model.
@@ -415,6 +416,10 @@ export const PROJECTION_CATALOG: Readonly<Record<ProjectionId, ProjectionCatalog
           deployment: runtime.deploymentSystem,
           patrol: runtime.patrolSystem,
           incidents: runtime.incidents,
+          observedContrabandBySector: observedContrabandBySecurityOffice(
+            runtime.prisoners.roomInstances,
+            runtime.contraband,
+          ),
         },
         tick,
       ) as unknown as JsonValue,

@@ -3908,6 +3908,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
    * stop agreeing the moment a second sector exists.
    */
   'hud.security-section.sector-short': '{count} short',
+  'hud.security-section.sector-concealed': 'Concealed contraband in sector: {count}',
   /*
    * `openIncidentCount`, painted only when it is above zero. The projection
    * asks `IncidentLog.openIncidentsInSector`, so "open" is the log's word for
