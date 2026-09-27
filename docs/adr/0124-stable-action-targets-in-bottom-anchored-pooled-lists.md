@@ -86,7 +86,7 @@ change how a queue is prioritized.
 
 ## Relation to accepted layout decisions
 
-[ADR 0115](../0115-where-the-prisoner-roster-lives-and-what-the-manage-rail-can-afford.md)
+[ADR 0115](./0115-where-the-prisoner-roster-lives-and-what-the-manage-rail-can-afford.md)
 accepted the roster's placement and left the Manage rail capped and
 bottom-anchored. `docs/VISUAL_IDENTITY.md` documents the constrained rail
 composition. Option 1 retains both commitments: it changes the placement of
