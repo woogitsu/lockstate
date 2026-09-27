@@ -2050,11 +2050,10 @@ interface TileRectangle {
   readonly height: number;
 }
 
-/** One `wall-brick` order: the tile it is anchored to, and which of that tile's two edges it fills. */
-interface WallSegment {
+/** One whole-square `wall-brick` order outside a zoned rectangle. */
+interface WallSquare {
   readonly x: number;
   readonly y: number;
-  readonly edge: 'north' | 'west';
 }
 
 /**
@@ -2071,7 +2070,11 @@ interface WallSegment {
  * `tests/helpers/room-walls.ts`, and nothing that stubbed one would be proving
  * what this file exists to prove.
  *
- * `SparseWorld` stores a **north** edge and a **west** edge per tile, so a
+ * Current route: place a one-square-thick ring outside each zone rectangle.
+ * The square boundary reader treats each wall square as a closed face against
+ * the adjacent room square; shared ring squares are ordered only once.
+ *
+ * Historical route, kept to explain older save geometry: `SparseWorld` stores a **north** edge and a **west** edge per tile, so a
  * rectangle's south boundary is the north edge of the row *below* it and its
  * east boundary is the west edge of the column to its *right* -- tiles outside
  * the rectangle. That is what made a room flush against the edge of owned land
@@ -2100,30 +2103,25 @@ interface WallSegment {
  * The claim is corrected rather than deleted because the *reason* to dedupe is
  * unchanged: nothing here may assume the drags stay clear of each other.
  *
- * North first, then west, so the edge chooser is pressed twice for a whole
- * prison rather than once per segment.
+ * The new route has no edge chooser for wall squares.
  */
-function perimeterSegments(rectangles: readonly TileRectangle[]): readonly WallSegment[] {
+function perimeterSegments(rectangles: readonly TileRectangle[]): readonly WallSquare[] {
   const seen = new Set<string>();
-  const segments: WallSegment[] = [];
-  const add = (segment: WallSegment): void => {
-    const key = `${segment.x},${segment.y},${segment.edge}`;
+  const segments: WallSquare[] = [];
+  const add = (segment: WallSquare): void => {
+    const key = `${segment.x},${segment.y}`;
     if (seen.has(key)) return;
     seen.add(key);
     segments.push(segment);
   };
-  for (const edge of ['north', 'west'] as const) {
-    for (const rectangle of rectangles) {
-      if (edge === 'north') {
-        for (let x = rectangle.x; x < rectangle.x + rectangle.width; x += 1) {
-          add({ x, y: rectangle.y, edge });
-          add({ x, y: rectangle.y + rectangle.height, edge });
-        }
-      } else {
-        for (const x of [rectangle.x, rectangle.x + rectangle.width]) {
-          for (let y = rectangle.y; y < rectangle.y + rectangle.height; y += 1) add({ x, y, edge });
-        }
-      }
+  for (const rectangle of rectangles) {
+    for (let x = rectangle.x - 1; x <= rectangle.x + rectangle.width; x += 1) {
+      add({ x, y: rectangle.y - 1 });
+      add({ x, y: rectangle.y + rectangle.height });
+    }
+    for (let y = rectangle.y; y < rectangle.y + rectangle.height; y += 1) {
+      add({ x: rectangle.x - 1, y });
+      add({ x: rectangle.x + rectangle.width, y });
     }
   }
   return segments;
@@ -2272,7 +2270,7 @@ async function wallRectanglesFromTheKeyboard(
   page: Page,
   rectangles: readonly TileRectangle[],
   options: WallOrderOptions = {},
-): Promise<readonly WallSegment[]> {
+): Promise<readonly WallSquare[]> {
   const orderAt = options.orderAt;
   if (orderAt === undefined) return orderWallRectangles(page, rectangles);
   const entered = page.viewportSize();
@@ -2290,7 +2288,7 @@ async function wallRectanglesFromTheKeyboard(
 async function orderWallRectangles(
   page: Page,
   rectangles: readonly TileRectangle[],
-): Promise<readonly WallSegment[]> {
+): Promise<readonly WallSquare[]> {
   const segments = perimeterSegments(rectangles);
 
   await tabTo(page, 'the Build tab', { selector: '.ui-tab[data-tab="build"]' });
@@ -2451,7 +2449,6 @@ async function orderWallRectangles(
     strides.set(name, await walkFocus(page, key, name, target));
   };
 
-  let chosenEdge: WallSegment['edge'] | undefined;
   let chosenColumn: number | undefined;
   let entered = false;
   for (const segment of segments) {
@@ -2482,22 +2479,11 @@ async function orderWallRectangles(
     }
     await page.keyboard.press('Control+a');
     await page.keyboard.type(String(segment.y));
-    if (chosenEdge !== segment.edge) {
-      await tabTo(page, `the ${segment.edge} edge option`, {
-        selector: `.hud-build__coordinates [data-choice="${segment.edge}"]`,
-      });
-      await page.keyboard.press('Enter');
-      chosenEdge = segment.edge;
-      // From the chooser rather than from the field: a different distance, so
-      // a different hop.
-      await tabTo(page, 'the Place order control', { selector: '.hud-build__coordinates .ui-action' });
-    } else {
-      // This hop is also what commits the Tile Y field, which reports on
-      // `change`, and `change` fires when focus leaves the input.
-      await hopTo('the Place order control, from the Tile Y field', 'Tab', {
-        selector: '.hud-build__coordinates .ui-action',
-      });
-    }
+    // Whole-square walls have no edge chooser. Leaving Tile Y commits its
+    // change before submitting the order.
+    await hopTo('the Place order control, from the Tile Y field', 'Tab', {
+      selector: '.hud-build__coordinates .ui-action',
+    });
     await page.keyboard.press('Enter');
   }
 
@@ -4480,6 +4466,9 @@ test.describe('the assembled application', () => {
     // exists so a selector can say which section it means.
     const coordinates = page.locator('.hud-build__coordinates > .ui-section__header');
     if ((await coordinates.getAttribute('aria-expanded')) === 'false') await coordinates.click();
+    // Whole-square walls have no edge choice. Exercise the two edge controls
+    // with a door selected so this sweep still hit-tests every live control.
+    await page.locator('.hud-build__list [data-buildable="door-wooden"]').click();
     const expanded = await controlReachability(page);
     record(expanded);
     expect(
@@ -10938,19 +10927,15 @@ test.describe('the assembled application', () => {
     await coordinates.locator('> .ui-section__header').click();
     await expect(coordinates).toHaveAttribute('data-collapsed', 'false');
 
-    // The wall first, where the chooser is undisputed -- so a hidden chooser
-    // below is a fact about the door row rather than about the whole panel.
+    // Whole-square walls must not expose an edge choice. Doors still occupy
+    // an edge and therefore need that choice after switching catalogue rows.
     const chooser = page.locator('.hud-build .ui-choice');
     await page.locator('.hud-build__list [data-buildable="wall-brick"]').click();
     await expect(
       page.locator('.hud-build__list [data-buildable="wall-brick"][data-selected="true"]'),
       'the wall row did not become the selection',
     ).toHaveCount(1);
-    await expect(chooser).toBeVisible();
-
-    // The retained edge the defect leaked. Chosen on the wall, where the
-    // control is undisputed.
-    await chooser.locator('[data-choice="west"]').click();
+    await expect(chooser).toBeHidden();
 
     // And the row this issue is about. A door is edge geometry -- it writes
     // `DOOR_EDGE_NUMERIC_ID` onto a tile edge -- so the chooser must survive
@@ -10962,6 +10947,7 @@ test.describe('the assembled application', () => {
       'the door row did not become the selection, so the chooser below is about something else',
     ).toHaveCount(1);
     await expect(chooser).toBeVisible();
+    await chooser.locator('[data-choice="west"]').click();
     await expect(chooser.locator('[data-choice="west"]')).toHaveAttribute('aria-checked', 'true');
   });
 
