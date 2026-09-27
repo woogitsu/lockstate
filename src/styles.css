@@ -34,7 +34,10 @@ canvas {
 
 .empty-world-prompt:not([hidden]) {
   position: fixed;
-  z-index: calc(var(--hud-layer) + 1);
+  /* The route belongs to the world, below the HUD's interactive chrome.
+     At narrow or zoomed layouts its card can geometrically cross a tab or
+     resize handle; those controls must still win the press. */
+  z-index: calc(var(--hud-layer) - 1);
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -46,8 +49,12 @@ canvas {
   background: var(--surface-raised);
   color: var(--text-body);
   text-align: center;
-  pointer-events: auto;
+  pointer-events: none;
   touch-action: auto;
+}
+
+.empty-world-prompt__actions button {
+  pointer-events: auto;
 }
 
 .empty-world-prompt h2 {

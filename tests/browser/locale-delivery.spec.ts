@@ -115,7 +115,7 @@ test.describe('a browser that asks for Polish', () => {
     await expect(page.locator('[data-delete-confirm] .save-panel__item-label')).toContainText('Usunąć Nowe więzienie?');
     await page.getByRole('button', { name: 'Usuń trwale' }).click();
     await expect(page.locator('[data-deleted-prison] .save-panel__item-label')).toContainText('Nowe więzienie — usunięto.');
-    await page.getByRole('button', { name: 'Przywróć' }).click();
+    await page.getByRole('button', { name: 'Przywróć', exact: true }).click();
     await expect(page.locator('.save-panel__item-label').first()).toHaveText('Nowe więzienie (1 gen.)');
   });
 

@@ -11692,8 +11692,6 @@ test.describe('the assembled application', () => {
         }, scale);
         await page.setViewportSize({ width, height });
         await openApp(page);
-        await page.getByRole('button', { name: 'New prison' }).click();
-        await expect(page.locator('.empty-world-prompt')).toBeHidden();
         const drawerPlacement = (await page.locator('.hud').getAttribute('data-layout-navigation-placement')) === 'drawer';
         if (drawerPlacement) await page.locator('.hud-navigation-drawer__trigger').click();
         await page.locator('.ui-tab[data-tab="build"]').click();
