@@ -24,6 +24,7 @@ import { HUD_VIEW_MODEL_SCHEMA_ID } from '../presentation/view-model';
 import type { EntityId } from '../entity/entity-store';
 import { PROJECTION_IDS, type ProjectionId, type ProjectionTarget } from '../protocol/types';
 import type { SimulationRuntime } from '../runtime/new-session';
+import { instantiateRoomTemplate } from '../../content/room-template-catalog';
 
 /**
  * Which registry of a real session answers which read model.
@@ -109,7 +110,7 @@ export interface ProjectionResult {
 }
 
 /** What a request may name, and what the worker rejects when it names the wrong thing. */
-export type ProjectionTargetKind = 'none' | 'entity' | 'id';
+export type ProjectionTargetKind = 'none' | 'entity' | 'id' | 'room-template';
 
 export interface ProjectionCatalogEntry {
   /**
@@ -488,6 +489,18 @@ export const PROJECTION_CATALOG: Readonly<Record<ProjectionId, ProjectionCatalog
     paged: false,
     target: 'none',
     project: (runtime) => ({ view: projectWorldForRendering(runtime.world) as unknown as JsonValue }),
+  },
+  'world/room-template-preflight': {
+    schemaId: 'room-template-placement',
+    schemaVersion: 1,
+    paged: false,
+    target: 'room-template',
+    project: (runtime, _tick, request) => {
+      const target = request.target;
+      if (target?.kind !== 'room-template') throw new Error('Room template target required');
+      const plan = instantiateRoomTemplate(target.templateId, target.origin, target.mirrorX === undefined ? {} : { mirrorX: target.mirrorX });
+      return { view: runtime.roomTemplates.preflight(plan) as unknown as JsonValue };
+    },
   },
 };
 
