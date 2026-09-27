@@ -1114,6 +1114,7 @@ let worldRoomReadout: ((area: HudRoomArea | undefined) => void) | undefined;
  * enclosure call `setWorldRoomEnclosure`, and only they see anything else.
  */
 let worldRoomEnclosure: 'sealed' | 'open' = 'sealed';
+let worldRoomGap: { x: number; y: number; edge: 'north' | 'west' } | undefined;
 
 /** Which room row the panel currently shows as selected, read off the DOM. */
 function roomsPanelSelection(): string | undefined {
@@ -1315,6 +1316,7 @@ window.lockstateUiHarness = {
     worldRoomPlace = undefined;
     worldRoomReadout = undefined;
     worldRoomEnclosure = 'sealed';
+    worldRoomGap = undefined;
     hud = mountHud(root, {
       // Stands in for `BuildTool`, which is the only implementation in the
       // application: the composition root hands the HUD a source, the HUD
@@ -1347,7 +1349,11 @@ window.lockstateUiHarness = {
         // Issue #493: the HUD asks this synchronously, for both producers of a
         // rectangle, rather than being told. `setWorldRoomEnclosure` is the
         // spec's one lever over the answer.
-        classifyArea: () => worldRoomEnclosure,
+        classifyArea: () => worldRoomGap === undefined
+          ? { enclosure: worldRoomEnclosure }
+          : { enclosure: worldRoomEnclosure, gap: {
+              tile: { x: worldRoomGap.x, y: worldRoomGap.y }, edge: worldRoomGap.edge,
+            } },
       },
       localizer: countingLocalizer,
       // `empty` mounts the shipped default instead of a populated prison --
@@ -2089,6 +2095,9 @@ window.lockstateUiHarness = {
 
   setWorldRoomEnclosure(enclosure: 'sealed' | 'open'): void {
     worldRoomEnclosure = enclosure;
+  },
+  setWorldRoomGap(gap: { x: number; y: number; edge: 'north' | 'west' } | undefined): void {
+    worldRoomGap = gap;
   },
 
   clickRoomType(roomId: string): boolean {

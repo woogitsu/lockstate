@@ -11,6 +11,7 @@ import { rovingTabStop } from '../primitives/roving-focus';
 import { bindRovingFocusKeydown } from '../primitives/roving-focus-keydown';
 import { HUD_MESSAGE_KEY } from './messages';
 import { pressArm, toggleRemovalMode } from './tool-arming';
+
 import type {
   HudLocalizer,
   HudRoomEnclosureRequirement,
@@ -20,6 +21,12 @@ import type {
   HudRoomsViewModel,
   HudZoningNoticeViewModel,
 } from './view-model';
+
+/** Advisory perimeter preview from the latest rendered world snapshot. */
+export interface HudRoomPerimeterPreview {
+  readonly enclosure: 'sealed' | 'open';
+  readonly gap?: { readonly tile: { readonly x: number; readonly y: number }; readonly edge: 'north' | 'west' };
+}
 
 /**
  * The Rooms panel.
@@ -203,7 +210,7 @@ export interface RoomsPanelOptions {
    * tell which [producer] it was" would quietly stop being true the moment one
    * producer got a warning the other could not.
    */
-  readonly classifyArea: (area: RoomsPanelArea) => 'sealed' | 'open';
+  readonly classifyArea: (area: RoomsPanelArea) => HudRoomPerimeterPreview;
 }
 
 export interface RoomsPanel {
@@ -231,13 +238,13 @@ export interface RoomsPanel {
   /**
    * A finished gesture: the rectangle is now pending confirmation.
    *
-   * `enclosure` is the host's answer to `options.classifyArea` for this same
+   * `preview` is the host's answer to `options.classifyArea` for this same
    * rectangle, already computed before the call so the host's own
    * `classifyArea` is asked exactly once per rectangle rather than once here
    * and once again by the panel. Absent -- rather than asked for again -- when
    * `area` is `undefined`, matching every other field this call clears.
    */
-  setPendingArea(area: RoomsPanelArea | undefined, enclosure?: 'sealed' | 'open'): void;
+  setPendingArea(area: RoomsPanelArea | undefined, preview?: HudRoomPerimeterPreview): void;
   /** What the simulation said about the last room designated. */
   setZoningNotice(notice: HudZoningNoticeViewModel | undefined): void;
   /**
@@ -587,7 +594,7 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
    * already asked once. Cleared everywhere `pending` is, so the two can never
    * name different rectangles.
    */
-  let pendingEnclosure: 'sealed' | 'open' | undefined;
+  let pendingPreview: HudRoomPerimeterPreview | undefined;
   let notice: HudZoningNoticeViewModel | undefined;
   /** What the simulation last said the designated rooms are missing, or nothing asked yet. */
   let needs: HudRoomNeedsViewModel | undefined;
@@ -1191,7 +1198,7 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
       // here", and silently changing which would be the panel deciding
       // something the player did not say.
       pending = undefined;
-      pendingEnclosure = undefined;
+      pendingPreview = undefined;
       const wasArmed = armed;
       // Arming to remove is arming, and "Stop removing" stands the whole tool
       // down instead of handing back a designating one that still holds the
@@ -1313,7 +1320,7 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
       const handOn = handConfirmRowFocusToArm(confirmButton.element);
       if (removing) {
         pending = undefined;
-        pendingEnclosure = undefined;
+        pendingPreview = undefined;
         standDownAfterConfirm();
         paintActions();
         handOn();
@@ -1326,7 +1333,7 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
       // `undefined` impossible rather than merely unlikely.
       if (roomId === undefined) return;
       pending = undefined;
-      pendingEnclosure = undefined;
+      pendingPreview = undefined;
       // Before the repaint, so the row this press just swapped back is painted
       // once, in the state it will be read in -- and before the intent leaves,
       // so a host that refuses it cannot leave the world armed behind a panel
@@ -1344,7 +1351,7 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
     onActivate: () => {
       const handOn = handConfirmRowFocusToArm(cancelButton.element);
       pending = undefined;
-      pendingEnclosure = undefined;
+      pendingPreview = undefined;
       paintActions();
       handOn();
     },
@@ -1445,7 +1452,7 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
    */
   function pendingIsUnenclosed(): boolean {
     if (pending === undefined || removing) return false;
-    if (pendingEnclosure !== 'open') return false;
+    if (pendingPreview?.enclosure !== 'open') return false;
     return selectedRoom()?.enclosure === 'enclosed';
   }
 
@@ -1464,13 +1471,15 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
       return;
     }
     if (pendingIsUnenclosed()) {
-      // The same sentence the post-confirm readout already uses for an open
-      // room (`paintEnclosure` below) -- reused deliberately rather than
-      // drafted new, since a second, differently worded sentence for the
-      // identical fact is exactly the kind of drift `docs/LOCALIZATION.md`
-      // warns a message-key catalog invites. Naming *which* side is open
-      // would need new copy this change does not ship; see the ADR.
-      note.textContent = t(HUD_MESSAGE_KEY.roomsEnclosureOpen);
+      // A real snapshot names the first open edge. Harnesses without a world
+      // keep the generic wording, while the post-confirm readout below still
+      // reports the simulation's actual enclosure verdict.
+      const gap = pendingPreview?.gap;
+      note.textContent = gap === undefined
+        ? t(HUD_MESSAGE_KEY.roomsEnclosureOpen)
+        : t(gap.edge === 'north' ? HUD_MESSAGE_KEY.roomsOpenNorthEdge : HUD_MESSAGE_KEY.roomsOpenWestEdge, {
+            x: gap.tile.x, y: gap.tile.y,
+          });
       note.dataset['tone'] = 'warning';
       return;
     }
@@ -2020,9 +2029,9 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
    * pending before, which is exactly the kind of mismatch #411's guarantee
    * forbids between the two producers.
    */
-  function adoptPendingArea(next: RoomsPanelArea | undefined, enclosure?: 'sealed' | 'open'): void {
+  function adoptPendingArea(next: RoomsPanelArea | undefined, preview?: HudRoomPerimeterPreview): void {
     pending = next;
-    pendingEnclosure = next === undefined ? undefined : enclosure;
+    pendingPreview = next === undefined ? undefined : preview;
     area = undefined;
     // A finished rectangle opens the panel, whatever was folded before it.
     // `drawing()` already ends the pass, which covers the fold this surface
@@ -2128,14 +2137,14 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
       area = next;
       paintArea();
     },
-    setPendingArea(next: RoomsPanelArea | undefined, enclosure?: 'sealed' | 'open'): void {
+    setPendingArea(next: RoomsPanelArea | undefined, preview?: HudRoomPerimeterPreview): void {
       // The dragged rectangle is taken into the coordinate fields as well, so
       // the two routes hold one rectangle between them rather than two: a
       // player who drags 6x5 and wanted 6x6 can nudge the height instead of
       // dragging again, and a form that still showed 0,0,1,1 beside a pending
       // 12x9 would be a second, stale statement of the same thing.
       if (next !== undefined) showCoordinates(next);
-      adoptPendingArea(next, enclosure);
+      adoptPendingArea(next, preview);
     },
     setZoningNotice(next: HudZoningNoticeViewModel | undefined): void {
       notice = next;
@@ -2166,7 +2175,7 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
       // origin.
       if (!visible) {
         pending = undefined;
-        pendingEnclosure = undefined;
+        pendingPreview = undefined;
         area = undefined;
         // The readout is *pulled* while this tab is the one showing, so leaving
         // it stops the refresh -- and a readout nothing is refreshing goes
