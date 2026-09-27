@@ -104,18 +104,6 @@ canvas {
   }
 }
 
-/* The start route is the only work before a prison exists. At the desktop
-   target, defer live-game readouts and tools until a session can use them;
-   the save rail remains available for loading and importing. */
-@media (min-width: 1920px) and (min-height: 1080px) {
-  #app:has(.empty-world-prompt:not([hidden])) .hud-strip__metrics,
-  #app:has(.empty-world-prompt:not([hidden])) .hud__tabs,
-  #app:has(.empty-world-prompt:not([hidden])) .hud__corner,
-  #app:has(.empty-world-prompt:not([hidden])) .hud__side {
-    display: none;
-  }
-}
-
 /*
  * Save/load panel (issue #19) — plain DOM browser UI beside the Phaser
  * canvas, never inside the renderer's scene graph.
