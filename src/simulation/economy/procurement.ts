@@ -92,7 +92,7 @@ export interface ProcurementSnapshot {
  * fails to compile until somebody decides what the player is told. Inline, it
  * could only have been mapped with a fallback.
  */
-export type PurchaseRefusalReason = 'unknown-material' | 'invalid-quantity' | 'duplicate-order' | 'insufficient-funds';
+export type PurchaseRefusalReason = 'unknown-material' | 'invalid-quantity' | 'duplicate-order' | 'insufficient-funds' | 'storage-full';
 
 /** What a purchase did. `ok` is not a refusal. */
 export type PurchaseOutcome =
@@ -288,6 +288,8 @@ export class ProcurementSystem implements SystemRegistration {
      * takes its answer rather than branching on whether it exists.
      */
     private readonly carryRoute?: DeliveryCarryRoute,
+    /** Live physical capacity and occupied stock, excluding this system's pending orders. */
+    private readonly deliverySpace?: () => { readonly capacity: number; readonly occupied: number },
   ) {}
 
   /**
@@ -381,6 +383,14 @@ export class ProcurementSystem implements SystemRegistration {
     }
     const material = procurableMaterial(itemId);
     if (material === undefined) return { ok: false, reason: 'unknown-material' };
+
+    if (this.deliverySpace !== undefined) {
+      const space = this.deliverySpace();
+      const pendingUnits = this.pending.reduce((sum, delivery) => sum + delivery.quantity, 0);
+      if (space.occupied + pendingUnits + quantity > space.capacity) {
+        return { ok: false, reason: 'storage-full' };
+      }
+    }
 
     const paidMinorUnits = purchaseChargeMinorUnits(material.unitPriceMinorUnits, quantity);
     if (!this.treasury.spend(paidMinorUnits, spendClass, isFreshUnfurnishedPrison)) {

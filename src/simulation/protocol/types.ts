@@ -1482,6 +1482,7 @@ export const REFUSAL_REASONS = [
   'place-object.unowned-land',
   'purchase.duplicate-order',
   'purchase.insufficient-funds',
+  'purchase.storage-full',
   'purchase.invalid-quantity',
   'purchase.unknown-material',
   'release-guard.not-held',

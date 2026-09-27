@@ -833,6 +833,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.alert.refusal.purchase.insufficient-funds':
     'Nic nie kupiono — dostawy są wstrzymane, dopóki więzienie nie zarobi.',
   'hud.alert.refusal.purchase.invalid-quantity': 'Nie zamówiono materiałów — takiej ilości nie da się kupić.',
+  'hud.alert.refusal.purchase.storage-full': 'Nie zamówiono materiałów — brakuje miejsca na dostawę. Zużyj lub sprzedaj zapasy albo rozbuduj zaplecze.',
   'hud.alert.refusal.purchase.unknown-material': 'Nie zamówiono materiałów — ten materiał nie jest na sprzedaż.',
   'hud.alert.refusal.sell.insufficient-stock': 'Nic nie sprzedano — więzienie nie ma tyle w magazynie.',
   'hud.alert.refusal.sell.invalid-quantity': 'Nic nie sprzedano — takiej ilości nie da się sprzedać.',
