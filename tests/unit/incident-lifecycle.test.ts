@@ -102,6 +102,24 @@ describe('IncidentLog: one validated, forward-only lifecycle', () => {
     restored.transition('incident-a', 'responding', 60);
     expect(restored.get('incident-a')!.state).toBe('responding');
   });
+
+  it('rebuilds indices only from the last saved row for a duplicate incident id', () => {
+    const first = new IncidentLog();
+    first.open({ id: 'duplicate', type: 'riot', sectorId: 'old-sector', participantIds: [5], severity: 8, causeFactors: [] }, 200);
+    const last = new IncidentLog();
+    last.open({ id: 'duplicate', type: 'riot', sectorId: 'new-sector', participantIds: [6], severity: 8, causeFactors: [] }, 100);
+    last.transition('duplicate', 'lapsed', 110);
+
+    const restored = new IncidentLog();
+    restored.loadSnapshot([...first.getSnapshot(), ...last.getSnapshot()]);
+
+    expect(restored.get('duplicate')?.state).toBe('lapsed');
+    expect(restored.openIncidentCount).toBe(0);
+    expect(restored.openIncidentsInSector('old-sector')).toEqual([]);
+    expect(restored.isOpenRiotParticipant(5)).toBe(false);
+    expect(restored.lastIncidentStartedAtTick('old-sector')).toBeUndefined();
+    expect(restored.lastIncidentStartedAtTick('new-sector')).toBe(100);
+  });
 });
 
 describe('IncidentLog: how long a sector has been quiet, without walking the log', () => {

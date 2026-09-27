@@ -398,6 +398,11 @@ export class IncidentLog {
     this.openRiotCountByParticipant.clear();
     for (const [id, record] of snapshot) {
       this.records.set(id, { ...record, participantIds: [...record.participantIds], causeFactors: record.causeFactors.map((factor) => ({ ...factor })), timeline: record.timeline.map((entry) => ({ ...entry })) });
+    }
+    // The save schema permits duplicate ids and the record map keeps the last
+    // row. Derive every index from that surviving map, so an earlier open row
+    // cannot leave a terminal replacement marked open or keep its old sector.
+    for (const [id, record] of this.records) {
       this.noteStart(record.sectorId, record.type, record.startedAtTick);
       if (record.state !== 'resolved' && record.state !== 'lapsed') {
         this.noteRiotParticipants(record.type, record.participantIds, 1);
