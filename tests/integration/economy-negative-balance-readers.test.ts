@@ -175,7 +175,8 @@ describe('the status channel carries a negative balance instead of refusing the 
     const runtime = createNewSimulationRuntime(SEED);
     addBulkPurchaseStorage(runtime);
     runtime.treasury.setOverdraftFloor(-2_000);
-    submit(runtime, 'buy', { type: 'PurchaseMaterials', orderId: 'buy-to-zero', itemId: 'item.brick', quantity: 2_500 });
+    runtime.treasury.restore({ balanceMinorUnits: 24_000 });
+    submit(runtime, 'buy', { type: 'PurchaseMaterials', orderId: 'buy-to-zero', itemId: 'item.brick', quantity: 600 });
     expect(runtime.treasury.balanceMinorUnits).toBe(0);
 
     const parsed = statusCountsSchema.safeParse(projectStatusCounts(runtime, runtime.kernel.tick));

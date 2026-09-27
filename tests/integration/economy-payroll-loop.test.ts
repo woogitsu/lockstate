@@ -240,9 +240,12 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
     runtime.treasury.setOverdraftFloor(-2_500);
     hire(runtime, 12);
     admit(runtime, 2);
+    // Model a prison that has already spent 75,000 of the larger opening
+    // grant; the remaining real order stays within the delivery bay's gate.
+    runtime.treasury.restore({ balanceMinorUnits: runtime.treasury.balanceMinorUnits - 75_000 });
     // 550 bricks at 40: 22,000 of the remaining balance, leaving too little to
     // meet a 960 payroll for long.
-    submit(runtime, 'buy-bricks', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-b', itemId: 'item.brick', quantity: 2_425 }));
+    submit(runtime, 'buy-bricks', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-b', itemId: 'item.brick', quantity: 550 }));
     expect(runtime.refusals.count, 'the fixture must be able to afford the bricks it buys').toBe(0);
     return runtime;
   }
