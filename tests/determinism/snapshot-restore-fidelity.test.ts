@@ -94,7 +94,9 @@ function buildCarriedScopeSession(): SimulationRuntime {
  * stock the build orders draw from.
  */
 function reapplySessionSetup(runtime: SimulationRuntime): void {
-  runtime.containers.require('construction-materials').deposit('item.brick', 500);
+  // The fixture is deliberately re-applied after restore, so keep the
+  // artificial stock below the finite gate while still covering the orders.
+  runtime.containers.require('construction-materials').deposit('item.brick', 200);
 }
 
 const CARRIED_SCOPE_COMMANDS: readonly { readonly id: string; readonly executeAtTick: number; readonly payload: ReturnType<typeof packCommand> }[] = [

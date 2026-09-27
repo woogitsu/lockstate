@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { addBulkPurchaseStorage } from '../helpers/storage-capacity-fixture';
 import { PROCUREMENT_DELIVERY_DELAY_TICKS, PROCURABLE_MATERIALS } from '../../src/content/procurement-catalog';
 import { BUILDABLE_REGISTRY } from '../../src/simulation/construction';
 import {
@@ -165,6 +166,7 @@ function createSession(seed = 0x717) {
   // Keep this historical 25,000-balance drag fixture after the larger grant.
   expect(runtime.treasury.spend(75_000, 'wages')).toBe(true);
   runtime.treasury.setOverdraftFloor(-2_500);
+  addBulkPurchaseStorage(runtime);
   let sequence = 0;
 
   const submit = (command: SimulationCommand): void => {

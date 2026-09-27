@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { addBulkPurchaseStorage } from '../helpers/storage-capacity-fixture';
 import { procurableMaterial } from '../../src/content/procurement-catalog';
 import { TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS } from '../../src/simulation/economy';
 import { HUD_VIEW_MODEL_SCHEMA_VERSION } from '../../src/simulation/presentation/view-model';
@@ -78,6 +79,7 @@ function send(runtime: SimulationRuntime, command: SimulationCommand): void {
 /** A walled, zoned cell with no bed built -- fresh and unfurnished for its whole life so far. */
 function prisonWithACell(): SimulationRuntime {
   const runtime = createNewSimulationRuntime(SEED);
+  addBulkPurchaseStorage(runtime);
   wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
   send(runtime, { type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT });
   return runtime;
@@ -107,8 +109,10 @@ describe('the FUNDS badge during the starter exemption (#771, fixed 2026-09-01)'
     expect(BRICK_PRICE, 'this file\'s arithmetic is written from 40, not read back off the catalogue').toBe(40);
     expect(PLANK_PRICE, 'and from 65').toBe(65);
 
-    // The played sequence, to the minor unit: 654 bricks, landing at -1,160.
-    send(runtime, { type: 'PurchaseMaterials', orderId: 'buy-bricks', itemId: BRICK, quantity: 2_529 });
+    // Seed an older prison's balance, then make a real purchase below the
+    // 600-unit delivery gate: 22,800 - 599 x 40 = -1,160.
+    runtime.treasury.restore({ balanceMinorUnits: 22_800 });
+    send(runtime, { type: 'PurchaseMaterials', orderId: 'buy-bricks', itemId: BRICK, quantity: 599 });
     expect(runtime.refusals.count, 'the fixture must be able to afford the bricks it buys').toBe(0);
     expect(runtime.treasury.balanceMinorUnits, 'the exact balance the played session measured').toBe(-1_160);
 

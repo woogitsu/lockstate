@@ -251,7 +251,10 @@ function runToQuiet(runtime: SimulationRuntime, limit = 2_000): number {
  */
 function drainedPrison(): SimulationRuntime {
   const runtime = createNewSimulationRuntime(SEED);
-  send(runtime, { type: 'PurchaseMaterials', orderId: 'drain', itemId: 'item.wood-plank', quantity: 1_553 });
+  // Begin after the larger opening grant has been spent elsewhere, keeping
+  // this real purchase inside the physical delivery capacity.
+  runtime.treasury.restore({ balanceMinorUnits: 25_000 });
+  send(runtime, { type: 'PurchaseMaterials', orderId: 'drain', itemId: 'item.wood-plank', quantity: 399 });
   step(runtime, PROCUREMENT_DELIVERY_DELAY_TICKS + 2);
   send(runtime, { type: 'PurchaseMaterials', orderId: 'buy-1', itemId: BRICK, quantity: 6 });
   expect(runtime.refusals.count, 'the fixture must afford everything it presses').toBe(0);
@@ -263,10 +266,10 @@ function drainedPrison(): SimulationRuntime {
   return runtime;
 }
 
-/** 100,000 - 1,553 x 65, with the six bricks refunded. */
-const DRAINED_BALANCE = -945;
+/** 25,000 - 399 x 65, with the six bricks refunded. */
+const DRAINED_BALANCE = -935;
 /** After six bricks: room for three walls, not four. */
-const DRAINED_AFTER_SIX_BRICKS = -1_185;
+const DRAINED_AFTER_SIX_BRICKS = -1_175;
 
 describe('a refund survives the clock (#687)', () => {
   it('pins the three figures every balance below is written from', () => {

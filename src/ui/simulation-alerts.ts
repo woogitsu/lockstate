@@ -61,6 +61,7 @@ const REFUSAL_LABEL_KEYS: Readonly<Record<RefusalReason, LocalizationKey>> = {
   'place-object.unowned-land': 'hud.alert.refusal.place-object.unowned-land',
   'purchase.duplicate-order': 'hud.alert.refusal.purchase.duplicate-order',
   'purchase.insufficient-funds': 'hud.alert.refusal.purchase.insufficient-funds',
+  'purchase.storage-full': 'hud.alert.refusal.purchase.storage-full',
   'purchase.invalid-quantity': 'hud.alert.refusal.purchase.invalid-quantity',
   'purchase.unknown-material': 'hud.alert.refusal.purchase.unknown-material',
   'release-guard.not-held': 'hud.alert.refusal.release-guard.not-held',

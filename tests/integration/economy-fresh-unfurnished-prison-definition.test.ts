@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { addBulkPurchaseStorage } from '../helpers/storage-capacity-fixture';
 import { procurableMaterial } from '../../src/content/procurement-catalog';
 import { placedObjectAt } from '../../src/simulation/objects';
 import { tileCoordinate } from '../../src/simulation/world';
@@ -90,6 +91,7 @@ function send(runtime: SimulationRuntime, command: SimulationCommand): void {
  */
 function prisonRestoredWithAnOffCatalogueRoom(): SimulationRuntime {
   const runtime = createNewSimulationRuntime(SEED);
+  addBulkPurchaseStorage(runtime);
   runtime.prisoners.roomInstances.register({
     instanceId: 'restored-1',
     roomCatalogId: OFF_CATALOGUE_ROOM_ID,
@@ -157,11 +159,10 @@ describe('"a fresh, unfurnished prison" has one definition, and the host reads i
     const runtime = prisonRestoredWithAnOffCatalogueRoom();
     expect(BRICK_PRICE, 'this file\'s arithmetic is written from 40, not read back off the catalogue').toBe(40);
 
-    // 25,000 - 655 x 40 = -1,200: past the starter rung (-1,185), short of the
-    // mature one (-1,250), which is the only window in which the two floors
-    // give different answers to the same press.
-    send(runtime, { type: 'PurchaseMaterials', orderId: 'buy-bricks', itemId: BRICK, quantity: 2_530 });
-    expect(runtime.refusals.count, 'the fixture must be able to afford the bricks it buys').toBe(0);
+    // Restore the balance inside the narrow gap between the two overdraft
+    // rungs. Buying down from the larger opening grant would exceed the
+    // delivery bay's capacity and test that unrelated gate instead.
+    runtime.treasury.restore({ balanceMinorUnits: -1_200 });
     expect(runtime.treasury.balanceMinorUnits, 'the balance this case is built at').toBe(-1_200);
 
     const counts = reportedCounts(publication(runtime));
@@ -187,7 +188,7 @@ describe('"a fresh, unfurnished prison" has one definition, and the host reads i
 
   it('states a remainder the same press will honour', () => {
     const runtime = prisonRestoredWithAnOffCatalogueRoom();
-    send(runtime, { type: 'PurchaseMaterials', orderId: 'buy-bricks', itemId: BRICK, quantity: 2_530 });
+    runtime.treasury.restore({ balanceMinorUnits: -1_200 });
 
     const counts = reportedCounts(publication(runtime));
     const fundsMetric = projectStatusMetrics(counts).find((descriptor) => descriptor.id === 'funds');

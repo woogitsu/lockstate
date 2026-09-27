@@ -14,6 +14,7 @@ import {
 } from '../../src/simulation/runtime/new-session';
 import { tileCoordinate, type TilePosition } from '../../src/simulation/world/coordinates';
 import { wallRoomPerimeter } from '../helpers/room-walls';
+import { addBulkPurchaseStorage } from '../helpers/storage-capacity-fixture';
 
 /**
  * **Money is conserved across every build order a player can place and take
@@ -752,6 +753,10 @@ describe('money is conserved across build orders and undo (#285)', () => {
     const wholeBalance = TREASURY_STARTING_BALANCE_MINOR_UNITS / price;
 
     const session = createSession();
+    // Five furnished rooms give 2,600 units of capacity. The three orders
+    // below total 2,529, so they exercise the treasury boundary without
+    // hitting the independent delivery gate.
+    addBulkPurchaseStorage(session.runtime, 5);
     session.buy('order-buy-everything', WALL_REQUIREMENT.itemId, wholeBalance, 'a purchase for the exact balance');
 
     expect(

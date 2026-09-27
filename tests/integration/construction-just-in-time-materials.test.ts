@@ -15,6 +15,7 @@ import {
 import { captureSessionSnapshot, restoreSimulationRuntime } from '../../src/simulation/runtime/restore-session';
 import { buildQueueFromProjection } from '../../src/ui/simulation-build-queue';
 import { wallRoomPerimeter } from '../helpers/room-walls';
+import { addBulkPurchaseStorage } from '../helpers/storage-capacity-fixture';
 
 /**
  * **A build order buys what it needs** — [ADR 0017](../../docs/adr/0017-money-primary-resource-model.md)
@@ -302,13 +303,17 @@ describe('a prison that cannot pay is told, at the press (#629, ADR 0017 decisio
    */
   function prisonWith(balance: number): SimulationRuntime {
     const runtime = createNewSimulationRuntime(SEED);
+    // This insolvency probe begins with an older prison's spent grant. A
+    // single order from the current 100,000 start would exceed delivery
+    // capacity before it reached the financial rung under test.
+    runtime.treasury.restore({ balanceMinorUnits: 25_000 });
     // As far as the *starter* delivery rung allows (this runtime never
     // furnishes a room, so it is judged there for its whole life -- see the
     // docblock above), in whole planks, and the rest at the wage rung. Planks
     // because no wall order asks for one, so the stock this leaves behind
     // cannot fund anything the cases below place.
     const pressable = Math.floor(
-      (TREASURY_STARTING_BALANCE_MINOR_UNITS - INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS) / PLANK_PRICE,
+      (runtime.treasury.balanceMinorUnits - INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS) / PLANK_PRICE,
     );
     send(runtime, { type: 'PurchaseMaterials', orderId: 'order-buy', itemId: PLANK, quantity: pressable });
     const rest = runtime.treasury.balanceMinorUnits - balance;
@@ -341,7 +346,7 @@ describe('a prison that cannot pay is told, at the press (#629, ADR 0017 decisio
    * rung rather than 403 against the mature one (see its own docblock), so
    * `-1,930 + 402 x 65 = 24,200` is what the cancelled delivery hands back.
    */
-  const REFUNDED_BALANCE = 99_210;
+  const REFUNDED_BALANCE = 24_200;
 
   it('records the refusal on the press, keeps the order, and says how much is missing', () => {
     // 40 in the bank against a wall that costs 80.
@@ -644,7 +649,9 @@ describe('a placed object is a build order too (ADR 0028 decision 4)', () => {
      * holds bricks a bed cannot use either way, which is the property the
      * fixture was chosen for.
      */
-    send(runtime, { type: 'PurchaseMaterials', orderId: 'order-buy', itemId: BRICK, quantity: 2_529 });
+    addBulkPurchaseStorage(runtime);
+    runtime.treasury.restore({ balanceMinorUnits: 22_800 });
+    send(runtime, { type: 'PurchaseMaterials', orderId: 'order-buy', itemId: BRICK, quantity: 599 });
     expect(runtime.treasury.balanceMinorUnits, 'the deepest a press reaches while fresh and unfurnished').toBe(-1_160);
     expect(runtime.treasury.spend(70, 'wages'), 'and the rest, the way a payday would').toBe(true);
     expect(runtime.treasury.balanceMinorUnits).toBe(-1_230);
