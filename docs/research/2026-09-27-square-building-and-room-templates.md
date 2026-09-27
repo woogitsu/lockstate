@@ -28,11 +28,14 @@ wall square and has an obvious opening on the ground plane.
    undo. There is one result for the gesture; a partial prefab is a refusal.
 5. Save and reload without changing the plan's footprint.
 
-The first templates are a minimum valid Cell, its mirror and a row of cells
-facing a shared corridor. Their dimensions follow the current room catalogue's
-2×3 minimum interior and real 1×2 bed and 1×1 toilet footprints. The source
-references illustrate modular repetition, door rhythm and visible contents;
-the art, names and UI are original to Lockstate.
+The first templates are a 2×5-interior Cell, its mirror and a row of cells
+facing a shared corridor. The reference sheet specifically shows a 2×5 Cell
+inside a 4×7 wall footprint, plus a larger 4×4 interior and repeated cell
+blocks. The 2×5 template exceeds the current room catalogue's 2×3 *minimum*;
+that minimum remains a validity rule, not a design target. A real 1×2 bed and
+1×1 toilet fit within the interior without sharing an occupied square. The
+source references illustrate modular repetition, door rhythm and visible
+contents; the art, names and UI are original to Lockstate.
 
 ## Geometry and compatibility
 
