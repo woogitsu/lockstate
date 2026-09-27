@@ -35,6 +35,7 @@ import {
   type RefusalLog,
 } from '../refusals';
 import type { ConstructionSystem } from '../construction/system';
+import type { RoomTemplateCoordinator } from '../construction/room-template-coordinator';
 import type { ObjectPlacementService } from '../objects';
 import type { PrisonerOperationsRuntime } from '../prisoners/prisoner-operations-runtime';
 import type { RoomZoningService } from '../rooms/zoning';
@@ -209,6 +210,7 @@ import { tileCoordinate } from '../world/coordinates';
  */
 const LEAVES_THE_UNDO_HISTORY_CURRENT: ReadonlySet<SimulationCommand['type']> = new Set([
   'PlaceBuildOrder',
+  'PlaceRoomTemplate',
   'PlaceObject',
   'Undo',
   'Redo',
@@ -225,6 +227,7 @@ export function createSessionCommandHandler(
   staffDismissal: StaffDismissalService,
   refusals: RefusalLog,
   events: SimulationEventLog,
+  roomTemplates: RoomTemplateCoordinator,
 ): CommandHandler {
   const constructionCommands = createConstructionCommandHandler(construction, refusals, events);
 
@@ -232,6 +235,15 @@ export function createSessionCommandHandler(
     const simCommand = unpackCommand(command.payload as never);
     if (simCommand !== null && !LEAVES_THE_UNDO_HISTORY_CURRENT.has(simCommand.type)) {
       construction.noteActionThatDoesNotWriteTheUndoStack();
+    }
+    if (simCommand !== null && simCommand.type === 'PlaceRoomTemplate') {
+      roomTemplates.place({
+        templateId: simCommand.templateId,
+        origin: simCommand.origin,
+        mirrorX: simCommand.mirrorX ?? false,
+        sequence: command.sequence,
+      });
+      return;
     }
     if (simCommand !== null && simCommand.type === 'ZoneRoom') {
       // The outcome is not dropped and it now reaches the player. It used to
