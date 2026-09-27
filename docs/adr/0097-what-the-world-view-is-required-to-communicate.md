@@ -509,7 +509,7 @@ with a screenshot pair.
 
 **This has a corollary that costs a renderer module.** `TileLayer` repaints on a
 change of `revision` or of visible range and on nothing else
-(`src/rendering/feed/render-feed.ts:92-96`), and `revision` is deliberately
+(`src/rendering/feed/render-feed.ts:97-103`, `revision`), and `revision` is deliberately
 geometry-only — `SimulationSnapshotFeed.applyDelta`'s own docblock
 (`src/rendering/feed/simulation-snapshot-feed.ts:395-402`) records that bumping
 it for an actor delta would throw away ADR 0040 slice 1's entire saving. So a
