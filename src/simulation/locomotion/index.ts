@@ -6,5 +6,6 @@ export {
   type HeadingComponent,
   type LocomotionSnapshot,
   type WalkReading,
+  type WalkSnapshot,
 } from './locomotion';
 export { LocomotionSystem } from './locomotion-system';

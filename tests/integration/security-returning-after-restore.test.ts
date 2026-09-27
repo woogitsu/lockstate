@@ -6,7 +6,7 @@ import { NavigationSystem } from '../../src/simulation/navigation/navigation-sys
 import { projectStaff } from '../../src/simulation/presentation/staff-projection';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
-import { captureSessionSnapshot, restoreSimulationRuntime } from '../../src/simulation/runtime/restore-session';
+import { captureSessionSnapshot, restoreSimulationRuntime, type SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
 import { constantDeploymentSchedule } from '../../src/simulation/security/deployment-schedule';
 import { DeploymentSystem } from '../../src/simulation/security/deployment-system';
 import { createGuardLocomotionSystem } from '../../src/simulation/security/guard-locomotion';
@@ -29,6 +29,10 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * ```
  * [hud/staff] .view.roster.rows[0].assignment.deploymentPhase: "travelling" -> "on-post"
  * ```
+ *
+ * **Since issue #1373 this describes a save written before the walk was
+ * saved, and every case below restores that shape** (`writtenBeforeInFlight`);
+ * a current save resumes the journey instead.
  *
  * `GuardRoster.loadSnapshot` drops a `'travelling'` guard's path request --
  * it named a queue the previous `NavigationSystem` instance owned and no
@@ -121,15 +125,26 @@ function prisonSavedMidJourney(withSpareGuard = false): SimulationRuntime {
     expect(live.securityGuards.getDeploymentPhase(1)).toBe('unassigned');
   }
 
-  const snapshot = captureSessionSnapshot(live);
-  const simulation = snapshot.simulation!;
-  const { work: _work, ...navigation } = simulation.navigation;
-  const { locomotion: _locomotion, ...guards } = simulation.security.guards;
-  // These assertions pin the original compatibility rule for an older save.
-  return restoreSimulationRuntime({
-    ...snapshot,
-    simulation: { ...simulation, navigation, security: { ...simulation.security, guards } },
-  }, SEED).runtime;
+  return restoreSimulationRuntime(writtenBeforeInFlight(captureSessionSnapshot(live)), SEED).runtime;
+}
+
+/**
+ * The bundle as a build before issue #1373 wrote it: no `simulation.inFlight`.
+ *
+ * **Why every case in this file restores that shape.** Since #1373 a save
+ * carries the walk and the navigation queue (the owner's ruling of 2026-09-23
+ * on ADR 0059 open question 3), so a guard saved mid-journey comes back
+ * `'travelling'`, still walking, and the settling to `'on-post'` this file
+ * labels never happens -- `a save this build writes` below pins that. The
+ * settling is still what every save written *before* #1373 gets on load,
+ * because an absent section is restored with the old reset, so the word
+ * `Returning` is still reachable and still owed its guard. Each case below is
+ * unchanged apart from being handed that older shape.
+ */
+function writtenBeforeInFlight(bundle: SessionSnapshotBundle): SessionSnapshotBundle {
+  if (bundle.simulation === undefined) throw new Error('a captured session must carry a simulation section');
+  const { inFlight: _inFlight, ...simulation } = bundle.simulation;
+  return { ...bundle, simulation };
 }
 
 function rosterPhases(runtime: SimulationRuntime): readonly string[] {
@@ -161,6 +176,26 @@ function rosterStatusWords(runtime: SimulationRuntime): readonly string[] {
 }
 
 describe('a guard who was walking when the prison was saved', () => {
+  it('a save this build writes (#1373) brings the guard back still walking, so there is nothing to say Returning about', () => {
+    const live = createNewSimulationRuntime(SEED);
+    admitOne(live);
+    submit(live, 'hire-far', packCommand({ type: 'HireStaff', staffRoleId: 'staff-role.guard', ...FAR_TILE }));
+    expect(live.securityGuards.getDeploymentPhase(0)).toBe('travelling');
+
+    const restored = restoreSimulationRuntime(captureSessionSnapshot(live), SEED).runtime;
+    expect(restored.securityGuards.getDeploymentPhase(0)).toBe('travelling');
+    expect(restored.securityGuards.getPathRequestId(0)).toBe(live.securityGuards.getPathRequestId(0));
+    expect(rosterPhases(restored)).toEqual(rosterPhases(live));
+
+    // And it reaches the post on the tick the unsaved session does.
+    for (let step = 0; step < 100; step += 1) {
+      live.kernel.step();
+      restored.kernel.step();
+      expect(restored.securityGuards.getTile(0), `tick ${String(live.kernel.tick)}`).toEqual(live.securityGuards.getTile(0));
+    }
+    expect(restored.securityGuards.getDeploymentPhase(0)).toBe('on-post');
+  });
+
   it('is not said to be on a post it is not standing on -- the row says Returning', () => {
     const restored = prisonSavedMidJourney();
 

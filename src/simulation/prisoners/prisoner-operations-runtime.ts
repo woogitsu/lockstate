@@ -95,6 +95,24 @@ export type AdmitPrisonerOutcome =
  * dispatch, and the state this reports is already carried by residency and
  * cold-state accommodation.
  */
+/** What `PrisonerOperationsRuntime.getTravelSnapshot` carries: see that method. */
+export interface PrisonerTravelSnapshot {
+  /** Keyed by component index, the key `LocomotionStore` is addressed with for this population. */
+  readonly locomotion: LocomotionSnapshot;
+  readonly pathRequestIds: readonly (readonly [EntityId, string])[];
+  readonly requestSequence: number;
+}
+
+/**
+ * A travel snapshot to resume, and the one question the resume has to ask of
+ * the `NavigationSystem` that was restored beside it. Passed to
+ * `loadSnapshot`; absent means the save carries no travel at all.
+ */
+export interface PrisonerTravelRestore {
+  readonly snapshot: PrisonerTravelSnapshot;
+  readonly knowsRequest: (requestId: string) => boolean;
+}
+
 export interface ExcessRelocationOutcome {
   readonly relocated: readonly ExcessResidentRelocation[];
   readonly stranded: readonly EntityId[];
@@ -945,7 +963,22 @@ export class PrisonerOperationsRuntime {
    * round-trips a snapshot without one gets a window that says it opened at 0,
    * which is what a fixture with no clock means.
    */
-  public loadSnapshot(snapshot: ReturnType<typeof this.getSnapshot> & { readonly locomotion?: LocomotionSnapshot }, atTick = 0): void {
+  /**
+   * The prisoners' half of the work in flight (issue #1373, ADR 0059 option 5):
+   * every walk and heading, every outstanding path-request id, and the counter
+   * that names the next one. The navigation queue those ids name is
+   * `NavigationSystem.getInFlightSnapshot`, and the two travel together in the
+   * save's `inFlight` section, because an id is meaningless without its entry.
+   */
+  public getTravelSnapshot(): PrisonerTravelSnapshot {
+    return {
+      locomotion: this.locomotion.getSnapshot(),
+      pathRequestIds: this.coldState.getPathRequestSnapshot(),
+      requestSequence: this.actionSystem.getRequestSequence(),
+    };
+  }
+
+  public loadSnapshot(snapshot: ReturnType<typeof this.getSnapshot>, atTick = 0, travel?: PrisonerTravelRestore): void {
     this.entityStore.loadSnapshot(snapshot.entityStore);
     this.records.loadSnapshot(snapshot.records);
     this.needs.loadSnapshot(snapshot.needs);
@@ -962,39 +995,18 @@ export class PrisonerOperationsRuntime {
       else this.bitset.remove(index, PRISONER_COMPONENT_ID);
     }
 
-    // A walk is the second half of the transient travel state the block below
-    // drops, and it is dropped for the same reason: it names waypoints from a
-    // route a rebuilt `NavigationSystem` no longer holds, and a restored
-    // prisoner is re-planned from the tile the snapshot carried rather than
-    // resumed mid-leg. Clearing the headings with it is what stops a recycled
-    // component index from inheriting the way its previous occupant faced.
-    if (snapshot.locomotion === undefined) this.locomotion.clear();
-    else this.locomotion.loadSnapshot(snapshot.locomotion);
-
-    // Any entity mid-`'travelling'` referenced a path request in the
-    // *previous* NavigationSystem instance's queue -- a fresh one (per this
-    // method's own snapshot-scope doc) never received it and would never
-    // resolve it, leaving that entity stuck forever. Drop back to 'idle' so
-    // the next reconsideration cycle re-selects and re-requests instead.
-    const travellingPhase = ACTION_PHASES.indexOf('travelling');
-    const idlePhase = ACTION_PHASES.indexOf('idle');
-    for (let index = 0; snapshot.locomotion === undefined && index <= this.entityStore.maxActiveIndex; index += 1) {
-      if (!this.entityStore.isIndexAlive(index)) continue;
-      if (this.currentAction.phase[index] !== travellingPhase) continue;
-      this.currentAction.phase[index] = idlePhase;
-      const entityId = this.entityStore.getIdByIndex(index);
-      this.coldState.setActionTarget(entityId, undefined);
-      this.coldState.setPathRequestId(entityId, undefined);
-    }
+    if (travel === undefined) this.resetTravelForASaveThatCarriesNone();
+    else this.resumeTravel(travel);
 
     // Concurrent-use claims are derived, not persisted (ADR 0029), so they are
     // rebuilt here from the phase and action target the snapshot did carry.
     // **Order is load-bearing and this is the last step for a reason**: the
-    // registry's `loadSnapshot` above cleared every claim, and the loop above
-    // has just dropped every `travelling` prisoner to `idle` and cleared their
-    // target -- so this scan sees exactly the prisoners who are genuinely still
-    // performing, and cannot reinstate a claim for a journey that no longer
-    // exists.
+    // registry's `loadSnapshot` above cleared every claim, and the travel step
+    // above has settled every `travelling` prisoner -- resumed, or dropped to
+    // `idle` with their target cleared -- so this scan sees exactly the
+    // prisoners who are genuinely still performing. A traveller holds no claim
+    // in a live session either (ADR 0029 decision 2), so a resumed walk needs
+    // none rebuilt.
     this.actionSystem.reinstateUseClaims();
 
     // **After the components, because it clears rather than reads them.** A
@@ -1006,6 +1018,82 @@ export class PrisonerOperationsRuntime {
     // re-indexed from somebody else's save -- #111's shape, one component
     // further out.
     this.actionSystem.reopenSubstitutionWindow(atTick);
+  }
+
+  /**
+   * What every restore did before issue #1373, and what a restore of a save
+   * written before it still does: such a save carries no walk and no
+   * navigation queue, so a `'travelling'` prisoner's path request named an
+   * entry in a `NavigationSystem` that no longer exists.
+   *
+   * The two comments below are this method's body as it stood, unchanged:
+   * absence of the `inFlight` section is a fact about the save's age, and it
+   * is honoured with exactly what the build that wrote it would have done on
+   * load (ADR 0038 §1).
+   */
+  private resetTravelForASaveThatCarriesNone(): void {
+    // A walk is the second half of the transient travel state the block below
+    // drops, and it is dropped for the same reason: it names waypoints from a
+    // route a rebuilt `NavigationSystem` no longer holds, and a restored
+    // prisoner is re-planned from the tile the snapshot carried rather than
+    // resumed mid-leg. Clearing the headings with it is what stops a recycled
+    // component index from inheriting the way its previous occupant faced.
+    this.locomotion.clear();
+
+    // Any entity mid-`'travelling'` referenced a path request in the
+    // *previous* NavigationSystem instance's queue -- a fresh one (per this
+    // method's own snapshot-scope doc) never received it and would never
+    // resolve it, leaving that entity stuck forever. Drop back to 'idle' so
+    // the next reconsideration cycle re-selects and re-requests instead.
+    const travellingPhase = ACTION_PHASES.indexOf('travelling');
+    for (let index = 0; index <= this.entityStore.maxActiveIndex; index += 1) {
+      if (!this.entityStore.isIndexAlive(index)) continue;
+      if (this.currentAction.phase[index] !== travellingPhase) continue;
+      this.dropTravellerToIdle(index);
+    }
+  }
+
+  /**
+   * Resumes every walk and every outstanding path request a save carried
+   * (issue #1373): the save-then-continue session is the continue session.
+   *
+   * **Nothing is pruned to make the state look tidier**, because anything a
+   * restore tidies is a difference from the session that was saved. A walk
+   * whose prisoner is no longer `'travelling'` -- `onWalksArrived` already
+   * ignores such arrivals -- is restored as it was, and so is a `'travelling'`
+   * prisoner with neither a walk nor a request, whom `continueTravelling`
+   * sends to `idle` at the next reconsideration exactly as it would have.
+   *
+   * **One case is repaired, and it is unreachable from a save this build
+   * writes**: a request id the restored `NavigationSystem` does not hold. The
+   * writer captures the queue and the ids in one pass, so the two cannot
+   * disagree; a hand-edited or truncated save can. Such a prisoner would wait
+   * for ever on a result nothing will produce -- the failure the old reset
+   * existed to prevent -- so that one prisoner gets the old reset instead.
+   */
+  private resumeTravel(travel: PrisonerTravelRestore): void {
+    const { snapshot } = travel;
+    this.locomotion.loadSnapshot(snapshot.locomotion);
+    this.actionSystem.setRequestSequence(snapshot.requestSequence);
+
+    const travellingPhase = ACTION_PHASES.indexOf('travelling');
+    for (const [entityId, requestId] of snapshot.pathRequestIds) {
+      if (travel.knowsRequest(requestId)) {
+        this.coldState.setPathRequestId(entityId, requestId);
+        continue;
+      }
+      if (!this.entityStore.isAlive(entityId)) continue;
+      const index = this.entityStore.getIndex(entityId);
+      if (this.currentAction.phase[index] === travellingPhase && !this.locomotion.isWalking(index)) this.dropTravellerToIdle(index);
+    }
+  }
+
+  private dropTravellerToIdle(index: number): void {
+    this.locomotion.cancelWalk(index);
+    this.currentAction.phase[index] = ACTION_PHASES.indexOf('idle');
+    const entityId = this.entityStore.getIdByIndex(index);
+    this.coldState.setActionTarget(entityId, undefined);
+    this.coldState.setPathRequestId(entityId, undefined);
   }
 
   /**

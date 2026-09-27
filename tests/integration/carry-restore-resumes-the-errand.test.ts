@@ -6,7 +6,7 @@ import { ACTION_PHASES } from '../../src/simulation/prisoners/components';
 import { GENERAL_POPULATION_REGIME, resolveActiveRegimeBlock } from '../../src/simulation/prisoners/regime';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
-import { captureSessionSnapshot, restoreSimulationRuntime } from '../../src/simulation/runtime/restore-session';
+import { captureSessionSnapshot, restoreSimulationRuntime, type SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { wallRoomPerimeter } from '../helpers/room-walls';
 
@@ -27,6 +27,10 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  *   by landing note 2) relies on — a carrier comes back idle with the carry
  *   still in `actionIndex` and the job still `'assigned'` on the board, and the
  *   *next* reconsideration is expected to re-select it.
+ *   **Since issue #1373 that is the rule for a save written before the walk
+ *   was saved, and only for one**: a current save carries the walk, so its
+ *   carrier comes back `'travelling'`. `writtenBeforeInFlight` below is how
+ *   this file keeps reaching the rule it guards.
  * - `carryAvailableFor` answers that question correctly: a prisoner whose own
  *   `activeJobFor` is defined is eligible whether or not the board has anything
  *   spare.
@@ -216,6 +220,27 @@ function aCarrierMidDropOff(): SimulationRuntime {
 }
 
 /**
+ * The same bundle as a build before issue #1373 would have written it: no
+ * `simulation.inFlight`, so no walk and no navigation queue.
+ *
+ * **Why this file restores that shape rather than the current one.** Since
+ * #1373 a save carries the walk (the owner's ruling of 2026-09-23 on ADR 0059
+ * open question 3), so a carrier saved mid-drop-off comes back *still walking*
+ * and never passes through `idle` at all -- which means a current save no
+ * longer reaches the gate #882 fixed. That gate is still live: it is what every
+ * save written before #1373 reaches on load, because an absent `inFlight`
+ * section is restored with the old reset (`docs/PERSISTENCE.md`, "Adding an
+ * optional field without a version bump"). So the three #882 cases below are
+ * run against the older shape, where they still mean what they were written to
+ * mean, and the current shape gets its own, stricter case.
+ */
+function writtenBeforeInFlight(bundle: SessionSnapshotBundle): SessionSnapshotBundle {
+  if (bundle.simulation === undefined) throw new Error('a captured session must carry a simulation section');
+  const { inFlight: _inFlight, ...simulation } = bundle.simulation;
+  return { ...bundle, simulation };
+}
+
+/**
  * Writes the urgent need on the carrier and returns the runtime, so it can be
  * applied on every step: `NeedsDecaySystem` runs between reconsiderations and a
  * level written once would drift back over the threshold on its own, which
@@ -265,16 +290,29 @@ describe('issue #882: a restore hands the errand back rather than turning it int
     expect(readCarrier(live)).toMatchObject({ jobState: 'completed', inTheDepot: 4 });
   });
 
-  it('finishes it on the same terms after a restore, within decision 5\'s bound', () => {
+  it('a save that carries the walk (#1373) restores the carrier still walking, and the errand finishes on the continuous tick', () => {
     const live = aCarrierMidDropOff();
     const bundle = captureSessionSnapshot(live);
     const continuous = completedAt(live);
     expect(continuous, 'the reference run must complete, or there is nothing to compare against').toBeDefined();
 
     const restored = restoreSimulationRuntime(bundle).runtime;
-    expect(captureSessionSnapshot(restored)).toEqual(bundle);
-    // A new save carries the leg itself; the carrier remains in transit.
     expect(readCarrier(restored)).toMatchObject({ actionId: 'action.carry', phase: 'travelling', jobState: 'assigned', jobLeg: 'dropoff' });
+    // Not "within decision 5's bound": exactly the tick continuous play
+    // reached. The bound below is what a save written before #1373 still pays.
+    expect(completedAt(restored)).toBe(continuous);
+  });
+
+  it('finishes it on the same terms after a restore, within decision 5\'s bound', () => {
+    const live = aCarrierMidDropOff();
+    const bundle = writtenBeforeInFlight(captureSessionSnapshot(live));
+    const continuous = completedAt(live);
+    expect(continuous, 'the reference run must complete, or there is nothing to compare against').toBeDefined();
+
+    const restored = restoreSimulationRuntime(bundle).runtime;
+    // The restore rule ADR 0093 decision 5 depends on: a carrier comes back
+    // idle, holding the carry in `actionIndex`, with the job still theirs.
+    expect(readCarrier(restored)).toMatchObject({ actionId: 'action.carry', phase: 'idle', jobState: 'assigned', jobLeg: 'dropoff' });
 
     const afterRestore = completedAt(restored);
     expect(
@@ -282,22 +320,15 @@ describe('issue #882: a restore hands the errand back rather than turning it int
       `the restored carrier never finished the errand within ${RUN_FOR} ticks; they were last seen doing ${JSON.stringify(readCarrier(restored))}`,
     ).toBeDefined();
     expect(readCarrier(restored)).toMatchObject({ jobState: 'completed', inTheDepot: 4 });
-    expect(afterRestore, 'a saved walk must complete at the same tick as continuous play').toBe(continuous);
-  });
-
-  it('matches continuous carry state on every tick after a mid-route save', () => {
-    const live = aCarrierMidDropOff();
-    const restored = restoreSimulationRuntime(captureSessionSnapshot(live)).runtime;
-    for (let tick = 0; tick < 80; tick += 1) {
-      live.kernel.step();
-      restored.kernel.step();
-      expect(captureSessionSnapshot(restored), `drift after tick ${String(live.kernel.tick)}`).toEqual(captureSessionSnapshot(live));
-    }
+    expect(
+      afterRestore! - continuous!,
+      'ADR 0093 decision 5 (landing note 3): a restore costs a carry at most two reconsideration cycles',
+    ).toBeLessThanOrEqual(RESTORE_BOUND_TICKS);
   });
 
   it('does not let the restored carrier choose anything but the errand while they hold the goods', () => {
     const live = aCarrierMidDropOff();
-    const restored = restoreSimulationRuntime(captureSessionSnapshot(live)).runtime;
+    const restored = restoreSimulationRuntime(writtenBeforeInFlight(captureSessionSnapshot(live))).runtime;
 
     // Every action the restored carrier is seen in *before* the errand ends.
     // The regression put `action.use-toilet` here at tick 1,881, with four
@@ -334,7 +365,7 @@ describe('issue #882: a restore hands the errand back rather than turning it int
     expect(isNeedUnmetForStateIncome(URGENT_NEED_LEVEL), 'the case must be one the state withholds for').toBe(true);
 
     const live = aCarrierMidDropOff();
-    const bundle = captureSessionSnapshot(withUrgentNeed(live));
+    const bundle = writtenBeforeInFlight(captureSessionSnapshot(withUrgentNeed(live)));
     const continuous = completedAt(live, withUrgentNeed);
     expect(continuous, 'the reference run must complete, or there is nothing to compare against').toBeDefined();
 

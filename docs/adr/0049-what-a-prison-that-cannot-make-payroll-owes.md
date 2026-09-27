@@ -46,7 +46,7 @@ counted rather than remembered:
   restored balance.
 
 A fifth is in the save format: `balanceMinorUnits: z.number().int().nonnegative().safe()`
-(`src/persistence/save-schema.ts:954`). **Only two of the five constrain the
+(`src/persistence/save-schema.ts:955`). **Only two of the five constrain the
 balance itself**; the other three constrain amounts moving across it. The
 distinction matters because it is the two that a signed balance would have to
 relax, and the schema one is the load-bearing one — a negative balance is not a

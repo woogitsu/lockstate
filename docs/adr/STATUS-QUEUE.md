@@ -792,7 +792,15 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `42fc9649` (**v0.0.784**) by the delta method,
+Re-anchored at `main` @ `c8d25355` (**v0.0.795**) by the delta method,
+from `dbd24ea3`, the last tree whose window the dated §3 reading actually
+describes. That reading's header was later moved to `42fc9649` without moving
+its `9e6361c9..dbd24ea3` window or its nine-landing count. The new §3 entry
+records the larger re-reading, including that mismatch; neither staleness
+budget changes.
+
+**The previous anchor, retained as history.** It read: *"Re-anchored at `main` @
+`42fc9649` (**v0.0.784**) by the delta method,"* and continued:
 from `9e6361c9`. This is the release commit after #1445, the last
 first-parent landing in the `main` tree this branch read. Nine non-release
 first-parent landings and thirty-six commits were unread at the start of this
@@ -2242,7 +2250,7 @@ The two that this window did **not** move, because they were already wrong when
 it opened — and neither file is in it:
 
 - §2's ADR 0071 entry gave the concurrent-use ceiling's three production
-  callers as `src/simulation/prisoners/action-system.ts:820`, `:1067` and
+  callers as `src/simulation/prisoners/action-system.ts:840`, `:1067` and
   `:1082`. **All three are doc-comment prose**, and that file is byte-identical
   at the oldest commit this container's history reaches and at `c57f5fa8`, so
   the numbers were false through every window any recent anchor examined. The
@@ -4000,7 +4008,7 @@ are corrected below with the old span kept beside the new one.
 **A third citation was wrong when it was WRITTEN, and it is a wrong file
 rather than a wrong line.** §2's ADR 0071 entry names the concurrent-use
 ceiling's *"three production callers"* as
-`src/simulation/prisoners/action-system.ts:820`, `:1067` and `:1082`. That file
+`src/simulation/prisoners/action-system.ts:840`, `:1067` and `:1082`. That file
 is a member of this window, so the three lines were opened: on `3f8c00b0` they
 are comment prose, and at `71617799` — the commit that wrote the citation —
 they were comment prose as well. The three callers that pass a capability were
@@ -6762,7 +6770,7 @@ already false when this window opened.** The one this window actually
 falsified is the smallest of them.
 
 **Falsified by this window:** §5's ADR 0009 entry cites
-`src/persistence/save-schema.ts:1198` for the comment naming `masterSeedSchema`
+`src/persistence/save-schema.ts:1199` for the comment naming `masterSeedSchema`
 *"from `services/challenges`"*. #571's V4 bounds-recovery work added sixteen
 lines above it, so it is **`:1214`** here. That is the fifth pair of numbers
 this one comment has been given and the sentence it supports has never
@@ -9400,7 +9408,7 @@ Measured at `05640b6` (v0.0.210):
   room (`src/simulation/objects/room-capacity.ts:176-201`, ADR 0028 decision 2)
   and reads no rectangle; the rule this amendment scopes is the
   *concurrent-use* ceiling, whose three production callers
-  (`src/simulation/prisoners/action-system.ts:1280`, `:1672`, `:1710` — **these
+  (`src/simulation/prisoners/action-system.ts:1300`, `:1672`, `:1710` — **these
   read `:1168`, `:1531` and `:1569` from the `ebdcb317` anchor until this one,
   and all three are kept beside the new values rather than deleted**) all pass a
   capability and all sit behind a `room-catalog-id` target, so only
@@ -13681,7 +13689,7 @@ all.
 **The two that do not, and why no anchor could have found them.**
 
 - **§2's ADR 0071 entry gave the concurrent-use ceiling's three production
-  callers as `src/simulation/prisoners/action-system.ts:820`, `:1067` and
+  callers as `src/simulation/prisoners/action-system.ts:840`, `:1067` and
   `:1082`.** All three are doc-comment prose. `git show` on the oldest commit
   this container's history reaches puts the same bytes at those lines as
   `c57f5fa8` does, so the file has not moved in any window a recent anchor
@@ -13844,7 +13852,7 @@ genuinely live citations outside the window. **All eight were opened and all
 eight hold** —
 `src/simulation/objects/room-capacity.ts:176-201` (the `residentCapacity`
 summation, still opening at `:176` and still closing at `:201`),
-`src/simulation/prisoners/action-system.ts:1168`, `:1531` and `:1569` (the
+`src/simulation/prisoners/action-system.ts:1188`, `:1531` and `:1569` (the
 three `RoomInstanceRegistry` methods, exactly where the previous pass moved
 them), `src/simulation/prisoners/release.ts:216`
 (`entityStore.destroy(entityId);`), `tests/unit/entity-generation-wrap.test.ts:124` (`const stale = store.spawn();`),
@@ -17535,7 +17543,7 @@ their authors. Full repository verification belongs to this PR's CI.
   this session's bookkeeping. Another tab's winning write is returned as a
   refusal at `:917`, without retry. The save-schema change adds a comment
   to the revision input; the master-seed boundary sentence remains at
-  `src/persistence/save-schema.ts:1380-1382` on both trees.
+  `src/persistence/save-schema.ts:1552-1554` on both trees.
 - **Two new persistence sentences overstate that implementation.**
   `docs/PERSISTENCE.md:2649-2650` says the manual refusal is reached only
   after retry, but the other-tab branch at `session-controller.ts:917`
@@ -17743,7 +17751,7 @@ experiment, SQL suite or historical measurement was re-run.
   `:2649-2650` and `:2654-2656` still read what the bullet quotes, `:917`
   still returns the other tab's refusal directly, `:965-974` still maps the
   dropped submission to a failed result, and
-  `src/persistence/save-schema.ts:1380-1382` still carries the master-seed
+  `src/persistence/save-schema.ts:1552-1554` still carries the master-seed
   boundary sentence. ADR 0031's discharged coordinate holds too:
   `src/ui/hud/build-panel.ts:740` is
   `export const BUILD_QUEUE_ROW_LIMIT = 64;`.
@@ -17970,7 +17978,7 @@ experiment, SQL suite or historical measurement was re-run.
   so it was wrong when written or stale from before — an off-by-one no delta
   method can reach, and the fourth instance this chain has recorded of the
   class.
-- **`src/persistence/save-schema.ts:1289` was 91 lines out before the window
+- **`src/persistence/save-schema.ts:1290` was 91 lines out before the window
   and is 155 out after it.** The `masterSeedSchema` *"from
   `services/challenges`"* comment §5's ADR 0009 bullet cites is at
   **`:1444`** here and was at **`:1380`** at `a29699ff` — which is the very
@@ -21802,6 +21810,60 @@ all. **So "exactly one" is exact about a measurable class and silent about the
 class this file's findings usually come from**, and the honest reading of it is
 that hand re-aiming got 81 of 83 anchors right in the part of the corpus a gate
 can check, with the unchecked part unmeasured in both directions.
+
+## 3. The 2026-09-26 pass: the previous anchor outran its own reading
+
+Read at `c8d25355` (**v0.0.795**). The previous live header named
+`42fc9649`, but the entry it certified explicitly measured
+`9e6361c9..dbd24ea3`: nine non-release first-parent landings. The actual
+`9e6361c9..42fc9649` window has twenty-two such landings. Moving the header
+without re-reading that intervening history made its stated window false on
+the day it was written. This pass therefore reads from `dbd24ea3`, not from
+the misleading header: **24 non-release first-parent landings, 269 commits,
+436 changed paths**, including 43 in `src/` and 40 under `docs/adr/`.
+The current `main` CI failed one of 5,726 tests on the resulting stale-anchor
+gate (run 36269080607); the automatic staging deploy then reported that it
+did not publish (run 36269260231). Those are consequences of the red gate,
+not evidence that the in-flight save change itself failed a simulation test.
+
+**The decision census did not flip.** The ADR index still has 117 numbered
+rows, 42 `Proposed` and 75 `Accepted`, with **Next free number: 0124**.
+The one changed index row rewrites description, not status. §2 still has nine
+live entries. This is a count of the current index and the named entries,
+not an inference from which PRs merged or from the new save format.
+
+**§4's deployment constraint remains unenforced in this repository.**
+`docs/DEPLOYMENT.md` and `.github/workflows/migrate-database.yml` are
+unchanged across the real review window. The latter still exposes only
+`workflow_dispatch`, with typed project-ref confirmation and an environment
+gate for applying migrations to production. The former still records the
+hosted staging integration as a dashboard configuration with no gate on
+every merge. The window *does* add
+`supabase/migrations/20260826090000_close_prison_id_existence_oracles.sql`
+(#355), so the previous entry's "migrations unchanged" observation cannot
+be carried forward. A repository diff cannot establish whether that SQL has
+already been applied to the hosted project or whether the integration's
+production-project constraint is enforced outside this repository.
+
+**§5's two stale-writer discrepancies still stand, at new coordinates.**
+`docs/PERSISTENCE.md:2857-2858` says the manual stale refusal is reached only
+after one retry, but `src/persistence/session/session-controller.ts:1032`
+returns another tab's conflict immediately. The document's departed-writer
+bullet at `:2862-2864` says there is no report, while `saveNow` at
+`session-controller.ts:1081-1086` returns a failed result for a manual save
+whose session changed. The new V6/V7 `simulation.inFlight` explanation moved
+the prose coordinates; it did not change either stale-writer rule. The source
+file's only edit in this window is the default-name argument of
+`createPrison`, above these branches. Historical coordinates below this
+entry remain dated records, not current evidence.
+
+**§6's status-reference gate remains in place.** Its test file is unchanged
+in this window; it still checks the corpus walk, parsed status claims and
+numbered ADR floor. The current index and ADR status census above agree, but
+the gate's known blind spots remain: claims without an ADR number, negations,
+dated research, and applied migrations as history. The re-reading above is
+targeted to the live claims and paths the window could falsify. It does not
+certify every historical `file:line` in this long archive.
 
 ## 3. The 2026-09-25 second pass: nine landings, art and Full HD work, no status flip
 
@@ -26329,7 +26391,7 @@ one direction.
   it corrected; this is the fourth consecutive anchor at which that has been
   demonstrated inside this file's own text, which stops being an anecdote and
   starts being the measured base rate. And **there are two mentions
-  now, not one**: `src/persistence/save-schema.ts:1289` names
+  now, not one**: `src/persistence/save-schema.ts:1290` names
   `masterSeedSchema` *"from `services/challenges`"* in a comment explaining why it
   does **not** import it (this read `:1164`, then `:1182` at `07add3e` after
   #486's refused-restore work added eighteen lines above it, then `:1198` after

@@ -54,6 +54,9 @@ function sameTile(a: TilePosition, b: TilePosition): boolean {
   return a.x === b.x && a.y === b.y;
 }
 
+/** Every path request this system makes is named under this prefix, which is what lets a restored session find the ones it no longer has a record of. */
+const RESPONSE_REQUEST_ID_PREFIX = 'incidents.respond.';
+
 /**
  * Who the prison just lost, as the departure itself reports them
  * ([#683](https://github.com/matmaxalez/lockstate/issues/683)).
@@ -512,6 +515,7 @@ export class IncidentResponseSystem implements SystemRegistration {
     // scheduled update, at a tick the kernel drove.
     if (this.orphanedClaimSweepPending) {
       this.orphanedClaimSweepPending = false;
+      this.abandonOrphanedRequests();
       this.releaseOrphanedClaims();
       this.redispatchInterruptedResponses(context.tick);
     }
@@ -519,6 +523,36 @@ export class IncidentResponseSystem implements SystemRegistration {
     for (const incident of this.incidents.openIncidents()) {
       if (incident.state === 'active') this.tryDispatch(incident, context.tick);
       else this.advanceResponse(incident, context.tick);
+    }
+  }
+
+  /**
+   * Gives back every path request under this system's prefix that no live
+   * response record names (issue #1373).
+   *
+   * A save carries the navigation queue since then, and it does not carry this
+   * system's records (ADR 0033), so a responder's request comes back with no
+   * record to collect it. Left alone it would be searched and then retained
+   * for ever -- the leak `NavigationSystem.abandonRequest` closes on a live
+   * teardown -- and worse, `requestSequence` restarts at zero on a restore, so
+   * the re-dispatch below could mint the same id and `requestRoute` would throw
+   * out of `Kernel.step()` on a duplicate. So it runs first, on the same
+   * update as the rest of the owed reconciliation, rather than inside
+   * `loadSnapshot`: a restore that rewrote the payload it had just been given
+   * would not be a fixed point, and `tests/integration/incident-response-restore.test.ts`
+   * requires that it is.
+   *
+   * Checked against the records rather than assumed empty, for the reason
+   * `releaseOrphanedClaims` gives.
+   */
+  private abandonOrphanedRequests(): void {
+    const live = new Set<string>();
+    for (const incidentId of [...this.responses.keys()].sort()) {
+      const byGuard = this.responses.get(incidentId)!.pathRequestIdsByGuard;
+      for (const guardId of [...byGuard.keys()].sort((a, b) => a - b)) live.add(byGuard.get(guardId)!);
+    }
+    for (const requestId of this.navigation.requestIdsWithPrefix(RESPONSE_REQUEST_ID_PREFIX)) {
+      if (!live.has(requestId)) this.navigation.abandonRequest(requestId);
     }
   }
 
@@ -608,7 +642,7 @@ export class IncidentResponseSystem implements SystemRegistration {
         continue;
       }
       this.requestSequence += 1;
-      const requestId = `incidents.respond.${incident.id}.${guardId}.${this.requestSequence}`;
+      const requestId = `${RESPONSE_REQUEST_ID_PREFIX}${incident.id}.${guardId}.${this.requestSequence}`;
       this.navigation.requestRoute(requestId, currentTile, destination, this.routeContextResolver(this.guards.getStaffRoleId(guardId)), 2, tick);
       record.pathRequestIdsByGuard.set(guardId, requestId);
     }

@@ -244,7 +244,7 @@ also the value a fresh `PrisonerRecordComponent` slot already holds by
 construction. `EncodedPrisonerComponents.solitarySanctionEndTick` is optional
 on decode (the same shape `intelligenceSequence` already uses,
 `src/simulation/runtime/session-systems.ts`), the save schema's field is
-`.optional()` (`src/persistence/save-schema.ts:379`), and
+`.optional()` (`src/persistence/save-schema.ts:380`), and
 `decodePrisonerComponents` only `.set()`s it when present — leaving the
 fresh, every-slot-zero default standing otherwise. **`SAVE_SCHEMA_VERSION`
 stays at 5.** ADR 0038 §1's own rule is the reason, restated for this field

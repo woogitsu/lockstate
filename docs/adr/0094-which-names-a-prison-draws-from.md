@@ -43,7 +43,7 @@ only ever carried — and `src/simulation/identity/actor-identity.ts` states the
 case at length, including the three facts about `EntityStore` that rule out
 deriving a name from an entity id. Names are minted from a dedicated
 `identity.actor-name` stream in canonical entity order and snapshotted into
-the save's `identity` field (`src/persistence/save-schema.ts:1396`).
+the save's `identity` field (`src/persistence/save-schema.ts:1568`).
 
 What was never built is the content. `src/simulation/identity/name-pool.ts`
 ships `PLACEHOLDER_ACTOR_NAME_POOL` — 32 given names by 32 family names — and
@@ -122,7 +122,7 @@ forbids `localeCompare` because *collation* varies with ICU data; nothing
 here collates.
 
 **"hashed into determinism state" — yes, and this one is load-bearing.** The
-save payload carries `identity` (`src/persistence/save-schema.ts:1396`, and
+save payload carries `identity` (`src/persistence/save-schema.ts:1568`, and
 `:1297`/`:1327` for the earlier envelopes) and its checksum is
 `computeSaveChecksum(payload)` (`:1765`), which is `deterministicStateHash`
 (`src/persistence/checksum.ts:10`) — FNV-1a over
@@ -214,7 +214,7 @@ built. What does not exist is the *choosing*, and it reaches the save.
 option is `masterSeed % pools.length`: nothing stored, the same prison always
 naming the same way. It fails on this repository's own facts, and it fails the
 same way deriving a *name* from an entity id failed. `masterSeed` is
-**optional** in the save schema (`src/persistence/save-schema.ts:1390`, added
+**optional** in the save schema (`src/persistence/save-schema.ts:1562`, added
 by #412 after V5 shipped), so a save written before that has no seed to
 re-derive from. Restoring one is safe for the existing population — stored
 names win, and `loadSnapshot` tolerates a `poolId` it disagrees with by

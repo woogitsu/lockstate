@@ -240,7 +240,7 @@ implementation hazardous, and it is what the consequences section is about.
 ### Look one module over: the mechanism a fix needs exists and has one caller
 
 `PrisonerOperationsRuntime.relocateResidentsOutOf`
-(`src/simulation/prisoners/prisoner-operations-runtime.ts:689`) moves every
+(`src/simulation/prisoners/prisoner-operations-runtime.ts:707`) moves every
 resident of named instances into other suitable accommodation. It is
 all-or-nothing — residents are visited in ascending entity id, each offered only
 the target their own classification group prefers, and the moment one has
@@ -394,7 +394,7 @@ replaced. Until 2026-08-30 the two paragraphs above read:
 > **A(i), the behaviour: a removal that drops a room's capacity below its
 > occupancy relocates the excess**, through
 > `PrisonerOperationsRuntime.relocateResidentsOutOf`
-> (`src/simulation/prisoners/prisoner-operations-runtime.ts:500`).
+> (`src/simulation/prisoners/prisoner-operations-runtime.ts:518`).
 >
 > This is the owner's ruling and it is the better game. […] The mechanism is
 > already written, already atomic, already deterministic, and already trusted by
@@ -1235,7 +1235,7 @@ because a list of test names in an ADR rots on the first rename.
   > that had already been written one section up and did not travel.
 - **No save format moves.** No field is added to `BuildOrder`, and the one field
   involved is already persisted and already validated
-  (`src/persistence/save-schema.ts:222`). A save written before this change
+  (`src/persistence/save-schema.ts:223`). A save written before this change
   restores into it unchanged: a completed order carrying an allocation simply
   never gives it back.
 - **A determinism fingerprint moves for any prison that takes a finished thing
