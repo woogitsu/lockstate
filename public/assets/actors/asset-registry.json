@@ -74,6 +74,14 @@
       ]
     },
     {
+      "assetId": "actor.prisoner.sleep",
+      "manifest": "actor.prisoner.sleep.atlas-manifests.json",
+      "clips": [
+        "idle",
+        "sleep"
+      ]
+    },
+    {
       "assetId": "actor.prisoner.treatment",
       "manifest": "actor.prisoner.treatment.atlas-manifests.json",
       "clips": [

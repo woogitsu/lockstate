@@ -35,6 +35,7 @@ const riotContractPath = path.join(repositoryRoot, 'assets', 'contracts', 'priso
 const assaultContractPath = path.join(repositoryRoot, 'assets', 'contracts', 'prisoner-assault-8-direction.contract.json');
 const treatmentContractPath = path.join(repositoryRoot, 'assets', 'contracts', 'prisoner-treatment-8-direction.contract.json');
 const showerContractPath = path.join(repositoryRoot, 'assets', 'contracts', 'prisoner-shower-8-direction.contract.json');
+const sleepContractPath = path.join(repositoryRoot, 'assets', 'contracts', 'prisoner-sleep-8-direction.contract.json');
 const PNG_SIGNATURE = '89504e470d0a1a0a';
 const LFS_POINTER_PREFIX = 'version https://git-lfs.github.com/spec/v1';
 
@@ -281,6 +282,9 @@ export async function validateAtlasDirectory(atlasDirectory, options = {}) {
   const showerContract = options.contract === undefined
     ? JSON.parse(await readFile(showerContractPath, 'utf8'))
     : contract;
+  const sleepContract = options.contract === undefined
+    ? JSON.parse(await readFile(sleepContractPath, 'utf8'))
+    : contract;
 
   const manifestFiles = options.manifestName
     ? [options.manifestName]
@@ -326,7 +330,7 @@ export async function validateAtlasDirectory(atlasDirectory, options = {}) {
     }
 
     for (const manifest of manifests) {
-      const authoredContract = manifest.assetId === 'actor.guard.response' ? responseContract : manifest.assetId === 'actor.guard.search' ? searchContract : manifest.assetId === 'actor.prisoner.riot' ? riotContract : manifest.assetId === 'actor.prisoner.assault' ? assaultContract : manifest.assetId === 'actor.prisoner.treatment' ? treatmentContract : manifest.assetId === 'actor.prisoner.shower' ? showerContract : contract;
+      const authoredContract = manifest.assetId === 'actor.guard.response' ? responseContract : manifest.assetId === 'actor.guard.search' ? searchContract : manifest.assetId === 'actor.prisoner.riot' ? riotContract : manifest.assetId === 'actor.prisoner.assault' ? assaultContract : manifest.assetId === 'actor.prisoner.treatment' ? treatmentContract : manifest.assetId === 'actor.prisoner.shower' ? showerContract : manifest.assetId === 'actor.prisoner.sleep' ? sleepContract : contract;
       await validateClipManifest(manifest, { atlasDirectory, contract: authoredContract, report, pivots });
       atlasCount += 1;
     }
