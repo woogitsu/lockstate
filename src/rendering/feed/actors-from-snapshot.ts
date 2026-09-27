@@ -115,6 +115,7 @@ export const PRISONER_ACTOR_ASSET_ID = 'actor.prisoner.base';
  */
 export const GUARD_ACTOR_ASSET_ID = 'actor.guard.base';
 const TREATMENT_ACTION_INDEX = actionIndexOf(INFIRMARY_TREATMENT_ACTION_ID);
+const SHOWER_ACTION_INDEX = actionIndexOf('action.shower');
 const PERFORMING_PHASE = ACTION_PHASES.indexOf('performing');
 
 export function actorsFromSnapshot(
@@ -142,7 +143,9 @@ export function actorsFromSnapshot(
       // collide with a guard at the same raw index -- see its own comment.
       id: composeRenderActorId(RENDER_ACTOR_POPULATION_PRISONER, packEntityId(index, store.generations[index]!)),
       assetId: components.actionIndex[index] === TREATMENT_ACTION_INDEX && components.actionPhase[index] === PERFORMING_PHASE
-        ? 'actor.prisoner.treatment' : PRISONER_ACTOR_ASSET_ID,
+        ? 'actor.prisoner.treatment'
+        : components.actionIndex[index] === SHOWER_ACTION_INDEX && components.actionPhase[index] === PERFORMING_PHASE
+          ? 'actor.prisoner.shower' : PRISONER_ACTOR_ASSET_ID,
       tileX: components.tileX[index]!,
       tileY: components.tileY[index]!,
       // Defaults, not simulation state -- see the note above.
@@ -150,6 +153,8 @@ export function actorsFromSnapshot(
       deltaY: 0,
       ...(components.actionIndex[index] === TREATMENT_ACTION_INDEX && components.actionPhase[index] === PERFORMING_PHASE
         ? { infirmaryTreatment: true } : {}),
+      ...(components.actionIndex[index] === SHOWER_ACTION_INDEX && components.actionPhase[index] === PERFORMING_PHASE
+        ? { showering: true } : {}),
     });
   }
 

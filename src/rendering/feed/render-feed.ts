@@ -34,6 +34,8 @@ export interface RenderActor {
   readonly openAssault?: boolean;
   /** This prisoner is performing the existing infirmary treatment action. */
   readonly infirmaryTreatment?: boolean;
+  /** This prisoner is performing the existing shower action. */
+  readonly showering?: boolean;
 }
 
 /**
