@@ -15,7 +15,7 @@ export interface RoomTemplatePlan {
   readonly objects: readonly { readonly buildableId: RoomTemplateObjectId; readonly x: number; readonly y: number }[];
 }
 
-export type RoomTemplateId = 'cell-basic' | 'cell-large' | 'shower-room';
+type RoomTemplateId = 'cell-basic' | 'cell-large' | 'shower-room';
 type RoomTemplateObjectId = 'bed-wooden' | 'toilet-brick' | 'shower-head-brick';
 
 interface TemplateDefinition {
