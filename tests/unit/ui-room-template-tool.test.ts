@@ -33,4 +33,20 @@ describe('room-template HUD tool contract', () => {
     expect(place).toHaveBeenCalledOnce();
     expect(place).toHaveBeenCalledWith({ templateId: 'cell-basic', origin: { x: 3, y: 4 } });
   });
+
+  it('keeps one placement in flight even when the player presses twice', async () => {
+    let finishPlacement: (() => void) | undefined;
+    const place = vi.fn(() => new Promise<void>((resolve) => { finishPlacement = resolve; }));
+    const port: RoomTemplatePlacementPort = {
+      preflight: vi.fn(async () => ({ ok: true as const })),
+      place,
+    };
+    const tool = new RoomTemplateTool(port);
+    const first = tool.placeAt({ x: 3, y: 4 });
+    expect(await tool.placeAt({ x: 3, y: 4 })).toEqual({ ok: false, reason: 'busy' });
+    await vi.waitFor(() => expect(place).toHaveBeenCalledOnce());
+    finishPlacement?.();
+    expect(await first).toEqual({ ok: true });
+    expect(place).toHaveBeenCalledOnce();
+  });
 });
