@@ -107,6 +107,10 @@ const FIXTURE: HarnessWorldFixture = {
   securityFloorMinTileY: 24,
   securityFloorMaxTileX: 26,
   securityFloorMaxTileY: 26,
+  utilityFloorMinTileX: 22,
+  utilityFloorMinTileY: 24,
+  utilityFloorMaxTileX: 23,
+  utilityFloorMaxTileY: 26,
   wallRowTileY: 2,
   doorTileX: 4,
   doorRowTileY: 2,
@@ -179,6 +183,7 @@ function buildFrame(): RenderFrame {
   const includeCommonRoomFloor = new URLSearchParams(window.location.search).has('commonRoomFloor');
   const includeClassroomFloor = new URLSearchParams(window.location.search).has('classroomFloor');
   const includeSecurityFloor = new URLSearchParams(window.location.search).has('securityFloor');
+  const includeUtilityFloor = new URLSearchParams(window.location.search).has('utilityFloor');
   const includeStaffFloor = new URLSearchParams(window.location.search).has('staffFloor');
   const includeBedVisual = new URLSearchParams(window.location.search).has('bedVisual');
   const includeStoveVisual = new URLSearchParams(window.location.search).has('stoveVisual');
@@ -214,7 +219,7 @@ function buildFrame(): RenderFrame {
       world.setLeftEdge({ x: tileCoordinate(FIXTURE.showerFloorMaxTileX + 1), y: tileCoordinate(tileY) }, WALL_EDGE_NUMERIC_ID);
     }
   }
-  if (includeInfirmaryFloor || includeCommonRoomFloor || includeClassroomFloor || includeSecurityFloor) {
+  if (includeInfirmaryFloor || includeCommonRoomFloor || includeClassroomFloor || includeSecurityFloor || includeUtilityFloor) {
     const roomChunk = { x: chunkCoordinate(2), y: chunkCoordinate(2) };
     world.load(roomChunk);
     world.setOwned(roomChunk, true);
@@ -348,6 +353,15 @@ function buildFrame(): RenderFrame {
     for (let tileY = FIXTURE.securityFloorMinTileY; tileY <= FIXTURE.securityFloorMaxTileY; tileY += 1) {
       for (let tileX = FIXTURE.securityFloorMinTileX; tileX <= FIXTURE.securityFloorMaxTileX; tileX += 1) {
         world.setZoning({ x: tileCoordinate(tileX), y: tileCoordinate(tileY) }, securityOffice.numericId);
+      }
+    }
+  }
+  if (includeUtilityFloor) {
+    const utilityRoom = defaultRoomContentRegistry.getById('room.utility-room');
+    if (utilityRoom === undefined) throw new Error('The utility room is missing from the catalog.');
+    for (let tileY = FIXTURE.utilityFloorMinTileY; tileY <= FIXTURE.utilityFloorMaxTileY; tileY += 1) {
+      for (let tileX = FIXTURE.utilityFloorMinTileX; tileX <= FIXTURE.utilityFloorMaxTileX; tileX += 1) {
+        world.setZoning({ x: tileCoordinate(tileX), y: tileCoordinate(tileY) }, utilityRoom.numericId);
       }
     }
   }
@@ -605,6 +619,13 @@ function buildFrame(): RenderFrame {
       tileY: 24,
       phase: 'built' as const,
     }] : []),
+    ...(includeUtilityFloor ? [{
+      id: 'utility-floor-panel',
+      definitionId: 'utility-panel-brick',
+      tileX: FIXTURE.utilityFloorMinTileX,
+      tileY: FIXTURE.utilityFloorMinTileY,
+      phase: 'built' as const,
+    }] : []),
   ];
 
   return {
@@ -632,6 +653,7 @@ const scene = new WorldScene({
     || new URLSearchParams(window.location.search).has('commonRoomFloor')
     || new URLSearchParams(window.location.search).has('classroomFloor')
     || new URLSearchParams(window.location.search).has('securityFloor')
+    || new URLSearchParams(window.location.search).has('utilityFloor')
     || new URLSearchParams(window.location.search).has('staffFloor')
     || new URLSearchParams(window.location.search).has('bedVisual')
     || new URLSearchParams(window.location.search).has('stoveVisual') ? {

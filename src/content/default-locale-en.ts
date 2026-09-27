@@ -801,6 +801,10 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
    * operability.
    */
   'hud.minimap.placeholder': 'No map is drawn here yet — pressing may move the camera',
+  // #1534: the historical explanation below included a page with no prison.
+  // That case now has its own inert, truthful sentence; the placeholder above
+  // applies only after a session exists and before its first map frame.
+  'hud.minimap.no-prison': 'Create or load a prison to see the map',
   /*
    * **Both minimap sentences, chosen under the 2026-09-04 release, verified
    * against the code rather than assumed, and recorded here per the release's
@@ -4113,8 +4117,16 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   // ---------------------------------------------------------------
   'save.panel.region': 'Prison saves',
   'save.panel.title': 'Prisons',
+  'save.manage.title': 'Saved prisons',
+  'save.manage.local': 'On this device',
+  'save.manage.cloud-unavailable': 'Cloud saves are unavailable in this version because the game has no cloud connection.',
 
   'save.action.create': 'New prison',
+  'save.empty-world.title': 'Start a prison',
+  'save.empty-world.description': 'Create a new prison or continue one saved in this browser.',
+  'save.empty-world.create': 'Create a prison',
+  'save.empty-world.choose': 'Load a saved prison',
+  'save.empty-world.restore': 'Restore a deleted prison',
   'save.default-prison-name': 'New Prison',
   'save.action.save': 'Save now',
   'save.action.export': 'Export',

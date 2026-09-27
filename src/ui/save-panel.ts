@@ -582,6 +582,10 @@ export function orderDeletedPrisonsForDisplay(deleted: readonly DeletedPrison[])
  */
 export class SavePanel {
   private readonly root: HTMLElement;
+  private emptyWorldPrompt: HTMLElement | undefined;
+  private emptyWorldChoose: HTMLButtonElement | undefined;
+  private emptyWorldRoute: 'load' | 'restore' | undefined;
+  private onSessionPresenceChange: ((active: boolean) => void) | undefined;
   private readonly statusElement: HTMLElement;
   private readonly listElement: HTMLElement;
   private readonly detailElement: HTMLElement;
@@ -592,6 +596,7 @@ export class SavePanel {
   private readonly gate: AsyncActionGate;
   /** Monotonic guard so an older in-flight `refresh` can never repaint over a newer one. */
   private refreshToken = 0;
+  private onInventoryChanged: (() => void) | undefined;
 
   private readonly localizer: SavePanelLocalizer;
 
@@ -728,6 +733,49 @@ export class SavePanel {
   public dispose(): void {
     this.gate.dispose();
     this.root.remove();
+    this.emptyWorldPrompt?.remove();
+  }
+
+  /** A central route into the same create and load controls as the save rail. */
+  public mountEmptyWorldPrompt(parent: HTMLElement, onSessionPresenceChange?: (active: boolean) => void): void {
+    if (this.emptyWorldPrompt !== undefined) return;
+    this.onSessionPresenceChange = onSessionPresenceChange;
+    const prompt = document.createElement('section');
+    prompt.className = 'empty-world-prompt';
+    prompt.hidden = true;
+    prompt.setAttribute('aria-labelledby', 'empty-world-prompt-title');
+
+    const heading = document.createElement('h2');
+    heading.id = 'empty-world-prompt-title';
+    heading.textContent = this.text(SAVE_PANEL_MESSAGE_KEY.emptyWorldTitle);
+    const description = document.createElement('p');
+    description.textContent = this.text(SAVE_PANEL_MESSAGE_KEY.emptyWorldDescription);
+    const actions = document.createElement('div');
+    actions.className = 'empty-world-prompt__actions';
+    actions.append(this.button(this.busy, SAVE_PANEL_MESSAGE_KEY.emptyWorldCreate, () => this.requestCreate()));
+
+    const choose = document.createElement('button');
+    choose.type = 'button';
+    choose.className = 'save-panel__button';
+    choose.textContent = this.text(SAVE_PANEL_MESSAGE_KEY.emptyWorldChoose);
+    choose.addEventListener('click', () => {
+      const target = this.listElement.querySelector<HTMLButtonElement>(this.emptyWorldRoute === 'restore'
+        ? '.save-panel__item[data-deleted-prison] button'
+        : '.save-panel__item[data-prison] button');
+      target?.scrollIntoView({ block: 'nearest' });
+      target?.focus();
+    });
+    choose.hidden = true;
+    actions.append(choose);
+    prompt.append(heading, description, actions);
+    parent.append(prompt);
+    this.emptyWorldPrompt = prompt;
+    this.emptyWorldChoose = choose;
+  }
+
+  /** Keep another view of the same local inventory in sync after a repaint. */
+  public setOnInventoryChanged(listener: () => void): void {
+    this.onInventoryChanged = listener;
   }
 
   public setStatus(status: SaveStatus): void {
@@ -759,6 +807,7 @@ export class SavePanel {
    */
   public async refresh(): Promise<void> {
     const token = ++this.refreshToken;
+    this.onSessionPresenceChange?.(this.controller.getActiveSession() !== undefined);
 
     let prisons: readonly PrisonSlotMetadata[];
     let deleted: readonly DeletedPrison[];
@@ -799,6 +848,14 @@ export class SavePanel {
     // validating. `retainDeleteArming` is the one rule for all three.
     this.armedDeletion = retainDeleteArming(this.armedDeletion, prisons.map((prison) => prison.prisonId));
     const activeId = this.controller.getActiveSession()?.prisonId;
+    if (this.emptyWorldPrompt !== undefined) this.emptyWorldPrompt.hidden = activeId !== undefined;
+    this.emptyWorldRoute = prisons.length > 0 ? 'load' : deleted.length > 0 ? 'restore' : undefined;
+    if (this.emptyWorldChoose !== undefined) {
+      this.emptyWorldChoose.hidden = this.emptyWorldRoute === undefined;
+      this.emptyWorldChoose.textContent = this.text(this.emptyWorldRoute === 'restore'
+        ? SAVE_PANEL_MESSAGE_KEY.emptyWorldRestore
+        : SAVE_PANEL_MESSAGE_KEY.emptyWorldChoose);
+    }
 
     // "No prisons yet" is false while a deleted one is still standing there to
     // be brought back, so the empty row is drawn only when the list is empty of
@@ -808,6 +865,7 @@ export class SavePanel {
       empty.className = 'save-panel__empty';
       empty.textContent = this.text(SAVE_PANEL_MESSAGE_KEY.listEmpty);
       this.listElement.append(empty);
+      this.onInventoryChanged?.();
       return;
     }
 
@@ -876,6 +934,7 @@ export class SavePanel {
     for (const gone of orderDeletedPrisonsForDisplay(deleted)) {
       this.listElement.append(this.deletedPrisonRow(gone));
     }
+    this.onInventoryChanged?.();
   }
 
   /**
