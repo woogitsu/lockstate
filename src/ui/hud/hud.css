@@ -6336,7 +6336,14 @@
     padding-left: calc(var(--space-3) - 2px);
   }
 
-  .hud-layout__separator--navigation { right: 0; }
+  .hud-layout__separator--navigation {
+    right: 0;
+    bottom: auto;
+    /* Keep the resize target beside the six tabs and their restore arrow.
+       A full-height focus outline otherwise crosses the bottom-left minimap.
+       The browser test measures both ends against the rendered controls. */
+    height: min(100%, calc((6 * 52px + 44px + 24px) * var(--ui-scale)));
+  }
 
   /* The minimap corner shares the middle row with the navigation and would sit
      under it. It moves right by exactly what the rail is taking. */
