@@ -4480,6 +4480,9 @@ test.describe('the assembled application', () => {
     // exists so a selector can say which section it means.
     const coordinates = page.locator('.hud-build__coordinates > .ui-section__header');
     if ((await coordinates.getAttribute('aria-expanded')) === 'false') await coordinates.click();
+    // Whole-square walls have no edge choice. Exercise the two edge controls
+    // with a door selected so this sweep still hit-tests every live control.
+    await page.locator('.hud-build__list [data-buildable="door-wooden"]').click();
     const expanded = await controlReachability(page);
     record(expanded);
     expect(
@@ -10938,19 +10941,15 @@ test.describe('the assembled application', () => {
     await coordinates.locator('> .ui-section__header').click();
     await expect(coordinates).toHaveAttribute('data-collapsed', 'false');
 
-    // The wall first, where the chooser is undisputed -- so a hidden chooser
-    // below is a fact about the door row rather than about the whole panel.
+    // Whole-square walls must not expose an edge choice. Doors still occupy
+    // an edge and therefore need that choice after switching catalogue rows.
     const chooser = page.locator('.hud-build .ui-choice');
     await page.locator('.hud-build__list [data-buildable="wall-brick"]').click();
     await expect(
       page.locator('.hud-build__list [data-buildable="wall-brick"][data-selected="true"]'),
       'the wall row did not become the selection',
     ).toHaveCount(1);
-    await expect(chooser).toBeVisible();
-
-    // The retained edge the defect leaked. Chosen on the wall, where the
-    // control is undisputed.
-    await chooser.locator('[data-choice="west"]').click();
+    await expect(chooser).toBeHidden();
 
     // And the row this issue is about. A door is edge geometry -- it writes
     // `DOOR_EDGE_NUMERIC_ID` onto a tile edge -- so the chooser must survive
@@ -10962,6 +10961,7 @@ test.describe('the assembled application', () => {
       'the door row did not become the selection, so the chooser below is about something else',
     ).toHaveCount(1);
     await expect(chooser).toBeVisible();
+    await chooser.locator('[data-choice="west"]').click();
     await expect(chooser.locator('[data-choice="west"]')).toHaveAttribute('aria-checked', 'true');
   });
 
