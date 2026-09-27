@@ -25,6 +25,7 @@ import pipeline_common  # noqa: E402  (Blender does not add the script directory
 DIRECTIONS = ("south", "southWest", "west", "northWest", "north", "northEast", "east", "southEast")
 CLIPS = {"idle": (1, 1), "walk": (8, 10)}
 RESPONSE_CLIPS = {"idle": (1, 1), "respond": (4, 6)}
+SEARCH_CLIPS = {"idle": (1, 1), "search": (4, 6)}
 FRAME_SIZE = (256, 384)
 FOOT_PIVOT = (128, 352)
 
@@ -48,7 +49,7 @@ def main():
     if not args.asset_id.replace(".", "").replace("-", "").isalnum() or not args.asset_id[0].islower():
         raise ValueError("asset-id must be lower-case dot/dash-separated identifier")
     scene = bpy.context.scene
-    clips = RESPONSE_CLIPS if args.asset_id == "actor.guard.response" else CLIPS
+    clips = RESPONSE_CLIPS if args.asset_id == "actor.guard.response" else SEARCH_CLIPS if args.asset_id == "actor.guard.search" else CLIPS
     target = bpy.data.objects.get(args.target)
     if target is None:
         raise ValueError(f"target '{args.target}' was not found")

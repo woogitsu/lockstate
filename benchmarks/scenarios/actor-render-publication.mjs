@@ -409,8 +409,10 @@ const SMOKE_BOUNDS = Object.freeze({
    *
    * 4 -> 5 with #1507's actor action word. The record and header widths stay
    * unchanged, so the byte bounds above still apply while the version advances.
+   * 5 -> 6 with #1512's search action. This changes the meaning of the action
+   * word without changing the width measured by the byte bounds.
    */
-  decodedLayoutVersion: { equals: 5 },
+  decodedLayoutVersion: { equals: 6 },
   decodedKeyframeFlag: { equals: 1 },
   renderActorCount: { equals: 500 },
 });
@@ -446,7 +448,7 @@ const FULL_BOUNDS = Object.freeze({
   decodedRemovedCount: { equals: 0 },
   /* Zero for the smoke profile's reason: this fixture zones no rooms either. */
   decodedRoomConditionCount: { equals: 0 },
-  decodedLayoutVersion: { equals: 5 },
+  decodedLayoutVersion: { equals: 6 },
   decodedKeyframeFlag: { equals: 1 },
   renderActorCount: { equals: 5_000 },
 });

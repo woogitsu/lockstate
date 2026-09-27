@@ -35,6 +35,18 @@ eight-frame 2080×3104 sheet, limiting decoded texture growth at startup.
 The Full HD comparison with a resting guard at default zoom is
 `assets/rendered/evidence/guard-incident-response-default-zoom-1920x1080.png`.
 
+`actor.guard.search` is the matching inspection variant for a guard claimed by
+`SearchSystem`. Its four-frame `search` clip extends and sweeps a compact
+inspection torch while the other arm stays at rest. The silver torch body
+separates from the navy sleeve without drawing a mechanical vision cone. The wider pose remains
+visible at default game zoom. The guard keeps the same uniform silhouette, camera, pivot and eight
+facings as the base model. The worker marks the actual search claimant in
+render-actors layout 6; the renderer selects this atlas only while that claim
+is live. The Full HD world preview is
+`assets/rendered/evidence/guard-search-1920x1080.png`; the comparison against a
+resting guard at default zoom is
+`assets/rendered/evidence/guard-search-default-zoom-1920x1080.png`.
+
 ## Blender source scene
 
 Each `.blend` source must contain:
@@ -44,7 +56,7 @@ Each `.blend` source must contain:
 - a parent empty named `SpriteRoot`; the character's authored forward direction
   at rotation zero is `south`;
 - timeline frames 1–8 for the base walk cycle (the first frame is also idle);
-  the guard response variant renders frames 1–4 as a looping radio gesture;
+  the guard response and search variants render frames 1–4 as looping duty gestures;
 - world lighting and the actor model/rig, with no opaque backdrop.
 
 `export-directional-sprites.py` preserves the authored camera and rotates

@@ -30,6 +30,8 @@ import {
   RENDER_ACTOR_POPULATION_PRISONER,
 } from '../../src/simulation/protocol/render-actors-payload';
 import { readRenderActorsPayload, type ReadRenderActorRecord } from '../helpers/render-actors-reader';
+import { decodeRenderActorsPayload } from '../../src/simulation/protocol/render-actors-payload';
+import { actorsFromDelta } from '../../src/rendering/feed/actors-from-delta';
 import { expectOk } from '../helpers/expect-ok';
 
 /**
@@ -151,7 +153,7 @@ function scenarioActors(runtime: SimulationRuntime): readonly ReadRenderActorRec
     runtime.securityGuards.locomotion.read(guardId, tile.x, tile.y, reading);
     actors.push({
       entityId: guardId,
-      packedFields: packRenderActorFields(RENDER_ACTOR_POPULATION_GUARD, reading.headingX, reading.headingY),
+      packedFields: packRenderActorFields(RENDER_ACTOR_POPULATION_GUARD, reading.headingX, reading.headingY, runtime.incidentResponseSystem.claimedGuardIds().includes(guardId), runtime.searchSystem.claimedGuardIds().includes(guardId)),
       subX: reading.subX,
       subY: reading.subY,
       velocitySubX: reading.velocitySubX * TICKS_PER_WALL_SECOND,
@@ -186,7 +188,13 @@ describe('the worker publishes a render delta', () => {
     // Against the scenario's own store rather than against a list written here
     // -- the payload has to describe a simulation, and the simulation is the
     // only honest authority for what it holds.
-    expect(read.records).toEqual(scenarioActors(scenario));
+    // The restored worker may claim a guard for a search during its first
+    // step; this assertion is about positions, not the live duty flag.
+    expect(read.records.map((record) => ({ ...record, packedFields: record.packedFields & ~(1 << 13) })))
+      .toEqual(scenarioActors(scenario).map((record) => ({ ...record, packedFields: record.packedFields & ~(1 << 13) })));
+    expect(read.records.some((record) => (record.packedFields & (1 << 13)) !== 0)).toBe(true);
+    const drawnActors = actorsFromDelta(decodeRenderActorsPayload(delta!.payload.delta.data as ArrayBuffer));
+    expect(drawnActors.filter((actor) => actor.assetId === 'actor.guard.search')).toHaveLength(1);
 
     // And a literal, so the comparison above cannot be satisfied by two empty
     // sets or by the same wrong tile read twice. `buildDeterminismScenario`
@@ -237,7 +245,7 @@ describe('the worker publishes a render delta', () => {
     // 4 since ADR 0097's per-room condition block joined this payload; the
     // envelope's own `SIMULATION_PROTOCOL_VERSION` is untouched by it, which
     // is the property versioning the read model inside the payload buys.
-    expect(delta!.payload.delta.schemaVersion).toBe(5);
+    expect(delta!.payload.delta.schemaVersion).toBe(6);
     if (delta!.payload.delta.transport !== 'array-buffer') throw new Error('unreachable');
     expect(delta!.payload.delta.contentType).toBe('application/x-lockstate-render-actors');
     expect(delta!.payload.delta.byteLength).toBe(delta!.payload.delta.data.byteLength);

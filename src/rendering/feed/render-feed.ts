@@ -26,6 +26,8 @@ export interface RenderActor {
   readonly facing?: AtlasDirection;
   /** A live incident has claimed this guard for response duty. */
   readonly incidentResponse?: boolean;
+  /** A live contraband search has claimed this guard. */
+  readonly contrabandSearch?: boolean;
 }
 
 /**
