@@ -707,6 +707,7 @@ function pruneUndefined<T>(value: T): T {
 /** Reads every persisted subsystem's own snapshot contract. Never touches renderer state, and never mutates the runtime. */
 export function captureSessionSystems(runtime: SimulationRuntime): EncodedSessionSystems {
   const coldState = runtime.prisoners.coldState.getSnapshot();
+  const roomTemplates = runtime.roomTemplates.snapshot();
 
   return pruneUndefined({
     // Emitted unconditionally by a live capture: every session has exactly the
@@ -788,7 +789,7 @@ export function captureSessionSystems(runtime: SimulationRuntime): EncodedSessio
       },
       search: runtime.searchSystem.getInFlightSnapshot(),
     },
-    roomTemplates: runtime.roomTemplates.snapshot(),
+    ...(roomTemplates.pending.length === 0 ? {} : { roomTemplates }),
     incidents: {
       log: runtime.incidents.getSnapshot(),
       sectorRisk: runtime.sectorRisk.getSnapshot(),
