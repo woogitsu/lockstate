@@ -16,6 +16,7 @@ import pipeline_common  # noqa: E402  (Blender does not add the script directory
 
 ACTOR_IDS = (
     "actor.prisoner.base",
+    "actor.prisoner.shower",
     "actor.guard.base",
     "actor.guard.response",
     "actor.guard.search",
@@ -213,6 +214,14 @@ def animate_treatment_arm(item, side):
         item.keyframe_insert(data_path="rotation_euler", index=0, frame=frame)
 
 
+def animate_shower_arm(item, side):
+    """Bring both hands up to the head with a small alternating washing motion."""
+    item.rotation_euler.y = math.radians(160 * side)
+    for frame, degrees in enumerate((-12, -24, -18, -6, -12), start=1):
+        item.rotation_euler.x = math.radians(degrees)
+        item.keyframe_insert(data_path="rotation_euler", index=0, frame=frame)
+
+
 def face(object_, target):
     object_.rotation_euler = (target - object_.location).to_track_quat("-Z", "Y").to_euler()
 
@@ -225,6 +234,7 @@ def build_detailed_actor(root, asset_id):
     riot = asset_id == "actor.prisoner.riot"
     assault = asset_id == "actor.prisoner.assault"
     treatment = asset_id == "actor.prisoner.treatment"
+    shower = asset_id == "actor.prisoner.shower"
     medic = asset_id == "actor.medic.base"
     cook = asset_id == "actor.cook.base"
     staff = asset_id == "actor.staff.base"
@@ -354,7 +364,7 @@ def build_detailed_actor(root, asset_id):
              (0.017, 0.16, 0.045), staff_canvas, root, 0.004)
         cube("Staff folded work cloth", (0.405, -0.08, 1.50),
              (0.038, 0.075, 0.20), undershirt, root, 0.008)
-    if asset_id in ("actor.prisoner.base", "actor.prisoner.riot", "actor.prisoner.assault"):
+    if asset_id in ("actor.prisoner.base", "actor.prisoner.riot", "actor.prisoner.assault", "actor.prisoner.shower"):
         # The existing pocket/button detail disappears at the 64 px game scale.
         # A pale ID patch carries the identity at game scale without changing
         # the shared actor rig or relying on tiny button details.
@@ -434,6 +444,8 @@ def build_detailed_actor(root, asset_id):
             animate_assault_arm(arm, side)
         elif treatment:
             animate_treatment_arm(arm, side)
+        elif shower:
+            animate_shower_arm(arm, side)
         else:
             animate(arm, 1 if side == -1 else -1)
 
@@ -443,7 +455,7 @@ def build_detailed_actor(root, asset_id):
         cube(f"Trouser seam.{side}", (side * 0.215, -0.19, 0.95), (0.014, 0.01, 0.48), dark_seam, leg, 0.002)
         sphere(f"Work shoe upper.{side}", (side * 0.215, -0.12, 0.205), (0.19, 0.27, 0.16), shoe, leg)
         cube(f"Rubber sole.{side}", (side * 0.215, -0.12, 0.085), (0.19, 0.29, 0.06), shoe, leg, 0.038)
-        if not response and not search and not riot and not assault and not treatment:
+        if not response and not search and not riot and not assault and not treatment and not shower:
             animate(leg, -1 if side == -1 else 1)
 
 

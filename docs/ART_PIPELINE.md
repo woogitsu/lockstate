@@ -64,6 +64,16 @@ existing open-assault membership from `IncidentLog`; closure restores both
 participants to the base atlas. The Full HD preview with a calm bystander is
 `assets/rendered/evidence/prisoner-assault-1920x1080.png`.
 
+`actor.prisoner.shower` draws the existing `action.shower` only during its
+`performing` phase. Both hands move to the head in four `wash` frames, while
+the orange uniform, camera, eight facings and foot pivot stay consistent with
+the base prisoner. Travelling and completed actions use the calm or walking
+atlas. The authored contract is
+[`prisoner-shower-8-direction.contract.json`](../assets/contracts/prisoner-shower-8-direction.contract.json).
+Full HD comparisons beside a calm prisoner in a furnished Shower Room are
+`assets/rendered/evidence/prisoner-shower-default-zoom-1920x1080.png` and
+`assets/rendered/evidence/prisoner-shower-zoom3-1920x1080.png`.
+
 ## Blender source scene
 
 Each `.blend` source must contain:

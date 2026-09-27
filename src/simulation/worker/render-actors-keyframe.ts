@@ -11,6 +11,7 @@ import type { RoomConditionRow } from './room-conditions';
 import type { IncidentLog } from '../incidents/incident';
 
 const TREATMENT_ACTION_INDEX = actionIndexOf(INFIRMARY_TREATMENT_ACTION_ID);
+const SHOWER_ACTION_INDEX = actionIndexOf('action.shower');
 const PERFORMING_PHASE = ACTION_PHASES.indexOf('performing');
 
 /** Project the existing open-incident ledger once per delta, never per prisoner. */
@@ -228,7 +229,8 @@ export function encodeRenderActorsKeyframe(
     writer.writeRecord(
       entityStore.getIdByIndex(index),
       packRenderActorFields(RENDER_ACTOR_POPULATION_PRISONER, reading.headingX, reading.headingY, false, false, riotParticipants?.isOpenRiotParticipant(entityStore.getIdByIndex(index)) ?? false, assaultParticipants?.has(entityStore.getIdByIndex(index)) ?? false,
-        source.currentAction?.actionIndex[index] === TREATMENT_ACTION_INDEX && source.currentAction?.phase[index] === PERFORMING_PHASE),
+        source.currentAction?.actionIndex[index] === TREATMENT_ACTION_INDEX && source.currentAction?.phase[index] === PERFORMING_PHASE,
+        source.currentAction?.actionIndex[index] === SHOWER_ACTION_INDEX && source.currentAction?.phase[index] === PERFORMING_PHASE),
       reading.subX,
       reading.subY,
       // Sub-tile units a *tick* become sub-tile units a wall-clock second
