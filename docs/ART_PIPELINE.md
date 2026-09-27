@@ -495,6 +495,13 @@ scene now shapes these as low, rounded cloth folds under the same glazing, as
 in the accepted overhead reference. The furnished Full HD Laundry capture
 compares the same machine before and after; its footprint and rules do not change.
 
+**2026-09-27 utility panel revision:** the buildable 1×1 control panel keeps
+its six breakers, two status lenses and guarded red switch. Its four tiny
+yellow chips read as separate dots at normal game zoom; a continuous yellow
+band with recessed dark diagonal cuts now reads as hazard paint. Full HD
+WorldScene captures compare the same built Utility Room at zoom 1 and 3.
+The utility capability and room rules are unchanged.
+
 **2026-09-23 addition, without rewriting the earlier comparison:** the new
 `furniture.dining.table.wooden` model no longer uses only flat materials. The
 owner's Prison Architect references and a generated four-view concept informed

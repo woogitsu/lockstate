@@ -86,6 +86,8 @@ A full-map A* per actor per frame is forbidden. The region/portal graph, door/pe
 ### Saves
 Local-first persistence uses IndexedDB, and it is the only persistence the running app reaches: nothing under `src/` reads `VITE_SUPABASE_*` or imports `src/persistence/cloud/`, so the cloud client, sync engine and their SQL are a specified contract with no caller yet — see [CLOUD_SAVE.md](./CLOUD_SAVE.md). Cloud persistence is specified as Supabase Auth + Postgres metadata; moving large payloads into Supabase Storage is a candidate, not a decision, and no payload is compressed anywhere in `src/`. The versioned save envelope, its runtime schema, checksum and forward-migration framework are defined in [PERSISTENCE.md](./PERSISTENCE.md) independently of which storage backend consumes it.
 
+Zarządzaj shows the local IndexedDB save inventory through `src/ui/account/manage-saves-panel.ts` and `save-list-projection.ts`; the existing quick-save panel remains available on every tab. The Manage panel can load, confirm deletion and restore a local prison. Its cloud line reports unavailable, since no cloud client or sign-in flow is mounted.
+
 Every save contains at minimum:
 - save schema version,
 - game build/version,

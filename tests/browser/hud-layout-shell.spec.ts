@@ -114,6 +114,22 @@ async function open(page: Page, viewport: { width: number; height: number }): Pr
 }
 
 test.describe('the HUD layout shell', () => {
+  test('the focused navigation resize guide ends before the Full HD minimap', async ({ page }) => {
+    await open(page, { width: 1920, height: 1080 });
+    const separator = page.locator('.hud-layout__separator--navigation');
+    const tabs = page.locator('.hud-tabs__inner');
+    const corner = page.locator('.hud__corner');
+    await separator.focus();
+    const separatorBox = await separator.boundingBox();
+    const tabsBox = await tabs.boundingBox();
+    const cornerBox = await corner.boundingBox();
+    expect(separatorBox).not.toBeNull();
+    expect(tabsBox).not.toBeNull();
+    expect(cornerBox).not.toBeNull();
+    expect(separatorBox!.y + separatorBox!.height).toBeGreaterThanOrEqual(tabsBox!.y + tabsBox!.height);
+    expect(separatorBox!.y + separatorBox!.height).toBeLessThan(cornerBox!.y);
+  });
+
   test('opens at exactly the layout this repository drew before it existed', async ({ page }) => {
     await open(page, DESKTOP);
 
