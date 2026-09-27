@@ -10,6 +10,7 @@ import { procurableMaterial } from '../../src/content/procurement-catalog';
 import {
   TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
   TREASURY_STARTING_BALANCE_MINOR_UNITS,
+  INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS,
 } from '../../src/simulation/economy';
 import { SIMULATION_PROTOCOL_VERSION, type MainToWorkerMessage } from '../../src/simulation/protocol/types';
 import { expectOk } from '../helpers/expect-ok';
@@ -740,7 +741,26 @@ describe('a command submitted against a paused clock', () => {
    * the identical path with a different reason id.
    */
   test('publishes the refusal when the treasury cannot cover a purchase dispatched during the pause', () => {
-    const { port, machine } = start();
+    // Restore a prison that has spent part of its opening grant. Two orders
+    // can then fit the physical gate while only the first fits the treasury.
+    const seed = start();
+    seed.machine.handleMessage({
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: 'balance-seed',
+      kind: 'simulation/request-snapshot',
+      payload: { reason: 'manual-save' },
+    });
+    const snapshot = structuredClone(seed.port.messages.at(-1)?.payload.snapshot);
+    snapshot.data.simulation.economy.treasury.balanceMinorUnits = 20_000;
+    const port = new MockPort();
+    const machine = new SimulationWorkerStateMachine(port, 'test-build', () => 0);
+    machine.handleMessage({
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: 'restore-balance',
+      kind: 'simulation/initialize',
+      payload: { sessionId: 'paused-financial-boundary', source: { kind: 'snapshot', snapshot } },
+    });
+    expect(machine.state).toBe('paused');
     const unitPrice = procurableMaterial('item.brick')?.unitPriceMinorUnits;
     if (unitPrice === undefined) return expect.unreachable('item.brick is not for sale, so no purchase can be driven');
     /*
@@ -756,7 +776,7 @@ describe('a command submitted against a paused clock', () => {
      * property the case needs and they are unchanged; only what they are
      * measured against moved.
      */
-    const spendable = TREASURY_STARTING_BALANCE_MINOR_UNITS - TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS;
+    const spendable = 20_000 - INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS;
     const quantity = Math.floor(spendable / unitPrice / 2) + 1;
     expect(quantity * unitPrice).toBeLessThanOrEqual(spendable);
     expect(2 * quantity * unitPrice).toBeGreaterThan(spendable);
@@ -784,7 +804,7 @@ describe('a command submitted against a paused clock', () => {
     const afterFirst = port.messages.filter((message) => message.kind === 'simulation/status-counts').at(-1);
     // The first one was paid for, during the pause, and the readout says so.
     expect(afterFirst.payload.counts.treasuryMinorUnits).toBe(
-      TREASURY_STARTING_BALANCE_MINOR_UNITS - quantity * unitPrice,
+      20_000 - quantity * unitPrice,
     );
     expect(afterFirst.payload.refusal).toBeUndefined();
 
@@ -793,7 +813,7 @@ describe('a command submitted against a paused clock', () => {
     // The second could not be, so `ProcurementSystem` refused it and the
     // refusal rode out on the same channel the balance did.
     expect(afterSecond.payload.counts.treasuryMinorUnits).toBe(
-      TREASURY_STARTING_BALANCE_MINOR_UNITS - quantity * unitPrice,
+      20_000 - quantity * unitPrice,
     );
     expect(afterSecond.payload.refusal?.reason).toBe('purchase.insufficient-funds');
     // The refusal is what opened the gate: an unchanged balance would have
