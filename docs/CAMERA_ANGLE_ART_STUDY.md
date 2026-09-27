@@ -1,5 +1,10 @@
 # Canonical cell and corridor angle study
 
+The [seam and cutaway follow-up](CAMERA_SEAM_CUTAWAY_REPAIR.md) preserves
+these original nine renders in `baseline/`, seals the corner joints, and tests
+a west-wall cutaway at the low western angle. Findings below describe the
+original unmodified study.
+
 This is a controlled Blender image grid for choosing how the adjustable world
 view should be rendered. It is not a Phaser implementation or a new gameplay
 room. The [wall module kit](WALL_CAMERA_ART_PLAN.md) supplies the authored
