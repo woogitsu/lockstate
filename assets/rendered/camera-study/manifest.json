@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "source": "interior-cell-angle-study.blend",
   "wallSource": "wall.interior.cutaway.blend",
-  "wallSourceSha256": "52f07baf44d18c19796b8c95d42690e421a8e49ef78481d6fc94ad96c4e1a9ef",
+  "wallSourceSha256": "9712dc725b92c0d65056e5874fbad4ce143497fd61fe012eba919d218a2bd0b8",
   "lighting": {
     "type": "one area light",
     "location": [
@@ -190,7 +190,8 @@
       "yawDegrees": -45,
       "elevationDegrees": 25,
       "image": "cell-yaw-45-elev25.png",
-      "sha256": "2b066215ecbde69d066979ea267faf6e04783e1c301744fa789e0fccc03ec0c6",
+      "sha256": "f85577f0a5d8feda7ddf2f0f0f0ef18be754117f9cfed8cda7fdb502f23a0215",
+      "orangePixelCount": 205,
       "cameraLocation": [
         -8.485281,
         -7.485281,
@@ -201,7 +202,8 @@
       "yawDegrees": -45,
       "elevationDegrees": 45,
       "image": "cell-yaw-45-elev45.png",
-      "sha256": "d5d0bb1f98f489182dd56d1520dfd3cb847500fb826965fc65ecadfb26279716",
+      "sha256": "50a0f83184d444d6814cb5589c730c1517305a24623c5430bd77cc208f9954ab",
+      "orangePixelCount": 1149,
       "cameraLocation": [
         -8.485281,
         -7.485281,
@@ -212,7 +214,8 @@
       "yawDegrees": -45,
       "elevationDegrees": 65,
       "image": "cell-yaw-45-elev65.png",
-      "sha256": "3fc869b8f0a427a6c6df9741ab89866eaa71ad1f2721a68a1063cc29747b98ca",
+      "sha256": "90e1408df230cfb7386f7eedbd3343055d848aa33407d4af9bf062bf21ea1c76",
+      "orangePixelCount": 1598,
       "cameraLocation": [
         -8.485281,
         -7.485281,
@@ -223,7 +226,8 @@
       "yawDegrees": 0,
       "elevationDegrees": 25,
       "image": "cell-yaw+00-elev25.png",
-      "sha256": "7ec70cf57435888cd7190a283010c444f58e88496164facb4c03ffb3a8a623f5",
+      "sha256": "a2cb76ba8281707030a2572683d6d022dcea50e6a93562adc304f21e3ae9752e",
+      "orangePixelCount": 2527,
       "cameraLocation": [
         0.0,
         -11.0,
@@ -234,7 +238,8 @@
       "yawDegrees": 0,
       "elevationDegrees": 45,
       "image": "cell-yaw+00-elev45.png",
-      "sha256": "e9199b9a383d09de675c6018e2a3791cf2058b4f46f00991fb1e91e0df2cca23",
+      "sha256": "2fca3181ee620e2d925ef6a73fef217dcc14a3c3c1b020f74b4bbfdf4a0489d0",
+      "orangePixelCount": 2253,
       "cameraLocation": [
         0.0,
         -11.0,
@@ -245,7 +250,8 @@
       "yawDegrees": 0,
       "elevationDegrees": 65,
       "image": "cell-yaw+00-elev65.png",
-      "sha256": "f5f7faf41f8fbcc0200d0a7725251a6824a19a910f688400a1eebfc76cee30a9",
+      "sha256": "1258ee28179bf3a9f55b4b93c9a32925dab2dda47e24226695a3bc23714b5251",
+      "orangePixelCount": 1353,
       "cameraLocation": [
         0.0,
         -11.0,
@@ -256,7 +262,8 @@
       "yawDegrees": 45,
       "elevationDegrees": 25,
       "image": "cell-yaw+45-elev25.png",
-      "sha256": "b0c6f05988c8fd9b695757bffade33e5cd34033221f1cab8f2917d0f255e6797",
+      "sha256": "a7cd6152dd9ae594bc366e3618a7588e5c32e9aa5016ccf325bcfdf44ba52072",
+      "orangePixelCount": 2082,
       "cameraLocation": [
         8.485281,
         -7.485281,
@@ -267,7 +274,8 @@
       "yawDegrees": 45,
       "elevationDegrees": 45,
       "image": "cell-yaw+45-elev45.png",
-      "sha256": "57536c23d3440186254b63ce9e375b71307f43f4d315057bb02cd6acfccf6e8e",
+      "sha256": "6febe9f8833dfd5de7d1af83f1bdccd566eb89e55d7197b3ecc13565bcbf113b",
+      "orangePixelCount": 1661,
       "cameraLocation": [
         8.485281,
         -7.485281,
@@ -278,12 +286,43 @@
       "yawDegrees": 45,
       "elevationDegrees": 65,
       "image": "cell-yaw+45-elev65.png",
-      "sha256": "e3e74c74727fa3dfb3519d4d96042ffb193b07ceec1a2b15f67413e123936149",
+      "sha256": "6c42139913f7987d5ba985014f9e459a3461fc2e9fd89906767ba2695e4fdeec",
+      "orangePixelCount": 1006,
       "cameraLocation": [
         8.485281,
         -7.485281,
         26.734083
       ]
     }
-  ]
+  ],
+  "cutawayCandidate": {
+    "selectionRule": {
+      "yawDegreesAtMost": -30,
+      "elevationDegreesAtMost": 30
+    },
+    "referenceImage": "cell-yaw-45-elev25.png",
+    "image": "cell-yaw-45-elev25-west-cutaway.png",
+    "sha256": "93ab55c38c7359259f69c7c3a98e8ab53c766c36d0584bcf7092e249981ea4a5",
+    "orangePixelCount": 3554,
+    "changedInstances": [
+      {
+        "name": "west wall 1",
+        "assetId": "wall.interior.module.cutaway"
+      },
+      {
+        "name": "west wall 2",
+        "assetId": "wall.interior.module.cutaway"
+      },
+      {
+        "name": "west wall 3",
+        "assetId": "wall.interior.module.cutaway"
+      },
+      {
+        "name": "north-west corner",
+        "assetId": "wall.interior.corner.inner.cutaway"
+      }
+    ],
+    "yawDegrees": -45,
+    "elevationDegrees": 25
+  }
 }

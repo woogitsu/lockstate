@@ -114,19 +114,20 @@ def build_shape(collection, shape, height, surfaces):
             box(collection, f"vertical panel joint {x}", (x, -0.128, height / 2),
                 (0.009, 0.005, max(height - 0.25, 0.12)), seam)
     elif shape == "corner.inner":
-        wall_run(collection, "inner east arm", (0.06, -0.38), 0.88, "x", height,
-                 plaster, coping, skirting, highlight)
-        wall_run(collection, "inner south arm", (-0.38, 0.06), 0.88, "y", height,
-                 plaster, coping, skirting, highlight)
-        box(collection, "inner corner tie", (-0.38, -0.38, height / 2),
-            (0.25, 0.25, height), plaster)
+        # Both arms are centered on the same tile-edge axes as straight runs.
+        # They terminate at +0.5, exactly where a neighboring straight module
+        # begins. The previous offset arms (+/-0.38) left visible dark gaps.
+        outline = [(-0.125, -0.125), (0.5, -0.125), (0.5, 0.125),
+                   (0.125, 0.125), (0.125, 0.5), (-0.125, 0.5)]
+        polygon_prism(collection, "inner corner skirting", outline, 0, 0.24, skirting)
+        polygon_prism(collection, "inner corner plaster", outline, 0.24, height, plaster)
+        polygon_prism(collection, "inner corner coping", outline, height, height + 0.08, coping)
     elif shape == "corner.outer":
-        wall_run(collection, "outer west arm", (-0.06, 0.38), 0.88, "x", height,
-                 plaster, coping, skirting, highlight)
-        wall_run(collection, "outer north arm", (0.38, -0.06), 0.88, "y", height,
-                 plaster, coping, skirting, highlight)
-        box(collection, "outer corner tie", (0.38, 0.38, height / 2),
-            (0.25, 0.25, height), plaster)
+        outline = [(-0.5, -0.125), (-0.125, -0.125), (-0.125, -0.5),
+                   (0.125, -0.5), (0.125, 0.125), (-0.5, 0.125)]
+        polygon_prism(collection, "outer corner skirting", outline, 0, 0.24, skirting)
+        polygon_prism(collection, "outer corner plaster", outline, 0.24, height, plaster)
+        polygon_prism(collection, "outer corner coping", outline, height, height + 0.08, coping)
     elif shape == "end":
         wall_run(collection, "terminated run", (-0.11, 0), 0.78, "x", height,
                  plaster, coping, skirting, highlight)

@@ -44,7 +44,7 @@
         0.5
       ],
       "heightTiles": 2.5,
-      "sha256": "143c26d5dce3764d3eeec07cc440d54fdf399882cf19f8cde5e313c2c0d7645c",
+      "sha256": "fd3af7b7b9b005631c7cc1fa305250bd4563161113792cc553830664dabb3b0a",
       "camera": "orthographic-oblique-preview"
     },
     {
@@ -59,7 +59,7 @@
         0.5
       ],
       "heightTiles": 0.52,
-      "sha256": "c5f94c8dc1116e9b91ed1d921c83a903414f38d7fda37e10117665f0903ce786",
+      "sha256": "db57cf09b57503930f90ed86954d6be04b0131ae855079691e5d13a00a9a83cc",
       "camera": "orthographic-oblique-preview"
     },
     {
@@ -74,7 +74,7 @@
         0.5
       ],
       "heightTiles": 2.5,
-      "sha256": "9ea953e21fb0f94628fc85c76e96bad88c721512145d243b90cba992ff7a8b27",
+      "sha256": "e9f97287258365b59732b1a6e004c8294d09e507d775cad4c649bf9c49bc4f22",
       "camera": "orthographic-oblique-preview"
     },
     {
@@ -89,7 +89,7 @@
         0.5
       ],
       "heightTiles": 0.52,
-      "sha256": "ebeb48098424aacb6f2edff55cf2de46324b585f51efd49e1b527b1cbd28c296",
+      "sha256": "472002f3079aeafd7df79edb4278ebdb9dcb674e14cad879a6a030a9e627722f",
       "camera": "orthographic-oblique-preview"
     },
     {

@@ -7,6 +7,21 @@ const root = join(__dirname, '../..');
 const output = join(root, 'assets/rendered/camera-study');
 
 describe('canonical interior cell camera-angle study', () => {
+  it('retains the original nine views and wall source for before/after review', () => {
+    const baseline = JSON.parse(readFileSync(join(output, 'baseline/manifest.json'), 'utf8')) as {
+      sourceCommit: string; wallSource: string; wallSourceSha256: string;
+      entries: { image: string; sha256: string }[];
+    };
+    expect(baseline.sourceCommit).toBe('b72642c54152b18b7b24050cef2b43d0f6d9fc13');
+    expect(baseline.entries).toHaveLength(9);
+    const wall = readFileSync(join(root, 'assets/source/blender', baseline.wallSource));
+    expect(createHash('sha256').update(wall).digest('hex')).toBe(baseline.wallSourceSha256);
+    for (const entry of baseline.entries) {
+      const png = readFileSync(join(output, 'baseline', entry.image));
+      expect(createHash('sha256').update(png).digest('hex')).toBe(entry.sha256);
+    }
+  });
+
   it('renders one geometry and light at the complete 3 × 3 camera grid', () => {
     const manifest = JSON.parse(readFileSync(join(output, 'manifest.json'), 'utf8')) as {
       source: string;
@@ -20,7 +35,13 @@ describe('canonical interior cell camera-angle study', () => {
       yawDegrees: number[];
       elevationDegrees: number[];
       instances: { assetId: string }[];
-      entries: { yawDegrees: number; elevationDegrees: number; image: string; sha256: string; cameraLocation: number[] }[];
+      entries: { yawDegrees: number; elevationDegrees: number; image: string; sha256: string; orangePixelCount: number; cameraLocation: number[] }[];
+      cutawayCandidate: {
+        selectionRule: { yawDegreesAtMost: number; elevationDegreesAtMost: number };
+        referenceImage: string; image: string; sha256: string; orangePixelCount: number;
+        changedInstances: { name: string; assetId: string }[];
+        yawDegrees: number; elevationDegrees: number;
+      };
     };
     expect(readFileSync(join(root, 'assets/source/blender', manifest.source)).length).toBeGreaterThan(1000);
     const wallSource = readFileSync(join(root, 'assets/source/blender', manifest.wallSource));
@@ -54,5 +75,21 @@ describe('canonical interior cell camera-angle study', () => {
         Number((1 + 12 * Math.tan(pitch)).toFixed(6)),
       ]);
     }
+    const lowWest = manifest.entries.find((entry) => entry.yawDegrees === -45 && entry.elevationDegrees === 25)!;
+    const candidate = manifest.cutawayCandidate;
+    expect(candidate.selectionRule).toEqual({ yawDegreesAtMost: -30, elevationDegreesAtMost: 30 });
+    expect([candidate.yawDegrees, candidate.elevationDegrees]).toEqual([lowWest.yawDegrees, lowWest.elevationDegrees]);
+    expect(candidate.referenceImage).toBe(lowWest.image);
+    expect(candidate.changedInstances).toEqual([
+      { name: 'west wall 1', assetId: 'wall.interior.module.cutaway' },
+      { name: 'west wall 2', assetId: 'wall.interior.module.cutaway' },
+      { name: 'west wall 3', assetId: 'wall.interior.module.cutaway' },
+      { name: 'north-west corner', assetId: 'wall.interior.corner.inner.cutaway' },
+    ]);
+    expect(candidate.orangePixelCount).toBeGreaterThan(lowWest.orangePixelCount * 10);
+    const png = readFileSync(join(output, candidate.image));
+    expect(png.subarray(0, 8).toString('hex')).toBe('89504e470d0a1a0a');
+    expect([png.readUInt32BE(16), png.readUInt32BE(20), png[25]]).toEqual([1280, 720, 6]);
+    expect(createHash('sha256').update(png).digest('hex')).toBe(candidate.sha256);
   });
 });

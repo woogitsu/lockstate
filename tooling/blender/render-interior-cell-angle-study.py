@@ -31,7 +31,7 @@ ORTHO_SCALE = 16.5
 RESOLUTION = (1280, 720)
 
 
-def stable_png(path: Path) -> None:
+def stable_png(path: Path) -> bytes:
     """Canonicalize RGBA rows and discard Blender's changing PNG metadata."""
     source = path.read_bytes()
     if source[:8] != b"\x89PNG\r\n\x1a\n":
@@ -101,6 +101,17 @@ def stable_png(path: Path) -> None:
         result += chunk(kind, data)
     result += chunk(b"IDAT", zlib.compress(bytes(unfiltered), 9)) + chunk(b"IEND", b"")
     path.write_bytes(result)
+    return bytes(pixels)
+
+
+def orange_pixel_count(pixels: bytes) -> int:
+    """Visibility proxy for the fixed orange actor, excluding the brown door."""
+    count = 0
+    for index in range(0, len(pixels), 4):
+        red, green, blue = pixels[index:index + 3]
+        if red > 125 and red > green * 1.55 and red > blue * 1.7 and green > 30:
+            count += 1
+    return count
 
 
 def material(name, color, roughness=0.8):
@@ -251,10 +262,35 @@ def main():
             path = OUTPUT / name
             scene.render.filepath = str(path)
             bpy.ops.render.render(write_still=True)
-            stable_png(path)
+            pixels = stable_png(path)
             entries.append({"yawDegrees": yaw, "elevationDegrees": elevation,
                             "image": name, "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                            "orangePixelCount": orange_pixel_count(pixels),
                             "cameraLocation": [round(value, 6) for value in camera.location]})
+
+    # Candidate art-only cutaway for the measured low-left occlusion case.
+    # Keep the canonical nine images unchanged: this tenth image differs only
+    # in the west wall and north-west corner's full/cutaway collection choice.
+    changed = []
+    for obj in bpy.context.scene.objects:
+        if obj.name.startswith("west wall ") or obj.name == "north-west corner":
+            replacement = ("wall.interior.corner.inner.cutaway" if obj.name == "north-west corner"
+                           else "wall.interior.module.cutaway")
+            obj.instance_collection = wall_collections[replacement]
+            obj["sourceAssetId"] = replacement
+            changed.append({"name": obj.name, "assetId": replacement})
+    set_camera(camera, -45, 25)
+    cutaway_path = OUTPUT / "cell-yaw-45-elev25-west-cutaway.png"
+    scene.render.filepath = str(cutaway_path)
+    bpy.ops.render.render(write_still=True)
+    cutaway_pixels = stable_png(cutaway_path)
+    cutaway_entry = {"selectionRule": {"yawDegreesAtMost": -30, "elevationDegreesAtMost": 30},
+                     "referenceImage": "cell-yaw-45-elev25.png",
+                     "image": cutaway_path.name,
+                     "sha256": hashlib.sha256(cutaway_path.read_bytes()).hexdigest(),
+                     "orangePixelCount": orange_pixel_count(cutaway_pixels),
+                     "changedInstances": changed,
+                     "yawDegrees": -45, "elevationDegrees": 25}
     wall_source_sha = hashlib.sha256(WALL_SOURCE.read_bytes()).hexdigest()
     manifest = {"schemaVersion": 1, "source": SOURCE.name,
                 "wallSource": WALL_SOURCE.name, "wallSourceSha256": wall_source_sha,
@@ -264,7 +300,8 @@ def main():
                 "orthoScale": ORTHO_SCALE, "target": list(TARGET),
                 "sourceSceneCamera": {"yawDegrees": 0, "elevationDegrees": 45},
                 "yawDegrees": list(YAW_DEGREES), "elevationDegrees": list(ELEVATION_DEGREES),
-                "instances": instances, "entries": entries}
+                "instances": instances, "entries": entries,
+                "cutawayCandidate": cutaway_entry}
     pipeline_common.write_text(OUTPUT / "manifest.json", json.dumps(manifest, indent=2) + "\n")
 
 
