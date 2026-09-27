@@ -76,7 +76,8 @@ export interface SearchMetrics {
   readonly searchesQueued: number;
 }
 
-export type TargetLocationResolver = (target: SearchTarget) => TilePosition;
+/** `undefined` means a dynamic target has left before guards could search it. */
+export type TargetLocationResolver = (target: SearchTarget) => TilePosition | undefined;
 /** Category concealment lookup, injected rather than importing the content catalog directly -- keeps this system usable against any catalog a session provides, matching `DeploymentSystem`'s own decoupling from a specific staff-role source. */
 export type CategoryConcealmentResolver = (categoryId: string) => number;
 /**
@@ -311,6 +312,11 @@ export class SearchSystem implements SystemRegistration {
   private assignQueuedOrders(tick: number): void {
     while (this.queue.length > 0) {
       const next = this.queue[0]!;
+      if (next.targets.some((target) => this.locateTarget(target) === undefined)) {
+        this.queue.shift();
+        this.searchesCancelled += 1;
+        continue;
+      }
       const policy = this.findPolicy(next.scope);
       /*
        * A search is a security duty, so the pool is the post-eligible one
@@ -338,8 +344,7 @@ export class SearchSystem implements SystemRegistration {
     }
   }
 
-  private beginTravelToCurrentTarget(job: SearchJobRecord, tick: number): void {
-    const destination = this.locateTarget(job.targets[job.currentTargetIndex]!);
+  private beginTravelToCurrentTarget(job: SearchJobRecord, tick: number, destination: TilePosition): void {
     for (const guardId of job.guardIds) {
       const currentTile = this.guards.getTile(guardId);
       if (sameTile(currentTile, destination)) continue;
@@ -380,13 +385,19 @@ export class SearchSystem implements SystemRegistration {
   }
 
   private advanceJob(job: SearchJobRecord, context: SimulationContext): void {
+    const destination = this.locateTarget(job.targets[job.currentTargetIndex]!);
+    if (destination === undefined) {
+      this.releaseGuards(job);
+      this.active.delete(job.id);
+      this.searchesCancelled += 1;
+      return;
+    }
     if (job.state === 'travelling') {
       if (!job.travelInFlight) {
-        this.beginTravelToCurrentTarget(job, context.tick);
+        this.beginTravelToCurrentTarget(job, context.tick, destination);
         job.travelInFlight = true;
       }
 
-      const destination = this.locateTarget(job.targets[job.currentTargetIndex]!);
       let allArrived = true;
       for (const guardId of job.guardIds) {
         const requestId = job.pathRequestIdsByGuard.get(guardId);
