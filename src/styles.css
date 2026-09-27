@@ -38,10 +38,6 @@ canvas {
    the canvas remains the hit target and a real session restores its image. */
 #app:has(.empty-world-prompt:not([hidden])) {
   background-color: var(--surface-sunken);
-  background-image:
-    linear-gradient(to right, var(--border-hairline) var(--hairline), transparent var(--hairline)),
-    linear-gradient(to bottom, var(--border-hairline) var(--hairline), transparent var(--hairline));
-  background-size: calc(4 * var(--space-4)) calc(4 * var(--space-4));
 }
 
 #app:has(.empty-world-prompt:not([hidden])) #game-root canvas { opacity: 0; }
