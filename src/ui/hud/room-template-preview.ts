@@ -139,7 +139,9 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
       } catch {
         status.textContent = t('hud.build.template-unavailable');
       }
-      await refreshPlacement();
+      // Keep this origin locked after queuing. The worker may not have run the
+      // command yet, so an immediate read can still say "clear" and allow a
+      // second press. Editing the origin or choice asks for a fresh verdict.
     });
     dialog.append(element('div', {
       className: 'hud-template__placement',
