@@ -942,6 +942,17 @@ describe('RoomInstanceRegistry', () => {
       expect(registry.occupancyOf('cell-2')).toBe(0);
     });
 
+    it('counts repeated rows for one room only when they add a new occupant', () => {
+      const registry = new RoomInstanceRegistry();
+      registry.register({ instanceId: 'cell-1', roomCatalogId: 'room.cell', anchorTile: TILE, residentCapacity: 3, concurrentUseCapacity: 3, objectCapabilities: ['sleep-surface'] });
+
+      registry.loadSnapshot([['cell-1', [7]], ['cell-1', [7, 9]]]);
+
+      expect(registry.occupantsOf('cell-1')).toEqual([7, 9]);
+      expect(registry.occupancyOf('cell-1')).toBe(2);
+      expect(registry.totalOccupancy).toBe(2);
+    });
+
     it('throws rather than silently dropping occupants for an instance id the registry does not have', () => {
       const registry = new RoomInstanceRegistry();
       expect(() => registry.loadSnapshot([['room.cell:9:9', [1]]])).toThrow(RangeError);
