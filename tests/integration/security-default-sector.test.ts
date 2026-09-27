@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { packCommand } from '../../src/simulation/protocol/commands';
+import { placedObjectAt } from '../../src/simulation/objects';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
 import {
   captureSessionSnapshot,
@@ -356,6 +357,27 @@ describe('an incident is triggered, responded to and closed, in a session starte
    * than 2,400.
    */
   const RIOT_TICK = 2_050;
+
+  it('announces rising risk from a furnished security office before the real riot without delaying it', () => {
+    const runtime = overcrowdedPrison();
+    const anchor = { x: tileCoordinate(25), y: tileCoordinate(25) };
+    runtime.prisoners.roomInstances.register({
+      instanceId: 'observing-office', roomCatalogId: 'room.security-office',
+      anchorTile: anchor, width: 3, height: 3, residentCapacity: 0,
+      concurrentUseCapacity: 0, objectCapabilities: [],
+    });
+    expect(runtime.placedObjects.place(placedObjectAt('object.security-console', anchor, 0))).toBe(true);
+    runtime.roomCapacity.resolveAll();
+    expect(runtime.prisoners.roomInstances.getById('observing-office')?.objectCapabilities).toContain('surveillance');
+
+    stepTo(runtime, RIOT_TICK + 1);
+    const warning = runtime.events.getSnapshot().records.find((event) => event.type === 'incidents.sector-risk-warning');
+    const riot = runtime.events.getSnapshot().records.find((event) => event.type === 'incidents.riot-opened');
+    expect(warning).toMatchObject({ sectorId: DEFAULT_SECTOR_ID });
+    expect(riot?.tick).toBe(RIOT_TICK);
+    expect(riot!.tick - warning!.tick).toBe(550);
+    expect(runtime.incidents.all().filter((incident) => incident.type === 'riot')).toHaveLength(1);
+  });
 
   it('opens a riot in the derived sector from real needs and real understaffing', () => {
     const runtime = overcrowdedPrison();

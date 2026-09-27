@@ -300,7 +300,7 @@ return flashpoint.riskTier >= ESCAPE_ATTEMPT_MINIMUM_RISK_TIER && flashpoint.con
 
 with `ESCAPE_ATTEMPT_MINIMUM_RISK_TIER = 3` (`:113`), and it is the **only** gate:
 `IncidentTriggerSystem` filters candidates through it before anything is scored
-(`src/simulation/incidents/trigger-system.ts:343-344`). — VERIFIED at both lines.
+(`src/simulation/incidents/trigger-system.ts:345-346`). — VERIFIED at both lines.
 
 The brief asked whether *"the escape mechanic may be dead for the same single
 reason"*. **It is not, and #643's own §12 named this as its weakest claim and

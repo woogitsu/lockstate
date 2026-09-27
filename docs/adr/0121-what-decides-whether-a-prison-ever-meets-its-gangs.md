@@ -285,12 +285,12 @@ without an incident either.
 that prisoner, before any gang code runs at all**, and whether one ever opens
 is `IncidentTriggerSystem`'s question, not `default-gangs.ts`'s. A riot needs
 `if (this.risk.isSustainedHot(sectorId) && !this.isQuiet(sectorId, context.tick, 'riot', this.quietTicksAfterIncident)) {`
-(`src/simulation/incidents/trigger-system.ts:375`) -- twelve consecutive hot
+(`src/simulation/incidents/trigger-system.ts:389`) -- twelve consecutive hot
 sampling points, per the file's own "Four gates" docblock immediately above
 this method. An assault is explicitly refused whenever the sector is not
 already trending hot:
 `if (this.risk.getConsecutiveHotSamples(sectorId) > 0) return false;`
-(`src/simulation/incidents/trigger-system.ts:489`). "Hot" is a function of
+(`src/simulation/incidents/trigger-system.ts:503`). "Hot" is a function of
 need-deficit, contraband-severity and staffing-shortfall -- a needs-met,
 staffed prison never crosses it, which is the invariant §6 measures directly
 and §7 traces into two other ADRs.

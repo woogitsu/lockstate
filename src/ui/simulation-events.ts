@@ -619,6 +619,11 @@ const EVENT_PRESENTATION: Readonly<
     severity: 'danger',
     surfaces: 'band-and-log',
   },
+  'incidents.sector-risk-warning': {
+    labelKey: 'hud.alert.event.incidents.sector-risk-warning',
+    severity: 'warning',
+    surfaces: 'band-and-log',
+  },
   'objects.removed-spend-destroyed': {
     labelKey: 'hud.alert.event.objects.removed-spend-destroyed',
     severity: 'warning',
@@ -1242,7 +1247,7 @@ export function hudAlertsWithoutRow(
  * last possible moment and nothing upstream of the formatter knows what a
  * major unit is.
  */
-function eventParameters(event: SimulationEvent): { readonly [key: string]: number } {
+function eventParameters(event: SimulationEvent): { readonly [key: string]: number | string } {
   switch (event.type) {
     case 'economy.wages-unpaid':
       return { total: event.unpaidWagesMinorUnits };
@@ -1259,6 +1264,8 @@ function eventParameters(event: SimulationEvent): { readonly [key: string]: numb
       return { count: event.count };
     case 'incidents.riot-opened':
       return { count: event.participantCount };
+    case 'incidents.sector-risk-warning':
+      return { sector: event.sectorId };
     // The crossing is the whole sentence; the figure a player would want --
     // how far under, how much room is left -- is on the FUNDS chip of the
     // always-visible status strip, which keeps answering it after this notice
@@ -1480,6 +1487,7 @@ function eventParameterMessages(
     case 'economy.construction-restored':
     case 'prisoners.discharged':
     case 'incidents.riot-opened':
+    case 'incidents.sector-risk-warning':
     case 'incidents.gang-retaliation-opened':
     case 'incidents.assault-opened':
     case 'incidents.escape-attempt-opened':

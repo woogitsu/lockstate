@@ -823,6 +823,14 @@ work are not.**
   that wrote a save could record a log at all, and every one of those saves
   restored to exactly the empty log an absent section restores to now.
 
+  Issue #595 adds `incidents.sector-risk-warning` to the retained event union.
+  It changes no saved field: an older V7 log cannot contain that event, while
+  current V7 accepts both the older records and the new member. No migration or
+  version bump is needed. On restore it returns to the alerts history with the
+  other retained events; `restored: true` keeps the old warning out of the live
+  event band. The sector's hot-sample streak is restored separately, so a load
+  does not invent a second warning for the same streak.
+
   **The dismissals are in the save for a reason worth stating separately**, and
   it is why the owner's decisions 2 and 3 could not have been built apart: a row
   a player retired that came back on the next load would make the two undo one

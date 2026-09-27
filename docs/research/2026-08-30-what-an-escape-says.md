@@ -168,7 +168,7 @@ It is reachable, and the arithmetic says how narrowly:
   score is `0.65` — an attempt still fires for a prisoner with a long sentence
   carrying something severe.
 - Severity is `Math.max(1, Math.min(10, Math.round(candidate.score * 10)))`
-  (`src/simulation/incidents/trigger-system.ts:360`), so the cheapest attempt
+  (`src/simulation/incidents/trigger-system.ts:362`), so the cheapest attempt
   the trigger can open is **severity 6**, and
   `requiredResponderCount(6)` is 3 (`respondersPerSeverityPoint: 0.5`,
   `:25-30`).

@@ -2162,6 +2162,7 @@ export const SIMULATION_EVENT_TYPES = [
   'incidents.escape-succeeded',
   'incidents.gang-retaliation-opened',
   'incidents.riot-opened',
+  'incidents.sector-risk-warning',
   'objects.removed-spend-destroyed',
   'prisoners.discharged',
   'prisoners.housed',
@@ -2731,6 +2732,15 @@ const riotOpenedEventSchema = z
     ...simulationEventEnvelopeFields,
     type: z.literal('incidents.riot-opened'),
     participantCount: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER),
+  })
+  .strict();
+
+/** An equipped security office observed the first hot sample in a sector. */
+const sectorRiskWarningEventSchema = z
+  .object({
+    ...simulationEventEnvelopeFields,
+    type: z.literal('incidents.sector-risk-warning'),
+    sectorId: z.string().min(1),
   })
   .strict();
 
@@ -3317,6 +3327,7 @@ export const simulationEventSchema = z.discriminatedUnion('type', [
   roomUnzonedEventSchema,
   roomZonedEventSchema,
   riotOpenedEventSchema,
+  sectorRiskWarningEventSchema,
   gangRetaliationOpenedEventSchema,
   assaultOpenedEventSchema,
   escapeAttemptOpenedEventSchema,

@@ -53,7 +53,7 @@ declines to invent one. That reasoning is sound for those two types and is
 left exactly as it stands.
 
 **The new sanction is different, because an assault is different from a
-riot.** `tryOpenAssault` (`src/simulation/incidents/trigger-system.ts:373`)
+riot.** `tryOpenAssault` (`src/simulation/incidents/trigger-system.ts:375`)
 does not name "who was in the sector"; it *ranks* the sector's flashpoints by
 `scoreAssaultPressure` — each prisoner's own need deficit, contraband and the
 sector's staffing shortfall — and takes the worst two. That ranking is thrown

@@ -320,7 +320,7 @@ in this corpus does not mean "not built". It means "not signed".
 | 0053 Who may stand a security post | `src/content/staff-role-catalog.ts:12,42,123`; the post refusal at `src/simulation/protocol/commands.ts:648` | REFERENCE |
 | 0054 What a prisoner's day is made of | decision 1's room-gating read back by `src/simulation/incidents/sector-risk.ts:62`; `src/persistence/save-schema.ts:1274` (**dead; live at `:1284`**); `src/simulation/protocol/commands.ts:763` | REFERENCE |
 | 0056 Keeping a player's orders in order | `src/ui/simulation-commands.ts:50,218`; `:567` — *"would only reopen the inversion ADR 0056 closed"* | REFERENCE |
-| 0057 What a riot does to a prisoner's day | `src/simulation/runtime/new-session.ts:614`; `src/simulation/incidents/trigger-system.ts:430`; `src/simulation/incidents/incident.ts:285` | REFERENCE |
+| 0057 What a riot does to a prisoner's day | `src/simulation/runtime/new-session.ts:614`; `src/simulation/incidents/trigger-system.ts:444`; `src/simulation/incidents/incident.ts:285` | REFERENCE |
 | 0059 How an actor gets from one tile to the next | the locomotion store and its render feed: `src/rendering/feed/actor-extrapolation.ts:21`, `actors-from-delta.ts:35`, `actors-from-snapshot.ts:74`; 20 files under `src/` | REFERENCE |
 | 0061 What the prison produces on its own | `incidents.escape-attempt-opened` producer and its alert entry, `src/ui/simulation-events.ts:570,1299`; 20 files under `src/` | VERIFIED |
 | 0062 Who gets the room when more want it than it seats | the three-pass ordering, `src/simulation/prisoners/action-system.ts:526` (*"Pass 3 — the idle, by descending `needUrgency`"*), with `:82` and `:637` | VERIFIED |

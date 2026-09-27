@@ -1482,6 +1482,14 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     undefined,
     undefined,
     sampleFlashpoints,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    (sectorId) => sectorId === defaultSector.id && prisoners.roomInstances.allByRoomCatalogId('room.security-office').some(
+      (room) => room.objectCapabilities.includes('surveillance'),
+    ),
   );
 
 

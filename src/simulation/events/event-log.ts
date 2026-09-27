@@ -701,6 +701,12 @@ export class SimulationEventLog {
     }
   }
 
+  /** A warning about sustained-risk conditions, not a prediction that a riot is certain. */
+  public recordSectorRiskWarning(sectorId: string, tick: number): void {
+    if (sectorId.length === 0) return;
+    this.append({ sequence: this._sequence + 1, tick, type: 'incidents.sector-risk-warning', sectorId });
+  }
+
   /**
    * Records that a build order the player asked to cancel was cancelled
    * (the owner's ruling of 2026-09-01 on

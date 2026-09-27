@@ -513,7 +513,7 @@ had a bed each and a toilet standing in the cell. A toilet that never serves
   `action.free-association` serves nothing (`needEffectsPerTick: {}`,
   `actions.ts:227`).
 - **VERIFIED, read.** Riots open on `needsPressure`, a sector mean of unmet
-  needs (`src/simulation/incidents/trigger-system.ts:503`).
+  needs (`src/simulation/incidents/trigger-system.ts:517`).
 - **MEASURED.** Riots opened repeatedly in acts B, P, Y and D and each closed
   itself, and the closing band in three of them was *"the last one ran out of
   time instead of being contained"*.
