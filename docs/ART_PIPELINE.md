@@ -502,6 +502,20 @@ small red mark was difficult to read beside the medical bed. The before and
 after Full HD WorldScene captures use the same built room and camera. Object
 identity, footprint and building rules are unchanged.
 
+**2026-09-26 medical bed revision:** the buildable infirmary bed now carries a
+pale enamel badge with a teal cross on its foot blanket. The former small red
+cross blended into the dark teal cover and disagreed with the cabinet's mark.
+The new badge remains recognizable in the 1920×1080 WorldScene at default zoom;
+closer captures show its material and silhouette. The bed, cover, rails,
+footprint and treatment rules are unchanged.
+
+**2026-09-27 utility panel revision:** the buildable 1×1 control panel keeps
+its six breakers, two status lenses and guarded red switch. Its four tiny
+yellow chips read as separate dots at normal game zoom; a continuous yellow
+band with recessed dark diagonal cuts now reads as hazard paint. Full HD
+WorldScene captures compare the same built Utility Room at zoom 1 and 3.
+The utility capability and room rules are unchanged.
+
 **2026-09-23 addition, without rewriting the earlier comparison:** the new
 `furniture.dining.table.wooden` model no longer uses only flat materials. The
 owner's Prison Architect references and a generated four-view concept informed
