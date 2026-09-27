@@ -18,9 +18,11 @@ test('template placement UI checks every square before enabling one submit', asy
   await expect(place).toBeEnabled();
   await dialog.getByRole('button', { name: 'Large cell' }).click();
   await expect(dialog.locator('.hud-template__dimensions')).toHaveText('6 × 7');
+  await dialog.getByRole('checkbox', { name: 'Mirror horizontally' }).check();
+  expect(await dialog.locator('.hud-template__diagram').evaluate((grid) => grid.children[39]?.classList.contains('hud-template__tile--door'))).toBe(true);
   await expect(place).toBeEnabled();
   await place.click();
   expect(await page.evaluate(() => (window as unknown as { templateRequests: unknown[] }).templateRequests)).toEqual([
-    { templateId: 'cell-large', origin: { x: 10, y: 7 } },
+    { templateId: 'cell-large', origin: { x: 10, y: 7 }, mirrorX: true },
   ]);
 });

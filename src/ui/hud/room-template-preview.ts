@@ -55,7 +55,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
   function select(id: RoomTemplateId): void {
     selectedId = id;
     tool?.select(id, mirrorX);
-    const plan = instantiateRoomTemplate(id, { x: 0, y: 0 });
+    const plan = instantiateRoomTemplate(id, { x: 0, y: 0 }, { mirrorX });
     for (const [rowId, button] of buttons) button.setAttribute('aria-pressed', rowId === id ? 'true' : 'false');
     dimensions.textContent = `${plan.width} × ${plan.height}`;
     const counts = new Map<string, number>();
@@ -79,7 +79,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
         diagram.append(element('span', { className: `hud-template__tile hud-template__tile--${kind}`, attributes: { 'aria-hidden': 'true' } }));
       }
     }
-    void refreshPlacement();
+    if (dialog.open) void refreshPlacement();
   }
 
   // This form is absent in the shipped app until both worker preflight and
@@ -127,7 +127,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
     mirror.addEventListener('change', () => {
       mirrorX = mirror.checked;
       tool.select(selectedId, mirrorX);
-      void refreshPlacement();
+      select(selectedId);
     });
     place.addEventListener('click', async () => {
       const tile = origin();
