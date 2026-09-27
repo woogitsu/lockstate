@@ -4440,7 +4440,7 @@ async function bootPersistence(workers: SimulationWorkerChannel, hud: HudHandle)
     });
     panel = new SavePanel(controller, hud.asideSlot, localizer);
     const app = document.getElementById('app');
-    if (app !== null) panel.mountEmptyWorldPrompt(app, (active) => hud.setMinimapSessionActive(active));
+    if (app !== null) panel.mountEmptyWorldPrompt(app, (active) => hud.setSessionActive(active));
     manageSavesPanel = new ManageSavesPanel(controller, hud.manageSavesSlot, localizer, () => panel.refresh());
     panel.setOnInventoryChanged(() => { void manageSavesPanel?.refresh(); });
   } catch (error) {
