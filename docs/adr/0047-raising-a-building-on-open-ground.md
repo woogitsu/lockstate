@@ -71,9 +71,9 @@ and the reason is mechanical rather than a matter of design taste.
 
 The defect is a consequence of where an edge is stored.
 `roomPerimeterEnclosure` reads a rectangle's south boundary as the north edge of
-the row **below** it (`src/simulation/rooms/enclosure.ts:219-221`) and its east
+the row **below** it (`src/simulation/rooms/enclosure.ts:229-231`, `perimeterFaceClosed`) and its east
 boundary as the west edge of the column to its **right**
-(`src/simulation/rooms/enclosure.ts:230-232`). Those two edges are stored on tiles
+(`src/simulation/rooms/enclosure.ts:239-241`, `perimeterFaceClosed`). Those two edges are stored on tiles
 outside the rectangle. If the rectangle is flush against the edge of owned land,
 those tiles are unowned, and `ConstructionSystem.submitOrder` refuses a wall
 there.
@@ -109,7 +109,7 @@ decision:
 > tile across the edge it occupies: every boundary edge of an owned parcel has
 > unowned land on the far side, and a prison is a perimeter.
 
-`tests/unit/construction-ownership.test.ts:124` pins it — *"checks the order's
+`tests/unit/construction-ownership.test.ts:124`, `approves an edge order`, pins it — *"checks the order's
 own tile, not the tile across the edge it occupies"* — with a fixture whose
 order tile is owned and whose far tile is not.
 
@@ -409,7 +409,7 @@ was the alternative and is rejected because "indoors" is the conclusion, not the
 missing thing.
 
 **Where it runs: inside the existing per-tile loop**, after bounds and ownership
-and beside the overlap check (`src/simulation/rooms/zoning.ts:554`–`:558`). Not
+and beside the overlap check (`src/simulation/rooms/zoning.ts:554-558`, `canBuildAt`). Not
 as a fifth pass. Three reasons, and they agree:
 
 - It is one array read per tile, on tiles the loop already visits, so it is free
@@ -495,7 +495,7 @@ in bounds when either adjacent tile is in a materialised chunk.
    has a visible edge from the first frame instead of growing one when a wall
    completes. It costs eight chunks of planes and it is the shape land purchase
    will want anyway. Recommended, but separable and not decided here.
-2. **`docs/WORLD.md`'s sentence and `tests/unit/construction-ownership.test.ts:124`'s
+2. **`docs/WORLD.md`'s sentence and `tests/unit/construction-ownership.test.ts:124` (`approves an edge order`)'s
    title become wrong even though the test stays green.** Its fixture has one
    owned side and passes under either rule; what changes is the claim the title
    makes. Both need the same edit, and a test whose name asserts the opposite of
