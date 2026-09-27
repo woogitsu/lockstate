@@ -90,6 +90,18 @@ continuous-rotation versus asset-atlas tradeoff before remodelling every object.
 Do not turn the entire art catalog into one-angle oblique PNGs and then discover
 that the camera cannot move.
 
+### First renderer foundation on this branch
+
+`src/rendering/camera/oblique-projection.ts` now expresses the ground-plane
+projection, its inverse pointer hit, four-corner culling bounds and anchored
+angle change. It starts from the existing top-down Phaser framing without a
+tile jump. Six focused tests cover absolute coordinates at 30°/90° elevation,
+90° yaw, cursor anchoring, bounds and invalid poses. A deliberate sign mutation
+in the yaw transform made the 90° test fail (`1000` instead of `920`); restoring
+the code made all six pass. **This foundation is not wired into `WorldScene`**:
+no player can turn the view yet, and the sprite depth/cutaway rules are still
+required before exposing the control.
+
 ## Reusable concept prompt set
 
 These are **normalized prompts for new exploration**, not a claim that each
