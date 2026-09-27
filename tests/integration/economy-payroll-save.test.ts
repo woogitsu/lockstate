@@ -162,7 +162,10 @@ function insolventSession(): SimulationRuntime {
   addBulkPurchaseStorage(runtime);
   submit(runtime, 'hire-0', packCommand({ type: 'HireStaff', staffRoleId: GUARD, ...ARRIVAL }));
   submit(runtime, 'hire-1', packCommand({ type: 'HireStaff', staffRoleId: GUARD, ...ARRIVAL }));
-  submit(runtime, 'buy', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-b', itemId: 'item.brick', quantity: 2_524 }));
+  // Preserve the historical insolvent balance while keeping the real orders
+  // inside the storage capacity added by the fixture.
+  runtime.treasury.restore({ balanceMinorUnits: runtime.treasury.balanceMinorUnits - 75_000 });
+  submit(runtime, 'buy', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-b', itemId: 'item.brick', quantity: 649 }));
   submit(runtime, 'buy-p', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-p', itemId: 'item.wood-plank', quantity: 1 }));
   expect(runtime.refusals.count, 'the fixture must afford everything it buys').toBe(0);
   expect(runtime.treasury.balanceMinorUnits, 'exactly the starter delivery rung, with nothing left to press').toBe(
