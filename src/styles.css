@@ -35,7 +35,7 @@ canvas {
 /* Before a prison exists, the renderer has no terrain to draw. Give that
    empty canvas a quiet planning surface so the central start action belongs
    to the game world instead of floating in a black void. This is visual only:
-   the canvas remains the hit target and a real session removes the overlay. */
+   the canvas remains the hit target and a real session restores its image. */
 #app:has(.empty-world-prompt:not([hidden])) {
   background-color: var(--surface-sunken);
   background-image:
