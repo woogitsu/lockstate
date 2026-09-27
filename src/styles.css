@@ -32,6 +32,57 @@ canvas {
   display: block;
 }
 
+.empty-world-prompt:not([hidden]) {
+  position: fixed;
+  /* The route belongs to the world, below the HUD's interactive chrome.
+     At narrow or zoomed layouts its card can geometrically cross a tab or
+     resize handle; those controls must still win the press. */
+  z-index: calc(var(--hud-layer) - 1);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  box-sizing: border-box;
+  width: min(520px, calc(100vw - 2 * var(--space-4)));
+  padding: var(--space-5);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+  color: var(--text-body);
+  text-align: center;
+  /* Only the actions take input. The card itself may cross the map or a
+     compact HUD rail, and its empty area must not swallow those controls. */
+  pointer-events: none;
+  touch-action: auto;
+}
+
+.empty-world-prompt__actions button {
+  pointer-events: auto;
+}
+
+.empty-world-prompt h2 {
+  margin: 0 0 var(--space-3);
+}
+
+.empty-world-prompt p {
+  margin: 0 0 var(--space-4);
+}
+
+.empty-world-prompt__actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+/* The start card is a Full HD affordance. Below that usable CSS viewport,
+   its action buttons cover navigation and display controls; the save rail
+   already provides the same create and load routes without an overlay. */
+@media (max-width: 1919px), (max-height: 1079px) {
+  .empty-world-prompt:not([hidden]) {
+    display: none;
+  }
+}
+
 /*
  * Save/load panel (issue #19) — plain DOM browser UI beside the Phaser
  * canvas, never inside the renderer's scene graph.
@@ -195,6 +246,29 @@ canvas {
   text-transform: none;
   overflow-wrap: anywhere;
 }
+
+/* A compact disclosure keeps Staff and Intake reachable in the same Manage
+   rail. The expanded local inventory scrolls inside its allotted height. */
+.hud__manage-saves:not([hidden]) { flex: 0 1 auto; min-height: var(--tap-target); max-height: 55%; overflow-y: auto; }
+/* The UI harness mounts the HUD without persistence. An empty slot must not
+   take height from Staff or push its payroll header below the panel fold. */
+.hud__manage-saves:empty { display: none; }
+.manage-saves { padding: var(--space-2); background: var(--surface-raised); border: var(--hairline) solid var(--border); border-radius: var(--radius-md); font-size: var(--text-size-body); touch-action: auto; }
+.manage-saves > summary { min-height: var(--tap-target); display: flex; align-items: center; cursor: pointer; font-weight: 600; }
+.manage-saves:not([open]) > :not(summary) { display: none; }
+.manage-saves > h3 { margin: var(--space-2) 0; font-size: var(--text-size-label); }
+.manage-saves__list { margin: 0; padding: 0; list-style: none; }
+.manage-saves__item { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1); padding: var(--space-1) 0; border-bottom: var(--hairline) solid var(--border-hairline); }
+.manage-saves__name { flex: 1 1 100%; overflow-wrap: anywhere; }
+.manage-saves__name[data-active='true'] { color: var(--accent); font-weight: 700; }
+.manage-saves__button { min-height: var(--tap-target); padding: 0 var(--space-2); font: inherit; color: var(--text-body); background: var(--surface-overlay); border: var(--hairline) solid var(--border); border-radius: var(--radius-sm); cursor: pointer; }
+.manage-saves__button:focus-visible, .manage-saves > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.manage-saves__button:disabled { color: var(--text-muted); cursor: default; }
+.manage-saves__confirm { flex-basis: 100%; }
+.manage-saves__status, .manage-saves__cloud { margin: var(--space-2) 0 0; overflow-wrap: anywhere; }
+.manage-saves__status[data-kind='error'] { color: var(--status-danger); }
+.manage-saves__status[data-kind='storage-unavailable'] { color: var(--status-warning); }
+.manage-saves__cloud { color: var(--text-muted); }
 
 /*
  * Telemetry consent prompt (issue #36, ADR 0010).

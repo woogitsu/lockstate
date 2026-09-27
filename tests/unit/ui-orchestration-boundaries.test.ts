@@ -641,6 +641,13 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
       "Value: `MigrationChain` from `src/persistence/migration` and `zodVersionSchema` from `src/persistence/zod-version-schema`. Account preferences are a *persisted* record, so `AGENTS.md` boundary 7 applies to them -- every persistent format must have a version and migration strategy -- and this is the repository's one implementation of that. A type-only import cannot satisfy the boundary, because the obligation is to run the chain, not to name it. The direction is UI-onto-a-persistence-mechanism, never persistence-onto-UI: nothing under `src/persistence/` knows this module exists, which is what keeps boundary 5 (persistence consumes explicit snapshots and does not reach into renderer internals) true in both directions. What would make this entry wrong is a save *payload* type appearing here -- preferences are account metadata and #34 is explicit that they stay outside the prison snapshot.",
   },
   {
+    file: 'src/ui/account/manage-saves-panel.ts',
+    tree: 'persistence',
+    kind: 'type-only',
+    reason:
+      'Type-only: SaveInventory, ActiveSession and SessionLoadOutcome name the outcomes the host-owned Manage panel displays. The panel receives a sessions port from main.ts and never constructs or imports an IndexedDB store or SessionController value. A value import here would move storage ownership into the view and break the UI boundary.',
+  },
+  {
     file: 'src/ui/account/account-preferences.ts',
     tree: 'shared',
     kind: 'type-only',

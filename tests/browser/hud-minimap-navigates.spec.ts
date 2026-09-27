@@ -54,7 +54,7 @@ function localeText(key: string): string {
   return entry;
 }
 
-const MINIMAP_PLACEHOLDER_TEXT = localeText('hud.minimap.placeholder');
+const MINIMAP_NO_PRISON_TEXT = localeText('hud.minimap.no-prison');
 const MINIMAP_NAVIGABLE_TEXT = localeText('hud.minimap.navigable');
 const MINIMAP_MAP_READY_TEXT = localeText('hud.minimap.map-ready');
 
@@ -215,7 +215,7 @@ test.describe('the minimap navigates the camera (#793)', () => {
     expect(nearBottomLeft.tileY, 'a bottom-left click did not move the camera toward larger world Y than a top-right click').toBeGreaterThan(nearTopRight.tileY);
   });
 
-  test('a click that finds no loaded world sends no command and leaves the panel telling the player so, rather than staying silent', async ({ page }) => {
+  test('without a prison the minimap stays inert and explains how to see a map', async ({ page }) => {
     await installTee(page);
     await page.setViewportSize({ width: 1280, height: 800 });
     await openApp(page);
@@ -226,7 +226,8 @@ test.describe('the minimap navigates the camera (#793)', () => {
     // rather than silently doing nothing).
 
     const textBefore = await page.locator('.hud-minimap__placeholder').textContent();
-    expect(textBefore, 'the placeholder should read the pre-session sentence before anything is clicked').toBe(MINIMAP_PLACEHOLDER_TEXT);
+    expect(textBefore, 'the placeholder should explain the empty session before anything is clicked').toBe(MINIMAP_NO_PRISON_TEXT);
+    await expect(page.locator('.hud-minimap__surface')).toBeDisabled();
 
     const rect = await minimapSurfaceRect(page);
     await clickMinimap(page, pointAt(rect, 0.5, 0.5));
@@ -235,7 +236,7 @@ test.describe('the minimap navigates the camera (#793)', () => {
     expect(commands, 'a click with no world loaded reached the simulation -- it must not, this gesture is presentational only (AGENTS.md boundary 1)').toEqual([]);
 
     const textAfter = await page.locator('.hud-minimap__placeholder').textContent();
-    expect(textAfter, 'the panel claimed to have navigated when there was nowhere to go').toBe(MINIMAP_PLACEHOLDER_TEXT);
+    expect(textAfter, 'the panel claimed to have navigated when there was nowhere to go').toBe(MINIMAP_NO_PRISON_TEXT);
     expect(textAfter, 'a click that found no world must not silently claim it worked').not.toBe(MINIMAP_NAVIGABLE_TEXT);
   });
 
