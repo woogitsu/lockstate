@@ -1953,7 +1953,7 @@ def architectural(collection, root, asset_id):
         # The v3 side/three-quarter concepts show the nozzle face hanging at
         # an angle. A flat disc read as a floor drain at normal game zoom.
         head_parts = [
-            cylinder(collection, root, "Shallow shower head shell", (0, 0.155, 0.81), 0.32, 0.20, "galvanized", 64),
+            cylinder(collection, root, "Shallow shower head shell", (0, 0.155, 0.865), 0.32, 0.09, "galvanized", 64),
             torus(collection, root, "Teal rolled head ring", (0, 0.155, 0.920), 0.277, 0.031, "shower_teal"),
             cylinder(collection, root, "Deep charcoal nozzle face", (0, 0.155, 0.918), 0.263, 0.018, "metal_recess", 64),
         ]
@@ -1973,7 +1973,7 @@ def architectural(collection, root, asset_id):
             world_transform = part.matrix_world.copy()
             part.parent = hinge
             part.matrix_world = world_transform
-        hinge.rotation_euler.x = math.radians(38)
+        hinge.rotation_euler.x = math.radians(63)
         for x, surface in ((-0.255, "shower_hot"), (0.255, "shower_cold")):
             cylinder(collection, root, f"Service valve body.{x}", (x, -0.20, 0.88), 0.070, 0.13, "galvanized_edge", 24)
             cylinder(collection, root, f"Service valve lens.{x}", (x, -0.20, 0.955), 0.038, 0.014, surface, 24)

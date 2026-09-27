@@ -440,7 +440,10 @@ test.describe('the environment artwork', () => {
     const labels = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.roomLabels());
     expect(labels.map((label) => label.text)).toContain('Shower Room');
     if (process.env['LOCKSTATE_CAPTURE_SHOWER_ART'] === '1') {
-      await page.screenshot({ path: testInfo.outputPath('furnished-shower-1920x1080.png') });
+      await page.screenshot({ path: testInfo.outputPath('furnished-shower-zoom3-1920x1080.png') });
+      await page.evaluate(async ({ x, y }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, 1),
+        { x: 13.5 * fixture.tileSizePx, y: 13.5 * fixture.tileSizePx });
+      await page.screenshot({ path: testInfo.outputPath('furnished-shower-zoom1-1920x1080.png') });
     }
   });
 
@@ -459,6 +462,20 @@ test.describe('the environment artwork', () => {
     expect(socket?.cover?.[3]).toBe(255);
     expect(socket?.screw?.[3]).toBe(255);
     expect(channelDistance(socket!.cover!, socket!.screw!)).toBeGreaterThan(40);
+  });
+
+  test('the shower nozzle has a shallow wall-mounted profile at game scale', async ({ page }) => {
+    await openHarness(page);
+    const profile = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.object.shower-head');
+      return frame === undefined ? undefined : {
+        face: harness.atlasPixel(frame.x + 64, frame.y + 94),
+        lowerTile: harness.atlasPixel(frame.x + 64, frame.y + 112),
+      };
+    });
+    expect(profile?.face?.[3]).toBe(255);
+    expect(profile?.lowerTile?.[3]).toBe(0);
   });
 
   test('the waste bin lid joins its body at game scale instead of reading as two rings', async ({ page }) => {
