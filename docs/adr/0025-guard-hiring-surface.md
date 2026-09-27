@@ -184,13 +184,13 @@ That single gap starves four systems that are built, scheduled and
 tested:
 
 - `DeploymentSystem` walks `unassignedGuardIds()` to fill a sector's required
-  headcount (`src/simulation/security/deployment-system.ts:194`).
+  headcount (`src/simulation/security/deployment-system.ts:210`).
 - `PatrolSystem` walks `allGuardIds()` and starts a loop for each guard on post
-  (`src/simulation/security/patrol-system.ts:73`).
+  (`src/simulation/security/patrol-system.ts:89`).
 - `IncidentResponseSystem` claims responders from `unassignedGuardIds()`
-  (`src/simulation/incidents/response-system.ts:535`).
+  (`src/simulation/incidents/response-system.ts:569`).
 - `SearchSystem` claims a searcher the same way
-  (`src/simulation/contraband/search-system.ts:295`).
+  (`src/simulation/contraband/search-system.ts:322`).
 
 > **Three of those four no longer call `unassignedGuardIds()` at all**, and the
 > anchors above are the re-aimed ones rather than the originals (`:108`, `:72`,
@@ -320,7 +320,7 @@ Selecting Security today changes the tab bar's `aria-current`, sets
 > > and the new `security` section paints the four HUD read models that had a
 > > route out of the worker and no painter. **Nothing about decision 1 moves
 > > with it**: `staffPanel.setVisible(state.activeTab === 'manage')` is at
-> > `src/ui/hud/hud.ts:2993` (the anchor read 2957, then 2917, then 2611, then 2759, then 2837,
+> > `src/ui/hud/hud.ts:3010` (the anchor read `:3006`, then 2993, then 2957, then 2917, then 2611, then 2759, then 2837,
 > > then 2887, then 2980, then 2963, then 2987; re-aimed onto the quoted line by `grep -n` rather than by
 > > arithmetic, on `ba1c0a87` merged with `49cd2fbd`, again on 2026-09-22 after
 > > ADR 0122's `show-alert-place` intent member was added to the union above

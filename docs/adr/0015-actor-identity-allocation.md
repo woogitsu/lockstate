@@ -39,7 +39,7 @@ since shipped (`docs/PERSISTENCE.md`). When this ADR was written the envelope
 carried only `kernel`/`world`/`construction`/`entities` while the runtime built
 roughly thirty subsystems, and prisoners, staff, security, contraband and
 incidents were not persisted at all. Neither half is true on `main` any more:
-`sessionSystemsSchemaFor` (`src/persistence/save-schema.ts:784-794`) persists
+`sessionSystemsSchemaFor` (`src/persistence/save-schema.ts:785-795`) persists
 `prisoners`, `operations`, `navigation`, `security`, `contraband`, `incidents`
 and `economy` as the `simulation` section of both the V3 and the V4 payload.
 The two routes are therefore weighed on their merits.
@@ -120,7 +120,7 @@ category 1.**
   can collide with a restored one. The registry owns `getSnapshot()` /
   `loadSnapshot()`; the envelope field was #70's to add, and #70 has added it —
   `identity` is a field of both the V3 and the V4 payload
-  (`src/persistence/save-schema.ts:838`, `:868`), with the snapshot shape at
+  (`src/persistence/save-schema.ts:839`, `:868`), with the snapshot shape at
   `:715`.
 - **Renameable**, with no RNG involvement. `ActorIdentityRegistry.rename`
   exists today with no command wired to it, so the decision is not quietly
@@ -189,7 +189,7 @@ no decision recorded here.
   the same state a session that never registered the RNG stream is in. This
   ADR deliberately did not create the V3 bump. #70 has since made it, in the
   shape described above: `identity: actorIdentitySnapshotSchema.optional()` at
-  `src/persistence/save-schema.ts:838` for V3 and `:868` for V4.
+  `src/persistence/save-schema.ts:839` for V3 and `:868` for V4.
 - **Session wiring — done.** `src/simulation/runtime/new-session.ts` had to
   register the `identity.actor-name` stream alongside the existing three,
   construct the registry, pass it to `PrisonerOperationsRuntime`, and mint for
@@ -297,22 +297,22 @@ grep. Nobody had, and every one of these was wrong:
 | `new-session.ts:248` — constructs `GuardRoster` | `const DEFAULT_GUARD_CAPACITY = 500;` | `:496` |
 
 **Re-swept 2026-09-15, by opening each line rather than by applying an offset.**
-Every entry in the right-hand column above is now history. Where each subject is
-on `main`:
+Every entry in the right-hand column above is now history. The coordinates below
+were re-opened against the 2026-09-26 V7 save branch:
 
-| subject | the table's column | 2026-09-15 |
+| subject | the table's column | 2026-09-26 |
 | --- | --- | --- |
-| `sessionSystemsShapeFor` | `:922-934` | `src/persistence/save-schema.ts:1344` |
-| V3 `identity` field | `:982` | `src/persistence/save-schema.ts:1361` |
-| V4 `identity` field | `:1012` | `src/persistence/save-schema.ts:1391` |
-| `actorIdentitySnapshotSchema` | `:841` | `src/persistence/save-schema.ts:1151` |
+| `sessionSystemsShapeFor` | `:922-934` | `src/persistence/save-schema.ts:1346` |
+| V3 `identity` field | `:982` | `src/persistence/save-schema.ts:1691` |
+| V4 `identity` field | `:1012` | `src/persistence/save-schema.ts:1721` |
+| `actorIdentitySnapshotSchema` | `:841` | `src/persistence/save-schema.ts:1153` |
 | registers the stream | `:292` | `src/simulation/runtime/new-session.ts:487` |
 | constructs the registry | `:301` | `src/simulation/runtime/new-session.ts:496` |
 | passes it to `PrisonerOperationsRuntime` | `:325` | `src/simulation/runtime/new-session.ts:596` |
-| constructs `GuardRoster` | `:496` | `src/simulation/runtime/new-session.ts:1029` |
+| constructs `GuardRoster` | `:496` | `src/simulation/runtime/new-session.ts:1048` |
 
 The seven-key list is still exactly the seven keys, at
-`src/persistence/save-schema.ts:1232-1238`.
+`src/persistence/save-schema.ts:1351-1357`.
 
 Two of those are worse than an offset. **`sessionSystemsSchemaFor` does not
 exist**: `grep -rn "sessionSystemsSchemaFor" src/ tests/` is empty. It was
@@ -324,7 +324,7 @@ which is the one failure mode a code citation is supposed to be immune to.
 
 The Context says:
 
-> `sessionSystemsSchemaFor` (`src/persistence/save-schema.ts:784-794`) persists
+> `sessionSystemsSchemaFor` (`src/persistence/save-schema.ts:785-795`) persists
 > `prisoners`, `operations`, `navigation`, `security`, `contraband`, `incidents`
 > and `economy` as the `simulation` section of both the V3 and the V4 payload.
 
@@ -352,8 +352,8 @@ schema bump and neither of the current forms did.
 > whole point of it.** The heading says *"`identity` is in three payload
 > versions rather than two"*. It is in **four**: `savePayloadV6Schema` carries
 > `identity: actorIdentitySnapshotSchema.optional()` at
-> `src/persistence/save-schema.ts:1497`, beside V3's `src/persistence/save-schema.ts:1361`, V4's `:1391` and
-> V5's `src/persistence/save-schema.ts:1460`. A section written to condemn *"both the V3 and the V4"* as a
+> `src/persistence/save-schema.ts:1669`, beside V3's `src/persistence/save-schema.ts:1533`, V4's `:1391` and
+> V5's `src/persistence/save-schema.ts:1632`. A section written to condemn *"both the V3 and the V4"* as a
 > rotting enumeration replaced it with a different tally in its own title, and
 > that tally rotted in nineteen days — which is `docs/AGENT_WORKFLOW.md` §4's
 > *"a correction is no more durable than the claim it corrected"* arriving on

@@ -88,6 +88,10 @@ export interface HarnessWorldFixture {
   readonly securityFloorMinTileY: number;
   readonly securityFloorMaxTileX: number;
   readonly securityFloorMaxTileY: number;
+  readonly utilityFloorMinTileX: number;
+  readonly utilityFloorMinTileY: number;
+  readonly utilityFloorMaxTileX: number;
+  readonly utilityFloorMaxTileY: number;
   readonly wallRowTileY: number;
   readonly doorTileX: number;
   readonly doorRowTileY: number;

@@ -97,7 +97,7 @@ moves:
 
 ```
 $ grep -rn "securitySectors.register" src/
-src/simulation/runtime/session-systems.ts:587:  for (const sector of systems.security.sectorDefinitions)
+src/simulation/runtime/session-systems.ts:635:  for (const sector of systems.security.sectorDefinitions)
                                                   runtime.securitySectors.register({ ...sector });
 ```
 

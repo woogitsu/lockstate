@@ -294,6 +294,27 @@ const PAIRS: readonly EnumUnionPair[] = [
     members: unionMembers<IncidentType>()(['assault', 'escape-attempt', 'riot', 'gang-retaliation']),
     readerOnly: [],
   },
+  // The three below arrived with `simulation.inFlight` (issue #1373), which
+  // carries resolved-and-uncollected routes, failures included, and each
+  // active search job's leg state.
+  {
+    site: 'routeFailureReasonSchema',
+    union: 'RouteFailureReason (src/simulation/navigation/route.ts:18)',
+    members: unionMembers<RouteFailureReason>()(['invalid-origin', 'invalid-destination', 'unreachable', 'permission-denied']),
+    readerOnly: [],
+  },
+  {
+    site: 'doorAccessDenialReasonSchema',
+    union: 'DoorAccessDenialReason (src/simulation/navigation/route-context.ts:18)',
+    members: unionMembers<DoorAccessDenialReason>()(['locked', 'insufficient-clearance', 'missing-permission']),
+    readerOnly: [],
+  },
+  {
+    site: 'searchJobStateSchema',
+    union: 'SearchJobState (src/simulation/contraband/search-system.ts:22)',
+    members: unionMembers<SearchJobState>()(['travelling', 'searching']),
+    readerOnly: [],
+  },
 ];
 
 /**
