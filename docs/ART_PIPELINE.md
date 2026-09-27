@@ -57,6 +57,13 @@ base atlas. The Full HD comparison with a calm prisoner is
 The default-zoom Full HD comparison uses four agitated prisoners and one calm
 prisoner in `assets/rendered/evidence/prisoner-riot-default-zoom-1920x1080.png`.
 
+`actor.prisoner.assault` shows both named participants in an open assault. Its
+Blender scene uses four alternating `struggle` frames and the same eight facings,
+camera and pivot as the base prisoner. Render-actors layout 8 carries the
+existing open-assault membership from `IncidentLog`; closure restores both
+participants to the base atlas. The Full HD preview with a calm bystander is
+`assets/rendered/evidence/prisoner-assault-1920x1080.png`.
+
 ## Blender source scene
 
 Each `.blend` source must contain:
@@ -66,7 +73,7 @@ Each `.blend` source must contain:
 - a parent empty named `SpriteRoot`; the character's authored forward direction
   at rotation zero is `south`;
 - timeline frames 1–8 for the base walk cycle (the first frame is also idle);
-  the guard response/search and prisoner riot variants render frames 1–4 as looping gestures;
+  the guard response/search and prisoner riot/assault variants render frames 1–4 as looping gestures;
 - world lighting and the actor model/rig, with no opaque backdrop.
 
 `export-directional-sprites.py` preserves the authored camera and rotates

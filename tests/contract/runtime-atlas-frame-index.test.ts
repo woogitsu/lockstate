@@ -43,6 +43,7 @@ describe('runtime atlas frame index', () => {
       'actor.guard.response',
       'actor.guard.search',
       'actor.medic.base',
+      'actor.prisoner.assault',
       'actor.prisoner.base',
       'actor.prisoner.riot',
       'actor.staff.base',
@@ -50,17 +51,17 @@ describe('runtime atlas frame index', () => {
 
     for (const assetId of index.assetIds()) {
       const idle = index.clip(assetId, 'idle');
-      const motionClipId = assetId === 'actor.guard.response' ? 'respond' : assetId === 'actor.guard.search' ? 'search' : assetId === 'actor.prisoner.riot' ? 'agitate' : 'walk';
+      const motionClipId = assetId === 'actor.guard.response' ? 'respond' : assetId === 'actor.guard.search' ? 'search' : assetId === 'actor.prisoner.riot' ? 'agitate' : assetId === 'actor.prisoner.assault' ? 'struggle' : 'walk';
       const walk = index.clip(assetId, motionClipId);
       expect(idle, `${assetId} idle`).toBeDefined();
       expect(walk, `${assetId} walk`).toBeDefined();
       expect(idle?.frameCount).toBe(1);
-      expect(walk?.frameCount).toBe(assetId === 'actor.guard.response' || assetId === 'actor.guard.search' || assetId === 'actor.prisoner.riot' ? 4 : 8);
-      expect(walk?.fps).toBe(assetId === 'actor.guard.response' || assetId === 'actor.guard.search' || assetId === 'actor.prisoner.riot' ? 6 : 10);
+      expect(walk?.frameCount).toBe(assetId === 'actor.guard.response' || assetId === 'actor.guard.search' || assetId === 'actor.prisoner.riot' || assetId === 'actor.prisoner.assault' ? 4 : 8);
+      expect(walk?.fps).toBe(assetId === 'actor.prisoner.assault' ? 8 : assetId === 'actor.guard.response' || assetId === 'actor.guard.search' || assetId === 'actor.prisoner.riot' ? 6 : 10);
       expect(walk?.loop).toBe(true);
 
       for (const direction of ATLAS_DIRECTIONS) {
-        expect(walk?.byDirection.get(direction)?.length, `${assetId} walk ${direction}`).toBe(assetId === 'actor.guard.response' || assetId === 'actor.guard.search' || assetId === 'actor.prisoner.riot' ? 4 : 8);
+        expect(walk?.byDirection.get(direction)?.length, `${assetId} walk ${direction}`).toBe(assetId === 'actor.guard.response' || assetId === 'actor.guard.search' || assetId === 'actor.prisoner.riot' || assetId === 'actor.prisoner.assault' ? 4 : 8);
         expect(idle?.byDirection.get(direction)?.length, `${assetId} idle ${direction}`).toBe(1);
       }
     }
@@ -116,7 +117,7 @@ describe('runtime atlas frame index', () => {
   it('anchors every role on the same foot pivot, so no role needs an offset', async () => {
     const index = await loadPublishedIndex();
     for (const assetId of index.assetIds()) {
-      for (const clipId of ['idle', assetId === 'actor.guard.response' ? 'respond' : assetId === 'actor.guard.search' ? 'search' : assetId === 'actor.prisoner.riot' ? 'agitate' : 'walk']) {
+      for (const clipId of ['idle', assetId === 'actor.guard.response' ? 'respond' : assetId === 'actor.guard.search' ? 'search' : assetId === 'actor.prisoner.riot' ? 'agitate' : assetId === 'actor.prisoner.assault' ? 'struggle' : 'walk']) {
         const frame = index.frame(assetId, clipId, 'south', 0);
         expect(frame?.footPivotPx, `${assetId} ${clipId}`).toEqual({ x: 128, y: 352 });
       }

@@ -318,6 +318,19 @@ const harness: LockstateActorMotionHarness = {
     );
     emitKeyframe(tick, writer.finish());
   },
+  publishAssaultPair: (tick, active) => {
+    const writer = new RenderActorsKeyframeWriter(2, UNCHANGED_WORLD);
+    for (const [id, x, headingX] of [[70, 8, 1], [71, 10, -1]] as const) {
+      writer.writeRecord(
+        id,
+        packRenderActorFields(RENDER_ACTOR_POPULATION_PRISONER, headingX, 0, false, false, false, active),
+        x * LOCOMOTION_SUBTILE_UNITS,
+        4 * LOCOMOTION_SUBTILE_UNITS,
+        0, 0,
+      );
+    }
+    emitKeyframe(tick, writer.finish());
+  },
   publishCrowd: (tick, records) => {
     const writer = new RenderActorsKeyframeWriter(records.length, UNCHANGED_WORLD);
     for (const record of records) {
