@@ -1,5 +1,22 @@
 # Camera and coordinate contract
 
+## Prepared orientation input (not an active camera angle)
+
+`src/input/camera-orientation.ts` defines desired yaw/tilt state and a remappable
+gesture vocabulary for a later projection. The proposed defaults are Q/E for
+left/right yaw, PageUp/PageDown for tilt, and Alt plus secondary-button drag for
+continuous movement. Validation rejects duplicate keys and collisions with the
+current live camera/build key bindings. Input in a modal or text field, or
+while a placement pointer gesture is active, produces no orientation intent.
+
+**None of these gestures currently rotates or tilts the rendered world.** The
+module is not connected to `WorldScene`, the current top-down Phaser projection
+does not consume its state, and no player-facing angle readout or buttons are
+shown. `cameraOrientationReadout` provides numeric values for that later UI; it
+must be exposed only when the renderer actually applies the angles. Wiring the
+gesture adapter, persisted remaps, projection and visible readout is a separate
+integration step, not something this input contract claims to have delivered.
+
 The renderer owns camera state; it is not prison simulation state and must not be written to saves as authoritative gameplay data.
 
 - World coordinates are continuous logical coordinates. Tiles are integer cells, including at negative positions. How many world units a tile spans is a presentation choice owned by the renderer (`TILE_SIZE_PX`, see [RENDERING.md](./RENDERING.md)), not part of this contract.
