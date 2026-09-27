@@ -237,12 +237,27 @@ export function createSessionCommandHandler(
       construction.noteActionThatDoesNotWriteTheUndoStack();
     }
     if (simCommand !== null && simCommand.type === 'PlaceRoomTemplate') {
-      roomTemplates.place({
+      const key = `room-template:${simCommand.templateId}:${simCommand.origin.x}:${simCommand.origin.y}:${simCommand.mirrorX ?? false}`;
+      const verdict = roomTemplates.place({
         templateId: simCommand.templateId,
         origin: simCommand.origin,
         mirrorX: simCommand.mirrorX ?? false,
         sequence: command.sequence,
       });
+      if (!verdict.ok) {
+        // Existing construction copy remains truthful for this grouped build:
+        // the player does not own the square, or cannot build over its current
+        // structure/object. The originating tile comes from the full-footprint
+        // preflight, not from the gesture's top-left anchor.
+        refusals.record(
+          verdict.reason === 'unowned-land' ? 'build.unowned-land' : 'build.unbuildable',
+          context.tick,
+          key,
+          verdict.tile,
+        );
+      } else {
+        refusals.supersede(key);
+      }
       return;
     }
     if (simCommand !== null && simCommand.type === 'ZoneRoom') {
