@@ -14,6 +14,7 @@ import {
   projectPrisonerRoster,
   projectRoomDetail,
   projectRoomList,
+  projectRoomTemplatePreflight,
   projectSecurity,
   projectStaff,
   projectStatusStrip,
@@ -24,7 +25,6 @@ import { HUD_VIEW_MODEL_SCHEMA_ID } from '../presentation/view-model';
 import type { EntityId } from '../entity/entity-store';
 import { PROJECTION_IDS, type ProjectionId, type ProjectionTarget } from '../protocol/types';
 import type { SimulationRuntime } from '../runtime/new-session';
-import { instantiateRoomTemplate } from '../../content/room-template-catalog';
 
 /**
  * Which registry of a real session answers which read model.
@@ -498,8 +498,7 @@ export const PROJECTION_CATALOG: Readonly<Record<ProjectionId, ProjectionCatalog
     project: (runtime, _tick, request) => {
       const target = request.target;
       if (target?.kind !== 'room-template') throw new Error('Room template target required');
-      const plan = instantiateRoomTemplate(target.templateId, target.origin, target.mirrorX === undefined ? {} : { mirrorX: target.mirrorX });
-      return { view: runtime.roomTemplates.preflight(plan) as unknown as JsonValue };
+      return { view: projectRoomTemplatePreflight(runtime.roomTemplates, target.templateId, target.origin, target.mirrorX) as unknown as JsonValue };
     },
   },
 };
