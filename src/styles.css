@@ -49,6 +49,8 @@ canvas {
   background: var(--surface-raised);
   color: var(--text-body);
   text-align: center;
+  /* Only the actions take input. The card itself may cross the map or a
+     compact HUD rail, and its empty area must not swallow those controls. */
   pointer-events: none;
   touch-action: auto;
 }
@@ -70,6 +72,15 @@ canvas {
   justify-content: center;
   flex-wrap: wrap;
   gap: var(--space-3);
+}
+
+/* The start card is a Full HD affordance. Below that usable CSS viewport,
+   its action buttons cover navigation and display controls; the save rail
+   already provides the same create and load routes without an overlay. */
+@media (max-width: 1919px), (max-height: 1079px) {
+  .empty-world-prompt:not([hidden]) {
+    display: none;
+  }
 }
 
 /*

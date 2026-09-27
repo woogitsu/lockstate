@@ -2829,6 +2829,15 @@ const NEVER_LAID_OUT_WITHOUT_A_HELD_GUARD = [
 const NEVER_LAID_OUT_WITHOUT_ZOOM_DRAWER =
   'hud > hud__tabs > button.ui-icon-button ui-icon-button--bordered hud-navigation-drawer__trigger "Show the sections"';
 
+// This sweep deliberately creates a prison before walking the controls. The
+// empty-session route is consequently hidden throughout it, and on these
+// sub-Full-HD viewports its card is suppressed even before creation. Its own
+// browser test presses Create and Load while the empty session is visible.
+const NEVER_LAID_OUT_WITHOUT_EMPTY_SESSION = [
+  'empty-world-prompt > empty-world-prompt__actions > button.save-panel__button "Create a prison"',
+  'empty-world-prompt > empty-world-prompt__actions > button.save-panel__button "Load a saved prison"',
+] as const;
+
 const NEVER_LAID_OUT_BELOW_720 = [
   'hud > hud__corner > ui-panel hud-minimap > ui-panel__header > ' +
     'button.ui-icon-button ui-icon-button--quiet ui-panel__toggle "Collapse"',
@@ -5040,6 +5049,7 @@ test.describe('the assembled application', () => {
     const exempt = [
       ...(width <= 720 ? NEVER_LAID_OUT_BELOW_720 : []),
       ...NEVER_LAID_OUT_WITHOUT_A_HELD_GUARD,
+      ...NEVER_LAID_OUT_WITHOUT_EMPTY_SESSION,
       NEVER_LAID_OUT_WITHOUT_ZOOM_DRAWER,
       // This sweep deliberately starts a playable session. The central
       // empty-session routes are verified separately in
