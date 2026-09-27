@@ -1,6 +1,6 @@
 import { expect, test } from './network-changed-fixture';
 
-test('animates laundry study from the worker delta and restores the calm prisoner afterwards', async ({ page }) => {
+test('animates laundry folding from the worker delta and restores the calm prisoner afterwards', async ({ page }) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/tests/browser/actor-motion-harness.html');
   await page.evaluate(async () => window.lockstateActorMotionHarness!.ready);
@@ -18,9 +18,9 @@ test('animates laundry study from the worker delta and restores the calm prisone
   expect(await page.evaluate(() => window.lockstateActorMotionHarness!.spritesWithAsset('actor.prisoner.laundry'))).toHaveLength(0);
 });
 
-test('shows the open workbook beside a calm prisoner in a furnished Full HD Laundry', async ({ page }) => {
+test('shows the folded linen beside a calm prisoner in a furnished Full HD Laundry', async ({ page }) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
-  await page.goto('/tests/browser/environment-art-harness.html?laundryFloor=1&prisonerLaundryVisual=1');
+  await page.goto('/tests/browser/environment-art-harness.html?showerFloor=1&prisonerLaundryVisual=1');
   await page.evaluate(async () => {
     await window.lockstateEnvironmentArtHarness!.ready;
     await window.lockstateEnvironmentArtHarness!.artLoaded;
@@ -37,4 +37,5 @@ test('shows the open workbook beside a calm prisoner in a furnished Full HD Laun
     await page.screenshot({ path: 'assets/rendered/evidence/prisoner-laundry-zoom3-1920x1080.png' });
   }
 });
+
 
