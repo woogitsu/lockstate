@@ -1136,8 +1136,8 @@ export interface HudHandle {
   update(viewModel: HudViewModel): void;
   /** Paints a read-only projection supplied by the world renderer. */
   updateMinimap(view: MinimapView | undefined): void;
-  /** Makes the empty-session minimap a truthful, inert instruction. */
-  setMinimapSessionActive(active: boolean): void;
+  /** Keeps empty-session map and purchase actions inert until a prison is active. */
+  setSessionActive(active: boolean): void;
   /**
    * Live feedback from the world pointer into the Build panel's readout.
    *
@@ -2093,9 +2093,10 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     minimapViewport.style.width = `${String(Math.max(0, right - left) * 100)}%`;
     minimapViewport.style.height = `${String(Math.max(0, bottom - top) * 100)}%`;
   }
-  function setMinimapSessionActive(active: boolean): void {
+  function setSessionActive(active: boolean): void {
     hasActivePrison = active;
     minimapSurface.disabled = !active;
+    buildPanel.setSessionActive(active);
     updateMinimap(currentMinimapView);
   }
   minimapSurface.addEventListener('click', (event: MouseEvent) => {
@@ -3444,7 +3445,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     preferencesSlot: layout.preferencesSlot,
     update,
     updateMinimap,
-    setMinimapSessionActive,
+    setSessionActive,
     setBuildTarget: (target) => buildPanel.setTarget(target),
     setUnavailable,
     clearPrisonerSelection: () => rosterPanel.clearPrisonerSelection(),
