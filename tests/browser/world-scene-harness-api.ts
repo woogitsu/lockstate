@@ -29,6 +29,11 @@ export interface HarnessEdge {
   readonly edge: string;
 }
 
+export interface HarnessSquare {
+  readonly x: number;
+  readonly y: number;
+}
+
 /** One tile rectangle, flattened out of `TileRect` so it crosses `page.evaluate`. */
 export interface HarnessRect {
   readonly tileX: number;
@@ -177,6 +182,9 @@ export interface LockstateWorldSceneHarness {
    * gesture, so arming is a harness flag rather than a rebuild.
    */
   armBuildTool(armed: boolean): void;
+  armSquareBuildTool(armed: boolean): void;
+  placedSquareRuns(): readonly (readonly HarnessSquare[])[];
+  targetedSquareRun(): readonly HarnessSquare[] | undefined;
   /**
    * How many times the scene has asked the arming owner to put the tool down
    * (issue #959).

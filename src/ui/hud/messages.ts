@@ -565,6 +565,7 @@ export const HUD_MESSAGE_KEY = {
   buildArm: 'hud.build.arm',
   buildDisarm: 'hud.build.disarm',
   buildArmHint: 'hud.build.arm-hint',
+  buildArmHintSquare: 'hud.build.arm-hint-square',
   /**
    * The armed-tool hint for a row that stands on a tile rather than on an edge
    * (issue #904).

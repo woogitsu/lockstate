@@ -2950,7 +2950,6 @@ test.describe('HUD shell', () => {
       await page.evaluate(() => window.lockstateUiHarness.stepBuildCoordinate('x', 'up'));
       await page.evaluate(() => window.lockstateUiHarness.stepBuildCoordinate('x', 'up'));
       await page.evaluate(() => window.lockstateUiHarness.stepBuildCoordinate('y', 'down'));
-      await page.evaluate(() => window.lockstateUiHarness.clickBuildEdge('west'));
 
       const probe = await page.evaluate(() => window.lockstateUiHarness.buildProbe());
       // `input.value` is the `toHaveValue` case: it reads back whatever the
@@ -2959,18 +2958,18 @@ test.describe('HUD shell', () => {
       expect(probe.visible).toBe(true);
       expect(probe.tileX).toBe('18');
       expect(probe.tileY).toBe('15');
-      expect(probe.edge).toBe('west');
+      expect(probe.edgeChooserVisible).toBe(false);
 
       await page.evaluate(() => window.lockstateUiHarness.clickPlaceOrder());
       const intents = await page.evaluate(() => window.lockstateUiHarness.hudIntents());
 
-      // A run of one: the numeric route names exactly one edge, and says so
-      // in the same shape a drag does (issue #225).
+      // The keyboard route covers the same whole square as a world tap.
       expect(intents.filter((intent) => intent.includes('place-build-order'))).toEqual([
         JSON.stringify({
           kind: 'place-build-order',
           definitionId: 'wall-brick',
-          edges: [{ x: 18, y: 15, edge: 'west' }],
+          footprint: 'square',
+          squares: [{ x: 18, y: 15 }],
         }),
       ]);
 
@@ -3023,6 +3022,7 @@ test.describe('HUD shell', () => {
     test('draws a distinct visible label per edge, and names the aimed edge in the readout', async ({ page }) => {
       await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
       await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
+      await page.evaluate(() => window.lockstateUiHarness.clickBuildable('door-wooden'));
       // The chooser lives in the folded fallback section, whose body carries
       // `hidden`. Opening it is what makes a visibility claim about the
       // options meaningful rather than vacuously false.
@@ -3282,7 +3282,7 @@ test.describe('HUD shell', () => {
       // The chooser lives in the numeric fallback: the map route reads the
       // edge off the gesture instead of asking for it twice.
       await page.evaluate(() => window.lockstateUiHarness.expandBuildCoordinates());
-      expect((await page.evaluate(() => window.lockstateUiHarness.buildProbe())).edgeChooserVisible).toBe(true);
+      expect((await page.evaluate(() => window.lockstateUiHarness.buildProbe())).edgeChooserVisible).toBe(false);
 
       // A disabled chooser would still claim the setting exists; it is hidden
       // instead.
