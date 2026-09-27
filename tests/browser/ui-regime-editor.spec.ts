@@ -176,3 +176,29 @@ test.describe('the Regime panel can change the day it reports', () => {
     expect(await editIntents(page)).toEqual([]);
   });
 });
+
+test.describe('the Full HD day-plan explanation', () => {
+  test.use({ viewport: { width: 1920, height: 1080 }, locale: 'pl-PL' });
+
+  test('keeps the entire locked-category reason inside the panel (#1514)', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.getByRole('button', { name: 'Nowe więzienie' }).click();
+    await page.locator('.ui-tab[data-tab="day-plan"]').click();
+    const editor = page.locator('.hud-regime__editor > .ui-section__header');
+    await expect(editor).toBeVisible();
+    if ((await editor.getAttribute('aria-expanded')) === 'false') await editor.click();
+
+    const reason = page.locator(".hud-regime__editor-list .ui-toggles[data-group='general-population'] .ui-toggles__reason");
+    await expect(reason).toBeVisible();
+    await expect(reason).toContainText('ostatniej nie da się wyłączyć');
+    const geometry = await reason.evaluate((node) => {
+      const text = node as HTMLElement;
+      const rail = text.closest('.hud-regime__editor-list')!;
+      const textBox = text.getBoundingClientRect();
+      const railBox = rail.getBoundingClientRect();
+      return { textRight: textBox.right, railRight: railBox.right, scrollWidth: text.scrollWidth, clientWidth: text.clientWidth };
+    });
+    expect(geometry.textRight, 'the reason extends outside the Full HD day-plan panel').toBeLessThanOrEqual(geometry.railRight + 0.5);
+    expect(geometry.scrollWidth, 'the reason is clipped inside its own box').toBeLessThanOrEqual(geometry.clientWidth + 1);
+  });
+});

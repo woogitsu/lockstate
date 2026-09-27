@@ -189,7 +189,7 @@ stream states, and `restoreState` overwrites all four.
 > - *"`src/main.ts:2100` constructs `SessionController` with no `masterSeed` at
 >   all"*. It passes a generator: `new SessionController(repository, host, {`
 >   with `generateMasterSeed` among its options
->   (`src/main.ts:4424-4427`; the anchor read `:4220-4223`, then
+>   (`src/main.ts:4431-4434`; the anchor read `:4220-4223`, then
 >   `:4381-4384`, re-aimed on 2026-09-21 by
 >   `grep -n 'new SessionController(repository, host, {'` after a chrome-row
 >   overflow fix added an unrelated function above it and again on 2026-09-22
