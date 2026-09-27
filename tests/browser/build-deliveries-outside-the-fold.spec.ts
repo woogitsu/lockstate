@@ -78,6 +78,7 @@ interface MeasuredBox {
   readonly hitsItself: boolean;
   /** Whether the whole box is inside the Build panel's *visible* box, not merely its scroll content. */
   readonly insideVisibleBox: boolean;
+  readonly insidePanelWidth: boolean;
 }
 
 interface DeliveriesGeometry {
@@ -125,6 +126,7 @@ async function deliveriesGeometry(page: Page): Promise<DeliveriesGeometry | null
         hasOffsetParent: (node as HTMLElement).offsetParent !== null,
         hitsItself: hit !== null && (node === hit || node.contains(hit)),
         insideVisibleBox: rect.top >= panelBox.top - 0.5 && rect.bottom <= fold + 0.5,
+        insidePanelWidth: rect.left >= panelBox.left - 0.5 && rect.right <= panelBox.right + 0.5,
       };
     };
     const buyFold = document.querySelector<HTMLElement>('.hud-build__buy');
@@ -252,6 +254,9 @@ test.describe('the money the game spent for the player', () => {
       expect(geometry?.block?.hasOffsetParent, `the deliveries block has no offsetParent at ${at}`).toBe(true);
       expect(geometry?.count?.height ?? 0, `the refundable total has no height at ${at}`).toBeGreaterThan(0);
       expect(geometry?.count?.hasOffsetParent, `the refundable total has no offsetParent at ${at}`).toBe(true);
+      if (width >= 1920) {
+        expect(geometry?.count?.insidePanelWidth, `the refundable total is clipped horizontally at ${at}`).toBe(true);
+      }
       expect(geometry?.countText, `the refundable total renders a raw key at ${at}`).not.toMatch(/^hud\./);
       expect(geometry?.countText, `the refundable total states no figure at ${at}`).toMatch(/\d/);
 
