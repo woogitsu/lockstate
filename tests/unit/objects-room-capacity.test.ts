@@ -353,6 +353,19 @@ describe('the resolver writes what the objects imply, and only when something ch
     expect(resolver.resolveInstance('infirmary-1')).toMatchObject({ residentCapacity: 4 });
   });
 
+  it('does not turn a holding cell into residency when a bed is placed there (#590)', () => {
+    const { rooms, objects, resolver } = prison();
+    rooms.register(instance({ instanceId: 'holding-1', roomCatalogId: 'room.holding-cell' }));
+    objects.place(placedObjectAt('object.bed', TILE(4, 6), 0));
+
+    expect(resolver.resolveInstance('cell-1')?.residentCapacity).toBe(1);
+    expect(resolver.resolveInstance('holding-1')).toMatchObject({
+      residentCapacity: 0,
+      concurrentUseCapacityByCapability: [['sleep-surface', 1]],
+    });
+    expect(rooms.getById('holding-1')?.residentCapacity).toBe(0);
+  });
+
   it('resolves the room containing a tile, and nothing when the tile is in none', () => {
     const { rooms, objects, resolver } = prison();
     objects.place(placedObjectAt('object.bed', TILE(4, 6), 0));
