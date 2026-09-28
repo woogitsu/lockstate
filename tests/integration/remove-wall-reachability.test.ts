@@ -6,6 +6,8 @@ import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/si
 import { TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy/treasury';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { wallRoomPerimeter } from '../helpers/room-walls';
+import { createSaveEnvelope, decodeSaveEnvelope } from '../../src/persistence/save-schema';
+import { captureSessionSnapshot, restoreSimulationRuntime, type SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
 
 /**
  * [ADR 0106](../../docs/adr/0106-how-a-finished-wall-comes-down-without-a-keyboard.md):
@@ -88,6 +90,47 @@ function createSession(seed = 0x106) {
 }
 
 describe('a finished wall is reachable through RemoveWall (ADR 0106)', () => {
+  it('removes a completed full-square wall from any part of its occupied tile', () => {
+    const session = createSession();
+    const square = { x: 7, y: 7 };
+    session.send({ type: 'PlaceBuildOrder', orderId: 'square-wall', definitionId: WALL, ...square, footprint: 'square' });
+    session.runUntilState('square-wall', 'completed');
+    expect(session.runtime.world.getSquareStructure(tile(square.x, square.y))).toBeGreaterThan(0);
+    const balanceAfterBuild = session.runtime.treasury.balanceMinorUnits;
+
+    // The Remove tool still sends the edge nearest the pointer. A full-square
+    // wall must not become removable only from the half resolved as 'north'.
+    session.send({ type: 'RemoveWall', ...square, edge: 'west' });
+    expect(session.runtime.world.getSquareStructure(tile(square.x, square.y))).toBe(0);
+    expect(session.runtime.construction.getOrder('square-wall')?.state).toBe('cancelled');
+    expect(session.runtime.treasury.balanceMinorUnits).toBe(balanceAfterBuild);
+  });
+
+  it('removes a completed full-square wall after a real save and load', () => {
+    const session = createSession();
+    const square = { x: 9, y: 9 };
+    session.send({ type: 'PlaceBuildOrder', orderId: 'saved-square-wall', definitionId: WALL, ...square, footprint: 'square' });
+    session.runUntilState('saved-square-wall', 'completed');
+    const bundle = captureSessionSnapshot(session.runtime);
+    const envelope = createSaveEnvelope({
+      gameVersion: 'lockstate-0.0.0', prisonId: 'square-removal', revision: 1,
+      createdAt: 1_700_000_000_000, updatedAt: 1_700_000_000_001,
+      kernel: bundle.kernel, world: bundle.world, construction: bundle.construction,
+      ...(bundle.entities === undefined ? {} : { entities: bundle.entities }),
+      ...(bundle.simulation === undefined ? {} : { simulation: bundle.simulation }),
+      ...(bundle.identity === undefined ? {} : { identity: bundle.identity }),
+      ...(bundle.masterSeed === undefined ? {} : { masterSeed: bundle.masterSeed }),
+    });
+    const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope)) as unknown);
+    expect(decoded.ok).toBe(true);
+    if (!decoded.ok) throw new Error('square-wall save did not decode');
+    const restored = restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle, 0x106).runtime;
+    expect(restored.world.getSquareStructure(tile(square.x, square.y))).toBeGreaterThan(0);
+    restored.kernel.submitCommand('remove-saved-square', 1, restored.kernel.tick, packCommand({ type: 'RemoveWall', ...square, edge: 'west' }));
+    restored.kernel.step();
+    expect(restored.world.getSquareStructure(tile(square.x, square.y))).toBe(0);
+    expect(restored.construction.getOrder('saved-square-wall')?.state).toBe('cancelled');
+  });
   it('removes the completed wall, keeps every coin already spent, and accepts a re-drag at the catalogue price again', () => {
     const session = createSession();
     const { runtime } = session;
