@@ -10021,7 +10021,7 @@ test.describe('the assembled application', () => {
     const sentBefore = (await purchases()).length;
     await page.locator('.hud-build__buy .ui-number__input').fill('1000');
     await page.locator('.hud-build__buy .ui-number__input').press('Enter');
-    await expect(buy).toHaveText('Buy 1000 × Brick · 40,000');
+    await expect(buy).toHaveText('Buy 1,000 × Brick · 40,000');
     // Which the control now says before it is pressed, and is still pressed --
     // see `pressBuyExpectingRefusal` for why both halves matter and why the
     // press is forced.
