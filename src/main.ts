@@ -39,6 +39,7 @@ import { applyAccessibilitySettings, createDisplayScaleControl } from './ui/disp
 import { createThemeControl, createThemeController, resolveSystemThemeQuery } from './ui/theme';
 import { SavePanel } from './ui/save-panel';
 import { createSimulationRoomTemplatePreflight } from './ui/simulation-room-template-port';
+import { projectRoomTemplateCost } from './simulation/presentation/room-template-cost';
 import { ManageSavesPanel } from './ui/account/manage-saves-panel';
 import {
   EMPTY_HUD_VIEW_MODEL,
@@ -2611,6 +2612,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
   hud = mountHud(app, {
     localizer,
     ...(roomTemplatePreflight === undefined ? {} : { roomTemplatePreflight }),
+    roomTemplateQuote: projectRoomTemplateCost,
     layout: loadLayoutSettings(layoutStore),
     // Persisted first and painted second, exactly as the interface scale is:
     // `saveLayoutSettings` swallows a refusal by design, so the write cannot
