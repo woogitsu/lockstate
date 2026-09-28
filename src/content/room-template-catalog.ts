@@ -18,7 +18,7 @@ export interface RoomTemplatePlan {
   readonly height: number;
   readonly wallSquares: readonly TemplateSquare[];
   readonly doorSquares: readonly TemplateDoorSquare[];
-  readonly zone: { readonly roomId: 'room.cell' | 'room.shower-room' | 'room.canteen' | 'room.kitchen' | 'room.infirmary'; readonly x: number; readonly y: number; readonly width: number; readonly height: number };
+  readonly zone: { readonly roomId: 'room.cell' | 'room.shower-room' | 'room.canteen' | 'room.kitchen' | 'room.infirmary' | 'room.laundry' | 'room.classroom'; readonly x: number; readonly y: number; readonly width: number; readonly height: number };
   /** Every separately designated room; `zone` retains the first for older readers. */
   readonly zones: readonly RoomTemplatePlan['zone'][];
   readonly objects: readonly { readonly buildableId: RoomTemplateObjectId; readonly x: number; readonly y: number }[];
@@ -27,8 +27,8 @@ export interface RoomTemplatePlan {
 /** Player-facing choices; backend-authored additions can join after HUD copy and controls land. */
 export const ROOM_TEMPLATE_IDS = ['cell-basic', 'cell-large', 'shower-room', 'cell-row-four', 'canteen-basic', 'kitchen-basic', 'infirmary-basic'] as const;
 export type RoomTemplateId = (typeof ROOM_TEMPLATE_IDS)[number];
-export type AuthoredRoomTemplateId = RoomTemplateId;
-type RoomTemplateObjectId = 'bed-wooden' | 'toilet-brick' | 'shower-head-brick' | 'dining-table-wooden' | 'bench-wooden' | 'stove-brick' | 'prep-counter-brick' | 'fridge-brick' | 'medical-bed-wooden' | 'medicine-cabinet-wooden';
+export type AuthoredRoomTemplateId = RoomTemplateId | 'laundry-basic' | 'classroom-basic';
+type RoomTemplateObjectId = 'bed-wooden' | 'toilet-brick' | 'shower-head-brick' | 'dining-table-wooden' | 'bench-wooden' | 'stove-brick' | 'prep-counter-brick' | 'fridge-brick' | 'medical-bed-wooden' | 'medicine-cabinet-wooden' | 'washing-machine-brick' | 'bookshelf-wooden' | 'chair-wooden';
 
 /** Authored object names resolve to the same catalogue footprint used by placement. */
 const TEMPLATE_OBJECT_IDS: Readonly<Record<RoomTemplateObjectId, string>> = {
@@ -42,6 +42,9 @@ const TEMPLATE_OBJECT_IDS: Readonly<Record<RoomTemplateObjectId, string>> = {
   'fridge-brick': 'object.fridge',
   'medical-bed-wooden': 'object.medical-bed',
   'medicine-cabinet-wooden': 'object.medicine-cabinet',
+  'washing-machine-brick': 'object.washing-machine',
+  'bookshelf-wooden': 'object.bookshelf',
+  'chair-wooden': 'object.chair',
 };
 
 /** Full occupied furniture squares, shared by catalogue diagram and world ghost. */
@@ -106,6 +109,23 @@ const TEMPLATES: Readonly<Record<Exclude<AuthoredRoomTemplateId, 'cell-row-four'
     objects: [
       { buildableId: 'medical-bed-wooden', x: 1, y: 1 },
       { buildableId: 'medicine-cabinet-wooden', x: 3, y: 1 },
+    ],
+  },
+  'laundry-basic': {
+    width: 6, height: 6, roomId: 'room.laundry', doorX: 2,
+    objects: [
+      { buildableId: 'washing-machine-brick', x: 1, y: 1, width: 2 },
+      { buildableId: 'washing-machine-brick', x: 1, y: 3, width: 2 },
+    ],
+  },
+  'classroom-basic': {
+    width: 7, height: 7, roomId: 'room.classroom', doorX: 3,
+    objects: [
+      { buildableId: 'bookshelf-wooden', x: 1, y: 1, width: 2 },
+      { buildableId: 'chair-wooden', x: 1, y: 3 },
+      { buildableId: 'chair-wooden', x: 2, y: 3 },
+      { buildableId: 'chair-wooden', x: 3, y: 3 },
+      { buildableId: 'chair-wooden', x: 4, y: 3 },
     ],
   },
 };
