@@ -67,6 +67,20 @@ const canRunLive = blender !== undefined && versionMatches;
 
 describe('environment-object render determinism', () => {
   it.skipIf(!canRunLive)(
+    'rejects an --only list when the renderer silently omits an unknown collection',
+    () => {
+      const result = spawnSync(
+        process.execPath,
+        [SCRIPT_PATH, '--only', 'door.interior.variants,missing.collection', '--runs', '2', '--blender', blender!.command],
+        { encoding: 'utf8', cwd: REPOSITORY_ROOT },
+      );
+      const output = `${result.stdout ?? ''}${result.stderr ?? ''}`;
+      expect(result.status, output).not.toBe(0);
+      expect(output).toContain('missing.collection');
+    },
+    180_000,
+  );
+  it.skipIf(!canRunLive)(
     'produces byte-identical output from two independent runs of one collection',
     () => {
       const result = spawnSync(
