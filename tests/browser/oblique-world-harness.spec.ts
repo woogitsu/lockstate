@@ -1,0 +1,22 @@
+import { expect, test } from './network-changed-fixture';
+import type {} from './oblique-world-harness';
+
+test('real render feed cell keeps one build square under the cursor while the scene turns', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/tests/browser/oblique-world-harness.html');
+  await page.evaluate(() => window.lockstateObliqueWorldHarness.ready());
+  await expect(page.locator('canvas')).toBeVisible();
+  let previousGroundPaints = 0;
+  for (const [yaw, elevation] of [[-45, 25], [0, 45], [45, 65]] as const) {
+    await page.evaluate(([y, e]) => window.lockstateObliqueWorldHarness.setPose(y, e), [yaw, elevation] as const);
+    const point = await page.evaluate(() => window.lockstateObliqueWorldHarness.pointAtTile(3, 3));
+    await page.mouse.click(point.x, point.y);
+    expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.selected())).toEqual({ tileX: 3, tileY: 3 });
+    const painted = await page.evaluate(() => window.lockstateObliqueWorldHarness.paintCounts());
+    expect(painted.ground).toBeGreaterThan(previousGroundPaints);
+    previousGroundPaints = painted.ground;
+    await page.waitForTimeout(100);
+    expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.paintCounts())).toEqual(painted);
+    await page.screenshot({ path: testInfo.outputPath(`render-feed-yaw${yaw}-elev${elevation}-fullhd.png`) });
+  }
+});

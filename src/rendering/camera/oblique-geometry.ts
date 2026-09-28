@@ -24,6 +24,33 @@ export interface ProjectedWallPrism {
   readonly heightTiles: number;
 }
 
+/** A projected rectangular footprint with a raised top, in world units. */
+export function projectedRectPrism(
+  x: number,
+  y: number,
+  width: number,
+  depth: number,
+  height: number,
+  camera: ObliqueCameraState,
+): { readonly footprint: TileQuad; readonly top: TileQuad } {
+  if (![x, y, width, depth, height].every(Number.isFinite) || width <= 0 || depth <= 0 || height <= 0) {
+    throw new RangeError('Projected prism dimensions must be positive and finite.');
+  }
+  const footprint: TileQuad = [
+    groundToScreen({ x, y }, camera),
+    groundToScreen({ x: x + width, y }, camera),
+    groundToScreen({ x: x + width, y: y + depth }, camera),
+    groundToScreen({ x, y: y + depth }, camera),
+  ];
+  const top: TileQuad = [
+    groundToScreen({ x, y, z: height }, camera),
+    groundToScreen({ x: x + width, y, z: height }, camera),
+    groundToScreen({ x: x + width, y: y + depth, z: height }, camera),
+    groundToScreen({ x, y: y + depth, z: height }, camera),
+  ];
+  return { footprint, top };
+}
+
 /**
  * View-only full-square wall volume. Swapping full/cutaway height must never
  * move the base polygon that placement, selection and pathfinding refer to.
@@ -35,16 +62,10 @@ export function projectedWallPrism(
   camera: ObliqueCameraState,
 ): ProjectedWallPrism {
   if (!Number.isFinite(heightTiles) || heightTiles <= 0) throw new RangeError('Wall height must be positive and finite.');
-  const footprint = projectedTileQuad(tileX, tileY, camera);
   const x = tileX * TILE_SIZE_PX;
   const y = tileY * TILE_SIZE_PX;
   const z = heightTiles * TILE_SIZE_PX;
-  const top: TileQuad = [
-    groundToScreen({ x, y, z }, camera),
-    groundToScreen({ x: x + TILE_SIZE_PX, y, z }, camera),
-    groundToScreen({ x: x + TILE_SIZE_PX, y: y + TILE_SIZE_PX, z }, camera),
-    groundToScreen({ x, y: y + TILE_SIZE_PX, z }, camera),
-  ];
+  const { footprint, top } = projectedRectPrism(x, y, TILE_SIZE_PX, TILE_SIZE_PX, z, camera);
   return { footprint, top, heightTiles };
 }
 
