@@ -1629,6 +1629,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'app.shell.label': 'Aplikacja gry Lockstate',
   'hud.build.template-materials': 'Materiały: {materials}',
   'hud.build.template-catalogue-value': 'Wartość katalogowa: {total}. Posiadane materiały mogą obniżyć wydatek.',
+  'hud.build.template-zero-cost': 'Wartość katalogowa: 0. Nie wymaga materiałów.',
   'hud.build.template-catalogue-value-unavailable': 'Wartość katalogowa jest niedostępna. Sprawdź wymagane materiały.',
   'hud.build.template-cell-row-four': 'Rząd czterech cel',
   'hud.build.template-arm-hint': 'Wybrano: {name}. Wskaż mapę, aby obejrzeć cały wzór. Kliknij wolny obrys, aby zlecić budowę. Środkowy przycisk myszy lub strzałki poruszają kamerą.',
