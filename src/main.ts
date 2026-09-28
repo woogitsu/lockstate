@@ -37,6 +37,7 @@ import { WorldScene } from './rendering/scene/world-scene';
 import { ObliqueWorldScene } from './rendering/scene/oblique-world-scene';
 import { fetchObliqueModuleSet } from './rendering/assets/oblique-module-registry';
 import { CameraPoseInputAdapter, type CameraPoseAction } from './input/camera-pose-input';
+import { createObliqueMinimapReader } from './ui/oblique-minimap-reader';
 import { VOID_COLOR } from './rendering/world/appearance';
 import { applyAccessibilitySettings, createDisplayScaleControl } from './ui/display-scale';
 import { createThemeControl, createThemeController, resolveSystemThemeQuery } from './ui/theme';
@@ -392,6 +393,7 @@ const obliquePreviewRequested = new URL(window.location.href).searchParams.get('
 let obliqueCameraScene: ObliqueWorldScene | undefined;
 let cameraHud: HudHandle | undefined;
 let cameraInput: CameraPoseInputAdapter | undefined;
+const readObliqueMinimap = createObliqueMinimapReader(renderFeed);
 const cameraPlacementActive = (): boolean =>
   (buildTool?.isArmed() ?? false) || (roomTool?.isArmed() ?? false) || (objectTool?.isArmed() ?? false);
 const cameraContexts = () => {
@@ -741,6 +743,7 @@ if (obliquePreviewRequested) {
         artCatalogs,
         onPoseChanged: (pose) => {
           cameraHud?.updateCameraPose(pose);
+          cameraHud?.updateMinimap(readObliqueMinimap(pose));
           refreshCameraControls();
         },
         canRotate: () => cameraInput?.canActivate() ?? false,
@@ -3922,10 +3925,13 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
   if (obliquePreviewRequested) {
     cameraHud = hud;
     if (obliqueCameraScene !== undefined) hud.updateCameraPose(obliqueCameraScene.cameraPose);
+    window.setInterval(() => {
+      if (obliqueCameraScene !== undefined) hud.updateMinimap(readObliqueMinimap(obliqueCameraScene.cameraPose));
+    }, 250);
     refreshCameraControls();
   }
   // The renderer owns the projection and camera; the HUD only paints it.
-  worldScene.setMinimapSink((view) => hud?.updateMinimap(view));
+  worldScene.setMinimapSink((view) => { if (!obliquePreviewRequested) hud?.updateMinimap(view); });
 
   /*
    * The build identity, in the corner, from first paint.
