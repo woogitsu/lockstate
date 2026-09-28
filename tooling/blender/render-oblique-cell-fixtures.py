@@ -45,7 +45,7 @@ def main() -> None:
     modules.pipeline_common.require_blender_version()
     modules.setup_scene()
     for asset_id, slug in MODELS:
-        if asset_id in ("fixture.cell.toilet_sink", "furniture.chair.wooden"):
+        if asset_id in ("fixture.cell.toilet_sink", "furniture.storage.rack.wooden", "furniture.chair.wooden"):
             modules.YAW = tuple(-165 + index * 30 for index in range(12))
             modules.ELEVATION = (20, 30, 40, 50, 60, 70)
         else:
