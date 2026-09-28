@@ -57,6 +57,7 @@ export const placeBuildOrderSchema = z.object({
   x: z.number().int(),
   y: z.number().int(),
   edge: z.enum(BUILD_EDGES).optional(),
+  footprint: z.literal('square').optional(),
   transactionId: z.string().optional(),
 }).strict();
 
@@ -85,6 +86,14 @@ export const zoneRoomSchema = z.object({
   width: z.number().int(),
   height: z.number().int(),
   transactionId: z.string().optional(),
+}).strict();
+
+/** One atomic authored template gesture; the worker expands its complete footprint. */
+export const placeRoomTemplateSchema = z.object({
+  type: z.literal('PlaceRoomTemplate'),
+  templateId: z.enum(['cell-basic', 'cell-large', 'shower-room', 'canteen-basic', 'kitchen-basic', 'cell-row-four', 'infirmary-basic', 'laundry-basic', 'classroom-basic']),
+  origin: z.object({ x: z.number().int().safe(), y: z.number().int().safe() }).strict(),
+  mirrorX: z.boolean().optional(),
 }).strict();
 
 /**
@@ -777,6 +786,7 @@ export const editRegimeBlockSchema = z.object({
 
 export const simulationCommandSchema = z.discriminatedUnion('type', [
   placeBuildOrderSchema,
+  placeRoomTemplateSchema,
   cancelBuildOrderSchema,
   zoneRoomSchema,
   unzoneRoomSchema,
@@ -800,6 +810,13 @@ export type SimulationCommand = z.infer<typeof simulationCommandSchema>;
 
 function commandJson(command: SimulationCommand): JsonValue {
   switch (command.type) {
+    case 'PlaceRoomTemplate':
+      return {
+        type: command.type,
+        templateId: command.templateId,
+        origin: { x: command.origin.x, y: command.origin.y },
+        ...(command.mirrorX === undefined ? {} : { mirrorX: command.mirrorX }),
+      };
     case 'PlaceBuildOrder':
       return {
         type: command.type,
@@ -808,6 +825,7 @@ function commandJson(command: SimulationCommand): JsonValue {
         x: command.x,
         y: command.y,
         ...(command.edge === undefined ? {} : { edge: command.edge }),
+        ...(command.footprint === undefined ? {} : { footprint: command.footprint }),
         ...(command.transactionId === undefined
           ? {}
           : { transactionId: command.transactionId }),

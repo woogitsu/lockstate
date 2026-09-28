@@ -31,7 +31,7 @@ try {
     });
     await page.route('**/assets/environment/oblique/wall-module-west-cutaway-*.png', async (route) => {
       const name = new URL(route.request().url()).pathname.split('/').at(-1);
-      if (!name) throw new Error('West cutaway frame URL has no filename');
+      if (name === undefined) throw new Error('Cutaway image URL has no file name.');
       await route.fulfill({ contentType: 'image/png', body: await readFile(join('public/assets/environment/oblique', name)) });
     });
   }

@@ -52,6 +52,8 @@ export interface SerializedChunkState {
   readonly terrain?: TerrainRle;
   readonly topEdge?: TerrainRle; // Reusing TerrainRle format (RLE of Uint8) for simplicity
   readonly leftEdge?: TerrainRle;
+  /** New whole-tile wall (1), north-south door (2), or east-west door (3). */
+  readonly squareStructure?: TerrainRle;
   readonly zoning?: TerrainRle;
 }
 
@@ -191,7 +193,7 @@ function decodeChunk(value: unknown): SerializedChunkState {
   allowedKeys(
     record,
     ['contentRevision', 'dirty', 'geometryRevision', 'lifecycle', 'x', 'y'],
-    ['terrain', 'topEdge', 'leftEdge', 'zoning'],
+    ['terrain', 'topEdge', 'leftEdge', 'squareStructure', 'zoning'],
     'Chunk',
   );
   if (
@@ -207,6 +209,7 @@ function decodeChunk(value: unknown): SerializedChunkState {
   let terrain: TerrainRle | undefined;
   let topEdge: TerrainRle | undefined;
   let leftEdge: TerrainRle | undefined;
+  let squareStructure: TerrainRle | undefined;
   let zoning: TerrainRle | undefined;
 
   if (record.terrain !== undefined) {
@@ -220,6 +223,10 @@ function decodeChunk(value: unknown): SerializedChunkState {
   if (record.leftEdge !== undefined) {
     if (!Array.isArray(record.leftEdge)) throw new WorldSnapshotError('Chunk leftEdge must be an array.');
     leftEdge = record.leftEdge as TerrainRle;
+  }
+  if (record.squareStructure !== undefined) {
+    if (!Array.isArray(record.squareStructure)) throw new WorldSnapshotError('Chunk squareStructure must be an array.');
+    squareStructure = record.squareStructure as TerrainRle;
   }
   if (record.zoning !== undefined) {
     if (!Array.isArray(record.zoning)) throw new WorldSnapshotError('Chunk zoning must be an array.');
@@ -237,6 +244,7 @@ function decodeChunk(value: unknown): SerializedChunkState {
       ...(terrain !== undefined ? { terrain } : {}),
       ...(topEdge !== undefined ? { topEdge } : {}),
       ...(leftEdge !== undefined ? { leftEdge } : {}),
+      ...(squareStructure !== undefined ? { squareStructure } : {}),
       ...(zoning !== undefined ? { zoning } : {}),
     };
   } catch (error) {
@@ -284,6 +292,7 @@ export class SparseWorld {
   private readonly chunkTerrain = new Map<string, Uint8Array>();
   private readonly chunkTopEdge = new Map<string, Uint8Array>();
   private readonly chunkLeftEdge = new Map<string, Uint8Array>();
+  private readonly chunkSquareStructure = new Map<string, Uint8Array>();
   private readonly chunkZoning = new Map<string, Uint8Array>();
   private readonly parcels = new Map<string, ParcelDefinition>();
   private readonly ownedParcels = new Set<string>();
@@ -551,6 +560,20 @@ export class SparseWorld {
     this.markGeometryChanged(chunk);
   }
 
+  /** Whole-square construction geometry, independent from pre-existing edge walls. */
+  public getSquareStructure(tile: TilePosition): number {
+    return this.getMapValue(this.chunkSquareStructure, tile);
+  }
+
+  public setSquareStructure(tile: TilePosition, value: 0 | 1 | 2 | 3): void {
+    if (value !== 0 && value !== 1 && value !== 2 && value !== 3) {
+      throw new RangeError('Square structure value must be empty (0), wall (1), north-south door (2), or east-west door (3).');
+    }
+    this.setMapValue(this.chunkSquareStructure, tile, value);
+    const { chunk } = tileToChunk(tile, this.tileChunkSize);
+    this.markGeometryChanged(chunk);
+  }
+
   public getZoning(tile: TilePosition): number {
     return this.getMapValue(this.chunkZoning, tile);
   }
@@ -727,6 +750,7 @@ export class SparseWorld {
         const terrainData = this.chunkTerrain.get(key);
         const topEdgeData = this.chunkTopEdge.get(key);
         const leftEdgeData = this.chunkLeftEdge.get(key);
+        const squareStructureData = this.chunkSquareStructure.get(key);
         const zoningData = this.chunkZoning.get(key);
         
         const hasData = state.lifecycle === 'loaded';
@@ -741,6 +765,8 @@ export class SparseWorld {
           ...(hasData && terrainData ? { terrain: encodeTerrainRle(terrainData) } : {}),
           ...(hasData && topEdgeData ? { topEdge: encodeTerrainRle(topEdgeData) } : {}),
           ...(hasData && leftEdgeData ? { leftEdge: encodeTerrainRle(leftEdgeData) } : {}),
+          ...(hasData && squareStructureData?.some((value) => value !== 0)
+            ? { squareStructure: encodeTerrainRle(squareStructureData) } : {}),
           ...(hasData && zoningData ? { zoning: encodeTerrainRle(zoningData) } : {}),
         };
       });
@@ -819,6 +845,11 @@ export class SparseWorld {
         if (chunk.terrain !== undefined) world.chunkTerrain.set(key, decodeTerrainRle(chunk.terrain, size * size));
         if (chunk.topEdge !== undefined) world.chunkTopEdge.set(key, decodeTerrainRle(chunk.topEdge, size * size));
         if (chunk.leftEdge !== undefined) world.chunkLeftEdge.set(key, decodeTerrainRle(chunk.leftEdge, size * size));
+        if (chunk.squareStructure !== undefined) {
+          const structures = decodeTerrainRle(chunk.squareStructure, size * size);
+          if (structures.some((value) => value > 3)) throw new WorldSnapshotError('Chunk squareStructure has an unknown value.');
+          world.chunkSquareStructure.set(key, structures);
+        }
         if (chunk.zoning !== undefined) world.chunkZoning.set(key, decodeTerrainRle(chunk.zoning, size * size));
         world.ensureStorage(key);
       }

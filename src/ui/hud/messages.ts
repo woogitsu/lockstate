@@ -519,6 +519,35 @@ export const HUD_MESSAGE_KEY = {
   buildTitle: 'hud.build.title',
   buildCatalogue: 'hud.build.catalogue',
   buildCatalogueEmpty: 'hud.build.catalogue-empty',
+  templatePlans: 'hud.build.templates',
+  templatePlansShort: 'hud.build.templates-short',
+  templatePreviewOnly: 'hud.build.template-preview-only',
+  templatePositionHint: 'hud.build.template-position-hint',
+  templateX: 'hud.build.template-x',
+  templateY: 'hud.build.template-y',
+  templateMirror: 'hud.build.template-mirror',
+  templatePlace: 'hud.build.template-place',
+  templateMap: 'hud.build.template-map',
+  templateInvalidPosition: 'hud.build.template-invalid-position',
+  templateOutsideSafeTiles: 'hud.build.template-outside-safe-tiles',
+  templateReady: 'hud.build.template-ready',
+  templateBlocked: 'hud.build.template-blocked',
+  templateUnownedLand: 'hud.build.template-unowned-land',
+  templateUnavailable: 'hud.build.template-unavailable',
+  templateSubmitted: 'hud.build.template-submitted',
+  templateClose: 'hud.build.template-close',
+  templateCellBasic: 'hud.build.template-cell-basic',
+  templateCellLarge: 'hud.build.template-cell-large',
+  templateShowerRoom: 'hud.build.template-shower-room',
+  templateWall: 'hud.build.template-wall',
+  templateDoor: 'hud.build.template-door',
+  templateFurniture: 'hud.build.template-furniture',
+  templateBed: 'hud.build.template-bed',
+  templateToilet: 'hud.build.template-toilet',
+  templateShower: 'hud.build.template-shower',
+  templateSize: 'hud.build.template-size',
+  templateObjectCount: 'hud.build.template-object-count',
+  templateAriaLabel: 'hud.build.template-aria-label',
   buildSelected: 'hud.build.selected',
   /**
    * What one catalogue row costs, before it is armed (issue #901).
@@ -573,6 +602,7 @@ export const HUD_MESSAGE_KEY = {
   buildArm: 'hud.build.arm',
   buildDisarm: 'hud.build.disarm',
   buildArmHint: 'hud.build.arm-hint',
+  buildArmHintSquare: 'hud.build.arm-hint-square',
   /**
    * The armed-tool hint for a row that stands on a tile rather than on an edge
    * (issue #904).
@@ -1792,6 +1822,10 @@ export const HUD_MESSAGE_KEY = {
   severityInfo: 'hud.severity.info',
   severityWarning: 'hud.severity.warning',
   severityDanger: 'hud.severity.danger',
+  templateMaterials: 'hud.build.template-materials',
+  templateCatalogueValue: 'hud.build.template-catalogue-value',
+  templateCatalogueValueUnavailable: 'hud.build.template-catalogue-value-unavailable',
+  templateCellRowFour: 'hud.build.template-cell-row-four',
 } as const satisfies Readonly<Record<string, LocalizationKey>>;
 
 export type HudMessageKey = (typeof HUD_MESSAGE_KEY)[keyof typeof HUD_MESSAGE_KEY];

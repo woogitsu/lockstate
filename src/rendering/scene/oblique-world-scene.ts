@@ -1,11 +1,14 @@
 import Phaser from 'phaser';
+import { pickEdgeAtWorld, type BuildEdgeId } from '../build/edge-picking';
 import type { RenderActor, RenderFeed, RenderFrame } from '../feed/render-feed';
 import { TILE_SIZE_PX, worldToTile } from '../tile-metrics';
 import { VOID_COLOR, ZONING_TINT_ALPHA, UNOWNED_SHADE_ALPHA, UNOWNED_SHADE_COLOR } from '../world/appearance';
 import {
   changeObliquePoseAtScreenPoint,
   groundToScreen,
+  panObliqueCameraByScreenDelta,
   screenToGround,
+  zoomObliqueCameraAtScreenPoint,
   type ObliqueCameraState,
 } from '../camera/oblique-projection';
 import { obliqueDepthForAnchor, projectedTileQuad, type TileQuad } from '../camera/oblique-geometry';
@@ -17,6 +20,8 @@ import { selectObliqueWallJunctions } from './oblique-wall-junctions';
 
 const DEFAULT_YAW_RADIANS = -Math.PI / 4;
 const DEFAULT_ELEVATION_RADIANS = Math.PI / 4;
+const ZOOM_BOUNDS = { min: 0.2, max: 3 } as const;
+const ZOOM_STEP = 1.25;
 
 function lowerTop(footprint: TileQuad, top: TileQuad, fraction: number): TileQuad {
   const corner = (index: 0 | 1 | 2 | 3): Point => ({
@@ -29,6 +34,10 @@ function lowerTop(footprint: TileQuad, top: TileQuad, fraction: number): TileQua
 export interface ObliqueWorldSceneOptions {
   readonly feed: RenderFeed;
   readonly onTileSelected?: (tileX: number, tileY: number) => void;
+  /** A completed left-button ground gesture, reported as whole square tiles. */
+  readonly onTileGesture?: (tiles: readonly { readonly x: number; readonly y: number }[], edge: BuildEdgeId) => void;
+  /** Live whole-tile drag endpoints; undefined start clears the preview. */
+  readonly onTileGesturePreview?: (start: { readonly x: number; readonly y: number } | undefined, end?: { readonly x: number; readonly y: number }) => void;
   readonly onGroundHover?: (tile: { readonly tileX: number; readonly tileY: number } | undefined) => void;
   /** The HUD follows every scene-side pose change, including pointer drags. */
   readonly onPoseChanged?: (pose: ObliqueCameraState) => void;
@@ -47,6 +56,9 @@ export interface ObliqueWorldSceneOptions {
 export class ObliqueWorldScene extends Phaser.Scene {
   private readonly feed: RenderFeed;
   private readonly onTileSelected: ((tileX: number, tileY: number) => void) | undefined;
+  private readonly onTileGesture: ((tiles: readonly { readonly x: number; readonly y: number }[], edge: BuildEdgeId) => void) | undefined;
+  private readonly onTileGesturePreview: ((start: { readonly x: number; readonly y: number } | undefined, end?: { readonly x: number; readonly y: number }) => void) | undefined;
+  private leftGesture: { readonly pointerId: number; readonly x: number; readonly y: number } | undefined;
   private readonly onGroundHover: ((tile: { readonly tileX: number; readonly tileY: number } | undefined) => void) | undefined;
   private readonly onPoseChanged: ((pose: ObliqueCameraState) => void) | undefined;
   private readonly canRotate: () => boolean;
@@ -68,6 +80,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private lastPaintedPoseRevision = -1;
   private actorPositions: { id: number; tileX: number; tileY: number }[] = [];
   private groundPaints = 0;
+  private groundArtPaints = 0;
   private raisedPaints = 0;
   private artImages: Phaser.GameObjects.Image[] = [];
   private groundArtImages: Phaser.GameObjects.Image[] = [];
@@ -79,6 +92,8 @@ export class ObliqueWorldScene extends Phaser.Scene {
     super({ key: 'oblique-world' });
     this.feed = options.feed;
     this.onTileSelected = options.onTileSelected;
+    this.onTileGesture = options.onTileGesture;
+    this.onTileGesturePreview = options.onTileGesturePreview;
     this.onGroundHover = options.onGroundHover;
     this.onPoseChanged = options.onPoseChanged;
     this.canRotate = options.canRotate ?? (() => true);
@@ -126,7 +141,11 @@ export class ObliqueWorldScene extends Phaser.Scene {
       const tileX = worldToTile(world.x);
       const tileY = worldToTile(world.y);
       this.selected = { tileX, tileY };
-      this.onTileSelected?.(tileX, tileY);
+      if (this.onTileGesture === undefined) this.onTileSelected?.(tileX, tileY);
+      else {
+        this.leftGesture = { pointerId: pointer.id, x: tileX, y: tileY };
+        this.onTileGesturePreview?.({ x: tileX, y: tileY }, { x: tileX, y: tileY });
+      }
       this.paintSelection();
       if (this.lastProjection !== undefined) {
         this.paintRaised(this.lastProjection);
@@ -136,6 +155,10 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
       this.hoverPointerAt = { x: pointer.x, y: pointer.y };
       this.emitGroundHover();
+      if (this.leftGesture?.pointerId === pointer.id) {
+        const world = screenToGround({ x: pointer.x, y: pointer.y }, this.pose);
+        this.onTileGesturePreview?.(this.leftGesture, { x: worldToTile(world.x), y: worldToTile(world.y) });
+      }
       if (pointer.id !== this.turnPointerId || this.turnPointerAt === undefined) return;
       if (!this.canRotate()) {
         this.turnPointerId = undefined;
@@ -156,11 +179,40 @@ export class ObliqueWorldScene extends Phaser.Scene {
       this.turnPointerId = undefined;
       this.turnPointerAt = undefined;
     };
-    this.input.on('pointerup', stopTurn);
-    this.input.on('pointerupoutside', stopTurn);
+    this.input.on('pointerup', (pointer: Phaser.Input.Pointer) => {
+      stopTurn(pointer);
+      const start = this.leftGesture;
+      if (start === undefined || pointer.id !== start.pointerId) return;
+      this.leftGesture = undefined;
+      this.onTileGesturePreview?.(undefined);
+      const world = screenToGround({ x: pointer.x, y: pointer.y }, this.pose);
+      const endX = worldToTile(world.x);
+      const endY = worldToTile(world.y);
+      const width = Math.abs(endX - start.x) + 1;
+      const height = Math.abs(endY - start.y) + 1;
+      if (width * height > 4096) return;
+      const tiles: { x: number; y: number }[] = [];
+      for (let y = Math.min(start.y, endY); y <= Math.max(start.y, endY); y += 1) {
+        for (let x = Math.min(start.x, endX); x <= Math.max(start.x, endX); x += 1) {
+          tiles.push({ x, y });
+        }
+      }
+      this.onTileGesture?.(tiles, pickEdgeAtWorld(world).edge);
+    });
+    this.input.on('pointerupoutside', (pointer: Phaser.Input.Pointer) => {
+      stopTurn(pointer);
+      if (pointer.id === this.leftGesture?.pointerId) {
+        this.leftGesture = undefined;
+        this.onTileGesturePreview?.(undefined);
+      }
+    });
     this.input.on('gameout', () => {
       this.hoverPointerAt = undefined;
       this.emitGroundHover();
+      if (this.leftGesture !== undefined) {
+        this.leftGesture = undefined;
+        this.onTileGesturePreview?.(undefined);
+      }
     });
   }
 
@@ -169,6 +221,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
   public get paintCounts(): { readonly ground: number; readonly raised: number } {
     return { ground: this.groundPaints, raised: this.raisedPaints };
   }
+  public get groundArtPaintCount(): number { return this.groundArtPaints; }
   public get artTextureKeys(): readonly string[] {
     return [...this.groundArtImages, ...this.artImages, ...this.actorArtImages].map((item) => item.texture.key);
   }
@@ -210,27 +263,76 @@ export class ObliqueWorldScene extends Phaser.Scene {
     void this.ensureArtForCurrentPose().catch((error: unknown) => { this.artLoadErrors.push(String(error)); });
   }
 
+  /** The visible zoom controls must change the active angled camera, not the dormant top-down scene. */
+  public stepCameraZoom(direction: 'in' | 'out', pivot?: Point): void {
+    const factor = direction === 'in' ? ZOOM_STEP : 1 / ZOOM_STEP;
+    const zoom = Math.min(ZOOM_BOUNDS.max, Math.max(ZOOM_BOUNDS.min, this.pose.zoom * factor));
+    if (zoom === this.pose.zoom) return;
+    this.pose = zoomObliqueCameraAtScreenPoint(
+      this.pose,
+      pivot ?? { x: this.pose.viewport.width / 2, y: this.pose.viewport.height / 2 },
+      zoom,
+    );
+    this.poseRevision += 1;
+    this.onPoseChanged?.(this.pose);
+    this.emitGroundHover();
+    this.repaint();
+  }
+
+  /** Move the angled viewport in screen axes; mouse grabbing supplies the inverse drag. */
+  public stepCameraPan(screenDx: number, screenDy: number): void {
+    if (!Number.isFinite(screenDx) || !Number.isFinite(screenDy) || (screenDx === 0 && screenDy === 0)) return;
+    this.pose = panObliqueCameraByScreenDelta(this.pose, screenDx, screenDy);
+    this.poseRevision += 1;
+    this.onPoseChanged?.(this.pose);
+    this.emitGroundHover();
+    this.repaint();
+  }
+
+  /** Point the angled view at the same loaded-world location selected on the minimap. */
+  public navigateToMinimapPoint(fx: number, fy: number): boolean {
+    const bounds = this.lastFrame?.world.loadedBounds;
+    if (bounds === undefined || !Number.isFinite(fx) || !Number.isFinite(fy)) return false;
+    const clampedX = Math.min(1, Math.max(0, fx));
+    const clampedY = Math.min(1, Math.max(0, fy));
+    this.pose = {
+      ...this.pose,
+      target: {
+        x: (bounds.minTileX + clampedX * (bounds.maxTileX - bounds.minTileX + 1)) * TILE_SIZE_PX,
+        y: (bounds.minTileY + clampedY * (bounds.maxTileY - bounds.minTileY + 1)) * TILE_SIZE_PX,
+      },
+    };
+    this.poseRevision += 1;
+    this.onPoseChanged?.(this.pose);
+    this.emitGroundHover();
+    this.repaint();
+    return true;
+  }
+
   /** Resolve only the authored frames nearest to the active camera pose. */
   public async ensureArtForCurrentPose(): Promise<void> {
+    const requestedPoseRevision = this.poseRevision;
     const pending: Promise<void>[] = [];
     for (const catalog of this.artCatalogs.values()) {
       const frame = selectObliqueModuleFrame(catalog, this.pose);
       if (this.textures.exists(frame.image)) continue;
       let task = this.pendingArtLoads.get(frame.image);
       if (task === undefined) {
-        task = ensureObliqueModuleFrameTexture(this, catalog, this.pose).then(() => {
-          if (this.lastProjection !== undefined && this.scene.isActive()) {
-            this.paintGroundArt(this.lastProjection);
-            this.paintRaised(this.lastProjection);
-            this.paintArt(this.lastProjection);
-            this.paintActorArt(this.lastProjection);
-          }
-        }).finally(() => { this.pendingArtLoads.delete(frame.image); });
+        task = ensureObliqueModuleFrameTexture(this, catalog, this.pose)
+          .then(() => undefined)
+          .finally(() => { this.pendingArtLoads.delete(frame.image); });
         this.pendingArtLoads.set(frame.image, task);
       }
       pending.push(task);
     }
     await Promise.all(pending);
+    if (pending.length > 0 && requestedPoseRevision === this.poseRevision &&
+        this.lastProjection !== undefined && this.scene.isActive()) {
+      this.paintGroundArt(this.lastProjection);
+      this.paintRaised(this.lastProjection);
+      this.paintArt(this.lastProjection);
+      this.paintActorArt(this.lastProjection);
+    }
   }
 
   public override update(time: number): void {
@@ -286,24 +388,29 @@ export class ObliqueWorldScene extends Phaser.Scene {
   }
 
   private paintGroundArt(projection: ObliqueWorldProjection): void {
+    this.groundArtPaints += 1;
     for (const image of this.groundArtImages) image.destroy();
     this.groundArtImages = [];
     for (const tile of projection.ground) {
-      if (tile.artAssetId === undefined) continue;
-      const catalog = this.artCatalogs.get(tile.artAssetId);
-      if (catalog === undefined) continue;
-      const frame = selectObliqueModuleFrame(catalog, this.pose);
-      if (!this.textures.exists(frame.image)) continue;
       const anchor = {
         x: tile.quad.reduce((sum, corner) => sum + corner.x, 0) / 4,
         y: tile.quad.reduce((sum, corner) => sum + corner.y, 0) / 4,
       };
-      const [width, height] = catalog.resolutionPx;
-      const [pivotX, pivotY] = catalog.pivotPx;
-      this.groundArtImages.push(this.add.image(anchor.x, anchor.y, frame.image)
-        .setOrigin(pivotX / width, pivotY / height)
-        .setScale(this.pose.zoom)
-        .setDepth(0.2));
+      const assets = tile.artAssetId === undefined
+        ? tile.artOverlayAssetIds
+        : [tile.artAssetId, ...tile.artOverlayAssetIds];
+      for (const [index, assetId] of assets.entries()) {
+        const catalog = this.artCatalogs.get(assetId);
+        if (catalog === undefined) continue;
+        const frame = selectObliqueModuleFrame(catalog, this.pose);
+        if (!this.textures.exists(frame.image)) continue;
+        const [width, height] = catalog.resolutionPx;
+        const [pivotX, pivotY] = catalog.pivotPx;
+        this.groundArtImages.push(this.add.image(anchor.x, anchor.y, frame.image)
+          .setOrigin(pivotX / width, pivotY / height)
+          .setScale(this.pose.zoom)
+          .setDepth(0.2 + index * 0.001));
+      }
     }
   }
 
@@ -351,10 +458,10 @@ export class ObliqueWorldScene extends Phaser.Scene {
   }
 
   private cutawayArtAssetId(item: ObliqueSolid): string | undefined {
-    if (item.artAssetId === 'wall.interior.module.full' || item.artAssetId === 'wall.interior.module.west.full') {
-      return 'wall.interior.module.cutaway';
-    }
+    if (item.artAssetId === 'wall.interior.module.full') return 'wall.interior.module.cutaway';
+    if (item.artAssetId === 'wall.interior.module.west.full') return 'wall.interior.module.west.cutaway';
     if (item.artAssetId === 'door.interior.open.west.full') return 'door.interior.open.west.cutaway';
+    if (item.artAssetId === 'door.shower.privacy.open.full') return 'door.shower.privacy.open.cutaway';
     return undefined;
   }
 

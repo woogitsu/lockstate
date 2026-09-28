@@ -49,6 +49,23 @@ test('TopologyManager detects enclosed rooms within a chunk', () => {
   expect(mergedId1).toBe(mergedId2);
 });
 
+test('TopologyManager separates regions on a column of whole-square walls', () => {
+  const world = new SparseWorld(8);
+  const position = { x: chunkCoordinate(0), y: chunkCoordinate(0) };
+  world.load(position);
+  const manager = new TopologyManager(world);
+  manager.update([world.getChunk(position)!]);
+  const before = manager.getTopologyId({ x: tileCoordinate(2), y: tileCoordinate(3) });
+  expect(before).toBe(manager.getTopologyId({ x: tileCoordinate(6), y: tileCoordinate(3) }));
+
+  for (let y = 0; y < 8; y += 1) {
+    world.setSquareStructure({ x: tileCoordinate(4), y: tileCoordinate(y) }, 1);
+  }
+  manager.update([world.getChunk(position)!]);
+  expect(manager.getTopologyId({ x: tileCoordinate(2), y: tileCoordinate(3) }))
+    .not.toBe(manager.getTopologyId({ x: tileCoordinate(6), y: tileCoordinate(3) }));
+});
+
 test('TopologyManager detects rooms spanning chunk boundaries', () => {
   const world = new SparseWorld(16);
   

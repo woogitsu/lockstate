@@ -25,7 +25,7 @@ try {
       canvas.height = 1080;
       document.body.append(canvas);
       const ctx = canvas.getContext('2d');
-      if (!ctx) throw new Error('2D canvas context unavailable');
+      if (ctx === null) throw new Error('The browser did not provide a 2D canvas context.');
       ctx.fillStyle = '#344048';
       ctx.fillRect(0, 0, 1920, 1080);
       const rad = yaw * Math.PI / 180;
@@ -36,7 +36,7 @@ try {
       for (let x = -14; x < 14; x += 1) {
         for (let y = -14; y < 14; y += 1) {
           const center = project(x + 0.5, y + 0.5);
-          if (withBlender) ctx.drawImage(image, center.x - catalog.pivotPx[0], center.y - catalog.pivotPx[1]);
+          if (withBlender) ctx.drawImage(image, center.x - 256, center.y - 256);
           else {
             const corners = [[x, y], [x + 1, y], [x + 1, y + 1], [x, y + 1]];
             ctx.beginPath();

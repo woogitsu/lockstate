@@ -7,6 +7,7 @@ import {
   type TilePosition,
 } from '../world/coordinates';
 import { type DoorSide, DoorRegistry } from './door';
+import { squareBoundary } from '../world/square-boundary';
 
 export type RegionId = number;
 
@@ -58,16 +59,22 @@ export interface NavigationGraph {
 
 export interface ResolvedEdge {
   readonly wallValue: number;
+  /** A whole-square wall wins over a historical door registered on this face. */
+  readonly squareWall: boolean;
   readonly ownerTile: TilePosition;
   readonly side: DoorSide;
 }
 
 export function resolveEdge(world: SparseWorld, a: TilePosition, b: TilePosition): ResolvedEdge {
-  if (b.x === a.x + 1 && b.y === a.y) return { wallValue: world.getLeftEdge(b), ownerTile: b, side: 'left' };
-  if (b.x === a.x - 1 && b.y === a.y) return { wallValue: world.getLeftEdge(a), ownerTile: a, side: 'left' };
-  if (b.y === a.y + 1 && b.x === a.x) return { wallValue: world.getTopEdge(b), ownerTile: b, side: 'top' };
-  if (b.y === a.y - 1 && b.x === a.x) return { wallValue: world.getTopEdge(a), ownerTile: a, side: 'top' };
-  throw new RangeError('Tiles are not orthogonally adjacent.');
+  let ownerTile: TilePosition;
+  let side: DoorSide;
+  let wallValue: number;
+  if (b.x === a.x + 1 && b.y === a.y) { ownerTile = b; side = 'left'; wallValue = world.getLeftEdge(b); }
+  else if (b.x === a.x - 1 && b.y === a.y) { ownerTile = a; side = 'left'; wallValue = world.getLeftEdge(a); }
+  else if (b.y === a.y + 1 && b.x === a.x) { ownerTile = b; side = 'top'; wallValue = world.getTopEdge(b); }
+  else if (b.y === a.y - 1 && b.x === a.x) { ownerTile = a; side = 'top'; wallValue = world.getTopEdge(a); }
+  else throw new RangeError('Tiles are not orthogonally adjacent.');
+  return { ownerTile, side, wallValue, squareWall: squareBoundary(world, a, b) === 'wall' };
 }
 
 export function neighbors(tile: TilePosition): readonly TilePosition[] {
@@ -144,6 +151,7 @@ export function buildNavigationGraph(
         if (!tileSet.has(neighborKey) || tileToRegion.has(neighborKey)) continue;
 
         const edge = resolveEdge(world, current, neighbor);
+        if (edge.squareWall) continue;
         if (doors.getByEdge(edge.ownerTile, edge.side) !== undefined) continue; // door: always a region boundary
         if (edge.wallValue !== 0) continue; // solid wall: no portal, no connectivity
 
@@ -161,6 +169,7 @@ export function buildNavigationGraph(
     for (const neighbor of neighbors(tile)) {
       if (!tileSet.has(tileKey(neighbor))) continue;
       const edge = resolveEdge(world, tile, neighbor);
+      if (edge.squareWall) continue;
       const door = doors.getByEdge(edge.ownerTile, edge.side);
       if (door === undefined || seenDoorIds.has(door.id)) continue;
       seenDoorIds.add(door.id);

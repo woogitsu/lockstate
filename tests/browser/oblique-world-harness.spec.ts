@@ -38,6 +38,37 @@ test('build mode blocks right-drag turning and the HUD observes allowed turns', 
   expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.poseChangeCount())).toBeGreaterThan(countBefore);
 });
 
+test('angled zoom and minimap navigation act on the visible scene', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/tests/browser/oblique-world-harness.html');
+  await page.waitForFunction(() => window.lockstateObliqueWorldHarness !== undefined);
+  await page.evaluate(() => window.lockstateObliqueWorldHarness.ready());
+  const before = await page.evaluate(() => window.lockstateObliqueWorldHarness.cameraTargetAndZoom());
+  await page.evaluate(() => window.lockstateObliqueWorldHarness.stepCameraZoom('in'));
+  const zoomed = await page.evaluate(() => window.lockstateObliqueWorldHarness.cameraTargetAndZoom());
+  expect(zoomed.zoom).toBeGreaterThan(before.zoom);
+  expect({ x: zoomed.x, y: zoomed.y }).toEqual({ x: before.x, y: before.y });
+  await page.evaluate(() => window.lockstateObliqueWorldHarness.stepCameraZoom('out'));
+  expect((await page.evaluate(() => window.lockstateObliqueWorldHarness.cameraTargetAndZoom())).zoom).toBeCloseTo(before.zoom);
+  await expect.poll(() => page.evaluate(() => window.lockstateObliqueWorldHarness.navigateToMinimapPoint(1, 1))).toBe(true);
+  const moved = await page.evaluate(() => window.lockstateObliqueWorldHarness.cameraTargetAndZoom());
+  expect(moved.x).toBeGreaterThan(before.x);
+  expect(moved.y).toBeGreaterThan(before.y);
+  expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.navigateToMinimapPoint(Number.NaN, 0))).toBe(false);
+});
+
+test('one camera turn batches newly loaded Blender frames into one ground repaint', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/tests/browser/oblique-world-harness.html');
+  await page.waitForFunction(() => window.lockstateObliqueWorldHarness !== undefined);
+  await page.evaluate(() => window.lockstateObliqueWorldHarness.ready());
+  const before = await page.evaluate(() => window.lockstateObliqueWorldHarness.groundArtPaintCount());
+  await page.evaluate(() => window.lockstateObliqueWorldHarness.setPose(90, 25));
+  const after = await page.evaluate(() => window.lockstateObliqueWorldHarness.groundArtPaintCount());
+  expect(after - before).toBeLessThanOrEqual(3);
+  expect(after - before).toBeGreaterThanOrEqual(1);
+});
+
 test('real render feed cell keeps one build square under the cursor while the scene turns', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/tests/browser/oblique-world-harness.html');
@@ -49,8 +80,12 @@ test('real render feed cell keeps one build square under the cursor while the sc
   expect(loadedArt.some((key) => key.includes('cell-door-open'))).toBe(true);
   expect(loadedArt.some((key) => key.includes('cell-bed'))).toBe(true);
   expect(loadedArt.some((key) => key.includes('floor-cell'))).toBe(true);
+  expect(loadedArt.some((key) => key.includes('floor-terrain-dirt'))).toBe(true);
+  expect(loadedArt.some((key) => key.includes('floor-terrain-grass'))).toBe(true);
+  expect(loadedArt.some((key) => key.includes('floor-dirt-grass-edge-north'))).toBe(true);
   expect(loadedArt.some((key) => key.includes('floor-shower'))).toBe(true);
   expect(loadedArt.some((key) => key.includes('shower-head'))).toBe(true);
+  expect(loadedArt.some((key) => key.includes('shower-privacy-door-full'))).toBe(true);
   expect(loadedArt.some((key) => key.includes('actor-prisoner'))).toBe(true);
   expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.loadedArtTextureCount()))
     .toBeLessThanOrEqual(await page.evaluate(() => window.lockstateObliqueWorldHarness.artCatalogCount()));
@@ -69,6 +104,7 @@ test('real render feed cell keeps one build square under the cursor while the sc
       expect(artAfterSelection.length).toBeLessThan(artBeforeSelection.length);
       expect(artAfterSelection.some((key) => key.includes('cell-bed'))).toBe(true);
       expect(artAfterSelection.some((key) => key.includes('wall-module-cutaway'))).toBe(true);
+      expect(artAfterSelection.some((key) => key.includes('wall-module-west-cutaway'))).toBe(true);
       const cutaway = await page.evaluate(() => window.lockstateObliqueWorldHarness.cutawayWallIds());
       expect(cutaway).toContain('north-edge:3:5');
       expect(cutaway).not.toContain('north-edge:2:1');
@@ -82,6 +118,12 @@ test('real render feed cell keeps one build square under the cursor while the sc
   }
   expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.loadedArtTextureCount()))
     .toBeLessThanOrEqual(4 * await page.evaluate(() => window.lockstateObliqueWorldHarness.artCatalogCount()));
+  await page.evaluate(() => window.lockstateObliqueWorldHarness.setPose(0, 45));
+  const showerPoint = await page.evaluate(() => window.lockstateObliqueWorldHarness.pointAtTile(6, 2));
+  await page.mouse.click(showerPoint.x, showerPoint.y);
+  expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.cutawayWallIds())).toContain('north-edge:6:3');
+  expect((await page.evaluate(() => window.lockstateObliqueWorldHarness.artTextureKeys()))
+    .some((key) => key.includes('shower-privacy-door-cutaway'))).toBe(true);
   const actorBefore = await page.evaluate(() => window.lockstateObliqueWorldHarness.actorArtPosition());
   const staticPaints = await page.evaluate(() => window.lockstateObliqueWorldHarness.paintCounts().ground);
   await page.evaluate(() => window.lockstateObliqueWorldHarness.moveActorToTile(4));

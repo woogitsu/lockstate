@@ -296,8 +296,8 @@ const producerSources = collectTypeScriptFiles(join(ROOT, 'src'))
   // issue prose all name these commands in sentences saying they have no
   // producer. An unstripped scan would report them produced by the comments
   // explaining that they are not.
-  .map((path) => ({ where: relative(ROOT, path), text: stripComments(readFileSync(path, 'utf8')) }))
-  .filter((source) => !source.where.startsWith(join('src', 'simulation', 'protocol')));
+  .map((path) => ({ where: relative(ROOT, path).split('\\').join('/'), text: stripComments(readFileSync(path, 'utf8')) }))
+  .filter((source) => !source.where.startsWith('src/simulation/protocol'));
 
 const COMMAND_TYPES: readonly string[] = simulationCommandSchema.options.map((option) => option.shape.type.value);
 
@@ -349,7 +349,7 @@ describe('every declared simulation command either has a producer or is accounte
     // `case 'purchase-materials':` -- rather than spending time on the list
     // below. The seventh correction of the same shape.
     expect(producerSources.length).toBeGreaterThan(50);
-    expect(COMMAND_TYPES.length).toBe(18);
+    expect(COMMAND_TYPES.length).toBe(19);
 
     expect(producersOf('PlaceBuildOrder')).toEqual(['src/main.ts']);
     expect(producersOf('PurchaseMaterials')).toEqual(['src/main.ts']);
@@ -442,7 +442,7 @@ describe('every declared simulation command either has a producer or is accounte
     // not the producer" while naming the file that *is* is the strongest form
     // available, and it is the form that keeps working as commands gain
     // producers.
-    const handler = producerSources.find((source) => source.where === join('src', 'simulation', 'construction', 'handler.ts'));
+    const handler = producerSources.find((source) => source.where === 'src/simulation/construction/handler.ts');
     expect(handler, 'the construction command handler moved; this control needs its new path').toBeDefined();
     expect(handler!.text).toContain(`case 'CancelBuildOrder':`);
     expect(producerPattern('CancelBuildOrder').test(handler!.text)).toBe(false);
@@ -552,6 +552,6 @@ describe('every declared simulation command either has a producer or is accounte
     // what this pair of assertions is for -- a nineteenth command added with no
     // producer fails here as well as failing the accounting above.
     expect(unproducedTypes.length).toBe(0);
-    expect(COMMAND_TYPES.length - unproducedTypes.length).toBe(18);
+    expect(COMMAND_TYPES.length - unproducedTypes.length).toBe(19);
   });
 });

@@ -168,6 +168,55 @@ current player view.
 
 ## Active delivery lanes
 
+**Integration checkpoint, 2026-09-28 (PR #1623, `aa1723f7e`):** the optional
+`/?oblique-preview=1` route now uses the live prison, adjustable yaw and
+elevation controls, mouse movement, map zoom/minimap navigation, Blender
+wall/door/floor/furniture/actor modules, and a whole-tile room-template ghost
+with a preflight verdict and cost. The Cell, Canteen, Shower and Infirmary
+templates can be selected in the HUD and placed through the real command
+path. A stale placement reply no longer replaces a newer ghost. The Full HD
+placement and stale-reply browser flows pass, including Save/Load coverage;
+the larger placement flow still takes about 1.7 minutes locally, so rendering
+performance needs work before this replaces the default top-down view.
+Ground art updates for newly loaded camera frames are now batched into one
+repaint rather than 29. Additional room templates, clearer selected-tool
+state, Escape behavior, corner art and smaller ground textures are in separate
+reviewed branches. This is an integration branch, not a production release.
+
+**Later checkpoint (`e34dabd8c`):** the running Full HD angled route also
+offers Laundry and Classroom plans, places a whole-square wall by click or
+rectangle drag as one Undo transaction, and places an object at the shown
+footprint. Escape puts down an armed plan and Build selection follows the
+actual tool. Doorway guards now reject later plans, walls and objects that
+would block the only approach to a pending or completed cell, including after
+Save/Load. The drag rectangle is submitted correctly, but its live ghost
+still shows the hovered single square; the scene now exposes both live drag
+endpoints so the HUD can paint the exact pending footprint and total catalogue
+estimate. Ground frame crop, batched texture loading and corner modules remain
+in separate PRs until their exact-head CI is green and integration passes.
+
+**Integration checkpoint (`3ff00027a`, 2026-09-28):** the oblique scene now
+accepts a screen-space zoom pivot and pan deltas, preserving the pointed ground
+square through a pose change. The Full HD route also exercises the existing
+Build remove tool against completed wall edges, and leaves modified keyboard
+shortcuts to the browser. The HUD worker has reproduced a wheel-zoom pointer
+drift in Build and is wiring this scene port to fix it. For #1663 the owner
+chose to block overlapping zones while a paid room template is pending; PR
+#1680 contains that behavior and is already an ancestor of this integration
+branch, though it is not on `main`. Separate draft PRs
+#1714 and #1716 cover 90-degree Canteen and Large Cell plans with Save/Load.
+The Blender ground, texture-loader and corner work is pushed on isolated
+branches; these slices are not yet declared shipped or on production.
+
+**Input checkpoint (`6ece6d1cc`, 2026-09-28):** the Full HD angled preview
+accepts wheel zoom anchored beneath the pointed square, keyboard pan through
+the saved WASD/arrow bindings, and middle-button map drag. The latter does not
+place an armed Build order. These controls passed their real-browser checks
+after integration on this branch. The owner-requested zone reservation from
+#1663 is present in this branch's ancestry, but none of these preview changes
+is on `main` yet. The Save/Load room-plan browser flow exposed an intermittent
+long reload; investigate that before treating the complete flow as verified.
+
 Keep three isolated worktrees moving in parallel: (1) Blender modules and
 consistent camera poses, (2) square-first construction and ready-made rooms,
 and (3) Full HD HUD, controls and visible template previews. The renderer
@@ -196,6 +245,10 @@ input seam for the square/template ghost and its checked placement command.
 Shower-room zoning and finished shower heads select the matching Blender
 modules. The remaining gate is to wire the actual template tool and its
 preflight verdict to those ports, then prove the placed room survives Save/Load.
+For a shower room north of its entrance, the north-edge door selects the
+Blender privacy frame and switches to its cutaway frame when it would hide the
+selected tile. West-edge doors continue using their west-facing module; the
+privacy frame has no west-facing geometry yet.
 
 **Highest-priority continuation for every future session:** keep those three
 workers directed at this camera/building/art delivery until the selectable

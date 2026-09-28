@@ -53,8 +53,15 @@ export class CameraPoseInputAdapter {
     private readonly bindings: readonly CameraPoseBinding[] = DEFAULT_CAMERA_POSE_BINDINGS,
   ) {}
 
-  public keyDown(event: { readonly code: string; readonly repeat?: boolean }): boolean {
-    if (event.repeat) return false;
+  public keyDown(event: {
+    readonly code: string;
+    readonly repeat?: boolean;
+    readonly altKey?: boolean;
+    readonly ctrlKey?: boolean;
+    readonly metaKey?: boolean;
+    readonly shiftKey?: boolean;
+  }): boolean {
+    if (event.repeat || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return false;
     const binding = this.bindings.find((item) => item.code === event.code);
     return binding === undefined ? false : this.activate(binding.action);
   }

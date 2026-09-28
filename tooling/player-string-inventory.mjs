@@ -72,7 +72,8 @@
 // example, arguing each of its three clauses at the code that decides it.
 
 import { readFileSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { fileURLToPath } from 'node:url';
 
 const REPOSITORY_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -341,4 +342,4 @@ function main() {
   process.stdout.write(`Wrote ${INVENTORY_PATH}: ${String(entries.length)} authored sentences\n`);
 }
 
-if (process.argv[1] !== undefined && import.meta.url === `file://${process.argv[1]}`) main();
+if (process.argv[1] !== undefined && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) main();
