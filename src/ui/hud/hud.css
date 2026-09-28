@@ -557,6 +557,8 @@
   padding-inline: var(--space-1);
   white-space: normal;
 }
+/* At 200% give the five Polish button labels room without shrinking type. */
+:root[data-ui-scale-step='200'] .hud-camera-angle { gap: var(--space-1); }
 .hud__corner .hud-camera-angle__button { pointer-events: auto; }
 
 /* The frame scales with the rest of the interface (#545): it is a HUD panel
