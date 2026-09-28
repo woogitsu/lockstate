@@ -45,7 +45,8 @@ export function validateRoomTemplatePlacement(
     if (door.y !== plan.origin.y + plan.height - 1) continue;
     const outsideY = door.y + 1;
     if (!Number.isSafeInteger(outsideY)) continue;
-    if (world.getTopEdge({ x: tileCoordinate(door.x), y: tileCoordinate(outsideY) }) !== 0) {
+    const outside = { x: tileCoordinate(door.x), y: tileCoordinate(outsideY) };
+    if (world.getSquareStructure(outside) !== 0 || structureIsClaimed(outside) || world.getTopEdge(outside) !== 0) {
       return { ok: false, reason: 'structure-occupied', tile: { x: tileCoordinate(door.x), y: tileCoordinate(door.y) } };
     }
   }
