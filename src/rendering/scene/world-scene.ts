@@ -1463,7 +1463,12 @@ export class WorldScene extends Phaser.Scene {
     const port = this.templateGhostPort;
     if (origin === undefined || port === undefined || this.templateVerdict?.ok !== true ||
         origin.x !== tile.x || origin.y !== tile.y) return true;
+    // The worker can answer after the pointer has moved or another tool has
+    // taken over. That verdict belongs to the submitted ghost, not the current
+    // preview (which may now represent a different room and square).
+    const revision = this.templateRevision;
     void port.placeAt(origin).then((verdict) => {
+      if (revision !== this.templateRevision || !this.isTemplateArmed()) return;
       if (!verdict.ok) {
         this.templateVerdict = verdict;
         if (this.templatePlan !== undefined) this.buildOverlay?.updateTemplate(this.templatePlan, verdict);
