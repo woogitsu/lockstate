@@ -24,7 +24,7 @@ test('Full HD angled Build reaches, places and restores the complete Delivery Ba
   await expect(ghost).toHaveAttribute('data-verdict', 'clear');
   await expect(ghost.getByRole('status')).toContainText('Delivery Bay, 6 × 6 tiles');
   await expect(ghost.locator('polygon')).toHaveCount(36);
-  await expect(ghost.locator('polygon[data-kind="furniture"]')).toHaveCount(3);
+  await expect(ghost.locator('polygon[data-kind="dock"]')).toHaveCount(3);
   await expect(ghost.locator('polygon[data-kind="door"]')).toHaveCount(1);
   await expect(ghost.locator('.oblique-template-ghost__cost')).toContainText('Catalogue value: 1,780');
   const origin = await ghost.locator('polygon').first().evaluate((node) => ({
