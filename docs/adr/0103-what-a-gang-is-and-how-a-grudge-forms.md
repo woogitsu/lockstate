@@ -1563,7 +1563,7 @@ and re-checked one bullet at a time on 2026-09-15 against `main` at `e044a3e8`:
 - *"No producer of any kind: zero calls to `register`, `addMember` or
   `addGrudge` outside `loadSnapshot`"* — **there are four.**
   `src/simulation/incidents/default-gangs.ts:82` registers,
-  `src/simulation/runtime/new-session.ts:671` adds a member at the site
+  `src/simulation/runtime/new-session.ts:678` adds a member at the site
   Decision 6 named, and `src/simulation/incidents/default-gangs.ts:313-314` add
   the grudge pair. The count was the claim and the count has moved.
 - *"No guard against a retaliation with an empty participant list"* — **the

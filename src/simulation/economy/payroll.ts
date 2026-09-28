@@ -213,6 +213,8 @@ export interface PayrollResidencySource {
  * at its default of `0`) still bounds arrears at this figure, because the
  * bound is a property of what a prison may owe, independent of whether this
  * particular session opened the standing overdraft at all.
+ * The approved 100,000 opening grant (#641) makes the linked default facility
+ * and this forward-accrual cap 10,000; the 2,500 quoted above is historical.
  *
  * **Prospective, exactly as decision 2's reserve is** — ADR 0096 §"What the
  * owner must approve" item 6 asks whether a *restore* should write down

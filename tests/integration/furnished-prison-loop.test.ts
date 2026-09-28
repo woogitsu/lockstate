@@ -308,7 +308,7 @@ describe('a shower room and a canteen become satisfiable for the first time', ()
     // `FURNISHING` came off a `footprint.width`, so this figure moves only if a
     // footprint or a material price moves.
     expect(FURNISHING_COST).toBe(1_095);
-    expect(runtime.treasury.balanceMinorUnits).toBe(25_000 - 1_095);
+    expect(runtime.treasury.balanceMinorUnits).toBe(100_000 - 1_095);
   });
 });
 

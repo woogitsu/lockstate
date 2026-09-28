@@ -152,14 +152,18 @@ a deadlock and not a rule.
 | a brick | 40 minor units | `PROCUREMENT_CATALOG`, `src/content/procurement-catalog.ts` |
 | so a wall segment | 80 minor units | derived |
 | a 2×3 cell's perimeter | `2 × (2 + 3)` = 10 segments = 800 minor units | derived |
-| a new prison's treasury | `TREASURY_STARTING_BALANCE_MINOR_UNITS` = 25 000 | `src/simulation/economy/treasury.ts` |
+| a new prison's treasury when measured | `TREASURY_STARTING_BALANCE_MINOR_UNITS` = 25 000 | `src/simulation/economy/treasury.ts` |
 | does work need a hired worker? | **no** — `ConstructionSystem.update` advances an in-progress order by a fixed 10 per scheduled tick, one order at a time | `src/simulation/construction/system.ts` |
 
-A fresh prison can therefore afford roughly thirty-one 2×3 cells' worth of wall
+At the measured grant, a fresh prison could therefore afford roughly thirty-one 2×3 cells' worth of wall
 out of its opening balance, and the work drains without anyone being hired. The
 bootstrap is not deadlocked: buy bricks, order the walls, wait, zone. There is
 no path in which the player needs a room in order to get the money or the labour
 to build the walls the room now requires.
+
+**Implementation update (#641):** The opening grant is now 100,000, enough for
+125 such perimeters at the same wall price. The bootstrap argument above is
+unchanged; its 25,000 figure records the original measurement.
 
 **One reachability trap is real and is not closed here.**
 `roomPerimeterEnclosure` reads the *south* boundary as the north edge of the row

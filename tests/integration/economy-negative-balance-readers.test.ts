@@ -173,7 +173,7 @@ describe('the status channel carries a negative balance instead of refusing the 
   it('still accepts the identical prison one minor unit above the boundary', () => {
     const runtime = createNewSimulationRuntime(SEED);
     runtime.treasury.setOverdraftFloor(-2_000);
-    submit(runtime, 'buy', { type: 'PurchaseMaterials', orderId: 'buy-to-zero', itemId: 'item.brick', quantity: 625 });
+    submit(runtime, 'buy', { type: 'PurchaseMaterials', orderId: 'buy-to-zero', itemId: 'item.brick', quantity: 2_500 });
     expect(runtime.treasury.balanceMinorUnits).toBe(0);
 
     const parsed = statusCountsSchema.safeParse(projectStatusCounts(runtime, runtime.kernel.tick));

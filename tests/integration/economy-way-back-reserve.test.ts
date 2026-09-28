@@ -66,6 +66,8 @@ function cellRingEdges(): readonly { readonly x: number; readonly y: number; rea
 /** Hires `guards`, on day one, and presses nothing else — ADR 0096's own act B. */
 function hireOnly(guards: number): SimulationRuntime {
   const runtime = createNewSimulationRuntime(SEED);
+  // Preserve ADR 0096's measured 25,000-balance setup after the larger grant.
+  expect(runtime.treasury.spend(75_000, 'wages')).toBe(true);
   for (let index = 0; index < guards; index += 1) {
     submit(runtime, `hire-${String(index)}`, packCommand({ type: 'HireStaff', staffRoleId: 'staff-role.guard', ...ARRIVAL }));
   }

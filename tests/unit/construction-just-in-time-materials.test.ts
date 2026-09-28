@@ -61,10 +61,9 @@ const order = (orderId: string, ...requirements: MaterialRequirement[]): QueuedO
 const oneOrder = (...requirements: MaterialRequirement[]): QueuedOrderDemand[] => [order('order-1', ...requirements)];
 
 function fixture(startingBalance = 25_000) {
-  const treasury = new Treasury();
-  if (startingBalance < 25_000) {
-    expect(treasury.spend(25_000 - startingBalance, 'construction'), 'the fixture must be able to reach its own opening balance').toBe(true);
-  }
+  // This suite uses explicit balances to isolate queue funding arithmetic.
+  // The default new-session grant is covered by economy-treasury.test.ts.
+  const treasury = new Treasury(startingBalance);
   const stock = new Container('construction-materials');
   const procurement = new ProcurementSystem(treasury, stock);
   const service = new JustInTimeMaterialsService(procurement, stock, treasury);
