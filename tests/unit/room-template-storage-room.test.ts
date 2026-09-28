@@ -1,4 +1,4 @@
-﻿import { expect, it } from 'vitest';
+import { expect, it } from 'vitest';
 import { instantiateRoomTemplate, type AuthoredRoomTemplateId } from '../../src/content/room-template-catalog';
 import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { packCommand } from '../../src/simulation/protocol/commands';
@@ -16,7 +16,10 @@ it.each([false, true])('places a complete Storage Room plan with two racks (mirr
     zone: { roomId: 'room.storage-room', x: 6, y: 6, width: 3, height: 3 } });
   expect(plan.doorSquares).toHaveLength(1);
   expect(plan.objects.map((object) => object.buildableId)).toEqual(['storage-rack-wooden', 'storage-rack-wooden']);
-  expect(projectRoomTemplateCost(templateId).orderCount).toBeGreaterThan(0);
+  expect(projectRoomTemplateCost(templateId)).toEqual({ orderCount: 18, materials: [
+    { itemId: 'item.brick', quantity: 30 },
+    { itemId: 'item.wood-plank', quantity: 3 },
+  ], catalogueCostMinorUnits: 1395 });
   const runtime = createNewSimulationRuntime(73);
   expect(runtime.roomTemplates.preflight(plan)).toEqual({ ok: true });
   runtime.kernel.submitCommand('storage-room', 0, runtime.kernel.tick, packCommand({
@@ -50,5 +53,3 @@ it.each([false, true])('places a complete Storage Room plan with two racks (mirr
     placedObjects: restored.placedObjects,
   })?.requirementSummary.missingCapability).toBe(0);
 }, 120_000);
-
-
