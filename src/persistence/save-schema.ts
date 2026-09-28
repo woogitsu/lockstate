@@ -1649,7 +1649,7 @@ const contrabandSectionV7Schema = contrabandSectionSchema.extend({
   }).strict(),
 }).strict();
 const roomTemplateRequestV7Schema = z.object({
-  templateId: z.enum(['cell-basic', 'cell-large', 'shower-room', 'canteen-basic', 'kitchen-basic', 'cell-row-four', 'infirmary-basic', 'laundry-basic', 'classroom-basic', 'common-room-basic', 'security-office-basic', 'storage-room-basic']),
+  templateId: z.enum(['cell-basic', 'cell-large', 'shower-room', 'canteen-basic', 'kitchen-basic', 'cell-row-four', 'infirmary-basic', 'laundry-basic', 'classroom-basic', 'common-room-basic', 'security-office-basic', 'storage-room-basic', 'staff-room-basic']),
   origin: z.object({ x: z.number().int().safe(), y: z.number().int().safe() }).strict(),
   mirrorX: z.boolean(),
   /** Additive V7 field. Absent on older pending gestures means unrotated. */
