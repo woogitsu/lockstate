@@ -203,7 +203,7 @@ loop that walks every tile of the requested rectangle — not once for the ancho
 `return this.refuse('unowned-land', request, tick, tile);`
 (verbatim in `src/simulation/rooms/zoning.ts`)
 
-at `src/simulation/rooms/zoning.ts:556`, guarded by `canBuildAt` on the line
+at `src/simulation/rooms/zoning.ts:562`, guarded by `canBuildAt` on the line
 above it, inside the nested offset loop opened at
 `src/simulation/rooms/zoning.ts:544-545` — whose bounds are `request.height` and
 `request.width`, so it is every tile of the rectangle and not the anchor. **So

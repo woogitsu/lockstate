@@ -249,7 +249,7 @@ state `deriveXoshiroState(masterSeed, streamName)` already gave it.
 
 (**This paragraph named `restoreSimulationRuntime`, and the merge is not
 there.** `restoreSimulationRuntime`
-(`src/simulation/runtime/restore-session.ts:367`) *calls*
+(`src/simulation/runtime/restore-session.ts:372`) *calls*
 `runtime.kernel.restoreState(toKernelSnapshot(bundle.kernel))` at `:372`, and
 the merge is inside that — so the outer function is where the restore is
 entered, not where the streams are reconciled. This document already attributed

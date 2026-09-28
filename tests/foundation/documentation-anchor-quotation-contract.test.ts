@@ -757,7 +757,6 @@ const UNVERIFIED_BUDGET: Readonly<Record<string, number>> = {
   'docs/adr/0005-entity-storage-model.md': 1,
   'docs/adr/0006-simulation-worker-adapter.md': 2,
   'docs/adr/0008-trusted-service-boundary.md': 1,
-  'docs/adr/0012-derived-identifier-reproducibility.md': 1,
   'docs/adr/0013-free-tier-cloud-save-capacity.md': 1,
   'docs/adr/0015-actor-identity-allocation.md': 24,
   'docs/adr/0017-money-primary-resource-model.md': 5,

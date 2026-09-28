@@ -1,8 +1,8 @@
-import { expect, test } from './network-changed-fixture';
+import { expect, test, type Locator } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
 
 type Tile = { x: number; y: number };
-const coordinate = async (element: import('@playwright/test').Locator): Promise<Tile> => element.evaluate((node) => ({
+const coordinate = async (element: Locator): Promise<Tile> => element.evaluate((node) => ({
   x: Number(node.getAttribute('data-tile-x')),
   y: Number(node.getAttribute('data-tile-y')),
 }));

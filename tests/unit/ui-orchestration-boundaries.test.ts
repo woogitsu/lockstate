@@ -167,6 +167,27 @@ const gatedFiles = [...orchestrationFiles, ...gatedHereFiles];
  */
 const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
   {
+    file: 'src/ui/oblique-minimap-reader.ts',
+    tree: 'rendering',
+    kind: 'value',
+    reason:
+      'Value: the angled-camera minimap reader projects the published render feed and converts the camera ground bounds into the existing minimap viewport. It reads presentation data only and does not construct a simulation or issue commands.',
+  },
+  {
+    file: 'src/ui/oblique-minimap-reader.ts',
+    tree: 'shared',
+    kind: 'type-only',
+    reason:
+      'Type-only: MinimapView defines the returned projection consumed by the HUD. This erased import shares the viewport shape with the top-down minimap without giving the reader any storage or simulation authority.',
+  },
+  {
+    file: 'src/ui/oblique-template-placement.ts',
+    tree: 'content',
+    kind: 'type-only',
+    reason:
+      'Type-only: TemplateSquare names the snapped origin handed to the room-template tool. The helper only guards a late worker reply against a newer selection; it reads no catalogue values and creates no simulation state.',
+  },
+  {
     file: 'src/ui/build-tool.ts',
     tree: 'rendering',
     kind: 'type-only',
@@ -713,6 +734,8 @@ describe('UI orchestration boundaries', () => {
       'src/ui/language-messages.ts',
       'src/ui/language.ts',
       'src/ui/object-tool.ts',
+      'src/ui/oblique-minimap-reader.ts',
+      'src/ui/oblique-template-placement.ts',
       'src/ui/prisoner-sentence.ts',
       'src/ui/room-template-tool.ts',
       'src/ui/room-tool.ts',

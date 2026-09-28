@@ -265,6 +265,8 @@ describe('no module in src/ui/ renders a hard-coded sentence (issue #208)', () =
     'language-messages.ts',
     'language.ts',
     'object-tool.ts',
+    'oblique-minimap-reader.ts',
+    'oblique-template-placement.ts',
     'prisoner-sentence.ts',
     'room-template-tool.ts',
     'room-tool.ts',

@@ -215,7 +215,7 @@ not a projection detail: it is a destructive control aimed by a hidden number.
 
 > **Both numbers in that paragraph have since moved, and both moved away from
 > it — so the paragraph is dated rather than rewritten.** `BUILD_QUEUE_ROW_LIMIT`
-> is **64** today (`src/ui/hud/build-panel.ts:740`), not three, and
+> is **64** today (`src/ui/hud/build-panel.ts:751`), not three, and
 > `build-panel.ts:2445-2455` records the change in its own words — *"which was
 > free while the limit was three and is not free at sixty-four"*. And the order
 > the fold lays out is no longer ascending id: `projectBuildQueue` sorts the

@@ -134,7 +134,7 @@ interface EnumUnionPair {
 
 const PAIRS: readonly EnumUnionPair[] = [
   {
-    site: 'sessionSystemsV7Schema.templateId',
+    site: 'roomTemplateRequestV7Schema.templateId',
     union: 'AuthoredRoomTemplateId (src/content/room-template-catalog.ts)',
     members: unionMembers<AuthoredRoomTemplateId>()(['cell-basic', 'cell-large', 'shower-room', 'cell-row-four', 'canteen-basic', 'kitchen-basic', 'infirmary-basic', 'laundry-basic', 'classroom-basic']),
     readerOnly: [],

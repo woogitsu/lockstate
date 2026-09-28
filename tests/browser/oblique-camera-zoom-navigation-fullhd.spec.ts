@@ -1,6 +1,6 @@
-import { expect, test } from './network-changed-fixture';
+import { expect, test, type Page } from './network-changed-fixture';
 
-async function settledCanvas(page: import('@playwright/test').Page): Promise<Buffer> {
+async function settledCanvas(page: Page): Promise<Buffer> {
   const canvas = page.locator('#game-root canvas');
   let previous = await canvas.screenshot();
   for (let attempt = 0; attempt < 25; attempt += 1) {
@@ -12,7 +12,7 @@ async function settledCanvas(page: import('@playwright/test').Page): Promise<Buf
   throw new Error('Angled world did not settle before the camera comparison.');
 }
 
-async function openWorld(page: import('@playwright/test').Page): Promise<void> {
+async function openWorld(page: Page): Promise<void> {
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/?oblique-preview=1');
   await page.getByRole('button', { name: 'New prison' }).click();

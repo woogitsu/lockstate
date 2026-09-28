@@ -156,7 +156,7 @@ today, so a panel put there competes with nothing.
 
 ### The consumer is finished, four systems are waiting on it, and nothing in the application can reach it
 
-`GuardRoster.hire` (`src/simulation/security/guard-roster.ts:89`; the anchor
+`GuardRoster.hire` (`src/simulation/security/guard-roster.ts:89`, `public hire`; the anchor
 read `:75`) is complete.
 It spawns an entity in the roster's own `EntityStore`, mints an actor name
 through the ADR 0015 seam when the session supplied one, and writes a
@@ -173,7 +173,7 @@ and its restore path already reasons about a guard caught mid-travel.
 > **Not since this ADR's own surface shipped** (#302, and the Status block
 > above says so). `GuardRoster.hire` is called from
 > `src/simulation/staff/hiring.ts:221`, which
-> `src/simulation/runtime/session-commands.ts:736` reaches on a `HireStaff`
+> `src/simulation/runtime/session-commands.ts:732` reaches on a `HireStaff`
 > command. This paragraph and the *Consequences* bullet *"`GuardRoster.hire`
 > gains its first production caller"* have therefore disagreed with each other
 > inside one file for as long as the implementation has existed; the Context is
@@ -227,7 +227,7 @@ the eight ids as having no consumer anywhere at all.
 The HUD may not import the simulation. That is `AGENTS.md` boundary 1 in its
 strongest form for `src/ui/hud/**`, and `tests/unit/ui-hud-messages.test.ts`
 asserts it by scanning for the import. So the HUD cannot build a command: it
-emits a `HudIntent` (`export type HudIntent =`, `src/ui/hud/hud.ts:376`; the
+emits a `HudIntent` (`export type HudIntent =`, `src/ui/hud/hud.ts:380`; the
 anchor read `:372`, then `:365`, itself the re-aim of `:322`, itself the 2026-09-06 re-aim
 of `:270`) and `src/main.ts` turns it into
 one, in the `onIntent` switch. The two most recent producers took exactly that

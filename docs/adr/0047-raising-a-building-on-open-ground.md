@@ -71,7 +71,7 @@ and the reason is mechanical rather than a matter of design taste.
 
 The defect is a consequence of where an edge is stored.
 `roomPerimeterEnclosure` reads a rectangle's south boundary as the north edge of
-the row **below** it (`src/simulation/rooms/enclosure.ts:219-221`) and its east
+the row **below** it (`src/simulation/rooms/enclosure.ts:212`) and its east
 boundary as the west edge of the column to its **right**
 (`src/simulation/rooms/enclosure.ts:230-232`). Those two edges are stored on tiles
 outside the rectangle. If the rectangle is flush against the edge of owned land,
@@ -109,7 +109,7 @@ decision:
 > tile across the edge it occupies: every boundary edge of an owned parcel has
 > unowned land on the far side, and a prison is a perimeter.
 
-`tests/unit/construction-ownership.test.ts:124` pins it — *"checks the order's
+`tests/unit/construction-ownership.test.ts:118` pins it — *"checks the order's
 own tile, not the tile across the edge it occupies"* — with a fixture whose
 order tile is owned and whose far tile is not.
 
@@ -144,7 +144,7 @@ first two claims hold — `TopologyManager.update`
 block, where `navigation` is present (`src/simulation/runtime/new-session.ts:1607`).
 
 **But the same flood fill runs every tick, in navigation, and is registered.**
-`buildNavigationGraph` (`src/simulation/navigation/region-graph.ts:99`)
+`buildNavigationGraph` (`src/simulation/navigation/region-graph.ts:106`)
 partitions every loaded chunk's tiles into maximal sets connected across
 zero-valued edges (`src/simulation/navigation/region-graph.ts:148`), returns
 `tileToRegion` and `regionTiles`, caches the result against a geometry
@@ -229,7 +229,7 @@ chunk — `chunkTerrain`, `chunkTopEdge`, `chunkLeftEdge`, `chunkZoning`
 `ensureStorageMap`, `:585`). All four serialize as optional RLE fields on
 `SerializedChunkState` (`:45`), and `decodeChunk`'s `allowedKeys` lists exactly
 those four as optional (`:191`). The save boundary mirrors it
-(`src/persistence/save-schema.ts:126`–`:129`, `terrain` / `topEdge` / `leftEdge`
+(`src/persistence/save-schema.ts:130`–`:133`, `terrain` / `topEdge` / `leftEdge`
 / `zoning`, each `terrainRleSchema.optional()`; this branch wrote `:115`–`:118`
 on 2026-09-15 and by 2026-09-16, when it merged `origin/main`, that span was a
 blank line and the first three lines of `serializedChunkStateSchema`'s
@@ -285,7 +285,7 @@ feature with a reader and no producer.
   rectangle's own perimeter, with the south and east sides read off neighbouring
   tiles.
 - Objects already require a room: `PlaceObject` refuses `outside-room`
-  (`src/simulation/objects/object-placement-service.ts:540`).
+  (`src/simulation/objects/object-placement-service.ts:548`).
 
 ### Rendering
 
@@ -335,7 +335,7 @@ catalogue; `0` means bare ground.
 **`setFloor` bumps `contentRevision`, not `geometryRevision`.** A floor blocks
 nothing and connects nothing, so it must not invalidate the navigation graph:
 `isNavigationGraphStale` fingerprints `geometryRevision`
-(`src/simulation/navigation/region-graph.ts:204`, over the signature computed at
+(`src/simulation/navigation/region-graph.ts:213`, over the signature computed at
 `:84`), and paving a hall would
 otherwise rebuild the region graph for every tile of the slab. This is the same
 choice `setZoning` makes and for the same reason.
@@ -618,7 +618,7 @@ same tool.
 
 **The pacing risk, derived rather than guessed.** The clock steps every 50 ms at
 speed 1 (`src/simulation/clock/fixed-step-clock.ts:29`), `ConstructionSystem`
-runs every ten ticks (`src/simulation/construction/system.ts:347`), and one
+runs every ten ticks (`src/simulation/construction/system.ts:342`), and one
 order is in progress at a time. So the crew completes **at most one order every
 500 ms at speed 1**, or one every 125 ms at speed 4. A 10×10 slab is 100 orders
 and therefore **at least 50 seconds of watching at speed 1**; a 20×20 slab is at
@@ -859,6 +859,6 @@ not to write a third flood fill.
 defect is caused by one asymmetric predicate and fixed by widening it. I did not
 enumerate every caller that could reproduce the asymmetry elsewhere:
 `ObjectPlacementService` and `RoomZoningService` also call `canBuildAt`
-(`src/simulation/objects/object-placement-service.ts:526`,
-`src/simulation/rooms/zoning.ts:555`), and neither is an edge order, so neither
+(`src/simulation/objects/object-placement-service.ts:531`,
+`src/simulation/rooms/zoning.ts:562`), and neither is an edge order, so neither
 should change — but "should not" is an argument and not a check.
