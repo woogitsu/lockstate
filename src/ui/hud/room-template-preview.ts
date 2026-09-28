@@ -246,13 +246,14 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
     place.addEventListener('click', async () => {
       const tile = origin();
       if (tile === undefined || !wholePlanFitsSafeTiles(tile) || place.disabled) return;
+      const current = ++revision;
       place.disabled = true;
       try {
         const result = await tool.placeAt(tile);
-        status.textContent = result.ok ? t(HUD_MESSAGE_KEY.templateSubmitted) :
+        if (current === revision) status.textContent = result.ok ? t(HUD_MESSAGE_KEY.templateSubmitted) :
           t(result.reason === 'unowned-land' ? HUD_MESSAGE_KEY.templateUnownedLand : HUD_MESSAGE_KEY.templateBlocked);
       } catch {
-        status.textContent = t(HUD_MESSAGE_KEY.templateUnavailable);
+        if (current === revision) status.textContent = t(HUD_MESSAGE_KEY.templateUnavailable);
       }
       // Keep this origin locked after queuing. The worker may not have run the
       // command yet, so an immediate read can still say "clear" and allow a
