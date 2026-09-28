@@ -112,6 +112,14 @@
     {
       "assetId": "floor.terrain.dirt-grass.edge.west",
       "manifest": "/game-content/oblique-floor-dirt-grass-edge-west.v1.json"
+    },
+    {
+      "assetId": "wall.interior.corner.inner.north-east.full",
+      "manifest": "/game-content/oblique-wall-corner-north-east-full.v1.json"
+    },
+    {
+      "assetId": "wall.interior.corner.inner.north-east.cutaway",
+      "manifest": "/game-content/oblique-wall-corner-north-east-cutaway.v1.json"
     }
   ]
 }
