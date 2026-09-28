@@ -1,14 +1,9 @@
 {
   "schemaVersion": 1,
   "assetId": "door.interior.open.west.cutaway",
-  "source": "door.interior.leaf.open.blend",
-  "sourceSha256": "48a27d1b212e88121e6b55661452f70df1129e78f8825eebc3913db1d5aeaf5f",
-  "sourceDependencies": [
-    {
-      "source": "wall.interior.cutaway.blend",
-      "sha256": "98b264c5b3ea15658d7d8996f403024928c660135a66025adccba1d385927e6c"
-    }
-  ],
+  "source": "wall.interior.cutaway.blend",
+  "sourceSha256": "98b264c5b3ea15658d7d8996f403024928c660135a66025adccba1d385927e6c",
+  "sourceDependencies": [],
   "resolutionPx": [
     512,
     512
@@ -59,434 +54,434 @@
     {
       "yawDegrees": -180,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-180-elev25.842c45ae06d2.png",
-      "sha256": "842c45ae06d27e7c49b0354a177e7181d75ce77c02b6bea1b1d16aab7f2404b8"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-180-elev25.6a0ee5fc2c42.png",
+      "sha256": "6a0ee5fc2c42029a3a677fdb46d93870c2aa8b971165562c2624e27cb213b490"
     },
     {
       "yawDegrees": -180,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-180-elev45.1d2a77d4af7c.png",
-      "sha256": "1d2a77d4af7c40507c763703e2fcba933a2043a6772acada7557c1fb7af8b7ca"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-180-elev45.f8751bc18548.png",
+      "sha256": "f8751bc185487c520aaa2dd75c6ca5fb9ad3f10de9f332116716aa22d2921fb1"
     },
     {
       "yawDegrees": -180,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-180-elev65.aafc1fe200f3.png",
-      "sha256": "aafc1fe200f3f6dc74183547089ac3dac2a16b44d87bc922e206adced04ec0d1"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-180-elev65.b7be1b934f3d.png",
+      "sha256": "b7be1b934f3d1638d8f389397680eaf1e3f5c8a4d94e334fc7f2520afddf8111"
     },
     {
       "yawDegrees": -165,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-165-elev25.d352a7433eae.png",
-      "sha256": "d352a7433eae189cecb0dd6209236090c51ae6443f1242b87b11effa4228c82e"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-165-elev25.e0347ce74c69.png",
+      "sha256": "e0347ce74c695b3c5d880085b47169bbb20f25c6a8be147bd2b133096880fe72"
     },
     {
       "yawDegrees": -165,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-165-elev45.c69e99687f49.png",
-      "sha256": "c69e99687f499914ca782823ab6a0ec35450dee3369a9fb167be4862d4194843"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-165-elev45.120c51562f93.png",
+      "sha256": "120c51562f932b63e1e6b8504ecc79cb43d68d1a8bf935ee50c54ddc033ba6bf"
     },
     {
       "yawDegrees": -165,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-165-elev65.7b43c6f252df.png",
-      "sha256": "7b43c6f252dffd0ff8735f7699072f29478a824ec2df091808be5d452d7a134b"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-165-elev65.fcce85e00eaa.png",
+      "sha256": "fcce85e00eaaebf49f4d0baf4c0cdef48cdd60a08954851e3b66f024d3be5cd5"
     },
     {
       "yawDegrees": -150,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-150-elev25.5dfa51f873a1.png",
-      "sha256": "5dfa51f873a1d5ecdf88343387e9d41c491acc7a5fa2277dbcc27e62788d3b55"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-150-elev25.fef3a99f94cb.png",
+      "sha256": "fef3a99f94cbbfe4645f158c5499d56f8733a394513635eefaa36d79d605edf4"
     },
     {
       "yawDegrees": -150,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-150-elev45.39e7a1302b3c.png",
-      "sha256": "39e7a1302b3c63e1a9395e8898a770238f858a90dc6bbc0dda56455fce7e2ce3"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-150-elev45.cdd10ec014c3.png",
+      "sha256": "cdd10ec014c3df0d717077d1b9d321363e4dba67ebf6321f585d7f81b0340908"
     },
     {
       "yawDegrees": -150,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-150-elev65.e6faf34e3e90.png",
-      "sha256": "e6faf34e3e9023a31122f3daa8e265ab8952e1e883cdf42ae410754f02ca08c8"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-150-elev65.65b347c8e4bd.png",
+      "sha256": "65b347c8e4bd25cb8bd5bb7d2760b460b358355e057040c2b36fc09db24b800b"
     },
     {
       "yawDegrees": -135,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-135-elev25.2a1bfccea080.png",
-      "sha256": "2a1bfccea08066bde404e39c78c4b18ddcd7e6caf30c48db0208bd960d47335c"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-135-elev25.e05659f9dce1.png",
+      "sha256": "e05659f9dce1e9229cbbbea1bbfc3197fa56e7e1d8d346de6364949774c58e83"
     },
     {
       "yawDegrees": -135,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-135-elev45.ed19273dc321.png",
-      "sha256": "ed19273dc321e4c4ca788984866177c78153564d1372b4be05337c10ac4f5485"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-135-elev45.542a5e726978.png",
+      "sha256": "542a5e726978af4dda40553c0cac0d541c75358c990d17d40fbfeeb6317ce989"
     },
     {
       "yawDegrees": -135,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-135-elev65.14ceb6fe762f.png",
-      "sha256": "14ceb6fe762fa41c63b359223e8d45c12334325d1e6414fc889d403cc29ad0c0"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-135-elev65.aca676b4fb91.png",
+      "sha256": "aca676b4fb91932d5da0f9822557ddea14ebd75eac4b22df4d35693987cac43c"
     },
     {
       "yawDegrees": -120,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-120-elev25.79adf5b7a77c.png",
-      "sha256": "79adf5b7a77c66b6043524190b7fedc5192e9600d9a25726b1db859d3c1a1fff"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-120-elev25.6d835aa5746f.png",
+      "sha256": "6d835aa5746f224bf4fbb23f7c96cb5aed507194d66cc3e2b2889df5ced2729b"
     },
     {
       "yawDegrees": -120,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-120-elev45.661768cd37b3.png",
-      "sha256": "661768cd37b3f811644d3781f537f91085723f0562f41e7f098255096a9365dd"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-120-elev45.082746292bd7.png",
+      "sha256": "082746292bd7fd0943dcaee707bddc4ae91e6d7f222dca78d049bb8f5780adc9"
     },
     {
       "yawDegrees": -120,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-120-elev65.cc4ed4449260.png",
-      "sha256": "cc4ed44492609fc3d27b15ec7a5fb3b185c8991ce99ff028a9af302a98c2e259"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-120-elev65.5a8c8c0c3c7c.png",
+      "sha256": "5a8c8c0c3c7cdbd32d521a6b0698a854e00306822dfc310e13b245338f0d3c47"
     },
     {
       "yawDegrees": -105,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-105-elev25.2391b8878989.png",
-      "sha256": "2391b887898946795f7c169ccfb754821b989265f8c549956f570a6bd75b9676"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-105-elev25.7b5ff9a8dc12.png",
+      "sha256": "7b5ff9a8dc12c573053c6f27414f1b9b8bd1f2274a832c8af78f412b45d0ec57"
     },
     {
       "yawDegrees": -105,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-105-elev45.2e389ca23762.png",
-      "sha256": "2e389ca23762ac5cd670154ae04debbd1a969e167057329198259600630be54f"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-105-elev45.1aca2a71d67d.png",
+      "sha256": "1aca2a71d67da2e0aa7f4582d5b54640b8b92e869e0cf3a32029cc1c79dc283e"
     },
     {
       "yawDegrees": -105,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-105-elev65.132cb485ec81.png",
-      "sha256": "132cb485ec81673ba9deb98280ef7ebbc5b59c328a4b6029a44f3f77b398e7cf"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-105-elev65.a8ed7666aeac.png",
+      "sha256": "a8ed7666aeac70471cc767418400cbc00e2e82e415c270633cbf34e60ffb3c5d"
     },
     {
       "yawDegrees": -90,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-90-elev25.4db3ba4e670d.png",
-      "sha256": "4db3ba4e670d383fbcdce1abc53cc010940089944eebe042753315060555ba81"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-90-elev25.26e60339b00d.png",
+      "sha256": "26e60339b00d33899e9c5a8eebb4f655ca8620be2f43459c2c583e3dfa5f0705"
     },
     {
       "yawDegrees": -90,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-90-elev45.46eabe3e54d4.png",
-      "sha256": "46eabe3e54d43d794d5ecbb5a90367ab3b9c12fa314c3411c0a2f944538bfcda"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-90-elev45.9471ce422d29.png",
+      "sha256": "9471ce422d29d255a1511589b722df2f400eecad552736fcff23f4b691cb2c07"
     },
     {
       "yawDegrees": -90,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-90-elev65.f90a58535afb.png",
-      "sha256": "f90a58535afb1da66c277e9e0097ecf8ffbc636ec72754f8779a3c6b7cf424a7"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-90-elev65.9921f5889978.png",
+      "sha256": "9921f5889978d3784a2442183e9d19bf826400ce86243b5836babb5b8d54513e"
     },
     {
       "yawDegrees": -75,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-75-elev25.530dca011efe.png",
-      "sha256": "530dca011efe8cb1bedec0cf76443268ccc23911904f93b20d886a8239a322a0"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-75-elev25.5d7ec0acb785.png",
+      "sha256": "5d7ec0acb7852a149cfbcb2c36029adca47b7b460365451b249fc2115f3b5431"
     },
     {
       "yawDegrees": -75,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-75-elev45.09e4da0b7dba.png",
-      "sha256": "09e4da0b7dba0a81c1466c40c597df639cb6251cad0e55a626d9824209dcd3e5"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-75-elev45.2c57f82fd390.png",
+      "sha256": "2c57f82fd3902443bc0864fe8ac53344436eb0dd5645c7b514aead6fef1287e0"
     },
     {
       "yawDegrees": -75,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-75-elev65.1bcbc78dd4c7.png",
-      "sha256": "1bcbc78dd4c738eb5c0d445126ac901fa08f3230de2f1d243863b451c3191c5e"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-75-elev65.18e228a99072.png",
+      "sha256": "18e228a99072df7e2b67991b3de617d9617bc2d2c7706ccea925605d334db466"
     },
     {
       "yawDegrees": -60,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-60-elev25.4f08c6a6b2ca.png",
-      "sha256": "4f08c6a6b2ca14236398371adebff106e418f24fc1727d392614ef51b9b64d80"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-60-elev25.447b05a89a87.png",
+      "sha256": "447b05a89a8752fa211ee17cd3513c4c7b0c1a7ca65d0f7e19f51a6272ae5bc3"
     },
     {
       "yawDegrees": -60,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-60-elev45.054f6d36bedc.png",
-      "sha256": "054f6d36bedc1739e8b1686fee40f2d6955e87b2bcf40ceff1314860c137a983"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-60-elev45.723da50d1d71.png",
+      "sha256": "723da50d1d716fed90de0f01f64903f5e83d536e772880d763da62fe428bc528"
     },
     {
       "yawDegrees": -60,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-60-elev65.d78b5b99211c.png",
-      "sha256": "d78b5b99211c22cf4c772759c7a1e51bb3f40faed6b5d667b050a86090a06900"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-60-elev65.e82c5a901848.png",
+      "sha256": "e82c5a901848a70bdcbbe5429c5af512f6703b0ae52dcdd63973cb2930da78b0"
     },
     {
       "yawDegrees": -45,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-45-elev25.621a6f3dbfa7.png",
-      "sha256": "621a6f3dbfa7a8ad25ef42577b887534daa4fe9959b565630313d7845cc677f5"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-45-elev25.6e5f5a39e1f3.png",
+      "sha256": "6e5f5a39e1f33ac63a4307e2bd14b18573f84e77f11d268da395b362cff70f56"
     },
     {
       "yawDegrees": -45,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-45-elev45.95ffc066d757.png",
-      "sha256": "95ffc066d757b74c51801b96d5fc0721fa74c82980284e2d23148f98cc62c79f"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-45-elev45.6109b4c8f99c.png",
+      "sha256": "6109b4c8f99c8aed492c32fe36948f401640d763a7fce8e689b130ba6617b1b6"
     },
     {
       "yawDegrees": -45,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-45-elev65.2989354e5dc7.png",
-      "sha256": "2989354e5dc7e245e9ce3da2382495aeaa1233352c7656921203333708e6d76a"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-45-elev65.0487f70a5a3a.png",
+      "sha256": "0487f70a5a3a068d90e74040436ff6ddf499c63aeee021b21f45d1cde533de1c"
     },
     {
       "yawDegrees": -30,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-30-elev25.c669500ce3a6.png",
-      "sha256": "c669500ce3a6a2bb4b70eac50c679a88a39f48e8764eb97c6f982f2b6c318bc3"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-30-elev25.601bdfec69da.png",
+      "sha256": "601bdfec69dafe6940726961945745b78d93c9bf88b74f605ab340cf03effb2b"
     },
     {
       "yawDegrees": -30,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-30-elev45.0e9a5c1116b5.png",
-      "sha256": "0e9a5c1116b5eb440fcee2310bb2644765b873e9a7aa75d4306b6aa4a6f9a68e"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-30-elev45.030080f504da.png",
+      "sha256": "030080f504da29ac296d71072e0869b3ea22cb620c55b5fc3a87cbbf80d258c3"
     },
     {
       "yawDegrees": -30,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-30-elev65.82429e7a5bb4.png",
-      "sha256": "82429e7a5bb4439beb156e7d3ebc279ffa9b38bc5c0d442c4fcea1ee05d759b6"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-30-elev65.67014be1b000.png",
+      "sha256": "67014be1b000aaac003e34360f18f6b68c90f7376f9cb1148800797063a4e44b"
     },
     {
       "yawDegrees": -15,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-15-elev25.12842fc05529.png",
-      "sha256": "12842fc05529bdbe2265ec09e5d7d898992d2043ea8acd0e4a1ae100c6dd63cd"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-15-elev25.087fb9b99c9a.png",
+      "sha256": "087fb9b99c9aff66b93a45cf583f937fabe1aa8a05bb1d8b192bc0a6e7c4c2b2"
     },
     {
       "yawDegrees": -15,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-15-elev45.038053b9900b.png",
-      "sha256": "038053b9900bac4eba231326553fec9115d2fe6558c5f85fcb847637a6de47fa"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-15-elev45.5b33751c6a6d.png",
+      "sha256": "5b33751c6a6df9c421e1a2f0307d039b769f4c8f9acaed48205787703e05f766"
     },
     {
       "yawDegrees": -15,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-15-elev65.354849e0c544.png",
-      "sha256": "354849e0c544d035586827c09b4fddfbff4467f723f73ef4b8c9a48f68c45981"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-15-elev65.584e579c48f5.png",
+      "sha256": "584e579c48f5248b4baeb0fae3c8209412010950fd5c33972e46cd90b09b1a79"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+00-elev25.00b3d75acf6c.png",
-      "sha256": "00b3d75acf6cb1719d9ddd9a50764e6933ec965c516acf8974ea89c1fc27083b"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+00-elev25.ff71b4423b9f.png",
+      "sha256": "ff71b4423b9fc1cdaf1dfaf2b9ec79cc8174b98e1e90bd52bc78482b67ad3ff0"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+00-elev45.4d9b94d10a0b.png",
-      "sha256": "4d9b94d10a0b0c5f8199daf28b5e191f5c301d3e6be42c1c8af3cc19bc240cfa"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+00-elev45.7a83e8bf7a52.png",
+      "sha256": "7a83e8bf7a52adf454f698fbd08c7fef58a552483e6f51966205cdd4a49fda82"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+00-elev65.ffde3fdbfc9c.png",
-      "sha256": "ffde3fdbfc9c29bc4f43adf374aa0e6c6500b1e99097c873d29e8259d9951a9a"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+00-elev65.e388f8b39ca7.png",
+      "sha256": "e388f8b39ca7267135cdd164d5da3d193c6d91093e97d0282b5d623cac245dd2"
     },
     {
       "yawDegrees": 15,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+15-elev25.44dda3128d89.png",
-      "sha256": "44dda3128d891294425d3b7f1304f1fe0e29a67378146b666f83f271bbb39596"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+15-elev25.c894aab1d695.png",
+      "sha256": "c894aab1d695de1189ce706c37d288c3d9ba163eb0857cb4b606b18994f1fff1"
     },
     {
       "yawDegrees": 15,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+15-elev45.bfa84c9b423e.png",
-      "sha256": "bfa84c9b423e129f8b3aa9bfefd5504191c5f97c12eb7509cbe4eee917fb521a"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+15-elev45.611e108f1f15.png",
+      "sha256": "611e108f1f15bb352bba696b3ab0b51826634c6a77863c7ac3c0a4e91a69a3dc"
     },
     {
       "yawDegrees": 15,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+15-elev65.01631db8a782.png",
-      "sha256": "01631db8a7829afcca2f83134f083c26cb471b4a205e74955893dbe97a9c1293"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+15-elev65.e360642123bb.png",
+      "sha256": "e360642123bb25d403b05886b76f8b4745b77e1d5da8d231b9bff975b5aa6f1f"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+30-elev25.a5ef1abd3c50.png",
-      "sha256": "a5ef1abd3c506161c8e1e607947b403847cdd13ba1c2ba38cc7e12790a6c5459"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+30-elev25.d39702e79ba8.png",
+      "sha256": "d39702e79ba80f2d6858080e4fa35d22b037b69b10f724b37b7e260b55eba5bb"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+30-elev45.2620ebca8bc1.png",
-      "sha256": "2620ebca8bc11546ee13818263b4ded97b91d9882a5db965bcd7bddfc5fb54d0"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+30-elev45.7985e098ce0b.png",
+      "sha256": "7985e098ce0baef50659c5c880abefae816d020ba231c04daee406a8c4844868"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+30-elev65.bd65010d4285.png",
-      "sha256": "bd65010d4285c68850d940cf013d5c7c6cb6c7128f282c88bf4fdcb93681c495"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+30-elev65.db8939993932.png",
+      "sha256": "db893999393224ece02674f694024c2e40a85720aa733e982e3f10a355807364"
     },
     {
       "yawDegrees": 45,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+45-elev25.514b12260696.png",
-      "sha256": "514b12260696c9ebf2149a6b07625e951991300e12962d84f9f8683bb804bfb5"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+45-elev25.b4b2adb2e5b1.png",
+      "sha256": "b4b2adb2e5b1c58a27f721027337227ebd619558084b73b2d6c3a1a735f949e5"
     },
     {
       "yawDegrees": 45,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+45-elev45.833cddbe5be4.png",
-      "sha256": "833cddbe5be498048be0d021c39a1581f3511832c45e066e45c9380d4f9bcd15"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+45-elev45.50b2776a518c.png",
+      "sha256": "50b2776a518cf1c7a69236c79da84230d110eb1e2a4b8a97b9594cec5f3932eb"
     },
     {
       "yawDegrees": 45,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+45-elev65.2ad2c7593cda.png",
-      "sha256": "2ad2c7593cda65c5f4bf109a326f450dff68822a31f3fea8b90be9c858e4152d"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+45-elev65.611c03c0ce41.png",
+      "sha256": "611c03c0ce414463df6750208546e6cf0800ae93cea9543bc1d06dee507e2818"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+60-elev25.6ac01ba2975e.png",
-      "sha256": "6ac01ba2975e3f657b33a39daaabe014e90b00a3bdc9ba990ea64eaddc2f2be6"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+60-elev25.f2589142bfe9.png",
+      "sha256": "f2589142bfe92fd0a380f0b1268c18a4dc30786627713ef0132feec5d18186d1"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+60-elev45.213d7819bcb5.png",
-      "sha256": "213d7819bcb5b262899f29414ee4c44abcfae38ace0f548011e0a8e916e6985a"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+60-elev45.7c2083a67e74.png",
+      "sha256": "7c2083a67e74c6be40ecdf6b1a3c5f4ad9887a375caab10f1df19a013a607567"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+60-elev65.72a30ae9474d.png",
-      "sha256": "72a30ae9474d39f317d54f04f00dba52580132089c24547a3833c462a62ded17"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+60-elev65.ce2a0757dfe8.png",
+      "sha256": "ce2a0757dfe8b67132384e0a52f2278b538d6697a3ef2f25b92ed4783c08f372"
     },
     {
       "yawDegrees": 75,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+75-elev25.0023a52a2a34.png",
-      "sha256": "0023a52a2a34d7c540609ccc556e13c2e11c46cf1f6f7e841d2ccd0044efeca6"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+75-elev25.028238ae9db9.png",
+      "sha256": "028238ae9db964e95f8d5be8edd54d02475492ae327b743e8a7d92a13920729d"
     },
     {
       "yawDegrees": 75,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+75-elev45.d0af35da826f.png",
-      "sha256": "d0af35da826f37719d4cb1bd797748b757274acf7373e41474a85c0d05d4e154"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+75-elev45.508eb40b4645.png",
+      "sha256": "508eb40b464575dd5e256773114df5ce792b2cde4e6595924a83130ee7c816de"
     },
     {
       "yawDegrees": 75,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+75-elev65.9085b54a8971.png",
-      "sha256": "9085b54a8971b8bbd392a4626bc4992c12dabbef34b3c3e0a6a1cf4542e3e70a"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+75-elev65.2c0c90e2e145.png",
+      "sha256": "2c0c90e2e14530361789e2f7204e9fd8929bd6717d5c251ab0647261758286e2"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+90-elev25.90335e64d7d7.png",
-      "sha256": "90335e64d7d70f7cae93d598371911108d3d26033d0660e560a7e3dd111abac4"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+90-elev25.d5e80ffb89dd.png",
+      "sha256": "d5e80ffb89ddc53100d5cd5ecc7743e4cfff0ce698e184c40014a5269945a5f2"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+90-elev45.5d6a5c3f9c4f.png",
-      "sha256": "5d6a5c3f9c4fbe1587a2ab52dd3613cb2c36c8a0cfa783b9943c59aa5ee19fa3"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+90-elev45.fc878ac5d814.png",
+      "sha256": "fc878ac5d8140060546d05cadc33b117f54c2bd9ad06f95bdfc6b7d04665220b"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+90-elev65.4e7c23b89ce7.png",
-      "sha256": "4e7c23b89ce7f9593aa316298e2c259208706df86f626c5c398ed5d938b001ca"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+90-elev65.8c21a5b013ae.png",
+      "sha256": "8c21a5b013ae3561730ee34b12efa83c2c97539870a77aa86db86557e648fd70"
     },
     {
       "yawDegrees": 105,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+105-elev25.2667027dcaf0.png",
-      "sha256": "2667027dcaf02f149bf9be29e6f6788ad3c264bd1ff8507fa12fdf1ba03a1f64"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+105-elev25.b9e894a3d4da.png",
+      "sha256": "b9e894a3d4da0342456c4f7a55d07a1c817803f765f64b67ff70e09318818b7d"
     },
     {
       "yawDegrees": 105,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+105-elev45.a80787713996.png",
-      "sha256": "a8078771399676015cffc3fcfa15fb743ee55664783b16d1baac3bb19451d449"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+105-elev45.9cdaa38aeb12.png",
+      "sha256": "9cdaa38aeb1241dfd1b59e3e843c5f527d97b1dd5f4fc4843062e5861be001e4"
     },
     {
       "yawDegrees": 105,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+105-elev65.fba89a59a7cd.png",
-      "sha256": "fba89a59a7cdc8c82e8b56a10f27e2f258cefb5491f0ddccd014f33d6a865c86"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+105-elev65.afac41afe88f.png",
+      "sha256": "afac41afe88f11afaf1018c3ad68ef4bbc3d128bbf9b93f988d2dc2575fd9022"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+120-elev25.d72c47acdb8a.png",
-      "sha256": "d72c47acdb8a79720b10cc4696ce418c8b8e5cce1222dfcdbda3a91c7a98d717"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+120-elev25.21ffee0f12cf.png",
+      "sha256": "21ffee0f12cf6a158b75e4ba1874a5fe011b8252adc5087733c1160e89660474"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+120-elev45.70111b0df1a1.png",
-      "sha256": "70111b0df1a13baf38e933e3b861c22774babf2b56e7ccea415ba85b505d7bea"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+120-elev45.442edb5459c3.png",
+      "sha256": "442edb5459c367e5c059bba320837366655d47ad872b8b0f95f810f41d088228"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+120-elev65.f1051b9d1d53.png",
-      "sha256": "f1051b9d1d53969597dfa40c0c2c0c4ef238ddca77cfa97b9c50c77f37f9ceb4"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+120-elev65.77637f080b61.png",
+      "sha256": "77637f080b617a1d14210b0504e9f90e3d423d732e2cb8300cde1a76090e7d19"
     },
     {
       "yawDegrees": 135,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+135-elev25.dcab5af56dcc.png",
-      "sha256": "dcab5af56dcc76fcc359ff0c3c4b6ee7e3ef56255a632e98dc1dcb9ee1fb51b9"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+135-elev25.949e87af5498.png",
+      "sha256": "949e87af549839f7b97c575cb7c35197d2d1b341d227592e96a80b90e3bc036b"
     },
     {
       "yawDegrees": 135,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+135-elev45.78fa780cf245.png",
-      "sha256": "78fa780cf2455bcb29fa318821d2ea2f4c0ff8932a448867db6acb6c041d6cff"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+135-elev45.4c3d37f2d1fa.png",
+      "sha256": "4c3d37f2d1fa799b2a552863af21b9a2f52c6b5a4976fa21c44ab1b6f526736a"
     },
     {
       "yawDegrees": 135,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+135-elev65.7c47cd33c63e.png",
-      "sha256": "7c47cd33c63e61b281e59dc1d35649103cf87350e4bc518c72dae7145f94f765"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+135-elev65.9d18739c4204.png",
+      "sha256": "9d18739c420463bbeb8340ab048df1b951ccc50d39f9f886355c04d61831e049"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+150-elev25.833dfaa24af8.png",
-      "sha256": "833dfaa24af8bd8642abef51d7d26c1e03a7753c321cceafbdef631659b99c94"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+150-elev25.0d99e89df1c4.png",
+      "sha256": "0d99e89df1c488bed500f655a473886c45111af0f8f541158471f5446dcd021b"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+150-elev45.a61b1f77701c.png",
-      "sha256": "a61b1f77701c46f716f5fab9aca9964b75969defd1296b47ff5ebe494f63e809"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+150-elev45.a2d0d0f93c57.png",
+      "sha256": "a2d0d0f93c577dfda97af20d1e6bba69e454cf00434c365a6d1496d83e19e261"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+150-elev65.021f04837828.png",
-      "sha256": "021f0483782851c7b397112dcb73997e7b470a60cfa443689a79c11b1b0f52c8"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+150-elev65.980831b5d4cd.png",
+      "sha256": "980831b5d4cdafca7893c79e74a36e36155c449db9d32567b8ba09618fba865a"
     },
     {
       "yawDegrees": 165,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+165-elev25.96c027f51929.png",
-      "sha256": "96c027f51929c6f61e1fd9f16aa2cdae9ccb228211df67abd4a931fe3dc518e3"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+165-elev25.ed6d7889c7b1.png",
+      "sha256": "ed6d7889c7b1b4f0c098bdac74be0649ee5b916afa87e44a206c7bab1683af0f"
     },
     {
       "yawDegrees": 165,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+165-elev45.b7ad7e95dffa.png",
-      "sha256": "b7ad7e95dffaf908be14d2d40ea3d7ab5ee962d10c12a5457e3f5f8b69f057e2"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+165-elev45.5ec4b5ce3ac2.png",
+      "sha256": "5ec4b5ce3ac2822dee262cfe54c758de4b5182a38fd688c5875bbe7122257211"
     },
     {
       "yawDegrees": 165,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+165-elev65.879ac4693dde.png",
-      "sha256": "879ac4693dde85b2b31be5708501684d1b4fdee72d71903ffa44ba99edf93efc"
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw+165-elev65.b71649e3f965.png",
+      "sha256": "b71649e3f9652307795d7417e15a7df4aee704bca9a246d657080218dadd78c5"
     }
   ]
 }
