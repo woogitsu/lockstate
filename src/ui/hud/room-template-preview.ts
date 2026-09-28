@@ -10,6 +10,7 @@ const NAME_KEYS: Record<RoomTemplateId, LocalizationKey> = {
   'cell-basic': HUD_MESSAGE_KEY.templateCellBasic,
   'cell-large': HUD_MESSAGE_KEY.templateCellLarge,
   'shower-room': HUD_MESSAGE_KEY.templateShowerRoom,
+  'cell-row-four': HUD_MESSAGE_KEY.templateCellRowFour,
 };
 
 /** A catalogue of authored plans. Selection previews geometry; it never places an order. */

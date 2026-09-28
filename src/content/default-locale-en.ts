@@ -4529,6 +4529,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.template-materials': 'Materials: {materials}',
   'hud.build.template-catalogue-value': 'Catalogue value: {total}. Materials already held may lower the amount spent.',
   'hud.build.template-catalogue-value-unavailable': 'Catalogue value unavailable. Check the material requirements.',
+  'hud.build.template-cell-row-four': 'Four-cell row',
 };
 
 /**

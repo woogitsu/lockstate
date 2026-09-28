@@ -1615,6 +1615,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.template-materials': 'Materiały: {materials}',
   'hud.build.template-catalogue-value': 'Wartość katalogowa: {total}. Posiadane materiały mogą obniżyć wydatek.',
   'hud.build.template-catalogue-value-unavailable': 'Wartość katalogowa jest niedostępna. Sprawdź wymagane materiały.',
+  'hud.build.template-cell-row-four': 'Rząd czterech cel',
 };
 
 export const localePlCatalog: LocalizationCatalog = buildLocalizationCatalog(plMessages);
