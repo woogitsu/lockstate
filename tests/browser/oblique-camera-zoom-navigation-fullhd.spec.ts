@@ -49,6 +49,20 @@ test('Full HD angled world zooms with the wheel over the map', async ({ page }) 
   await expect.poll(async () => viewport.evaluate((element) => `${element.style.width}/${element.style.height}`)).not.toBe(beforeZoom);
 });
 
+test('wheel zoom keeps the build square under an off-centre cursor', async ({ page }) => {
+  test.setTimeout(120_000);
+  await openWorld(page);
+  await page.getByRole('button', { name: 'Build', exact: true }).click();
+  await page.locator('.hud-build__list [data-buildable="wall-brick"]').click();
+  await page.getByRole('button', { name: 'Place on map', exact: true }).click();
+  await page.mouse.move(1400, 500);
+  const square = page.locator('.oblique-square-ghost polygon').first();
+  await expect(square).toBeVisible();
+  const tile = await square.evaluate((element) => `${element.getAttribute('data-tile-x')}/${element.getAttribute('data-tile-y')}`);
+  await page.mouse.wheel(0, -400);
+  await expect.poll(async () => square.evaluate((element) => `${element.getAttribute('data-tile-x')}/${element.getAttribute('data-tile-y')}`)).toBe(tile);
+});
+
 test('Full HD angled world responds to the visible minimap', async ({ page }) => {
   test.setTimeout(120_000);
   await openWorld(page);
