@@ -468,10 +468,15 @@ export function createSecurityPanel(options: SecurityPanelOptions): SecurityPane
       max: n(shown.severityMax),
     });
     detailResponders.hidden = shown.requiredResponders === undefined;
+    // `requiredResponders` is the incident detail's required response count.
+    // Select the grammatical form from that number, then interpolate its
+    // locale-formatted display value. The flat English entry remains valid.
     detailResponders.textContent =
       shown.requiredResponders === undefined
         ? ''
-        : t(HUD_MESSAGE_KEY.sectionSecurityIncidentResponders, { count: n(shown.requiredResponders) });
+        : localizer.formatPlural(HUD_MESSAGE_KEY.sectionSecurityIncidentResponders, shown.requiredResponders, {
+            count: n(shown.requiredResponders),
+          });
     /*
      * The outcome line is drawn for a terminal incident and for no other. An
      * open incident has no `outcome` at all, so "0 hurt" would assert that it
