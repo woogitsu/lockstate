@@ -40,7 +40,7 @@ describe('oblique cell module registry', () => {
       expect(catalog.nominalPixelsPerTile).toBe(64);
       expect(catalog.pivotPx).toEqual(isGround ? [64, 64] : [256, 256]);
       expect(catalog.cameraTargetTiles).toEqual([0, 0, 0]);
-      const isDense = entry.assetId === 'furniture.cell.bed.single.variants' || entry.assetId === 'fixture.cell.sink' || entry.assetId === 'fixture.cell.waste_bin' || entry.assetId === 'furniture.dining.table.wooden' || entry.assetId === 'furniture.corridor.bench.variants' || entry.assetId === 'furniture.kitchen.prep_counter' || entry.assetId === 'furniture.kitchen.stove' || entry.assetId === 'furniture.kitchen.fridge';
+      const isDense = entry.assetId === 'furniture.cell.bed.single.variants' || entry.assetId === 'fixture.cell.toilet_sink' || entry.assetId === 'fixture.cell.sink' || entry.assetId === 'fixture.cell.waste_bin' || entry.assetId === 'furniture.dining.table.wooden' || entry.assetId === 'furniture.corridor.bench.variants' || entry.assetId === 'furniture.kitchen.prep_counter' || entry.assetId === 'furniture.kitchen.stove' || entry.assetId === 'furniture.kitchen.fridge';
       const isWide = entry.assetId.startsWith('wall.interior.module.') || entry.assetId.startsWith('wall.interior.corner.') || entry.assetId.startsWith('wall.interior.junction.') || entry.assetId === 'wall.square.brick.low' || entry.assetId.startsWith('floor.') || entry.assetId.startsWith('actor.') || entry.assetId === 'door.interior.open.cutaway' || entry.assetId.startsWith('door.interior.open.west.') || entry.assetId.startsWith('door.shower.privacy.') || entry.assetId === 'fixture.shower.head';
       expect(catalog.yawDegrees).toEqual(isDense
         ? [-165, -135, -105, -75, -45, -15, 15, 45, 75, 105, 135, 165]
