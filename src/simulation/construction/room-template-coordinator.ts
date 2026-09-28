@@ -2,6 +2,7 @@ import { instantiateRoomTemplate, roomTemplateOriginFitsSafeCoordinates, type Ro
 import type { SystemRegistration, SimulationContext } from '../kernel/system';
 import type { PlacedObjectRegistry } from '../objects/placed-object-registry';
 import type { ObjectPlacementService } from '../objects/object-placement-service';
+import type { DoorRegistry } from '../navigation/door';
 import { objectFootprintTiles, tileKey } from '../objects/placed-object';
 import type { RoomZoningService } from '../rooms/zoning';
 import type { SparseWorld } from '../world/sparse-world';
@@ -10,6 +11,7 @@ import { tileAcrossEdge, type ConstructionSystem } from './system';
 import { createRoomTemplateBuildPlan } from './room-template-build-plan';
 import { BUILDABLE_REGISTRY, occupiesTileEdge } from './definition';
 import { resolveBuildEdge } from './build-order';
+import type { BuildOrder } from './build-order';
 import { validateRoomTemplatePlacement, type RoomTemplatePlacement } from './room-template-placement';
 
 export interface PendingRoomTemplate {
@@ -41,6 +43,7 @@ export class RoomTemplateCoordinator implements SystemRegistration {
     private readonly roomZoning: RoomZoningService,
     private readonly placedObjects: PlacedObjectRegistry,
     private readonly objectPlacement: ObjectPlacementService,
+    private readonly doors: DoorRegistry,
   ) {}
 
   public preflight(plan: RoomTemplatePlan): RoomTemplatePlacement {
@@ -96,6 +99,17 @@ export class RoomTemplateCoordinator implements SystemRegistration {
           x: tileCoordinate(door.x), y: tileCoordinate(outsideY),
         } };
       }
+    }
+    // Completed plans leave the pending ledger, but their door and zoned room
+    // remain in the world. A later wall must not cover that outside approach.
+    for (const wall of plan.wallSquares) {
+      if (!Number.isSafeInteger(wall.y - 2)) continue;
+      const doorTile = { x: tileCoordinate(wall.x), y: tileCoordinate(wall.y - 1) };
+      const roomTile = { x: tileCoordinate(wall.x), y: tileCoordinate(wall.y - 2) };
+      if (this.doors.getByEdge(doorTile, 'top') === undefined || this.world.getZoning(roomTile) === 0) continue;
+      return { ok: false, reason: 'structure-occupied', tile: {
+        x: tileCoordinate(wall.x), y: tileCoordinate(wall.y),
+      } };
     }
     for (const door of plan.doorSquares) {
       if (door.y !== plan.origin.y + plan.height - 1) continue;
@@ -181,6 +195,23 @@ export class RoomTemplateCoordinator implements SystemRegistration {
       }
     }
     this.pending = remaining;
+  }
+
+  /** Reserve the sole outside approach of a pending south-facing template door against later opaque walls. */
+  public claimsPendingDoorApproach(order: BuildOrder): boolean {
+    if (BUILDABLE_REGISTRY.get(order.definitionId)?.category !== 'wall') return false;
+    if (order.footprint !== 'square' && resolveBuildEdge(order) !== 'north') return false;
+    return this.claimsPendingDoorApproachTile(order.location, order.placementSequence);
+  }
+
+  public claimsPendingDoorApproachTile(tile: TilePosition, orderSequence?: number): boolean {
+    return this.pending.some((request) => {
+      if (request.sequence === orderSequence) return false;
+      const plan = instantiateRoomTemplate(request.templateId, request.origin, { mirrorX: request.mirrorX });
+      return plan.doorSquares.some((door) =>
+        door.y === plan.origin.y + plan.height - 1 &&
+        door.x === tile.x && door.y + 1 === tile.y);
+    });
   }
 
   /** Command dispatch also runs while paused, so release invalidated plans then. */
