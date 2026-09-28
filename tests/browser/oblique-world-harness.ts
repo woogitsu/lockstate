@@ -20,6 +20,9 @@ export interface ObliqueWorldHarness {
   cutawayWallIds(): readonly string[];
   actorArtPosition(): Point | undefined;
   moveActorToTile(tileX: number): Promise<void>;
+  cameraAngles(): { readonly yawRadians: number; readonly elevationRadians: number };
+  poseChangeCount(): number;
+  setRotationEnabled(enabled: boolean): void;
 }
 
 declare global {
@@ -54,6 +57,8 @@ const frame: RenderFrame = {
   roomConditions: [],
 };
 let actorTileX = 3;
+let rotationEnabled = true;
+let poseChangeCount = 0;
 
 let resolveReady!: () => void;
 const ready = new Promise<void>((resolve) => { resolveReady = resolve; });
@@ -64,6 +69,8 @@ const artCatalogs = await fetchObliqueModuleSet();
 const scene = new HarnessScene({
   feed: { readFrame: () => ({ ...frame, actors: [{ ...frame.actors[0]!, tileX: actorTileX }] }) },
   artCatalogs,
+  canRotate: () => rotationEnabled,
+  onPoseChanged: () => { poseChangeCount += 1; },
 });
 const game = new Phaser.Game({
   type: Phaser.AUTO,
@@ -92,6 +99,9 @@ window.lockstateObliqueWorldHarness = {
   loadedArtTextureCount: () => scene.loadedArtTextureCount,
   cutawayWallIds: () => scene.cutawayWallIds,
   actorArtPosition: () => scene.actorArtPosition,
+  cameraAngles: () => ({ yawRadians: scene.cameraPose.yawRadians, elevationRadians: scene.cameraPose.elevationRadians }),
+  poseChangeCount: () => poseChangeCount,
+  setRotationEnabled(enabled) { rotationEnabled = enabled; },
   async moveActorToTile(tileX) {
     actorTileX = tileX;
     await new Promise<void>((resolve) => { game.events.once(Phaser.Core.Events.POST_RENDER, () => resolve()); });

@@ -34,6 +34,8 @@ import { DemoActorFeed, isDemoActorsRequested } from './rendering/feed/demo-acto
 import { EMPTY_RENDER_FRAME, type RenderFeed } from './rendering/feed/render-feed';
 import { SimulationSnapshotFeed } from './rendering/feed/simulation-snapshot-feed';
 import { WorldScene } from './rendering/scene/world-scene';
+import { ObliqueWorldScene } from './rendering/scene/oblique-world-scene';
+import { fetchObliqueModuleSet } from './rendering/assets/oblique-module-registry';
 import { VOID_COLOR } from './rendering/world/appearance';
 import { applyAccessibilitySettings, createDisplayScaleControl } from './ui/display-scale';
 import { createThemeControl, createThemeController, resolveSystemThemeQuery } from './ui/theme';
@@ -698,7 +700,27 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
   },
 };
 
-new Phaser.Game(gameConfig);
+const game = new Phaser.Game(gameConfig);
+
+// The angled renderer first runs against the same live RenderFeed as the
+// standard scene behind an explicit preview URL. Building still belongs to
+// WorldScene; this gate lets browser QA exercise a real prison without exposing
+// a view whose construction gestures are not wired up yet.
+if (new URL(window.location.href).searchParams.get('oblique-preview') === '1') {
+  game.events.once(Phaser.Core.Events.READY, () => {
+    void fetchObliqueModuleSet().then((artCatalogs) => {
+      const obliqueScene = new ObliqueWorldScene({ feed: renderFeed, artCatalogs });
+      game.scene.add('oblique-world', obliqueScene, false);
+      obliqueScene.events.once(Phaser.Scenes.Events.CREATE, () => {
+        game.scene.stop('WorldScene');
+        document.body.dataset.obliquePreview = 'ready';
+      });
+      game.scene.start('oblique-world');
+    }).catch((error: unknown) => {
+      console.warn('Angled camera preview unavailable; the standard world remains active.', error);
+    });
+  });
+}
 
 /**
  * `?actors=demo` puts scripted actors on screen.

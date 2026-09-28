@@ -27,19 +27,25 @@ function lowerTop(footprint: TileQuad, top: TileQuad, fraction: number): TileQua
 export interface ObliqueWorldSceneOptions {
   readonly feed: RenderFeed;
   readonly onTileSelected?: (tileX: number, tileY: number) => void;
+  /** The HUD follows every scene-side pose change, including pointer drags. */
+  readonly onPoseChanged?: (pose: ObliqueCameraState) => void;
+  /** An armed construction gesture owns the pointer until it is put down. */
+  readonly canRotate?: () => boolean;
   /** Optional Blender modules; the scene still renders valid geometry without them. */
   readonly artCatalogs?: ReadonlyMap<string, ObliqueModuleCatalog>;
 }
 
 /**
  * A second, presentation-only Phaser scene for the angled renderer migration.
- * It reads the same immutable RenderFeed as WorldScene. Main.ts does not start
- * it yet: furniture art, build ghosts and measured repaint cost must join this
- * scene before players can switch to it.
+ * It reads the same immutable RenderFeed as WorldScene. The composition root
+ * starts it only for the explicit preview route while build gestures and
+ * measured repaint cost are completed before ordinary players switch to it.
  */
 export class ObliqueWorldScene extends Phaser.Scene {
   private readonly feed: RenderFeed;
   private readonly onTileSelected: ((tileX: number, tileY: number) => void) | undefined;
+  private readonly onPoseChanged: ((pose: ObliqueCameraState) => void) | undefined;
+  private readonly canRotate: () => boolean;
   private readonly artCatalogs: ReadonlyMap<string, ObliqueModuleCatalog>;
   private groundGraphics!: Phaser.GameObjects.Graphics;
   private selectionGraphics!: Phaser.GameObjects.Graphics;
@@ -67,6 +73,8 @@ export class ObliqueWorldScene extends Phaser.Scene {
     super({ key: 'oblique-world' });
     this.feed = options.feed;
     this.onTileSelected = options.onTileSelected;
+    this.onPoseChanged = options.onPoseChanged;
+    this.canRotate = options.canRotate ?? (() => true);
     this.artCatalogs = options.artCatalogs ?? new Map();
   }
 
@@ -95,9 +103,11 @@ export class ObliqueWorldScene extends Phaser.Scene {
       yawRadians: DEFAULT_YAW_RADIANS,
       elevationRadians: DEFAULT_ELEVATION_RADIANS,
     };
+    this.onPoseChanged?.(this.pose);
     this.input.mouse?.disableContextMenu();
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       if (pointer.button === 2 && !pointer.wasTouch) {
+        if (!this.canRotate()) return;
         this.turnPointerId = pointer.id;
         this.turnPointerAt = { x: pointer.x, y: pointer.y };
         return;
@@ -116,6 +126,11 @@ export class ObliqueWorldScene extends Phaser.Scene {
     });
     this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
       if (pointer.id !== this.turnPointerId || this.turnPointerAt === undefined) return;
+      if (!this.canRotate()) {
+        this.turnPointerId = undefined;
+        this.turnPointerAt = undefined;
+        return;
+      }
       const dx = pointer.x - this.turnPointerAt.x;
       const dy = pointer.y - this.turnPointerAt.y;
       this.turnPointerAt = { x: pointer.x, y: pointer.y };
@@ -166,6 +181,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     const screen = pivot ?? { x: this.pose.viewport.width / 2, y: this.pose.viewport.height / 2 };
     this.pose = changeObliquePoseAtScreenPoint(this.pose, screen, yawRadians, elevation);
     this.poseRevision += 1;
+    this.onPoseChanged?.(this.pose);
     this.repaint();
     void this.ensureArtForCurrentPose().catch((error: unknown) => { this.artLoadErrors.push(String(error)); });
   }
@@ -198,6 +214,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     if (viewport.width !== this.pose.viewport.width || viewport.height !== this.pose.viewport.height) {
       this.pose = { ...this.pose, viewport };
       this.poseRevision += 1;
+      this.onPoseChanged?.(this.pose);
     }
     const frame = this.feed.readFrame(time / 1000);
     if (!this.framedWorld && frame.world.loadedBounds !== undefined) {
@@ -211,6 +228,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
       };
       this.framedWorld = true;
       this.poseRevision += 1;
+      this.onPoseChanged?.(this.pose);
     }
     this.lastFrame = frame;
     this.repaint();

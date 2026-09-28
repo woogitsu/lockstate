@@ -1,6 +1,30 @@
 import { expect, test } from './network-changed-fixture';
 import type {} from './oblique-world-harness';
 
+test('build mode blocks right-drag turning and the HUD observes allowed turns', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/tests/browser/oblique-world-harness.html');
+  await page.evaluate(() => window.lockstateObliqueWorldHarness.ready());
+  const before = await page.evaluate(() => window.lockstateObliqueWorldHarness.cameraAngles());
+  const countBefore = await page.evaluate(() => window.lockstateObliqueWorldHarness.poseChangeCount());
+  await page.evaluate(() => window.lockstateObliqueWorldHarness.setRotationEnabled(false));
+  await page.mouse.move(950, 540);
+  await page.mouse.down({ button: 'right' });
+  await page.mouse.move(1020, 580, { steps: 5 });
+  await page.mouse.up({ button: 'right' });
+  expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.cameraAngles())).toEqual(before);
+  expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.poseChangeCount())).toBe(countBefore);
+  await page.evaluate(() => window.lockstateObliqueWorldHarness.setRotationEnabled(true));
+  await page.mouse.move(950, 540);
+  await page.mouse.down({ button: 'right' });
+  await page.mouse.move(1020, 580, { steps: 5 });
+  await page.mouse.up({ button: 'right' });
+  const after = await page.evaluate(() => window.lockstateObliqueWorldHarness.cameraAngles());
+  expect(after.yawRadians).not.toBe(before.yawRadians);
+  expect(after.elevationRadians).not.toBe(before.elevationRadians);
+  expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.poseChangeCount())).toBeGreaterThan(countBefore);
+});
+
 test('real render feed cell keeps one build square under the cursor while the scene turns', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/tests/browser/oblique-world-harness.html');
