@@ -256,6 +256,21 @@ worker Full HD flow and the player-facing EN/PL Full HD flow both reached
 Save, reload and a blocked duplicate placement. This remains part of the
 optional angled route until its integration PR clears the release gates.
 
+**Integration checkpoint, 2026-09-28 (`b1f74727c`, PR #1623):** the
+optional route also has a tested zero-prisoner delivery fallback, so a
+finished Delivery Bay and Storage Room cannot strand the first Cell's
+materials with no carrier. The Delivery Bay catalogue and 36-square ghost
+distinguish its amber, non-walkable dock marker from its teal southern door,
+in both English and Polish. Blender now produces warm masonry and sealed cell
+floor frames for all supported yaw/elevation poses; the real Full HD app
+loads them from a saved cell, with screenshots under
+`docs/evidence/oblique-cell-materials/`. App/tools TypeScript and 134
+focused tests passed on this combined branch. **The default view is still
+top-down.** In the current real-app capture, full-height near walls hide the
+bed until selection triggers cutaway; visual occlusion and renderer frame
+cost are the two active release blockers. Dedicated workers are measuring
+and fixing these while the gameplay lane extends the room catalogue.
+
 Keep three isolated worktrees moving in parallel: (1) Blender modules and
 consistent camera poses, (2) square-first construction and ready-made rooms,
 and (3) Full HD HUD, controls and visible template previews. The renderer
