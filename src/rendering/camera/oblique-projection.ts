@@ -19,6 +19,47 @@ export interface WorldPoint3D extends Point {
   readonly z?: number;
 }
 
+export interface GroundRectangle {
+  readonly left: number;
+  readonly top: number;
+  readonly right: number;
+  readonly bottom: number;
+}
+
+/** Fit a ground rectangle inside a screen rectangle without changing the world grid. */
+export function fitObliqueGroundRectangle(
+  camera: ObliqueCameraState,
+  ground: GroundRectangle,
+  screen: GroundRectangle,
+  minZoom: number,
+  maxZoom: number,
+): ObliqueCameraState {
+  if (![ground.left, ground.top, ground.right, ground.bottom, screen.left, screen.top,
+    screen.right, screen.bottom, minZoom, maxZoom].every(Number.isFinite)
+    || ground.right <= ground.left || ground.bottom <= ground.top
+    || screen.right <= screen.left || screen.bottom <= screen.top
+    || minZoom <= 0 || maxZoom < minZoom) throw new RangeError('Invalid fit rectangle.');
+  const centre = { x: (ground.left + ground.right) / 2, y: (ground.top + ground.bottom) / 2 };
+  const unit = { ...camera, target: centre, zoom: 1 };
+  const corners = [
+    groundToScreen({ x: ground.left, y: ground.top }, unit),
+    groundToScreen({ x: ground.right, y: ground.top }, unit),
+    groundToScreen({ x: ground.right, y: ground.bottom }, unit),
+    groundToScreen({ x: ground.left, y: ground.bottom }, unit),
+  ];
+  const width = Math.max(...corners.map((point) => point.x)) - Math.min(...corners.map((point) => point.x));
+  const height = Math.max(...corners.map((point) => point.y)) - Math.min(...corners.map((point) => point.y));
+  const zoom = Math.min(maxZoom, Math.max(minZoom, Math.min((screen.right - screen.left) / width,
+    (screen.bottom - screen.top) / height)));
+  const candidate = { ...unit, zoom };
+  const desiredCentre = { x: (screen.left + screen.right) / 2, y: (screen.top + screen.bottom) / 2 };
+  const target = screenToGround({
+    x: camera.viewport.width / 2 + (camera.viewport.width / 2 - desiredCentre.x),
+    y: camera.viewport.height / 2 + (camera.viewport.height / 2 - desiredCentre.y),
+  }, candidate);
+  return { ...candidate, target };
+}
+
 function assertFinite(value: number, label: string): void {
   if (!Number.isFinite(value)) throw new RangeError(`${label} must be finite.`);
 }
