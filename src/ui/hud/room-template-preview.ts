@@ -21,6 +21,7 @@ export const ROOM_TEMPLATE_NAME_KEYS: Record<RoomTemplateId, LocalizationKey> = 
   'storage-room-basic': 'room.storage-room.name',
   'staff-room-basic': 'room.staff-room.name',
   'solitary-cell-basic': 'room.solitary-cell.name',
+  'holding-cell-basic': 'room.holding-cell.name',
   'delivery-bay-basic': 'room.delivery-bay.name',
 };
 
