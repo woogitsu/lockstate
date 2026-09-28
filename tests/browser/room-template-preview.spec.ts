@@ -54,4 +54,10 @@ test('Polish Full HD room plan states material quantities and catalogue value be
   expect(geometry.right).toBeLessThanOrEqual(geometry.viewportWidth);
   expect(geometry.bottom).toBeLessThanOrEqual(geometry.viewportHeight);
   await page.screenshot({ path: testInfo.outputPath('room-template-quote-pl-fullhd.png') });
+  await dialog.getByRole('button', { name: 'Rząd czterech cel' }).click();
+  await expect(dialog.locator('.hud-template__dimensions')).toHaveText('7 × 16 pól');
+  await expect(dialog.locator('.hud-template__materials')).toContainText('Cegła × 112');
+  await expect(dialog.locator('.hud-template__materials')).toContainText('Deska × 8');
+  await expect(dialog.locator('.hud-template__catalogue-value')).toContainText('5000');
+  await page.screenshot({ path: testInfo.outputPath('four-cell-row-quote-pl-fullhd.png') });
 });
