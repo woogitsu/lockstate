@@ -24,6 +24,7 @@ export const ROOM_TEMPLATE_NAME_KEYS: Record<RoomTemplateId, LocalizationKey> = 
   'holding-cell-basic': 'room.holding-cell.name',
   'delivery-bay-basic': 'room.delivery-bay.name',
   'reception-basic': 'room.reception.name',
+  'yard-basic': 'room.yard.name',
 };
 
 /** A catalogue of authored plans. Selection previews geometry; it never places an order. */
@@ -78,6 +79,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
   let selectedId: RoomTemplateId = ROOM_TEMPLATE_IDS[0];
   let mirrorX = false;
   let halfTurn = false;
+  let mirrorLabel: HTMLElement | undefined;
   let halfTurnCheckbox: HTMLInputElement | undefined;
   let halfTurnLabel: HTMLElement | undefined;
   let quoteRevision = 0;
@@ -95,7 +97,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
       catalogueValue.textContent = cost.catalogueCostMinorUnits === undefined
         ? t(HUD_MESSAGE_KEY.templateCatalogueValueUnavailable)
         : t(HUD_MESSAGE_KEY.templateCatalogueValue, { total: localizer.formatNumber(cost.catalogueCostMinorUnits) });
-      materials.hidden = false;
+      materials.hidden = cost.materials.length === 0;
       catalogueValue.hidden = false;
     } catch {
       if (revision === quoteRevision) {
@@ -109,12 +111,15 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
     if (id !== 'cell-row-four') halfTurn = false;
     if (halfTurnCheckbox !== undefined) halfTurnCheckbox.checked = halfTurn;
     if (halfTurnLabel !== undefined) halfTurnLabel.hidden = id !== 'cell-row-four';
+    if (mirrorLabel !== undefined) mirrorLabel.hidden = id === 'yard-basic';
     tool?.select(id, mirrorX, halfTurn ? 2 : 0);
     const plan = tool?.planAt({ x: 0, y: 0 }) ?? instantiateRoomTemplate(id, { x: 0, y: 0 }, { mirrorX });
     for (const [rowId, button] of buttons) button.setAttribute('aria-pressed', rowId === id ? 'true' : 'false');
     dimensions.textContent = t(HUD_MESSAGE_KEY.templateSize, { width: plan.width, height: plan.height });
     const counts = new Map<string, number>();
     for (const object of plan.objects) counts.set(object.buildableId, (counts.get(object.buildableId) ?? 0) + 1);
+    contents.hidden = counts.size === 0;
+    legend.hidden = id === 'yard-basic';
     const objectNames: Record<string, LocalizationKey> = {
       'bed-wooden': HUD_MESSAGE_KEY.templateBed,
       'toilet-brick': HUD_MESSAGE_KEY.templateToilet,
@@ -172,6 +177,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
     const x = element('input', { attributes: { type: 'number', step: '1', value: '0', 'aria-label': t(HUD_MESSAGE_KEY.templateX) } });
     const y = element('input', { attributes: { type: 'number', step: '1', value: '0', 'aria-label': t(HUD_MESSAGE_KEY.templateY) } });
     const mirror = element('input', { attributes: { type: 'checkbox' } });
+    mirrorLabel = element('label', { children: [mirror, element('span', { text: t(HUD_MESSAGE_KEY.templateMirror) })] });
     halfTurnCheckbox = element('input', { attributes: { type: 'checkbox' } });
     halfTurnLabel = element('label', { children: [halfTurnCheckbox, element('span', { text: t(HUD_MESSAGE_KEY.templateRotateHalf) })] });
     halfTurnLabel.hidden = true;
@@ -249,7 +255,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
       children: [
         element('label', { className: 'hud-template__coordinate', children: [element('span', { text: t(HUD_MESSAGE_KEY.templateX) }), x] }),
         element('label', { className: 'hud-template__coordinate', children: [element('span', { text: t(HUD_MESSAGE_KEY.templateY) }), y] }),
-        element('label', { children: [mirror, element('span', { text: t(HUD_MESSAGE_KEY.templateMirror) })] }),
+        mirrorLabel,
         halfTurnLabel,
         place, map, status,
       ],
