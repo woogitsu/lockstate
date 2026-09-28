@@ -182,25 +182,17 @@ import { procurableMaterial } from '../../content/procurement-catalog';
 /**
  * What a new prison starts with.
  *
- * **No longer a placeholder: 25,000 is the owner's decision, and the decision
- * was to leave it where it was.** It used to say here that this figure should
- * be replaced the moment a real income line existed. That line landed with
- * #29, the question was put, and the answer was to keep 25,000 — so this
- * constant is now a chosen opening balance rather than a number waiting to be
- * chosen. It is still not an income policy; a starting balance says what you
- * begin with, never what the state pays you for, and ADR 0017 decision 5
- * keeps both out of the architecture record and in #29.
- *
- * What it buys, in the game's own units, so the figure can be argued with
- * rather than merely trusted: at the shipped catalog prices it is a few
- * hundred bricks, or roughly 22 standalone 2×3 cells' worth of wall and door
- * at 1,105 each — and it is 83 prisoner-days of income at 300
- * (`STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS`). That second reading is the
- * one #29 added: the opening balance is now expressible as a number of days
- * of running the place, which is what makes "keep it" a judgement rather than
- * an omission.
+ * The owner raised the grant to 100,000 in #641 on 2026-09-23 after measuring
+ * the cost of a first prison and the wall-drag trap. This places that trap
+ * roughly four screenfuls away. It does not eliminate the hard lock: a player
+ * can still exhaust the larger grant on walls before buying a first bed.
+ * ADR 0075's development grants are accepted design, but no threshold grant
+ * is implemented yet, so this change alone must not close #641. The overdraft floor
+ * and arrears bound are each one tenth of this grant by the same ruling.
+ * Existing saves retain their recorded balance; only new prisons receive this
+ * grant. It is an opening balance, not recurring state income.
  */
-export const TREASURY_STARTING_BALANCE_MINOR_UNITS = 25_000;
+export const TREASURY_STARTING_BALANCE_MINOR_UNITS = 100_000;
 
 /**
  * How far under water every prison may go, as a standing facility rather than
@@ -292,7 +284,15 @@ export const TREASURY_STARTING_BALANCE_MINOR_UNITS = 25_000;
  * to raise it. What the player is told about it is ADR 0081 open question 2 and
  * is the owner's.
  */
-export const TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS = -Math.trunc(TREASURY_STARTING_BALANCE_MINOR_UNITS / 10);
+/** The approved one-tenth facility, calculated from this prison's opening grant (#976). */
+export function overdraftFloorForOpeningBalance(openingBalanceMinorUnits: number): number {
+  if (!Number.isSafeInteger(openingBalanceMinorUnits) || openingBalanceMinorUnits < 0) {
+    throw new RangeError('An opening balance must be a non-negative safe integer of minor units.');
+  }
+  return -Math.trunc(openingBalanceMinorUnits / 10);
+}
+
+export const TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS = overdraftFloorForOpeningBalance(TREASURY_STARTING_BALANCE_MINOR_UNITS);
 
 /**
  * **Which rung of ADR 0017 decision 8's insolvency ladder a spend belongs to.**
@@ -406,7 +406,7 @@ export const INSOLVENCY_RUNG_CONSTRUCTION_FLOOR_MINOR_UNITS = INSOLVENCY_RUNG_DE
  *
  * **`'wages'` is `-Infinity` and that is not a threshold: it is the sentinel for
  * "no rung of its own above the treasury's floor".** Ruling 19 puts the third
- * rung *at* the floor (−2,500 today), and the floor already has an owner --
+ * rung *at* the floor (−10,000 with the #641 opening grant), and the floor already has an owner --
  * `Treasury.setOverdraftFloor`, fed by `createNewSimulationRuntime` from
  * `TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS`. Writing −2,500 here would be a second
  * copy of a number that is already defined once, and the two copies would
@@ -682,9 +682,9 @@ export class Treasury {
    * did before ADR 0075 decision 2.
    *
    * **The default stays `0` and the shipped floor is applied by the composition
-   * root, not here.** `createNewSimulationRuntime` calls
-   * `setOverdraftFloor(TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS)` on the treasury
-   * it builds (`src/simulation/runtime/new-session.ts`), so a session has the
+   * root, not here.** `createNewSimulationRuntime` uses
+   * `createOpeningTreasury` (`src/simulation/runtime/new-session.ts`) to apply
+   * the facility calculated from that session's opening grant, so a session has the
    * facility and a bare `new Treasury()` in a test does not — which is what
    * keeps the boundary cases in `tests/unit/economy-treasury.test.ts` about
    * this class rather than about a magnitude somebody may move.

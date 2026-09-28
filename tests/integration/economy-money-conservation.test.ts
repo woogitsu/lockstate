@@ -819,11 +819,11 @@ describe('money is conserved across build orders and undo (#285)', () => {
     const roomToTheRung = TREASURY_STARTING_BALANCE_MINOR_UNITS - INSOLVENCY_RUNG_STARTER_DELIVERIES_FLOOR_MINOR_UNITS;
     const plankPrice = UNIT_PRICE.get(DOOR_REQUIREMENT.itemId)!;
     expect(
-      653 * price + 1 * plankPrice,
+      2_528 * price + 1 * plankPrice,
       'the two catalogue prices no longer reach the starter rung exactly, so this case can no longer land on it',
     ).toBe(roomToTheRung);
 
-    session.buy('order-buy-the-room', WALL_REQUIREMENT.itemId, 653 - wholeBalance, 'the rest of the room, in bricks');
+    session.buy('order-buy-the-room', WALL_REQUIREMENT.itemId, 2_528 - wholeBalance, 'the rest of the room, in bricks');
     session.buy('order-buy-the-last-coin', DOOR_REQUIREMENT.itemId, 1, 'a purchase for the exact remaining room');
     expect(
       session.runtime.refusals.count,
@@ -845,7 +845,7 @@ describe('money is conserved across build orders and undo (#285)', () => {
     expect(
       session.runtime.treasury.balanceMinorUnits - TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
       'and the deeper floor is untouched, with a rung between the press and it',
-    ).toBe(1_315);
+    ).toBe(8_815);
     expect(session.runtime.procurement.pendingDeliveries).toHaveLength(3);
 
     // And the conservation equation is unmoved by all of it: `session.buy`

@@ -4,7 +4,6 @@ import { BUILDABLE_REGISTRY } from '../../src/simulation/construction';
 import {
   INSOLVENCY_RUNG_DELIVERIES_FLOOR_MINOR_UNITS,
   TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
-  TREASURY_STARTING_BALANCE_MINOR_UNITS,
 } from '../../src/simulation/economy';
 import { packCommand, type SimulationCommand } from '../../src/simulation/protocol/commands';
 import {
@@ -135,6 +134,9 @@ function edges(count: number): readonly Edge[] {
  */
 function createSession(seed = 0x717) {
   const runtime = createNewSimulationRuntime(seed);
+  // Reproduce the measured 25,000-balance drag after earlier spending.
+  expect(runtime.treasury.spend(75_000, 'wages')).toBe(true);
+  runtime.treasury.setOverdraftFloor(-2_500);
   let sequence = 0;
 
   const atOneTick = (commands: readonly SimulationCommand[]): void => {
@@ -190,6 +192,7 @@ function cancels(runtime: SimulationRuntime, orderIds: readonly string[]): reado
 }
 
 /** The 328 walls the overdraft funds: 26,240 out of a 25,000 facility, ending at −1,240. */
+const LEGACY_BALANCE = 25_000;
 const DRAG = 328;
 
 describe('what a cancelled drag gives back, and when (#717)', () => {
@@ -205,14 +208,12 @@ describe('what a cancelled drag gives back, and when (#717)', () => {
 
     session.atOneTick(placements(orderIds));
     expect(session.runtime.treasury.balanceMinorUnits, '328 walls at 80, out of 25,000').toBe(
-      TREASURY_STARTING_BALANCE_MINOR_UNITS - DRAG * WALL_COST,
+      LEGACY_BALANCE - DRAG * WALL_COST,
     );
     expect(session.runtime.procurement.pendingDeliveries, 'one delivery per funded order').toHaveLength(DRAG);
 
     session.atOneTick(cancels(session.runtime, orderIds));
-    expect(session.runtime.treasury.balanceMinorUnits, 'the whole 26,240, in money').toBe(
-      TREASURY_STARTING_BALANCE_MINOR_UNITS,
-    );
+    expect(session.runtime.treasury.balanceMinorUnits, 'the whole 26,240, in money').toBe(LEGACY_BALANCE);
     expect(session.stock(WALL_REQUIREMENT.itemId), 'and no bricks were conjured on the way back').toBe(0);
   }, 60_000);
 
@@ -273,9 +274,7 @@ describe('what a cancelled drag gives back, and when (#717)', () => {
     expect(session.stateCounts(orderIds), 'every order really was cancelled').toEqual(
       new Map([['cancelled', DRAG]]),
     );
-    expect(session.runtime.treasury.balanceMinorUnits, 'the whole 26,240 back — it read −1,240 before the ruling').toBe(
-      TREASURY_STARTING_BALANCE_MINOR_UNITS,
-    );
+    expect(session.runtime.treasury.balanceMinorUnits, 'the whole 26,240 back — it read −1,240 before the ruling').toBe(LEGACY_BALANCE);
     expect(session.stock(WALL_REQUIREMENT.itemId), 'and the shelf is empty — it held 656 bricks before the ruling').toBe(
       0,
     );
@@ -283,7 +282,7 @@ describe('what a cancelled drag gives back, and when (#717)', () => {
     // No longer locked, which is the whole of what the ruling bought.
     session.atOneTick([{ type: 'PurchaseMaterials', orderId: 'buy-plank-2', itemId: PLANK, quantity: 1 }]);
     expect(session.runtime.treasury.balanceMinorUnits, 'and the door its first cell needs is affordable again').toBe(
-      TREASURY_STARTING_BALANCE_MINOR_UNITS - PLANK_PRICE,
+      LEGACY_BALANCE - PLANK_PRICE,
     );
   }, 60_000);
 
@@ -309,9 +308,9 @@ describe('what a cancelled drag gives back, and when (#717)', () => {
      */
     const onTheRoad = createSession();
     onTheRoad.atOneTick(placements(['wall-0']));
-    expect(onTheRoad.runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS - WALL_COST);
+    expect(onTheRoad.runtime.treasury.balanceMinorUnits).toBe(LEGACY_BALANCE - WALL_COST);
     onTheRoad.atOneTick([cancelOrder(onTheRoad.runtime, 'wall-0')]);
-    expect(onTheRoad.runtime.treasury.balanceMinorUnits, 'money').toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+    expect(onTheRoad.runtime.treasury.balanceMinorUnits, 'money').toBe(LEGACY_BALANCE);
     expect(onTheRoad.stock(WALL_REQUIREMENT.itemId)).toBe(0);
 
     const landed = createSession();
@@ -326,9 +325,7 @@ describe('what a cancelled drag gives back, and when (#717)', () => {
       WALL_REQUIREMENT.quantity,
     );
     landed.atOneTick([cancelOrder(landed.runtime, 'wall-0')]);
-    expect(landed.runtime.treasury.balanceMinorUnits, 'money — this read 24,920, bricks and no money, before the ruling').toBe(
-      TREASURY_STARTING_BALANCE_MINOR_UNITS,
-    );
+    expect(landed.runtime.treasury.balanceMinorUnits, 'money — this read 24,920, bricks and no money, before the ruling').toBe(LEGACY_BALANCE);
     expect(landed.stock(WALL_REQUIREMENT.itemId), 'and the bricks went with it, as they do one state later').toBe(0);
 
     /*
@@ -348,11 +345,9 @@ describe('what a cancelled drag gives back, and when (#717)', () => {
     expect(measured.stateCounts(['wall-0']).get('assigned'), 'it did allocate in the end').toBe(1);
     expect(ticksHolding, 'ten ticks of holding bricks nothing has claimed').toBe(10);
 
-    expect(measured.runtime.treasury.balanceMinorUnits).toBe(TREASURY_STARTING_BALANCE_MINOR_UNITS - WALL_COST);
+    expect(measured.runtime.treasury.balanceMinorUnits).toBe(LEGACY_BALANCE - WALL_COST);
     measured.atOneTick([cancelOrder(measured.runtime, 'wall-0')]);
-    expect(measured.runtime.treasury.balanceMinorUnits, 'money again, one state later').toBe(
-      TREASURY_STARTING_BALANCE_MINOR_UNITS,
-    );
+    expect(measured.runtime.treasury.balanceMinorUnits, 'money again, one state later').toBe(LEGACY_BALANCE);
     expect(measured.stock(WALL_REQUIREMENT.itemId), 'and the bricks went with it').toBe(0);
   }, 60_000);
 });

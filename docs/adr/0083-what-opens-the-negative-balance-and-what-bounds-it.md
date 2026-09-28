@@ -535,6 +535,11 @@ Three things recommend it and one warns against it:
   that sweep is run**, and whoever implements this must run it and report if
   −2,500 is wrong rather than shipping it on this paragraph's authority.
 
+**Implementation update (#641, #976):** The approved one-tenth rule now derives
+the facility from the actual opening grant. The owner's 100,000 grant gives a
+new prison a −10,000 facility. The −2,500 figures above describe the measured
+25,000-grant scenario; the ratio was not changed.
+
 ### 3. `escalatedDiversionRateBasisPoints` is proposed at **5,000 bp (50%)**, and is not set here
 
 Ruled terms 25% / 15% / 45 days leave the fourth member open. 50% is *"the

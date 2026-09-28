@@ -162,10 +162,10 @@ test.describe('a refused press says how much more money the prison needs (#772, 
      */
     expect(BRICK_UNIT_PRICE, 'the brick price this case is built on').toBe(40);
     expect(FRESH_PRESS_FLOOR, 'the starter deliveries rung: -1,250 shifted shallower by one plank').toBe(-1_185);
-    expect(TREASURY_STARTING_BALANCE_MINOR_UNITS, 'the balance a new prison starts on').toBe(25_000);
-    expect(SPENDABLE, 'the grant plus the starter rung').toBe(26_185);
-    expect(UNAFFORDABLE_QUANTITY).toBe(754);
-    expect(TOTAL, 'what the press would spend').toBe(30_160);
+    expect(TREASURY_STARTING_BALANCE_MINOR_UNITS, 'the balance a new prison starts on').toBe(100_000);
+    expect(SPENDABLE, 'the grant plus the starter rung').toBe(101_185);
+    expect(UNAFFORDABLE_QUANTITY).toBe(2_629);
+    expect(TOTAL, 'what the press would spend').toBe(105_160);
     expect(SHORTFALL, 'how much more the prison needs').toBe(3_975);
     expect(
       new Set([TOTAL, TREASURY_STARTING_BALANCE_MINOR_UNITS, SPENDABLE, SHORTFALL]).size,
