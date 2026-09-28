@@ -914,6 +914,11 @@ export class ObjectPlacementService {
     return claimed;
   }
 
+  /** A full-square wall must not cross furniture, whether standing or still in the build queue. */
+  public claimsTileForSquareWall(tile: TilePosition): boolean {
+    return this.placedObjects.isTileOccupied(tile) || this.tilesClaimedByOrdersInFlight().has(tileKey(tile));
+  }
+
   /**
    * Every order that is going to put an object somewhere and has not yet, with
    * the tiles it will occupy.
