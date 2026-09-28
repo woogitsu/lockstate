@@ -2317,6 +2317,11 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       elevationUp: t(HUD_MESSAGE_KEY.cameraAngleElevationUp),
       elevationDown: t(HUD_MESSAGE_KEY.cameraAngleElevationDown),
       reset: t(HUD_MESSAGE_KEY.cameraAngleReset),
+      yawLeftShort: t(HUD_MESSAGE_KEY.cameraAngleYawLeftShort),
+      yawRightShort: t(HUD_MESSAGE_KEY.cameraAngleYawRightShort),
+      elevationUpShort: t(HUD_MESSAGE_KEY.cameraAngleElevationUpShort),
+      elevationDownShort: t(HUD_MESSAGE_KEY.cameraAngleElevationDownShort),
+      resetShort: t(HUD_MESSAGE_KEY.cameraAngleResetShort),
       yaw: t(HUD_MESSAGE_KEY.cameraAngleYaw),
       elevation: t(HUD_MESSAGE_KEY.cameraAngleElevation),
     }, options.onCameraPoseAction);

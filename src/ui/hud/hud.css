@@ -557,6 +557,9 @@
   padding-inline: var(--space-1);
   white-space: normal;
 }
+/* At 200% the five fixed columns leave the Polish "Prawo" a fraction wider
+ * than its button. Keep the label inside its pressable target. */
+:root[data-ui-scale-step='200'] .hud-camera-angle__button { font-size: calc(0.9 * var(--text-size-body)); }
 .hud__corner .hud-camera-angle__button { pointer-events: auto; }
 
 /* The frame scales with the rest of the interface (#545): it is a HUD panel

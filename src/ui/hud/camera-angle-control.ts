@@ -8,6 +8,11 @@ export interface CameraAngleLabels {
   readonly elevationUp: string;
   readonly elevationDown: string;
   readonly reset: string;
+  readonly yawLeftShort: string;
+  readonly yawRightShort: string;
+  readonly elevationUpShort: string;
+  readonly elevationDownShort: string;
+  readonly resetShort: string;
   readonly yaw: string;
   readonly elevation: string;
 }
@@ -28,18 +33,18 @@ export function createCameraAngleControl(
   onActivate: (action: CameraPoseAction) => void,
 ): CameraAngleControl {
   const reading = element('output', { className: 'hud-camera-angle__reading' });
-  const actions: readonly [CameraPoseAction, string][] = [
-    ['yaw-left', labels.yawLeft],
-    ['yaw-right', labels.yawRight],
-    ['elevation-up', labels.elevationUp],
-    ['elevation-down', labels.elevationDown],
-    ['reset', labels.reset],
+  const actions: readonly [CameraPoseAction, string, string][] = [
+    ['yaw-left', labels.yawLeft, labels.yawLeftShort],
+    ['yaw-right', labels.yawRight, labels.yawRightShort],
+    ['elevation-up', labels.elevationUp, labels.elevationUpShort],
+    ['elevation-down', labels.elevationDown, labels.elevationDownShort],
+    ['reset', labels.reset, labels.resetShort],
   ];
-  const buttons = actions.map(([action, label]) => {
+  const buttons = actions.map(([action, label, shortLabel]) => {
     const button = element('button', {
       className: 'ui-action hud-camera-angle__button',
       attributes: { type: 'button', 'aria-label': label, title: label },
-      text: label,
+      text: shortLabel,
     });
     button.addEventListener('click', () => onActivate(action));
     return button;
