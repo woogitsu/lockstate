@@ -7354,6 +7354,9 @@
 .hud-template__placement .hud-template__coordinate { flex-direction: column; align-items: stretch; gap: var(--space-1); }
 
 .oblique-template-ghost { position: fixed; inset: 0; z-index: calc(var(--hud-layer) - 1); pointer-events: none; }
+.oblique-square-ghost { position: fixed; inset: 0; width: 100%; height: 100%; z-index: calc(var(--hud-layer) - 1); pointer-events: none; }
+.oblique-square-ghost[hidden] { display: none; }
+.oblique-square-ghost polygon { fill: var(--accent-soft); fill-opacity: .55; stroke: var(--accent-deep); stroke-width: 2; vector-effect: non-scaling-stroke; }
 .oblique-template-ghost[hidden] { display: none; }
 .oblique-template-ghost__map { width: 100%; height: 100%; }
 .oblique-template-ghost__map polygon { fill: var(--accent-soft); fill-opacity: .52; stroke: var(--accent-deep); stroke-width: 2; vector-effect: non-scaling-stroke; }
