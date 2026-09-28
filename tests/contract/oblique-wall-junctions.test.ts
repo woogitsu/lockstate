@@ -10,10 +10,10 @@ const camera = {
   zoom: 2, yawRadians: Math.PI / 4, elevationRadians: Math.PI / 4,
 };
 
-function projectedWalls() {
+function projectedWalls(northKind: 1 | 2 = 1) {
   const world = new SparseWorld(8);
   world.load({ x: chunkCoordinate(0), y: chunkCoordinate(0) });
-  world.setTopEdge({ x: tileCoordinate(2), y: tileCoordinate(2) }, 1);
+  world.setTopEdge({ x: tileCoordinate(2), y: tileCoordinate(2) }, northKind);
   world.setLeftEdge({ x: tileCoordinate(3), y: tileCoordinate(1) }, 1);
   world.setLeftEdge({ x: tileCoordinate(3), y: tileCoordinate(2) }, 1);
   const snapshot = world.snapshot();
@@ -53,5 +53,14 @@ describe('real projected wall junction composition', () => {
     const result = selectObliqueWallJunctions(projection.raised, () => true,
       (item) => item.id === 'west-edge:3:2');
     expect(result.placements.map((entry) => entry.assetId)).toEqual(['wall.interior.junction.t.west.cutaway']);
+  });
+
+  it('leaves the door opening and its incident walls separate', () => {
+    const { projection } = projectedWalls(2);
+    const door = projection.raised.find((item) => item.kind === 'north-edge' && item.id === 'north-edge:2:2');
+    expect(door?.artAssetId).toContain('door.');
+    const result = selectObliqueWallJunctions(projection.raised, () => true, () => false);
+    expect(result.placements).toEqual([]);
+    expect(result.consumedIds.size).toBe(0);
   });
 });
