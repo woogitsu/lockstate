@@ -17,6 +17,10 @@ export interface ObliqueWorldHarness {
   selected(): { readonly tileX: number; readonly tileY: number } | undefined;
   paintCounts(): { readonly ground: number; readonly raised: number };
   groundArtPaintCount(): number;
+  groundArtImageCount(): number;
+  projectedGroundTileCount(): number;
+  paintedGroundTileCount(): number;
+  visibleUncachedGroundObjectCount(): number;
   artTextureKeys(): readonly string[];
   loadedArtTextureCount(): number;
   artCatalogCount(): number;
@@ -52,6 +56,9 @@ world.setTerrain(tile(1, 0), 'dirt');
 world.setTerrain(tile(6, 6), 'dirt');
 world.setTerrain(tile(7, 6), 'dirt');
 world.setTerrain(tile(0, 1), 'grass');
+if (new URL(window.location.href).searchParams.has('ground-stress')) {
+  for (let y = 0; y < 8; y += 1) for (let x = 0; x < 8; x += 1) world.setTerrain(tile(x, y), 'dirt');
+}
 for (let y = 2; y <= 4; y += 1) {
   for (let x = 2; x <= 4; x += 1) world.setZoning(tile(x, y), 1);
 }
@@ -125,6 +132,10 @@ window.lockstateObliqueWorldHarness = {
   selected: () => scene.selectedTile,
   paintCounts: () => scene.paintCounts,
   groundArtPaintCount: () => scene.groundArtPaintCount,
+  groundArtImageCount: () => scene.groundArtImageCount,
+  projectedGroundTileCount: () => scene.projectedGroundTileCount,
+  paintedGroundTileCount: () => scene.paintedGroundTileCount,
+  visibleUncachedGroundObjectCount: () => scene.visibleUncachedGroundObjectCount,
   artTextureKeys: () => scene.artTextureKeys,
   loadedArtTextureCount: () => scene.loadedArtTextureCount,
   artCatalogCount: () => artCatalogs.size,

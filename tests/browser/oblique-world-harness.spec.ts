@@ -1,6 +1,22 @@
 import { expect, test } from './network-changed-fixture';
 import type {} from './oblique-world-harness';
 
+test('small angled viewport culls and caches static ground', async ({ page }) => {
+  await page.setViewportSize({ width: 400, height: 300 });
+  await page.goto('/tests/browser/oblique-world-harness.html?ground-stress=1');
+  await page.evaluate(() => window.lockstateObliqueWorldHarness.ready());
+  const counts = await page.evaluate(() => ({
+    projected: window.lockstateObliqueWorldHarness.projectedGroundTileCount(),
+    sprites: window.lockstateObliqueWorldHarness.groundArtImageCount(),
+    painted: window.lockstateObliqueWorldHarness.paintedGroundTileCount(),
+  }));
+  expect(counts.projected).toBeGreaterThan(0);
+  expect(counts.sprites).toBeGreaterThan(0);
+  expect(counts.sprites).toBeLessThan(counts.projected);
+  expect(counts.painted).toBeLessThan(counts.projected);
+  expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.visibleUncachedGroundObjectCount())).toBe(0);
+});
+
 test('hover reports the logical whole square under the pointer to the build HUD', async ({ page }) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/tests/browser/oblique-world-harness.html');
@@ -101,7 +117,8 @@ test('real render feed cell keeps one build square under the cursor while the sc
     expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.selected())).toEqual({ tileX: 3, tileY: 3 });
     if (yaw === -45) {
       const artAfterSelection = await page.evaluate(() => window.lockstateObliqueWorldHarness.artTextureKeys());
-      expect(artAfterSelection.length).toBeLessThan(artBeforeSelection.length);
+      expect(artAfterSelection.filter((key) => key.includes('wall-module-full')).length)
+        .toBeLessThan(artBeforeSelection.filter((key) => key.includes('wall-module-full')).length);
       expect(artAfterSelection.some((key) => key.includes('cell-bed'))).toBe(true);
       expect(artAfterSelection.some((key) => key.includes('wall-module-cutaway'))).toBe(true);
       expect(artAfterSelection.some((key) => key.includes('wall-module-west-cutaway'))).toBe(true);

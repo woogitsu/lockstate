@@ -66,6 +66,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private readonly artCatalogs: ReadonlyMap<string, ObliqueModuleCatalog>;
   private groundGraphics!: Phaser.GameObjects.Graphics;
   private groundGridGraphics!: Phaser.GameObjects.Graphics;
+  private groundComposite!: Phaser.GameObjects.RenderTexture;
   private groundHoverGraphics!: Phaser.GameObjects.Graphics;
   private selectionGraphics!: Phaser.GameObjects.Graphics;
   private raisedGraphics!: Phaser.GameObjects.Graphics;
@@ -85,6 +86,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private actorPositions: { id: number; tileX: number; tileY: number }[] = [];
   private groundPaints = 0;
   private groundArtPaints = 0;
+  private paintedGroundTiles = 0;
   private raisedPaints = 0;
   private artImages: Phaser.GameObjects.Image[] = [];
   private groundArtImages: Phaser.GameObjects.Image[] = [];
@@ -121,9 +123,18 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor(VOID_COLOR);
     this.groundGraphics = this.add.graphics().setScrollFactor(0).setDepth(0);
     this.groundGridGraphics = this.add.graphics().setScrollFactor(0).setDepth(0.4);
+    this.groundComposite = this.add.renderTexture(0, 0, this.cameras.main.width, this.cameras.main.height)
+      .setOrigin(0, 0).setScrollFactor(0).setDepth(0.4);
     this.groundHoverGraphics = this.add.graphics().setScrollFactor(0).setDepth(0.6);
     this.selectionGraphics = this.add.graphics().setScrollFactor(0).setDepth(0.5);
     this.raisedGraphics = this.add.graphics().setScrollFactor(0).setDepth(1);
+    const restoreGround = (): void => {
+      if (this.lastProjection !== undefined) this.refreshGroundComposite();
+    };
+    this.game.renderer.on(Phaser.Renderer.Events.RESTORE_WEBGL, restoreGround);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.game.renderer.off(Phaser.Renderer.Events.RESTORE_WEBGL, restoreGround);
+    });
     this.pose = {
       target: { x: 0, y: 0 },
       viewport: { width: this.cameras.main.width, height: this.cameras.main.height },
@@ -228,6 +239,13 @@ export class ObliqueWorldScene extends Phaser.Scene {
     return { ground: this.groundPaints, raised: this.raisedPaints };
   }
   public get groundArtPaintCount(): number { return this.groundArtPaints; }
+  public get groundArtImageCount(): number { return this.groundArtImages.length; }
+  public get projectedGroundTileCount(): number { return this.lastProjection?.ground.length ?? 0; }
+  public get paintedGroundTileCount(): number { return this.paintedGroundTiles; }
+  public get visibleUncachedGroundObjectCount(): number {
+    return Number(this.groundGraphics.visible) + Number(this.groundGridGraphics.visible) +
+      this.groundArtImages.filter((image) => image.visible).length;
+  }
   public get artTextureKeys(): readonly string[] {
     return [...this.groundArtImages, ...this.artImages, ...this.actorArtImages].map((item) => item.texture.key);
   }
@@ -253,7 +271,10 @@ export class ObliqueWorldScene extends Phaser.Scene {
   public setGroundGridEmphasis(isBuildActive: boolean): void {
     if (this.buildGridEmphasis === isBuildActive) return;
     this.buildGridEmphasis = isBuildActive;
-    if (this.lastProjection !== undefined) this.paintGroundGrid(this.lastProjection);
+    if (this.lastProjection !== undefined) {
+      this.paintGroundGrid(this.lastProjection);
+      this.refreshGroundComposite();
+    }
     this.paintGroundHover();
   }
 
@@ -344,6 +365,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     if (pending.length > 0 && requestedPoseRevision === this.poseRevision &&
         this.lastProjection !== undefined && this.scene.isActive()) {
       this.paintGroundArt(this.lastProjection);
+      this.refreshGroundComposite();
       this.paintRaised(this.lastProjection);
       this.paintArt(this.lastProjection);
       this.paintActorArt(this.lastProjection);
@@ -386,11 +408,21 @@ export class ObliqueWorldScene extends Phaser.Scene {
     graphics.fillPath();
   }
 
+  private quadVisible(quad: TileQuad): boolean {
+    const xs = quad.map((corner) => corner.x);
+    const ys = quad.map((corner) => corner.y);
+    return Math.max(...xs) >= 0 && Math.min(...xs) <= this.pose.viewport.width &&
+      Math.max(...ys) >= 0 && Math.min(...ys) <= this.pose.viewport.height;
+  }
+
   private paintGround(projection: ObliqueWorldProjection): void {
     const ground = this.groundGraphics;
     ground.clear();
     this.groundPaints += 1;
+    this.paintedGroundTiles = 0;
     for (const tile of projection.ground) {
+      if (!this.quadVisible(tile.quad)) continue;
+      this.paintedGroundTiles += 1;
       this.fillQuad(ground, tile.quad, tile.fill);
       if (tile.zoningTint !== undefined) this.fillQuad(ground, tile.quad, tile.zoningTint, ZONING_TINT_ALPHA);
       if (!tile.owned) this.fillQuad(ground, tile.quad, UNOWNED_SHADE_COLOR, UNOWNED_SHADE_ALPHA);
@@ -402,6 +434,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     grid.clear();
     grid.lineStyle(Math.max(1.5, this.pose.zoom), 0x26323b, this.buildGridEmphasis ? 0.65 : 0.09);
     for (const tile of projection.ground) {
+      if (!this.quadVisible(tile.quad)) continue;
       for (let side = 0; side < 4; side += 1) {
         const next = (side + 1) % 4;
         grid.lineBetween(tile.quad[side]!.x, tile.quad[side]!.y, tile.quad[next]!.x, tile.quad[next]!.y);
@@ -443,12 +476,31 @@ export class ObliqueWorldScene extends Phaser.Scene {
         if (!this.textures.exists(frame.image)) continue;
         const [width, height] = catalog.resolutionPx;
         const [pivotX, pivotY] = catalog.pivotPx;
+        // The inverse-projected tile range is a bounding rectangle around the
+        // angled viewport. Its corner tiles can be far outside the canvas.
+        // Cull by the full sprite bounds, including art that extends past its
+        // tile, so nearby artwork is never clipped at the screen edge.
+        const left = anchor.x - pivotX * this.pose.zoom;
+        const top = anchor.y - pivotY * this.pose.zoom;
+        if (left > this.pose.viewport.width || top > this.pose.viewport.height ||
+            left + width * this.pose.zoom < 0 || top + height * this.pose.zoom < 0) continue;
         this.groundArtImages.push(this.add.image(anchor.x, anchor.y, frame.image)
           .setOrigin(pivotX / width, pivotY / height)
           .setScale(this.pose.zoom)
           .setDepth(0.2 + index * 0.001));
       }
     }
+  }
+
+  /** Cache the static ground at viewport resolution instead of drawing each tile every frame. */
+  private refreshGroundComposite(): void {
+    this.groundComposite.resize(this.pose.viewport.width, this.pose.viewport.height);
+    this.groundComposite.clear();
+    this.groundComposite.draw([this.groundGraphics, ...this.groundArtImages, this.groundGridGraphics]);
+    this.groundComposite.render();
+    this.groundGraphics.setVisible(false);
+    this.groundGridGraphics.setVisible(false);
+    for (const image of this.groundArtImages) image.setVisible(false);
   }
 
   private paintSelection(): void {
@@ -615,6 +667,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
       this.paintGround(projection);
       this.paintGroundGrid(projection);
       this.paintGroundArt(projection);
+      this.refreshGroundComposite();
       this.paintSelection();
       this.paintGroundHover();
       this.paintRaised(projection);
