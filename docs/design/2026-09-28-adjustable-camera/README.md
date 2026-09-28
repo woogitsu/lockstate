@@ -202,10 +202,20 @@ Build remove tool against completed wall edges, and leaves modified keyboard
 shortcuts to the browser. The HUD worker has reproduced a wheel-zoom pointer
 drift in Build and is wiring this scene port to fix it. For #1663 the owner
 chose to block overlapping zones while a paid room template is pending; PR
-#1680 contains that behavior and still needs integration. Separate draft PRs
+#1680 contains that behavior and is already an ancestor of this integration
+branch, though it is not on `main`. Separate draft PRs
 #1714 and #1716 cover 90-degree Canteen and Large Cell plans with Save/Load.
 The Blender ground, texture-loader and corner work is pushed on isolated
 branches; these slices are not yet declared shipped or on production.
+
+**Input checkpoint (`6ece6d1cc`, 2026-09-28):** the Full HD angled preview
+accepts wheel zoom anchored beneath the pointed square, keyboard pan through
+the saved WASD/arrow bindings, and middle-button map drag. The latter does not
+place an armed Build order. These controls passed their real-browser checks
+after integration on this branch. The owner-requested zone reservation from
+#1663 is present in this branch's ancestry, but none of these preview changes
+is on `main` yet. The Save/Load room-plan browser flow exposed an intermittent
+long reload; investigate that before treating the complete flow as verified.
 
 Keep three isolated worktrees moving in parallel: (1) Blender modules and
 consistent camera poses, (2) square-first construction and ready-made rooms,
