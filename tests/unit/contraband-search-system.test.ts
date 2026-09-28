@@ -73,6 +73,28 @@ function hireForSearch(guards: GuardRoster, tile: TilePosition): void {
 const OPEN_CELL_INDEX = 1;
 
 describe('SearchSystem: staffing, real navigation, deterministic detection and confiscation', () => {
+  it('does not restore one guard as the claimant of two active searches', () => {
+    const { guards, search, cellBlock, kernel } = buildHarness(6, [CERTAIN_DETECT_POLICY]);
+    hireForSearch(guards, cellBlock.canteenTiles[0]!);
+    const guardId = guards.allGuardIds()[0]!;
+    guards.setDeploymentPhase(guardId, 'on-search');
+    const target = { holderKind: 'cell' as const, holderId: String(OPEN_CELL_INDEX) };
+    search.loadSnapshot({
+      queue: [],
+      active: [
+        ['search-a', { scope: 'cell', targets: [target], guardIds: [guardId], currentTargetIndex: 0 }],
+        ['search-b', { scope: 'cell', targets: [target], guardIds: [guardId], currentTargetIndex: 0 }],
+      ],
+      metrics: { itemsDiscovered: 0, itemsMissed: 0, searchesCompleted: 0, searchesCancelled: 0 },
+    });
+
+    expect(search.getSnapshot().active).toHaveLength(1);
+    expect(search.getSnapshot().queue.map((order) => order.id)).toEqual(['search-b']);
+    expect(search.claimedGuardIds()).toEqual([guardId]);
+    for (let tick = 0; tick < 1000 && search.getMetrics().searchesCompleted < 2; tick += 1) kernel.step();
+    expect(search.getMetrics().searchesCompleted).toBe(2);
+    expect(search.getMetrics().searchesQueued).toBe(0);
+  });
   it('a search stays queued until enough unassigned guards exist, then completes and confiscates a guaranteed-detected item', () => {
     const { cellBlock, contraband, guards, search, kernel } = buildHarness(6, [CERTAIN_DETECT_POLICY]);
     contraband.introduce('item-1', 'contraband.phone', { kind: 'cell', id: String(OPEN_CELL_INDEX) }, { sourceType: 'room-object', sourceId: 'x', introducedAtTick: 0 });
