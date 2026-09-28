@@ -303,7 +303,16 @@ export class CarryJobExecutor {
     for (const job of this.board.activeJobs()) {
       if (job.state === 'available') continue;
       const workerId = job.assignedWorkerId;
-      if (workerId !== undefined && isEligibleCarrier(workerId)) continue;
+      if (workerId !== undefined && isEligibleCarrier(workerId)) {
+        // A schema-valid older snapshot can name one carrier on two jobs.
+        // JobBoard's derived index can name only one of them; preserve that
+        // indexed job and compensate the claim the carrier cannot resume.
+        if (this.board.activeJobFor(workerId)?.id === job.id) continue;
+        this.failJob(job, 'duplicate-carrier-claim');
+        job.assignedWorkerId = undefined;
+        ended += 1;
+        continue;
+      }
       // The same clearing `failDepartedCarrier` explains, for the same reason:
       // a restored job naming an id this session does not hold would hand the
       // errand's history to whoever the recycled index goes to next.
