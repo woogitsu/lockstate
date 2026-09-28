@@ -101,7 +101,7 @@ ambiguity already costs, and recommends an answer.
 ### The three channels this repository already has
 
 The taxonomy is not invented here. `SimulationEventLog`'s own docblock states
-it, at `src/simulation/events/event-log.ts:50-51`, explaining why issue #507
+it, at `src/simulation/events/event-log.ts:201`, explaining why issue #507
 became a channel rather than two more fields:
 
 > That is the whole reason issue #507 is a channel rather than two more

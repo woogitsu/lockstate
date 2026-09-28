@@ -58,7 +58,7 @@ restores **silently**, and dies later. Verified on `main` @ `54418b6`
 
 - `Kernel.restoreState` did `this._rng = new NamedRngStreams(snapshot.rngStates)`
   — **replace, not merge**. The four streams `createNewSimulationRuntime` derived
-  from `masterSeed` a moment earlier (`src/simulation/runtime/new-session.ts:288-293`,
+  from `masterSeed` a moment earlier (`new-session.ts:288-293` on `54418b6`,
   handed to the kernel at `:294`) were discarded. Nothing compared the two sets.
 
   **This bullet is now history, and is kept in the past tense rather than
