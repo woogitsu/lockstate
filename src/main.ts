@@ -44,6 +44,7 @@ import { createThemeControl, createThemeController, resolveSystemThemeQuery } fr
 import { SavePanel } from './ui/save-panel';
 import { createSimulationRoomTemplatePreflight, createSimulationRoomTemplateQuote } from './ui/simulation-room-template-port';
 import { createObliqueTemplateGhost, type ObliqueTemplateGhostView } from './ui/hud/oblique-template-ghost';
+import { buildCatalogueRowLabel } from './ui/hud/build-panel';
 import type { RoomTemplateTool, RoomTemplatePreflight, RoomTemplateCostQuote } from './ui/room-template-tool';
 import type { RoomTemplatePlan } from './content/room-template-catalog';
 import { ManageSavesPanel } from './ui/account/manage-saves-panel';
@@ -404,6 +405,9 @@ let obliqueTemplateTool: RoomTemplateTool | undefined;
 let obliqueTemplateGhost: ObliqueTemplateGhostView | undefined;
 let obliqueTemplateHover: { readonly x: number; readonly y: number } | undefined;
 let obliqueSquareGhost: SVGSVGElement | undefined;
+let obliqueSquareGhostRoot: HTMLDivElement | undefined;
+let obliqueSquareGhostNotice: HTMLDivElement | undefined;
+let obliqueWallBuildable: HudBuildableViewModel | undefined;
 let obliqueTemplatePlan: RoomTemplatePlan | undefined;
 let obliqueTemplateVerdict: RoomTemplatePreflight | undefined;
 let obliqueTemplateQuote: RoomTemplateCostQuote | undefined;
@@ -414,7 +418,7 @@ const paintObliqueSquareGhost = (): void => {
   if (ghost === undefined) return;
   const tile = obliqueTemplateHover;
   if (!buildTool?.isArmed() || !buildTool.squareFootprint() || tile === undefined || obliqueCameraScene === undefined) {
-    ghost.setAttribute('hidden', '');
+    if (obliqueSquareGhostRoot !== undefined) obliqueSquareGhostRoot.hidden = true;
     ghost.replaceChildren();
     buildTool?.targetSquares(undefined);
     return;
@@ -426,7 +430,15 @@ const paintObliqueSquareGhost = (): void => {
   polygon.setAttribute('data-tile-x', String(tile.x));
   polygon.setAttribute('data-tile-y', String(tile.y));
   ghost.replaceChildren(polygon);
-  ghost.removeAttribute('hidden');
+  if (obliqueSquareGhostRoot !== undefined) obliqueSquareGhostRoot.hidden = false;
+  if (obliqueSquareGhostNotice !== undefined && obliqueWallBuildable !== undefined) {
+    const label = buildCatalogueRowLabel(
+      (key, args) => localizer.format(key, args),
+      obliqueWallBuildable,
+      obliqueWallBuildable.placementCostMinorUnits === undefined ? undefined : localizer.formatNumber(obliqueWallBuildable.placementCostMinorUnits),
+    );
+    if (obliqueSquareGhostNotice.textContent !== label) obliqueSquareGhostNotice.textContent = label;
+  }
   buildTool.targetSquares([tile]);
 };
 const paintObliqueTemplateGhost = (): void => {
@@ -2773,6 +2785,8 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
    */
   const layoutStore = resolveBrowserKeyValueStore();
 
+  const initialBuildCatalogue = buildCatalogue();
+  obliqueWallBuildable = initialBuildCatalogue.buildables.find(({ definitionId }) => definitionId === 'wall-brick');
   hud = mountHud(app, {
     localizer,
     ...(roomTemplatePreflight === undefined ? {} : { roomTemplatePreflight }),
@@ -2804,7 +2818,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     // Spread rather than passed as `undefined`: `exactOptionalPropertyTypes`
     // is on, so an absent notice has to be an absent property.
     ...(simulationUnavailable ? { unavailable: SIMULATION_UNAVAILABLE_NOTICE } : {}),
-    build: buildCatalogue(),
+    build: initialBuildCatalogue,
     staff: staffRoster(),
     /*
      * The room catalogue, passed at mount for the reason the buildable one is:
@@ -4057,11 +4071,17 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     obliqueTemplateTool = hud.roomTemplateTool;
     obliqueTemplateGhost = createObliqueTemplateGhost(localizer);
     document.body.append(obliqueTemplateGhost.element);
+    obliqueSquareGhostRoot = document.createElement('div');
+    obliqueSquareGhostRoot.className = 'oblique-square-ghost';
     obliqueSquareGhost = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    obliqueSquareGhost.classList.add('oblique-square-ghost');
+    obliqueSquareGhost.classList.add('oblique-square-ghost__map');
     obliqueSquareGhost.setAttribute('aria-hidden', 'true');
-    obliqueSquareGhost.setAttribute('hidden', '');
-    document.body.append(obliqueSquareGhost);
+    obliqueSquareGhostNotice = document.createElement('div');
+    obliqueSquareGhostNotice.className = 'oblique-square-ghost__notice';
+    obliqueSquareGhostNotice.setAttribute('role', 'status');
+    obliqueSquareGhostRoot.append(obliqueSquareGhost, obliqueSquareGhostNotice);
+    obliqueSquareGhostRoot.hidden = true;
+    document.body.append(obliqueSquareGhostRoot);
     obliqueTemplateTool?.onSelectionChanged(refreshObliqueTemplateGhost);
     if (obliqueCameraScene !== undefined) hud.updateCameraPose(obliqueCameraScene.cameraPose);
     refreshObliqueTemplateGhost();
