@@ -1,8 +1,8 @@
 import { expect, test } from './network-changed-fixture';
-import { installTee, sentCommands } from './playtest-harness';
+import { countsSeries, installTee, sentCommands } from './playtest-harness';
 
 test('Full HD built room plan fits only on request and camera retains its Save/Load contract', async ({ page }, testInfo) => {
-  test.setTimeout(120_000);
+  test.setTimeout(180_000);
   await installTee(page);
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/?oblique-preview=1');
@@ -24,7 +24,19 @@ test('Full HD built room plan fits only on request and camera retains its Save/L
   await expect(dialog).not.toBeVisible();
   await expect.poll(async () => viewport.evaluate((element) => `${element.style.left}/${element.style.top}/${element.style.width}`)).not.toBe(before);
   const fitted = await viewport.evaluate((element) => `${element.style.left}/${element.style.top}/${element.style.width}`);
-  await page.screenshot({ path: testInfo.outputPath('four-cell-row-fit-fullhd.png') });
+  await page.getByRole('button', { name: 'Play at normal speed' }).click();
+  await page.getByRole('button', { name: 'Fast forward' }).click();
+  await page.getByRole('button', { name: 'Fast forward' }).click();
+  await expect.poll(async () => (await countsSeries(page)).at(-1)?.rooms, { timeout: 120_000 }).toBe(4);
+  await expect(page.locator('.hud-build')).not.toHaveAttribute('data-queued', /[1-9]/);
+  expect(await viewport.evaluate((element) => `${element.style.left}/${element.style.top}/${element.style.width}`)).toBe(fitted);
+  await page.screenshot({ path: testInfo.outputPath('four-cell-row-built-fit-fullhd.png') });
+  await page.locator('.hud-build__list [data-buildable="wall-brick"]').click();
+  await page.getByRole('button', { name: 'Place on map', exact: true }).click();
+  await page.mouse.move(960, 540);
+  const pickedTile = page.locator('.oblique-square-ghost polygon').first();
+  await expect(pickedTile).toHaveAttribute('data-tile-x', '13');
+  await expect(pickedTile).toHaveAttribute('data-tile-y', '18');
   await page.getByRole('button', { name: 'Save now' }).click();
   await expect(page.locator('.save-panel__status')).toContainText('Saved (generation ');
   await page.reload();
