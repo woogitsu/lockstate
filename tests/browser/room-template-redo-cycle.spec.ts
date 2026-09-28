@@ -28,6 +28,25 @@ test('Full HD redo after save restores a complete pending Cell plan', async ({ p
     ((window as unknown as { lockstateFromWorker?: Array<{ kind: string; payload?: { commandId?: string; status?: string } }> }).lockstateFromWorker ?? [])
       .find((message) => message.kind === 'simulation/command-result' && message.payload?.commandId === `template-redo.${wanted}`)?.payload?.status,
   sequence);
+  const roomRow = async () => page.evaluate(async () => {
+    const worker = (window as unknown as { roomPlanWorker?: Worker }).roomPlanWorker;
+    if (worker === undefined) throw new Error('simulation worker missing');
+    const messageId = crypto.randomUUID();
+    return new Promise<{ requirementSummary?: { missingCapability?: number } } | undefined>((resolve, reject) => {
+      const timeout = setTimeout(() => { worker.removeEventListener('message', receive); reject(new Error('room-list projection timed out')); }, 5_000);
+      const receive = (event: MessageEvent) => {
+        const message = event.data as { kind?: string; replyTo?: string; payload?: { view?: { data?: unknown } } };
+        if (message.kind !== 'simulation/projection' || message.replyTo !== messageId) return;
+        clearTimeout(timeout);
+        worker.removeEventListener('message', receive);
+        const data = message.payload?.view?.data as { rooms?: { rows?: Array<{ requirementSummary?: { missingCapability?: number } }> } } | undefined;
+        resolve(data?.rooms?.rows?.[0]);
+      };
+      worker.addEventListener('message', receive);
+      worker.postMessage({ protocolVersion: 1, messageId, kind: 'simulation/request-projection',
+        payload: { projectionId: 'hud/room-list' } });
+    });
+  });
   await expect.poll(() => page.evaluate(() =>
     ((window as unknown as { lockstateFromWorker?: Array<{ kind: string }> }).lockstateFromWorker ?? [])
       .some((message) => message.kind === 'simulation/ready'))).toBe(true);
@@ -48,5 +67,6 @@ test('Full HD redo after save restores a complete pending Cell plan', async ({ p
   await page.getByRole('button', { name: 'Fast forward' }).click();
   await page.getByRole('button', { name: 'Fast forward' }).click();
   await expect.poll(async () => (await countsSeries(page)).at(-1)?.rooms, { timeout: 120_000 }).toBe(1);
+  await expect.poll(roomRow, { timeout: 120_000 }).toMatchObject({ requirementSummary: { missingCapability: 0 } });
   await page.screenshot({ path: testInfo.outputPath('cell-redone-complete-fullhd.png') });
 });
