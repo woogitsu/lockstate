@@ -49,4 +49,20 @@ describe('the next room templates (#1586)', () => {
     ]);
     expectUsableFootprint(plan);
   });
+
+  it('places a complete canteen with two tables and four non-overlapping benches', () => {
+    const plan = instantiateRoomTemplate('canteen-basic', { x: 10, y: 20 });
+    expect([plan.width, plan.height]).toEqual([8, 8]);
+    expect(plan.zone).toEqual({ roomId: 'room.canteen', x: 11, y: 21, width: 6, height: 6 });
+    expect(plan.doorSquares).toEqual([{ x: 13, y: 27 }]);
+    expect(plan.objects).toEqual([
+      { buildableId: 'dining-table-wooden', x: 11, y: 21 },
+      { buildableId: 'dining-table-wooden', x: 14, y: 21 },
+      { buildableId: 'bench-wooden', x: 11, y: 23 },
+      { buildableId: 'bench-wooden', x: 14, y: 23 },
+      { buildableId: 'bench-wooden', x: 11, y: 25 },
+      { buildableId: 'bench-wooden', x: 14, y: 25 },
+    ]);
+    expectUsableFootprint(plan);
+  });
 });
