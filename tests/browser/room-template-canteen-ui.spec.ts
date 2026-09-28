@@ -13,7 +13,7 @@ test('Full HD Build selects and submits the authored canteen with its entire foo
   await expect(dialog.locator('.hud-template__dimensions')).toHaveText('8 × 8 tiles');
   await expect(dialog.locator('.hud-template__diagram .hud-template__tile')).toHaveCount(64);
   await expect(dialog.locator('.hud-template__diagram .hud-template__tile--door')).toHaveCount(1);
-  await expect(dialog.locator('.hud-template__diagram .hud-template__tile--object')).toHaveCount(6);
+  await expect(dialog.locator('.hud-template__diagram .hud-template__tile--object')).toHaveCount(20);
   await expect(dialog.locator('.hud-template__contents')).toContainText('Dining Table × 2');
   await expect(dialog.locator('.hud-template__contents')).toContainText('Bench × 4');
   await expect(dialog.locator('.hud-template__materials')).toContainText('Brick × 54');

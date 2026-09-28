@@ -1,4 +1,6 @@
 /** Player-authored plans use occupied squares; the simulation never infers them from a rendered wall face. */
+import { defaultObjectRegistry } from './object-catalog';
+
 export interface TemplateSquare {
   readonly x: number;
   readonly y: number;
@@ -26,6 +28,31 @@ export const ROOM_TEMPLATE_IDS = ['cell-basic', 'cell-large', 'shower-room', 'ce
 export type RoomTemplateId = (typeof ROOM_TEMPLATE_IDS)[number];
 export type AuthoredRoomTemplateId = RoomTemplateId;
 type RoomTemplateObjectId = 'bed-wooden' | 'toilet-brick' | 'shower-head-brick' | 'dining-table-wooden' | 'bench-wooden' | 'stove-brick' | 'prep-counter-brick' | 'fridge-brick';
+
+/** Authored object names resolve to the same catalogue footprint used by placement. */
+const TEMPLATE_OBJECT_IDS: Readonly<Record<RoomTemplateObjectId, string>> = {
+  'bed-wooden': 'object.bed',
+  'toilet-brick': 'object.toilet',
+  'shower-head-brick': 'object.shower-head',
+  'dining-table-wooden': 'object.dining-table',
+  'bench-wooden': 'object.bench',
+  'stove-brick': 'object.stove',
+  'prep-counter-brick': 'object.prep-counter',
+  'fridge-brick': 'object.fridge',
+};
+
+/** Full occupied furniture squares, shared by catalogue diagram and world ghost. */
+export function roomTemplateObjectSquares(plan: RoomTemplatePlan): readonly TemplateSquare[] {
+  return plan.objects.flatMap((object) => {
+    const footprint = defaultObjectRegistry.getById(TEMPLATE_OBJECT_IDS[object.buildableId])?.footprint;
+    if (footprint === undefined) throw new Error(`Missing footprint for room template object: ${object.buildableId}`);
+    const squares: TemplateSquare[] = [];
+    for (let dy = 0; dy < footprint.height; dy += 1) {
+      for (let dx = 0; dx < footprint.width; dx += 1) squares.push({ x: object.x + dx, y: object.y + dy });
+    }
+    return squares;
+  });
+}
 
 interface TemplateDefinition {
   readonly width: number;

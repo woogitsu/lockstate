@@ -1,4 +1,4 @@
-import { ROOM_TEMPLATE_IDS, instantiateRoomTemplate, type RoomTemplateId } from '../../content/room-template-catalog';
+import { ROOM_TEMPLATE_IDS, instantiateRoomTemplate, roomTemplateObjectSquares, type RoomTemplateId } from '../../content/room-template-catalog';
 import { defaultItemRegistry } from '../../content/item-catalog';
 import type { LocalizationKey } from '../../content/localization';
 import { element, nextUiId } from '../primitives/dom';
@@ -112,7 +112,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
     diagram.replaceChildren();
     const wall = new Set(plan.wallSquares.map(({ x, y }) => `${x},${y}`));
     const door = new Set(plan.doorSquares.map(({ x, y }) => `${x},${y}`));
-    const objects = new Map(plan.objects.map(({ x, y, buildableId }) => [`${x},${y}`, buildableId]));
+    const objects = new Set(roomTemplateObjectSquares(plan).map(({ x, y }) => `${x},${y}`));
     for (let y = 0; y < plan.height; y += 1) {
       for (let x = 0; x < plan.width; x += 1) {
         const key = `${x},${y}`;

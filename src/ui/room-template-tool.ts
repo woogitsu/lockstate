@@ -34,12 +34,20 @@ export class RoomTemplateTool {
   private mirrorX = false;
   private busy = false;
   private armed = false;
+  private readonly selectionListeners = new Set<() => void>();
 
   public constructor(private readonly port: RoomTemplatePlacementPort) {}
 
   public select(templateId: RoomTemplateId, mirrorX = false): void {
+    if (this.selected === templateId && this.mirrorX === mirrorX) return;
     this.selected = templateId;
     this.mirrorX = mirrorX;
+    for (const listener of this.selectionListeners) listener();
+  }
+
+  public onSelectionChanged(listener: () => void): () => void {
+    this.selectionListeners.add(listener);
+    return () => this.selectionListeners.delete(listener);
   }
 
   public arm(): void { this.armed = true; }

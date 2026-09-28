@@ -8,6 +8,7 @@ export interface TemplateGhostVerdict {
 
 export interface TemplateGhostPort {
   isArmed(): boolean;
+  onSelectionChanged(listener: () => void): () => void;
   planAt(origin: TemplateSquare): RoomTemplatePlan;
   inspectAt(origin: TemplateSquare): Promise<{ readonly plan: RoomTemplatePlan; readonly verdict: TemplateGhostVerdict }>;
   placeAt(origin: TemplateSquare): Promise<TemplateGhostVerdict>;
