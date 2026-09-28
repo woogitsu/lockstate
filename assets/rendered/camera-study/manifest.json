@@ -1,0 +1,328 @@
+{
+  "schemaVersion": 1,
+  "source": "interior-cell-angle-study.blend",
+  "wallSource": "wall.interior.cutaway.blend",
+  "wallSourceSha256": "9712dc725b92c0d65056e5874fbad4ce143497fd61fe012eba919d218a2bd0b8",
+  "lighting": {
+    "type": "one area light",
+    "location": [
+      -4,
+      -5,
+      9
+    ],
+    "energy": 900,
+    "size": 5,
+    "worldAmbientStrength": 0.6
+  },
+  "resolution": [
+    1280,
+    720
+  ],
+  "projection": "orthographic",
+  "orthoScale": 16.5,
+  "target": [
+    0.0,
+    1.0,
+    1.0
+  ],
+  "sourceSceneCamera": {
+    "yawDegrees": 0,
+    "elevationDegrees": 45
+  },
+  "yawDegrees": [
+    -45,
+    0,
+    45
+  ],
+  "elevationDegrees": [
+    25,
+    45,
+    65
+  ],
+  "instances": [
+    {
+      "name": "north wall -1",
+      "assetId": "wall.interior.module.full",
+      "tile": [
+        -1,
+        4
+      ],
+      "rotationDegrees": 0
+    },
+    {
+      "name": "north wall 0",
+      "assetId": "wall.interior.module.full",
+      "tile": [
+        0,
+        4
+      ],
+      "rotationDegrees": 0
+    },
+    {
+      "name": "north wall 1",
+      "assetId": "wall.interior.module.full",
+      "tile": [
+        1,
+        4
+      ],
+      "rotationDegrees": 0
+    },
+    {
+      "name": "west wall 1",
+      "assetId": "wall.interior.module.full",
+      "tile": [
+        -2,
+        1
+      ],
+      "rotationDegrees": 90
+    },
+    {
+      "name": "east wall 1",
+      "assetId": "wall.interior.module.full",
+      "tile": [
+        2,
+        1
+      ],
+      "rotationDegrees": 90
+    },
+    {
+      "name": "west wall 2",
+      "assetId": "wall.interior.module.full",
+      "tile": [
+        -2,
+        2
+      ],
+      "rotationDegrees": 90
+    },
+    {
+      "name": "east wall 2",
+      "assetId": "wall.interior.module.full",
+      "tile": [
+        2,
+        2
+      ],
+      "rotationDegrees": 90
+    },
+    {
+      "name": "west wall 3",
+      "assetId": "wall.interior.module.full",
+      "tile": [
+        -2,
+        3
+      ],
+      "rotationDegrees": 90
+    },
+    {
+      "name": "east wall 3",
+      "assetId": "wall.interior.module.full",
+      "tile": [
+        2,
+        3
+      ],
+      "rotationDegrees": 90
+    },
+    {
+      "name": "south wall left low",
+      "assetId": "wall.interior.module.cutaway",
+      "tile": [
+        -1,
+        0
+      ],
+      "rotationDegrees": 0
+    },
+    {
+      "name": "south door frame",
+      "assetId": "wall.interior.doorframe.full",
+      "tile": [
+        0,
+        0
+      ],
+      "rotationDegrees": 0
+    },
+    {
+      "name": "south wall right low",
+      "assetId": "wall.interior.module.cutaway",
+      "tile": [
+        1,
+        0
+      ],
+      "rotationDegrees": 0
+    },
+    {
+      "name": "north-west corner",
+      "assetId": "wall.interior.corner.inner.full",
+      "tile": [
+        -2,
+        4
+      ],
+      "rotationDegrees": -90
+    },
+    {
+      "name": "north-east corner",
+      "assetId": "wall.interior.corner.outer.full",
+      "tile": [
+        2,
+        4
+      ],
+      "rotationDegrees": 0
+    },
+    {
+      "name": "south-west low corner",
+      "assetId": "wall.interior.corner.inner.cutaway",
+      "tile": [
+        -2,
+        0
+      ],
+      "rotationDegrees": 0
+    },
+    {
+      "name": "south-east low corner",
+      "assetId": "wall.interior.corner.inner.cutaway",
+      "tile": [
+        2,
+        0
+      ],
+      "rotationDegrees": 90
+    }
+  ],
+  "entries": [
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 25,
+      "image": "cell-yaw-45-elev25.png",
+      "sha256": "f85577f0a5d8feda7ddf2f0f0f0ef18be754117f9cfed8cda7fdb502f23a0215",
+      "orangePixelCount": 205,
+      "cameraLocation": [
+        -8.485281,
+        -7.485281,
+        6.595692
+      ]
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 45,
+      "image": "cell-yaw-45-elev45.png",
+      "sha256": "50a0f83184d444d6814cb5589c730c1517305a24623c5430bd77cc208f9954ab",
+      "orangePixelCount": 1149,
+      "cameraLocation": [
+        -8.485281,
+        -7.485281,
+        13.0
+      ]
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 65,
+      "image": "cell-yaw-45-elev65.png",
+      "sha256": "90e1408df230cfb7386f7eedbd3343055d848aa33407d4af9bf062bf21ea1c76",
+      "orangePixelCount": 1598,
+      "cameraLocation": [
+        -8.485281,
+        -7.485281,
+        26.734083
+      ]
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 25,
+      "image": "cell-yaw+00-elev25.png",
+      "sha256": "a2cb76ba8281707030a2572683d6d022dcea50e6a93562adc304f21e3ae9752e",
+      "orangePixelCount": 2527,
+      "cameraLocation": [
+        0.0,
+        -11.0,
+        6.595692
+      ]
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 45,
+      "image": "cell-yaw+00-elev45.png",
+      "sha256": "2fca3181ee620e2d925ef6a73fef217dcc14a3c3c1b020f74b4bbfdf4a0489d0",
+      "orangePixelCount": 2253,
+      "cameraLocation": [
+        0.0,
+        -11.0,
+        13.0
+      ]
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 65,
+      "image": "cell-yaw+00-elev65.png",
+      "sha256": "1258ee28179bf3a9f55b4b93c9a32925dab2dda47e24226695a3bc23714b5251",
+      "orangePixelCount": 1353,
+      "cameraLocation": [
+        0.0,
+        -11.0,
+        26.734083
+      ]
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 25,
+      "image": "cell-yaw+45-elev25.png",
+      "sha256": "a7cd6152dd9ae594bc366e3618a7588e5c32e9aa5016ccf325bcfdf44ba52072",
+      "orangePixelCount": 2082,
+      "cameraLocation": [
+        8.485281,
+        -7.485281,
+        6.595692
+      ]
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 45,
+      "image": "cell-yaw+45-elev45.png",
+      "sha256": "6febe9f8833dfd5de7d1af83f1bdccd566eb89e55d7197b3ecc13565bcbf113b",
+      "orangePixelCount": 1661,
+      "cameraLocation": [
+        8.485281,
+        -7.485281,
+        13.0
+      ]
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 65,
+      "image": "cell-yaw+45-elev65.png",
+      "sha256": "6c42139913f7987d5ba985014f9e459a3461fc2e9fd89906767ba2695e4fdeec",
+      "orangePixelCount": 1006,
+      "cameraLocation": [
+        8.485281,
+        -7.485281,
+        26.734083
+      ]
+    }
+  ],
+  "cutawayCandidate": {
+    "selectionRule": {
+      "yawDegreesAtMost": -30,
+      "elevationDegreesAtMost": 30
+    },
+    "referenceImage": "cell-yaw-45-elev25.png",
+    "image": "cell-yaw-45-elev25-west-cutaway.png",
+    "sha256": "93ab55c38c7359259f69c7c3a98e8ab53c766c36d0584bcf7092e249981ea4a5",
+    "orangePixelCount": 3554,
+    "changedInstances": [
+      {
+        "name": "west wall 1",
+        "assetId": "wall.interior.module.cutaway"
+      },
+      {
+        "name": "west wall 2",
+        "assetId": "wall.interior.module.cutaway"
+      },
+      {
+        "name": "west wall 3",
+        "assetId": "wall.interior.module.cutaway"
+      },
+      {
+        "name": "north-west corner",
+        "assetId": "wall.interior.corner.inner.cutaway"
+      }
+    ],
+    "yawDegrees": -45,
+    "elevationDegrees": 25
+  }
+}
