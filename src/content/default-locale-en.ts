@@ -2298,6 +2298,33 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
 
   'hud.build.title': 'Build',
   'hud.build.catalogue': 'What to build',
+  'hud.build.templates': 'Room plans',
+  'hud.build.templates-short': 'Plans',
+  'hud.build.template-preview-only': 'Preview only. Choose a plan to inspect its footprint; placement is not available yet.',
+  'hud.build.template-position-hint': 'Choose an origin. The whole footprint is checked before you can place this plan.',
+  'hud.build.template-x': 'Plan origin X',
+  'hud.build.template-y': 'Plan origin Y',
+  'hud.build.template-mirror': 'Mirror horizontally',
+  'hud.build.template-place': 'Place room plan',
+  'hud.build.template-map': 'Place on map',
+  'hud.build.template-invalid-position': 'Enter whole-number coordinates.',
+  'hud.build.template-ready': 'This footprint is clear.',
+  'hud.build.template-blocked': 'This footprint is blocked. Choose another position.',
+  'hud.build.template-unavailable': 'Placement check is unavailable. Try again.',
+  'hud.build.template-submitted': 'Room plan submitted.',
+  'hud.build.template-close': 'Close plans',
+  'hud.build.template-cell-basic': 'Basic cell',
+  'hud.build.template-cell-large': 'Large cell',
+  'hud.build.template-shower-room': 'Shower room',
+  'hud.build.template-wall': 'Wall',
+  'hud.build.template-door': 'Door',
+  'hud.build.template-furniture': 'Furniture',
+  'hud.build.template-bed': 'Bed',
+  'hud.build.template-toilet': 'Toilet',
+  'hud.build.template-shower': 'Shower',
+  'hud.build.template-size': '{width} × {height} tiles',
+  'hud.build.template-object-count': '{name} × {count}',
+  'hud.build.template-aria-label': '{name}, {width} × {height} tiles',
   'hud.build.catalogue-empty': 'Nothing is available to build',
   'hud.build.selected': 'Selected',
   /**
@@ -2434,6 +2461,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.remove-submit': 'Remove object here',
   'hud.build.disarm': 'Stop placing',
   'hud.build.arm-hint': 'Click a tile edge to place a wall. Drag along it to lay a run. Two fingers, the middle button or the arrow keys still move the camera.',
+  'hud.build.arm-hint-square': 'Click a whole tile to place a wall. Drag across tiles to lay a row. The highlighted squares are the exact footprint. Two fingers, the middle button or the arrow keys still move the camera.',
   /*
    * The same hint for a buildable that stands on a **tile** rather than on an
    * edge (issue #904).
@@ -4506,6 +4534,10 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.camera-angle.reset': 'Reset angle',
   'hud.camera-angle.yaw': 'Turn',
   'hud.camera-angle.elevation': 'Tilt',
+  'hud.build.template-materials': 'Materials: {materials}',
+  'hud.build.template-catalogue-value': 'Catalogue value: {total}. Materials already held may lower the amount spent.',
+  'hud.build.template-catalogue-value-unavailable': 'Catalogue value unavailable. Check the material requirements.',
+  'hud.build.template-cell-row-four': 'Four-cell row',
 };
 
 /**

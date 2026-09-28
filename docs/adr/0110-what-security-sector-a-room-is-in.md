@@ -230,7 +230,7 @@ for ambiguity, and not a new rule.
 **The falsifier did not falsify, and the honest boundary is one branch wide.**
 `SparseWorld.setParcelOwned` *does* carry a revoking branch —
 `} else if (this.ownedParcels.delete(id)) {` at
-`src/simulation/world/sparse-world.ts:637` — and it has **zero call sites
+`src/simulation/world/sparse-world.ts:660` — and it has **zero call sites
 anywhere in `src/`** outside the class that defines it, and no command reaches
 it. So land cannot be un-owned today, and the mechanism that would allow it is
 already written and merely unused. §10 carries this as the weakest claim.

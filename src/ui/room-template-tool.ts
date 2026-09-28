@@ -1,0 +1,79 @@
+import { instantiateRoomTemplate, type RoomTemplateId, type RoomTemplatePlan, type TemplateSquare } from '../content/room-template-catalog';
+
+/** Display data supplied by the composition root; the HUD never imports the simulation. */
+export interface RoomTemplateCostQuote {
+  readonly orderCount: number;
+  readonly materials: readonly { readonly itemId: string; readonly quantity: number }[];
+  readonly catalogueCostMinorUnits?: number;
+}
+
+/** One player press becomes one worker command once the transactional backend is available. */
+export interface RoomTemplatePlacementRequest {
+  readonly templateId: RoomTemplateId;
+  readonly origin: TemplateSquare;
+  readonly mirrorX?: boolean;
+}
+
+export type RoomTemplatePreflight =
+  | { readonly ok: true }
+  | { readonly ok: false; readonly reason: 'unowned-land' | 'structure-occupied' | 'object-occupied'; readonly tile: TemplateSquare };
+
+export interface RoomTemplatePlacementPort {
+  /** Read-only worker query over every square, including the room's future objects. */
+  preflight(request: RoomTemplatePlacementRequest): Promise<RoomTemplatePreflight>;
+  /** Backend must validate again and commit atomically; preflight can become stale. */
+  place(request: RoomTemplatePlacementRequest): Promise<void>;
+}
+
+/**
+ * HUD-facing tool state, dormant until a worker preflight and atomic command
+ * are both provided. It never infers ownership or collisions from pixels.
+ */
+export class RoomTemplateTool {
+  private selected: RoomTemplateId = 'cell-basic';
+  private mirrorX = false;
+  private busy = false;
+  private armed = false;
+
+  public constructor(private readonly port: RoomTemplatePlacementPort) {}
+
+  public select(templateId: RoomTemplateId, mirrorX = false): void {
+    this.selected = templateId;
+    this.mirrorX = mirrorX;
+  }
+
+  public arm(): void { this.armed = true; }
+  public standDown(): void { this.armed = false; }
+  public isArmed(): boolean { return this.armed; }
+
+  public planAt(origin: TemplateSquare): RoomTemplatePlan {
+    return instantiateRoomTemplate(this.selected, origin, { mirrorX: this.mirrorX });
+  }
+
+  public async inspectAt(origin: TemplateSquare): Promise<{ readonly plan: RoomTemplatePlan; readonly verdict: RoomTemplatePreflight }> {
+    const plan = this.planAt(origin);
+    return { plan, verdict: await this.port.preflight(this.requestAt(origin)) };
+  }
+
+  private requestAt(origin: TemplateSquare): RoomTemplatePlacementRequest {
+    return {
+      templateId: this.selected,
+      origin: { x: origin.x, y: origin.y },
+      ...(this.mirrorX ? { mirrorX: true } : {}),
+    };
+  }
+
+  public async placeAt(origin: TemplateSquare): Promise<RoomTemplatePreflight | { readonly ok: false; readonly reason: 'busy' }> {
+    if (this.busy) return { ok: false, reason: 'busy' };
+    this.busy = true;
+    try {
+      const request = this.requestAt(origin);
+      const verdict = await this.port.preflight(request);
+      if (!verdict.ok) return verdict;
+      await this.port.place(request);
+      return verdict;
+    } finally {
+      this.busy = false;
+    }
+  }
+}

@@ -332,7 +332,7 @@ which tile each was on — information the nested shape has no reason to have ke
 #### Against a tile plane. Rejected, and this is the expensive-to-reverse one.
 
 Every world plane today is a `Uint8Array` — `chunkTerrain`, `chunkTopEdge`,
-`chunkLeftEdge`, `chunkZoning` (`src/simulation/world/sparse-world.ts:284-287`;
+`chunkLeftEdge`, `chunkZoning` (`src/simulation/world/sparse-world.ts:289-292`;
 the anchor read `:268-271`, four fields of an unrelated rectangle literal)
 — RLE-encoded per chunk, with a decode contract that validates values against
 the *terrain* registry (`:141-169`). `objectDefinitionSchema` bounds `numericId`

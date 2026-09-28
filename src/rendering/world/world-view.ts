@@ -22,6 +22,7 @@ interface ChunkLayers {
   readonly terrain: Uint8Array | undefined;
   readonly topEdge: Uint8Array | undefined;
   readonly leftEdge: Uint8Array | undefined;
+  readonly squareStructure: Uint8Array | undefined;
   readonly zoning: Uint8Array | undefined;
 }
 
@@ -41,12 +42,14 @@ export interface TileSample {
   topEdge: number;
   /** Non-zero when a wall segment runs along the tile's west edge. */
   leftEdge: number;
+  /** Whole-square wall or oriented door, independent from the old edge wall layers. */
+  squareStructure: number;
   zoning: number;
   owned: boolean;
 }
 
 export function createTileSample(): TileSample {
-  return { loaded: false, terrainNumericId: 0, topEdge: 0, leftEdge: 0, zoning: 0, owned: false };
+  return { loaded: false, terrainNumericId: 0, topEdge: 0, leftEdge: 0, squareStructure: 0, zoning: 0, owned: false };
 }
 
 function layerKey(chunkX: number, chunkY: number): string {
@@ -114,6 +117,7 @@ export class WorldRenderView {
         terrain: chunk.terrain === undefined ? undefined : decodeTerrainRle(chunk.terrain, tilesPerChunk),
         topEdge: chunk.topEdge === undefined ? undefined : decodeTerrainRle(chunk.topEdge, tilesPerChunk),
         leftEdge: chunk.leftEdge === undefined ? undefined : decodeTerrainRle(chunk.leftEdge, tilesPerChunk),
+        squareStructure: chunk.squareStructure === undefined ? undefined : decodeTerrainRle(chunk.squareStructure, tilesPerChunk),
         zoning: chunk.zoning === undefined ? undefined : decodeTerrainRle(chunk.zoning, tilesPerChunk),
       });
 
@@ -177,6 +181,7 @@ export class WorldRenderView {
     out.terrainNumericId = layers?.terrain?.[index] ?? 0;
     out.topEdge = layers?.topEdge?.[index] ?? 0;
     out.leftEdge = layers?.leftEdge?.[index] ?? 0;
+    out.squareStructure = layers?.squareStructure?.[index] ?? 0;
     out.zoning = layers?.zoning?.[index] ?? 0;
     out.owned = this.isTileOwnedInChunk(tileX, tileY, key);
   }
@@ -205,6 +210,10 @@ export class WorldRenderView {
   /** The tile's own west edge. See `getTopEdge`. */
   public getLeftEdge(tile: TilePosition): number {
     return this.chunks.get(this.chunkKeyFor(tile.x, tile.y))?.leftEdge?.[this.indexInChunk(tile.x, tile.y)] ?? 0;
+  }
+
+  public getSquareStructure(tile: TilePosition): number {
+    return this.chunks.get(this.chunkKeyFor(tile.x, tile.y))?.squareStructure?.[this.indexInChunk(tile.x, tile.y)] ?? 0;
   }
 
   private chunkKeyFor(tileX: number, tileY: number): string {

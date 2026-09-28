@@ -1,0 +1,65 @@
+import { expect, test } from './network-changed-fixture';
+import { countsSeries, installTee } from './playtest-harness';
+
+test('Full HD worker builds a complete Infirmary and restores its footprint', async ({ page }, testInfo) => {
+  test.setTimeout(180_000);
+  await installTee(page);
+  await page.addInitScript(() => {
+    const RealWorker = Worker;
+    class ProbedWorker extends RealWorker {
+      public constructor(url: string | URL, options?: WorkerOptions) {
+        super(url, options);
+        const projections: unknown[] = [];
+        super.addEventListener('message', (event: MessageEvent) => {
+          if ((event.data as { kind?: string })?.kind === 'simulation/projection') projections.push(event.data);
+        });
+        (window as unknown as { roomPlanProjections: unknown[] }).roomPlanProjections = projections;
+        (window as unknown as { roomPlanWorker: Worker }).roomPlanWorker = this;
+      }
+    }
+    (window as unknown as { Worker: typeof Worker }).Worker = ProbedWorker as typeof Worker;
+  });
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/index.html');
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await expect.poll(() => page.evaluate(() =>
+    ((window as unknown as { lockstateFromWorker?: Array<{ kind: string }> }).lockstateFromWorker ?? [])
+      .some((message) => message.kind === 'simulation/ready'))).toBe(true);
+  await page.evaluate(() => {
+    const worker = (window as unknown as { roomPlanWorker?: Worker }).roomPlanWorker;
+    if (worker === undefined) throw new Error('simulation worker was not captured');
+    worker.postMessage({
+      protocolVersion: 1, messageId: 'infirmary.place', kind: 'simulation/submit-command',
+      payload: { commandId: 'infirmary.place', sequence: 0, executeAtTick: 0,
+        command: { schemaId: 'lockstate.simulation.command', schemaVersion: 1, transport: 'structured-clone',
+          data: { type: 'PlaceRoomTemplate', templateId: 'infirmary-basic', origin: { x: 10, y: 10 } } } },
+    });
+  });
+  await expect.poll(() => page.evaluate(() =>
+    ((window as unknown as { lockstateFromWorker?: Array<{ kind: string; payload?: { commandId?: string; status?: string } }> }).lockstateFromWorker ?? [])
+      .some((message) => message.kind === 'simulation/command-result' && message.payload?.commandId === 'infirmary.place' && message.payload.status === 'queued'))).toBe(true);
+  await page.getByRole('button', { name: 'Play at normal speed' }).click();
+  await page.getByRole('button', { name: 'Fast forward' }).click();
+  await page.getByRole('button', { name: 'Fast forward' }).click();
+  await expect.poll(async () => (await countsSeries(page)).at(-1)?.rooms, { timeout: 120_000 }).toBe(1);
+  await expect(page.locator('.hud-build')).not.toHaveAttribute('data-queued', /[1-9]/, { timeout: 120_000 });
+  await page.screenshot({ path: testInfo.outputPath('infirmary-complete-fullhd.png') });
+
+  await page.getByRole('button', { name: 'Save now' }).click();
+  await expect(page.locator('.save-panel__status')).toContainText('Saved (generation ');
+  await page.reload();
+  await page.locator('.save-panel__item button').filter({ hasText: 'Load' }).first().click();
+  await expect.poll(async () => (await countsSeries(page)).at(-1)?.rooms).toBe(1);
+  await page.evaluate(() => {
+    const worker = (window as unknown as { roomPlanWorker?: Worker }).roomPlanWorker;
+    if (worker === undefined) throw new Error('restored simulation worker was not captured');
+    worker.postMessage({ protocolVersion: 1, messageId: 'infirmary.restored', kind: 'simulation/request-projection',
+      payload: { projectionId: 'world/room-template-preflight',
+        target: { kind: 'room-template', templateId: 'infirmary-basic', origin: { x: 10, y: 10 } } } });
+  });
+  await expect.poll(() => page.evaluate(() =>
+    ((window as unknown as { roomPlanProjections?: Array<{
+      replyTo?: string; payload?: { view?: { data?: { ok?: boolean; reason?: string } } };
+    }> }).roomPlanProjections ?? []).find((message) => message.replyTo === 'infirmary.restored')?.payload?.view?.data,
+  )).toMatchObject({ ok: false, reason: 'structure-occupied' });
+});

@@ -46,6 +46,7 @@ export interface RowContent {
   readonly tileY: number;
   readonly structures: readonly RenderStructure[];
   readonly edges: readonly RowEdge[];
+  readonly squares: readonly { readonly tileX: number; readonly value: number }[];
 }
 
 /**
@@ -56,12 +57,12 @@ export function buildRowIndex(
   world: WorldRenderView,
   structures: readonly RenderStructure[],
 ): ReadonlyMap<number, RowContent> {
-  const rows = new Map<number, { tileY: number; structures: RenderStructure[]; edges: RowEdge[] }>();
+  const rows = new Map<number, { tileY: number; structures: RenderStructure[]; edges: RowEdge[]; squares: { tileX: number; value: number }[] }>();
 
-  const rowFor = (tileY: number): { tileY: number; structures: RenderStructure[]; edges: RowEdge[] } => {
+  const rowFor = (tileY: number): { tileY: number; structures: RenderStructure[]; edges: RowEdge[]; squares: { tileX: number; value: number }[] } => {
     let row = rows.get(tileY);
     if (row === undefined) {
-      row = { tileY, structures: [], edges: [] };
+      row = { tileY, structures: [], edges: [], squares: [] };
       rows.set(tileY, row);
     }
     return row;
@@ -92,8 +93,12 @@ export function buildRowIndex(
         for (let localX = 0; localX < size; localX += 1) {
           const tileX = originTileX + localX;
           world.readTile(tileX, tileY, sample);
-          if (sample.topEdge === 0 && sample.leftEdge === 0) continue;
-          rowFor(tileY).edges.push({ tileX, top: sample.topEdge, left: sample.leftEdge });
+          if (sample.topEdge !== 0 || sample.leftEdge !== 0) {
+            rowFor(tileY).edges.push({ tileX, top: sample.topEdge, left: sample.leftEdge });
+          }
+          if (sample.squareStructure !== 0) {
+            rowFor(tileY).squares.push({ tileX, value: sample.squareStructure });
+          }
         }
       }
     }

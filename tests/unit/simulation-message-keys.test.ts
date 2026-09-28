@@ -119,6 +119,13 @@ interface UnlabelledEnum {
 
 const UNLABELLED: readonly UnlabelledEnum[] = [
   {
+    sourceFile: 'src/content/room-template-catalog.ts',
+    declaration: 'ROOM_TEMPLATE_IDS',
+    members: ['cell-basic', 'cell-large', 'shower-room', 'cell-row-four', 'canteen-basic', 'kitchen-basic'],
+    reason:
+      'The player-visible plan labels are the authored EN/PL HUD_MESSAGE_KEY.templateCellBasic/templateCellLarge/templateShowerRoom/templateCellRowFour keys and room.canteen.name/room.kitchen.name in src/ui/hud/room-template-preview.ts, not generated simulation enum labels. The same module selects these six authored plans and never renders the raw ids.',
+  },
+  {
     sourceFile: 'src/simulation/protocol/types.ts',
     declaration: 'MAIN_TO_WORKER_MESSAGE_KINDS',
     reason:

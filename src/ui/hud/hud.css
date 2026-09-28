@@ -1681,6 +1681,60 @@
   outline-offset: 2px;
 }
 
+.hud-build__catalogue-actions { display: flex; align-items: center; gap: var(--space-1); min-width: 0; }
+.hud-build__catalogue-actions .hud-build__category { max-width: 110px; }
+.hud-build__template-open {
+  min-height: var(--tap-target);
+  padding: 0 var(--space-2);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-raised);
+  color: var(--text-body);
+  font: inherit;
+  cursor: pointer;
+}
+.hud-build__template-open:focus-visible,
+.hud-template button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.hud-template {
+  width: min(520px, calc(100vw - 40px));
+  max-height: calc(100vh - 80px);
+  padding: var(--space-5);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+  color: var(--text-body);
+  overflow: auto;
+}
+.hud-template::backdrop { background: var(--surface-dialog-backdrop); }
+.hud-template__header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.hud-template__header h2 { margin: 0; font-size: var(--text-size-value); }
+.hud-template__choices { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.hud-template button {
+  min-height: var(--tap-target);
+  padding: 0 var(--space-3);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunken);
+  color: var(--text-body);
+  font: inherit;
+  cursor: pointer;
+}
+.hud-template button[aria-pressed='true'] { border-color: var(--accent); color: var(--accent); }
+.hud-template__diagram { display: grid; gap: 2px; width: max-content; margin: var(--space-3) auto 0; }
+.hud-template__tile { width: 1.5rem; aspect-ratio: 1; background: var(--surface-sunken); border: var(--hairline) solid var(--border); }
+.hud-template__tile--wall { background: var(--text-muted); }
+.hud-template__tile--door { background: var(--accent); }
+.hud-template__tile--object { background: var(--text-body); border-radius: 50%; }
+.hud-template__legend { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-3); margin-top: var(--space-3); }
+.hud-template__legend > span { display: inline-flex; align-items: center; gap: var(--space-1); }
+.hud-template__legend .hud-template__tile { width: 0.9rem; }
+.hud-template__contents { text-align: center; }
+.hud-template__placement { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); margin-top: var(--space-4); }
+.hud-template__placement input[type='number'] { width: 100%; min-height: var(--tap-target); box-sizing: border-box; }
+.hud-template__placement label { display: flex; align-items: center; gap: var(--space-2); }
+.hud-template__placement .hud-template__status { grid-column: 1 / -1; margin: 0; }
+.hud-template__tile--blocked { outline: 3px solid var(--status-danger); outline-offset: -2px; }
+
 /*
  * `:not([hidden])` because this section folds. An author `display: flex` beats
  * the `display: none` the user agent gives `[hidden]`, so an unguarded rule
@@ -7293,3 +7347,8 @@
     --hud-rail-panel-width: max(var(--hud-inspector-width), calc(280px * var(--ui-scale)));
   }
 }
+
+.hud-template__materials,
+.hud-template__catalogue-value { margin: var(--space-2) 0; text-align: center; overflow-wrap: anywhere; }
+.hud-template__catalogue-value { color: var(--text-heading); }
+.hud-template__placement .hud-template__coordinate { flex-direction: column; align-items: stretch; gap: var(--space-1); }

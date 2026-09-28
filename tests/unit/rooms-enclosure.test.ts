@@ -96,6 +96,24 @@ function wallPerimeter(
 }
 
 describe('a rectangle whose own perimeter is walled reads as sealed', () => {
+  it('recognizes an interior surrounded by whole-square walls', () => {
+    const world = ownedWorld();
+    const rectangle = { x: 5, y: 5, width: 2, height: 2 };
+    for (let x = 5; x <= 6; x += 1) {
+      world.setSquareStructure(tile(x, 4), 1);
+      world.setSquareStructure(tile(x, 7), 1);
+    }
+    for (let y = 5; y <= 6; y += 1) {
+      world.setSquareStructure(tile(4, y), 1);
+      world.setSquareStructure(tile(7, y), 1);
+    }
+    expect(roomPerimeterEnclosure(world, rectangle)).toEqual({ enclosure: 'sealed' });
+    world.setSquareStructure(tile(5, 4), 0);
+    expect(roomPerimeterEnclosure(world, rectangle)).toEqual({
+      enclosure: 'open', gap: { tile: tile(5, 5), edge: 'north' },
+    });
+  });
+
   it('answers sealed for a fully walled rectangle', () => {
     const world = ownedWorld();
     const rectangle = { x: 4, y: 4, width: 3, height: 2 };

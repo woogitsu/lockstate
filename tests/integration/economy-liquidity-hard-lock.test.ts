@@ -429,6 +429,10 @@ describe('the treasury spent to nothing on one legal purchase (ECON-002)', () =>
      * is: the list is every command the protocol declares, and the claim this
      * test defends is about which of them can turn stock back into money.
      * Editing a timetable cannot, in either direction.
+     *
+     * `PlaceRoomTemplate` is the nineteenth: it expands one authored gesture
+     * into wall, door and furniture orders. Those orders may spend funds on
+     * materials, but none credits the treasury or sells stock back.
      */
     const types = simulationCommandSchema.options.map((option) => option.shape.type.value).sort();
     expect(types).toEqual([
@@ -441,6 +445,7 @@ describe('the treasury spent to nothing on one legal purchase (ECON-002)', () =>
       'HireStaff',
       'PlaceBuildOrder',
       'PlaceObject',
+      'PlaceRoomTemplate',
       'PurchaseMaterials',
       'Redo',
       'ReleaseGuardAssignment',

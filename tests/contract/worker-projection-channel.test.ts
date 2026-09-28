@@ -145,6 +145,8 @@ function targetFor(projectionId: ProjectionId, harness: Harness): ProjectionTarg
       // asked with the same shape and answers "no such incident", which is a
       // legal, declared reply and is asserted as such below.
       return { kind: 'id', id: 'cell-1' };
+    case 'room-template':
+      return { kind: 'room-template', templateId: 'cell-basic', origin: { x: 5, y: 5 } };
   }
 }
 
@@ -152,6 +154,16 @@ const PAGED_IDS = PROJECTION_IDS.filter((id) => PROJECTION_CATALOG[id].paged);
 const UNPAGED_IDS = PROJECTION_IDS.filter((id) => !PROJECTION_CATALOG[id].paged);
 
 describe('every declared projection has a publish route the worker really answers', () => {
+  it('quotes the four-cell row through a validated worker projection', () => {
+    const harness = new Harness(scenarioSnapshot());
+    const reply = harness.ask('world/room-template-cost', {
+      target: { kind: 'room-template', templateId: 'cell-row-four', origin: { x: 10, y: 10 } },
+    });
+    expect(reply.kind).toBe('simulation/projection');
+    expect(reply.payload.view.schemaId).toBe('room-template-cost');
+    expect(reply.payload.view.data).toMatchObject({ orderCount: 66, catalogueCostMinorUnits: 5000 });
+    expectOk(decodeWorkerToMainMessage(reply), 'four-cell row cost on the wire');
+  });
   it('scans a vocabulary and a catalog that agree, and neither is empty', () => {
     // Vacuity guard. An empty vocabulary would make every loop below assert
     // nothing at all, which reads exactly like compliance.

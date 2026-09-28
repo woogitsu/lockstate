@@ -526,7 +526,9 @@ export class ObjectPlacementService {
       if (!canBuildAt(this.world, tile, PLACEMENT_REQUIREMENT).buildable) {
         return this.refuse('unowned-land', request, tick, tile);
       }
-      if (this.placedObjects.isTileOccupied(tile) || claimed.has(tileKey(tile))) {
+      // A full-square wall occupies ground, not a legacy edge. Checking the
+      // complete object footprint keeps its far tile from entering that wall.
+      if (this.world.getSquareStructure(tile) !== 0 || this.placedObjects.isTileOccupied(tile) || claimed.has(tileKey(tile))) {
         return this.refuse('tile-occupied', request, tick, tile);
       }
     }
