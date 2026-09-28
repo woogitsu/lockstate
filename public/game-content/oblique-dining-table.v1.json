@@ -1,0 +1,478 @@
+{
+  "schemaVersion": 1,
+  "assetId": "furniture.dining.table.wooden",
+  "source": "environment.mvp.catalog.blend",
+  "sourceSha256": "57db9afb7e48996cef9aaedda72b8e874e865eb56862ee4add8b177a9713887d",
+  "sourceDependencies": [],
+  "resolutionPx": [
+    512,
+    512
+  ],
+  "nominalPixelsPerTile": 64,
+  "pivotPx": [
+    256,
+    256
+  ],
+  "cameraTargetTiles": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "projection": "orthographic",
+  "yawDegrees": [
+    -165,
+    -135,
+    -105,
+    -75,
+    -45,
+    -15,
+    15,
+    45,
+    75,
+    105,
+    135,
+    165
+  ],
+  "elevationDegrees": [
+    20,
+    30,
+    40,
+    50,
+    60,
+    70
+  ],
+  "frames": [
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/dining-table-yaw-165-elev20.1d0b44c817c6.png",
+      "sha256": "1d0b44c817c62ea030068a1869bbba4e72b9b7a30dae50fcd18765045c38ce37"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/dining-table-yaw-165-elev30.d7de8b6da9a1.png",
+      "sha256": "d7de8b6da9a1ec4e6dfc7cc27c39903ce70749174eaabe4ed76fe556915bb475"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/dining-table-yaw-165-elev40.d2f546170b53.png",
+      "sha256": "d2f546170b5309ed5e34c6b3f821759db157c58b1ca2b16dba36b76fdea45b03"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/dining-table-yaw-165-elev50.267b341974e7.png",
+      "sha256": "267b341974e7deb1bbb451600ae9f618d3fdcce67904370c87ec3085d9dd7a14"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/dining-table-yaw-165-elev60.638a38e5a979.png",
+      "sha256": "638a38e5a979a15f17facf19e4e388085edb149208b282e98c14b539c5cb807d"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/dining-table-yaw-165-elev70.f0cdf44edb5b.png",
+      "sha256": "f0cdf44edb5bd7331a77c72ecfb763c22a0e67d7ecac77191549fbfaa00b9d9e"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/dining-table-yaw-135-elev20.e11556963adc.png",
+      "sha256": "e11556963adcff77b0ae22f44852e890013bc242c947aa3569ffc503047c5375"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/dining-table-yaw-135-elev30.d2ec2bb92be8.png",
+      "sha256": "d2ec2bb92be89f9697b3b7ad72aeb668669f8af3bd335ddf027f5e8d469bb6bf"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/dining-table-yaw-135-elev40.4bd3f9fe3c47.png",
+      "sha256": "4bd3f9fe3c47e47b73a6c12e850e14ffef9357909fdb4e6d4140ecee536d67cd"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/dining-table-yaw-135-elev50.51a660dac057.png",
+      "sha256": "51a660dac057b57e6a8cf700e0607b7ec07f4a480cc4b4c003fb46ee251391dc"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/dining-table-yaw-135-elev60.bff63075565e.png",
+      "sha256": "bff63075565e778b4e2c47183539c9b59f9ef2c9eabce19fffad12b729d5d975"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/dining-table-yaw-135-elev70.7bdac8c7003f.png",
+      "sha256": "7bdac8c7003ffaeb4080a056e7dd834b124f7671b0eba14bc1721400fca4f52a"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/dining-table-yaw-105-elev20.435114699148.png",
+      "sha256": "435114699148d8abb9e5c7ed13f8ef3512104725b3b28714902930653ce428d5"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/dining-table-yaw-105-elev30.a16d926cf2d3.png",
+      "sha256": "a16d926cf2d3e42914faf6c4769db5e3490da8fd6cc4c1d30318efc87cdfd25a"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/dining-table-yaw-105-elev40.fccbc2a167cb.png",
+      "sha256": "fccbc2a167cbd408f80ee5124aa824bd9702ae26a1033b864ef750a7bc2b1e26"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/dining-table-yaw-105-elev50.83c99c552fbd.png",
+      "sha256": "83c99c552fbd2f64c5eb3d0131ebfb3b532c057d1bdd1387918d97d69c063fee"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/dining-table-yaw-105-elev60.51203543a663.png",
+      "sha256": "51203543a6633473b41b2871796f0a0e6970745d14cc7ccd39e5ac9131841937"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/dining-table-yaw-105-elev70.7112b1254cb0.png",
+      "sha256": "7112b1254cb0f05bc4edaa3e9297ba73fcb70b097f765f5e2e898f06f6a693bb"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/dining-table-yaw-75-elev20.2d891b6c8674.png",
+      "sha256": "2d891b6c8674de960d1018c7de3402c618e38ffec6b38e6f329ad12f651e7db7"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/dining-table-yaw-75-elev30.3fbdc7e9f673.png",
+      "sha256": "3fbdc7e9f673bc9bb7989afd12d5047c6662137af8f83f2d837d816238f648af"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/dining-table-yaw-75-elev40.117a3101116c.png",
+      "sha256": "117a3101116c9cf1789460fbd6d0408c5a269a32ff38b3b253b6721c27ff9ab9"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/dining-table-yaw-75-elev50.0c130a875ce8.png",
+      "sha256": "0c130a875ce85589aa3b11dac9e245b8a4153507170618dcb8c4f35dfa0642a9"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/dining-table-yaw-75-elev60.be51bddc5831.png",
+      "sha256": "be51bddc583150e249959f1dd0fed65a1d90a127b584e7930c635c2f854bddb0"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/dining-table-yaw-75-elev70.c851b74ebb0c.png",
+      "sha256": "c851b74ebb0ca305615896cd4e2ad918b9b15a3ebaafa9d7fab62ac944537aba"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/dining-table-yaw-45-elev20.ccb19232ec03.png",
+      "sha256": "ccb19232ec039144dee8a115c3d4618ad53c30e344d0280b90247fea4ab81596"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/dining-table-yaw-45-elev30.99eb7f87c26c.png",
+      "sha256": "99eb7f87c26cd68a7769aa3a6bb078793eb36e2236ace06d15ea239961732400"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/dining-table-yaw-45-elev40.1da44747a032.png",
+      "sha256": "1da44747a03253055458144e07dc82a9f80df2cde76aaef8e8546deadf431c1f"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/dining-table-yaw-45-elev50.1062b115da9a.png",
+      "sha256": "1062b115da9a7959387c06f8d38c5725069f68c166107f8994b5d5042dcfd59e"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/dining-table-yaw-45-elev60.3e442073b2ed.png",
+      "sha256": "3e442073b2ed5b15943ed640aaefe6144b29aa78568ed4fd48a0162ab5794c61"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/dining-table-yaw-45-elev70.d38655d44f01.png",
+      "sha256": "d38655d44f01eb850f70ce5400a032057b6b07f9030ea5102c6a003e9c29dc70"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/dining-table-yaw-15-elev20.d7da4f514f35.png",
+      "sha256": "d7da4f514f354d6ed7e6aa6fde0e6e7895db038bd7ccc3ad37518ecc98cad1a8"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/dining-table-yaw-15-elev30.43145e77c432.png",
+      "sha256": "43145e77c4322a6d4ed9bb0d68024690ce8bb28c598ec0cf04ad1a3b026a7ea4"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/dining-table-yaw-15-elev40.c6143f33b5f3.png",
+      "sha256": "c6143f33b5f36070258352a27ec709289396abf78081ec64faf6c62a3b050924"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/dining-table-yaw-15-elev50.2b4d6b6c8f74.png",
+      "sha256": "2b4d6b6c8f7406e27dbc3d524e11bc0cb25e4dae7c368cb7a0418fdb8dfee8d5"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/dining-table-yaw-15-elev60.bfb7f52868c0.png",
+      "sha256": "bfb7f52868c0e00cd40e9b3934fff1ea8ce276d0456904cf6648300186bf8461"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/dining-table-yaw-15-elev70.11a3381345aa.png",
+      "sha256": "11a3381345aaa86c9fba51af8f1b2cbc06566b4c2bac3c9c5057b612ecf99ae6"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/dining-table-yaw+15-elev20.a4641248885d.png",
+      "sha256": "a4641248885d1845e259e36cc68add759784d34fcb43e9985c572dabe1158e86"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/dining-table-yaw+15-elev30.2040e105b333.png",
+      "sha256": "2040e105b333d6ae87e0f481a68532e6b1f2e16245be63fcaa8ef2bb84466d4f"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/dining-table-yaw+15-elev40.de28ca96b44d.png",
+      "sha256": "de28ca96b44d5f736ff6a7e659360a1de254d5cb4e2c2a0d6cb0b24993aa0261"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/dining-table-yaw+15-elev50.b56b1189b990.png",
+      "sha256": "b56b1189b990b2538b03340cd8603b0f45b44cc9249fbbabc4f296fbf860b043"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/dining-table-yaw+15-elev60.fdb93e2cf10b.png",
+      "sha256": "fdb93e2cf10ba4926098608030ce21f0a00d9f42da245de5e6fd56caad8f8997"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/dining-table-yaw+15-elev70.4f433e09e303.png",
+      "sha256": "4f433e09e3032ce4ae3039e315939a0a45235b3c4b20b131d4bf4d494e43071e"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/dining-table-yaw+45-elev20.cb2afa5d4bd1.png",
+      "sha256": "cb2afa5d4bd1c91f859d9cff839bc6b744c3fe74b59c718e11a9fec0ef07c270"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/dining-table-yaw+45-elev30.4384010ea3b6.png",
+      "sha256": "4384010ea3b63e1c829cb83157013a95d99ec452c86f02ee60be01c047fb3644"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/dining-table-yaw+45-elev40.33dc509d2f33.png",
+      "sha256": "33dc509d2f333f90ebc8f0a3268bdafaf08665ca3931145c3f781e7bc750864b"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/dining-table-yaw+45-elev50.df0c2d11c428.png",
+      "sha256": "df0c2d11c428eb1ae0c6d12b1f27484e84d786c20ccf5d498e0de4c6909fd090"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/dining-table-yaw+45-elev60.55fd8a5f536e.png",
+      "sha256": "55fd8a5f536ea24eab7b0f7305e36b3a645ac9a753f2d130fde999fdb5992216"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/dining-table-yaw+45-elev70.20215edeb3e7.png",
+      "sha256": "20215edeb3e7fc5d65c12fddf167bee2ab662ffbb188d69d2ea2eb6e8bec633a"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/dining-table-yaw+75-elev20.693791b9f02c.png",
+      "sha256": "693791b9f02ce870ee81734c1ea74d439d194f8e10c8202dc5539fbf3808d859"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/dining-table-yaw+75-elev30.dbafd315ff5e.png",
+      "sha256": "dbafd315ff5e96c4bb6ac6d6c2e57903710d769d42f67af1235df19a6441576b"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/dining-table-yaw+75-elev40.0d91520f6063.png",
+      "sha256": "0d91520f60631ac43ba91960e1650ba41ff526acfcde029976f4a2fefb135c6e"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/dining-table-yaw+75-elev50.405bd14c7352.png",
+      "sha256": "405bd14c735221394ddb2fb4924659e268efa529890aed4e8cd4cdebf7507de0"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/dining-table-yaw+75-elev60.c12c6d230559.png",
+      "sha256": "c12c6d23055977f62020d0af57079bbe6eb26b45dd428c1baa6741cc616f660c"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/dining-table-yaw+75-elev70.95c6870987dc.png",
+      "sha256": "95c6870987dc8ca2ea8c4711e878c9776b39159034e046e2b55771bfda40050c"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/dining-table-yaw+105-elev20.7d60c69dbde2.png",
+      "sha256": "7d60c69dbde201f918932f8a7bafa054cc752982257c6bb16f23228602e69729"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/dining-table-yaw+105-elev30.75f5cda90657.png",
+      "sha256": "75f5cda90657af50068435b585289135204edf8023c0370a1385937cf9b16b92"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/dining-table-yaw+105-elev40.a921eae49223.png",
+      "sha256": "a921eae492231b38fc17de64524117e8bcf75f856e3be95d39a59a26aeeee407"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/dining-table-yaw+105-elev50.c5f6bd28584c.png",
+      "sha256": "c5f6bd28584c269ead5b6ddac061e7bbd1dd07e6b4fd80939d14c0bed0f7d218"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/dining-table-yaw+105-elev60.4798a0d0c2e2.png",
+      "sha256": "4798a0d0c2e2f23d9aba93c2a5de67a98068ed312397361cb27867a9a35fbbab"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/dining-table-yaw+105-elev70.a5723c73a91d.png",
+      "sha256": "a5723c73a91db8523908cc90de7b91989a3fde6c031ec3fe353182034b3516c3"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/dining-table-yaw+135-elev20.22849cd08328.png",
+      "sha256": "22849cd08328ec8dced442fad1d2a9045283cb2f9bf86c511d95595b667acbb4"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/dining-table-yaw+135-elev30.205e31350aef.png",
+      "sha256": "205e31350aefd0fe5d21f71815574fc31252940565460fb2f80870a3fc5e49e9"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/dining-table-yaw+135-elev40.efdc29fc7d40.png",
+      "sha256": "efdc29fc7d40866b3038837687d074a989c51f589706515903cabfe3c0eca5ce"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/dining-table-yaw+135-elev50.c4085cbe41bd.png",
+      "sha256": "c4085cbe41bd4f50888975d8468249e9716327e64a4e055e5bead74f3bf89e0b"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/dining-table-yaw+135-elev60.9ac41a0d76f1.png",
+      "sha256": "9ac41a0d76f1e221b349ca27ca1bdb25ff78d4fe84149988d277480ca878b583"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/dining-table-yaw+135-elev70.b079bc37d25c.png",
+      "sha256": "b079bc37d25c63123f7c6fdf43a01a3ba41a9de5ced9783779efd3265271250a"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/dining-table-yaw+165-elev20.6f6e465a878a.png",
+      "sha256": "6f6e465a878ae4a17da093ded24067bb61f6e84b301015d60d82f804d413e2c7"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/dining-table-yaw+165-elev30.7234cc27dd96.png",
+      "sha256": "7234cc27dd9653d3b956896eb1addfcabc86eca75b2d4027052019af26656bf7"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/dining-table-yaw+165-elev40.ddb9ecfa4df5.png",
+      "sha256": "ddb9ecfa4df59a23e35452f22838c6dc175a29351132bff02ef2b4c4b6dfff7a"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/dining-table-yaw+165-elev50.6222d2581dc8.png",
+      "sha256": "6222d2581dc8570b947bc8fc7707cc40390079c3a023e9d92ceb8761062c9641"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/dining-table-yaw+165-elev60.5e5cec197338.png",
+      "sha256": "5e5cec197338bdf57dd31d47e4a714a73ed180876fbd51ba9a0a4d60d973976d"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/dining-table-yaw+165-elev70.ece1469313d6.png",
+      "sha256": "ece1469313d624d6eeb6d748dbc21939e1ff09ade311db729bd1408a021c46a9"
+    }
+  ]
+}

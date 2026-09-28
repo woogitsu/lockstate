@@ -50,6 +50,10 @@
       "manifest": "/game-content/oblique-cell-waste-bin.v1.json"
     },
     {
+      "assetId": "furniture.dining.table.wooden",
+      "manifest": "/game-content/oblique-dining-table.v1.json"
+    },
+    {
       "assetId": "furniture.storage.rack.wooden",
       "manifest": "/game-content/oblique-cell-storage-rack.v1.json"
     },
