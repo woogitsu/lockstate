@@ -914,6 +914,11 @@ if (obliquePreviewRequested) {
       game.scene.add('oblique-world', obliqueScene, false);
       obliqueScene.events.once(Phaser.Scenes.Events.CREATE, () => {
         obliqueCameraScene = obliqueScene;
+        game.canvas.addEventListener('wheel', (event) => {
+          if (event.ctrlKey || event.altKey || event.metaKey || event.shiftKey || event.deltaY === 0) return;
+          event.preventDefault();
+          obliqueScene.stepCameraZoom(event.deltaY < 0 ? 'in' : 'out');
+        }, { passive: false });
         cameraInput = new CameraPoseInputAdapter(obliqueScene, cameraContexts, cameraPlacementActive);
         cameraHud?.updateCameraPose(obliqueScene.cameraPose);
         refreshCameraControls();

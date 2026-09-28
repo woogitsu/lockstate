@@ -32,6 +32,23 @@ test('Full HD angled world responds to the visible zoom control', async ({ page 
   await page.screenshot({ path: testInfo.outputPath('oblique-after-zoom-fullhd.png') });
 });
 
+test('Full HD angled world zooms with the wheel over the map', async ({ page }) => {
+  test.setTimeout(120_000);
+  await openWorld(page);
+  const canvas = page.locator('#game-root canvas');
+  const viewport = page.locator('.hud-minimap__viewport');
+  await expect(viewport).toBeVisible();
+  await page.waitForTimeout(1000);
+  const beforeZoom = await viewport.evaluate((element) => `${element.style.width}/${element.style.height}`);
+  const bounds = await canvas.boundingBox();
+  expect(bounds).not.toBeNull();
+  await page.mouse.move(bounds!.x + bounds!.width / 2, bounds!.y + bounds!.height / 2);
+  await page.waitForTimeout(1000);
+  expect(await viewport.evaluate((element) => `${element.style.width}/${element.style.height}`)).toBe(beforeZoom);
+  await page.mouse.wheel(0, -400);
+  await expect.poll(async () => viewport.evaluate((element) => `${element.style.width}/${element.style.height}`)).not.toBe(beforeZoom);
+});
+
 test('Full HD angled world responds to the visible minimap', async ({ page }) => {
   test.setTimeout(120_000);
   await openWorld(page);
