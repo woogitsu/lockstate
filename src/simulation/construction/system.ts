@@ -636,6 +636,20 @@ export class ConstructionSystem implements SystemRegistration {
       return;
     }
 
+    // A door occupies an edge, but a whole-square wall on either side still
+    // blocks that crossing. Check queued walls too: a door accepted while the
+    // crew builds the wall would otherwise finish as an unusable portal.
+    if (definition.placesDoor !== undefined) {
+      const acrossDoor = tileAcrossEdge(order.location, resolveBuildEdge(order));
+      if (this.squareWallClaimsTile(order.location) ||
+          (acrossDoor !== undefined && this.squareWallClaimsTile(acrossDoor))) {
+        this.setState(order, 'failed');
+        order.failReason = 'unbuildable';
+        this.orders.set(order.id, order);
+        return;
+      }
+    }
+
     // A room plan owns its entire rectangle while its shell is in flight,
     // including empty interior squares that have no world geometry yet. Its
     // own shell/furniture orders retain the plan's sequence and may enter.
@@ -698,6 +712,16 @@ export class ConstructionSystem implements SystemRegistration {
       const across = tileAcrossEdge(order.location, resolveBuildEdge(order));
       if ((order.location.x === tile.x && order.location.y === tile.y) ||
           (across !== undefined && across.x === tile.x && across.y === tile.y)) return true;
+    }
+    return false;
+  }
+
+  private squareWallClaimsTile(tile: TilePosition): boolean {
+    if (this.world.getSquareStructure(tile) !== 0) return true;
+    for (const order of this.orders.values()) {
+      if (order.footprint !== 'square' || order.state === 'completed' ||
+          order.state === 'cancelled' || order.state === 'failed') continue;
+      if (order.location.x === tile.x && order.location.y === tile.y) return true;
     }
     return false;
   }
