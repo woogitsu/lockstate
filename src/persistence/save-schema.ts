@@ -1655,7 +1655,8 @@ const roomTemplateRequestV7Schema = z.object({
   /** Additive V7 field. Absent on older pending gestures means unrotated. */
   quarterTurns: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]).optional(),
   sequence: z.number().int().nonnegative(),
-}).strict().refine((request) => (request.quarterTurns ?? 0) === 0 || request.templateId === 'canteen-basic', {
+}).strict().refine((request) => (request.quarterTurns ?? 0) === 0 ||
+  request.templateId === 'canteen-basic' || request.templateId === 'cell-large', {
   message: 'This saved room plan has no valid quarter-turn layout.',
   path: ['quarterTurns'],
 });

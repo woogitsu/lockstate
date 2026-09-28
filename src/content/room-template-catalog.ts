@@ -148,11 +148,15 @@ export function instantiateRoomTemplate(
 }
 
 /** Includes the exclusive loop bounds used by placement and pending claims. */
-export function roomTemplateOriginFitsSafeCoordinates(id: AuthoredRoomTemplateId, origin: TemplateSquare): boolean {
+export function roomTemplateOriginFitsSafeCoordinates(id: AuthoredRoomTemplateId, origin: TemplateSquare, quarterTurns: 0 | 1 | 2 | 3 = 0): boolean {
   const dimensions = id === 'cell-row-four' ? { width: 7, height: 16 } : TEMPLATES[id];
+  const width = dimensions === undefined ? 0 : quarterTurns % 2 === 0 ? dimensions.width : dimensions.height;
+  const height = dimensions === undefined ? 0 : quarterTurns % 2 === 0 ? dimensions.height : dimensions.width;
   return dimensions !== undefined && Number.isSafeInteger(origin.x) && Number.isSafeInteger(origin.y) &&
     origin.x <= Number.MAX_SAFE_INTEGER - dimensions.width &&
-    origin.y <= Number.MAX_SAFE_INTEGER - dimensions.height;
+    origin.y <= Number.MAX_SAFE_INTEGER - dimensions.height &&
+    origin.x <= Number.MAX_SAFE_INTEGER - width &&
+    origin.y <= Number.MAX_SAFE_INTEGER - height;
 }
 
 /** Four basic Cells share party walls across each bank of a clear two-tile corridor. */

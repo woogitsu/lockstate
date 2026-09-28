@@ -96,7 +96,8 @@ export const placeRoomTemplateSchema = z.object({
   mirrorX: z.boolean().optional(),
   /** Clockwise turns of the complete footprint; absent is the legacy unrotated plan. */
   quarterTurns: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]).optional(),
-}).strict().refine((request) => (request.quarterTurns ?? 0) === 0 || request.templateId === 'canteen-basic', {
+}).strict().refine((request) => (request.quarterTurns ?? 0) === 0 ||
+  request.templateId === 'canteen-basic' || request.templateId === 'cell-large', {
   message: 'This authored room plan has no valid quarter-turn layout yet.',
   path: ['quarterTurns'],
 });

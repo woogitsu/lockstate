@@ -13,7 +13,7 @@ export function projectRoomTemplatePreflight(
   mirrorX = false,
   quarterTurns: TemplateQuarterTurns = 0,
 ): RoomTemplatePlacement {
-  if (!roomTemplateOriginFitsSafeCoordinates(templateId, origin)) {
+  if (!roomTemplateOriginFitsSafeCoordinates(templateId, origin, quarterTurns)) {
     return { ok: false, reason: 'unowned-land', tile: {
       x: tileCoordinate(origin.x), y: tileCoordinate(origin.y),
     } };
