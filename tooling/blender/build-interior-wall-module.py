@@ -188,11 +188,28 @@ def main():
     scene.view_settings.view_transform = "Standard"
     scene.view_settings.look = "Medium High Contrast"
 
-    plaster = material("warm pale plaster", (0.57, 0.56, 0.52, 1), 0.91)
-    coping = material("blue grey metal coping", (0.39, 0.46, 0.50, 1), 0.64)
-    skirting = material("dark blue grey skirting", (0.22, 0.29, 0.34, 1), 0.78)
-    seam = material("recessed plaster joint", (0.40, 0.43, 0.43, 1), 0.94)
-    highlight = material("pale enamel inlay", (0.60, 0.66, 0.68, 1), 0.72)
+    plaster = material("warm lime plaster", (0.62, 0.53, 0.42, 1), 0.93)
+    coping = material("muted sandstone coping", (0.48, 0.44, 0.37, 1), 0.84)
+    skirting = material("warm charcoal skirting", (0.31, 0.29, 0.26, 1), 0.88)
+    seam = material("recessed warm plaster joint", (0.44, 0.38, 0.31, 1), 0.96)
+    highlight = material("pale stone inlay", (0.67, 0.60, 0.49, 1), 0.86)
+
+    # Generated coordinates keep the fine mineral variation locked to each
+    # wall mesh and deterministic across every camera angle. The small color
+    # range keeps furniture and actors more legible than the masonry itself.
+    nodes = plaster.node_tree.nodes
+    links = plaster.node_tree.links
+    texture = nodes.new("ShaderNodeTexNoise")
+    texture.noise_dimensions = "3D"
+    texture.inputs["Scale"].default_value = 18.0
+    texture.inputs["Detail"].default_value = 2.0
+    ramp = nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.elements[0].position = 0.25
+    ramp.color_ramp.elements[0].color = (0.57, 0.48, 0.38, 1)
+    ramp.color_ramp.elements[1].position = 0.75
+    ramp.color_ramp.elements[1].color = (0.66, 0.57, 0.45, 1)
+    links.new(texture.outputs["Fac"], ramp.inputs["Fac"])
+    links.new(ramp.outputs["Color"], nodes.get("Principled BSDF").inputs["Base Color"])
 
     # All assets have the same full-square pivot. Their physical wall core is
     # thinner, but this footprint guarantees identical rotation and swapping.
