@@ -53,6 +53,7 @@ def main() -> None:
         collection = bpy.data.collections.get(source_id)
         if collection is None:
             raise RuntimeError(f"Missing source collection {source_id}")
+        pipeline_common.extend_inner_corner_to_edge_pair(collection)
         for item in bpy.data.collections:
             if item.name.startswith("wall.interior."):
                 item.hide_render = item != collection

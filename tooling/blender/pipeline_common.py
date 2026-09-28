@@ -228,3 +228,37 @@ def add_mesh_object(name: str, mesh: bpy.types.Mesh, location: tuple[float, floa
     item.location = location
     bpy.context.collection.objects.link(item)
     return item
+
+
+def extend_inner_corner_to_edge_pair(collection: bpy.types.Collection) -> None:
+    """Make both corner arms replace whole 1-tile runtime edges.
+
+    The authored inner-corner source reaches only 0.5 tile from the pivot.
+    Stretch the positive arm ends to 1 tile while preserving the 0.25-tile
+    wall thickness and the central joint. A private mesh copy avoids changing
+    the source collection shared by other renders.
+    """
+    core_half_width = 0.125
+    source_arm_end = 0.5
+    edge_arm_end = 1.0
+    arm_stretch = (edge_arm_end - core_half_width) / (source_arm_end - core_half_width)
+    for item in collection.all_objects:
+        if item.type != "MESH":
+            continue
+        item.data = item.data.copy()
+        for vertex in item.data.vertices:
+            for axis in ("x", "y"):
+                value = getattr(vertex.co, axis)
+                if value > core_half_width:
+                    setattr(vertex.co, axis,
+                            core_half_width + (value - core_half_width) * arm_stretch)
+        item.data.update()
+
+    points = [vertex.co for item in collection.all_objects if item.type == "MESH"
+              for vertex in item.data.vertices]
+    if not points:
+        raise RuntimeError(f"No inner-corner mesh in {collection.name}")
+    for axis in ("x", "y"):
+        reach = max(getattr(point, axis) for point in points)
+        if abs(reach - edge_arm_end) > 1e-6:
+            raise RuntimeError(f"{collection.name} {axis} arm ends at {reach}, expected 1 tile")
