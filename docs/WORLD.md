@@ -116,10 +116,10 @@ pricing, selection and UI; it is not the ownership test.
 - Checks terrain properties (e.g. `requiresBuildableTerrain`, `allowWater`).
 
 It has three production callers, each supplying its own requirement set:
-`ConstructionSystem.submitOrder` (`src/simulation/construction/system.ts:587`,
+`ConstructionSystem.submitOrder` (`src/simulation/construction/system.ts:704`,
 inside `admits`, with `SUBMISSION_REQUIREMENT`), `ObjectPlacementService`
-(`src/simulation/objects/object-placement-service.ts:531`,
-`PLACEMENT_REQUIREMENT`) and room zoning (`src/simulation/rooms/zoning.ts:555`,
+(`src/simulation/objects/object-placement-service.ts:535`,
+`PLACEMENT_REQUIREMENT`) and room zoning (`src/simulation/rooms/zoning.ts:562`,
 `ZONING_REQUIREMENT`). **This document said "its one production caller" from
 `f1d5c30` until this correction**; the second arrived at `041a379` (#269) and
 the third at `6cededc` (#320), so the sentence had been wrong for about a

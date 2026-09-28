@@ -1,7 +1,7 @@
 import { expect, test } from './network-changed-fixture';
 import { countsSeries, installTee } from './playtest-harness';
 
-async function desktopColourCount(page: import('@playwright/test').Page, screenshot: Buffer): Promise<number> {
+async function desktopColourCount(page: import('./network-changed-fixture').Page, screenshot: Buffer): Promise<number> {
   return page.evaluate(async (data) => {
     const image = new Image();
     image.src = data;
