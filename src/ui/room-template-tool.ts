@@ -62,6 +62,7 @@ export class RoomTemplateTool {
     for (const listener of this.selectionListeners) listener();
   }
   public isArmed(): boolean { return this.armed; }
+  public selectedTemplateId(): RoomTemplateId { return this.selected; }
 
   public planAt(origin: TemplateSquare): RoomTemplatePlan {
     return instantiateRoomTemplate(this.selected, origin, { mirrorX: this.mirrorX });
