@@ -283,6 +283,17 @@ looks offset from the cutaway gap at shallow yaw, and renderer profiling
 measured roughly 50 ms per frame in the warmed 32 × 32 prison, so visual
 alignment and performance remain active release gates.
 
+**Full HD follow-up (`77c16ff2c`, PR #1623):** Holding Cell is now selectable
+in the Build catalogue using its existing EN/PL room name. The 16-square
+ghost and quote show the south door and two-square bench; real EN/PL browser
+flows placed the plan, saved, reloaded and rejected an overlapping repeat.
+The static ground now composites into one Phaser render texture and refreshes
+when the world revision, camera pose or loaded art changes. On the measured
+32 × 32 scene, the warmed mean fell from **52.0 to 23.2–24.0 ms/frame** and a
+prefab/Save/reload flow from 14.5 to 10.8 seconds. Those are local Full HD
+measurements, not a 60 fps guarantee; a larger prison benchmark and another
+render pass are in progress. The default player view remains top-down.
+
 Keep three isolated worktrees moving in parallel: (1) Blender modules and
 consistent camera poses, (2) square-first construction and ready-made rooms,
 and (3) Full HD HUD, controls and visible template previews. The renderer
