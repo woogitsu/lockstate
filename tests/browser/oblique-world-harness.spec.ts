@@ -1,6 +1,19 @@
 import { expect, test } from './network-changed-fixture';
 import type {} from './oblique-world-harness';
 
+test('hover reports the logical whole square under the pointer to the build HUD', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/tests/browser/oblique-world-harness.html');
+  await page.evaluate(() => window.lockstateObliqueWorldHarness.ready());
+  const point = await page.evaluate(() => window.lockstateObliqueWorldHarness.pointAtTile(3, 3));
+  await page.mouse.move(point.x, point.y);
+  await expect.poll(() => page.evaluate(() => window.lockstateObliqueWorldHarness.hovered())).toEqual({ tileX: 3, tileY: 3 });
+  await page.evaluate(() => window.lockstateObliqueWorldHarness.setPose(90, 25));
+  const expected = await page.evaluate((screen) => window.lockstateObliqueWorldHarness.tileAtScreen(screen), point);
+  expect(expected).not.toEqual({ tileX: 3, tileY: 3 });
+  expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.hovered())).toEqual(expected);
+});
+
 test('build mode blocks right-drag turning and the HUD observes allowed turns', async ({ page }) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/tests/browser/oblique-world-harness.html');
@@ -36,8 +49,11 @@ test('real render feed cell keeps one build square under the cursor while the sc
   expect(loadedArt.some((key) => key.includes('cell-door-open'))).toBe(true);
   expect(loadedArt.some((key) => key.includes('cell-bed'))).toBe(true);
   expect(loadedArt.some((key) => key.includes('floor-cell'))).toBe(true);
+  expect(loadedArt.some((key) => key.includes('floor-shower'))).toBe(true);
+  expect(loadedArt.some((key) => key.includes('shower-head'))).toBe(true);
   expect(loadedArt.some((key) => key.includes('actor-prisoner'))).toBe(true);
-  expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.loadedArtTextureCount())).toBeLessThanOrEqual(15);
+  expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.loadedArtTextureCount()))
+    .toBeLessThanOrEqual(await page.evaluate(() => window.lockstateObliqueWorldHarness.artCatalogCount()));
   let previousGroundPaints = 0;
   for (const [yaw, elevation] of [[-45, 25], [0, 45], [45, 65]] as const) {
     await page.evaluate(([y, e]) => window.lockstateObliqueWorldHarness.setPose(y, e), [yaw, elevation] as const);
@@ -64,7 +80,8 @@ test('real render feed cell keeps one build square under the cursor while the sc
     expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.paintCounts())).toEqual(painted);
     await page.screenshot({ path: testInfo.outputPath(`render-feed-yaw${yaw}-elev${elevation}-fullhd.png`) });
   }
-  expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.loadedArtTextureCount())).toBeLessThan(70);
+  expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.loadedArtTextureCount()))
+    .toBeLessThanOrEqual(4 * await page.evaluate(() => window.lockstateObliqueWorldHarness.artCatalogCount()));
   const actorBefore = await page.evaluate(() => window.lockstateObliqueWorldHarness.actorArtPosition());
   const staticPaints = await page.evaluate(() => window.lockstateObliqueWorldHarness.paintCounts().ground);
   await page.evaluate(() => window.lockstateObliqueWorldHarness.moveActorToTile(4));

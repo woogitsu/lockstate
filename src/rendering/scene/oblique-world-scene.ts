@@ -27,6 +27,7 @@ function lowerTop(footprint: TileQuad, top: TileQuad, fraction: number): TileQua
 export interface ObliqueWorldSceneOptions {
   readonly feed: RenderFeed;
   readonly onTileSelected?: (tileX: number, tileY: number) => void;
+  readonly onGroundHover?: (tile: { readonly tileX: number; readonly tileY: number } | undefined) => void;
   /** The HUD follows every scene-side pose change, including pointer drags. */
   readonly onPoseChanged?: (pose: ObliqueCameraState) => void;
   /** An armed construction gesture owns the pointer until it is put down. */
@@ -44,6 +45,7 @@ export interface ObliqueWorldSceneOptions {
 export class ObliqueWorldScene extends Phaser.Scene {
   private readonly feed: RenderFeed;
   private readonly onTileSelected: ((tileX: number, tileY: number) => void) | undefined;
+  private readonly onGroundHover: ((tile: { readonly tileX: number; readonly tileY: number } | undefined) => void) | undefined;
   private readonly onPoseChanged: ((pose: ObliqueCameraState) => void) | undefined;
   private readonly canRotate: () => boolean;
   private readonly artCatalogs: ReadonlyMap<string, ObliqueModuleCatalog>;
@@ -55,6 +57,8 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private selected: { tileX: number; tileY: number } | undefined;
   private turnPointerId: number | undefined;
   private turnPointerAt: Point | undefined;
+  private hoverPointerAt: Point | undefined;
+  private hovered: { tileX: number; tileY: number } | undefined;
   private lastFrame: RenderFrame | undefined;
   private lastProjection: ObliqueWorldProjection | undefined;
   private lastPaintedRevision = -1;
@@ -73,6 +77,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     super({ key: 'oblique-world' });
     this.feed = options.feed;
     this.onTileSelected = options.onTileSelected;
+    this.onGroundHover = options.onGroundHover;
     this.onPoseChanged = options.onPoseChanged;
     this.canRotate = options.canRotate ?? (() => true);
     this.artCatalogs = options.artCatalogs ?? new Map();
@@ -106,6 +111,8 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.onPoseChanged?.(this.pose);
     this.input.mouse?.disableContextMenu();
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      this.hoverPointerAt = { x: pointer.x, y: pointer.y };
+      this.emitGroundHover();
       if (pointer.button === 2 && !pointer.wasTouch) {
         if (!this.canRotate()) return;
         this.turnPointerId = pointer.id;
@@ -125,6 +132,8 @@ export class ObliqueWorldScene extends Phaser.Scene {
       }
     });
     this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
+      this.hoverPointerAt = { x: pointer.x, y: pointer.y };
+      this.emitGroundHover();
       if (pointer.id !== this.turnPointerId || this.turnPointerAt === undefined) return;
       if (!this.canRotate()) {
         this.turnPointerId = undefined;
@@ -147,6 +156,10 @@ export class ObliqueWorldScene extends Phaser.Scene {
     };
     this.input.on('pointerup', stopTurn);
     this.input.on('pointerupoutside', stopTurn);
+    this.input.on('gameout', () => {
+      this.hoverPointerAt = undefined;
+      this.emitGroundHover();
+    });
   }
 
   public get cameraPose(): ObliqueCameraState { return this.pose; }
@@ -175,6 +188,14 @@ export class ObliqueWorldScene extends Phaser.Scene {
       .map((item) => item.id) ?? [];
   }
 
+  private emitGroundHover(): void {
+    const world = this.hoverPointerAt === undefined ? undefined : screenToGround(this.hoverPointerAt, this.pose);
+    const next = world === undefined ? undefined : { tileX: worldToTile(world.x), tileY: worldToTile(world.y) };
+    if (next?.tileX === this.hovered?.tileX && next?.tileY === this.hovered?.tileY) return;
+    this.hovered = next;
+    this.onGroundHover?.(next);
+  }
+
   /** Shared entry point for mouse drag, remappable keyboard actions and HUD buttons. */
   public setPoseRadians(yawRadians: number, elevationRadians: number, pivot?: Point): void {
     const elevation = Math.min(80 * Math.PI / 180, Math.max(20 * Math.PI / 180, elevationRadians));
@@ -182,6 +203,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.pose = changeObliquePoseAtScreenPoint(this.pose, screen, yawRadians, elevation);
     this.poseRevision += 1;
     this.onPoseChanged?.(this.pose);
+    this.emitGroundHover();
     this.repaint();
     void this.ensureArtForCurrentPose().catch((error: unknown) => { this.artLoadErrors.push(String(error)); });
   }
@@ -215,6 +237,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
       this.pose = { ...this.pose, viewport };
       this.poseRevision += 1;
       this.onPoseChanged?.(this.pose);
+      this.emitGroundHover();
     }
     const frame = this.feed.readFrame(time / 1000);
     if (!this.framedWorld && frame.world.loadedBounds !== undefined) {
@@ -229,6 +252,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
       this.framedWorld = true;
       this.poseRevision += 1;
       this.onPoseChanged?.(this.pose);
+      this.emitGroundHover();
     }
     this.lastFrame = frame;
     this.repaint();

@@ -3,8 +3,8 @@ import { chunkCoordinate, tileCoordinate } from '../../src/simulation/world/coor
 import { SparseWorld } from '../../src/simulation/world/sparse-world';
 import { WorldRenderView } from '../../src/rendering/world/world-view';
 import { ObliqueWorldScene } from '../../src/rendering/scene/oblique-world-scene';
-import { groundToScreen } from '../../src/rendering/camera/oblique-projection';
-import { TILE_SIZE_PX } from '../../src/rendering/tile-metrics';
+import { groundToScreen, screenToGround } from '../../src/rendering/camera/oblique-projection';
+import { TILE_SIZE_PX, worldToTile } from '../../src/rendering/tile-metrics';
 import type { RenderFrame } from '../../src/rendering/feed/render-feed';
 import type { Point } from '../../src/rendering/camera/coordinates';
 import { fetchObliqueModuleSet } from '../../src/rendering/assets/oblique-module-registry';
@@ -17,12 +17,15 @@ export interface ObliqueWorldHarness {
   paintCounts(): { readonly ground: number; readonly raised: number };
   artTextureKeys(): readonly string[];
   loadedArtTextureCount(): number;
+  artCatalogCount(): number;
   cutawayWallIds(): readonly string[];
   actorArtPosition(): Point | undefined;
   moveActorToTile(tileX: number): Promise<void>;
   cameraAngles(): { readonly yawRadians: number; readonly elevationRadians: number };
   poseChangeCount(): number;
   setRotationEnabled(enabled: boolean): void;
+  hovered(): { readonly tileX: number; readonly tileY: number } | undefined;
+  tileAtScreen(point: Point): { readonly tileX: number; readonly tileY: number };
 }
 
 declare global {
@@ -40,6 +43,7 @@ for (let y = 0; y < 8; y += 1) {
 for (let y = 2; y <= 4; y += 1) {
   for (let x = 2; x <= 4; x += 1) world.setZoning(tile(x, y), 1);
 }
+world.setZoning(tile(6, 2), 7);
 for (let x = 1; x <= 4; x += 1) {
   world.setTopEdge(tile(x, 1), 1);
   world.setTopEdge(tile(x, 5), x === 3 ? 2 : 1);
@@ -51,7 +55,10 @@ for (let y = 1; y <= 4; y += 1) {
 const frame: RenderFrame = {
   revision: 1,
   world: WorldRenderView.fromSnapshot(world.snapshot()),
-  structures: [{ id: 'bed-1', definitionId: 'bed-wooden', tileX: 2, tileY: 2, phase: 'built' }],
+  structures: [
+    { id: 'bed-1', definitionId: 'bed-wooden', tileX: 2, tileY: 2, phase: 'built' },
+    { id: 'shower-1', definitionId: 'shower-head-brick', tileX: 6, tileY: 2, phase: 'built' },
+  ],
   actors: [{ id: 7, assetId: 'actor.prisoner.base', tileX: 3, tileY: 3, deltaX: 0, deltaY: 0 }],
   rooms: [],
   roomConditions: [],
@@ -59,6 +66,7 @@ const frame: RenderFrame = {
 let actorTileX = 3;
 let rotationEnabled = true;
 let poseChangeCount = 0;
+let hovered: { tileX: number; tileY: number } | undefined;
 
 let resolveReady!: () => void;
 const ready = new Promise<void>((resolve) => { resolveReady = resolve; });
@@ -71,6 +79,7 @@ const scene = new HarnessScene({
   artCatalogs,
   canRotate: () => rotationEnabled,
   onPoseChanged: () => { poseChangeCount += 1; },
+  onGroundHover: (tile) => { hovered = tile; },
 });
 const game = new Phaser.Game({
   type: Phaser.AUTO,
@@ -97,11 +106,17 @@ window.lockstateObliqueWorldHarness = {
   paintCounts: () => scene.paintCounts,
   artTextureKeys: () => scene.artTextureKeys,
   loadedArtTextureCount: () => scene.loadedArtTextureCount,
+  artCatalogCount: () => artCatalogs.size,
   cutawayWallIds: () => scene.cutawayWallIds,
   actorArtPosition: () => scene.actorArtPosition,
   cameraAngles: () => ({ yawRadians: scene.cameraPose.yawRadians, elevationRadians: scene.cameraPose.elevationRadians }),
   poseChangeCount: () => poseChangeCount,
   setRotationEnabled(enabled) { rotationEnabled = enabled; },
+  hovered: () => hovered,
+  tileAtScreen(point) {
+    const ground = screenToGround(point, scene.cameraPose);
+    return { tileX: worldToTile(ground.x), tileY: worldToTile(ground.y) };
+  },
   async moveActorToTile(tileX) {
     actorTileX = tileX;
     await new Promise<void>((resolve) => { game.events.once(Phaser.Core.Events.POST_RENDER, () => resolve()); });

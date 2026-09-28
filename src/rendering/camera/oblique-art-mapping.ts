@@ -13,11 +13,13 @@ const OBJECT_ART: Readonly<Record<string, string>> = {
   'object.toilet': 'fixture.cell.toilet_sink',
   'object.storage-rack': 'furniture.storage.rack.wooden',
   'object.chair': 'furniture.chair.wooden',
+  'object.shower-head': 'fixture.shower.head',
 };
 
 const ROOM_FLOOR_ART: Readonly<Record<string, string>> = {
   'room.cell': 'floor.cell.sealed-concrete',
   'room.canteen': 'floor.canteen.terrazzo',
+  'room.shower-room': 'floor.shower.ceramic',
 };
 
 export function artForGround(zoningNumericId: number): string | undefined {

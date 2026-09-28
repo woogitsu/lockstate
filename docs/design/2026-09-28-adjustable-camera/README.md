@@ -189,6 +189,14 @@ rotates it by mouse, keyboard and buttons, places a cell template on filled
 squares, and reloads the same saved footprint. Test that flow before enabling
 the new scene by default.
 
+The live preview now also has the Full HD camera HUD bridge and a ground-hover
+callback that reports the logical tile after pointer movement **and** camera
+rotation. `onTileSelected` reports the left press; these two ports are the
+input seam for the square/template ghost and its checked placement command.
+Shower-room zoning and finished shower heads select the matching Blender
+modules. The remaining gate is to wire the actual template tool and its
+preflight verdict to those ports, then prove the placed room survives Save/Load.
+
 **Highest-priority continuation for every future session:** keep those three
 workers directed at this camera/building/art delivery until the selectable
 angle, whole-square construction, usable cell/room patterns and Blender art

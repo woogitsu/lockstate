@@ -61,6 +61,7 @@ try {
       canvas.height = 1080;
       document.body.append(canvas);
       const ctx = canvas.getContext('2d');
+      if (ctx === null) throw new Error('The browser did not provide a 2D canvas context.');
       ctx.fillStyle = '#344048';
       ctx.fillRect(0, 0, 1920, 1080);
       const rad = yaw * Math.PI / 180;
