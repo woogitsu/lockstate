@@ -1,4 +1,4 @@
-import { roomTemplateObjectSquares, type RoomTemplatePlan } from '../../content/room-template-catalog';
+import { roomTemplateObjectSquares, type RoomTemplateId, type RoomTemplatePlan } from '../../content/room-template-catalog';
 import type { RoomTemplateCostQuote, RoomTemplatePreflight } from '../room-template-tool';
 import type { HudLocalizer } from './view-model';
 import { HUD_MESSAGE_KEY } from './messages';
@@ -42,12 +42,15 @@ export function createObliqueTemplateGhost(localizer: HudLocalizer): ObliqueTemp
   return {
     element: root,
     update(plan, geometry, verdict, quote): void {
+      if (!Object.hasOwn(ROOM_TEMPLATE_NAME_KEYS, plan.id)) {
+        throw new RangeError(`Unknown player-facing room template: ${plan.id}`);
+      }
       root.hidden = false;
       const state = verdict === undefined ? 'pending' : verdict.ok ? 'clear' : 'blocked';
       root.dataset.verdict = state;
       notice.setAttribute('aria-busy', verdict === undefined ? 'true' : 'false');
       identity.textContent = localizer.format(HUD_MESSAGE_KEY.templateAriaLabel, {
-        name: localizer.format(ROOM_TEMPLATE_NAME_KEYS[plan.id]), width: plan.width, height: plan.height,
+        name: localizer.format(ROOM_TEMPLATE_NAME_KEYS[plan.id as RoomTemplateId]), width: plan.width, height: plan.height,
       });
       status.textContent = verdict === undefined ? '' : localizer.format(verdict.ok
         ? HUD_MESSAGE_KEY.templateReady

@@ -503,7 +503,7 @@ const refreshObliqueTemplateGhost = (): void => {
     obliqueTemplateVerdict = verdict;
     paintObliqueTemplateGhost();
   }).catch(() => { if (revision === obliqueTemplateRevision) obliqueTemplateGhost?.clear(); });
-  void templateQuoteReader?.(obliqueTemplatePlan.id).then((quote) => {
+  void templateQuoteReader?.(tool.selectedTemplateId()).then((quote) => {
     if (revision !== obliqueTemplateRevision) return;
     obliqueTemplateQuote = quote;
     paintObliqueTemplateGhost();
