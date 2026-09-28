@@ -1621,6 +1621,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   const roomTemplates = new RoomTemplateCoordinator(world, construction, roomZoning, placedObjects, objectPlacement, navigation.doors);
   construction.setPendingRoomTemplateClaims((tile, sequence) => roomTemplates.claimsPendingFootprint(tile, sequence));
   construction.setPendingRoomTemplateDoorApproachClaims((order) => roomTemplates.claimsPendingDoorApproach(order));
+  construction.setObjectClaimsSquare((tile) => objectPlacement!.claimsTileForSquareWall(tile));
   objectPlacement.setPendingRoomDoorApproachClaim((tile) => roomTemplates.claimsPendingDoorApproachTile(tile));
   roomZoning.setPendingTemplateClaim((tile, sequence) => roomTemplates.claimsPendingFootprint(tile, sequence));
   kernel.registerSystem(roomTemplates);
