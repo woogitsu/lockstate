@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "assetId": "furniture.storage.rack.wooden",
+  "source": "environment.mvp.catalog.blend",
+  "sourceSha256": "57db9afb7e48996cef9aaedda72b8e874e865eb56862ee4add8b177a9713887d",
+  "sourceDependencies": [],
+  "resolutionPx": [
+    512,
+    512
+  ],
+  "nominalPixelsPerTile": 64,
+  "pivotPx": [
+    256,
+    256
+  ],
+  "cameraTargetTiles": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "projection": "orthographic",
+  "yawDegrees": [
+    -45,
+    0,
+    45
+  ],
+  "elevationDegrees": [
+    25,
+    45,
+    65
+  ],
+  "frames": [
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw-45-elev25.8d105f4848b5.png",
+      "sha256": "8d105f4848b5a3da5163f0e4a602a748b4cd37ca213377f402925b7b60ec7a9d"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw-45-elev45.64b641ccac53.png",
+      "sha256": "64b641ccac53af6bdaea44878f6657163f1f3f43d95eeeae45e25e35c3de3bd0"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw-45-elev65.212f0f284fa6.png",
+      "sha256": "212f0f284fa6c2a8899049f0e3341474dd26fcc7b6adb70950db79a625a0d79b"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw+00-elev25.4cfcd7e90886.png",
+      "sha256": "4cfcd7e90886c5c5a5eb419e8cb2b0a37404df3ca5e0691de9cf965a53c0c01a"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw+00-elev45.62f11687323c.png",
+      "sha256": "62f11687323c6aab9ba6ec01ca14efad0922933484a7242c1cdd2fc1e445c5f3"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw+00-elev65.1e3a7bb118c5.png",
+      "sha256": "1e3a7bb118c5188883bab86accf0a474e042847c9cabe806ded0ed039b38cf60"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw+45-elev25.6e7653d43559.png",
+      "sha256": "6e7653d435592bceaffb4aea4fc786790d10192cc8cd901df0a2a64e36c7e012"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw+45-elev45.cf138dc6ec05.png",
+      "sha256": "cf138dc6ec058020af7793f8d51c3dde8da50e979565acc0c196aa00a14cb534"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw+45-elev65.0aa6843fd6e7.png",
+      "sha256": "0aa6843fd6e7b8b24ebf3acde511da40b77206e1c748ff898465abf302186354"
+    }
+  ]
+}
