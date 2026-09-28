@@ -35,6 +35,7 @@ import { EMPTY_RENDER_FRAME, type RenderFeed } from './rendering/feed/render-fee
 import { SimulationSnapshotFeed } from './rendering/feed/simulation-snapshot-feed';
 import { WorldScene } from './rendering/scene/world-scene';
 import { ObliqueWorldScene } from './rendering/scene/oblique-world-scene';
+import { projectedTileQuad } from './rendering/camera/oblique-geometry';
 import { fetchObliqueModuleSet } from './rendering/assets/oblique-module-registry';
 import { CameraPoseInputAdapter, type CameraPoseAction } from './input/camera-pose-input';
 import { VOID_COLOR } from './rendering/world/appearance';
@@ -409,7 +410,11 @@ let obliqueTemplateRevision = 0;
 const templateQuoteReader = simulation === undefined ? undefined : createSimulationRoomTemplateQuote(simulation);
 const paintObliqueTemplateGhost = (): void => {
   if (obliqueTemplateTool?.isArmed() && obliqueTemplatePlan !== undefined && obliqueCameraScene !== undefined) {
-    obliqueTemplateGhost?.update(obliqueTemplatePlan, obliqueCameraScene.cameraPose, obliqueTemplateVerdict, obliqueTemplateQuote);
+    const pose = obliqueCameraScene.cameraPose;
+    obliqueTemplateGhost?.update(obliqueTemplatePlan, {
+      viewport: pose.viewport,
+      tileQuad: (x, y) => projectedTileQuad(x, y, pose),
+    }, obliqueTemplateVerdict, obliqueTemplateQuote);
   } else obliqueTemplateGhost?.clear();
 };
 const obliqueTemplateOriginAt = (tile: { readonly x: number; readonly y: number }, tool: RoomTemplateTool): { x: number; y: number } => {

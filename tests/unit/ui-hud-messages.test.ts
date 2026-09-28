@@ -71,6 +71,7 @@ const HUD_MODULE_NAMES = [
   'label-parameters.ts',
   'layout-shell.ts',
   'messages.ts',
+  'oblique-template-ghost.ts',
   'overview-panel.ts',
   'pooled-row-binding.ts',
   'projection.ts',

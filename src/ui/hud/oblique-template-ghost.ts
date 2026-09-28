@@ -1,15 +1,19 @@
 import { roomTemplateObjectSquares, type RoomTemplatePlan } from '../../content/room-template-catalog';
-import { projectedTileQuad } from '../../rendering/camera/oblique-geometry';
-import type { ObliqueCameraState } from '../../rendering/camera/oblique-projection';
 import type { RoomTemplateCostQuote, RoomTemplatePreflight } from '../room-template-tool';
 import type { HudLocalizer } from './view-model';
 import { HUD_MESSAGE_KEY } from './messages';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
+/** The composition root supplies scene geometry; the HUD only paints points. */
+export interface ObliqueTemplateGhostGeometry {
+  readonly viewport: { readonly width: number; readonly height: number };
+  readonly tileQuad: (x: number, y: number) => readonly { readonly x: number; readonly y: number }[];
+}
+
 export interface ObliqueTemplateGhostView {
   readonly element: HTMLElement;
-  update(plan: RoomTemplatePlan, pose: ObliqueCameraState, verdict: RoomTemplatePreflight | undefined, quote: RoomTemplateCostQuote | undefined): void;
+  update(plan: RoomTemplatePlan, geometry: ObliqueTemplateGhostGeometry, verdict: RoomTemplatePreflight | undefined, quote: RoomTemplateCostQuote | undefined): void;
   clear(): void;
 }
 
@@ -32,7 +36,7 @@ export function createObliqueTemplateGhost(localizer: HudLocalizer): ObliqueTemp
 
   return {
     element: root,
-    update(plan, pose, verdict, quote): void {
+    update(plan, geometry, verdict, quote): void {
       root.hidden = false;
       const state = verdict === undefined ? 'pending' : verdict.ok ? 'clear' : 'blocked';
       root.dataset.verdict = state;
@@ -43,7 +47,7 @@ export function createObliqueTemplateGhost(localizer: HudLocalizer): ObliqueTemp
       cost.textContent = quote === undefined ? '' : quote.catalogueCostMinorUnits === undefined
         ? localizer.format(HUD_MESSAGE_KEY.templateCatalogueValueUnavailable)
         : localizer.format(HUD_MESSAGE_KEY.templateCatalogueValue, { total: localizer.formatNumber(quote.catalogueCostMinorUnits) });
-      svg.setAttribute('viewBox', `0 0 ${pose.viewport.width} ${pose.viewport.height}`);
+      svg.setAttribute('viewBox', `0 0 ${geometry.viewport.width} ${geometry.viewport.height}`);
       svg.replaceChildren();
       const walls = new Set(plan.wallSquares.map(({ x, y }) => `${x},${y}`));
       const doors = new Set(plan.doorSquares.map(({ x, y }) => `${x},${y}`));
@@ -52,7 +56,7 @@ export function createObliqueTemplateGhost(localizer: HudLocalizer): ObliqueTemp
         for (let x = plan.origin.x; x < plan.origin.x + plan.width; x += 1) {
           const key = `${x},${y}`;
           const polygon = document.createElementNS(SVG_NS, 'polygon');
-          polygon.setAttribute('points', projectedTileQuad(x, y, pose).map((point) => `${point.x},${point.y}`).join(' '));
+          polygon.setAttribute('points', geometry.tileQuad(x, y).map((point) => `${point.x},${point.y}`).join(' '));
           const blockedTile = verdict?.ok === false && verdict.tile.x === x && verdict.tile.y === y;
           polygon.setAttribute('data-kind', blockedTile ? 'blocked' : doors.has(key) && verdict?.ok === true ? 'door' : walls.has(key) ? 'wall' : furniture.has(key) ? 'furniture' : 'floor');
           polygon.setAttribute('data-tile-x', String(x));
