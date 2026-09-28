@@ -3,6 +3,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { chromium } from '@playwright/test';
 
+/** @typedef {Window & { lockstateObliqueWorldHarness: import('../tests/browser/oblique-world-harness').ObliqueWorldHarness }} HarnessWindow */
+
 const origin = process.env.LOCKSTATE_LIVE_OBLIQUE_ORIGIN ?? 'http://127.0.0.1:5197';
 const browser = await chromium.launch({ headless: true });
 try {
@@ -18,14 +20,14 @@ try {
       'world.setTerrain(tile(x, y), x >= 5 ? "grass" : "dirt")') });
   });
   await page.goto(`${origin}/tests/browser/oblique-world-harness.html`, { waitUntil: 'domcontentloaded' });
-  await page.waitForFunction(() => window.lockstateObliqueWorldHarness !== undefined);
-  await page.evaluate(() => window.lockstateObliqueWorldHarness.ready());
+  await page.waitForFunction(() => /** @type {HarnessWindow} */ (window).lockstateObliqueWorldHarness !== undefined);
+  await page.evaluate(() => /** @type {HarnessWindow} */ (window).lockstateObliqueWorldHarness.ready());
   const captures = [];
   for (const yaw of [-90, -45, 0, 45, 90]) {
-    await page.evaluate((angle) => window.lockstateObliqueWorldHarness.setPose(angle, 45), yaw);
+    await page.evaluate((angle) => /** @type {HarnessWindow} */ (window).lockstateObliqueWorldHarness.setPose(angle, 45), yaw);
     const path = join(tmpdir(), `lockstate-live-grass-seam-yaw${yaw}.png`);
     await page.screenshot({ path });
-    captures.push({ yaw, path, textureKeys: await page.evaluate(() => window.lockstateObliqueWorldHarness.artTextureKeys().length) });
+    captures.push({ yaw, path, textureKeys: await page.evaluate(() => /** @type {HarnessWindow} */ (window).lockstateObliqueWorldHarness.artTextureKeys().length) });
   }
   console.log(JSON.stringify({ viewport: '1920x1080', captures }, null, 2));
 } finally {

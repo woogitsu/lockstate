@@ -92,6 +92,7 @@ test('real render feed cell keeps one build square under the cursor while the sc
       expect(artAfterSelection.length).toBeLessThan(artBeforeSelection.length);
       expect(artAfterSelection.some((key) => key.includes('cell-bed'))).toBe(true);
       expect(artAfterSelection.some((key) => key.includes('wall-module-cutaway'))).toBe(true);
+      expect(artAfterSelection.some((key) => key.includes('wall-module-west-cutaway'))).toBe(true);
       const cutaway = await page.evaluate(() => window.lockstateObliqueWorldHarness.cutawayWallIds());
       expect(cutaway).toContain('north-edge:3:5');
       expect(cutaway).not.toContain('north-edge:2:1');
