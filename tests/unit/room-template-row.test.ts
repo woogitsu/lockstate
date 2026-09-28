@@ -1,4 +1,4 @@
-import { expect, it } from 'vitest';
+import { expect, it, vi } from 'vitest';
 import { instantiateRoomTemplate } from '../../src/content/room-template-catalog';
 import { createRoomTemplateBuildPlan } from '../../src/simulation/construction/room-template-build-plan';
 import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
@@ -82,6 +82,32 @@ it('cancels the whole row when one shell order is cancelled, including across sa
   expect(restored.roomTemplates.snapshot().pending).toHaveLength(0);
   expect(restored.construction.allOrders().every((order) => order.state === 'cancelled')).toBe(true);
   expect(restored.roomTemplates.preflight(instantiateRoomTemplate('cell-row-four', origin))).toEqual({ ok: true });
+});
+
+it('rolls back earlier cells if a later designation refuses after the shell finishes', () => {
+  const runtime = createNewSimulationRuntime(73);
+  const origin = { x: 5, y: 5 };
+  const first = instantiateRoomTemplate('cell-row-four', origin).zones[0]!;
+  const originalZone = runtime.roomZoning.zone.bind(runtime.roomZoning);
+  let calls = 0;
+  vi.spyOn(runtime.roomZoning, 'zone').mockImplementation((request, tick) => {
+    calls += 1;
+    return originalZone(calls === 2 ? { ...request, x: first.x, y: first.y } : request, tick);
+  });
+  runtime.kernel.submitCommand('row-refusal', 0, runtime.kernel.tick, packCommand({
+    type: 'PlaceRoomTemplate', templateId: 'cell-row-four', origin,
+  }));
+  for (let tick = 0; tick < 30000; tick += 1) {
+    runtime.kernel.step();
+    if (runtime.roomTemplates.snapshot().pending.length === 0 && calls > 0) break;
+  }
+  expect(calls).toBe(2);
+  expect(runtime.roomTemplates.snapshot().pending).toHaveLength(0);
+  for (const zone of instantiateRoomTemplate('cell-row-four', origin).zones) {
+    expect(runtime.prisoners.roomInstances.getById(`room.cell:${zone.x}:${zone.y}`)).toBeUndefined();
+  }
+  expect(runtime.construction.allOrders().every((order) => order.state === 'cancelled')).toBe(true);
+  expect(runtime.roomTemplates.preflight(instantiateRoomTemplate('cell-row-four', origin))).toEqual({ ok: true });
 });
 
 it('builds four individually zoned and furnished cells from one command', () => {
