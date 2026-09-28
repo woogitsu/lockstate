@@ -1,5 +1,7 @@
 import { ROOM_TEMPLATE_IDS, instantiateRoomTemplate, type RoomTemplateId } from '../../content/room-template-catalog';
+import { defaultItemRegistry } from '../../content/item-catalog';
 import type { LocalizationKey } from '../../content/localization';
+import { projectRoomTemplateCost } from '../../simulation/presentation/room-template-cost';
 import { element, nextUiId } from '../primitives/dom';
 import type { HudLocalizer } from './view-model';
 import { HUD_MESSAGE_KEY } from './messages';
@@ -28,6 +30,8 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
   const choices = element('div', { className: 'hud-template__choices', attributes: { role: 'group', 'aria-label': t(HUD_MESSAGE_KEY.templatePlans) } });
   const dimensions = element('p', { className: 'hud-template__dimensions' });
   const contents = element('p', { className: 'hud-template__contents' });
+  const materials = element('p', { className: 'hud-template__materials' });
+  const catalogueValue = element('p', { className: 'hud-template__catalogue-value' });
   const diagram = element('div', { className: 'hud-template__diagram', attributes: { role: 'img' } });
   const legend = element('div', {
     className: 'hud-template__legend',
@@ -45,6 +49,8 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
       diagram,
       legend,
       contents,
+      materials,
+      catalogueValue,
     ],
   });
   title.id = nextUiId('hud-template-title');
@@ -67,6 +73,16 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
       'shower-head-brick': HUD_MESSAGE_KEY.templateShower,
     };
     contents.textContent = [...counts].map(([objectId, count]) => t(HUD_MESSAGE_KEY.templateObjectCount, { name: t(objectNames[objectId]!), count })).join(' · ');
+    const quote = projectRoomTemplateCost(id);
+    const materialNames = quote.materials.map(({ itemId, quantity }) => {
+      const item = defaultItemRegistry.getById(itemId);
+      if (item === undefined) throw new Error(`Unknown room-template material: ${itemId}`);
+      return t(HUD_MESSAGE_KEY.templateObjectCount, { name: t(item.nameKey as LocalizationKey), count: localizer.formatNumber(quantity) });
+    });
+    materials.textContent = t(HUD_MESSAGE_KEY.templateMaterials, { materials: materialNames.join(' · ') });
+    catalogueValue.textContent = quote.catalogueCostMinorUnits === undefined
+      ? t(HUD_MESSAGE_KEY.templateCatalogueValueUnavailable)
+      : t(HUD_MESSAGE_KEY.templateCatalogueValue, { total: localizer.formatNumber(quote.catalogueCostMinorUnits) });
     diagram.setAttribute('aria-label', t(HUD_MESSAGE_KEY.templateAriaLabel, { name: t(NAME_KEYS[id]), width: plan.width, height: plan.height }));
     diagram.style.gridTemplateColumns = `repeat(${plan.width}, 1.5rem)`;
     diagram.replaceChildren();
@@ -151,7 +167,12 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
     });
     dialog.append(element('div', {
       className: 'hud-template__placement',
-      children: [x, y, element('label', { children: [mirror, element('span', { text: t(HUD_MESSAGE_KEY.templateMirror) })] }), place, map, status],
+      children: [
+        element('label', { className: 'hud-template__coordinate', children: [element('span', { text: t(HUD_MESSAGE_KEY.templateX) }), x] }),
+        element('label', { className: 'hud-template__coordinate', children: [element('span', { text: t(HUD_MESSAGE_KEY.templateY) }), y] }),
+        element('label', { children: [mirror, element('span', { text: t(HUD_MESSAGE_KEY.templateMirror) })] }),
+        place, map, status,
+      ],
     }));
   }
   for (const id of ROOM_TEMPLATE_IDS) {

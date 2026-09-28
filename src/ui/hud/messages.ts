@@ -1812,6 +1812,9 @@ export const HUD_MESSAGE_KEY = {
   severityInfo: 'hud.severity.info',
   severityWarning: 'hud.severity.warning',
   severityDanger: 'hud.severity.danger',
+  templateMaterials: 'hud.build.template-materials',
+  templateCatalogueValue: 'hud.build.template-catalogue-value',
+  templateCatalogueValueUnavailable: 'hud.build.template-catalogue-value-unavailable',
 } as const satisfies Readonly<Record<string, LocalizationKey>>;
 
 export type HudMessageKey = (typeof HUD_MESSAGE_KEY)[keyof typeof HUD_MESSAGE_KEY];
