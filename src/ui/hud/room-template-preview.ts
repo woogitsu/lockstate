@@ -1,4 +1,4 @@
-import { ROOM_TEMPLATE_IDS, instantiateRoomTemplate, roomTemplateObjectSquares, type RoomTemplateId } from '../../content/room-template-catalog';
+import { ROOM_TEMPLATE_IDS, instantiateRoomTemplate, roomTemplateObjectSquares, roomTemplateOriginFitsSafeCoordinates, type RoomTemplateId } from '../../content/room-template-catalog';
 import { defaultItemRegistry } from '../../content/item-catalog';
 import type { LocalizationKey } from '../../content/localization';
 import { element, nextUiId } from '../primitives/dom';
@@ -185,8 +185,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
       return Number.isSafeInteger(next.x) && Number.isSafeInteger(next.y) ? next : undefined;
     };
     const wholePlanFitsSafeTiles = (tile: { readonly x: number; readonly y: number }): boolean => {
-      const plan = tool.planAt({ x: 0, y: 0 });
-      return Number.isSafeInteger(tile.x + plan.width - 1) && Number.isSafeInteger(tile.y + plan.height - 1);
+      return roomTemplateOriginFitsSafeCoordinates(selectedId, tile, halfTurn ? 2 : 0);
     };
     let revision = 0;
     refreshPlacement = async (): Promise<void> => {
