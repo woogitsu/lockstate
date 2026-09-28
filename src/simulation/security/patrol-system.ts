@@ -33,6 +33,9 @@ export class PatrolSystem implements SystemRegistration {
   public readonly schedule = { intervalTicks: 10, phaseTicks: 0 };
 
   private requestSequence = 0;
+
+  public getPathRequestSequence(): number { return this.requestSequence; }
+  public restorePathRequestSequence(sequence: number): void { this.requestSequence = sequence; }
   private loopsCompletedOnTime = 0;
   private loopsCompletedLate = 0;
   private loopsMissed = 0;
@@ -43,6 +46,22 @@ export class PatrolSystem implements SystemRegistration {
     private readonly navigation: NavigationSystem,
     private readonly routeContextResolver: (staffRoleId: string) => RouteContext = (staffRoleId) => resolveStaffRouteContext(staffRoleId),
   ) {}
+
+  /**
+   * The counter that names this system's path requests, for the save's
+   * `inFlight` section (issue #1373). It used to be excluded because *"no
+   * restored state can reference an old name"*; since the navigation queue and
+   * the roster's `pathRequestId` are both carried, restored state does, and a
+   * counter reset to zero would mint names the saved session never minted.
+   */
+  public getRequestSequence(): number {
+    return this.requestSequence;
+  }
+
+  public setRequestSequence(sequence: number): void {
+    if (!Number.isInteger(sequence) || sequence < 0) throw new RangeError(`A path-request sequence is a non-negative integer, got ${String(sequence)}.`);
+    this.requestSequence = sequence;
+  }
 
   public getMetrics(): PatrolMetrics {
     return { loopsCompletedOnTime: this.loopsCompletedOnTime, loopsCompletedLate: this.loopsCompletedLate, loopsMissed: this.loopsMissed };

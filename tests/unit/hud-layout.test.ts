@@ -14,8 +14,10 @@ import {
 } from '../../src/input/layout-preference';
 import {
   DEFAULT_INSPECTOR_WIDTH_PX,
+  FULL_HD_INSPECTOR_WIDTH_PX,
   DEFAULT_SHEET_HEIGHT_PX,
   DEFAULT_NAVIGATION_WIDTH_PX,
+  FULL_HD_NAVIGATION_WIDTH_PX,
   INSPECTOR_WIDTH_RANGE,
   MAP_WIDTH_RESERVE_PX,
   NAVIGATION_WIDTH_RANGE,
@@ -170,16 +172,21 @@ describe('where the five sections are laid out', () => {
     expect(navigationPlacement({ width: 1280, height: height - 1, uiScale: 1 }, strip)).toBe('bar');
   });
 
-  it('hands the sections back to the bar when the interface scale takes the room', () => {
-    // 900x600 at 200 %: the strip alone is 176px, and five tabs are 588.
-    expect(navigationPlacement({ width: 900, height: 600, uiScale: 2 }, 176)).toBe('bar');
+  it('hands the sections to the drawer when enlarged tabs would crush the rail', () => {
+    // 900x600 at 200 %: the strip alone is 176px, and six tabs exceed the rail.
+    expect(navigationPlacement({ width: 900, height: 600, uiScale: 2 }, 176)).toBe('drawer');
     // The same window at 100 %, where they fit comfortably.
     expect(navigationPlacement({ width: 900, height: 600, uiScale: 1 }, 84)).toBe('rail');
   });
 
-  it('is what `resolveHudLayout` reports, and a bar takes no width from the map', () => {
+  it('uses a drawer when Full HD page zoom leaves no height for a wrapped bar', () => {
+    expect(navigationPlacement({ width: 960, height: 540, uiScale: 1.75 }, 185)).toBe('drawer');
+    expect(navigationPlacement({ width: 960, height: 540, uiScale: 2 }, 206)).toBe('drawer');
+  });
+
+  it('is what `resolveHudLayout` reports, and a drawer takes no width from the map', () => {
     const geometry = resolveHudLayout(DEFAULT_LAYOUT_SETTINGS, { width: 900, height: 600, uiScale: 2 }, 176);
-    expect(geometry.navigationPlacement).toBe('bar');
+    expect(geometry.navigationPlacement).toBe('drawer');
     expect(geometry.navigationExtent).toBe(0);
     // ...which the inspector is then free to spend.
     expect(geometry.inspector.range.max).toBe(900 - MAP_WIDTH_RESERVE_PX);
@@ -253,6 +260,25 @@ describe('what a region is before a player has ever sized it', () => {
   it('opens the navigation with its labels legible', () => {
     expect(DEFAULT_NAVIGATION_WIDTH_PX).toBe(180);
     expect(resolveLayoutSize('navigation', DEFAULT_LAYOUT_SETTINGS, DESKTOP, 180)).toBe(180);
+  });
+
+  it('uses the slimmer labelled rail only at Full HD, while respecting a stored width', () => {
+    const fullHd = { width: 1920, height: 1080, uiScale: 1 };
+    expect(resolveLayoutSize('navigation', DEFAULT_LAYOUT_SETTINGS, fullHd, 0)).toBe(FULL_HD_NAVIGATION_WIDTH_PX);
+    expect(resolveLayoutSize('navigation', DEFAULT_LAYOUT_SETTINGS, { ...fullHd, height: 1079 }, 0)).toBe(180);
+    expect(resolveLayoutSize('navigation', withLayoutSize(DEFAULT_LAYOUT_SETTINGS, 'navigationWidth', 160), fullHd, 0)).toBe(160);
+  });
+
+  it('opens a readable Full HD inspector while respecting a stored width', () => {
+    const fullHd = { width: 1920, height: 1080, uiScale: 1 };
+    expect(resolveLayoutSize('inspector', DEFAULT_LAYOUT_SETTINGS, fullHd, FULL_HD_NAVIGATION_WIDTH_PX))
+      .toBe(FULL_HD_INSPECTOR_WIDTH_PX);
+    expect(resolveLayoutSize('inspector', DEFAULT_LAYOUT_SETTINGS, { ...fullHd, height: 1079 }, FULL_HD_NAVIGATION_WIDTH_PX))
+      .toBe(DEFAULT_INSPECTOR_WIDTH_PX);
+    expect(resolveLayoutSize('inspector', withLayoutSize(DEFAULT_LAYOUT_SETTINGS, 'inspectorWidth', 300), fullHd, FULL_HD_NAVIGATION_WIDTH_PX))
+      .toBe(300);
+    expect(resolveLayoutSize('inspector', DEFAULT_LAYOUT_SETTINGS, { ...fullHd, uiScale: 2 }, FULL_HD_NAVIGATION_WIDTH_PX * 2))
+      .toBe(FULL_HD_INSPECTOR_WIDTH_PX * 2);
   });
 
   it('opens the inspector at exactly the rail this repository has always drawn', () => {

@@ -184,13 +184,13 @@ That single gap starves four systems that are built, scheduled and
 tested:
 
 - `DeploymentSystem` walks `unassignedGuardIds()` to fill a sector's required
-  headcount (`src/simulation/security/deployment-system.ts:194`).
+  headcount (`src/simulation/security/deployment-system.ts:210`).
 - `PatrolSystem` walks `allGuardIds()` and starts a loop for each guard on post
-  (`src/simulation/security/patrol-system.ts:73`).
+  (`src/simulation/security/patrol-system.ts:89`).
 - `IncidentResponseSystem` claims responders from `unassignedGuardIds()`
-  (`src/simulation/incidents/response-system.ts:535`).
+  (`src/simulation/incidents/response-system.ts:569`).
 - `SearchSystem` claims a searcher the same way
-  (`src/simulation/contraband/search-system.ts:295`).
+  (`src/simulation/contraband/search-system.ts:322`).
 
 > **Three of those four no longer call `unassignedGuardIds()` at all**, and the
 > anchors above are the re-aimed ones rather than the originals (`:108`, `:72`,
@@ -227,8 +227,8 @@ the eight ids as having no consumer anywhere at all.
 The HUD may not import the simulation. That is `AGENTS.md` boundary 1 in its
 strongest form for `src/ui/hud/**`, and `tests/unit/ui-hud-messages.test.ts`
 asserts it by scanning for the import. So the HUD cannot build a command: it
-emits a `HudIntent` (`export type HudIntent =`, `src/ui/hud/hud.ts:372`; the
-anchor read `:365`, itself the re-aim of `:322`, itself the 2026-09-06 re-aim
+emits a `HudIntent` (`export type HudIntent =`, `src/ui/hud/hud.ts:376`; the
+anchor read `:372`, then `:365`, itself the re-aim of `:322`, itself the 2026-09-06 re-aim
 of `:270`) and `src/main.ts` turns it into
 one, in the `onIntent` switch. The two most recent producers took exactly that
 route and are the pattern this follows —
@@ -320,8 +320,8 @@ Selecting Security today changes the tab bar's `aria-current`, sets
 > > and the new `security` section paints the four HUD read models that had a
 > > route out of the worker and no painter. **Nothing about decision 1 moves
 > > with it**: `staffPanel.setVisible(state.activeTab === 'manage')` is at
-> > `src/ui/hud/hud.ts:2917` (the anchor read 2611, then 2759, then 2837,
-> > then 2887; re-aimed onto the quoted line by `grep -n` rather than by
+> > `src/ui/hud/hud.ts:3010` (the anchor read `:3006`, then 2993, then 2957, then 2917, then 2611, then 2759, then 2837,
+> > then 2887, then 2980, then 2963, then 2987; re-aimed onto the quoted line by `grep -n` rather than by
 > > arithmetic, on `ba1c0a87` merged with `49cd2fbd`, again on 2026-09-22 after
 > > ADR 0122's `show-alert-place` intent member was added to the union above
 > > it, and again the same day after #1356 wired the status strip's Undo and

@@ -74,6 +74,7 @@ export const prisonSlotMetadataSchema = z
     prisonId: z.string().min(1),
     gameVersion: z.string().min(1),
     displayName: z.string().optional(),
+    usesDefaultName: z.literal(true).optional(),
     // `undefined` until the first successful save. Accepted both as an
     // explicit `undefined` (which is what `create()` writes, and what
     // structured clone stores) and as an absent key: the two carry the same

@@ -393,7 +393,7 @@ job simply restarts its dwell timer"*, and **ADR 0093 retired both halves of
 that**: `performingSince` is deleted and the dwell timer is the prisoner's
 `phaseStartedAtTick`, which the save does carry (decision 5,
 `src/simulation/operations/carry-executor.ts:28` and
-`src/simulation/prisoners/action-system.ts:775`). A restored carry therefore
+`src/simulation/prisoners/action-system.ts:795`). A restored carry therefore
 resumes its dwell rather than restarting it, and nothing about the wait is
 session-scoped any more.
 

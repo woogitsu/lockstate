@@ -521,9 +521,11 @@ it is on.
   `environment-art.ts`'s own docblock recorded every one of those departures,
   including `object.storage-rack` leaving and returning; this sentence recorded
   none of them, which is the argument for citing the module rather than
-  restating its arithmetic. `object.bed` is drawn from
-  `furniture.cell.bed.single.variants` — the one view on that sheet taken from
-  directly above — and it is the first object of any kind drawn as art rather
+  restating its arithmetic. The first `object.bed` art came from
+  `furniture.cell.bed.single.variants` on the owner sheet, from its one view
+  taken directly above. Since 2026-09-23 it uses the Blender render of the
+  same asset ID, with the original sheet retained in the source-art catalog.
+  The bed was the first object of any kind drawn as art rather
   than as a shaded slab. What had to be built first was not the mapping row but
   a **painter path**: `objectSprite` had no reader that draws, so until this
   change a row in `src/rendering/world/environment-art.ts` moved a coverage

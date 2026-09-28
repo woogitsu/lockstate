@@ -266,6 +266,7 @@ export interface CreatePrisonInput {
   readonly prisonId: string;
   readonly gameVersion: string;
   readonly displayName?: string;
+  readonly usesDefaultName?: true;
 }
 
 /**
@@ -296,6 +297,7 @@ export const DEFAULT_UNDO_WINDOW_MS = 24 * 60 * 60 * 1000;
 export interface DeletedPrison {
   readonly prisonId: string;
   readonly displayName?: string;
+  readonly usesDefaultName?: true;
   readonly deletedAt: number;
   /** When the undo closes. Informational for a display; never the gate -- see `restoreFromTombstone`. */
   readonly expiresAt: number;
@@ -390,6 +392,7 @@ async function sweepTombstones(tx: LocalSaveTransaction, now: number): Promise<r
     restorable.push({
       prisonId: tombstone.prisonId,
       ...(tombstone.metadata.displayName === undefined ? {} : { displayName: tombstone.metadata.displayName }),
+      ...(tombstone.metadata.usesDefaultName === true ? { usesDefaultName: true as const } : {}),
       deletedAt: tombstone.deletedAt,
       expiresAt: tombstone.expiresAt,
     });
@@ -572,6 +575,7 @@ export class PrisonSaveRepository {
         createdAt: timestamp,
         updatedAt: timestamp,
         ...(input.displayName === undefined ? {} : { displayName: input.displayName }),
+        ...(input.usesDefaultName === true ? { usesDefaultName: true as const } : {}),
       };
       await writeSlot(tx, metadata);
       return metadata;

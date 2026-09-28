@@ -1251,6 +1251,22 @@ describe('ADR 0091 decision 2 (option F): the standing refusal reports when its 
     expect(log.count).toBe(1);
   });
 
+  it('retires the band across RemoveWall and RemoveObject without withdrawing the refusal log (#1270)', () => {
+    for (const [reason, standingKey, decidedKey] of [
+      ['remove-wall.nothing-to-remove', removeWallSupersessionKey(18, 19, 'north'), removeObjectSupersessionKey(14, 14)],
+      ['remove-object.nothing-to-remove', removeObjectSupersessionKey(14, 14), removeWallSupersessionKey(18, 19, 'north')],
+    ] as const) {
+      const log = new RefusalLog();
+      log.record(reason, 3, standingKey);
+      log.supersede(decidedKey);
+
+      expect(log.last?.reason, 'a different target must remain in the refusal log').toBe(reason);
+      expect(log.last?.sequence).toBe(1);
+      expect(log.count).toBe(1);
+      expect(log.last?.routeDecidedSince, 'the other removal arm must retire the standing band').toBe(true);
+    }
+  });
+
   it('leaves a refusal filed under no key alone, whatever succeeds', () => {
     // `record`'s `key` is optional and the class calls that "the correct,
     // inert default". Inert has to stay inert: with no key there is no route,

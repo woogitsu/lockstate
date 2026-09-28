@@ -22,20 +22,34 @@ import type { TilePosition } from '../world/coordinates';
  * arithmetic below is integer addition rather than a vector library, and the
  * invariant is checked in `beginWalk` rather than assumed.
  *
- * ### Why sub-tile progress is integer, and not saved
+ * ### Why sub-tile progress is integer, and why it is now saved
  *
  * Integer, because ADR 0020 makes the kernel's state deterministic and
  * reproducible from a seed; a fixed-point offset in `1/256` of a tile is exact
  * under addition where a float accumulator is exact only in practice.
  *
- * Not saved, because a walk is already transient state that no save carries.
- * `PrisonerOperationsRuntime.loadSnapshot` drops every restored traveller to
- * `idle` and clears its path request, and `GuardRoster.loadSnapshot` documents
- * the same mid-leg reset, both because the path request named a queue entry in
- * a `NavigationSystem` a restored session rebuilds empty. A walk is the second
- * half of exactly that state, so it is dropped for exactly that reason, and
- * **no save-format field is added by this module** -- the actor resumes from
- * the tile it had reached, which is the tile the snapshot already carried.
+ * **Saved since issue #1373** (the owner's ruling of 2026-09-23 on ADR 0059
+ * open question 3, option 5): `getSnapshot` carries every walk and heading,
+ * and a save written by this build restores its walkers mid-stride. Measured
+ * before the change, on the fixture
+ * `tests/determinism/restore-mid-walk-exactness.test.ts` uses (issue #1373):
+ * 41 of 41 saves taken with somebody walking restored to a prison that had
+ * not reconverged with the one that was saved by day 6. The paragraph that
+ * follows is what this header said until then, and it is kept because
+ * `clear()` is still exactly what a restore of an *older* save does:
+ *
+ * > Not saved, because a walk is already transient state that no save carries.
+ * > `PrisonerOperationsRuntime.loadSnapshot` drops every restored traveller to
+ * > `idle` and clears its path request, and `GuardRoster.loadSnapshot` documents
+ * > the same mid-leg reset, both because the path request named a queue entry in
+ * > a `NavigationSystem` a restored session rebuilds empty. A walk is the second
+ * > half of exactly that state, so it is dropped for exactly that reason, and
+ * > **no save-format field is added by this module** -- the actor resumes from
+ * > the tile it had reached, which is the tile the snapshot already carried.
+ *
+ * Its premise is what changed: the navigation queue is carried too now
+ * (`NavigationSystem.getInFlightSnapshot`), so a restored session is no longer
+ * rebuilt empty and the path request is no longer dead.
  *
  * ### What it costs
  *
@@ -54,11 +68,13 @@ import type { TilePosition } from '../world/coordinates';
  * reconsiders on its own cadence, which is what keeps this off AGENTS.md
  * boundary 9's budgeted pathfinding path.
  *
- * **Still no save-format field.** The re-validation is asked at the moment of
- * crossing rather than carried as a validity token on the route, so a walk
- * gains no state a snapshot would have to version -- the paragraph above stays
- * true, and that is one of the reasons the traversal-time rule was chosen over
- * a token.
+ * **Still no save-format field *for the re-validation*.** It is asked at the
+ * moment of crossing rather than carried as a validity token on the route, so
+ * a walk gains no state a snapshot would have to version on its account --
+ * which is also why a restored walk needs nothing beyond its waypoints and
+ * progress to be re-validated exactly as the saved one would have been. (This
+ * paragraph said *"the paragraph above stays true"*; the paragraph above is
+ * now a kept quotation, see "why it is now saved".)
  */
 
 /**
@@ -141,6 +157,23 @@ interface WalkState {
   progress: number;
   headingX: HeadingComponent;
   headingY: HeadingComponent;
+}
+
+/** One walk as a save carries it: `WalkState` plus the key it belongs to. */
+export interface WalkSnapshot {
+  readonly key: number;
+  readonly waypoints: readonly TilePosition[];
+  readonly next: number;
+  readonly progress: number;
+  readonly headingX: HeadingComponent;
+  readonly headingY: HeadingComponent;
+}
+
+/** What `LocomotionStore.getSnapshot` carries: see that method. */
+export interface LocomotionSnapshot {
+  readonly walks: readonly WalkSnapshot[];
+  /** `[key, headingX, headingY]`, for every actor that has walked -- a standing actor's heading is the way it faces. */
+  readonly headings: readonly (readonly [number, HeadingComponent, HeadingComponent])[];
 }
 
 function headingComponent(delta: number): HeadingComponent {
@@ -270,10 +303,100 @@ export class LocomotionStore {
     this.headings.delete(key);
   }
 
-  /** Drops every walk and every heading. For a restore, which rebuilds the navigation queue empty. */
+  /**
+   * Drops every walk and every heading. For a restore of a save that carries
+   * no walks -- one written before issue #1373 -- which is the reset every
+   * restore used to apply.
+   */
   public clear(): void {
     this.walks.clear();
     this.headings.clear();
+  }
+
+  /**
+   * Every walk in progress and every heading, **ascending by key** (issue
+   * #1373, ADR 0059 option 5).
+   *
+   * The whole of what `advance` and `read` consult, so a store loaded from
+   * this answers every future call exactly as the one that wrote it would:
+   * the waypoints, which leg is being walked, how far into it, and the way
+   * the actor faces. `arrived` and `blocked` are empty between calls and are
+   * not state.
+   *
+   * Ascending by key rather than in `Map` insertion order: `advance`
+   * enumerates the map, but every walk moves by the same amount and writes
+   * only its own actor, and the one order-dependent step -- who arrived --
+   * is sorted before it is handed over (the argument
+   * `tests/determinism/canonical-iteration-contract.test.ts` carries). So
+   * insertion order is history, and a save must not carry history into its
+   * checksum.
+   */
+  public getSnapshot(): LocomotionSnapshot {
+    const walks: WalkSnapshot[] = [];
+    for (const key of [...this.walks.keys()].sort((a, b) => a - b)) {
+      const walk = this.walks.get(key)!;
+      // Only the legs still to walk, from the waypoint the actor last
+      // crossed: `advance` and `read` never look behind `next - 1`, so the
+      // tiles already walked are history, and a long walk nearly finished
+      // would otherwise carry its whole route. Re-based so `next` is 1.
+      walks.push({
+        key,
+        waypoints: walk.waypoints.slice(walk.next - 1).map((waypoint) => ({ x: waypoint.x, y: waypoint.y })),
+        next: 1,
+        progress: walk.progress,
+        headingX: walk.headingX,
+        headingY: walk.headingY,
+      });
+    }
+    const headings: (readonly [number, HeadingComponent, HeadingComponent])[] = [];
+    for (const key of [...this.headings.keys()].sort((a, b) => a - b)) {
+      const heading = this.headings.get(key)!;
+      headings.push([key, heading.x, heading.y]);
+    }
+    return { walks, headings };
+  }
+
+  /**
+   * Replaces every walk and heading with a snapshot's.
+   *
+   * Validates what `beginWalk` validates -- one tile along one axis per leg --
+   * and what `advance` relies on: a walk between its first and last waypoint,
+   * with progress inside one tile. A save that breaks any of them is refused
+   * with a `RangeError` rather than walked through a wall.
+   */
+  public loadSnapshot(snapshot: LocomotionSnapshot): void {
+    this.walks.clear();
+    this.headings.clear();
+    for (const walk of snapshot.walks) {
+      if (this.walks.has(walk.key)) throw new RangeError(`Locomotion snapshot carries two walks for key ${String(walk.key)}.`);
+      if (walk.waypoints.length < 2) throw new RangeError(`Walk ${String(walk.key)} has fewer than two waypoints.`);
+      for (let index = 1; index < walk.waypoints.length; index += 1) {
+        const from = walk.waypoints[index - 1]!;
+        const to = walk.waypoints[index]!;
+        if (Math.abs(to.x - from.x) + Math.abs(to.y - from.y) !== 1) {
+          throw new RangeError(`Walk ${String(walk.key)} leg ${String(index)} does not step one tile along one axis.`);
+        }
+      }
+      if (!Number.isInteger(walk.next) || walk.next < 1 || walk.next >= walk.waypoints.length) {
+        throw new RangeError(`Walk ${String(walk.key)} is not between its first and last waypoint.`);
+      }
+      if (!Number.isInteger(walk.progress) || walk.progress < 0 || walk.progress >= LOCOMOTION_SUBTILE_UNITS) {
+        throw new RangeError(`Walk ${String(walk.key)} has progress outside one tile.`);
+      }
+      this.walks.set(walk.key, {
+        waypoints: walk.waypoints.map((waypoint) => ({ x: waypoint.x, y: waypoint.y })),
+        next: walk.next,
+        progress: walk.progress,
+        headingX: walk.headingX,
+        headingY: walk.headingY,
+      });
+    }
+    for (const [key, x, y] of snapshot.headings) this.headings.set(key, { x, y });
+  }
+
+  /** Every key with a walk in progress, ascending. For a restore that has to reconcile walks against the population it restored. */
+  public walkingKeys(): readonly number[] {
+    return [...this.walks.keys()].sort((a, b) => a - b);
   }
 
   /**

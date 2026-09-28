@@ -40,6 +40,13 @@ function buildScenario() {
 }
 
 describe('resolveOccupancyScaledGuardCount: the schedule is a floor, the population is a demand', () => {
+  it('uses an explicit ratio without changing the authored schedule floor (#977)', () => {
+    expect(resolveOccupancyScaledGuardCount(1, 17, false, 10)).toBe(2);
+    expect(resolveOccupancyScaledGuardCount(5, 17, false, 10)).toBe(5);
+    expect(() => resolveOccupancyScaledGuardCount(1, 17, false, 0)).toThrow(RangeError);
+    expect(() => resolveOccupancyScaledGuardCount(1, 17, false, 2.5)).toThrow(RangeError);
+  });
+
   it('leaves the authored count alone until the population has outgrown it', () => {
     // Eight per guard, so a sector of eight still asks for the one its schedule
     // authored, and the ninth arrival is what changes the answer.
@@ -130,6 +137,14 @@ describe('resolveOccupancyScaledGuardCount: the schedule is a floor, the populat
 });
 
 describe('DeploymentSystem reports and enforces the scaled requirement, not two different numbers', () => {
+  it('uses the injected ratio for the report that drives posting (#977)', () => {
+    const { navigation, sectors, guards } = buildScenario();
+    const deployment = new DeploymentSystem(
+      sectors, guards, navigation, [constantDeploymentSchedule(SECTOR_ID, 1)], undefined, () => 17, 10,
+    );
+    expect(deployment.getCoverageReport(0)).toEqual([{ sectorId: SECTOR_ID, required: 2, assigned: 0, shortage: 2 }]);
+  });
+
   it('raises required, assigned and shortage together as the sector fills up', () => {
     const { cellBlock, navigation, sectors, guards } = buildScenario();
     const schedules: DeploymentSchedule[] = [constantDeploymentSchedule(SECTOR_ID, 1)];

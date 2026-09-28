@@ -359,7 +359,7 @@ names the guard and never the claim.
 > v0.0.108), which landed **47 minutes** after this document was accepted at
 > `1dcee50` (v0.0.106). `src/simulation/security/default-sector.ts:253` calls
 > `targets.sectors.register(definition)`, reached through
-> `applyDefaultSecuritySector`, which `src/simulation/runtime/session-systems.ts:27`
+> `applyDefaultSecuritySector`, which `src/simulation/runtime/session-systems.ts:29`
 > imports for both a new session and a restore.
 > `DEFAULT_SECURITY_SECTOR_REQUIRED_GUARD_COUNT = 1` (`default-sector.ts:99`), so
 > the first hire is posted and held.

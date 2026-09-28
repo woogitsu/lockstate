@@ -243,7 +243,12 @@ import { describe, expect, it } from 'vitest';
 const ROOT = join(__dirname, '../..');
 
 /** Read-only dated history. See the blind-spot list. */
-const RESEARCH = join('docs', 'research');
+const RESEARCH = 'docs/research';
+
+/** Compare document keys and exclusions using repository-style separators. */
+function documentPath(file: string): string {
+  return relative(ROOT, file).replaceAll('\\', '/');
+}
 
 /** The two trees whose churn the sweep measured. */
 const IN_SCOPE_ROOTS = ['src/', 'tests/'] as const;
@@ -280,7 +285,7 @@ const markdownFiles = [
   ...readdirSync(ROOT)
     .filter((entry) => entry.endsWith('.md'))
     .map((entry) => join(ROOT, entry)),
-].filter((file) => !relative(ROOT, file).startsWith(RESEARCH));
+].filter((file) => !documentPath(file).startsWith(RESEARCH));
 
 /**
  * The same anchor form the sibling gate reads, deliberately character for
@@ -422,7 +427,7 @@ function withinAny(ranges: readonly (readonly [number, number])[], offset: numbe
 }
 
 function citationsIn(file: string, scanArchive = false): readonly Citation[] {
-  const source = relative(ROOT, file);
+  const source = documentPath(file);
   const text = readFileSync(file, 'utf8');
   const spans = codeSpansIn(text);
   const archive = scanArchive ? [] : archiveRangesIn(source, text);
@@ -764,7 +769,6 @@ const UNVERIFIED_BUDGET: Readonly<Record<string, number>> = {
   'docs/adr/0026-entity-id-lifetime.md': 3,
   'docs/adr/0028-object-placement-and-derived-room-capacity.md': 18,
   'docs/adr/0029-concurrent-room-use-claims.md': 6,
-  'docs/adr/0031-build-queue-cancellation-surface.md': 1,
   'docs/adr/0034-releasing-a-claimed-guard.md': 6,
   'docs/adr/0038-what-makes-a-save-compatible.md': 15,
   'docs/adr/0039-a-keyboard-route-to-room-zoning.md': 4,
@@ -878,13 +882,10 @@ describe('rooted src/ and tests/ anchors in the documentation carry a checkable 
      * - ADR 0103's *"(`src/simulation/incidents/gangs.ts:71`) stays
      *   unwritten"*, beside `adjustReputation`. `gangs.ts:71` is
      *   `public adjustReputation(gangId: string, delta: number): void {`. Exact.
-     * - ADR 0093's *"`SAVE_SCHEMA_VERSION` is `5`
-     *   (`src/persistence/save-schema.ts:36`)"*. `save-schema.ts:36` is
-     *   **blank**; the declaration is `:38`. This one is the tolerance
-     *   demonstrating itself: an anchor two lines stale still resolves, because
-     *   the fragment moved with the code and the number did not. (The
-     *   surrounding sentence is separately wrong -- the constant is `6` --
-     *   which is a claim gate's business, not this one's.)
+     * - ADR 0093's dated #1376 correction cites
+     *   `src/persistence/save-schema.ts:40` beside `SAVE_SCHEMA_VERSION`.
+     *   The declaration is on that line in the V7 branch. The original
+     *   carry-era sentence and its stale `:36` remain visible as history.
      *
      * **Not verifying, and every one of the five is a real defect.**
      * - `src/main.ts:621` in ADR 0092 is `: {`, the opening of a conditional
@@ -951,7 +952,7 @@ describe('rooted src/ and tests/ anchors in the documentation carry a checkable 
     expect({
       'regime.ts:12': control('docs/adr/0079-a-sentence-long-enough-to-be-a-history.md', 'src/simulation/prisoners/regime.ts:12'),
       'gangs.ts:71': control('docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md', 'src/simulation/incidents/gangs.ts:71'),
-      'save-schema.ts:36': control('docs/adr/0093-a-carry-is-an-action.md', 'src/persistence/save-schema.ts:36'),
+      'save-schema.ts:40': control('docs/adr/0093-a-carry-is-an-action.md', 'src/persistence/save-schema.ts:40'),
       'main.ts:621': control('docs/adr/0092-who-decides-where-a-guard-stands.md', 'src/main.ts:621'),
       'new-session.ts:1400': control('docs/adr/0093-a-carry-is-an-action.md', 'src/simulation/runtime/new-session.ts:1400'),
       'actor-identity.ts:210': control('docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md', 'src/simulation/identity/actor-identity.ts:210'),
@@ -960,7 +961,7 @@ describe('rooted src/ and tests/ anchors in the documentation carry a checkable 
     }).toEqual({
       'regime.ts:12': true,
       'gangs.ts:71': true,
-      'save-schema.ts:36': true,
+      'save-schema.ts:40': true,
       'main.ts:621': false,
       'new-session.ts:1400': false,
       'actor-identity.ts:210': false,

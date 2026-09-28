@@ -69,11 +69,11 @@ describe('assignPooledRows', () => {
     ]);
   });
 
-  it('gives no box to a leading row with nothing to show', () => {
+  it('gives no box to a trailing row with nothing to show in a top-anchored pool', () => {
     expect(assignPooledRows(fresh(3), ['a'], 0, SETTLE)).toEqual([
-      { kind: 'empty' },
-      { kind: 'empty' },
       { kind: 'fills', itemId: 'a' },
+      { kind: 'empty' },
+      { kind: 'empty' },
     ]);
   });
 
@@ -137,7 +137,7 @@ describe('assignPooledRows', () => {
 
   it('keeps lower boxes while an item remains above them', () => {
     const freed = publish(holding('a', 'b', 'c'), ['a'], 5_000).rows;
-    expect(kinds(assignPooledRows(freed, ['a'], 9_000, SETTLE))).toEqual(['keeps', 'holds-open', 'holds-open']);
+    expect(kinds(assignPooledRows(freed, ['a'], 9_000, SETTLE, 'bottom'))).toEqual(['keeps', 'holds-open', 'holds-open']);
   });
 
   it('keeps departed boxes inert until the settle window ends even when the list empties', () => {
@@ -161,6 +161,19 @@ describe('assignPooledRows', () => {
     );
     expect(named).toEqual(['a', 'b']);
     expect(new Set(named).size).toBe(named.length);
+  });
+
+  it('keeps the visible slots anchored from the bottom when requested', () => {
+    expect(assignPooledRows(fresh(3), ['a'], 0, SETTLE, 'bottom')).toEqual([
+      { kind: 'empty' },
+      { kind: 'empty' },
+      { kind: 'fills', itemId: 'a' },
+    ]);
+    expect(assignPooledRows(fresh(3), ['a', 'b', 'c'], 0, SETTLE, 'bottom')).toEqual([
+      { kind: 'fills', itemId: 'a' },
+      { kind: 'fills', itemId: 'b' },
+      { kind: 'fills', itemId: 'c' },
+    ]);
   });
 
   it('holds the invariant across a whole queue draining through a three-row pool', () => {

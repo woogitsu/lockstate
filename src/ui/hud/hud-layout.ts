@@ -110,6 +110,15 @@ export const MAP_WIDTH_RESERVE_PX = 320;
 /** The width the navigation opens at before a player has ever sized it. */
 export const DEFAULT_NAVIGATION_WIDTH_PX = 180;
 
+/** Direction A keeps labels, while lending the Full HD map another 52px. */
+export const FULL_HD_NAVIGATION_WIDTH_PX = 128;
+
+function defaultNavigationWidth(viewport: LayoutViewport): number {
+  return viewport.width >= 1920 && viewport.height >= 1080
+    ? FULL_HD_NAVIGATION_WIDTH_PX
+    : DEFAULT_NAVIGATION_WIDTH_PX;
+}
+
 /**
  * The width the inspector opens at, which is exactly what the rail has always
  * been: `--hud-rail-panel-width` is `264px * var(--ui-scale)` in
@@ -122,6 +131,15 @@ export const DEFAULT_NAVIGATION_WIDTH_PX = 180;
  * names.
  */
 export const DEFAULT_INSPECTOR_WIDTH_PX = 264;
+
+/** A readable Build and Schedule column at Full HD; stored sizes still win. */
+export const FULL_HD_INSPECTOR_WIDTH_PX = 340;
+
+function defaultInspectorWidth(viewport: LayoutViewport): number {
+  return viewport.width >= 1920 && viewport.height >= 1080
+    ? FULL_HD_INSPECTOR_WIDTH_PX
+    : DEFAULT_INSPECTOR_WIDTH_PX;
+}
 
 /**
  * The height one tab occupies in the vertical rail at 100 %: icon over label,
@@ -195,7 +213,7 @@ export function isPhoneLayout(viewport: LayoutViewport): boolean {
 }
 
 /** Where the five sections are laid out. */
-export type NavigationPlacement = 'rail' | 'bar';
+export type NavigationPlacement = 'rail' | 'bar' | 'drawer';
 
 /**
  * Whether the navigation is the left rail the direction asks for, or the bottom
@@ -224,7 +242,11 @@ export type NavigationPlacement = 'rail' | 'bar';
 export function navigationPlacement(viewport: LayoutViewport, reservedHeight: number): NavigationPlacement {
   if (isPhoneLayout(viewport)) return 'bar';
   const available = viewport.height - reservedHeight - NAVIGATION_RAIL_SLACK_PX;
-  return available >= navigationRailBlock(viewport) ? 'rail' : 'bar';
+  if (available >= navigationRailBlock(viewport)) return 'rail';
+  // When the rail cannot fit and the remaining height is less than five tap
+  // targets, a wrapped bar takes too much of the map and crushes the inspector.
+  // At 1920x1080 with 200% page zoom this is the 960x540 layout viewport.
+  return available < 5 * 44 * viewport.uiScale ? 'drawer' : 'bar';
 }
 
 /**
@@ -329,7 +351,7 @@ export function sizeFieldFor(region: LayoutRegion, viewport: LayoutViewport): La
  * The **absent** case is where the three regions differ, and it is why
  * `LayoutSettings`' sizes are optional rather than defaulted (see that file's
  * header): a navigation nobody has sized opens with its labels legible, a rail
- * nobody has sized is exactly the rail this repository has always drawn, and a
+ * nobody has sized follows the desktop tier's default, and a
  * phone sheet nobody has sized is as tall as the tier lets it be -- which is
  * the only one of the three that cannot be written down as a number, because it
  * is a property of the phone in the player's hand.
@@ -347,8 +369,8 @@ export function resolveLayoutSize(
   const stored = settings[field];
   // A stored size is a design pixel; everything below this line is painted.
   if (stored !== undefined) return clampSeparatorSize(stored * scale, range);
-  if (field === 'navigationWidth') return clampSeparatorSize(DEFAULT_NAVIGATION_WIDTH_PX * scale, range);
-  if (field === 'inspectorWidth') return clampSeparatorSize(DEFAULT_INSPECTOR_WIDTH_PX * scale, range);
+  if (field === 'navigationWidth') return clampSeparatorSize(defaultNavigationWidth(viewport) * scale, range);
+  if (field === 'inspectorWidth') return clampSeparatorSize(defaultInspectorWidth(viewport) * scale, range);
   // The phone sheet: as tall as the tier allows until the player says otherwise.
   return clampSeparatorSize(range.max, range);
 }
@@ -390,7 +412,7 @@ export function resolveHudLayout(
   const navSize = resolveLayoutSize('navigation', settings, viewport, 0);
   // A folded navigation has taken its width back, so the inspector may have it
   // -- and so has one that is laid out as a bottom bar rather than a column.
-  const navExtent = navCollapsed || placement === 'bar' ? 0 : navSize;
+  const navExtent = navCollapsed || placement !== 'rail' ? 0 : navSize;
   const inspectorCollapsed = isRegionCollapsed(settings, 'inspector');
   const inspectorSize = resolveLayoutSize('inspector', settings, viewport, navExtent);
   return {

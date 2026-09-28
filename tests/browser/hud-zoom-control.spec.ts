@@ -154,6 +154,15 @@ test.describe('the HUD names the zoom, and the control it names it with works (#
     const atArrival = await tilesAcross(page);
     expect(atArrival, 'the span instrument read no tiles at all at arrival -- it is broken, and nothing below it means anything').toBeGreaterThan(0);
 
+    // The world probes submit RemoveWall on empty tiles, which raises a real
+    // refusal row. Its height used to bring the six-tab column over the zoom
+    // island; keep the last tab reachable as well as the zoom button below.
+    await expect(page.locator('.hud__refusal')).toBeVisible();
+    const lastTab = page.locator('.hud__tabs .ui-tab:last-child');
+    const lastTabBox = await lastTab.boundingBox();
+    if (lastTabBox === null) throw new Error('the last navigation tab has no box');
+    await assertHits(page, { x: lastTabBox.x + lastTabBox.width / 2, y: lastTabBox.y + lastTabBox.height / 2 }, '.hud__tabs .ui-tab:last-child', 'the last navigation tab');
+
     await pressZoom(page, '.hud-zoom__in', 3);
     const zoomedIn = await tilesAcross(page);
 

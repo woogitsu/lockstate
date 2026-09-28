@@ -1,6 +1,6 @@
 import { expect, test, type Page } from './network-changed-fixture';
 import { defaultObjectRegistry } from '../../src/content/object-catalog';
-import { ENVIRONMENT_SPRITE_IDS } from '../../src/rendering/assets/environment-sprites';
+import { ENVIRONMENT_SPRITE_IDS, ENVIRONMENT_SPRITES } from '../../src/rendering/assets/environment-sprites';
 import { FLOOR_ART_DEPTH } from '../../src/rendering/depth';
 import { EDGE_WALL_THICKNESS_TILES, PLANNED_OBJECT_TINT, edgeAppearance } from '../../src/rendering/world/appearance';
 import { objectSprite } from '../../src/rendering/world/environment-art';
@@ -40,8 +40,8 @@ import type { HarnessPixel, HarnessWorldFixture } from './environment-art-harnes
 
 const HARNESS_URL = '/tests/browser/environment-art-harness.html';
 
-async function openHarness(page: Page): Promise<HarnessWorldFixture> {
-  await page.goto(HARNESS_URL);
+async function openHarness(page: Page, roomLabels: boolean | 'showerFloor' | 'infirmaryFloor' | 'commonRoomFloor' | 'classroomFloor' | 'securityFloor' | 'staffFloor' | 'bedVisual' | 'stoveVisual' | 'washerVisual' | 'showerVisual' = false): Promise<HarnessWorldFixture> {
+  await page.goto(`${HARNESS_URL}${roomLabels === 'showerFloor' ? '?showerFloor=1' : roomLabels === 'infirmaryFloor' ? '?infirmaryFloor=1' : roomLabels === 'commonRoomFloor' ? '?commonRoomFloor=1' : roomLabels === 'classroomFloor' ? '?classroomFloor=1' : roomLabels === 'securityFloor' ? '?securityFloor=1' : roomLabels === 'staffFloor' ? '?staffFloor=1' : roomLabels === 'bedVisual' ? '?bedVisual=1' : roomLabels === 'stoveVisual' ? '?stoveVisual=1' : roomLabels === 'washerVisual' ? '?showerFloor=1&washerVisual=1' : roomLabels === 'showerVisual' ? '?showerFloor=1&showerVisual=1' : roomLabels ? '?roomLabels=1' : ''}`);
   await page.waitForFunction(() => window.lockstateEnvironmentArtHarness !== undefined);
   await page.evaluate(async () => {
     const harness = window.lockstateEnvironmentArtHarness!;
@@ -60,6 +60,32 @@ function channelDistance(left: HarnessPixel, right: HarnessPixel): number {
 }
 
 test.describe('the environment artwork', () => {
+  test('the wooden chair has a clear air gap and one continuous seat at game scale', async ({ page }) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const fixture = await openHarness(page);
+    const chair = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.object.chair');
+      if (frame === undefined) return undefined;
+      return {
+        size: [frame.width, frame.height],
+        back: harness.atlasPixel(frame.x + 64, frame.y + 15),
+        gap: harness.atlasPixel(frame.x + 64, frame.y + 30),
+        seat: harness.atlasPixel(frame.x + 64, frame.y + 67),
+      };
+    });
+    expect(chair?.size).toEqual([128, 128]);
+    expect(chair?.back?.[3]).toBeGreaterThan(240);
+    expect(chair?.gap?.[3]).toBeLessThan(20);
+    expect(chair?.seat?.[3]).toBeGreaterThan(240);
+    await page.evaluate(async ({ x, y }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, 3),
+      { x: (fixture.chairTileX + 0.5) * fixture.tileSizePx, y: (fixture.chairTileY + 0.5) * fixture.tileSizePx });
+    const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+    expect(sprites.filter(sprite => sprite.frameName === 'env.object.chair')).toEqual([
+      expect.objectContaining({ x: fixture.chairTileX * fixture.tileSizePx, y: fixture.chairTileY * fixture.tileSizePx }),
+    ]);
+  });
+
   test('cuts every declared sprite out of the published sheets and packs one texture', async ({ page }) => {
     await openHarness(page);
     const atlas = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.atlas());
@@ -72,6 +98,379 @@ test.describe('the environment artwork', () => {
     // The key carries the content-hashed filename of every sheet it was cut
     // from, so it cannot drift from the art (ADR-0014's runtime-access rule).
     expect(atlas!.textureKey).toContain('/game-content/source-art/');
+  });
+
+  test('the cell bed pillow keeps a raised cotton centre visible at game scale', async ({ page }) => {
+    await openHarness(page);
+    const pillow = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.object.bed');
+      if (frame === undefined) return undefined;
+      return {
+        size: [frame.width, frame.height],
+        centre: harness.atlasPixel(frame.x + 64, frame.y + 60),
+        edge: harness.atlasPixel(frame.x + 36, frame.y + 60),
+      };
+    });
+    expect(pillow?.size).toEqual([128, 256]);
+    expect(pillow?.centre?.[3]).toBe(255);
+    expect(pillow?.edge?.[3]).toBe(255);
+    expect(channelDistance(pillow!.centre!, pillow!.edge!)).toBeGreaterThan(5);
+  });
+
+  test('the refined bed sits beside the toilet inside a furnished Full HD cell', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const fixture = await openHarness(page, 'bedVisual');
+    await page.evaluate(async ({ x, y }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, 3),
+      { x: 4 * fixture.tileSizePx, y: 3.5 * fixture.tileSizePx });
+    const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+    expect(sprites.filter((sprite) => sprite.frameName === 'env.object.bed')).toEqual([
+      expect.objectContaining({ x: 3 * fixture.tileSizePx, y: 3 * fixture.tileSizePx }),
+    ]);
+    expect(sprites.filter((sprite) => sprite.frameName === 'env.object.toilet')).toEqual([
+      expect.objectContaining({ x: 5 * fixture.tileSizePx, y: 3 * fixture.tileSizePx }),
+    ]);
+    const labels = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.roomLabels());
+    expect(labels.map((label) => label.text)).toContain('Cell');
+    if (process.env['LOCKSTATE_CAPTURE_BED_ART'] === '1') {
+      await page.screenshot({ path: testInfo.outputPath('furnished-cell-bed-1920x1080.png') });
+    }
+  });
+
+  test('the cell toilet has a recessed drain visible inside its water ring', async ({ page }) => {
+    await openHarness(page);
+    const bowl = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.object.toilet');
+      return frame === undefined ? undefined : {
+        size: [frame.width, frame.height],
+        drain: harness.atlasPixel(frame.x + 64, frame.y + 80),
+        water: harness.atlasPixel(frame.x + 72, frame.y + 80),
+      };
+    });
+    expect(bowl?.size).toEqual([128, 128]);
+    expect(bowl?.drain?.[3]).toBe(255);
+    expect(bowl?.water?.[3]).toBe(255);
+    expect(channelDistance(bowl!.drain!, bowl!.water!)).toBeGreaterThan(20);
+  });
+
+  test('the recessed toilet drain remains legible in a furnished Full HD cell', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const fixture = await openHarness(page, 'bedVisual');
+    await page.evaluate(async ({ x, y }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, 3.5),
+      { x: 4.5 * fixture.tileSizePx, y: 3.5 * fixture.tileSizePx });
+    const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+    expect(sprites.filter((sprite) => sprite.frameName === 'env.object.toilet')).toEqual([
+      expect.objectContaining({ x: 5 * fixture.tileSizePx, y: 3 * fixture.tileSizePx }),
+    ]);
+    if (process.env['LOCKSTATE_CAPTURE_TOILET_ART'] === '1') {
+      await page.screenshot({ path: testInfo.outputPath('furnished-cell-toilet-1920x1080.png') });
+    }
+  });
+
+  test('the employee desk lamp has a visible dark swivel above its enamel hood', async ({ page }) => {
+    await openHarness(page);
+    const lamp = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.object.desk');
+      return frame === undefined ? undefined : {
+        size: [frame.width, frame.height],
+        swivel: harness.atlasPixel(frame.x + 82, frame.y + 33),
+        hood: harness.atlasPixel(frame.x + 90, frame.y + 33),
+      };
+    });
+    expect(lamp?.size).toEqual([256, 128]);
+    expect(lamp?.swivel?.[3]).toBe(255);
+    expect(lamp?.hood?.[3]).toBe(255);
+    expect(channelDistance(lamp!.swivel!, lamp!.hood!)).toBeGreaterThan(20);
+  });
+
+  test('the employee desk lamp sits beside the paperwork at Full HD', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const fixture = await openHarness(page);
+    await page.evaluate(async ({ x, y }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, 3),
+      { x: 12.5 * fixture.tileSizePx, y: 4.5 * fixture.tileSizePx });
+    const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+    expect(sprites.filter((sprite) => sprite.frameName === 'env.object.desk')).toEqual([
+      expect.objectContaining({ x: fixture.deskTileX * fixture.tileSizePx, y: fixture.deskTileY * fixture.tileSizePx }),
+    ]);
+    if (process.env['LOCKSTATE_CAPTURE_DESK_ART'] === '1') {
+      await page.screenshot({ path: testInfo.outputPath('employee-desk-1920x1080.png') });
+    }
+  });
+
+  test('the stove grate has a diagonal iron support visible at game scale', async ({ page }) => {
+    await openHarness(page);
+    const support = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.object.stove');
+      return frame === undefined ? undefined : {
+        size: [frame.width, frame.height],
+        pixel: harness.atlasPixel(frame.x + 84, frame.y + 54),
+      };
+    });
+    expect(support?.size).toEqual([256, 128]);
+    expect(support?.pixel?.[3]).toBe(255);
+    expect(support!.pixel![0]).toBeLessThan(95);
+  });
+
+  test('the stove and fridge are drawn inside a furnished Full HD kitchen', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const fixture = await openHarness(page, 'stoveVisual');
+    await page.evaluate(async ({ x, y }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, 3),
+      { x: 4 * fixture.tileSizePx, y: 7.5 * fixture.tileSizePx });
+    const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+    expect(sprites.filter((sprite) => sprite.frameName === 'env.object.stove')).toEqual([
+      expect.objectContaining({ x: 2 * fixture.tileSizePx, y: 7 * fixture.tileSizePx }),
+    ]);
+    expect(sprites.filter((sprite) => sprite.frameName === 'env.object.fridge')).toEqual([
+      expect.objectContaining({ x: 5 * fixture.tileSizePx, y: 7 * fixture.tileSizePx }),
+    ]);
+    const labels = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.roomLabels());
+    expect(labels.map((label) => label.text)).toContain('Kitchen');
+    if (process.env['LOCKSTATE_CAPTURE_STOVE_ART'] === '1') {
+      await page.screenshot({ path: testInfo.outputPath('furnished-kitchen-stove-1920x1080.png') });
+    }
+  });
+
+  test('the preparation counter reads in a furnished Full HD kitchen', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const fixture = await openHarness(page, 'stoveVisual');
+    await page.evaluate(async ({ x, y }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, 3),
+      { x: 4 * fixture.tileSizePx, y: 7.5 * fixture.tileSizePx });
+    const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+    expect(sprites.filter((sprite) => sprite.frameName === 'env.object.prep-counter')).toEqual([
+      expect.objectContaining({ x: 2 * fixture.tileSizePx, y: 6 * fixture.tileSizePx }),
+    ]);
+    if (process.env['LOCKSTATE_CAPTURE_PREP_COUNTER_ART'] === '1') {
+      await page.screenshot({ path: testInfo.outputPath('prep-counter-1920x1080.png') });
+    }
+  });
+
+  test('the preparation tray has open dark space between individual leaves', async ({ page }) => {
+    await openHarness(page);
+    const leafGap = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.object.prep-counter');
+      return frame === undefined ? undefined : harness.atlasPixel(frame.x + 193, frame.y + 62);
+    });
+    expect(leafGap?.[3]).toBe(255);
+    expect(leafGap?.[1], 'the green pan should show its dark recess between leaves').toBeLessThan(105);
+  });
+
+  test('the library bookshelf reads in a Full HD room', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const fixture = await openHarness(page, 'classroomFloor');
+    await page.evaluate(async ({ x, y }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, 3),
+      { x: 19 * fixture.tileSizePx, y: 25 * fixture.tileSizePx });
+    const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+    expect(sprites.filter((sprite) => sprite.frameName === 'env.object.bookshelf')).toContainEqual(
+      expect.objectContaining({ x: 18 * fixture.tileSizePx, y: 24 * fixture.tileSizePx }),
+    );
+    if (process.env['LOCKSTATE_CAPTURE_BOOKSHELF_ART'] === '1') {
+      await page.screenshot({ path: testInfo.outputPath('bookshelf-1920x1080.png') });
+    }
+  });
+
+  test('the stocked rack has distinct goods in a Full HD world view', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const fixture = await openHarness(page, 'stoveVisual');
+    await page.evaluate(async ({ x, y }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, 3),
+      { x: 5.5 * fixture.tileSizePx, y: 6.5 * fixture.tileSizePx });
+    const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+    expect(sprites.filter((sprite) => sprite.frameName === 'env.object.storage-rack')).toEqual([
+      expect.objectContaining({ x: 5 * fixture.tileSizePx, y: 6 * fixture.tileSizePx }),
+    ]);
+    const goods = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.object.storage-rack');
+      if (frame === undefined) return undefined;
+      return {
+        kraft: harness.atlasPixel(frame.x + 84, frame.y + 65),
+        canvas: harness.atlasPixel(frame.x + 93, frame.y + 92),
+      };
+    });
+    expect(goods?.kraft?.[3]).toBe(255);
+    expect(goods?.canvas?.[3]).toBe(255);
+    expect(channelDistance(goods!.kraft!, goods!.canvas!)).toBeGreaterThan(30);
+    expect(goods!.kraft![0]).toBeGreaterThan(goods!.canvas![0] + 25);
+    expect(goods!.canvas![2]).toBeGreaterThan(goods!.kraft![2] + 10);
+    if (process.env['LOCKSTATE_CAPTURE_RACK_ART'] === '1') {
+      await page.screenshot({ path: testInfo.outputPath('storage-rack-1920x1080.png') });
+    }
+  });
+
+  test('the bookshelf upright is blue-grey rather than a bright divider', async ({ page }) => {
+    await openHarness(page);
+    const upright = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.object.bookshelf');
+      return frame === undefined ? undefined : harness.atlasPixel(frame.x + 92, frame.y + 60);
+    });
+    expect(upright?.[3]).toBe(255);
+    expect(upright?.[0], 'a light post overwhelms both rows of books at world scale').toBeLessThan(160);
+  });
+
+  test('the utility control has raised breaker levers in the Full HD world', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const fixture = await openHarness(page);
+    await page.evaluate(async ({ x, y }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, 3),
+      { x: 44.5 * fixture.tileSizePx, y: 4.5 * fixture.tileSizePx });
+    const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+    expect(sprites.filter((sprite) => sprite.frameName === 'env.object.utility-panel')).toContainEqual(
+      expect.objectContaining({ x: 44 * fixture.tileSizePx, y: 4 * fixture.tileSizePx }),
+    );
+    if (process.env['LOCKSTATE_CAPTURE_UTILITY_PANEL_ART'] === '1') {
+      await page.screenshot({ path: testInfo.outputPath('utility-panel-1920x1080.png') });
+    }
+  });
+
+  test('the utility breakers reveal a dark recess below their cream handles', async ({ page }) => {
+    await openHarness(page);
+    const recess = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.object.utility-panel');
+      return frame === undefined ? undefined : harness.atlasPixel(frame.x + 46, frame.y + 47);
+    });
+    expect(recess?.[3]).toBe(255);
+    expect(recess?.[0], 'six flat cream keycaps hide the breaker recesses').toBeLessThan(90);
+  });
+
+  test('the closed loading gate reads as braced timber at Full HD game scale', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const camera = async () => {
+      const fixture = await openHarness(page);
+      await page.evaluate(async ({ x, y }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, 3),
+        { x: 46.5 * fixture.tileSizePx, y: 4.5 * fixture.tileSizePx });
+      return fixture;
+    };
+    const fixture = await camera();
+    const result = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.object.loading-dock-door');
+      return {
+        sprites: harness.tileSprites().filter((sprite) => sprite.frameName === 'env.object.loading-dock-door'),
+        brace: frame === undefined ? undefined : harness.atlasPixel(frame.x + 60, frame.y + 50),
+      };
+    });
+    expect(result.sprites).toContainEqual(expect.objectContaining({
+      x: 45 * fixture.tileSizePx,
+      y: 4 * fixture.tileSizePx,
+    }));
+    expect(result.brace?.[3]).toBe(255);
+    expect(result.brace?.[0], 'the overhead brace disappears into the timber').toBeGreaterThan(150);
+    if (process.env['LOCKSTATE_CAPTURE_GATE_ART'] === '1') {
+      await page.screenshot({ path: testInfo.outputPath('gate-after-1920x1080.png') });
+    }
+  });
+
+  test('the refrigerator top reveals the split between its two doors', async ({ page }) => {
+    await openHarness(page);
+    const doors = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.object.fridge');
+      return frame === undefined ? undefined : {
+        size: [frame.width, frame.height],
+        seam: harness.atlasPixel(frame.x + 64, frame.y + 91),
+        enamel: harness.atlasPixel(frame.x + 57, frame.y + 91),
+      };
+    });
+    expect(doors?.size).toEqual([128, 128]);
+    expect(doors?.seam?.[3]).toBe(255);
+    expect(doors?.enamel?.[3]).toBe(255);
+    expect(channelDistance(doors!.seam!, doors!.enamel!)).toBeGreaterThan(20);
+  });
+
+  test('the split refrigerator reads beside the stove in a Full HD kitchen', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const fixture = await openHarness(page, 'stoveVisual');
+    await page.evaluate(async ({ x, y }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, 3),
+      { x: 4.5 * fixture.tileSizePx, y: 7.5 * fixture.tileSizePx });
+    const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+    expect(sprites.filter((sprite) => sprite.frameName === 'env.object.fridge')).toEqual([
+      expect.objectContaining({ x: 5 * fixture.tileSizePx, y: 7 * fixture.tileSizePx }),
+    ]);
+    if (process.env['LOCKSTATE_CAPTURE_FRIDGE_ART'] === '1') {
+      await page.screenshot({ path: testInfo.outputPath('fridge-1920x1080.png') });
+    }
+  });
+
+  test('the twin washer drums remain visible at Full HD', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const fixture = await openHarness(page, 'washerVisual');
+    await page.evaluate(async ({ x, y }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, 3),
+      { x: 18 * fixture.tileSizePx, y: 13.5 * fixture.tileSizePx });
+    const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+    expect(sprites.filter((sprite) => sprite.frameName === 'env.object.washing-machine')).toEqual([
+      expect.objectContaining({ x: 17 * fixture.tileSizePx, y: 13 * fixture.tileSizePx }),
+    ]);
+    if (process.env['LOCKSTATE_CAPTURE_WASHER_ART'] === '1') {
+      await page.screenshot({ path: testInfo.outputPath('washer-1920x1080.png') });
+    }
+  });
+
+  test('rounded cloth folds leave clear glass where the old angular shard crossed it', async ({ page }) => {
+    await openHarness(page);
+    const drum = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.object.washing-machine');
+      return frame === undefined ? undefined : {
+        size: [frame.width, frame.height],
+        clearGlass: harness.atlasPixel(frame.x + 92, frame.y + 80),
+        fabric: harness.atlasPixel(frame.x + 77, frame.y + 73),
+      };
+    });
+    expect(drum?.size).toEqual([256, 128]);
+    expect(drum?.clearGlass?.[3]).toBe(255);
+    expect(drum?.fabric?.[3]).toBe(255);
+    expect(drum!.clearGlass![0]).toBeLessThan(130);
+    expect(drum!.fabric![0]).toBeGreaterThan(150);
+  });
+
+  test('two shower fixtures are drawn over ceramic in a furnished Full HD room', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const fixture = await openHarness(page, 'showerVisual');
+    await page.evaluate(async ({ x, y }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, 3),
+      { x: 13.5 * fixture.tileSizePx, y: 13.5 * fixture.tileSizePx });
+    const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+    expect(sprites.filter((sprite) => sprite.frameName === 'env.object.shower-head')).toEqual([
+      expect.objectContaining({ x: 12 * fixture.tileSizePx, y: 13 * fixture.tileSizePx }),
+      expect.objectContaining({ x: 14 * fixture.tileSizePx, y: 13 * fixture.tileSizePx }),
+    ]);
+    const labels = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.roomLabels());
+    expect(labels.map((label) => label.text)).toContain('Shower Room');
+    if (process.env['LOCKSTATE_CAPTURE_SHOWER_ART'] === '1') {
+      await page.screenshot({ path: testInfo.outputPath('furnished-shower-1920x1080.png') });
+    }
+  });
+
+  test('the shower wall socket has a recessed steel cover at game scale', async ({ page }) => {
+    await openHarness(page);
+    const socket = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.object.shower-head');
+      return frame === undefined ? undefined : {
+        size: [frame.width, frame.height],
+        cover: harness.atlasPixel(frame.x + 58, frame.y + 30),
+        screw: harness.atlasPixel(frame.x + 64, frame.y + 30),
+      };
+    });
+    expect(socket?.size).toEqual([128, 128]);
+    expect(socket?.cover?.[3]).toBe(255);
+    expect(socket?.screw?.[3]).toBe(255);
+    expect(channelDistance(socket!.cover!, socket!.screw!)).toBeGreaterThan(40);
+  });
+
+  test('the waste bin lid joins its body at game scale instead of reading as two rings', async ({ page }) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await openHarness(page);
+    const bridge = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.object.waste-bin');
+      return frame === undefined ? undefined : harness.atlasPixel(frame.x + 38, frame.y + 23);
+    });
+    expect(bridge?.[3], 'the upper left of the hinged lid should be filled').toBe(255);
+    expect(bridge?.[1], 'the hinged lid should remain visible as enamel').toBeGreaterThan(130);
   });
 
   test('the packed frames hold decoded photographic pixels, not a Git LFS pointer', async ({ page }) => {
@@ -108,12 +507,654 @@ test.describe('the environment artwork', () => {
     }
   });
 
-  test('draws the zoned room as one tiling floor, and the wall run as walls and a door', async ({ page }) => {
+  test('the Blender linoleum fills every edge of its repeating tile', async ({ page }) => {
+    expect(ENVIRONMENT_SPRITES['env.floor.institutional'].kind).toBe('rendered-art');
+    await openHarness(page);
+    const pixels = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.floor.institutional');
+      if (!frame) return undefined;
+      return {
+        size: [frame.width, frame.height],
+        samples: [
+          [0, 0], [frame.width - 1, 0], [0, frame.height - 1],
+          [frame.width - 1, frame.height - 1],
+        ].map(([x, y]) => harness.atlasPixel(frame.x + x!, frame.y + y!)),
+      };
+    });
+    expect(pixels?.size).toEqual([128, 128]);
+    for (const pixel of pixels!.samples) expect(pixel?.[3]).toBeGreaterThan(200);
+  });
+
+  test('the cell uses an opaque Blender concrete frame', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
     const fixture = await openHarness(page);
+    const frame = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const bounds = harness.atlasFrame('env.floor.cell');
+      return bounds === undefined ? undefined : {
+        size: [bounds.width, bounds.height],
+        corners: [[0, 0], [bounds.width - 1, 0], [0, bounds.height - 1], [bounds.width - 1, bounds.height - 1]]
+          .map(([x, y]) => harness.atlasPixel(bounds.x + x!, bounds.y + y!)),
+      };
+    });
+    expect(frame?.size).toEqual([128, 128]);
+    for (const pixel of frame!.corners) expect(pixel?.[3]).toBeGreaterThan(200);
+    if (process.env['LOCKSTATE_CAPTURE_CELL_ART'] === '1') {
+      const centreX = (fixture.zonedMinTileX + fixture.zonedMaxTileX + 1) * fixture.tileSizePx / 2;
+      const centreY = (fixture.zonedMinTileY + fixture.zonedMaxTileY + 1) * fixture.tileSizePx / 2;
+      await page.evaluate(async ({ x, y }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y),
+        { x: centreX, y: centreY });
+      await page.screenshot({ path: testInfo.outputPath('cell-floor-1920x1080.png') });
+    }
+  });
+
+  test('the kitchen uses its own opaque tiling frame while the neighboring cell has sealed concrete', async ({ page }) => {
+    const fixture = await openHarness(page);
+    const result = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.floor.kitchen');
+      return {
+        kitchen: harness.tileSprites().filter((sprite) => sprite.frameName === 'env.floor.kitchen'),
+        cell: harness.tileSprites().filter((sprite) => sprite.frameName === 'env.floor.cell'),
+        size: frame === undefined ? undefined : [frame.width, frame.height],
+        corners: frame === undefined ? [] : [
+          [0, 0], [frame.width - 1, 0], [0, frame.height - 1], [frame.width - 1, frame.height - 1],
+        ].map(([x, y]) => harness.atlasPixel(frame.x + x!, frame.y + y!)),
+      };
+    });
+    expect(result.size).toEqual([128, 128]);
+    // This room straddles an 8-tile chunk boundary, so the renderer keeps
+    // one merged rectangle per chunk rather than one sprite for the room.
+    expect(result.kitchen).toHaveLength(2);
+    expect(result.cell).toHaveLength(1);
+    expect([result.kitchen[0]!.x, result.kitchen[0]!.y]).toEqual([
+      fixture.kitchenMinTileX * fixture.tileSizePx, fixture.kitchenMinTileY * fixture.tileSizePx,
+    ]);
+    expect(result.kitchen.map((sprite) => sprite.width)).toEqual([
+      (fixture.kitchenMaxTileX - fixture.kitchenMinTileX + 1) * fixture.tileSizePx,
+      (fixture.kitchenMaxTileX - fixture.kitchenMinTileX + 1) * fixture.tileSizePx,
+    ]);
+    expect(result.kitchen.reduce((height, sprite) => height + sprite.height, 0)).toBe(
+      (fixture.kitchenMaxTileY - fixture.kitchenMinTileY + 1) * fixture.tileSizePx,
+    );
+    for (const pixel of result.corners) expect(pixel?.[3]).toBeGreaterThan(200);
+  });
+
+  test('the canteen uses its own Blender floor beside the kitchen, with opaque corners', async ({ page }) => {
+    const fixture = await openHarness(page);
+    const result = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.floor.canteen');
+      return {
+        canteen: harness.tileSprites().filter((sprite) => sprite.frameName === 'env.floor.canteen'),
+        kitchen: harness.tileSprites().filter((sprite) => sprite.frameName === 'env.floor.kitchen'),
+        size: frame === undefined ? undefined : [frame.width, frame.height],
+        corners: frame === undefined ? [] : [
+          [0, 0], [frame.width - 1, 0], [0, frame.height - 1], [frame.width - 1, frame.height - 1],
+        ].map(([x, y]) => harness.atlasPixel(frame.x + x!, frame.y + y!)),
+      };
+    });
+    expect(result.size).toEqual([128, 128]);
+    expect(result.kitchen).toHaveLength(2);
+    expect(result.canteen.length).toBeGreaterThanOrEqual(2);
+    expect(result.canteen.some((sprite) => sprite.x === fixture.canteenMinTileX * fixture.tileSizePx)).toBe(true);
+    for (const pixel of result.corners) expect(pixel?.[3]).toBeGreaterThan(200);
+  });
+
+  test('the 3 by 3 shower has ceramic beside a distinct laundry service floor', async ({ page }, testInfo) => {
+    const fixture = await openHarness(page, 'showerFloor');
+    const tile = fixture.tileSizePx;
+    const middleX = (fixture.showerFloorMinTileX + fixture.laundryFloorMaxTileX + 1) * tile / 2;
+    const middleY = (fixture.showerFloorMinTileY + fixture.showerFloorMaxTileY + 1) * tile / 2;
+    const frame = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const bounds = harness.atlasFrame('env.floor.shower');
+      return bounds === undefined ? undefined : {
+        size: [bounds.width, bounds.height],
+        ceramic: harness.atlasPixel(bounds.x + 32, bounds.y + 32),
+        grout: harness.atlasPixel(bounds.x + 64, bounds.y + 32),
+        corners: [[0, 0], [bounds.width - 1, 0], [0, bounds.height - 1], [bounds.width - 1, bounds.height - 1]]
+          .map(([x, y]) => harness.atlasPixel(bounds.x + x!, bounds.y + y!)),
+      };
+    });
+    expect(frame?.size).toEqual([128, 128]);
+    for (const pixel of frame!.corners) expect(pixel?.[3]).toBeGreaterThan(200);
+    expect(channelDistance(frame!.ceramic!, frame!.grout!)).toBeGreaterThanOrEqual(15);
+    expect(channelDistance(frame!.ceramic!, frame!.grout!)).toBeLessThan(40);
+    const laundryFrame = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const bounds = harness.atlasFrame('env.floor.laundry');
+      return bounds === undefined ? undefined : {
+        size: [bounds.width, bounds.height],
+        corners: [[0, 0], [bounds.width - 1, 0], [0, bounds.height - 1], [bounds.width - 1, bounds.height - 1]]
+          .map(([x, y]) => harness.atlasPixel(bounds.x + x!, bounds.y + y!)),
+      };
+    });
+    expect(laundryFrame?.size).toEqual([128, 128]);
+    for (const pixel of laundryFrame!.corners) expect(pixel?.[3]).toBeGreaterThan(200);
+    for (const zoom of [1, 0.5]) {
+      await page.evaluate(async ({ x, y, zoom: level }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, level),
+        { x: middleX, y: middleY, zoom });
+      const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+      const shower = sprites.filter((sprite) => sprite.frameName === 'env.floor.shower');
+      expect(shower.reduce((area, sprite) => area + sprite.width * sprite.height, 0)).toBe(9 * tile * tile);
+      const laundry = sprites.filter((sprite) => sprite.frameName === 'env.floor.laundry'
+        && sprite.x >= fixture.laundryFloorMinTileX * tile);
+      expect(laundry.reduce((area, sprite) => area + sprite.width * sprite.height, 0)).toBe(9 * tile * tile);
+      const labels = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.roomLabels());
+      expect(labels.map((label) => label.text)).toContain('Shower Room');
+      expect(labels.map((label) => label.text)).toContain('Laundry');
+      if (process.env['LOCKSTATE_CAPTURE_SHOWER_ART'] === '1' || process.env['LOCKSTATE_CAPTURE_LAUNDRY_ART'] === '1') {
+        await page.screenshot({ path: testInfo.outputPath(`shower-floor-zoom-${zoom}.png`) });
+      }
+    }
+  });
+
+  test('the 4 by 4 Infirmary draws seamless vinyl beside Laundry and keeps its name at both zoom levels', async ({ page }, testInfo) => {
+    const fixture = await openHarness(page, 'infirmaryFloor');
+    const tile = fixture.tileSizePx;
+    const frame = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const bounds = harness.atlasFrame('env.floor.infirmary');
+      const laundry = harness.atlasFrame('env.floor.laundry');
+      return bounds === undefined ? undefined : {
+        size: [bounds.width, bounds.height],
+        centre: harness.atlasPixel(bounds.x + 64, bounds.y + 64),
+        laundryCentre: laundry === undefined ? undefined : harness.atlasPixel(laundry.x + 64, laundry.y + 64),
+        corners: [[0, 0], [bounds.width - 1, 0], [0, bounds.height - 1], [bounds.width - 1, bounds.height - 1]]
+          .map(([x, y]) => harness.atlasPixel(bounds.x + x!, bounds.y + y!)),
+      };
+    });
+    expect(frame?.size).toEqual([128, 128]);
+    for (const pixel of frame!.corners) expect(pixel?.[3]).toBeGreaterThan(200);
+    expect(channelDistance(frame!.centre!, frame!.laundryCentre!)).toBeGreaterThan(20);
+    const centreX = (fixture.infirmaryFloorMinTileX + fixture.infirmaryFloorMaxTileX + 1) * tile / 2;
+    const centreY = (fixture.infirmaryFloorMinTileY + fixture.infirmaryFloorMaxTileY + 1) * tile / 2;
+    for (const zoom of [1, 0.5]) {
+      await page.evaluate(async ({ x, y, zoom: level }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, level),
+        { x: centreX, y: centreY, zoom });
+      const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+      const infirmary = sprites.filter((sprite) => sprite.frameName === 'env.floor.infirmary'
+        && sprite.y >= fixture.infirmaryFloorMinTileY * tile);
+      expect(infirmary.reduce((area, sprite) => area + sprite.width * sprite.height, 0)).toBe(16 * tile * tile);
+      const laundry = sprites.filter((sprite) => sprite.frameName === 'env.floor.laundry');
+      expect(laundry.reduce((area, sprite) => area + sprite.width * sprite.height, 0)).toBe(9 * tile * tile);
+      const labels = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.roomLabels());
+      expect(labels.map((label) => label.text)).toContain('Infirmary');
+      expect(labels.map((label) => label.text)).toContain('Laundry');
+      if (process.env['LOCKSTATE_CAPTURE_INFIRMARY_ART'] === '1') {
+        await page.screenshot({ path: testInfo.outputPath(`infirmary-floor-zoom-${zoom}.png`) });
+      }
+    }
+  });
+
+  test('the 5 by 5 Common Room draws warm seamless composite with benches at both zoom levels', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const fixture = await openHarness(page, 'commonRoomFloor');
+    const tile = fixture.tileSizePx;
+    const frame = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const bounds = harness.atlasFrame('env.floor.common-room');
+      const institutional = harness.atlasFrame('env.floor.institutional');
+      return bounds === undefined ? undefined : {
+        size: [bounds.width, bounds.height],
+        centre: harness.atlasPixel(bounds.x + 64, bounds.y + 64),
+        institutionalCentre: institutional === undefined ? undefined : harness.atlasPixel(institutional.x + 64, institutional.y + 64),
+        corners: [[0, 0], [bounds.width - 1, 0], [0, bounds.height - 1], [bounds.width - 1, bounds.height - 1]]
+          .map(([x, y]) => harness.atlasPixel(bounds.x + x!, bounds.y + y!)),
+      };
+    });
+    expect(frame?.size).toEqual([128, 128]);
+    for (const pixel of frame!.corners) expect(pixel?.[3]).toBeGreaterThan(200);
+    expect(channelDistance(frame!.centre!, frame!.institutionalCentre!)).toBeGreaterThan(20);
+    const centreX = (fixture.commonRoomFloorMinTileX + fixture.commonRoomFloorMaxTileX + 1) * tile / 2;
+    const centreY = (fixture.commonRoomFloorMinTileY + fixture.commonRoomFloorMaxTileY + 1) * tile / 2;
+    for (const zoom of [1, 0.5]) {
+      await page.evaluate(async ({ x, y, zoom: level }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, level),
+        { x: centreX, y: centreY, zoom });
+      const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+      const commonRoom = sprites.filter((sprite) => sprite.frameName === 'env.floor.common-room');
+      expect(commonRoom.reduce((area, sprite) => area + sprite.width * sprite.height, 0)).toBe(25 * tile * tile);
+      const labels = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.roomLabels());
+      expect(labels.map((label) => label.text)).toContain('Common Room');
+      if (process.env['LOCKSTATE_CAPTURE_COMMON_ROOM_ART'] === '1') {
+        await page.screenshot({ path: testInfo.outputPath(`common-room-floor-zoom-${zoom}.png`) });
+      }
+    }
+  });
+
+  test('the 5 by 5 Classroom draws staggered oak planks with its bookshelf and chairs at both zoom levels', async ({ page }, testInfo) => {
+    const fixture = await openHarness(page, 'classroomFloor');
+    const tile = fixture.tileSizePx;
+    const frame = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const bounds = harness.atlasFrame('env.floor.classroom');
+      const infirmary = harness.atlasFrame('env.floor.infirmary');
+      return bounds === undefined ? undefined : {
+        size: [bounds.width, bounds.height],
+        centre: harness.atlasPixel(bounds.x + 64, bounds.y + 64),
+        infirmaryCentre: infirmary === undefined ? undefined : harness.atlasPixel(infirmary.x + 64, infirmary.y + 64),
+        corners: [[0, 0], [bounds.width - 1, 0], [0, bounds.height - 1], [bounds.width - 1, bounds.height - 1]]
+          .map(([x, y]) => harness.atlasPixel(bounds.x + x!, bounds.y + y!)),
+      };
+    });
+    expect(frame?.size).toEqual([128, 128]);
+    for (const pixel of frame!.corners) expect(pixel?.[3]).toBeGreaterThan(200);
+    expect(channelDistance(frame!.centre!, frame!.infirmaryCentre!)).toBeGreaterThan(20);
+    const centreX = (fixture.classroomFloorMinTileX + fixture.classroomFloorMaxTileX + 1) * tile / 2;
+    const centreY = (fixture.classroomFloorMinTileY + fixture.classroomFloorMaxTileY + 1) * tile / 2;
+    for (const zoom of [1, 0.5]) {
+      await page.evaluate(async ({ x, y, zoom: level }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, level),
+        { x: centreX, y: centreY, zoom });
+      const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+      const classroom = sprites.filter((sprite) => sprite.frameName === 'env.floor.classroom');
+      expect(classroom.reduce((area, sprite) => area + sprite.width * sprite.height, 0)).toBe(25 * tile * tile);
+      const labels = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.roomLabels());
+      expect(labels.map((label) => label.text)).toContain('Classroom');
+      if (process.env['LOCKSTATE_CAPTURE_CLASSROOM_ART'] === '1') {
+        await page.screenshot({ path: testInfo.outputPath(`classroom-floor-zoom-${zoom}.png`) });
+      }
+    }
+  });
+
+  test('the 3 by 3 Security Office draws seamless resin beneath its console at both zoom levels', async ({ page }, testInfo) => {
+    const fixture = await openHarness(page, 'securityFloor');
+    const tile = fixture.tileSizePx;
+    const frame = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const bounds = harness.atlasFrame('env.floor.security-office');
+      return bounds === undefined ? undefined : {
+        size: [bounds.width, bounds.height],
+        corners: [[0, 0], [bounds.width - 1, 0], [0, bounds.height - 1], [bounds.width - 1, bounds.height - 1]]
+          .map(([x, y]) => harness.atlasPixel(bounds.x + x!, bounds.y + y!)),
+      };
+    });
+    expect(frame?.size).toEqual([128, 128]);
+    for (const pixel of frame!.corners) expect(pixel?.[3]).toBeGreaterThan(200);
+    const centreX = (fixture.securityFloorMinTileX + fixture.securityFloorMaxTileX + 1) * tile / 2;
+    const centreY = (fixture.securityFloorMinTileY + fixture.securityFloorMaxTileY + 1) * tile / 2;
+    for (const zoom of [1, 0.5]) {
+      await page.evaluate(async ({ x, y, zoom: level }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, level),
+        { x: centreX, y: centreY, zoom });
+      const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+      const floor = sprites.filter((sprite) => sprite.frameName === 'env.floor.security-office');
+      expect(floor.reduce((area, sprite) => area + sprite.width * sprite.height, 0)).toBe(9 * tile * tile);
+      expect(sprites.some((sprite) => sprite.frameName === 'env.object.security-console')).toBe(true);
+      const labels = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.roomLabels());
+      expect(labels.map((label) => label.text)).toContain('Security Office');
+      if (process.env['LOCKSTATE_CAPTURE_SECURITY_ART'] === '1') {
+        await page.screenshot({ path: testInfo.outputPath(`security-office-floor-zoom-${zoom}.png`) });
+      }
+    }
+  });
+
+  test('the 3 by 3 Staff Room draws warm woven vinyl at both zoom levels', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const fixture = await openHarness(page, 'staffFloor');
+    const tile = fixture.tileSizePx;
+    const frame = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const bounds = harness.atlasFrame('env.floor.staff-room');
+      return bounds === undefined ? undefined : {
+        size: [bounds.width, bounds.height],
+        corners: [[0, 0], [bounds.width - 1, 0], [0, bounds.height - 1], [bounds.width - 1, bounds.height - 1]]
+          .map(([x, y]) => harness.atlasPixel(bounds.x + x!, bounds.y + y!)),
+      };
+    });
+    expect(frame?.size).toEqual([128, 128]);
+    for (const pixel of frame!.corners) expect(pixel?.[3]).toBeGreaterThan(200);
+    const centreX = (fixture.staffFloorMinTileX + fixture.staffFloorMaxTileX + 1) * tile / 2;
+    const centreY = (fixture.staffFloorMinTileY + fixture.staffFloorMaxTileY + 1) * tile / 2;
+    for (const zoom of [1, 0.5]) {
+      await page.evaluate(async ({ x, y, zoom: level }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, level),
+        { x: centreX, y: centreY, zoom });
+      const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+      const floor = sprites.filter((sprite) => sprite.frameName === 'env.floor.staff-room');
+      expect(floor.reduce((area, sprite) => area + sprite.width * sprite.height, 0)).toBe(9 * tile * tile);
+      const labels = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.roomLabels());
+      expect(labels.map((label) => label.text)).toContain('Staff Room');
+      if (process.env['LOCKSTATE_CAPTURE_STAFF_ART'] === '1') {
+        await page.screenshot({ path: testInfo.outputPath(`staff-room-floor-zoom-${zoom}.png`) });
+      }
+    }
+  });
+
+  test('the outdoor yard draws an outdoor floor across its 8 by 8 footprint', async ({ page }, testInfo) => {
+    const fixture = await openHarness(page, true);
+    const centreX = ((fixture.yardMinTileX + fixture.yardMaxTileX + 1) / 2) * fixture.tileSizePx + 7;
+    const centreY = ((fixture.yardMinTileY + fixture.yardMaxTileY + 1) / 2) * fixture.tileSizePx + 7;
+    const frame = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const bounds = harness.atlasFrame('env.floor.yard');
+      return bounds === undefined ? undefined : {
+        size: [bounds.width, bounds.height],
+        corners: [[0, 0], [bounds.width - 1, 0], [0, bounds.height - 1], [bounds.width - 1, bounds.height - 1]]
+          .map(([x, y]) => harness.atlasPixel(bounds.x + x!, bounds.y + y!)),
+      };
+    });
+    expect(frame?.size).toEqual([128, 128]);
+    for (const pixel of frame!.corners) expect(pixel?.[3]).toBeGreaterThan(200);
+    for (const zoom of [1, 0.5]) {
+      await page.evaluate(async ({ x, y, zoom: level }) => window.lockstateEnvironmentArtHarness!.centreCameraOn(x, y, level), { x: centreX, y: centreY, zoom });
+      const floor = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+      const yardFloor = floor.filter((sprite) => sprite.frameName === 'env.floor.yard');
+      expect(yardFloor.reduce((area, sprite) => area + sprite.width * sprite.height, 0)).toBe(64 * fixture.tileSizePx * fixture.tileSizePx);
+      const covering = floor.filter((sprite) => sprite.x <= centreX && sprite.x + sprite.width >= centreX
+        && sprite.y <= centreY && sprite.y + sprite.height >= centreY);
+      expect(covering.map((sprite) => sprite.frameName)).toEqual(['env.floor.yard']);
+      const labels = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.roomLabels());
+      expect(labels.map((label) => label.text)).toContain('Yard');
+      if (process.env['LOCKSTATE_CAPTURE_YARD_ART'] === '1') {
+        await page.screenshot({ path: testInfo.outputPath(`yard-zoom-${zoom}.png`) });
+      }
+    }
+  });
+
+  test('the Blender dirt covers bare outdoor ground and restores colour fallback when removed', async ({ page }) => {
+    const fixture = await openHarness(page);
+    expect(ENVIRONMENT_SPRITES['env.terrain.dirt'].kind).toBe('rendered-art');
+    const borders = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.terrain.dirt');
+      if (!frame) return undefined;
+      return {
+        size: [frame.width, frame.height],
+        left: harness.atlasPixel(frame.x, frame.y + 64),
+        right: harness.atlasPixel(frame.x + 127, frame.y + 64),
+        top: harness.atlasPixel(frame.x + 64, frame.y),
+        bottom: harness.atlasPixel(frame.x + 64, frame.y + 127),
+      };
+    });
+    expect(borders?.size).toEqual([128, 128]);
+    for (const pixel of [borders!.left, borders!.right, borders!.top, borders!.bottom]) {
+      expect(pixel?.[3]).toBeGreaterThan(200);
+    }
+    expect(channelDistance(borders!.left!, borders!.right!)).toBeLessThan(12);
+    expect(channelDistance(borders!.top!, borders!.bottom!)).toBeLessThan(12);
+    const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+    const dirt = sprites.filter((sprite) => sprite.frameName === 'env.terrain.dirt');
+    expect(dirt.length).toBeGreaterThan(0);
+    const x = 3.5 * fixture.tileSizePx;
+    const y = 1.5 * fixture.tileSizePx;
+    expect(dirt.some((sprite) => x >= sprite.x && x < sprite.x + sprite.width && y >= sprite.y && y < sprite.y + sprite.height)).toBe(true);
+    expect(dirt.some((sprite) => sprite.width > fixture.tileSizePx), 'outdoor dirt should merge into runs').toBe(true);
+    const withArt = await page.evaluate(async ({ x, y }) => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      await harness.centreCameraOn(x, y);
+      return harness.centrePixel();
+    }, { x, y });
+    const withoutArt = await page.evaluate(async ({ x, y }) => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      harness.removeArt();
+      await harness.centreCameraOn(x, y);
+      return harness.centrePixel();
+    }, { x, y });
+    expect(withArt[3]).toBeGreaterThan(200);
+    expect(withoutArt[3]).toBeGreaterThan(200);
+    expect(channelDistance(withArt, withoutArt)).toBeGreaterThan(15);
+  });
+
+  test('the Blender grass tiles a painted outdoor strip and restores colour fallback', async ({ page }) => {
+    const fixture = await openHarness(page);
+    expect(ENVIRONMENT_SPRITES['env.terrain.grass'].kind).toBe('rendered-art');
+    const borders = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.terrain.grass');
+      if (!frame) return undefined;
+      return {
+        size: [frame.width, frame.height],
+        left: harness.atlasPixel(frame.x, frame.y + 64),
+        right: harness.atlasPixel(frame.x + 127, frame.y + 64),
+        top: harness.atlasPixel(frame.x + 64, frame.y),
+        bottom: harness.atlasPixel(frame.x + 64, frame.y + 127),
+      };
+    });
+    expect(borders?.size).toEqual([128, 128]);
+    for (const pixel of [borders!.left, borders!.right, borders!.top, borders!.bottom]) {
+      expect(pixel?.[3]).toBeGreaterThan(200);
+    }
+    expect(channelDistance(borders!.left!, borders!.right!)).toBeLessThan(12);
+    expect(channelDistance(borders!.top!, borders!.bottom!)).toBeLessThan(12);
+    const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+    const grass = sprites.filter((sprite) => sprite.frameName === 'env.terrain.grass');
+    const x = (fixture.grassTileX + 0.5) * fixture.tileSizePx;
+    const y = (fixture.grassTileY + 0.5) * fixture.tileSizePx;
+    expect(grass.some((sprite) => x >= sprite.x && x < sprite.x + sprite.width && y >= sprite.y && y < sprite.y + sprite.height)).toBe(true);
+    expect(grass.some((sprite) => sprite.width > fixture.tileSizePx)).toBe(true);
+    const withArt = await page.evaluate(async ({ x, y }) => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      await harness.centreCameraOn(x, y);
+      return harness.centrePixel();
+    }, { x, y });
+    const withoutArt = await page.evaluate(async ({ x, y }) => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      harness.removeArt();
+      await harness.centreCameraOn(x, y);
+      return harness.centrePixel();
+    }, { x, y });
+    expect(channelDistance(withArt, withoutArt)).toBeGreaterThan(15);
+  });
+
+  test('the Blender paving draws concrete terrain restored through a world snapshot', async ({ page }) => {
+    const fixture = await openHarness(page);
+    expect(ENVIRONMENT_SPRITES['env.terrain.concrete'].kind).toBe('rendered-art');
+    const pixels = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.terrain.concrete');
+      if (!frame) return undefined;
+      return {
+        size: [frame.width, frame.height],
+        centre: harness.atlasPixel(frame.x + 64, frame.y + 64),
+        eastJoint: harness.atlasPixel(frame.x + 127, frame.y + 64),
+        southJoint: harness.atlasPixel(frame.x + 64, frame.y + 127),
+      };
+    });
+    expect(pixels?.size).toEqual([128, 128]);
+    for (const pixel of [pixels!.centre, pixels!.eastJoint, pixels!.southJoint]) {
+      expect(pixel?.[3]).toBeGreaterThan(200);
+    }
+    expect(channelDistance(pixels!.centre!, pixels!.eastJoint!)).toBeGreaterThan(8);
+    const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+    const concrete = sprites.filter((sprite) => sprite.frameName === 'env.terrain.concrete');
+    const x = (fixture.concreteTileX + 0.5) * fixture.tileSizePx;
+    const y = (fixture.concreteTileY + 0.5) * fixture.tileSizePx;
+    expect(concrete.some((sprite) => x >= sprite.x && x < sprite.x + sprite.width && y >= sprite.y && y < sprite.y + sprite.height)).toBe(true);
+    expect(concrete.some((sprite) => sprite.width > fixture.tileSizePx)).toBe(true);
+    const withArt = await page.evaluate(async ({ x, y }) => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      await harness.centreCameraOn(x, y);
+      return harness.centrePixel();
+    }, { x, y });
+    const withoutArt = await page.evaluate(async ({ x, y }) => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      harness.removeArt();
+      await harness.centreCameraOn(x, y);
+      return harness.centrePixel();
+    }, { x, y });
+    expect(channelDistance(withArt, withoutArt)).toBeGreaterThan(8);
+  });
+
+  test('the Blender gravel draws a saved service path with visible chippings', async ({ page }) => {
+    const fixture = await openHarness(page);
+    expect(ENVIRONMENT_SPRITES['env.terrain.gravel'].kind).toBe('rendered-art');
+    const pixels = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.terrain.gravel');
+      if (!frame) return undefined;
+      return {
+        size: [frame.width, frame.height],
+        centre: harness.atlasPixel(frame.x + 64, frame.y + 64),
+        left: harness.atlasPixel(frame.x, frame.y + 64),
+        right: harness.atlasPixel(frame.x + 127, frame.y + 64),
+        top: harness.atlasPixel(frame.x + 64, frame.y),
+        bottom: harness.atlasPixel(frame.x + 64, frame.y + 127),
+      };
+    });
+    expect(pixels?.size).toEqual([128, 128]);
+    for (const pixel of [pixels!.centre, pixels!.left, pixels!.right, pixels!.top, pixels!.bottom]) {
+      expect(pixel?.[3]).toBeGreaterThan(200);
+    }
+    const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+    const gravel = sprites.filter((sprite) => sprite.frameName === 'env.terrain.gravel');
+    const x = (fixture.gravelTileX + 0.5) * fixture.tileSizePx;
+    const y = (fixture.gravelTileY + 0.5) * fixture.tileSizePx;
+    expect(gravel.some((sprite) => x >= sprite.x && x < sprite.x + sprite.width && y >= sprite.y && y < sprite.y + sprite.height)).toBe(true);
+    expect(gravel.some((sprite) => sprite.width > fixture.tileSizePx)).toBe(true);
+    const withArt = await page.evaluate(async ({ x, y }) => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      await harness.centreCameraOn(x, y);
+      return harness.centrePixel();
+    }, { x, y });
+    const withoutArt = await page.evaluate(async ({ x, y }) => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      harness.removeArt();
+      await harness.centreCameraOn(x, y);
+      return harness.centrePixel();
+    }, { x, y });
+    expect(channelDistance(withArt, withoutArt)).toBeGreaterThan(12);
+  });
+
+  test('the Blender bedrock draws saved rock tiles as layered slate', async ({ page }) => {
+    const fixture = await openHarness(page);
+    expect(ENVIRONMENT_SPRITES['env.terrain.rock'].kind).toBe('rendered-art');
+    const pixels = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.terrain.rock');
+      if (!frame) return undefined;
+      return {
+        size: [frame.width, frame.height],
+        centre: harness.atlasPixel(frame.x + 64, frame.y + 64),
+        left: harness.atlasPixel(frame.x, frame.y + 64),
+        right: harness.atlasPixel(frame.x + 127, frame.y + 64),
+      };
+    });
+    expect(pixels?.size).toEqual([128, 128]);
+    for (const pixel of [pixels!.centre, pixels!.left, pixels!.right]) {
+      expect(pixel?.[3]).toBeGreaterThan(200);
+    }
+    const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
+    const rock = sprites.filter((sprite) => sprite.frameName === 'env.terrain.rock');
+    const x = (fixture.rockTileX + 0.5) * fixture.tileSizePx;
+    const y = (fixture.rockTileY + 0.5) * fixture.tileSizePx;
+    expect(rock.some((sprite) => x >= sprite.x && x < sprite.x + sprite.width && y >= sprite.y && y < sprite.y + sprite.height)).toBe(true);
+    expect(rock.some((sprite) => sprite.width > fixture.tileSizePx)).toBe(true);
+    const withArt = await page.evaluate(async ({ x, y }) => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      await harness.centreCameraOn(x, y);
+      return harness.centrePixel();
+    }, { x, y });
+    const withoutArt = await page.evaluate(async ({ x, y }) => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      harness.removeArt();
+      await harness.centreCameraOn(x, y);
+      return harness.centrePixel();
+    }, { x, y });
+    expect(channelDistance(withArt, withoutArt)).toBeGreaterThan(12);
+  });
+
+  test('packs the Blender overhead door cap and frontal door face', async ({ page }) => {
+    expect(ENVIRONMENT_SPRITES['env.door.interior.cap'].kind).toBe('rendered-art');
+    expect(ENVIRONMENT_SPRITES['env.door.interior.face'].kind).toBe('rendered-art');
+    await openHarness(page);
+    const reading = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const cap = harness.atlasFrame('env.door.interior.cap');
+      const face = harness.atlasFrame('env.door.interior.face');
+      if (cap === undefined || face === undefined) return undefined;
+      return {
+        capSize: [cap.width, cap.height],
+        faceSize: [face.width, face.height],
+        timber: harness.atlasPixel(cap.x + Math.floor(cap.width / 2), cap.y + Math.floor(cap.height / 2)),
+        jamb: harness.atlasPixel(cap.x + Math.floor(cap.width / 2), cap.y + 8),
+      };
+    });
+    expect(reading).toBeDefined();
+    expect(reading!.capSize).toEqual([32, 128]);
+    expect(reading!.faceSize).toEqual([128, 128]);
+    expect(reading!.timber).toBeDefined();
+    expect(reading!.jamb).toBeDefined();
+    expect(reading!.timber![3]).toBeGreaterThan(200);
+    expect(channelDistance(reading!.timber!, reading!.jamb!)).toBeGreaterThan(20);
+  });
+
+  test('the frontal door has a complete frame and a distinct walnut leaf', async ({ page }) => {
+    await openHarness(page);
+    const reading = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.door.interior.face');
+      if (!frame) return undefined;
+      return {
+        size: [frame.width, frame.height],
+        wood: harness.atlasPixel(frame.x + 64, frame.y + 64),
+        steel: harness.atlasPixel(frame.x + 5, frame.y + 64),
+        corners: [[0, 0], [127, 0], [0, 127], [127, 127]].map(([x, y]) =>
+          harness.atlasPixel(frame.x + x!, frame.y + y!)),
+      };
+    });
+    expect(reading?.size).toEqual([128, 128]);
+    expect(reading!.wood?.[3]).toBeGreaterThan(200);
+    expect(reading!.steel?.[3]).toBeGreaterThan(200);
+    for (const pixel of reading!.corners) expect(pixel?.[3]).toBeGreaterThan(200);
+    expect(channelDistance(reading!.wood!, reading!.steel!)).toBeGreaterThan(25);
+  });
+
+  test('the Blender wall cap tiles without transparent seams', async ({ page }) => {
+    expect(ENVIRONMENT_SPRITES['env.wall.interior.cap'].kind).toBe('rendered-art');
+    expect(ENVIRONMENT_SPRITES['env.wall.interior.face'].kind).toBe('rendered-art');
+    await openHarness(page);
+    const readings = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.wall.interior.cap');
+      if (!frame) return undefined;
+      return {
+        size: [frame.width, frame.height],
+        start: harness.atlasPixel(frame.x + Math.floor(frame.width / 2), frame.y),
+        middle: harness.atlasPixel(frame.x + Math.floor(frame.width / 2), frame.y + Math.floor(frame.height / 2)),
+        end: harness.atlasPixel(frame.x + Math.floor(frame.width / 2), frame.y + frame.height - 1),
+      };
+    });
+    expect(readings).toBeDefined();
+    expect(readings!.size).toEqual([32, 128]);
+    for (const pixel of [readings!.start, readings!.middle, readings!.end]) {
+      expect(pixel?.[3]).toBeGreaterThan(200);
+    }
+  });
+
+  test('the Blender wall face has opaque tile edges and distinct coping and skirting', async ({ page }) => {
+    await openHarness(page);
+    const readings = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.wall.interior.face');
+      if (!frame) return undefined;
+      return {
+        size: [frame.width, frame.height],
+        top: harness.atlasPixel(frame.x + 32, frame.y + 2),
+        plaster: harness.atlasPixel(frame.x + 32, frame.y + 64),
+        base: harness.atlasPixel(frame.x + 32, frame.y + 120),
+        east: harness.atlasPixel(frame.x + 127, frame.y + 64),
+        west: harness.atlasPixel(frame.x, frame.y + 64),
+      };
+    });
+    expect(readings?.size).toEqual([128, 128]);
+    for (const pixel of [readings!.top, readings!.plaster, readings!.base, readings!.east, readings!.west]) {
+      expect(pixel?.[3]).toBeGreaterThan(200);
+    }
+    expect(channelDistance(readings!.top!, readings!.plaster!)).toBeGreaterThan(12);
+    expect(channelDistance(readings!.base!, readings!.plaster!)).toBeGreaterThan(20);
+  });
+
+  test('draws the zoned room as one tiling floor, and the wall run as walls and a door', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const fixture = await openHarness(page);
+    await page.evaluate(async () => window.lockstateEnvironmentArtHarness!.centreCameraOn(4.5 * 64, 2.5 * 64, 1));
+    if (process.env['LOCKSTATE_CAPTURE_INTERIOR_DOOR_ART'] === '1') {
+      await page.screenshot({ path: testInfo.outputPath('interior-door-1920x1080.png') });
+    }
     const sprites = await page.evaluate(() => window.lockstateEnvironmentArtHarness!.tileSprites());
 
     const tile = fixture.tileSizePx;
-    const floors = sprites.filter((sprite) => sprite.frameName === 'env.floor.institutional');
+    const floors = sprites.filter((sprite) => sprite.frameName === 'env.floor.cell');
     const faces = sprites.filter((sprite) => sprite.frameName === 'env.wall.interior.face');
     const caps = sprites.filter((sprite) => sprite.frameName === 'env.wall.interior.cap');
     const doors = sprites.filter((sprite) => sprite.frameName === 'env.door.interior.face');
@@ -166,6 +1207,28 @@ test.describe('the environment artwork', () => {
     const capFrame = frames['env.wall.interior.cap']!;
     expect(capFrame.height * caps[0]!.tileScaleY, 'a wall cap should repeat once per tile').toBeCloseTo(tile, 3);
     expect(capFrame.width * caps[0]!.tileScaleX, 'a wall cap should fill its bar once').toBeCloseTo(caps[0]!.width, 3);
+  });
+
+  test('the interior door keeps recessed walnut panels and a readable dark latch at Full HD zoom 1', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await openHarness(page);
+    await page.evaluate(async () => window.lockstateEnvironmentArtHarness!.centreCameraOn(4.5 * 64, 2.5 * 64, 1));
+    const pixels = await page.evaluate(() => {
+      const harness = window.lockstateEnvironmentArtHarness!;
+      const frame = harness.atlasFrame('env.door.interior.face');
+      if (frame === undefined) return undefined;
+      return {
+        panelBorder: harness.atlasPixel(frame.x + 27, frame.y + 35),
+        panelField: harness.atlasPixel(frame.x + 64, frame.y + 35),
+        latch: harness.atlasPixel(frame.x + 101, frame.y + 63),
+        latchPlate: harness.atlasPixel(frame.x + 105, frame.y + 63),
+      };
+    });
+    expect(pixels?.panelBorder?.[0]).toBeLessThan(pixels!.panelField![0] - 35);
+    expect(pixels?.latch?.[0]).toBeLessThan(pixels!.latchPlate![0] - 55);
+    if (process.env['LOCKSTATE_CAPTURE_INTERIOR_DOOR_ART'] === '1') {
+      await page.screenshot({ path: testInfo.outputPath('interior-door-1920x1080.png') });
+    }
   });
 
   test('puts the floor art on the screen, and the blocks back when it is taken away', async ({ page }) => {
@@ -433,36 +1496,139 @@ test.describe('the environment artwork', () => {
    * **A third row, a storage rack, stood here from 2026-09-06 to 2026-09-07
    * and is not a fourth case that quietly vanished.** `object.storage-rack`
    * was reverted to the colour fallback (#1059, `environment-art.ts`'s
-   * `OBJECTS_ON_COLOUR_FALLBACK` docblock) once a playtest found its render
-   * reads as a flat grey seam at every zoom the game draws it at, not as
-   * storage furniture -- the same "reads as a blob, not the thing it names"
-   * bar the same pass had already refused for `object.chair`. With
-   * `objectSprite('object.storage-rack')` now `undefined`, this case would
-   * fail its own first assertion (`${catalogueId} is no longer mapped to
-   * artwork`) rather than exercise anything real, which is why it is removed
-   * rather than left red.
+   * `OBJECTS_ON_COLOUR_FALLBACK` docblock) once a playtest found its closed
+   * locker render read as a flat grey seam. The row below uses a new open
+   * wooden rack and must pass the same drawn-pixel test.
    */
   const RENDERED_OBJECT_CASES: readonly {
     readonly label: string;
     readonly buildableId: string;
     readonly catalogueId: string;
+    readonly expectedSpriteId: string;
     readonly tileOf: (fixture: HarnessWorldFixture) => readonly [number, number];
   }[] = [
     {
       label: 'bench',
       buildableId: 'bench-wooden',
       catalogueId: 'object.bench',
+      expectedSpriteId: 'env.object.bench',
       tileOf: (fixture) => [fixture.benchTileX, fixture.benchTileY],
     },
     {
       label: 'desk',
       buildableId: 'desk-wooden',
       catalogueId: 'object.desk',
+      expectedSpriteId: 'env.object.desk',
       tileOf: (fixture) => [fixture.deskTileX, fixture.deskTileY],
+    },
+    {
+      label: 'shower head',
+      buildableId: 'shower-head-brick',
+      catalogueId: 'object.shower-head',
+      expectedSpriteId: 'env.object.shower-head',
+      tileOf: (fixture) => [fixture.showerTileX, fixture.showerTileY],
+    },
+    {
+      label: 'waste bin',
+      buildableId: 'waste-bin-brick',
+      catalogueId: 'object.waste-bin',
+      expectedSpriteId: 'env.object.waste-bin',
+      tileOf: (fixture) => [fixture.wasteBinTileX, fixture.wasteBinTileY],
+    },
+    {
+      label: 'storage rack',
+      buildableId: 'storage-rack-wooden',
+      catalogueId: 'object.storage-rack',
+      expectedSpriteId: 'env.object.storage-rack',
+      tileOf: (fixture) => [fixture.storageRackTileX, fixture.storageRackTileY],
+    },
+    {
+      label: 'chair',
+      buildableId: 'chair-wooden',
+      catalogueId: 'object.chair',
+      expectedSpriteId: 'env.object.chair',
+      tileOf: (fixture) => [fixture.chairTileX, fixture.chairTileY],
+    },
+    {
+      label: 'dining table',
+      buildableId: 'dining-table-wooden',
+      catalogueId: 'object.dining-table',
+      expectedSpriteId: 'env.object.dining-table',
+      tileOf: (fixture) => [fixture.diningTableTileX, fixture.diningTableTileY],
+    },
+    {
+      label: 'medical bed',
+      buildableId: 'medical-bed-wooden',
+      catalogueId: 'object.medical-bed',
+      expectedSpriteId: 'env.object.medical-bed',
+      tileOf: (fixture) => [fixture.medicalBedTileX, fixture.medicalBedTileY],
+    },
+    {
+      label: 'medicine cabinet',
+      buildableId: 'medicine-cabinet-wooden',
+      catalogueId: 'object.medicine-cabinet',
+      expectedSpriteId: 'env.object.medicine-cabinet',
+      tileOf: (fixture) => [fixture.medicineCabinetTileX, fixture.medicineCabinetTileY],
+    },
+    {
+      label: 'stove',
+      buildableId: 'stove-brick',
+      catalogueId: 'object.stove',
+      expectedSpriteId: 'env.object.stove',
+      tileOf: (fixture) => [fixture.stoveTileX, fixture.stoveTileY],
+    },
+    {
+      label: 'washing machine',
+      buildableId: 'washing-machine-brick',
+      catalogueId: 'object.washing-machine',
+      expectedSpriteId: 'env.object.washing-machine',
+      tileOf: (fixture) => [fixture.washingMachineTileX, fixture.washingMachineTileY],
+    },
+    {
+      label: 'fridge',
+      buildableId: 'fridge-brick',
+      catalogueId: 'object.fridge',
+      expectedSpriteId: 'env.object.fridge',
+      tileOf: (fixture) => [fixture.fridgeTileX, fixture.fridgeTileY],
+    },
+    {
+      label: 'security console',
+      buildableId: 'security-console-brick',
+      catalogueId: 'object.security-console',
+      expectedSpriteId: 'env.object.security-console',
+      tileOf: (fixture) => [fixture.securityConsoleTileX, fixture.securityConsoleTileY],
+    },
+    {
+      label: 'utility panel',
+      buildableId: 'utility-panel-brick',
+      catalogueId: 'object.utility-panel',
+      expectedSpriteId: 'env.object.utility-panel',
+      tileOf: (fixture) => [fixture.utilityPanelTileX, fixture.utilityPanelTileY],
+    },
+    {
+      label: 'loading dock door',
+      buildableId: 'loading-dock-door-wooden',
+      catalogueId: 'object.loading-dock-door',
+      expectedSpriteId: 'env.object.loading-dock-door',
+      tileOf: (fixture) => [fixture.loadingDockDoorTileX, fixture.loadingDockDoorTileY],
+    },
+    {
+      label: 'prep counter',
+      buildableId: 'prep-counter-brick',
+      catalogueId: 'object.prep-counter',
+      expectedSpriteId: 'env.object.prep-counter',
+      tileOf: (fixture) => [fixture.prepCounterTileX, fixture.prepCounterTileY],
+    },
+    {
+      label: 'bookshelf',
+      buildableId: 'bookshelf-wooden',
+      catalogueId: 'object.bookshelf',
+      expectedSpriteId: 'env.object.bookshelf',
+      tileOf: (fixture) => [fixture.bookshelfTileX, fixture.bookshelfTileY],
     },
   ];
 
-  for (const { label, buildableId, catalogueId, tileOf } of RENDERED_OBJECT_CASES) {
+  for (const { label, buildableId, catalogueId, expectedSpriteId, tileOf } of RENDERED_OBJECT_CASES) {
     test(`draws a finished ${label} from the atlas, over exactly the tiles the simulation reserved`, async ({ page }) => {
       const fixture = await openHarness(page);
       const tile = fixture.tileSizePx;
@@ -472,6 +1638,7 @@ test.describe('the environment artwork', () => {
       expect(objectId, `${buildableId} no longer places a catalogued object`).toBe(catalogueId);
       const spriteId = objectSprite(objectId!);
       expect(spriteId, `${catalogueId} is no longer mapped to artwork`).toBeDefined();
+      expect(spriteId, `${catalogueId} resolves to the wrong model`).toBe(expectedSpriteId);
       const footprint = defaultObjectRegistry.getById(objectId!)?.footprint;
       expect(footprint, `${catalogueId} is not in the object catalog`).toBeDefined();
 

@@ -29,6 +29,11 @@ what it was doing.
    whether the `STATUS-QUEUE` anchor is approaching its staleness budget. A red
    `main` or a merge conflict is work *now*, not "waiting on review".
 5. **Do not merge and do not open a pull request without the owner asking.**
+   The owner's direct 2026-09-24 instruction recorded in `AGENTS.md` grants
+   standing permission for this continuing task's own agent branches, so a
+   separate question per branch is no longer required. Keep the exact-head,
+   mergeability, and serial `main` CI gates below; do not take over another
+   session's branch or cross the four owner reservations.
 6. **If there is genuinely nothing to do, say so in one sentence and stop.** Do
    not invent work, and do not restate findings already recorded.
 
@@ -764,6 +769,12 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
   nothing is the precondition for any such claim, and re-running one test while
   another suite runs proves nothing at all. Let the PR's own `browser` job be the
   gate.
+  **A `ps` check before a run is not a statement about the run.** Verify that
+  the machine was idle at the start and remained idle throughout, or say
+  plainly that the measurement was contended. A red baseline is evidence only
+  when that baseline run was itself uncontended: two reds under contention are
+  two non-measurements, not a comparison. Contention produces false reds, not
+  false greens, so a pass survives contention while a failure does not.
   **Do not wrap that check in `until ! ps … | grep -q "[p]laywright/test/cli"; do
   sleep …; done`.** It deadlocks: the waiting shell's own command line contains
   the pattern, so the loop matches itself and waits for ever. Two agents sat

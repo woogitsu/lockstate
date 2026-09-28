@@ -486,14 +486,13 @@ test.describe('the Build panel deliveries block', () => {
       deliveries: [delivery(1, 2), delivery(2, 3), delivery(3, 4)],
     });
     const advanced = await probe(page);
-    expect(advanced.rows.map((row) => row.orderId)).toEqual(['', 'buy-01', 'buy-02']);
+    expect(advanced.rows.map((row) => row.orderId)).toEqual(['buy-01', 'buy-02']);
     // Every surviving purchase is in the place it was in, to the pixel.
-    expect(advanced.rows[1]?.cancelBox?.y).toBe(before.rows[1]?.cancelBox?.y);
-    expect(advanced.rows[2]?.cancelBox?.y).toBe(before.rows[2]?.cancelBox?.y);
-    // The freed place keeps its box and promises nothing while it names
-    // nothing, and the arriving `buy-03` is counted behind the line rather than
-    // put in it: two of four are drawn, so two are out of reach.
-    expect(advanced.rows[0]?.labelText).toBe('');
+    expect(advanced.rows[0]?.cancelBox?.y).toBe(before.rows[1]?.cancelBox?.y);
+    expect(advanced.rows[1]?.cancelBox?.y).toBe(before.rows[2]?.cancelBox?.y);
+    // The freed leading place names nothing and the arriving `buy-03` is
+    // counted behind the line: two of four are drawn and two are out of reach.
+    expect(advanced.rows.every((row) => row.orderId !== 'buy-00')).toBe(true);
     expect(await ariaDisabledOfRow(page, 0)).toBe('true');
     expect(advanced.moreText).toContain('2');
 
@@ -504,7 +503,7 @@ test.describe('the Build panel deliveries block', () => {
       deliveries: [delivery(1, 2), delivery(2, 3), delivery(3, 4)],
     };
     await report(page, advance);
-    expect((await probe(page)).rows.map((row) => row.orderId)).toEqual(['', 'buy-01', 'buy-02']);
+    expect((await probe(page)).rows.map((row) => row.orderId)).toEqual(['buy-01', 'buy-02']);
 
     // Past the window the waiting purchase takes it, so the block does not go
     // on drawing two rows for four purchases for ever.

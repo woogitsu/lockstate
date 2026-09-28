@@ -108,6 +108,8 @@ interface SizeReport {
   readonly simulationSecurityBytes: number;
   readonly simulationContrabandBytes: number;
   readonly simulationIncidentsBytes: number;
+  /** `simulation.inFlight` (issue #1373): walks, the navigation queue, and the ids and counters that name it. */
+  readonly simulationInFlightBytes: number;
   /**
    * What the same per-prisoner component state would cost written across the
    * store's full allocated `capacity` instead of its allocated prefix -- the
@@ -422,6 +424,7 @@ describe.each(PRISON_SIZE_TIERS.map((tier) => [tier.id, tier] as const))(
         simulationSecurityBytes: jsonByteSize(fixture.envelope.payload.simulation?.security),
         simulationContrabandBytes: jsonByteSize(fixture.envelope.payload.simulation?.contraband),
         simulationIncidentsBytes: jsonByteSize(fixture.envelope.payload.simulation?.incidents),
+        simulationInFlightBytes: jsonByteSize(fixture.envelope.payload.simulation?.inFlight),
         simulationPrisonersCapacityShapedBytes: jsonByteSize(capacityShapedPrisonerComponents(fixture)),
         identityBytes: jsonByteSize(fixture.envelope.payload.identity),
         namedActors: fixture.envelope.payload.identity?.entries.length ?? 0,
@@ -593,7 +596,7 @@ afterAll(() => {
   lines.push('so security/contraband/incidents are near-empty here by construction, not by encoding.');
   lines.push(
     renderTable(
-      ['tier', 'prisoners', 'simulation', 'prisoners', 'operations', 'navigation', 'security', 'contraband', 'incidents', 'share of envelope'],
+      ['tier', 'prisoners', 'simulation', 'prisoners', 'operations', 'navigation', 'security', 'contraband', 'incidents', 'in flight', 'share of envelope'],
       sizeReports.map((row) => [
         row.tierId,
         String(row.prisoners),
@@ -604,6 +607,7 @@ afterAll(() => {
         formatBytes(row.simulationSecurityBytes),
         formatBytes(row.simulationContrabandBytes),
         formatBytes(row.simulationIncidentsBytes),
+        formatBytes(row.simulationInFlightBytes),
         `${((row.simulationBytes / row.envelopeBytes) * 100).toFixed(1)}%`,
       ]),
     ),

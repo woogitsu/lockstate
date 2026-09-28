@@ -301,16 +301,11 @@ test.describe('the Staff panel held-guards block', () => {
     });
     const advanced = await probe(page);
     expect(advanced.held.rows.map((row) => row.guardId)).toEqual(['', '5', '6']);
-    // The freed place keeps its box rather than collapsing, because collapsing
-    // it would slide the two rows below it up a row's height into whatever
-    // pointer is resting there -- the same defect by geometry instead of by
-    // binding.
+    // ADR 0124 keeps the freed leading box inert, so the two surviving controls
+    // retain their screen coordinates under the bottom-anchored layout.
     expect(advanced.held.rows).toHaveLength(3);
-    // It names nobody and says so: no label, and `aria-disabled` rather than
-    // `disabled`, because `createBusyGroup` assigns `disabled` to every member
-    // on every busy transition and would clear it. The authority that stops a
-    // press is `row.guardId === undefined` in the panel, not this attribute.
-    expect(advanced.held.rows[0]?.labelText).toBe('');
+    // The inert slot names nobody while its settle timer runs.
+    expect(advanced.held.rows.every((row) => row.guardId !== '4')).toBe(true);
     expect(
       await page.evaluate(
         () =>
@@ -349,8 +344,8 @@ test.describe('the Staff panel held-guards block', () => {
     expect(refilled.held.moreText).toContain('1');
 
     /*
-     * And a press reaches the guard the row names, throughout. Guard 4 is gone
-     * from the DOM entirely -- a re-aiming pool would have put a live control
+     * And a press reaches the guard the row names, throughout. Guard 4 has no
+     * live control in the inert box -- a re-aiming pool would have put one
      * where his label was -- and guard 6, whom the player has been reading in
      * the same place since the first publication, is who the press releases.
      */

@@ -41,6 +41,7 @@ import {
   objectArtCoverage,
   objectSprite,
   terrainArtCoverage,
+  terrainFloorSpriteByNumericId,
   zonedFloorSprite,
 } from '../../src/rendering/world/environment-art';
 
@@ -130,6 +131,17 @@ describe('environment extraction manifest', () => {
     }
   });
 
+  it('loads the cell bed from its full Blender render instead of the older owner-sheet crop', () => {
+    const sprite = ENVIRONMENT_SPRITES['env.object.bed'];
+    expect(sprite.kind).toBe('rendered-art');
+    expect(environmentSourceAssetIds()).not.toContain('furniture.cell.bed.single.variants');
+    const frame = planEnvironmentAtlas(catalog, ENVIRONMENT_SPRITES, renderedCatalog).frames.find((item) => item.spriteId === 'env.object.bed');
+    expect(frame?.sheetKey).toBe('rendered-art:furniture.cell.bed.single.variants');
+    expect(frame?.sourceRectPx).toEqual({ x: 0, y: 0, width: 256, height: 512 });
+    expect(frame?.atlasRectPx.width).toBe(128);
+    expect(frame?.atlasRectPx.height).toBe(256);
+  });
+
   it('turns a frame size with its quarter-turn', () => {
     const upright: EnvironmentSpriteDefinition = {
       kind: 'source-art',
@@ -217,7 +229,11 @@ describe('environment atlas plan', () => {
     const first = [...ENVIRONMENT_SPRITE_IDS].sort()[0]!;
     const broken = {
       ...ENVIRONMENT_SPRITES,
-      [first]: { ...ENVIRONMENT_SPRITES[first], sourceRectPx: { x: 1_400, y: 1_000, width: 400, height: 400 } },
+      [first]: {
+        kind: 'source-art', assetId: 'floor.linoleum.institutional',
+        sourceRectPx: { x: 1_400, y: 1_000, width: 400, height: 400 },
+        runtimeSizePx: { width: 128, height: 128 }, quarterTurns: 0, note: 'invalid test crop',
+      },
     } as Readonly<Record<EnvironmentSpriteId, EnvironmentSpriteDefinition>>;
     expect(() => planEnvironmentAtlas(catalog, broken)).toThrow(new RegExp(first.replace(/\./gu, '\\.')));
   });
@@ -226,7 +242,11 @@ describe('environment atlas plan', () => {
     const first = [...ENVIRONMENT_SPRITE_IDS].sort()[0]!;
     const broken = {
       ...ENVIRONMENT_SPRITES,
-      [first]: { ...ENVIRONMENT_SPRITES[first], assetId: 'no.such.sheet' },
+      [first]: {
+        kind: 'source-art', assetId: 'no.such.sheet',
+        sourceRectPx: { x: 0, y: 0, width: 128, height: 128 },
+        runtimeSizePx: { width: 128, height: 128 }, quarterTurns: 0, note: 'missing test sheet',
+      },
     } as Readonly<Record<EnvironmentSpriteId, EnvironmentSpriteDefinition>>;
     expect(() => planEnvironmentAtlas(catalog, broken)).toThrow(/no\.such\.sheet/);
   });
@@ -259,11 +279,50 @@ describe('simulation identity to artwork', () => {
   });
 
   it('gives a zoned tile a floor and an unzoned one nothing', () => {
-    const [room] = defaultRoomContentRegistry.all();
+    const room = defaultRoomContentRegistry.getById('room.cell');
     expect(room).toBeDefined();
-    expect(zonedFloorSprite(room!.numericId)).toBe('env.floor.institutional');
+    expect(zonedFloorSprite(room!.numericId)).toBe('env.floor.cell');
     expect(zonedFloorSprite(0)).toBeUndefined();
     expect(zonedFloorSprite(60_000)).toBeUndefined();
+    const kitchen = defaultRoomContentRegistry.getById('room.kitchen');
+    const canteen = defaultRoomContentRegistry.getById('room.canteen');
+    const yard = defaultRoomContentRegistry.getById('room.yard');
+    const shower = defaultRoomContentRegistry.getById('room.shower-room');
+    const laundry = defaultRoomContentRegistry.getById('room.laundry');
+    const infirmary = defaultRoomContentRegistry.getById('room.infirmary');
+    const commonRoom = defaultRoomContentRegistry.getById('room.common-room');
+    const classroom = defaultRoomContentRegistry.getById('room.classroom');
+    const securityOffice = defaultRoomContentRegistry.getById('room.security-office');
+    const cell = defaultRoomContentRegistry.getById('room.cell');
+    const solitaryCell = defaultRoomContentRegistry.getById('room.solitary-cell');
+    const holdingCell = defaultRoomContentRegistry.getById('room.holding-cell');
+    const staffRoom = defaultRoomContentRegistry.getById('room.staff-room');
+    expect(kitchen).toBeDefined();
+    expect(canteen).toBeDefined();
+    expect(yard).toBeDefined();
+    expect(shower).toBeDefined();
+    expect(laundry).toBeDefined();
+    expect(infirmary).toBeDefined();
+    expect(commonRoom).toBeDefined();
+    expect(classroom).toBeDefined();
+    expect(securityOffice).toBeDefined();
+    expect(cell).toBeDefined();
+    expect(solitaryCell).toBeDefined();
+    expect(holdingCell).toBeDefined();
+    expect(staffRoom).toBeDefined();
+    expect(zonedFloorSprite(kitchen!.numericId)).toBe('env.floor.kitchen');
+    expect(zonedFloorSprite(canteen!.numericId)).toBe('env.floor.canteen');
+    expect(zonedFloorSprite(yard!.numericId)).toBe('env.floor.yard');
+    expect(zonedFloorSprite(shower!.numericId)).toBe('env.floor.shower');
+    expect(zonedFloorSprite(laundry!.numericId)).toBe('env.floor.laundry');
+    expect(zonedFloorSprite(infirmary!.numericId)).toBe('env.floor.infirmary');
+    expect(zonedFloorSprite(commonRoom!.numericId)).toBe('env.floor.common-room');
+    expect(zonedFloorSprite(classroom!.numericId)).toBe('env.floor.classroom');
+    expect(zonedFloorSprite(securityOffice!.numericId)).toBe('env.floor.security-office');
+    expect(zonedFloorSprite(cell!.numericId)).toBe('env.floor.cell');
+    expect(zonedFloorSprite(solitaryCell!.numericId)).toBe('env.floor.cell');
+    expect(zonedFloorSprite(holdingCell!.numericId)).toBe('env.floor.institutional');
+    expect(zonedFloorSprite(staffRoom!.numericId)).toBe('env.floor.staff-room');
   });
 
   it('resolves every mapped identity to a sprite the manifest declares', () => {
@@ -299,10 +358,21 @@ describe('declared fallback', () => {
 
   it('accounts for every terrain exactly once', () => {
     const coverage = terrainArtCoverage();
+    expect(coverage.drawn).toEqual(['concrete', 'dirt', 'grass', 'gravel', 'rock']);
     expect([...coverage.onFallback]).toEqual([...TERRAIN_ON_COLOUR_FALLBACK]);
     expect([...coverage.drawn, ...coverage.onFallback].sort()).toEqual(
       DEFAULT_TERRAIN_DEFINITIONS.map((definition) => definition.id).sort(),
     );
+  });
+
+  it('maps simulation dirt, grass, gravel, concrete and rock ids to art and leaves water on colour', () => {
+    expect(terrainFloorSpriteByNumericId(0)).toBe('env.terrain.dirt');
+    expect(terrainFloorSpriteByNumericId(1)).toBe('env.terrain.grass');
+    expect(terrainFloorSpriteByNumericId(2)).toBe('env.terrain.gravel');
+    expect(terrainFloorSpriteByNumericId(3)).toBe('env.terrain.concrete');
+    expect(terrainFloorSpriteByNumericId(4)).toBe('env.terrain.rock');
+    expect(terrainFloorSpriteByNumericId(5)).toBeUndefined();
+    expect(terrainFloorSpriteByNumericId(255)).toBeUndefined();
   });
 
   it('draws both edge values rather than leaving one on colour', () => {

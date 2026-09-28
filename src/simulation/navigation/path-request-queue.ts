@@ -38,6 +38,31 @@ interface PendingPathRequest {
   readonly enqueuedAtTick: number;
 }
 
+/**
+ * A waiting request as a save carries it: the input, plus the tick it joined
+ * the queue. Exported for the save boundary alone; `PendingPathRequest` above
+ * stays module-internal for the reason its own comment gives.
+ */
+export interface PendingPathRequestSnapshot extends PathRequestInput {
+  readonly enqueuedAtTick: number;
+}
+
+function copyRequest(request: PathRequestInput): PathRequestInput {
+  const { context } = request;
+  return {
+    id: request.id,
+    origin: { x: request.origin.x, y: request.origin.y },
+    destination: { x: request.destination.x, y: request.destination.y },
+    context: {
+      role: context.role,
+      securityClearance: context.securityClearance,
+      ...(context.permissions === undefined ? {} : { permissions: [...context.permissions] }),
+      ...(context.emergencyOverride === undefined ? {} : { emergencyOverride: context.emergencyOverride }),
+    },
+    priority: request.priority,
+  };
+}
+
 export interface ResolvedPathRequest {
   readonly id: string;
   readonly result: RouteResult;
@@ -52,6 +77,10 @@ export interface PathRequestQueueMetrics {
   readonly totalExpansions: number;
   readonly ticksProcessed: number;
   readonly flowFieldActivations: number;
+}
+
+export interface PathRequestQueueSnapshot {
+  readonly pending: readonly { readonly request: PathRequestInput; readonly enqueuedAtTick: number }[];
 }
 
 export interface PathRequestQueueOptions {
@@ -135,6 +164,11 @@ export class PathRequestQueue {
     return this.pending.size;
   }
 
+  /** Whether `id` is waiting. Read by a restore to tell a live request from one its owner names and no queue holds. */
+  public has(id: string): boolean {
+    return this.pending.has(id);
+  }
+
   public getMetrics(): PathRequestQueueMetrics {
     return {
       resolvedCount: this.resolvedCount,
@@ -143,6 +177,42 @@ export class PathRequestQueue {
       ticksProcessed: this.ticksProcessed,
       flowFieldActivations: this.flowFieldActivations,
     };
+  }
+
+  /** Persistence view; deliberately separate from ADR 0007's live status API. */
+  public getSnapshot(): PathRequestQueueSnapshot {
+    return {
+      pending: [...this.pending.values()].sort((a, b) => a.request.id < b.request.id ? -1 : a.request.id > b.request.id ? 1 : 0).map(({ request, enqueuedAtTick }) => ({
+        request: {
+          ...request,
+          origin: { ...request.origin },
+          destination: { ...request.destination },
+          context: { ...request.context, ...(request.context.permissions === undefined ? {} : { permissions: [...request.context.permissions] }) },
+        },
+        enqueuedAtTick,
+      })),
+    };
+  }
+
+  public loadSnapshot(snapshot: PathRequestQueueSnapshot): void {
+    this.pending.clear();
+    for (const entry of snapshot.pending) {
+      if (this.pending.has(entry.request.id)) throw new Error(`Duplicate saved path request: ${entry.request.id}`);
+      this.pending.set(entry.request.id, {
+        enqueuedAtTick: entry.enqueuedAtTick,
+        request: {
+          ...entry.request,
+          origin: { ...entry.request.origin },
+          destination: { ...entry.request.destination },
+          context: { ...entry.request.context, ...(entry.request.context.permissions === undefined ? {} : { permissions: [...entry.request.context.permissions] }) },
+        },
+      });
+    }
+    this.resolvedCount = 0;
+    this.cancelledCount = 0;
+    this.totalExpansions = 0;
+    this.ticksProcessed = 0;
+    this.flowFieldActivations = 0;
   }
 
   public processTick(params: ProcessTickParams): readonly ResolvedPathRequest[] {

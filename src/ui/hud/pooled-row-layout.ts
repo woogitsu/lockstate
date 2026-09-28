@@ -21,10 +21,32 @@ export function releasePooledRowHeight(row: HTMLElement): void {
  * correct. Keep the previously visible place under the same screen pixel.
  */
 export function capturePooledRowAnchor(rows: readonly HTMLElement[]): () => void {
+  const list = rows[0]?.parentElement;
+  const reserveSlots = (): void => {
+    if (!list) return;
+    const visible = rows.filter((row) => !row.hidden);
+    if (visible.length === 0) {
+      list.style.removeProperty('min-height');
+      return;
+    }
+    const rowHeight = Math.max(...visible.map((row) => row.offsetHeight));
+    const gap = Number.parseFloat(getComputedStyle(list).rowGap) || 0;
+    const capacity = rows.length * rowHeight + Math.max(0, rows.length - 1) * gap;
+    const maxHeight = Number.parseFloat(getComputedStyle(list).maxHeight);
+    const capped = Number.isFinite(maxHeight) ? Math.min(capacity, maxHeight) : capacity;
+    const previous = Number.parseFloat(list.style.minHeight) || 0;
+    if (capped > previous) list.style.minHeight = `${capped}px`;
+  };
+  if (list !== undefined && list !== null && !list.hidden) {
+    const height = list.offsetHeight;
+    const previous = Number.parseFloat(list.style.minHeight) || 0;
+    if (height > previous) list.style.minHeight = `${height}px`;
+  }
   const anchor = rows.find((row) => !row.hidden && row.getBoundingClientRect().height > 0);
-  if (anchor === undefined) return () => {};
+  if (anchor === undefined) return reserveSlots;
   const top = anchor.getBoundingClientRect().top;
   return () => {
+    reserveSlots();
     if (anchor.hidden) return;
     const displacement = anchor.getBoundingClientRect().top - top;
     if (Math.abs(displacement) < 0.5) return;

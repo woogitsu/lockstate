@@ -57,6 +57,7 @@ const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMess
  * `hud.alert.refusal.place-object.outside-room`.
  */
 const OUTSIDE_ROOM = localizer.format('hud.alert.refusal.place-object.outside-room');
+const OUTSIDE_MAP = localizer.format('hud.alert.refusal.build.out-of-bounds');
 
 /** The save panel's own label for the control that starts a session. */
 const NEW_PRISON = localizer.format('save.action.create');
@@ -169,5 +170,26 @@ test.describe('a refused placement never reads as an accepted one (#1160)', () =
     // what they just ordered.
     await expect(queued).toHaveCount(0);
     await expect(panel).not.toHaveAttribute('data-queued', /.*/u);
+  });
+
+  test('a Full HD coordinate wall refusal leaves no order before an adjacent valid wall is queued', async ({ page }) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await openBuildPanel(page);
+    const panel = page.locator('.ui-panel.hud-build');
+    const band = page.locator('.hud__refusal');
+
+    // A new prison owns one 32×32 chunk. These two tiles share an edge, but
+    // only x=31 lies inside it. Both presses use the same catalogue selection.
+    await placeAt(page, 'wall-brick', 32, 16);
+    await expect(band).toBeVisible();
+    await expect(band).toHaveAttribute('data-source', 'simulation');
+    await expect(band).toHaveText(OUTSIDE_MAP);
+    await expect(panel).not.toHaveAttribute('data-queued', /.*/u);
+    await expect(page.locator('.hud-build__queue-row')).toHaveCount(0);
+
+    await placeAt(page, 'wall-brick', 31, 16);
+    await expect(panel).toHaveAttribute('data-queued', '1');
+    await expect(page.locator('.hud-build__queue-count')).toHaveText(QUEUE_COUNT_ONE);
+    await expect(band).toBeHidden();
   });
 });

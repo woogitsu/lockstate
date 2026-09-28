@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { defaultMessageCatalogEn } from '../../src/services/localization';
+import { messageCatalogPl } from '../../src/services/localization/pl-catalog';
 import { HUD_MESSAGE_KEY } from '../../src/ui/hud/messages';
 import { OVERVIEW_ROWS } from '../../src/ui/hud/overview-panel';
 import { hudOverviewFromWorkerMessage } from '../../src/ui/simulation-counts';
@@ -51,6 +52,16 @@ function statusCounts(overrides: Partial<Record<string, number>> = {}): WorkerTo
 }
 
 describe('the Overview readout is made of published figures and nothing else', () => {
+  it('states the verified occupied-place payment rule in both shipped locales', () => {
+    expect(defaultMessageCatalogEn.messages[HUD_MESSAGE_KEY.overviewIncomeNote]).toBe(
+      'State income is paid for occupied places at the end of each day.',
+    );
+    expect(HUD_MESSAGE_KEY.overviewIncomeNote).toBe('hud.overview.income-note');
+    expect(messageCatalogPl.messages[HUD_MESSAGE_KEY.overviewIncomeNote]).toBe(
+      'Państwo płaci za zajęte miejsca na koniec każdego dnia.',
+    );
+  });
+
   it('reads each row off its own field, so no two rows can state the same number', () => {
     // Three distinct values in the fixture and three distinct reads: a row
     // wired to the wrong field shows up here, where a row wired to a computed

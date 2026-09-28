@@ -433,7 +433,7 @@ export interface SavePanelSessions {
    */
   listSaves(): Promise<SaveInventory>;
   getActiveSession(): ActiveSession | undefined;
-  createPrison(prisonId: string, displayName?: string): Promise<SaveResult>;
+  createPrison(prisonId: string, displayName?: string, usesDefaultName?: true): Promise<SaveResult>;
   saveNow(): Promise<SaveResult>;
   loadPrison(prisonId: string): Promise<SessionLoadOutcome>;
   deletePrison(prisonId: string): Promise<void>;
@@ -582,6 +582,10 @@ export function orderDeletedPrisonsForDisplay(deleted: readonly DeletedPrison[])
  */
 export class SavePanel {
   private readonly root: HTMLElement;
+  private emptyWorldPrompt: HTMLElement | undefined;
+  private emptyWorldChoose: HTMLButtonElement | undefined;
+  private emptyWorldRoute: 'load' | 'restore' | undefined;
+  private onSessionPresenceChange: ((active: boolean) => void) | undefined;
   private readonly statusElement: HTMLElement;
   private readonly listElement: HTMLElement;
   private readonly detailElement: HTMLElement;
@@ -592,6 +596,7 @@ export class SavePanel {
   private readonly gate: AsyncActionGate;
   /** Monotonic guard so an older in-flight `refresh` can never repaint over a newer one. */
   private refreshToken = 0;
+  private onInventoryChanged: (() => void) | undefined;
 
   private readonly localizer: SavePanelLocalizer;
 
@@ -708,6 +713,13 @@ export class SavePanel {
     return parameters === undefined ? this.localizer.format(key) : this.localizer.format(key, parameters);
   }
 
+  /** Legacy/custom names remain literal; only new slots carry this stable marker. */
+  private prisonName(prison: { readonly prisonId: string; readonly displayName?: string; readonly usesDefaultName?: true }): string {
+    return prison.displayName ?? (prison.usesDefaultName === true
+      ? this.text(SAVE_PANEL_MESSAGE_KEY.defaultPrisonName)
+      : prison.prisonId);
+  }
+
   /** True while a request is outstanding. The one signal the controls are driven from. */
   public isBusy(): boolean {
     return this.gate.busy;
@@ -721,6 +733,49 @@ export class SavePanel {
   public dispose(): void {
     this.gate.dispose();
     this.root.remove();
+    this.emptyWorldPrompt?.remove();
+  }
+
+  /** A central route into the same create and load controls as the save rail. */
+  public mountEmptyWorldPrompt(parent: HTMLElement, onSessionPresenceChange?: (active: boolean) => void): void {
+    if (this.emptyWorldPrompt !== undefined) return;
+    this.onSessionPresenceChange = onSessionPresenceChange;
+    const prompt = document.createElement('section');
+    prompt.className = 'empty-world-prompt';
+    prompt.hidden = true;
+    prompt.setAttribute('aria-labelledby', 'empty-world-prompt-title');
+
+    const heading = document.createElement('h2');
+    heading.id = 'empty-world-prompt-title';
+    heading.textContent = this.text(SAVE_PANEL_MESSAGE_KEY.emptyWorldTitle);
+    const description = document.createElement('p');
+    description.textContent = this.text(SAVE_PANEL_MESSAGE_KEY.emptyWorldDescription);
+    const actions = document.createElement('div');
+    actions.className = 'empty-world-prompt__actions';
+    actions.append(this.button(this.busy, SAVE_PANEL_MESSAGE_KEY.emptyWorldCreate, () => this.requestCreate()));
+
+    const choose = document.createElement('button');
+    choose.type = 'button';
+    choose.className = 'save-panel__button';
+    choose.textContent = this.text(SAVE_PANEL_MESSAGE_KEY.emptyWorldChoose);
+    choose.addEventListener('click', () => {
+      const target = this.listElement.querySelector<HTMLButtonElement>(this.emptyWorldRoute === 'restore'
+        ? '.save-panel__item[data-deleted-prison] button'
+        : '.save-panel__item[data-prison] button');
+      target?.scrollIntoView({ block: 'nearest' });
+      target?.focus();
+    });
+    choose.hidden = true;
+    actions.append(choose);
+    prompt.append(heading, description, actions);
+    parent.append(prompt);
+    this.emptyWorldPrompt = prompt;
+    this.emptyWorldChoose = choose;
+  }
+
+  /** Keep another view of the same local inventory in sync after a repaint. */
+  public setOnInventoryChanged(listener: () => void): void {
+    this.onInventoryChanged = listener;
   }
 
   public setStatus(status: SaveStatus): void {
@@ -752,6 +807,7 @@ export class SavePanel {
    */
   public async refresh(): Promise<void> {
     const token = ++this.refreshToken;
+    this.onSessionPresenceChange?.(this.controller.getActiveSession() !== undefined);
 
     let prisons: readonly PrisonSlotMetadata[];
     let deleted: readonly DeletedPrison[];
@@ -792,6 +848,14 @@ export class SavePanel {
     // validating. `retainDeleteArming` is the one rule for all three.
     this.armedDeletion = retainDeleteArming(this.armedDeletion, prisons.map((prison) => prison.prisonId));
     const activeId = this.controller.getActiveSession()?.prisonId;
+    if (this.emptyWorldPrompt !== undefined) this.emptyWorldPrompt.hidden = activeId !== undefined;
+    this.emptyWorldRoute = prisons.length > 0 ? 'load' : deleted.length > 0 ? 'restore' : undefined;
+    if (this.emptyWorldChoose !== undefined) {
+      this.emptyWorldChoose.hidden = this.emptyWorldRoute === undefined;
+      this.emptyWorldChoose.textContent = this.text(this.emptyWorldRoute === 'restore'
+        ? SAVE_PANEL_MESSAGE_KEY.emptyWorldRestore
+        : SAVE_PANEL_MESSAGE_KEY.emptyWorldChoose);
+    }
 
     // "No prisons yet" is false while a deleted one is still standing there to
     // be brought back, so the empty row is drawn only when the list is empty of
@@ -801,6 +865,7 @@ export class SavePanel {
       empty.className = 'save-panel__empty';
       empty.textContent = this.text(SAVE_PANEL_MESSAGE_KEY.listEmpty);
       this.listElement.append(empty);
+      this.onInventoryChanged?.();
       return;
     }
 
@@ -816,9 +881,9 @@ export class SavePanel {
       const label = document.createElement('span');
       label.className = 'save-panel__item-label';
       label.textContent = this.text(SAVE_PANEL_MESSAGE_KEY.listItem, {
-        // A prison's display name is player-authored and a prison id is a
-        // stable identifier: neither is translatable, and both are data.
-        name: prison.displayName ?? prison.prisonId,
+        // Only the stable built-in-name marker is localized; custom and
+        // legacy stored names stay verbatim across locale changes.
+        name: this.prisonName(prison),
         // Readable generations only (#432): a quarantined generation is one
         // this build refused and kept for a later build, so counting it here
         // would tell the player they have a save this build cannot offer them.
@@ -851,7 +916,7 @@ export class SavePanel {
           () =>
             this.requestDelete({
               prisonId: prison.prisonId,
-              named: prison.displayName ?? prison.prisonId,
+              named: this.prisonName(prison),
               updatedAt: prison.updatedAt,
             }),
           `delete:${prison.prisonId}`,
@@ -869,6 +934,7 @@ export class SavePanel {
     for (const gone of orderDeletedPrisonsForDisplay(deleted)) {
       this.listElement.append(this.deletedPrisonRow(gone));
     }
+    this.onInventoryChanged?.();
   }
 
   /**
@@ -894,7 +960,7 @@ export class SavePanel {
 
     const label = document.createElement('span');
     label.className = 'save-panel__item-label';
-    const sentence = describeDeletedPrison(gone.displayName ?? gone.prisonId);
+    const sentence = describeDeletedPrison(this.prisonName(gone));
     label.textContent = this.text(sentence.messageKey, sentence.messageParameters);
     item.append(label);
 
@@ -902,7 +968,7 @@ export class SavePanel {
       this.button(
         this.rowBusy,
         SAVE_PANEL_MESSAGE_KEY.actionTombstoneRestore,
-        () => this.requestRestore(gone.prisonId, gone.displayName ?? gone.prisonId),
+        () => this.requestRestore(gone.prisonId, this.prisonName(gone)),
         `restore:${gone.prisonId}`,
       ),
       this.button(
@@ -1008,7 +1074,7 @@ export class SavePanel {
       const prisonId = newPrisonId();
       this.setStatus({ kind: 'saving', messageKey: SAVE_PANEL_MESSAGE_KEY.statusCreating });
       try {
-        this.setStatus(describeSaveResult(await this.controller.createPrison(prisonId, 'New Prison')));
+        this.setStatus(describeSaveResult(await this.controller.createPrison(prisonId, undefined, true)));
       } catch (error) {
         this.setStatus({
           kind: 'error',

@@ -60,7 +60,7 @@ three functions in it.
 > neither freezes the code nor is honoured by editors. Below this line:
 > `9e3727a0` (2026-09-05) added a correction to §*What is owed, and to whom*,
 > and `80b845cd` (2026-09-08) added a **new** `file:line`
-> (`src/persistence/save-schema.ts:36`, in the §*Decision 6* parenthetical) that
+> (`src/persistence/save-schema.ts:37`, in the §*Decision 6* parenthetical) that
 > was read at `adb9ed00` and not at `84e247c` — the worse of the two shapes,
 > because a new anchor below an unchanged pin silently inherits a date nobody
 > read it at. That anchor has since drifted to `:38` and is corrected there.
@@ -406,7 +406,7 @@ save-schema key is added, and `SAVE_ENVELOPE_VERSION` does not move.
 
 (**`SAVE_ENVELOPE_VERSION` never existed, on this date or any other.** The
 constant this decision means is `SAVE_SCHEMA_VERSION`,
-`src/persistence/save-schema.ts:38` (read 2026-09-15; the anchor this
+`src/persistence/save-schema.ts:39` (read 2026-09-15; the anchor this
 parenthetical carried when it was written on 2026-09-08 was `:36`, and the
 constant reads `6` today), which was already declared and already
 `5` in the tree this document was written against — so the sentence above is
@@ -801,7 +801,7 @@ counted an unmet cycle and returned; there was no second candidate. The fallback
 > [ADR 0041](0041-what-happens-when-a-prisoners-chosen-action-has-nowhere-to-go.md),
 > and they are kept in the past tense rather than deleted because the
 > measurement above them was taken under the rule they describe (2026-09-15).**
-> `beginNextAction` (`src/simulation/prisoners/action-system.ts:1616`) no longer
+> `beginNextAction` (`src/simulation/prisoners/action-system.ts:1636`) no longer
 > takes one action. It walks `rankActions`' whole ordered list —
 > `for (let rank = 0; rank < plan.candidates.length; rank += 1)` (`:1624`) —
 > and `continue`s past any candidate whose target does not resolve (`:1627`,

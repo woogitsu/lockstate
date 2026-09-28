@@ -158,6 +158,21 @@ function objectRequirementStatuses(runtime: SimulationRuntime, instanceId: strin
 }
 
 describe('a removed object takes its capacity and its capability with it', () => {
+  it('retires a standing wall-removal refusal when RemoveWall removes an object elsewhere (#1270)', () => {
+    const runtime = prisonWithFurnishedCell();
+    stepTo(runtime, 200);
+
+    submit(runtime, 'empty-wall', packCommand({ type: 'RemoveWall', x: 18, y: 19, edge: 'north' }));
+    expect(runtime.refusals.last?.reason).toBe('remove-wall.nothing-to-remove');
+    expect(runtime.refusals.last?.routeDecidedSince).toBeUndefined();
+
+    submit(runtime, 'remove-bed-by-wall-command', packCommand({ type: 'RemoveWall', ...BED_TILE, edge: 'north' }));
+    expect(runtime.placedObjects.objectAt(BED_TILE as never), 'the object arm must actually remove the bed').toBeUndefined();
+    expect(runtime.refusals.last?.reason, 'the different target must remain in the refusal log').toBe('remove-wall.nothing-to-remove');
+    expect(runtime.refusals.count).toBe(1);
+    expect(runtime.refusals.last?.routeDecidedSince, 'the standing band must retire').toBe(true);
+  });
+
   it('drops the capability and both capacities, and the tile becomes placeable again', () => {
     const runtime = prisonWithFurnishedCell();
     stepTo(runtime, 200);

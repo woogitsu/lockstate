@@ -120,14 +120,24 @@ export const NEED_DECAY_PER_TICK: Readonly<Record<NeedId, number>> = {
 
 /**
  * `NEED_DECAY_PER_TICK` in stored units, derived rather than authored twice.
- * Every entry is a whole number at `NEED_SCALE` = 200, which is the property
- * that makes `decayNeed` exact; `Math.round` here only clears the
- * floating-point residue of the multiplication, and the test module asserts
- * that it never has anything else to clear.
+ * Every entry must be a whole number at `NEED_SCALE` = 200, which is the
+ * property that makes `decayNeed` exact. A future difficulty policy cannot
+ * silently round an authored multiplier into a different rate (#978).
  */
-export const NEED_DECAY_SCALED_PER_TICK: Readonly<Record<NeedId, number>> = Object.freeze(
-  Object.fromEntries(NEED_IDS.map((needId) => [needId, Math.round(NEED_DECAY_PER_TICK[needId] * NEED_SCALE)])) as Record<NeedId, number>,
-);
+export function needDecayRatesForMultiplier(multiplier: number): Readonly<Record<NeedId, number>> {
+  if (!Number.isFinite(multiplier) || multiplier <= 0) {
+    throw new RangeError('A need decay multiplier must be finite and positive.');
+  }
+  return Object.freeze(Object.fromEntries(NEED_IDS.map((needId) => {
+    const scaledRate = NEED_DECAY_PER_TICK[needId] * NEED_SCALE * multiplier;
+    if (!Number.isSafeInteger(scaledRate) || scaledRate <= 0) {
+      throw new RangeError(`Need decay for ${needId} is not a positive whole stored unit per tick.`);
+    }
+    return [needId, scaledRate];
+  })) as Record<NeedId, number>);
+}
+
+export const NEED_DECAY_SCALED_PER_TICK = needDecayRatesForMultiplier(1);
 
 /**
  * **What a fully covered sector puts back into `safety`, per tick** (issue

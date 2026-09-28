@@ -426,6 +426,7 @@ test.describe('the Build panel queue', () => {
     // that held the finished `order-00` is emptied rather than re-aimed. The
     // arriving `order-03` gets no row this publication, because the only free
     // one is the box being held open.
+    // ADR 0124 keeps the freed leading box inert instead of collapsing it.
     expect(advanced.rows.map((row) => row.orderId)).toEqual(['', 'order-01', 'order-02']);
     expect(advanced.rows[1]?.cancelBox?.y).toBe(before.rows[1]?.cancelBox?.y);
     expect(advanced.rows[2]?.cancelBox?.y).toBe(before.rows[2]?.cancelBox?.y);

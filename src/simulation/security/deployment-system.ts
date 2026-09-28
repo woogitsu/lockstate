@@ -7,7 +7,7 @@ import { resolveStaffRouteContext } from './access-policy';
 import { isAtPost } from './deployment-phase';
 import { resolveRequiredGuardCount, type DeploymentSchedule } from './deployment-schedule';
 import { claimableGuardIds, isPostEligibleStaffRoleId } from './post-eligibility';
-import { resolveOccupancyScaledGuardCount, sectorOccupantCountIsComplete, type SectorOccupantCountResolver } from './sector-staffing';
+import { DEFAULT_SECTOR_PRISONERS_PER_GUARD, assertValidSectorPrisonersPerGuard, resolveOccupancyScaledGuardCount, sectorOccupantCountIsComplete, type SectorOccupantCountResolver } from './sector-staffing';
 import type { EntityId } from '../entity/entity-store';
 import type { GuardRoster } from './guard-roster';
 import type { SecuritySectorRegistry } from './sector';
@@ -39,6 +39,9 @@ export class DeploymentSystem implements SystemRegistration {
   public readonly schedule = { intervalTicks: 10, phaseTicks: 0 };
 
   private requestSequence = 0;
+
+  public getPathRequestSequence(): number { return this.requestSequence; }
+  public restorePathRequestSequence(sequence: number): void { this.requestSequence = sequence; }
   private deploymentFailures = 0;
 
   /**
@@ -111,7 +114,26 @@ export class DeploymentSystem implements SystemRegistration {
      * schedule does not have to.
      */
     private readonly resolveOccupantCount?: SectorOccupantCountResolver,
-  ) {}
+    private readonly prisonersPerGuard = DEFAULT_SECTOR_PRISONERS_PER_GUARD,
+  ) {
+    assertValidSectorPrisonersPerGuard(prisonersPerGuard);
+  }
+
+  /**
+   * The counter that names this system's path requests, for the save's
+   * `inFlight` section (issue #1373). It used to be excluded because *"no
+   * restored state can reference an old name"*; since the navigation queue and
+   * the roster's `pathRequestId` are both carried, restored state does, and a
+   * counter reset to zero would mint names the saved session never minted.
+   */
+  public getRequestSequence(): number {
+    return this.requestSequence;
+  }
+
+  public setRequestSequence(sequence: number): void {
+    if (!Number.isInteger(sequence) || sequence < 0) throw new RangeError(`A path-request sequence is a non-negative integer, got ${String(sequence)}.`);
+    this.requestSequence = sequence;
+  }
 
   public getMetrics(): { readonly deploymentFailures: number } {
     return { deploymentFailures: this.deploymentFailures };
@@ -163,6 +185,7 @@ export class DeploymentSystem implements SystemRegistration {
       scheduled,
       this.resolveOccupantCount(sectorId),
       sectorOccupantCountIsComplete(sectorId),
+      this.prisonersPerGuard,
     );
   }
 

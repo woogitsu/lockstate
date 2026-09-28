@@ -171,7 +171,7 @@ module doc, and `tests/determinism/` gains a pin for it.
   ([ADR 0007](./0007-navigation-work-budgets-and-flow-fields.md)), and the
   exception carried its own escape clause: if routing state ever enters a save,
   they become category 1. **That clause has since fired.** `pathRequestId` is a
-  field of the persisted job record (`src/persistence/save-schema.ts:672`) and
+  field of the persisted job record (`src/persistence/save-schema.ts:673`) and
   of the persisted guard record (`:734`), both inside the `simulation` section
   of the shipped payload — which is now **three** payload versions and not two:
   `:1296` for V3, `:1326` for V4 and `:1395` for V5. What keeps it harmless
@@ -182,7 +182,7 @@ module doc, and `tests/determinism/` gains a pin for it.
   `'travelling'` job
   (`src/simulation/operations/job.ts:284`) and `GuardRoster.loadSnapshot` does
   the same for a `'travelling'` guard
-  (`src/simulation/security/guard-roster.ts:281`), so no restored session
+  (`src/simulation/security/guard-roster.ts:344`), so no restored session
   consumes an id minted by a previous one.
   (**Four of the six anchors in this bullet had drifted and one claim had been
   overtaken.** They read `save-schema.ts:419`, `:468`, `:837` for V3 and `:867`
@@ -264,6 +264,31 @@ module doc, and `tests/determinism/` gains a pin for it.
   paragraphs up is the durable form and these numbers are the perishable one.) Whether the taxonomy should now move
   these to category 1, and what that obliges, is left open rather than settled
   here; the acceptance above did not take it either.
+
+  **Amended 2026-09-23 (issue #1373): the escape clause has fired a second
+  time, and this time the compensation is gone rather than relied on.** The
+  owner ruled that day on [ADR 0059](./0059-how-an-actor-gets-from-one-tile-to-the-next.md)
+  open question 3 (option 5, *"Zapisuj marsz (zalecane)"* -- an option label,
+  the weaker provenance) that a save carries a walk. So a save this build
+  writes carries the navigation queue itself (`simulation.inFlight`), the
+  request ids the owners hold, **and the four counters that mint them**
+  (`ActionSystem`, `DeploymentSystem`, `PatrolSystem`, `SearchSystem`), and a
+  restored session **does** consume ids a previous one minted -- which is the
+  point: the continuous session would have consumed them. That is category 1
+  in this ADR's own terms (*"allocated and snapshotted"*), taken for exactly
+  these ids and nothing wider. The sentence above that ends *"so no restored
+  session consumes an id minted by a previous one"* is kept as it stood,
+  because it is still exactly true of a save written before the ruling: such a
+  save has no `inFlight` section and both clears still run on it --
+  `restored.pathRequestId = undefined` now returns **three**, the two
+  pre-existing restore-side clears (the guard one moved into
+  `settleRestoredTraveller`, `guard-roster.ts:344`) and a third at
+  `guard-roster.ts:317`, which applies the same clear to a *current* save's
+  guard whose carried request the restored queue does not hold.
+  `IncidentResponseSystem.requestSequence` stays category 2: its records are
+  not carried (ADR 0033), so no restored state can name one of its ids, and
+  its first update after a load gives back the ones the queue brought home
+  (`abandonOrphanedRequests`).
 - Future gameplay systems get a decision to follow instead of a precedent to
   guess at.
 

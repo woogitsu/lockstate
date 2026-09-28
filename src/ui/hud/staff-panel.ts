@@ -1336,9 +1336,10 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
       guards.map((guard) => String(guard.entityId)),
       nowMs,
       HELD_GUARD_ROW_SETTLE_MS,
+      'bottom',
     );
 
-    const restoreAnchor = capturePooledRowAnchor(heldRows.map((row) => row.element));
+    const restoreHeldAnchor = capturePooledRowAnchor(heldRows.map((row) => row.element));
     let drawn = 0;
     for (const [index, row] of heldRows.entries()) {
       pinPooledRowHeight(row.element);
@@ -1392,7 +1393,7 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
     // no rows and must still keep its boxes, or the list would collapse under
     // the pointer the boxes are being held for.
     heldList.hidden = assignments.every((assignment) => assignment.kind === 'empty');
-    restoreAnchor();
+    restoreHeldAnchor();
     heldEmpty.hidden = guards.length > 0;
     /*
      * Counted against `held.held` and against the rows this pass actually
@@ -1775,7 +1776,7 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
       return;
     }
 
-    const rosterWindow = shown.staff.slice(0, STAFF_ROSTER_ROW_LIMIT);
+    const rosterWindow = [...shown.staff].sort((left, right) => left.entityId - right.entityId).slice(0, STAFF_ROSTER_ROW_LIMIT);
     const members = new Map(rosterWindow.map((member) => [String(member.entityId), member]));
     /*
      * Which row names whom -- `assignPooledRows`, not `staff[index]`, and that
@@ -1800,10 +1801,11 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
       rosterWindow.map((member) => String(member.entityId)),
       nowMs,
       STAFF_ROSTER_ROW_SETTLE_MS,
+      'bottom',
     );
 
+    const restoreRosterAnchor = capturePooledRowAnchor(rosterRows.map((row) => row.element));
     let drawn = 0;
-    const restoreAnchor = capturePooledRowAnchor(rosterRows.map((row) => row.element));
     for (const [index, row] of rosterRows.entries()) {
       pinPooledRowHeight(row.element);
       const assignment = assignments[index];
@@ -1859,7 +1861,7 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
     // boxes, or the list would collapse under the pointer the boxes are being
     // held for.
     rosterList.hidden = assignments.every((assignment) => assignment.kind === 'empty');
-    restoreAnchor();
+    restoreRosterAnchor();
     /*
      * Counted against `shown.hired` and against the rows this pass actually
      * **drew**, which are no longer the same subtraction the window gives: a

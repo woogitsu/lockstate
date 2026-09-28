@@ -10,6 +10,7 @@ import {
   NEED_MIN_SCALED,
   NEED_SCALE,
   NeedsComponent,
+  needDecayRatesForMultiplier,
   provisionSafety,
   SAFETY_COVERAGE_PROVISION_MULTIPLIER,
   SAFETY_COVERAGE_PROVISION_PER_TICK,
@@ -18,6 +19,13 @@ import {
 import { SECTOR_COVERAGE_STATES } from '../../src/simulation/security/coverage-state';
 
 describe('the scale the needs store uses', () => {
+  it('rejects a decay multiplier that cannot be represented exactly in stored units (#978)', () => {
+    expect(() => needDecayRatesForMultiplier(0.5)).toThrow(/recreation/);
+    expect(() => needDecayRatesForMultiplier(0.75)).toThrow(/hunger/);
+    expect(needDecayRatesForMultiplier(2).recreation).toBe(NEED_DECAY_SCALED_PER_TICK.recreation * 2);
+    expect(() => needDecayRatesForMultiplier(0)).toThrow(RangeError);
+  });
+
   it('represents every decay rate as a whole number of stored units per tick', () => {
     // This is the property the whole fix rests on (#259): if a rate is not a
     // whole number at this scale, `decayNeed` starts rounding again and the

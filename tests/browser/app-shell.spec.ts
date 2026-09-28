@@ -2823,6 +2823,21 @@ const NEVER_LAID_OUT_WITHOUT_A_HELD_GUARD = [
     'hud-staff__held-list > hud-staff__held-row > button.ui-action "Release" #3',
 ] as const;
 
+// These five sweep viewports never enter the short, enlarged desktop layout.
+// The trigger is mounted but deliberately hidden there; the dedicated Full HD
+// page-zoom test opens it and checks all six tabs by pointer and keyboard.
+const NEVER_LAID_OUT_WITHOUT_ZOOM_DRAWER =
+  'hud > hud__tabs > button.ui-icon-button ui-icon-button--bordered hud-navigation-drawer__trigger "Show the sections"';
+
+// This sweep deliberately creates a prison before walking the controls. The
+// empty-session route is consequently hidden throughout it, and on these
+// sub-Full-HD viewports its card is suppressed even before creation. Its own
+// browser test presses Create and Load while the empty session is visible.
+const NEVER_LAID_OUT_WITHOUT_EMPTY_SESSION = [
+  'empty-world-prompt > empty-world-prompt__actions > button.save-panel__button "Create a prison"',
+  'empty-world-prompt > empty-world-prompt__actions > button.save-panel__button "Load a saved prison"',
+] as const;
+
 const NEVER_LAID_OUT_BELOW_720 = [
   'hud > hud__corner > ui-panel hud-minimap > ui-panel__header > ' +
     'button.ui-icon-button ui-icon-button--quiet ui-panel__toggle "Collapse"',
@@ -2873,20 +2888,12 @@ const NEVER_LAID_OUT_BELOW_720 = [
    * fails the moment the corner comes back, which is what will retire all
    * three of these together.
    *
-   * **Its label is the authored sentence, truncated to 32 characters by the
-   * inventory's own `textContent.slice(0, 32)` -- and it is stable across the
-   * latch, which is luck worth naming rather than relying on silently.** The
-   * two strings the surface can carry are
-   * `'No map is drawn here yet — pressing may move the camera'` before a press
-   * has proved the camera moves and
-   * `'No map is drawn here yet — press to jump the camera there'` after, and
-   * their first 32 characters are identical, so this entry does not depend on
-   * which state the sweep happens to find. Reword either sentence past that
-   * 32nd character and nothing here moves; reword the shared prefix and this
-   * line has to move with it.
+   * The Full HD operations HUD now draws an actual map on this button. Its
+   * inventory name is the first 32 characters of the current label. The
+   * corner remains hidden below 720px, so this is still an honest exemption.
    */
   'hud > hud__corner > ui-panel hud-minimap > ui-panel__body > ' +
-    'button.hud-minimap__surface "No map is drawn here yet — press"',
+    'button.hud-minimap__surface "Prison map — press to move the c"',
   /*
    * AND THE ZOOM PAIR, ADDED 2026-09-05 (#1023), WHICH IS A WORSE ENTRY THAN
    * THE TWO ABOVE AND IS WRITTEN OUT AS SUCH RATHER THAN SLIPPED IN.
@@ -3442,13 +3449,16 @@ test.describe('the assembled application', () => {
   });
 
   test('a click in the middle of the screen reaches the world, not the HUD', async ({ page }) => {
-    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.setViewportSize({ width: 1920, height: 1080 });
     await openApp(page);
+    // The empty-session route intentionally occupies the centre until a
+    // prison exists. Measure world input in the playable state.
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.empty-world-prompt')).toBeHidden();
 
     for (const [width, height] of [
-      [1280, 800],
-      [768, 1024],
-      [375, 812],
+      [1920, 1080],
+      [2560, 1440],
     ] as const) {
       await page.setViewportSize({ width, height });
       await expect
@@ -3771,6 +3781,7 @@ test.describe('the assembled application', () => {
     // buttons on the page at all.
     await page.getByRole('button', { name: 'New prison' }).click();
     await expect(page.locator('.save-panel__item-label').first()).toContainText('New Prison');
+    await expect(page.locator('.empty-world-prompt')).toBeHidden();
 
     /*
      * ---- where #174's own gate lives, and why not here (2026-08-31) --------
@@ -4030,6 +4041,21 @@ test.describe('the assembled application', () => {
         reachability.unreachable,
         `controls covered by something else on the ${tab} tab at ${width}x${height}`,
       ).toEqual([]);
+      if (tab === 'manage') {
+        // The local-save list is a disclosure on this tab. Its row controls
+        // must be reachable when the player opens it, not exempted as hidden.
+        const savedPrisons = page.locator('.manage-saves');
+        // Quick Save and Manage refresh independently. Wait for the actual
+        // row before opening, so a late refresh cannot add hidden controls
+        // after this state was measured.
+        await expect(savedPrisons.locator('.manage-saves__item')).toHaveCount(1);
+        await savedPrisons.locator('summary').click();
+        const expanded = await controlReachability(page);
+        inventory = expanded;
+        record(expanded);
+        expect(expanded.unreachable, `Manage saves controls unreachable at ${width}x${height}`).toEqual([]);
+        await savedPrisons.locator('summary').click();
+      }
     }
 
     /*
@@ -4094,7 +4120,10 @@ test.describe('the assembled application', () => {
      * The count is the guard against a vacuous pass.
      */
     await page.locator('.ui-tab[data-tab="build"]').click();
-    const saveButtons = await controlReachability(page, '.save-panel__button');
+    // The central empty-session routes reuse this button style but are
+    // intentionally hidden once a prison is active. This check inventories
+    // the save rail itself.
+    const saveButtons = await controlReachability(page, '.save-panel .save-panel__button');
     expect(
       saveButtons.measured.length,
       `save-panel buttons with a box to hit-test at ${width}x${height}, of ${saveButtons.controls.length} matched`,
@@ -5013,10 +5042,27 @@ test.describe('the assembled application', () => {
     ).toBeHidden();
 
     await page.locator('.ui-tab[data-tab="build"]').click();
+    // The inventory is an element snapshot, not a catalogue of labels. A
+    // background save can replace Manage's row after its first measurement,
+    // minting new element ids while its disclosure is shut. Revisit both
+    // panels at the end so the final accounting tests the controls that are
+    // actually in the document now.
+    const finalBuild = await controlReachability(page);
+    record(finalBuild);
+    const finalSaves = page.locator('.manage-saves');
+    await page.locator('.ui-tab[data-tab="manage"]').click();
+    await expect(finalSaves.locator('.manage-saves__item')).toHaveCount(1);
+    if ((await finalSaves.getAttribute('open')) === null) await finalSaves.locator('summary').click();
+    await expect(finalSaves).toHaveAttribute('open', '');
+    await expect(finalSaves.getByRole('button', { name: 'Load' })).toBeVisible();
+    await expect(finalSaves.getByRole('button', { name: 'Delete' })).toBeVisible();
+    inventory = await controlReachability(page);
+    record(inventory);
+    expect(inventory.unreachable, `final Manage controls unreachable at ${width}x${height}`).toEqual([]);
 
     // Nothing got a free pass by never being laid out. At desktop widths the
-    // Build tab with its coordinates expanded shows every control there is,
-    // so the list is empty; at 720px and below the responsive rules drop
+    // Build and Manage controls have each been revisited in their visible
+    // state, so the list is empty; at 720px and below the responsive rules drop
     // `.hud__corner` outright — the minimap and the alerts section — and
     // those two controls genuinely cannot be reached at any tab. That is a
     // deliberate responsive decision (see `hud.css`), named here so it stays
@@ -5035,6 +5081,8 @@ test.describe('the assembled application', () => {
     const exempt = [
       ...(width <= 720 ? NEVER_LAID_OUT_BELOW_720 : []),
       ...NEVER_LAID_OUT_WITHOUT_A_HELD_GUARD,
+      ...NEVER_LAID_OUT_WITHOUT_EMPTY_SESSION,
+      NEVER_LAID_OUT_WITHOUT_ZOOM_DRAWER,
     ];
     const neverLaidOut = inventory.controls.filter(
       (_, index) => !everMeasured.has(inventory.ids[index] ?? ''),
@@ -8568,6 +8616,88 @@ test.describe('the assembled application', () => {
     await expect(page.locator('.save-panel__empty')).toHaveCount(0);
   });
 
+  test('Manage lists local saves, confirms deletion, restores it, and states why cloud saves are unavailable (#1168)', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openApp(page);
+    await expect(page.locator('.manage-saves')).toBeHidden();
+    await page.locator('.ui-tab[data-tab="manage"]').click();
+    const details = page.locator('.manage-saves');
+    await expect(details).toBeVisible();
+    await details.locator('summary').click();
+    await expect(details.locator('.manage-saves__cloud')).toHaveText(
+      'Cloud saves are unavailable in this version because the game has no cloud connection.',
+    );
+    await expect(details.locator('.manage-saves__list')).toContainText('No prisons yet.');
+
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(details.locator('.manage-saves__item')).toHaveCount(1);
+    await expect(details.locator('.manage-saves__name')).toContainText('New Prison (1 gen)');
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(details.locator('.manage-saves__item')).toHaveCount(2);
+
+    const second = details.locator('.manage-saves__item').last();
+    await second.getByRole('button', { name: 'Load' }).click();
+    await expect(details.locator('.manage-saves__status')).toHaveText('Loaded.');
+
+    await details.locator('.manage-saves__item').last().getByRole('button', { name: 'Delete', exact: true }).click();
+    await expect(details.getByRole('button', { name: 'Delete permanently' })).toBeVisible();
+    await expect(details.getByRole('button', { name: 'Keep' })).toBeFocused();
+    await details.getByRole('button', { name: 'Keep' }).click();
+    await expect(details.locator('.manage-saves__item')).toHaveCount(2);
+    await details.locator('.manage-saves__item').last().getByRole('button', { name: 'Delete', exact: true }).click();
+    await details.getByRole('button', { name: 'Delete permanently' }).click();
+    await expect(details.locator('.manage-saves__item[data-deleted-prison-id]')).toHaveCount(1);
+    await expect(details.locator('.manage-saves__item[data-deleted-prison-id] .manage-saves__name'))
+      .toContainText('New Prison — deleted.');
+    await details.getByRole('button', { name: 'Bring it back' }).click();
+    await expect(details.locator('.manage-saves__item[data-deleted-prison-id]')).toHaveCount(0);
+    await expect(details.locator('.manage-saves__item')).toHaveCount(2);
+  });
+
+  test('Manage keeps the built-in prison name localized after reload and deletion', async ({ page }) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await openApp(page);
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.save-panel__item-label')).toHaveText('New Prison (1 gen)');
+
+    await page.evaluate(() => {
+      localStorage.setItem('lockstate.settings.language', JSON.stringify({ version: 1, preference: 'pl' }));
+    });
+    await page.reload();
+    await openApp(page);
+    await page.locator('.ui-tab[data-tab="manage"]').click();
+    const details = page.locator('.manage-saves');
+    await details.locator('summary').click();
+    await expect(details.locator('.manage-saves__name')).toContainText('Nowe więzienie (1');
+    await details.getByRole('button', { name: 'Usuń', exact: true }).click();
+    await expect(details.getByRole('button', { name: 'Zachowaj' })).toBeFocused();
+    await details.getByRole('button', { name: 'Usuń trwale' }).click();
+    await expect(details.locator('.manage-saves__item[data-deleted-prison-id] .manage-saves__name'))
+      .toContainText('Nowe więzienie — usunięto.');
+    await details.getByRole('button', { name: 'Przywróć' }).click();
+    await expect(details.locator('.manage-saves__name')).toContainText('Nowe więzienie (1');
+    await expect(details.getByRole('button', { name: 'Wczytaj' })).toBeFocused();
+  });
+
+  test('Manage refreshes an armed deletion age after returning to the tab (#1168)', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openApp(page);
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await page.locator('.ui-tab[data-tab="manage"]').click();
+    const details = page.locator('.manage-saves');
+    await details.locator('summary').click();
+    await details.getByRole('button', { name: 'Delete', exact: true }).click();
+    const confirmation = details.locator('.manage-saves__confirm');
+    await expect(confirmation).toContainText('less than a minute ago');
+    await page.evaluate(() => {
+      const later = Date.now() + 2 * 60 * 60 * 1000;
+      Date.now = () => later;
+    });
+    await page.locator('.ui-tab[data-tab="build"]').click();
+    await page.locator('.ui-tab[data-tab="manage"]').click();
+    await expect(confirmation).toContainText('2 h ago');
+  });
+
   /**
    * Issue #287, and the whole point of the Import control: a session the game
    * exported comes back.
@@ -11473,7 +11603,7 @@ test.describe('the assembled application', () => {
     await page.goto(APP_URL);
 
     // The three things a blank page has none of.
-    await expect(page.locator('canvas')).toHaveCount(1);
+    await expect(page.locator('#game-root canvas')).toHaveCount(1);
     await expect(page.locator('.hud')).toHaveCount(1);
     expect(await page.locator('.hud-tabs__inner .ui-tab').count()).toBeGreaterThan(0);
 
@@ -11485,7 +11615,7 @@ test.describe('the assembled application', () => {
     // the default bindings, so a working camera is the observable form of that
     // claim -- and it is the half a try/catch around `JSON.parse` alone would
     // not deliver, since it never reaches the parse.
-    await expect(page.locator('canvas')).toBeVisible();
+    await expect(page.locator('#game-root canvas')).toBeVisible();
   });
 
   /**
@@ -11681,9 +11811,14 @@ test.describe('the assembled application', () => {
         }, scale);
         await page.setViewportSize({ width, height });
         await openApp(page);
+        const drawerPlacement = (await page.locator('.hud').getAttribute('data-layout-navigation-placement')) === 'drawer';
+        if (drawerPlacement) await page.locator('.hud-navigation-drawer__trigger').click();
         await page.locator('.ui-tab[data-tab="build"]').click();
+        // Selecting a tab closes the temporary drawer. Reopen it to measure
+        // the six tabs in the state where a player can press them.
+        if (drawerPlacement) await page.locator('.hud-navigation-drawer__trigger').click();
 
-        const report = await page.evaluate(() => {
+        const report = await page.evaluate((drawerOpen) => {
           const outside: string[] = [];
           const unreachable: string[] = [];
           const selectors = [
@@ -11714,7 +11849,7 @@ test.describe('the assembled application', () => {
           }
           // Presence is not reachability. Only a real hit test says whether
           // the pixel at a control's centre belongs to that control.
-          for (const control of document.querySelectorAll<HTMLElement>('.ui-tab, .display-scale__cycle')) {
+          for (const control of document.querySelectorAll<HTMLElement>(drawerOpen ? '.ui-tab' : '.ui-tab, .display-scale__cycle')) {
             const rect = control.getBoundingClientRect();
             const hit = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
             if (hit === null || !control.contains(hit)) {
@@ -11792,7 +11927,16 @@ test.describe('the assembled application', () => {
             // the second half of the #88 fix and it must survive every scale.
             railOverflow: rail === null ? -1 : rail.scrollHeight - rail.clientHeight,
           };
-        });
+        }, drawerPlacement);
+
+        if (drawerPlacement) {
+          await page.locator('.hud-navigation-drawer__trigger').click();
+          const scaleReachable = await page.locator('.display-scale__cycle').evaluate((control) => {
+            const rect = control.getBoundingClientRect();
+            return control.contains(document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2));
+          });
+          expect(scaleReachable, `scale control is covered at ${width}x${height} and ${scale * 100}%`).toBe(true);
+        }
 
         expect(report.outside, `laid outside the viewport at ${width}x${height} and ${scale * 100}%`).toEqual([]);
         expect(report.unreachable, `covered by something else at ${width}x${height} and ${scale * 100}%`).toEqual([]);
@@ -11954,9 +12098,12 @@ test.describe('the assembled application', () => {
       expect(reading, `the status strip is not on the page at ${width}x${height}`).not.toBeNull();
       const at = `${width}x${height}`;
 
-      // The property. Every chip the strip is wide enough to show is shown --
-      // so nothing else on the strip is taking room the readout needed.
-      if (height >= SHORT_VIEWPORT_HEIGHT_PX) {
+      // The Full HD operations frame deliberately gives the metrics row back
+      // the strip's right-hand control gutter. Its row can therefore be wider
+      // than the strip's content box, while all nine chips remain on screen.
+      if (width >= 1920 && height >= 1080) {
+        expect(reading!.fullyVisible, `${at}: the permanent Full HD status row lost a chip`).toBe(reading!.chips);
+      } else if (height >= SHORT_VIEWPORT_HEIGHT_PX) {
         expect(
           reading!.fullyVisible,
           `${at}: ${reading!.fullyVisible} of ${reading!.chips} chips are on screen, but the strip is ` +

@@ -30,6 +30,8 @@ export interface PrisonSlotMetadata {
   readonly prisonId: string;
   readonly gameVersion: string;
   readonly displayName?: string;
+  /** Stable marker for the built-in name; translated text is never stored. */
+  readonly usesDefaultName?: true;
   /** `undefined` until the first successful save. */
   readonly currentGenerationId: string | undefined;
   /** Oldest first; bounded by the repository's retention policy. */

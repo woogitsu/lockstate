@@ -247,6 +247,8 @@ export function formatIntakeWithoutPlaceText(t: Translate, pipeline: HudIntakePi
 
 export interface IntakePanel {
   readonly element: HTMLElement;
+  /** Reveal and focus Admit after the empty-roster instruction opens Manage. */
+  focusAdmit(): void;
   /**
    * Where the arrivals are now, or `undefined` to take the block off.
    *
@@ -422,6 +424,13 @@ export function createIntakePanel(options: IntakePanelOptions): IntakePanel {
 
   return {
     element: panel.element,
+    focusAdmit(): void {
+      if (collapsed) {
+        collapsed = false;
+        panel.setCollapsed(false);
+      }
+      admit.element.focus();
+    },
     controls: [admit.element],
     submitControl: admit.element,
     setPipeline(next: HudIntakePipelineViewModel | undefined): void {

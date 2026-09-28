@@ -1,4 +1,5 @@
 import type { LocalizationKey } from '../../content/localization';
+import type { MinimapView } from '../../shared/minimap-view';
 import { DEFAULT_LAYOUT_SETTINGS, type LayoutSettings } from '../../input/layout-preference';
 import type { MessageParameters } from '../../services/localization/format';
 import { hostRefusalReason } from '../host-refusal';
@@ -1114,6 +1115,8 @@ export interface HudHandle {
    * Empty, it collapses to nothing and the rail is exactly what it was before.
    */
   readonly asideSlot: HTMLElement;
+  /** Host-owned local save list on Manage; the HUD supplies only its tab-scoped box. */
+  readonly manageSavesSlot: HTMLElement;
   /**
    * The status strip's left-hand chrome slot, passed straight through.
    *
@@ -1133,6 +1136,10 @@ export interface HudHandle {
    */
   readonly preferencesSlot: HTMLElement;
   update(viewModel: HudViewModel): void;
+  /** Paints a read-only projection supplied by the world renderer. */
+  updateMinimap(view: MinimapView | undefined): void;
+  /** Makes the empty-session minimap a truthful, inert instruction. */
+  setMinimapSessionActive(active: boolean): void;
   /**
    * Live feedback from the world pointer into the Build panel's readout.
    *
@@ -2015,23 +2022,21 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   });
 
   // ---- bottom-left minimap frame -----------------------------------
-  // Rendering is still a placeholder, honestly labelled in visible text --
-  // minimap *rendering* belongs to the renderer, not to the HUD, and does
-  // not exist yet. Navigation is not (issue #793): the surface itself is a
-  // real click target, and every point on it maps to a world position
-  // through `onMinimapNavigate` (`WorldScene.navigateToMinimapPoint` owns the
-  // mapping -- see its own comment for what the surface represents and why).
+  // The world renderer supplies a bounded, read-only map projection; this
+  // surface paints it without knowing simulation state. Before the first
+  // world frame, the original placeholder remains truthful. Navigation from
+  // any point still uses `WorldScene.navigateToMinimapPoint` (issue #793).
   //
   // **A real `<button>`, not a `div`, since issue #903.** It used to be a
   // `div` with no `role` and no way into the keyboard's focus order at all --
   // `tabIndex` reads `-1` by default on an element nobody opted in -- so a
-  // keyboard player could never fire the swap below and only ever read
+  // keyboard player could never navigate and only ever read
   // `minimapPlaceholder`'s denial, against `AGENTS.md` boundary 10 (input
   // must support touch/pointer *and* remapping/keyboard). A real `<button>`
   // gives the correct role and a correct accessible name for free rather than
   // reinventing either with ARIA: it is in the tab order by default, its
   // accessible name is computed from its own text content -- exactly the
-  // sentence a sighted player reads, kept as the one source of truth instead
+  // sentence a player hears, kept as the one source of truth instead
   // of a second, divergent `aria-label` -- and, load-bearing for the handler
   // below, it dispatches a `click` event for an Enter/Space activation just
   // as it does for a pointer click, so the one listener already here needed
@@ -2039,12 +2044,64 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   // `<button>` would otherwise add; see its comment on `.hud-minimap__surface`
   // for what that costs and why each reset is there.
   const minimapPlaceholder = eyebrowText(t(HUD_MESSAGE_KEY.minimapPlaceholder), 'hud-minimap__placeholder');
+  const minimapCanvas = element('canvas', { className: 'hud-minimap__canvas', attributes: { 'aria-hidden': 'true' } }) as HTMLCanvasElement;
+  const minimapViewport = element('span', { className: 'hud-minimap__viewport', attributes: { 'aria-hidden': 'true' } });
   const minimapSurface = element('button', {
     className: 'hud-minimap__surface',
     attributes: { type: 'button' },
-    children: [minimapPlaceholder],
+    children: [minimapCanvas, minimapViewport, minimapPlaceholder],
   });
+  let lastMinimapPixels: Uint8Array | undefined;
+  let currentMinimapView: MinimapView | undefined;
+  // Harnesses without a session controller keep their established navigable
+  // surface; the assembled app sets this to false before persistence boots.
+  let hasActivePrison = true;
+  const minimapPalette = ['#16232b', '#607569', '#89a76b', '#b89468', '#3c7990', '#34424d'] as const;
+  function updateMinimap(view: MinimapView | undefined): void {
+    currentMinimapView = view;
+    const visible = view !== undefined && hasActivePrison;
+    minimapCanvas.hidden = !visible;
+    minimapViewport.hidden = !visible;
+    minimapPlaceholder.textContent = t(!hasActivePrison
+      ? HUD_MESSAGE_KEY.minimapNoPrison
+      : visible ? HUD_MESSAGE_KEY.minimapMapReady : HUD_MESSAGE_KEY.minimapPlaceholder);
+    minimapPlaceholder.classList.toggle('hud-minimap__placeholder--sr-only', visible);
+    if (view === undefined || !hasActivePrison) {
+      lastMinimapPixels = undefined;
+      return;
+    }
+    if (lastMinimapPixels !== view.pixels) {
+      lastMinimapPixels = view.pixels;
+      minimapCanvas.width = view.width;
+      minimapCanvas.height = view.height;
+      const context = minimapCanvas.getContext('2d');
+      if (context !== null) {
+        for (let y = 0; y < view.height; y += 1) {
+          for (let x = 0; x < view.width; x += 1) {
+            context.fillStyle = minimapPalette[view.pixels[y * view.width + x] ?? 0] ?? minimapPalette[0];
+            context.fillRect(x, y, 1, 1);
+          }
+        }
+      }
+    }
+    const { x, y, width, height } = view.viewport;
+    const left = Math.max(0, x);
+    const top = Math.max(0, y);
+    const right = Math.min(1, x + width);
+    const bottom = Math.min(1, y + height);
+    minimapViewport.hidden = right <= left || bottom <= top;
+    minimapViewport.style.left = `${String(left * 100)}%`;
+    minimapViewport.style.top = `${String(top * 100)}%`;
+    minimapViewport.style.width = `${String(Math.max(0, right - left) * 100)}%`;
+    minimapViewport.style.height = `${String(Math.max(0, bottom - top) * 100)}%`;
+  }
+  function setMinimapSessionActive(active: boolean): void {
+    hasActivePrison = active;
+    minimapSurface.disabled = !active;
+    updateMinimap(currentMinimapView);
+  }
   minimapSurface.addEventListener('click', (event: MouseEvent) => {
+    if (!hasActivePrison) return;
     const rect = minimapSurface.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) return;
     /*
@@ -2068,11 +2125,9 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
         ? { fx: 0.5, fy: 0.5 }
         : { fx: (event.clientX - rect.left) / rect.width, fy: (event.clientY - rect.top) / rect.height };
     const navigated = options.onMinimapNavigate?.(point) ?? false;
-    // Only ever moves *toward* "navigable" -- a press that fails today still
-    // leaves the accurate `minimapPlaceholder` sentence standing, and a
-    // session's loaded world never disappears once one exists (see the
-    // message key's own comment), so this never has to move back.
-    if (navigated) minimapPlaceholder.textContent = t(HUD_MESSAGE_KEY.minimapNavigable);
+    // A failed press in an active session leaves the accurate placeholder.
+    // Losing that session resets the separate empty-prison state above.
+    if (navigated && lastMinimapPixels === undefined) minimapPlaceholder.textContent = t(HUD_MESSAGE_KEY.minimapNavigable);
   });
 
   const alertList = element('div', { className: 'hud-alerts__list' });
@@ -2096,6 +2151,16 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   const alertsNone = eyebrowText(t(HUD_MESSAGE_KEY.alertsUnknown), 'hud-alerts__none');
   alertsSection.body.append(alertList, alertsNone);
 
+  // The Full HD Build view gives the map back its lower-left corner by
+  // starting with the minimap folded. A player opening it keeps that choice
+  // for subsequent Build visits in this HUD session.
+  const fullHdBuild = window.matchMedia('(min-width: 1920px) and (min-height: 1080px)');
+  let buildMinimapExpanded = false;
+  let alertsInPhoneTier = false;
+  let corner!: HTMLElement;
+  const compactBuildMinimap = (): boolean =>
+    fullHdBuild.matches && state.activeTab === 'build' && !buildMinimapExpanded;
+
   const minimapPanel: Panel = createPanel({
     title: t(HUD_MESSAGE_KEY.minimapTitle),
     icon: 'minimap',
@@ -2105,6 +2170,11 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       expandLabel: t(HUD_MESSAGE_KEY.panelExpand),
       collapsed: isPanelCollapsed(state, 'minimap'),
       onToggle: () => {
+        if (fullHdBuild.matches && state.activeTab === 'build') {
+          buildMinimapExpanded = !buildMinimapExpanded;
+          paintState();
+          return;
+        }
         const collapsed = !isPanelCollapsed(state, 'minimap');
         dispatchShell(
           { kind: 'toggle-panel', panel: 'minimap' },
@@ -2130,7 +2200,14 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * close over `layout`, which does not exist yet when it first runs.
    */
   function placeAlertsFold(phone: boolean): void {
-    (phone ? overviewPanel.foldSlot : minimapPanel.body).append(alertsSection.element);
+    alertsInPhoneTier = phone;
+    const home = phone
+      ? overviewPanel.foldSlot
+      : fullHdBuild.matches && state.activeTab === 'build' && corner !== undefined
+        ? corner
+        : minimapPanel.body;
+    alertsSection.element.classList.toggle('hud-alerts--detached', home === corner);
+    if (alertsSection.element.parentElement !== home) home.append(alertsSection.element);
   }
 
   /*
@@ -2205,7 +2282,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     children: [zoomLegend, zoomOut.element, zoomIn.element],
   });
 
-  const corner = element('div', { className: 'hud__corner', children: [zoomControl, minimapPanel.element] });
+  corner = element('div', { className: 'hud__corner', children: [zoomControl, minimapPanel.element] });
 
   // ---- bottom-right build panel ------------------------------------
   // Placing an order is a *command*: it asks the host to change the
@@ -2593,6 +2670,12 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    */
   const rosterPanel: RosterPanel = createRosterPanel({
     localizer,
+    onEmptyAction: (action) => {
+      const tab = action === 'build' ? 'build' : 'manage';
+      dispatchShell({ kind: 'select-tab', tab }, { kind: 'select-tab', tab });
+      if (action === 'build') buildPanel.focusCatalogue();
+      else intakePanel.focusAdmit();
+    },
     onSelectPrisoner: (prisonerId) => {
       runReported('select-prisoner', () => options.onIntent?.({ kind: 'select-prisoner', prisonerId }), reportError);
     },
@@ -2624,11 +2707,13 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       buildPanel.element,
       roomsPanel.element,
       staffPanel.element,
+      element('div', { className: 'hud__manage-saves' }),
       regimePanel.element,
       rosterPanel.element,
       securityPanel.element,
     ],
   });
+  const manageSavesSlot = side.querySelector<HTMLElement>('.hud__manage-saves')!;
 
   /**
    * The other route to the same command: a run dragged along the world
@@ -2762,6 +2847,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   const rail = element('div', { className: 'hud__rail', children: [aside, side] });
 
   // ---- bottom-centre tab bar ---------------------------------------
+  let closeNavigationDrawer = (): void => {};
   const tabs: TabButton[] = HUD_TABS.map((definition) =>
     createTabButton({
       id: definition.id,
@@ -2771,11 +2857,16 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       onSelect: (id: string) => {
         const tab = id as HudTabId;
         dispatchShell({ kind: 'select-tab', tab }, { kind: 'select-tab', tab });
+        closeNavigationDrawer();
       },
     }),
   );
 
-  const tabsInner = element('div', { className: 'hud-tabs__inner', children: tabs.map((tab) => tab.element) });
+  const tabsInner = element('div', {
+    className: 'hud-tabs__inner',
+    attributes: { id: 'hud-navigation-sections' },
+    children: tabs.map((tab) => tab.element),
+  });
   const tabBar = element('nav', {
     className: 'hud__tabs',
     attributes: { 'aria-label': t(HUD_MESSAGE_KEY.tabsRegion) },
@@ -2874,6 +2965,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
      */
     onTierChange: placeAlertsFold,
   });
+  closeNavigationDrawer = (): void => layout.closeNavigationDrawer();
   strip.layoutSlot.append(layout.menu);
 
   // Only the controls that issue a *command* are disabled while one is in
@@ -2909,6 +3001,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
 
   function paintState(): void {
     hud.dataset['activeTab'] = state.activeTab;
+    placeAlertsFold(alertsInPhoneTier);
     for (const tab of tabs) tab.setActive(tab.id === state.activeTab);
     // Hidden, not merely unstyled: a panel that is off-screen but still in the
     // tab order is a control a keyboard can reach and a player cannot see.
@@ -2920,6 +3013,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // ever laid out there and none pays for the others' height.
     overviewPanel.setVisible(state.activeTab === 'overview');
     intakePanel.setVisible(state.activeTab === 'manage');
+    manageSavesSlot.hidden = state.activeTab !== 'manage';
     // The fifth, on the tab that had none (issue #451). With this line every
     // member of `HUD_TAB_IDS` answers a tap with a panel, which is the state
     // `tests/browser/ui-shell.spec.ts` used to pin the opposite of.
@@ -2934,10 +3028,18 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     securityPanel.setVisible(state.activeTab === 'security');
     for (const panel of HUD_PANEL_IDS) {
       const collapsed = isPanelCollapsed(state, panel);
-      if (panel === 'minimap') minimapPanel.setCollapsed(collapsed);
+      if (panel === 'minimap') {
+        minimapPanel.setCollapsed(
+          fullHdBuild.matches && state.activeTab === 'build'
+            ? compactBuildMinimap()
+            : collapsed,
+        );
+      }
       else alertsSection.setCollapsed(collapsed);
     }
   }
+
+  fullHdBuild.addEventListener('change', paintState);
 
   // ---- alerts ------------------------------------------------------
   const alertRows = new Map<string, ListRow>();
@@ -3343,9 +3445,12 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   return {
     element: hud,
     asideSlot: aside,
+    manageSavesSlot,
     brandSlot: strip.brandSlot,
     preferencesSlot: layout.preferencesSlot,
     update,
+    updateMinimap,
+    setMinimapSessionActive,
     setBuildTarget: (target) => buildPanel.setTarget(target),
     setUnavailable,
     clearPrisonerSelection: () => rosterPanel.clearPrisonerSelection(),
@@ -3362,6 +3467,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       applyState(hudShellReducer(state, action));
     },
     destroy: () => {
+      fullHdBuild.removeEventListener('change', paintState);
       gate.dispose();
       // Tearing the layout down is also what ends a drag that was still live:
       // `ResizeSeparator.destroy` reports `'abandoned'` and removes the

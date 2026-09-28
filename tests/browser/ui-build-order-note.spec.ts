@@ -187,7 +187,9 @@ async function readNote(page: Page, sentence: string, pausedWord: string): Promi
       const deliveries = document.querySelector('.hud-build__deliveries');
       const spend = document.querySelector('.hud-build__deliveries-count');
       const spendRect = spend === null || spend.getClientRects().length === 0 ? null : spend.getBoundingClientRect();
-      const refund = document.querySelector('.hud-build__delivery-row .ui-action');
+      // Bottom-anchored pools keep leading empty rows mounted. Measure the
+      // first purchase that has a Cancel action, not an empty pooled slot.
+      const refund = document.querySelector('.hud-build__delivery-row[data-delivery] .ui-action');
       const refundRect = refund === null || refund.getClientRects().length === 0 ? null : refund.getBoundingClientRect();
       const armHint = document.querySelector<HTMLElement>('.hud-build__arm-hint');
       const armLine = armHint === null ? 0 : Number.parseFloat(getComputedStyle(armHint).lineHeight);

@@ -55,7 +55,7 @@
 -- project; see docs/CLOUD_SAVE.md, "What has and has not been executed".
 
 begin;
-select plan(10);
+select plan(11);
 
 -- --- The inventory ------------------------------------------------------
 --
@@ -162,6 +162,57 @@ user_settings:user_settings_pkey:p:user_id
 user_settings:user_settings_schema_version_check:c:settings_schema_version
 user_settings:user_settings_user_id_fkey:f:user_id$expected$, e'\r', ''),
   'every CHECK, UNIQUE, PRIMARY KEY and FOREIGN KEY in public is the one its migration writes, over the columns it writes it over'
+);
+
+-- --- What the inventory above cannot see: a bare unique INDEX -----------
+--
+-- `pg_constraint` -- the catalog the assertion above reads -- records only
+-- constraints, i.e. objects created (or later attached) with `ADD CONSTRAINT`.
+-- A `create unique index ... on prisons (...)` with no `ADD CONSTRAINT` around
+-- it enforces uniqueness exactly as a constraint would, and PostgreSQL still
+-- names it in the `23505` it raises, but it never gets a `pg_constraint` row --
+-- so the assertion above would stay green while such an index sat on `prisons`
+-- entirely unpinned.
+--
+-- That gap matters here specifically because `create_prison()`
+-- (`20260826090000_close_prison_id_existence_oracles.sql:492-533`) discriminates
+-- on exactly this: it catches `unique_violation`, reads
+-- `GET STACKED DIAGNOSTICS v_constraint = constraint_name`, and answers the
+-- safe, indistinguishable `42501` only when that name is `prisons_pkey`; any
+-- other name -- an existing `prisons_owner_slot_unique`, or a future index this
+-- suite failed to name -- falls through to a bare `raise;` that re-exposes the
+-- raw `23505` and its `DETAIL 'Key (id)=(...) already exists.'`, which is the
+-- #343 oracle this migration closed. `GET STACKED DIAGNOSTICS constraint_name`
+-- reports a bare unique index's name exactly as it would a real constraint's,
+-- because both arrive through the same `23505 duplicate key value violates
+-- unique constraint "<name>"` error -- verified directly against a scratch
+-- PostgreSQL 16.13 database: `create unique index t_col_bare_uq on t(col)`
+-- with no surrounding `ADD CONSTRAINT` is absent from `pg_constraint`, yet a
+-- colliding insert raises `duplicate key value violates unique constraint
+-- "t_col_bare_uq"` all the same. So a bare unique index added to `prisons` in
+-- a later migration would reach `create_prison()`'s fallthrough exactly as a
+-- renamed or added `pg_constraint` row would, and only this assertion, not the
+-- one above, would see it.
+--
+-- Pinned from `pg_index`/`pg_class` rather than `pg_constraint`, and by name
+-- rather than by count, for the same reason the assertion above pins names: a
+-- count of "2" is satisfied by swapping one unique index for another, which is
+-- exactly the silent case this suite exists to catch.
+--
+-- THIS IS DETECTION, NOT PREVENTION. It fails `pnpm verify:sql` before a
+-- migration adding an unnamed or renamed unique index on `prisons` can merge;
+-- it does nothing at runtime, and a bare unique index added and reviewed
+-- without ever running this suite would still reach the same fallthrough.
+select is(
+  (select string_agg(ic.relname, e'\n' order by ic.relname)
+     from pg_index i
+     join pg_class ic on ic.oid = i.indexrelid
+     join pg_class tc on tc.oid = i.indrelid
+     join pg_namespace n on n.oid = tc.relnamespace and n.nspname = 'public'
+    where tc.relname = 'prisons' and i.indisunique),
+  replace($expected$prisons_owner_slot_unique
+prisons_pkey$expected$, e'\r', ''),
+  'prisons carries exactly the two unique indexes create_prison() discriminates on by name -- including the one created implicitly by the primary key -- and no bare CREATE UNIQUE INDEX that pg_constraint alone would miss'
 );
 
 -- --- The six the per-column suites cannot reach, driven -----------------

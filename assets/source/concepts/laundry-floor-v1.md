@@ -1,0 +1,7 @@
+# Laundry service floor, revision 1
+
+`laundry-floor-multiview-v1.png` is a four-view concept generated with Codex image generation on 2026-09-24. It is a reference for the Blender model, not a runtime sprite. The owner's Prison Architect screenshots informed the goal of clear material identity at game scale; the design is original.
+
+The concept proposes sealed warm-grey aggregate with embedded anti-slip minerals, recessed joints and a drain. Repeating the pictured drain every game tile would turn a 3×3 laundry into a regular dot grid, so the production `floor.laundry.nonslip` model uses the continuous aggregate alone. Its sparse dark and pale grains distinguish it from Shower's blue-grey four-square ceramic while the unchanged hygiene zoning wash still communicates room category. The Blender scene in `assets/source/blender/environment.mvp.catalog.blend` produces the published 1×1 tile using `tooling/blender/render-environment-objects.py`.
+
+Concept prompt: Four synchronized views of an original practical wet-service laundry floor tile for a polished top-down prison management game: orthographic top, shallow oblique, low grazing edge, and 3×3 repeat. Warm-neutral sealed concrete and fine anti-slip mineral flecks, restrained recessed drain detail in the reference, beside blue-grey shower ceramic. No people, machines, lettering, UI, logo or watermark. The render adapts the material and intentionally omits the repeating drain.

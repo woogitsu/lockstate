@@ -1,5 +1,13 @@
 # Visual identity and product voice
 
+**Current viewport target for the HUD overhaul (owner instruction,
+2026-09-24):** design and verify game play at a minimum of 1920×1080 and at
+larger desktop sizes. The owner explicitly set this target and asked that it
+be recorded in the repository; the exact wording and provenance are in
+`AGENTS.md`, "The game's minimum design viewport". Older small-screen
+measurements below remain historical evidence about existing code, not the
+acceptance viewport for the new design.
+
 This document is the repository's reading of the design direction the owner
 delivered on 2026-09-13. The delivery itself is vendored verbatim under
 [`docs/design/2026-09-13-identity-v5/`](./design/2026-09-13-identity-v5/) and is

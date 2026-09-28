@@ -88,6 +88,7 @@ export type PrisonRecoveryStatus =
 export interface SaveListRow {
   readonly prisonId: string;
   readonly displayName: string | undefined;
+  readonly usesDefaultName?: true;
   readonly availability: 'local-only' | 'cloud-only' | 'local-and-cloud';
   /**
    * The prison's current local revision, when it is knowable.
@@ -158,6 +159,7 @@ function rowForLocal(
   const base = {
     prisonId: slot.prisonId,
     displayName: slot.displayName,
+    ...(slot.usesDefaultName === undefined ? {} : { usesDefaultName: slot.usesDefaultName }),
     localRevision,
     cloudRevision: cloud?.revision,
     lastPlayedAt: slot.updatedAt,

@@ -148,4 +148,5 @@ that is a scope change to review separately.
 ## Decision requested
 
 The owner accepted **Option 1** with the four-block scope and invariant above
-on 2026-09-24. Implementation and its test evidence remain to be added.
+on 2026-09-24. The four-list implementation and browser evidence are included
+in the pull request that adds this ADR; they ship when that change is merged.

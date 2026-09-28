@@ -1,0 +1,7 @@
+# Handwashing sink concept, revision 1
+
+`sink-multiview-v1.png` was generated with the built-in image generation tool on 2026-09-24 as a three-view modelling reference. The original institutional wall-mounted sink has a thick oval enamel rim, recessed cool-grey basin, steel rear rail, curved central tap, and distinct red/blue service valves. Those forms are modelled in Blender under the existing `fixture.cell.sink` collection. The runtime sprite comes from the repository's deterministic Blender pipeline, not from a crop of this concept.
+
+Prompt: Original institutional handwashing sink for one tile in a 2.5D prison management game; one object, three synchronized top/front/side views; readable at 64 pixels; pale enamel oval basin, dark drain, brushed metal faucet, separate muted red/blue valves, rear rail and support; transparent background and soft north-west lighting; no floor, person, text, UI, logo, or watermark. The owner's Prison Architect screenshots guided the legibility goal; the design and geometry are original.
+
+`object.sink` remains catalogue-only: `src/simulation/construction/definition.ts` deliberately has no sink buildable, since no room currently asks for one. This source model and render are ready for a later gameplay decision. They are not registered as runtime art, published into `public/`, or included in CI's LFS pull list while nothing in normal play can draw them.

@@ -460,9 +460,9 @@ def _pixel_size(footprint: tuple[float, float]) -> tuple[int, int]:
     return ratio_x * multiplier, ratio_y * multiplier
 
 
-def _frame(footprint: tuple[float, float], origin: Vector, low: Vector, high: Vector) -> tuple[float, float]:
+def _frame(footprint: tuple[float, float], origin: Vector, low: Vector, high: Vector, margin_fraction: float = MARGIN_FRACTION) -> tuple[float, float]:
     """The frame's world width and height, in tiles, at the footprint's aspect."""
-    grown = 1.0 + 2.0 * MARGIN_FRACTION
+    grown = 1.0 + 2.0 * margin_fraction
     half_x = max(abs(high.x - origin.x), abs(origin.x - low.x))
     half_y = max(abs(high.y - origin.y), abs(origin.y - low.y))
     needed_x = max(footprint[0], 2.0 * half_x) * grown
@@ -517,7 +517,9 @@ def main() -> None:
         origin = origin_object.matrix_world.translation
         low, high = _evaluated_bounds(collection)
 
-        frame_width, frame_height = _frame(footprint, origin, low, high)
+        # Repeating architectural and terrain tiles must meet at pixel edges.
+        margin_fraction = 0.0 if asset_id in {"floor.linoleum.institutional", "floor.kitchen.nonslip", "floor.canteen.terrazzo", "floor.yard.compacted-earth", "floor.shower.ceramic", "floor.laundry.nonslip", "floor.infirmary.vinyl", "floor.common-room.cork-rubber", "floor.classroom.oak-laminate", "floor.security-office.antistatic", "floor.cell.sealed-concrete", "floor.staff-room.woven-vinyl", "wall.interior.cap.overhead", "wall.interior.face", "door.interior.face", "terrain.dirt.compacted", "terrain.grass.mown", "terrain.concrete.paving", "terrain.gravel.service_path", "terrain.rock.bedrock"} else MARGIN_FRACTION
+        frame_width, frame_height = _frame(footprint, origin, low, high, margin_fraction)
         resolution_x, resolution_y = _pixel_size(footprint)
         scene.render.resolution_x, scene.render.resolution_y = resolution_x, resolution_y
         camera.data.ortho_scale = frame_width
@@ -539,7 +541,8 @@ def main() -> None:
             "pixelSha256": hashlib.sha256(pixels).hexdigest(),
             "footprintTiles": {"width": footprint[0], "height": footprint[1]},
             "frameTiles": {"width": round(frame_width, 6), "height": round(frame_height, 6)},
-            "overhangsFootprint": frame_width > footprint[0] * (1.0 + 2.0 * MARGIN_FRACTION) + 1e-6,
+            **({"marginFraction": margin_fraction} if margin_fraction != MARGIN_FRACTION else {}),
+            "overhangsFootprint": frame_width > footprint[0] * (1.0 + 2.0 * margin_fraction) + 1e-6,
             "sizePx": {"width": resolution_x, "height": resolution_y},
             "frameAspectDriftFromFootprint": round(aspect_drift, 9),
             "opaqueBoundsPx": silhouette,
