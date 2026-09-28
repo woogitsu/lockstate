@@ -531,7 +531,11 @@
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: var(--space-2);
   align-self: flex-start;
-  max-width: min(470px, 100%);
+  /* Keep the camera controls in the left HUD column when a Full HD
+   * browser is zoomed to 200% (a 960px CSS viewport). The Build rail
+   * overlays the right edge of this column at narrow desktop widths; without
+   * this cap it steals the minimap toggle and the angle buttons. */
+  max-width: min(470px, max(0px, calc(100vw - 620px)));
   margin-bottom: var(--space-2);
   padding: var(--space-2);
   border: var(--hairline) solid var(--border);
@@ -572,7 +576,13 @@
    corner and the row label both move with it. **The minimap square does
    not** -- see the cap on `.hud-minimap__surface` immediately below, and the
    measurement that made capping it necessary rather than a style choice. */
-.hud-minimap { width: calc(396px * var(--ui-scale)); background: var(--surface-raised); }
+.hud-minimap {
+  /* The right-hand Build rail owns the remaining space on narrow desktops.
+   * Capping by the viewport keeps its header and toggle above that rail at
+   * 175–200% interface scale while leaving the Full HD layout unchanged. */
+  width: min(calc(396px * var(--ui-scale)), max(0px, calc(100vw - 620px)));
+  background: var(--surface-raised);
+}
 
 .hud-minimap__surface {
   position: relative;

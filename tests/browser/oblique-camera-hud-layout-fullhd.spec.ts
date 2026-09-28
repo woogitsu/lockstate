@@ -94,3 +94,33 @@ test('angled camera HUD does not cover Build at a narrower desktop width', async
   expect(boxes.angle).toBeLessThan(boxes.build);
   expect(boxes.minimap).toBeLessThan(boxes.build);
 });
+
+test('camera controls keep the minimap toggle reachable at 200% interface scale', async ({ page }) => {
+  // This is the CSS viewport produced by a 1280x800 laptop at 200% browser
+  // zoom. The interface scale is independently 200%, which used to make the
+  // 396px minimap extend underneath the Build rail and intercept its toggle.
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto('/?oblique-preview=1');
+  await page.getByRole('button', { name: 'New prison', exact: true }).click();
+  await expect(page.locator('body[data-oblique-preview="ready"]')).toBeVisible();
+  await page.getByRole('button', { name: 'Build', exact: true }).click();
+  for (let step = 0; step < 4; step += 1) await page.locator('.display-scale__cycle').click();
+
+  const boxes = await page.evaluate(() => {
+    const minimap = document.querySelector('.hud-minimap')!.getBoundingClientRect();
+    const build = document.querySelector('.hud-build')!.getBoundingClientRect();
+    const toggle = document.querySelector('.hud-minimap .ui-panel__toggle') as HTMLElement;
+    const toggleBox = toggle.getBoundingClientRect();
+    const hit = document.elementFromPoint(toggleBox.left + toggleBox.width / 2, toggleBox.top + toggleBox.height / 2);
+    return {
+      minimapRight: minimap.right,
+      buildLeft: build.left,
+      toggleHit: hit === toggle || toggle.contains(hit),
+    };
+  });
+
+  expect(boxes.minimapRight, 'the minimap header is hidden beneath the Build rail').toBeLessThanOrEqual(boxes.buildLeft);
+  expect(boxes.toggleHit, 'the minimap toggle is covered by the Build rail').toBe(true);
+  await page.locator('.hud-minimap .ui-panel__toggle').click();
+  await expect(page.locator('.hud-minimap .ui-panel__toggle')).toHaveAttribute('aria-expanded', 'false');
+});
