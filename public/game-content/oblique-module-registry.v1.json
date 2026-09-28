@@ -44,6 +44,14 @@
     {
       "assetId": "floor.canteen.terrazzo",
       "manifest": "/game-content/oblique-floor-canteen.v1.json"
+    },
+    {
+      "assetId": "actor.prisoner.base",
+      "manifest": "/game-content/oblique-actor-prisoner.v1.json"
+    },
+    {
+      "assetId": "actor.guard.base",
+      "manifest": "/game-content/oblique-actor-guard.v1.json"
     }
   ]
 }
