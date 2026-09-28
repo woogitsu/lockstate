@@ -46,9 +46,9 @@ def build_edge_pair_t(source, variant: str):
                (-0.125, 0.125), (-1.11, 0.125)]
     height = 2.50 if variant == "full" else 0.52
     for label, low, high, material_name in (
-        ("skirting", 0, 0.24, "dark blue grey skirting"),
-        ("plaster", 0.24, height, "warm pale plaster"),
-        ("coping", height, height + 0.08, "blue grey metal coping"),
+        ("skirting", 0, 0.24, "warm charcoal skirting"),
+        ("plaster", 0.24, height, "warm lime plaster"),
+        ("coping", height, height + 0.08, "muted sandstone coping"),
     ):
         wall_source.polygon_prism(collection, f"west T {label}", outline,
                                   low, high, materials[material_name])

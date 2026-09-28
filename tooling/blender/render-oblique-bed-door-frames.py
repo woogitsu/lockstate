@@ -121,16 +121,21 @@ def main() -> None:
     render_module("door.interior.open.full", "cell-door-open", LEAF, [WALL])
     frame.hide_render = True
     leaf.hide_render = True
-    registry = {"schemaVersion": 1, "entries": [
-        {"assetId": "wall.interior.module.full", "manifest": "/game-content/oblique-modules.v1.json"},
-        {"assetId": "wall.interior.module.west.full", "manifest": "/game-content/oblique-wall-west.v1.json"},
-        {"assetId": "wall.interior.module.cutaway", "manifest": "/game-content/oblique-wall-cutaway.v1.json"},
+    registry_path = ROOT / "public/game-content/oblique-module-registry.v1.json"
+    registry = json.loads(registry_path.read_text(encoding="utf-8")) if registry_path.exists() else {
+        "schemaVersion": 1, "entries": []}
+    for updated in [
         {"assetId": bed_id, "manifest": "/game-content/oblique-cell-bed.v1.json"},
         {"assetId": "door.interior.open.full", "manifest": "/game-content/oblique-cell-door-open.v1.json"},
-        {"assetId": "door.interior.open.west.full", "manifest": "/game-content/oblique-cell-door-west-full.v1.json"},
-        {"assetId": "door.interior.open.west.cutaway", "manifest": "/game-content/oblique-cell-door-west-cutaway.v1.json"},
-    ]}
-    pipeline_common.write_text(ROOT / "public/game-content/oblique-module-registry.v1.json",
+    ]:
+        entries = registry["entries"]
+        index = next((index for index, entry in enumerate(entries)
+                      if entry["assetId"] == updated["assetId"]), None)
+        if index is None:
+            entries.append(updated)
+        else:
+            entries[index] = updated
+    pipeline_common.write_text(registry_path,
                                json.dumps(registry, indent=2) + "\n")
 
 
