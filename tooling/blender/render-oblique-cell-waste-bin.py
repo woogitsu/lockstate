@@ -1,6 +1,6 @@
 """Render the authored waste bin through the oblique runtime pipeline.
 
-The sink keeps its one-tile footprint and existing origin.  This module is
+The waste bin keeps its one-tile footprint and existing origin.  This module is
 deliberately denser than the legacy object grid: twelve yaw samples and six
 elevation samples let the adjustable camera choose a nearby pose without
 silhouette popping.
@@ -44,12 +44,13 @@ def main() -> None:
 
     existing = json.loads(REGISTRY.read_text(encoding="utf-8"))
     entries = [entry for entry in existing["entries"] if entry["assetId"] != ASSET_ID]
-    entries.append({"assetId": ASSET_ID,
-                    "manifest": f"/game-content/oblique-{SLUG}.v1.json"})
+    sink_index = next(index for index, entry in enumerate(entries)
+                      if entry["assetId"] == "fixture.cell.sink")
+    entries.insert(sink_index + 1, {"assetId": ASSET_ID,
+                                    "manifest": f"/game-content/oblique-{SLUG}.v1.json"})
     modules.pipeline_common.write_text(
         REGISTRY, json.dumps({"schemaVersion": 1, "entries": entries}, indent=2) + "\n")
 
 
 if __name__ == "__main__":
     main()
-

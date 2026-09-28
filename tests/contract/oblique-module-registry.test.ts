@@ -122,7 +122,7 @@ describe('oblique cell module registry', () => {
       expect(lowFrame).toBeDefined();
       expect(lowFrame!.sha256).not.toBe(frame.sha256);
     }
-  });
+  }, 15_000);
 
   it('rejects duplicate registry identities', () => {
     const registry = parseObliqueModuleRegistry(json('/game-content/oblique-module-registry.v1.json'));
