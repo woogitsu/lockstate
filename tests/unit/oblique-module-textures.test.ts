@@ -16,7 +16,7 @@ function catalog(image: string): ObliqueModuleCatalog {
   } as ObliqueModuleCatalog;
 }
 
-function fakeScene() {
+function fakeScene(failedKeys: readonly string[] = []) {
   const events = new EventEmitter();
   const textures = new Set<string>();
   const queued: string[] = [];
@@ -31,7 +31,10 @@ function fakeScene() {
       start: () => {
         starts += 1;
         setTimeout(() => {
-          for (const key of queued.splice(0)) textures.add(key);
+          for (const key of queued.splice(0)) {
+            if (failedKeys.includes(key)) events.emit('fileloaderror', { key });
+            else textures.add(key);
+          }
           events.emit('complete');
         }, 0);
       },
@@ -63,5 +66,18 @@ describe('oblique module frame loading', () => {
     const later = ensureObliqueModuleFrameTexture(scene, catalog('/assets/environment/oblique/later.png'), pose);
     await Promise.all([first, duplicate, later]);
     expect(getStarts()).toBe(2);
+  });
+
+  it('keeps successful frames available when another frame in the batch fails', async () => {
+    const failed = '/assets/environment/oblique/missing.png';
+    const { scene, getStarts } = fakeScene([failed]);
+    const pose = { yawRadians: 0, elevationRadians: Math.PI / 4 };
+    const results = await Promise.allSettled([
+      ensureObliqueModuleFrameTexture(scene, catalog('/assets/environment/oblique/good.png'), pose),
+      ensureObliqueModuleFrameTexture(scene, catalog(failed), pose),
+    ]);
+    expect(results[0]?.status).toBe('fulfilled');
+    expect(results[1]?.status).toBe('rejected');
+    expect(getStarts()).toBe(1);
   });
 });
