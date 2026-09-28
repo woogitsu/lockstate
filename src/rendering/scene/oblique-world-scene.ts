@@ -204,6 +204,10 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.input.on('gameout', () => {
       this.hoverPointerAt = undefined;
       this.emitGroundHover();
+      if (this.leftGesture !== undefined) {
+        this.leftGesture = undefined;
+        this.onTileGesturePreview?.(undefined);
+      }
     });
   }
 
