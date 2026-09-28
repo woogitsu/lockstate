@@ -24,7 +24,7 @@ export function createRoomTemplateBuildPlan(
   quarterTurns: TemplateQuarterTurns = 0,
 ): RoomTemplateBuildPlan {
   const authored = instantiateRoomTemplate(templateId, origin, { mirrorX });
-  if (quarterTurns !== 0 && templateId !== 'canteen-basic') {
+  if (quarterTurns !== 0 && templateId !== 'canteen-basic' && templateId !== 'cell-large') {
     throw new RangeError(`Room template ${templateId} has no valid quarter-turn layout.`);
   }
   const plan: RoomTemplatePlan = quarterTurns === 0 ? authored : (() => {
