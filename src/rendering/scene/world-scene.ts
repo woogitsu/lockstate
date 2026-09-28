@@ -311,6 +311,8 @@ export class WorldScene extends Phaser.Scene {
   private actors: ActorLayer | undefined;
   private buildOverlay: BuildOverlay | undefined;
   private templateGhostPort: TemplateGhostPort | undefined;
+  private unsubscribeTemplateSelection: (() => void) | undefined;
+  private templateHoverScreen: { readonly x: number; readonly y: number } | undefined;
   private templatePointerId: number | undefined;
   private templateOrigin: TemplateSquare | undefined;
   private templatePlan: RoomTemplatePlan | undefined;
@@ -369,7 +371,16 @@ export class WorldScene extends Phaser.Scene {
   }
 
   public setTemplateGhostPort(port: TemplateGhostPort | undefined): void {
+    this.unsubscribeTemplateSelection?.();
     this.templateGhostPort = port;
+    this.unsubscribeTemplateSelection = port?.onSelectionChanged(() => {
+      this.templateRevision += 1;
+      this.templateOrigin = undefined;
+      this.templatePlan = undefined;
+      this.templateVerdict = undefined;
+      this.buildOverlay?.clear();
+      if (this.isTemplateArmed() && this.templateHoverScreen !== undefined) this.previewTemplateHover(this.templateHoverScreen);
+    });
   }
 
   public constructor(options: WorldSceneOptions) {
@@ -743,6 +754,8 @@ export class WorldScene extends Phaser.Scene {
     this.input.on('pointerupoutside', finishPointer);
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.unsubscribeTemplateSelection?.();
+      this.unsubscribeTemplateSelection = undefined;
       window.removeEventListener('keydown', keyDown);
       window.removeEventListener('keyup', keyUp);
       window.removeEventListener('blur', blur);
@@ -1145,7 +1158,7 @@ export class WorldScene extends Phaser.Scene {
    * before the transform. `tests/browser/camera-coordinates.spec.ts` drives a
    * real mouse at a real camera to check both halves of that sentence.
    */
-  private worldPointOf(pointer: Phaser.Input.Pointer): { readonly x: number; readonly y: number } {
+  private worldPointOf(pointer: { readonly x: number; readonly y: number }): { readonly x: number; readonly y: number } {
     return screenToWorld({ x: pointer.x, y: pointer.y }, this.cameraState());
   }
 
@@ -1426,9 +1439,10 @@ export class WorldScene extends Phaser.Scene {
     return this.templatePointerId !== undefined || this.buildPointerId !== undefined || this.objectPointerId !== undefined || this.areaPointerId !== undefined;
   }
 
-  private previewTemplateHover(pointer: Phaser.Input.Pointer): void {
+  private previewTemplateHover(pointer: { readonly x: number; readonly y: number }): void {
     const port = this.templateGhostPort;
     if (port === undefined) return;
+    this.templateHoverScreen = { x: pointer.x, y: pointer.y };
     const tile = this.templateOriginAt(pointer, port);
     const plan = port.planAt(tile);
     const oldDoor = this.templatePlan?.doorSquares[0];
@@ -1451,7 +1465,7 @@ export class WorldScene extends Phaser.Scene {
   }
 
   /** Keep a large plan under the pointer as a whole, rather than anchoring its top corner there. */
-  private templateOriginAt(pointer: Phaser.Input.Pointer, port: TemplateGhostPort): TemplateSquare {
+  private templateOriginAt(pointer: { readonly x: number; readonly y: number }, port: TemplateGhostPort): TemplateSquare {
     const hovered = this.squareAt(this.worldPointOf(pointer));
     const size = port.planAt(hovered);
     if (size.width <= 8 && size.height <= 8) return hovered;

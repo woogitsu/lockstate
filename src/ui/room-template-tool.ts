@@ -34,16 +34,33 @@ export class RoomTemplateTool {
   private mirrorX = false;
   private busy = false;
   private armed = false;
+  private readonly selectionListeners = new Set<() => void>();
 
   public constructor(private readonly port: RoomTemplatePlacementPort) {}
 
   public select(templateId: RoomTemplateId, mirrorX = false): void {
+    if (this.selected === templateId && this.mirrorX === mirrorX) return;
     this.selected = templateId;
     this.mirrorX = mirrorX;
+    for (const listener of this.selectionListeners) listener();
   }
 
-  public arm(): void { this.armed = true; }
-  public standDown(): void { this.armed = false; }
+  /** A ghost needs a repaint when either the selected variant or armed state changes. */
+  public onSelectionChanged(listener: () => void): () => void {
+    this.selectionListeners.add(listener);
+    return () => this.selectionListeners.delete(listener);
+  }
+
+  public arm(): void {
+    if (this.armed) return;
+    this.armed = true;
+    for (const listener of this.selectionListeners) listener();
+  }
+  public standDown(): void {
+    if (!this.armed) return;
+    this.armed = false;
+    for (const listener of this.selectionListeners) listener();
+  }
   public isArmed(): boolean { return this.armed; }
 
   public planAt(origin: TemplateSquare): RoomTemplatePlan {

@@ -57,6 +57,18 @@ test('angled zoom and minimap navigation act on the visible scene', async ({ pag
   expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.navigateToMinimapPoint(Number.NaN, 0))).toBe(false);
 });
 
+test('one camera turn batches newly loaded Blender frames into one ground repaint', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/tests/browser/oblique-world-harness.html');
+  await page.waitForFunction(() => window.lockstateObliqueWorldHarness !== undefined);
+  await page.evaluate(() => window.lockstateObliqueWorldHarness.ready());
+  const before = await page.evaluate(() => window.lockstateObliqueWorldHarness.groundArtPaintCount());
+  await page.evaluate(() => window.lockstateObliqueWorldHarness.setPose(90, 25));
+  const after = await page.evaluate(() => window.lockstateObliqueWorldHarness.groundArtPaintCount());
+  expect(after - before).toBeLessThanOrEqual(3);
+  expect(after - before).toBeGreaterThanOrEqual(1);
+});
+
 test('real render feed cell keeps one build square under the cursor while the scene turns', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/tests/browser/oblique-world-harness.html');

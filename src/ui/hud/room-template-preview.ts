@@ -1,4 +1,4 @@
-import { ROOM_TEMPLATE_IDS, instantiateRoomTemplate, type RoomTemplateId } from '../../content/room-template-catalog';
+import { ROOM_TEMPLATE_IDS, instantiateRoomTemplate, roomTemplateObjectSquares, type RoomTemplateId } from '../../content/room-template-catalog';
 import { defaultItemRegistry } from '../../content/item-catalog';
 import type { LocalizationKey } from '../../content/localization';
 import { element, nextUiId } from '../primitives/dom';
@@ -115,7 +115,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
     diagram.replaceChildren();
     const wall = new Set(plan.wallSquares.map(({ x, y }) => `${x},${y}`));
     const door = new Set(plan.doorSquares.map(({ x, y }) => `${x},${y}`));
-    const objects = new Map(plan.objects.map(({ x, y, buildableId }) => [`${x},${y}`, buildableId]));
+    const objects = new Set(roomTemplateObjectSquares(plan).map(({ x, y }) => `${x},${y}`));
     for (let y = 0; y < plan.height; y += 1) {
       for (let x = 0; x < plan.width; x += 1) {
         const key = `${x},${y}`;
@@ -143,6 +143,10 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
       const next = { x: Number(x.value), y: Number(y.value) };
       return Number.isSafeInteger(next.x) && Number.isSafeInteger(next.y) ? next : undefined;
     };
+    const wholePlanFitsSafeTiles = (tile: { readonly x: number; readonly y: number }): boolean => {
+      const plan = instantiateRoomTemplate(selectedId, { x: 0, y: 0 }, { mirrorX });
+      return Number.isSafeInteger(tile.x + plan.width - 1) && Number.isSafeInteger(tile.y + plan.height - 1);
+    };
     let revision = 0;
     refreshPlacement = async (): Promise<void> => {
       const current = ++revision;
@@ -150,6 +154,10 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
       const tile = origin();
       if (tile === undefined) {
         status.textContent = t(HUD_MESSAGE_KEY.templateInvalidPosition);
+        return;
+      }
+      if (!wholePlanFitsSafeTiles(tile)) {
+        status.textContent = t(HUD_MESSAGE_KEY.templateOutsideSafeTiles);
         return;
       }
       try {
@@ -176,7 +184,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
     });
     place.addEventListener('click', async () => {
       const tile = origin();
-      if (tile === undefined || place.disabled) return;
+      if (tile === undefined || !wholePlanFitsSafeTiles(tile) || place.disabled) return;
       place.disabled = true;
       try {
         const result = await tool.placeAt(tile);

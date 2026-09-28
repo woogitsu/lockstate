@@ -15,6 +15,7 @@ export interface ObliqueWorldHarness {
   pointAtTile(tileX: number, tileY: number): Point;
   selected(): { readonly tileX: number; readonly tileY: number } | undefined;
   paintCounts(): { readonly ground: number; readonly raised: number };
+  groundArtPaintCount(): number;
   artTextureKeys(): readonly string[];
   loadedArtTextureCount(): number;
   artCatalogCount(): number;
@@ -110,6 +111,7 @@ window.lockstateObliqueWorldHarness = {
   },
   selected: () => scene.selectedTile,
   paintCounts: () => scene.paintCounts,
+  groundArtPaintCount: () => scene.groundArtPaintCount,
   artTextureKeys: () => scene.artTextureKeys,
   loadedArtTextureCount: () => scene.loadedArtTextureCount,
   artCatalogCount: () => artCatalogs.size,

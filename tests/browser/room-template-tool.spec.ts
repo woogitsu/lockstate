@@ -27,3 +27,15 @@ test('template placement UI checks every square before enabling one submit', asy
     { templateId: 'cell-large', origin: { x: 10, y: 7 }, mirrorX: true },
   ]);
 });
+
+test('Full HD plan origin rejects a footprint beyond safe tile coordinates before querying worker', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/tests/browser/room-template-tool-harness.html');
+  await page.getByRole('button', { name: 'Room plans' }).click();
+  const dialog = page.getByRole('dialog', { name: 'Room plans' });
+  await dialog.getByRole('spinbutton', { name: 'Plan origin X' }).fill(String(Number.MAX_SAFE_INTEGER));
+  await expect(dialog.getByRole('status')).toContainText('outside');
+  await expect(dialog.getByRole('button', { name: 'Place room plan' })).toBeDisabled();
+  await dialog.getByRole('spinbutton', { name: 'Plan origin X' }).fill('10');
+  await expect(dialog.getByRole('status')).toContainText('clear');
+});

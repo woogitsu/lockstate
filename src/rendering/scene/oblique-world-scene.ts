@@ -68,6 +68,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private lastPaintedPoseRevision = -1;
   private actorPositions: { id: number; tileX: number; tileY: number }[] = [];
   private groundPaints = 0;
+  private groundArtPaints = 0;
   private raisedPaints = 0;
   private artImages: Phaser.GameObjects.Image[] = [];
   private groundArtImages: Phaser.GameObjects.Image[] = [];
@@ -169,6 +170,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
   public get paintCounts(): { readonly ground: number; readonly raised: number } {
     return { ground: this.groundPaints, raised: this.raisedPaints };
   }
+  public get groundArtPaintCount(): number { return this.groundArtPaints; }
   public get artTextureKeys(): readonly string[] {
     return [...this.groundArtImages, ...this.artImages, ...this.actorArtImages].map((item) => item.texture.key);
   }
@@ -244,25 +246,27 @@ export class ObliqueWorldScene extends Phaser.Scene {
 
   /** Resolve only the authored frames nearest to the active camera pose. */
   public async ensureArtForCurrentPose(): Promise<void> {
+    const requestedPoseRevision = this.poseRevision;
     const pending: Promise<void>[] = [];
     for (const catalog of this.artCatalogs.values()) {
       const frame = selectObliqueModuleFrame(catalog, this.pose);
       if (this.textures.exists(frame.image)) continue;
       let task = this.pendingArtLoads.get(frame.image);
       if (task === undefined) {
-        task = ensureObliqueModuleFrameTexture(this, catalog, this.pose).then(() => {
-          if (this.lastProjection !== undefined && this.scene.isActive()) {
-            this.paintGroundArt(this.lastProjection);
-            this.paintRaised(this.lastProjection);
-            this.paintArt(this.lastProjection);
-            this.paintActorArt(this.lastProjection);
-          }
-        }).finally(() => { this.pendingArtLoads.delete(frame.image); });
+        task = ensureObliqueModuleFrameTexture(this, catalog, this.pose)
+          .finally(() => { this.pendingArtLoads.delete(frame.image); });
         this.pendingArtLoads.set(frame.image, task);
       }
       pending.push(task);
     }
     await Promise.all(pending);
+    if (pending.length > 0 && requestedPoseRevision === this.poseRevision &&
+        this.lastProjection !== undefined && this.scene.isActive()) {
+      this.paintGroundArt(this.lastProjection);
+      this.paintRaised(this.lastProjection);
+      this.paintArt(this.lastProjection);
+      this.paintActorArt(this.lastProjection);
+    }
   }
 
   public override update(time: number): void {
@@ -318,6 +322,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
   }
 
   private paintGroundArt(projection: ObliqueWorldProjection): void {
+    this.groundArtPaints += 1;
     for (const image of this.groundArtImages) image.destroy();
     this.groundArtImages = [];
     for (const tile of projection.ground) {
