@@ -532,6 +532,7 @@ export const HUD_MESSAGE_KEY = {
   templateOutsideSafeTiles: 'hud.build.template-outside-safe-tiles',
   templateReady: 'hud.build.template-ready',
   templateBlocked: 'hud.build.template-blocked',
+  templateUnownedLand: 'hud.build.template-unowned-land',
   templateUnavailable: 'hud.build.template-unavailable',
   templateSubmitted: 'hud.build.template-submitted',
   templateClose: 'hud.build.template-close',

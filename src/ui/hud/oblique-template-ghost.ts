@@ -37,7 +37,9 @@ export function createObliqueTemplateGhost(localizer: HudLocalizer): ObliqueTemp
       const state = verdict === undefined ? 'pending' : verdict.ok ? 'clear' : 'blocked';
       root.dataset.verdict = state;
       notice.setAttribute('aria-busy', verdict === undefined ? 'true' : 'false');
-      status.textContent = verdict === undefined ? '' : localizer.format(verdict.ok ? HUD_MESSAGE_KEY.templateReady : HUD_MESSAGE_KEY.templateBlocked);
+      status.textContent = verdict === undefined ? '' : localizer.format(verdict.ok
+        ? HUD_MESSAGE_KEY.templateReady
+        : verdict.reason === 'unowned-land' ? HUD_MESSAGE_KEY.templateUnownedLand : HUD_MESSAGE_KEY.templateBlocked);
       cost.textContent = quote === undefined ? '' : quote.catalogueCostMinorUnits === undefined
         ? localizer.format(HUD_MESSAGE_KEY.templateCatalogueValueUnavailable)
         : localizer.format(HUD_MESSAGE_KEY.templateCatalogueValue, { total: localizer.formatNumber(quote.catalogueCostMinorUnits) });

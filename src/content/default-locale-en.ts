@@ -2311,6 +2311,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.template-outside-safe-tiles': 'The plan extends outside valid map coordinates.',
   'hud.build.template-ready': 'This footprint is clear.',
   'hud.build.template-blocked': 'This footprint is blocked. Choose another position.',
+  'hud.build.template-unowned-land': 'This plan reaches land you do not own. Choose another position.',
   'hud.build.template-unavailable': 'Placement check is unavailable. Try again.',
   'hud.build.template-submitted': 'Room plan submitted.',
   'hud.build.template-close': 'Close plans',

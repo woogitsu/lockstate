@@ -1083,6 +1083,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.template-outside-safe-tiles': 'Wzór wychodzi poza prawidłowe współrzędne mapy.',
   'hud.build.template-ready': 'Cały obrys jest wolny.',
   'hud.build.template-blocked': 'Obrys jest zajęty. Wybierz inne miejsce.',
+  'hud.build.template-unowned-land': 'Wzór sięga poza posiadany teren. Wybierz inne miejsce.',
   'hud.build.template-unavailable': 'Nie można sprawdzić miejsca. Spróbuj ponownie.',
   'hud.build.template-submitted': 'Zlecono postawienie wzoru.',
   'hud.build.template-close': 'Zamknij wzory',

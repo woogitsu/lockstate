@@ -42,6 +42,9 @@ import { applyAccessibilitySettings, createDisplayScaleControl } from './ui/disp
 import { createThemeControl, createThemeController, resolveSystemThemeQuery } from './ui/theme';
 import { SavePanel } from './ui/save-panel';
 import { createSimulationRoomTemplatePreflight, createSimulationRoomTemplateQuote } from './ui/simulation-room-template-port';
+import { createObliqueTemplateGhost, type ObliqueTemplateGhostView } from './ui/hud/oblique-template-ghost';
+import type { RoomTemplateTool, RoomTemplatePreflight, RoomTemplateCostQuote } from './ui/room-template-tool';
+import type { RoomTemplatePlan } from './content/room-template-catalog';
 import { ManageSavesPanel } from './ui/account/manage-saves-panel';
 import {
   EMPTY_HUD_VIEW_MODEL,
@@ -396,8 +399,54 @@ const obliquePreviewRequested = new URL(window.location.href).searchParams.get('
 let obliqueCameraScene: ObliqueWorldScene | undefined;
 let cameraHud: HudHandle | undefined;
 let cameraInput: CameraPoseInputAdapter | undefined;
+let obliqueTemplateTool: RoomTemplateTool | undefined;
+let obliqueTemplateGhost: ObliqueTemplateGhostView | undefined;
+let obliqueTemplateHover: { readonly x: number; readonly y: number } | undefined;
+let obliqueTemplatePlan: RoomTemplatePlan | undefined;
+let obliqueTemplateVerdict: RoomTemplatePreflight | undefined;
+let obliqueTemplateQuote: RoomTemplateCostQuote | undefined;
+let obliqueTemplateRevision = 0;
+const templateQuoteReader = simulation === undefined ? undefined : createSimulationRoomTemplateQuote(simulation);
+const paintObliqueTemplateGhost = (): void => {
+  if (obliqueTemplateTool?.isArmed() && obliqueTemplatePlan !== undefined && obliqueCameraScene !== undefined) {
+    obliqueTemplateGhost?.update(obliqueTemplatePlan, obliqueCameraScene.cameraPose, obliqueTemplateVerdict, obliqueTemplateQuote);
+  } else obliqueTemplateGhost?.clear();
+};
+const obliqueTemplateOriginAt = (tile: { readonly x: number; readonly y: number }, tool: RoomTemplateTool): { x: number; y: number } => {
+  const plan = tool.planAt({ x: 0, y: 0 });
+  return { x: tile.x - Math.floor(plan.width / 2), y: tile.y - Math.floor(plan.height / 2) };
+};
+const refreshObliqueTemplateGhost = (): void => {
+  const revision = ++obliqueTemplateRevision;
+  const tool = obliqueTemplateTool;
+  const tile = obliqueTemplateHover;
+  if (tool === undefined || !tool.isArmed() || tile === undefined) {
+    obliqueTemplatePlan = undefined;
+    obliqueTemplateVerdict = undefined;
+    obliqueTemplateQuote = undefined;
+    paintObliqueTemplateGhost();
+    refreshCameraControls();
+    return;
+  }
+  const origin = obliqueTemplateOriginAt(tile, tool);
+  obliqueTemplatePlan = tool.planAt(origin);
+  obliqueTemplateVerdict = undefined;
+  obliqueTemplateQuote = undefined;
+  paintObliqueTemplateGhost();
+  refreshCameraControls();
+  void tool.inspectAt(origin).then(({ verdict }) => {
+    if (revision !== obliqueTemplateRevision) return;
+    obliqueTemplateVerdict = verdict;
+    paintObliqueTemplateGhost();
+  }).catch(() => { if (revision === obliqueTemplateRevision) obliqueTemplateGhost?.clear(); });
+  void templateQuoteReader?.(obliqueTemplatePlan.id).then((quote) => {
+    if (revision !== obliqueTemplateRevision) return;
+    obliqueTemplateQuote = quote;
+    paintObliqueTemplateGhost();
+  }).catch(() => { /* The footprint remains useful without a catalogue quote. */ });
+};
 const cameraPlacementActive = (): boolean =>
-  (buildTool?.isArmed() ?? false) || (roomTool?.isArmed() ?? false) || (objectTool?.isArmed() ?? false);
+  (buildTool?.isArmed() ?? false) || (roomTool?.isArmed() ?? false) || (objectTool?.isArmed() ?? false) || (obliqueTemplateTool?.isArmed() ?? false);
 const cameraContexts = () => {
   if (document.querySelector('dialog[open], [role="dialog"][aria-modal="true"]')) return ['modal'] as const;
   if (document.activeElement?.matches('input, textarea, select, [contenteditable="true"]')) return ['text-entry'] as const;
@@ -746,8 +795,25 @@ if (obliquePreviewRequested) {
         onPoseChanged: (pose) => {
           cameraHud?.updateCameraPose(pose);
           refreshCameraControls();
+          paintObliqueTemplateGhost();
         },
         canRotate: () => cameraInput?.canActivate() ?? false,
+        onGroundHover: (tile) => {
+          obliqueTemplateHover = tile === undefined ? undefined : { x: tile.tileX, y: tile.tileY };
+          refreshObliqueTemplateGhost();
+        },
+        onTileSelected: (tileX, tileY) => {
+          const tile = obliqueTemplateHover;
+          const tool = obliqueTemplateTool;
+          if (tool === undefined || !tool.isArmed() || tile?.x !== tileX || tile.y !== tileY || obliqueTemplateVerdict?.ok !== true) return;
+          ++obliqueTemplateRevision;
+          obliqueTemplateVerdict = undefined;
+          paintObliqueTemplateGhost();
+          void tool.placeAt(obliqueTemplateOriginAt(tile, tool)).then((result) => {
+            if (result.ok) tool.standDown();
+            refreshObliqueTemplateGhost();
+          }).catch(() => refreshObliqueTemplateGhost());
+        },
       });
       game.scene.add('oblique-world', obliqueScene, false);
       obliqueScene.events.once(Phaser.Scenes.Events.CREATE, () => {
@@ -3949,7 +4015,12 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
   });
   if (obliquePreviewRequested) {
     cameraHud = hud;
+    obliqueTemplateTool = hud.roomTemplateTool;
+    obliqueTemplateGhost = createObliqueTemplateGhost(localizer);
+    document.body.append(obliqueTemplateGhost.element);
+    obliqueTemplateTool?.onSelectionChanged(refreshObliqueTemplateGhost);
     if (obliqueCameraScene !== undefined) hud.updateCameraPose(obliqueCameraScene.cameraPose);
+    refreshObliqueTemplateGhost();
     refreshCameraControls();
   }
   // The renderer owns the projection and camera; the HUD only paints it.
