@@ -188,12 +188,16 @@ export class RoomTemplateCoordinator implements SystemRegistration {
   public claimsPendingDoorApproach(order: BuildOrder): boolean {
     if (BUILDABLE_REGISTRY.get(order.definitionId)?.category !== 'wall') return false;
     if (order.footprint !== 'square' && resolveBuildEdge(order) !== 'north') return false;
+    return this.claimsPendingDoorApproachTile(order.location, order.placementSequence);
+  }
+
+  public claimsPendingDoorApproachTile(tile: TilePosition, orderSequence?: number): boolean {
     return this.pending.some((request) => {
-      if (request.sequence === order.placementSequence) return false;
+      if (request.sequence === orderSequence) return false;
       const plan = instantiateRoomTemplate(request.templateId, request.origin, { mirrorX: request.mirrorX });
       return plan.doorSquares.some((door) =>
         door.y === plan.origin.y + plan.height - 1 &&
-        door.x === order.location.x && door.y + 1 === order.location.y);
+        door.x === tile.x && door.y + 1 === tile.y);
     });
   }
 
