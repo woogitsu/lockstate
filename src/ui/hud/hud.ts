@@ -3459,6 +3459,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     getLayout: () => layout.getSettings(),
     refreshLayout: () => {
       layout.refresh();
+      if (state.activeTab === 'zones') roomsPanel.revealSelectedRoom();
     },
     setLayout: (settings: LayoutSettings) => {
       layout.setSettings(settings);
