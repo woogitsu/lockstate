@@ -60,6 +60,14 @@
     {
       "assetId": "actor.guard.base",
       "manifest": "/game-content/oblique-actor-guard.v1.json"
+    },
+    {
+      "assetId": "wall.interior.corner.inner.north-west.full",
+      "manifest": "/game-content/oblique-wall-corner-north-west-full.v1.json"
+    },
+    {
+      "assetId": "wall.interior.corner.inner.north-west.cutaway",
+      "manifest": "/game-content/oblique-wall-corner-north-west-cutaway.v1.json"
     }
   ]
 }

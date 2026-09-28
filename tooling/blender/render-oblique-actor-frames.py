@@ -51,6 +51,7 @@ def render_actor(asset_id: str, slug: str) -> None:
     scene.render.resolution_x = scene.render.resolution_y = 512
     scene.render.resolution_percentage = 100
     pipeline_common.apply_deterministic_render_settings(scene)
+    pipeline_common.configure_oblique_module_lighting(scene)
     scene.camera.data.type = "ORTHO"
     scene.camera.data.ortho_scale = 8.0  # 512 / 8 = 64 px per tile
     OUTPUT.mkdir(parents=True, exist_ok=True)
