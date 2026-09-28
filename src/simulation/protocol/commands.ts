@@ -91,7 +91,7 @@ export const zoneRoomSchema = z.object({
 /** One atomic authored template gesture; the worker expands its complete footprint. */
 export const placeRoomTemplateSchema = z.object({
   type: z.literal('PlaceRoomTemplate'),
-  templateId: z.enum(['cell-basic', 'cell-large', 'shower-room', 'canteen-basic', 'kitchen-basic', 'cell-row-four', 'infirmary-basic', 'laundry-basic', 'classroom-basic', 'common-room-basic', 'security-office-basic', 'storage-room-basic', 'staff-room-basic', 'solitary-cell-basic', 'delivery-bay-basic', 'holding-cell-basic']),
+  templateId: z.enum(['cell-basic', 'cell-large', 'shower-room', 'canteen-basic', 'kitchen-basic', 'cell-row-four', 'infirmary-basic', 'laundry-basic', 'classroom-basic', 'common-room-basic', 'security-office-basic', 'storage-room-basic', 'staff-room-basic', 'solitary-cell-basic', 'delivery-bay-basic', 'holding-cell-basic', 'reception-basic']),
   origin: z.object({ x: z.number().int().safe(), y: z.number().int().safe() }).strict(),
   mirrorX: z.boolean().optional(),
   /** Clockwise turns of the complete footprint; absent is the legacy unrotated plan. */
