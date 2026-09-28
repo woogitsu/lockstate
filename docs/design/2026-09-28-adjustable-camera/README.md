@@ -168,6 +168,21 @@ current player view.
 
 ## Active delivery lanes
 
+**Integration checkpoint, 2026-09-28 (PR #1623, `aa1723f7e`):** the optional
+`/?oblique-preview=1` route now uses the live prison, adjustable yaw and
+elevation controls, mouse movement, map zoom/minimap navigation, Blender
+wall/door/floor/furniture/actor modules, and a whole-tile room-template ghost
+with a preflight verdict and cost. The Cell, Canteen, Shower and Infirmary
+templates can be selected in the HUD and placed through the real command
+path. A stale placement reply no longer replaces a newer ghost. The Full HD
+placement and stale-reply browser flows pass, including Save/Load coverage;
+the larger placement flow still takes about 1.7 minutes locally, so rendering
+performance needs work before this replaces the default top-down view.
+Ground art updates for newly loaded camera frames are now batched into one
+repaint rather than 29. Additional room templates, clearer selected-tool
+state, Escape behavior, corner art and smaller ground textures are in separate
+reviewed branches. This is an integration branch, not a production release.
+
 Keep three isolated worktrees moving in parallel: (1) Blender modules and
 consistent camera poses, (2) square-first construction and ready-made rooms,
 and (3) Full HD HUD, controls and visible template previews. The renderer
