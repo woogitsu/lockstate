@@ -129,7 +129,11 @@ export class RoomTemplateCoordinator implements SystemRegistration {
     // particular, the zero-cost Yard must be designated by its placement
     // press even while the clock is paused.
     if (built.shellOrderIds.length === 0) {
-      return this.finishPlan(request, built, tick) ? { ok: true } : {
+      const finished = this.finishPlan(request, built, tick);
+      // A shell-free plan writes no construction transaction. Like ordinary
+      // zoning, it closes access to an older Undo entry after it succeeds.
+      if (finished) this.construction.noteActionThatDoesNotWriteTheUndoStack();
+      return finished ? { ok: true } : {
         ok: false, reason: 'structure-occupied', tile: {
           x: tileCoordinate(request.origin.x), y: tileCoordinate(request.origin.y),
         },
