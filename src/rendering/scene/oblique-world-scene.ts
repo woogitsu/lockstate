@@ -31,6 +31,8 @@ export interface ObliqueWorldSceneOptions {
   readonly onTileSelected?: (tileX: number, tileY: number) => void;
   /** A completed left-button ground gesture, reported as whole square tiles. */
   readonly onTileGesture?: (tiles: readonly { readonly x: number; readonly y: number }[]) => void;
+  /** Live whole-tile drag endpoints; undefined start clears the preview. */
+  readonly onTileGesturePreview?: (start: { readonly x: number; readonly y: number } | undefined, end?: { readonly x: number; readonly y: number }) => void;
   readonly onGroundHover?: (tile: { readonly tileX: number; readonly tileY: number } | undefined) => void;
   /** The HUD follows every scene-side pose change, including pointer drags. */
   readonly onPoseChanged?: (pose: ObliqueCameraState) => void;
@@ -50,6 +52,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private readonly feed: RenderFeed;
   private readonly onTileSelected: ((tileX: number, tileY: number) => void) | undefined;
   private readonly onTileGesture: ((tiles: readonly { readonly x: number; readonly y: number }[]) => void) | undefined;
+  private readonly onTileGesturePreview: ((start: { readonly x: number; readonly y: number } | undefined, end?: { readonly x: number; readonly y: number }) => void) | undefined;
   private leftGesture: { readonly pointerId: number; readonly x: number; readonly y: number } | undefined;
   private readonly onGroundHover: ((tile: { readonly tileX: number; readonly tileY: number } | undefined) => void) | undefined;
   private readonly onPoseChanged: ((pose: ObliqueCameraState) => void) | undefined;
@@ -85,6 +88,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.feed = options.feed;
     this.onTileSelected = options.onTileSelected;
     this.onTileGesture = options.onTileGesture;
+    this.onTileGesturePreview = options.onTileGesturePreview;
     this.onGroundHover = options.onGroundHover;
     this.onPoseChanged = options.onPoseChanged;
     this.canRotate = options.canRotate ?? (() => true);
@@ -133,7 +137,10 @@ export class ObliqueWorldScene extends Phaser.Scene {
       const tileY = worldToTile(world.y);
       this.selected = { tileX, tileY };
       if (this.onTileGesture === undefined) this.onTileSelected?.(tileX, tileY);
-      else this.leftGesture = { pointerId: pointer.id, x: tileX, y: tileY };
+      else {
+        this.leftGesture = { pointerId: pointer.id, x: tileX, y: tileY };
+        this.onTileGesturePreview?.({ x: tileX, y: tileY }, { x: tileX, y: tileY });
+      }
       this.paintSelection();
       if (this.lastProjection !== undefined) {
         this.paintRaised(this.lastProjection);
@@ -143,6 +150,10 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
       this.hoverPointerAt = { x: pointer.x, y: pointer.y };
       this.emitGroundHover();
+      if (this.leftGesture?.pointerId === pointer.id) {
+        const world = screenToGround({ x: pointer.x, y: pointer.y }, this.pose);
+        this.onTileGesturePreview?.(this.leftGesture, { x: worldToTile(world.x), y: worldToTile(world.y) });
+      }
       if (pointer.id !== this.turnPointerId || this.turnPointerAt === undefined) return;
       if (!this.canRotate()) {
         this.turnPointerId = undefined;
@@ -168,6 +179,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
       const start = this.leftGesture;
       if (start === undefined || pointer.id !== start.pointerId) return;
       this.leftGesture = undefined;
+      this.onTileGesturePreview?.(undefined);
       const world = screenToGround({ x: pointer.x, y: pointer.y }, this.pose);
       const endX = worldToTile(world.x);
       const endY = worldToTile(world.y);
@@ -184,7 +196,10 @@ export class ObliqueWorldScene extends Phaser.Scene {
     });
     this.input.on('pointerupoutside', (pointer: Phaser.Input.Pointer) => {
       stopTurn(pointer);
-      if (pointer.id === this.leftGesture?.pointerId) this.leftGesture = undefined;
+      if (pointer.id === this.leftGesture?.pointerId) {
+        this.leftGesture = undefined;
+        this.onTileGesturePreview?.(undefined);
+      }
     });
     this.input.on('gameout', () => {
       this.hoverPointerAt = undefined;
