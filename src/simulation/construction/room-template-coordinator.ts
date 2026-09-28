@@ -2,9 +2,9 @@ import type { RoomTemplatePlan } from '../../content/room-template-catalog';
 import type { SystemRegistration, SimulationContext } from '../kernel/system';
 import type { PlacedObjectRegistry } from '../objects/placed-object-registry';
 import type { ObjectPlacementService } from '../objects/object-placement-service';
+import { objectFootprintTiles, tileKey } from '../objects/placed-object';
 import type { RoomZoningService } from '../rooms/zoning';
 import type { SparseWorld } from '../world/sparse-world';
-import type { TilePosition } from '../world/coordinates';
 import type { ConstructionSystem } from './system';
 import { createRoomTemplateBuildPlan } from './room-template-build-plan';
 import { BUILDABLE_REGISTRY } from './definition';
@@ -41,14 +41,30 @@ export class RoomTemplateCoordinator implements SystemRegistration {
   public preflight(plan: RoomTemplatePlan): RoomTemplatePlacement {
     const active = this.construction.allOrders().filter((order) =>
       order.state !== 'cancelled' && order.state !== 'failed' && order.state !== 'completed');
-    const claims = (tile: TilePosition, object: boolean): boolean => active.some((order) =>
-      order.location.x === tile.x && order.location.y === tile.y &&
-      (BUILDABLE_REGISTRY.get(order.definitionId)?.placesObjectId !== undefined) === object);
+    const objectClaims = new Set<string>();
+    const structureClaims = new Set<string>();
+    for (const order of active) {
+      const objectId = BUILDABLE_REGISTRY.get(order.definitionId)?.placesObjectId;
+      if (objectId === undefined) {
+        structureClaims.add(tileKey(order.location));
+        continue;
+      }
+      const definition = this.placedObjects.definitionOf(objectId);
+      if (definition === undefined) {
+        objectClaims.add(tileKey(order.location));
+        continue;
+      }
+      // ObjectPlacementService reserves every square of an in-flight object's
+      // footprint, not just its anchor. The template preflight must agree.
+      for (const tile of objectFootprintTiles(definition, order.location, 0)) {
+        objectClaims.add(tileKey(tile));
+      }
+    }
     return validateRoomTemplatePlacement(
       this.world,
       plan,
-      (tile) => this.placedObjects.isTileOccupied(tile) || claims(tile, true),
-      (tile) => claims(tile, false),
+      (tile) => this.placedObjects.isTileOccupied(tile) || objectClaims.has(tileKey(tile)),
+      (tile) => structureClaims.has(tileKey(tile)),
     );
   }
 
