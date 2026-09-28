@@ -1,5 +1,12 @@
 import { instantiateRoomTemplate, type RoomTemplateId, type RoomTemplatePlan, type TemplateSquare } from '../content/room-template-catalog';
 
+/** Display data supplied by the composition root; the HUD never imports the simulation. */
+export interface RoomTemplateCostQuote {
+  readonly orderCount: number;
+  readonly materials: readonly { readonly itemId: string; readonly quantity: number }[];
+  readonly catalogueCostMinorUnits?: number;
+}
+
 /** One player press becomes one worker command once the transactional backend is available. */
 export interface RoomTemplatePlacementRequest {
   readonly templateId: RoomTemplateId;
