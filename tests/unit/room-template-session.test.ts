@@ -4,12 +4,25 @@ import { captureSessionSnapshot, restoreSimulationRuntime } from '../../src/simu
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { createRoomTemplateBuildPlan } from '../../src/simulation/construction/room-template-build-plan';
+import { createBuildOrder } from '../../src/simulation/construction/build-order';
 import { createSaveEnvelope, decodeSaveEnvelope } from '../../src/persistence/save-schema';
 import type { SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
 
 const tile = (x: number, y: number) => ({ x: tileCoordinate(x), y: tileCoordinate(y) });
 
 describe('room template session command', () => {
+  it('preflights the whole footprint of a pending two-square object, including its non-anchor square', () => {
+    const runtime = createNewSimulationRuntime(72);
+    const desk = createBuildOrder('pending-desk', 'desk-wooden', tile(9, 10), undefined, 0);
+    runtime.construction.submitOrder(desk);
+    expect(desk.state).not.toBe('failed');
+    const plan = createRoomTemplateBuildPlan('cell-basic', { x: 10, y: 10 }, false, 1).plan;
+
+    expect(runtime.roomTemplates.preflight(plan)).toEqual({
+      ok: false, reason: 'object-occupied', tile: tile(10, 10),
+    });
+    expect(runtime.construction.allOrders()).toHaveLength(1);
+  });
   it('reports the first unowned square through the existing construction refusal channel', () => {
     const runtime = createNewSimulationRuntime(72);
     runtime.kernel.submitCommand('template-unowned', 0, runtime.kernel.tick, packCommand({
