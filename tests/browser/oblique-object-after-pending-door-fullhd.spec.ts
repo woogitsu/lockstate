@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test';
+import type { Page } from './network-changed-fixture';
 import { expect, test } from './network-changed-fixture';
 import { countsSeries, currentTick, installTee, sentCommands } from './playtest-harness';
 

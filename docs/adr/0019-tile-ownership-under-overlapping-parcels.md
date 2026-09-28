@@ -327,9 +327,9 @@ re-grepped rather than carried over.*
 > **Re-aimed 2026-09-15. The count is unchanged — still exactly three
 > production call sites, and still these three modules — and all three line
 > numbers are history.** Opened rather than offset:
-> `src/simulation/construction/system.ts:587`,
+> `src/simulation/construction/system.ts:704`,
 > `src/simulation/rooms/zoning.ts:562` and
-> `src/simulation/objects/object-placement-service.ts:531`. The declaration is
+> `src/simulation/objects/object-placement-service.ts:540`. The declaration is
 > the one anchor in this amendment that has not moved at all: `canBuildAt` is
 > still declared at `src/simulation/world/buildability.ts:16`, which is the
 > anchor issue #274's row 8 cited and got right.
