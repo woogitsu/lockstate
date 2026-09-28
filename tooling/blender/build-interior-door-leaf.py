@@ -22,7 +22,7 @@ SOURCE = ROOT / "assets/source/blender/door.interior.leaf.open.blend"
 MANIFEST = ROOT / "assets/source/blender/door.interior.leaf.open.manifest.json"
 ASSET_ID = "door.interior.leaf.open"
 HINGE = (-0.36, 0.0, 0.0)
-OPEN_DEGREES = -80
+OPEN_DEGREES = -125  # folds out toward the corridor wall, clear from both oblique views
 
 
 def material(name: str, color: tuple[float, float, float, float], roughness: float):
