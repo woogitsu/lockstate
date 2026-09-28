@@ -7,6 +7,19 @@ import { packCommand } from '../../src/simulation/protocol/commands';
 
 const tile = (x: number, y: number) => ({ x: tileCoordinate(x), y: tileCoordinate(y) });
 
+it('rejects the command before ordering any shell when the doorway opens beyond owned land', () => {
+  const runtime = createNewSimulationRuntime(73);
+  const plan = instantiateRoomTemplate('cell-basic', { x: 10, y: 25 });
+  expect(runtime.roomTemplates.preflight(plan)).toEqual({ ok: false, reason: 'unowned-land', tile: tile(11, 32) });
+  runtime.kernel.submitCommand('unowned-approach', 0, runtime.kernel.tick, packCommand({
+    type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 10, y: 25 },
+  }));
+  runtime.kernel.step();
+  expect(runtime.refusals.last).toMatchObject({ reason: 'build.unowned-land', tile: tile(11, 32) });
+  expect(runtime.roomTemplates.snapshot().pending).toEqual([]);
+  expect(runtime.construction.allOrders()).toEqual([]);
+});
+
 it.each([false, true])('preflight refuses a queued edge wall across the future Basic Cell doorway (mirrorX=%s)', (mirrorX) => {
   const runtime = createNewSimulationRuntime(73);
   const doorX = mirrorX ? 12 : 11;

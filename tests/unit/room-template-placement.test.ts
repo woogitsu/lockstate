@@ -30,6 +30,24 @@ describe('whole-room placement preflight', () => {
     expect(world.getSquareStructure(tile(29, 10))).toBe(0);
   });
 
+  it('refuses a room whose only doorway opens onto unowned land outside its footprint', () => {
+    const world = new SparseWorld(32);
+    world.load(originChunk);
+    world.setOwned(originChunk, true);
+    const plan = instantiateRoomTemplate('cell-basic', { x: 10, y: 25 });
+    const before = world.snapshot();
+
+    expect(validateRoomTemplatePlacement(world, plan)).toEqual({
+      ok: false, reason: 'unowned-land', tile: tile(11, 32),
+    });
+    expect(world.snapshot()).toEqual(before);
+
+    const southernChunk = { x: chunkCoordinate(0), y: chunkCoordinate(1) };
+    world.load(southernChunk);
+    world.setOwned(southernChunk, true);
+    expect(validateRoomTemplatePlacement(world, plan)).toEqual({ ok: true });
+  });
+
   it('accepts a free owned footprint and refuses existing furniture through the occupancy reader', () => {
     const world = new SparseWorld(32);
     world.load(originChunk);

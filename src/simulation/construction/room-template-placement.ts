@@ -51,6 +51,9 @@ export function validateRoomTemplatePlacement(
     if (!Number.isSafeInteger(outsideX) || !Number.isSafeInteger(outsideY)) continue;
     const doorTile = { x: tileCoordinate(door.x), y: tileCoordinate(door.y) };
     const outside = { x: tileCoordinate(outsideX), y: tileCoordinate(outsideY) };
+    if (!world.isTileOwned(outside)) {
+      return { ok: false, reason: 'unowned-land', tile: outside };
+    }
     const edgeBlocked = north ? world.getTopEdge(doorTile) !== 0 :
       south ? world.getTopEdge(outside) !== 0 :
       west ? world.getLeftEdge(doorTile) !== 0 :
