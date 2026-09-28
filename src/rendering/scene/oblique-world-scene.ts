@@ -4,6 +4,7 @@ import { TILE_SIZE_PX, worldToTile } from '../tile-metrics';
 import { VOID_COLOR, ZONING_TINT_ALPHA, UNOWNED_SHADE_ALPHA, UNOWNED_SHADE_COLOR } from '../world/appearance';
 import {
   changeObliquePoseAtScreenPoint,
+  groundToScreen,
   screenToGround,
   type ObliqueCameraState,
 } from '../camera/oblique-projection';
@@ -12,6 +13,7 @@ import { projectObliqueActors, projectObliqueWorldFrame, sortObliqueRaised, type
 import type { Point } from '../camera/coordinates';
 import { selectObliqueModuleFrame, type ObliqueModuleCatalog } from '../assets/oblique-module-catalog';
 import { ensureObliqueModuleFrameTexture } from '../phaser/oblique-module-textures';
+import { selectObliqueWallJunctions } from './oblique-wall-junctions';
 
 const DEFAULT_YAW_RADIANS = -Math.PI / 4;
 const DEFAULT_ELEVATION_RADIANS = Math.PI / 4;
@@ -315,6 +317,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     const raised = this.raisedGraphics;
     raised.clear();
     this.raisedPaints += 1;
+    const junctions = this.wallJunctions(projection);
     for (const item of projection.raised) {
       if (item.kind === 'actor') {
         if (this.actorArtFrame(item) !== undefined) continue;
@@ -324,6 +327,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
         raised.fillCircle(item.head.x, item.head.y, 8 * this.pose.zoom);
         continue;
       }
+      if (junctions.consumedIds.has(item.id)) continue;
       const cutaway = this.cutsAwayForSelection(item);
       if (this.displayArtFrame(item, cutaway) !== undefined) continue;
       const top = cutaway ? lowerTop(item.footprint, item.top, 0.18) : item.top;
@@ -368,11 +372,21 @@ export class ObliqueWorldScene extends Phaser.Scene {
     return assetId === undefined ? undefined : this.artFrame(item, assetId);
   }
 
+  private wallJunctions(projection: ObliqueWorldProjection) {
+    return selectObliqueWallJunctions(projection.raised, (assetId) => {
+      const catalog = this.artCatalogs.get(assetId);
+      if (catalog === undefined) return false;
+      return this.textures.exists(selectObliqueModuleFrame(catalog, this.pose).image);
+    }, (edge) => this.cutsAwayForSelection(edge));
+  }
+
   private paintArt(projection: ObliqueWorldProjection): void {
     for (const image of this.artImages) image.destroy();
     this.artImages = [];
+    const junctions = this.wallJunctions(projection);
     for (const item of projection.raised) {
       if (item.kind === 'actor') continue;
+      if (junctions.consumedIds.has(item.id)) continue;
       const cutaway = this.cutsAwayForSelection(item);
       const art = this.displayArtFrame(item, cutaway);
       if (art === undefined) continue;
@@ -388,6 +402,19 @@ export class ObliqueWorldScene extends Phaser.Scene {
         .setAlpha(item.alpha)
         .setDepth(2 + item.viewDepth / 10_000);
       this.artImages.push(image);
+    }
+    for (const junction of junctions.placements) {
+      const catalog = this.artCatalogs.get(junction.assetId)!;
+      const frame = selectObliqueModuleFrame(catalog, this.pose);
+      const anchor = groundToScreen(junction.groundAnchor, this.pose);
+      const [width, height] = catalog.resolutionPx;
+      const [pivotX, pivotY] = catalog.pivotPx;
+      const depth = obliqueDepthForAnchor(junction.groundAnchor, this.pose.yawRadians);
+      this.artImages.push(this.add.image(anchor.x, anchor.y, frame.image)
+        .setOrigin(pivotX / width, pivotY / height)
+        .setScale(this.pose.zoom)
+        .setAlpha(Math.min(...junction.incident.map((edge) => edge.alpha)))
+        .setDepth(2 + depth / 10_000));
     }
   }
 
