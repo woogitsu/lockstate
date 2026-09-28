@@ -30,6 +30,11 @@ BASE_ASSET_IDS = (
     "furniture.cell.bed.single.variants",
     "door.interior.open.full",
 )
+FLOOR_ASSET_IDS = (
+    "floor.cell.sealed-concrete",
+    "floor.linoleum.institutional",
+    "floor.canteen.terrazzo",
+)
 REGISTRY = modules.ROOT / "public/game-content/oblique-module-registry.v1.json"
 
 
@@ -55,6 +60,7 @@ def main() -> None:
     entries.extend({"assetId": asset_id,
                     "manifest": f"/game-content/oblique-{slug}.v1.json"}
                    for asset_id, slug in MODELS)
+    entries.extend(by_id[asset_id] for asset_id in FLOOR_ASSET_IDS if asset_id in by_id)
     modules.pipeline_common.write_text(REGISTRY,
         json.dumps({"schemaVersion": 1, "entries": entries}, indent=2) + "\n")
 
