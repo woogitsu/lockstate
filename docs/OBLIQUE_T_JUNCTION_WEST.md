@@ -35,3 +35,4 @@ The left side overlaps the two existing corner modules; the right side loads
 the single T module. At yaw −90° the overlap is hidden by the projection, but
 at yaw 45° the duplicated face is obvious. These images are a controlled
 browser composition test, not a claim that the game scene selects this module.
+The reproducible harness is [`tooling/qa-oblique-t-junction-west.mjs`](../tooling/qa-oblique-t-junction-west.mjs).
