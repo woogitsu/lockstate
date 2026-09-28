@@ -1726,6 +1726,7 @@
 .hud-template__tile--wall { background: var(--text-muted); }
 .hud-template__tile--door { background: var(--accent); }
 .hud-template__tile--object { background: var(--text-body); border-radius: 50%; }
+.hud-template__tile--dock { background: repeating-linear-gradient(135deg, var(--status-warning) 0 5px, var(--surface-sunken) 5px 9px); border-color: var(--status-warning); }
 .hud-template__legend { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-3); margin-top: var(--space-3); }
 .hud-template__legend > span { display: inline-flex; align-items: center; gap: var(--space-1); }
 .hud-template__legend .hud-template__tile { width: 0.9rem; }
@@ -7365,6 +7366,7 @@
 .oblique-template-ghost__map polygon { fill: var(--accent-soft); fill-opacity: .52; stroke: var(--accent-deep); stroke-width: 2; vector-effect: non-scaling-stroke; }
 .oblique-template-ghost__map polygon[data-kind='wall'] { fill: var(--text-muted); fill-opacity: .64; }
 .oblique-template-ghost__map polygon[data-kind='furniture'] { fill: var(--text-heading); fill-opacity: .67; }
+.oblique-template-ghost__map polygon[data-kind='dock'] { fill: var(--status-warning); fill-opacity: .76; stroke: var(--text-heading); stroke-dasharray: 5 3; }
 .oblique-template-ghost__map polygon[data-kind='door'] { fill: var(--accent); fill-opacity: .82; }
 .oblique-template-ghost[data-verdict='pending'] .oblique-template-ghost__map polygon { stroke-dasharray: 5 4; }
 .oblique-template-ghost[data-verdict='blocked'] .oblique-template-ghost__map polygon { stroke: var(--status-danger); }
@@ -7387,4 +7389,6 @@
   overflow-wrap: anywhere;
 }
 .oblique-template-ghost__cost { color: var(--text-muted); }
+.oblique-template-ghost__marker { color: var(--text-heading); }
+.oblique-template-ghost__marker[hidden] { display: none; }
 .oblique-template-ghost__identity { color: var(--text-heading); }

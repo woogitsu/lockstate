@@ -22,7 +22,7 @@ Nothing mechanical can. That argument belongs in a docblock beside that code —
 `hud.alert.event.construction.undo-refused-newer-action` is the worked example, arguing
 each of its three clauses at the code that decides it.
 
-## The 599 authored sentences
+## The 601 authored sentences
 
 Source: `src/content/default-locale-en.ts`, in the order they are declared.
 
@@ -627,4 +627,6 @@ Source: `src/content/default-locale-en.ts`, in the order they are declared.
 | `hud.build.template-catalogue-value-unavailable` | Catalogue value unavailable. Check the material requirements. | `src/content/default-locale-en.ts:4543` |
 | `hud.build.template-cell-row-four` | Four-cell row | `src/content/default-locale-en.ts:4544` |
 | `hud.build.template-arm-hint` | Selected: {name}. Point at the map to preview the whole room plan. Click a clear footprint to submit it. Middle drag or arrow keys move the camera. | `src/content/default-locale-en.ts:4545` |
+| `hud.build.template-interior` | Interior | `src/content/default-locale-en.ts:4546` |
+| `hud.build.template-dock-marker` | Dock marker (not a passage) | `src/content/default-locale-en.ts:4547` |
 

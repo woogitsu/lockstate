@@ -4543,6 +4543,8 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.template-catalogue-value-unavailable': 'Catalogue value unavailable. Check the material requirements.',
   'hud.build.template-cell-row-four': 'Four-cell row',
   'hud.build.template-arm-hint': 'Selected: {name}. Point at the map to preview the whole room plan. Click a clear footprint to submit it. Middle drag or arrow keys move the camera.',
+  'hud.build.template-interior': 'Interior',
+  'hud.build.template-dock-marker': 'Dock marker (not a passage)',
 };
 
 /**

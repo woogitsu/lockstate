@@ -32,9 +32,11 @@ export function createObliqueTemplateGhost(localizer: HudLocalizer): ObliqueTemp
   const identity = document.createElement('strong');
   identity.className = 'oblique-template-ghost__identity';
   const status = document.createElement('span');
+  const marker = document.createElement('span');
+  marker.className = 'oblique-template-ghost__marker';
   const cost = document.createElement('span');
   cost.className = 'oblique-template-ghost__cost';
-  notice.append(identity, status, cost);
+  notice.append(identity, status, marker, cost);
   root.append(svg, notice);
 
   return {
@@ -50,6 +52,8 @@ export function createObliqueTemplateGhost(localizer: HudLocalizer): ObliqueTemp
       status.textContent = verdict === undefined ? '' : localizer.format(verdict.ok
         ? HUD_MESSAGE_KEY.templateReady
         : verdict.reason === 'unowned-land' ? HUD_MESSAGE_KEY.templateUnownedLand : HUD_MESSAGE_KEY.templateBlocked);
+      marker.textContent = plan.id === 'delivery-bay-basic' ? localizer.format(HUD_MESSAGE_KEY.templateDockMarker) : '';
+      marker.hidden = plan.id !== 'delivery-bay-basic';
       cost.textContent = quote === undefined ? '' : quote.catalogueCostMinorUnits === undefined
         ? localizer.format(HUD_MESSAGE_KEY.templateCatalogueValueUnavailable)
         : localizer.format(HUD_MESSAGE_KEY.templateCatalogueValue, { total: localizer.formatNumber(quote.catalogueCostMinorUnits) });
@@ -58,13 +62,15 @@ export function createObliqueTemplateGhost(localizer: HudLocalizer): ObliqueTemp
       const walls = new Set(plan.wallSquares.map(({ x, y }) => `${x},${y}`));
       const doors = new Set(plan.doorSquares.map(({ x, y }) => `${x},${y}`));
       const furniture = new Set(roomTemplateObjectSquares(plan).map(({ x, y }) => `${x},${y}`));
+      // The Delivery Bay's sole authored object is the delivery marker, not its doorway.
+      const dock = plan.id === 'delivery-bay-basic' ? furniture : new Set<string>();
       for (let y = plan.origin.y; y < plan.origin.y + plan.height; y += 1) {
         for (let x = plan.origin.x; x < plan.origin.x + plan.width; x += 1) {
           const key = `${x},${y}`;
           const polygon = document.createElementNS(SVG_NS, 'polygon');
           polygon.setAttribute('points', geometry.tileQuad(x, y).map((point) => `${point.x},${point.y}`).join(' '));
           const blockedTile = verdict?.ok === false && verdict.tile.x === x && verdict.tile.y === y;
-          polygon.setAttribute('data-kind', blockedTile ? 'blocked' : doors.has(key) && verdict?.ok === true ? 'door' : walls.has(key) ? 'wall' : furniture.has(key) ? 'furniture' : 'floor');
+          polygon.setAttribute('data-kind', blockedTile ? 'blocked' : doors.has(key) && verdict?.ok === true ? 'door' : walls.has(key) ? 'wall' : dock.has(key) ? 'dock' : furniture.has(key) ? 'furniture' : 'floor');
           polygon.setAttribute('data-tile-x', String(x));
           polygon.setAttribute('data-tile-y', String(y));
           svg.append(polygon);
@@ -76,6 +82,7 @@ export function createObliqueTemplateGhost(localizer: HudLocalizer): ObliqueTemp
       svg.replaceChildren();
       identity.textContent = '';
       status.textContent = '';
+      marker.textContent = '';
       cost.textContent = '';
     },
   };

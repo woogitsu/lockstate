@@ -44,11 +44,16 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
   const materials = element('p', { className: 'hud-template__materials' });
   const catalogueValue = element('p', { className: 'hud-template__catalogue-value' });
   const diagram = element('div', { className: 'hud-template__diagram', attributes: { role: 'img' } });
+  const legendItem = (kind: string, key: LocalizationKey): HTMLElement => element('span', { children: [
+    element('span', { className: `hud-template__tile hud-template__tile--${kind}`, attributes: { 'aria-hidden': 'true' } }),
+    element('span', { text: t(key) }),
+  ] });
+  const furnitureLegend = legendItem('object', HUD_MESSAGE_KEY.templateFurniture);
+  const interiorLegend = legendItem('interior', HUD_MESSAGE_KEY.templateInterior);
+  const dockLegend = legendItem('dock', HUD_MESSAGE_KEY.templateDockMarker);
   const legend = element('div', {
     className: 'hud-template__legend',
-    children: ([['wall', HUD_MESSAGE_KEY.templateWall], ['door', HUD_MESSAGE_KEY.templateDoor], ['object', HUD_MESSAGE_KEY.templateFurniture]] as const).map(([kind, key]) =>
-      element('span', { children: [element('span', { className: `hud-template__tile hud-template__tile--${kind}`, attributes: { 'aria-hidden': 'true' } }), element('span', { text: t(key) })] }),
-    ),
+    children: [legendItem('wall', HUD_MESSAGE_KEY.templateWall), legendItem('door', HUD_MESSAGE_KEY.templateDoor), furnitureLegend],
   });
   const dialog = element('dialog', {
     className: 'hud-template',
@@ -131,10 +136,20 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
     const wall = new Set(plan.wallSquares.map(({ x, y }) => `${x},${y}`));
     const door = new Set(plan.doorSquares.map(({ x, y }) => `${x},${y}`));
     const objects = new Set(roomTemplateObjectSquares(plan).map(({ x, y }) => `${x},${y}`));
+    // This authored plan's only object is the three-square delivery marker.
+    const dock = id === 'delivery-bay-basic' ? objects : new Set<string>();
+    if (id === 'delivery-bay-basic') {
+      furnitureLegend.remove();
+      legend.append(interiorLegend, dockLegend);
+    } else {
+      interiorLegend.remove();
+      dockLegend.remove();
+      legend.append(furnitureLegend);
+    }
     for (let y = 0; y < plan.height; y += 1) {
       for (let x = 0; x < plan.width; x += 1) {
         const key = `${x},${y}`;
-        const kind = wall.has(key) ? 'wall' : door.has(key) ? 'door' : objects.has(key) ? 'object' : 'floor';
+        const kind = wall.has(key) ? 'wall' : door.has(key) ? 'door' : dock.has(key) ? 'dock' : objects.has(key) ? 'object' : 'floor';
         diagram.append(element('span', { className: `hud-template__tile hud-template__tile--${kind}`, attributes: { 'aria-hidden': 'true' } }));
       }
     }
