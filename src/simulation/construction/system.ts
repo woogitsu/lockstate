@@ -394,6 +394,7 @@ export class ConstructionSystem implements SystemRegistration {
   private currentTransactionId: string | undefined;
   private pendingRoomTemplateClaims?: (tile: TilePosition, sequence: number | undefined) => boolean;
   private roomTemplateDoorApproachClaims?: (order: BuildOrder) => boolean;
+  private completedDoorClaimsSquare?: (tile: TilePosition) => boolean;
   private objectClaimsSquare?: (tile: TilePosition) => boolean;
 
   /** The session supplies its live template reservations after both systems exist. */
@@ -403,6 +404,11 @@ export class ConstructionSystem implements SystemRegistration {
 
   public setRoomTemplateDoorApproachClaims(reader: (order: BuildOrder) => boolean): void {
     this.roomTemplateDoorApproachClaims = reader;
+  }
+
+  /** The door registry remains authoritative after a door order completes or a save loads. */
+  public setCompletedDoorClaimsSquare(reader: (tile: TilePosition) => boolean): void {
+    this.completedDoorClaimsSquare = reader;
   }
 
   public setObjectClaimsSquare(reader: (tile: TilePosition) => boolean): void {
@@ -622,6 +628,14 @@ export class ConstructionSystem implements SystemRegistration {
       return;
     }
 
+    if (order.footprint === 'square' &&
+        (this.pendingDoorClaimsSquare(order.location) || this.completedDoorClaimsSquare?.(order.location) === true)) {
+      this.setState(order, 'failed');
+      order.failReason = 'unbuildable';
+      this.orders.set(order.id, order);
+      return;
+    }
+
     // A room plan owns its entire rectangle while its shell is in flight,
     // including empty interior squares that have no world geometry yet. Its
     // own shell/furniture orders retain the plan's sequence and may enter.
@@ -674,6 +688,18 @@ export class ConstructionSystem implements SystemRegistration {
     const buildability = canBuildAt(this.world, tile, SUBMISSION_REQUIREMENT);
     if (buildability.buildable) return undefined;
     return SUBMISSION_FAIL_REASONS[buildability.reason] ?? 'unbuildable';
+  }
+
+  /** A door still in the queue reserves the square on each side of its edge. */
+  private pendingDoorClaimsSquare(tile: TilePosition): boolean {
+    for (const order of this.orders.values()) {
+      if (order.state === 'completed' || order.state === 'cancelled' || order.state === 'failed' ||
+          BUILDABLE_REGISTRY.get(order.definitionId)?.placesDoor === undefined) continue;
+      const across = tileAcrossEdge(order.location, resolveBuildEdge(order));
+      if ((order.location.x === tile.x && order.location.y === tile.y) ||
+          (across !== undefined && across.x === tile.x && across.y === tile.y)) return true;
+    }
+    return false;
   }
 
   /**
