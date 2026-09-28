@@ -12,6 +12,7 @@ const NAME_KEYS: Record<RoomTemplateId, LocalizationKey> = {
   'shower-room': HUD_MESSAGE_KEY.templateShowerRoom,
   'cell-row-four': HUD_MESSAGE_KEY.templateCellRowFour,
   'canteen-basic': 'room.canteen.name',
+  'kitchen-basic': 'room.kitchen.name',
 };
 
 /** A catalogue of authored plans. Selection previews geometry; it never places an order. */
@@ -98,6 +99,9 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
       'shower-head-brick': HUD_MESSAGE_KEY.templateShower,
       'dining-table-wooden': 'object.dining-table.name',
       'bench-wooden': 'object.bench.name',
+      'stove-brick': 'object.stove.name',
+      'prep-counter-brick': 'object.prep-counter.name',
+      'fridge-brick': 'object.fridge.name',
     };
     contents.textContent = [...counts].map(([objectId, count]) => t(HUD_MESSAGE_KEY.templateObjectCount, { name: t(objectNames[objectId]!), count })).join(' · ');
     materials.hidden = true;
