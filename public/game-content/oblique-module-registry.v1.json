@@ -84,6 +84,10 @@
     {
       "assetId": "door.shower.privacy.open.cutaway",
       "manifest": "/game-content/oblique-shower-privacy-door-cutaway.v1.json"
+    },
+    {
+      "assetId": "floor.terrain.dirt",
+      "manifest": "/game-content/oblique-floor-terrain-dirt.v1.json"
     }
   ]
 }
