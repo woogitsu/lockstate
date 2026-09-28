@@ -521,6 +521,7 @@ export const HUD_MESSAGE_KEY = {
   templatePlace: 'hud.build.template-place',
   templateMap: 'hud.build.template-map',
   templateInvalidPosition: 'hud.build.template-invalid-position',
+  templateOutsideSafeTiles: 'hud.build.template-outside-safe-tiles',
   templateReady: 'hud.build.template-ready',
   templateBlocked: 'hud.build.template-blocked',
   templateUnavailable: 'hud.build.template-unavailable',

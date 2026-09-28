@@ -2308,6 +2308,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.template-place': 'Place room plan',
   'hud.build.template-map': 'Place on map',
   'hud.build.template-invalid-position': 'Enter whole-number coordinates.',
+  'hud.build.template-outside-safe-tiles': 'The plan extends outside valid map coordinates.',
   'hud.build.template-ready': 'This footprint is clear.',
   'hud.build.template-blocked': 'This footprint is blocked. Choose another position.',
   'hud.build.template-unavailable': 'Placement check is unavailable. Try again.',

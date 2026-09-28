@@ -1072,6 +1072,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.template-place': 'Postaw wzór pomieszczenia',
   'hud.build.template-map': 'Postaw na mapie',
   'hud.build.template-invalid-position': 'Wpisz całkowite współrzędne.',
+  'hud.build.template-outside-safe-tiles': 'Wzór wychodzi poza prawidłowe współrzędne mapy.',
   'hud.build.template-ready': 'Cały obrys jest wolny.',
   'hud.build.template-blocked': 'Obrys jest zajęty. Wybierz inne miejsce.',
   'hud.build.template-unavailable': 'Nie można sprawdzić miejsca. Spróbuj ponownie.',
