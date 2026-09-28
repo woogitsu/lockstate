@@ -211,7 +211,8 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
           const localY = verdict.tile.y - plan.origin.y;
           diagram.children[localY * plan.width + localX]?.classList.add('hud-template__tile--blocked');
         }
-        status.textContent = verdict.ok ? t(HUD_MESSAGE_KEY.templateReady) : t(HUD_MESSAGE_KEY.templateBlocked);
+        status.textContent = verdict.ok ? t(HUD_MESSAGE_KEY.templateReady) :
+          t(verdict.reason === 'unowned-land' ? HUD_MESSAGE_KEY.templateUnownedLand : HUD_MESSAGE_KEY.templateBlocked);
       } catch {
         if (current === revision) status.textContent = t(HUD_MESSAGE_KEY.templateUnavailable);
       }
@@ -232,7 +233,8 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
       place.disabled = true;
       try {
         const result = await tool.placeAt(tile);
-        status.textContent = result.ok ? t(HUD_MESSAGE_KEY.templateSubmitted) : t(HUD_MESSAGE_KEY.templateBlocked);
+        status.textContent = result.ok ? t(HUD_MESSAGE_KEY.templateSubmitted) :
+          t(result.reason === 'unowned-land' ? HUD_MESSAGE_KEY.templateUnownedLand : HUD_MESSAGE_KEY.templateBlocked);
       } catch {
         status.textContent = t(HUD_MESSAGE_KEY.templateUnavailable);
       }
