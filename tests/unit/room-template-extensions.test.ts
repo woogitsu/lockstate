@@ -65,4 +65,17 @@ describe('the next room templates (#1586)', () => {
     ]);
     expectUsableFootprint(plan);
   });
+
+  it('places a kitchen with the three distinct food preparation fixtures', () => {
+    const plan = instantiateRoomTemplate('kitchen-basic', { x: 10, y: 20 });
+    expect([plan.width, plan.height]).toEqual([6, 6]);
+    expect(plan.zone).toEqual({ roomId: 'room.kitchen', x: 11, y: 21, width: 4, height: 4 });
+    expect(plan.doorSquares).toEqual([{ x: 12, y: 25 }]);
+    expect(plan.objects).toEqual([
+      { buildableId: 'stove-brick', x: 11, y: 21 },
+      { buildableId: 'prep-counter-brick', x: 13, y: 21 },
+      { buildableId: 'fridge-brick', x: 11, y: 23 },
+    ]);
+    expectUsableFootprint(plan);
+  });
 });
