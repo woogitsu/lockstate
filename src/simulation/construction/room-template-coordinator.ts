@@ -94,12 +94,24 @@ export class RoomTemplateCoordinator implements SystemRegistration {
         remaining.push(request);
         continue;
       }
-      const zone = built.plan.zone;
-      const outcome = this.roomZoning.zone({
-        roomCatalogId: zone.roomId,
-        x: zone.x, y: zone.y, width: zone.width, height: zone.height,
-      }, context.tick);
-      if (outcome.kind === 'refused') continue;
+      const zoned: RoomTemplatePlan['zones'][number][] = [];
+      let refused = false;
+      for (const zone of built.plan.zones) {
+        const outcome = this.roomZoning.zone({
+          roomCatalogId: zone.roomId,
+          x: zone.x, y: zone.y, width: zone.width, height: zone.height,
+        }, context.tick);
+        if (outcome.kind === 'refused') {
+          // A row is one gesture: a later room refusing must not leave the
+          // earlier members designated while its pending obligation vanishes.
+          for (const previous of zoned.reverse()) this.roomZoning.unzone(previous, context.tick);
+          for (const id of built.shellOrderIds) this.construction.cancelOrder(id);
+          refused = true;
+          break;
+        }
+        zoned.push(zone);
+      }
+      if (refused) continue;
       for (const order of built.orders.slice(built.shellOrderIds.length)) {
         this.objectPlacement.place({
           orderId: order.id,
