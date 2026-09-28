@@ -111,6 +111,7 @@ const frame: RenderFrame = {
   structures: [
     { id: 'bed-1', definitionId: 'bed-wooden', tileX: 2, tileY: 2, phase: 'built' },
     { id: 'sink-1', definitionId: 'object.sink', tileX: 3, tileY: 2, phase: 'built' },
+    { id: 'waste-bin-1', definitionId: 'object.waste-bin', tileX: 4, tileY: 2, phase: 'built' },
     { id: 'shower-1', definitionId: 'shower-head-brick', tileX: 6, tileY: 2, phase: 'built' },
     ...largeBeds,
   ],
