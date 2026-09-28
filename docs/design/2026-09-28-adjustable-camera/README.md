@@ -47,6 +47,41 @@ legible Polish angle labels. Merge one PR at a time only after its exact-head
 checks and the preceding main CI are green; visually verify the deployed
 result before calling the new view shipped.
 
+## Delivery checkpoint — 2026-09-28, 23:22 CEST
+
+The integrated real-game tree is now [#1791](https://github.com/woogitsu/lockstate/pull/1791)
+(`codex/oblique-phase3-20260928`). It includes the angled camera, full-square
+build footprints, authored room plans, the cost/refusal preflight and the first
+Blender modules. The preview remains opt-in and the stack has not shipped to
+`main` or production. Foundation [#1617](https://github.com/woogitsu/lockstate/pull/1617)
+has exact-head green browser, verify and assets checks. The later integration
+checks are still the release boundary.
+
+At #1791's previous head, the 90-minute browser job stopped after roughly
+396 tests and reported a canteen ghost comparison failure. Pixel inspection
+showed that the plan area returned exactly to its initial pixels; 54 pixels
+in the unrelated HUD differed by one RGB level. The test now compares only
+the plan footprint and waits for its worker verdict. All three canteen
+browser scenarios passed locally. The suite also now uses two independent
+browser workers on CI, with one locally; five representative Full HD camera,
+placement and canteen tests passed together with two workers. The new exact
+head is `e7462ac66`; its full CI is running, so these focused checks are not
+yet proof of a green release gate.
+
+The parallel slices stay isolated and stacked: cell sink [#1794](https://github.com/woogitsu/lockstate/pull/1794),
+waste bin [#1797](https://github.com/woogitsu/lockstate/pull/1797),
+canteen table [#1801](https://github.com/woogitsu/lockstate/pull/1801)
+and bench [#1806](https://github.com/woogitsu/lockstate/pull/1806)
+provide reproducible 72-pose Blender art with Full HD runtime evidence;
+[#1795](https://github.com/woogitsu/lockstate/pull/1795) keeps the minimap
+clear of the Build rail at 200% browser zoom. Gameplay slices
+[#1798](https://github.com/woogitsu/lockstate/pull/1798) through
+[#1807](https://github.com/woogitsu/lockstate/pull/1807) repair paused Yard
+completion, Undo/Redo and wall, door, furniture and plan-preflight conflicts.
+They have focused red-to-green tests and real-game checks, but their full
+stacked CI and serial `main` delivery are still outstanding. Keep the art,
+gameplay and HUD/camera lanes active while those gates run.
+
 ## Visual references
 
 | Image | Question it answers | Keep | Correct before shipping |
