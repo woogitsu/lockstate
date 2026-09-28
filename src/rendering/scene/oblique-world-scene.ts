@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { pickEdgeAtWorld, type BuildEdgeId } from '../build/edge-picking';
 import type { RenderActor, RenderFeed, RenderFrame } from '../feed/render-feed';
 import { TILE_SIZE_PX, worldToTile } from '../tile-metrics';
 import { VOID_COLOR, ZONING_TINT_ALPHA, UNOWNED_SHADE_ALPHA, UNOWNED_SHADE_COLOR } from '../world/appearance';
@@ -30,7 +31,7 @@ export interface ObliqueWorldSceneOptions {
   readonly feed: RenderFeed;
   readonly onTileSelected?: (tileX: number, tileY: number) => void;
   /** A completed left-button ground gesture, reported as whole square tiles. */
-  readonly onTileGesture?: (tiles: readonly { readonly x: number; readonly y: number }[]) => void;
+  readonly onTileGesture?: (tiles: readonly { readonly x: number; readonly y: number }[], edge: BuildEdgeId) => void;
   /** Live whole-tile drag endpoints; undefined start clears the preview. */
   readonly onTileGesturePreview?: (start: { readonly x: number; readonly y: number } | undefined, end?: { readonly x: number; readonly y: number }) => void;
   readonly onGroundHover?: (tile: { readonly tileX: number; readonly tileY: number } | undefined) => void;
@@ -51,7 +52,7 @@ export interface ObliqueWorldSceneOptions {
 export class ObliqueWorldScene extends Phaser.Scene {
   private readonly feed: RenderFeed;
   private readonly onTileSelected: ((tileX: number, tileY: number) => void) | undefined;
-  private readonly onTileGesture: ((tiles: readonly { readonly x: number; readonly y: number }[]) => void) | undefined;
+  private readonly onTileGesture: ((tiles: readonly { readonly x: number; readonly y: number }[], edge: BuildEdgeId) => void) | undefined;
   private readonly onTileGesturePreview: ((start: { readonly x: number; readonly y: number } | undefined, end?: { readonly x: number; readonly y: number }) => void) | undefined;
   private leftGesture: { readonly pointerId: number; readonly x: number; readonly y: number } | undefined;
   private readonly onGroundHover: ((tile: { readonly tileX: number; readonly tileY: number } | undefined) => void) | undefined;
@@ -192,7 +193,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
           tiles.push({ x, y });
         }
       }
-      this.onTileGesture?.(tiles);
+      this.onTileGesture?.(tiles, pickEdgeAtWorld(world).edge);
     });
     this.input.on('pointerupoutside', (pointer: Phaser.Input.Pointer) => {
       stopTurn(pointer);
