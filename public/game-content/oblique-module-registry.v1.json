@@ -62,6 +62,10 @@
       "manifest": "/game-content/oblique-prep-counter.v1.json"
     },
     {
+      "assetId": "furniture.kitchen.stove",
+      "manifest": "/game-content/oblique-kitchen-stove.v1.json"
+    },
+    {
       "assetId": "furniture.storage.rack.wooden",
       "manifest": "/game-content/oblique-cell-storage-rack.v1.json"
     },
