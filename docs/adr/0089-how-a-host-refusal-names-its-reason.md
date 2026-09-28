@@ -106,7 +106,7 @@ it.
 
 ### The inventory: every host-refusal producer, enumerated rather than counted
 
-`src/ui/host-refusal.ts:6-46`'s own docblock names the shape: a *command*
+`src/ui/host-refusal.ts:6-46`'s own docblock opens `A *command* intent` and names the shape: a *command*
 intent is refused in one of two places, and a **host** refusal is the one
 `src/main.ts` decides on this thread, before a command is ever sent to the
 simulation worker, by throwing. (The other place — the worker refusing a
