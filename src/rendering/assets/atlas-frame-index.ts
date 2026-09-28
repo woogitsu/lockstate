@@ -51,11 +51,11 @@ export class AtlasFrameIndex {
     private readonly imageList: readonly IndexedImage[],
   ) {}
 
-  public static fromLibrary(library: AtlasLibrary): AtlasFrameIndex {
+  public static fromLibrary(library: AtlasLibrary, assetIds: readonly string[] = library.assetIds()): AtlasFrameIndex {
     const clips = new Map<string, Map<string, IndexedClip>>();
     const images = new Map<string, { name: string; rect: AtlasFrameRect }[]>();
 
-    for (const assetId of library.assetIds()) {
+    for (const assetId of assetIds) {
       const byClip = new Map<string, IndexedClip>();
 
       for (const clipId of library.clipIds(assetId)) {

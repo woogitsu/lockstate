@@ -118,6 +118,24 @@ and placement previews. They are never simulation authority.
 
 ## Delivery and caching
 
+### Actor atlas load budget (2026-09-26, issue #32)
+
+The five authored roles have ten idle/walk PNGs. Their committed PNG lengths
+sum to 10,337,239 bytes and their atlas dimensions require 145,267,200 bytes
+(138.5 MiB) of RGBA texture storage. `WorldScene` used to load all ten at
+startup even though the live delta protocol publishes only prisoner and guard
+populations. It now preloads those four textures: 4,176,594 bytes transferred
+and 58,106,880 bytes (55.4 MiB) decoded, saving 6,160,645 transfer bytes and
+87,160,320 decoded bytes at ordinary startup. `?actors=demo` still loads all
+five roles so the visual atlas review remains complete.
+
+`tests/contract/actor-atlas-budget.test.ts` gates ordinary startup at 5 MiB
+transfer and 64 MiB RGBA, with a 12 MiB/160 MiB ceiling for the full authored
+catalog. It reads each committed PNG when available and the Git LFS pointer's
+declared object size in a pointer-only checkout, alongside manifest dimensions.
+The numbers exclude environment art, Phaser's internal copies and browser
+network overhead; they bound this actor atlas batch, not total game memory.
+
 Runtime art is published from `public/`, which Vite copies verbatim without
 fingerprinting, so `/assets/actors/*` — atlases, atlas manifests and
 `asset-registry.json` alike — revalidates rather than being cached as

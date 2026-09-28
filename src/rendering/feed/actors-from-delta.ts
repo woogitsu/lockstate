@@ -17,6 +17,8 @@ const KNOWN_POPULATION_ASSETS: ReadonlyMap<number, string> = new Map([
   [RENDER_ACTOR_POPULATION_PRISONER, PRISONER_ACTOR_ASSET_ID],
   [RENDER_ACTOR_POPULATION_GUARD, GUARD_ACTOR_ASSET_ID],
 ]);
+/** The same mapping drives startup texture selection, so a new population cannot be drawn without its atlas. */
+export const LIVE_ACTOR_ASSET_IDS: readonly string[] = [...KNOWN_POPULATION_ASSETS.values()];
 
 /**
  * The renderer's view of a `simulation/delta` keyframe.

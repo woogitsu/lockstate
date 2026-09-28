@@ -104,6 +104,8 @@ export interface WorldSceneOptions {
   readonly feed: RenderFeed;
   /** Injectable so a test or a preview can supply a batch without the network. */
   readonly loadAtlasLibrary?: () => Promise<AtlasLibrary>;
+  /** Limit the initial texture batch to roles the live world can publish. */
+  readonly actorAssetIds?: readonly string[];
   /**
    * The generated source-art catalog the environment sprites are cut from.
    *
@@ -258,6 +260,7 @@ export interface WorldSceneOptions {
 export class WorldScene extends Phaser.Scene {
   private feed: RenderFeed;
   private readonly loadAtlasLibrary: () => Promise<AtlasLibrary>;
+  private readonly actorAssetIds: readonly string[] | undefined;
   private readonly loadSourceArtCatalog: () => Promise<SourceArtCatalog>;
   private readonly loadRenderedArtCatalog: () => Promise<RenderedArtCatalog>;
   private readonly onError: (error: Error) => void;
@@ -379,6 +382,7 @@ export class WorldScene extends Phaser.Scene {
       () => (isTextEntryFocused() ? ['text-entry'] : ['world']),
     );
     this.loadAtlasLibrary = options.loadAtlasLibrary ?? (() => AtlasLibrary.load());
+    this.actorAssetIds = options.actorAssetIds;
     this.loadSourceArtCatalog = options.loadSourceArtCatalog ?? (() => SourceArtCatalog.load());
     this.loadRenderedArtCatalog = options.loadRenderedArtCatalog ?? (() => RenderedArtCatalog.load());
     this.onError =
@@ -1675,7 +1679,7 @@ export class WorldScene extends Phaser.Scene {
   private async loadActorAtlases(): Promise<void> {
     try {
       const library = await this.loadAtlasLibrary();
-      const index = AtlasFrameIndex.fromLibrary(library);
+      const index = AtlasFrameIndex.fromLibrary(library, this.actorAssetIds ?? library.assetIds());
       await registerAtlasTextures(this, index);
       // The scene may have shut down while the batch was in flight.
       if (this.tiles === undefined) return;
