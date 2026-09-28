@@ -6,6 +6,7 @@ import { chromium } from '@playwright/test';
 
 const origin = process.env.LOCKSTATE_PREVIEW_ORIGIN ?? 'http://127.0.0.1:5187';
 const baseline = process.env.LOCKSTATE_ACTOR_BASELINE_REF;
+const useCorner = process.env.LOCKSTATE_USE_CORNER !== '0';
 const oldActors = baseline ? Object.fromEntries(
   ['prisoner', 'guard'].map((role) => [
     `actor.${role}.base`,
@@ -18,7 +19,7 @@ try {
   await page.goto(`${origin}/art-angle-preview.html`, { waitUntil: 'networkidle' });
   const captures = [];
   for (const yaw of [-90, -45, 0, 45, 90]) {
-    const result = await page.evaluate(async ({ angle, oldActors }) => {
+    const result = await page.evaluate(async ({ angle, oldActors, useCorner }) => {
       const registry = await (await fetch('/game-content/oblique-module-registry.v1.json')).json();
       const catalogs = new Map();
       for (const entry of registry.entries) catalogs.set(entry.assetId, await (await fetch(entry.manifest)).json());
@@ -30,9 +31,10 @@ try {
       for (const y of [-1, 0, 1]) floor.push({ id: 'floor.linoleum.institutional', x: -2, y });
       const cutaway = angle < 0;
       const raised = [
-        ...[-1, 0, 1].map((x) => ({ id: 'wall.interior.module.full', x, y: 1.5 })),
-        ...[-1, 1].map((y) => ({ id: cutaway ? 'wall.interior.module.cutaway' : 'wall.interior.module.west.full', x: -1.5, y })),
-        { id: cutaway ? 'door.interior.open.west.cutaway' : 'door.interior.open.west.full', x: -1.5, y: 0 },
+        ...(useCorner ? [0, 1] : [-1, 0, 1]).map((x) => ({ id: 'wall.interior.module.full', x, y: 1 })),
+        ...(useCorner ? [-1] : [-1, 1]).map((y) => ({ id: cutaway ? 'wall.interior.module.cutaway' : 'wall.interior.module.west.full', x: -1, y })),
+        ...(useCorner ? [{ id: `wall.interior.corner.inner.north-west.${cutaway ? 'cutaway' : 'full'}`, x: -1, y: 1 }] : []),
+        { id: cutaway ? 'door.interior.open.west.cutaway' : 'door.interior.open.west.full', x: -1, y: 0 },
         { id: 'furniture.cell.bed.single.variants', x: 0.65, y: 0.65 },
         { id: 'actor.prisoner.base', x: 0, y: -0.45 },
         { id: 'actor.guard.base', x: -2, y: 0 },
@@ -85,8 +87,8 @@ try {
       ctx.font = '18px sans-serif';
       ctx.fillText('Native 64 px/tile', 1430, 365);
       return { modules: used.length, uniqueImages: images.size };
-    }, { angle: yaw, oldActors });
-    const path = join(tmpdir(), `lockstate-oblique-cell-composite-${baseline ? 'before' : 'after'}-yaw${yaw}.png`);
+    }, { angle: yaw, oldActors, useCorner });
+    const path = join(tmpdir(), `lockstate-oblique-cell-corner-${useCorner ? 'after' : 'before'}-yaw${yaw}.png`);
     await page.screenshot({ path });
     captures.push({ yaw, path, ...result });
   }
