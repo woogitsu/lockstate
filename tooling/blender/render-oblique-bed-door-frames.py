@@ -63,8 +63,11 @@ def setup_scene() -> None:
     scene.camera = camera
 
 
-def render_module(asset_id: str, slug: str, source: Path, dependencies: list[Path]) -> None:
+def render_module(asset_id: str, slug: str, source: Path, dependencies: list[Path],
+                  resolution_px: int = 512) -> None:
     scene = bpy.context.scene
+    scene.render.resolution_x = scene.render.resolution_y = resolution_px
+    scene.camera.data.ortho_scale = resolution_px / 64.0
     OUTPUT.mkdir(parents=True, exist_ok=True)
     frames = []
     for yaw in YAW:
@@ -91,8 +94,8 @@ def render_module(asset_id: str, slug: str, source: Path, dependencies: list[Pat
                 "sourceDependencies": [{"source": path.name,
                                         "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
                                        for path in dependencies],
-                "resolutionPx": [512, 512], "nominalPixelsPerTile": 64,
-                "pivotPx": [256, 256], "cameraTargetTiles": list(TARGET),
+                "resolutionPx": [resolution_px, resolution_px], "nominalPixelsPerTile": 64,
+                "pivotPx": [resolution_px // 2, resolution_px // 2], "cameraTargetTiles": list(TARGET),
                 "projection": "orthographic", "yawDegrees": list(YAW),
                 "elevationDegrees": list(ELEVATION), "frames": frames}
     path = ROOT / f"public/game-content/oblique-{slug}.v1.json"
