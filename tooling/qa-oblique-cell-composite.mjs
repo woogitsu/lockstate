@@ -61,6 +61,7 @@ try {
       canvas.height = 1080;
       document.body.append(canvas);
       const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('2D canvas context unavailable');
       ctx.fillStyle = '#344048';
       ctx.fillRect(0, 0, 1920, 1080);
       const rad = angle * Math.PI / 180;
@@ -73,8 +74,10 @@ try {
         for (const item of items) {
           const url = select(item.id);
           const image = images.get(url);
+          const catalog = catalogs.get(item.id);
           const at = project(item, zoom, centerX, centerY);
-          ctx.drawImage(image, at.x - 256 * zoom, at.y - 256 * zoom, 512 * zoom, 512 * zoom);
+          ctx.drawImage(image, at.x - catalog.pivotPx[0] * zoom, at.y - catalog.pivotPx[1] * zoom,
+            catalog.resolutionPx[0] * zoom, catalog.resolutionPx[1] * zoom);
         }
       };
       paint(floor.slice().sort((a, b) => depth(b) - depth(a)), 2, 720, 600);

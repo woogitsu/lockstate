@@ -63,6 +63,7 @@ try {
       canvas.height = 1080;
       document.body.append(canvas);
       const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('2D canvas context unavailable');
       ctx.fillStyle = '#344048';
       ctx.fillRect(0, 0, 1920, 1080);
       const rad = yaw * Math.PI / 180;
@@ -74,7 +75,8 @@ try {
       const paint = (items) => {
         for (const item of items.sort((a, b) => depth(b) - depth(a))) {
           const at = project(item);
-          ctx.drawImage(images.get(select(item.id)), at.x - 256, at.y - 256);
+          const catalog = catalogs.get(item.id);
+          ctx.drawImage(images.get(select(item.id)), at.x - catalog.pivotPx[0], at.y - catalog.pivotPx[1]);
         }
       };
       paint(floor);

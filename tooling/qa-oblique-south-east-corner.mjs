@@ -54,6 +54,7 @@ try {
       canvas.height = 1080;
       document.body.append(canvas);
       const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('2D canvas context unavailable');
       ctx.fillStyle = '#344048';
       ctx.fillRect(0, 0, 1920, 1080);
       const rad = angle * Math.PI / 180;
