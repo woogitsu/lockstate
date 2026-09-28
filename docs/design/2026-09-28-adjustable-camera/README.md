@@ -113,6 +113,32 @@ small scene. It does **not** establish framerate, occlusion correctness for a
 large prison, art fidelity, or integration with `WorldScene`. Those are the
 next delivery gates.
 
+## Actual render-feed scene at Full HD
+
+The follow-up scene in `src/rendering/scene/oblique-world-scene.ts` now reads a
+real `RenderFrame` from the existing `RenderFeed` and projects loaded ground
+tiles, wall and door edges, structures and actors from the current simulation
+grid. The `tests/browser/oblique-world-harness.ts` scene uses an actual
+`SparseWorld` snapshot with one walled cell, a door, a bed and an actor. These
+1920 × 1080 browser captures are output from that scene, not concept art:
+
+| Yaw / elevation | Actual render-feed output |
+| --- | --- |
+| -45° / 25° | [Shallow pose](./render-feed-yaw-45-elev25-fullhd.png) |
+| 0° / 45° | [Straight pose](./render-feed-yaw0-elev45-fullhd.png) |
+| +45° / 65° | [High pose](./render-feed-yaw45-elev65-fullhd.png) |
+
+The same logical tile (3, 3) is selected at all three angles. The selected
+footprint fills its entire projected square. Static tiles and solids are
+reprojected only when the frame revision, camera pose or viewport changes;
+the test checks that idle browser frames do not repaint them. Actor movement
+can repaint the raised layer without rebuilding the ground. A deliberate
+mutation that projected every *empty* north edge made the unit test fail with
+63 extra solids; restoration returned it to green. This is still a plain
+diagnostic renderer. It has no final art, wall cutaway, construction ghosts or
+player-visible switch in `main.ts`, and the browser fixture is a small scene
+rather than the frame-cost acceptance test for a large prison.
+
 ## Active delivery lanes
 
 Keep three isolated worktrees moving in parallel: (1) Blender modules and
@@ -122,6 +148,15 @@ integration joins their verified outputs. A finished worker takes the next
 independent issue so the visual redesign does not stall on CI polling. Record
 the actual merged result and production visual check before calling a slice
 shipped.
+
+**Highest-priority continuation for every future session:** keep those three
+workers directed at this camera/building/art delivery until the selectable
+angle, whole-square construction, usable cell/room patterns and Blender art
+are present together in the running game. When a worker finishes, give it the
+next independent task in its lane. Push each reviewed coherent increment to
+GitHub; do not spend a whole run only watching checks. Owner-approved control
+methods are mouse, keyboard and on-screen buttons, with a freely adjustable
+angle rather than one fixed isometric view.
 
 ### First renderer foundation on this branch
 
