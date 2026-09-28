@@ -1,5 +1,6 @@
 import { DOOR_EDGE_NUMERIC_ID, WALL_EDGE_NUMERIC_ID } from '../../simulation/construction/definition';
 import { catalogueObjectId } from '../world/structures';
+import { defaultRoomContentRegistry } from '../../content/room-catalog';
 
 /** Authored modules currently match a north edge or a catalogued object origin. */
 const NORTH_EDGE_ART: ReadonlyMap<number, string> = new Map([
@@ -13,6 +14,16 @@ const OBJECT_ART: Readonly<Record<string, string>> = {
   'object.storage-rack': 'furniture.storage.rack.wooden',
   'object.chair': 'furniture.chair.wooden',
 };
+
+const ROOM_FLOOR_ART: Readonly<Record<string, string>> = {
+  'room.cell': 'floor.cell.sealed-concrete',
+  'room.canteen': 'floor.canteen.terrazzo',
+};
+
+export function artForGround(zoningNumericId: number): string | undefined {
+  const room = defaultRoomContentRegistry.getByNumericId(zoningNumericId);
+  return room === undefined ? undefined : ROOM_FLOOR_ART[room.id];
+}
 
 export function artForNorthEdge(edgeNumericId: number): string | undefined {
   return NORTH_EDGE_ART.get(edgeNumericId);

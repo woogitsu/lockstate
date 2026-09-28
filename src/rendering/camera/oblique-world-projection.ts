@@ -14,7 +14,7 @@ import { TILE_SIZE_PX, tileRangeContains, visibleTileRange } from '../tile-metri
 import { groundToScreen, visibleGroundBounds, type ObliqueCameraState } from './oblique-projection';
 import { obliqueDepthForAnchor, projectedRectPrism, projectedTileQuad, type TileQuad } from './oblique-geometry';
 import type { Point } from './coordinates';
-import { artForNorthEdge, artForWestEdge, artForStructure } from './oblique-art-mapping';
+import { artForGround, artForNorthEdge, artForWestEdge, artForStructure } from './oblique-art-mapping';
 
 export interface ObliqueGroundTile {
   readonly tileX: number;
@@ -23,6 +23,7 @@ export interface ObliqueGroundTile {
   readonly fill: number;
   readonly zoningTint: number | undefined;
   readonly owned: boolean;
+  readonly artAssetId: string | undefined;
 }
 
 export interface ObliqueSolid {
@@ -123,6 +124,7 @@ export function projectObliqueWorldFrame(frame: RenderFrame, camera: ObliqueCame
           tileX, tileY, quad: projectedTileQuad(tileX, tileY, camera),
           fill: (tileX + tileY) % 2 === 0 ? terrain.fill : terrain.fillAlternate,
           zoningTint: zoningTint(sample.zoning), owned: sample.owned,
+          artAssetId: artForGround(sample.zoning),
         });
         if (sample.topEdge !== 0) edge('north-edge', tileX, tileY, sample.topEdge);
         if (sample.leftEdge !== 0) edge('west-edge', tileX, tileY, sample.leftEdge);

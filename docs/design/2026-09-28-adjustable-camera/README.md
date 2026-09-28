@@ -142,7 +142,9 @@ rather than the frame-cost acceptance test for a large prison.
 ## First Blender modules inside the actual scene
 
 The composition branch joins the camera scene to authored north and west wall,
-cutaway wall, open-door, bed, toilet, rack and chair modules. Its browser fixture loads the real
+cutaway wall, open-door, bed, toilet, rack and chair modules. Cell and canteen
+zoning select their matching Blender floor tile, while unzoned ground retains
+the baseline terrain appearance. Its browser fixture loads the real
 content-hashed PNGs and checks that each camera pose chooses the matching bed
 frame. It renders the same immutable world and selected square as above:
 
@@ -158,7 +160,7 @@ browser mutation that reversed the near-wall depth comparison cut the far
 wall instead and failed the test; restoration passed. Authored cutaway art now
 replaces nearby wall geometry at the selected camera pose. Door cutaways still
 use geometry. The scene loads only the needed camera frames into Phaser's
-texture cache. Actors and floors have not reached final art quality. Depth and
+texture cache. Actors and unzoned ground have not reached final art quality. Depth and
 asset loading must be measured on a much larger prison before replacing the
 current player view.
 

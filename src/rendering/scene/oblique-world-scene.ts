@@ -58,6 +58,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private groundPaints = 0;
   private raisedPaints = 0;
   private artImages: Phaser.GameObjects.Image[] = [];
+  private groundArtImages: Phaser.GameObjects.Image[] = [];
   private readonly pendingArtLoads = new Map<string, Promise<void>>();
   private readonly artLoadErrors: string[] = [];
 
@@ -137,7 +138,9 @@ export class ObliqueWorldScene extends Phaser.Scene {
   public get paintCounts(): { readonly ground: number; readonly raised: number } {
     return { ground: this.groundPaints, raised: this.raisedPaints };
   }
-  public get artTextureKeys(): readonly string[] { return this.artImages.map((item) => item.texture.key); }
+  public get artTextureKeys(): readonly string[] {
+    return [...this.groundArtImages, ...this.artImages].map((item) => item.texture.key);
+  }
   public get loadedArtTextureCount(): number {
     const keys = new Set<string>();
     for (const catalog of this.artCatalogs.values()) for (const frame of catalog.frames) {
@@ -172,6 +175,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
       if (task === undefined) {
         task = ensureObliqueModuleFrameTexture(this, catalog, this.pose).then(() => {
           if (this.lastProjection !== undefined && this.scene.isActive()) {
+            this.paintGroundArt(this.lastProjection);
             this.paintRaised(this.lastProjection);
             this.paintArt(this.lastProjection);
           }
@@ -228,6 +232,28 @@ export class ObliqueWorldScene extends Phaser.Scene {
         const next = (side + 1) % 4;
         ground.lineBetween(tile.quad[side]!.x, tile.quad[side]!.y, tile.quad[next]!.x, tile.quad[next]!.y);
       }
+    }
+  }
+
+  private paintGroundArt(projection: ObliqueWorldProjection): void {
+    for (const image of this.groundArtImages) image.destroy();
+    this.groundArtImages = [];
+    for (const tile of projection.ground) {
+      if (tile.artAssetId === undefined) continue;
+      const catalog = this.artCatalogs.get(tile.artAssetId);
+      if (catalog === undefined) continue;
+      const frame = selectObliqueModuleFrame(catalog, this.pose);
+      if (!this.textures.exists(frame.image)) continue;
+      const anchor = {
+        x: tile.quad.reduce((sum, corner) => sum + corner.x, 0) / 4,
+        y: tile.quad.reduce((sum, corner) => sum + corner.y, 0) / 4,
+      };
+      const [width, height] = catalog.resolutionPx;
+      const [pivotX, pivotY] = catalog.pivotPx;
+      this.groundArtImages.push(this.add.image(anchor.x, anchor.y, frame.image)
+        .setOrigin(pivotX / width, pivotY / height)
+        .setScale(this.pose.zoom)
+        .setDepth(0.2));
     }
   }
 
@@ -339,6 +365,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
       this.lastPaintedPoseRevision = this.poseRevision;
       this.rememberActors(frame.actors);
       this.paintGround(projection);
+      this.paintGroundArt(projection);
       this.paintSelection();
       this.paintRaised(projection);
       this.paintArt(projection);

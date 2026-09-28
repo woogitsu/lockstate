@@ -32,6 +32,9 @@ world.setOwned(origin, true);
 for (let y = 0; y < 8; y += 1) {
   for (let x = 0; x < 8; x += 1) world.setTerrain(tile(x, y), 'concrete');
 }
+for (let y = 2; y <= 4; y += 1) {
+  for (let x = 2; x <= 4; x += 1) world.setZoning(tile(x, y), 1);
+}
 for (let x = 1; x <= 4; x += 1) {
   world.setTopEdge(tile(x, 1), 1);
   world.setTopEdge(tile(x, 5), x === 3 ? 2 : 1);
