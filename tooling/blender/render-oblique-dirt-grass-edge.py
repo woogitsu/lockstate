@@ -24,7 +24,7 @@ def main() -> None:
         modules.setup_scene()
         asset_id = f"floor.terrain.dirt-grass.edge.{direction}"
         modules.append_collection(SOURCE, asset_id)
-        modules.render_module(asset_id, f"floor-dirt-grass-edge-{direction}", SOURCE, [])
+        modules.render_module(asset_id, f"floor-dirt-grass-edge-{direction}", SOURCE, [], resolution_px=128)
     registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
     entries = [entry for entry in registry["entries"]
                if not entry["assetId"].startswith("floor.terrain.dirt-grass.edge.")]
