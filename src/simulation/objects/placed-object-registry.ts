@@ -228,9 +228,16 @@ export class PlacedObjectRegistry {
     this.objects.clear();
     this.tileIndex.clear();
     let placed = 0;
-    // Ascending `(y, x)` before anything is written, so a snapshot whose array
-    // order was disturbed in transit still produces the same registry.
-    const ordered = [...snapshot].sort((a, b) => a.anchorTile.y - b.anchorTile.y || a.anchorTile.x - b.anchorTile.x);
+    // The anchor orders ordinary rows. A damaged save can contain two rows at
+    // the same anchor, so object id and orientation complete the order before
+    // `place` accepts one and refuses the other. Ignore the saved instance id:
+    // it is derived from the anchor on restore and may itself be malformed.
+    const ordered = [...snapshot].sort((a, b) =>
+      a.anchorTile.y - b.anchorTile.y ||
+      a.anchorTile.x - b.anchorTile.x ||
+      (a.objectId < b.objectId ? -1 : a.objectId > b.objectId ? 1 : 0) ||
+      a.orientation - b.orientation,
+    );
     for (const object of ordered) {
       if (this.place({ ...object, placedObjectId: placedObjectIdFor(object.anchorTile) })) placed += 1;
     }

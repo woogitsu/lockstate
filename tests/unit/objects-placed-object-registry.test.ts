@@ -158,6 +158,30 @@ describe('every enumeration is in tile order', () => {
     expect(registry.size).toBe(1);
     expect(registry.objectAt(TILE(1, 1))).toBeDefined();
   });
+
+  it('restores conflicting rows at one anchor independently of saved array order', () => {
+    const bed = placedObjectAt('object.bed', TILE(4, 6), 0);
+    const toilet = placedObjectAt('object.toilet', TILE(4, 6), 0);
+    const forward = new PlacedObjectRegistry();
+    const reversed = new PlacedObjectRegistry();
+
+    expect(forward.loadSnapshot([bed, toilet])).toBe(1);
+    expect(reversed.loadSnapshot([toilet, bed])).toBe(1);
+    expect(forward.getSnapshot()).toEqual(reversed.getSnapshot());
+  });
+
+  it('uses orientation to break a same-object anchor tie and ignores saved instance ids', () => {
+    const north = { ...placedObjectAt('object.bed', TILE(4, 6), 0), placedObjectId: 'z' };
+    const east = { ...placedObjectAt('object.bed', TILE(4, 6), 1), placedObjectId: 'a' };
+    const forward = new PlacedObjectRegistry();
+    const reversed = new PlacedObjectRegistry();
+
+    expect(forward.loadSnapshot([east, north])).toBe(1);
+    expect(reversed.loadSnapshot([north, east])).toBe(1);
+    expect(forward.getSnapshot()).toEqual(reversed.getSnapshot());
+    expect(forward.getSnapshot()[0]?.orientation).toBe(0);
+    expect(forward.getSnapshot()[0]?.placedObjectId).toBe('object:4:6');
+  });
 });
 
 describe('the footprint an orientation produces', () => {
