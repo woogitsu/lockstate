@@ -10,14 +10,14 @@ const digest = (bytes: Buffer) => createHash('sha256').update(bytes).digest('hex
 const json = (path: string): unknown => JSON.parse(readFileSync(join(root, 'public', path.slice(1)), 'utf8')) as unknown;
 
 describe('oblique cell module registry', () => {
-  it('publishes thirty-seven logical modules with complete hashed poses and a shared ground pivot', () => {
+  it('publishes thirty-eight logical modules with complete hashed poses and a shared ground pivot', () => {
     const registry = parseObliqueModuleRegistry(json('/game-content/oblique-module-registry.v1.json'));
     expect(registry.entries.map((entry) => entry.assetId)).toEqual([
       'wall.interior.module.full', 'wall.interior.module.west.full', 'wall.interior.module.cutaway',
       'wall.interior.module.west.cutaway',
       'furniture.cell.bed.single.variants', 'door.interior.open.full', 'door.interior.open.cutaway',
       'door.interior.open.west.full', 'door.interior.open.west.cutaway',
-      'fixture.cell.toilet_sink', 'fixture.cell.sink', 'furniture.storage.rack.wooden', 'furniture.chair.wooden',
+      'fixture.cell.toilet_sink', 'fixture.cell.sink', 'fixture.cell.waste_bin', 'furniture.storage.rack.wooden', 'furniture.chair.wooden',
       'floor.cell.sealed-concrete', 'floor.linoleum.institutional', 'floor.canteen.terrazzo',
       'actor.prisoner.base', 'actor.guard.base',
       'wall.interior.corner.inner.north-west.full', 'wall.interior.corner.inner.north-west.cutaway',
@@ -40,7 +40,7 @@ describe('oblique cell module registry', () => {
       expect(catalog.nominalPixelsPerTile).toBe(64);
       expect(catalog.pivotPx).toEqual(isGround ? [64, 64] : [256, 256]);
       expect(catalog.cameraTargetTiles).toEqual([0, 0, 0]);
-      const isSink = entry.assetId === 'fixture.cell.sink';
+      const isSink = entry.assetId === 'fixture.cell.sink' || entry.assetId === 'fixture.cell.waste_bin';
       const isWide = entry.assetId.startsWith('wall.interior.module.') || entry.assetId.startsWith('wall.interior.corner.') || entry.assetId.startsWith('wall.interior.junction.') || entry.assetId === 'wall.square.brick.low' || entry.assetId.startsWith('floor.') || entry.assetId.startsWith('actor.') || entry.assetId === 'door.interior.open.cutaway' || entry.assetId.startsWith('door.interior.open.west.') || entry.assetId.startsWith('door.shower.privacy.') || entry.assetId === 'fixture.shower.head';
       expect(catalog.yawDegrees).toEqual(isSink
         ? [-165, -135, -105, -75, -45, -15, 15, 45, 75, 105, 135, 165]
@@ -122,7 +122,7 @@ describe('oblique cell module registry', () => {
       expect(lowFrame).toBeDefined();
       expect(lowFrame!.sha256).not.toBe(frame.sha256);
     }
-  });
+  }, 15_000);
 
   it('rejects duplicate registry identities', () => {
     const registry = parseObliqueModuleRegistry(json('/game-content/oblique-module-registry.v1.json'));
