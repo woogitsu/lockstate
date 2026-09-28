@@ -7381,3 +7381,4 @@
   overflow-wrap: anywhere;
 }
 .oblique-template-ghost__cost { color: var(--text-muted); }
+.oblique-template-ghost__identity { color: var(--text-heading); }
