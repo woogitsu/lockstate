@@ -1545,9 +1545,21 @@ export class ConstructionSystem implements SystemRegistration {
     let winner: BuildOrder | undefined;
     for (const order of this.orderedOrders()) {
       if (order.state !== 'completed') continue;
+      if (order.footprint === 'square') continue;
       if (order.location.x !== location.x || order.location.y !== location.y) continue;
       if (resolveBuildEdge(order) !== edge) continue;
       if (edgeNumericIdFor(getBuildableDefinition(order.definitionId)) === 0) continue;
+      winner = order;
+    }
+    return winner;
+  }
+
+  /** A full-square wall is claimed by its tile, independent of pointer-edge picking. */
+  public completedOrderClaimingSquare(location: TilePosition): BuildOrder | undefined {
+    let winner: BuildOrder | undefined;
+    for (const order of this.orderedOrders()) {
+      if (order.state !== 'completed' || order.footprint !== 'square') continue;
+      if (order.location.x !== location.x || order.location.y !== location.y) continue;
       winner = order;
     }
     return winner;

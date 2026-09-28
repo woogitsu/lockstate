@@ -999,10 +999,9 @@ export function createSessionCommandHandler(
        * wall or door is not this branch's concern, because the queue's
        * per-row cancel already reaches it.
        */
-      const wallOrder = construction.completedOrderClaimingEdge(
-        { x: tileCoordinate(simCommand.x), y: tileCoordinate(simCommand.y) },
-        simCommand.edge,
-      );
+      const location = { x: tileCoordinate(simCommand.x), y: tileCoordinate(simCommand.y) };
+      const wallOrder = construction.completedOrderClaimingSquare(location) ??
+        construction.completedOrderClaimingEdge(location, simCommand.edge);
       const wallKey = removeWallSupersessionKey(simCommand.x, simCommand.y, simCommand.edge);
       if (wallOrder === undefined) {
         // The tile the press resolved to, and **not the edge beside it**:
