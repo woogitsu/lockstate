@@ -1726,7 +1726,7 @@
 .hud-template__tile--wall { background: var(--text-muted); }
 .hud-template__tile--door { background: var(--accent); }
 .hud-template__tile--object { background: var(--text-body); border-radius: 50%; }
-.hud-template__tile--dock { background: repeating-linear-gradient(135deg, var(--status-warning) 0 5px, var(--surface-sunken) 5px 9px); border-color: var(--status-warning); }
+.hud-template__tile--dock { background: var(--status-warning); border-color: var(--text-body); }
 .hud-template__legend { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-3); margin-top: var(--space-3); }
 .hud-template__legend > span { display: inline-flex; align-items: center; gap: var(--space-1); }
 .hud-template__legend .hud-template__tile { width: 0.9rem; }
