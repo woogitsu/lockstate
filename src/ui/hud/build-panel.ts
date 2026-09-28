@@ -1,4 +1,5 @@
 import type { LocalizationKey } from '../../content/localization';
+import type { RoomTemplateId } from '../../content/room-template-catalog';
 import { deriveSimulationMessageKey } from '../../content/simulation-message-keys';
 import type { MessageParameters } from '../../services/localization/format';
 import { freshUnfurnishedPrison, pressAffordabilityVerdict, purchasePreviewMinorUnits, sellBackPreviewMinorUnits } from '../affordability';
@@ -14,7 +15,7 @@ import { bindRovingFocusKeydown } from '../primitives/roving-focus-keydown';
 import { HUD_MESSAGE_KEY } from './messages';
 import { assignPooledRows } from './pooled-row-binding';
 import { createRoomTemplatePreview } from './room-template-preview';
-import type { RoomTemplateTool } from '../room-template-tool';
+import type { RoomTemplateCostQuote, RoomTemplateTool } from '../room-template-tool';
 import { toggleRemovalMode } from './tool-arming';
 import {
   HUD_BUILD_EDGES,
@@ -159,6 +160,7 @@ export interface BuildPanelOptions {
   readonly localizer: HudLocalizer;
   readonly model: HudBuildViewModel;
   readonly roomTemplateTool?: RoomTemplateTool;
+  readonly roomTemplateQuote?: (id: RoomTemplateId) => RoomTemplateCostQuote;
   readonly onArmRoomTemplate?: () => void;
   /** The numeric route: place exactly one order at the coordinates shown. */
   readonly onPlace: (intent: BuildPanelIntent) => void;
@@ -1088,7 +1090,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     paintCatalogue();
     revealSelectedRow();
   });
-  const templatePreview = createRoomTemplatePreview(localizer, options.roomTemplateTool, options.onArmRoomTemplate);
+  const templatePreview = createRoomTemplatePreview(localizer, options.roomTemplateTool, options.onArmRoomTemplate, options.roomTemplateQuote);
   const catalogueActions = element('div', {
     className: 'hud-build__catalogue-actions',
     children: categoryOptions.length === 0 ? [templatePreview.openButton] : [categoryFilter, templatePreview.openButton],
