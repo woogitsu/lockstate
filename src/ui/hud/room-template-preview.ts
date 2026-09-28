@@ -13,6 +13,7 @@ const NAME_KEYS: Record<RoomTemplateId, LocalizationKey> = {
   'cell-row-four': HUD_MESSAGE_KEY.templateCellRowFour,
   'canteen-basic': 'room.canteen.name',
   'kitchen-basic': 'room.kitchen.name',
+  'common-room-basic': 'room.common-room.name',
 };
 
 /** A catalogue of authored plans. Selection previews geometry; it never places an order. */
