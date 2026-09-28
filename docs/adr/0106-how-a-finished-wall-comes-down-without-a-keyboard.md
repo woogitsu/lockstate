@@ -138,7 +138,7 @@ each was re-found by its text on this tree rather than trusted from either.
   the Build panel's queue block — a press on its row for one that is still
   queued."*
 - **The resolver a `Remove` press reaches is tile-and-object-shaped by
-  construction, not by oversight.** `ObjectPlacementService.remove` (class at
+  construction, not by oversight.** `ObjectPlacementService` `remove` (class at
   `src/simulation/objects/object-placement-service.ts:455`, method at `:646`)
   tries exactly two things at the pressed tile, in order: a placed object
   (`this.placedObjects.objectAt(tile)`, `:649`) and a still-building object
@@ -156,9 +156,9 @@ each was re-found by its text on this tree rather than trusted from either.
 
 The comment on the issue (2026-09-04) recorded the other arm of the same
 standing run: disarm `Remove`, press `Z` once. `ConstructionSystem.cancelOrder`
-(`src/simulation/construction/system.ts:941-990`) is unconditional on state
+(`src/simulation/construction/system.ts:1052-1062`) is unconditional on state
 beyond `isCancellable`, and for a `'completed'` order it sets `hadGeometry =
-true` (`:949`) and calls `this.revertConstruction(order)` (`:951`), which
+true` (`:1060`) and calls `this.revertConstruction(order)` (`:1062`), which
 rewrites the edge the order wrote — falling to whatever *other* completed
 order still claims it, or to zero
 (`revertConstruction`, `:1827-1854`; `otherCompletedClaimants`, `:1866-1874`;

@@ -100,7 +100,7 @@ import { describe, expect, it } from 'vitest';
 
 const ROOT = join(__dirname, '../..');
 
-const RESEARCH = join('docs', 'research');
+const RESEARCH = 'docs/research';
 
 /** Markdown under `docs/`, plus the markdown at the repository root. */
 function collectMarkdownFiles(directory: string): readonly string[] {
@@ -143,7 +143,7 @@ interface Anchor {
 }
 
 function anchorsIn(file: string): readonly Anchor[] {
-  const source = relative(ROOT, file);
+  const source = relative(ROOT, file).replaceAll('\\', '/');
   const anchors: Anchor[] = [];
   for (const match of readFileSync(file, 'utf8').matchAll(/`([^`\n]+)`/g)) {
     // Trailing sentence punctuation is the sentence's, not the anchor's.
@@ -262,7 +262,7 @@ describe('every rooted file:line anchor in the documentation is in range', () =>
       'docs/research/audit-2026-08-26/09-bug-hunt.md -> src/simulation/operations/job-system.ts:196-201: no such file',
       'docs/research/audit-2026-08-26/09-bug-hunt.md -> src/simulation/operations/job-system.ts:196-201: no such file',
       'docs/research/audit-2026-08-26/09-bug-hunt.md -> src/simulation/operations/job-system.ts:215-224: no such file',
-      'docs/research/2026-09-05-does-the-game-say-there-is-no-door.md -> src/simulation/rooms/enclosure.ts:303: out of range, src/simulation/rooms/enclosure.ts has 294 lines',
+      'docs/research/2026-09-05-does-the-game-say-there-is-no-door.md -> src/simulation/rooms/enclosure.ts:303: out of range, src/simulation/rooms/enclosure.ts has 302 lines',
       /*
        * **Four more of the first shape, and all four have one cause: ADR
        * 0115's split.** The owner's ruling of 2026-09-16 moved the roster, the

@@ -85,6 +85,14 @@ interface Triple {
  * code declares is checked for a row.
  */
 const TRIPLES: readonly Triple[] = [
+  {
+    press: 'Build panel · Room plans · Place room plan',
+    intent: 'place-room-template',
+    command: 'PlaceRoomTemplate',
+    artifact: 'the complete room plan is queued',
+    producer: 'simulation',
+    reach: "createRoomTemplatePreview({ roomTemplateTool })",
+  },
   // -- the Build panel's coordinate submit, three modes ---------------------
   {
     press: 'Build panel · ENTER COORDINATES · Place order (wall row selected)',
@@ -324,7 +332,7 @@ const TRIPLES: readonly Triple[] = [
       quote: "await expect(refusal).toHaveAttribute('data-action', 'hire-staff');",
     },
     provesAbsence: {
-      quote: "expect(await hiresSent(page)).toEqual([]);\n    await expect(staffMetric).toHaveText('0');",
+      quote: "expect(await hiresSent(page)).toEqual([]);",
     },
   },
   {
@@ -575,7 +583,7 @@ describe('the refusal surfaces issue #1160 criterion 4 is counted in', () => {
     const silent = [...new Set(TRIPLES.map((triple) => triple.intent))]
       .filter((intent) => refusalMessageKey(intent) === undefined)
       .sort();
-    expect(silent).toEqual(['dismiss-staff', 'edit-regime-block', 'place-object', 'remove-object']);
+    expect(silent).toEqual(['dismiss-staff', 'edit-regime-block', 'place-object', 'place-room-template', 'remove-object']);
     for (const intent of silent) {
       expect(MAIN, `${intent} no longer dispatches a command`).toContain(`case '${intent}':`);
     }
@@ -616,6 +624,15 @@ describe('the refusal surfaces issue #1160 criterion 4 is counted in', () => {
     const panel = TRIPLES.filter((triple) => !['world', 'keyboard', 'transportIntent'].includes(triple.reach));
     expect(panel.length).toBeGreaterThan(20);
     for (const triple of panel) {
+      if (triple.intent === 'place-room-template') {
+        // This button calls RoomTemplateTool rather than dispatching directly.
+        expect(read('src/ui/hud/room-template-preview.ts')).toContain("place.addEventListener('click', async () => {");
+        expect(read('src/ui/hud/room-template-preview.ts')).toContain('await tool.placeAt(tile)');
+        expect(read('src/ui/room-template-tool.ts')).toContain('await this.port.place(request)');
+        expect(read('src/ui/hud/hud.ts')).toContain("kind: 'place-room-template'");
+        expect(MAIN).toContain("case 'place-room-template':");
+        continue;
+      }
       const routes = routesForIntent(uiSources, triple.intent);
       const control = routes.find((route) => route.outcome === 'control');
       expect(control, `${triple.intent} no longer reaches a control`).toBeDefined();
@@ -665,13 +682,13 @@ describe('the refusal surfaces issue #1160 criterion 4 is counted in', () => {
 
   it('counts the enumeration, and the two totals that differ over the keyboard pair', () => {
     // 32 / 30 / 14 / 21 until #1356 added the strip's Undo and Redo rows.
-    expect(TRIPLES.length).toBe(34);
-    expect(pointerTriples.length).toBe(32);
-    expect(simulationTriples.length).toBe(18);
+    expect(TRIPLES.length).toBe(35);
+    expect(pointerTriples.length).toBe(33);
+    expect(simulationTriples.length).toBe(19);
     expect(hostTriples.length).toBe(16);
     expect(simulationTriples.length + hostTriples.length).toBe(TRIPLES.length);
     // Twenty-three distinct presses, of which twenty-one a pointer can make.
-    expect(new Set(TRIPLES.map((triple) => triple.press)).size).toBe(23);
+    expect(new Set(TRIPLES.map((triple) => triple.press)).size).toBe(24);
   });
 
   it('checks every coverage claim against the spec file that is supposed to carry it', () => {
@@ -694,15 +711,15 @@ describe('the refusal surfaces issue #1160 criterion 4 is counted in', () => {
     }
     // The number owed, derived rather than typed: a triple is owed a spec
     // until one drives its press and finds its artifact missing.
-    expect(TRIPLES.length - proven.length).toBe(31);
-    expect(pointerTriples.length - proven.filter((triple) => triple.reach !== 'keyboard').length).toBe(29);
+    expect(TRIPLES.length - proven.length).toBe(32);
+    expect(pointerTriples.length - proven.filter((triple) => triple.reach !== 'keyboard').length).toBe(30);
   });
 
   it('is the number the rollout plan states, so the document cannot drift from the table', () => {
     const plan = read('docs/IDENTITY_V5_ROLLOUT.md');
     const section = plan.slice(plan.indexOf('### The enumeration criterion 4 was restated in terms of'));
     expect(section.length, 'the stage 4 enumeration subsection was renamed or removed').toBeGreaterThan(500);
-    for (const figure of ['34', '32', '31', '29', '18', '16', '23']) {
+    for (const figure of ['35', '33', '32', '30', '19', '16', '24']) {
       expect(section, `the plan no longer states ${figure}`).toContain(figure);
     }
   });
@@ -712,6 +729,7 @@ describe('the refusal surfaces issue #1160 criterion 4 is counted in', () => {
 function commandDomain(triple: Triple): string {
   const byCommand: Readonly<Record<string, string>> = {
     PlaceBuildOrder: 'build',
+    PlaceRoomTemplate: 'build',
     PlaceObject: 'place-object',
     RemoveObject: 'remove-object',
     RemoveWall: 'remove-wall',

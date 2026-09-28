@@ -146,7 +146,7 @@ and both edges, plus the bricks and the build time for all four.
 
 **That does not make it unreachable, and the reason is the coincidence ADR 0036
 decision 2 calls load-bearing.** (16, 16) is `NEW_PRISON_ORIGIN_TILE`
-(`src/main.ts:869`) — the tile the Build panel's x/y fields **start on**. A
+(`src/main.ts:886`) — the tile the Build panel's x/y fields **start on**. A
 player who opens the Build panel and presses without editing the coordinates is
 building on the post tile, and four such presses is a small 2×2-ish wall stub
 or the first corner of a room. The realistic route is not malice; it is a
