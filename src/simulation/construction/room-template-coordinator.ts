@@ -116,7 +116,7 @@ export class RoomTemplateCoordinator implements SystemRegistration {
     });
   }
 
-  public place(request: PendingRoomTemplate, tick = 0): RoomTemplatePlacement {
+  public place(request: PendingRoomTemplate, tick: number): RoomTemplatePlacement {
     if (!roomTemplateOriginFitsSafeCoordinates(request.templateId, request.origin, request.quarterTurns ?? 0)) {
       return { ok: false, reason: 'unowned-land', tile: {
         x: tileCoordinate(request.origin.x), y: tileCoordinate(request.origin.y),
