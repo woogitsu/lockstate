@@ -12,7 +12,7 @@ const NAME_KEYS: Record<RoomTemplateId, LocalizationKey> = {
 
 /** A catalogue of authored plans. Selection previews geometry; it never places an order. */
 export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTemplateTool, onArmMap?: () => void): { readonly openButton: HTMLButtonElement; readonly dialog: HTMLDialogElement } {
-  const t = (key: LocalizationKey): string => localizer.format(key);
+  const t = (key: LocalizationKey, parameters?: Record<string, string | number>): string => localizer.format(key, parameters);
   const openButton = element('button', {
     className: 'hud-build__template-open',
     text: t('hud.build.templates-short'),
@@ -57,7 +57,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
     tool?.select(id, mirrorX);
     const plan = instantiateRoomTemplate(id, { x: 0, y: 0 }, { mirrorX });
     for (const [rowId, button] of buttons) button.setAttribute('aria-pressed', rowId === id ? 'true' : 'false');
-    dimensions.textContent = `${plan.width} × ${plan.height}`;
+    dimensions.textContent = t('hud.build.template-size', { width: plan.width, height: plan.height });
     const counts = new Map<string, number>();
     for (const object of plan.objects) counts.set(object.buildableId, (counts.get(object.buildableId) ?? 0) + 1);
     const objectNames: Record<string, LocalizationKey> = {
@@ -65,8 +65,8 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
       'toilet-brick': 'hud.build.template-toilet',
       'shower-head-brick': 'hud.build.template-shower',
     };
-    contents.textContent = [...counts].map(([objectId, count]) => `${t(objectNames[objectId]!) } × ${count}`).join(' · ');
-    diagram.setAttribute('aria-label', `${t(NAME_KEYS[id])}, ${plan.width} × ${plan.height}`);
+    contents.textContent = [...counts].map(([objectId, count]) => t('hud.build.template-object-count', { name: t(objectNames[objectId]!), count })).join(' · ');
+    diagram.setAttribute('aria-label', t('hud.build.template-aria-label', { name: t(NAME_KEYS[id]), width: plan.width, height: plan.height }));
     diagram.style.gridTemplateColumns = `repeat(${plan.width}, 1.5rem)`;
     diagram.replaceChildren();
     const wall = new Set(plan.wallSquares.map(({ x, y }) => `${x},${y}`));
@@ -118,7 +118,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
           const localY = verdict.tile.y - plan.origin.y;
           diagram.children[localY * plan.width + localX]?.classList.add('hud-template__tile--blocked');
         }
-        status.textContent = verdict.ok ? t('hud.build.template-ready') : `${t('hud.build.template-blocked')} (${verdict.tile.x}, ${verdict.tile.y})`;
+        status.textContent = verdict.ok ? t('hud.build.template-ready') : t('hud.build.template-blocked');
       } catch {
         if (current === revision) status.textContent = t('hud.build.template-unavailable');
       }

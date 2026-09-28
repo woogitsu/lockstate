@@ -2322,6 +2322,9 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.template-bed': 'Bed',
   'hud.build.template-toilet': 'Toilet',
   'hud.build.template-shower': 'Shower',
+  'hud.build.template-size': '{width} × {height} tiles',
+  'hud.build.template-object-count': '{name} × {count}',
+  'hud.build.template-aria-label': '{name}, {width} × {height} tiles',
   'hud.build.catalogue-empty': 'Nothing is available to build',
   'hud.build.selected': 'Selected',
   /**
