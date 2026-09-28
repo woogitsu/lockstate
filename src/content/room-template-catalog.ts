@@ -7,6 +7,8 @@ export interface TemplateSquare {
 export interface TemplateDoorSquare extends TemplateSquare {
   /** A north-facing doorway uses the north edge of the tile just inside the room. */
   readonly orderTile?: TemplateSquare;
+  /** Canonical world edge; absent preserves the authored north-edge door. */
+  readonly edge?: 'north' | 'west';
 }
 
 export interface RoomTemplatePlan {
@@ -19,7 +21,7 @@ export interface RoomTemplatePlan {
   readonly zone: { readonly roomId: 'room.cell' | 'room.shower-room' | 'room.canteen' | 'room.kitchen' | 'room.infirmary' | 'room.laundry' | 'room.classroom'; readonly x: number; readonly y: number; readonly width: number; readonly height: number };
   /** Every separately designated room; `zone` retains the first for older readers. */
   readonly zones: readonly RoomTemplatePlan['zone'][];
-  readonly objects: readonly { readonly buildableId: RoomTemplateObjectId; readonly x: number; readonly y: number }[];
+  readonly objects: readonly { readonly buildableId: RoomTemplateObjectId; readonly x: number; readonly y: number; readonly orientation?: 0 | 1 | 2 | 3 }[];
 }
 
 /** Player-facing choices; backend-authored additions can join after HUD copy and controls land. */

@@ -7,6 +7,7 @@ import { SnapshotRefusedError } from '../runtime/restore-refusal';
 import { SparseWorld } from '../world/sparse-world';
 import { type BuildabilityRequirement, canBuildAt } from '../world/buildability';
 import { type TilePosition, tileCoordinate, tileToChunk } from '../world/coordinates';
+import type { ObjectOrientation } from '../objects/placed-object';
 
 export interface ConstructionSnapshot {
   readonly orders: readonly BuildOrder[];
@@ -246,7 +247,7 @@ const SUBMISSION_FAIL_REASONS: Readonly<Record<string, BuildOrderFailReason>> = 
  * `ObjectPlacementService` documents the one interleaving that produces it.
  */
 export interface ObjectPlacementSink {
-  onOrderCompleted(objectId: string, anchor: TilePosition): boolean;
+  onOrderCompleted(objectId: string, anchor: TilePosition, orientation?: ObjectOrientation): boolean;
   onOrderReverted(objectId: string, anchor: TilePosition): boolean;
 }
 
@@ -2034,7 +2035,7 @@ export class ConstructionSystem implements SystemRegistration {
       // and the room it stands in has its capacity re-derived on the same call
       // (ADR 0028 decision 2, moment one of three).
       if (definition.placesObjectId !== undefined) {
-        this.objectPlacement?.onOrderCompleted(definition.placesObjectId, order.location);
+        this.objectPlacement?.onOrderCompleted(definition.placesObjectId, order.location, order.objectOrientation ?? 0);
       }
       this.markGeometryChanged(order.location);
       return;

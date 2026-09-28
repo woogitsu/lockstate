@@ -94,7 +94,12 @@ export const placeRoomTemplateSchema = z.object({
   templateId: z.enum(['cell-basic', 'cell-large', 'shower-room', 'canteen-basic', 'kitchen-basic', 'cell-row-four', 'infirmary-basic', 'laundry-basic', 'classroom-basic']),
   origin: z.object({ x: z.number().int().safe(), y: z.number().int().safe() }).strict(),
   mirrorX: z.boolean().optional(),
-}).strict();
+  /** Clockwise turns of the complete footprint; absent is the legacy unrotated plan. */
+  quarterTurns: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]).optional(),
+}).strict().refine((request) => (request.quarterTurns ?? 0) === 0 || request.templateId === 'canteen-basic', {
+  message: 'This authored room plan has no valid quarter-turn layout yet.',
+  path: ['quarterTurns'],
+});
 
 /**
  * Clear the room designations a rectangle touches (#261's removal half).
@@ -816,6 +821,7 @@ function commandJson(command: SimulationCommand): JsonValue {
         templateId: command.templateId,
         origin: { x: command.origin.x, y: command.origin.y },
         ...(command.mirrorX === undefined ? {} : { mirrorX: command.mirrorX }),
+        ...(command.quarterTurns === undefined ? {} : { quarterTurns: command.quarterTurns }),
       };
     case 'PlaceBuildOrder':
       return {
