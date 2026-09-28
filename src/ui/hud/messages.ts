@@ -391,6 +391,7 @@ export const HUD_MESSAGE_KEY = {
   zoomRegion: 'hud.zoom.title',
   zoomIn: 'hud.zoom.in',
   zoomOut: 'hud.zoom.out',
+  cameraControls: 'hud.camera.controls',
   cameraAngleTitle: 'hud.camera-angle.title',
   cameraAngleYawLeft: 'hud.camera-angle.yaw-left',
   cameraAngleYawRight: 'hud.camera-angle.yaw-right',

@@ -2301,7 +2301,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       // that also has an interface scale. The same word is on screen in the
       // legend, so this is a machine-readable copy of a visible label rather
       // than the only place the meaning exists.
-      'aria-label': t('hud.camera.controls'),
+      'aria-label': t(HUD_MESSAGE_KEY.cameraControls),
     },
     // Out before in, so the pair reads left to right the way a range does and
     // the way the keys do on the row they are bound to.
