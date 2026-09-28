@@ -1,6 +1,7 @@
 import type { LocalizationKey } from '../../content/localization';
+import type { RoomTemplateId } from '../../content/room-template-catalog';
 import type { MinimapView } from '../../shared/minimap-view';
-import type { RoomTemplateTool } from '../room-template-tool';
+import type { RoomTemplateCostQuote, RoomTemplateTool } from '../room-template-tool';
 import { RoomTemplateTool as RoomTemplateToolState, type RoomTemplatePlacementRequest, type RoomTemplatePreflight } from '../room-template-tool';
 import { DEFAULT_LAYOUT_SETTINGS, type LayoutSettings } from '../../input/layout-preference';
 import type { MessageParameters } from '../../services/localization/format';
@@ -868,6 +869,7 @@ export interface HudUnavailableNotice {
 export interface MountHudOptions {
   readonly localizer: HudLocalizer;
   readonly roomTemplatePreflight?: (request: RoomTemplatePlacementRequest) => Promise<RoomTemplatePreflight>;
+  readonly roomTemplateQuote?: (id: RoomTemplateId) => Promise<RoomTemplateCostQuote>;
   /**
    * The player's stored layout: which regions are folded and how wide or tall
    * the two resizable ones are (#1159).
@@ -2303,6 +2305,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       });
   const buildPanel: BuildPanel = createBuildPanel({
     localizer,
+    ...(options.roomTemplateQuote === undefined ? {} : { roomTemplateQuote: options.roomTemplateQuote }),
     ...(roomTemplateTool === undefined ? {} : { roomTemplateTool }),
     onArmRoomTemplate: () => {
       buildPanel.standDown();

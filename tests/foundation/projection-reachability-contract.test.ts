@@ -381,8 +381,6 @@ const readersOf = (id: string): readonly string[] => READER_SURFACE.filter((file
  * today, with a citation, and must not merely restate a plan.
  */
 const UNPAINTED_PROJECTION_IDS: Readonly<Partial<Record<ProjectionId, string>>> = {
-  'world/room-template-cost':
-    'No UI reader on this backend branch: the player-facing quote currently exists only in stacked HUD PR #1612, which imports the static cost function directly. This worker route gives that HUD follow-up a validated request/response boundary; until its reader lands, this ID is deliberately unpainted.',
   'world/render-snapshot':
     "No reader. `decodeRenderLayer` (`src/simulation/presentation/world-projection.ts`) has no caller outside its own module and `tests/`; the render path gets world chunks through `src/rendering/feed/simulation-snapshot-feed.ts`'s session-snapshot bundle instead of pulling this projection. ADR 0040 open question 4 (`docs/adr/0040-the-shape-of-the-render-delta-channel.md:522`) leaves reuse-versus-delete to slice 4 and deliberately does not decide it here.",
 };
