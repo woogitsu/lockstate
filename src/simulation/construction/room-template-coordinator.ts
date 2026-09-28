@@ -107,22 +107,11 @@ export class RoomTemplateCoordinator implements SystemRegistration {
   }
 
   public update(context: SimulationContext): void {
+    this.reconcileCancelledShells();
     const remaining: PendingRoomTemplate[] = [];
     for (const request of this.pending) {
       const built = createRoomTemplateBuildPlan(request.templateId, request.origin, request.mirrorX, request.sequence);
       const states = built.shellOrderIds.map((id) => this.construction.getOrder(id)?.state);
-      if (states.some((state) => state === undefined || state === 'cancelled' || state === 'failed')) {
-        // A grouped room gesture must not keep building a partial shell after
-        // one member is lost. This includes completed orders: cancelOrder
-        // reverses their world geometry as it does for construction Undo.
-        for (const id of built.shellOrderIds) {
-          const order = this.construction.getOrder(id);
-          if (order !== undefined && order.state !== 'cancelled' && order.state !== 'failed') {
-            this.construction.cancelOrder(id);
-          }
-        }
-        continue;
-      }
       if (states.some((state) => state !== 'completed')) {
         remaining.push(request);
         continue;
@@ -155,6 +144,26 @@ export class RoomTemplateCoordinator implements SystemRegistration {
       }
     }
     this.pending = remaining;
+  }
+
+  /** Command dispatch also runs while paused, so release invalidated plans then. */
+  public reconcileCancelledShells(): void {
+    this.pending = this.pending.filter((request) => {
+      const shellOrderIds = createRoomTemplateBuildPlan(request.templateId, request.origin, request.mirrorX, request.sequence).shellOrderIds;
+      if (!shellOrderIds.some((id) => {
+        const state = this.construction.getOrder(id)?.state;
+        return state === undefined || state === 'cancelled' || state === 'failed';
+      })) return true;
+      // A grouped room gesture must not keep a partial shell. This includes
+      // completed orders, whose geometry cancelOrder reverses.
+      for (const id of shellOrderIds) {
+        const order = this.construction.getOrder(id);
+        if (order !== undefined && order.state !== 'cancelled' && order.state !== 'failed') {
+          this.construction.cancelOrder(id);
+        }
+      }
+      return false;
+    });
   }
 
   public snapshot(): RoomTemplateCoordinatorSnapshot {

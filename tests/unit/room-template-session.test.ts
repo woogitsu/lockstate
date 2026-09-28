@@ -104,6 +104,34 @@ describe('room template session command', () => {
     expect(shell.every((order) => order.state === 'cancelled')).toBe(true);
   });
 
+  it('releases the whole cancelled plan before the next command can reuse its footprint', () => {
+    const runtime = createNewSimulationRuntime(72);
+    runtime.kernel.submitCommand('template-0', 0, runtime.kernel.tick, packCommand({
+      type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 5, y: 5 },
+    }));
+    runtime.kernel.step();
+    const shell = runtime.construction.allOrders().filter((order) => order.id.startsWith('room-template-'));
+    runtime.kernel.submitCommand('cancel-shell', 1, runtime.kernel.tick, packCommand({
+      type: 'CancelBuildOrder', orderId: shell[0]!.id, expectedRevision: runtime.construction.revisionOf(shell[0]!.id),
+    }));
+    runtime.kernel.step();
+    expect(runtime.roomTemplates.snapshot().pending).toEqual([]);
+    expect(shell.every((order) => order.state === 'cancelled')).toBe(true);
+    expect(runtime.roomTemplates.preflight(createRoomTemplateBuildPlan('cell-basic', { x: 5, y: 5 }, false, 2).plan)).toEqual({ ok: true });
+  });
+
+  it('releases the same paused footprint after Undo cancels its grouped shell', () => {
+    const runtime = createNewSimulationRuntime(72);
+    runtime.kernel.submitCommand('template-0', 0, runtime.kernel.tick, packCommand({
+      type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 5, y: 5 },
+    }));
+    runtime.kernel.step();
+    runtime.kernel.submitCommand('undo-template', 1, runtime.kernel.tick, packCommand({ type: 'Undo' }));
+    runtime.kernel.step();
+    expect(runtime.roomTemplates.snapshot().pending).toEqual([]);
+    expect(runtime.roomTemplates.preflight(createRoomTemplateBuildPlan('cell-basic', { x: 5, y: 5 }, false, 2).plan)).toEqual({ ok: true });
+  });
+
   it('reverses built shell squares when a later room-plan order is cancelled', () => {
     const runtime = createNewSimulationRuntime(72);
     runtime.kernel.submitCommand('template-0', 0, runtime.kernel.tick, packCommand({
