@@ -17,7 +17,7 @@ test('Full HD oblique camera controls the real world and stands down during Buil
   expect(after.equals(before), 'the rendered world did not turn with the HUD action').toBe(false);
   await page.screenshot({ path: testInfo.outputPath('oblique-after-hud-turn-fullhd.png') });
 
-  await page.locator('canvas').click({ position: { x: 750, y: 400 } });
+  await page.locator('#game-root canvas').click({ position: { x: 750, y: 400 } });
   await page.keyboard.press('q');
   await expect(reading).toContainText('-45°');
 
