@@ -3,6 +3,7 @@ import { PROCURABLE_MATERIALS } from '../../src/content/procurement-catalog';
 import { BUILDABLE_REGISTRY } from '../../src/simulation/construction/definition';
 import { packCommand, type SimulationCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { captureSessionSnapshot, restoreSimulationRuntime } from '../../src/simulation/runtime/restore-session';
 import { TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy/treasury';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { wallRoomPerimeter } from '../helpers/room-walls';
@@ -88,6 +89,25 @@ function createSession(seed = 0x106) {
 }
 
 describe('a finished wall is reachable through RemoveWall (ADR 0106)', () => {
+  it('removes a completed full-square wall from its west half without refunding its cost', () => {
+    const session = createSession();
+    const { runtime } = session;
+    session.send({ type: 'PlaceBuildOrder', orderId: 'square-wall-west', definitionId: WALL, x: 7, y: 7, footprint: 'square' });
+    session.runUntilState('square-wall-west', 'completed');
+    expect(runtime.world.getSquareStructure(tile(7, 7))).toBeGreaterThan(0);
+    const balanceAfterBuild = runtime.treasury.balanceMinorUnits;
+
+    session.send({ type: 'RemoveWall', x: 7, y: 7, edge: 'west' });
+
+    expect(runtime.world.getSquareStructure(tile(7, 7))).toBe(0);
+    expect(runtime.construction.getOrder('square-wall-west')?.state).toBe('cancelled');
+    expect(runtime.treasury.balanceMinorUnits).toBe(balanceAfterBuild);
+    const loaded = restoreSimulationRuntime(captureSessionSnapshot(runtime)).runtime;
+    expect(loaded.world.getSquareStructure(tile(7, 7))).toBe(0);
+    expect(loaded.construction.getOrder('square-wall-west')?.state).toBe('cancelled');
+    expect(loaded.treasury.balanceMinorUnits).toBe(balanceAfterBuild);
+  });
+
   it('removes the completed wall, keeps every coin already spent, and accepts a re-drag at the catalogue price again', () => {
     const session = createSession();
     const { runtime } = session;

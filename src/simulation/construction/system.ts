@@ -1552,7 +1552,7 @@ export class ConstructionSystem implements SystemRegistration {
   }
 
   /**
-   * The completed order, if any, claiming this tile edge -- what a
+   * The completed order, if any, claiming this tile edge or whole square -- what a
    * `RemoveWall` press resolves to
    * ([ADR 0106](../../../docs/adr/0106-how-a-finished-wall-comes-down-without-a-keyboard.md)).
    *
@@ -1576,6 +1576,10 @@ export class ConstructionSystem implements SystemRegistration {
    * on `placesDoor`); this resolver has no second reader to lean on, so it
    * filters here.
    *
+   * A full-square wall claims the tile independently of the pointer's edge;
+   * edge walls and doors still require their authored edge to match. The
+   * object arm of `RemoveWall` runs before this resolver.
+   *
    * **Highest id wins when more than one completed order claims the same
    * edge**, matching `remainingEdgeValue`'s own precedent for which claimant
    * an edge's *value* belongs to -- the walk below is ascending and keeps
@@ -1589,7 +1593,7 @@ export class ConstructionSystem implements SystemRegistration {
     for (const order of this.orderedOrders()) {
       if (order.state !== 'completed') continue;
       if (order.location.x !== location.x || order.location.y !== location.y) continue;
-      if (resolveBuildEdge(order) !== edge) continue;
+      if (order.footprint !== 'square' && resolveBuildEdge(order) !== edge) continue;
       if (edgeNumericIdFor(getBuildableDefinition(order.definitionId)) === 0) continue;
       winner = order;
     }
