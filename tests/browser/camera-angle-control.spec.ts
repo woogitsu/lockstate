@@ -78,3 +78,37 @@ test('camera shortcuts stop during text focus and armed placement', async ({ pag
   await page.keyboard.press('e');
   expect(await page.evaluate(() => (window as typeof window & { cameraAngleKeyCalls: string[] }).cameraAngleKeyCalls)).toHaveLength(5);
 });
+
+test('Full HD angle controls remain distinct from the minimap at larger interface scales', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/index.html');
+  await page.evaluate(async () => {
+    const { createCameraAngleControl } = await import('../../src/ui/hud/camera-angle-control');
+    const control = createCameraAngleControl({
+      title: 'Camera angle', yawLeft: 'Turn left', yawRight: 'Turn right',
+      elevationUp: 'Tilt up', elevationDown: 'Tilt down', reset: 'Reset angle',
+      yaw: 'Turn', elevation: 'Tilt',
+    }, () => {});
+    control.updatePose({ yawRadians: -Math.PI / 4, elevationRadians: Math.PI / 4 });
+    document.querySelector('.hud-minimap')?.before(control.element);
+  });
+  for (const scale of [100, 125, 150]) {
+    if (scale > 100) await page.locator('.display-scale__cycle').click();
+    const geometry = await page.evaluate(() => {
+      const group = document.querySelector('.hud-camera-angle')!.getBoundingClientRect();
+      const map = document.querySelector('.hud-minimap')!.getBoundingClientRect();
+      const corner = document.querySelector('.hud__corner')!;
+      const buttons = [...document.querySelectorAll('.hud-camera-angle__button')].map((button) => button.getBoundingClientRect());
+      return { group: { left: group.left, right: group.right, bottom: group.bottom }, mapTop: map.top, mapBottom: map.bottom,
+        cornerBottom: corner.getBoundingClientRect().bottom, cornerScrollHeight: corner.scrollHeight, cornerClientHeight: corner.clientHeight,
+        buttonWidths: buttons.map((button) => button.width), buttonHeights: buttons.map((button) => button.height) };
+    });
+    expect(geometry.group.left).toBeGreaterThanOrEqual(0);
+    expect(geometry.group.right).toBeLessThanOrEqual(1920);
+    expect(geometry.group.bottom).toBeLessThanOrEqual(geometry.mapTop + 1);
+    expect(geometry.mapBottom, `${scale}% minimap extends beyond the Full HD viewport`).toBeLessThanOrEqual(1080);
+    expect(Math.min(...geometry.buttonWidths)).toBeGreaterThanOrEqual(44 * scale / 100);
+    expect(Math.min(...geometry.buttonHeights)).toBeGreaterThanOrEqual(44 * scale / 100);
+    if (scale === 150) await page.screenshot({ path: testInfo.outputPath('angle-controls-150-percent-fullhd.png') });
+  }
+});
