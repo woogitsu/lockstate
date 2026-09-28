@@ -32,6 +32,18 @@
     {
       "assetId": "furniture.chair.wooden",
       "manifest": "/game-content/oblique-cell-chair.v1.json"
+    },
+    {
+      "assetId": "floor.cell.sealed-concrete",
+      "manifest": "/game-content/oblique-floor-cell.v1.json"
+    },
+    {
+      "assetId": "floor.linoleum.institutional",
+      "manifest": "/game-content/oblique-floor-corridor.v1.json"
+    },
+    {
+      "assetId": "floor.canteen.terrazzo",
+      "manifest": "/game-content/oblique-floor-canteen.v1.json"
     }
   ]
 }
