@@ -121,6 +121,7 @@ def render_module(asset_id: str, slug: str, source: Path, dependencies: list[Pat
 
 
 def main() -> None:
+    global YAW, ELEVATION
     pipeline_common.require_blender_version()
     setup_scene()
     bed_id = "furniture.cell.bed.single.variants"
@@ -130,9 +131,15 @@ def main() -> None:
         raise RuntimeError("Cell bed source lacks bottom-center origin")
     origin.location = (0, 0, 0)  # source catalog distributes models among gallery slots
     bpy.context.view_layer.update()
+    YAW = tuple(-165 + index * 30 for index in range(12))
+    ELEVATION = (20, 30, 40, 50, 60, 70)
     render_module(bed_id, "cell-bed", CATALOG, [])
     bed.hide_render = True
 
+    # Doors retain their authored three-angle grid; only the high-visibility
+    # bed needs denser sampling while the player rotates the camera.
+    YAW = (-45, 0, 45)
+    ELEVATION = (25, 45, 65)
     frame = append_collection(WALL, "wall.interior.doorframe.full")
     leaf = append_collection(LEAF, "door.interior.leaf.open")
     bpy.context.view_layer.update()

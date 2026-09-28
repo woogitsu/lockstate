@@ -101,7 +101,16 @@ test('a saved furnished cell stays readable in the real Full HD app across camer
   test.setTimeout(60_000);
   await page.setViewportSize({ width: 1920, height: 1080 });
   const errors: string[] = [];
+  const bedFrames = new Set<string>();
+  let bedResponses = 0;
   page.on('pageerror', (error) => errors.push(error.message));
+  page.on('response', (response) => {
+    const url = response.url();
+    if (response.ok() && url.includes('/assets/environment/oblique/cell-bed-yaw') && url.endsWith('.png')) {
+      bedFrames.add(new URL(url).pathname);
+      bedResponses += 1;
+    }
+  });
   await page.goto('/?oblique-preview=1');
   await page.evaluate(async (raw) => {
     const repositoryPath = '/src/persistence/local/repository.ts';
@@ -127,6 +136,7 @@ test('a saved furnished cell stays readable in the real Full HD app across camer
   for (let step = 0; step < 2; step += 1) await angle.getByRole('button', { name: 'Tilt down' }).click();
   await expect(reading).toContainText('25°');
   const shallow = await page.screenshot({ path: testInfo.outputPath('warm-cell-app-yaw-minus45-elev25-fullhd.png') });
+  await expect.poll(() => bedFrames.size).toBeGreaterThan(0);
   expect(await visibleBedBlanketPixels(page, shallow)).toBeGreaterThan(700);
   expect(await cutawayDoorWoodPixels(page, shallow, [1015, 565, 1060, 645]),
     'the near cutaway doorway must not leave a detached low timber slab').toBeLessThan(20);
@@ -134,17 +144,21 @@ test('a saved furnished cell stays readable in the real Full HD app across camer
   for (let step = 0; step < 2; step += 1) await angle.getByRole('button', { name: 'Tilt up' }).click();
   await expect(reading).toContainText('Turn 0°');
   const front = await page.screenshot({ path: testInfo.outputPath('warm-cell-app-yaw0-elev45-fullhd.png') });
+  await expect.poll(() => bedFrames.size).toBeGreaterThan(1);
   expect(await visibleBedBlanketPixels(page, front)).toBeGreaterThan(700);
   expect(await cutawayDoorWoodPixels(page, front, [840, 620, 910, 705])).toBeLessThan(20);
   for (let step = 0; step < 3; step += 1) await angle.getByRole('button', { name: 'Turn right' }).click();
   for (let step = 0; step < 2; step += 1) await angle.getByRole('button', { name: 'Tilt up' }).click();
   await expect(reading).toContainText('Turn 45°');
   const high = await page.screenshot({ path: testInfo.outputPath('warm-cell-app-yaw45-elev65-fullhd.png') });
+  await expect.poll(() => bedFrames.size).toBeGreaterThan(2);
   expect(await visibleBedBlanketPixels(page, high)).toBeGreaterThan(700);
   expect(await cutawayDoorWoodPixels(page, high, [720, 565, 800, 635])).toBeLessThan(20);
+  const responsesBeforeReload = bedResponses;
   await page.reload({ waitUntil: 'domcontentloaded' });
   await page.locator('.save-panel__item button').filter({ hasText: 'Load' }).first().click();
   await expect(page.locator('body[data-oblique-preview="ready"]')).toBeVisible();
+  await expect.poll(() => bedResponses).toBeGreaterThan(responsesBeforeReload);
   await page.locator('#game-root canvas').screenshot({ path: testInfo.outputPath('warm-cell-app-after-load-canvas-fullhd.png') });
   expect(errors).toEqual([]);
 });
