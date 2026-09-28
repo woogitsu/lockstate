@@ -43,9 +43,21 @@ function closest(value: number, options: readonly number[]): number {
   return options.reduce((best, option) => Math.abs(option - value) < Math.abs(best - value) ? option : best);
 }
 
+function closestYaw(value: number, options: readonly number[]): number {
+  if (!Number.isFinite(value)) throw new RangeError('Camera yaw must be finite.');
+  // The authored grid uses [-180, 180). A +179° camera must select -180°,
+  // not jump backward to +165° merely because the numbers straddle a seam.
+  const normalized = ((value + 180) % 360 + 360) % 360 - 180;
+  const distance = (option: number): number => {
+    const difference = Math.abs(option - normalized);
+    return Math.min(difference, 360 - difference);
+  };
+  return options.reduce((best, option) => distance(option) < distance(best) ? option : best);
+}
+
 /** Select one authored pose for the camera state; the image path remains catalog owned. */
 export function selectObliqueModuleFrame(catalog: ObliqueModuleCatalog, pose: ObliqueAnglePose): ObliqueModuleFrame {
-  const yaw = closest(pose.yawRadians * 180 / Math.PI, catalog.yawDegrees);
+  const yaw = closestYaw(pose.yawRadians * 180 / Math.PI, catalog.yawDegrees);
   const elevation = closest(pose.elevationRadians * 180 / Math.PI, catalog.elevationDegrees);
   const frame = catalog.frames.find((entry) => entry.yawDegrees === yaw && entry.elevationDegrees === elevation);
   if (!frame) throw new Error(`Missing oblique module pose ${yaw},${elevation}.`);
