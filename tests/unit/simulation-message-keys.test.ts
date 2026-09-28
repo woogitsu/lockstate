@@ -119,9 +119,16 @@ interface UnlabelledEnum {
 
 const UNLABELLED: readonly UnlabelledEnum[] = [
   {
+    sourceFile: 'src/content/room-template-rotation-geometry.ts',
+    declaration: 'TemplateQuarterTurns',
+    members: ['0', '1', '2', '3'],
+    reason:
+      'Clockwise quarter-turn counts used only by pure room-plan geometry. Like ObjectOrientation, these numbers select a footprint transform and are not player-facing labels. No command, save or HUD projection carries this new type yet; a future rotate control must carry its own truthful localized action text rather than render a raw number. The exact four members are pinned so a new value cannot inherit this arithmetic exemption silently.',
+  },
+  {
     sourceFile: 'src/content/room-template-catalog.ts',
     declaration: 'ROOM_TEMPLATE_IDS',
-    members: ['cell-basic', 'cell-large', 'shower-room', 'cell-row-four', 'canteen-basic', 'kitchen-basic', 'infirmary-basic', 'laundry-basic', 'classroom-basic'],
+    members: ['cell-basic', 'cell-large', 'shower-room', 'cell-row-four', 'canteen-basic', 'kitchen-basic', 'infirmary-basic', 'laundry-basic', 'classroom-basic', 'common-room-basic'],
     reason:
       'The player-visible plan labels are the authored EN/PL HUD_MESSAGE_KEY.templateCellBasic/templateCellLarge/templateShowerRoom/templateCellRowFour keys and room.canteen.name/room.kitchen.name/room.infirmary.name/room.laundry.name/room.classroom.name in src/ui/hud/room-template-preview.ts, not generated simulation enum labels. The same module selects these nine authored plans and never renders the raw ids.',
   },

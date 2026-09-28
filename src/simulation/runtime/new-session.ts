@@ -848,7 +848,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     world,
     new ContainerMaterialsProvider(constructionMaterials),
     {
-      onOrderCompleted: (objectId, anchor) => objectPlacement?.onOrderCompleted(objectId, anchor) ?? false,
+      onOrderCompleted: (objectId, anchor, orientation) => objectPlacement?.onOrderCompleted(objectId, anchor, orientation) ?? false,
       onOrderReverted: (objectId, anchor) => objectPlacement?.onOrderReverted(objectId, anchor) ?? false,
     },
     doorConstruction,
@@ -1620,9 +1620,9 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   kernel.registerSystem(construction);
   const roomTemplates = new RoomTemplateCoordinator(world, construction, roomZoning, placedObjects, objectPlacement, navigation.doors);
   construction.setPendingRoomTemplateClaims((tile, sequence) => roomTemplates.claimsPendingFootprint(tile, sequence));
-  construction.setPendingRoomTemplateDoorApproachClaims((order) => roomTemplates.claimsPendingDoorApproach(order));
+  construction.setRoomTemplateDoorApproachClaims((order) => roomTemplates.claimsRoomDoorApproach(order));
   construction.setObjectClaimsSquare((tile) => objectPlacement!.claimsTileForSquareWall(tile));
-  objectPlacement.setPendingRoomDoorApproachClaim((tile) => roomTemplates.claimsPendingDoorApproachTile(tile));
+  objectPlacement.setRoomDoorApproachClaim((tile) => roomTemplates.claimsRoomDoorApproachTile(tile));
   roomZoning.setPendingTemplateClaim((tile, sequence) => roomTemplates.claimsPendingFootprint(tile, sequence));
   kernel.registerSystem(roomTemplates);
   kernel.registerSystem(procurement);

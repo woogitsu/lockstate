@@ -186,6 +186,8 @@ const buildOrderSchema = z
      */
     edge: z.enum(['north', 'west']).optional(),
     footprint: z.literal('square').optional(),
+    /** Additive: older build orders without this field retain orientation 0. */
+    objectOrientation: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]).optional(),
     /**
      * Where the order sits in the sequence of gestures the player made
      * ([ADR 0082](../../docs/adr/0082-what-order-build-orders-are-carried-out-in.md),
@@ -1647,11 +1649,17 @@ const contrabandSectionV7Schema = contrabandSectionSchema.extend({
   }).strict(),
 }).strict();
 const roomTemplateRequestV7Schema = z.object({
-  templateId: z.enum(['cell-basic', 'cell-large', 'shower-room', 'canteen-basic', 'kitchen-basic', 'cell-row-four', 'infirmary-basic', 'laundry-basic', 'classroom-basic']),
+  templateId: z.enum(['cell-basic', 'cell-large', 'shower-room', 'canteen-basic', 'kitchen-basic', 'cell-row-four', 'infirmary-basic', 'laundry-basic', 'classroom-basic', 'common-room-basic']),
   origin: z.object({ x: z.number().int().safe(), y: z.number().int().safe() }).strict(),
   mirrorX: z.boolean(),
+  /** Additive V7 field. Absent on older pending gestures means unrotated. */
+  quarterTurns: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]).optional(),
   sequence: z.number().int().nonnegative(),
-}).strict();
+}).strict().refine((request) => (request.quarterTurns ?? 0) === 0 ||
+  request.templateId === 'canteen-basic' || request.templateId === 'cell-large', {
+  message: 'This saved room plan has no valid quarter-turn layout.',
+  path: ['quarterTurns'],
+});
 const sessionSystemsV7Schema = sessionSystemsV6Schema.extend({
   prisoners: prisonersSectionV7Schema,
   navigation: navigationSectionSchema.omit({ work: true }),

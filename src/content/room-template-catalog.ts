@@ -9,6 +9,8 @@ export interface TemplateSquare {
 export interface TemplateDoorSquare extends TemplateSquare {
   /** A north-facing doorway uses the north edge of the tile just inside the room. */
   readonly orderTile?: TemplateSquare;
+  /** Canonical world edge; absent preserves the authored north-edge door. */
+  readonly edge?: 'north' | 'west';
 }
 
 export interface RoomTemplatePlan {
@@ -18,14 +20,14 @@ export interface RoomTemplatePlan {
   readonly height: number;
   readonly wallSquares: readonly TemplateSquare[];
   readonly doorSquares: readonly TemplateDoorSquare[];
-  readonly zone: { readonly roomId: 'room.cell' | 'room.shower-room' | 'room.canteen' | 'room.kitchen' | 'room.infirmary' | 'room.laundry' | 'room.classroom'; readonly x: number; readonly y: number; readonly width: number; readonly height: number };
+  readonly zone: { readonly roomId: 'room.cell' | 'room.shower-room' | 'room.canteen' | 'room.kitchen' | 'room.infirmary' | 'room.laundry' | 'room.classroom' | 'room.common-room'; readonly x: number; readonly y: number; readonly width: number; readonly height: number };
   /** Every separately designated room; `zone` retains the first for older readers. */
   readonly zones: readonly RoomTemplatePlan['zone'][];
-  readonly objects: readonly { readonly buildableId: RoomTemplateObjectId; readonly x: number; readonly y: number }[];
+  readonly objects: readonly { readonly buildableId: RoomTemplateObjectId; readonly x: number; readonly y: number; readonly orientation?: 0 | 1 | 2 | 3 }[];
 }
 
 /** Player-facing choices; backend-authored additions can join after HUD copy and controls land. */
-export const ROOM_TEMPLATE_IDS = ['cell-basic', 'cell-large', 'shower-room', 'cell-row-four', 'canteen-basic', 'kitchen-basic', 'infirmary-basic', 'laundry-basic', 'classroom-basic'] as const;
+export const ROOM_TEMPLATE_IDS = ['cell-basic', 'cell-large', 'shower-room', 'cell-row-four', 'canteen-basic', 'kitchen-basic', 'infirmary-basic', 'laundry-basic', 'classroom-basic', 'common-room-basic'] as const;
 export type RoomTemplateId = (typeof ROOM_TEMPLATE_IDS)[number];
 export type AuthoredRoomTemplateId = RoomTemplateId;
 type RoomTemplateObjectId = 'bed-wooden' | 'toilet-brick' | 'shower-head-brick' | 'dining-table-wooden' | 'bench-wooden' | 'stove-brick' | 'prep-counter-brick' | 'fridge-brick' | 'medical-bed-wooden' | 'medicine-cabinet-wooden' | 'washing-machine-brick' | 'bookshelf-wooden' | 'chair-wooden';
@@ -128,6 +130,15 @@ const TEMPLATES: Readonly<Record<Exclude<AuthoredRoomTemplateId, 'cell-row-four'
       { buildableId: 'chair-wooden', x: 4, y: 3 },
     ],
   },
+  'common-room-basic': {
+    width: 7, height: 7, roomId: 'room.common-room', doorX: 3,
+    objects: [
+      { buildableId: 'bench-wooden', x: 1, y: 1, width: 2 },
+      { buildableId: 'bench-wooden', x: 4, y: 1, width: 2 },
+      { buildableId: 'bench-wooden', x: 1, y: 4, width: 2 },
+      { buildableId: 'bench-wooden', x: 4, y: 4, width: 2 },
+    ],
+  },
 };
 
 /**
@@ -178,11 +189,15 @@ export function instantiateRoomTemplate(
 }
 
 /** Includes the exclusive loop bounds used by placement and pending claims. */
-export function roomTemplateOriginFitsSafeCoordinates(id: AuthoredRoomTemplateId, origin: TemplateSquare): boolean {
+export function roomTemplateOriginFitsSafeCoordinates(id: AuthoredRoomTemplateId, origin: TemplateSquare, quarterTurns: 0 | 1 | 2 | 3 = 0): boolean {
   const dimensions = id === 'cell-row-four' ? { width: 7, height: 16 } : TEMPLATES[id];
+  const width = dimensions === undefined ? 0 : quarterTurns % 2 === 0 ? dimensions.width : dimensions.height;
+  const height = dimensions === undefined ? 0 : quarterTurns % 2 === 0 ? dimensions.height : dimensions.width;
   return dimensions !== undefined && Number.isSafeInteger(origin.x) && Number.isSafeInteger(origin.y) &&
     origin.x <= Number.MAX_SAFE_INTEGER - dimensions.width &&
-    origin.y <= Number.MAX_SAFE_INTEGER - dimensions.height;
+    origin.y <= Number.MAX_SAFE_INTEGER - dimensions.height &&
+    origin.x <= Number.MAX_SAFE_INTEGER - width &&
+    origin.y <= Number.MAX_SAFE_INTEGER - height;
 }
 
 /** Four basic Cells share party walls across each bank of a clear two-tile corridor. */

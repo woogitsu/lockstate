@@ -1,4 +1,5 @@
-import { instantiateRoomTemplate, roomTemplateOriginFitsSafeCoordinates, type RoomTemplatePlan } from '../../content/room-template-catalog';
+import { roomTemplateOriginFitsSafeCoordinates, type RoomTemplatePlan } from '../../content/room-template-catalog';
+import type { TemplateQuarterTurns } from '../../content/room-template-rotation-geometry';
 import type { SystemRegistration, SimulationContext } from '../kernel/system';
 import type { PlacedObjectRegistry } from '../objects/placed-object-registry';
 import type { ObjectPlacementService } from '../objects/object-placement-service';
@@ -18,6 +19,8 @@ export interface PendingRoomTemplate {
   readonly templateId: RoomTemplatePlan['id'];
   readonly origin: RoomTemplatePlan['origin'];
   readonly mirrorX: boolean;
+  /** Absent in older pending saves; those gestures remain unrotated. */
+  readonly quarterTurns?: TemplateQuarterTurns;
   readonly sequence: number;
 }
 
@@ -54,8 +57,7 @@ export class RoomTemplateCoordinator implements SystemRegistration {
     const edgeApproachClaims = new Set<string>();
     // Shell orders claim only perimeter tiles. Until zoning completes, the
     // interior is still empty world, but it belongs to the same atomic plan.
-    const pendingPlans = this.pending.map((request) =>
-      instantiateRoomTemplate(request.templateId, request.origin, { mirrorX: request.mirrorX }));
+    const pendingPlans = this.pending.map((request) => this.planFor(request));
     for (const order of active) {
       const objectId = BUILDABLE_REGISTRY.get(order.definitionId)?.placesObjectId;
       if (objectId === undefined) {
@@ -74,7 +76,7 @@ export class RoomTemplateCoordinator implements SystemRegistration {
       }
       // ObjectPlacementService reserves every square of an in-flight object's
       // footprint, not just its anchor. The template preflight must agree.
-      for (const tile of objectFootprintTiles(definition, order.location, 0)) {
+      for (const tile of objectFootprintTiles(definition, order.location, order.objectOrientation ?? 0)) {
         objectClaims.add(tileKey(tile));
       }
     }
@@ -88,25 +90,10 @@ export class RoomTemplateCoordinator implements SystemRegistration {
     );
     if (!verdict.ok) return verdict;
     // A later plan must not build its perimeter on the outside approach of an
-    // earlier pending doorway. Rectangle overlap alone misses adjacent plans.
-    const wallSquares = new Set(plan.wallSquares.map((square) => `${square.x}:${square.y}`));
-    for (const pending of pendingPlans) {
-      for (const door of pending.doorSquares) {
-        if (door.y !== pending.origin.y + pending.height - 1) continue;
-        const outsideY = door.y + 1;
-        if (!wallSquares.has(`${door.x}:${outsideY}`)) continue;
-        return { ok: false, reason: 'structure-occupied', tile: {
-          x: tileCoordinate(door.x), y: tileCoordinate(outsideY),
-        } };
-      }
-    }
-    // Completed plans leave the pending ledger, but their door and zoned room
-    // remain in the world. A later wall must not cover that outside approach.
+    // earlier pending or completed doorway. Rectangle overlap misses both.
     for (const wall of plan.wallSquares) {
-      if (!Number.isSafeInteger(wall.y - 2)) continue;
-      const doorTile = { x: tileCoordinate(wall.x), y: tileCoordinate(wall.y - 1) };
-      const roomTile = { x: tileCoordinate(wall.x), y: tileCoordinate(wall.y - 2) };
-      if (this.doors.getByEdge(doorTile, 'top') === undefined || this.world.getZoning(roomTile) === 0) continue;
+      const tile = { x: tileCoordinate(wall.x), y: tileCoordinate(wall.y) };
+      if (!this.claimsRoomDoorApproachTile(tile)) continue;
       return { ok: false, reason: 'structure-occupied', tile: {
         x: tileCoordinate(wall.x), y: tileCoordinate(wall.y),
       } };
@@ -123,19 +110,19 @@ export class RoomTemplateCoordinator implements SystemRegistration {
   public claimsPendingFootprint(tile: TilePosition, orderSequence: number | undefined): boolean {
     return this.pending.some((request) => {
       if (orderSequence === request.sequence) return false;
-      const plan = instantiateRoomTemplate(request.templateId, request.origin, { mirrorX: request.mirrorX });
+      const plan = this.planFor(request);
       return tile.x >= plan.origin.x && tile.x < plan.origin.x + plan.width &&
         tile.y >= plan.origin.y && tile.y < plan.origin.y + plan.height;
     });
   }
 
   public place(request: PendingRoomTemplate): RoomTemplatePlacement {
-    if (!roomTemplateOriginFitsSafeCoordinates(request.templateId, request.origin)) {
+    if (!roomTemplateOriginFitsSafeCoordinates(request.templateId, request.origin, request.quarterTurns ?? 0)) {
       return { ok: false, reason: 'unowned-land', tile: {
         x: tileCoordinate(request.origin.x), y: tileCoordinate(request.origin.y),
       } };
     }
-    const built = createRoomTemplateBuildPlan(request.templateId, request.origin, request.mirrorX, request.sequence);
+    const built = createRoomTemplateBuildPlan(request.templateId, request.origin, request.mirrorX, request.sequence, request.quarterTurns ?? 0);
     const verdict = this.preflight(built.plan);
     if (!verdict.ok) return verdict;
     // An all-footprint preflight precedes the first mutation. If a build rule
@@ -161,7 +148,7 @@ export class RoomTemplateCoordinator implements SystemRegistration {
       this.construction.canRedoOrdersTogether(this.shellOrderIds(request)));
     const remaining: PendingRoomTemplate[] = [];
     for (const request of this.pending) {
-      const built = createRoomTemplateBuildPlan(request.templateId, request.origin, request.mirrorX, request.sequence);
+      const built = createRoomTemplateBuildPlan(request.templateId, request.origin, request.mirrorX, request.sequence, request.quarterTurns ?? 0);
       const states = built.shellOrderIds.map((id) => this.construction.getOrder(id)?.state);
       if (states.some((state) => state !== 'completed')) {
         remaining.push(request);
@@ -191,27 +178,51 @@ export class RoomTemplateCoordinator implements SystemRegistration {
           definitionId: order.definitionId,
           x: order.location.x,
           y: order.location.y,
+          ...(order.objectOrientation === undefined ? {} : { orientation: order.objectOrientation }),
         }, context.tick, request.sequence);
       }
     }
     this.pending = remaining;
   }
 
-  /** Reserve the sole outside approach of a pending south-facing template door against later opaque walls. */
-  public claimsPendingDoorApproach(order: BuildOrder): boolean {
+  /** Reserve either side's outside approach after a room plan is queued or completed. */
+  public claimsRoomDoorApproach(order: BuildOrder): boolean {
     if (BUILDABLE_REGISTRY.get(order.definitionId)?.category !== 'wall') return false;
     if (order.footprint !== 'square' && resolveBuildEdge(order) !== 'north') return false;
-    return this.claimsPendingDoorApproachTile(order.location, order.placementSequence);
+    return this.claimsRoomDoorApproachTile(order.location, order.placementSequence);
   }
 
-  public claimsPendingDoorApproachTile(tile: TilePosition, orderSequence?: number): boolean {
-    return this.pending.some((request) => {
+  public claimsRoomDoorApproachTile(tile: TilePosition, orderSequence?: number): boolean {
+    const pendingClaims = this.pending.some((request) => {
       if (request.sequence === orderSequence) return false;
-      const plan = instantiateRoomTemplate(request.templateId, request.origin, { mirrorX: request.mirrorX });
+      const plan = this.planFor(request);
       return plan.doorSquares.some((door) =>
-        door.y === plan.origin.y + plan.height - 1 &&
-        door.x === tile.x && door.y + 1 === tile.y);
+        (door.x === tile.x && (
+          (door.y === plan.origin.y + plan.height - 1 && door.y + 1 === tile.y) ||
+          (door.y === plan.origin.y && door.y - 1 === tile.y))) ||
+        (door.y === tile.y && (
+          (door.x === plan.origin.x && door.x - 1 === tile.x) ||
+          (door.x === plan.origin.x + plan.width - 1 && door.x + 1 === tile.x))));
     });
+    if (pendingClaims) return true;
+    // A completed plan no longer has a pending request. Its registered door
+    // and zoned interior are the durable evidence of the approach to protect.
+    // South: approach, door, interior are y, y-1, y-2. North-facing row:
+    // approach, door square, order/room tile are y, y+1, y+2.
+    const doorAt = (doorY: number, roomY: number): boolean => {
+      if (!Number.isSafeInteger(doorY) || !Number.isSafeInteger(roomY)) return false;
+      const doorTile = { x: tile.x, y: tileCoordinate(doorY) };
+      const roomTile = { x: tile.x, y: tileCoordinate(roomY) };
+      return this.doors.getByEdge(doorTile, 'top') !== undefined && this.world.getZoning(roomTile) !== 0;
+    };
+    const sideDoorAt = (doorX: number, roomX: number): boolean => {
+      if (!Number.isSafeInteger(doorX) || !Number.isSafeInteger(roomX)) return false;
+      const doorTile = { x: tileCoordinate(doorX), y: tile.y };
+      const roomTile = { x: tileCoordinate(roomX), y: tile.y };
+      return this.doors.getByEdge(doorTile, 'left') !== undefined && this.world.getZoning(roomTile) !== 0;
+    };
+    return doorAt(tile.y - 1, tile.y - 2) || doorAt(tile.y + 2, tile.y + 2) ||
+      sideDoorAt(tile.x - 1, tile.x - 2) || sideDoorAt(tile.x + 2, tile.x + 2);
   }
 
   /** Command dispatch also runs while paused, so release invalidated plans then. */
@@ -256,7 +267,11 @@ export class RoomTemplateCoordinator implements SystemRegistration {
   }
 
   private shellOrderIds(request: PendingRoomTemplate): readonly string[] {
-    return createRoomTemplateBuildPlan(request.templateId, request.origin, request.mirrorX, request.sequence).shellOrderIds;
+    return createRoomTemplateBuildPlan(request.templateId, request.origin, request.mirrorX, request.sequence, request.quarterTurns ?? 0).shellOrderIds;
+  }
+
+  private planFor(request: PendingRoomTemplate): RoomTemplatePlan {
+    return createRoomTemplateBuildPlan(request.templateId, request.origin, request.mirrorX, request.sequence, request.quarterTurns ?? 0).plan;
   }
 
   public snapshot(): RoomTemplateCoordinatorSnapshot {
