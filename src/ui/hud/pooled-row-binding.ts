@@ -82,11 +82,11 @@
  *    is refused that was ever offered, because a blank row promises nothing --
  *    which is what keeps this a paint rule rather than a player-facing refusal
  *    needing a sentence of its own (`AGENTS.md` exclusion 4).
- * 2. **A row naming nothing keeps its box while any row after it names
- *    something.** Hiding it would slide every row below it up a row's height
- *    into whatever pointer was resting there, which is the same defect by
- *    geometry rather than by binding. Only the trailing run of empty rows gives
- *    its boxes up, and giving those up moves nothing.
+ * 2. **A row naming nothing keeps its box while another visible slot needs its
+ *    place.** Hiding an interior box slides a neighbor into the old pointer.
+ *    ADR 0124 resolves the bottom anchor: unused leading slots can collapse,
+ *    while every lower visible slot retains its place and height. The panels
+ *    also restore the scroll offset of a short inspector after publication.
  *
  * **Pixels are part of the contract now (#1294, ADR 0124).** The four HUD
  * callers request the bottom anchor. Vacant leading slots may collapse; the
@@ -238,7 +238,9 @@ export function assignPooledRows(
       occupiedBelow = true;
       continue;
     }
-    if (!occupiedBelow) assignments[index] = { kind: 'empty' };
+    const row = orderedRows[index]!;
+    const settling = row.freedAtMs !== undefined && nowMs - row.freedAtMs < settleMs;
+    if (!occupiedBelow && row.itemId === undefined && !settling) assignments[index] = { kind: 'empty' };
   }
 
   return anchor === 'bottom' ? assignments.reverse() : assignments;

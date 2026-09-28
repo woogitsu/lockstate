@@ -458,7 +458,7 @@ inherited:
   > are re-stated by subject rather than re-numbered: the three projections
   > compose the field through `toActorNameViewModel` —
   > `src/simulation/presentation/prisoner-projection.ts:331`,
-  > `src/simulation/presentation/staff-projection.ts:189` and
+  > `src/simulation/presentation/staff-projection.ts:196` and
   > `src/simulation/presentation/guard-release-projection.ts:199` — and the
   > view-model type they build is
   > `src/simulation/presentation/view-model.ts:235`. The old *"Four

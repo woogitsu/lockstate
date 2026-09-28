@@ -426,9 +426,10 @@ test.describe('the Build panel queue', () => {
     // that held the finished `order-00` is emptied rather than re-aimed. The
     // arriving `order-03` gets no row this publication, because the only free
     // one is the box being held open.
-    expect(advanced.rows.map((row) => row.orderId)).toEqual(['order-01', 'order-02']);
-    expect(advanced.rows[0]?.cancelBox?.y).toBe(before.rows[1]?.cancelBox?.y);
-    expect(advanced.rows[1]?.cancelBox?.y).toBe(before.rows[2]?.cancelBox?.y);
+    // ADR 0124 keeps the freed leading box inert instead of collapsing it.
+    expect(advanced.rows.map((row) => row.orderId)).toEqual(['', 'order-01', 'order-02']);
+    expect(advanced.rows[1]?.cancelBox?.y).toBe(before.rows[1]?.cancelBox?.y);
+    expect(advanced.rows[2]?.cancelBox?.y).toBe(before.rows[2]?.cancelBox?.y);
     // The tail is counted against what was drawn: two of eleven are on screen.
     expect(advanced.moreText).toContain('9');
 
@@ -454,7 +455,7 @@ test.describe('the Build panel queue', () => {
     const advance = { total: 11, started: 1, orders: [order(1, 'in-progress'), order(2, 'assigned'), order(3, 'assigned')], materialsFunding: { unfunded: false, shortfallMinorUnits: 0, nextOrderShortfallMinorUnits: 0 } } as HudBuildQueueViewModel;
     await page.evaluate((model) => window.lockstateUiHarness.reportBuildQueue(model), advance);
     const stillBlank = await probeQueue(page);
-    expect(stillBlank.rows.map((row) => row.orderId)).toEqual(['order-01', 'order-02']);
+    expect(stillBlank.rows.map((row) => row.orderId)).toEqual(['', 'order-01', 'order-02']);
 
     // Past the window, the waiting order takes it -- so the block does not go
     // on drawing two rows for a queue of eleven for ever.

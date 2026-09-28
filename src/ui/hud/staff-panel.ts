@@ -457,6 +457,8 @@ export interface StaffCoverageReadout {
    * fills no placeholder because `securityCoverageMetHint` declares none.
    */
   readonly hireCount: number;
+  /** Filled only on the reserve rung, for the hint's {reserve} placeholder. */
+  readonly reserveCount?: number;
 }
 
 export function describeStaffCoverage(coverage: HudStaffCoverageViewModel): StaffCoverageReadout {
@@ -478,6 +480,19 @@ export function describeStaffCoverage(coverage: HudStaffCoverageViewModel): Staf
       badgeKey: HUD_MESSAGE_KEY.securityCoverageShort,
       hintKey: HUD_MESSAGE_KEY.securityCoverageShortHint,
       hireCount: coverage.shortage,
+    };
+  }
+  // A no-post prison is exempt. A staffed prison with every post filled still
+  // needs a free, post-eligible pool for response and search duty (ADR 0095).
+  const reserveShortage = coverage.responseReserveShortage;
+  const reserveRequired = coverage.responseReserveRequired;
+  if (coverage.required > 0 && reserveShortage !== undefined && reserveShortage > 0 && reserveRequired !== undefined) {
+    return {
+      tone: 'warning',
+      badgeKey: HUD_MESSAGE_KEY.securityCoverageReserveShort,
+      hintKey: HUD_MESSAGE_KEY.securityCoverageReserveShortHint,
+      hireCount: reserveShortage,
+      reserveCount: reserveRequired,
     };
   }
   // Includes a prison that asks for nobody: a `DeploymentSchedule` of zero is an
@@ -840,13 +855,18 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
     // the assertion survives a reworded sentence. No stylesheet reads it -- the
     // colour is the badge's, and the badge carries the word beside it.
     coverageBlock.dataset['tone'] = readout.tone;
+    coverageBlock.dataset['reserveShort'] = readout.reserveCount === undefined ? 'false' : 'true';
     coverageSummary.textContent = t(HUD_MESSAGE_KEY.securityCoverageSummary, {
       assigned: localizer.formatNumber(coverage.assigned),
       required: localizer.formatNumber(coverage.required),
     });
     coverageBadge.update({ tone: readout.tone, text: t(readout.badgeKey) });
-    coverageHint.textContent =
-      readout.hireCount > 0
+    coverageHint.textContent = readout.reserveCount !== undefined
+      ? t(readout.hintKey, {
+          count: localizer.formatNumber(readout.hireCount),
+          reserve: localizer.formatNumber(readout.reserveCount),
+        })
+      : readout.hireCount > 0
         ? t(readout.hintKey, { count: localizer.formatNumber(readout.hireCount) })
         : t(readout.hintKey);
     /*
@@ -1537,10 +1557,10 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
    * stands. Nothing is blocked while an arm is up: the player may press another
    * row, collapse the fold, or leave the tab, and each of those drops it.
    *
-   * **Below the list rather than inside the armed row.** A second line inside a
-   * row would change that row's height and slide every row under it -- which is
-   * #860's defect by geometry instead of by binding, arriving in the middle of
-   * the gesture this line exists to make safe.
+   * **In a reserved place above the list rather than inside the armed row.**
+   * Revealing a new line below the list scrolls the panel and moves the armed
+   * button away from the first press's coordinate. The reserved place keeps the
+   * confirmation visible and every row stationary through both presses.
    *
    * It is the armed control's `aria-describedby` while it stands, added and
    * removed per repaint on `hireShortfall`'s pattern above: a description
@@ -1586,11 +1606,8 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
     /*
      * Scrolled into view on the press that reveals it, which is `queueSection`'s
      * rule one panel over: *"a disclosure that reveals a control the player
-     * cannot see has not revealed it."* This block is the last thing in a panel
-     * that is `overflow-y: auto`, so at the short viewports the line the whole
-     * confirmation rests on can be laid out below the panel's own fold -- and a
-     * confirmation the player cannot read is the worst outcome of the three,
-     * worse than no confirmation, because the second press still sacks somebody.
+     * cannot see has not revealed it."* Its reserved place is above the rows,
+     * so revealing it normally needs no scroll and cannot displace the button.
      *
      * `block: 'nearest'`, so a box already inside the fold is not moved.
      */
@@ -1685,8 +1702,8 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
   });
   rosterSection.element.classList.add('hud-staff__roster');
   rosterSection.body.append(
-    rosterList,
     dismissConfirmationSlot,
+    rosterList,
     rosterMore,
     eyebrowText(t(HUD_MESSAGE_KEY.securityRosterHint), 'hud-staff__note'),
   );

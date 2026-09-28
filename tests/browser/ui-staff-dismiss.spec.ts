@@ -376,6 +376,11 @@ test.describe('a dismiss row fires at who it named (#877)', () => {
     // a gate that checked the layout first would decline to make the press the
     // defect is about.
     await page.mouse.click(aimedAt.x, aimedAt.y);
+    const armedRows = await readRows(page);
+    expect(
+      Math.abs(armedRows[1]!.y - aimedAt.y),
+      'revealing the confirmation moved the armed control away from the saved coordinate',
+    ).toBeLessThan(1);
     await page.mouse.click(aimedAt.x, aimedAt.y);
 
     /*
@@ -409,7 +414,7 @@ test.describe('a dismiss row fires at who it named (#877)', () => {
     expect(
       after.map((row) => row.laidOut),
       'the freed place gave its box up, so the rows below it moved under the pointer',
-    ).toEqual([false, true, true]);
+    ).toEqual([true, true, true]);
     /*
      * And the place did not move, which is a second way the same harm arrives
      * and was measured while proving this test can fail.
@@ -632,9 +637,9 @@ test.describe('the dismiss confirmation is whole at the shortest viewport (#877,
     /*
      * And it is on screen without the player scrolling for it, which
      * `paintDismissConfirmation` scrolls into view on the press that reveals it:
-     * this block is the last thing in a panel that is `overflow-y: auto`, and a
-     * confirmation the player cannot read is worse than none -- the second press
-     * still sacks somebody.
+     * the reserved place above the list keeps that scroll from moving the
+     * pressed row, and a confirmation the player cannot read is worse than
+     * none -- the second press still sacks somebody.
      */
     expect(
       reading.insidePanel,
