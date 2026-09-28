@@ -22,11 +22,9 @@ export interface RoomTemplatePlan {
   readonly objects: readonly { readonly buildableId: RoomTemplateObjectId; readonly x: number; readonly y: number }[];
 }
 
-export const ROOM_TEMPLATE_IDS = ['cell-basic', 'cell-large', 'shower-room'] as const;
-// The four-cell block is accepted by the simulation before its HUD preset is
-// surfaced; the UI catalog adds it once its name and full preview are ready.
+export const ROOM_TEMPLATE_IDS = ['cell-basic', 'cell-large', 'shower-room', 'cell-row-four'] as const;
 export type RoomTemplateId = (typeof ROOM_TEMPLATE_IDS)[number];
-export type AuthoredRoomTemplateId = RoomTemplateId | 'cell-row-four';
+export type AuthoredRoomTemplateId = RoomTemplateId;
 type RoomTemplateObjectId = 'bed-wooden' | 'toilet-brick' | 'shower-head-brick';
 
 interface TemplateDefinition {
@@ -37,7 +35,7 @@ interface TemplateDefinition {
   readonly objects: readonly { readonly buildableId: RoomTemplateObjectId; readonly x: number; readonly y: number }[];
 }
 
-const TEMPLATES: Readonly<Record<(typeof ROOM_TEMPLATE_IDS)[number], TemplateDefinition>> = {
+const TEMPLATES: Readonly<Record<Exclude<RoomTemplateId, 'cell-row-four'>, TemplateDefinition>> = {
   'cell-basic': {
     width: 4, height: 7, roomId: 'room.cell', doorX: 1,
     objects: [{ buildableId: 'bed-wooden', x: 1, y: 1 }, { buildableId: 'toilet-brick', x: 2, y: 4 }],

@@ -41,3 +41,27 @@ test('Full HD Build places one complete cell and keeps its claim after save and 
   await expect(restored.getByRole('button', { name: 'Place room plan' })).toBeDisabled();
   await page.screenshot({ path: testInfo.outputPath('template-restored-blocked-fullhd.png') });
 });
+
+test('Full HD Build previews and submits the four-cell corridor row through its catalogue button', async ({ page }, testInfo) => {
+  await installTee(page);
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/index.html');
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await page.getByRole('button', { name: 'Build', exact: true }).click();
+  await page.getByRole('button', { name: 'Room plans', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Room plans' });
+  await dialog.getByRole('button', { name: 'Four-cell row' }).click();
+  await expect(dialog.locator('.hud-template__diagram .hud-template__tile')).toHaveCount(112);
+  await expect(dialog.locator('.hud-template__diagram .hud-template__tile--door')).toHaveCount(4);
+  await expect(dialog.locator('.hud-template__materials')).toContainText('Brick');
+  await expect(dialog.locator('.hud-template__catalogue-value')).toContainText('Catalogue value:');
+  await dialog.getByRole('spinbutton', { name: 'Plan origin X' }).fill('10');
+  await dialog.getByRole('spinbutton', { name: 'Plan origin Y' }).fill('10');
+  await expect(dialog.getByRole('status')).toContainText('clear');
+  await page.screenshot({ path: testInfo.outputPath('four-cell-row-ready-fullhd.png') });
+  await dialog.getByRole('button', { name: 'Place room plan' }).click();
+  await expect(dialog.getByRole('status')).toContainText('submitted');
+  await expect.poll(async () => (await sentCommands(page)).filter((command) => command.type === 'PlaceRoomTemplate')).toEqual([
+    { type: 'PlaceRoomTemplate', templateId: 'cell-row-four', origin: { x: 10, y: 10 } },
+  ]);
+});
