@@ -18,6 +18,14 @@
       ]
     },
     {
+      "assetId": "actor.guard.response",
+      "manifest": "actor.guard.response.atlas-manifests.json",
+      "clips": [
+        "idle",
+        "respond"
+      ]
+    },
+    {
       "assetId": "actor.medic.base",
       "manifest": "actor.medic.base.atlas-manifests.json",
       "clips": [

@@ -236,6 +236,15 @@ function spritesWithAsset(assetId: string): readonly SpritePosition[] {
   return found;
 }
 
+function framesWithAsset(assetId: string): readonly string[] {
+  const frames: string[] = [];
+  for (const child of scene.children?.list ?? []) {
+    const image = child as Phaser.GameObjects.Image;
+    if (image.visible && image.texture?.key.includes(assetId)) frames.push(image.frame.name);
+  }
+  return frames;
+}
+
 /**
  * The drawn world's marker every keyframe this harness publishes carries
  * (ADR 0099).
@@ -298,6 +307,17 @@ const harness: LockstateActorMotionHarness = {
     );
     emitKeyframe(tick, writer.finish());
   },
+  publishGuardResponse: (tick, tile) => {
+    const writer = new RenderActorsKeyframeWriter(1, UNCHANGED_WORLD);
+    writer.writeRecord(
+      GUARD_ENTITY_ID,
+      packRenderActorFields(RENDER_ACTOR_POPULATION_GUARD, 0, 0, true),
+      Math.round(tile.x * LOCOMOTION_SUBTILE_UNITS),
+      Math.round(tile.y * LOCOMOTION_SUBTILE_UNITS),
+      0, 0,
+    );
+    emitKeyframe(tick, writer.finish());
+  },
   publishCrowd: (tick, records) => {
     const writer = new RenderActorsKeyframeWriter(records.length, UNCHANGED_WORLD);
     for (const record of records) {
@@ -344,6 +364,7 @@ const harness: LockstateActorMotionHarness = {
   publicationCount: () => publications,
   actorSprites,
   spritesWithAsset,
+  framesWithAsset,
   unresolvedActorCount: () => scene.rendererStats.unresolvedActors,
   motionSamples: () => [...samples],
   resetSamples: () => {

@@ -13,9 +13,10 @@ import { DEFAULT_FACING, clipFrameOrdinal, directionFromMovement } from '../asse
  * unit-testable without a canvas.
  */
 
-/** Clip ids authored in `assets/contracts/character-8-direction.contract.json`. */
+/** Clip ids authored in the base and guard-response eight-direction contracts. */
 export const IDLE_CLIP_ID = 'idle';
 export const WALK_CLIP_ID = 'walk';
+export const RESPOND_CLIP_ID = 'respond';
 
 /**
  * Speed below which an actor is drawn idle rather than walking, in world
@@ -34,6 +35,7 @@ export interface ActorMotion {
   readonly deltaY: number;
   /** Direction to keep when standing still; defaults to the contract's authored front view. */
   readonly facing?: AtlasDirection;
+  readonly incidentResponse?: boolean;
 }
 
 /**
@@ -57,6 +59,11 @@ export function selectActorPose(motion: ActorMotion, out: ActorPose = createActo
   }
 
   const facing = motion.facing ?? DEFAULT_FACING;
+  if (motion.incidentResponse) {
+    out.clipId = RESPOND_CLIP_ID;
+    out.direction = facing;
+    return out;
+  }
   const speed = Math.hypot(deltaX, deltaY);
   if (speed < IDLE_SPEED_THRESHOLD) {
     out.clipId = IDLE_CLIP_ID;

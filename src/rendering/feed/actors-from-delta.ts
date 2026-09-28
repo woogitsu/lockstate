@@ -5,6 +5,7 @@ import {
   RENDER_ACTORS_SUBTILE_UNITS,
   renderActorHeadingX,
   renderActorHeadingY,
+  renderActorIncidentResponse,
   renderActorPopulation,
   type RenderActorsPayload,
 } from '../../simulation/protocol/render-actors-payload';
@@ -80,7 +81,9 @@ export function actorsFromDelta(payload: RenderActorsPayload): MutableRenderActo
   for (let record = 0; record < payload.recordCount; record += 1) {
     const packedFields = payload.packedFields[record]!;
     const population = renderActorPopulation(packedFields);
-    const assetId = KNOWN_POPULATION_ASSETS.get(population);
+    const assetId = population === RENDER_ACTOR_POPULATION_GUARD && renderActorIncidentResponse(packedFields)
+      ? 'actor.guard.response'
+      : KNOWN_POPULATION_ASSETS.get(population);
     if (assetId === undefined) continue;
     const headingX = renderActorHeadingX(packedFields);
     const headingY = renderActorHeadingY(packedFields);
@@ -95,6 +98,7 @@ export function actorsFromDelta(payload: RenderActorsPayload): MutableRenderActo
       tileY: payload.subY[record]! / RENDER_ACTORS_SUBTILE_UNITS,
       deltaX: payload.velocitySubX[record]! / RENDER_ACTORS_SUBTILE_UNITS,
       deltaY: payload.velocitySubY[record]! / RENDER_ACTORS_SUBTILE_UNITS,
+      ...(population === RENDER_ACTOR_POPULATION_GUARD && renderActorIncidentResponse(packedFields) ? { incidentResponse: true } : {}),
       // `exactOptionalPropertyTypes` is on, so "no facing" has to be an absent
       // key rather than an explicit `undefined`.
       ...(headingX === 0 && headingY === 0 ? {} : { facing: directionFromMovement(headingX, headingY, DEFAULT_FACING) }),
