@@ -10,10 +10,11 @@ const digest = (bytes: Buffer) => createHash('sha256').update(bytes).digest('hex
 const json = (path: string): unknown => JSON.parse(readFileSync(join(root, 'public', path.slice(1)), 'utf8')) as unknown;
 
 describe('oblique cell module registry', () => {
-  it('publishes twenty-seven logical modules with complete hashed poses and a shared ground pivot', () => {
+  it('publishes twenty-eight logical modules with complete hashed poses and a shared ground pivot', () => {
     const registry = parseObliqueModuleRegistry(json('/game-content/oblique-module-registry.v1.json'));
     expect(registry.entries.map((entry) => entry.assetId)).toEqual([
       'wall.interior.module.full', 'wall.interior.module.west.full', 'wall.interior.module.cutaway',
+      'wall.interior.module.west.cutaway',
       'furniture.cell.bed.single.variants', 'door.interior.open.full',
       'door.interior.open.west.full', 'door.interior.open.west.cutaway',
       'fixture.cell.toilet_sink', 'furniture.storage.rack.wooden', 'furniture.chair.wooden',
@@ -72,6 +73,7 @@ describe('oblique cell module registry', () => {
     }
     const west = parseObliqueModuleCatalog(json('/game-content/oblique-wall-west.v1.json'));
     const cutaway = parseObliqueModuleCatalog(json('/game-content/oblique-wall-cutaway.v1.json'));
+    const westCutaway = parseObliqueModuleCatalog(json('/game-content/oblique-wall-west-cutaway.v1.json'));
     for (let index = 0; index < full.frames.length; index += 1) {
       expect(west.frames[index]!.yawDegrees).toBe(full.frames[index]!.yawDegrees);
       expect(west.frames[index]!.elevationDegrees).toBe(full.frames[index]!.elevationDegrees);
@@ -79,6 +81,9 @@ describe('oblique cell module registry', () => {
       expect(cutaway.frames[index]!.yawDegrees).toBe(full.frames[index]!.yawDegrees);
       expect(cutaway.frames[index]!.elevationDegrees).toBe(full.frames[index]!.elevationDegrees);
       expect(cutaway.frames[index]!.sha256).not.toBe(full.frames[index]!.sha256);
+      expect(westCutaway.frames[index]!.yawDegrees).toBe(cutaway.frames[index]!.yawDegrees);
+      expect(westCutaway.frames[index]!.elevationDegrees).toBe(cutaway.frames[index]!.elevationDegrees);
+      expect(westCutaway.frames[index]!.sha256).not.toBe(cutaway.frames[index]!.sha256);
     }
     const door = parseObliqueModuleCatalog(json('/game-content/oblique-cell-door-open.v1.json'));
     expect(door.sourceDependencies?.map((dependency) => dependency.source)).toEqual(['wall.interior.cutaway.blend']);
