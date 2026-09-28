@@ -1,8 +1,8 @@
 """Study the shipped Blender cell bed in the canonical 3x3 cell camera grid.
 
-The source cell, camera target, light and ortho scale come from the canonical
-scene. At 1920x1080, 16.5 vertical world units give 65.45 px per tile, near
-the game's nominal 64 px default zoom. Run using Blender 5.2 from repo root.
+The source cell, camera target, light and angle grid come from the canonical
+scene. Blender's orthographic scale is the horizontal world span, so 1920px
+at scale 30 gives the game's nominal 64 px per tile. Run using Blender 5.2.
 """
 from __future__ import annotations
 
@@ -29,6 +29,7 @@ BED_ID = "furniture.cell.bed.single.variants"
 SOURCE = ROOT / "assets/source/blender/cell-bed-angle-study.blend"
 OUTPUT = ROOT / "assets/rendered/cell-bed-angle-study"
 RESOLUTION = (1920, 1080)
+ORTHO_SCALE = 30.0
 
 
 def digest(path: Path) -> str:
@@ -87,7 +88,7 @@ def main():
 
     scene.render.resolution_x, scene.render.resolution_y = RESOLUTION
     scene.render.resolution_percentage = 100
-    scene.camera.data.ortho_scale = angle.ORTHO_SCALE
+    scene.camera.data.ortho_scale = ORTHO_SCALE
     scene.render.image_settings.file_format = "PNG"
     scene.render.image_settings.color_mode = "RGBA"
     scene.render.film_transparent = True  # same alpha backdrop as the canonical scene
@@ -171,8 +172,8 @@ def main():
                 "bedCatalogSource": CATALOG_SOURCE.name, "bedCatalogSha256": digest(CATALOG_SOURCE),
                 "bedCollection": BED_ID, "bedOriginTile": [1.0, 2.1, 0.0],
                 "resolution": list(RESOLUTION), "projection": "orthographic",
-                "orthoScale": angle.ORTHO_SCALE,
-                "nominalPixelsPerTile": round(RESOLUTION[1] / angle.ORTHO_SCALE, 3),
+                "orthoScale": ORTHO_SCALE,
+                "nominalPixelsPerTile": round(RESOLUTION[0] / ORTHO_SCALE, 3),
                 "target": list(angle.TARGET),
                 "lighting": {"type": "one area light", "location": [-4, -5, 9],
                              "energy": 900, "size": 5},

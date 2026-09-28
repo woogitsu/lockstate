@@ -89,8 +89,8 @@ describe('shipped cell bed at canonical camera angles and default zoom', () => {
     expect(manifest.bedOriginTile).toEqual([1, 2.1, 0]);
     expect(manifest.resolution).toEqual([1920, 1080]);
     expect(manifest.projection).toBe('orthographic');
-    expect(manifest.orthoScale).toBe(16.5);
-    expect(manifest.nominalPixelsPerTile).toBeCloseTo(64, -1);
+    expect(manifest.orthoScale).toBe(30);
+    expect(manifest.nominalPixelsPerTile).toBe(64);
     expect(manifest.target).toEqual([0, 1, 1]);
     expect(manifest.lighting).toEqual({ type: 'one area light', location: [-4, -5, 9], energy: 900, size: 5 });
     expect(manifest.yawDegrees).toEqual([-45, 0, 45]);
@@ -110,9 +110,9 @@ describe('shipped cell bed at canonical camera angles and default zoom', () => {
       }
       const { opaquePixelCount, boundsPx, widthPx, heightPx } = entry.silhouette;
       expect(silhouetteFromCanonicalPng(readFileSync(join(output, entry.silhouetteImage)))).toEqual(entry.silhouette);
-      expect(opaquePixelCount).toBeGreaterThanOrEqual(15_000);
-      expect(widthPx).toBeGreaterThanOrEqual(110);
-      expect(heightPx).toBeGreaterThanOrEqual(170);
+      expect(opaquePixelCount).toBeGreaterThanOrEqual(4_800);
+      expect(widthPx).toBeGreaterThanOrEqual(60);
+      expect(heightPx).toBeGreaterThanOrEqual(95);
       expect(widthPx).toBe(boundsPx[2] - boundsPx[0]);
       expect(heightPx).toBe(boundsPx[3] - boundsPx[1]);
       expect(boundsPx[0]).toBeGreaterThanOrEqual(0);
@@ -139,6 +139,6 @@ describe('shipped cell bed at canonical camera angles and default zoom', () => {
     expect(visibleBlanketPixels(readFileSync(join(output, lowEast.furnishedImage)), maskPng)).toBe(candidate.visibleBlanketPixelsBefore);
     expect(visibleBlanketPixels(candidatePng, maskPng)).toBe(candidate.visibleBlanketPixelsAfter);
     expect(candidate.visibleBlanketPixelsBefore).toBe(0);
-    expect(candidate.visibleBlanketPixelsAfter).toBeGreaterThan(2_000);
+    expect(candidate.visibleBlanketPixelsAfter).toBeGreaterThan(700);
   });
 });
