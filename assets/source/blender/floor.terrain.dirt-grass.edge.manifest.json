@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "source": "floor.terrain.dirt-grass.edge.blend",
+  "sha256": "cdd904daaf309c3c992047d65f1d1b79be84169daf2f6bfe01b98776e6a7526b",
+  "assetIds": [
+    "floor.terrain.dirt-grass.edge.north",
+    "floor.terrain.dirt-grass.edge.east",
+    "floor.terrain.dirt-grass.edge.south",
+    "floor.terrain.dirt-grass.edge.west"
+  ],
+  "footprintTiles": [
+    1,
+    1
+  ],
+  "pivotTile": [
+    0.5,
+    0.5
+  ],
+  "placement": "overlay on grass tile facing dirt"
+}
