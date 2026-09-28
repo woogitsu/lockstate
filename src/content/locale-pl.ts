@@ -684,6 +684,11 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.camera-angle.elevation-up': 'Pochyl w górę',
   'hud.camera-angle.elevation-down': 'Pochyl w dół',
   'hud.camera-angle.reset': 'Przywróć kąt',
+  'hud.camera-angle.yaw-left-short': 'Lewo',
+  'hud.camera-angle.yaw-right-short': 'Prawo',
+  'hud.camera-angle.elevation-up-short': 'Góra',
+  'hud.camera-angle.elevation-down-short': 'Dół',
+  'hud.camera-angle.reset-short': 'Reset',
   'hud.camera-angle.yaw': 'Obrót',
   'hud.camera-angle.elevation': 'Pochylenie',
 

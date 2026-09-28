@@ -9,6 +9,8 @@ test('Full HD angle controls show the active pose and send each button action', 
     const control = createCameraAngleControl({
       title: 'Camera angle', yawLeft: 'Turn left', yawRight: 'Turn right',
       elevationUp: 'Tilt up', elevationDown: 'Tilt down', reset: 'Reset angle',
+      yawLeftShort: 'Left', yawRightShort: 'Right', elevationUpShort: 'Up',
+      elevationDownShort: 'Down', resetShort: 'Reset',
       yaw: 'Turn', elevation: 'Tilt',
     }, (action) => { actions.push(action); });
     control.updatePose({ yawRadians: -Math.PI / 4, elevationRadians: Math.PI / 4 });
@@ -17,6 +19,7 @@ test('Full HD angle controls show the active pose and send each button action', 
   });
   const group = page.getByRole('group', { name: 'Camera angle' });
   await expect(group).toBeVisible();
+  await expect(group.locator('.hud-camera-angle__button')).toHaveText(['Left', 'Right', 'Up', 'Down', 'Reset']);
   await expect(group.locator('output')).toHaveText('Turn -45° · Tilt 45°');
   for (const name of ['Turn left', 'Turn right', 'Tilt up', 'Tilt down', 'Reset angle']) {
     await group.getByRole('button', { name }).click();
@@ -87,6 +90,8 @@ test('Full HD angle controls remain distinct from the minimap at larger interfac
     const control = createCameraAngleControl({
       title: 'Camera angle', yawLeft: 'Turn left', yawRight: 'Turn right',
       elevationUp: 'Tilt up', elevationDown: 'Tilt down', reset: 'Reset angle',
+      yawLeftShort: 'Left', yawRightShort: 'Right', elevationUpShort: 'Up',
+      elevationDownShort: 'Down', resetShort: 'Reset',
       yaw: 'Turn', elevation: 'Tilt',
     }, () => {});
     control.updatePose({ yawRadians: -Math.PI / 4, elevationRadians: Math.PI / 4 });

@@ -399,6 +399,11 @@ export const HUD_MESSAGE_KEY = {
   cameraAngleElevationUp: 'hud.camera-angle.elevation-up',
   cameraAngleElevationDown: 'hud.camera-angle.elevation-down',
   cameraAngleReset: 'hud.camera-angle.reset',
+  cameraAngleYawLeftShort: 'hud.camera-angle.yaw-left-short',
+  cameraAngleYawRightShort: 'hud.camera-angle.yaw-right-short',
+  cameraAngleElevationUpShort: 'hud.camera-angle.elevation-up-short',
+  cameraAngleElevationDownShort: 'hud.camera-angle.elevation-down-short',
+  cameraAngleResetShort: 'hud.camera-angle.reset-short',
   cameraAngleYaw: 'hud.camera-angle.yaw',
   cameraAngleElevation: 'hud.camera-angle.elevation',
 
