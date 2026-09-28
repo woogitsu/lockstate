@@ -772,6 +772,14 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.zoom.title': 'Zoom',
   'hud.zoom.in': 'Zoom in',
   'hud.zoom.out': 'Zoom out',
+  'hud.camera-angle.title': 'Camera angle',
+  'hud.camera-angle.yaw-left': 'Turn left',
+  'hud.camera-angle.yaw-right': 'Turn right',
+  'hud.camera-angle.elevation-up': 'Tilt up',
+  'hud.camera-angle.elevation-down': 'Tilt down',
+  'hud.camera-angle.reset': 'Reset angle',
+  'hud.camera-angle.yaw': 'Turn',
+  'hud.camera-angle.elevation': 'Tilt',
 
   'hud.minimap.title': 'Minimap',
   /*
