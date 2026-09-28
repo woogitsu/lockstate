@@ -128,7 +128,7 @@ const UNLABELLED: readonly UnlabelledEnum[] = [
   {
     sourceFile: 'src/content/room-template-catalog.ts',
     declaration: 'ROOM_TEMPLATE_IDS',
-    members: ['cell-basic', 'cell-large', 'shower-room', 'cell-row-four', 'canteen-basic', 'kitchen-basic', 'infirmary-basic', 'laundry-basic', 'classroom-basic', 'common-room-basic'],
+    members: ['cell-basic', 'cell-large', 'shower-room', 'cell-row-four', 'canteen-basic', 'kitchen-basic', 'infirmary-basic', 'laundry-basic', 'classroom-basic', 'common-room-basic', 'security-office-basic', 'storage-room-basic'],
     reason:
       'The player-visible plan labels are the authored EN/PL HUD_MESSAGE_KEY.templateCellBasic/templateCellLarge/templateShowerRoom/templateCellRowFour keys and room.canteen.name/room.kitchen.name/room.infirmary.name/room.laundry.name/room.classroom.name in src/ui/hud/room-template-preview.ts, not generated simulation enum labels. The same module selects these nine authored plans and never renders the raw ids.',
   },
