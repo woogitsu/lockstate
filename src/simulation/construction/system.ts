@@ -160,7 +160,7 @@ function requiredQuantitiesByItemId(definition: BuildableDefinition): Map<string
  * anything. The caller reads `undefined` as "no far side to fall back on",
  * which leaves such an order refused for its own tile exactly as before.
  */
-function tileAcrossEdge(location: TilePosition, edge: BuildEdge): TilePosition | undefined {
+export function tileAcrossEdge(location: TilePosition, edge: BuildEdge): TilePosition | undefined {
   const x = edge === 'west' ? location.x - 1 : location.x;
   const y = edge === 'north' ? location.y - 1 : location.y;
   if (!Number.isSafeInteger(x) || !Number.isSafeInteger(y)) return undefined;

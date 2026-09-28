@@ -5,10 +5,11 @@ import type { ObjectPlacementService } from '../objects/object-placement-service
 import { objectFootprintTiles, tileKey } from '../objects/placed-object';
 import type { RoomZoningService } from '../rooms/zoning';
 import type { SparseWorld } from '../world/sparse-world';
-import type { TilePosition } from '../world/coordinates';
-import type { ConstructionSystem } from './system';
+import { tileCoordinate, type TilePosition } from '../world/coordinates';
+import { tileAcrossEdge, type ConstructionSystem } from './system';
 import { createRoomTemplateBuildPlan } from './room-template-build-plan';
-import { BUILDABLE_REGISTRY } from './definition';
+import { BUILDABLE_REGISTRY, occupiesTileEdge } from './definition';
+import { resolveBuildEdge } from './build-order';
 import { validateRoomTemplatePlacement, type RoomTemplatePlacement } from './room-template-placement';
 
 export interface PendingRoomTemplate {
@@ -44,6 +45,7 @@ export class RoomTemplateCoordinator implements SystemRegistration {
       order.state !== 'cancelled' && order.state !== 'failed' && order.state !== 'completed');
     const objectClaims = new Set<string>();
     const structureClaims = new Set<string>();
+    const edgeApproachClaims = new Set<string>();
     // Shell orders claim only perimeter tiles. Until zoning completes, the
     // interior is still empty world, but it belongs to the same atomic plan.
     const pendingPlans = this.pending.map((request) =>
@@ -52,6 +54,11 @@ export class RoomTemplateCoordinator implements SystemRegistration {
       const objectId = BUILDABLE_REGISTRY.get(order.definitionId)?.placesObjectId;
       if (objectId === undefined) {
         structureClaims.add(tileKey(order.location));
+        const definition = BUILDABLE_REGISTRY.get(order.definitionId);
+        if (definition !== undefined && order.footprint !== 'square' && occupiesTileEdge(definition)) {
+          const across = tileAcrossEdge(order.location, resolveBuildEdge(order));
+          if (across !== undefined) edgeApproachClaims.add(tileKey(across));
+        }
         continue;
       }
       const definition = this.placedObjects.definitionOf(objectId);
@@ -65,7 +72,7 @@ export class RoomTemplateCoordinator implements SystemRegistration {
         objectClaims.add(tileKey(tile));
       }
     }
-    return validateRoomTemplatePlacement(
+    const verdict = validateRoomTemplatePlacement(
       this.world,
       plan,
       (tile) => this.placedObjects.isTileOccupied(tile) || objectClaims.has(tileKey(tile)),
@@ -73,6 +80,13 @@ export class RoomTemplateCoordinator implements SystemRegistration {
         tile.x >= pending.origin.x && tile.x < pending.origin.x + pending.width &&
         tile.y >= pending.origin.y && tile.y < pending.origin.y + pending.height),
     );
+    if (!verdict.ok) return verdict;
+    for (const door of plan.doorSquares) {
+      if (door.y !== plan.origin.y + plan.height - 1) continue;
+      const tile = { x: tileCoordinate(door.x), y: tileCoordinate(door.y) };
+      if (edgeApproachClaims.has(tileKey(tile))) return { ok: false, reason: 'structure-occupied', tile };
+    }
+    return verdict;
   }
 
   /** The pending gesture reserves every square, even before its shell is visible. */
