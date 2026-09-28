@@ -3,6 +3,7 @@ import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-ses
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { captureSessionSnapshot, restoreSimulationRuntime } from '../../src/simulation/runtime/restore-session';
 import { createSaveEnvelope, decodeSaveEnvelope } from '../../src/persistence/save-schema';
+import { projectRoomDetail } from '../../src/simulation/presentation/room-projection';
 
 it.each([false, true])('can build a first Cell after furnished Delivery Bay and Storage Room (restore=%s)', (restore) => {
   let runtime = createNewSimulationRuntime(73);
@@ -50,4 +51,8 @@ it.each([false, true])('can build a first Cell after furnished Delivery Bay and 
   expect(runtime.construction.allOrders().every((order) => order.state === 'completed')).toBe(true);
   expect(runtime.prisoners.roomInstances.allByRoomCatalogId('room.cell')).toHaveLength(1);
   expect(runtime.jobs.allSorted()).toHaveLength(0);
+  expect(projectRoomDetail(runtime.prisoners, 'room.cell:21:6', {
+    placedObjects: runtime.placedObjects,
+    perimeter: { edges: runtime.world, doors: runtime.navigation.doors, regions: runtime.navigation.getGraph() },
+  })).toMatchObject({ access: 'doorway', requirementSummary: { missingCapability: 0 } });
 }, 120_000);
