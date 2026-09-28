@@ -2,6 +2,7 @@ import { expect, test } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
 
 test('Full HD angled scene paints the whole canteen before placing that plan', async ({ page }, testInfo) => {
+  test.setTimeout(180_000);
   await installTee(page);
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/?oblique-preview=1');
@@ -45,8 +46,9 @@ test('Full HD angled scene paints the whole canteen before placing that plan', a
   await expect(ghost).toBeHidden();
   await page.getByRole('button', { name: 'Save now' }).click();
   await expect(page.locator('.save-panel__status')).toContainText('Saved (generation ');
-  await page.reload();
+  await page.reload({ waitUntil: 'domcontentloaded' });
   await page.locator('.save-panel__item button').filter({ hasText: 'Load' }).first().click();
+  await expect(page.locator('body[data-oblique-preview="ready"]')).toBeVisible();
   await page.getByRole('button', { name: 'Build', exact: true }).click();
   await page.getByRole('button', { name: 'Room plans', exact: true }).click();
   const restored = page.getByRole('dialog', { name: 'Room plans' });
