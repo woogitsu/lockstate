@@ -183,3 +183,20 @@ test('whole-square dirt grid stays legible above Blender ground at three yaw ang
     expect(contrast, `yaw ${yaw}° grid contrast`).toBeGreaterThan(18);
   }
 });
+
+test('selected cell shows the north door cutaway Blender module', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/tests/browser/oblique-world-harness.html');
+  await page.waitForFunction(() => window.lockstateObliqueWorldHarness !== undefined);
+  await page.evaluate(() => window.lockstateObliqueWorldHarness.ready());
+  for (const yaw of [-45, 0, 45]) {
+    await page.evaluate((angle) => window.lockstateObliqueWorldHarness.setPose(angle, 45), yaw);
+    const point = await page.evaluate(() => window.lockstateObliqueWorldHarness.pointAtTile(3, 3));
+    await page.mouse.click(point.x, point.y);
+    expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.selected())).toEqual({ tileX: 3, tileY: 3 });
+    const textures = await page.evaluate(() => window.lockstateObliqueWorldHarness.artTextureKeys());
+    expect(textures.some((key) => key.includes('cell-door-north-cutaway')), `yaw ${yaw}° cutaway door`).toBe(true);
+    expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.artErrors())).toEqual([]);
+    await page.screenshot({ path: testInfo.outputPath(`north-door-cutaway-yaw${yaw}-fullhd.png`) });
+  }
+});
