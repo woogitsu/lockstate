@@ -84,6 +84,19 @@ export class RoomTemplateCoordinator implements SystemRegistration {
         tile.y >= pending.origin.y && tile.y < pending.origin.y + pending.height),
     );
     if (!verdict.ok) return verdict;
+    // A later plan must not build its perimeter on the outside approach of an
+    // earlier pending doorway. Rectangle overlap alone misses adjacent plans.
+    const wallSquares = new Set(plan.wallSquares.map((square) => `${square.x}:${square.y}`));
+    for (const pending of pendingPlans) {
+      for (const door of pending.doorSquares) {
+        if (door.y !== pending.origin.y + pending.height - 1) continue;
+        const outsideY = door.y + 1;
+        if (!wallSquares.has(`${door.x}:${outsideY}`)) continue;
+        return { ok: false, reason: 'structure-occupied', tile: {
+          x: tileCoordinate(door.x), y: tileCoordinate(outsideY),
+        } };
+      }
+    }
     for (const door of plan.doorSquares) {
       if (door.y !== plan.origin.y + plan.height - 1) continue;
       const tile = { x: tileCoordinate(door.x), y: tileCoordinate(door.y) };
