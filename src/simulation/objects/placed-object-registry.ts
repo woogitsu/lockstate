@@ -228,9 +228,15 @@ export class PlacedObjectRegistry {
     this.objects.clear();
     this.tileIndex.clear();
     let placed = 0;
-    // Ascending `(y, x)` before anything is written, so a snapshot whose array
-    // order was disturbed in transit still produces the same registry.
-    const ordered = [...snapshot].sort((a, b) => a.anchorTile.y - b.anchorTile.y || a.anchorTile.x - b.anchorTile.x);
+    // The schema permits conflicting rows at one anchor. Use object id and
+    // orientation to break that tie, so array order cannot decide which row
+    // survives the overlap refusal in `place`.
+    const ordered = [...snapshot].sort((a, b) =>
+      a.anchorTile.y - b.anchorTile.y
+      || a.anchorTile.x - b.anchorTile.x
+      || (a.objectId < b.objectId ? -1 : a.objectId > b.objectId ? 1 : 0)
+      || a.orientation - b.orientation,
+    );
     for (const object of ordered) {
       if (this.place({ ...object, placedObjectId: placedObjectIdFor(object.anchorTile) })) placed += 1;
     }
