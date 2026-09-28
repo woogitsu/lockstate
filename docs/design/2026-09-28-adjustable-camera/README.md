@@ -271,6 +271,18 @@ bed until selection triggers cutaway; visual occlusion and renderer frame
 cost are the two active release blockers. Dedicated workers are measuring
 and fixing these while the gameplay lane extends the room catalogue.
 
+**Follow-up checkpoint (`bb5b92989`, PR #1623):** a 4 × 4 Holding Cell plan
+with a south door and two-square bench now exists in the worker, including
+quote, complete square footprint, collision and Save/Load tests. Its HUD
+catalogue entry is a separate in-flight step. In the real Full HD oblique
+application, camera-facing walls of a furnished room now lower automatically
+without first selecting a tile; the bed and floor remain visible at
+−45°/25°, 0°/45° and +45°/65° after a genuine Save/Load. This changed only
+rendering, not the authoritative wall collision. The open door leaf still
+looks offset from the cutaway gap at shallow yaw, and renderer profiling
+measured roughly 50 ms per frame in the warmed 32 × 32 prison, so visual
+alignment and performance remain active release gates.
+
 Keep three isolated worktrees moving in parallel: (1) Blender modules and
 consistent camera poses, (2) square-first construction and ready-made rooms,
 and (3) Full HD HUD, controls and visible template previews. The renderer
