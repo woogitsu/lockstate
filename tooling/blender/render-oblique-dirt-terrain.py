@@ -25,9 +25,12 @@ def main() -> None:
     modules.append_collection(SOURCE, ASSET_ID)
     modules.render_module(ASSET_ID, SLUG, SOURCE, [], resolution_px=128)
     existing = json.loads(REGISTRY.read_text(encoding="utf-8"))
-    entries = [entry for entry in existing["entries"] if entry["assetId"] != ASSET_ID]
-    entries.append({"assetId": ASSET_ID,
-                    "manifest": f"/game-content/oblique-{SLUG}.v1.json"})
+    replacement = {"assetId": ASSET_ID,
+                   "manifest": f"/game-content/oblique-{SLUG}.v1.json"}
+    entries = [replacement if entry["assetId"] == ASSET_ID else entry
+               for entry in existing["entries"]]
+    if not any(entry["assetId"] == ASSET_ID for entry in existing["entries"]):
+        entries.append(replacement)
     modules.pipeline_common.write_text(REGISTRY,
         json.dumps({"schemaVersion": 1, "entries": entries}, indent=2) + "\n")
 
