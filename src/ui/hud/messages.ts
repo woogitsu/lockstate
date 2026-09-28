@@ -559,25 +559,13 @@ export const HUD_MESSAGE_KEY = {
    * spend happens at a placement press, issue #640), so there is no "Buy" or
    * "Place" to put in front of the name.
    *
-   * **Two keys rather than one**, because one wording cannot stay true across
-   * every row. `buildCatalogueRowPrice` is safe for the nineteen rows whose
-   * press places one discrete object (`buildable.placesObject === true`):
-   * `ObjectTool.place` (`src/ui/object-tool.ts`) is one press, one tile, one
-   * command, so the quoted total is what that one press will spend, always.
-   * `buildCatalogueRowPriceSegment` is for the two rows that do not
-   * (`wall-brick`, `door-wooden`): both occupy a tile edge and both reach
-   * `BuildTool.place` (`src/ui/build-tool.ts`) through the `place-build-order`
-   * route `hud.ts` sends for `placesObject === false`, and that route drags a
-   * *run* of segments in one gesture -- a drag of seven costs seven times the
-   * quoted number. Naming the unit is what keeps the sentence true of a drag
-   * as well as of a tap; the flat wording above would not be.
-   *
-   * Branched on `buildable.placesObject`, the same shape fact `armedHintKey`
-   * (issue #904, `build-panel.ts`) already branches its own two sentences on
-   * -- one boolean, one architectural fact, never two rules that can
-   * disagree.
+   * Object rows quote one placement. Brick walls quote one whole square;
+   * edge doors quote one segment. A dragged run can multiply either unit,
+   * so a flat figure would understate the cost of that gesture.
    */
   buildCatalogueRowPrice: 'hud.build.catalogue-row-price',
+  /** A dragged brick wall places and prices complete squares. */
+  buildCatalogueRowPriceSquare: 'hud.build.catalogue-row-price-square',
   /** The per-segment twin of `buildCatalogueRowPrice` above; see its comment. */
   buildCatalogueRowPriceSegment: 'hud.build.catalogue-row-price-segment',
   buildPlacement: 'hud.build.placement',

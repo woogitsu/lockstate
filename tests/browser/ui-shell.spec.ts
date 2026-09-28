@@ -2562,11 +2562,11 @@ test.describe('HUD shell', () => {
       // may be a raw `hud.*` identifier.
       expect(probe.texts.filter((text) => text.startsWith('hud.'))).toEqual([]);
       // Since issue #901 the row's own label carries its price -- this
-      // fixture's `wall-brick` is a per-segment row (`placesObject: false`),
+      // fixture's `wall-brick` is a per-square row (`placesObject: false`),
       // priced at 40 minor units × 2 bricks (`BUILD_MODEL` in
       // `tests/browser/ui-harness.ts`), so "Brick wall" alone is no longer
       // this row's whole text and would falsely pass if it still were.
-      expect(probe.texts).toContain('Brick wall · 80 per segment');
+      expect(probe.texts).toContain('Brick wall · 80 per square');
 
       await page.evaluate(() => window.lockstateUiHarness.clickTab('manage'));
       expect((await page.evaluate(() => window.lockstateUiHarness.buildProbe())).visible).toBe(false);
