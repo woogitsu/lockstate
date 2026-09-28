@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "entries": [
+    {
+      "assetId": "wall.interior.module.full",
+      "manifest": "/game-content/oblique-modules.v1.json"
+    },
+    {
+      "assetId": "furniture.cell.bed.single.variants",
+      "manifest": "/game-content/oblique-cell-bed.v1.json"
+    },
+    {
+      "assetId": "door.interior.open.full",
+      "manifest": "/game-content/oblique-cell-door-open.v1.json"
+    }
+  ]
+}

@@ -19,21 +19,32 @@ try {
   const initial = await page.locator('body').getAttribute('data-loaded-frame');
   if (!initial?.includes('wall-module-full-yaw+00-elev45.')) throw new Error(`Wrong initial frame: ${initial}`);
   const before = await page.screenshot({ path: join(tmpdir(), 'lockstate-oblique-wall-yaw0-elev45.png') });
+  await page.locator('[data-asset-id="furniture.cell.bed.single.variants"]').click();
   await page.locator('[data-axis="yaw"][data-angle="45"]').click();
   await page.locator('[data-axis="elevation"][data-angle="25"]').click();
   const selected = await page.locator('body').getAttribute('data-loaded-frame');
-  if (!selected?.includes('wall-module-full-yaw+45-elev25.')) throw new Error(`Wrong selected frame: ${selected}`);
-  const after = await page.screenshot({ path: join(tmpdir(), 'lockstate-oblique-wall-yaw45-elev25.png') });
+  if (!selected?.includes('cell-bed-yaw+45-elev25.')) throw new Error(`Wrong bed frame: ${selected}`);
+  const after = await page.screenshot({ path: join(tmpdir(), 'lockstate-oblique-bed-yaw45-elev25.png') });
+  await page.locator('[data-asset-id="door.interior.open.full"]').click();
+  await page.locator('[data-axis="yaw"][data-angle="-45"]').click();
+  await page.locator('[data-axis="elevation"][data-angle="65"]').click();
+  const door = await page.locator('body').getAttribute('data-loaded-frame');
+  if (!door?.includes('cell-door-open-yaw-45-elev65.')) throw new Error(`Wrong door frame: ${door}`);
+  const doorScreen = await page.screenshot({ path: join(tmpdir(), 'lockstate-oblique-door-yaw-45-elev65.png') });
   if (createHash('sha256').update(before).digest('hex') === createHash('sha256').update(after).digest('hex')) {
     throw new Error('Angle change left the Full HD screenshot unchanged.');
   }
-  if (images.length !== 9 || images.some((image) => image.status !== 200)) {
-    throw new Error(`Expected nine successfully loaded angle textures, got ${JSON.stringify(images)}.`);
+  if (createHash('sha256').update(after).digest('hex') === createHash('sha256').update(doorScreen).digest('hex')) {
+    throw new Error('Module change left the Full HD screenshot unchanged.');
+  }
+  if (images.length !== 27 || images.some((image) => image.status !== 200)) {
+    throw new Error(`Expected 27 successfully loaded angle textures, got ${JSON.stringify(images)}.`);
   }
   if (failures.length > 0) throw new Error(`Browser errors: ${failures.join('; ')}`);
-  console.log(JSON.stringify({ viewport: '1920x1080', initial, selected, imagesLoaded: images.length,
+  console.log(JSON.stringify({ viewport: '1920x1080', initial, selected, door, imagesLoaded: images.length,
     screenshots: [join(tmpdir(), 'lockstate-oblique-wall-yaw0-elev45.png'),
-      join(tmpdir(), 'lockstate-oblique-wall-yaw45-elev25.png')] }, null, 2));
+      join(tmpdir(), 'lockstate-oblique-bed-yaw45-elev25.png'),
+      join(tmpdir(), 'lockstate-oblique-door-yaw-45-elev65.png')] }, null, 2));
 } finally {
   await browser.close();
 }

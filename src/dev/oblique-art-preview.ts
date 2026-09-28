@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { fetchObliqueModuleCatalog, selectObliqueModuleFrame, type ObliqueModuleCatalog } from '../rendering/assets/oblique-module-catalog';
+import { selectObliqueModuleFrame, type ObliqueModuleCatalog } from '../rendering/assets/oblique-module-catalog';
+import { fetchObliqueModuleSet } from '../rendering/assets/oblique-module-registry';
 import { registerObliqueModuleTextures } from '../rendering/phaser/oblique-module-textures';
 
 const state = { yawRadians: 0, elevationRadians: Math.PI / 4 };
@@ -7,7 +8,8 @@ const status = document.getElementById('angle-status')!;
 const controls = document.getElementById('angle-controls')!;
 
 class PreviewScene extends Phaser.Scene {
-  private catalog?: ObliqueModuleCatalog;
+  private catalogs?: Map<string, ObliqueModuleCatalog>;
+  private assetId = 'wall.interior.module.full';
   private inspection?: Phaser.GameObjects.Image;
   private native?: Phaser.GameObjects.Image;
 
@@ -15,12 +17,25 @@ class PreviewScene extends Phaser.Scene {
 
   async create(): Promise<void> {
     try {
-      this.catalog = await fetchObliqueModuleCatalog();
-      await registerObliqueModuleTextures(this, this.catalog);
-      const initial = selectObliqueModuleFrame(this.catalog, state);
+      this.catalogs = await fetchObliqueModuleSet();
+      for (const catalog of this.catalogs.values()) await registerObliqueModuleTextures(this, catalog);
+      const initialCatalog = this.catalogs.get(this.assetId);
+      if (!initialCatalog) throw new Error(`Missing preview module ${this.assetId}`);
+      const initial = selectObliqueModuleFrame(initialCatalog, state);
       this.inspection = this.add.image(610, 585, initial.image).setScale(3);
       this.native = this.add.image(1370, 585, initial.image);
-      for (const [axis, angles] of [['yaw', this.catalog.yawDegrees], ['elevation', this.catalog.elevationDegrees]] as const) {
+      const moduleRow = document.createElement('div');
+      moduleRow.textContent = 'module: ';
+      for (const assetId of this.catalogs.keys()) {
+        const button = document.createElement('button');
+        button.textContent = assetId;
+        button.dataset.assetId = assetId;
+        button.style.margin = '4px';
+        button.onclick = () => { this.assetId = assetId; this.showSelectedFrame(); };
+        moduleRow.append(button);
+      }
+      controls.append(moduleRow);
+      for (const [axis, angles] of [['yaw', initialCatalog.yawDegrees], ['elevation', initialCatalog.elevationDegrees]] as const) {
         const row = document.createElement('div');
         row.textContent = `${axis}: `;
         for (const angle of angles) {
@@ -45,12 +60,15 @@ class PreviewScene extends Phaser.Scene {
   }
 
   private showSelectedFrame(): void {
-    if (!this.catalog || !this.inspection || !this.native) return;
-    const frame = selectObliqueModuleFrame(this.catalog, state);
+    if (!this.catalogs || !this.inspection || !this.native) return;
+    const catalog = this.catalogs.get(this.assetId);
+    if (!catalog) throw new Error(`Missing preview module ${this.assetId}`);
+    const frame = selectObliqueModuleFrame(catalog, state);
     this.inspection.setTexture(frame.image);
     this.native.setTexture(frame.image);
-    status.textContent = `yaw ${frame.yawDegrees}° · elevation ${frame.elevationDegrees}° · ${frame.image}`;
+    status.textContent = `${this.assetId} · yaw ${frame.yawDegrees}° · elevation ${frame.elevationDegrees}° · ${frame.image}`;
     document.body.dataset.loadedFrame = frame.image;
+    document.body.dataset.loadedAsset = this.assetId;
   }
 }
 
