@@ -2321,9 +2321,13 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       elevation: t(HUD_MESSAGE_KEY.cameraAngleElevation),
     }, options.onCameraPoseAction);
   if (angleControl !== undefined && options.cameraPose !== undefined) angleControl.updatePose(options.cameraPose);
+  const cameraPanels = angleControl === undefined ? minimapPanel.element : element('div', {
+    className: 'hud-camera-panels',
+    children: [angleControl.element, minimapPanel.element],
+  });
   corner = element('div', {
     className: 'hud__corner',
-    children: [zoomControl, ...(angleControl === undefined ? [] : [angleControl.element]), minimapPanel.element],
+    children: [zoomControl, cameraPanels],
   });
 
   // ---- bottom-right build panel ------------------------------------
