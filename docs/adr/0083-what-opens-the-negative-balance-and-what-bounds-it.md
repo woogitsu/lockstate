@@ -93,10 +93,11 @@ Both are sequencing-and-magnitude rulings against
 decision 2, which is **Accepted**. What this ADR exists for is that acting on
 them needs one fact nobody has established and one decision nobody has taken.
 
-**What the code does today, each verified at the cited line rather than
-remembered:**
+**What the code did at this ADR's initial review, recorded against that
+revision:** Later implementation added a caller for `setOverdraftFloor` and
+loan wiring; the observations below explain the gap this decision addressed.
 
-1. `Treasury.setOverdraftFloor` (`src/simulation/economy/treasury.ts:167`) has
+1. `Treasury.setOverdraftFloor` (`treasury.ts:167` in the reviewed revision) has
    **no caller in `src/`** — `grep -rn 'setOverdraftFloor' src/` returns the
    definition alone. The floor defaults to `0`
    (`src/simulation/economy/treasury.ts:143`), so no shipped session can go a

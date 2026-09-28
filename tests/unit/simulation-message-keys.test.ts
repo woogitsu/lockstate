@@ -119,6 +119,13 @@ interface UnlabelledEnum {
 
 const UNLABELLED: readonly UnlabelledEnum[] = [
   {
+    sourceFile: 'src/content/room-template-catalog.ts',
+    declaration: 'ROOM_TEMPLATE_IDS',
+    members: ['cell-basic', 'cell-large', 'shower-room'],
+    reason:
+      'These authored plan ids are already labelled by the exhaustive NAME_KEYS mapping in src/ui/hud/room-template-preview.ts. Each choice renders its hud.build.template-* localization key through that mapping. A second simulation-enum namespace would duplicate the three player-facing names and allow the two copies to drift.',
+  },
+  {
     sourceFile: 'src/simulation/protocol/types.ts',
     declaration: 'MAIN_TO_WORKER_MESSAGE_KINDS',
     reason:

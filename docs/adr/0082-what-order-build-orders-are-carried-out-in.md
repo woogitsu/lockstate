@@ -81,7 +81,7 @@ halves."* This is that document.
 > directions). The decision below was accepted on 2026-08-31 and implemented in
 > #722; `ConstructionSystem.orderedOrders()` has sorted on
 > `compareBuildOrderExecution` — `(placementSequence ?? -1, id)` — ever since,
-> at `src/simulation/construction/system.ts:1534-1535`, with the comparator
+> at `src/simulation/construction/system.ts:1583`, with the comparator
 > itself in `src/simulation/construction/build-order.ts`. Re-pointing this
 > section's anchors at today's lines would make a dead diagnosis read as a
 > current one, which is the more impressive-looking and less honest change.
