@@ -7286,6 +7286,12 @@
     width: calc(270px * var(--ui-scale));
   }
 
+  /* The camera controls share this corner with Build at 200% scale. Keep
+   * the map pressable while leaving the Build catalogue uncovered. */
+  :root[data-ui-scale-step='200'] .hud-camera-panels > .hud-minimap {
+    width: calc(190px * var(--ui-scale));
+  }
+
   :root[data-ui-scale-enlarged='true'] .hud-minimap__surface {
     max-width: 100%;
     height: calc(1.25 * var(--tap-target));
