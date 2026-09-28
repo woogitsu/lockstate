@@ -999,6 +999,7 @@
   --surface-raised: var(--paper-000);
   --surface-overlay: var(--paper-100);
   --surface-active: var(--paper-200);
+  --surface-dialog-backdrop: rgb(0 0 0 / 55%);
 
   /* Text, strongest first -- all four are delivered day values. Measured on
      `--surface-base`: 13.35, 12.01, 9.51 and 4.70:1. */
@@ -1060,6 +1061,7 @@
   --surface-raised: var(--ink-700);
   --surface-overlay: var(--ink-600);
   --surface-active: var(--ink-500);
+  --surface-dialog-backdrop: rgb(0 0 0 / 55%);
 
   /* Measured on `--surface-base`: 14.34, 13.49, 8.74 and 5.87:1. */
   --text-heading: var(--paper-100);

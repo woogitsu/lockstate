@@ -189,7 +189,7 @@ const INSTITUTIONAL_FLOOR_ART_BASE: readonly [number, number, number] = [187.585
 /** Mean decoded RGB of the Blender kitchen tile, pinned by the real-PNG drift gate. */
 const KITCHEN_FLOOR_ART_BASE: readonly [number, number, number] = [173.310, 181.373, 185.388];
 /** Mean decoded RGB of the warm Blender canteen tile, pinned by the real-PNG drift gate. */
-const CANTEEN_FLOOR_ART_BASE: readonly [number, number, number] = [209.852, 171.709, 166.421];
+const CANTEEN_FLOOR_ART_BASE: readonly [number, number, number] = [191.438, 183.582, 169.882];
 /** Mean decoded RGB of the warm outdoor Yard ground, pinned by the real-PNG drift gate. */
 const YARD_FLOOR_ART_BASE: readonly [number, number, number] = [138.413, 117.393, 95.413];
 /** Mean decoded RGB of the Blender shower ceramic, pinned by the real-PNG drift gate. */

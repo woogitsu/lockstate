@@ -117,6 +117,7 @@
 .hud__corner .ui-panel__toggle,
 .hud__corner .hud-zoom__out,
 .hud__corner .hud-zoom__in,
+.hud__corner .hud-pan__button,
 .hud__corner .hud-minimap__surface,
 .hud__corner .ui-section__header,
 .hud__corner .hud-alerts__list {
@@ -513,6 +514,53 @@
 /* The legend never shrinks and never wraps: it is one short word, and a
    wrapped one would take the row past the tap targets beside it. */
 .hud-zoom__legend { flex: none; }
+
+/* Keep the angle panel beside the minimap so opening its map does not push
+   the pressable surface below the viewport at larger interface scales. */
+.hud-camera-panels {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-2);
+  min-height: 0;
+  max-height: 100%;
+}
+.hud-camera-panels > .hud-minimap { flex: 0 1 auto; }
+
+.hud-camera-angle {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--space-2);
+  align-self: flex-start;
+  max-width: min(470px, 100%);
+  margin-bottom: var(--space-2);
+  padding: var(--space-2);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+}
+.hud-camera-panels > .hud-camera-angle {
+  flex: none;
+  margin-bottom: 0;
+}
+/* At narrower desktop widths, preserve the former column footprint rather
+   than letting the minimap row cover the Build panel across the map. */
+@media (max-width: 1700px) {
+  .hud-camera-panels { flex-direction: column; align-items: flex-start; }
+  .hud-camera-panels > .hud-camera-angle { margin-bottom: var(--space-2); }
+}
+.hud-camera-angle__legend,
+.hud-camera-angle__reading { grid-column: 1 / -1; }
+.hud-camera-angle__reading { font-variant-numeric: tabular-nums; }
+.hud-camera-angle__button {
+  min-width: 0;
+  min-height: var(--tap-target);
+  padding-inline: var(--space-1);
+  white-space: normal;
+}
+/* At 200% the five fixed columns leave the Polish "Prawo" a fraction wider
+ * than its button. Keep the label inside its pressable target. */
+:root[data-ui-scale-step='200'] .hud-camera-angle__button { font-size: var(--text-size-label); }
+.hud__corner .hud-camera-angle__button { pointer-events: auto; }
 
 /* The frame scales with the rest of the interface (#545): it is a HUD panel
    like any other, and a minimap that stayed a fixed width while the type
@@ -1656,6 +1704,62 @@
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
+
+.hud-build__catalogue-actions { display: flex; align-items: center; gap: var(--space-1); min-width: 0; }
+.hud-build__catalogue-actions .hud-build__category { max-width: 110px; }
+.hud-build__template-open {
+  min-height: var(--tap-target);
+  padding: 0 var(--space-2);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-raised);
+  color: var(--text-body);
+  font: inherit;
+  cursor: pointer;
+}
+.hud-build__template-open:focus-visible,
+.hud-template button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.hud-template {
+  width: min(520px, calc(100vw - 40px));
+  max-height: calc(100vh - 80px);
+  padding: var(--space-5);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+  color: var(--text-body);
+  overflow: auto;
+}
+.hud-template::backdrop { background: var(--surface-dialog-backdrop); }
+.hud-template__header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.hud-template__header h2 { margin: 0; font-size: var(--text-size-value); }
+.hud-template__choices { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.hud-template button {
+  min-height: var(--tap-target);
+  padding: 0 var(--space-3);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunken);
+  color: var(--text-body);
+  font: inherit;
+  cursor: pointer;
+}
+.hud-template button[aria-pressed='true'] { border-color: var(--accent); color: var(--accent); }
+.hud-template__diagram { display: grid; gap: 2px; width: max-content; margin: var(--space-3) auto 0; }
+.hud-template__tile { width: 1.5rem; aspect-ratio: 1; background: var(--surface-sunken); border: var(--hairline) solid var(--border); }
+.hud-template__tile--wall { background: var(--text-muted); }
+.hud-template__tile--door { background: var(--accent); }
+.hud-template__tile--object { background: var(--text-body); border-radius: 50%; }
+.hud-template__tile--dock { background: var(--status-warning); border-color: var(--text-body); }
+.hud-template__legend { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-3); margin-top: var(--space-3); }
+.hud-template__legend[hidden] { display: none; }
+.hud-template__legend > span { display: inline-flex; align-items: center; gap: var(--space-1); }
+.hud-template__legend .hud-template__tile { width: 0.9rem; }
+.hud-template__contents { text-align: center; }
+.hud-template__placement { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); margin-top: var(--space-4); }
+.hud-template__placement input[type='number'] { width: 100%; min-height: var(--tap-target); box-sizing: border-box; }
+.hud-template__placement label:not([hidden]) { display: flex; align-items: center; gap: var(--space-2); }
+.hud-template__placement .hud-template__status { grid-column: 1 / -1; margin: 0; }
+.hud-template__tile--blocked { outline: 3px solid var(--status-danger); outline-offset: -2px; }
 
 /*
  * `:not([hidden])` because this section folds. An author `display: flex` beats
@@ -7187,6 +7291,12 @@
     width: calc(270px * var(--ui-scale));
   }
 
+  /* The camera controls share this corner with Build at 200% scale. Keep
+   * the map pressable while leaving the Build catalogue uncovered. */
+  :root[data-ui-scale-step='200'] .hud-camera-panels > .hud-minimap {
+    width: calc(190px * var(--ui-scale));
+  }
+
   :root[data-ui-scale-enlarged='true'] .hud-minimap__surface {
     max-width: 100%;
     height: calc(1.25 * var(--tap-target));
@@ -7270,3 +7380,46 @@
     --hud-rail-panel-width: max(var(--hud-inspector-width), calc(280px * var(--ui-scale)));
   }
 }
+
+.hud-template__materials,
+.hud-template__catalogue-value { margin: var(--space-2) 0; text-align: center; overflow-wrap: anywhere; }
+.hud-template__catalogue-value { color: var(--text-heading); }
+.hud-template__placement .hud-template__coordinate { flex-direction: column; align-items: stretch; gap: var(--space-1); }
+
+.oblique-template-ghost { position: fixed; inset: 0; z-index: calc(var(--hud-layer) - 1); pointer-events: none; }
+.oblique-square-ghost { position: fixed; inset: 0; z-index: calc(var(--hud-layer) - 1); pointer-events: none; }
+.oblique-square-ghost[hidden] { display: none; }
+.oblique-square-ghost__map { width: 100%; height: 100%; }
+.oblique-square-ghost__map polygon { fill: var(--text-muted); fill-opacity: .38; stroke: var(--text-heading); stroke-width: 2; vector-effect: non-scaling-stroke; }
+.oblique-square-ghost__notice { position: absolute; left: 50%; bottom: var(--space-4); transform: translateX(-50%); box-sizing: border-box; max-width: min(34rem, calc(100vw - 36rem)); padding: var(--space-2) var(--space-3); background: var(--surface-raised); color: var(--text-body); border: var(--hairline) solid var(--border); border-radius: var(--radius-md); text-align: center; overflow-wrap: anywhere; }
+.oblique-template-ghost[hidden] { display: none; }
+.oblique-template-ghost__map { width: 100%; height: 100%; }
+.oblique-template-ghost__map polygon { fill: var(--accent-soft); fill-opacity: .52; stroke: var(--accent-deep); stroke-width: 2; vector-effect: non-scaling-stroke; }
+.oblique-template-ghost__map polygon[data-kind='wall'] { fill: var(--text-muted); fill-opacity: .64; }
+.oblique-template-ghost__map polygon[data-kind='furniture'] { fill: var(--text-heading); fill-opacity: .67; }
+.oblique-template-ghost__map polygon[data-kind='dock'] { fill: var(--status-warning); fill-opacity: .76; stroke: var(--text-heading); stroke-dasharray: 5 3; }
+.oblique-template-ghost__map polygon[data-kind='door'] { fill: var(--accent); fill-opacity: .82; }
+.oblique-template-ghost[data-verdict='pending'] .oblique-template-ghost__map polygon { stroke-dasharray: 5 4; }
+.oblique-template-ghost[data-verdict='blocked'] .oblique-template-ghost__map polygon { stroke: var(--status-danger); }
+.oblique-template-ghost__map polygon[data-kind='blocked'] { fill: var(--status-danger); fill-opacity: .76; }
+.oblique-template-ghost__notice {
+  position: absolute;
+  left: 50%;
+  bottom: var(--space-4);
+  transform: translateX(-50%);
+  display: grid;
+  gap: var(--space-1);
+  box-sizing: border-box;
+  max-width: min(34rem, calc(100vw - 36rem));
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface-raised);
+  color: var(--text-body);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-md);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.oblique-template-ghost__cost { color: var(--text-muted); }
+.oblique-template-ghost__marker { color: var(--text-heading); }
+.oblique-template-ghost__marker[hidden] { display: none; }
+.oblique-template-ghost__identity { color: var(--text-heading); }

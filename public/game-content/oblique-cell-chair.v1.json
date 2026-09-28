@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "assetId": "furniture.chair.wooden",
+  "source": "environment.mvp.catalog.blend",
+  "sourceSha256": "57db9afb7e48996cef9aaedda72b8e874e865eb56862ee4add8b177a9713887d",
+  "sourceDependencies": [],
+  "resolutionPx": [
+    512,
+    512
+  ],
+  "nominalPixelsPerTile": 64,
+  "pivotPx": [
+    256,
+    256
+  ],
+  "cameraTargetTiles": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "projection": "orthographic",
+  "yawDegrees": [
+    -45,
+    0,
+    45
+  ],
+  "elevationDegrees": [
+    25,
+    45,
+    65
+  ],
+  "frames": [
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/cell-chair-yaw-45-elev25.70f1e2e46b84.png",
+      "sha256": "70f1e2e46b840fae9040ea0b09c6e826b18212f18ec73fc12487b11ce2ad4f08"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/cell-chair-yaw-45-elev45.ab799d52cc06.png",
+      "sha256": "ab799d52cc065171a51505e01e58e5914fbb01f4b3cf182dedac64417d76d4d3"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/cell-chair-yaw-45-elev65.f80dd11f6157.png",
+      "sha256": "f80dd11f6157d8f487c909bcecee8587a574c3b4e7cfb8a5b96a32e5024ddda4"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/cell-chair-yaw+00-elev25.1b61948ce443.png",
+      "sha256": "1b61948ce4437d3ef376f60cc05913b12c140f9fe0299b6b69044eaf5de0aa32"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/cell-chair-yaw+00-elev45.448781174250.png",
+      "sha256": "44878117425084f1b2f146758e22e369a45b9a5f613d18a6479f245ae8dab229"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/cell-chair-yaw+00-elev65.572119b85368.png",
+      "sha256": "572119b85368bd3fa770fb64916954d7fadd53e5253e9870121a7f5c68197f5c"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/cell-chair-yaw+45-elev25.fbdb7797901c.png",
+      "sha256": "fbdb7797901c9581a3f6f726ce1c2ba736c0ce0c613b645424b5e3381ca11eee"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/cell-chair-yaw+45-elev45.6f037d0141b1.png",
+      "sha256": "6f037d0141b11e7e3559fbebe1321a909eaf152c5d709ba11289fa3f28e51a65"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/cell-chair-yaw+45-elev65.bf062b11e13b.png",
+      "sha256": "bf062b11e13bbc0b7e1030d1228443fa87f5abc991f0a37dd493694e09eeb88a"
+    }
+  ]
+}

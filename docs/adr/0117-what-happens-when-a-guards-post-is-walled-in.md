@@ -332,7 +332,7 @@ and [ADR 0087](./0087-whether-a-refusal-is-an-event-or-a-condition.md) decision
 of four members today — `construction.unfunded`, `intake.no-place`,
 `treasury.construction-refused`, `treasury.deliveries-refused` — produced by the
 pure function `computeStandingPrisonConditions`
-(`src/simulation/presentation/status-strip-projection.ts:253`) and published on
+(`src/simulation/presentation/status-strip-projection.ts:277`) and published on
 `statusCountsSchema.conditions`, an array bounded by the union's own length
 (`types.ts:1234`).
 

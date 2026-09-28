@@ -34,6 +34,10 @@ export const ICON_IDS = [
   'dismiss',
   'zoom-in',
   'zoom-out',
+  'pan-up',
+  'pan-down',
+  'pan-left',
+  'pan-right',
   'undo',
   'redo',
 ] as const;
@@ -184,6 +188,10 @@ export const ICON_PATHS: Readonly<Record<IconId, readonly string[]>> = {
     'M14.85 14.85 19.25 19.25',
     'M7.75 10.5h5.5',
   ],
+  'pan-up': ['M12 19V5', 'M5 12l7-7 7 7'],
+  'pan-down': ['M12 5v14', 'M5 12l7 7 7-7'],
+  'pan-left': ['M19 12H5', 'M12 5l-7 7 7 7'],
+  'pan-right': ['M5 12h14', 'M12 5l7 7-7 7'],
   // Undo and redo, in the status strip (#1356): a hooked arrow that turns
   // back on itself, pointing left for undo and right for redo -- the glyph a
   // player already reads as "take that back" in every editor. Strokes only and

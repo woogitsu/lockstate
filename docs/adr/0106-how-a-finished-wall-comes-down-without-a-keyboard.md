@@ -105,7 +105,7 @@ each was re-found by its text on this tree rather than trusted from either.
 
 - **`Remove` does not claim the job the docblock hands it, and says so.** The
   control's own locale string, `hud.build.remove-hint`
-  (`src/content/default-locale-en.ts:2433`; the anchor read `:2429`, then `:2424`, then `:1739`, which was
+  (`src/content/default-locale-en.ts:2463`; the anchor read `:2429`, then `:2424`, then `:1739`, which was
   a *mention* of the key inside another string's docblock rather than the
   declaration, and was re-aimed onto the declaration itself on 2026-09-19 after
   #1292 grew this file, then `:2318` -- the same declaration, before the two
@@ -139,7 +139,7 @@ each was re-found by its text on this tree rather than trusted from either.
   queued."*
 - **The resolver a `Remove` press reaches is tile-and-object-shaped by
   construction, not by oversight.** `ObjectPlacementService.remove` (class at
-  `src/simulation/objects/object-placement-service.ts:455`, method at `:646`)
+  `src/simulation/objects/object-placement-service.ts:455`, `export class ObjectPlacementService`, method at `:646`)
   tries exactly two things at the pressed tile, in order: a placed object
   (`this.placedObjects.objectAt(tile)`, `:649`) and a still-building object
   order (`this.orderBuildingObjectAt(tile)`, `:716`, which matches only orders
@@ -149,7 +149,7 @@ each was re-found by its text on this tree rather than trusted from either.
   value `ConstructionSystem` wrote and the `'completed'` order that wrote it.
   Falling through both arms returns `{ kind: 'refused', reason:
   'nothing-to-remove' }` (`RemoveObjectRefusalReason`, `:207`), which
-  `src/simulation/runtime/session-commands.ts:793` turns into the sentence
+  `src/simulation/runtime/session-commands.ts` (session command routing) turns into the sentence
   the issue quotes.
 
 ### 2. The positive control, re-opened from the issue's own comment
@@ -180,12 +180,12 @@ is the cheap falsifier any implementation of this document owes.
 
 ```
 $ grep -rn "CancelBuildOrder" src/ --include='*.ts' | grep -v "^src/simulation/"
-src/ui/hud/build-panel.ts:167, :1189(*), :2103        … comments
+src/ui/hud/build-panel.ts (comments)
 src/ui/hud/view-model.ts:734, :768                     … comments
 src/ui/hud/projection.ts, messages.ts, hud.ts          … comments and refusal keys
 src/ui/simulation-*.ts (4 files)                       … comments
 src/content/default-locale-en.ts                        … comments
-src/main.ts:2495                                        … comment
+src/main.ts (comment)
 src/main.ts:2498: requireSimulation(commands).submit({ type: 'CancelBuildOrder', orderId: intent.orderId });
 ```
 
@@ -194,7 +194,7 @@ producer**, `src/main.ts:2498`, under `case 'cancel-build-order':` at `:2497`,
 fed by the queue row's intent. `CancelBuildOrder`'s own decode
 (`src/simulation/protocol/commands.ts`) carries only `orderId` on the wire —
 no location, no edge — and its handler
-(`src/simulation/construction/handler.ts:133-160`) reads the order by that id,
+(`src/simulation/construction/handler.ts`, cancellation handler) reads the order by that id,
 tries `cancelOrder`, and swallows a `not found` or `not cancellable` silently
 by design (`:148-151`, "cancellation is intentionally idempotent at the
 command boundary"). **A completed wall's order id reaches no surface a player
@@ -206,7 +206,7 @@ keyboard one that reaches the whole undo stack rather than one wall.
 ### 4. Why `RemoveObject` cannot be widened cheaply, and why that reframes the cost rather than removing it
 
 `RemoveObject`'s own routing comment
-(`src/simulation/runtime/session-commands.ts:71-74`) states its scope
+(`src/simulation/runtime/session-commands.ts:78`) states its scope
 narrowly: *"the same service's other half: a placement and a removal are one
 gesture with a mode … routed side by side (ADR 0028 phase 3)."*
 `ObjectPlacementService` owns a *registry of placed objects*; it does not own
@@ -228,10 +228,9 @@ priced in §5.
 
 A wall lives on a tile *edge*, not a tile, and picking one from a raw pointer
 position is already solved: `src/rendering/build/edge-picking.ts` exports
-`pickEdgeAtWorld` as *"pure geometry: no Phaser, no DOM, no simulation"*
-(`:1-20`), and `src/rendering/scene/world-scene.ts` already imports and calls
-it for the build tool's own wall-drawing press (`:23-24` import, `:1021` call,
-`:1339` a second call for the hover readout). The object tool's press path,
+`pickEdgeAtWorld` as *"pure geometry: no Phaser, no DOM, no simulation"*, and
+`src/rendering/scene/world-scene.ts` already imports and calls it for the build
+tool's own wall-drawing press and the hover readout. The object tool's press path,
 by contrast, rounds straight to a tile (`world-scene.ts:1189`,
 `this.objectTool?.place({ tileX, tileY })`) because an object occupies a
 whole tile and has never needed an edge.

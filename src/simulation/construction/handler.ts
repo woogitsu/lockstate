@@ -93,6 +93,7 @@ export function createConstructionCommandHandler(
           },
           simCommand.edge,
           command.sequence,
+          simCommand.footprint,
         );
         constructionSystem.submitOrder(order);
         // Read straight off the order the system just decided on, rather than

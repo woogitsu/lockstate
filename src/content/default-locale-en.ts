@@ -770,8 +770,10 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
    *   display-scale control already took "interface".
    */
   'hud.zoom.title': 'Zoom',
+  'hud.camera.controls': 'Camera controls',
   'hud.zoom.in': 'Zoom in',
   'hud.zoom.out': 'Zoom out',
+  'hud.template.fit-view': 'Fit plan in view',
 
   'hud.minimap.title': 'Minimap',
   /*
@@ -1353,6 +1355,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.alert.refusal.zone.invalid-area': 'The room was not zoned — that area is not a valid rectangle.',
   'hud.alert.refusal.zone.out-of-bounds': 'The room was not zoned — part of that area is outside the map.',
   'hud.alert.refusal.zone.overlaps-existing-room': 'The room was not zoned — it overlaps a room that is already there.',
+  'hud.alert.refusal.zone.overlaps-pending-template': 'The room was not zoned — a room plan is being built on this area.',
   'hud.alert.refusal.zone.unknown-room-type': 'The room was not zoned — that is not a room type this prison knows.',
   'hud.alert.refusal.zone.unowned-land': 'The room was not zoned — you do not own all of that land.',
   // The authored minimum, refused for the first time. Every one of the 18 room
@@ -2298,6 +2301,37 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
 
   'hud.build.title': 'Build',
   'hud.build.catalogue': 'What to build',
+  'hud.build.templates': 'Room plans',
+  'hud.build.templates-short': 'Plans',
+  'hud.build.template-preview-only': 'Preview only. Choose a plan to inspect its footprint; placement is not available yet.',
+  'hud.build.template-position-hint': 'Choose an origin. The whole footprint is checked before you can place this plan.',
+  'hud.build.template-x': 'Plan origin X',
+  'hud.build.template-y': 'Plan origin Y',
+  'hud.build.template-mirror': 'Mirror horizontally',
+  'hud.build.template-rotate-half': 'Rotate 180°',
+  'hud.build.template-rotation': 'Rotation',
+  'hud.build.template-place': 'Place room plan',
+  'hud.build.template-map': 'Place on map',
+  'hud.build.template-invalid-position': 'Enter whole-number coordinates.',
+  'hud.build.template-outside-safe-tiles': 'The plan extends outside valid map coordinates.',
+  'hud.build.template-ready': 'This footprint is clear.',
+  'hud.build.template-blocked': 'This footprint is blocked. Choose another position.',
+  'hud.build.template-unowned-land': 'This plan reaches land you do not own. Choose another position.',
+  'hud.build.template-unavailable': 'Placement check is unavailable. Try again.',
+  'hud.build.template-submitted': 'Room plan submitted.',
+  'hud.build.template-close': 'Close plans',
+  'hud.build.template-cell-basic': 'Basic cell',
+  'hud.build.template-cell-large': 'Large cell',
+  'hud.build.template-shower-room': 'Shower room',
+  'hud.build.template-wall': 'Wall',
+  'hud.build.template-door': 'Door',
+  'hud.build.template-furniture': 'Furniture',
+  'hud.build.template-bed': 'Bed',
+  'hud.build.template-toilet': 'Toilet',
+  'hud.build.template-shower': 'Shower',
+  'hud.build.template-size': '{width} × {height} tiles',
+  'hud.build.template-object-count': '{name} × {count}',
+  'hud.build.template-aria-label': '{name}, {width} × {height} tiles',
   'hud.build.catalogue-empty': 'Nothing is available to build',
   'hud.build.selected': 'Selected',
   /**
@@ -2434,6 +2468,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.remove-submit': 'Remove object here',
   'hud.build.disarm': 'Stop placing',
   'hud.build.arm-hint': 'Click a tile edge to place a wall. Drag along it to lay a run. Two fingers, the middle button or the arrow keys still move the camera.',
+  'hud.build.arm-hint-square': 'Click a whole tile to place a wall. Drag across tiles to lay a row. The highlighted squares are the exact footprint. Two fingers, the middle button or the arrow keys still move the camera.',
   /*
    * The same hint for a buildable that stands on a **tile** rather than on an
    * edge (issue #904).
@@ -4498,6 +4533,27 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   // now sets it here, on the same element, as soon as the localizer is built.
   // The wording is carried across unchanged; see `src/ui/app-shell-messages.ts`.
   'app.shell.label': 'Lockstate game application',
+  'hud.camera-angle.title': 'Camera angle',
+  'hud.camera-angle.yaw-left': 'Turn left',
+  'hud.camera-angle.yaw-right': 'Turn right',
+  'hud.camera-angle.elevation-up': 'Tilt up',
+  'hud.camera-angle.elevation-down': 'Tilt down',
+  'hud.camera-angle.reset': 'Reset angle',
+  'hud.camera-angle.yaw-left-short': 'Left',
+  'hud.camera-angle.yaw-right-short': 'Right',
+  'hud.camera-angle.elevation-up-short': 'Up',
+  'hud.camera-angle.elevation-down-short': 'Down',
+  'hud.camera-angle.reset-short': 'Reset',
+  'hud.camera-angle.yaw': 'Turn',
+  'hud.camera-angle.elevation': 'Tilt',
+  'hud.build.template-materials': 'Materials: {materials}',
+  'hud.build.template-catalogue-value': 'Catalogue value: {total}. Materials already held may lower the amount spent.',
+  'hud.build.template-zero-cost': 'Catalogue value: 0. No materials required.',
+  'hud.build.template-catalogue-value-unavailable': 'Catalogue value unavailable. Check the material requirements.',
+  'hud.build.template-cell-row-four': 'Four-cell row',
+  'hud.build.template-arm-hint': 'Selected: {name}. Point at the map to preview the whole room plan. Click a clear footprint to submit it. Middle drag or arrow keys move the camera.',
+  'hud.build.template-interior': 'Interior',
+  'hud.build.template-dock-marker': 'Dock marker (not a passage)',
 };
 
 /**

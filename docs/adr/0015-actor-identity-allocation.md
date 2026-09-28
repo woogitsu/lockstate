@@ -309,7 +309,7 @@ were re-opened against the 2026-09-26 V7 save branch:
 | registers the stream | `:292` | `src/simulation/runtime/new-session.ts:487` |
 | constructs the registry | `:301` | `src/simulation/runtime/new-session.ts:496` |
 | passes it to `PrisonerOperationsRuntime` | `:325` | `src/simulation/runtime/new-session.ts:596` |
-| constructs `GuardRoster` | `:496` | `src/simulation/runtime/new-session.ts:1048` |
+| constructs `GuardRoster` | `:496` | `src/simulation/runtime/new-session.ts:1056` |
 
 The seven-key list is still exactly the seven keys, at
 `src/persistence/save-schema.ts:1351-1357`.
@@ -451,7 +451,7 @@ inherited:
   > `givenName` and `familyName` separately rather than one composed string"*),
   > reaching the player through the localizer rather than as a composed string
   > from the simulation. `src/ui/simulation-events.ts:1498-1502`,
-  > `src/ui/simulation-prisoner-detail.ts:128` and
+  > `src/ui/simulation-prisoner-detail.ts:128` (`givenName: view.name.givenName`) and
   > `src/ui/simulation-prisoner-roster.ts:204` carry it the rest of the way.
   >
   > **The projection anchors moved and their shape changed with them**, so they

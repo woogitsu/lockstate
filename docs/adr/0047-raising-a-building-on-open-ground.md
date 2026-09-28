@@ -71,7 +71,7 @@ and the reason is mechanical rather than a matter of design taste.
 
 The defect is a consequence of where an edge is stored.
 `roomPerimeterEnclosure` reads a rectangle's south boundary as the north edge of
-the row **below** it (`src/simulation/rooms/enclosure.ts:219-221`) and its east
+the row **below** it (`src/simulation/rooms/enclosure.ts:212`) and its east
 boundary as the west edge of the column to its **right**
 (`src/simulation/rooms/enclosure.ts:230-232`). Those two edges are stored on tiles
 outside the rectangle. If the rectangle is flush against the edge of owned land,
@@ -109,7 +109,7 @@ decision:
 > tile across the edge it occupies: every boundary edge of an owned parcel has
 > unowned land on the far side, and a prison is a perimeter.
 
-`tests/unit/construction-ownership.test.ts:124` pins it — *"checks the order's
+`tests/unit/construction-ownership.test.ts:118` pins it — *"checks the order's
 own tile, not the tile across the edge it occupies"* — with a fixture whose
 order tile is owned and whose far tile is not.
 
@@ -141,10 +141,10 @@ exposes no enclosure query, that its `update()` has no caller, and that the
 topological reading of `enclosed` therefore is not implementable today. The
 first two claims hold — `TopologyManager.update`
 (`src/simulation/rooms/topology.ts:55`) is absent from the `registerSystem`
-block, where `navigation` is present (`src/simulation/runtime/new-session.ts:1607`).
+block, where `navigation` is present (`src/simulation/runtime/new-session.ts:1639`).
 
 **But the same flood fill runs every tick, in navigation, and is registered.**
-`buildNavigationGraph` (`src/simulation/navigation/region-graph.ts:99`)
+`buildNavigationGraph` (`src/simulation/navigation/region-graph.ts:106`)
 partitions every loaded chunk's tiles into maximal sets connected across
 zero-valued edges (`src/simulation/navigation/region-graph.ts:148`), returns
 `tileToRegion` and `regionTiles`, caches the result against a geometry
@@ -204,7 +204,7 @@ Every anchor below was opened.
   (`src/simulation/runtime/new-session.ts:436-438`). Chunk size 32, so the playable
   world is tiles `0..31` square.
 - **Nothing in `src/` can buy land.** `canPurchaseParcel`
-  (`src/simulation/world/sparse-world.ts:702`) and `getParcelPrice` (`:711`) have no
+  (`src/simulation/world/sparse-world.ts:725`) and `getParcelPrice` (`:734`) have no
   caller outside their own file, `registerParcel`'s only `src/` call site is
   `fromSnapshot` re-registering what a save carried
   (`src/simulation/world/tile-ownership.ts:17` says so and it is still true),
@@ -225,11 +225,11 @@ Every anchor below was opened.
 
 `SparseWorld` keeps four parallel `Uint8Array(size*size)` planes per loaded
 chunk — `chunkTerrain`, `chunkTopEdge`, `chunkLeftEdge`, `chunkZoning`
-(`src/simulation/world/sparse-world.ts:284`–`:287`, allocated on demand through
+(`src/simulation/world/sparse-world.ts:289`–`:287`, allocated on demand through
 `ensureStorageMap`, `:585`). All four serialize as optional RLE fields on
 `SerializedChunkState` (`:45`), and `decodeChunk`'s `allowedKeys` lists exactly
 those four as optional (`:191`). The save boundary mirrors it
-(`src/persistence/save-schema.ts:126`–`:129`, `terrain` / `topEdge` / `leftEdge`
+(`src/persistence/save-schema.ts:130`–`:133`, `terrain` / `topEdge` / `leftEdge`
 / `zoning`, each `terrainRleSchema.optional()`; this branch wrote `:115`–`:118`
 on 2026-09-15 and by 2026-09-16, when it merged `origin/main`, that span was a
 blank line and the first three lines of `serializedChunkStateSchema`'s
@@ -254,7 +254,7 @@ Six definitions, including `grass` (`src/simulation/world/terrain.ts:22`) and
 (`src/rendering/world/appearance.ts:66`, `:68`). **Nothing in `src/` writes
 terrain**: `grep -rn "setTerrain\|fillTerrain" --include=*.ts src/` returns only
 the definitions in `sparse-world.ts` themselves. `getTerrainNumericId` returns
-`0` for an absent plane (`src/simulation/world/sparse-world.ts:476`), and `0` is
+`0` for an absent plane (`src/simulation/world/sparse-world.ts:481`), and `0` is
 `dirt`. So the shipped world is dirt everywhere and the terrain layer is a
 feature with a reader and no producer.
 
@@ -285,7 +285,7 @@ feature with a reader and no producer.
   rectangle's own perimeter, with the south and east sides read off neighbouring
   tiles.
 - Objects already require a room: `PlaceObject` refuses `outside-room`
-  (`src/simulation/objects/object-placement-service.ts:540`).
+  (`src/simulation/objects/object-placement-service.ts:548`).
 
 ### Rendering
 
@@ -316,7 +316,7 @@ its first producer.
 
 **One consequence to know before taking it.** The implicit default terrain of a
 plane that was never written is `0` = `dirt`
-(`src/simulation/world/sparse-world.ts:476`). If a later chunk is materialised —
+(`src/simulation/world/sparse-world.ts:481`). If a later chunk is materialised —
 which decision 6 can cause, see its consequences — it arrives dirt, and there is
 a visible seam against the grass. Two exits: fill each chunk as it materialises,
 or give `SparseWorld` a `defaultTerrainNumericId`, which is a snapshot field and
@@ -326,16 +326,16 @@ renumbering terrain ids; `0` is persisted in every existing save.
 ### 2. A foundation is a floor value in a fifth per-chunk plane
 
 `SparseWorld` gains `chunkFloor`, a fifth `Uint8Array(size*size)` beside the
-four it already declares at `src/simulation/world/sparse-world.ts:284-287`, with
+four it already declares at `src/simulation/world/sparse-world.ts:289-292`, with
 `getFloor`/`setFloor` written exactly like `getZoning`/`setZoning`
-(`src/simulation/world/sparse-world.ts:554`, `:558`).
+(`src/simulation/world/sparse-world.ts:577`, `:581`).
 The stored value is a floor material's `numericId` from a small content
 catalogue; `0` means bare ground.
 
 **`setFloor` bumps `contentRevision`, not `geometryRevision`.** A floor blocks
 nothing and connects nothing, so it must not invalidate the navigation graph:
 `isNavigationGraphStale` fingerprints `geometryRevision`
-(`src/simulation/navigation/region-graph.ts:204`, over the signature computed at
+(`src/simulation/navigation/region-graph.ts:213`, over the signature computed at
 `:84`), and paving a hall would
 otherwise rebuild the region graph for every tile of the slab. This is the same
 choice `setZoning` makes and for the same reason.
@@ -486,7 +486,7 @@ in bounds when either adjacent tile is in a materialised chunk.
 
 1. **Completing such an order materialises the far chunk.** `writeEdge` →
    `setTopEdge` → `setMapValue` → `load(chunk)`
-   (`src/simulation/world/sparse-world.ts:538` → `:572` → `:372`). A fresh 32×32 chunk appears in
+   (`src/simulation/world/sparse-world.ts:547` → `:595` → `:600`). A fresh 32×32 chunk appears in
    the world, in the snapshot, and — because the render view draws every
    `loaded` chunk — on screen, as a block of unowned ground where there was
    void. That is a **visible** change and it should be a deliberate one.
@@ -572,7 +572,7 @@ claims in this corpus; this document does not intend to be the first.
   unchanged and ADR 0038 decision 2's absence rule is not engaged.
 - **The plane serializes through the one run-length codec** the save format
   already uses (`encodeTerrainRle`/`decodeTerrainRle`,
-  `src/simulation/world/sparse-world.ts:179`, `:183`), so its round trip is the round
+  `src/simulation/world/sparse-world.ts:184`, `:183`), so its round trip is the round
   trip four planes already have, including the `maxValue: 255` rejection.
 - **Ordering of writes does not matter.** A floor value is a per-tile
   assignment, not an accumulation, so a slab paved in any order is the same
@@ -618,7 +618,7 @@ same tool.
 
 **The pacing risk, derived rather than guessed.** The clock steps every 50 ms at
 speed 1 (`src/simulation/clock/fixed-step-clock.ts:29`), `ConstructionSystem`
-runs every ten ticks (`src/simulation/construction/system.ts:347`), and one
+runs every ten ticks (`src/simulation/construction/system.ts:342`), and one
 order is in progress at a time. So the crew completes **at most one order every
 500 ms at speed 1**, or one every 125 ms at speed 4. A 10×10 slab is 100 orders
 and therefore **at least 50 seconds of watching at speed 1**; a 20×20 slab is at
@@ -859,6 +859,6 @@ not to write a third flood fill.
 defect is caused by one asymmetric predicate and fixed by widening it. I did not
 enumerate every caller that could reproduce the asymmetry elsewhere:
 `ObjectPlacementService` and `RoomZoningService` also call `canBuildAt`
-(`src/simulation/objects/object-placement-service.ts:526`,
-`src/simulation/rooms/zoning.ts:555`), and neither is an edge order, so neither
+(`src/simulation/objects/object-placement-service.ts:531`,
+`src/simulation/rooms/zoning.ts:562`), and neither is an edge order, so neither
 should change — but "should not" is an argument and not a check.

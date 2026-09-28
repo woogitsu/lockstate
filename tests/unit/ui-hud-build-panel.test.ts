@@ -116,9 +116,15 @@ describe('the armed hint says what the armed gesture does (#904)', () => {
   });
 
   it('tells an edge row to click an edge and drag a run', () => {
-    const hint = localizer.format(armedHintKey(row(false), false));
+    const hint = localizer.format(armedHintKey({ ...row(false), definitionId: 'door-wooden' }, false));
     expect(hint).toContain('tile edge');
     expect(hint, 'a run is the wall gesture and only the wall gesture').toContain('Drag');
+  });
+
+  it('tells a wall row to cover full squares, rather than aim at a thin edge', () => {
+    const hint = localizer.format(armedHintKey(row(false), false));
+    expect(hint).toContain('whole tile');
+    expect(hint).not.toContain('tile edge');
   });
 
   it('tells a tile row to press a tile, and does not offer it a run', () => {
@@ -147,7 +153,7 @@ describe('the armed hint says what the armed gesture does (#904)', () => {
     // Not a judgement about the empty catalogue: `paintArmed` only reaches this
     // with no row chosen, and the wall route is what a row answering `false` to
     // both shape facts takes as well.
-    expect(armedHintKey(undefined, false)).toBe(armedHintKey(row(false), false));
+    expect(armedHintKey(undefined, false)).toBe(armedHintKey({ ...row(false), definitionId: 'door-wooden' }, false));
   });
 
   it('gives the two arms different sentences, which is the whole of the fix', () => {
@@ -227,7 +233,7 @@ describe('the catalogue row states its own price (#901)', () => {
 
 describe('the edge chooser and the edge a command carries agree', () => {
   const row = (occupiesEdge: boolean): HudBuildableViewModel => ({
-    definitionId: occupiesEdge ? 'wall-brick' : 'bed-wooden',
+    definitionId: occupiesEdge ? 'door-wooden' : 'bed-wooden',
     labelKey: 'content.buildable',
     occupiesEdge,
     placesObject: !occupiesEdge,
@@ -251,6 +257,7 @@ describe('the edge chooser and the edge a command carries agree', () => {
 
   it('hides it for a buildable that does not', () => {
     expect(edgeChooserShown(row(false), false)).toBe(false);
+    expect(edgeChooserShown({ ...row(true), definitionId: 'wall-brick' }, false)).toBe(false);
   });
 
   it('hides it while removing, whatever is selected', () => {

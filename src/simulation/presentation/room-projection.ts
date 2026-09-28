@@ -421,6 +421,13 @@ export interface RoomDetailViewModel extends RoomListRowViewModel {
 export interface RoomListViewModel {
   readonly schemaVersion: HudViewModelSchemaVersion;
   readonly rooms: ViewModelPage<RoomListRowViewModel>;
+  /** Prison-wide checklist, including rooms beyond the requested list window. */
+  readonly roomNeedsSummary: {
+    readonly unfinishedRooms: number;
+    readonly totalNeeds: number;
+    /** The least unfinished room, breaking equal shortfalls by canonical instance id. */
+    readonly firstUnfinishedRoomId?: string;
+  };
   /** Declared-catalog order, every known room type, including types with no instance placed. */
   readonly countsByRoomCatalogId: readonly {
     readonly roomCatalogId: string;
@@ -824,14 +831,31 @@ export function projectRoomList(
 
   let occupants = 0;
   let capacity = 0;
+  let unfinishedRooms = 0;
+  let totalNeeds = 0;
+  let firstUnfinishedRoomId: string | undefined;
+  let firstShortfall = Number.POSITIVE_INFINITY;
   for (const row of allRows) {
     occupants += row.occupancy.current;
     capacity += row.occupancy.capacity;
+    const shortfall = row.requirementSummary.missingCapability + (row.access === 'no-way-in' || row.access === 'unreachable' ? 1 : 0);
+    if (shortfall <= 0) continue;
+    unfinishedRooms += 1;
+    totalNeeds += shortfall;
+    if (shortfall < firstShortfall) {
+      firstShortfall = shortfall;
+      firstUnfinishedRoomId = row.instanceId;
+    }
   }
 
   return {
     schemaVersion: HUD_VIEW_MODEL_SCHEMA_VERSION,
     rooms: pageOf(allRows, request),
+    roomNeedsSummary: {
+      unfinishedRooms,
+      totalNeeds,
+      ...(firstUnfinishedRoomId === undefined ? {} : { firstUnfinishedRoomId }),
+    },
     countsByRoomCatalogId: rooms.all().map((definition) => {
       const ofType = source.roomInstances.allByRoomCatalogId(definition.id);
       let typeOccupants = 0;

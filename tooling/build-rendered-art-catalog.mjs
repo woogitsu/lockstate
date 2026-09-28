@@ -182,7 +182,7 @@ for (const assetId of [...PUBLISHED_ASSET_IDS].sort()) {
     sourceAttribution: {
       license: 'project-rendered, reproducible',
       producedBy: sidecar.producedBy,
-      catalog: sidecar.catalog,
+      catalog: sidecarEntry.sourceCatalog ?? sidecar.catalog,
       blenderVersion: sidecar.blenderVersion,
     },
   });

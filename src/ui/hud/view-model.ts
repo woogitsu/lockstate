@@ -1547,11 +1547,9 @@ export interface HudRoomAtCapacityViewModel {
  * ADR 0022 measured to 0.05px.
  *
  * The three counts are the simulation's own. `unfinishedRooms` and
- * `totalNeeds` are counted over the page of rooms that was actually requested
- * (`MAX_PROJECTION_PAGE_LIMIT` of them), so in a prison with more rooms than
- * one page they describe that page rather than the whole prison;
- * `totalRooms` is `RoomListViewModel.totals.instances`, which is every
- * instance whatever window was asked for.
+ * `totalNeeds` come from `RoomListViewModel.roomNeedsSummary`, computed over
+ * every room before the worker pages its list. `totalRooms` is
+ * `RoomListViewModel.totals.instances` over that same full set.
  */
 export interface HudRoomNeedsViewModel {
   /** How many designated rooms are missing at least one thing. */

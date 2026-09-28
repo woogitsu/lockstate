@@ -40,6 +40,15 @@ function armedTool(): { readonly tool: BuildTool; readonly orders: readonly HudB
 }
 
 describe('BuildTool', () => {
+  it('reports a wall-square drag as one full-footprint order with no edge ambiguity', () => {
+    const { tool, orders } = armedTool();
+    tool.placeSquares([{ x: 4, y: 7 }, { x: 5, y: 7 }, { x: 5, y: 7 }]);
+    expect(orders).toEqual([{
+      definitionId: 'wall-brick', footprint: 'square',
+      squares: [{ x: 4, y: 7 }, { x: 5, y: 7 }],
+    }]);
+  });
+
   it('reports a whole run as one order, in the order the run was given', () => {
     const { tool, orders } = armedTool();
 

@@ -1,0 +1,486 @@
+{
+  "schemaVersion": 1,
+  "assetId": "wall.interior.corner.inner.north-west.full",
+  "source": "wall.interior.cutaway.blend",
+  "sourceSha256": "98b264c5b3ea15658d7d8996f403024928c660135a66025adccba1d385927e6c",
+  "resolutionPx": [
+    512,
+    512
+  ],
+  "nominalPixelsPerTile": 64,
+  "pivotPx": [
+    256,
+    256
+  ],
+  "cameraTargetTiles": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "projection": "orthographic",
+  "yawDegrees": [
+    -180,
+    -165,
+    -150,
+    -135,
+    -120,
+    -105,
+    -90,
+    -75,
+    -60,
+    -45,
+    -30,
+    -15,
+    0,
+    15,
+    30,
+    45,
+    60,
+    75,
+    90,
+    105,
+    120,
+    135,
+    150,
+    165
+  ],
+  "elevationDegrees": [
+    25,
+    45,
+    65
+  ],
+  "frames": [
+    {
+      "yawDegrees": -180,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw-180-elev25.e35968f9694d.png",
+      "sha256": "e35968f9694d9bb7ebf35c977b5d1a19a02e4d2f344f571d4ba2f472ad15d1ff"
+    },
+    {
+      "yawDegrees": -180,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw-180-elev45.c67d103712d9.png",
+      "sha256": "c67d103712d91906eea21fdc740bf5ed7396cc3332bcc39846a4d87926a6c4af"
+    },
+    {
+      "yawDegrees": -180,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw-180-elev65.8181411a1640.png",
+      "sha256": "8181411a16406666d4b4c90e50afc2d6177376ec056574a1ce35c1bdb019ea08"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw-165-elev25.356072c4db1f.png",
+      "sha256": "356072c4db1f69f39cadbea49dff82cef12c6b2a1e99ee1b4615b27afcee2933"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw-165-elev45.c6f403af75e2.png",
+      "sha256": "c6f403af75e2acd3c5d0a5efef3fea71366472589ca6aa31caa15692e012bc23"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw-165-elev65.c67de15a8b8e.png",
+      "sha256": "c67de15a8b8e6cda096d340beffc4d154d7c360992c2109066907ecd09fc1eff"
+    },
+    {
+      "yawDegrees": -150,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw-150-elev25.2777ee27b220.png",
+      "sha256": "2777ee27b220526cd24e8370cac26b632eab2dd272a54adeb0c6c74147c954a0"
+    },
+    {
+      "yawDegrees": -150,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw-150-elev45.3578205006a6.png",
+      "sha256": "3578205006a61b7981470c2212faa8d9b4b2946a7600d0ba7640cdca684953a1"
+    },
+    {
+      "yawDegrees": -150,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw-150-elev65.c6e55cfab289.png",
+      "sha256": "c6e55cfab289d737956e24500cade96e295f52d7c4e09ff386b31ade86791d4a"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw-135-elev25.b68bec772ff9.png",
+      "sha256": "b68bec772ff9f4f511e0619180dac8794fb538a15080bbfb8bacdafe013e84ac"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw-135-elev45.87cbfb4e08d7.png",
+      "sha256": "87cbfb4e08d7aefe31715c29ad485a8437286063d07e70cf060e2075c76094b8"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw-135-elev65.b6c52ca2efa0.png",
+      "sha256": "b6c52ca2efa0fa97b9c05a62a8bf4e144a8795bb4309eff50b99ee9a40ca8d94"
+    },
+    {
+      "yawDegrees": -120,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw-120-elev25.745e2d148603.png",
+      "sha256": "745e2d1486039604b80768f0ad5a3ed38d237477bd01f2f39405253ec41ef787"
+    },
+    {
+      "yawDegrees": -120,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw-120-elev45.e51f681993e9.png",
+      "sha256": "e51f681993e911004555a37e5ff0241e880b4ec4379199815cc348e1f1e64497"
+    },
+    {
+      "yawDegrees": -120,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw-120-elev65.e60fdf04c718.png",
+      "sha256": "e60fdf04c718db425f5e698acfd7ce03034da376c86f394344c170524f532743"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw-105-elev25.40e51979a860.png",
+      "sha256": "40e51979a8609ca582ffed017ad3576c41a00fda4c9794b031d277a14e27cd76"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw-105-elev45.1508459f44c1.png",
+      "sha256": "1508459f44c134b80c918c942e51192a2716da31208580733390e4186a0586d6"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw-105-elev65.7bc7b232747f.png",
+      "sha256": "7bc7b232747fcadb1d20c9e282200b72e75535a99dab9a1b22a6eed3fde25a17"
+    },
+    {
+      "yawDegrees": -90,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw-90-elev25.88f3b204f443.png",
+      "sha256": "88f3b204f443ab5b7a89f5d5e935f94445ba70300b7a70b7bdd6e7204a9e295d"
+    },
+    {
+      "yawDegrees": -90,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw-90-elev45.57ae3f2570b9.png",
+      "sha256": "57ae3f2570b9f7446c9b173e6ceb6b7e1f44232f11432c2e0e05108b76673bb8"
+    },
+    {
+      "yawDegrees": -90,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw-90-elev65.b91d92acf54d.png",
+      "sha256": "b91d92acf54d58df4c92d050350a070027401931f1629cc8dec94e7abed2b9b7"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw-75-elev25.debf6f4a224f.png",
+      "sha256": "debf6f4a224f20f48b1ccf8c456a8680bd3a9589ce674eec6d9dcd523f55d85b"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw-75-elev45.dbff3df445d4.png",
+      "sha256": "dbff3df445d4e77fed3e407dcd9abd91ed31956d79ce6f2d841d8568803c1c6b"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw-75-elev65.cc5d29b52fab.png",
+      "sha256": "cc5d29b52fab055b4fb345156e3a0f0ec8e39d0237506656fb19c348e2461b5a"
+    },
+    {
+      "yawDegrees": -60,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw-60-elev25.30df0390a7a2.png",
+      "sha256": "30df0390a7a2abd541c72f52ae57df0e24fdeaa87fd972dd49e066a384869b2d"
+    },
+    {
+      "yawDegrees": -60,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw-60-elev45.fe0e43f1ddfd.png",
+      "sha256": "fe0e43f1ddfd3e66ee67fd52fea67a7418e4beeddab4c91329adb900c1dc4f54"
+    },
+    {
+      "yawDegrees": -60,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw-60-elev65.7edce44fdb56.png",
+      "sha256": "7edce44fdb56f002a6c83c55197803ba6a1bd9a0cfac27dcfdc79ab96fff2693"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw-45-elev25.0b82bba0c4df.png",
+      "sha256": "0b82bba0c4df78270fb642d5d7adf02bb96e93ceb2813a10a459212c50a95045"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw-45-elev45.f871ecb6f11f.png",
+      "sha256": "f871ecb6f11f97851cb3c416c21a9dab15580675c1ea64b7970aaa523b545092"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw-45-elev65.96a0b852794e.png",
+      "sha256": "96a0b852794ea71841469a0baab2a4a1d6f35269ee4c5826d3e8473352629d93"
+    },
+    {
+      "yawDegrees": -30,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw-30-elev25.eedab77e66b3.png",
+      "sha256": "eedab77e66b390f734006a7ec364a1c6105110311333bd1e69f9c796e30010ce"
+    },
+    {
+      "yawDegrees": -30,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw-30-elev45.417dd5cc085f.png",
+      "sha256": "417dd5cc085f373f379847806f8b3a8b742e5f7f9d8954b5d10b687b7e56f7f9"
+    },
+    {
+      "yawDegrees": -30,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw-30-elev65.2255750b1848.png",
+      "sha256": "2255750b1848fb6ac1fc29393889e46735a37921e6e8356a17dd8087dbef8793"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw-15-elev25.21b36bf65c33.png",
+      "sha256": "21b36bf65c3391d68cde969e66f7869583de244c38bd186e4cf9733584555286"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw-15-elev45.55893204cef8.png",
+      "sha256": "55893204cef87eb5e3838daf69cd7d760b2afcc0b06165f4eae50e2a8e55984c"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw-15-elev65.9dd880a7ee58.png",
+      "sha256": "9dd880a7ee5806c55a4941e23dc6ce2f19f9a32dbd6b6fc8772d3709f2b3f26d"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw+00-elev25.eed346341d29.png",
+      "sha256": "eed346341d29c858e199d8c1dc7a7e66ed28d9902c418695614f88e3052c0e36"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw+00-elev45.bbfb8aaf6412.png",
+      "sha256": "bbfb8aaf6412f02ee339740e0c908490059efd480829b53af03f88815abd3bd8"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw+00-elev65.70f1f4d33368.png",
+      "sha256": "70f1f4d33368b450c701f040e6c61986ab7e93920036065a89af223d2cb534de"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw+15-elev25.7987f3cb13ff.png",
+      "sha256": "7987f3cb13ff4fadfe9c9197f20ef4c80498262b3a01c10d0262f23d6d932711"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw+15-elev45.b48b74d09b85.png",
+      "sha256": "b48b74d09b85edb786d22feb45e98432978df435454a709aa8f31c44b9de1be5"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw+15-elev65.772f984ffb76.png",
+      "sha256": "772f984ffb76ae8fedebce709d4d3f82b13cd9e7bf1eb0cb29338c6ca570dd39"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw+30-elev25.8c9a6257d0c5.png",
+      "sha256": "8c9a6257d0c5f247d190a52c0de6c8b45a1a0e416d7e2c14f408368d2f91acc4"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw+30-elev45.a6c649b7c900.png",
+      "sha256": "a6c649b7c90037e8f73b2ec0cf388b5f459c514a3508bfe114acbdb0698aec3d"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw+30-elev65.92f9c8aaf81c.png",
+      "sha256": "92f9c8aaf81c51cda2a4935faa269ede92e82e7581a510e4736cca1b53fa5cef"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw+45-elev25.cd157095a21d.png",
+      "sha256": "cd157095a21d7d09acfd8ec30fddd33a7948233556cc3fcb6c7375bd98d6cb4b"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw+45-elev45.b279e06c33e8.png",
+      "sha256": "b279e06c33e83414993e8feb3d6da0070d4def30f0ab83c9c32c163e96767493"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw+45-elev65.3cde8e9a6518.png",
+      "sha256": "3cde8e9a6518da5cc2d4be29e5d0eeb033b9091e7f5914988e2e3a71f69490d9"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw+60-elev25.cff8c822eb45.png",
+      "sha256": "cff8c822eb459197bfd6050df8cf4655a2f4ef5b18173e9d99c6d65684d418bc"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw+60-elev45.612b97d48e42.png",
+      "sha256": "612b97d48e42c7ed99189d722e57692d8e613a07fac0b95a743e1ce971e4fbb0"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw+60-elev65.f0e639babc89.png",
+      "sha256": "f0e639babc89adb00aefc87261773c6a016b15290469059336985dba617b9428"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw+75-elev25.6941f3f09cd3.png",
+      "sha256": "6941f3f09cd311df44fa1bcce6661bf210016fe0f82b4fe228a0055c7b2483e7"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw+75-elev45.d09a351060cf.png",
+      "sha256": "d09a351060cfb88262c9620be39c0f811455e3e226263a2ed4b42d78b48ad662"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw+75-elev65.6697e475ba88.png",
+      "sha256": "6697e475ba88f924717ea09b0e2d85fcbf54f7a0845a820176f1caf84d381f8a"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw+90-elev25.2d6cc2e67773.png",
+      "sha256": "2d6cc2e677732568743da072495cd575c2b356b2a999c44be0bd0cfc49d49f3a"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw+90-elev45.83419d532623.png",
+      "sha256": "83419d53262333c93b7052bec6123bd5b64ef3790fbfb8785a459ca2044b08d7"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw+90-elev65.2307c5180642.png",
+      "sha256": "2307c5180642f5a14b23610f9f08b40076615bceb13a700f6030197720fea10a"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw+105-elev25.231ee521d1e0.png",
+      "sha256": "231ee521d1e0a7eaaf9eb9346d942906b4c2b713396b61f994e95573a8415390"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw+105-elev45.57cb6cb2fa2a.png",
+      "sha256": "57cb6cb2fa2a8653f407971c1df562dcb9cd276f1854eb439a722efae3bb0695"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw+105-elev65.478b6d824076.png",
+      "sha256": "478b6d824076496472d5e43f27ed506c05d4f343e016b9ff9192d72da12a7860"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw+120-elev25.75b8cda7992d.png",
+      "sha256": "75b8cda7992d2bbe09faaba4fa67eca80a232a2bbcff6b7a3364718821e82dfd"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw+120-elev45.c01a4716d34e.png",
+      "sha256": "c01a4716d34ebacc3ed0f2bb6f25eb08046091528340f369a7654f30e88fc2c6"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw+120-elev65.9f6869061733.png",
+      "sha256": "9f68690617339540518835f36a7fb082a5a9bf6c1b92333adfdd235a769ca768"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw+135-elev25.92b663ded0e7.png",
+      "sha256": "92b663ded0e7747c6da3ad46368ae61c31a922619da896a522c381211127a70a"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw+135-elev45.dd541bdb7837.png",
+      "sha256": "dd541bdb783711052c8315ae67de6ca90b9d3283e4ad0e41ddac885bdeab8682"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw+135-elev65.b8d0d6005eff.png",
+      "sha256": "b8d0d6005eff377055dd5a79a0ba98d4a416553f663f8ee229bb8395004622bd"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw+150-elev25.49fff25f5fa2.png",
+      "sha256": "49fff25f5fa2191650a56c43a39399857acdfeddc3263026b1ef57b507cd5ba0"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw+150-elev45.60cc61cc11c9.png",
+      "sha256": "60cc61cc11c9ad57f56d73bc28a3fcf59eb33ffb43caae56c9bb467dbcdb9dd9"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw+150-elev65.46229c58c69c.png",
+      "sha256": "46229c58c69c40ceef752d93b9cb245c902e9df004e23eb63114de457e405333"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw+165-elev25.7920d6046e3c.png",
+      "sha256": "7920d6046e3cdb493c5e1e645a6942d75404853d5635627c93689bf640ad8ea4"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw+165-elev45.968cdc84c23f.png",
+      "sha256": "968cdc84c23f0e2ec17495ba20034f53c1ae72b34de5c2d12fb8074db3972e78"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw+165-elev65.80d85a23b087.png",
+      "sha256": "80d85a23b087b4afe29b70ce7c872789c2eed3d8f38e3246bad9a9d1d4256c18"
+    }
+  ]
+}

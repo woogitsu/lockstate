@@ -129,7 +129,9 @@ export default defineConfig({
    */
   testIgnore: /production-artifact\.spec\.ts$/,
   fullyParallel: false,
-  workers: 1,
+  // The Full HD camera/build suite outgrew the 90-minute browser job. CI runs
+  // independent browser contexts concurrently; local runs remain lightweight.
+  workers: process.env['CI'] === undefined ? 1 : 2,
   forbidOnly: process.env['CI'] !== undefined,
   /**
    * ZERO, AND THE CONDITIONAL RETRY ABOVE THIS CONFIG DOES NOT RELAX IT.
