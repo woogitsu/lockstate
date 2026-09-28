@@ -16,16 +16,17 @@ export interface RoomTemplatePlan {
   readonly height: number;
   readonly wallSquares: readonly TemplateSquare[];
   readonly doorSquares: readonly TemplateDoorSquare[];
-  readonly zone: { readonly roomId: 'room.cell' | 'room.shower-room' | 'room.canteen' | 'room.kitchen'; readonly x: number; readonly y: number; readonly width: number; readonly height: number };
+  readonly zone: { readonly roomId: 'room.cell' | 'room.shower-room' | 'room.canteen' | 'room.kitchen' | 'room.infirmary'; readonly x: number; readonly y: number; readonly width: number; readonly height: number };
   /** Every separately designated room; `zone` retains the first for older readers. */
   readonly zones: readonly RoomTemplatePlan['zone'][];
   readonly objects: readonly { readonly buildableId: RoomTemplateObjectId; readonly x: number; readonly y: number }[];
 }
 
+/** Player-facing choices; backend-authored additions can join after HUD copy and controls land. */
 export const ROOM_TEMPLATE_IDS = ['cell-basic', 'cell-large', 'shower-room', 'cell-row-four', 'canteen-basic', 'kitchen-basic'] as const;
 export type RoomTemplateId = (typeof ROOM_TEMPLATE_IDS)[number];
-export type AuthoredRoomTemplateId = RoomTemplateId;
-type RoomTemplateObjectId = 'bed-wooden' | 'toilet-brick' | 'shower-head-brick' | 'dining-table-wooden' | 'bench-wooden' | 'stove-brick' | 'prep-counter-brick' | 'fridge-brick';
+export type AuthoredRoomTemplateId = RoomTemplateId | 'infirmary-basic';
+type RoomTemplateObjectId = 'bed-wooden' | 'toilet-brick' | 'shower-head-brick' | 'dining-table-wooden' | 'bench-wooden' | 'stove-brick' | 'prep-counter-brick' | 'fridge-brick' | 'medical-bed-wooden' | 'medicine-cabinet-wooden';
 
 interface TemplateDefinition {
   readonly width: number;
@@ -35,7 +36,7 @@ interface TemplateDefinition {
   readonly objects: readonly { readonly buildableId: RoomTemplateObjectId; readonly x: number; readonly y: number; readonly width?: number }[];
 }
 
-const TEMPLATES: Readonly<Record<Exclude<RoomTemplateId, 'cell-row-four'>, TemplateDefinition>> = {
+const TEMPLATES: Readonly<Record<Exclude<AuthoredRoomTemplateId, 'cell-row-four'>, TemplateDefinition>> = {
   'cell-basic': {
     width: 4, height: 7, roomId: 'room.cell', doorX: 1,
     objects: [{ buildableId: 'bed-wooden', x: 1, y: 1 }, { buildableId: 'toilet-brick', x: 2, y: 4 }],
@@ -69,6 +70,13 @@ const TEMPLATES: Readonly<Record<Exclude<RoomTemplateId, 'cell-row-four'>, Templ
       { buildableId: 'stove-brick', x: 1, y: 1, width: 2 },
       { buildableId: 'prep-counter-brick', x: 3, y: 1, width: 2 },
       { buildableId: 'fridge-brick', x: 1, y: 3 },
+    ],
+  },
+  'infirmary-basic': {
+    width: 6, height: 6, roomId: 'room.infirmary', doorX: 2,
+    objects: [
+      { buildableId: 'medical-bed-wooden', x: 1, y: 1 },
+      { buildableId: 'medicine-cabinet-wooden', x: 3, y: 1 },
     ],
   },
 };
