@@ -161,6 +161,37 @@ describe('CarryJobExecutor: the carry-item lifecycle end to end', () => {
     expect(crew.isBusy(WORKER)).toBe(false);
   });
 
+  it('does not release a second job reservation when failure is reported twice', () => {
+    const { source, board, executor } = buildFixture();
+    source.deposit('item.brick', 10);
+    submit(board, 'carry-first', 4);
+    submit(board, 'carry-second', 4);
+    const first = executor.claimAvailableJobFor(1)!;
+    executor.claimAvailableJobFor(2);
+    expect(source.reservedOf('item.brick')).toBe(8);
+
+    executor.failJob(first, ROUTE_DENIED);
+    executor.failJob(first, ROUTE_DENIED);
+
+    expect(source.reservedOf('item.brick')).toBe(4);
+    expect(executor.pickUp(board.getById('carry-second')!)).toBe(true);
+  });
+
+  it('does not deposit twice when a completed drop-off is repeated', () => {
+    const { source, destination, board, executor } = buildFixture();
+    source.deposit('item.brick', 10);
+    submit(board, 'carry-once', 4);
+    const job = executor.claimAvailableJobFor(WORKER)!;
+    expect(executor.pickUp(job)).toBe(true);
+    expect(executor.dropOff(job)).toBe(true);
+
+    executor.dropOff(job);
+
+    expect(board.getById('carry-once')?.state).toBe('completed');
+    expect(source.quantityOf('item.brick')).toBe(6);
+    expect(destination.quantityOf('item.brick')).toBe(4);
+  });
+
   it('cancel() on a still-available job (no reservation yet) does not corrupt another job\'s real reservation for the same item', () => {
     const { source, board, executor } = buildFixture();
     source.deposit('item.brick', 5);
