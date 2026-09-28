@@ -59,6 +59,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private raisedPaints = 0;
   private artImages: Phaser.GameObjects.Image[] = [];
   private groundArtImages: Phaser.GameObjects.Image[] = [];
+  private actorArtImages: Phaser.GameObjects.Image[] = [];
   private readonly pendingArtLoads = new Map<string, Promise<void>>();
   private readonly artLoadErrors: string[] = [];
 
@@ -139,7 +140,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     return { ground: this.groundPaints, raised: this.raisedPaints };
   }
   public get artTextureKeys(): readonly string[] {
-    return [...this.groundArtImages, ...this.artImages].map((item) => item.texture.key);
+    return [...this.groundArtImages, ...this.artImages, ...this.actorArtImages].map((item) => item.texture.key);
   }
   public get loadedArtTextureCount(): number {
     const keys = new Set<string>();
@@ -178,6 +179,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
             this.paintGroundArt(this.lastProjection);
             this.paintRaised(this.lastProjection);
             this.paintArt(this.lastProjection);
+            this.paintActorArt(this.lastProjection);
           }
         }).finally(() => { this.pendingArtLoads.delete(frame.image); });
         this.pendingArtLoads.set(frame.image, task);
@@ -269,6 +271,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.raisedPaints += 1;
     for (const item of projection.raised) {
       if (item.kind === 'actor') {
+        if (this.actorArtFrame(item) !== undefined) continue;
         raised.lineStyle(13 * this.pose.zoom, 0xdd8342, 1);
         raised.lineBetween(item.head.x, item.head.y + 8 * this.pose.zoom, item.foot.x, item.foot.y);
         raised.fillStyle(0xffbd78, 1);
@@ -301,6 +304,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     if (item.artAssetId === 'wall.interior.module.full' || item.artAssetId === 'wall.interior.module.west.full') {
       return 'wall.interior.module.cutaway';
     }
+    if (item.artAssetId === 'door.interior.open.west.full') return 'door.interior.open.west.cutaway';
     return undefined;
   }
 
@@ -341,6 +345,29 @@ export class ObliqueWorldScene extends Phaser.Scene {
     }
   }
 
+  private actorArtFrame(item: ObliqueActorPoint): { readonly catalog: ObliqueModuleCatalog; readonly image: string } | undefined {
+    const catalog = this.artCatalogs.get(item.artAssetId);
+    if (catalog === undefined) return undefined;
+    const frame = selectObliqueModuleFrame(catalog, this.pose);
+    return this.textures.exists(frame.image) ? { catalog, image: frame.image } : undefined;
+  }
+
+  private paintActorArt(projection: ObliqueWorldProjection): void {
+    for (const image of this.actorArtImages) image.destroy();
+    this.actorArtImages = [];
+    for (const item of projection.raised) {
+      if (item.kind !== 'actor') continue;
+      const art = this.actorArtFrame(item);
+      if (art === undefined) continue;
+      const [width, height] = art.catalog.resolutionPx;
+      const [pivotX, pivotY] = art.catalog.pivotPx;
+      this.actorArtImages.push(this.add.image(item.foot.x, item.foot.y, art.image)
+        .setOrigin(pivotX / width, pivotY / height)
+        .setScale(this.pose.zoom)
+        .setDepth(2 + item.viewDepth / 10_000));
+    }
+  }
+
   private actorsMoved(actors: readonly RenderActor[]): boolean {
     if (actors.length !== this.actorPositions.length) return true;
     for (let index = 0; index < actors.length; index += 1) {
@@ -369,6 +396,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
       this.paintSelection();
       this.paintRaised(projection);
       this.paintArt(projection);
+      this.paintActorArt(projection);
       return;
     }
     if (!this.actorsMoved(frame.actors)) return;
@@ -378,5 +406,6 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.lastProjection = { ...this.lastProjection, raised };
     this.rememberActors(frame.actors);
     this.paintRaised(this.lastProjection);
+    this.paintActorArt(this.lastProjection);
   }
 }

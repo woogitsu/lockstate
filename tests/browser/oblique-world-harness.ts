@@ -47,7 +47,7 @@ const frame: RenderFrame = {
   revision: 1,
   world: WorldRenderView.fromSnapshot(world.snapshot()),
   structures: [{ id: 'bed-1', definitionId: 'bed-wooden', tileX: 2, tileY: 2, phase: 'built' }],
-  actors: [{ id: 7, assetId: 'actor.prisoner', tileX: 3, tileY: 3, deltaX: 0, deltaY: 0 }],
+  actors: [{ id: 7, assetId: 'actor.prisoner.base', tileX: 3, tileY: 3, deltaX: 0, deltaY: 0 }],
   rooms: [],
   roomConditions: [],
 };

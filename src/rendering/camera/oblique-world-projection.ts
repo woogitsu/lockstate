@@ -47,6 +47,7 @@ export interface ObliqueActorPoint {
   readonly foot: Point;
   readonly head: Point;
   readonly viewDepth: number;
+  readonly artAssetId: string;
 }
 
 export interface ObliqueWorldProjection {
@@ -68,6 +69,7 @@ export function projectObliqueActors(actors: readonly RenderActor[], camera: Obl
       foot: groundToScreen({ x, y }, camera),
       head: groundToScreen({ x, y, z: 0.8 * TILE_SIZE_PX }, camera),
       viewDepth: obliqueDepthForAnchor({ x, y }, camera.yawRadians),
+      artAssetId: actor.assetId,
     });
   }
   return projected;

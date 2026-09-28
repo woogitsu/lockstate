@@ -30,7 +30,9 @@ export function artForNorthEdge(edgeNumericId: number): string | undefined {
 }
 
 export function artForWestEdge(edgeNumericId: number): string | undefined {
-  return edgeNumericId === WALL_EDGE_NUMERIC_ID ? 'wall.interior.module.west.full' : undefined;
+  if (edgeNumericId === WALL_EDGE_NUMERIC_ID) return 'wall.interior.module.west.full';
+  if (edgeNumericId === DOOR_EDGE_NUMERIC_ID) return 'door.interior.open.west.full';
+  return undefined;
 }
 
 export function artForStructure(definitionId: string): string | undefined {
