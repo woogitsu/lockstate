@@ -23,3 +23,22 @@ it.each([false, true])('refuses a late ordinary square wall across a pending Cel
   expect(runtime.roomTemplates.snapshot().pending).toHaveLength(1);
   expect(runtime.world.getSquareStructure(tile(11, 17))).toBe(0);
 }, 120_000);
+
+it('refuses a late north-edge wall while allowing an unrelated nearby wall', () => {
+  const runtime = createNewSimulationRuntime(73);
+  runtime.kernel.submitCommand('cell', 0, runtime.kernel.tick, packCommand({
+    type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 10, y: 10 },
+  }));
+  runtime.kernel.step();
+  runtime.kernel.submitCommand('edge-wall', 1, runtime.kernel.tick, packCommand({
+    type: 'PlaceBuildOrder', orderId: 'doorway-edge-wall', definitionId: 'wall-brick',
+    x: 11, y: 17, edge: 'north',
+  }));
+  runtime.kernel.submitCommand('side-wall', 2, runtime.kernel.tick, packCommand({
+    type: 'PlaceBuildOrder', orderId: 'side-wall', definitionId: 'wall-brick',
+    x: 14, y: 17, footprint: 'square',
+  }));
+  runtime.kernel.step();
+  expect(runtime.construction.getOrder('doorway-edge-wall')).toMatchObject({ state: 'failed', failReason: 'unbuildable' });
+  expect(runtime.construction.getOrder('side-wall')?.state).toBe('approved');
+});
