@@ -90,6 +90,39 @@ continuous-rotation versus asset-atlas tradeoff before remodelling every object.
 Do not turn the entire art catalog into one-angle oblique PNGs and then discover
 that the camera cannot move.
 
+## Real Phaser camera spike at Full HD
+
+The browser spike in `tests/browser/oblique-spike.html` uses Phaser 4 and the
+shared projection code. It draws one cell, a corridor, a door gap, a person and
+full/short wall prisms from a square grid. These are flat diagnostic colors,
+**not final game art or a player-visible mode**. The three screenshots are from
+the same scene at a physical 1920 × 1080 viewport:
+
+| Yaw / elevation | Actual browser output |
+| --- | --- |
+| -45° / 25° | [Shallow side view](./spike-yaw-minus45-elev25-fullhd.png) |
+| 0° / 45° | [Straight view](./spike-yaw0-elev45-fullhd.png) |
+| +45° / 65° | [High side view](./spike-yaw-plus45-elev65-fullhd.png) |
+
+At all three poses, a click at the projected centre of logical tile (2, 2)
+selects exactly (2, 2); the visible yellow selection fills the whole square.
+The browser test passed 1/1. A deliberate one-tile offset in pointer picking
+made it fail with `tileX: 3`; restoring the picker returned the test to green.
+This proves the projection, rendered square and inverse pointer hit in the
+small scene. It does **not** establish framerate, occlusion correctness for a
+large prison, art fidelity, or integration with `WorldScene`. Those are the
+next delivery gates.
+
+## Active delivery lanes
+
+Keep three isolated worktrees moving in parallel: (1) Blender modules and
+consistent camera poses, (2) square-first construction and ready-made rooms,
+and (3) Full HD HUD, controls and visible template previews. The renderer
+integration joins their verified outputs. A finished worker takes the next
+independent issue so the visual redesign does not stall on CI polling. Record
+the actual merged result and production visual check before calling a slice
+shipped.
+
 ### First renderer foundation on this branch
 
 `src/rendering/camera/oblique-projection.ts` now expresses the ground-plane
