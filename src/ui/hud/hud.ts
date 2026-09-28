@@ -869,7 +869,7 @@ export interface HudUnavailableNotice {
 export interface MountHudOptions {
   readonly localizer: HudLocalizer;
   readonly roomTemplatePreflight?: (request: RoomTemplatePlacementRequest) => Promise<RoomTemplatePreflight>;
-  readonly roomTemplateQuote?: (id: RoomTemplateId) => RoomTemplateCostQuote;
+  readonly roomTemplateQuote?: (id: RoomTemplateId) => Promise<RoomTemplateCostQuote>;
   /**
    * The player's stored layout: which regions are folded and how wide or tall
    * the two resizable ones are (#1159).
