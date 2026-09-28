@@ -160,6 +160,7 @@ import json
 import math
 import struct
 import sys
+import traceback
 import zlib
 from math import gcd, radians
 from pathlib import Path
@@ -564,4 +565,10 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception:
+        # Blender returns 0 for an unhandled Python exception unless the caller
+        # supplies --python-exit-code. Direct invocations must fail as well.
+        traceback.print_exc()
+        raise SystemExit(1)

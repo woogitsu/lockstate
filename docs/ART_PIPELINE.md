@@ -245,7 +245,7 @@ declares its footprint `(1, 1)`.
 
 ```bash
 /opt/blender/blender -b assets/source/blender/environment.mvp.catalog.blend \
-    --factory-startup --python tooling/blender/render-environment-objects.py -- \
+    --factory-startup --python-exit-code 1 --python tooling/blender/render-environment-objects.py -- \
     --output assets/rendered/environment
 ```
 
