@@ -312,6 +312,7 @@ describe('every HUD message key resolves in the bundled default locale', () => {
       'hud.overview.income-note',
       'hud.build.catalogue-row-price',
       'hud.build.catalogue-row-price-segment',
+      'hud.build.template-zero-cost',
     ]);
 
     for (const key of HUD_MESSAGE_KEYS) {
