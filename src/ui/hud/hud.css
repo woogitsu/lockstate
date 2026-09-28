@@ -515,18 +515,38 @@
    wrapped one would take the row past the tap targets beside it. */
 .hud-zoom__legend { flex: none; }
 
-/* Mounted beside the zoom island only while the oblique camera is active. */
+/* Keep the angle panel beside the minimap so opening its map does not push
+   the pressable surface below the viewport at larger interface scales. */
+.hud-camera-panels {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-2);
+  min-height: 0;
+  max-height: 100%;
+}
+.hud-camera-panels > .hud-minimap { flex: 0 1 auto; }
+
 .hud-camera-angle {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: var(--space-2);
   align-self: flex-start;
-  max-width: min(396px, 100%);
+  max-width: min(470px, 100%);
   margin-bottom: var(--space-2);
   padding: var(--space-2);
   border: var(--hairline) solid var(--border);
   border-radius: var(--radius-md);
   background: var(--surface-raised);
+}
+.hud-camera-panels > .hud-camera-angle {
+  flex: none;
+  margin-bottom: 0;
+}
+/* At narrower desktop widths, preserve the former column footprint rather
+   than letting the minimap row cover the Build panel across the map. */
+@media (max-width: 1700px) {
+  .hud-camera-panels { flex-direction: column; align-items: flex-start; }
+  .hud-camera-panels > .hud-camera-angle { margin-bottom: var(--space-2); }
 }
 .hud-camera-angle__legend,
 .hud-camera-angle__reading { grid-column: 1 / -1; }
@@ -1728,6 +1748,7 @@
 .hud-template__tile--object { background: var(--text-body); border-radius: 50%; }
 .hud-template__tile--dock { background: var(--status-warning); border-color: var(--text-body); }
 .hud-template__legend { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-3); margin-top: var(--space-3); }
+.hud-template__legend[hidden] { display: none; }
 .hud-template__legend > span { display: inline-flex; align-items: center; gap: var(--space-1); }
 .hud-template__legend .hud-template__tile { width: 0.9rem; }
 .hud-template__contents { text-align: center; }

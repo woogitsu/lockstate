@@ -5,6 +5,7 @@ import { TILE_SIZE_PX, worldToTile } from '../tile-metrics';
 import { VOID_COLOR, ZONING_TINT_ALPHA, UNOWNED_SHADE_ALPHA, UNOWNED_SHADE_COLOR } from '../world/appearance';
 import {
   changeObliquePoseAtScreenPoint,
+  fitObliqueGroundRectangle,
   groundToScreen,
   panObliqueCameraByScreenDelta,
   screenToGround,
@@ -163,12 +164,12 @@ export class ObliqueWorldScene extends Phaser.Scene {
       this.hoverPointerAt = { x: pointer.x, y: pointer.y };
       this.emitGroundHover();
       if (pointer.button === 2 && !pointer.wasTouch) {
-        if (!this.canRotate()) return;
+        if (this.leftGesture !== undefined || !this.canRotate()) return;
         this.turnPointerId = pointer.id;
         this.turnPointerAt = { x: pointer.x, y: pointer.y };
         return;
       }
-      if (pointer.button !== 0) return;
+      if (pointer.button !== 0 || this.turnPointerId !== undefined) return;
       const world = screenToGround({ x: pointer.x, y: pointer.y }, this.pose);
       const tileX = worldToTile(world.x);
       const tileY = worldToTile(world.y);
@@ -214,6 +215,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     };
     this.input.on('pointerup', (pointer: Phaser.Input.Pointer) => {
       stopTurn(pointer);
+      if (pointer.button !== 0) return;
       const start = this.leftGesture;
       if (start === undefined || pointer.id !== start.pointerId) return;
       this.leftGesture = undefined;
@@ -304,13 +306,18 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.paintGroundHover();
   }
 
-  private emitGroundHover(): void {
+  private emitGroundHover(cameraMoved = false): void {
     const world = this.hoverPointerAt === undefined ? undefined : screenToGround(this.hoverPointerAt, this.pose);
     const next = world === undefined ? undefined : { tileX: worldToTile(world.x), tileY: worldToTile(world.y) };
     if (next?.tileX === this.hovered?.tileX && next?.tileY === this.hovered?.tileY) return;
     this.hovered = next;
     this.paintGroundHover();
     this.onGroundHover?.(next);
+    // A pan or turn can move the ground under a held pointer without a
+    // pointermove. Match the rectangle to the tile that pointerup will pick.
+    if (cameraMoved && this.leftGesture !== undefined && next !== undefined) {
+      this.onTileGesturePreview?.(this.leftGesture, { x: next.tileX, y: next.tileY });
+    }
   }
 
   /** Shared entry point for mouse drag, remappable keyboard actions and HUD buttons. */
@@ -320,7 +327,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.pose = changeObliquePoseAtScreenPoint(this.pose, screen, yawRadians, elevation);
     this.poseRevision += 1;
     this.onPoseChanged?.(this.pose);
-    this.emitGroundHover();
+    this.emitGroundHover(true);
     this.repaint();
     void this.ensureArtForCurrentPose().catch((error: unknown) => { this.artLoadErrors.push(String(error)); });
   }
@@ -337,7 +344,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     );
     this.poseRevision += 1;
     this.onPoseChanged?.(this.pose);
-    this.emitGroundHover();
+    this.emitGroundHover(true);
     this.repaint();
   }
 
@@ -345,6 +352,27 @@ export class ObliqueWorldScene extends Phaser.Scene {
   public stepCameraPan(screenDx: number, screenDy: number): void {
     if (!Number.isFinite(screenDx) || !Number.isFinite(screenDy) || (screenDx === 0 && screenDy === 0)) return;
     this.pose = panObliqueCameraByScreenDelta(this.pose, screenDx, screenDy);
+    this.poseRevision += 1;
+    this.onPoseChanged?.(this.pose);
+    this.emitGroundHover(true);
+    this.repaint();
+  }
+
+  /** An explicit HUD action frames a selected tile area inside the usable central view. */
+  public fitGroundTileArea(area: { readonly x: number; readonly y: number; readonly width: number; readonly height: number }): void {
+    if (![area.x, area.y, area.width, area.height].every(Number.isSafeInteger) || area.width <= 0 || area.height <= 0) return;
+    const { width, height } = this.pose.viewport;
+    this.pose = fitObliqueGroundRectangle(this.pose, {
+      left: area.x * TILE_SIZE_PX,
+      top: area.y * TILE_SIZE_PX,
+      right: (area.x + area.width) * TILE_SIZE_PX,
+      bottom: (area.y + area.height) * TILE_SIZE_PX,
+    }, {
+      left: width * 0.21,
+      right: width * 0.79,
+      top: height * 0.17,
+      bottom: height * 0.83,
+    }, ZOOM_BOUNDS.min, ZOOM_BOUNDS.max);
     this.poseRevision += 1;
     this.onPoseChanged?.(this.pose);
     this.emitGroundHover();
@@ -366,7 +394,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     };
     this.poseRevision += 1;
     this.onPoseChanged?.(this.pose);
-    this.emitGroundHover();
+    this.emitGroundHover(true);
     this.repaint();
     return true;
   }
@@ -405,7 +433,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
       this.pose = { ...this.pose, viewport };
       this.poseRevision += 1;
       this.onPoseChanged?.(this.pose);
-      this.emitGroundHover();
+      this.emitGroundHover(true);
     }
     const frame = this.feed.readFrame(time / 1000);
     if (!this.framedWorld && frame.world.loadedBounds !== undefined) {
@@ -420,7 +448,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
       this.framedWorld = true;
       this.poseRevision += 1;
       this.onPoseChanged?.(this.pose);
-      this.emitGroundHover();
+      this.emitGroundHover(true);
     }
     this.lastFrame = frame;
     this.repaint();

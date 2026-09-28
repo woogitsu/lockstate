@@ -1,5 +1,5 @@
 import type { LocalizationKey } from '../../content/localization';
-import type { RoomTemplateId } from '../../content/room-template-catalog';
+import type { RoomTemplateId, RoomTemplatePlan } from '../../content/room-template-catalog';
 import { deriveSimulationMessageKey } from '../../content/simulation-message-keys';
 import type { MessageParameters } from '../../services/localization/format';
 import { freshUnfurnishedPrison, pressAffordabilityVerdict, purchasePreviewMinorUnits, sellBackPreviewMinorUnits } from '../affordability';
@@ -162,6 +162,7 @@ export interface BuildPanelOptions {
   readonly roomTemplateTool?: RoomTemplateTool;
   readonly roomTemplateQuote?: (id: RoomTemplateId) => Promise<RoomTemplateCostQuote>;
   readonly onArmRoomTemplate?: () => void;
+  readonly onFitRoomTemplate?: (plan: RoomTemplatePlan) => void;
   /** The numeric route: place exactly one order at the coordinates shown. */
   readonly onPlace: (intent: BuildPanelIntent) => void;
   /**
@@ -1093,7 +1094,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     paintCatalogue();
     revealSelectedRow();
   });
-  const templatePreview = createRoomTemplatePreview(localizer, options.roomTemplateTool, options.onArmRoomTemplate, options.roomTemplateQuote);
+  const templatePreview = createRoomTemplatePreview(localizer, options.roomTemplateTool, options.onArmRoomTemplate, options.roomTemplateQuote, options.onFitRoomTemplate);
   const catalogueActions = element('div', {
     className: 'hud-build__catalogue-actions',
     children: categoryOptions.length === 0 ? [templatePreview.openButton] : [categoryFilter, templatePreview.openButton],

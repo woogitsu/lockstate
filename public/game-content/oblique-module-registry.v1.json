@@ -144,6 +144,14 @@
     {
       "assetId": "wall.square.brick.low",
       "manifest": "/game-content/oblique-square-brick-low-wall.v1.json"
+    },
+    {
+      "assetId": "furniture.dining.table.wooden",
+      "manifest": "/game-content/oblique-canteen-dining-table.v1.json"
+    },
+    {
+      "assetId": "furniture.corridor.bench.variants",
+      "manifest": "/game-content/oblique-canteen-bench.v1.json"
     }
   ]
 }

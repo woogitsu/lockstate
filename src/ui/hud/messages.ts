@@ -392,6 +392,7 @@ export const HUD_MESSAGE_KEY = {
   zoomIn: 'hud.zoom.in',
   zoomOut: 'hud.zoom.out',
   cameraControls: 'hud.camera.controls',
+  templateFitView: 'hud.template.fit-view',
   cameraAngleTitle: 'hud.camera-angle.title',
   cameraAngleYawLeft: 'hud.camera-angle.yaw-left',
   cameraAngleYawRight: 'hud.camera-angle.yaw-right',
@@ -1829,6 +1830,7 @@ export const HUD_MESSAGE_KEY = {
   severityDanger: 'hud.severity.danger',
   templateMaterials: 'hud.build.template-materials',
   templateCatalogueValue: 'hud.build.template-catalogue-value',
+  templateZeroCost: 'hud.build.template-zero-cost',
   templateCatalogueValueUnavailable: 'hud.build.template-catalogue-value-unavailable',
   templateCellRowFour: 'hud.build.template-cell-row-four',
 } as const satisfies Readonly<Record<string, LocalizationKey>>;

@@ -1,5 +1,5 @@
 import type { LocalizationKey } from '../../content/localization';
-import type { RoomTemplateId } from '../../content/room-template-catalog';
+import type { RoomTemplateId, RoomTemplatePlan } from '../../content/room-template-catalog';
 import type { MinimapView } from '../../shared/minimap-view';
 import type { CameraPoseAction } from '../../input/camera-pose-input';
 import type { RoomTemplateCostQuote, RoomTemplateTool } from '../room-template-tool';
@@ -872,6 +872,7 @@ export interface MountHudOptions {
   readonly localizer: HudLocalizer;
   readonly roomTemplatePreflight?: (request: RoomTemplatePlacementRequest) => Promise<RoomTemplatePreflight>;
   readonly roomTemplateQuote?: (id: RoomTemplateId) => Promise<RoomTemplateCostQuote>;
+  readonly onFitRoomTemplate?: (plan: RoomTemplatePlan) => void;
   /**
    * The player's stored layout: which regions are folded and how wide or tall
    * the two resizable ones are (#1159).
@@ -2321,9 +2322,13 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       elevation: t(HUD_MESSAGE_KEY.cameraAngleElevation),
     }, options.onCameraPoseAction);
   if (angleControl !== undefined && options.cameraPose !== undefined) angleControl.updatePose(options.cameraPose);
+  const cameraPanels = angleControl === undefined ? minimapPanel.element : element('div', {
+    className: 'hud-camera-panels',
+    children: [angleControl.element, minimapPanel.element],
+  });
   corner = element('div', {
     className: 'hud__corner',
-    children: [zoomControl, ...(angleControl === undefined ? [] : [angleControl.element]), minimapPanel.element],
+    children: [zoomControl, cameraPanels],
   });
 
   // ---- bottom-right build panel ------------------------------------
@@ -2340,6 +2345,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   const buildPanel: BuildPanel = createBuildPanel({
     localizer,
     ...(options.roomTemplateQuote === undefined ? {} : { roomTemplateQuote: options.roomTemplateQuote }),
+    ...(options.onFitRoomTemplate === undefined ? {} : { onFitRoomTemplate: options.onFitRoomTemplate }),
     ...(roomTemplateTool === undefined ? {} : { roomTemplateTool }),
     onArmRoomTemplate: () => {
       buildPanel.standDown();

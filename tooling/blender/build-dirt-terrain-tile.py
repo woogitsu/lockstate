@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import sys
 from pathlib import Path
 
@@ -28,43 +29,44 @@ def main() -> None:
     pipeline_common.apply_deterministic_render_settings(scene)
     pipeline_common.configure_oblique_module_lighting(scene)
 
-    soil = bpy.data.materials.new("matte compacted earth")
+    soil = bpy.data.materials.new("matte warm compacted earth")
+    soil.diffuse_color = (0.22, 0.16, 0.10, 1)
     soil.use_nodes = True
     tree = soil.node_tree
     principled = tree.nodes.get("Principled BSDF")
     principled.inputs["Roughness"].default_value = 0.94
-    position = tree.nodes.new("ShaderNodeNewGeometry")
+    coordinates = tree.nodes.new("ShaderNodeTexCoord")
+    split = tree.nodes.new("ShaderNodeSeparateXYZ")
+    tree.links.new(coordinates.outputs["Generated"], split.inputs["Vector"])
+
+    def periodic(channel: str, operation: str):
+        angle = tree.nodes.new("ShaderNodeMath")
+        angle.operation = "MULTIPLY"
+        angle.inputs[1].default_value = 2 * math.pi
+        tree.links.new(split.outputs[channel], angle.inputs[0])
+        trig = tree.nodes.new("ShaderNodeMath")
+        trig.operation = operation
+        tree.links.new(angle.outputs[0], trig.inputs[0])
+        return trig.outputs[0]
+
+    torus = tree.nodes.new("ShaderNodeCombineXYZ")
+    tree.links.new(periodic("X", "SINE"), torus.inputs["X"])
+    tree.links.new(periodic("X", "COSINE"), torus.inputs["Y"])
+    tree.links.new(periodic("Y", "SINE"), torus.inputs["Z"])
     noise = tree.nodes.new("ShaderNodeTexNoise")
-    noise.noise_dimensions = "2D"
-    noise.inputs["Scale"].default_value = 13.0
-    noise.inputs["Detail"].default_value = 2.0
-    noise.inputs["Roughness"].default_value = 0.58
+    noise.noise_dimensions = "4D"
+    noise.inputs["Scale"].default_value = 3.8
+    noise.inputs["Detail"].default_value = 2.5
+    tree.links.new(torus.outputs["Vector"], noise.inputs["Vector"])
+    tree.links.new(periodic("Y", "COSINE"), noise.inputs["W"])
     ramp = tree.nodes.new("ShaderNodeValToRGB")
-    ramp.color_ramp.elements[0].position = 0.18
-    ramp.color_ramp.elements[0].color = (0.100, 0.084, 0.052, 1)
-    ramp.color_ramp.elements[1].position = 0.82
-    ramp.color_ramp.elements[1].color = (0.172, 0.151, 0.093, 1)
-    moss_noise = tree.nodes.new("ShaderNodeTexNoise")
-    moss_noise.noise_dimensions = "2D"
-    moss_noise.inputs["Scale"].default_value = 5.0
-    moss_noise.inputs["Detail"].default_value = 2.0
-    moss_threshold = tree.nodes.new("ShaderNodeValToRGB")
-    moss_threshold.color_ramp.elements[0].position = 0.59
-    moss_threshold.color_ramp.elements[1].position = 0.74
-    moss_strength = tree.nodes.new("ShaderNodeMath")
-    moss_strength.operation = "MULTIPLY"
-    moss_strength.inputs[1].default_value = 0.35
-    mottled_soil = tree.nodes.new("ShaderNodeMixRGB")
-    mottled_soil.blend_type = "MIX"
-    mottled_soil.inputs[2].default_value = (0.080, 0.145, 0.060, 1)
-    tree.links.new(position.outputs["Position"], noise.inputs["Vector"])
+    ramp.color_ramp.elements[0].position = 0.32
+    ramp.color_ramp.elements[0].color = (0.16, 0.115, 0.070, 1)
+    ramp.color_ramp.elements[1].position = 0.68
+    ramp.color_ramp.elements[1].color = (0.28, 0.205, 0.13, 1)
+    ramp.color_ramp.elements.new(0.5).color = (0.22, 0.16, 0.10, 1)
     tree.links.new(noise.outputs["Fac"], ramp.inputs["Fac"])
-    tree.links.new(position.outputs["Position"], moss_noise.inputs["Vector"])
-    tree.links.new(moss_noise.outputs["Fac"], moss_threshold.inputs["Fac"])
-    tree.links.new(moss_threshold.outputs["Color"], moss_strength.inputs[0])
-    tree.links.new(moss_strength.outputs[0], mottled_soil.inputs[0])
-    tree.links.new(ramp.outputs["Color"], mottled_soil.inputs[1])
-    tree.links.new(mottled_soil.outputs["Color"], principled.inputs["Base Color"])
+    tree.links.new(ramp.outputs["Color"], principled.inputs["Base Color"])
 
     collection = bpy.data.collections.new(ASSET_ID)
     scene.collection.children.link(collection)
@@ -86,7 +88,7 @@ def main() -> None:
         "schemaVersion": 1, "source": SOURCE.name,
         "sha256": hashlib.sha256(SOURCE.read_bytes()).hexdigest(),
         "assetIds": [ASSET_ID], "footprintTiles": [1, 1],
-        "pivotTile": [0.5, 0.5], "material": "matte compacted earth",
+        "pivotTile": [0.5, 0.5], "material": "matte warm compacted earth",
     }, indent=2) + "\n")
 
 

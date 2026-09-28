@@ -773,6 +773,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.camera.controls': 'Camera controls',
   'hud.zoom.in': 'Zoom in',
   'hud.zoom.out': 'Zoom out',
+  'hud.template.fit-view': 'Fit plan in view',
 
   'hud.minimap.title': 'Minimap',
   /*
@@ -4541,6 +4542,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.camera-angle.elevation': 'Tilt',
   'hud.build.template-materials': 'Materials: {materials}',
   'hud.build.template-catalogue-value': 'Catalogue value: {total}. Materials already held may lower the amount spent.',
+  'hud.build.template-zero-cost': 'Catalogue value: 0. No materials required.',
   'hud.build.template-catalogue-value-unavailable': 'Catalogue value unavailable. Check the material requirements.',
   'hud.build.template-cell-row-four': 'Four-cell row',
   'hud.build.template-arm-hint': 'Selected: {name}. Point at the map to preview the whole room plan. Click a clear footprint to submit it. Middle drag or arrow keys move the camera.',
