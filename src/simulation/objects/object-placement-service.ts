@@ -457,6 +457,11 @@ export class ObjectPlacementService {
   private readonly refusals: PlaceObjectRefusal[] = [];
   /** The same window for the other gesture; see `recentRemovalRefusals`. */
   private readonly removalRefusals: RemoveObjectRefusal[] = [];
+  private pendingRoomDoorApproachClaim?: (tile: TilePosition) => boolean;
+
+  public setPendingRoomDoorApproachClaim(reader: (tile: TilePosition) => boolean): void {
+    this.pendingRoomDoorApproachClaim = reader;
+  }
 
   public constructor(
     private readonly world: SparseWorld,
@@ -528,7 +533,8 @@ export class ObjectPlacementService {
       }
       // A full-square wall occupies ground, not a legacy edge. Checking the
       // complete object footprint keeps its far tile from entering that wall.
-      if (this.world.getSquareStructure(tile) !== 0 || this.placedObjects.isTileOccupied(tile) || claimed.has(tileKey(tile))) {
+      if (this.world.getSquareStructure(tile) !== 0 || this.placedObjects.isTileOccupied(tile) ||
+          claimed.has(tileKey(tile)) || this.pendingRoomDoorApproachClaim?.(tile) === true) {
         return this.refuse('tile-occupied', request, tick, tile);
       }
     }
