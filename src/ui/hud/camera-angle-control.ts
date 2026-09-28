@@ -23,6 +23,9 @@ export interface CameraAngleControl {
   setAvailable(available: boolean): void;
 }
 
+const MIN_ELEVATION_RADIANS = 20 * Math.PI / 180;
+const MAX_ELEVATION_RADIANS = 80 * Math.PI / 180;
+
 export function cameraAngleDegrees(radians: number): number {
   return Math.round(radians * 180 / Math.PI);
 }
@@ -49,6 +52,16 @@ export function createCameraAngleControl(
     button.addEventListener('click', () => onActivate(action));
     return button;
   });
+  let available = true;
+  const updateAvailability = (pose: { readonly elevationRadians: number }): void => {
+    const enabled = new Map<CameraPoseAction, boolean>([
+      ['yaw-left', available], ['yaw-right', available],
+      ['elevation-up', available && pose.elevationRadians < MAX_ELEVATION_RADIANS],
+      ['elevation-down', available && pose.elevationRadians > MIN_ELEVATION_RADIANS],
+      ['reset', available],
+    ]);
+    actions.forEach(([action], index) => { buttons[index]!.disabled = !enabled.get(action); });
+  };
   const legend = element('span', { className: 'hud-camera-angle__legend', text: labels.title });
   const control = element('div', {
     className: 'hud-camera-angle',
@@ -59,9 +72,13 @@ export function createCameraAngleControl(
     element: control,
     updatePose(pose): void {
       reading.textContent = `${labels.yaw} ${cameraAngleDegrees(pose.yawRadians)}° · ${labels.elevation} ${cameraAngleDegrees(pose.elevationRadians)}°`;
+      updateAvailability(pose);
     },
-    setAvailable(available): void {
-      for (const button of buttons) button.disabled = !available;
+    setAvailable(nextAvailable): void {
+      available = nextAvailable;
+      // The current pose is updated by the host immediately after creation;
+      // keep all controls disabled until that first pose arrives.
+      for (const button of buttons) button.disabled = !nextAvailable;
     },
   };
 }

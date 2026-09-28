@@ -45,6 +45,29 @@ test('Full HD angle controls show the active pose and send each button action', 
   await page.screenshot({ path: testInfo.outputPath('camera-angle-controls-fullhd.png') });
 });
 
+test('camera tilt buttons disable at the renderer elevation limits', async ({ page }) => {
+  await page.goto('/index.html');
+  await page.evaluate(async () => {
+    const { createCameraAngleControl } = await import('../../src/ui/hud/camera-angle-control');
+    const control = createCameraAngleControl({
+      title: 'Camera angle', yawLeft: 'Turn left', yawRight: 'Turn right',
+      elevationUp: 'Tilt up', elevationDown: 'Tilt down', reset: 'Reset angle',
+      yawLeftShort: 'Left', yawRightShort: 'Right', elevationUpShort: 'Up',
+      elevationDownShort: 'Down', resetShort: 'Reset', yaw: 'Turn', elevation: 'Tilt',
+    }, () => {});
+    control.setAvailable(true);
+    document.body.append(control.element);
+    Object.assign(window, { cameraAngleLimitControl: control });
+  });
+  const group = page.getByRole('group', { name: 'Camera angle' });
+  await page.evaluate(() => (window as typeof window & { cameraAngleLimitControl: { updatePose(pose: { yawRadians: number; elevationRadians: number }): void } }).cameraAngleLimitControl.updatePose({ yawRadians: 0, elevationRadians: 80 * Math.PI / 180 }));
+  await expect(group.getByRole('button', { name: 'Tilt up' })).toBeDisabled();
+  await expect(group.getByRole('button', { name: 'Tilt down' })).toBeEnabled();
+  await page.evaluate(() => (window as typeof window & { cameraAngleLimitControl: { updatePose(pose: { yawRadians: number; elevationRadians: number }): void } }).cameraAngleLimitControl.updatePose({ yawRadians: 0, elevationRadians: 20 * Math.PI / 180 }));
+  await expect(group.getByRole('button', { name: 'Tilt up' })).toBeEnabled();
+  await expect(group.getByRole('button', { name: 'Tilt down' })).toBeDisabled();
+});
+
 test('camera shortcuts stop during text focus and armed placement', async ({ page }) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/index.html');
