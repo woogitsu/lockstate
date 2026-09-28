@@ -160,7 +160,7 @@ export interface BuildPanelOptions {
   readonly localizer: HudLocalizer;
   readonly model: HudBuildViewModel;
   readonly roomTemplateTool?: RoomTemplateTool;
-  readonly roomTemplateQuote?: (id: RoomTemplateId) => RoomTemplateCostQuote;
+  readonly roomTemplateQuote?: (id: RoomTemplateId) => Promise<RoomTemplateCostQuote>;
   readonly onArmRoomTemplate?: () => void;
   /** The numeric route: place exactly one order at the coordinates shown. */
   readonly onPlace: (intent: BuildPanelIntent) => void;

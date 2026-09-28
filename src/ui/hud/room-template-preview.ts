@@ -14,7 +14,7 @@ const NAME_KEYS: Record<RoomTemplateId, LocalizationKey> = {
 };
 
 /** A catalogue of authored plans. Selection previews geometry; it never places an order. */
-export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTemplateTool, onArmMap?: () => void, quote?: (id: RoomTemplateId) => RoomTemplateCostQuote): { readonly openButton: HTMLButtonElement; readonly dialog: HTMLDialogElement } {
+export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTemplateTool, onArmMap?: () => void, quote?: (id: RoomTemplateId) => Promise<RoomTemplateCostQuote>): { readonly openButton: HTMLButtonElement; readonly dialog: HTMLDialogElement } {
   const t = (key: LocalizationKey, parameters?: Record<string, string | number>): string => localizer.format(key, parameters);
   const openButton = element('button', {
     className: 'hud-build__template-open',
@@ -59,6 +59,30 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
   const buttons = new Map<RoomTemplateId, HTMLButtonElement>();
   let selectedId: RoomTemplateId = ROOM_TEMPLATE_IDS[0];
   let mirrorX = false;
+  let quoteRevision = 0;
+  async function refreshQuote(id: RoomTemplateId, revision: number): Promise<void> {
+    if (quote === undefined) return;
+    try {
+      const cost = await quote(id);
+      if (revision !== quoteRevision) return;
+      const materialNames = cost.materials.map(({ itemId, quantity }) => {
+        const item = defaultItemRegistry.getById(itemId);
+        if (item === undefined) throw new Error(`Unknown room-template material: ${itemId}`);
+        return t(HUD_MESSAGE_KEY.templateObjectCount, { name: t(item.nameKey as LocalizationKey), count: localizer.formatNumber(quantity) });
+      });
+      materials.textContent = t(HUD_MESSAGE_KEY.templateMaterials, { materials: materialNames.join(' · ') });
+      catalogueValue.textContent = cost.catalogueCostMinorUnits === undefined
+        ? t(HUD_MESSAGE_KEY.templateCatalogueValueUnavailable)
+        : t(HUD_MESSAGE_KEY.templateCatalogueValue, { total: localizer.formatNumber(cost.catalogueCostMinorUnits) });
+      materials.hidden = false;
+      catalogueValue.hidden = false;
+    } catch {
+      if (revision === quoteRevision) {
+        materials.hidden = true;
+        catalogueValue.hidden = true;
+      }
+    }
+  }
   function select(id: RoomTemplateId): void {
     selectedId = id;
     tool?.select(id, mirrorX);
@@ -73,20 +97,9 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
       'shower-head-brick': HUD_MESSAGE_KEY.templateShower,
     };
     contents.textContent = [...counts].map(([objectId, count]) => t(HUD_MESSAGE_KEY.templateObjectCount, { name: t(objectNames[objectId]!), count })).join(' · ');
-    const cost = quote?.(id);
-    materials.hidden = cost === undefined;
-    catalogueValue.hidden = cost === undefined;
-    if (cost !== undefined) {
-      const materialNames = cost.materials.map(({ itemId, quantity }) => {
-        const item = defaultItemRegistry.getById(itemId);
-        if (item === undefined) throw new Error(`Unknown room-template material: ${itemId}`);
-        return t(HUD_MESSAGE_KEY.templateObjectCount, { name: t(item.nameKey as LocalizationKey), count: localizer.formatNumber(quantity) });
-      });
-      materials.textContent = t(HUD_MESSAGE_KEY.templateMaterials, { materials: materialNames.join(' · ') });
-      catalogueValue.textContent = cost.catalogueCostMinorUnits === undefined
-        ? t(HUD_MESSAGE_KEY.templateCatalogueValueUnavailable)
-        : t(HUD_MESSAGE_KEY.templateCatalogueValue, { total: localizer.formatNumber(cost.catalogueCostMinorUnits) });
-    }
+    materials.hidden = true;
+    catalogueValue.hidden = true;
+    void refreshQuote(id, ++quoteRevision);
     diagram.setAttribute('aria-label', t(HUD_MESSAGE_KEY.templateAriaLabel, { name: t(NAME_KEYS[id]), width: plan.width, height: plan.height }));
     diagram.style.gridTemplateColumns = `repeat(${plan.width}, 1.5rem)`;
     diagram.replaceChildren();
@@ -186,7 +199,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
     choices.append(button);
   }
   select(ROOM_TEMPLATE_IDS[0]);
-  openButton.addEventListener('click', () => { dialog.showModal(); void refreshPlacement(); });
+  openButton.addEventListener('click', () => { dialog.showModal(); void refreshQuote(selectedId, ++quoteRevision); void refreshPlacement(); });
   closeButton.addEventListener('click', () => dialog.close());
   dialog.addEventListener('close', () => openButton.focus());
   return { openButton, dialog };
