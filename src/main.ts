@@ -511,6 +511,10 @@ const refreshObliqueTemplateGhost = (): void => {
 };
 const cameraPlacementActive = (): boolean =>
   (buildTool?.isArmed() ?? false) || (roomTool?.isArmed() ?? false) || (objectTool?.isArmed() ?? false) || (obliqueTemplateTool?.isArmed() ?? false);
+// A square Build gesture keeps the left button; yaw/tilt use keyboard, HUD,
+// or the right button. Other placement modes retain their current angle lock.
+const cameraAnglePlacementBlocked = (): boolean =>
+  (roomTool?.isArmed() ?? false) || (objectTool?.isArmed() ?? false) || (obliqueTemplateTool?.isArmed() ?? false);
 const cameraContexts = () => {
   if (document.querySelector('dialog[open], [role="dialog"][aria-modal="true"]')) return ['modal'] as const;
   if (document.activeElement?.matches('input, textarea, select, [contenteditable="true"]')) return ['text-entry'] as const;
@@ -974,7 +978,7 @@ if (obliquePreviewRequested) {
             y: (event.clientY - bounds.top) * game.canvas.height / bounds.height,
           });
         }, { passive: false });
-        cameraInput = new CameraPoseInputAdapter(obliqueScene, cameraContexts, cameraPlacementActive);
+        cameraInput = new CameraPoseInputAdapter(obliqueScene, cameraContexts, cameraAnglePlacementBlocked);
         cameraHud?.updateCameraPose(obliqueScene.cameraPose);
         refreshCameraControls();
         game.scene.stop('WorldScene');
