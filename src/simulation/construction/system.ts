@@ -636,13 +636,15 @@ export class ConstructionSystem implements SystemRegistration {
       return;
     }
 
-    // A door occupies an edge, but a whole-square wall on either side still
-    // blocks that crossing. Check queued walls too: a door accepted while the
-    // crew builds the wall would otherwise finish as an unusable portal.
+    // A door occupies an edge, but a whole-square wall or furniture on either
+    // side still blocks that crossing. Check queued claims too: accepting the
+    // door while either is being built would leave an unusable portal.
     if (definition.placesDoor !== undefined) {
       const acrossDoor = tileAcrossEdge(order.location, resolveBuildEdge(order));
       if (this.squareWallClaimsTile(order.location) ||
-          (acrossDoor !== undefined && this.squareWallClaimsTile(acrossDoor))) {
+          this.objectClaimsSquare?.(order.location) === true ||
+          (acrossDoor !== undefined && (this.squareWallClaimsTile(acrossDoor) ||
+            this.objectClaimsSquare?.(acrossDoor) === true))) {
         this.setState(order, 'failed');
         order.failReason = 'unbuildable';
         this.orders.set(order.id, order);
