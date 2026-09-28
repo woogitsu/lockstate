@@ -12,6 +12,18 @@
     {
       "assetId": "door.interior.open.full",
       "manifest": "/game-content/oblique-cell-door-open.v1.json"
+    },
+    {
+      "assetId": "fixture.cell.toilet_sink",
+      "manifest": "/game-content/oblique-cell-toilet.v1.json"
+    },
+    {
+      "assetId": "furniture.storage.rack.wooden",
+      "manifest": "/game-content/oblique-cell-storage-rack.v1.json"
+    },
+    {
+      "assetId": "furniture.chair.wooden",
+      "manifest": "/game-content/oblique-cell-chair.v1.json"
     }
   ]
 }
