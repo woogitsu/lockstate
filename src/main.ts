@@ -3243,6 +3243,20 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
            * and is now one transaction.
            */
           const transactionId = `build-${crypto.randomUUID()}`;
+          if (intent.footprint === 'square') {
+            for (const square of intent.squares) {
+              sender.submit({
+                type: 'PlaceBuildOrder',
+                orderId: `order-${crypto.randomUUID()}`,
+                definitionId: intent.definitionId,
+                x: square.x,
+                y: square.y,
+                footprint: 'square',
+                transactionId,
+              });
+            }
+            return;
+          }
           for (const edge of intent.edges) {
             // A throw ends the run here rather than firing eleven more doomed
             // commands at a worker that has already said no -- and it is the

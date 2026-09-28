@@ -134,6 +134,45 @@ describe('a build order carries the tile edge it occupies', () => {
 });
 
 describe('completing an order writes world geometry', () => {
+  it('builds and removes a whole wall square without changing legacy edge walls', () => {
+    const world = loadedWorld();
+    world.setTopEdge(tile(4, 6), WALL_EDGE_NUMERIC_ID);
+    const construction = new ConstructionSystem(world);
+    const kernel = new Kernel();
+    kernel.registerSystem(construction);
+    kernel.setCommandHandler(createConstructionCommandHandler(construction, new RefusalLog(), new SimulationEventLog()));
+    kernel.submitCommand('square-0', 0, 0, packCommand({
+      type: 'PlaceBuildOrder', orderId: 'square-wall-0', definitionId: 'wall-brick',
+      x: 4, y: 6, footprint: 'square', transactionId: 'square-gesture-0',
+    }));
+    runToCompletion(kernel);
+
+    expect(construction.getOrder('square-wall-0')?.state).toBe('completed');
+    expect(world.getSquareStructure(tile(4, 6))).toBe(1);
+    expect(world.getTopEdge(tile(4, 6))).toBe(WALL_EDGE_NUMERIC_ID);
+    expect(world.getLeftEdge(tile(4, 6))).toBe(0);
+
+    const envelope = createSaveEnvelope(envelopeInput(construction.snapshot(), world));
+    const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope)) as unknown);
+    expectOk(decoded, 'the round-tripped square wall');
+    expect(decoded.value.payload.construction.orders[0]).toMatchObject({ id: 'square-wall-0', footprint: 'square' });
+    expect(SparseWorld.fromSnapshot(decoded.value.payload.world).getSquareStructure(tile(4, 6))).toBe(1);
+
+    construction.cancelOrder('square-wall-0');
+    expect(world.getSquareStructure(tile(4, 6))).toBe(0);
+    expect(world.getTopEdge(tile(4, 6))).toBe(WALL_EDGE_NUMERIC_ID);
+  });
+
+  it('refuses a whole-square order over an existing square instead of charging for a duplicate', () => {
+    const world = loadedWorld();
+    world.setSquareStructure(tile(4, 6), 1);
+    const construction = new ConstructionSystem(world);
+    const order = createBuildOrder('square-occupied', 'wall-brick', tile(4, 6), undefined, undefined, 'square');
+    construction.submitOrder(order);
+    expect(order.state).toBe('failed');
+    expect(world.getSquareStructure(tile(4, 6))).toBe(1);
+  });
+
   function placeWall(world: SparseWorld, edge: BuildEdge | undefined, at = tile(4, 6)): ConstructionSystem {
     const construction = new ConstructionSystem(world);
     const kernel = new Kernel();

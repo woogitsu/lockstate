@@ -54,6 +54,19 @@ export class BuildOverlay {
     }
   }
 
+  /** The entire tile is the occupied footprint; the raised face is presentation only. */
+  public updateSquares(squares: readonly { readonly x: number; readonly y: number }[]): void {
+    this.graphics.clear();
+    this.graphics.fillStyle(EDGE_WALL_APPEARANCE.topFill, PLANNED_ALPHA);
+    this.graphics.lineStyle(2, EDGE_WALL_APPEARANCE.outline, 1);
+    for (const square of squares) {
+      const left = square.x * TILE_SIZE_PX;
+      const top = square.y * TILE_SIZE_PX;
+      this.graphics.fillRect(left, top, TILE_SIZE_PX, TILE_SIZE_PX);
+      this.graphics.strokeRect(left + 1, top + 1, TILE_SIZE_PX - 2, TILE_SIZE_PX - 2);
+    }
+  }
+
   public clear(): void {
     this.graphics.clear();
   }

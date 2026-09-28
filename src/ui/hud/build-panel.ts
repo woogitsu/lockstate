@@ -350,7 +350,7 @@ export function buildEdgeChoiceOptions(t: Translate): readonly ChoiceOption[] {
  * which is what makes that pair unable to disagree.
  */
 export function edgeChooserShown(buildable: HudBuildableViewModel | undefined, removing: boolean): boolean {
-  return !removing && buildable?.occupiesEdge === true;
+  return !removing && buildable?.occupiesEdge === true && buildable.definitionId !== 'wall-brick';
 }
 
 /**
@@ -381,6 +381,7 @@ export function edgeChooserShown(buildable: HudBuildableViewModel | undefined, r
  */
 export function armedHintKey(buildable: HudBuildableViewModel | undefined, removing: boolean): LocalizationKey {
   if (removing) return HUD_MESSAGE_KEY.buildRemoveHint;
+  if (buildable?.definitionId === 'wall-brick') return HUD_MESSAGE_KEY.buildArmHintSquare;
   return buildable?.placesObject === true ? HUD_MESSAGE_KEY.buildArmHintObject : HUD_MESSAGE_KEY.buildArmHint;
 }
 

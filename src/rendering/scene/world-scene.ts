@@ -22,10 +22,12 @@ import {
   type EditHistoryPort,
   type ToolStandDownPort,
   type WorldPoint,
+  MAX_RUN_SEGMENTS,
   edgeRunFromDrag,
   edgeTargetsEqual,
   pickEdgeAtWorld,
 } from '../build/edge-picking';
+import { squareRun, type SquareTarget } from '../build/square-picking';
 import type { RenderFeed } from '../feed/render-feed';
 import { ActorLayer } from '../phaser/actor-layer';
 import { registerAtlasTextures } from '../phaser/atlas-textures';
@@ -287,7 +289,9 @@ export class WorldScene extends Phaser.Scene {
   private buildPointerId: number | undefined;
   private buildPress: WorldPoint | undefined;
   private buildSegments: readonly EdgeTarget[] = [];
+  private buildSquares: readonly SquareTarget[] = [];
   private hoveredEdge: EdgeTarget | undefined;
+  private hoveredSquare: SquareTarget | undefined;
 
   private tiles: TileLayer | undefined;
   /**
@@ -760,10 +764,12 @@ export class WorldScene extends Phaser.Scene {
     // Disarming while a run is in progress, or while a ghost is showing,
     // must take the ghost away -- otherwise the panel says the tool is off
     // and the world still shows a wall about to appear.
-    if (!this.isBuildArmed() && (this.buildPointerId !== undefined || this.buildSegments.length > 0)) {
+    if (!this.isBuildArmed() && (this.buildPointerId !== undefined || this.buildSegments.length > 0 || this.buildSquares.length > 0)) {
       this.cancelBuild();
       this.buildSegments = [];
+      this.buildSquares = [];
       this.hoveredEdge = undefined;
+      this.hoveredSquare = undefined;
       this.buildOverlay?.clear();
     }
     if (!this.isRoomArmed() && (this.areaPointerId !== undefined || this.areaRect !== undefined)) {
@@ -1111,6 +1117,11 @@ export class WorldScene extends Phaser.Scene {
     return screenToWorld({ x: pointer.x, y: pointer.y }, this.cameraState());
   }
 
+  private squareAt(point: WorldPoint): SquareTarget {
+    const tile = pickTileAtWorld(point);
+    return { x: tile.tileX, y: tile.tileY };
+  }
+
   private beginBuild(pointer: Phaser.Input.Pointer): void {
     // The *press point* is kept, not the edge it resolved to: a drag can still
     // change which axis the run lies on, and re-deriving from the original
@@ -1118,7 +1129,13 @@ export class WorldScene extends Phaser.Scene {
     // at. See `edgeRunFromDrag`.
     this.buildPointerId = pointer.id;
     this.buildPress = this.worldPointOf(pointer);
-    this.buildSegments = [pickEdgeAtWorld(this.buildPress)];
+    if (this.buildTool?.squareFootprint?.() === true) {
+      this.buildSquares = [this.squareAt(this.buildPress)];
+      this.buildSegments = [];
+    } else {
+      this.buildSegments = [pickEdgeAtWorld(this.buildPress)];
+      this.buildSquares = [];
+    }
     this.paintBuildPreview();
   }
 
@@ -1135,9 +1152,14 @@ export class WorldScene extends Phaser.Scene {
     if (this.releaseMissed(pointer)) {
       this.cancelBuild();
       this.hoveredEdge = undefined;
+      this.hoveredSquare = undefined;
       return false;
     }
-    this.buildSegments = edgeRunFromDrag(this.buildPress, this.worldPointOf(pointer));
+    if (this.buildTool?.squareFootprint?.() === true) {
+      this.buildSquares = squareRun(this.squareAt(this.buildPress), this.squareAt(this.worldPointOf(pointer))).slice(0, MAX_RUN_SEGMENTS);
+    } else {
+      this.buildSegments = edgeRunFromDrag(this.buildPress, this.worldPointOf(pointer));
+    }
     this.paintBuildPreview();
     return true;
   }
@@ -1146,13 +1168,18 @@ export class WorldScene extends Phaser.Scene {
   private commitBuild(pointer: Phaser.Input.Pointer): boolean {
     if (this.buildPointerId !== pointer.id) return false;
     const segments = this.buildSegments;
+    const squares = this.buildSquares;
     this.buildPointerId = undefined;
     this.buildPress = undefined;
     this.buildSegments = [];
+    this.buildSquares = [];
     this.hoveredEdge = undefined;
+    this.hoveredSquare = undefined;
     this.buildOverlay?.clear();
     this.buildTool?.target?.(undefined);
-    if (segments.length > 0) this.buildTool?.place(segments);
+    this.buildTool?.targetSquares?.(undefined);
+    if (squares.length > 0) this.buildTool?.placeSquares?.(squares);
+    else if (segments.length > 0) this.buildTool?.place(segments);
     return true;
   }
 
@@ -1179,8 +1206,10 @@ export class WorldScene extends Phaser.Scene {
     this.buildPointerId = undefined;
     this.buildPress = undefined;
     this.buildSegments = [];
+    this.buildSquares = [];
     this.buildOverlay?.clear();
     this.buildTool?.target?.(undefined);
+    this.buildTool?.targetSquares?.(undefined);
   }
 
   /**
@@ -1451,16 +1480,33 @@ export class WorldScene extends Phaser.Scene {
   }
 
   private previewHover(pointer: Phaser.Input.Pointer): void {
+    if (this.buildTool?.squareFootprint?.() === true) {
+      const square = this.squareAt(this.worldPointOf(pointer));
+      if (this.hoveredSquare?.x === square.x && this.hoveredSquare?.y === square.y) return;
+      this.hoveredSquare = square;
+      this.hoveredEdge = undefined;
+      this.buildSquares = [square];
+      this.buildSegments = [];
+      this.paintBuildPreview();
+      return;
+    }
     const edge = pickEdgeAtWorld(this.worldPointOf(pointer));
     if (edgeTargetsEqual(edge, this.hoveredEdge)) return;
     this.hoveredEdge = edge;
+    this.hoveredSquare = undefined;
     this.buildSegments = [edge];
+    this.buildSquares = [];
     this.paintBuildPreview();
   }
 
   private paintBuildPreview(): void {
-    this.buildOverlay?.update(this.buildSegments);
-    this.buildTool?.target?.(this.buildSegments);
+    if (this.buildTool?.squareFootprint?.() === true) {
+      this.buildOverlay?.updateSquares(this.buildSquares);
+      this.buildTool.targetSquares?.(this.buildSquares);
+    } else {
+      this.buildOverlay?.update(this.buildSegments);
+      this.buildTool?.target?.(this.buildSegments);
+    }
   }
 
   /**

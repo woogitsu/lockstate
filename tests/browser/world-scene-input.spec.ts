@@ -1,4 +1,5 @@
 import { expect, test, type CDPSession, type Page } from './network-changed-fixture';
+import { worldToTile } from '../../src/rendering/tile-metrics';
 
 /**
  * Real-browser verification for the keyboard listeners `WorldScene` registers on
@@ -367,6 +368,27 @@ test.describe('the world scene discrete keys', () => {
     const runs = await page.evaluate(() => window.lockstateWorldSceneHarness!.placedRuns());
     expect(runs.length).toBe(1);
     expect(runs[0]!.length).toBeGreaterThan(1);
+  });
+
+  test('a wall drag targets and commits full squares at the pointer coordinates', async ({ page }) => {
+    await openHarness(page);
+    await page.evaluate(() => window.lockstateWorldSceneHarness!.armSquareBuildTool(true));
+    const box = (await page.locator('canvas').boundingBox())!;
+    const start = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+    const end = { x: start.x + 130, y: start.y };
+    const startWorld = await page.evaluate((point) => window.lockstateWorldSceneHarness!.worldPointAt(point), start);
+    const origin = { x: worldToTile(startWorld.x), y: worldToTile(startWorld.y) };
+
+    await page.mouse.move(start.x, start.y);
+    await page.mouse.down({ button: 'left' });
+    await page.mouse.move(end.x, end.y, { steps: 5 });
+    const preview = await page.evaluate(() => window.lockstateWorldSceneHarness!.targetedSquareRun());
+    expect(preview?.[0]).toEqual(origin);
+    expect(preview!.length).toBeGreaterThan(1);
+    await page.mouse.up({ button: 'left' });
+
+    expect(await page.evaluate(() => window.lockstateWorldSceneHarness!.placedSquareRuns())).toEqual([preview]);
+    expect(await page.evaluate(() => window.lockstateWorldSceneHarness!.placedRuns())).toEqual([]);
   });
 
   test('leaves the armed tool\'s hover ghost alone when the window loses focus, because there is no run to abandon (#200, #516)', async ({

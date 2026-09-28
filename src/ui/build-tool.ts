@@ -208,6 +208,27 @@ export class BuildTool
     return this.definitionId;
   }
 
+  public squareFootprint(): boolean {
+    return this.definitionId === 'wall-brick';
+  }
+
+  public targetSquares(squares: readonly { readonly x: number; readonly y: number }[] | undefined): void {
+    const first = squares?.[0];
+    this.readout?.(first === undefined ? undefined : { x: first.x, y: first.y, segments: squares!.length });
+  }
+
+  public placeSquares(squares: readonly { readonly x: number; readonly y: number }[]): void {
+    if (!this.armed || this.definitionId !== 'wall-brick' || squares.length === 0) return;
+    const seen = new Set<string>();
+    const unique = squares.filter((square) => {
+      const key = `${square.x},${square.y}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+    this.orders?.({ definitionId: this.definitionId, footprint: 'square', squares: unique });
+  }
+
   /**
    * The pointer moved. Summarised into the one line the panel shows, rather
    * than handed over as a list: the panel is a readout of where the wall will
