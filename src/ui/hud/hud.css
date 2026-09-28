@@ -7083,6 +7083,19 @@
  * still the middle grid track and receives pointer input through blank HUD
  * chrome. Smaller windows retain the existing responsive layout. */
 @media (min-width: 1920px) and (min-height: 1080px) {
+  /* The detached Alerts card is a separate task from the minimap. Give it
+   * the same 8px breathing room as the other corner groups instead of
+   * letting its border touch the map card and read as one unfinished box. */
+  .hud[data-layout-navigation-placement='rail'] .hud__corner {
+    gap: var(--space-2);
+  }
+  .hud[data-layout-navigation-placement='rail'] .hud-zoom,
+  .hud[data-layout-navigation-placement='rail'] .hud-camera-angle {
+    /* The corner now owns the vertical rhythm; avoid double gaps where the
+     * existing zoom and angle margins already supplied the same spacing. */
+    margin-bottom: 0;
+  }
+
   .hud-strip {
     row-gap: 0;
     background: var(--surface-sunken);

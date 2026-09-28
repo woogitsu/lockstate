@@ -196,3 +196,24 @@ test('Full HD browser zoom keeps oblique camera controls reachable at 175% and 2
   await minimapToggle.click();
   await expect(minimapToggle).toHaveAttribute('aria-expanded', 'true');
 });
+
+test('Full HD minimap and detached alerts keep their visual gutter at the default scale', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/?oblique-preview=1');
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await expect(page.locator('body[data-oblique-preview="ready"]')).toBeVisible();
+  await page.getByRole('button', { name: 'Build', exact: true }).click();
+  await page.locator('.hud-minimap .ui-panel__toggle').click();
+
+  const minimap = page.locator('.hud-minimap');
+  const alerts = page.locator('.hud__corner > .hud-alerts--detached');
+  await expect(minimap).toBeVisible();
+  await expect(alerts).toBeVisible();
+  const gap = await page.evaluate(() => {
+    const minimap = document.querySelector('.hud-minimap')!.getBoundingClientRect();
+    const alerts = document.querySelector('.hud__corner > .hud-alerts--detached')!.getBoundingClientRect();
+    return alerts.top - minimap.bottom;
+  });
+  await page.screenshot({ path: testInfo.outputPath('camera-corner-default-scale.png') });
+  expect(gap, 'the detached Alerts card should have the 8px corner spacing token below the minimap').toBeGreaterThanOrEqual(8);
+});
