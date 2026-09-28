@@ -26,6 +26,9 @@ export interface ObliqueWorldHarness {
   setRotationEnabled(enabled: boolean): void;
   hovered(): { readonly tileX: number; readonly tileY: number } | undefined;
   tileAtScreen(point: Point): { readonly tileX: number; readonly tileY: number };
+  cameraTargetAndZoom(): { readonly x: number; readonly y: number; readonly zoom: number };
+  stepCameraZoom(direction: 'in' | 'out'): void;
+  navigateToMinimapPoint(fx: number, fy: number): boolean;
 }
 
 declare global {
@@ -119,6 +122,9 @@ window.lockstateObliqueWorldHarness = {
     const ground = screenToGround(point, scene.cameraPose);
     return { tileX: worldToTile(ground.x), tileY: worldToTile(ground.y) };
   },
+  cameraTargetAndZoom: () => ({ ...scene.cameraPose.target, zoom: scene.cameraPose.zoom }),
+  stepCameraZoom: (direction) => scene.stepCameraZoom(direction),
+  navigateToMinimapPoint: (fx, fy) => scene.navigateToMinimapPoint(fx, fy),
   async moveActorToTile(tileX) {
     actorTileX = tileX;
     await new Promise<void>((resolve) => { game.events.once(Phaser.Core.Events.POST_RENDER, () => resolve()); });

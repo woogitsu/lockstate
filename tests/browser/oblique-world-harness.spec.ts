@@ -38,6 +38,25 @@ test('build mode blocks right-drag turning and the HUD observes allowed turns', 
   expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.poseChangeCount())).toBeGreaterThan(countBefore);
 });
 
+test('angled zoom and minimap navigation act on the visible scene', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/tests/browser/oblique-world-harness.html');
+  await page.waitForFunction(() => window.lockstateObliqueWorldHarness !== undefined);
+  await page.evaluate(() => window.lockstateObliqueWorldHarness.ready());
+  const before = await page.evaluate(() => window.lockstateObliqueWorldHarness.cameraTargetAndZoom());
+  await page.evaluate(() => window.lockstateObliqueWorldHarness.stepCameraZoom('in'));
+  const zoomed = await page.evaluate(() => window.lockstateObliqueWorldHarness.cameraTargetAndZoom());
+  expect(zoomed.zoom).toBeGreaterThan(before.zoom);
+  expect({ x: zoomed.x, y: zoomed.y }).toEqual({ x: before.x, y: before.y });
+  await page.evaluate(() => window.lockstateObliqueWorldHarness.stepCameraZoom('out'));
+  expect((await page.evaluate(() => window.lockstateObliqueWorldHarness.cameraTargetAndZoom())).zoom).toBeCloseTo(before.zoom);
+  await expect.poll(() => page.evaluate(() => window.lockstateObliqueWorldHarness.navigateToMinimapPoint(1, 1))).toBe(true);
+  const moved = await page.evaluate(() => window.lockstateObliqueWorldHarness.cameraTargetAndZoom());
+  expect(moved.x).toBeGreaterThan(before.x);
+  expect(moved.y).toBeGreaterThan(before.y);
+  expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.navigateToMinimapPoint(Number.NaN, 0))).toBe(false);
+});
+
 test('real render feed cell keeps one build square under the cursor while the scene turns', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/tests/browser/oblique-world-harness.html');
