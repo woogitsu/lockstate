@@ -5,7 +5,9 @@ import { TILE_SIZE_PX, worldToTile } from '../tile-metrics';
 import { VOID_COLOR, ZONING_TINT_ALPHA, UNOWNED_SHADE_ALPHA, UNOWNED_SHADE_COLOR } from '../world/appearance';
 import {
   changeObliquePoseAtScreenPoint,
+  panObliqueCameraByScreenDelta,
   screenToGround,
+  zoomObliqueCameraAtScreenPoint,
   type ObliqueCameraState,
 } from '../camera/oblique-projection';
 import { obliqueDepthForAnchor, projectedTileQuad, type TileQuad } from '../camera/oblique-geometry';
@@ -260,11 +262,25 @@ export class ObliqueWorldScene extends Phaser.Scene {
   }
 
   /** The visible zoom controls must change the active angled camera, not the dormant top-down scene. */
-  public stepCameraZoom(direction: 'in' | 'out'): void {
+  public stepCameraZoom(direction: 'in' | 'out', pivot?: Point): void {
     const factor = direction === 'in' ? ZOOM_STEP : 1 / ZOOM_STEP;
     const zoom = Math.min(ZOOM_BOUNDS.max, Math.max(ZOOM_BOUNDS.min, this.pose.zoom * factor));
     if (zoom === this.pose.zoom) return;
-    this.pose = { ...this.pose, zoom };
+    this.pose = zoomObliqueCameraAtScreenPoint(
+      this.pose,
+      pivot ?? { x: this.pose.viewport.width / 2, y: this.pose.viewport.height / 2 },
+      zoom,
+    );
+    this.poseRevision += 1;
+    this.onPoseChanged?.(this.pose);
+    this.emitGroundHover();
+    this.repaint();
+  }
+
+  /** Move the angled viewport in screen axes; mouse grabbing supplies the inverse drag. */
+  public stepCameraPan(screenDx: number, screenDy: number): void {
+    if (!Number.isFinite(screenDx) || !Number.isFinite(screenDy) || (screenDx === 0 && screenDy === 0)) return;
+    this.pose = panObliqueCameraByScreenDelta(this.pose, screenDx, screenDy);
     this.poseRevision += 1;
     this.onPoseChanged?.(this.pose);
     this.emitGroundHover();

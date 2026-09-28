@@ -106,6 +106,26 @@ export function changeObliquePoseAtScreenPoint(
   };
 }
 
+/** Zoom about the pointer so the ground square beneath it does not slide. */
+export function zoomObliqueCameraAtScreenPoint(camera: ObliqueCameraState, screen: Point, zoom: number): ObliqueCameraState {
+  const before = screenToGround(screen, camera);
+  const candidate = { ...camera, zoom };
+  const after = screenToGround(screen, candidate);
+  return {
+    ...candidate,
+    target: { x: camera.target.x + before.x - after.x, y: camera.target.y + before.y - after.y },
+  };
+}
+
+/** Move the viewport in screen axes; callers dragging the map pass the inverse pointer delta. */
+export function panObliqueCameraByScreenDelta(camera: ObliqueCameraState, screenDx: number, screenDy: number): ObliqueCameraState {
+  const target = screenToGround({
+    x: camera.viewport.width / 2 + screenDx,
+    y: camera.viewport.height / 2 + screenDy,
+  }, camera);
+  return { ...camera, target };
+}
+
 /** Preserve the exact top-down framing when the oblique renderer first mounts. */
 export function obliqueFromTopDown(camera: CameraState): ObliqueCameraState {
   return {
