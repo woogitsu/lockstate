@@ -977,6 +977,14 @@ records with a named entry apiece.
 > for the refusal to leave standing. The sentence under the table that calls
 > the undo pair *"a key chord and nothing else"* is history in the same way.
 
+> **AMENDED FOR ROOM PLANS, 2026-09-28.** The Place room plan button submits
+> `PlaceRoomTemplate` through `RoomTemplateTool`; the worker can reject it with
+> existing `build.*` reasons after its read-only preflight. This adds one
+> simulation triple and one pointer press: **35 triples**, **33** pointer
+> triples, **19** simulation and **16** host, **24** distinct presses, **32**
+> owed overall or **30** pointer-only. The earlier figures remain the count
+> before this command existed.
+
 **Eight triples are driven and only three are discharged, and the gap is the
 useful part of this pass.** Five specs reach a real refusal through a real
 press and assert the sentence, the band, the alerts row, the marked control —
