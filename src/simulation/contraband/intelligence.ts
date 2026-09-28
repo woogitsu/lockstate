@@ -162,6 +162,13 @@ export class IntelligenceLedger {
     let maxSequence = 0;
     for (const [id, record] of snapshot) {
       this.records.set(id, { ...record });
+      const numericSuffix = Number(id.slice('intel.'.length));
+      if (Number.isFinite(numericSuffix)) maxSequence = Math.max(maxSequence, numericSuffix);
+    }
+    // Save rows can repeat an id. The record map keeps the final row, so the
+    // target index must be derived from those same surviving records.
+    for (const id of [...this.records.keys()].sort()) {
+      const record = this.records.get(id)!;
       const key = targetKey(record.targetKind, record.targetId);
       let bucket = this.idsByTargetKey.get(key);
       if (bucket === undefined) {
@@ -169,8 +176,6 @@ export class IntelligenceLedger {
         this.idsByTargetKey.set(key, bucket);
       }
       bucket.add(id);
-      const numericSuffix = Number(id.slice('intel.'.length));
-      if (Number.isFinite(numericSuffix)) maxSequence = Math.max(maxSequence, numericSuffix);
     }
     this.sequence = sequence === undefined ? maxSequence : Math.max(maxSequence, sequence);
   }
