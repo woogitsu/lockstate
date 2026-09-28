@@ -835,7 +835,13 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    * already draws from, so **nothing about either binding is persisted** and
    * `ContainerMaterialsProvider` and `ConstructionSystem` are untouched.
    */
-  const deliveryCarryRoute = new DeliveryBayCarryRoute(prisoners.roomInstances, containers, jobs, CONSTRUCTION_MATERIALS_CONTAINER_ID);
+  const deliveryCarryRoute = new DeliveryBayCarryRoute(prisoners.roomInstances, containers, jobs,
+    CONSTRUCTION_MATERIALS_CONTAINER_ID, () => {
+      for (let index = 0; index <= prisoners.entityStore.maxActiveIndex; index += 1) {
+        if (prisoners.entityStore.isIndexAlive(index)) return true;
+      }
+      return false;
+    });
   const procurement = new ProcurementSystem(treasury, constructionMaterials, deliveryCarryRoute);
   /*
    * The treasury is the third argument since #703 ruling 12: an order is funded
