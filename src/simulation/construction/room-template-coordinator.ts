@@ -141,7 +141,7 @@ export class RoomTemplateCoordinator implements SystemRegistration {
         const outcome = this.roomZoning.zone({
           roomCatalogId: zone.roomId,
           x: zone.x, y: zone.y, width: zone.width, height: zone.height,
-        }, context.tick);
+        }, context.tick, request.sequence);
         if (outcome.kind === 'refused') {
           // A row is one gesture: a later room refusing must not leave the
           // earlier members designated while its pending obligation vanishes.

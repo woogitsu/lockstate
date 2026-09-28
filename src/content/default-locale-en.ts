@@ -1353,6 +1353,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.alert.refusal.zone.invalid-area': 'The room was not zoned — that area is not a valid rectangle.',
   'hud.alert.refusal.zone.out-of-bounds': 'The room was not zoned — part of that area is outside the map.',
   'hud.alert.refusal.zone.overlaps-existing-room': 'The room was not zoned — it overlaps a room that is already there.',
+  'hud.alert.refusal.zone.overlaps-pending-template': 'The room was not zoned — a room plan is being built on this area.',
   'hud.alert.refusal.zone.unknown-room-type': 'The room was not zoned — that is not a room type this prison knows.',
   'hud.alert.refusal.zone.unowned-land': 'The room was not zoned — you do not own all of that land.',
   // The authored minimum, refused for the first time. Every one of the 18 room

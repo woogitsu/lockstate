@@ -1508,6 +1508,7 @@ export const REFUSAL_REASONS = [
   'zone.not-enclosed',
   'zone.out-of-bounds',
   'zone.overlaps-existing-room',
+  'zone.overlaps-pending-template',
   'zone.unknown-room-type',
   'zone.unowned-land',
 ] as const;

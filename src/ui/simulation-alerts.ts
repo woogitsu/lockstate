@@ -76,6 +76,7 @@ const REFUSAL_LABEL_KEYS: Readonly<Record<RefusalReason, LocalizationKey>> = {
   'zone.not-enclosed': 'hud.alert.refusal.zone.not-enclosed',
   'zone.out-of-bounds': 'hud.alert.refusal.zone.out-of-bounds',
   'zone.overlaps-existing-room': 'hud.alert.refusal.zone.overlaps-existing-room',
+  'zone.overlaps-pending-template': 'hud.alert.refusal.zone.overlaps-pending-template',
   'zone.unknown-room-type': 'hud.alert.refusal.zone.unknown-room-type',
   'zone.unowned-land': 'hud.alert.refusal.zone.unowned-land',
   'unzone.invalid-area': 'hud.alert.refusal.unzone.invalid-area',

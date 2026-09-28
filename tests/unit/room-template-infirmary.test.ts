@@ -53,4 +53,9 @@ it.each([false, true])('places a complete Infirmary within the full 6×6 footpri
   })?.requirementSummary).toEqual({
     total: 4, objectRequirements: 2, satisfiedByCapability: 2, missingCapability: 0, notEvaluated: 2,
   });
+  const afterCompletion = restoreSimulationRuntime(captureSessionSnapshot(restored)).runtime;
+  expect(afterCompletion.placedObjects.getSnapshot()).toHaveLength(2);
+  expect(projectRoomDetail(afterCompletion.prisoners, 'room.infirmary:6:6', {
+    placedObjects: afterCompletion.placedObjects,
+  })?.requirementSummary.missingCapability).toBe(0);
 }, 120_000);
