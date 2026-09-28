@@ -1,14 +1,14 @@
-import { expect, it } from 'vitest';
-import { ROOM_TEMPLATE_IDS, instantiateRoomTemplate } from '../../src/content/room-template-catalog';
+﻿import { expect, it } from 'vitest';
+import { ROOM_TEMPLATE_IDS, instantiateRoomTemplate, roomTemplateObjectSquares } from '../../src/content/room-template-catalog';
 import { defaultObjectRegistry } from '../../src/content/object-catalog';
 import { BUILDABLE_REGISTRY } from '../../src/simulation/construction/definition';
 
 it.each(ROOM_TEMPLATE_IDS.flatMap((id) => [
   { id, mirrorX: false }, { id, mirrorX: true },
-]))('keeps every $id furnishing off its shell (mirrorX=$mirrorX)', ({ id, mirrorX }) => {
+]))('paints every occupied $id furnishing square inside its room (mirrorX=$mirrorX)', ({ id, mirrorX }) => {
   const plan = instantiateRoomTemplate(id, { x: 10, y: 10 }, { mirrorX });
   const shell = new Set([...plan.wallSquares, ...plan.doorSquares].map(({ x, y }) => `${x}:${y}`));
-  const furnished = new Set<string>();
+  const expected = new Set<string>();
   for (const object of plan.objects) {
     const buildable = BUILDABLE_REGISTRY.get(object.buildableId);
     const definition = defaultObjectRegistry.getById(buildable?.placesObjectId ?? '');
@@ -20,9 +20,10 @@ it.each(ROOM_TEMPLATE_IDS.flatMap((id) => [
         const key = `${x}:${y}`;
         expect(shell.has(key), `${id} ${mirrorX ? 'mirrored' : 'normal'} ${object.buildableId} at ${key}`).toBe(false);
         expect(plan.zones.some((zone) => x >= zone.x && x < zone.x + zone.width && y >= zone.y && y < zone.y + zone.height), `${id} ${object.buildableId} outside a room at ${key}`).toBe(true);
-        expect(furnished.has(key), `${id} objects overlap at ${key}`).toBe(false);
-        furnished.add(key);
+        expect(expected.has(key), `${id} objects overlap at ${key}`).toBe(false);
+        expected.add(key);
       }
     }
   }
+  expect(new Set(roomTemplateObjectSquares(plan).map(({ x, y }) => `${x}:${y}`))).toEqual(expected);
 });

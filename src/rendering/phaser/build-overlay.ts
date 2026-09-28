@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import type { EdgeTarget } from '../build/edge-picking';
-import type { RoomTemplatePlan } from '../../content/room-template-catalog';
+import { roomTemplateObjectSquares, type RoomTemplatePlan } from '../../content/room-template-catalog';
 import type { TemplateGhostVerdict } from '../build/template-ghost';
 import { TILE_SIZE_PX } from '../tile-metrics';
 import { EDGE_WALL_APPEARANCE, EDGE_WALL_THICKNESS_TILES, PLANNED_ALPHA } from '../world/appearance';
@@ -75,7 +75,7 @@ export class BuildOverlay {
     const blocked = verdict?.ok === false;
     const wall = new Set(plan.wallSquares.map(({ x, y }) => `${x},${y}`));
     const door = new Set(plan.doorSquares.map(({ x, y }) => `${x},${y}`));
-    const objects = new Set(plan.objects.map(({ x, y }) => `${x},${y}`));
+    const objects = new Set(roomTemplateObjectSquares(plan).map(({ x, y }) => `${x},${y}`));
     for (let y = plan.origin.y; y < plan.origin.y + plan.height; y += 1) {
       for (let x = plan.origin.x; x < plan.origin.x + plan.width; x += 1) {
         const key = `${x},${y}`;
