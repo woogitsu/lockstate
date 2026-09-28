@@ -22,6 +22,10 @@ describe('room template session command', () => {
       ok: false, reason: 'object-occupied', tile: tile(10, 10),
     });
     expect(runtime.construction.allOrders()).toHaveLength(1);
+    const restored = restoreSimulationRuntime(captureSessionSnapshot(runtime)).runtime;
+    expect(restored.roomTemplates.preflight(plan)).toEqual({
+      ok: false, reason: 'object-occupied', tile: tile(10, 10),
+    });
   });
   it('reports the first unowned square through the existing construction refusal channel', () => {
     const runtime = createNewSimulationRuntime(72);

@@ -51,7 +51,7 @@ test('Full HD room plan blocks the non-anchor square of an in-flight desk', asyn
   const dialog = page.getByRole('dialog', { name: 'Room plans' });
   await dialog.getByRole('spinbutton', { name: 'Plan origin X' }).fill('10');
   await dialog.getByRole('spinbutton', { name: 'Plan origin Y' }).fill('10');
-  await expect(dialog.getByRole('status')).toContainText('(10, 10)');
+  await expect(dialog.getByRole('status')).toContainText('blocked');
   await expect.poll(() => page.evaluate(() => {
     const messages = (window as unknown as { lockstateFromWorker: Array<{
       kind: string;
@@ -62,4 +62,18 @@ test('Full HD room plan blocks the non-anchor square of an in-flight desk', asyn
   })).toEqual({ ok: false, reason: 'object-occupied', tile: { x: 10, y: 10 } });
   await expect(dialog.getByRole('button', { name: 'Place room plan' })).toBeDisabled();
   expect((await sentCommands(page)).filter((command) => command.type === 'PlaceRoomTemplate')).toEqual([]);
+
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Pause' }).click();
+  await page.getByRole('button', { name: 'Save now' }).click();
+  await expect(page.locator('.save-panel__status')).toContainText('Saved (generation ');
+  await page.reload();
+  await page.locator('.save-panel__item button').filter({ hasText: 'Load' }).first().click();
+  await page.getByRole('button', { name: 'Build', exact: true }).click();
+  await page.getByRole('button', { name: 'Room plans', exact: true }).click();
+  const restored = page.getByRole('dialog', { name: 'Room plans' });
+  await restored.getByRole('spinbutton', { name: 'Plan origin X' }).fill('10');
+  await restored.getByRole('spinbutton', { name: 'Plan origin Y' }).fill('10');
+  await expect(restored.getByRole('status')).toContainText('blocked');
+  await expect(restored.getByRole('button', { name: 'Place room plan' })).toBeDisabled();
 });
