@@ -7109,9 +7109,10 @@
     scrollbar-color: var(--border-strong) var(--surface-sunken);
   }
 
-  .hud-build__selected-summary { display: none; }
-
-  :root[data-ui-scale-step='200'] .hud[data-active-tab='build'] .hud-build__catalogue .ui-section__header {
+  /* At Full HD the catalogue can scroll the selected row out of sight while
+   * the map action stays pinned below it. Keep the selected name in the
+   * existing 44px header at every scale, without adding a new panel row. */
+  .hud[data-active-tab='build'] .hud-build__catalogue .ui-section__header {
     position: relative;
     flex-wrap: wrap;
     column-gap: var(--space-2);
@@ -7120,7 +7121,7 @@
     padding-block: 0;
   }
 
-  :root[data-ui-scale-step='200'] .hud[data-active-tab='build'] .hud-build__selected-summary {
+  .hud[data-active-tab='build'] .hud-build__selected-summary {
     display: block;
     flex: 0 0 100%;
     color: var(--accent);
