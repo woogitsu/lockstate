@@ -255,6 +255,11 @@ because `tile-layer.ts` draws an object frame flat into the rectangle its
 footprint reserves: a perspective render would put a vanishing point inside a
 sprite drawn next to a copy of itself.
 
+For a single-collection review, pass `--only <asset-id>` together with
+`--output <scratch-directory>`. A partial render refuses the canonical
+`assets/rendered/environment/` directory: its sidecar contains only the
+selected entries and would otherwise replace the full-batch manifest.
+
 **A frame carries its object's declared footprint aspect exactly.**
 `tests/unit/environment-art.test.ts` checks two ratios within 3% -- the source
 crop against the packed frame, and the packed frame against the footprint -- and

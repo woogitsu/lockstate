@@ -1,5 +1,6 @@
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
@@ -66,6 +67,45 @@ const versionMatches = blender !== undefined && blender.version[0] === pinned[0]
 const canRunLive = blender !== undefined && versionMatches;
 
 describe('environment-object render determinism', () => {
+  it('keeps the partial-output refusal before the first output write', () => {
+    const source = readFileSync(RENDERER_PATH, 'utf8');
+    const refusal = source.indexOf('if args.only and output.resolve() == DEFAULT_OUTPUT.resolve():');
+    const firstWrite = source.indexOf('output.mkdir(parents=True, exist_ok=True)');
+    expect(refusal).toBeGreaterThan(-1);
+    expect(firstWrite).toBeGreaterThan(refusal);
+    expect(source.slice(refusal, firstWrite)).toContain('raise SystemExit(');
+  });
+
+  it.skipIf(!canRunLive)('refuses a partial render into the canonical output directory', () => {
+    const scratch = mkdtempSync(join(tmpdir(), 'lockstate-partial-render-'));
+    try {
+      const scriptDir = join(scratch, 'tooling/blender');
+      const sceneDir = join(scratch, 'assets/source/blender');
+      const outputDir = join(scratch, 'assets/rendered/environment');
+      for (const directory of [scriptDir, sceneDir, outputDir]) mkdirSync(directory, { recursive: true });
+      const copiedRenderer = join(scriptDir, 'render-environment-objects.py');
+      const copiedScene = join(sceneDir, 'environment.mvp.catalog.blend');
+      copyFileSync(RENDERER_PATH, copiedRenderer);
+      copyFileSync(SHARED_MODULE_PATH, join(scriptDir, 'pipeline_common.py'));
+      copyFileSync(join(REPOSITORY_ROOT, 'assets/source/blender/environment.mvp.catalog.blend'), copiedScene);
+      const sidecar = join(outputDir, 'environment-objects.render.json');
+      const original = '{"schemaVersion":1,"entries":[{"assetId":"keep-the-whole-batch"}]}\n';
+      writeFileSync(sidecar, original);
+
+      const result = spawnSync(blender!.command, [
+        '-b', copiedScene, '--factory-startup', '--python', copiedRenderer,
+        '--', '--only', 'door.interior.variants',
+      ], { cwd: scratch, encoding: 'utf8', timeout: 90_000 });
+      const output = `${result.stdout ?? ''}${result.stderr ?? ''}`;
+      expect(result.status, output).not.toBe(0);
+      expect(output).toMatch(/--only.*--output/u);
+      expect(readFileSync(sidecar, 'utf8'), 'a partial render must not replace the full-batch sidecar').toBe(original);
+    } finally {
+      // This path came from mkdtempSync inside tmpdir above, not from CLI input.
+      rmSync(scratch, { recursive: true, force: true });
+    }
+  }, 120_000);
+
   it.skipIf(!canRunLive)(
     'produces byte-identical output from two independent runs of one collection',
     () => {
