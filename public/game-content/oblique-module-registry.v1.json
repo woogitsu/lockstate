@@ -22,6 +22,14 @@
       "manifest": "/game-content/oblique-cell-door-open.v1.json"
     },
     {
+      "assetId": "door.interior.open.west.full",
+      "manifest": "/game-content/oblique-cell-door-west-full.v1.json"
+    },
+    {
+      "assetId": "door.interior.open.west.cutaway",
+      "manifest": "/game-content/oblique-cell-door-west-cutaway.v1.json"
+    },
+    {
       "assetId": "fixture.cell.toilet_sink",
       "manifest": "/game-content/oblique-cell-toilet.v1.json"
     },
