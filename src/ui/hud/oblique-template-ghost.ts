@@ -2,6 +2,7 @@ import { roomTemplateObjectSquares, type RoomTemplatePlan } from '../../content/
 import type { RoomTemplateCostQuote, RoomTemplatePreflight } from '../room-template-tool';
 import type { HudLocalizer } from './view-model';
 import { HUD_MESSAGE_KEY } from './messages';
+import { ROOM_TEMPLATE_NAME_KEYS } from './room-template-preview';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -28,10 +29,12 @@ export function createObliqueTemplateGhost(localizer: HudLocalizer): ObliqueTemp
   const notice = document.createElement('div');
   notice.className = 'oblique-template-ghost__notice';
   notice.setAttribute('role', 'status');
+  const identity = document.createElement('strong');
+  identity.className = 'oblique-template-ghost__identity';
   const status = document.createElement('span');
   const cost = document.createElement('span');
   cost.className = 'oblique-template-ghost__cost';
-  notice.append(status, cost);
+  notice.append(identity, status, cost);
   root.append(svg, notice);
 
   return {
@@ -41,6 +44,9 @@ export function createObliqueTemplateGhost(localizer: HudLocalizer): ObliqueTemp
       const state = verdict === undefined ? 'pending' : verdict.ok ? 'clear' : 'blocked';
       root.dataset.verdict = state;
       notice.setAttribute('aria-busy', verdict === undefined ? 'true' : 'false');
+      identity.textContent = localizer.format(HUD_MESSAGE_KEY.templateAriaLabel, {
+        name: localizer.format(ROOM_TEMPLATE_NAME_KEYS[plan.id]), width: plan.width, height: plan.height,
+      });
       status.textContent = verdict === undefined ? '' : localizer.format(verdict.ok
         ? HUD_MESSAGE_KEY.templateReady
         : verdict.reason === 'unowned-land' ? HUD_MESSAGE_KEY.templateUnownedLand : HUD_MESSAGE_KEY.templateBlocked);
@@ -68,6 +74,7 @@ export function createObliqueTemplateGhost(localizer: HudLocalizer): ObliqueTemp
     clear(): void {
       root.hidden = true;
       svg.replaceChildren();
+      identity.textContent = '';
       status.textContent = '';
       cost.textContent = '';
     },

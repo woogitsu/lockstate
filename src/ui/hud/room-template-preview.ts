@@ -6,7 +6,7 @@ import type { HudLocalizer } from './view-model';
 import { HUD_MESSAGE_KEY } from './messages';
 import type { RoomTemplateCostQuote, RoomTemplateTool } from '../room-template-tool';
 
-const NAME_KEYS: Record<RoomTemplateId, LocalizationKey> = {
+export const ROOM_TEMPLATE_NAME_KEYS: Record<RoomTemplateId, LocalizationKey> = {
   'cell-basic': HUD_MESSAGE_KEY.templateCellBasic,
   'cell-large': HUD_MESSAGE_KEY.templateCellLarge,
   'shower-room': HUD_MESSAGE_KEY.templateShowerRoom,
@@ -107,7 +107,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
     materials.hidden = true;
     catalogueValue.hidden = true;
     void refreshQuote(id, ++quoteRevision);
-    diagram.setAttribute('aria-label', t(HUD_MESSAGE_KEY.templateAriaLabel, { name: t(NAME_KEYS[id]), width: plan.width, height: plan.height }));
+    diagram.setAttribute('aria-label', t(HUD_MESSAGE_KEY.templateAriaLabel, { name: t(ROOM_TEMPLATE_NAME_KEYS[id]), width: plan.width, height: plan.height }));
     diagram.style.gridTemplateColumns = `repeat(${plan.width}, 1.5rem)`;
     diagram.replaceChildren();
     const wall = new Set(plan.wallSquares.map(({ x, y }) => `${x},${y}`));
@@ -208,7 +208,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
     }));
   }
   for (const id of ROOM_TEMPLATE_IDS) {
-    const button = element('button', { text: t(NAME_KEYS[id]), attributes: { type: 'button' } });
+    const button = element('button', { text: t(ROOM_TEMPLATE_NAME_KEYS[id]), attributes: { type: 'button' } });
     button.addEventListener('click', () => select(id));
     buttons.set(id, button);
     choices.append(button);
