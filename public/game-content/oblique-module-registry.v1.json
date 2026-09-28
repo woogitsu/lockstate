@@ -66,6 +66,10 @@
       "manifest": "/game-content/oblique-kitchen-stove.v1.json"
     },
     {
+      "assetId": "furniture.kitchen.fridge",
+      "manifest": "/game-content/oblique-kitchen-fridge.v1.json"
+    },
+    {
       "assetId": "furniture.storage.rack.wooden",
       "manifest": "/game-content/oblique-cell-storage-rack.v1.json"
     },
