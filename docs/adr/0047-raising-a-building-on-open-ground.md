@@ -87,13 +87,13 @@ defect one level up and with a longer explanation.
 
 **What actually causes it is an asymmetry in one predicate, and the asymmetry is
 a plain defect.** `submitOrder` asks `canBuildAt(this.world, order.location, …)`
-(`src/simulation/construction/system.ts:619`), and `canBuildAt` tests ownership
+(`src/simulation/construction/system.ts:702`), and `canBuildAt` tests ownership
 of the order's own tile and nothing else
 (`src/simulation/world/buildability.ts:26`).
 
 (**Two corrections to the sentence above, marked rather than overwritten,
 2026-09-15.** *Where:* the `canBuildAt` call this document cited as `:266` is
-now inside `admits` (`src/simulation/construction/system.ts:615`), which
+now inside `admits` (`src/simulation/construction/system.ts:698`), which
 `submitOrder` (`:540`) calls once per tile — decision 6 below landed and the
 extraction is what landing it looked like. Decision 6's own amendment block
 already recorded that move and gave `admits` as `:353`; **that block and this
@@ -261,8 +261,8 @@ feature with a reader and no producer.
 ### Walls, doors and the build queue
 
 - A wall is an edge value. `finalizeConstruction`
-  (`src/simulation/construction/system.ts:1965`) writes it through `writeEdge`
-  (`:2031`, called at `:1934`), which calls `setTopEdge`/`setLeftEdge` and
+  (`src/simulation/construction/system.ts:2082`) writes it through `writeEdge`
+  (`:2204`, called at `:2103`), which calls `setTopEdge`/`setLeftEdge` and
   therefore bumps `geometryRevision`.
 - `BuildableCategory` is `'wall' | 'object' | 'utility'`
   (`src/simulation/construction/definition.ts:6`). `wall-brick` is the only
