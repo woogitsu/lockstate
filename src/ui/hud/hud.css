@@ -7323,3 +7323,8 @@
     --hud-rail-panel-width: max(var(--hud-inspector-width), calc(280px * var(--ui-scale)));
   }
 }
+
+.hud-template__materials,
+.hud-template__catalogue-value { margin: var(--space-2) 0; text-align: center; overflow-wrap: anywhere; }
+.hud-template__catalogue-value { color: var(--text-heading); }
+.hud-template__placement .hud-template__coordinate { flex-direction: column; align-items: stretch; gap: var(--space-1); }

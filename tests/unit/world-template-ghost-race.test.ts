@@ -15,7 +15,7 @@ it('does not let an old placement verdict replace the ghost after the pointer mo
   scene.templatePlan = oldPlan;
   scene.templateVerdict = { ok: true };
   scene.templateRevision = 1;
-  scene.templateGhostPort = { isArmed: () => true, placeAt: () => new Promise((resolve) => { finish = resolve; }), standDown: vi.fn() };
+  scene.templateGhostPort = { isArmed: () => true, planAt: () => ({ width: 4, height: 7 }), placeAt: () => new Promise((resolve) => { finish = resolve; }), standDown: vi.fn() };
   scene.buildOverlay = overlay;
   scene.worldPointOf = () => oldOrigin;
   scene.squareAt = () => oldOrigin;
@@ -43,7 +43,7 @@ it('does not disarm a new template selection when the previous submission comple
   scene.templatePlan = { id: 'cell-basic' };
   scene.templateVerdict = { ok: true };
   scene.templateRevision = 1;
-  scene.templateGhostPort = { isArmed: () => true, placeAt: () => new Promise((resolve) => { finish = resolve; }), standDown };
+  scene.templateGhostPort = { isArmed: () => true, planAt: () => ({ width: 4, height: 7 }), placeAt: () => new Promise((resolve) => { finish = resolve; }), standDown };
   scene.buildOverlay = overlay;
   scene.worldPointOf = () => origin;
   scene.squareAt = () => origin;

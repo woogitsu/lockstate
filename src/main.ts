@@ -38,7 +38,7 @@ import { VOID_COLOR } from './rendering/world/appearance';
 import { applyAccessibilitySettings, createDisplayScaleControl } from './ui/display-scale';
 import { createThemeControl, createThemeController, resolveSystemThemeQuery } from './ui/theme';
 import { SavePanel } from './ui/save-panel';
-import { createSimulationRoomTemplatePreflight } from './ui/simulation-room-template-port';
+import { createSimulationRoomTemplatePreflight, createSimulationRoomTemplateQuote } from './ui/simulation-room-template-port';
 import { ManageSavesPanel } from './ui/account/manage-saves-panel';
 import {
   EMPTY_HUD_VIEW_MODEL,
@@ -2611,6 +2611,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
   hud = mountHud(app, {
     localizer,
     ...(roomTemplatePreflight === undefined ? {} : { roomTemplatePreflight }),
+    ...(simulation === undefined ? {} : { roomTemplateQuote: createSimulationRoomTemplateQuote(simulation) }),
     layout: loadLayoutSettings(layoutStore),
     // Persisted first and painted second, exactly as the interface scale is:
     // `saveLayoutSettings` swallows a refusal by design, so the write cannot
