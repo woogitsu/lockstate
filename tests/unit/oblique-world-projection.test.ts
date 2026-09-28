@@ -46,7 +46,7 @@ describe('oblique projection of an actual simulation snapshot', () => {
     expect(shower).toBeDefined();
     expect(artForGround(shower!.numericId)).toBe('floor.shower.ceramic');
     expect(artForGround(0, 0)).toBe('floor.terrain.dirt');
-    expect(artForGround(0, 1)).toBeUndefined();
+    expect(artForGround(0, 1)).toBe('floor.terrain.grass');
     expect(artForStructure('shower-head-brick')).toBe('fixture.shower.head');
     expect(artForNorthEdge(2, shower!.numericId)).toBe('door.shower.privacy.open.full');
   });
@@ -58,6 +58,13 @@ describe('oblique projection of an actual simulation snapshot', () => {
     expect(grass?.owned).toBe(true);
     expect(grass?.fill).toBe(0x47643a);
     expect(grass?.quad).toHaveLength(4);
+    expect(grass?.artAssetId).toBe('floor.terrain.grass');
+    expect(grass?.artOverlayAssetIds).toEqual([
+      'floor.terrain.dirt-grass.edge.north',
+      'floor.terrain.dirt-grass.edge.east',
+      'floor.terrain.dirt-grass.edge.south',
+      'floor.terrain.dirt-grass.edge.west',
+    ]);
 
     const solids = projected.raised.filter((item) => item.kind !== 'actor');
     expect(solids.map((item) => item.kind)).toEqual(['north-edge', 'west-edge', 'structure']);

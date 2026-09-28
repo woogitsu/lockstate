@@ -69,6 +69,8 @@ test('real render feed cell keeps one build square under the cursor while the sc
   expect(loadedArt.some((key) => key.includes('cell-bed'))).toBe(true);
   expect(loadedArt.some((key) => key.includes('floor-cell'))).toBe(true);
   expect(loadedArt.some((key) => key.includes('floor-terrain-dirt'))).toBe(true);
+  expect(loadedArt.some((key) => key.includes('floor-terrain-grass'))).toBe(true);
+  expect(loadedArt.some((key) => key.includes('floor-dirt-grass-edge-north'))).toBe(true);
   expect(loadedArt.some((key) => key.includes('floor-shower'))).toBe(true);
   expect(loadedArt.some((key) => key.includes('shower-head'))).toBe(true);
   expect(loadedArt.some((key) => key.includes('shower-privacy-door-full'))).toBe(true);

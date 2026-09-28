@@ -44,6 +44,7 @@ for (let y = 0; y < 8; y += 1) {
   for (let x = 0; x < 8; x += 1) world.setTerrain(tile(x, y), 'concrete');
 }
 world.setTerrain(tile(0, 0), 'dirt');
+world.setTerrain(tile(0, 1), 'grass');
 for (let y = 2; y <= 4; y += 1) {
   for (let x = 2; x <= 4; x += 1) world.setZoning(tile(x, y), 1);
 }

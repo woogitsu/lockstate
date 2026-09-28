@@ -321,21 +321,25 @@ export class ObliqueWorldScene extends Phaser.Scene {
     for (const image of this.groundArtImages) image.destroy();
     this.groundArtImages = [];
     for (const tile of projection.ground) {
-      if (tile.artAssetId === undefined) continue;
-      const catalog = this.artCatalogs.get(tile.artAssetId);
-      if (catalog === undefined) continue;
-      const frame = selectObliqueModuleFrame(catalog, this.pose);
-      if (!this.textures.exists(frame.image)) continue;
       const anchor = {
         x: tile.quad.reduce((sum, corner) => sum + corner.x, 0) / 4,
         y: tile.quad.reduce((sum, corner) => sum + corner.y, 0) / 4,
       };
-      const [width, height] = catalog.resolutionPx;
-      const [pivotX, pivotY] = catalog.pivotPx;
-      this.groundArtImages.push(this.add.image(anchor.x, anchor.y, frame.image)
-        .setOrigin(pivotX / width, pivotY / height)
-        .setScale(this.pose.zoom)
-        .setDepth(0.2));
+      const assets = tile.artAssetId === undefined
+        ? tile.artOverlayAssetIds
+        : [tile.artAssetId, ...tile.artOverlayAssetIds];
+      for (const [index, assetId] of assets.entries()) {
+        const catalog = this.artCatalogs.get(assetId);
+        if (catalog === undefined) continue;
+        const frame = selectObliqueModuleFrame(catalog, this.pose);
+        if (!this.textures.exists(frame.image)) continue;
+        const [width, height] = catalog.resolutionPx;
+        const [pivotX, pivotY] = catalog.pivotPx;
+        this.groundArtImages.push(this.add.image(anchor.x, anchor.y, frame.image)
+          .setOrigin(pivotX / width, pivotY / height)
+          .setScale(this.pose.zoom)
+          .setDepth(0.2 + index * 0.001));
+      }
     }
   }
 

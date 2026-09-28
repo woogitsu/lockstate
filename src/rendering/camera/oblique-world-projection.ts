@@ -14,7 +14,7 @@ import { TILE_SIZE_PX, tileRangeContains, visibleTileRange } from '../tile-metri
 import { groundToScreen, visibleGroundBounds, type ObliqueCameraState } from './oblique-projection';
 import { obliqueDepthForAnchor, projectedRectPrism, projectedTileQuad, type TileQuad } from './oblique-geometry';
 import type { Point } from './coordinates';
-import { artForGround, artForNorthEdge, artForWestEdge, artForStructure } from './oblique-art-mapping';
+import { artForGround, artForNorthEdge, artForWestEdge, artForStructure, DIRT_TERRAIN_NUMERIC_ID } from './oblique-art-mapping';
 import { DOOR_EDGE_NUMERIC_ID } from '../../simulation/construction/definition';
 
 export interface ObliqueGroundTile {
@@ -25,6 +25,7 @@ export interface ObliqueGroundTile {
   readonly zoningTint: number | undefined;
   readonly owned: boolean;
   readonly artAssetId: string | undefined;
+  readonly artOverlayAssetIds: readonly string[];
 }
 
 export interface ObliqueSolid {
@@ -94,6 +95,7 @@ export function projectObliqueWorldFrame(frame: RenderFrame, camera: ObliqueCame
   const size = world.chunkSize;
   const sample = createTileSample();
   const northSample = createTileSample();
+  const neighborSample = createTileSample();
   let loadedTilesVisited = 0;
 
   const edge = (kind: 'north-edge' | 'west-edge', tileX: number, tileY: number, value: number): void => {
@@ -127,11 +129,23 @@ export function projectObliqueWorldFrame(frame: RenderFrame, camera: ObliqueCame
         world.readTile(tileX, tileY, sample);
         loadedTilesVisited += 1;
         const terrain = terrainAppearance(sample.terrainNumericId);
+        const artAssetId = artForGround(sample.zoning, sample.terrainNumericId);
+        const artOverlayAssetIds: string[] = [];
+        if (artAssetId === 'floor.terrain.grass') {
+          for (const [direction, dx, dy] of [
+            ['north', 0, -1], ['east', 1, 0], ['south', 0, 1], ['west', -1, 0],
+          ] as const) {
+            world.readTile(tileX + dx, tileY + dy, neighborSample);
+            if (neighborSample.loaded && neighborSample.terrainNumericId === DIRT_TERRAIN_NUMERIC_ID) {
+              artOverlayAssetIds.push(`floor.terrain.dirt-grass.edge.${direction}`);
+            }
+          }
+        }
         ground.push({
           tileX, tileY, quad: projectedTileQuad(tileX, tileY, camera),
           fill: (tileX + tileY) % 2 === 0 ? terrain.fill : terrain.fillAlternate,
           zoningTint: zoningTint(sample.zoning), owned: sample.owned,
-          artAssetId: artForGround(sample.zoning, sample.terrainNumericId),
+          artAssetId, artOverlayAssetIds,
         });
         if (sample.topEdge !== 0) edge('north-edge', tileX, tileY, sample.topEdge);
         if (sample.leftEdge !== 0) edge('west-edge', tileX, tileY, sample.leftEdge);
