@@ -466,8 +466,8 @@ describe('every construction form in the catalog names something src/simulation/
     // count and two specific declaring modules are pinned.
     expect(simulationSources.length).toBeGreaterThan(50);
     const paths = simulationSources.map(({ file }) => file);
-    expect(paths.some((path) => path.endsWith('runtime/new-session.ts'))).toBe(true);
-    expect(paths.some((path) => path.endsWith('runtime/restore-session.ts'))).toBe(true);
+    expect(paths.some((path) => path.endsWith(join('runtime', 'new-session.ts')))).toBe(true);
+    expect(paths.some((path) => path.endsWith(join('runtime', 'restore-session.ts')))).toBe(true);
     expect(SIMULATION_CONSTRUCTION_FORMS.length).toBeGreaterThan(4);
   });
 
@@ -482,13 +482,13 @@ describe('every construction form in the catalog names something src/simulation/
     // If `SimulationRuntime` ever becomes a class, `new SimulationRuntime` is a
     // real construction form and belongs in the catalog. Pinning the current
     // declaration means that change cannot happen without this test noticing.
-    const newSession = simulationSources.find(({ file }) => file.endsWith('runtime/new-session.ts'))!;
+    const newSession = simulationSources.find(({ file }) => file.endsWith(join('runtime', 'new-session.ts')))!;
     expect(newSession.source).toMatch(/^export interface SimulationRuntime \{$/m);
     expect(newSession.source).not.toMatch(/\bexport\s+(?:abstract\s+)?class\s+SimulationRuntime\b/);
     // And the two factories the catalog names instead really are the way one
     // is obtained.
     expect(newSession.source).toMatch(/\bexport function createNewSimulationRuntime\b/);
-    const restore = simulationSources.find(({ file }) => file.endsWith('runtime/restore-session.ts'))!;
+    const restore = simulationSources.find(({ file }) => file.endsWith(join('runtime', 'restore-session.ts')))!;
     expect(restore.source).toMatch(/\bexport function restoreSimulationRuntime\b/);
   });
 
