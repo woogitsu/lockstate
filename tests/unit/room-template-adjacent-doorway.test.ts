@@ -26,3 +26,12 @@ it.each([false, true])('rejects a second Cell wall sealing a pending Cell doorwa
   expect(runtime.roomTemplates.snapshot().pending).toHaveLength(1);
   expect(runtime.refusals.last).toMatchObject({ reason: 'build.unbuildable', tile: tile(11, 17) });
 }, 120_000);
+
+it('allows a neighbouring Cell whose perimeter leaves the first doorway open', () => {
+  const runtime = createNewSimulationRuntime(73);
+  runtime.kernel.submitCommand('first', 0, runtime.kernel.tick, packCommand({
+    type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 10, y: 10 },
+  }));
+  runtime.kernel.step();
+  expect(runtime.roomTemplates.preflight(instantiateRoomTemplate('cell-basic', { x: 14, y: 10 }))).toEqual({ ok: true });
+});
