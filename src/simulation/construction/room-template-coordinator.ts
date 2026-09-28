@@ -65,7 +65,13 @@ export class RoomTemplateCoordinator implements SystemRegistration {
         const definition = BUILDABLE_REGISTRY.get(order.definitionId);
         if (definition !== undefined && order.footprint !== 'square' && occupiesTileEdge(definition)) {
           const across = tileAcrossEdge(order.location, resolveBuildEdge(order));
-          if (across !== undefined) edgeApproachClaims.add(tileKey(across));
+          if (across !== undefined) {
+            edgeApproachClaims.add(tileKey(across));
+            // A door queued just outside the east or south edge can cross
+            // into a future square wall without its order tile entering the
+            // plan. Submission would refuse that wall; preflight must agree.
+            if (definition.placesDoor !== undefined) structureClaims.add(tileKey(across));
+          }
         }
         continue;
       }
@@ -84,7 +90,7 @@ export class RoomTemplateCoordinator implements SystemRegistration {
       this.world,
       plan,
       (tile) => this.placedObjects.isTileOccupied(tile) || objectClaims.has(tileKey(tile)),
-      (tile) => structureClaims.has(tileKey(tile)) || pendingPlans.some((pending) =>
+      (tile) => structureClaims.has(tileKey(tile)) || this.completedDoorCrossesTile(tile) || pendingPlans.some((pending) =>
         tile.x >= pending.origin.x && tile.x < pending.origin.x + pending.width &&
         tile.y >= pending.origin.y && tile.y < pending.origin.y + pending.height),
     );
@@ -104,6 +110,15 @@ export class RoomTemplateCoordinator implements SystemRegistration {
       if (edgeApproachClaims.has(tileKey(tile))) return { ok: false, reason: 'structure-occupied', tile };
     }
     return verdict;
+  }
+
+  private completedDoorCrossesTile(tile: TilePosition): boolean {
+    // The footprint scan already sees top/left edge values on each of its
+    // tiles. East/south edges live in the neighboring tile outside that scan.
+    return (Number.isSafeInteger(tile.x + 1) &&
+      this.doors.getByEdge({ x: tileCoordinate(tile.x + 1), y: tile.y }, 'left') !== undefined) ||
+      (Number.isSafeInteger(tile.y + 1) &&
+      this.doors.getByEdge({ x: tile.x, y: tileCoordinate(tile.y + 1) }, 'top') !== undefined);
   }
 
   /** The pending gesture reserves every square, even before its shell is visible. */
