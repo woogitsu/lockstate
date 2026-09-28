@@ -65,3 +65,32 @@ test('Full HD Build previews and submits the four-cell corridor row through its 
     { type: 'PlaceRoomTemplate', templateId: 'cell-row-four', origin: { x: 10, y: 10 } },
   ]);
 });
+
+test('Full HD Build rotates the four-cell row preview and submits its matching worker variant', async ({ page }) => {
+  await installTee(page);
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/index.html');
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await page.getByRole('button', { name: 'Build', exact: true }).click();
+  await page.getByRole('button', { name: 'Room plans', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Room plans' });
+  const rotate = dialog.getByRole('checkbox', { name: 'Rotate 180°' });
+  await expect(rotate).toBeHidden();
+  await dialog.getByRole('button', { name: 'Four-cell row' }).click();
+  await expect(rotate).toBeVisible();
+  const doorIndices = () => dialog.locator('.hud-template__diagram .hud-template__tile--door').evaluateAll((tiles) =>
+    tiles.map((tile) => Array.prototype.indexOf.call(tile.parentElement!.children, tile) as number));
+  expect(await doorIndices()).toEqual([43, 46, 64, 67]);
+  await expect(dialog.locator('.hud-template__catalogue-value')).toContainText('Catalogue value:');
+  const quote = await dialog.locator('.hud-template__catalogue-value').textContent();
+  await rotate.check();
+  expect(await doorIndices()).toEqual([44, 47, 65, 68]);
+  await expect(dialog.locator('.hud-template__catalogue-value')).toHaveText(quote!);
+  await dialog.getByRole('spinbutton', { name: 'Plan origin X' }).fill('10');
+  await dialog.getByRole('spinbutton', { name: 'Plan origin Y' }).fill('10');
+  await expect(dialog.getByRole('status')).toContainText('clear');
+  await dialog.getByRole('button', { name: 'Place room plan' }).click();
+  await expect.poll(async () => (await sentCommands(page)).filter((command) => command.type === 'PlaceRoomTemplate')).toEqual([
+    { type: 'PlaceRoomTemplate', templateId: 'cell-row-four', origin: { x: 10, y: 10 }, quarterTurns: 2 },
+  ]);
+});

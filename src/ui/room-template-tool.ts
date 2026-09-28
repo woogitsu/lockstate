@@ -1,4 +1,5 @@
-import { instantiateRoomTemplate, type RoomTemplateId, type RoomTemplatePlan, type TemplateSquare } from '../content/room-template-catalog';
+import { instantiateRoomTemplate, orientRoomTemplatePlan, type RoomTemplateId, type RoomTemplatePlan, type TemplateSquare } from '../content/room-template-catalog';
+import type { TemplateQuarterTurns } from '../content/room-template-rotation-geometry';
 
 /** Display data supplied by the composition root; the HUD never imports the simulation. */
 export interface RoomTemplateCostQuote {
@@ -12,6 +13,7 @@ export interface RoomTemplatePlacementRequest {
   readonly templateId: RoomTemplateId;
   readonly origin: TemplateSquare;
   readonly mirrorX?: boolean;
+  readonly quarterTurns?: TemplateQuarterTurns;
 }
 
 export type RoomTemplatePreflight =
@@ -32,16 +34,18 @@ export interface RoomTemplatePlacementPort {
 export class RoomTemplateTool {
   private selected: RoomTemplateId = 'cell-basic';
   private mirrorX = false;
+  private quarterTurns: TemplateQuarterTurns = 0;
   private busy = false;
   private armed = false;
   private readonly selectionListeners = new Set<() => void>();
 
   public constructor(private readonly port: RoomTemplatePlacementPort) {}
 
-  public select(templateId: RoomTemplateId, mirrorX = false): void {
-    if (this.selected === templateId && this.mirrorX === mirrorX) return;
+  public select(templateId: RoomTemplateId, mirrorX = false, quarterTurns: TemplateQuarterTurns = 0): void {
+    if (this.selected === templateId && this.mirrorX === mirrorX && this.quarterTurns === quarterTurns) return;
     this.selected = templateId;
     this.mirrorX = mirrorX;
+    this.quarterTurns = quarterTurns;
     for (const listener of this.selectionListeners) listener();
   }
 
@@ -65,7 +69,7 @@ export class RoomTemplateTool {
   public selectedTemplateId(): RoomTemplateId { return this.selected; }
 
   public planAt(origin: TemplateSquare): RoomTemplatePlan {
-    return instantiateRoomTemplate(this.selected, origin, { mirrorX: this.mirrorX });
+    return orientRoomTemplatePlan(instantiateRoomTemplate(this.selected, origin, { mirrorX: this.mirrorX }), this.quarterTurns);
   }
 
   public async inspectAt(origin: TemplateSquare): Promise<{ readonly plan: RoomTemplatePlan; readonly verdict: RoomTemplatePreflight }> {
@@ -78,6 +82,7 @@ export class RoomTemplateTool {
       templateId: this.selected,
       origin: { x: origin.x, y: origin.y },
       ...(this.mirrorX ? { mirrorX: true } : {}),
+      ...(this.quarterTurns === 0 ? {} : { quarterTurns: this.quarterTurns }),
     };
   }
 

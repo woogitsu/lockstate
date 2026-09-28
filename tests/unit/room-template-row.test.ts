@@ -147,6 +147,9 @@ it.each([false, true])('half-turns the complete four-cell row and restores its p
     { x: doorwayXs[0], y: 19 }, { x: doorwayXs[1], y: 19 },
   ]);
   expect(built.orders.length).toBe(projectRoomTemplateCost('cell-row-four').orderCount);
+  expect(built.orders.map((order) => order.definitionId).sort()).toEqual(
+    createRoomTemplateBuildPlan('cell-row-four', origin, false, 0).orders.map((order) => order.definitionId).sort(),
+  );
   runtime.kernel.submitCommand('turned-row', 0, runtime.kernel.tick, packCommand({
     type: 'PlaceRoomTemplate', templateId: 'cell-row-four', origin, mirrorX, quarterTurns: 2,
   }));
