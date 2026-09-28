@@ -76,4 +76,14 @@ describe('camera pose input port before oblique scene activation', () => {
     expect(calls).toHaveLength(1);
     expect(remapCameraPoseBinding(remapped.bindings, 'yaw-left', 'KeyR')).toEqual({ ok: false, reason: 'duplicate-code' });
   });
+
+  it('leaves modified browser and system shortcuts alone', () => {
+    const { port, calls } = scene();
+    const adapter = new CameraPoseInputAdapter(port, () => ['world'], () => false);
+    for (const modifier of [{ ctrlKey: true }, { altKey: true }, { metaKey: true }, { shiftKey: true }]) {
+      expect(adapter.keyDown({ code: 'KeyE', ...modifier })).toBe(false);
+    }
+    expect(calls).toEqual([]);
+    expect(adapter.keyDown({ code: 'KeyE' })).toBe(true);
+  });
 });
