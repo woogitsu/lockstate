@@ -54,7 +54,10 @@ describe('oblique projection of an actual simulation snapshot', () => {
     const wall = solids.find((item) => item.kind === 'north-edge');
     const door = solids.find((item) => item.kind === 'west-edge');
     expect(wall?.topFill).not.toBe(door?.topFill);
+    expect(wall?.artAssetId).toBe('wall.interior.module.full');
+    expect(door?.artAssetId).toBe('door.interior.open.west.full');
     const bed = solids.find((item) => item.id === 'bed');
+    expect(bed?.artAssetId).toBe('furniture.cell.bed.single.variants');
     expect(bed?.footprint[2].y! - bed?.footprint[1].y!).toBeCloseTo(2 * 64 * Math.SQRT1_2 * pose.zoom, 5);
     expect(projected.raised.some((item) => item.kind === 'actor' && item.id === 9)).toBe(true);
   });

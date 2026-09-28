@@ -1,0 +1,486 @@
+{
+  "schemaVersion": 1,
+  "assetId": "actor.prisoner.base",
+  "source": "actor.prisoner.base.blend",
+  "sourceSha256": "48e3457298d9d3a2cc9dcd39725ba263450bffea27df05d42fe90afc6e659c0b",
+  "resolutionPx": [
+    512,
+    512
+  ],
+  "nominalPixelsPerTile": 64,
+  "pivotPx": [
+    256,
+    256
+  ],
+  "cameraTargetTiles": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "projection": "orthographic",
+  "yawDegrees": [
+    -180,
+    -165,
+    -150,
+    -135,
+    -120,
+    -105,
+    -90,
+    -75,
+    -60,
+    -45,
+    -30,
+    -15,
+    0,
+    15,
+    30,
+    45,
+    60,
+    75,
+    90,
+    105,
+    120,
+    135,
+    150,
+    165
+  ],
+  "elevationDegrees": [
+    25,
+    45,
+    65
+  ],
+  "frames": [
+    {
+      "yawDegrees": -180,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw-180-elev25.d43219181b8a.png",
+      "sha256": "d43219181b8abf3d84580d35fdedd76c1de282b742c31a82a88a7e88d0befa67"
+    },
+    {
+      "yawDegrees": -180,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw-180-elev45.47339c8c99b0.png",
+      "sha256": "47339c8c99b01955d3cb43d8db4605e5c12c84333c7a08c8fa31a025a4990fbb"
+    },
+    {
+      "yawDegrees": -180,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw-180-elev65.5041dc4b8a0f.png",
+      "sha256": "5041dc4b8a0fa16ecda9a9787e8577a1b9b351ed3aaeb9f8325b9973a4fa6cce"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw-165-elev25.07f5a1eadcce.png",
+      "sha256": "07f5a1eadcce5b00d811bb99daa57a808ded15df9327246cd6aa3089ea3ddcb1"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw-165-elev45.76faf526ba9b.png",
+      "sha256": "76faf526ba9bbe33ecad58196dd72a8005a309aff8d6d7a25364d7c57ee13f88"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw-165-elev65.9ea57dbbd205.png",
+      "sha256": "9ea57dbbd2058a5023cff473274354a762a017416dbd196fae7e22392a00223b"
+    },
+    {
+      "yawDegrees": -150,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw-150-elev25.d98014979df1.png",
+      "sha256": "d98014979df17e1be2a98ad7ea9101d88df3904b42d50e5ec7c835c72830a26a"
+    },
+    {
+      "yawDegrees": -150,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw-150-elev45.09bba01b6503.png",
+      "sha256": "09bba01b65035e211faf75b5c3911f0f0c802618bdc93573b64f2f00939b92ff"
+    },
+    {
+      "yawDegrees": -150,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw-150-elev65.57dd56043cdc.png",
+      "sha256": "57dd56043cdc94baadc1de38d914d32cd117009929ef28e4def1a2eb2245bd3d"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw-135-elev25.68282a18c01c.png",
+      "sha256": "68282a18c01cb65475353c99209209a9c4044fde0d5220b7e301215e55d63a04"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw-135-elev45.1bea8eb6d8c7.png",
+      "sha256": "1bea8eb6d8c7deda2b1b92a3c93e12f86c2de3d680dee7109005df43dd6eac1a"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw-135-elev65.18e8b53a2124.png",
+      "sha256": "18e8b53a21248998b9db4a3c026474f304b0e0b76f294a81289b50c0dc56ef30"
+    },
+    {
+      "yawDegrees": -120,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw-120-elev25.8b5dc10e8fbd.png",
+      "sha256": "8b5dc10e8fbd72dd4dc231a8b286c06b406007b74e6f7163d0d68a8d65d30b4d"
+    },
+    {
+      "yawDegrees": -120,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw-120-elev45.8522e5d8795b.png",
+      "sha256": "8522e5d8795bd75be12ed2e19627fe9bd370e1b653eea412c94f8f0604d06e9a"
+    },
+    {
+      "yawDegrees": -120,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw-120-elev65.bced0f38e5bf.png",
+      "sha256": "bced0f38e5bfbcaae8553751c88f6aa53da7d2d736fc904a71142ed102983e3c"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw-105-elev25.a2c8469bb8b4.png",
+      "sha256": "a2c8469bb8b489b10f7da20d26e33ce226bb106655e7d0979de363dd19c18725"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw-105-elev45.3e1279c83f74.png",
+      "sha256": "3e1279c83f74bf294067cef4cc902510e370e0416cd32c7137d51d8ce616cea3"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw-105-elev65.63b707d03e2e.png",
+      "sha256": "63b707d03e2e583853ac8781797aa523b621df5daeef2d24ba37813269d12f08"
+    },
+    {
+      "yawDegrees": -90,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw-90-elev25.09350af26001.png",
+      "sha256": "09350af2600154ba7e328b1e9df4ff3fecff7425336f79114e76d543c588c321"
+    },
+    {
+      "yawDegrees": -90,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw-90-elev45.9177e8ad1342.png",
+      "sha256": "9177e8ad1342ad4e08b03c484718f4e228192cd759345887a0a399871677ae69"
+    },
+    {
+      "yawDegrees": -90,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw-90-elev65.9f6c06d3202a.png",
+      "sha256": "9f6c06d3202ac22086016736db8783aec08d4c1070d12e7f0534a947f2357396"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw-75-elev25.4a31d0c6d4a8.png",
+      "sha256": "4a31d0c6d4a8754d61d56f113be69a3efcaa2357fcc43c63585604c6ff27e896"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw-75-elev45.70ef3f87843d.png",
+      "sha256": "70ef3f87843d6a39a68c4e064f3c75b9b48e828870365a140ec237bb816660ac"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw-75-elev65.a81ea333700a.png",
+      "sha256": "a81ea333700aae42fb0fc36b329877306f4d667fff2dbeb13ef959e56e7c2bee"
+    },
+    {
+      "yawDegrees": -60,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw-60-elev25.37f609f4a1ce.png",
+      "sha256": "37f609f4a1cef1555fccecc106bf652f7d344d32105b45eb8f142d4a1039315c"
+    },
+    {
+      "yawDegrees": -60,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw-60-elev45.6bcc839bf199.png",
+      "sha256": "6bcc839bf199bbfd1e5c87ab1dbdbd486107459c98447464e63dd1e81e93b19a"
+    },
+    {
+      "yawDegrees": -60,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw-60-elev65.0661a54b0759.png",
+      "sha256": "0661a54b075937452a9d343369061662e20e2a1b29747187d91b13142705d770"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw-45-elev25.d90dd934865c.png",
+      "sha256": "d90dd934865c19e287a29301e568216949f3e8336c47c65f6fd4456fc5bcba45"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw-45-elev45.90855b855cea.png",
+      "sha256": "90855b855cea113a1ef3f8b33d6e48865d5ae175fb29e4751e415e4ad1ebba69"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw-45-elev65.7651c2e76a9b.png",
+      "sha256": "7651c2e76a9ba7a7bb1e24258b5e2820c6323f34fd1583829c385ac8846cc51a"
+    },
+    {
+      "yawDegrees": -30,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw-30-elev25.f9007bdfd783.png",
+      "sha256": "f9007bdfd78384ec9e96c9416c013d762662d98d9b4b3fac642f890412eead1c"
+    },
+    {
+      "yawDegrees": -30,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw-30-elev45.dbeca313366c.png",
+      "sha256": "dbeca313366cd4993891c10d87d7994b07afd24545e4bd31e71a42436b0528ab"
+    },
+    {
+      "yawDegrees": -30,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw-30-elev65.a909ab88a1f6.png",
+      "sha256": "a909ab88a1f6ca1f3115cb196e14c612246bb404dadcb58da770abdce4c210f8"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw-15-elev25.d30cee940846.png",
+      "sha256": "d30cee940846bcaa96dd553a6dcf2b95d5fe1b473c992812b255c501df414256"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw-15-elev45.26008eaec58c.png",
+      "sha256": "26008eaec58cd7a91456b84b5cbceffe1f68e8007681c65a56af6e8c79ee2499"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw-15-elev65.0aba1d436792.png",
+      "sha256": "0aba1d436792f7fe60c0b8a1a4b4fafdeb00762b46ac0e8071b6deac79ee9b2a"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw+00-elev25.696080b9319a.png",
+      "sha256": "696080b9319a0d0aef7dcb57cde015de2abbaa47e9efe41580550540cc1dc9f2"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw+00-elev45.f9b731c36ddc.png",
+      "sha256": "f9b731c36ddc6e748d83fd51b0cd61e42fe6f50d985a4bfc7842e4d7949c3573"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw+00-elev65.1b31814979c0.png",
+      "sha256": "1b31814979c0163afe7e5959d0b3268a2c159c80e70ead589784dd647a6db34b"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw+15-elev25.962850a381a5.png",
+      "sha256": "962850a381a5eacb7d30aa2a0c1c692fc0b7c412033fa4930ba6f07c16442fe6"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw+15-elev45.36b78d8eb445.png",
+      "sha256": "36b78d8eb445a0a337028ef5aef0f6478af4e78165c3e3a42b077902a081bad1"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw+15-elev65.ba36d8ec7704.png",
+      "sha256": "ba36d8ec77042cb6042374c19f853bf42100f2d6ef87a5e5b79926f59ae2aa27"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw+30-elev25.05e4c296a85e.png",
+      "sha256": "05e4c296a85e3137c1a2c56731d7034655e20f0354af654d22312a78492914e8"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw+30-elev45.4389a37f2725.png",
+      "sha256": "4389a37f272541c82cc80a5d646c17614c0626e0ef9113687c342729edc47c02"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw+30-elev65.f3570f662bd2.png",
+      "sha256": "f3570f662bd2a6931dbc83813865d94013c497aded975841b372b853e3077a3e"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw+45-elev25.6ef03d14d0a3.png",
+      "sha256": "6ef03d14d0a321479db3bbdc938c9010970b4b2f1d7e717661e9d8b2cadd578c"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw+45-elev45.cb20cd4e6e82.png",
+      "sha256": "cb20cd4e6e82a2edc946dc7496fcf61757bd71c03c3d15a85938d0c0fb52965c"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw+45-elev65.7f9f51fe2113.png",
+      "sha256": "7f9f51fe2113f4623a94a4cd290763dc12df5dd1c7529c823c9761e071cfdd2a"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw+60-elev25.b0ea7476242e.png",
+      "sha256": "b0ea7476242ea36e3c5e20bed33a5076a9d82cc4dd5633c11eab89a0e7dc0f4e"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw+60-elev45.1ae54a8ddca9.png",
+      "sha256": "1ae54a8ddca910f8d735d9ff775cec3a346ff6913ac2755b99fa998bf352cf97"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw+60-elev65.153cd15867ad.png",
+      "sha256": "153cd15867ad52e40e21c6773fe89a4fe4d9678a6ebcf54568b706acb71655ea"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw+75-elev25.c77c437012fb.png",
+      "sha256": "c77c437012fb1925db85cc69dd6c0e5d975130c8e0f3c723b08396a211b33d87"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw+75-elev45.c12f155f06ca.png",
+      "sha256": "c12f155f06cabd7c3bc4a188b5b569d35a7b248e743f1e07cb203ec5d672f37c"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw+75-elev65.d8ebfcbab225.png",
+      "sha256": "d8ebfcbab22539d5960d157f5b02ab7803f2c766536f0c434e67ac4bf8acf789"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw+90-elev25.133671314606.png",
+      "sha256": "1336713146067a2a38f039595ca747e2c645b228113af7174101e46acaddd970"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw+90-elev45.9169d021d982.png",
+      "sha256": "9169d021d982c62b877b0672aa0d79623f688102438d1a5f7805cd23f79cf55d"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw+90-elev65.865a22a75b02.png",
+      "sha256": "865a22a75b02382346f98ad91bddad7411de2f213857c836a99e12e6770ad168"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw+105-elev25.5b4ce0622311.png",
+      "sha256": "5b4ce06223119b2b6923952ddd21e856074da70fa5367bc68fa473050752326d"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw+105-elev45.4fb7c8dec029.png",
+      "sha256": "4fb7c8dec029121c75e49bf87ceb1ab774dafc4c040e62d9164ad0493a9a5424"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw+105-elev65.ef069ae84972.png",
+      "sha256": "ef069ae84972f7226279f9669fcba6b87e52abd039c527f3761076c616b089fe"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw+120-elev25.dee14e09d5bf.png",
+      "sha256": "dee14e09d5bff644f5d1b029d25770fa75cade3e28377feb9040bc8a7e18b542"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw+120-elev45.4087a95d0cae.png",
+      "sha256": "4087a95d0cae8af729bc040286a4f7e10f5df338efd6a99693d1c59212ba0a7a"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw+120-elev65.dc7e5246941e.png",
+      "sha256": "dc7e5246941ecb1dd920c646a25362345be8736e75a54ac463b612dac1609322"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw+135-elev25.bf62d70169ef.png",
+      "sha256": "bf62d70169ef6ab4ba683d5462804c8ff09da6ef69667e7f1381e76bae4feaa6"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw+135-elev45.ab60e8da7f81.png",
+      "sha256": "ab60e8da7f810df86d40a3eb3e6e72169d05b94c0da71d828718dd397fd7ce7e"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw+135-elev65.ef1feb6d2ca3.png",
+      "sha256": "ef1feb6d2ca3b7c6557c8220d722ce5ce6134663ac27c6d81a245d04c708dcb5"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw+150-elev25.9fa189e465f8.png",
+      "sha256": "9fa189e465f84335ff3fc0bf85f7b341109a2bef139e4d3bbf756856edda33c6"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw+150-elev45.595a47f0b8eb.png",
+      "sha256": "595a47f0b8eb4b89be8a3c1b7bd205ebbe0e8336d2c5ec4e22dbcb931e507e7d"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw+150-elev65.b9b7751f7522.png",
+      "sha256": "b9b7751f7522ce83ec667f83d14cd7eca7adc0c7a2d7b6e69741bc8b6f9d09a9"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw+165-elev25.443c9aa3a0df.png",
+      "sha256": "443c9aa3a0dff66bb427ec9196bfee43c9eaef4eef702fe01a68c62b59c28b78"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw+165-elev45.2ac3e6a88bb4.png",
+      "sha256": "2ac3e6a88bb4574045a013582feb4bdb01098442589eae8a313f8947ddfe42bf"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-prisoner-yaw+165-elev65.30f6d934320c.png",
+      "sha256": "30f6d934320c2d77a3a3203283e84d7effe1a56db00581b1c5623969cb9d9d2a"
+    }
+  ]
+}

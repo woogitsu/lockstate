@@ -14,6 +14,7 @@ import { TILE_SIZE_PX, tileRangeContains, visibleTileRange } from '../tile-metri
 import { groundToScreen, visibleGroundBounds, type ObliqueCameraState } from './oblique-projection';
 import { obliqueDepthForAnchor, projectedRectPrism, projectedTileQuad, type TileQuad } from './oblique-geometry';
 import type { Point } from './coordinates';
+import { artForGround, artForNorthEdge, artForWestEdge, artForStructure } from './oblique-art-mapping';
 
 export interface ObliqueGroundTile {
   readonly tileX: number;
@@ -22,6 +23,7 @@ export interface ObliqueGroundTile {
   readonly fill: number;
   readonly zoningTint: number | undefined;
   readonly owned: boolean;
+  readonly artAssetId: string | undefined;
 }
 
 export interface ObliqueSolid {
@@ -35,6 +37,8 @@ export interface ObliqueSolid {
   readonly sideFill: number;
   readonly alpha: number;
   readonly viewDepth: number;
+  /** The optional Blender module shares this solid's ground anchor. */
+  readonly artAssetId: string | undefined;
 }
 
 export interface ObliqueActorPoint {
@@ -43,6 +47,7 @@ export interface ObliqueActorPoint {
   readonly foot: Point;
   readonly head: Point;
   readonly viewDepth: number;
+  readonly artAssetId: string;
 }
 
 export interface ObliqueWorldProjection {
@@ -64,6 +69,7 @@ export function projectObliqueActors(actors: readonly RenderActor[], camera: Obl
       foot: groundToScreen({ x, y }, camera),
       head: groundToScreen({ x, y, z: 0.8 * TILE_SIZE_PX }, camera),
       viewDepth: obliqueDepthForAnchor({ x, y }, camera.yawRadians),
+      artAssetId: actor.assetId,
     });
   }
   return projected;
@@ -100,6 +106,7 @@ export function projectObliqueWorldFrame(frame: RenderFrame, camera: ObliqueCame
       kind, id: `${kind}:${tileX}:${tileY}`, tileX, tileY,
       ...geometry, topFill: appearance.topFill, sideFill: appearance.sideFill, alpha: 1,
       viewDepth: obliqueDepthForAnchor({ x: x + width / 2, y: y + depth / 2 }, camera.yawRadians),
+      artAssetId: kind === 'north-edge' ? artForNorthEdge(value) : artForWestEdge(value),
     });
   };
 
@@ -119,6 +126,7 @@ export function projectObliqueWorldFrame(frame: RenderFrame, camera: ObliqueCame
           tileX, tileY, quad: projectedTileQuad(tileX, tileY, camera),
           fill: (tileX + tileY) % 2 === 0 ? terrain.fill : terrain.fillAlternate,
           zoningTint: zoningTint(sample.zoning), owned: sample.owned,
+          artAssetId: artForGround(sample.zoning),
         });
         if (sample.topEdge !== 0) edge('north-edge', tileX, tileY, sample.topEdge);
         if (sample.leftEdge !== 0) edge('west-edge', tileX, tileY, sample.leftEdge);
@@ -141,6 +149,7 @@ export function projectObliqueWorldFrame(frame: RenderFrame, camera: ObliqueCame
       ...geometry, topFill: appearance.topFill, sideFill: appearance.sideFill,
       alpha: structure.phase === 'planned' ? PLANNED_ALPHA : structure.phase === 'building' ? BUILDING_ALPHA : 1,
       viewDepth: obliqueDepthForAnchor({ x: x + width / 2, y: y + depth / 2 }, camera.yawRadians),
+      artAssetId: structure.phase === 'built' ? artForStructure(structure.definitionId) : undefined,
     });
   }
 

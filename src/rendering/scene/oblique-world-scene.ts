@@ -7,24 +7,46 @@ import {
   screenToGround,
   type ObliqueCameraState,
 } from '../camera/oblique-projection';
-import { projectedTileQuad, type TileQuad } from '../camera/oblique-geometry';
+import { obliqueDepthForAnchor, projectedTileQuad, type TileQuad } from '../camera/oblique-geometry';
 import { projectObliqueActors, projectObliqueWorldFrame, sortObliqueRaised, type ObliqueActorPoint, type ObliqueSolid, type ObliqueWorldProjection } from '../camera/oblique-world-projection';
 import type { Point } from '../camera/coordinates';
+import { selectObliqueModuleFrame, type ObliqueModuleCatalog } from '../assets/oblique-module-catalog';
+import { ensureObliqueModuleFrameTexture } from '../phaser/oblique-module-textures';
+
+const DEFAULT_YAW_RADIANS = -Math.PI / 4;
+const DEFAULT_ELEVATION_RADIANS = Math.PI / 4;
+
+function lowerTop(footprint: TileQuad, top: TileQuad, fraction: number): TileQuad {
+  const corner = (index: 0 | 1 | 2 | 3): Point => ({
+    x: footprint[index].x + (top[index].x - footprint[index].x) * fraction,
+    y: footprint[index].y + (top[index].y - footprint[index].y) * fraction,
+  });
+  return [corner(0), corner(1), corner(2), corner(3)];
+}
 
 export interface ObliqueWorldSceneOptions {
   readonly feed: RenderFeed;
   readonly onTileSelected?: (tileX: number, tileY: number) => void;
+  /** The HUD follows every scene-side pose change, including pointer drags. */
+  readonly onPoseChanged?: (pose: ObliqueCameraState) => void;
+  /** An armed construction gesture owns the pointer until it is put down. */
+  readonly canRotate?: () => boolean;
+  /** Optional Blender modules; the scene still renders valid geometry without them. */
+  readonly artCatalogs?: ReadonlyMap<string, ObliqueModuleCatalog>;
 }
 
 /**
  * A second, presentation-only Phaser scene for the angled renderer migration.
- * It reads the same immutable RenderFeed as WorldScene. Main.ts does not start
- * it yet: furniture art, build ghosts and measured repaint cost must join this
- * scene before players can switch to it.
+ * It reads the same immutable RenderFeed as WorldScene. The composition root
+ * starts it only for the explicit preview route while build gestures and
+ * measured repaint cost are completed before ordinary players switch to it.
  */
 export class ObliqueWorldScene extends Phaser.Scene {
   private readonly feed: RenderFeed;
   private readonly onTileSelected: ((tileX: number, tileY: number) => void) | undefined;
+  private readonly onPoseChanged: ((pose: ObliqueCameraState) => void) | undefined;
+  private readonly canRotate: () => boolean;
+  private readonly artCatalogs: ReadonlyMap<string, ObliqueModuleCatalog>;
   private groundGraphics!: Phaser.GameObjects.Graphics;
   private selectionGraphics!: Phaser.GameObjects.Graphics;
   private raisedGraphics!: Phaser.GameObjects.Graphics;
@@ -41,11 +63,32 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private actorPositions: { id: number; tileX: number; tileY: number }[] = [];
   private groundPaints = 0;
   private raisedPaints = 0;
+  private artImages: Phaser.GameObjects.Image[] = [];
+  private groundArtImages: Phaser.GameObjects.Image[] = [];
+  private actorArtImages: Phaser.GameObjects.Image[] = [];
+  private readonly pendingArtLoads = new Map<string, Promise<void>>();
+  private readonly artLoadErrors: string[] = [];
 
   public constructor(options: ObliqueWorldSceneOptions) {
     super({ key: 'oblique-world' });
     this.feed = options.feed;
     this.onTileSelected = options.onTileSelected;
+    this.onPoseChanged = options.onPoseChanged;
+    this.canRotate = options.canRotate ?? (() => true);
+    this.artCatalogs = options.artCatalogs ?? new Map();
+  }
+
+  public preload(): void {
+    const seen = new Set<string>();
+    for (const catalog of this.artCatalogs.values()) {
+      const frame = selectObliqueModuleFrame(catalog, {
+        yawRadians: DEFAULT_YAW_RADIANS,
+        elevationRadians: DEFAULT_ELEVATION_RADIANS,
+      });
+      if (seen.has(frame.image)) continue;
+      seen.add(frame.image);
+      this.load.image(frame.image, frame.image);
+    }
   }
 
   public create(): void {
@@ -57,12 +100,14 @@ export class ObliqueWorldScene extends Phaser.Scene {
       target: { x: 0, y: 0 },
       viewport: { width: this.cameras.main.width, height: this.cameras.main.height },
       zoom: 1.25,
-      yawRadians: -Math.PI / 4,
-      elevationRadians: Math.PI / 4,
+      yawRadians: DEFAULT_YAW_RADIANS,
+      elevationRadians: DEFAULT_ELEVATION_RADIANS,
     };
+    this.onPoseChanged?.(this.pose);
     this.input.mouse?.disableContextMenu();
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       if (pointer.button === 2 && !pointer.wasTouch) {
+        if (!this.canRotate()) return;
         this.turnPointerId = pointer.id;
         this.turnPointerAt = { x: pointer.x, y: pointer.y };
         return;
@@ -74,9 +119,18 @@ export class ObliqueWorldScene extends Phaser.Scene {
       this.selected = { tileX, tileY };
       this.onTileSelected?.(tileX, tileY);
       this.paintSelection();
+      if (this.lastProjection !== undefined) {
+        this.paintRaised(this.lastProjection);
+        this.paintArt(this.lastProjection);
+      }
     });
     this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
       if (pointer.id !== this.turnPointerId || this.turnPointerAt === undefined) return;
+      if (!this.canRotate()) {
+        this.turnPointerId = undefined;
+        this.turnPointerAt = undefined;
+        return;
+      }
       const dx = pointer.x - this.turnPointerAt.x;
       const dy = pointer.y - this.turnPointerAt.y;
       this.turnPointerAt = { x: pointer.x, y: pointer.y };
@@ -100,6 +154,26 @@ export class ObliqueWorldScene extends Phaser.Scene {
   public get paintCounts(): { readonly ground: number; readonly raised: number } {
     return { ground: this.groundPaints, raised: this.raisedPaints };
   }
+  public get artTextureKeys(): readonly string[] {
+    return [...this.groundArtImages, ...this.artImages, ...this.actorArtImages].map((item) => item.texture.key);
+  }
+  public get actorArtPosition(): Point | undefined {
+    const image = this.actorArtImages[0];
+    return image === undefined ? undefined : { x: image.x, y: image.y };
+  }
+  public get loadedArtTextureCount(): number {
+    const keys = new Set<string>();
+    for (const catalog of this.artCatalogs.values()) for (const frame of catalog.frames) {
+      if (this.textures.exists(frame.image)) keys.add(frame.image);
+    }
+    return keys.size;
+  }
+  public get artErrors(): readonly string[] { return this.artLoadErrors; }
+  public get cutawayWallIds(): readonly string[] {
+    return this.lastProjection?.raised
+      .filter((item): item is ObliqueSolid => item.kind !== 'actor' && this.cutsAwayForSelection(item))
+      .map((item) => item.id) ?? [];
+  }
 
   /** Shared entry point for mouse drag, remappable keyboard actions and HUD buttons. */
   public setPoseRadians(yawRadians: number, elevationRadians: number, pivot?: Point): void {
@@ -107,7 +181,32 @@ export class ObliqueWorldScene extends Phaser.Scene {
     const screen = pivot ?? { x: this.pose.viewport.width / 2, y: this.pose.viewport.height / 2 };
     this.pose = changeObliquePoseAtScreenPoint(this.pose, screen, yawRadians, elevation);
     this.poseRevision += 1;
+    this.onPoseChanged?.(this.pose);
     this.repaint();
+    void this.ensureArtForCurrentPose().catch((error: unknown) => { this.artLoadErrors.push(String(error)); });
+  }
+
+  /** Resolve only the authored frames nearest to the active camera pose. */
+  public async ensureArtForCurrentPose(): Promise<void> {
+    const pending: Promise<void>[] = [];
+    for (const catalog of this.artCatalogs.values()) {
+      const frame = selectObliqueModuleFrame(catalog, this.pose);
+      if (this.textures.exists(frame.image)) continue;
+      let task = this.pendingArtLoads.get(frame.image);
+      if (task === undefined) {
+        task = ensureObliqueModuleFrameTexture(this, catalog, this.pose).then(() => {
+          if (this.lastProjection !== undefined && this.scene.isActive()) {
+            this.paintGroundArt(this.lastProjection);
+            this.paintRaised(this.lastProjection);
+            this.paintArt(this.lastProjection);
+            this.paintActorArt(this.lastProjection);
+          }
+        }).finally(() => { this.pendingArtLoads.delete(frame.image); });
+        this.pendingArtLoads.set(frame.image, task);
+      }
+      pending.push(task);
+    }
+    await Promise.all(pending);
   }
 
   public override update(time: number): void {
@@ -115,6 +214,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     if (viewport.width !== this.pose.viewport.width || viewport.height !== this.pose.viewport.height) {
       this.pose = { ...this.pose, viewport };
       this.poseRevision += 1;
+      this.onPoseChanged?.(this.pose);
     }
     const frame = this.feed.readFrame(time / 1000);
     if (!this.framedWorld && frame.world.loadedBounds !== undefined) {
@@ -128,6 +228,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
       };
       this.framedWorld = true;
       this.poseRevision += 1;
+      this.onPoseChanged?.(this.pose);
     }
     this.lastFrame = frame;
     this.repaint();
@@ -158,6 +259,28 @@ export class ObliqueWorldScene extends Phaser.Scene {
     }
   }
 
+  private paintGroundArt(projection: ObliqueWorldProjection): void {
+    for (const image of this.groundArtImages) image.destroy();
+    this.groundArtImages = [];
+    for (const tile of projection.ground) {
+      if (tile.artAssetId === undefined) continue;
+      const catalog = this.artCatalogs.get(tile.artAssetId);
+      if (catalog === undefined) continue;
+      const frame = selectObliqueModuleFrame(catalog, this.pose);
+      if (!this.textures.exists(frame.image)) continue;
+      const anchor = {
+        x: tile.quad.reduce((sum, corner) => sum + corner.x, 0) / 4,
+        y: tile.quad.reduce((sum, corner) => sum + corner.y, 0) / 4,
+      };
+      const [width, height] = catalog.resolutionPx;
+      const [pivotX, pivotY] = catalog.pivotPx;
+      this.groundArtImages.push(this.add.image(anchor.x, anchor.y, frame.image)
+        .setOrigin(pivotX / width, pivotY / height)
+        .setScale(this.pose.zoom)
+        .setDepth(0.2));
+    }
+  }
+
   private paintSelection(): void {
     this.selectionGraphics.clear();
     if (this.selected === undefined) return;
@@ -170,17 +293,100 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.raisedPaints += 1;
     for (const item of projection.raised) {
       if (item.kind === 'actor') {
+        if (this.actorArtFrame(item) !== undefined) continue;
         raised.lineStyle(13 * this.pose.zoom, 0xdd8342, 1);
         raised.lineBetween(item.head.x, item.head.y + 8 * this.pose.zoom, item.foot.x, item.foot.y);
         raised.fillStyle(0xffbd78, 1);
         raised.fillCircle(item.head.x, item.head.y, 8 * this.pose.zoom);
         continue;
       }
+      const cutaway = this.cutsAwayForSelection(item);
+      if (this.displayArtFrame(item, cutaway) !== undefined) continue;
+      const top = cutaway ? lowerTop(item.footprint, item.top, 0.18) : item.top;
       for (let side = 0; side < 4; side += 1) {
         const next = (side + 1) % 4;
-        this.fillQuad(raised, [item.footprint[side]!, item.footprint[next]!, item.top[next]!, item.top[side]!], item.sideFill, item.alpha);
+        this.fillQuad(raised, [item.footprint[side]!, item.footprint[next]!, top[next]!, top[side]!], item.sideFill, item.alpha);
       }
-      this.fillQuad(raised, item.top, item.topFill, item.alpha);
+      this.fillQuad(raised, top, item.topFill, item.alpha);
+    }
+  }
+
+  /** Lower only a nearby wall between the camera and the selected ground square. */
+  private cutsAwayForSelection(item: ObliqueSolid): boolean {
+    if (this.selected === undefined || (item.kind !== 'north-edge' && item.kind !== 'west-edge')) return false;
+    if (Math.abs(item.tileX - this.selected.tileX) > 2 || Math.abs(item.tileY - this.selected.tileY) > 2) return false;
+    const selectedDepth = obliqueDepthForAnchor({
+      x: (this.selected.tileX + 0.5) * TILE_SIZE_PX,
+      y: (this.selected.tileY + 0.5) * TILE_SIZE_PX,
+    }, this.pose.yawRadians);
+    return item.viewDepth > selectedDepth + TILE_SIZE_PX * 0.25;
+  }
+
+  private cutawayArtAssetId(item: ObliqueSolid): string | undefined {
+    if (item.artAssetId === 'wall.interior.module.full' || item.artAssetId === 'wall.interior.module.west.full') {
+      return 'wall.interior.module.cutaway';
+    }
+    if (item.artAssetId === 'door.interior.open.west.full') return 'door.interior.open.west.cutaway';
+    return undefined;
+  }
+
+  private artFrame(item: ObliqueSolid, assetId = item.artAssetId): { readonly catalog: ObliqueModuleCatalog; readonly image: string } | undefined {
+    if (assetId === undefined) return undefined;
+    const catalog = this.artCatalogs.get(assetId);
+    if (catalog === undefined) return undefined;
+    const frame = selectObliqueModuleFrame(catalog, this.pose);
+    return this.textures.exists(frame.image) ? { catalog, image: frame.image } : undefined;
+  }
+
+  private displayArtFrame(item: ObliqueSolid, cutaway: boolean): { readonly catalog: ObliqueModuleCatalog; readonly image: string } | undefined {
+    if (!cutaway) return this.artFrame(item);
+    const assetId = this.cutawayArtAssetId(item);
+    return assetId === undefined ? undefined : this.artFrame(item, assetId);
+  }
+
+  private paintArt(projection: ObliqueWorldProjection): void {
+    for (const image of this.artImages) image.destroy();
+    this.artImages = [];
+    for (const item of projection.raised) {
+      if (item.kind === 'actor') continue;
+      const cutaway = this.cutsAwayForSelection(item);
+      const art = this.displayArtFrame(item, cutaway);
+      if (art === undefined) continue;
+      const anchor = {
+        x: item.footprint.reduce((sum, corner) => sum + corner.x, 0) / 4,
+        y: item.footprint.reduce((sum, corner) => sum + corner.y, 0) / 4,
+      };
+      const [width, height] = art.catalog.resolutionPx;
+      const [pivotX, pivotY] = art.catalog.pivotPx;
+      const image = this.add.image(anchor.x, anchor.y, art.image)
+        .setOrigin(pivotX / width, pivotY / height)
+        .setScale(this.pose.zoom)
+        .setAlpha(item.alpha)
+        .setDepth(2 + item.viewDepth / 10_000);
+      this.artImages.push(image);
+    }
+  }
+
+  private actorArtFrame(item: ObliqueActorPoint): { readonly catalog: ObliqueModuleCatalog; readonly image: string } | undefined {
+    const catalog = this.artCatalogs.get(item.artAssetId);
+    if (catalog === undefined) return undefined;
+    const frame = selectObliqueModuleFrame(catalog, this.pose);
+    return this.textures.exists(frame.image) ? { catalog, image: frame.image } : undefined;
+  }
+
+  private paintActorArt(projection: ObliqueWorldProjection): void {
+    for (const image of this.actorArtImages) image.destroy();
+    this.actorArtImages = [];
+    for (const item of projection.raised) {
+      if (item.kind !== 'actor') continue;
+      const art = this.actorArtFrame(item);
+      if (art === undefined) continue;
+      const [width, height] = art.catalog.resolutionPx;
+      const [pivotX, pivotY] = art.catalog.pivotPx;
+      this.actorArtImages.push(this.add.image(item.foot.x, item.foot.y, art.image)
+        .setOrigin(pivotX / width, pivotY / height)
+        .setScale(this.pose.zoom)
+        .setDepth(2 + item.viewDepth / 10_000));
     }
   }
 
@@ -208,8 +414,11 @@ export class ObliqueWorldScene extends Phaser.Scene {
       this.lastPaintedPoseRevision = this.poseRevision;
       this.rememberActors(frame.actors);
       this.paintGround(projection);
+      this.paintGroundArt(projection);
       this.paintSelection();
       this.paintRaised(projection);
+      this.paintArt(projection);
+      this.paintActorArt(projection);
       return;
     }
     if (!this.actorsMoved(frame.actors)) return;
@@ -219,5 +428,6 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.lastProjection = { ...this.lastProjection, raised };
     this.rememberActors(frame.actors);
     this.paintRaised(this.lastProjection);
+    this.paintActorArt(this.lastProjection);
   }
 }

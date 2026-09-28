@@ -139,6 +139,33 @@ diagnostic renderer. It has no final art, wall cutaway, construction ghosts or
 player-visible switch in `main.ts`, and the browser fixture is a small scene
 rather than the frame-cost acceptance test for a large prison.
 
+## First Blender modules inside the actual scene
+
+The composition branch joins the camera scene to authored north and west wall,
+cutaway wall, north and west doors, bed, toilet, rack and chair modules. Cell and canteen
+zoning select their matching Blender floor tile, while unzoned ground retains
+the baseline terrain appearance. Its browser fixture loads the real
+content-hashed PNGs and checks that each camera pose chooses the matching bed
+frame. It renders the same immutable world and selected square as above:
+
+| Yaw / elevation | Blender art with selected-room cutaway |
+| --- | --- |
+| -45° / 25° | [Shallow view](./blender-cutaway-render-feed-yaw-45-elev25-fullhd.png) |
+| 0° / 45° | [Straight view](./blender-cutaway-render-feed-yaw0-elev45-fullhd.png) |
+| +45° / 65° | [High view](./blender-cutaway-render-feed-yaw45-elev65-fullhd.png) |
+
+Selecting a ground square lowers only nearby walls *in front of* it. The
+unchanged edge layers still carry their full collision and save state. A
+browser mutation that reversed the near-wall depth comparison cut the far
+wall instead and failed the test; restoration passed. Authored cutaway art now
+replaces nearby wall geometry at the selected camera pose. Door cutaways still
+use geometry. The scene loads only the needed camera frames into Phaser's
+texture cache. Prisoner and guard idle sprites now use camera-matched Blender
+frames; walking animation still needs a motion-specific treatment. Unzoned
+ground has not reached final art quality. Depth and
+asset loading must be measured on a much larger prison before replacing the
+current player view.
+
 ## Active delivery lanes
 
 Keep three isolated worktrees moving in parallel: (1) Blender modules and
@@ -148,6 +175,19 @@ integration joins their verified outputs. A finished worker takes the next
 independent issue so the visual redesign does not stall on CI polling. Record
 the actual merged result and production visual check before calling a slice
 shipped.
+
+**Integrator handoff, 2026-09-28:** the art worker owns coherent Blender modules
+and the four-cell wing, the gameplay worker owns whole-footprint validation and
+template command parity, and the HUD worker owns camera controls and visible
+template previews. The integrator owns `src/main.ts` and the oblique scene until
+the preview branch is pushed, then hands its exact SHA to HUD for the stacked
+application wiring. The preview route `/?oblique-preview=1` reads the live
+simulation feed and paints a newly created prison, but it is an integration
+gate only: its build gestures and camera HUD are not yet connected. The next
+player-facing milestone is a real Full HD browser flow that creates a prison,
+rotates it by mouse, keyboard and buttons, places a cell template on filled
+squares, and reloads the same saved footprint. Test that flow before enabling
+the new scene by default.
 
 **Highest-priority continuation for every future session:** keep those three
 workers directed at this camera/building/art delivery until the selectable
