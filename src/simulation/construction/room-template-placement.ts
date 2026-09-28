@@ -49,6 +49,9 @@ export function validateRoomTemplatePlacement(
     if (world.getSquareStructure(outside) !== 0 || structureIsClaimed(outside) || world.getTopEdge(outside) !== 0) {
       return { ok: false, reason: 'structure-occupied', tile: { x: tileCoordinate(door.x), y: tileCoordinate(door.y) } };
     }
+    if (objectOccupies(outside)) {
+      return { ok: false, reason: 'object-occupied', tile: { x: tileCoordinate(door.x), y: tileCoordinate(door.y) } };
+    }
   }
   return { ok: true };
 }

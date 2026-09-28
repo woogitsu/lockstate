@@ -56,6 +56,16 @@ it('rejects the final room command without adding shell orders when a queued squ
   expect(runtime.construction.allOrders()).toEqual([wall]);
 });
 
+it.each([false, true])('preflight refuses a pending object footprint directly outside the Basic Cell doorway (mirrorX=%s)', (mirrorX) => {
+  const runtime = createNewSimulationRuntime(73);
+  const doorX = mirrorX ? 12 : 11;
+  const desk = createBuildOrder('approach-desk', 'desk-wooden', tile(doorX, 17), undefined, 0);
+  runtime.construction.submitOrder(desk);
+  expect(desk.state).toBe('approved');
+  const plan = instantiateRoomTemplate('cell-basic', { x: 10, y: 10 }, { mirrorX });
+  expect(runtime.roomTemplates.preflight(plan)).toEqual({ ok: false, reason: 'object-occupied', tile: tile(doorX, 16) });
+});
+
 it('keeps a side-boundary neighbour legal in both queued and completed states', () => {
   const runtime = createNewSimulationRuntime(73);
   const wall = createBuildOrder('side-neighbour', 'wall-brick', tile(14, 12), 'west', 0);
