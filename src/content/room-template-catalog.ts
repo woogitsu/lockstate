@@ -16,7 +16,7 @@ export interface RoomTemplatePlan {
   readonly height: number;
   readonly wallSquares: readonly TemplateSquare[];
   readonly doorSquares: readonly TemplateDoorSquare[];
-  readonly zone: { readonly roomId: 'room.cell' | 'room.shower-room'; readonly x: number; readonly y: number; readonly width: number; readonly height: number };
+  readonly zone: { readonly roomId: 'room.cell' | 'room.shower-room' | 'room.canteen'; readonly x: number; readonly y: number; readonly width: number; readonly height: number };
   /** Every separately designated room; `zone` retains the first for older readers. */
   readonly zones: readonly RoomTemplatePlan['zone'][];
   readonly objects: readonly { readonly buildableId: RoomTemplateObjectId; readonly x: number; readonly y: number }[];
@@ -26,8 +26,8 @@ export const ROOM_TEMPLATE_IDS = ['cell-basic', 'cell-large', 'shower-room'] as 
 // The four-cell block is accepted by the simulation before its HUD preset is
 // surfaced; the UI catalog adds it once its name and full preview are ready.
 export type RoomTemplateId = (typeof ROOM_TEMPLATE_IDS)[number];
-export type AuthoredRoomTemplateId = RoomTemplateId | 'cell-row-four';
-type RoomTemplateObjectId = 'bed-wooden' | 'toilet-brick' | 'shower-head-brick';
+export type AuthoredRoomTemplateId = RoomTemplateId | 'cell-row-four' | 'canteen-basic';
+type RoomTemplateObjectId = 'bed-wooden' | 'toilet-brick' | 'shower-head-brick' | 'dining-table-wooden' | 'bench-wooden';
 
 interface TemplateDefinition {
   readonly width: number;
@@ -37,7 +37,7 @@ interface TemplateDefinition {
   readonly objects: readonly { readonly buildableId: RoomTemplateObjectId; readonly x: number; readonly y: number }[];
 }
 
-const TEMPLATES: Readonly<Record<(typeof ROOM_TEMPLATE_IDS)[number], TemplateDefinition>> = {
+const TEMPLATES: Readonly<Record<Exclude<AuthoredRoomTemplateId, 'cell-row-four'>, TemplateDefinition>> = {
   'cell-basic': {
     width: 4, height: 7, roomId: 'room.cell', doorX: 1,
     objects: [{ buildableId: 'bed-wooden', x: 1, y: 1 }, { buildableId: 'toilet-brick', x: 2, y: 4 }],
@@ -53,6 +53,17 @@ const TEMPLATES: Readonly<Record<(typeof ROOM_TEMPLATE_IDS)[number], TemplateDef
   'shower-room': {
     width: 5, height: 5, roomId: 'room.shower-room', doorX: 2,
     objects: [{ buildableId: 'shower-head-brick', x: 1, y: 1 }, { buildableId: 'shower-head-brick', x: 3, y: 1 }],
+  },
+  'canteen-basic': {
+    width: 8, height: 8, roomId: 'room.canteen', doorX: 3,
+    objects: [
+      { buildableId: 'dining-table-wooden', x: 1, y: 1 },
+      { buildableId: 'dining-table-wooden', x: 4, y: 1 },
+      { buildableId: 'bench-wooden', x: 1, y: 3 },
+      { buildableId: 'bench-wooden', x: 4, y: 3 },
+      { buildableId: 'bench-wooden', x: 1, y: 5 },
+      { buildableId: 'bench-wooden', x: 4, y: 5 },
+    ],
   },
 };
 
