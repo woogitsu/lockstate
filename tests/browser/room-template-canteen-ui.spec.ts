@@ -57,15 +57,24 @@ test('Full HD stationary canteen ghost changes when Mirror X changes', async ({ 
   await dialog.getByRole('button', { name: 'Canteen', exact: true }).click();
   await dialog.getByRole('button', { name: 'Place on map' }).click();
   await page.mouse.move(850, 480);
-  const canvas = page.locator('#game-root canvas');
-  const before = await canvas.screenshot();
+  // Compare the plan itself. The right HUD can change by a one-level color
+  // rounding step while the canvas is unchanged.
+  const ghostClip = { x: 830, y: 475, width: 520, height: 520 };
+  const ghostScreenshot = () => page.screenshot({ clip: ghostClip });
+  // The hover preflight repaints the doorway after its worker verdict arrives.
+  await expect.poll(async () => {
+    const first = await ghostScreenshot();
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    return (await ghostScreenshot()).equals(first);
+  }).toBe(true);
+  const before = await ghostScreenshot();
   await page.getByRole('button', { name: 'Room plans', exact: true }).click();
   await dialog.getByRole('checkbox', { name: 'Mirror horizontally' }).check();
   await dialog.getByRole('button', { name: 'Close' }).click();
-  await expect.poll(async () => (await canvas.screenshot()).equals(before)).toBe(false);
+  await expect.poll(async () => (await ghostScreenshot()).equals(before)).toBe(false);
   await page.screenshot({ path: testInfo.outputPath('mirrored-canteen-ghost-fullhd.png') });
   await page.getByRole('button', { name: 'Room plans', exact: true }).click();
   await dialog.getByRole('checkbox', { name: 'Mirror horizontally' }).uncheck();
   await dialog.getByRole('button', { name: 'Close' }).click();
-  await expect.poll(async () => (await canvas.screenshot()).equals(before)).toBe(true);
+  await expect.poll(async () => (await ghostScreenshot()).equals(before)).toBe(true);
 });
