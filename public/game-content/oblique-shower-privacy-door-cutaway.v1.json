@@ -1,0 +1,487 @@
+{
+  "schemaVersion": 1,
+  "assetId": "door.shower.privacy.open.cutaway",
+  "source": "door.shower.privacy.open.blend",
+  "sourceSha256": "6df2a1a4604ddd99155b36780a1b524f65c92c89859421282857b0e40bfb7422",
+  "sourceDependencies": [],
+  "resolutionPx": [
+    512,
+    512
+  ],
+  "nominalPixelsPerTile": 64,
+  "pivotPx": [
+    256,
+    256
+  ],
+  "cameraTargetTiles": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "projection": "orthographic",
+  "yawDegrees": [
+    -180,
+    -165,
+    -150,
+    -135,
+    -120,
+    -105,
+    -90,
+    -75,
+    -60,
+    -45,
+    -30,
+    -15,
+    0,
+    15,
+    30,
+    45,
+    60,
+    75,
+    90,
+    105,
+    120,
+    135,
+    150,
+    165
+  ],
+  "elevationDegrees": [
+    25,
+    45,
+    65
+  ],
+  "frames": [
+    {
+      "yawDegrees": -180,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw-180-elev25.ccf340946b0c.png",
+      "sha256": "ccf340946b0c1d4ac197c9d3786d3e1efdc4af054781efa58b0162c0f0d68cb5"
+    },
+    {
+      "yawDegrees": -180,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw-180-elev45.3c87ff27126a.png",
+      "sha256": "3c87ff27126a91accb9f0d73b10cb7111d4ec75ac95e0989ab5dd76b6355d2a3"
+    },
+    {
+      "yawDegrees": -180,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw-180-elev65.b44bbd3cbb54.png",
+      "sha256": "b44bbd3cbb54bfbe6e5fe86ad8cd2dc179b684d593de5a136683ae0c8cc0b456"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw-165-elev25.07a26c112027.png",
+      "sha256": "07a26c11202765928219a5bc201452817b061358c7981b2e45f62a29b99ff3fd"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw-165-elev45.8d89fbb2b56a.png",
+      "sha256": "8d89fbb2b56ade4000ccd3892329c73b6c03975a679e4192885ee79d4f0a9e60"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw-165-elev65.71c2e4218d30.png",
+      "sha256": "71c2e4218d307d6fce4a9cfd4b213a2e94b999f7888805d53f8d8a7d25b33e24"
+    },
+    {
+      "yawDegrees": -150,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw-150-elev25.0d7d0249de22.png",
+      "sha256": "0d7d0249de2291f5507bc70ac692a3182afba0dea5c2bcaa91ed03d1b9408cab"
+    },
+    {
+      "yawDegrees": -150,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw-150-elev45.ae9ddf3ade3a.png",
+      "sha256": "ae9ddf3ade3ae9b8b515e9e66c1569accd58083b102c23f81e5a07879a2b9824"
+    },
+    {
+      "yawDegrees": -150,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw-150-elev65.1f66e80da720.png",
+      "sha256": "1f66e80da720dc694b73a722c98a7e26be663f0d7aed2db3fb19b1585589f973"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw-135-elev25.72b054220464.png",
+      "sha256": "72b054220464b9ac5e53b8d8639c80e60e6a60fd4340512707db100eb08fc379"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw-135-elev45.90538d6dcb87.png",
+      "sha256": "90538d6dcb87f05e900538dbf968e5f2339c88fc1f132f5fbd52d84937a360c3"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw-135-elev65.0593d692944a.png",
+      "sha256": "0593d692944a451d904a3035001df4bee94439e9ebbd9ff61f21fa99a1a63670"
+    },
+    {
+      "yawDegrees": -120,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw-120-elev25.fae5d7477902.png",
+      "sha256": "fae5d7477902807385c322677bc25bb208dd6ade023b0f40da0125f066882e31"
+    },
+    {
+      "yawDegrees": -120,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw-120-elev45.116ed6b7af4d.png",
+      "sha256": "116ed6b7af4d4edbf90cf27a2c57b0b243301c0832eb499db2a0a9286c159f51"
+    },
+    {
+      "yawDegrees": -120,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw-120-elev65.077aec3ba7ca.png",
+      "sha256": "077aec3ba7ca71b19feadfc4720da723ebb71679fa99f8af14ef607e1b85130a"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw-105-elev25.a9c2daf95d1d.png",
+      "sha256": "a9c2daf95d1def071b47cbf936b61b4f948059b2e2fea65a2b1e91a18597bb64"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw-105-elev45.f27f3b804d86.png",
+      "sha256": "f27f3b804d86dbdd9a76348827c9ef5c31dc9d8ef59b41d25509c399ea26781f"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw-105-elev65.09a7fa1fba4a.png",
+      "sha256": "09a7fa1fba4a34dee7b1dadeb1209e710348cb5ef7e412b71fbea4702d930150"
+    },
+    {
+      "yawDegrees": -90,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw-90-elev25.589d753cf7d2.png",
+      "sha256": "589d753cf7d28c1d068dbc9c8c299ff3caa865aa756aef68b19db2acc997a881"
+    },
+    {
+      "yawDegrees": -90,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw-90-elev45.fd5a691700d7.png",
+      "sha256": "fd5a691700d7f93837baa55351ef062a5b592025ca43001be048388989ff9a99"
+    },
+    {
+      "yawDegrees": -90,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw-90-elev65.1313cb32ea32.png",
+      "sha256": "1313cb32ea327956984e3921d4cd42745851831d91ae1a2edf770341511f06a0"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw-75-elev25.304b3ba289e6.png",
+      "sha256": "304b3ba289e603c1f4f1c558e87aaff37e226e3f25e4c2d305fa0d0d8f46aa66"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw-75-elev45.71245228e712.png",
+      "sha256": "71245228e712b15dceb1ae11f8437f031062f766d7257b0d6c159d975bc100ce"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw-75-elev65.4de961461bd0.png",
+      "sha256": "4de961461bd062f5c63e6e9ff9792da7d63d012570c83b9ad09e56d0900d72a7"
+    },
+    {
+      "yawDegrees": -60,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw-60-elev25.cb2c6d3e6dc4.png",
+      "sha256": "cb2c6d3e6dc4b98984373a2dee19291352f3d233c11b16e3932cb78e8d0718d7"
+    },
+    {
+      "yawDegrees": -60,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw-60-elev45.d916424b2f4e.png",
+      "sha256": "d916424b2f4edccd6202bc9a546cedb69323b2d1db8f2492393b983d74462be0"
+    },
+    {
+      "yawDegrees": -60,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw-60-elev65.68c31c1c38d3.png",
+      "sha256": "68c31c1c38d374e129f1764f8aa4c001bd42792064faea34192f3c5088bb48b1"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw-45-elev25.70828a2ca967.png",
+      "sha256": "70828a2ca96770ea42a4664da95d5e1d624a45e1571af32ddf9087e97dbaf37a"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw-45-elev45.e992058304fe.png",
+      "sha256": "e992058304fe6be2d8944c883491c87e9485399d7633568f0a566d07630c0ef4"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw-45-elev65.a2fd3f3c42c1.png",
+      "sha256": "a2fd3f3c42c1afde2fe47e643feff9e375747edd451c88e1008bdeeb5a23731a"
+    },
+    {
+      "yawDegrees": -30,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw-30-elev25.17c98ad4a635.png",
+      "sha256": "17c98ad4a63539799618fe74f8faf6579518ca25535926a09ef358b26dbb9807"
+    },
+    {
+      "yawDegrees": -30,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw-30-elev45.723c4adb6d20.png",
+      "sha256": "723c4adb6d2069e987b47fcfa847c7cd58fa354e528727d5fdd4b26c79750660"
+    },
+    {
+      "yawDegrees": -30,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw-30-elev65.5955b6ddd56f.png",
+      "sha256": "5955b6ddd56f982e6ac83d2d51d2f9a36dfb76be28d03b7d60ef407a197f808e"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw-15-elev25.4fce9aa57676.png",
+      "sha256": "4fce9aa576765d3b784862b1f0e06663dac5a3d112ca1dbcc0a90c6fc57f7005"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw-15-elev45.1e2f8b2cf00e.png",
+      "sha256": "1e2f8b2cf00e8ddce9c3b700c13ed00d7642e96a82997f0e95791f1d7e36060f"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw-15-elev65.9ad4412a185a.png",
+      "sha256": "9ad4412a185ab80dc38dac43345dfc846bc8f3dcdad4359ed724ac839457aa09"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw+00-elev25.8228e5815d05.png",
+      "sha256": "8228e5815d054afc69715ae7175838154e53b07c8f6326aede44f19b104d6049"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw+00-elev45.a679cbd18444.png",
+      "sha256": "a679cbd18444df94ee9c0e42632863a8db1686c01408f42fbbd22629e2f646da"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw+00-elev65.38ece0b023e4.png",
+      "sha256": "38ece0b023e4998367b42c1a56ad1d57ac59992c4e467b3f30344301363f6c5e"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw+15-elev25.067aefbe837e.png",
+      "sha256": "067aefbe837e708290bbce64608cdb698ba97640fbdc5d0aac79342e82b863f9"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw+15-elev45.5bf4bd429f6d.png",
+      "sha256": "5bf4bd429f6df1333b23b1b98b31ae33327e0702fd9999b972a9448636506978"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw+15-elev65.f2059caa3167.png",
+      "sha256": "f2059caa316770a6f3351b115f99de415e588c98b616213c560fbbaa80d4a9e2"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw+30-elev25.7d0fb8e12f26.png",
+      "sha256": "7d0fb8e12f26eeb2ebc85450e6aa75c070a494a46d016c5288974eab03cff938"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw+30-elev45.1ac0bd8ce4a8.png",
+      "sha256": "1ac0bd8ce4a8c939274c19005d26dc062868ea5cf5f987c4380f5dc62de88668"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw+30-elev65.2522301ded4f.png",
+      "sha256": "2522301ded4fb8ba23d4b60f2f8bab56d7fad1341f7d35db94e4f672152ff144"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw+45-elev25.9a90bc8c7aac.png",
+      "sha256": "9a90bc8c7aac9abeced338de503bc48623c7d87f1e98974f9c6d5769264cf087"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw+45-elev45.155a0519491e.png",
+      "sha256": "155a0519491ea9360b90762490651c070c3395ee03285e97d215e69ffe253af5"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw+45-elev65.9a6a18f3232c.png",
+      "sha256": "9a6a18f3232c2fc4d3d08d0c6ae1c2eac414b583df04ad1d6053103f8ec7bf48"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw+60-elev25.94d15c97bec4.png",
+      "sha256": "94d15c97bec4e93308ca1cd743670d1d6611df02c67e4fb0564de795a85c6d26"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw+60-elev45.500ea92a8f7f.png",
+      "sha256": "500ea92a8f7f715a38969e902f7e0b7a936d5e4a841ea7ebeac2b27d1bc4badb"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw+60-elev65.0f2011daa46d.png",
+      "sha256": "0f2011daa46d3d159d419781fe0dfd2f65aaa3f6fa9a186e53210c1977f40036"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw+75-elev25.b141227fd6c2.png",
+      "sha256": "b141227fd6c27f7042d0fdb99f9c3d36b8b378669a781130018b35c63012d750"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw+75-elev45.7c3cab93693d.png",
+      "sha256": "7c3cab93693db8123d08fa2f83ffb440e3f0d367c5d45a6091c619139674bbce"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw+75-elev65.647a62493ff4.png",
+      "sha256": "647a62493ff4dd3c419e7cb0cd87cc1bd4fe86f14a13929c0669146e06145bfa"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw+90-elev25.6298204d29c2.png",
+      "sha256": "6298204d29c2727ced06e84b6da7f53bb6644e7412b84ccd51a4335991de96ce"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw+90-elev45.d92f18528fce.png",
+      "sha256": "d92f18528fced8a58dd356c06aff436493eed776a742b12efcd4a330459edf31"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw+90-elev65.ae130842c084.png",
+      "sha256": "ae130842c0847171fe71ac60d0e950c30dcc47e06e17eab697b3b4057dba39be"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw+105-elev25.d2f89341afa6.png",
+      "sha256": "d2f89341afa67b160ac2d1daf17f31d6eb8275339d5e8535bf8428be71393a40"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw+105-elev45.37eb7d570752.png",
+      "sha256": "37eb7d570752f5c17afd076870842f485bbc60b6b035636a1f2e78598574e886"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw+105-elev65.96783f1c2c36.png",
+      "sha256": "96783f1c2c36100814065299eda23ec2a9b78f5cc2ce681a26618d340eaa1163"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw+120-elev25.2ad05837cb62.png",
+      "sha256": "2ad05837cb6206719c1123c74ceb7f924470b0429de161a0a7a0becd87c1e3aa"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw+120-elev45.40f78a903b6b.png",
+      "sha256": "40f78a903b6b198deb561939e88af0e55e4079226fd2073c67d6f2d806ecb330"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw+120-elev65.e7fadb21d462.png",
+      "sha256": "e7fadb21d46286afd96ed6e6564ac1132156c5a2daec70b4811373e5ed978a26"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw+135-elev25.1d2a24baf726.png",
+      "sha256": "1d2a24baf726ea8e27939421ffd263503aa529d932774a7e365d85120aff85a4"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw+135-elev45.ed6ca6b5bb99.png",
+      "sha256": "ed6ca6b5bb99b6fa19c8cac5d7d0400dcb0cfaaebf230dff20b14034d8339cee"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw+135-elev65.1b7af7cb2f61.png",
+      "sha256": "1b7af7cb2f6118adef2041424e314083985df92b4bbe2f9b89d77b97df1ad6fb"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw+150-elev25.84d8a6f8d031.png",
+      "sha256": "84d8a6f8d031dba722779c2e2d6e5d63375a6fcb10e43aa7ba6e825df36d30d8"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw+150-elev45.d895d1d6e492.png",
+      "sha256": "d895d1d6e492dde76ba171c37b7a38eb0d2f30d33b6cf134beffcbf8aa703e89"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw+150-elev65.72be92ec1ac2.png",
+      "sha256": "72be92ec1ac2a3b005117be9f156c92247e243d4e97cdee0e70337de543c8fb6"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw+165-elev25.98ce6efd40b3.png",
+      "sha256": "98ce6efd40b3b2212e5d6625e7226468bb58d051792c2158531bd21c4e474f62"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw+165-elev45.2915265054a2.png",
+      "sha256": "2915265054a2585995d861132db959011c3fdb6399091cf8e94b2ae4cffaa077"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw+165-elev65.a635b0626f55.png",
+      "sha256": "a635b0626f558d635b9c9f1c3dc4278feac6ff543cde0360f0af0344606a621a"
+    }
+  ]
+}

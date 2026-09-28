@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "source": "door.shower.privacy.open.blend",
+  "sha256": "6df2a1a4604ddd99155b36780a1b524f65c92c89859421282857b0e40bfb7422",
+  "assetIds": [
+    "door.shower.privacy.open.full",
+    "door.shower.privacy.open.cutaway"
+  ],
+  "footprintTiles": [
+    1,
+    1
+  ],
+  "pivotTile": [
+    0.5,
+    0.5
+  ],
+  "openDegrees": -65,
+  "material": "frosted aqua and galvanized steel"
+}

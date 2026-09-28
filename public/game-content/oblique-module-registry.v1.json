@@ -76,6 +76,14 @@
     {
       "assetId": "fixture.shower.head",
       "manifest": "/game-content/oblique-shower-head.v1.json"
+    },
+    {
+      "assetId": "door.shower.privacy.open.full",
+      "manifest": "/game-content/oblique-shower-privacy-door-full.v1.json"
+    },
+    {
+      "assetId": "door.shower.privacy.open.cutaway",
+      "manifest": "/game-content/oblique-shower-privacy-door-cutaway.v1.json"
     }
   ]
 }
