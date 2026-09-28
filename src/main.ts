@@ -3012,6 +3012,9 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
         );
       } else worldScene.stepCameraPan(direction);
     },
+    ...(obliquePreviewRequested ? { onFitRoomTemplate: (plan: RoomTemplatePlan) => {
+      obliqueCameraScene?.fitGroundTileArea({ x: plan.origin.x, y: plan.origin.y, width: plan.width, height: plan.height });
+    } } : {}),
     onIntent: (intent: HudIntent) => {
       switch (intent.kind) {
         case 'place-room-template':
