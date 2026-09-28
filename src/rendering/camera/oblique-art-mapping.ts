@@ -15,6 +15,7 @@ const OBJECT_ART: Readonly<Record<string, string>> = {
   'object.storage-rack': 'furniture.storage.rack.wooden',
   'object.chair': 'furniture.chair.wooden',
   'object.shower-head': 'fixture.shower.head',
+  'object.dining-table': 'furniture.dining.table.wooden',
 };
 
 const ROOM_FLOOR_ART: Readonly<Record<string, string>> = {

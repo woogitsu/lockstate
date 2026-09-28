@@ -10,7 +10,7 @@ const digest = (bytes: Buffer) => createHash('sha256').update(bytes).digest('hex
 const json = (path: string): unknown => JSON.parse(readFileSync(join(root, 'public', path.slice(1)), 'utf8')) as unknown;
 
 describe('oblique cell module registry', () => {
-  it('publishes thirty-six logical modules with complete hashed poses and a shared ground pivot', () => {
+  it('publishes thirty-seven logical modules with complete hashed poses and a shared ground pivot', () => {
     const registry = parseObliqueModuleRegistry(json('/game-content/oblique-module-registry.v1.json'));
     expect(registry.entries.map((entry) => entry.assetId)).toEqual([
       'wall.interior.module.full', 'wall.interior.module.west.full', 'wall.interior.module.cutaway',
@@ -31,6 +31,7 @@ describe('oblique cell module registry', () => {
       'wall.interior.corner.inner.south-east.full', 'wall.interior.corner.inner.south-east.cutaway',
       'wall.interior.junction.t.west.full', 'wall.interior.junction.t.west.cutaway',
       'wall.square.brick.low',
+      'furniture.dining.table.wooden',
     ]);
     for (const entry of registry.entries) {
       const catalog = parseObliqueModuleCatalog(json(entry.manifest));
@@ -40,11 +41,11 @@ describe('oblique cell module registry', () => {
       expect(catalog.nominalPixelsPerTile).toBe(64);
       expect(catalog.pivotPx).toEqual(isGround ? [64, 64] : [256, 256]);
       expect(catalog.cameraTargetTiles).toEqual([0, 0, 0]);
-      expect(catalog.yawDegrees).toEqual(entry.assetId.startsWith('wall.interior.module.') || entry.assetId.startsWith('wall.interior.corner.') || entry.assetId.startsWith('wall.interior.junction.') || entry.assetId === 'wall.square.brick.low' || entry.assetId.startsWith('floor.') || entry.assetId.startsWith('actor.') || entry.assetId === 'door.interior.open.cutaway' || entry.assetId.startsWith('door.interior.open.west.') || entry.assetId.startsWith('door.shower.privacy.') || entry.assetId === 'fixture.shower.head'
+      expect(catalog.yawDegrees).toEqual(entry.assetId.startsWith('wall.interior.module.') || entry.assetId.startsWith('wall.interior.corner.') || entry.assetId.startsWith('wall.interior.junction.') || entry.assetId === 'wall.square.brick.low' || entry.assetId === 'furniture.dining.table.wooden' || entry.assetId.startsWith('floor.') || entry.assetId.startsWith('actor.') || entry.assetId === 'door.interior.open.cutaway' || entry.assetId.startsWith('door.interior.open.west.') || entry.assetId.startsWith('door.shower.privacy.') || entry.assetId === 'fixture.shower.head'
         ? Array.from({ length: 24 }, (_, index) => -180 + index * 15)
         : [-45, 0, 45]);
       expect(catalog.elevationDegrees).toEqual([25, 45, 65]);
-      expect(catalog.frames).toHaveLength(entry.assetId.startsWith('wall.interior.module.') || entry.assetId.startsWith('wall.interior.corner.') || entry.assetId.startsWith('wall.interior.junction.') || entry.assetId === 'wall.square.brick.low' || entry.assetId.startsWith('floor.') || entry.assetId.startsWith('actor.') || entry.assetId === 'door.interior.open.cutaway' || entry.assetId.startsWith('door.interior.open.west.') || entry.assetId.startsWith('door.shower.privacy.') || entry.assetId === 'fixture.shower.head' ? 72 : 9);
+      expect(catalog.frames).toHaveLength(entry.assetId.startsWith('wall.interior.module.') || entry.assetId.startsWith('wall.interior.corner.') || entry.assetId.startsWith('wall.interior.junction.') || entry.assetId === 'wall.square.brick.low' || entry.assetId === 'furniture.dining.table.wooden' || entry.assetId.startsWith('floor.') || entry.assetId.startsWith('actor.') || entry.assetId === 'door.interior.open.cutaway' || entry.assetId.startsWith('door.interior.open.west.') || entry.assetId.startsWith('door.shower.privacy.') || entry.assetId === 'fixture.shower.head' ? 72 : 9);
       expect(digest(readFileSync(join(root, 'assets/source/blender', catalog.source)))).toBe(catalog.sourceSha256);
       for (const dependency of catalog.sourceDependencies ?? []) {
         expect(digest(readFileSync(join(root, 'assets/source/blender', dependency.source)))).toBe(dependency.sha256);
