@@ -941,6 +941,11 @@ export class ConstructionSystem implements SystemRegistration {
     return true;
   }
 
+  /** Whether one Undo transaction still offers every order of a room plan for Redo. */
+  public canRedoOrdersTogether(orderIds: readonly string[]): boolean {
+    return this.redoStack.some((transaction) => orderIds.every((id) => transaction.includes(id)));
+  }
+
   /**
    * Cancels an order, undoing the world geometry it wrote if it had already
    * finished.

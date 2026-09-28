@@ -1205,6 +1205,8 @@ export function createSessionCommandHandler(
     constructionCommands(command, context);
     if (simCommand?.type === 'CancelBuildOrder' || simCommand?.type === 'Undo') {
       roomTemplates.reconcileCancelledShells();
+    } else if (simCommand?.type === 'Redo') {
+      roomTemplates.reconcileRedoneShells();
     }
   };
 }

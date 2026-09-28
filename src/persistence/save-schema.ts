@@ -1646,6 +1646,12 @@ const contrabandSectionV7Schema = contrabandSectionSchema.extend({
     ])),
   }).strict(),
 }).strict();
+const roomTemplateRequestV7Schema = z.object({
+  templateId: z.enum(['cell-basic', 'cell-large', 'shower-room', 'canteen-basic', 'kitchen-basic', 'cell-row-four', 'infirmary-basic', 'laundry-basic', 'classroom-basic']),
+  origin: z.object({ x: z.number().int().safe(), y: z.number().int().safe() }).strict(),
+  mirrorX: z.boolean(),
+  sequence: z.number().int().nonnegative(),
+}).strict();
 const sessionSystemsV7Schema = sessionSystemsV6Schema.extend({
   prisoners: prisonersSectionV7Schema,
   navigation: navigationSectionSchema.omit({ work: true }),
@@ -1656,12 +1662,9 @@ const sessionSystemsV7Schema = sessionSystemsV6Schema.extend({
   // planner to migrate its own queue contract without changing that meaning.
   roomTemplates: z.object({
     version: z.literal(1),
-    pending: z.array(z.object({
-      templateId: z.enum(['cell-basic', 'cell-large', 'shower-room', 'canteen-basic', 'kitchen-basic', 'cell-row-four', 'infirmary-basic', 'laundry-basic', 'classroom-basic']),
-      origin: z.object({ x: z.number().int().safe(), y: z.number().int().safe() }).strict(),
-      mirrorX: z.boolean(),
-      sequence: z.number().int().nonnegative(),
-    }).strict()),
+    pending: z.array(roomTemplateRequestV7Schema),
+    // Optional additive state; earlier saves had no room-plan undo metadata.
+    undone: z.array(roomTemplateRequestV7Schema).optional(),
   }).strict().optional(),
 }).strict();
 
