@@ -59,7 +59,7 @@ The Full HD 1920×1080 browser harness imports the **real**
 edges in `SparseWorld`, and compares the two straight runtime solids with one
 corner at five yaw angles. It keeps neighboring straight solids so a gap or
 overlap at either end is visible. The harness source is
-[`qa-harness.mjs`](evidence/oblique-corner-edge-pair/qa-harness.mjs); it needs
+[`qa-oblique-corner-edge-pair.mjs`](../tooling/qa-oblique-corner-edge-pair.mjs); it needs
 the integrator's projector branch and a Vite browser-test server on port 5208.
 At all ten side/yaw samples the projector returned the expected four edge IDs
 and the browser loaded three distinct frame textures. These are real-projector
