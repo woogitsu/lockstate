@@ -407,7 +407,7 @@ let obliqueTemplateHover: { readonly x: number; readonly y: number } | undefined
 let obliqueSquareGhost: SVGSVGElement | undefined;
 let obliqueSquareGhostRoot: HTMLDivElement | undefined;
 let obliqueSquareGhostNotice: HTMLDivElement | undefined;
-let obliqueWallBuildable: HudBuildableViewModel | undefined;
+let obliqueBuildCatalogue: HudBuildViewModel | undefined;
 let obliqueTemplatePlan: RoomTemplatePlan | undefined;
 let obliqueTemplateVerdict: RoomTemplatePreflight | undefined;
 let obliqueTemplateQuote: RoomTemplateCostQuote | undefined;
@@ -417,29 +417,43 @@ const paintObliqueSquareGhost = (): void => {
   const ghost = obliqueSquareGhost;
   if (ghost === undefined) return;
   const tile = obliqueTemplateHover;
-  if (!buildTool?.isArmed() || !buildTool.squareFootprint() || tile === undefined || obliqueCameraScene === undefined) {
+  const wallArmed = buildTool?.isArmed() === true && buildTool.squareFootprint();
+  const objectFootprint = objectTool?.isArmed() === true && !objectTool.isRemoving() ? objectTool.footprint() : undefined;
+  if ((!wallArmed && objectFootprint === undefined) || tile === undefined || obliqueCameraScene === undefined) {
     if (obliqueSquareGhostRoot !== undefined) obliqueSquareGhostRoot.hidden = true;
     ghost.replaceChildren();
     buildTool?.targetSquares(undefined);
+    objectTool?.target(undefined);
     return;
   }
   const pose = obliqueCameraScene.cameraPose;
   ghost.setAttribute('viewBox', `0 0 ${pose.viewport.width} ${pose.viewport.height}`);
-  const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-  polygon.setAttribute('points', projectedTileQuad(tile.x, tile.y, pose).map(({ x, y }) => `${x},${y}`).join(' '));
-  polygon.setAttribute('data-tile-x', String(tile.x));
-  polygon.setAttribute('data-tile-y', String(tile.y));
-  ghost.replaceChildren(polygon);
+  const width = objectFootprint?.width ?? 1;
+  const height = objectFootprint?.height ?? 1;
+  const polygons: SVGPolygonElement[] = [];
+  for (let y = tile.y; y < tile.y + height; y += 1) {
+    for (let x = tile.x; x < tile.x + width; x += 1) {
+      const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+      polygon.setAttribute('points', projectedTileQuad(x, y, pose).map((point) => `${point.x},${point.y}`).join(' '));
+      polygon.setAttribute('data-tile-x', String(x));
+      polygon.setAttribute('data-tile-y', String(y));
+      polygons.push(polygon);
+    }
+  }
+  ghost.replaceChildren(...polygons);
   if (obliqueSquareGhostRoot !== undefined) obliqueSquareGhostRoot.hidden = false;
-  if (obliqueSquareGhostNotice !== undefined && obliqueWallBuildable !== undefined) {
+  const selectedId = wallArmed ? buildTool?.selectedDefinitionId : objectTool?.selectedDefinitionId;
+  const buildable = obliqueBuildCatalogue?.buildables.find(({ definitionId }) => definitionId === selectedId);
+  if (obliqueSquareGhostNotice !== undefined && buildable !== undefined) {
     const label = buildCatalogueRowLabel(
       (key, args) => localizer.format(key, args),
-      obliqueWallBuildable,
-      obliqueWallBuildable.placementCostMinorUnits === undefined ? undefined : localizer.formatNumber(obliqueWallBuildable.placementCostMinorUnits),
+      buildable,
+      buildable.placementCostMinorUnits === undefined ? undefined : localizer.formatNumber(buildable.placementCostMinorUnits),
     );
     if (obliqueSquareGhostNotice.textContent !== label) obliqueSquareGhostNotice.textContent = label;
   }
-  buildTool.targetSquares([tile]);
+  if (wallArmed) buildTool?.targetSquares([tile]);
+  else objectTool?.target({ tileX: tile.x, tileY: tile.y, width, height });
 };
 const paintObliqueTemplateGhost = (): void => {
   if (obliqueTemplateTool?.isArmed() && obliqueTemplatePlan !== undefined && obliqueCameraScene !== undefined) {
@@ -826,8 +840,8 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
 const game = new Phaser.Game(gameConfig);
 
 // The angled renderer first runs against the same live RenderFeed as the
-// standard scene behind an explicit preview URL. Full-square wall presses and
-// room plans share the live worker command port; other construction gestures
+// standard scene behind an explicit preview URL. Full-square wall and object
+// presses plus room plans share the live worker command port; other gestures
 // remain on WorldScene until their projected targets are represented.
 if (obliquePreviewRequested) {
   game.events.once(Phaser.Core.Events.READY, () => {
@@ -851,6 +865,11 @@ if (obliquePreviewRequested) {
           if (buildTool?.isArmed() && buildTool.squareFootprint()) {
             if (obliqueTemplateHover?.x !== tileX || obliqueTemplateHover.y !== tileY) return;
             buildTool.placeSquares([{ x: tileX, y: tileY }]);
+            return;
+          }
+          if (objectTool?.isArmed() && !objectTool.isRemoving()) {
+            if (obliqueTemplateHover?.x !== tileX || obliqueTemplateHover.y !== tileY) return;
+            objectTool.place({ tileX, tileY });
             return;
           }
           const tile = obliqueTemplateHover;
@@ -2786,7 +2805,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
   const layoutStore = resolveBrowserKeyValueStore();
 
   const initialBuildCatalogue = buildCatalogue();
-  obliqueWallBuildable = initialBuildCatalogue.buildables.find(({ definitionId }) => definitionId === 'wall-brick');
+  obliqueBuildCatalogue = initialBuildCatalogue;
   hud = mountHud(app, {
     localizer,
     ...(roomTemplatePreflight === undefined ? {} : { roomTemplatePreflight }),
@@ -3105,6 +3124,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
             tool?.setArmed(false);
             objects?.setArmed(intent.armed, { definitionId: intent.definitionId, footprint, removing: false });
             refreshCameraControls();
+            paintObliqueSquareGhost();
             return;
           }
           objects?.setArmed(false, { removing: false });
