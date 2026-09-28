@@ -57,7 +57,9 @@ export function createObliqueTemplateGhost(localizer: HudLocalizer): ObliqueTemp
         : verdict.reason === 'unowned-land' ? HUD_MESSAGE_KEY.templateUnownedLand : HUD_MESSAGE_KEY.templateBlocked);
       marker.textContent = plan.id === 'delivery-bay-basic' ? localizer.format(HUD_MESSAGE_KEY.templateDockMarker) : '';
       marker.hidden = plan.id !== 'delivery-bay-basic';
-      cost.textContent = quote === undefined ? '' : quote.catalogueCostMinorUnits === undefined
+      cost.textContent = quote === undefined ? '' : quote.catalogueCostMinorUnits === 0 && quote.materials.length === 0
+        ? localizer.format(HUD_MESSAGE_KEY.templateZeroCost)
+        : quote.catalogueCostMinorUnits === undefined
         ? localizer.format(HUD_MESSAGE_KEY.templateCatalogueValueUnavailable)
         : localizer.format(HUD_MESSAGE_KEY.templateCatalogueValue, { total: localizer.formatNumber(quote.catalogueCostMinorUnits) });
       svg.setAttribute('viewBox', `0 0 ${geometry.viewport.width} ${geometry.viewport.height}`);

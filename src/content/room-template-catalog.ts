@@ -21,14 +21,14 @@ export interface RoomTemplatePlan {
   readonly height: number;
   readonly wallSquares: readonly TemplateSquare[];
   readonly doorSquares: readonly TemplateDoorSquare[];
-  readonly zone: { readonly roomId: 'room.cell' | 'room.shower-room' | 'room.canteen' | 'room.kitchen' | 'room.infirmary' | 'room.laundry' | 'room.classroom' | 'room.common-room' | 'room.security-office' | 'room.storage-room' | 'room.staff-room' | 'room.solitary-cell' | 'room.delivery-bay' | 'room.holding-cell' | 'room.reception'; readonly x: number; readonly y: number; readonly width: number; readonly height: number };
+  readonly zone: { readonly roomId: 'room.cell' | 'room.shower-room' | 'room.canteen' | 'room.kitchen' | 'room.infirmary' | 'room.laundry' | 'room.classroom' | 'room.common-room' | 'room.security-office' | 'room.storage-room' | 'room.staff-room' | 'room.solitary-cell' | 'room.delivery-bay' | 'room.holding-cell' | 'room.reception' | 'room.yard'; readonly x: number; readonly y: number; readonly width: number; readonly height: number };
   /** Every separately designated room; `zone` retains the first for older readers. */
   readonly zones: readonly RoomTemplatePlan['zone'][];
   readonly objects: readonly { readonly buildableId: RoomTemplateObjectId; readonly x: number; readonly y: number; readonly orientation?: 0 | 1 | 2 | 3 }[];
 }
 
 /** Player-facing choices; backend-authored additions can join after HUD copy and controls land. */
-export const ROOM_TEMPLATE_IDS = ['cell-basic', 'cell-large', 'shower-room', 'cell-row-four', 'canteen-basic', 'kitchen-basic', 'infirmary-basic', 'laundry-basic', 'classroom-basic', 'common-room-basic', 'security-office-basic', 'storage-room-basic', 'staff-room-basic', 'solitary-cell-basic', 'holding-cell-basic', 'delivery-bay-basic', 'reception-basic'] as const;
+export const ROOM_TEMPLATE_IDS = ['cell-basic', 'cell-large', 'shower-room', 'cell-row-four', 'canteen-basic', 'kitchen-basic', 'infirmary-basic', 'laundry-basic', 'classroom-basic', 'common-room-basic', 'security-office-basic', 'storage-room-basic', 'staff-room-basic', 'solitary-cell-basic', 'holding-cell-basic', 'delivery-bay-basic', 'reception-basic', 'yard-basic'] as const;
 export type RoomTemplateId = (typeof ROOM_TEMPLATE_IDS)[number];
 export type AuthoredRoomTemplateId = RoomTemplateId;
 type RoomTemplateObjectId = 'bed-wooden' | 'toilet-brick' | 'shower-head-brick' | 'dining-table-wooden' | 'bench-wooden' | 'stove-brick' | 'prep-counter-brick' | 'fridge-brick' | 'medical-bed-wooden' | 'medicine-cabinet-wooden' | 'washing-machine-brick' | 'bookshelf-wooden' | 'chair-wooden' | 'security-console-brick' | 'storage-rack-wooden' | 'desk-wooden' | 'loading-dock-door-wooden';
@@ -77,7 +77,7 @@ interface TemplateDefinition {
   readonly objects: readonly { readonly buildableId: RoomTemplateObjectId; readonly x: number; readonly y: number; readonly width?: number }[];
 }
 
-const TEMPLATES: Readonly<Record<Exclude<AuthoredRoomTemplateId, 'cell-row-four'>, TemplateDefinition>> = {
+const TEMPLATES: Readonly<Record<Exclude<AuthoredRoomTemplateId, 'cell-row-four' | 'yard-basic'>, TemplateDefinition>> = {
   'cell-basic': {
     width: 4, height: 7, roomId: 'room.cell', doorX: 1,
     objects: [{ buildableId: 'bed-wooden', x: 1, y: 1 }, { buildableId: 'toilet-brick', x: 2, y: 4 }],
@@ -209,6 +209,11 @@ export function instantiateRoomTemplate(
   if (!roomTemplateOriginFitsSafeCoordinates(id, origin)) {
     throw new RangeError('Room template footprint exceeds safe tile coordinates.');
   }
+  if (id === 'yard-basic') {
+    const zone = { roomId: 'room.yard' as const, x: origin.x, y: origin.y, width: 8, height: 8 };
+    return { id, origin: { ...origin }, width: 8, height: 8,
+      wallSquares: [], doorSquares: [], objects: [], zone, zones: [zone] };
+  }
   if (id === 'cell-row-four') return instantiateCellRow(origin, options.mirrorX === true);
   const definition = TEMPLATES[id];
   if (definition === undefined) throw new RangeError(`Unknown room template: ${id}`);
@@ -242,7 +247,8 @@ export function instantiateRoomTemplate(
 
 /** Includes the exclusive loop bounds used by placement and pending claims. */
 export function roomTemplateOriginFitsSafeCoordinates(id: AuthoredRoomTemplateId, origin: TemplateSquare, quarterTurns: 0 | 1 | 2 | 3 = 0): boolean {
-  const dimensions = id === 'cell-row-four' ? { width: 7, height: 16 } : TEMPLATES[id];
+  const dimensions = id === 'cell-row-four' ? { width: 7, height: 16 } :
+    id === 'yard-basic' ? { width: 8, height: 8 } : TEMPLATES[id];
   const width = dimensions === undefined ? 0 : quarterTurns % 2 === 0 ? dimensions.width : dimensions.height;
   const height = dimensions === undefined ? 0 : quarterTurns % 2 === 0 ? dimensions.height : dimensions.width;
   return dimensions !== undefined && Number.isSafeInteger(origin.x) && Number.isSafeInteger(origin.y) &&
