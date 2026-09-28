@@ -7,10 +7,12 @@ test('Full HD empty start draws a quiet themed planning surface without taking m
   const before = await page.evaluate(() => {
     const app = document.getElementById('app')!;
     const style = getComputedStyle(app, '::before');
-    return { content: style.content, background: style.backgroundColor, hit: document.elementFromPoint(960, 350)?.tagName };
+    const grid = getComputedStyle(app, '::after');
+    return { content: style.content, background: style.backgroundColor, gridMask: grid.maskImage, hit: document.elementFromPoint(960, 350)?.tagName };
   });
   expect(before.content).not.toBe('none');
   expect(before.background).not.toBe('rgba(0, 0, 0, 0)');
+  expect(before.gridMask).not.toBe('none');
   expect(before.hit).toBe('CANVAS');
   await page.screenshot({ path: testInfo.outputPath('planning-surface-fullhd-light.png') });
 

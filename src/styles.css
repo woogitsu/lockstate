@@ -43,10 +43,18 @@ canvas {
     z-index: 1;
     pointer-events: none;
     background-color: var(--surface-sunken);
-    background-image:
-      linear-gradient(var(--border-hairline) var(--hairline), transparent var(--hairline)),
-      linear-gradient(90deg, var(--border-hairline) var(--hairline), transparent var(--hairline));
-    background-size: 48px 48px;
+  }
+
+  #app:has(> .empty-world-prompt:not([hidden]))::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background-color: var(--border-hairline);
+    mask-image: url('./ui/empty-grid-mask.svg');
+    mask-size: 48px 48px;
+    mask-repeat: repeat;
   }
 }
 
