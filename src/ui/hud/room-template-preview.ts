@@ -94,7 +94,9 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
         return t(HUD_MESSAGE_KEY.templateObjectCount, { name: t(item.nameKey as LocalizationKey), count: localizer.formatNumber(quantity) });
       });
       materials.textContent = t(HUD_MESSAGE_KEY.templateMaterials, { materials: materialNames.join(' · ') });
-      catalogueValue.textContent = cost.catalogueCostMinorUnits === undefined
+      catalogueValue.textContent = cost.catalogueCostMinorUnits === 0 && cost.materials.length === 0
+        ? t(HUD_MESSAGE_KEY.templateZeroCost)
+        : cost.catalogueCostMinorUnits === undefined
         ? t(HUD_MESSAGE_KEY.templateCatalogueValueUnavailable)
         : t(HUD_MESSAGE_KEY.templateCatalogueValue, { total: localizer.formatNumber(cost.catalogueCostMinorUnits) });
       materials.hidden = cost.materials.length === 0;
