@@ -12,6 +12,37 @@ set of views of one exact 3D scene. The actual `.blend` source and runtime
 renders must be built and tested separately. No concept PNG is loaded by the
 game.
 
+## Delivery checkpoint — 2026-09-28, 17:00 CEST
+
+The executable implementation is split into a serial stack. [#1617](https://github.com/woogitsu/lockstate/pull/1617)
+adds the world renderer and camera foundation; [#1623](https://github.com/woogitsu/lockstate/pull/1623)
+connects the angled scene, controls, tile picking, full-square ghosts and early
+Blender modules. [#1785](https://github.com/woogitsu/lockstate/pull/1785)
+integrates more room patterns, unobstructed HUD controls, truthful cost/refusal
+states, and Blender terrain, furniture and canteen flooring. These PRs are
+stacked in that order and are **not merged to main at this checkpoint**.
+Concept images remain reference material; the PRs carry actual game assets.
+
+In the real 1920 × 1080 application, the combined #1785 tree passed 8/8
+focused browser scenarios covering the room-fit control, angle/ghost input,
+Yard placement, canteen flooring and camera panel layout. Further per-slice
+browser checks covered active Build rotation, worker response ordering and
+Save/Load. This is evidence for a playable integration branch, not a claim
+about the deployed game. The exact-head CI gate for #1785 initially found
+three integration-contract drifts (zero-cost message classification, a changed
+template control signature and an ADR line anchor); commit `b308c5274`
+repaired them and the focused 34 tests pass. Wait for the new exact-head run.
+
+The next separate art/HUD/gameplay slices are [Reception floor #1788](https://github.com/woogitsu/lockstate/pull/1788),
+[200% minimap clearance #1786](https://github.com/woogitsu/lockstate/pull/1786)
+and [Canteen rotation control #1787](https://github.com/woogitsu/lockstate/pull/1787).
+They must be integrated onto one later branch and checked together, including
+tile picking, collisions, cost, construction completion and Save/Load.
+The workers then continue with Reception desk art, Large Cell rotation and
+legible Polish angle labels. Merge one PR at a time only after its exact-head
+checks and the preceding main CI are green; visually verify the deployed
+result before calling the new view shipped.
+
 ## Visual references
 
 | Image | Question it answers | Keep | Correct before shipping |
