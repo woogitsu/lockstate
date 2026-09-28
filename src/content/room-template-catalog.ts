@@ -86,6 +86,9 @@ export function instantiateRoomTemplate(
   if (!Number.isSafeInteger(origin.x) || !Number.isSafeInteger(origin.y)) {
     throw new RangeError('Room template origin must use safe integer tile coordinates.');
   }
+  if (!roomTemplateOriginFitsSafeCoordinates(id, origin)) {
+    throw new RangeError('Room template footprint exceeds safe tile coordinates.');
+  }
   if (id === 'cell-row-four') return instantiateCellRow(origin, options.mirrorX === true);
   const definition = TEMPLATES[id];
   if (definition === undefined) throw new RangeError(`Unknown room template: ${id}`);
@@ -115,6 +118,14 @@ export function instantiateRoomTemplate(
     // rather than only the anchor, so the far tile stays inside the room.
     objects: definition.objects.map((object) => ({ buildableId: object.buildableId, ...square(object.x + (options.mirrorX === true ? (object.width ?? 1) - 1 : 0), object.y) })),
   };
+}
+
+/** Includes the exclusive loop bounds used by placement and pending claims. */
+export function roomTemplateOriginFitsSafeCoordinates(id: AuthoredRoomTemplateId, origin: TemplateSquare): boolean {
+  const dimensions = id === 'cell-row-four' ? { width: 7, height: 16 } : TEMPLATES[id];
+  return dimensions !== undefined && Number.isSafeInteger(origin.x) && Number.isSafeInteger(origin.y) &&
+    origin.x <= Number.MAX_SAFE_INTEGER - dimensions.width &&
+    origin.y <= Number.MAX_SAFE_INTEGER - dimensions.height;
 }
 
 /** Four basic Cells share party walls across each bank of a clear two-tile corridor. */
