@@ -110,8 +110,9 @@ row carries the counter
 (`src/simulation/presentation/construction-projection.ts:381`); the per-command
 lead exists as `CANCEL_BUILD_ORDER_LEAD_TICKS`
 (`src/ui/simulation-commands.ts:183`); and Decision §7's candidate sentence
-shipped **verbatim** at `src/content/default-locale-en.ts:886`, with a Polish
-translation at `src/content/locale-pl.ts:694`.
+shipped **verbatim** at `src/content/default-locale-en.ts:1045`
+(`hud.alert.refusal.cancel-build-order.stale-cancellation`), with a Polish
+translation at `src/content/locale-pl.ts:818` under the same key.
 
 **Three things follow, and the third is the one a reader should hold onto.**
 (1) The `Status` line is **not** moved by this re-read — that is the owner's,
@@ -624,8 +625,9 @@ promise is not true of any code yet, since none of this is implemented):
 > document"* holds — this document still writes no string, and that is the
 > reservation-4 point it is making. *"None of this is implemented"* does not:
 > the sentence below shipped **verbatim, every character**, at
-> `src/content/default-locale-en.ts:886`, and is translated at
-> `src/content/locale-pl.ts:694`. So the promise is now true of code, which is
+> `src/content/default-locale-en.ts:1045` (key
+> `hud.alert.refusal.cancel-build-order.stale-cancellation`), and is translated at
+> `src/content/locale-pl.ts:818` under the same key. So the promise is now true of code, which is
 > the condition reservation 4's release attaches to the wording rather than a
 > licence this document granted itself.
 

@@ -1,0 +1,149 @@
+{
+  "schemaVersion": 1,
+  "entries": [
+    {
+      "assetId": "wall.interior.module.full",
+      "manifest": "/game-content/oblique-modules.v1.json"
+    },
+    {
+      "assetId": "wall.interior.module.west.full",
+      "manifest": "/game-content/oblique-wall-west.v1.json"
+    },
+    {
+      "assetId": "wall.interior.module.cutaway",
+      "manifest": "/game-content/oblique-wall-cutaway.v1.json"
+    },
+    {
+      "assetId": "wall.interior.module.west.cutaway",
+      "manifest": "/game-content/oblique-wall-west-cutaway.v1.json"
+    },
+    {
+      "assetId": "furniture.cell.bed.single.variants",
+      "manifest": "/game-content/oblique-cell-bed.v1.json"
+    },
+    {
+      "assetId": "door.interior.open.full",
+      "manifest": "/game-content/oblique-cell-door-open.v1.json"
+    },
+    {
+      "assetId": "door.interior.open.cutaway",
+      "manifest": "/game-content/oblique-cell-door-north-cutaway.v1.json"
+    },
+    {
+      "assetId": "door.interior.open.west.full",
+      "manifest": "/game-content/oblique-cell-door-west-full.v1.json"
+    },
+    {
+      "assetId": "door.interior.open.west.cutaway",
+      "manifest": "/game-content/oblique-cell-door-west-cutaway.v1.json"
+    },
+    {
+      "assetId": "fixture.cell.toilet_sink",
+      "manifest": "/game-content/oblique-cell-toilet.v1.json"
+    },
+    {
+      "assetId": "furniture.storage.rack.wooden",
+      "manifest": "/game-content/oblique-cell-storage-rack.v1.json"
+    },
+    {
+      "assetId": "furniture.chair.wooden",
+      "manifest": "/game-content/oblique-cell-chair.v1.json"
+    },
+    {
+      "assetId": "floor.cell.sealed-concrete",
+      "manifest": "/game-content/oblique-floor-cell.v1.json"
+    },
+    {
+      "assetId": "floor.linoleum.institutional",
+      "manifest": "/game-content/oblique-floor-corridor.v1.json"
+    },
+    {
+      "assetId": "floor.canteen.terrazzo",
+      "manifest": "/game-content/oblique-floor-canteen.v1.json"
+    },
+    {
+      "assetId": "actor.prisoner.base",
+      "manifest": "/game-content/oblique-actor-prisoner.v1.json"
+    },
+    {
+      "assetId": "actor.guard.base",
+      "manifest": "/game-content/oblique-actor-guard.v1.json"
+    },
+    {
+      "assetId": "wall.interior.corner.inner.north-west.full",
+      "manifest": "/game-content/oblique-wall-corner-north-west-full.v1.json"
+    },
+    {
+      "assetId": "wall.interior.corner.inner.north-west.cutaway",
+      "manifest": "/game-content/oblique-wall-corner-north-west-cutaway.v1.json"
+    },
+    {
+      "assetId": "floor.shower.ceramic",
+      "manifest": "/game-content/oblique-floor-shower.v1.json"
+    },
+    {
+      "assetId": "fixture.shower.head",
+      "manifest": "/game-content/oblique-shower-head.v1.json"
+    },
+    {
+      "assetId": "door.shower.privacy.open.full",
+      "manifest": "/game-content/oblique-shower-privacy-door-full.v1.json"
+    },
+    {
+      "assetId": "door.shower.privacy.open.cutaway",
+      "manifest": "/game-content/oblique-shower-privacy-door-cutaway.v1.json"
+    },
+    {
+      "assetId": "floor.terrain.dirt",
+      "manifest": "/game-content/oblique-floor-terrain-dirt.v1.json"
+    },
+    {
+      "assetId": "floor.terrain.grass",
+      "manifest": "/game-content/oblique-floor-terrain-grass.v1.json"
+    },
+    {
+      "assetId": "floor.terrain.dirt-grass.edge.north",
+      "manifest": "/game-content/oblique-floor-dirt-grass-edge-north.v1.json"
+    },
+    {
+      "assetId": "floor.terrain.dirt-grass.edge.east",
+      "manifest": "/game-content/oblique-floor-dirt-grass-edge-east.v1.json"
+    },
+    {
+      "assetId": "floor.terrain.dirt-grass.edge.south",
+      "manifest": "/game-content/oblique-floor-dirt-grass-edge-south.v1.json"
+    },
+    {
+      "assetId": "floor.terrain.dirt-grass.edge.west",
+      "manifest": "/game-content/oblique-floor-dirt-grass-edge-west.v1.json"
+    },
+    {
+      "assetId": "wall.interior.corner.inner.north-east.full",
+      "manifest": "/game-content/oblique-wall-corner-north-east-full.v1.json"
+    },
+    {
+      "assetId": "wall.interior.corner.inner.north-east.cutaway",
+      "manifest": "/game-content/oblique-wall-corner-north-east-cutaway.v1.json"
+    },
+    {
+      "assetId": "wall.interior.corner.inner.south-east.full",
+      "manifest": "/game-content/oblique-wall-corner-south-east-full.v1.json"
+    },
+    {
+      "assetId": "wall.interior.corner.inner.south-east.cutaway",
+      "manifest": "/game-content/oblique-wall-corner-south-east-cutaway.v1.json"
+    },
+    {
+      "assetId": "wall.interior.junction.t.west.full",
+      "manifest": "/game-content/oblique-wall-junction-t-west-full.v1.json"
+    },
+    {
+      "assetId": "wall.interior.junction.t.west.cutaway",
+      "manifest": "/game-content/oblique-wall-junction-t-west-cutaway.v1.json"
+    },
+    {
+      "assetId": "wall.square.brick.low",
+      "manifest": "/game-content/oblique-square-brick-low-wall.v1.json"
+    }
+  ]
+}

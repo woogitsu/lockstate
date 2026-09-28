@@ -90,7 +90,7 @@ That recurring charge now exists — `PayrollSystem` bills every employee's
 `wageBand.minPerDay` at the end of every in-game day — so the precondition is
 met and the ladder is reachable for the first time. Decision 2 below is what
 makes it reachable in the other sense as well: `Treasury.spend`
-(`src/simulation/economy/treasury.ts:111`) still refuses rather than overdrawing,
+(`src/simulation/economy/treasury.ts:809`, `public spend`) still refuses rather than overdrawing,
 so there is still no negative balance for a ladder to respond to.
 
 And ADR 0017 decision 3 already accepts the income line decision 1 below
@@ -283,7 +283,7 @@ consequences that follow."*
 
 **Its precondition is named in ADR 0017's own text and is not met today.**
 `Treasury.spend` refuses rather than overdrawing
-(`src/simulation/economy/treasury.ts:111`), so there is no negative balance for a
+(`src/simulation/economy/treasury.ts:809`, `public spend`), so there is no negative balance for a
 ladder to respond to. Building this means changing that.
 
 **The owner was asked whether bankruptcy should follow some number of days in

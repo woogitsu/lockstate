@@ -1,5 +1,9 @@
 import type { LocalizationKey } from '../../content/localization';
+import type { RoomTemplateId } from '../../content/room-template-catalog';
 import type { MinimapView } from '../../shared/minimap-view';
+import type { CameraPoseAction } from '../../input/camera-pose-input';
+import type { RoomTemplateCostQuote, RoomTemplateTool } from '../room-template-tool';
+import { RoomTemplateTool as RoomTemplateToolState, type RoomTemplatePlacementRequest, type RoomTemplatePreflight } from '../room-template-tool';
 import { DEFAULT_LAYOUT_SETTINGS, type LayoutSettings } from '../../input/layout-preference';
 import type { MessageParameters } from '../../services/localization/format';
 import { hostRefusalReason } from '../host-refusal';
@@ -17,6 +21,7 @@ import { type ListRow, createListRow } from '../primitives/list-row';
 import { type Panel, createPanel } from '../primitives/panel';
 import { type TabButton, createTabButton } from '../primitives/tab-button';
 import { type BuildPanel, type BuildPanelTarget, createBuildPanel } from './build-panel';
+import { createCameraAngleControl } from './camera-angle-control';
 import { type IntakePanel, createIntakePanel } from './intake-panel';
 import { type OverviewPanel, createOverviewPanel } from './overview-panel';
 import { type RegimePanel, createRegimePanel } from './regime-panel';
@@ -129,10 +134,9 @@ export interface HudBuildEdgeTarget {
  * covers a run. See the `place-build-order` intent for why the run stays
  * whole.
  */
-export interface HudBuildOrder {
-  readonly definitionId: string;
-  readonly edges: readonly HudBuildEdgeTarget[];
-}
+export type HudBuildOrder =
+  | { readonly definitionId: string; readonly edges: readonly HudBuildEdgeTarget[]; readonly squares?: never; readonly footprint?: never }
+  | { readonly definitionId: string; readonly footprint: 'square'; readonly squares: readonly { readonly x: number; readonly y: number }[]; readonly edges?: never };
 
 /**
  * The world's build gesture, as the HUD is willing to know it (issue #225).
@@ -375,6 +379,7 @@ export interface HudToolStandDownSource {
 
 export type HudIntent =
   | { readonly kind: 'select-tab'; readonly tab: HudTabId }
+  | ({ readonly kind: 'place-room-template' } & RoomTemplatePlacementRequest)
   | { readonly kind: 'set-clock'; readonly mode: HudClockMode; readonly speed: HudSpeed }
   | { readonly kind: 'toggle-panel'; readonly panel: HudPanelId; readonly collapsed: boolean }
   /**
@@ -865,6 +870,8 @@ export interface HudUnavailableNotice {
 
 export interface MountHudOptions {
   readonly localizer: HudLocalizer;
+  readonly roomTemplatePreflight?: (request: RoomTemplatePlacementRequest) => Promise<RoomTemplatePreflight>;
+  readonly roomTemplateQuote?: (id: RoomTemplateId) => Promise<RoomTemplateCostQuote>;
   /**
    * The player's stored layout: which regions are folded and how wide or tall
    * the two resizable ones are (#1159).
@@ -1062,6 +1069,10 @@ export interface MountHudOptions {
    * every harness in `tests/browser/` that does not pass it.
    */
   readonly onCameraZoom?: (direction: 'in' | 'out') => void;
+  readonly onCameraPan?: (direction: 'up' | 'down' | 'left' | 'right') => void;
+  /** Present only when the host has mounted an angle-capable camera. */
+  readonly onCameraPoseAction?: (action: CameraPoseAction) => void;
+  readonly cameraPose?: { readonly yawRadians: number; readonly elevationRadians: number };
   /**
    * Receives every player action, and may be async.
    *
@@ -1091,6 +1102,8 @@ export interface MountHudOptions {
 
 export interface HudHandle {
   readonly element: HTMLElement;
+  /** Shared input state for the world ghost; absent without a worker. */
+  readonly roomTemplateTool?: RoomTemplateTool;
   /**
    * A slot at the top of the HUD's right rail for a panel the **host** owns.
    *
@@ -1138,6 +1151,8 @@ export interface HudHandle {
   update(viewModel: HudViewModel): void;
   /** Paints a read-only projection supplied by the world renderer. */
   updateMinimap(view: MinimapView | undefined): void;
+  updateCameraPose(pose: { readonly yawRadians: number; readonly elevationRadians: number }): void;
+  setCameraPoseAvailable(available: boolean): void;
   /** Makes the empty-session minimap a truthful, inert instruction. */
   setMinimapSessionActive(active: boolean): void;
   /**
@@ -1994,6 +2009,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * The notification still cannot reject into the void.
    */
   const dispatchShell = (action: HudShellAction, intent: HudIntent): void => {
+    if (action.kind === 'select-tab' && action.tab !== 'build') roomTemplateTool?.standDown();
     applyState(hudShellReducer(state, action));
     runReported(intent.kind, () => options.onIntent?.(intent), reportError);
   };
@@ -2267,6 +2283,16 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     },
   });
   zoomIn.element.classList.add('hud-zoom__in');
+  const panButtons = (['left', 'up', 'down', 'right'] as const).map((direction) => {
+    const button = createIconButton({
+      icon: `pan-${direction}`,
+      label: t(`input.action.camera.${direction}`),
+      variant: 'bordered',
+      onActivate: () => options.onCameraPan?.(direction),
+    });
+    button.element.classList.add('hud-pan__button');
+    return button.element;
+  });
   const zoomControl = element('div', {
     className: 'hud-zoom',
     attributes: {
@@ -2275,22 +2301,51 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       // that also has an interface scale. The same word is on screen in the
       // legend, so this is a machine-readable copy of a visible label rather
       // than the only place the meaning exists.
-      'aria-label': t(HUD_MESSAGE_KEY.zoomRegion),
+      'aria-label': t(HUD_MESSAGE_KEY.cameraControls),
     },
     // Out before in, so the pair reads left to right the way a range does and
     // the way the keys do on the row they are bound to.
-    children: [zoomLegend, zoomOut.element, zoomIn.element],
+    children: [zoomLegend, ...panButtons, zoomOut.element, zoomIn.element],
   });
 
-  corner = element('div', { className: 'hud__corner', children: [zoomControl, minimapPanel.element] });
+  const angleControl = options.onCameraPoseAction === undefined || options.cameraPose === undefined
+    ? undefined
+    : createCameraAngleControl({
+      title: t(HUD_MESSAGE_KEY.cameraAngleTitle),
+      yawLeft: t(HUD_MESSAGE_KEY.cameraAngleYawLeft),
+      yawRight: t(HUD_MESSAGE_KEY.cameraAngleYawRight),
+      elevationUp: t(HUD_MESSAGE_KEY.cameraAngleElevationUp),
+      elevationDown: t(HUD_MESSAGE_KEY.cameraAngleElevationDown),
+      reset: t(HUD_MESSAGE_KEY.cameraAngleReset),
+      yaw: t(HUD_MESSAGE_KEY.cameraAngleYaw),
+      elevation: t(HUD_MESSAGE_KEY.cameraAngleElevation),
+    }, options.onCameraPoseAction);
+  if (angleControl !== undefined && options.cameraPose !== undefined) angleControl.updatePose(options.cameraPose);
+  corner = element('div', {
+    className: 'hud__corner',
+    children: [zoomControl, ...(angleControl === undefined ? [] : [angleControl.element]), minimapPanel.element],
+  });
 
   // ---- bottom-right build panel ------------------------------------
   // Placing an order is a *command*: it asks the host to change the
   // simulation, so it goes through the same gate as the transport controls
   // and a rejection is reported rather than dropped. Nothing changes locally
   // -- the wall appears when a snapshot says it was built.
+  const roomTemplateTool: RoomTemplateTool | undefined = options.roomTemplatePreflight === undefined || options.onIntent === undefined
+    ? undefined
+    : new RoomTemplateToolState({
+        preflight: options.roomTemplatePreflight,
+        place: async (request) => { await options.onIntent?.({ kind: 'place-room-template', ...request }); },
+      });
   const buildPanel: BuildPanel = createBuildPanel({
     localizer,
+    ...(options.roomTemplateQuote === undefined ? {} : { roomTemplateQuote: options.roomTemplateQuote }),
+    ...(roomTemplateTool === undefined ? {} : { roomTemplateTool }),
+    onArmRoomTemplate: () => {
+      buildPanel.standDown();
+      roomsPanel.standDown();
+      roomTemplateTool?.arm();
+    },
     model: options.build ?? { buildables: [], origin: { x: 0, y: 0 } },
     onPlace: (intent) => {
       /*
@@ -2328,6 +2383,14 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
         );
         return;
       }
+      if (intent.definitionId === 'wall-brick') {
+        dispatchCommand(
+          { kind: 'place-build-order', definitionId: intent.definitionId,
+            footprint: 'square', squares: [{ x: intent.x, y: intent.y }] },
+          buildPanel.submitControl,
+        );
+        return;
+      }
       // A run of one. The numeric route names exactly one edge, and it says
       // so in the same shape a drag does so that the host has one case to
       // handle and the gate has one action id to key on.
@@ -2341,6 +2404,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       );
     },
     onArm: (armed, definitionId, removing) => {
+      roomTemplateTool?.standDown();
       runReported(
         'arm-build-tool',
         () => options.onIntent?.({ kind: 'arm-build-tool', armed, definitionId, removing }),
@@ -2449,6 +2513,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       dispatchCommand({ kind: 'unzone-room', area }, roomsPanel.submitControl);
     },
     onArm: (armed, armOptions) => {
+      if (armed) roomTemplateTool?.standDown();
       runReported(
         'arm-room-tool',
         () =>
@@ -2463,6 +2528,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     },
     classifyArea: classifyRoomArea,
   });
+  roomTemplateTool?.onSelectionChanged(() => buildPanel.setTemplateArmed(roomTemplateTool.isArmed()));
 
   /*
    * The world's room gesture, joined to the panel rather than to the gate.
@@ -2828,6 +2894,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   options.toolStandDown?.attachStandDown(() => {
     buildPanel.standDown();
     roomsPanel.standDown();
+    roomTemplateTool?.standDown();
   });
 
   /**
@@ -3444,12 +3511,15 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
 
   return {
     element: hud,
+    ...(roomTemplateTool === undefined ? {} : { roomTemplateTool }),
     asideSlot: aside,
     manageSavesSlot,
     brandSlot: strip.brandSlot,
     preferencesSlot: layout.preferencesSlot,
     update,
     updateMinimap,
+    updateCameraPose: (pose) => angleControl?.updatePose(pose),
+    setCameraPoseAvailable: (available) => angleControl?.setAvailable(available),
     setMinimapSessionActive,
     setBuildTarget: (target) => buildPanel.setTarget(target),
     setUnavailable,

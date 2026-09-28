@@ -381,7 +381,12 @@ describe('the job board on a live session', () => {
      * container the bay's instance names.
      */
     const routed = prisonWithTheRoute();
+    // A carrier must exist before the bay route is activated. The early
+    // no-population phase keeps its direct-deposit bootstrap for first beds.
+    stepTo(routed, ADMIT_AT);
+    submit(routed, 'admit', packCommand({ type: 'AdmitPrisoner', sentenceLengthTicks: 200_000, priorIncidents: 0, ...ARRIVAL }));
     stepTo(routed, WATCH_FROM);
+    expect(routed.prisoners.intakeSystem.getMetrics().completedCount).toBe(1);
     const bay = routed.prisoners.roomInstances.allByRoomCatalogId('room.delivery-bay')[0];
     expect(bay, 'the fixture is only meaningful if the bay was actually zoned').toBeDefined();
     // Registered on first use, so nothing exists until a delivery needs it.

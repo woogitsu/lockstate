@@ -247,6 +247,10 @@ export function edgeRunBetween(anchor: EdgeTarget, point: WorldPoint): readonly 
 export interface BuildToolPort {
   /** True while world pointer input should build instead of pan. */
   isArmed(): boolean;
+  /** Whole-square wall mode. Other buildables still use their historical edges. */
+  squareFootprint?(): boolean;
+  placeSquares?(squares: readonly { readonly x: number; readonly y: number }[]): void;
+  targetSquares?(squares: readonly { readonly x: number; readonly y: number }[] | undefined): void;
   /** The player finished a gesture. Segments are canonical and de-duplicated. */
   place(segments: readonly EdgeTarget[]): void;
   /** Live feedback for the panel's readout. `undefined` when nothing is targeted. */

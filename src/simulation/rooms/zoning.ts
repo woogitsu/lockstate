@@ -213,6 +213,7 @@ export type ZoneRoomRefusalReason =
   | 'out-of-bounds'
   | 'unowned-land'
   | 'overlaps-existing-room'
+  | 'overlaps-pending-template'
   | 'duplicate-instance-id'
   | 'not-enclosed';
 
@@ -444,6 +445,12 @@ export function roomInstanceIdFor(roomCatalogId: string, anchor: TilePosition): 
 }
 
 export class RoomZoningService {
+  private pendingTemplateClaim: ((tile: TilePosition, sequence: number | undefined) => boolean) | undefined;
+
+  /** The template coordinator is created after this service during session wiring. */
+  public setPendingTemplateClaim(claim: (tile: TilePosition, sequence: number | undefined) => boolean): void {
+    this.pendingTemplateClaim = claim;
+  }
   /** Oldest first. A bounded window, not a log; see `MAX_RECORDED_ZONING_REFUSALS`. */
   private readonly refusals: ZoneRoomRefusal[] = [];
 
@@ -486,7 +493,7 @@ export class RoomZoningService {
    * chunk that does not exist yet, so writing before checking would grow the
    * world outside the owned area on its way to refusing.
    */
-  public zone(request: ZoneRoomRequest, tick: number): ZoneRoomOutcome {
+  public zone(request: ZoneRoomRequest, tick: number, templateSequence?: number): ZoneRoomOutcome {
     const definition = this.rooms.getById(request.roomCatalogId);
     if (definition === undefined) return this.refuse('unknown-room-type', request, tick);
 
@@ -556,6 +563,9 @@ export class RoomZoningService {
           return this.refuse('unowned-land', request, tick, tile);
         }
         if (this.world.getZoning(tile) !== 0) return this.refuse('overlaps-existing-room', request, tick, tile);
+        if (this.pendingTemplateClaim?.(tile, templateSequence)) {
+          return this.refuse('overlaps-pending-template', request, tick, tile);
+        }
       }
     }
 

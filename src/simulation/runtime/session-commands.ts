@@ -35,6 +35,7 @@ import {
   type RefusalLog,
 } from '../refusals';
 import type { ConstructionSystem } from '../construction/system';
+import type { RoomTemplateCoordinator } from '../construction/room-template-coordinator';
 import type { ObjectPlacementService } from '../objects';
 import type { PrisonerOperationsRuntime } from '../prisoners/prisoner-operations-runtime';
 import type { RoomZoningService } from '../rooms/zoning';
@@ -209,6 +210,7 @@ import { tileCoordinate } from '../world/coordinates';
  */
 const LEAVES_THE_UNDO_HISTORY_CURRENT: ReadonlySet<SimulationCommand['type']> = new Set([
   'PlaceBuildOrder',
+  'PlaceRoomTemplate',
   'PlaceObject',
   'Undo',
   'Redo',
@@ -225,6 +227,7 @@ export function createSessionCommandHandler(
   staffDismissal: StaffDismissalService,
   refusals: RefusalLog,
   events: SimulationEventLog,
+  roomTemplates: RoomTemplateCoordinator,
 ): CommandHandler {
   const constructionCommands = createConstructionCommandHandler(construction, refusals, events);
 
@@ -232,6 +235,31 @@ export function createSessionCommandHandler(
     const simCommand = unpackCommand(command.payload as never);
     if (simCommand !== null && !LEAVES_THE_UNDO_HISTORY_CURRENT.has(simCommand.type)) {
       construction.noteActionThatDoesNotWriteTheUndoStack();
+    }
+    if (simCommand !== null && simCommand.type === 'PlaceRoomTemplate') {
+      const key = `room-template:${simCommand.templateId}:${simCommand.origin.x}:${simCommand.origin.y}:${simCommand.mirrorX ?? false}:${simCommand.quarterTurns ?? 0}`;
+      const verdict = roomTemplates.place({
+        templateId: simCommand.templateId,
+        origin: simCommand.origin,
+        mirrorX: simCommand.mirrorX ?? false,
+        ...(simCommand.quarterTurns === undefined ? {} : { quarterTurns: simCommand.quarterTurns }),
+        sequence: command.sequence,
+      });
+      if (!verdict.ok) {
+        // Existing construction copy remains truthful for this grouped build:
+        // the player does not own the square, or cannot build over its current
+        // structure/object. The originating tile comes from the full-footprint
+        // preflight, not from the gesture's top-left anchor.
+        refusals.record(
+          verdict.reason === 'unowned-land' ? 'build.unowned-land' : 'build.unbuildable',
+          context.tick,
+          key,
+          verdict.tile,
+        );
+      } else {
+        refusals.supersede(key);
+      }
+      return;
     }
     if (simCommand !== null && simCommand.type === 'ZoneRoom') {
       // The outcome is not dropped and it now reaches the player. It used to
@@ -629,6 +657,7 @@ export function createSessionCommandHandler(
         // `cancel` splices the record out and answers only what it refunded,
         // and the item is what decides which orders were waiting on it.
         construction.withdrawOrdersAwaitingMaterial(cancelledItemId);
+        roomTemplates.reconcileCancelledShells();
       }
       const cancelKey = purchaseCancelSupersessionKey(simCommand.orderId);
       if (!outcome.ok) {
@@ -995,6 +1024,7 @@ export function createSessionCommandHandler(
       // onto the order before this branch could read the distinction back.
       const stateAtCancellation = wallOrder.state;
       construction.cancelOrder(wallOrder.id);
+      roomTemplates.reconcileCancelledShells();
       refusals.supersede(wallKey);
       // The same event `CancelBuildOrder` and `RemoveObject`'s pending-order
       // arm already record, reused rather than a new sentence: the state this
@@ -1174,5 +1204,10 @@ export function createSessionCommandHandler(
     }
 
     constructionCommands(command, context);
+    if (simCommand?.type === 'CancelBuildOrder' || simCommand?.type === 'Undo') {
+      roomTemplates.reconcileCancelledShells();
+    } else if (simCommand?.type === 'Redo') {
+      roomTemplates.reconcileRedoneShells();
+    }
   };
 }

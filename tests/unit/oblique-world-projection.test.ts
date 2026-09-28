@@ -5,6 +5,8 @@ import { projectObliqueWorldFrame } from '../../src/rendering/camera/oblique-wor
 import type { ObliqueCameraState } from '../../src/rendering/camera/oblique-projection';
 import type { RenderFrame } from '../../src/rendering/feed/render-feed';
 import { WorldRenderView } from '../../src/rendering/world/world-view';
+import { artForGround, artForNorthEdge, artForStructure } from '../../src/rendering/camera/oblique-art-mapping';
+import { defaultRoomContentRegistry } from '../../src/content/room-catalog';
 
 const tile = (x: number, y: number) => ({ x: tileCoordinate(x), y: tileCoordinate(y) });
 
@@ -39,6 +41,16 @@ const pose: ObliqueCameraState = {
 };
 
 describe('oblique projection of an actual simulation snapshot', () => {
+  it('selects authored shower floor and wall fixture from the real room and build catalogues', () => {
+    const shower = defaultRoomContentRegistry.getById('room.shower-room');
+    expect(shower).toBeDefined();
+    expect(artForGround(shower!.numericId)).toBe('floor.shower.ceramic');
+    expect(artForGround(0, 0)).toBe('floor.terrain.dirt');
+    expect(artForGround(0, 1)).toBe('floor.terrain.grass');
+    expect(artForStructure('shower-head-brick')).toBe('fixture.shower.head');
+    expect(artForStructure('wall-brick')).toBe('wall.square.brick.low');
+    expect(artForNorthEdge(2, shower!.numericId)).toBe('door.shower.privacy.open.full');
+  });
   it('reads loaded ground, distinct wall and door edges, a whole bed, and the actor without duplicating a finished wall', () => {
     const projected = projectObliqueWorldFrame(frame(), pose);
     expect(projected.loadedTilesVisited).toBe(64);
@@ -47,6 +59,13 @@ describe('oblique projection of an actual simulation snapshot', () => {
     expect(grass?.owned).toBe(true);
     expect(grass?.fill).toBe(0x47643a);
     expect(grass?.quad).toHaveLength(4);
+    expect(grass?.artAssetId).toBe('floor.terrain.grass');
+    expect(grass?.artOverlayAssetIds).toEqual([
+      'floor.terrain.dirt-grass.edge.north',
+      'floor.terrain.dirt-grass.edge.east',
+      'floor.terrain.dirt-grass.edge.south',
+      'floor.terrain.dirt-grass.edge.west',
+    ]);
 
     const solids = projected.raised.filter((item) => item.kind !== 'actor');
     expect(solids.map((item) => item.kind)).toEqual(['north-edge', 'west-edge', 'structure']);
@@ -54,7 +73,10 @@ describe('oblique projection of an actual simulation snapshot', () => {
     const wall = solids.find((item) => item.kind === 'north-edge');
     const door = solids.find((item) => item.kind === 'west-edge');
     expect(wall?.topFill).not.toBe(door?.topFill);
+    expect(wall?.artAssetId).toBe('wall.interior.module.full');
+    expect(door?.artAssetId).toBe('door.interior.open.west.full');
     const bed = solids.find((item) => item.id === 'bed');
+    expect(bed?.artAssetId).toBe('furniture.cell.bed.single.variants');
     expect(bed?.footprint[2].y! - bed?.footprint[1].y!).toBeCloseTo(2 * 64 * Math.SQRT1_2 * pose.zoom, 5);
     expect(projected.raised.some((item) => item.kind === 'actor' && item.id === 9)).toBe(true);
   });

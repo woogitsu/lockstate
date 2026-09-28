@@ -14,6 +14,8 @@ import { TILE_SIZE_PX, tileRangeContains, visibleTileRange } from '../tile-metri
 import { groundToScreen, visibleGroundBounds, type ObliqueCameraState } from './oblique-projection';
 import { obliqueDepthForAnchor, projectedRectPrism, projectedTileQuad, type TileQuad } from './oblique-geometry';
 import type { Point } from './coordinates';
+import { artForGround, artForNorthEdge, artForWestEdge, artForStructure, DIRT_TERRAIN_NUMERIC_ID } from './oblique-art-mapping';
+import { DOOR_EDGE_NUMERIC_ID } from '../../simulation/construction/definition';
 
 export interface ObliqueGroundTile {
   readonly tileX: number;
@@ -22,6 +24,8 @@ export interface ObliqueGroundTile {
   readonly fill: number;
   readonly zoningTint: number | undefined;
   readonly owned: boolean;
+  readonly artAssetId: string | undefined;
+  readonly artOverlayAssetIds: readonly string[];
 }
 
 export interface ObliqueSolid {
@@ -35,6 +39,8 @@ export interface ObliqueSolid {
   readonly sideFill: number;
   readonly alpha: number;
   readonly viewDepth: number;
+  /** The optional Blender module shares this solid's ground anchor. */
+  readonly artAssetId: string | undefined;
 }
 
 export interface ObliqueActorPoint {
@@ -43,6 +49,7 @@ export interface ObliqueActorPoint {
   readonly foot: Point;
   readonly head: Point;
   readonly viewDepth: number;
+  readonly artAssetId: string;
 }
 
 export interface ObliqueWorldProjection {
@@ -64,6 +71,7 @@ export function projectObliqueActors(actors: readonly RenderActor[], camera: Obl
       foot: groundToScreen({ x, y }, camera),
       head: groundToScreen({ x, y, z: 0.8 * TILE_SIZE_PX }, camera),
       viewDepth: obliqueDepthForAnchor({ x, y }, camera.yawRadians),
+      artAssetId: actor.assetId,
     });
   }
   return projected;
@@ -86,6 +94,8 @@ export function projectObliqueWorldFrame(frame: RenderFrame, camera: ObliqueCame
   const world = frame.world;
   const size = world.chunkSize;
   const sample = createTileSample();
+  const northSample = createTileSample();
+  const neighborSample = createTileSample();
   let loadedTilesVisited = 0;
 
   const edge = (kind: 'north-edge' | 'west-edge', tileX: number, tileY: number, value: number): void => {
@@ -96,10 +106,14 @@ export function projectObliqueWorldFrame(frame: RenderFrame, camera: ObliqueCame
     const width = kind === 'north-edge' ? TILE_SIZE_PX : thickness;
     const depth = kind === 'north-edge' ? thickness : TILE_SIZE_PX;
     const geometry = projectedRectPrism(x, y, width, depth, appearance.heightTiles * TILE_SIZE_PX, camera);
+    if (kind === 'north-edge' && value === DOOR_EDGE_NUMERIC_ID) world.readTile(tileX, tileY - 1, northSample);
     raised.push({
       kind, id: `${kind}:${tileX}:${tileY}`, tileX, tileY,
       ...geometry, topFill: appearance.topFill, sideFill: appearance.sideFill, alpha: 1,
       viewDepth: obliqueDepthForAnchor({ x: x + width / 2, y: y + depth / 2 }, camera.yawRadians),
+      artAssetId: kind === 'north-edge'
+        ? artForNorthEdge(value, value === DOOR_EDGE_NUMERIC_ID ? northSample.zoning : undefined)
+        : artForWestEdge(value),
     });
   };
 
@@ -115,10 +129,23 @@ export function projectObliqueWorldFrame(frame: RenderFrame, camera: ObliqueCame
         world.readTile(tileX, tileY, sample);
         loadedTilesVisited += 1;
         const terrain = terrainAppearance(sample.terrainNumericId);
+        const artAssetId = artForGround(sample.zoning, sample.terrainNumericId);
+        const artOverlayAssetIds: string[] = [];
+        if (artAssetId === 'floor.terrain.grass') {
+          for (const [direction, dx, dy] of [
+            ['north', 0, -1], ['east', 1, 0], ['south', 0, 1], ['west', -1, 0],
+          ] as const) {
+            world.readTile(tileX + dx, tileY + dy, neighborSample);
+            if (neighborSample.loaded && neighborSample.terrainNumericId === DIRT_TERRAIN_NUMERIC_ID) {
+              artOverlayAssetIds.push(`floor.terrain.dirt-grass.edge.${direction}`);
+            }
+          }
+        }
         ground.push({
           tileX, tileY, quad: projectedTileQuad(tileX, tileY, camera),
           fill: (tileX + tileY) % 2 === 0 ? terrain.fill : terrain.fillAlternate,
           zoningTint: zoningTint(sample.zoning), owned: sample.owned,
+          artAssetId, artOverlayAssetIds,
         });
         if (sample.topEdge !== 0) edge('north-edge', tileX, tileY, sample.topEdge);
         if (sample.leftEdge !== 0) edge('west-edge', tileX, tileY, sample.leftEdge);
@@ -141,6 +168,7 @@ export function projectObliqueWorldFrame(frame: RenderFrame, camera: ObliqueCame
       ...geometry, topFill: appearance.topFill, sideFill: appearance.sideFill,
       alpha: structure.phase === 'planned' ? PLANNED_ALPHA : structure.phase === 'building' ? BUILDING_ALPHA : 1,
       viewDepth: obliqueDepthForAnchor({ x: x + width / 2, y: y + depth / 2 }, camera.yawRadians),
+      artAssetId: structure.phase === 'built' ? artForStructure(structure.definitionId) : undefined,
     });
   }
 

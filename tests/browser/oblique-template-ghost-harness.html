@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="stylesheet" href="/src/styles.css"></head>
+<body>
+  <div id="game-root"></div>
+  <script type="module">
+    import { createObliqueTemplateGhost } from '/src/ui/hud/oblique-template-ghost.ts';
+    import { instantiateRoomTemplate } from '/src/content/room-template-catalog.ts';
+    import { projectedTileQuad } from '/src/rendering/camera/oblique-geometry.ts';
+    import { Localizer } from '/src/services/localization/localizer.ts';
+    import { defaultMessageCatalogEn } from '/src/services/localization/default-catalog.ts';
+    const localizer = new Localizer({ locale: 'en', catalogs: [defaultMessageCatalogEn] });
+    const view = createObliqueTemplateGhost(localizer);
+    document.querySelector('#game-root').append(view.element);
+    const plan = instantiateRoomTemplate('canteen-basic', { x: 10, y: 10 });
+    const pose = { target: { x: 14 * 64, y: 14 * 64 }, viewport: { width: 1920, height: 1080 }, zoom: 1.6, yawRadians: -Math.PI / 4, elevationRadians: Math.PI / 4 };
+    const geometry = { viewport: pose.viewport, tileQuad: (x, y) => projectedTileQuad(x, y, pose) };
+    const quote = { orderCount: 75, materials: [], catalogueCostMinorUnits: 3135 };
+    view.update(plan, geometry, undefined, quote);
+    window.ghostHarness = { view, plan, geometry, quote };
+  </script>
+</body>
+</html>

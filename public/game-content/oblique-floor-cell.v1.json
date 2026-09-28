@@ -1,0 +1,487 @@
+{
+  "schemaVersion": 1,
+  "assetId": "floor.cell.sealed-concrete",
+  "source": "floor.cell.warm-concrete.blend",
+  "sourceSha256": "611a9b73cf2924ec0828b6c94533ee778df811ddaa980ac179d7e6a9d7c4c81c",
+  "sourceDependencies": [],
+  "resolutionPx": [
+    128,
+    128
+  ],
+  "nominalPixelsPerTile": 64,
+  "pivotPx": [
+    64,
+    64
+  ],
+  "cameraTargetTiles": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "projection": "orthographic",
+  "yawDegrees": [
+    -180,
+    -165,
+    -150,
+    -135,
+    -120,
+    -105,
+    -90,
+    -75,
+    -60,
+    -45,
+    -30,
+    -15,
+    0,
+    15,
+    30,
+    45,
+    60,
+    75,
+    90,
+    105,
+    120,
+    135,
+    150,
+    165
+  ],
+  "elevationDegrees": [
+    25,
+    45,
+    65
+  ],
+  "frames": [
+    {
+      "yawDegrees": -180,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-cell-yaw-180-elev25.e245f2214cd6.png",
+      "sha256": "e245f2214cd67bd0817bc246dfa611541b050fc4646b88c028d0d19a774b8bff"
+    },
+    {
+      "yawDegrees": -180,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-cell-yaw-180-elev45.7e9679bc6fb9.png",
+      "sha256": "7e9679bc6fb94625e608d5b5d00bac5bef75cee63db535064d92397aa491f98a"
+    },
+    {
+      "yawDegrees": -180,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-cell-yaw-180-elev65.8b0120433df5.png",
+      "sha256": "8b0120433df5f1b96c9bb6e58e11c9dbc36be47ac0f532b3ff647702b587dae7"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-cell-yaw-165-elev25.10df758c40c6.png",
+      "sha256": "10df758c40c65729582811429b1f5700b6843a81862eb20408ef7863d4515324"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-cell-yaw-165-elev45.720f4498d0c8.png",
+      "sha256": "720f4498d0c8a2beb4e42f4e5ec203b5281e2d88f9ad2f024d0f41b5e87c6f68"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-cell-yaw-165-elev65.eb700ae85735.png",
+      "sha256": "eb700ae8573546a63cd525a4ba1d24d59d37db45424973437d0b9e6ff8544070"
+    },
+    {
+      "yawDegrees": -150,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-cell-yaw-150-elev25.06566e2961fc.png",
+      "sha256": "06566e2961fcec6a0437dab9efb389d31706aa51a452f768f1e867bd18b075bf"
+    },
+    {
+      "yawDegrees": -150,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-cell-yaw-150-elev45.d4b8743250e1.png",
+      "sha256": "d4b8743250e1d4ec566af880d122de2b9e0d883cf292efc43e8ce60784d75eca"
+    },
+    {
+      "yawDegrees": -150,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-cell-yaw-150-elev65.1c98aba8920c.png",
+      "sha256": "1c98aba8920c7642cf208af29e3581054e5475ef7f6c8c8ce058708dee7c322a"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-cell-yaw-135-elev25.9e8b03eb23f7.png",
+      "sha256": "9e8b03eb23f7786193c6f8a3d09fe52c53086344022449621ebecc076e0a6a18"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-cell-yaw-135-elev45.053d5492457f.png",
+      "sha256": "053d5492457fcc81e6e621a9a2c3ca52e075e491f41257799000b7d9644504d4"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-cell-yaw-135-elev65.1a679189e270.png",
+      "sha256": "1a679189e270c4d7599bdc795a0b1220737df15f693bbc984c5dd4579fc2ba5c"
+    },
+    {
+      "yawDegrees": -120,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-cell-yaw-120-elev25.7bbea24e8423.png",
+      "sha256": "7bbea24e842391d2b2e7f9c5385cbe8bb3464539cf7f11340e2f9dbff0df39b9"
+    },
+    {
+      "yawDegrees": -120,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-cell-yaw-120-elev45.f37be30059af.png",
+      "sha256": "f37be30059af0eaa86c61975d03b84fa60447c6e5ccb81d144676a22281d5c5b"
+    },
+    {
+      "yawDegrees": -120,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-cell-yaw-120-elev65.03eae583fa29.png",
+      "sha256": "03eae583fa294c3f27b3065248ab65882395cb415ddddf88f71621cb4c8d1b0d"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-cell-yaw-105-elev25.e8af68eaa583.png",
+      "sha256": "e8af68eaa58362097f5b9b83ea29b65c96aa5fcabc5935d7a2b2048e9d986e5a"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-cell-yaw-105-elev45.c00b5736a1ff.png",
+      "sha256": "c00b5736a1ffc7013b3bafe6e98c15be464d79d655b4aea1a4cb627ac618c7b6"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-cell-yaw-105-elev65.1f57bfd9a3be.png",
+      "sha256": "1f57bfd9a3be89bc76d0efb99c53ae9e3e5b01fa0bf154bfc129d8e45531ca39"
+    },
+    {
+      "yawDegrees": -90,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-cell-yaw-90-elev25.c975e1eadbe4.png",
+      "sha256": "c975e1eadbe42a975d1192de167b6353276904c99b2d5f0849f9d77b5dc73614"
+    },
+    {
+      "yawDegrees": -90,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-cell-yaw-90-elev45.235b3a5bce67.png",
+      "sha256": "235b3a5bce67905902ef165040be2d2b5d1d1c6fb8d22e46fbdf51708c63a67c"
+    },
+    {
+      "yawDegrees": -90,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-cell-yaw-90-elev65.f1aa67774a4d.png",
+      "sha256": "f1aa67774a4d13c86bd4da0a96f4ca526b9039cd0184bcfca0f3259b4e58857f"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-cell-yaw-75-elev25.c3df711e0627.png",
+      "sha256": "c3df711e06272a5ece3037972278d7923908d747147afbca0b8ebce9b8fba1e2"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-cell-yaw-75-elev45.d3143cdc0451.png",
+      "sha256": "d3143cdc0451394a83f615c906fe722a606e581aa408379655854a50f33aef10"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-cell-yaw-75-elev65.fe2d6e486caa.png",
+      "sha256": "fe2d6e486caa8ac60f4f6e0830912894feefc46bb1e9061fa67c380b18576bab"
+    },
+    {
+      "yawDegrees": -60,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-cell-yaw-60-elev25.c9c3ea92c84a.png",
+      "sha256": "c9c3ea92c84a7f1c7a6d31d0c1f0eb3d390cd2e90ce6a39ed786864fea37d192"
+    },
+    {
+      "yawDegrees": -60,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-cell-yaw-60-elev45.2b4d3fcb2ad6.png",
+      "sha256": "2b4d3fcb2ad68c4a78835b416a2758df11536ab70612fbdf27adefc4b199209f"
+    },
+    {
+      "yawDegrees": -60,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-cell-yaw-60-elev65.211f3c066b10.png",
+      "sha256": "211f3c066b100569a846038cc4e08fb4589ce2302b558858eaa579cdb6c372a9"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-cell-yaw-45-elev25.c0b62e926033.png",
+      "sha256": "c0b62e926033e2fd7d89650cfe98538280328cfa0261d62c28a527789473bc7c"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-cell-yaw-45-elev45.f362fceb7be3.png",
+      "sha256": "f362fceb7be335feb4161d55cc330db00752ee358726ce513b2124d656f40afc"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-cell-yaw-45-elev65.e9ee2d082628.png",
+      "sha256": "e9ee2d0826283ac4cb2f08db110554032bfd1cc39412efbc2a84a6a72732badb"
+    },
+    {
+      "yawDegrees": -30,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-cell-yaw-30-elev25.eb11d09f39a1.png",
+      "sha256": "eb11d09f39a10fa61f677fedf8ebbc3a19f07e95c0a18c44b9614b75005e4115"
+    },
+    {
+      "yawDegrees": -30,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-cell-yaw-30-elev45.e71aafa67202.png",
+      "sha256": "e71aafa6720244668da446629e2b22ff2a5ed8e1ce0086f6ccd03689dd83fdba"
+    },
+    {
+      "yawDegrees": -30,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-cell-yaw-30-elev65.4ae3af21395c.png",
+      "sha256": "4ae3af21395ce294bdcfd20386909e426e8a243d07b989704b7f41cf5a908e75"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-cell-yaw-15-elev25.511236b14b3c.png",
+      "sha256": "511236b14b3c07d5b81283691548c82266dde20bfd164b987285f778701bea0e"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-cell-yaw-15-elev45.4e6a567e5295.png",
+      "sha256": "4e6a567e529516760f4c558521b7691eb310690df03de3d9ed782736df581bb8"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-cell-yaw-15-elev65.b48bdb522d89.png",
+      "sha256": "b48bdb522d8950dc77c22d6aa7e9d8f1d94df08de28019a1f2eaedac663526e8"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-cell-yaw+00-elev25.4c4b46e578f6.png",
+      "sha256": "4c4b46e578f6cfa0c180227ef384d3f0925501acbb687063e83b2159bb5ed007"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-cell-yaw+00-elev45.80433fdd1f8c.png",
+      "sha256": "80433fdd1f8cb3d436c1424034e81907f75793efe6373a91490ac61a7012ad83"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-cell-yaw+00-elev65.f84ddce42720.png",
+      "sha256": "f84ddce42720e772386193cf9bff8fbf139797fc4f718f9ed8d63da34de2b3a7"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-cell-yaw+15-elev25.e30aef6b02bc.png",
+      "sha256": "e30aef6b02bc7cc914b81f3918d99964f937e0737c540742823015b7f03f5443"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-cell-yaw+15-elev45.dfcc9fc8630e.png",
+      "sha256": "dfcc9fc8630e9b9c3d5a83cc6274679254020434533c6ee131f68f7202d4e837"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-cell-yaw+15-elev65.36e27cc0ba30.png",
+      "sha256": "36e27cc0ba301410141871f5d5743e182df7cd78a49df24f4ce52c7b03b47879"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-cell-yaw+30-elev25.79e3bb2b7395.png",
+      "sha256": "79e3bb2b7395c506fad3c65fb2b672b4783752ba143ed6aafc11252095706fdd"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-cell-yaw+30-elev45.c523cf9daaa5.png",
+      "sha256": "c523cf9daaa5b3e03afcb32e5d16830691f7d1fec18a4dd7e8391919b2cf8176"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-cell-yaw+30-elev65.7d0e756746a3.png",
+      "sha256": "7d0e756746a3f6c57275c7024abaa924b24af646590a9c762cc3e4b39b72dd0e"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-cell-yaw+45-elev25.47e6138536bc.png",
+      "sha256": "47e6138536bcccfebb691614aa912cd576dd7e6e1709fdb1733bb7b4dae140c4"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-cell-yaw+45-elev45.03c737853815.png",
+      "sha256": "03c737853815bc04be6b868e68863b658cd7c875ad56b5e8393b698c8b37fc8a"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-cell-yaw+45-elev65.f2681d042f43.png",
+      "sha256": "f2681d042f43045c747270bbb52be7771512a5f58beb7580fa12d8df5b96a7c6"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-cell-yaw+60-elev25.f714f0e39af5.png",
+      "sha256": "f714f0e39af516ba1f3a0794a1e987bf2b2643664e0951c46580a6ea8290bb7b"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-cell-yaw+60-elev45.b991a965f789.png",
+      "sha256": "b991a965f789dcf9e81430433841757ef73e71c523ce698a113d9dccc412f267"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-cell-yaw+60-elev65.1a9a4796627b.png",
+      "sha256": "1a9a4796627bfced2bd0233161b8f406cffc0066a6e4d976077ee815c020698e"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-cell-yaw+75-elev25.c047d1896883.png",
+      "sha256": "c047d189688390d8b55c84db1856c0a76eaddf0e42589304197f49547605639f"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-cell-yaw+75-elev45.13808646f0f7.png",
+      "sha256": "13808646f0f78771f87eb70225472363d7277715f31657bc5bd6a84c450a5b30"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-cell-yaw+75-elev65.1e8355ca281d.png",
+      "sha256": "1e8355ca281df2d133a105823284d82fbe993d9c898358c981104e8d2a87548f"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-cell-yaw+90-elev25.e2d0bca9b28b.png",
+      "sha256": "e2d0bca9b28b872381e9c5667729b749f6a38a92313baceb6381db8de99bcb97"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-cell-yaw+90-elev45.a9e6f2dd0f61.png",
+      "sha256": "a9e6f2dd0f612c511d0dc0314307582822fdbc699031d822c55a9fcbd958ac6c"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-cell-yaw+90-elev65.1661bdc097d6.png",
+      "sha256": "1661bdc097d63b49f8f7c333655fa6b55255dd2fe7aeea14c3f4b36e59eadd4e"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-cell-yaw+105-elev25.e2601c2da871.png",
+      "sha256": "e2601c2da8717153e52683a911e70710eb80fed74cbcfc1b597f4a056b527430"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-cell-yaw+105-elev45.f9f78405c56a.png",
+      "sha256": "f9f78405c56a55276a3686021073a34bf9a5487ea85536f40790dfd84db6f9a3"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-cell-yaw+105-elev65.c193a977ec06.png",
+      "sha256": "c193a977ec06a19ad7ae024c3731e527acb73ce624a9d8017166dd5d7cebb182"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-cell-yaw+120-elev25.69f3e65deef4.png",
+      "sha256": "69f3e65deef41934ba4eca37152a69c6a6d6a0721c283bc69d5bee4f4d691376"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-cell-yaw+120-elev45.1142a7c2b3b8.png",
+      "sha256": "1142a7c2b3b832afad05f5fc7051c209d57fbb8fe4e325abf319c8449401f1aa"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-cell-yaw+120-elev65.a5a0db98487e.png",
+      "sha256": "a5a0db98487efd4522bbf4792e16380e33eec56b40c864dd87e0f2b4e7076b0c"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-cell-yaw+135-elev25.0b6946062f64.png",
+      "sha256": "0b6946062f646edec91542f9192e9aeaed4b534d071faaaa04063ef9b24d0916"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-cell-yaw+135-elev45.777817020a95.png",
+      "sha256": "777817020a95cd1cd351555a5afc35faa7b50974fcabf975feadcb8da4bd1623"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-cell-yaw+135-elev65.d4806137c134.png",
+      "sha256": "d4806137c134596b9360cf8f5b47988263fd6edd96e6b6341a9c3f1659f3805b"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-cell-yaw+150-elev25.b675fe258f2a.png",
+      "sha256": "b675fe258f2a38655f7a69e8ced483e10199a8e29f6b038579c547e255e14946"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-cell-yaw+150-elev45.c4ac82d59521.png",
+      "sha256": "c4ac82d59521e5e4f5441778043d157f3149584308017bffeb9f9526afee1c92"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-cell-yaw+150-elev65.612a39e18195.png",
+      "sha256": "612a39e1819555db3fc6854cdc2ea34610c85c422fa40024a671282d2939f12a"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-cell-yaw+165-elev25.36a6ded6046c.png",
+      "sha256": "36a6ded6046c11caff4c7fdf07c15e38e3e8069e91731fb37305e7f073a633c1"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-cell-yaw+165-elev45.57d8c8192d09.png",
+      "sha256": "57d8c8192d09599ca29a0fc4dac67ea69198623dfa7a655558ecc770b8e8be72"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-cell-yaw+165-elev65.906cdf3cf201.png",
+      "sha256": "906cdf3cf2019f0a0433ba7bf9e9a429ea07ce6c6cb1e4b004e50ed782b28304"
+    }
+  ]
+}

@@ -103,7 +103,7 @@ remembered:**
    minor unit under water.
 2. **`LoanBook.draw` does not open the floor.** It calls
    `this.treasury.credit(principalMinorUnits)`
-   (`src/simulation/economy/loans.ts:184`) — it hands the prison *money*. It
+   (`src/simulation/economy/loans.ts:244`) — it hands the prison *money*. It
    never touches the floor, and neither does anything else in `loans.ts`.
 3. `LoanBook` is built only when `options.loanTerms !== undefined`
    (`src/simulation/runtime/new-session.ts:794`), and nothing in `src/` passes
