@@ -15,6 +15,7 @@ export interface CameraAngleLabels {
 export interface CameraAngleControl {
   readonly element: HTMLElement;
   updatePose(pose: { readonly yawRadians: number; readonly elevationRadians: number }): void;
+  setAvailable(available: boolean): void;
 }
 
 export function cameraAngleDegrees(radians: number): number {
@@ -53,6 +54,9 @@ export function createCameraAngleControl(
     element: control,
     updatePose(pose): void {
       reading.textContent = `${labels.yaw} ${cameraAngleDegrees(pose.yawRadians)}° · ${labels.elevation} ${cameraAngleDegrees(pose.elevationRadians)}°`;
+    },
+    setAvailable(available): void {
+      for (const button of buttons) button.disabled = !available;
     },
   };
 }

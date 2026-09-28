@@ -1144,6 +1144,7 @@ export interface HudHandle {
   /** Paints a read-only projection supplied by the world renderer. */
   updateMinimap(view: MinimapView | undefined): void;
   updateCameraPose(pose: { readonly yawRadians: number; readonly elevationRadians: number }): void;
+  setCameraPoseAvailable(available: boolean): void;
   /** Makes the empty-session minimap a truthful, inert instruction. */
   setMinimapSessionActive(active: boolean): void;
   /**
@@ -3473,6 +3474,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     update,
     updateMinimap,
     updateCameraPose: (pose) => angleControl?.updatePose(pose),
+    setCameraPoseAvailable: (available) => angleControl?.setAvailable(available),
     setMinimapSessionActive,
     setBuildTarget: (target) => buildPanel.setTarget(target),
     setUnavailable,

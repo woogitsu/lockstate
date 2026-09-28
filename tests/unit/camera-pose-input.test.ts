@@ -14,6 +14,20 @@ function scene() {
 }
 
 describe('camera pose input port before oblique scene activation', () => {
+  it('routes all five default physical keys to the matching camera action', () => {
+    const { port, calls } = scene();
+    const adapter = new CameraPoseInputAdapter(port, () => ['world'], () => false);
+    for (const code of ['KeyQ', 'KeyE', 'PageUp', 'PageDown', 'Home']) {
+      expect(adapter.keyDown({ code })).toBe(true);
+    }
+    expect(calls).toHaveLength(5);
+    expect(calls[0]?.yaw).toBeCloseTo(-Math.PI / 4 - Math.PI / 12);
+    expect(calls[1]?.yaw).toBeCloseTo(-Math.PI / 4);
+    expect(calls[2]?.elevation).toBeCloseTo(Math.PI / 4 + Math.PI / 18);
+    expect(calls[3]?.elevation).toBeCloseTo(Math.PI / 4);
+    expect(calls[4]).toMatchObject({ yaw: -Math.PI / 4, elevation: Math.PI / 4 });
+  });
+
   it('maps keyboard, HUD intent and right drag to the same scene pose port', () => {
     const { port, calls } = scene();
     const adapter = new CameraPoseInputAdapter(port, () => ['world'], () => false);
