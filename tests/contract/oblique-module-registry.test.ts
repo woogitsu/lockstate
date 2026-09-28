@@ -10,7 +10,7 @@ const digest = (bytes: Buffer) => createHash('sha256').update(bytes).digest('hex
 const json = (path: string): unknown => JSON.parse(readFileSync(join(root, 'public', path.slice(1)), 'utf8')) as unknown;
 
 describe('oblique cell module registry', () => {
-  it('publishes twenty-two logical modules with complete hashed poses and a shared ground pivot', () => {
+  it('publishes twenty-three logical modules with complete hashed poses and a shared ground pivot', () => {
     const registry = parseObliqueModuleRegistry(json('/game-content/oblique-module-registry.v1.json'));
     expect(registry.entries.map((entry) => entry.assetId)).toEqual([
       'wall.interior.module.full', 'wall.interior.module.west.full', 'wall.interior.module.cutaway',
@@ -23,6 +23,7 @@ describe('oblique cell module registry', () => {
       'floor.shower.ceramic', 'fixture.shower.head',
       'door.shower.privacy.open.full', 'door.shower.privacy.open.cutaway',
       'floor.terrain.dirt',
+      'floor.terrain.grass',
     ]);
     for (const entry of registry.entries) {
       const catalog = parseObliqueModuleCatalog(json(entry.manifest));
