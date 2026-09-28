@@ -1,7 +1,8 @@
-import type { RoomTemplatePlan } from '../../content/room-template-catalog';
+import { instantiateRoomTemplate, type RoomTemplatePlan } from '../../content/room-template-catalog';
 import type { SystemRegistration, SimulationContext } from '../kernel/system';
 import type { PlacedObjectRegistry } from '../objects/placed-object-registry';
 import type { ObjectPlacementService } from '../objects/object-placement-service';
+import { objectFootprintTiles, tileKey } from '../objects/placed-object';
 import type { RoomZoningService } from '../rooms/zoning';
 import type { SparseWorld } from '../world/sparse-world';
 import type { TilePosition } from '../world/coordinates';
@@ -41,15 +42,47 @@ export class RoomTemplateCoordinator implements SystemRegistration {
   public preflight(plan: RoomTemplatePlan): RoomTemplatePlacement {
     const active = this.construction.allOrders().filter((order) =>
       order.state !== 'cancelled' && order.state !== 'failed' && order.state !== 'completed');
-    const claims = (tile: TilePosition, object: boolean): boolean => active.some((order) =>
-      order.location.x === tile.x && order.location.y === tile.y &&
-      (BUILDABLE_REGISTRY.get(order.definitionId)?.placesObjectId !== undefined) === object);
+    const objectClaims = new Set<string>();
+    const structureClaims = new Set<string>();
+    // Shell orders claim only perimeter tiles. Until zoning completes, the
+    // interior is still empty world, but it belongs to the same atomic plan.
+    const pendingPlans = this.pending.map((request) =>
+      instantiateRoomTemplate(request.templateId, request.origin, { mirrorX: request.mirrorX }));
+    for (const order of active) {
+      const objectId = BUILDABLE_REGISTRY.get(order.definitionId)?.placesObjectId;
+      if (objectId === undefined) {
+        structureClaims.add(tileKey(order.location));
+        continue;
+      }
+      const definition = this.placedObjects.definitionOf(objectId);
+      if (definition === undefined) {
+        objectClaims.add(tileKey(order.location));
+        continue;
+      }
+      // ObjectPlacementService reserves every square of an in-flight object's
+      // footprint, not just its anchor. The template preflight must agree.
+      for (const tile of objectFootprintTiles(definition, order.location, 0)) {
+        objectClaims.add(tileKey(tile));
+      }
+    }
     return validateRoomTemplatePlacement(
       this.world,
       plan,
-      (tile) => this.placedObjects.isTileOccupied(tile) || claims(tile, true),
-      (tile) => claims(tile, false),
+      (tile) => this.placedObjects.isTileOccupied(tile) || objectClaims.has(tileKey(tile)),
+      (tile) => structureClaims.has(tileKey(tile)) || pendingPlans.some((pending) =>
+        tile.x >= pending.origin.x && tile.x < pending.origin.x + pending.width &&
+        tile.y >= pending.origin.y && tile.y < pending.origin.y + pending.height),
     );
+  }
+
+  /** The pending gesture reserves every square, even before its shell is visible. */
+  public claimsPendingFootprint(tile: TilePosition, orderSequence: number | undefined): boolean {
+    return this.pending.some((request) => {
+      if (orderSequence === request.sequence) return false;
+      const plan = instantiateRoomTemplate(request.templateId, request.origin, { mirrorX: request.mirrorX });
+      return tile.x >= plan.origin.x && tile.x < plan.origin.x + plan.width &&
+        tile.y >= plan.origin.y && tile.y < plan.origin.y + plan.height;
+    });
   }
 
   public place(request: PendingRoomTemplate): RoomTemplatePlacement {
