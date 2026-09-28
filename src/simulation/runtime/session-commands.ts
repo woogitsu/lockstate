@@ -244,7 +244,7 @@ export function createSessionCommandHandler(
         mirrorX: simCommand.mirrorX ?? false,
         ...(simCommand.quarterTurns === undefined ? {} : { quarterTurns: simCommand.quarterTurns }),
         sequence: command.sequence,
-      });
+      }, context.tick);
       if (!verdict.ok) {
         // Existing construction copy remains truthful for this grouped build:
         // the player does not own the square, or cannot build over its current

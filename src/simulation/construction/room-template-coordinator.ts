@@ -116,7 +116,7 @@ export class RoomTemplateCoordinator implements SystemRegistration {
     });
   }
 
-  public place(request: PendingRoomTemplate): RoomTemplatePlacement {
+  public place(request: PendingRoomTemplate, tick = 0): RoomTemplatePlacement {
     if (!roomTemplateOriginFitsSafeCoordinates(request.templateId, request.origin, request.quarterTurns ?? 0)) {
       return { ok: false, reason: 'unowned-land', tile: {
         x: tileCoordinate(request.origin.x), y: tileCoordinate(request.origin.y),
@@ -125,6 +125,16 @@ export class RoomTemplateCoordinator implements SystemRegistration {
     const built = createRoomTemplateBuildPlan(request.templateId, request.origin, request.mirrorX, request.sequence, request.quarterTurns ?? 0);
     const verdict = this.preflight(built.plan);
     if (!verdict.ok) return verdict;
+    // A plan with no shell orders has no construction tick to wait for. In
+    // particular, the zero-cost Yard must be designated by its placement
+    // press even while the clock is paused.
+    if (built.shellOrderIds.length === 0) {
+      return this.finishPlan(request, built, tick) ? { ok: true } : {
+        ok: false, reason: 'structure-occupied', tile: {
+          x: tileCoordinate(request.origin.x), y: tileCoordinate(request.origin.y),
+        },
+      };
+    }
     // An all-footprint preflight precedes the first mutation. If a build rule
     // still rejects a shell order, cancel earlier orders before any tick runs.
     const accepted: string[] = [];
@@ -154,35 +164,37 @@ export class RoomTemplateCoordinator implements SystemRegistration {
         remaining.push(request);
         continue;
       }
-      const zoned: RoomTemplatePlan['zones'][number][] = [];
-      let refused = false;
-      for (const zone of built.plan.zones) {
-        const outcome = this.roomZoning.zone({
-          roomCatalogId: zone.roomId,
-          x: zone.x, y: zone.y, width: zone.width, height: zone.height,
-        }, context.tick, request.sequence);
-        if (outcome.kind === 'refused') {
-          // A row is one gesture: a later room refusing must not leave the
-          // earlier members designated while its pending obligation vanishes.
-          for (const previous of zoned.reverse()) this.roomZoning.unzone(previous, context.tick);
-          for (const id of built.shellOrderIds) this.construction.cancelOrder(id);
-          refused = true;
-          break;
-        }
-        zoned.push(zone);
-      }
-      if (refused) continue;
-      for (const order of built.orders.slice(built.shellOrderIds.length)) {
-        this.objectPlacement.place({
-          orderId: order.id,
-          definitionId: order.definitionId,
-          x: order.location.x,
-          y: order.location.y,
-          ...(order.objectOrientation === undefined ? {} : { orientation: order.objectOrientation }),
-        }, context.tick, request.sequence);
-      }
+      this.finishPlan(request, built, context.tick);
     }
     this.pending = remaining;
+  }
+
+  private finishPlan(request: PendingRoomTemplate, built: ReturnType<typeof createRoomTemplateBuildPlan>, tick: number): boolean {
+    const zoned: RoomTemplatePlan['zones'][number][] = [];
+    for (const zone of built.plan.zones) {
+      const outcome = this.roomZoning.zone({
+        roomCatalogId: zone.roomId,
+        x: zone.x, y: zone.y, width: zone.width, height: zone.height,
+      }, tick, request.sequence);
+      if (outcome.kind === 'refused') {
+        // A row is one gesture: a later room refusing must not leave the
+        // earlier members designated while its pending obligation vanishes.
+        for (const previous of zoned.reverse()) this.roomZoning.unzone(previous, tick);
+        for (const id of built.shellOrderIds) this.construction.cancelOrder(id);
+        return false;
+      }
+      zoned.push(zone);
+    }
+    for (const order of built.orders.slice(built.shellOrderIds.length)) {
+      this.objectPlacement.place({
+        orderId: order.id,
+        definitionId: order.definitionId,
+        x: order.location.x,
+        y: order.location.y,
+        ...(order.objectOrientation === undefined ? {} : { orientation: order.objectOrientation }),
+      }, tick, request.sequence);
+    }
+    return true;
   }
 
   /** Reserve either side's outside approach after a room plan is queued or completed. */
