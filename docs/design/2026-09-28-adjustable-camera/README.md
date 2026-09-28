@@ -141,8 +141,8 @@ rather than the frame-cost acceptance test for a large prison.
 
 ## First Blender modules inside the actual scene
 
-The composition branch joins the camera scene to the authored wall, open-door
-and bed modules from the art chain. Its browser fixture loads the real
+The composition branch joins the camera scene to authored north and west wall,
+cutaway wall, open-door, bed, toilet, rack and chair modules. Its browser fixture loads the real
 content-hashed PNGs and checks that each camera pose chooses the matching bed
 frame. It renders the same immutable world and selected square as above:
 
@@ -155,12 +155,12 @@ frame. It renders the same immutable world and selected square as above:
 Selecting a ground square lowers only nearby walls *in front of* it. The
 unchanged edge layers still carry their full collision and save state. A
 browser mutation that reversed the near-wall depth comparison cut the far
-wall instead and failed the test; restoration passed. The current short wall
-is a geometric placeholder pending a matching authored cutaway module. West
-edges also still use simple geometry because the first modular wall art is
-oriented to north edges. Actors, floors and arbitrary intermediate yaw angles
-have not reached final art quality. Depth and asset loading must be measured
-on a much larger prison before the scene can replace the current player view.
+wall instead and failed the test; restoration passed. Authored cutaway art now
+replaces nearby wall geometry at the selected camera pose. Door cutaways still
+use geometry. The scene loads only the needed camera frames into Phaser's
+texture cache. Actors and floors have not reached final art quality. Depth and
+asset loading must be measured on a much larger prison before replacing the
+current player view.
 
 ## Active delivery lanes
 

@@ -250,7 +250,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
         continue;
       }
       const cutaway = this.cutsAwayForSelection(item);
-      if (!cutaway && this.artFrame(item) !== undefined) continue;
+      if (this.displayArtFrame(item, cutaway) !== undefined) continue;
       const top = cutaway ? lowerTop(item.footprint, item.top, 0.18) : item.top;
       for (let side = 0; side < 4; side += 1) {
         const next = (side + 1) % 4;
@@ -271,12 +271,25 @@ export class ObliqueWorldScene extends Phaser.Scene {
     return item.viewDepth > selectedDepth + TILE_SIZE_PX * 0.25;
   }
 
-  private artFrame(item: ObliqueSolid): { readonly catalog: ObliqueModuleCatalog; readonly image: string } | undefined {
-    if (item.artAssetId === undefined) return undefined;
-    const catalog = this.artCatalogs.get(item.artAssetId);
+  private cutawayArtAssetId(item: ObliqueSolid): string | undefined {
+    if (item.artAssetId === 'wall.interior.module.full' || item.artAssetId === 'wall.interior.module.west.full') {
+      return 'wall.interior.module.cutaway';
+    }
+    return undefined;
+  }
+
+  private artFrame(item: ObliqueSolid, assetId = item.artAssetId): { readonly catalog: ObliqueModuleCatalog; readonly image: string } | undefined {
+    if (assetId === undefined) return undefined;
+    const catalog = this.artCatalogs.get(assetId);
     if (catalog === undefined) return undefined;
     const frame = selectObliqueModuleFrame(catalog, this.pose);
     return this.textures.exists(frame.image) ? { catalog, image: frame.image } : undefined;
+  }
+
+  private displayArtFrame(item: ObliqueSolid, cutaway: boolean): { readonly catalog: ObliqueModuleCatalog; readonly image: string } | undefined {
+    if (!cutaway) return this.artFrame(item);
+    const assetId = this.cutawayArtAssetId(item);
+    return assetId === undefined ? undefined : this.artFrame(item, assetId);
   }
 
   private paintArt(projection: ObliqueWorldProjection): void {
@@ -284,8 +297,8 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.artImages = [];
     for (const item of projection.raised) {
       if (item.kind === 'actor') continue;
-      if (this.cutsAwayForSelection(item)) continue;
-      const art = this.artFrame(item);
+      const cutaway = this.cutsAwayForSelection(item);
+      const art = this.displayArtFrame(item, cutaway);
       if (art === undefined) continue;
       const anchor = {
         x: item.footprint.reduce((sum, corner) => sum + corner.x, 0) / 4,

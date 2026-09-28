@@ -14,7 +14,7 @@ import { TILE_SIZE_PX, tileRangeContains, visibleTileRange } from '../tile-metri
 import { groundToScreen, visibleGroundBounds, type ObliqueCameraState } from './oblique-projection';
 import { obliqueDepthForAnchor, projectedRectPrism, projectedTileQuad, type TileQuad } from './oblique-geometry';
 import type { Point } from './coordinates';
-import { artForNorthEdge, artForStructure } from './oblique-art-mapping';
+import { artForNorthEdge, artForWestEdge, artForStructure } from './oblique-art-mapping';
 
 export interface ObliqueGroundTile {
   readonly tileX: number;
@@ -103,7 +103,7 @@ export function projectObliqueWorldFrame(frame: RenderFrame, camera: ObliqueCame
       kind, id: `${kind}:${tileX}:${tileY}`, tileX, tileY,
       ...geometry, topFill: appearance.topFill, sideFill: appearance.sideFill, alpha: 1,
       viewDepth: obliqueDepthForAnchor({ x: x + width / 2, y: y + depth / 2 }, camera.yawRadians),
-      artAssetId: kind === 'north-edge' ? artForNorthEdge(value) : undefined,
+      artAssetId: kind === 'north-edge' ? artForNorthEdge(value) : artForWestEdge(value),
     });
   };
 

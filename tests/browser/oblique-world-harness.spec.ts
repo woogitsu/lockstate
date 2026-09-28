@@ -8,9 +8,10 @@ test('real render feed cell keeps one build square under the cursor while the sc
   await expect(page.locator('canvas')).toBeVisible();
   const loadedArt = await page.evaluate(() => window.lockstateObliqueWorldHarness.artTextureKeys());
   expect(loadedArt.some((key) => key.includes('wall-module-full'))).toBe(true);
+  expect(loadedArt.some((key) => key.includes('wall-module-west-full'))).toBe(true);
   expect(loadedArt.some((key) => key.includes('cell-door-open'))).toBe(true);
   expect(loadedArt.some((key) => key.includes('cell-bed'))).toBe(true);
-  expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.loadedArtTextureCount())).toBeLessThanOrEqual(6);
+  expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.loadedArtTextureCount())).toBeLessThanOrEqual(8);
   let previousGroundPaints = 0;
   for (const [yaw, elevation] of [[-45, 25], [0, 45], [45, 65]] as const) {
     await page.evaluate(([y, e]) => window.lockstateObliqueWorldHarness.setPose(y, e), [yaw, elevation] as const);
@@ -25,6 +26,7 @@ test('real render feed cell keeps one build square under the cursor while the sc
       const artAfterSelection = await page.evaluate(() => window.lockstateObliqueWorldHarness.artTextureKeys());
       expect(artAfterSelection.length).toBeLessThan(artBeforeSelection.length);
       expect(artAfterSelection.some((key) => key.includes('cell-bed'))).toBe(true);
+      expect(artAfterSelection.some((key) => key.includes('wall-module-cutaway'))).toBe(true);
       const cutaway = await page.evaluate(() => window.lockstateObliqueWorldHarness.cutawayWallIds());
       expect(cutaway).toContain('north-edge:3:5');
       expect(cutaway).not.toContain('north-edge:2:1');
@@ -36,5 +38,5 @@ test('real render feed cell keeps one build square under the cursor while the sc
     expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.paintCounts())).toEqual(painted);
     await page.screenshot({ path: testInfo.outputPath(`render-feed-yaw${yaw}-elev${elevation}-fullhd.png`) });
   }
-  expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.loadedArtTextureCount())).toBeLessThan(30);
+  expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.loadedArtTextureCount())).toBeLessThan(40);
 });

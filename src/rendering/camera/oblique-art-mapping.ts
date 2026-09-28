@@ -9,10 +9,17 @@ const NORTH_EDGE_ART: ReadonlyMap<number, string> = new Map([
 
 const OBJECT_ART: Readonly<Record<string, string>> = {
   'object.bed': 'furniture.cell.bed.single.variants',
+  'object.toilet': 'fixture.cell.toilet_sink',
+  'object.storage-rack': 'furniture.storage.rack.wooden',
+  'object.chair': 'furniture.chair.wooden',
 };
 
 export function artForNorthEdge(edgeNumericId: number): string | undefined {
   return NORTH_EDGE_ART.get(edgeNumericId);
+}
+
+export function artForWestEdge(edgeNumericId: number): string | undefined {
+  return edgeNumericId === WALL_EDGE_NUMERIC_ID ? 'wall.interior.module.west.full' : undefined;
 }
 
 export function artForStructure(definitionId: string): string | undefined {
