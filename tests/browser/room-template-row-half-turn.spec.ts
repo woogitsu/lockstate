@@ -9,6 +9,14 @@ test('Full HD worker completes and restores a half-turned four-cell row', async 
     class ProbedWorker extends RealWorker {
       public constructor(url: string | URL, options?: WorkerOptions) {
         super(url, options);
+        const roomLists: unknown[] = [];
+        super.addEventListener('message', (event: MessageEvent) => {
+          const reply = event.data as { kind?: string; payload?: { projectionId?: string; view?: { data?: unknown } } };
+          if (reply.kind === 'simulation/projection' && reply.payload?.projectionId === 'hud/room-list') {
+            roomLists.push(reply.payload.view?.data);
+          }
+        });
+        (window as unknown as { roomBadgeLists: unknown[] }).roomBadgeLists = roomLists;
         (window as unknown as { rowWorker: Worker }).rowWorker = this;
       }
     }
@@ -38,10 +46,17 @@ test('Full HD worker completes and restores a half-turned four-cell row', async 
   await page.getByRole('button', { name: 'Fast forward' }).click();
   await expect.poll(async () => (await countsSeries(page)).at(-1)?.rooms, { timeout: 120_000 }).toBe(4);
   await expect(page.locator('.hud-build')).not.toHaveAttribute('data-queued', /[1-9]/, { timeout: 120_000 });
+  const latestRoomNeeds = async () => page.evaluate(() =>
+    ((window as unknown as { roomBadgeLists?: Array<{ totals?: { instances?: number }; roomNeedsSummary?: { unfinishedRooms?: number } }> }).roomBadgeLists ?? [])
+      .at(-1));
+  await expect.poll(latestRoomNeeds).toMatchObject({ totals: { instances: 4 }, roomNeedsSummary: { unfinishedRooms: 0 } });
+  await expect(page.locator('.ui-stat[data-metric="rooms"] .ui-badge')).toHaveCount(0);
   await page.getByRole('button', { name: 'Save now' }).click();
   await expect(page.locator('.save-panel__status')).toContainText('Saved (generation ');
   await page.reload();
   await page.locator('.save-panel__item button').filter({ hasText: 'Load' }).first().click();
   await expect.poll(async () => (await countsSeries(page)).at(-1)?.rooms).toBe(4);
+  await expect.poll(latestRoomNeeds).toMatchObject({ totals: { instances: 4 }, roomNeedsSummary: { unfinishedRooms: 0 } });
+  await expect(page.locator('.ui-stat[data-metric="rooms"] .ui-badge')).toHaveCount(0);
   await page.screenshot({ path: testInfo.outputPath('half-turned-row-restored-fullhd.png') });
 });
