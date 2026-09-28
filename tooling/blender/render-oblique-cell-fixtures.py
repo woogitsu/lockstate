@@ -45,6 +45,12 @@ def main() -> None:
     modules.pipeline_common.require_blender_version()
     modules.setup_scene()
     for asset_id, slug in MODELS:
+        if asset_id == "fixture.cell.toilet_sink":
+            modules.YAW = tuple(-165 + index * 30 for index in range(12))
+            modules.ELEVATION = (20, 30, 40, 50, 60, 70)
+        else:
+            modules.YAW = (-45, 0, 45)
+            modules.ELEVATION = (25, 45, 65)
         collection = modules.append_collection(modules.CATALOG, asset_id)
         origin = next((item for item in collection.all_objects
                        if item.name == asset_id + ".origin"), None)
@@ -59,12 +65,14 @@ def main() -> None:
     by_id = {entry["assetId"]: entry for entry in existing["entries"]}
     if not all(asset_id in by_id for asset_id in BASE_ASSET_IDS):
         raise RuntimeError("Base oblique module registry is incomplete")
-    entries = [by_id[asset_id] for asset_id in BASE_ASSET_IDS]
-    entries.extend({"assetId": asset_id,
-                    "manifest": f"/game-content/oblique-{slug}.v1.json"}
-                   for asset_id, slug in MODELS)
-    entries.extend(by_id[asset_id] for asset_id in FLOOR_ASSET_IDS if asset_id in by_id)
-    entries.extend(by_id[asset_id] for asset_id in ACTOR_ASSET_IDS if asset_id in by_id)
+    entries = list(existing["entries"])
+    for asset_id, slug in MODELS:
+        if asset_id in by_id:
+            continue
+        floor_index = next((index for index, entry in enumerate(entries)
+                            if entry["assetId"] in FLOOR_ASSET_IDS), len(entries))
+        entries.insert(floor_index, {"assetId": asset_id,
+                                     "manifest": f"/game-content/oblique-{slug}.v1.json"})
     modules.pipeline_common.write_text(REGISTRY,
         json.dumps({"schemaVersion": 1, "entries": entries}, indent=2) + "\n")
 

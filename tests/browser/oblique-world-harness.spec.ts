@@ -96,6 +96,7 @@ test('real render feed cell keeps one build square under the cursor while the sc
   expect(loadedArt.some((key) => key.includes('wall-module-west-full'))).toBe(true);
   expect(loadedArt.some((key) => key.includes('cell-door-open'))).toBe(true);
   expect(loadedArt.some((key) => key.includes('cell-bed'))).toBe(true);
+  expect(loadedArt.some((key) => key.includes('cell-toilet'))).toBe(true);
   expect(loadedArt.some((key) => key.includes('cell-sink'))).toBe(true);
   expect(loadedArt.some((key) => key.includes('cell-waste-bin'))).toBe(true);
   expect(loadedArt.some((key) => key.includes('dining-table'))).toBe(true);
@@ -130,6 +131,7 @@ test('real render feed cell keeps one build square under the cursor while the sc
       expect(artAfterSelection.filter((key) => key.includes('wall-module-full')).length)
         .toBeLessThan(artBeforeSelection.filter((key) => key.includes('wall-module-full')).length);
       expect(artAfterSelection.some((key) => key.includes('cell-bed'))).toBe(true);
+      expect(artAfterSelection.some((key) => key.includes('cell-toilet'))).toBe(true);
       expect(artAfterSelection.some((key) => key.includes('cell-sink'))).toBe(true);
       expect(artAfterSelection.some((key) => key.includes('cell-waste-bin'))).toBe(true);
       expect(artAfterSelection.some((key) => key.includes('dining-table'))).toBe(true);

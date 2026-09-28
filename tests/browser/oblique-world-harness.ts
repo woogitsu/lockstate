@@ -110,6 +110,7 @@ const frame: RenderFrame = {
   world: WorldRenderView.fromSnapshot(world.snapshot()),
   structures: [
     { id: 'bed-1', definitionId: 'bed-wooden', tileX: 2, tileY: 2, phase: 'built' },
+    { id: 'toilet-1', definitionId: 'toilet-brick', tileX: 1, tileY: 2, phase: 'built' },
     { id: 'sink-1', definitionId: 'object.sink', tileX: 3, tileY: 2, phase: 'built' },
     { id: 'waste-bin-1', definitionId: 'object.waste-bin', tileX: 4, tileY: 2, phase: 'built' },
     { id: 'dining-table-1', definitionId: 'dining-table-wooden', tileX: 1, tileY: 6, phase: 'built' },
