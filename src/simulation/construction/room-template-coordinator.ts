@@ -50,6 +50,7 @@ export class RoomTemplateCoordinator implements SystemRegistration {
   ) {}
 
   public preflight(plan: RoomTemplatePlan): RoomTemplatePlacement {
+    const plannedWalls = new Set(plan.wallSquares.map((wall) => `${wall.x},${wall.y}`));
     const active = this.construction.allOrders().filter((order) =>
       order.state !== 'cancelled' && order.state !== 'failed' && order.state !== 'completed');
     const objectClaims = new Set<string>();
@@ -70,7 +71,9 @@ export class RoomTemplateCoordinator implements SystemRegistration {
             // A door queued just outside the east or south edge can cross
             // into a future square wall without its order tile entering the
             // plan. Submission would refuse that wall; preflight must agree.
-            if (definition.placesDoor !== undefined) structureClaims.add(tileKey(across));
+            if (definition.placesDoor !== undefined && plannedWalls.has(tileKey(across))) {
+              structureClaims.add(tileKey(across));
+            }
           }
         }
         continue;
@@ -90,7 +93,8 @@ export class RoomTemplateCoordinator implements SystemRegistration {
       this.world,
       plan,
       (tile) => this.placedObjects.isTileOccupied(tile) || objectClaims.has(tileKey(tile)),
-      (tile) => structureClaims.has(tileKey(tile)) || this.completedDoorCrossesTile(tile) || pendingPlans.some((pending) =>
+      (tile) => structureClaims.has(tileKey(tile)) ||
+        (plannedWalls.has(tileKey(tile)) && this.completedDoorCrossesTile(tile)) || pendingPlans.some((pending) =>
         tile.x >= pending.origin.x && tile.x < pending.origin.x + pending.width &&
         tile.y >= pending.origin.y && tile.y < pending.origin.y + pending.height),
     );

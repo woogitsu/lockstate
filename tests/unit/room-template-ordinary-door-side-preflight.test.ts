@@ -48,3 +48,23 @@ it('does not block a Cell for an ordinary door one square farther away', () => {
   const plan = createRoomTemplateBuildPlan('cell-basic', { x: 10, y: 10 }, false, 1).plan;
   expect(runtime.roomTemplates.preflight(plan)).toEqual({ ok: true });
 });
+
+it.each([false, true])('keeps a wall-free Yard beside an ordinary door (completed=%s)', (completed) => {
+  const runtime = createNewSimulationRuntime(93);
+  runtime.containers.require(CONSTRUCTION_MATERIALS_CONTAINER_ID).deposit('item.wood-plank', 10);
+  runtime.kernel.submitCommand('yard-neighbor-door', 0, runtime.kernel.tick, packCommand({
+    type: 'PlaceBuildOrder', orderId: 'yard-neighbor-door', definitionId: 'door-wooden',
+    x: 18, y: 12, edge: 'west',
+  }));
+  runtime.kernel.step();
+  if (completed) {
+    for (let i = 0; i < 500; i += 1) {
+      runtime.kernel.step();
+      if (runtime.construction.getOrder('yard-neighbor-door')?.state === 'completed') break;
+    }
+    expect(runtime.construction.getOrder('yard-neighbor-door')?.state).toBe('completed');
+  }
+  const yard = createRoomTemplateBuildPlan('yard-basic', { x: 10, y: 10 }, false, 1).plan;
+  expect(yard.wallSquares).toHaveLength(0);
+  expect(runtime.roomTemplates.preflight(yard)).toEqual({ ok: true });
+});
