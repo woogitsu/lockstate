@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "assetId": "floor.canteen.terrazzo",
-  "source": "environment.mvp.catalog.blend",
-  "sourceSha256": "57db9afb7e48996cef9aaedda72b8e874e865eb56862ee4add8b177a9713887d",
+  "source": "floor.canteen.warm-terrazzo.blend",
+  "sourceSha256": "866d420e226d8d9ee75a1516026c870418c11709f47beeceff94012e9850185e",
   "sourceDependencies": [],
   "resolutionPx": [
     128,
@@ -54,434 +54,434 @@
     {
       "yawDegrees": -180,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-canteen-yaw-180-elev25.40d4e2f06de5.png",
-      "sha256": "40d4e2f06de52eb3cdeb920d9d6f514e044414bcdf004831a0d07458dd807c30"
+      "image": "/assets/environment/oblique/floor-canteen-yaw-180-elev25.99da13a99af4.png",
+      "sha256": "99da13a99af45b2ae4d27a3fa4c13743a8fd51d6ccc8f28b3706a369523ef140"
     },
     {
       "yawDegrees": -180,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-canteen-yaw-180-elev45.a8203870a000.png",
-      "sha256": "a8203870a00030eddd1c75796c8eeb4e89ca7e539200f35dcbdeffd18517caf4"
+      "image": "/assets/environment/oblique/floor-canteen-yaw-180-elev45.e3b2c32a5b36.png",
+      "sha256": "e3b2c32a5b362c997f91931fd53339dba018be6b2ac38df2bd9efad3e8184da6"
     },
     {
       "yawDegrees": -180,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-canteen-yaw-180-elev65.7f76d22d58ea.png",
-      "sha256": "7f76d22d58ea965100d75fd11d5f116fa0ba6af5d613cc504aa759f9ef0af53d"
+      "image": "/assets/environment/oblique/floor-canteen-yaw-180-elev65.1d27addfc947.png",
+      "sha256": "1d27addfc9473d9ae400d63791cc2b43fad1f80b197cf306674dd9b9dc44da2e"
     },
     {
       "yawDegrees": -165,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-canteen-yaw-165-elev25.ea9eef40c31b.png",
-      "sha256": "ea9eef40c31b96e661ecb7095a45752af37a23e187e274fce21d30c79a3577e6"
+      "image": "/assets/environment/oblique/floor-canteen-yaw-165-elev25.47df236b4991.png",
+      "sha256": "47df236b49910509b039bd37bb975e08fdc370ad620e186e3f1ced0db4bf6ec2"
     },
     {
       "yawDegrees": -165,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-canteen-yaw-165-elev45.6d9b20dccd55.png",
-      "sha256": "6d9b20dccd55e26e961f8fb1dfb3687798d29e850c81e46665a00c6e38faba64"
+      "image": "/assets/environment/oblique/floor-canteen-yaw-165-elev45.ad836812c5a1.png",
+      "sha256": "ad836812c5a1c9e79cb9c57bd8a4beda29c902db7a5de56b1ffe8dd102f3ea0c"
     },
     {
       "yawDegrees": -165,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-canteen-yaw-165-elev65.e514d5d2fdd0.png",
-      "sha256": "e514d5d2fdd0138eccab9614c5288570e8e47c169fd8e39fa61192318c75a7f3"
+      "image": "/assets/environment/oblique/floor-canteen-yaw-165-elev65.d8b4bc9f0932.png",
+      "sha256": "d8b4bc9f0932532c2f0bacb774aecd9dc3116ac4fd96207821df33277454bc80"
     },
     {
       "yawDegrees": -150,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-canteen-yaw-150-elev25.b10d34f1ad94.png",
-      "sha256": "b10d34f1ad947defdfe9b431dab7308b758124c366ff1c73e23e2f0e43856a8c"
+      "image": "/assets/environment/oblique/floor-canteen-yaw-150-elev25.0b8c72be7d41.png",
+      "sha256": "0b8c72be7d41b18e4dcb28015937e084c301e84dbd19cbf9c3989f86d6a0f008"
     },
     {
       "yawDegrees": -150,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-canteen-yaw-150-elev45.a17261ee96e3.png",
-      "sha256": "a17261ee96e3feec891d5e646a38a2464c50de685463ed20d9d834d0c1bcc503"
+      "image": "/assets/environment/oblique/floor-canteen-yaw-150-elev45.72ca06e6727e.png",
+      "sha256": "72ca06e6727e62d04d4a30739cd772ca840142bbdeb8fc49113fc7adadefb4fe"
     },
     {
       "yawDegrees": -150,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-canteen-yaw-150-elev65.ba4f1e3270f9.png",
-      "sha256": "ba4f1e3270f9b8f875a19da39ff969b94444232a1cc6ed242ec0354ecad5d4c2"
+      "image": "/assets/environment/oblique/floor-canteen-yaw-150-elev65.44231831ffdd.png",
+      "sha256": "44231831ffdd22adadb90f606c6c378c11d92084e89a5f6e252162cb40767de7"
     },
     {
       "yawDegrees": -135,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-canteen-yaw-135-elev25.6e6342bb9e4d.png",
-      "sha256": "6e6342bb9e4d575da894b8f0dda3f3201f30d6641f4ed0ee131c2ff1345c8f45"
+      "image": "/assets/environment/oblique/floor-canteen-yaw-135-elev25.fff085bda17d.png",
+      "sha256": "fff085bda17d61b706b831443c0e2bf588db0a62ba3bb60108028cf882cd9353"
     },
     {
       "yawDegrees": -135,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-canteen-yaw-135-elev45.7cc2661812d2.png",
-      "sha256": "7cc2661812d29dbf1313f7c955095b87689511ffb068253a945d77688150fb31"
+      "image": "/assets/environment/oblique/floor-canteen-yaw-135-elev45.ff4b27c840b4.png",
+      "sha256": "ff4b27c840b48fbd00d5d9539dbef856ca5cd9db10f0ef2bfb86401c16540170"
     },
     {
       "yawDegrees": -135,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-canteen-yaw-135-elev65.4bc71138c7eb.png",
-      "sha256": "4bc71138c7eb82927ad56457875b6ad8c0ef8b0feaf13792fb08e6cd7c7212f7"
+      "image": "/assets/environment/oblique/floor-canteen-yaw-135-elev65.ed89264dd5c2.png",
+      "sha256": "ed89264dd5c2c0c6a31a061e45f8eb835cbde5ab1479992d05325315586b9a09"
     },
     {
       "yawDegrees": -120,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-canteen-yaw-120-elev25.54eac6a472a9.png",
-      "sha256": "54eac6a472a966c16062309e0206fd5ca13f003339747e131a0590ae64b5eeb0"
+      "image": "/assets/environment/oblique/floor-canteen-yaw-120-elev25.2e6b8210e802.png",
+      "sha256": "2e6b8210e802a2649d0328e6a23abd379d99e31ff9aa0b6b2d9bd8ac98012eb5"
     },
     {
       "yawDegrees": -120,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-canteen-yaw-120-elev45.95f112f6df94.png",
-      "sha256": "95f112f6df9402acfa2d537d6afac9e0898107bbd3a62568523def8a2bf0176b"
+      "image": "/assets/environment/oblique/floor-canteen-yaw-120-elev45.018453403a06.png",
+      "sha256": "018453403a065642859523dc6901dabb4f58fc9d4f429d0528b1d709c252b397"
     },
     {
       "yawDegrees": -120,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-canteen-yaw-120-elev65.d6f91a80b445.png",
-      "sha256": "d6f91a80b4454a9edce5796f2112cb5030f379bd67a06d4a39705226f57e403d"
+      "image": "/assets/environment/oblique/floor-canteen-yaw-120-elev65.446b3d01d433.png",
+      "sha256": "446b3d01d4335a72376e646dab4b45aaad02f43abc18420800d4545de4a11aee"
     },
     {
       "yawDegrees": -105,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-canteen-yaw-105-elev25.0bbd88a5270a.png",
-      "sha256": "0bbd88a5270a25ce685c09b14d12c1ce2d76e8920ffb490ec73dfa2cc509b13c"
+      "image": "/assets/environment/oblique/floor-canteen-yaw-105-elev25.3bced840408c.png",
+      "sha256": "3bced840408c46f323726fde36d76bfa169d97a7ff00a38db1e6773257c682cf"
     },
     {
       "yawDegrees": -105,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-canteen-yaw-105-elev45.d0736f919e15.png",
-      "sha256": "d0736f919e1598ac7e20046fef4000793fffa265b8f755a8cd7036571e7f69fd"
+      "image": "/assets/environment/oblique/floor-canteen-yaw-105-elev45.0b83d034ff8a.png",
+      "sha256": "0b83d034ff8add1a2ede44e702e9158a62447198b56baac83605a832c074244e"
     },
     {
       "yawDegrees": -105,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-canteen-yaw-105-elev65.186972fd2910.png",
-      "sha256": "186972fd2910ce168a74d759df34a5f7833dcb5881283946bb499e5c1f6e9b29"
+      "image": "/assets/environment/oblique/floor-canteen-yaw-105-elev65.a7e182501ea4.png",
+      "sha256": "a7e182501ea4302ead68795611098a821f80ecd7195f8aba4ef3e4f29299081a"
     },
     {
       "yawDegrees": -90,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-canteen-yaw-90-elev25.ce21d7a6332c.png",
-      "sha256": "ce21d7a6332cad26e54569d9038a1170cc259ece686dd0c29496355a0d599ad2"
+      "image": "/assets/environment/oblique/floor-canteen-yaw-90-elev25.f40ba8afde05.png",
+      "sha256": "f40ba8afde0571d409cc647de773fba59a9b632f62e37ed9cfe641e2fc97a22a"
     },
     {
       "yawDegrees": -90,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-canteen-yaw-90-elev45.e91e7585063d.png",
-      "sha256": "e91e7585063d01b67d690bf98e57616d44dc2187f0eba27f3daceb519758ae6e"
+      "image": "/assets/environment/oblique/floor-canteen-yaw-90-elev45.80c8c1d83f69.png",
+      "sha256": "80c8c1d83f695504e26381722bb0ac398366c16b48624ee439de143f34177721"
     },
     {
       "yawDegrees": -90,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-canteen-yaw-90-elev65.363490c0082f.png",
-      "sha256": "363490c0082fe3074884d1a73cf8867791da1955a0fe73b8d3b42227cc20714b"
+      "image": "/assets/environment/oblique/floor-canteen-yaw-90-elev65.a1a035c38420.png",
+      "sha256": "a1a035c38420a65074fc8b60739bc65ca2c58f8fcb79bbe0b2a0633cc16d0b3a"
     },
     {
       "yawDegrees": -75,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-canteen-yaw-75-elev25.4d450265f867.png",
-      "sha256": "4d450265f8679b314c365fe426f9cd1b7fe243509be2003d8d2ca38925d1e1ee"
+      "image": "/assets/environment/oblique/floor-canteen-yaw-75-elev25.7a2c483e0ba7.png",
+      "sha256": "7a2c483e0ba77a65744cdf12d4d07a1980c6c189e7d35a13b09d7b8a7cf5248a"
     },
     {
       "yawDegrees": -75,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-canteen-yaw-75-elev45.923e642c6552.png",
-      "sha256": "923e642c6552511775e114c12492fe226ed2bce648508aac9f510b7c92704cf6"
+      "image": "/assets/environment/oblique/floor-canteen-yaw-75-elev45.ef10d3c59143.png",
+      "sha256": "ef10d3c59143370b8669ffa2f16bffa09d18c12670c1ba69844ad4edc1e58d4d"
     },
     {
       "yawDegrees": -75,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-canteen-yaw-75-elev65.7a868a27b4b9.png",
-      "sha256": "7a868a27b4b90721c3fef0c833e8fa61912e46ccfcb5f0d68cd72a32878b3ee5"
+      "image": "/assets/environment/oblique/floor-canteen-yaw-75-elev65.35da2d511cf7.png",
+      "sha256": "35da2d511cf7b5b40b376df5653c57be7ba25c4bff66bd24c6256798d51eb5d5"
     },
     {
       "yawDegrees": -60,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-canteen-yaw-60-elev25.eb2379dbf56b.png",
-      "sha256": "eb2379dbf56b8b52cd488dd4e45e0443d9a2b835304d557688b0f8f07d16e813"
+      "image": "/assets/environment/oblique/floor-canteen-yaw-60-elev25.ceb2e5c31c16.png",
+      "sha256": "ceb2e5c31c161251e95f1fb43da5cb2488f4b8ceb2a6b0cacfbad05a376d3603"
     },
     {
       "yawDegrees": -60,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-canteen-yaw-60-elev45.f6a247913d02.png",
-      "sha256": "f6a247913d02541955479b99ef77b572ae41744f2659f707cba06418aae81a9a"
+      "image": "/assets/environment/oblique/floor-canteen-yaw-60-elev45.e2928ad82f67.png",
+      "sha256": "e2928ad82f670dd90239bc400d763debb5f4a533288076c1e9535ad9c1ef3cf4"
     },
     {
       "yawDegrees": -60,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-canteen-yaw-60-elev65.b5297ac2ee17.png",
-      "sha256": "b5297ac2ee17712b399269a2292458d4009b0f5970853c15c1a14562038d5f79"
+      "image": "/assets/environment/oblique/floor-canteen-yaw-60-elev65.21dbd387b417.png",
+      "sha256": "21dbd387b41740fa31b36d1b7214d1bb4500d72902550011d87cbb994d27c7fb"
     },
     {
       "yawDegrees": -45,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-canteen-yaw-45-elev25.5848ea0375e1.png",
-      "sha256": "5848ea0375e10232c8228b89aa3fdf6cbd94b544ab3af1d5d4282a518d4b8a12"
+      "image": "/assets/environment/oblique/floor-canteen-yaw-45-elev25.09be9f9398f8.png",
+      "sha256": "09be9f9398f85165a591e178d9e583f5fbc0d567698ad2ffe49b76ec0d01a99e"
     },
     {
       "yawDegrees": -45,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-canteen-yaw-45-elev45.2ac56a1d6c91.png",
-      "sha256": "2ac56a1d6c91bdb56dee564cb38c76116ef8b99bbba78fcfdf18aa992d0a0fe4"
+      "image": "/assets/environment/oblique/floor-canteen-yaw-45-elev45.b8bf710d732d.png",
+      "sha256": "b8bf710d732d2f6ed0b2047683741b81d8d4258cf82e507ffe8019905a5e22be"
     },
     {
       "yawDegrees": -45,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-canteen-yaw-45-elev65.84d11f45fd54.png",
-      "sha256": "84d11f45fd547c55beca71876ce1f193e951350cf79016405edb78fa038fa999"
+      "image": "/assets/environment/oblique/floor-canteen-yaw-45-elev65.41e8e8f89a4c.png",
+      "sha256": "41e8e8f89a4c48be24b5e21097e30e6d50854f319aef9a97a7c87879954a1c45"
     },
     {
       "yawDegrees": -30,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-canteen-yaw-30-elev25.2035b91ff7ab.png",
-      "sha256": "2035b91ff7abff462d8aa92b79d79a50413b2dfca35f590a6457a4c14451cc7e"
+      "image": "/assets/environment/oblique/floor-canteen-yaw-30-elev25.900d1a4976ab.png",
+      "sha256": "900d1a4976abd470f5ae2bc7730783898d6f579f43a8d6979fd532a3f4f1be7c"
     },
     {
       "yawDegrees": -30,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-canteen-yaw-30-elev45.d011620a235a.png",
-      "sha256": "d011620a235a87e941a1c6d13d323dab7f1dcf8199e39032326f021fddefc8c8"
+      "image": "/assets/environment/oblique/floor-canteen-yaw-30-elev45.24c15f85d4bc.png",
+      "sha256": "24c15f85d4bcca6b71d5b8e47d504c49573b690807ddeb5bce0ffcd894f8d26a"
     },
     {
       "yawDegrees": -30,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-canteen-yaw-30-elev65.027745675c05.png",
-      "sha256": "027745675c056f056cff28922dcc134916ce8bf68ba5b961d7ba4860fc11b389"
+      "image": "/assets/environment/oblique/floor-canteen-yaw-30-elev65.03f582c10754.png",
+      "sha256": "03f582c10754aab930190414ed4a9279356d42c7615524aa51c021d0fe8b641c"
     },
     {
       "yawDegrees": -15,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-canteen-yaw-15-elev25.41287942b315.png",
-      "sha256": "41287942b315383c12eee850d2a2ca3698027ab05dd274c320f95bc59be083a3"
+      "image": "/assets/environment/oblique/floor-canteen-yaw-15-elev25.3d1e5c87177c.png",
+      "sha256": "3d1e5c87177c047dab940617486e0901e754b19c7612bf91f2936bfd879d2b0e"
     },
     {
       "yawDegrees": -15,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-canteen-yaw-15-elev45.d955b62eaf71.png",
-      "sha256": "d955b62eaf715a401cd9b31ada5bf0ced45378d1450b18201023916e9a328b72"
+      "image": "/assets/environment/oblique/floor-canteen-yaw-15-elev45.25df9ea05a0d.png",
+      "sha256": "25df9ea05a0d5d4f18679084646b0ca4ce7d8e23378efe302b1db795290ac758"
     },
     {
       "yawDegrees": -15,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-canteen-yaw-15-elev65.0092e6fe995d.png",
-      "sha256": "0092e6fe995da62aa5513f633474762fb04f5073e5a9624f915f63b42fda0025"
+      "image": "/assets/environment/oblique/floor-canteen-yaw-15-elev65.5df1bad54bcf.png",
+      "sha256": "5df1bad54bcf919a0b7c5a3fc56bfb43de6a0d4d4698080da229c6bc92a47575"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-canteen-yaw+00-elev25.7f0d05193979.png",
-      "sha256": "7f0d051939797992f8cc3c6b7dfdd19e1ac49a08b50abb8ef563af21a9696dc7"
+      "image": "/assets/environment/oblique/floor-canteen-yaw+00-elev25.69fb8c14707b.png",
+      "sha256": "69fb8c14707bcd4ce566d03105348ac1ba114a4b821cf00a1e70a0a1c8626bbc"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-canteen-yaw+00-elev45.bc0695ff0c67.png",
-      "sha256": "bc0695ff0c67d3a91b7f24767c1a55accbaa39da635314b94790a45feb121a58"
+      "image": "/assets/environment/oblique/floor-canteen-yaw+00-elev45.2f6588948583.png",
+      "sha256": "2f65889485834c06dd681efaf342b389d56fc61ca212d74c797486e3c55b1956"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-canteen-yaw+00-elev65.d870c4f0aca8.png",
-      "sha256": "d870c4f0aca8d23ef6f1ad106144812ea22b4d4872bfd20f7e92f07e7903ee0b"
+      "image": "/assets/environment/oblique/floor-canteen-yaw+00-elev65.f262d3ada4c5.png",
+      "sha256": "f262d3ada4c558072c5a6f858d78648a3fb3609436816e330e06283329e4fe67"
     },
     {
       "yawDegrees": 15,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-canteen-yaw+15-elev25.e3a3f7f6d1b3.png",
-      "sha256": "e3a3f7f6d1b31ec6fa62f8cf5ab5b3a2b232eaa719ad29e1cf6617b83bd76ad2"
+      "image": "/assets/environment/oblique/floor-canteen-yaw+15-elev25.e6192103742a.png",
+      "sha256": "e6192103742a439aa268397def857d8ab6f573b0faa71970402e1b5b768ff551"
     },
     {
       "yawDegrees": 15,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-canteen-yaw+15-elev45.b51e09fd41cd.png",
-      "sha256": "b51e09fd41cd4de5977c591a84509b10c26c3f2c597442192c9213dc727d5113"
+      "image": "/assets/environment/oblique/floor-canteen-yaw+15-elev45.34b7fd4f80a0.png",
+      "sha256": "34b7fd4f80a064402989d1b682200ecbe61d1a719bbcc4878194422638e50db0"
     },
     {
       "yawDegrees": 15,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-canteen-yaw+15-elev65.d2c23831d25f.png",
-      "sha256": "d2c23831d25f6e7461a8df0642c146fa928d01ae0a2bac7021cfb65c97d61534"
+      "image": "/assets/environment/oblique/floor-canteen-yaw+15-elev65.bf5d1fde0161.png",
+      "sha256": "bf5d1fde01612b811a5a58a54d06b744735599c6ef0f813baed6102d2de8eca9"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-canteen-yaw+30-elev25.b0d2c96eae15.png",
-      "sha256": "b0d2c96eae155030ab7e984c26b9013641189cebf78d48b9e6208f05a64f9be7"
+      "image": "/assets/environment/oblique/floor-canteen-yaw+30-elev25.cb4573e881c8.png",
+      "sha256": "cb4573e881c87fa281278b30708cc5b13e3269314c182c1b5b3df8ac166f10f6"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-canteen-yaw+30-elev45.1bebcb941e85.png",
-      "sha256": "1bebcb941e8545a60d7ed6cbd2f8e7d42bc80c053532ab3ba83b499987247f72"
+      "image": "/assets/environment/oblique/floor-canteen-yaw+30-elev45.84456839d08f.png",
+      "sha256": "84456839d08f7ae52bd5c9cde5303c427cc021c01158872933882939d11a1dbf"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-canteen-yaw+30-elev65.43eaec387b45.png",
-      "sha256": "43eaec387b456618d8cda1366660ea73aa257af4d291b23227caeaecef585aa8"
+      "image": "/assets/environment/oblique/floor-canteen-yaw+30-elev65.f9f0540a72a6.png",
+      "sha256": "f9f0540a72a6bdd20a67c3cc9b6e3e3864b658dcd7f6988c6c06dec11323ef32"
     },
     {
       "yawDegrees": 45,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-canteen-yaw+45-elev25.83d1913e0285.png",
-      "sha256": "83d1913e02851a35382f4755f2b7e772acbe4c44fcf7e9701a7482a09cd1b06f"
+      "image": "/assets/environment/oblique/floor-canteen-yaw+45-elev25.7fe0cdda21e9.png",
+      "sha256": "7fe0cdda21e902c4bbbd13bac7f672c76921c0d8a255f6c65216bdbe33d9388b"
     },
     {
       "yawDegrees": 45,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-canteen-yaw+45-elev45.5f8d6d7aacb1.png",
-      "sha256": "5f8d6d7aacb1f01b8987ba34a9d26ab4a5e450b71c0868671c4edfa01772e4b0"
+      "image": "/assets/environment/oblique/floor-canteen-yaw+45-elev45.bf909c488a7f.png",
+      "sha256": "bf909c488a7f83742cb1cbfd9c325744bf69436e66851f821af612f8a9bfcea6"
     },
     {
       "yawDegrees": 45,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-canteen-yaw+45-elev65.539549fe369a.png",
-      "sha256": "539549fe369a94a1ff94de4eb5fbda9aa901bf6daf80bf9cd45fd53c7054f205"
+      "image": "/assets/environment/oblique/floor-canteen-yaw+45-elev65.54ceea7ceba0.png",
+      "sha256": "54ceea7ceba0cac4cf6a8c6bc5c0002eba76fddc872b9323929ecc13a63f8016"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-canteen-yaw+60-elev25.742b43fcce7a.png",
-      "sha256": "742b43fcce7aa8fcbd0fcdbbd7a1a0329fc542ddf4ab36740c07edb094e24252"
+      "image": "/assets/environment/oblique/floor-canteen-yaw+60-elev25.31ec7ec41107.png",
+      "sha256": "31ec7ec411074af66d4d2e9c1909a97e8f2ad29a265f5e9bb5b80ccc1dad3ef7"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-canteen-yaw+60-elev45.c807d0247de4.png",
-      "sha256": "c807d0247de49bbbf947a023212c5c17602f7df4f6e135ed5ef07812de8d28f3"
+      "image": "/assets/environment/oblique/floor-canteen-yaw+60-elev45.456908eb2274.png",
+      "sha256": "456908eb2274bae4434bfe572703b5d00d5040eaa0d86d5dbdfeb61be1cc022e"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-canteen-yaw+60-elev65.15d98e268b65.png",
-      "sha256": "15d98e268b655d42808c5f99cd1a3089bb036d4e52a63ae73b2430c8ec49b9a8"
+      "image": "/assets/environment/oblique/floor-canteen-yaw+60-elev65.3b31fd031574.png",
+      "sha256": "3b31fd0315743026551e88d5c67c18c97842432b3f210070617041e181906bcf"
     },
     {
       "yawDegrees": 75,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-canteen-yaw+75-elev25.2382c3398e15.png",
-      "sha256": "2382c3398e15a6affbff7015c60d460063f04a6a7c68f31d683cd6af7ff98240"
+      "image": "/assets/environment/oblique/floor-canteen-yaw+75-elev25.968a6c12b159.png",
+      "sha256": "968a6c12b159615196aa84a95cd0cb425711e8f8550fe5c9452ecc90108a2fd4"
     },
     {
       "yawDegrees": 75,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-canteen-yaw+75-elev45.ddfdbae9fe9a.png",
-      "sha256": "ddfdbae9fe9a9923fe078f57fd4153c0308f16b95142b3b10696f5dc93aa37a7"
+      "image": "/assets/environment/oblique/floor-canteen-yaw+75-elev45.e6e3981ed8d7.png",
+      "sha256": "e6e3981ed8d73b093911184455d9e68c683bbac9ed7e6b6a5fd94a95ddd99b55"
     },
     {
       "yawDegrees": 75,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-canteen-yaw+75-elev65.8c7bbd519fce.png",
-      "sha256": "8c7bbd519fce9def15aeafa853f9ae3ba1763755dbd186d1201990e7c4c604d8"
+      "image": "/assets/environment/oblique/floor-canteen-yaw+75-elev65.d421e7902d16.png",
+      "sha256": "d421e7902d161f1e355517cefb2d6b14253e42f75333afa475ac5490ba460f74"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-canteen-yaw+90-elev25.36ef00c2a845.png",
-      "sha256": "36ef00c2a8453081b9f337af3c94111d066187234c93cf4aa6390d68da59d656"
+      "image": "/assets/environment/oblique/floor-canteen-yaw+90-elev25.bea730a714c4.png",
+      "sha256": "bea730a714c436b7adb6f86b714e8ca6d3c549c2344407997607147ef2136616"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-canteen-yaw+90-elev45.80c5b78f91fa.png",
-      "sha256": "80c5b78f91fa7fda36cae4807af9847ef5735910d9b928bcf4d3607389b348df"
+      "image": "/assets/environment/oblique/floor-canteen-yaw+90-elev45.8a87159cc28a.png",
+      "sha256": "8a87159cc28ab01e3627b03b370309c174503c815e3a00ea6a94b331261e06bf"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-canteen-yaw+90-elev65.1f9654f6eced.png",
-      "sha256": "1f9654f6eced0c861042089e762827b027f939badfd33106b6e1fe9d11209819"
+      "image": "/assets/environment/oblique/floor-canteen-yaw+90-elev65.a94acb61e53c.png",
+      "sha256": "a94acb61e53c25bfb8f465829acc36bc7ffbd1c12746f9f26b154ae81f32efb6"
     },
     {
       "yawDegrees": 105,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-canteen-yaw+105-elev25.6b8d6d9fa2a5.png",
-      "sha256": "6b8d6d9fa2a5ca08c1bd616c7b66cb2513214f45706e023ed085e6abf8985e0d"
+      "image": "/assets/environment/oblique/floor-canteen-yaw+105-elev25.f65bd5c701b4.png",
+      "sha256": "f65bd5c701b4441551c1968bb414728a9b516b2b160fba0556c1f35fd6a31527"
     },
     {
       "yawDegrees": 105,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-canteen-yaw+105-elev45.b45c0aa1b531.png",
-      "sha256": "b45c0aa1b5314fbf6e126eba4cd56184cf556275bde414d29be3850df71311dd"
+      "image": "/assets/environment/oblique/floor-canteen-yaw+105-elev45.f6ab9d157078.png",
+      "sha256": "f6ab9d1570787367149b89ac23f0b9cc9c4769c91465e4e675361ccc966ce761"
     },
     {
       "yawDegrees": 105,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-canteen-yaw+105-elev65.122ebfb4871e.png",
-      "sha256": "122ebfb4871e0020eb696de5cf627582c7bd28d92db1c7bd0fe43e17b34ec688"
+      "image": "/assets/environment/oblique/floor-canteen-yaw+105-elev65.02143aa25fde.png",
+      "sha256": "02143aa25fde9af39109b2cd6a368742b96b694de3e121b2db8360670e8804a3"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-canteen-yaw+120-elev25.6d53720eae6e.png",
-      "sha256": "6d53720eae6e1b56ce059ad8de466224b12e5e3abb48e93e894eb555460ea444"
+      "image": "/assets/environment/oblique/floor-canteen-yaw+120-elev25.0c4af2266a54.png",
+      "sha256": "0c4af2266a549c0983875c2b62ea6297756c0ab294ef6649fd62d08e9f647922"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-canteen-yaw+120-elev45.34b1f56aa286.png",
-      "sha256": "34b1f56aa286d5a6be790629d9e48939a54ef2d61a47b9746c8df922edbe87ff"
+      "image": "/assets/environment/oblique/floor-canteen-yaw+120-elev45.0e3cd315a316.png",
+      "sha256": "0e3cd315a31635610c7ddf9113fc207c7f4eab390cb2854011d9fc6ea881b6ac"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-canteen-yaw+120-elev65.741db8562d8f.png",
-      "sha256": "741db8562d8fb4cf25059c2ea3b94e9b21089638e3399ee834c79e7cb2bcd7b3"
+      "image": "/assets/environment/oblique/floor-canteen-yaw+120-elev65.f03db9bd3688.png",
+      "sha256": "f03db9bd36889d9091deaed84878826bf9c5c0efb46e909be607f4baa9cadbc8"
     },
     {
       "yawDegrees": 135,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-canteen-yaw+135-elev25.d4487f0fcce4.png",
-      "sha256": "d4487f0fcce4ad6e9f01e8703c67996a3011c1ac5ecc072b0d4140d13cf25fd2"
+      "image": "/assets/environment/oblique/floor-canteen-yaw+135-elev25.7b5ee7ee9c80.png",
+      "sha256": "7b5ee7ee9c80179a4103b3b2b6195baee7cae7843917e9c0a33f316278b1772b"
     },
     {
       "yawDegrees": 135,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-canteen-yaw+135-elev45.2f0e2342eb69.png",
-      "sha256": "2f0e2342eb693ec240d91ccf733842df9091760a152b529f3280a95423dfef4b"
+      "image": "/assets/environment/oblique/floor-canteen-yaw+135-elev45.1e05ce13a5e2.png",
+      "sha256": "1e05ce13a5e253f504122f25c0545f3b9445e9de8a02ed0aaa46fd4e1b5f160c"
     },
     {
       "yawDegrees": 135,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-canteen-yaw+135-elev65.29a06f358684.png",
-      "sha256": "29a06f358684fa6722a5c67ac7408e62e40e41fcd044341d7da4056667ccb8b5"
+      "image": "/assets/environment/oblique/floor-canteen-yaw+135-elev65.943111c182f8.png",
+      "sha256": "943111c182f81a3b3294d572650b5c72146d5dcb35b9bfd115b2c302a05eb3a7"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-canteen-yaw+150-elev25.76bf22238421.png",
-      "sha256": "76bf22238421502aeae8e87b48883cb87e0b2c8bdd2090a12627d4b3bb8910e5"
+      "image": "/assets/environment/oblique/floor-canteen-yaw+150-elev25.1021d00397f5.png",
+      "sha256": "1021d00397f5de7332dcc405da1b05ddc7a67280ef45d619737557f044133e53"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-canteen-yaw+150-elev45.f9bae584c59c.png",
-      "sha256": "f9bae584c59cb468b9270da1149277d64e9efac79cc344253efdb7ce50ed5bfb"
+      "image": "/assets/environment/oblique/floor-canteen-yaw+150-elev45.db99f2ae3845.png",
+      "sha256": "db99f2ae3845fd2ce74685761e812b80211c24ab49f79fb99439d9210234cde9"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-canteen-yaw+150-elev65.bb83d1081267.png",
-      "sha256": "bb83d10812673cecbd66a870ee952b62d12eefda891e5340f0fb7f167cc26e5e"
+      "image": "/assets/environment/oblique/floor-canteen-yaw+150-elev65.870214b6a61d.png",
+      "sha256": "870214b6a61d971a1c81bc293ea60f8b0a87bf9a4fc2f2032543a383fd045661"
     },
     {
       "yawDegrees": 165,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-canteen-yaw+165-elev25.3101cc058126.png",
-      "sha256": "3101cc058126a9f9ca2896c5ba2983e3c38e7df1e9de5d676bb496cc56a9158f"
+      "image": "/assets/environment/oblique/floor-canteen-yaw+165-elev25.c0c03e7a0b44.png",
+      "sha256": "c0c03e7a0b4421a269b71f04de96ab41efe1b4d5981b8d4d85dffe2e9a2d02c0"
     },
     {
       "yawDegrees": 165,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-canteen-yaw+165-elev45.d2ee0732464b.png",
-      "sha256": "d2ee0732464b8bc5d4db696fd8be6903be418f78201b0e1579680d795761d452"
+      "image": "/assets/environment/oblique/floor-canteen-yaw+165-elev45.452f8ac53013.png",
+      "sha256": "452f8ac53013ac4f874dd2bee8d7ec17e3a6b9a628e018c35b445418be9be5e1"
     },
     {
       "yawDegrees": 165,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-canteen-yaw+165-elev65.284137aa9a93.png",
-      "sha256": "284137aa9a93bb21d7578671e2c698cae439da6f062b924e302cb8a2cda5c9cf"
+      "image": "/assets/environment/oblique/floor-canteen-yaw+165-elev65.763c93004c2f.png",
+      "sha256": "763c93004c2fe4444ff844dc9a345eee78bd6d4eac3e5dc1e0d4c78372c7d724"
     }
   ]
 }
