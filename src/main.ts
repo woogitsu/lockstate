@@ -917,7 +917,11 @@ if (obliquePreviewRequested) {
         game.canvas.addEventListener('wheel', (event) => {
           if (event.ctrlKey || event.altKey || event.metaKey || event.shiftKey || event.deltaY === 0) return;
           event.preventDefault();
-          obliqueScene.stepCameraZoom(event.deltaY < 0 ? 'in' : 'out');
+          const bounds = game.canvas.getBoundingClientRect();
+          obliqueScene.stepCameraZoom(event.deltaY < 0 ? 'in' : 'out', {
+            x: (event.clientX - bounds.left) * game.canvas.width / bounds.width,
+            y: (event.clientY - bounds.top) * game.canvas.height / bounds.height,
+          });
         }, { passive: false });
         cameraInput = new CameraPoseInputAdapter(obliqueScene, cameraContexts, cameraPlacementActive);
         cameraHud?.updateCameraPose(obliqueScene.cameraPose);
