@@ -25,6 +25,7 @@ MODELS = (
 )
 BASE_ASSET_IDS = (
     "wall.interior.module.full",
+    "wall.interior.module.cutaway",
     "furniture.cell.bed.single.variants",
     "door.interior.open.full",
 )

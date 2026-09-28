@@ -6,6 +6,10 @@
       "manifest": "/game-content/oblique-modules.v1.json"
     },
     {
+      "assetId": "wall.interior.module.cutaway",
+      "manifest": "/game-content/oblique-wall-cutaway.v1.json"
+    },
+    {
       "assetId": "furniture.cell.bed.single.variants",
       "manifest": "/game-content/oblique-cell-bed.v1.json"
     },

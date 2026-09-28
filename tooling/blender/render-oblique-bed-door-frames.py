@@ -134,6 +134,7 @@ def main() -> None:
     leaf.hide_render = True
     registry = {"schemaVersion": 1, "entries": [
         {"assetId": "wall.interior.module.full", "manifest": "/game-content/oblique-modules.v1.json"},
+        {"assetId": "wall.interior.module.cutaway", "manifest": "/game-content/oblique-wall-cutaway.v1.json"},
         {"assetId": bed_id, "manifest": "/game-content/oblique-cell-bed.v1.json"},
         {"assetId": "door.interior.open.full", "manifest": "/game-content/oblique-cell-door-open.v1.json"},
     ]}
