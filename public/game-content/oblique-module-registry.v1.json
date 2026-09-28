@@ -54,6 +54,10 @@
       "manifest": "/game-content/oblique-dining-table.v1.json"
     },
     {
+      "assetId": "furniture.corridor.bench.variants",
+      "manifest": "/game-content/oblique-corridor-bench.v1.json"
+    },
+    {
       "assetId": "furniture.storage.rack.wooden",
       "manifest": "/game-content/oblique-cell-storage-rack.v1.json"
     },
