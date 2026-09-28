@@ -294,6 +294,25 @@ prefab/Save/reload flow from 14.5 to 10.8 seconds. Those are local Full HD
 measurements, not a 60 fps guarantee; a larger prison benchmark and another
 render pass are in progress. The default player view remains top-down.
 
+**Later Full HD checkpoint (2026-09-28):** the four-cell row can now turn 180°
+through the Build preview and the real worker command. Its square diagram,
+world ghost, mirror, preflight and saved construction use the same plan;
+90°/270° remain unsupported because those turns make the authored 2 × 5 Cell
+zones too shallow. A real browser flow placed and restored the four rooms, and
+the authoritative room projection reported four usable doorways with no missing
+capability. A cutaway door art pass gives the camera-facing opening a low frame
+and a clear gap at −45°/0°/+45°; the full door still has its timber leaf.
+The combined branch passed TypeScript and 124 focused unit/contract checks.
+
+The 64 × 64 Full HD benchmark exposed a release blocker at 271.5 ms/frame at
+zoom 0.64. Profiling traced this to the raised display list, rather than the
+simulation update. A second render texture pass measured 31.0 ms median and
+32.5 ms p95, with 43.5 MiB of textures; this still needs integration and a
+combined-app check. The art pass is replacing temporary brown square wall
+blocks with Blender masonry. Two older cell angle-study manifests reference
+the previous wall-source hash and need matching renders before exact-head CI.
+The status-queue anchor repair is in PR #1753 awaiting its browser gate.
+
 Keep three isolated worktrees moving in parallel: (1) Blender modules and
 consistent camera poses, (2) square-first construction and ready-made rooms,
 and (3) Full HD HUD, controls and visible template previews. The renderer
