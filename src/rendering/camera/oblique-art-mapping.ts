@@ -52,6 +52,7 @@ export function artForWestEdge(edgeNumericId: number): string | undefined {
 }
 
 export function artForStructure(definitionId: string): string | undefined {
+  if (definitionId === 'wall-brick') return 'wall.square.brick.low';
   const objectId = catalogueObjectId(definitionId);
   return objectId === undefined ? undefined : OBJECT_ART[objectId];
 }
