@@ -10,6 +10,7 @@ test('real render feed cell keeps one build square under the cursor while the sc
   expect(loadedArt.some((key) => key.includes('wall-module-full'))).toBe(true);
   expect(loadedArt.some((key) => key.includes('cell-door-open'))).toBe(true);
   expect(loadedArt.some((key) => key.includes('cell-bed'))).toBe(true);
+  expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.loadedArtTextureCount())).toBeLessThanOrEqual(6);
   let previousGroundPaints = 0;
   for (const [yaw, elevation] of [[-45, 25], [0, 45], [45, 65]] as const) {
     await page.evaluate(([y, e]) => window.lockstateObliqueWorldHarness.setPose(y, e), [yaw, elevation] as const);
@@ -35,4 +36,5 @@ test('real render feed cell keeps one build square under the cursor while the sc
     expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.paintCounts())).toEqual(painted);
     await page.screenshot({ path: testInfo.outputPath(`render-feed-yaw${yaw}-elev${elevation}-fullhd.png`) });
   }
+  expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.loadedArtTextureCount())).toBeLessThan(30);
 });

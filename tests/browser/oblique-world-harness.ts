@@ -16,6 +16,7 @@ export interface ObliqueWorldHarness {
   selected(): { readonly tileX: number; readonly tileY: number } | undefined;
   paintCounts(): { readonly ground: number; readonly raised: number };
   artTextureKeys(): readonly string[];
+  loadedArtTextureCount(): number;
   cutawayWallIds(): readonly string[];
 }
 
@@ -70,6 +71,7 @@ window.lockstateObliqueWorldHarness = {
   ready: () => ready,
   async setPose(yawDegrees, elevationDegrees) {
     scene.setPoseRadians(yawDegrees * Math.PI / 180, elevationDegrees * Math.PI / 180);
+    await scene.ensureArtForCurrentPose();
     await new Promise<void>((resolve) => { game.events.once(Phaser.Core.Events.POST_RENDER, () => resolve()); });
   },
   pointAtTile(tileX, tileY) {
@@ -78,5 +80,6 @@ window.lockstateObliqueWorldHarness = {
   selected: () => scene.selectedTile,
   paintCounts: () => scene.paintCounts,
   artTextureKeys: () => scene.artTextureKeys,
+  loadedArtTextureCount: () => scene.loadedArtTextureCount,
   cutawayWallIds: () => scene.cutawayWallIds,
 };

@@ -11,6 +11,10 @@ import { obliqueDepthForAnchor, projectedTileQuad, type TileQuad } from '../came
 import { projectObliqueActors, projectObliqueWorldFrame, sortObliqueRaised, type ObliqueActorPoint, type ObliqueSolid, type ObliqueWorldProjection } from '../camera/oblique-world-projection';
 import type { Point } from '../camera/coordinates';
 import { selectObliqueModuleFrame, type ObliqueModuleCatalog } from '../assets/oblique-module-catalog';
+import { ensureObliqueModuleFrameTexture } from '../phaser/oblique-module-textures';
+
+const DEFAULT_YAW_RADIANS = -Math.PI / 4;
+const DEFAULT_ELEVATION_RADIANS = Math.PI / 4;
 
 function lowerTop(footprint: TileQuad, top: TileQuad, fraction: number): TileQuad {
   const corner = (index: 0 | 1 | 2 | 3): Point => ({
@@ -54,6 +58,8 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private groundPaints = 0;
   private raisedPaints = 0;
   private artImages: Phaser.GameObjects.Image[] = [];
+  private readonly pendingArtLoads = new Map<string, Promise<void>>();
+  private readonly artLoadErrors: string[] = [];
 
   public constructor(options: ObliqueWorldSceneOptions) {
     super({ key: 'oblique-world' });
@@ -64,7 +70,11 @@ export class ObliqueWorldScene extends Phaser.Scene {
 
   public preload(): void {
     const seen = new Set<string>();
-    for (const catalog of this.artCatalogs.values()) for (const frame of catalog.frames) {
+    for (const catalog of this.artCatalogs.values()) {
+      const frame = selectObliqueModuleFrame(catalog, {
+        yawRadians: DEFAULT_YAW_RADIANS,
+        elevationRadians: DEFAULT_ELEVATION_RADIANS,
+      });
       if (seen.has(frame.image)) continue;
       seen.add(frame.image);
       this.load.image(frame.image, frame.image);
@@ -80,8 +90,8 @@ export class ObliqueWorldScene extends Phaser.Scene {
       target: { x: 0, y: 0 },
       viewport: { width: this.cameras.main.width, height: this.cameras.main.height },
       zoom: 1.25,
-      yawRadians: -Math.PI / 4,
-      elevationRadians: Math.PI / 4,
+      yawRadians: DEFAULT_YAW_RADIANS,
+      elevationRadians: DEFAULT_ELEVATION_RADIANS,
     };
     this.input.mouse?.disableContextMenu();
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
@@ -128,6 +138,14 @@ export class ObliqueWorldScene extends Phaser.Scene {
     return { ground: this.groundPaints, raised: this.raisedPaints };
   }
   public get artTextureKeys(): readonly string[] { return this.artImages.map((item) => item.texture.key); }
+  public get loadedArtTextureCount(): number {
+    const keys = new Set<string>();
+    for (const catalog of this.artCatalogs.values()) for (const frame of catalog.frames) {
+      if (this.textures.exists(frame.image)) keys.add(frame.image);
+    }
+    return keys.size;
+  }
+  public get artErrors(): readonly string[] { return this.artLoadErrors; }
   public get cutawayWallIds(): readonly string[] {
     return this.lastProjection?.raised
       .filter((item): item is ObliqueSolid => item.kind !== 'actor' && this.cutsAwayForSelection(item))
@@ -141,6 +159,28 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.pose = changeObliquePoseAtScreenPoint(this.pose, screen, yawRadians, elevation);
     this.poseRevision += 1;
     this.repaint();
+    void this.ensureArtForCurrentPose().catch((error: unknown) => { this.artLoadErrors.push(String(error)); });
+  }
+
+  /** Resolve only the authored frames nearest to the active camera pose. */
+  public async ensureArtForCurrentPose(): Promise<void> {
+    const pending: Promise<void>[] = [];
+    for (const catalog of this.artCatalogs.values()) {
+      const frame = selectObliqueModuleFrame(catalog, this.pose);
+      if (this.textures.exists(frame.image)) continue;
+      let task = this.pendingArtLoads.get(frame.image);
+      if (task === undefined) {
+        task = ensureObliqueModuleFrameTexture(this, catalog, this.pose).then(() => {
+          if (this.lastProjection !== undefined && this.scene.isActive()) {
+            this.paintRaised(this.lastProjection);
+            this.paintArt(this.lastProjection);
+          }
+        }).finally(() => { this.pendingArtLoads.delete(frame.image); });
+        this.pendingArtLoads.set(frame.image, task);
+      }
+      pending.push(task);
+    }
+    await Promise.all(pending);
   }
 
   public override update(time: number): void {
