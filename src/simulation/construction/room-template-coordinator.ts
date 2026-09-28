@@ -130,9 +130,9 @@ export class RoomTemplateCoordinator implements SystemRegistration {
     // press even while the clock is paused.
     if (built.shellOrderIds.length === 0) {
       const finished = this.finishPlan(request, built, tick);
-      // A shell-free plan writes no construction transaction. Like ordinary
-      // zoning, it closes access to an older Undo entry after it succeeds.
-      if (finished) this.construction.noteActionThatDoesNotWriteTheUndoStack();
+      // A shell-free plan writes no construction transaction, but it is still
+      // a new build gesture: older Undo and Redo entries cannot cross it.
+      if (finished) this.construction.noteAcceptedBuildGestureWithoutOrders();
       return finished ? { ok: true } : {
         ok: false, reason: 'structure-occupied', tile: {
           x: tileCoordinate(request.origin.x), y: tileCoordinate(request.origin.y),
