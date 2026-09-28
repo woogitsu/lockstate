@@ -10,14 +10,14 @@ const digest = (bytes: Buffer) => createHash('sha256').update(bytes).digest('hex
 const json = (path: string): unknown => JSON.parse(readFileSync(join(root, 'public', path.slice(1)), 'utf8')) as unknown;
 
 describe('oblique cell module registry', () => {
-  it('publishes thirty-six logical modules with complete hashed poses and a shared ground pivot', () => {
+  it('publishes thirty-seven logical modules with complete hashed poses and a shared ground pivot', () => {
     const registry = parseObliqueModuleRegistry(json('/game-content/oblique-module-registry.v1.json'));
     expect(registry.entries.map((entry) => entry.assetId)).toEqual([
       'wall.interior.module.full', 'wall.interior.module.west.full', 'wall.interior.module.cutaway',
       'wall.interior.module.west.cutaway',
       'furniture.cell.bed.single.variants', 'door.interior.open.full', 'door.interior.open.cutaway',
       'door.interior.open.west.full', 'door.interior.open.west.cutaway',
-      'fixture.cell.toilet_sink', 'furniture.storage.rack.wooden', 'furniture.chair.wooden',
+      'fixture.cell.toilet_sink', 'fixture.cell.sink', 'furniture.storage.rack.wooden', 'furniture.chair.wooden',
       'floor.cell.sealed-concrete', 'floor.linoleum.institutional', 'floor.canteen.terrazzo',
       'actor.prisoner.base', 'actor.guard.base',
       'wall.interior.corner.inner.north-west.full', 'wall.interior.corner.inner.north-west.cutaway',
@@ -40,11 +40,15 @@ describe('oblique cell module registry', () => {
       expect(catalog.nominalPixelsPerTile).toBe(64);
       expect(catalog.pivotPx).toEqual(isGround ? [64, 64] : [256, 256]);
       expect(catalog.cameraTargetTiles).toEqual([0, 0, 0]);
-      expect(catalog.yawDegrees).toEqual(entry.assetId.startsWith('wall.interior.module.') || entry.assetId.startsWith('wall.interior.corner.') || entry.assetId.startsWith('wall.interior.junction.') || entry.assetId === 'wall.square.brick.low' || entry.assetId.startsWith('floor.') || entry.assetId.startsWith('actor.') || entry.assetId === 'door.interior.open.cutaway' || entry.assetId.startsWith('door.interior.open.west.') || entry.assetId.startsWith('door.shower.privacy.') || entry.assetId === 'fixture.shower.head'
+      const isSink = entry.assetId === 'fixture.cell.sink';
+      const isWide = entry.assetId.startsWith('wall.interior.module.') || entry.assetId.startsWith('wall.interior.corner.') || entry.assetId.startsWith('wall.interior.junction.') || entry.assetId === 'wall.square.brick.low' || entry.assetId.startsWith('floor.') || entry.assetId.startsWith('actor.') || entry.assetId === 'door.interior.open.cutaway' || entry.assetId.startsWith('door.interior.open.west.') || entry.assetId.startsWith('door.shower.privacy.') || entry.assetId === 'fixture.shower.head';
+      expect(catalog.yawDegrees).toEqual(isSink
+        ? [-165, -135, -105, -75, -45, -15, 15, 45, 75, 105, 135, 165]
+        : isWide
         ? Array.from({ length: 24 }, (_, index) => -180 + index * 15)
         : [-45, 0, 45]);
-      expect(catalog.elevationDegrees).toEqual([25, 45, 65]);
-      expect(catalog.frames).toHaveLength(entry.assetId.startsWith('wall.interior.module.') || entry.assetId.startsWith('wall.interior.corner.') || entry.assetId.startsWith('wall.interior.junction.') || entry.assetId === 'wall.square.brick.low' || entry.assetId.startsWith('floor.') || entry.assetId.startsWith('actor.') || entry.assetId === 'door.interior.open.cutaway' || entry.assetId.startsWith('door.interior.open.west.') || entry.assetId.startsWith('door.shower.privacy.') || entry.assetId === 'fixture.shower.head' ? 72 : 9);
+      expect(catalog.elevationDegrees).toEqual(isSink ? [20, 30, 40, 50, 60, 70] : [25, 45, 65]);
+      expect(catalog.frames).toHaveLength(isSink || isWide ? 72 : 9);
       expect(digest(readFileSync(join(root, 'assets/source/blender', catalog.source)))).toBe(catalog.sourceSha256);
       for (const dependency of catalog.sourceDependencies ?? []) {
         expect(digest(readFileSync(join(root, 'assets/source/blender', dependency.source)))).toBe(dependency.sha256);

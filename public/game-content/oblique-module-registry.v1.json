@@ -42,6 +42,10 @@
       "manifest": "/game-content/oblique-cell-toilet.v1.json"
     },
     {
+      "assetId": "fixture.cell.sink",
+      "manifest": "/game-content/oblique-cell-sink.v1.json"
+    },
+    {
       "assetId": "furniture.storage.rack.wooden",
       "manifest": "/game-content/oblique-cell-storage-rack.v1.json"
     },
@@ -144,6 +148,10 @@
     {
       "assetId": "wall.square.brick.low",
       "manifest": "/game-content/oblique-square-brick-low-wall.v1.json"
+    },
+    {
+      "assetId": "fixture.cell.sink",
+      "manifest": "/game-content/oblique-cell-sink.v1.json"
     }
   ]
 }

@@ -48,6 +48,7 @@ describe('oblique projection of an actual simulation snapshot', () => {
     expect(artForGround(0, 0)).toBe('floor.terrain.dirt');
     expect(artForGround(0, 1)).toBe('floor.terrain.grass');
     expect(artForStructure('shower-head-brick')).toBe('fixture.shower.head');
+    expect(artForStructure('object.sink')).toBe('fixture.cell.sink');
     expect(artForStructure('wall-brick')).toBe('wall.square.brick.low');
     expect(artForNorthEdge(2, shower!.numericId)).toBe('door.shower.privacy.open.full');
   });

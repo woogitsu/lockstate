@@ -12,6 +12,7 @@ const NORTH_EDGE_ART: ReadonlyMap<number, string> = new Map([
 const OBJECT_ART: Readonly<Record<string, string>> = {
   'object.bed': 'furniture.cell.bed.single.variants',
   'object.toilet': 'fixture.cell.toilet_sink',
+  'object.sink': 'fixture.cell.sink',
   'object.storage-rack': 'furniture.storage.rack.wooden',
   'object.chair': 'furniture.chair.wooden',
   'object.shower-head': 'fixture.shower.head',
