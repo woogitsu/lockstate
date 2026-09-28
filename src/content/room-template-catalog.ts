@@ -16,7 +16,7 @@ export interface RoomTemplatePlan {
   readonly height: number;
   readonly wallSquares: readonly TemplateSquare[];
   readonly doorSquares: readonly TemplateDoorSquare[];
-  readonly zone: { readonly roomId: 'room.cell' | 'room.shower-room' | 'room.canteen'; readonly x: number; readonly y: number; readonly width: number; readonly height: number };
+  readonly zone: { readonly roomId: 'room.cell' | 'room.shower-room' | 'room.canteen' | 'room.kitchen'; readonly x: number; readonly y: number; readonly width: number; readonly height: number };
   /** Every separately designated room; `zone` retains the first for older readers. */
   readonly zones: readonly RoomTemplatePlan['zone'][];
   readonly objects: readonly { readonly buildableId: RoomTemplateObjectId; readonly x: number; readonly y: number }[];
@@ -26,8 +26,8 @@ export const ROOM_TEMPLATE_IDS = ['cell-basic', 'cell-large', 'shower-room'] as 
 // The four-cell block is accepted by the simulation before its HUD preset is
 // surfaced; the UI catalog adds it once its name and full preview are ready.
 export type RoomTemplateId = (typeof ROOM_TEMPLATE_IDS)[number];
-export type AuthoredRoomTemplateId = RoomTemplateId | 'cell-row-four' | 'canteen-basic';
-type RoomTemplateObjectId = 'bed-wooden' | 'toilet-brick' | 'shower-head-brick' | 'dining-table-wooden' | 'bench-wooden';
+export type AuthoredRoomTemplateId = RoomTemplateId | 'cell-row-four' | 'canteen-basic' | 'kitchen-basic';
+type RoomTemplateObjectId = 'bed-wooden' | 'toilet-brick' | 'shower-head-brick' | 'dining-table-wooden' | 'bench-wooden' | 'stove-brick' | 'prep-counter-brick' | 'fridge-brick';
 
 interface TemplateDefinition {
   readonly width: number;
@@ -63,6 +63,14 @@ const TEMPLATES: Readonly<Record<Exclude<AuthoredRoomTemplateId, 'cell-row-four'
       { buildableId: 'bench-wooden', x: 4, y: 3 },
       { buildableId: 'bench-wooden', x: 1, y: 5 },
       { buildableId: 'bench-wooden', x: 4, y: 5 },
+    ],
+  },
+  'kitchen-basic': {
+    width: 6, height: 6, roomId: 'room.kitchen', doorX: 2,
+    objects: [
+      { buildableId: 'stove-brick', x: 1, y: 1 },
+      { buildableId: 'prep-counter-brick', x: 3, y: 1 },
+      { buildableId: 'fridge-brick', x: 1, y: 3 },
     ],
   },
 };
