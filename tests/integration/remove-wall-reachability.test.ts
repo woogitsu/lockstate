@@ -96,12 +96,14 @@ describe('a finished wall is reachable through RemoveWall (ADR 0106)', () => {
     session.send({ type: 'PlaceBuildOrder', orderId: 'square-wall', definitionId: WALL, ...square, footprint: 'square' });
     session.runUntilState('square-wall', 'completed');
     expect(session.runtime.world.getSquareStructure(tile(square.x, square.y))).toBeGreaterThan(0);
+    const balanceAfterBuild = session.runtime.treasury.balanceMinorUnits;
 
     // The Remove tool still sends the edge nearest the pointer. A full-square
     // wall must not become removable only from the half resolved as 'north'.
     session.send({ type: 'RemoveWall', ...square, edge: 'west' });
     expect(session.runtime.world.getSquareStructure(tile(square.x, square.y))).toBe(0);
     expect(session.runtime.construction.getOrder('square-wall')?.state).toBe('cancelled');
+    expect(session.runtime.treasury.balanceMinorUnits).toBe(balanceAfterBuild);
   });
 
   it('removes a completed full-square wall after a real save and load', () => {

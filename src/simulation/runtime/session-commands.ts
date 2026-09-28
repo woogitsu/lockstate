@@ -993,8 +993,9 @@ export function createSessionCommandHandler(
       }
 
       /*
-       * Nothing to remove as an object. Try the edge the press resolved to
-       * (ADR 0106 §5): only a *completed* order counts --
+       * Nothing to remove as an object. A whole-square wall claims its tile,
+       * regardless of the incidental pointer edge; older edge walls and
+       * doors still claim that exact edge. Only a *completed* order counts --
        * `completedOrderClaimingEdge`'s own comment argues why an in-flight
        * wall or door is not this branch's concern, because the queue's
        * per-row cancel already reaches it.

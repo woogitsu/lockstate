@@ -1545,6 +1545,7 @@ export class ConstructionSystem implements SystemRegistration {
     let winner: BuildOrder | undefined;
     for (const order of this.orderedOrders()) {
       if (order.state !== 'completed') continue;
+      // A square has no authored edge; its separate tile resolver handles it.
       if (order.footprint === 'square') continue;
       if (order.location.x !== location.x || order.location.y !== location.y) continue;
       if (resolveBuildEdge(order) !== edge) continue;
