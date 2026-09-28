@@ -29,6 +29,8 @@ BASE_ASSET_IDS = (
     "wall.interior.module.cutaway",
     "furniture.cell.bed.single.variants",
     "door.interior.open.full",
+    "door.interior.open.west.full",
+    "door.interior.open.west.cutaway",
 )
 FLOOR_ASSET_IDS = (
     "floor.cell.sealed-concrete",
