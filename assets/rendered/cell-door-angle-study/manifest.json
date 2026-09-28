@@ -2,11 +2,11 @@
   "schemaVersion": 1,
   "source": "cell-door-angle-study.blend",
   "cellSource": "interior-cell-angle-study.blend",
-  "cellSourceSha256": "99870bc8060c89a15aeeadebf055aacc91afd575108fd005c6b6341745f6a5af",
+  "cellSourceSha256": "c017c67220f3d2f9e790d59b5f83e71b878b2a00e682fb09483da96ef90a3c69",
   "leafSource": "door.interior.leaf.open.blend",
   "leafSourceSha256": "48a27d1b212e88121e6b55661452f70df1129e78f8825eebc3913db1d5aeaf5f",
   "wallSource": "wall.interior.cutaway.blend",
-  "wallSourceSha256": "9712dc725b92c0d65056e5874fbad4ce143497fd61fe012eba919d218a2bd0b8",
+  "wallSourceSha256": "98b264c5b3ea15658d7d8996f403024928c660135a66025adccba1d385927e6c",
   "leafCollection": "door.interior.leaf.open",
   "frameCollection": "wall.interior.doorframe.full",
   "resolution": [
@@ -51,9 +51,9 @@
         6.595692
       ],
       "furnishedImage": "door-yaw-45-elev25.png",
-      "furnishedSha256": "b9c9bad04b7a55172cf60817f7645a23f665bdc97fda2d0c903df14a5e9b1f12",
+      "furnishedSha256": "156ec21bec0b2e223d1228c7776f38d9239cb46007b924eab1ee0c9eacb4853c",
       "apertureImage": "door-yaw-45-elev25-aperture.png",
-      "apertureSha256": "77eb1c09e1999438a7278adfa68bf927ca91bc6fe4419d8554c441b7c7613007",
+      "apertureSha256": "e6b9de1ec13d9e2d607789a97b9e63327736fb040eb55e40736631efa25db831",
       "aperture": {
         "uniqueSamplePixels": 40,
         "clearSamplePixels": 22,
@@ -235,9 +235,9 @@
         13.0
       ],
       "furnishedImage": "door-yaw-45-elev45.png",
-      "furnishedSha256": "0b7b44a3c095aa575786806b723afdcf0083c5992a26df52956abad4c6edf679",
+      "furnishedSha256": "bb389bd5a309c511e75dbd29e5768b203ce93d34ef711a60686f0788c0939031",
       "apertureImage": "door-yaw-45-elev45-aperture.png",
-      "apertureSha256": "4399ea79e0223dfbb2efe434e16a77d0fb96d28068b26e21b93f9b2b643ecb05",
+      "apertureSha256": "e2b4b4b6722e2f8f1acec66d2f9eef184e26dcac8bee0836cacf4de7412b3a32",
       "aperture": {
         "uniqueSamplePixels": 41,
         "clearSamplePixels": 22,
@@ -423,9 +423,9 @@
         26.734083
       ],
       "furnishedImage": "door-yaw-45-elev65.png",
-      "furnishedSha256": "a0c35e3f6241562854e726dfa2e4b306d275d945f1140c40ae5a13c75a96fd26",
+      "furnishedSha256": "3053ff2d073a0ceda00a0587c781031f3ac4c4f3c0548dc0dff07170f4d86226",
       "apertureImage": "door-yaw-45-elev65-aperture.png",
-      "apertureSha256": "e1f3b0cd2fb87eb6a0e79bb0d23a36fed25618cfbafa85269ea8d26f466f3427",
+      "apertureSha256": "5149fdddca97c26a3a5da3b15a2b611574179340b903a241b2e2f67772431213",
       "aperture": {
         "uniqueSamplePixels": 46,
         "clearSamplePixels": 31,
@@ -631,9 +631,9 @@
         6.595692
       ],
       "furnishedImage": "door-yaw+00-elev25.png",
-      "furnishedSha256": "64a7027476c93dc386bb9144f3bf5b3d3ad810c08822459225d3b1f8ed5e1c4f",
+      "furnishedSha256": "f362cd78cade3c53f4676043280b8d82f47773dea39041f2270839088ea1b3d7",
       "apertureImage": "door-yaw+00-elev25-aperture.png",
-      "apertureSha256": "02e8c2656520824cc30e437be554acf8ad7fc418cdc85f3049c219799c810695",
+      "apertureSha256": "bf29a49582238f6e1dfdbba18c34610083d27808b73569bf13cc5e0a03b26fcd",
       "aperture": {
         "uniqueSamplePixels": 41,
         "clearSamplePixels": 41,
@@ -819,9 +819,9 @@
         13.0
       ],
       "furnishedImage": "door-yaw+00-elev45.png",
-      "furnishedSha256": "3a89c7c7d9c5f1571e7666ebdfa4da52d7f498fda883b911b7d4c3ba961b91c0",
+      "furnishedSha256": "acea4462275a5aa71c6a917f9b698b0c6eb4e7bdbd00de940a64a8819c38d8cf",
       "apertureImage": "door-yaw+00-elev45-aperture.png",
-      "apertureSha256": "25d8a2f03ab7835f410c073f473fe68c9216a01af2d1622a3e9fc9fccd6fbb9a",
+      "apertureSha256": "5a32a563c5293c0e909fe978c70367b12d96b39ae7553d5858265f6640a59ea8",
       "aperture": {
         "uniqueSamplePixels": 41,
         "clearSamplePixels": 41,
@@ -1007,9 +1007,9 @@
         26.734083
       ],
       "furnishedImage": "door-yaw+00-elev65.png",
-      "furnishedSha256": "cfd390cbf554d2fa4266f4987e31ad9f7aaa6384f5bd22cd51b8ce3a4d020322",
+      "furnishedSha256": "0c987b8078a0bb7530a412e5073bf619950111f363247d5ef3a2bdedc2c86a27",
       "apertureImage": "door-yaw+00-elev65-aperture.png",
-      "apertureSha256": "baf4d6ac7a6a0a6e845ca3982516252398cf5af04358883ce96542b409e3319b",
+      "apertureSha256": "47118dfa5e1f94af1930d6eba2400ba5521372bacb18fc27a68cd0ba0611d3bb",
       "aperture": {
         "uniqueSamplePixels": 41,
         "clearSamplePixels": 41,
@@ -1195,9 +1195,9 @@
         6.595692
       ],
       "furnishedImage": "door-yaw+45-elev25.png",
-      "furnishedSha256": "d38547845561916765f070df607ee970b8a46c1c8a915cc4a78dcacf7c568e97",
+      "furnishedSha256": "ea746dbc6082d2fad889ca48af2dea89df620a82f7d24b51073ce2480fd395ae",
       "apertureImage": "door-yaw+45-elev25-aperture.png",
-      "apertureSha256": "9e9810e7809812bb4c46a5c2c2f15075bf1de0a117e7faf8f074b7ab49ed832a",
+      "apertureSha256": "05a9b9fc59fc8e3000c6357695276ee82388e8a471d32c5a2ed3b18090881d5e",
       "aperture": {
         "uniqueSamplePixels": 40,
         "clearSamplePixels": 24,
@@ -1379,9 +1379,9 @@
         13.0
       ],
       "furnishedImage": "door-yaw+45-elev45.png",
-      "furnishedSha256": "7c8f59c037cebf2c45d8caaf702be0c581c6746de3c04cc722dc0ee7e7bd6b24",
+      "furnishedSha256": "43bc2419f6b824cd25a5707f20c58625397c531620ef661c8ff780e92586f841",
       "apertureImage": "door-yaw+45-elev45-aperture.png",
-      "apertureSha256": "8c80aa5fb8b25f106ff8a6d8ff19c751503c333cf03db5f047e26a5bfffa1644",
+      "apertureSha256": "be6b0e9c6278c3b3fc8247454611b848c049559411c2bce7be712cc8f43ec13d",
       "aperture": {
         "uniqueSamplePixels": 41,
         "clearSamplePixels": 27,
@@ -1567,9 +1567,9 @@
         26.734083
       ],
       "furnishedImage": "door-yaw+45-elev65.png",
-      "furnishedSha256": "725f7fcc3f3142552438c3ddad9b00fab920d0891c42649ff0e464aa742e9230",
+      "furnishedSha256": "fc42ab5a7651c5f246b0f2514577712371493606ecaf057cd4f2f3373be623ba",
       "apertureImage": "door-yaw+45-elev65-aperture.png",
-      "apertureSha256": "199b78200c1b2a92940f422e3f94aea4ecf32e0404f4d7b592ecb6f13034684b",
+      "apertureSha256": "fb4a58b0d678235f756191a1b7156c3e87b9b74047e661e077b65e1a3e5069c7",
       "aperture": {
         "uniqueSamplePixels": 46,
         "clearSamplePixels": 29,
@@ -1774,9 +1774,9 @@
     "cutawayLeafHidden": true,
     "cutawayFrame": {
       "furnishedImage": "door-yaw+00-elev45-frame-cutaway.png",
-      "furnishedSha256": "7217a32b25c0c0f102fa5a940782f550f587d92595753d0f29a249b5f455fab4",
+      "furnishedSha256": "e9fc2db654b28a7f4b62648f27ea613f713a725d4f17f75c72d92f010c54d9df",
       "apertureImage": "door-yaw+00-elev45-frame-cutaway-aperture.png",
-      "apertureSha256": "1a228e9bc4db5ebf195e734ee8c4f0ae78a167e8cc8e2ad69964eff199c1bc3e",
+      "apertureSha256": "2462560d9e29dbd7076745167df91273fc5dca20a043fe7f7080a5ad392c792a",
       "aperture": {
         "uniqueSamplePixels": 41,
         "clearSamplePixels": 41,
@@ -1955,9 +1955,9 @@
     },
     "solidWall": {
       "furnishedImage": "door-yaw+00-elev45-solid-wall.png",
-      "furnishedSha256": "28b9ab11f4e4d2f1fcc7f00f6a9e7ce21d21e3683d7f84e9df68d5382655fe82",
+      "furnishedSha256": "c4f6942baa20f5d3029d0ce17076c886cb05179f1b67be49b8ba97df9f813ee3",
       "apertureImage": "door-yaw+00-elev45-solid-wall-aperture.png",
-      "apertureSha256": "596dc520f2a853472e4d0ce7d2ec0fadc3c59c9d41348e16345967e1f5e0fab4",
+      "apertureSha256": "461d3077ff817237a05424ef1a2f56576e578d7b1cbc8973bc974b24142b62d7",
       "aperture": {
         "uniqueSamplePixels": 41,
         "clearSamplePixels": 0,
