@@ -222,6 +222,8 @@ export interface RoomsPanel {
   readonly submitControl: HTMLButtonElement;
   /** Which room type is selected, exposed so a test can assert it without reading the DOM. */
   getSelectedRoomId(): string | undefined;
+  /** Keep the chosen row readable after an explicit HUD layout or scale change. */
+  revealSelectedRoom(): void;
   /** The rectangle awaiting confirmation, or `undefined`. */
   getPendingArea(): RoomsPanelArea | undefined;
   isArmed(): boolean;
@@ -689,7 +691,9 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
    * the player cannot see leaves a rule block that describes no visible room,
    * which is the confusion the selection was moved to remove.
    *
-   * **Once, on the first reveal that has a layout, and never again.**
+   * **Once on the first reveal that has a layout; again only after an explicit
+   * HUD layout refresh.** The latter covers an interface-scale change that
+   * shrinks this scroller around a selection that was visible a moment ago.
    * `hud.ts`'s `paintState` calls `setVisible(true)` on *every* state change
    * while this tab is showing, so scrolling on each call would take the list
    * back from a player who had scrolled it. And the first call may land while
@@ -702,7 +706,7 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
    * way `block: 'nearest'` is: a row already inside the box moves nothing.
    */
   let selectionRevealed = false;
-  const revealInitialSelection = (): void => {
+  const revealSelectedRoom = (): void => {
     const row = selectedId === undefined ? undefined : rows.get(selectedId)?.element;
     const listBox = catalogueList.getBoundingClientRect();
     if (row === undefined || catalogueList.clientHeight === 0) return;
@@ -2121,6 +2125,7 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
     controls: [confirmButton.element],
     submitControl: confirmButton.element,
     getSelectedRoomId: () => selectedId,
+    revealSelectedRoom,
     getPendingArea: () => pending,
     isArmed: () => armed,
     isRemoving: () => removing,
@@ -2157,7 +2162,7 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
     },
     setVisible(visible: boolean): void {
       panel.element.hidden = !visible;
-      if (visible && !selectionRevealed) revealInitialSelection();
+      if (visible && !selectionRevealed) revealSelectedRoom();
       // Leaving the tab must hand the pointer back to the camera, exactly as
       // the Build panel does: a tool that stayed armed behind a hidden panel
       // would swallow every click on a world the player thought they were only
