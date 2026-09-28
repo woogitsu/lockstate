@@ -87,6 +87,19 @@ describe('ContrabandRegistry: introduction, movement, stash and confiscation', (
     expect(restored.byHolder('cell', 'cell-1').map((item) => item.id)).toEqual(['item-1']);
     expect(restored.byHolder('cell', 'cell-2')).toEqual([]); // item-2 was confiscated -- not re-indexed on restore
   });
+
+  it('indexes only the final record when a saved item id appears twice', () => {
+    const registry = new ContrabandRegistry();
+    registry.introduce('item-1', 'contraband.phone', { kind: 'prisoner', id: '1' }, { sourceType: 'visit', sourceId: 'v1', introducedAtTick: 0 });
+    const concealed = registry.getSnapshot()[0]!;
+    registry.confiscate('item-1');
+    const confiscated = registry.getSnapshot()[0]!;
+    const restored = new ContrabandRegistry();
+    restored.loadSnapshot([concealed, confiscated]);
+
+    expect(restored.get('item-1')?.state).toBe('confiscated');
+    expect(restored.byHolder('prisoner', '1')).toEqual([]);
+  });
 });
 
 describe('a holder who leaves takes what they were concealing with them', () => {
