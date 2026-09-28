@@ -19,7 +19,7 @@ export function projectRoomTemplateCost(templateId: AuthoredRoomTemplateId): Roo
       quantities.set(material.itemId, (quantities.get(material.itemId) ?? 0) + material.quantity);
     }
   }
-  const materials = [...quantities].sort(([left], [right]) => left.localeCompare(right))
+  const materials = [...quantities].sort(([left], [right]) => left < right ? -1 : left > right ? 1 : 0)
     .map(([itemId, quantity]) => ({ itemId, quantity }));
   const catalogueCostMinorUnits = placementCostMinorUnits(materials);
   return {
