@@ -23,6 +23,7 @@ export const ROOM_TEMPLATE_NAME_KEYS: Record<RoomTemplateId, LocalizationKey> = 
   'solitary-cell-basic': 'room.solitary-cell.name',
   'holding-cell-basic': 'room.holding-cell.name',
   'delivery-bay-basic': 'room.delivery-bay.name',
+  'reception-basic': 'room.reception.name',
 };
 
 /** A catalogue of authored plans. Selection previews geometry; it never places an order. */
