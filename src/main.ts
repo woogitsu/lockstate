@@ -46,6 +46,7 @@ import { createSimulationRoomTemplatePreflight, createSimulationRoomTemplateQuot
 import { createObliqueTemplateGhost, type ObliqueTemplateGhostView } from './ui/hud/oblique-template-ghost';
 import type { RoomTemplateTool, RoomTemplatePreflight, RoomTemplateCostQuote } from './ui/room-template-tool';
 import type { RoomTemplatePlan } from './content/room-template-catalog';
+import { placeObliqueTemplateIfCurrent } from './ui/oblique-template-placement';
 import { ManageSavesPanel } from './ui/account/manage-saves-panel';
 import {
   EMPTY_HUD_VIEW_MODEL,
@@ -811,13 +812,16 @@ if (obliquePreviewRequested) {
           const tile = obliqueTemplateHover;
           const tool = obliqueTemplateTool;
           if (tool === undefined || !tool.isArmed() || tile?.x !== tileX || tile.y !== tileY || obliqueTemplateVerdict?.ok !== true) return;
-          ++obliqueTemplateRevision;
+          const placementRevision = ++obliqueTemplateRevision;
           obliqueTemplateVerdict = undefined;
           paintObliqueTemplateGhost();
-          void tool.placeAt(obliqueTemplateOriginAt(tile, tool)).then((result) => {
-            if (result.ok) tool.standDown();
-            refreshObliqueTemplateGhost();
-          }).catch(() => refreshObliqueTemplateGhost());
+          void placeObliqueTemplateIfCurrent(tool, obliqueTemplateOriginAt(tile, tool),
+            () => placementRevision === obliqueTemplateRevision && tool.isArmed(),
+          ).then(() => {
+            if (placementRevision === obliqueTemplateRevision) refreshObliqueTemplateGhost();
+          }).catch(() => {
+            if (placementRevision === obliqueTemplateRevision) refreshObliqueTemplateGhost();
+          });
         },
       });
       game.scene.add('oblique-world', obliqueScene, false);
