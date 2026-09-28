@@ -31,6 +31,31 @@ async function visibleBedBlanketPixels(page: Page, screenshot: Buffer): Promise<
   }, `data:image/png;base64,${screenshot.toString('base64')}`);
 }
 
+async function cutawayDoorWoodPixels(page: Page, screenshot: Buffer,
+  bounds: readonly [number, number, number, number]): Promise<number> {
+  return page.evaluate(async ({ data, bounds: [left, top, right, bottom] }) => {
+    const image = new Image();
+    image.src = data;
+    await image.decode();
+    const canvas = document.createElement('canvas');
+    canvas.width = image.width;
+    canvas.height = image.height;
+    const context = canvas.getContext('2d');
+    if (context === null) throw new Error('Screenshot canvas unavailable');
+    context.drawImage(image, 0, 0);
+    const pixels = context.getImageData(left, top, right - left, bottom - top).data;
+    let timber = 0;
+    for (let index = 0; index < pixels.length; index += 4) {
+      const red = pixels[index]!;
+      const green = pixels[index + 1]!;
+      const blue = pixels[index + 2]!;
+      if (red > 90 && red < 180 && green > 45 && green < 130 && blue > 25 && blue < 105
+        && red > green * 1.23 && green > blue * 1.18) timber += 1;
+    }
+    return timber;
+  }, { data: `data:image/png;base64,${screenshot.toString('base64')}`, bounds });
+}
+
 function builtCellSave(): string {
   const runtime = createNewSimulationRuntime(0);
   const world = runtime.world;
@@ -101,18 +126,22 @@ test('a saved furnished cell stays readable in the real Full HD app across camer
   await expect(reading).toContainText('-45°');
   for (let step = 0; step < 2; step += 1) await angle.getByRole('button', { name: 'Tilt down' }).click();
   await expect(reading).toContainText('25°');
-  expect(await visibleBedBlanketPixels(page,
-    await page.screenshot({ path: testInfo.outputPath('warm-cell-app-yaw-minus45-elev25-fullhd.png') }))).toBeGreaterThan(700);
+  const shallow = await page.screenshot({ path: testInfo.outputPath('warm-cell-app-yaw-minus45-elev25-fullhd.png') });
+  expect(await visibleBedBlanketPixels(page, shallow)).toBeGreaterThan(700);
+  expect(await cutawayDoorWoodPixels(page, shallow, [1015, 565, 1060, 645]),
+    'the near cutaway doorway must not leave a detached low timber slab').toBeLessThan(20);
   for (let step = 0; step < 3; step += 1) await angle.getByRole('button', { name: 'Turn right' }).click();
   for (let step = 0; step < 2; step += 1) await angle.getByRole('button', { name: 'Tilt up' }).click();
   await expect(reading).toContainText('Turn 0°');
-  expect(await visibleBedBlanketPixels(page,
-    await page.screenshot({ path: testInfo.outputPath('warm-cell-app-yaw0-elev45-fullhd.png') }))).toBeGreaterThan(700);
+  const front = await page.screenshot({ path: testInfo.outputPath('warm-cell-app-yaw0-elev45-fullhd.png') });
+  expect(await visibleBedBlanketPixels(page, front)).toBeGreaterThan(700);
+  expect(await cutawayDoorWoodPixels(page, front, [840, 620, 910, 705])).toBeLessThan(20);
   for (let step = 0; step < 3; step += 1) await angle.getByRole('button', { name: 'Turn right' }).click();
   for (let step = 0; step < 2; step += 1) await angle.getByRole('button', { name: 'Tilt up' }).click();
   await expect(reading).toContainText('Turn 45°');
-  expect(await visibleBedBlanketPixels(page,
-    await page.screenshot({ path: testInfo.outputPath('warm-cell-app-yaw45-elev65-fullhd.png') }))).toBeGreaterThan(700);
+  const high = await page.screenshot({ path: testInfo.outputPath('warm-cell-app-yaw45-elev65-fullhd.png') });
+  expect(await visibleBedBlanketPixels(page, high)).toBeGreaterThan(700);
+  expect(await cutawayDoorWoodPixels(page, high, [720, 565, 800, 635])).toBeLessThan(20);
   await page.reload({ waitUntil: 'domcontentloaded' });
   await page.locator('.save-panel__item button').filter({ hasText: 'Load' }).first().click();
   await expect(page.locator('body[data-oblique-preview="ready"]')).toBeVisible();
