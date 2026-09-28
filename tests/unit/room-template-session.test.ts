@@ -141,6 +141,7 @@ describe('room template session command', () => {
   it.each([
     ['cell-large', 'room.cell:6:6'],
     ['shower-room', 'room.shower-room:6:6'],
+    ['canteen-basic', 'room.canteen:6:6'],
   ] as const)('builds, zones and furnishes %s through scheduled construction', (templateId, instanceId) => {
     const runtime = createNewSimulationRuntime(73);
     runtime.kernel.submitCommand('template-0', 0, runtime.kernel.tick, packCommand({
@@ -149,7 +150,7 @@ describe('room template session command', () => {
     for (let tick = 0; tick < 25000; tick += 1) {
       runtime.kernel.step();
       const objects = runtime.construction.allOrders().filter((order) => order.id.includes('-2-object-'));
-      if (runtime.roomTemplates.snapshot().pending.length === 0 && objects.length === 2 && objects.every((order) => order.state === 'completed')) break;
+      if (runtime.roomTemplates.snapshot().pending.length === 0 && objects.length === (templateId === 'canteen-basic' ? 6 : 2) && objects.every((order) => order.state === 'completed')) break;
     }
     expect(runtime.prisoners.roomInstances.getById(instanceId)).toBeDefined();
     expect(runtime.construction.allOrders().filter((order) => order.id.includes('-2-object-')).every((order) => order.state === 'completed')).toBe(true);
