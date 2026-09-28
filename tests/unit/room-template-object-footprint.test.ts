@@ -1,5 +1,5 @@
 ﻿import { expect, it } from 'vitest';
-import { ROOM_TEMPLATE_IDS, instantiateRoomTemplate, roomTemplateObjectSquares } from '../../src/content/room-template-catalog';
+import { ROOM_TEMPLATE_IDS, instantiateRoomTemplate, orientRoomTemplatePlan, roomTemplateObjectSquares } from '../../src/content/room-template-catalog';
 import { defaultObjectRegistry } from '../../src/content/object-catalog';
 import { BUILDABLE_REGISTRY } from '../../src/simulation/construction/definition';
 
@@ -26,4 +26,15 @@ it.each(ROOM_TEMPLATE_IDS.flatMap((id) => [
     }
   }
   expect(new Set(roomTemplateObjectSquares(plan).map(({ x, y }) => `${x}:${y}`))).toEqual(expected);
+});
+
+it('paints all squares of furniture whose footprint turns with a room plan', () => {
+  const plan = orientRoomTemplatePlan(instantiateRoomTemplate('canteen-basic', { x: 10, y: 10 }), 1);
+  const table = plan.objects.find((object) => object.buildableId === 'dining-table-wooden');
+  expect(table).toBeDefined();
+  expect(roomTemplateObjectSquares({ ...plan, objects: [table!] })).toEqual([
+    { x: 15, y: 11 }, { x: 16, y: 11 },
+    { x: 15, y: 12 }, { x: 16, y: 12 },
+    { x: 15, y: 13 }, { x: 16, y: 13 },
+  ]);
 });
