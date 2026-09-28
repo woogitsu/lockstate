@@ -451,7 +451,7 @@ export interface RemovedObjectNoticePort {
   recordObjectRemoved(tick: number): void;
 }
 
-/** The orientation every placement gets, until a rotate control exists. See `ObjectOrientation`. */
+/** Ordinary object placements default to orientation zero; room templates may specify a quarter turn. */
 const DEFAULT_PLACEMENT_ORIENTATION: ObjectOrientation = 0;
 
 export class ObjectPlacementService {
