@@ -11,9 +11,19 @@ import type { SessionSnapshotBundle } from '../../src/simulation/runtime/restore
 const tile = (x: number, y: number) => ({ x: tileCoordinate(x), y: tileCoordinate(y) });
 
 describe('room template session command', () => {
+  it('designates a shell-free Yard on the placement press without advancing the clock, including after reload', () => {
+    const runtime = createNewSimulationRuntime(72);
+    expect(runtime.roomTemplates.place({ templateId: 'yard-basic', origin: { x: 10, y: 10 }, mirrorX: false, sequence: 0 }, runtime.kernel.tick)).toEqual({ ok: true });
+    expect(runtime.prisoners.roomInstances.getById('room.yard:10:10')).toBeDefined();
+    expect(runtime.roomTemplates.snapshot().pending).toEqual([]);
+    const restored = restoreSimulationRuntime(captureSessionSnapshot(runtime)).runtime;
+    expect(restored.prisoners.roomInstances.getById('room.yard:10:10')).toBeDefined();
+    expect(restored.roomTemplates.snapshot().pending).toEqual([]);
+  });
+
   it('reserves the entire pending plan, including empty interior squares, through save and load', () => {
     const runtime = createNewSimulationRuntime(72);
-    expect(runtime.roomTemplates.place({ templateId: 'canteen-basic', origin: { x: 10, y: 10 }, mirrorX: false, sequence: 0 })).toEqual({ ok: true });
+    expect(runtime.roomTemplates.place({ templateId: 'canteen-basic', origin: { x: 10, y: 10 }, mirrorX: false, sequence: 0 }, runtime.kernel.tick)).toEqual({ ok: true });
     const nested = createRoomTemplateBuildPlan('kitchen-basic', { x: 11, y: 11 }, false, 1).plan;
     expect(runtime.roomTemplates.preflight(nested)).toEqual({
       ok: false, reason: 'structure-occupied', tile: tile(11, 11),
