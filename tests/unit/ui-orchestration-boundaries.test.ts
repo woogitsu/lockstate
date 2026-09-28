@@ -627,6 +627,13 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
       'Type-only: SimulationMessageChannel names the worker query boundary. The adapter sends a read-only preflight request through the existing projection requester; it does not import or execute simulation state on the main thread.',
   },
   {
+    file: 'src/ui/simulation-room-template-port.ts',
+    tree: 'content',
+    kind: 'type-only',
+    reason:
+      'Type-only: RoomTemplateId names the authored catalogue choice used by the worker cost query. The UI adapter does not import catalogue values or derive costs; it asks the worker for the current quote and returns its read model to the HUD.',
+  },
+  {
     file: 'src/ui/telemetry-consent-prompt.ts',
     tree: 'content',
     kind: 'type-only',

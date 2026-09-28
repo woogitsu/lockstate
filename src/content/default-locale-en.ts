@@ -4526,6 +4526,10 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   // now sets it here, on the same element, as soon as the localizer is built.
   // The wording is carried across unchanged; see `src/ui/app-shell-messages.ts`.
   'app.shell.label': 'Lockstate game application',
+  'hud.build.template-materials': 'Materials: {materials}',
+  'hud.build.template-catalogue-value': 'Catalogue value: {total}. Materials already held may lower the amount spent.',
+  'hud.build.template-catalogue-value-unavailable': 'Catalogue value unavailable. Check the material requirements.',
+  'hud.build.template-cell-row-four': 'Four-cell row',
 };
 
 /**
