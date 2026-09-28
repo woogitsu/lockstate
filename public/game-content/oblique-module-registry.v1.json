@@ -88,6 +88,10 @@
     {
       "assetId": "floor.terrain.dirt",
       "manifest": "/game-content/oblique-floor-terrain-dirt.v1.json"
+    },
+    {
+      "assetId": "floor.terrain.grass",
+      "manifest": "/game-content/oblique-floor-terrain-grass.v1.json"
     }
   ]
 }
