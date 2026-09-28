@@ -13,9 +13,10 @@ describe('oblique Blender wall module publication', () => {
     const catalog = parseObliqueModuleCatalog(manifest);
     expect(catalog.assetId).toBe('wall.interior.module.full');
     expect(sha256(readFileSync(join(root, 'assets/source/blender', catalog.source)))).toBe(catalog.sourceSha256);
-    expect(catalog.resolutionPx).toEqual([256, 256]);
+    expect(catalog.resolutionPx).toEqual([512, 512]);
     expect(catalog.nominalPixelsPerTile).toBe(64);
-    expect(catalog.pivotPx).toEqual([128, 128]);
+    expect(catalog.pivotPx).toEqual([256, 256]);
+    expect(catalog.cameraTargetTiles).toEqual([0, 0, 0]);
     expect(catalog.yawDegrees).toEqual([-45, 0, 45]);
     expect(catalog.elevationDegrees).toEqual([25, 45, 65]);
     expect(catalog.frames).toHaveLength(9);
@@ -24,7 +25,7 @@ describe('oblique Blender wall module publication', () => {
       expect(frame.image).toContain(`.${frame.sha256.slice(0, 12)}.png`);
       const png = readFileSync(join(root, 'public', frame.image.slice(1)));
       expect(png.subarray(0, 8).toString('hex')).toBe('89504e470d0a1a0a');
-      expect([png.readUInt32BE(16), png.readUInt32BE(20), png[25]]).toEqual([256, 256, 6]);
+      expect([png.readUInt32BE(16), png.readUInt32BE(20), png[25]]).toEqual([512, 512, 6]);
       expect(sha256(png)).toBe(frame.sha256);
       expect(selectObliqueModuleFrame(catalog, {
         yawRadians: frame.yawDegrees * Math.PI / 180,

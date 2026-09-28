@@ -33,7 +33,7 @@ MANIFEST = ROOT / "public/game-content/oblique-modules.v1.json"
 ASSET_ID = "wall.interior.module.full"
 YAW = (-45, 0, 45)
 ELEVATION = (25, 45, 65)
-TARGET = Vector((0, 0, 1.25))
+TARGET = Vector((0, 0, 0))
 RADIUS = 12.0
 
 
@@ -53,11 +53,11 @@ def main() -> None:
     scene.render.film_transparent = True
     scene.render.image_settings.file_format = "PNG"
     scene.render.image_settings.color_mode = "RGBA"
-    scene.render.resolution_x = scene.render.resolution_y = 256
+    scene.render.resolution_x = scene.render.resolution_y = 512
     scene.render.resolution_percentage = 100
     pipeline_common.apply_deterministic_render_settings(scene)
     scene.camera.data.type = "ORTHO"
-    scene.camera.data.ortho_scale = 4.0  # 256 / 4 = 64 px per tile
+    scene.camera.data.ortho_scale = 8.0  # 512 / 8 = 64 px per tile
     OUTPUT.mkdir(parents=True, exist_ok=True)
     entries = []
     for yaw in YAW:
@@ -81,8 +81,9 @@ def main() -> None:
                             "sha256": digest})
     data = {"schemaVersion": 1, "assetId": ASSET_ID, "source": SOURCE.name,
             "sourceSha256": hashlib.sha256(SOURCE.read_bytes()).hexdigest(),
-            "resolutionPx": [256, 256], "nominalPixelsPerTile": 64,
-            "pivotPx": [128, 128], "projection": "orthographic",
+            "resolutionPx": [512, 512], "nominalPixelsPerTile": 64,
+            "pivotPx": [256, 256], "cameraTargetTiles": list(TARGET),
+            "projection": "orthographic",
             "yawDegrees": list(YAW), "elevationDegrees": list(ELEVATION),
             "frames": entries}
     pipeline_common.write_text(MANIFEST, json.dumps(data, indent=2) + "\n")

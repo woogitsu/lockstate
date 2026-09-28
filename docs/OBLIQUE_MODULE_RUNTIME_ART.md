@@ -2,9 +2,11 @@
 
 The first production-shaped camera module is `wall.interior.module.full`.
 `tooling/blender/render-oblique-wall-frames.py` isolates its existing Blender
-collection and renders nine transparent 256 × 256 PNGs at yaw −45°/0°/+45°
-and elevation 25°/45°/65°. All frames share the same square-tile pivot at
-(128, 128) and 64 px/tile source scale. The generated
+collection and renders nine transparent 512 × 512 PNGs at yaw −45°/0°/+45°
+and elevation 25°/45°/65°. The camera targets the world ground pivot at
+(0, 0, 0), which appears at (256, 256) in every frame; the wider transparent
+canvas fits the full height without clipping while preserving 64 px/tile.
+The generated
 [`oblique-modules.v1.json`](../public/game-content/oblique-modules.v1.json)
 records the source SHA and each content-hashed frame URL and SHA. Re-rendering
 the same source with Blender 5.2.1 reproduced all nine PNG hashes.

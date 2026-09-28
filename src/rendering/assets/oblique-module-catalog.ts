@@ -13,6 +13,7 @@ export const obliqueModuleSchema = z.object({
   resolutionPx: z.tuple([z.number().int().positive(), z.number().int().positive()]),
   nominalPixelsPerTile: z.number().positive(),
   pivotPx: z.tuple([z.number(), z.number()]),
+  cameraTargetTiles: z.tuple([z.number(), z.number(), z.number()]),
   projection: z.literal('orthographic'),
   yawDegrees: z.array(z.number().int()).min(1),
   elevationDegrees: z.array(z.number().int()).min(1),
