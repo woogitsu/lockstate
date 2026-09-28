@@ -45,6 +45,7 @@ import { createThemeControl, createThemeController, resolveSystemThemeQuery } fr
 import { SavePanel } from './ui/save-panel';
 import { createSimulationRoomTemplatePreflight, createSimulationRoomTemplateQuote } from './ui/simulation-room-template-port';
 import { createObliqueTemplateGhost, type ObliqueTemplateGhostView } from './ui/hud/oblique-template-ghost';
+import { buildCatalogueRowLabel } from './ui/hud/build-panel';
 import type { RoomTemplateTool, RoomTemplatePreflight, RoomTemplateCostQuote } from './ui/room-template-tool';
 import type { RoomTemplatePlan } from './content/room-template-catalog';
 import { placeObliqueTemplateIfCurrent } from './ui/oblique-template-placement';
@@ -407,6 +408,9 @@ let obliqueTemplateTool: RoomTemplateTool | undefined;
 let obliqueTemplateGhost: ObliqueTemplateGhostView | undefined;
 let obliqueTemplateHover: { readonly x: number; readonly y: number } | undefined;
 let obliqueSquareGhost: SVGSVGElement | undefined;
+let obliqueSquareGhostRoot: HTMLDivElement | undefined;
+let obliqueSquareGhostNotice: HTMLDivElement | undefined;
+let obliqueBuildCatalogue: HudBuildViewModel | undefined;
 let obliqueTemplatePlan: RoomTemplatePlan | undefined;
 let obliqueTemplateVerdict: RoomTemplatePreflight | undefined;
 let obliqueTemplateQuote: RoomTemplateCostQuote | undefined;
@@ -416,21 +420,43 @@ const paintObliqueSquareGhost = (): void => {
   const ghost = obliqueSquareGhost;
   if (ghost === undefined) return;
   const tile = obliqueTemplateHover;
-  if (!buildTool?.isArmed() || !buildTool.squareFootprint() || tile === undefined || obliqueCameraScene === undefined) {
-    ghost.setAttribute('hidden', '');
+  const wallArmed = buildTool?.isArmed() === true && buildTool.squareFootprint();
+  const objectFootprint = objectTool?.isArmed() === true && !objectTool.isRemoving() ? objectTool.footprint() : undefined;
+  if ((!wallArmed && objectFootprint === undefined) || tile === undefined || obliqueCameraScene === undefined) {
+    if (obliqueSquareGhostRoot !== undefined) obliqueSquareGhostRoot.hidden = true;
     ghost.replaceChildren();
     buildTool?.targetSquares(undefined);
+    objectTool?.target(undefined);
     return;
   }
   const pose = obliqueCameraScene.cameraPose;
   ghost.setAttribute('viewBox', `0 0 ${pose.viewport.width} ${pose.viewport.height}`);
-  const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-  polygon.setAttribute('points', projectedTileQuad(tile.x, tile.y, pose).map(({ x, y }) => `${x},${y}`).join(' '));
-  polygon.setAttribute('data-tile-x', String(tile.x));
-  polygon.setAttribute('data-tile-y', String(tile.y));
-  ghost.replaceChildren(polygon);
-  ghost.removeAttribute('hidden');
-  buildTool.targetSquares([tile]);
+  const width = objectFootprint?.width ?? 1;
+  const height = objectFootprint?.height ?? 1;
+  const polygons: SVGPolygonElement[] = [];
+  for (let y = tile.y; y < tile.y + height; y += 1) {
+    for (let x = tile.x; x < tile.x + width; x += 1) {
+      const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+      polygon.setAttribute('points', projectedTileQuad(x, y, pose).map((point) => `${point.x},${point.y}`).join(' '));
+      polygon.setAttribute('data-tile-x', String(x));
+      polygon.setAttribute('data-tile-y', String(y));
+      polygons.push(polygon);
+    }
+  }
+  ghost.replaceChildren(...polygons);
+  if (obliqueSquareGhostRoot !== undefined) obliqueSquareGhostRoot.hidden = false;
+  const selectedId = wallArmed ? buildTool?.selectedDefinitionId : objectTool?.selectedDefinitionId;
+  const buildable = obliqueBuildCatalogue?.buildables.find(({ definitionId }) => definitionId === selectedId);
+  if (obliqueSquareGhostNotice !== undefined && buildable !== undefined) {
+    const label = buildCatalogueRowLabel(
+      (key, args) => localizer.format(key, args),
+      buildable,
+      buildable.placementCostMinorUnits === undefined ? undefined : localizer.formatNumber(buildable.placementCostMinorUnits),
+    );
+    if (obliqueSquareGhostNotice.textContent !== label) obliqueSquareGhostNotice.textContent = label;
+  }
+  if (wallArmed) buildTool?.targetSquares([tile]);
+  else objectTool?.target({ tileX: tile.x, tileY: tile.y, width, height });
 };
 const paintObliqueTemplateGhost = (): void => {
   if (obliqueTemplateTool?.isArmed() && obliqueTemplatePlan !== undefined && obliqueCameraScene !== undefined) {
@@ -817,8 +843,8 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
 const game = new Phaser.Game(gameConfig);
 
 // The angled renderer first runs against the same live RenderFeed as the
-// standard scene behind an explicit preview URL. Full-square wall presses and
-// room plans share the live worker command port; other construction gestures
+// standard scene behind an explicit preview URL. Full-square wall and object
+// presses plus room plans share the live worker command port; other gestures
 // remain on WorldScene until their projected targets are represented.
 if (obliquePreviewRequested) {
   game.events.once(Phaser.Core.Events.READY, () => {
@@ -848,6 +874,11 @@ if (obliquePreviewRequested) {
             return;
           }
           if (tiles.length !== 1) return;
+          if (objectTool?.isArmed() && !objectTool.isRemoving()) {
+            if (obliqueTemplateHover?.x !== tileX || obliqueTemplateHover.y !== tileY) return;
+            objectTool.place({ tileX, tileY });
+            return;
+          }
           const tile = obliqueTemplateHover;
           const tool = obliqueTemplateTool;
           if (tool === undefined || !tool.isArmed() || tile?.x !== tileX || tile.y !== tileY || obliqueTemplateVerdict?.ok !== true) return;
@@ -2783,6 +2814,8 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
    */
   const layoutStore = resolveBrowserKeyValueStore();
 
+  const initialBuildCatalogue = buildCatalogue();
+  obliqueBuildCatalogue = initialBuildCatalogue;
   hud = mountHud(app, {
     localizer,
     ...(obliquePreviewRequested ? {
@@ -2814,7 +2847,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     // Spread rather than passed as `undefined`: `exactOptionalPropertyTypes`
     // is on, so an absent notice has to be an absent property.
     ...(simulationUnavailable ? { unavailable: SIMULATION_UNAVAILABLE_NOTICE } : {}),
-    build: buildCatalogue(),
+    build: initialBuildCatalogue,
     staff: staffRoster(),
     /*
      * The room catalogue, passed at mount for the reason the buildable one is:
@@ -3104,6 +3137,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
             tool?.setArmed(false);
             objects?.setArmed(intent.armed, { definitionId: intent.definitionId, footprint, removing: false });
             refreshCameraControls();
+            paintObliqueSquareGhost();
             return;
           }
           objects?.setArmed(false, { removing: false });
@@ -4070,11 +4104,17 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     obliqueTemplateTool = hud.roomTemplateTool;
     obliqueTemplateGhost = createObliqueTemplateGhost(localizer);
     document.body.append(obliqueTemplateGhost.element);
+    obliqueSquareGhostRoot = document.createElement('div');
+    obliqueSquareGhostRoot.className = 'oblique-square-ghost';
     obliqueSquareGhost = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    obliqueSquareGhost.classList.add('oblique-square-ghost');
+    obliqueSquareGhost.classList.add('oblique-square-ghost__map');
     obliqueSquareGhost.setAttribute('aria-hidden', 'true');
-    obliqueSquareGhost.setAttribute('hidden', '');
-    document.body.append(obliqueSquareGhost);
+    obliqueSquareGhostNotice = document.createElement('div');
+    obliqueSquareGhostNotice.className = 'oblique-square-ghost__notice';
+    obliqueSquareGhostNotice.setAttribute('role', 'status');
+    obliqueSquareGhostRoot.append(obliqueSquareGhost, obliqueSquareGhostNotice);
+    obliqueSquareGhostRoot.hidden = true;
+    document.body.append(obliqueSquareGhostRoot);
     obliqueTemplateTool?.onSelectionChanged(refreshObliqueTemplateGhost);
     if (obliqueCameraScene !== undefined) hud.updateCameraPose(obliqueCameraScene.cameraPose);
     window.setInterval(() => {

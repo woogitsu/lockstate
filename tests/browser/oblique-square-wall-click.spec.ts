@@ -15,6 +15,7 @@ test('Full HD oblique Build places the previewed full-square brick wall', async 
   await page.mouse.move(960, 540);
   const preview = page.locator('.oblique-square-ghost polygon');
   await expect(preview).toBeVisible();
+  await expect(page.locator('.oblique-square-ghost__notice')).toContainText('Brick wall · 80 per segment');
   const previewTile = await preview.evaluate((element) => ({ x: Number(element.getAttribute('data-tile-x')), y: Number(element.getAttribute('data-tile-y')) }));
   await page.screenshot({ path: testInfo.outputPath('oblique-square-wall-preview-1920x1080.png') });
   await page.mouse.click(960, 540);
@@ -58,4 +59,20 @@ test('Full HD oblique wall drag submits one transaction covering every square in
   expect(new Set(orders.map((order) => `${order.x},${order.y}`)).size).toBe(expectedCount);
   expect(new Set(orders.map((order) => order.transactionId)).size).toBe(1);
   expect(orders.every((order) => order.footprint === 'square' && order.definitionId === 'wall-brick')).toBe(true);
+});
+
+test.describe('Polish wall cost feedback', () => {
+  test.use({ locale: 'pl-PL' });
+
+  test('Full HD wall ghost uses the Build catalogue price in Polish', async ({ page }) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await page.goto('/?oblique-preview=1');
+    await page.getByRole('button', { name: 'Nowe więzienie' }).click();
+    await expect(page.locator('body[data-oblique-preview="ready"]')).toBeVisible();
+    await page.getByRole('button', { name: 'Buduj', exact: true }).click();
+    await page.locator('.hud-build__list [data-buildable="wall-brick"]').click();
+    await page.getByRole('button', { name: 'Stawiaj na mapie', exact: true }).click();
+    await page.mouse.move(960, 540);
+    await expect(page.locator('.oblique-square-ghost__notice')).toHaveText('Ściana z cegły · 80 za segment');
+  });
 });
