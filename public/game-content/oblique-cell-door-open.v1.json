@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "assetId": "door.interior.open.full",
   "source": "door.interior.leaf.open.blend",
-  "sourceSha256": "c3b7e6a65c7a23a542dd2e5e80f81fdaa543e3edac0fa646d21288a297145d2d",
+  "sourceSha256": "48a27d1b212e88121e6b55661452f70df1129e78f8825eebc3913db1d5aeaf5f",
   "sourceDependencies": [
     {
       "source": "wall.interior.cutaway.blend",
@@ -56,8 +56,8 @@
     {
       "yawDegrees": 0,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/cell-door-open-yaw+00-elev25.5e1e693c775d.png",
-      "sha256": "5e1e693c775d59da2745e3898c21b8a35fe33d9d305b8245687ddd7f359855da"
+      "image": "/assets/environment/oblique/cell-door-open-yaw+00-elev25.a709506bb576.png",
+      "sha256": "a709506bb576424ec3ff5b48211ebbaf8654c12463f18ca824857f4c6317cb83"
     },
     {
       "yawDegrees": 0,

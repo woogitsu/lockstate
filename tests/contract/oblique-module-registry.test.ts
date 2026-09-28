@@ -10,10 +10,11 @@ const digest = (bytes: Buffer) => createHash('sha256').update(bytes).digest('hex
 const json = (path: string): unknown => JSON.parse(readFileSync(join(root, 'public', path.slice(1)), 'utf8')) as unknown;
 
 describe('oblique cell module registry', () => {
-  it('publishes six logical modules with complete 3×3 hashed poses and a shared ground pivot', () => {
+  it('publishes eight logical modules with complete hashed poses and a shared ground pivot', () => {
     const registry = parseObliqueModuleRegistry(json('/game-content/oblique-module-registry.v1.json'));
     expect(registry.entries.map((entry) => entry.assetId)).toEqual([
-      'wall.interior.module.full', 'furniture.cell.bed.single.variants', 'door.interior.open.full',
+      'wall.interior.module.full', 'wall.interior.module.west.full', 'wall.interior.module.cutaway',
+      'furniture.cell.bed.single.variants', 'door.interior.open.full',
       'fixture.cell.toilet_sink', 'furniture.storage.rack.wooden', 'furniture.chair.wooden',
     ]);
     for (const entry of registry.entries) {
@@ -23,11 +24,11 @@ describe('oblique cell module registry', () => {
       expect(catalog.nominalPixelsPerTile).toBe(64);
       expect(catalog.pivotPx).toEqual([256, 256]);
       expect(catalog.cameraTargetTiles).toEqual([0, 0, 0]);
-      expect(catalog.yawDegrees).toEqual(entry.assetId === 'wall.interior.module.full'
+      expect(catalog.yawDegrees).toEqual(entry.assetId.startsWith('wall.interior.module.')
         ? Array.from({ length: 24 }, (_, index) => -180 + index * 15)
         : [-45, 0, 45]);
       expect(catalog.elevationDegrees).toEqual([25, 45, 65]);
-      expect(catalog.frames).toHaveLength(entry.assetId === 'wall.interior.module.full' ? 72 : 9);
+      expect(catalog.frames).toHaveLength(entry.assetId.startsWith('wall.interior.module.') ? 72 : 9);
       expect(digest(readFileSync(join(root, 'assets/source/blender', catalog.source)))).toBe(catalog.sourceSha256);
       for (const dependency of catalog.sourceDependencies ?? []) {
         expect(digest(readFileSync(join(root, 'assets/source/blender', dependency.source)))).toBe(dependency.sha256);
@@ -43,6 +44,17 @@ describe('oblique cell module registry', () => {
           elevationRadians: frame.elevationDegrees * Math.PI / 180,
         })).toEqual(frame);
       }
+    }
+    const full = parseObliqueModuleCatalog(json('/game-content/oblique-modules.v1.json'));
+    const west = parseObliqueModuleCatalog(json('/game-content/oblique-wall-west.v1.json'));
+    const cutaway = parseObliqueModuleCatalog(json('/game-content/oblique-wall-cutaway.v1.json'));
+    for (let index = 0; index < full.frames.length; index += 1) {
+      expect(west.frames[index]!.yawDegrees).toBe(full.frames[index]!.yawDegrees);
+      expect(west.frames[index]!.elevationDegrees).toBe(full.frames[index]!.elevationDegrees);
+      expect(west.frames[index]!.sha256).not.toBe(full.frames[index]!.sha256);
+      expect(cutaway.frames[index]!.yawDegrees).toBe(full.frames[index]!.yawDegrees);
+      expect(cutaway.frames[index]!.elevationDegrees).toBe(full.frames[index]!.elevationDegrees);
+      expect(cutaway.frames[index]!.sha256).not.toBe(full.frames[index]!.sha256);
     }
     const door = parseObliqueModuleCatalog(json('/game-content/oblique-cell-door-open.v1.json'));
     expect(door.sourceDependencies?.map((dependency) => dependency.source)).toEqual(['wall.interior.cutaway.blend']);

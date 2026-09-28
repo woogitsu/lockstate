@@ -67,11 +67,55 @@ try {
     await page.screenshot({ path });
     captures.push(path);
   }
+  const beforeCutaway = images.length;
+  await page.locator('[data-asset-id="wall.interior.module.cutaway"]').click();
+  for (const elevation of [25, 65]) {
+    await page.locator(`[data-axis="elevation"][data-angle="${elevation}"]`).click();
+    for (const yaw of yawAngles) {
+      await page.locator(`[data-axis="yaw"][data-angle="${yaw}"]`).click();
+      await page.waitForFunction((expected) => document.body.dataset.loadedFrame?.includes(expected),
+        stem('wall-module-cutaway', yaw, elevation));
+      const pivot = await page.locator('body').getAttribute('data-pivot-screen');
+      if (pivot !== '1370,585') throw new Error(`Cutaway pivot drifted at ${yaw}°/${elevation}°: ${pivot}`);
+      if ([-90, 0, 90].includes(yaw)) {
+        const path = preview(`wall-cutaway-yaw${yaw}-elev${elevation}`);
+        await page.screenshot({ path });
+        captures.push(path);
+      }
+    }
+  }
+  if (images.length !== beforeCutaway + 48) throw new Error(`Cutaway should load 48 selected frames, got ${images.length - beforeCutaway}.`);
+  const beforeWest = images.length;
+  await page.locator('[data-asset-id="wall.interior.module.west.full"]').click();
+  for (const elevation of [25, 65]) {
+    await page.locator(`[data-axis="elevation"][data-angle="${elevation}"]`).click();
+    for (const yaw of yawAngles) {
+      await page.locator(`[data-axis="yaw"][data-angle="${yaw}"]`).click();
+      await page.waitForFunction((expected) => document.body.dataset.loadedFrame?.includes(expected),
+        stem('wall-module-west-full', yaw, elevation));
+      if (await page.locator('body').getAttribute('data-pivot-screen') !== '1370,585') {
+        throw new Error(`West-wall pivot drifted at ${yaw}°/${elevation}°.`);
+      }
+      if ([-90, -45, 0, 45, 90].includes(yaw)) {
+        const path = preview(`wall-west-yaw${yaw}-elev${elevation}`);
+        await page.screenshot({ path });
+        captures.push(path);
+      }
+    }
+  }
+  if (images.length !== beforeWest + 48) throw new Error(`West wall should load 48 selected frames, got ${images.length - beforeWest}.`);
   if (images.some((response) => response.status() !== 200)) throw new Error('An oblique image failed HTTP 200.');
   if (failures.length > 0) throw new Error(`Browser errors: ${failures.join('; ')}`);
   const bytes = (await Promise.all(images.map((response) => response.body()))).map((body) => body.length);
   console.log(JSON.stringify({ viewport: '1920x1080', startupTextures: 1, initialBytes,
-    yawPosesVisited: yawAngles.length, pivotScreen: '1370,585', texturesFetched: images.length,
+    yawPosesVisited: yawAngles.length, cutawayPosesVisited: 48,
+    cutawayImagesFetched: beforeWest - beforeCutaway,
+    cutawayBytes: (await Promise.all(images.slice(beforeCutaway, beforeWest).map((response) => response.body())))
+      .reduce((sum, body) => sum + body.length, 0),
+    westImagesFetched: images.length - beforeWest,
+    westBytes: (await Promise.all(images.slice(beforeWest).map((response) => response.body())))
+      .reduce((sum, body) => sum + body.length, 0),
+    pivotScreen: '1370,585', texturesFetched: images.length,
     transferredImageBytes: bytes.reduce((sum, value) => sum + value, 0),
     yawLoadMs: { min: Math.min(...latenciesMs), median: [...latenciesMs].sort((a, b) => a - b)[12],
       max: Math.max(...latenciesMs) }, captures }, null, 2));
