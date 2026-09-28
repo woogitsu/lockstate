@@ -26,3 +26,14 @@ branch must call this public scene method when that state changes. This art
 branch does not edit the app orchestrator. The default Browse presentation is
 already active in the scene without that wiring; stronger Build styling waits
 for the app call.
+
+The real `/?oblique-preview=1` application was also exercised at 1920×1080:
+a new prison was created, the `Basic cell` plan was placed, Browse was opened,
+and yaw -45°, 0°, and 45° were captured. The exact-source targeted browser
+test passed 1/1 with one worker. Its screenshots are
+`app-planned-cell-yaw-45.png`, `app-planned-cell-yaw0.png`, and
+`app-planned-cell-yaw45.png` in the same evidence directory. That plan is
+still a construction order with translucent geometry, so the application
+check proves the ground
+presentation around a placed plan; the built cell visual review above comes
+from the actual Phaser scene fed a completed world snapshot.
