@@ -183,6 +183,18 @@ repaint rather than 29. Additional room templates, clearer selected-tool
 state, Escape behavior, corner art and smaller ground textures are in separate
 reviewed branches. This is an integration branch, not a production release.
 
+**Later checkpoint (`e34dabd8c`):** the running Full HD angled route also
+offers Laundry and Classroom plans, places a whole-square wall by click or
+rectangle drag as one Undo transaction, and places an object at the shown
+footprint. Escape puts down an armed plan and Build selection follows the
+actual tool. Doorway guards now reject later plans, walls and objects that
+would block the only approach to a pending or completed cell, including after
+Save/Load. The drag rectangle is submitted correctly, but its live ghost
+still shows the hovered single square; the scene now exposes both live drag
+endpoints so the HUD can paint the exact pending footprint and total catalogue
+estimate. Ground frame crop, batched texture loading and corner modules remain
+in separate PRs until their exact-head CI is green and integration passes.
+
 Keep three isolated worktrees moving in parallel: (1) Blender modules and
 consistent camera poses, (2) square-first construction and ready-made rooms,
 and (3) Full HD HUD, controls and visible template previews. The renderer
