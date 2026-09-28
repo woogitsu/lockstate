@@ -25,9 +25,9 @@ export interface RoomTemplatePlan {
 }
 
 /** Player-facing choices; backend-authored additions can join after HUD copy and controls land. */
-export const ROOM_TEMPLATE_IDS = ['cell-basic', 'cell-large', 'shower-room', 'cell-row-four', 'canteen-basic', 'kitchen-basic'] as const;
+export const ROOM_TEMPLATE_IDS = ['cell-basic', 'cell-large', 'shower-room', 'cell-row-four', 'canteen-basic', 'kitchen-basic', 'common-room-basic'] as const;
 export type RoomTemplateId = (typeof ROOM_TEMPLATE_IDS)[number];
-export type AuthoredRoomTemplateId = RoomTemplateId | 'infirmary-basic' | 'laundry-basic' | 'classroom-basic' | 'common-room-basic';
+export type AuthoredRoomTemplateId = RoomTemplateId | 'infirmary-basic' | 'laundry-basic' | 'classroom-basic';
 type RoomTemplateObjectId = 'bed-wooden' | 'toilet-brick' | 'shower-head-brick' | 'dining-table-wooden' | 'bench-wooden' | 'stove-brick' | 'prep-counter-brick' | 'fridge-brick' | 'medical-bed-wooden' | 'medicine-cabinet-wooden' | 'washing-machine-brick' | 'bookshelf-wooden' | 'chair-wooden';
 
 interface TemplateDefinition {
