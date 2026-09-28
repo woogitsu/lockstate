@@ -30,5 +30,16 @@ export function validateRoomTemplatePlacement(
       if (objectOccupies(tile)) return { ok: false, reason: 'object-occupied', tile };
     }
   }
+  // A south-facing doorway needs its outside approach open. Its door edge is
+  // between the interior and the perimeter gap; an older edge wall just beyond
+  // that gap would otherwise pass the rectangle scan and seal the entrance.
+  for (const door of plan.doorSquares) {
+    if (door.y !== plan.origin.y + plan.height - 1) continue;
+    const outsideY = door.y + 1;
+    if (!Number.isSafeInteger(outsideY)) continue;
+    if (world.getTopEdge({ x: tileCoordinate(door.x), y: tileCoordinate(outsideY) }) !== 0) {
+      return { ok: false, reason: 'structure-occupied', tile: { x: tileCoordinate(door.x), y: tileCoordinate(door.y) } };
+    }
+  }
   return { ok: true };
 }
