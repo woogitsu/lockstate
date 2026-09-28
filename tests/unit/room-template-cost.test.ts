@@ -14,9 +14,13 @@ describe('room template catalogue cost', () => {
     });
   });
 
-  it('prices every shipped plan from its actual construction orders', () => {
+  it('prices shell plans from their orders and the zoning-only Yard at zero', () => {
     for (const id of ROOM_TEMPLATE_IDS) {
       const quote = projectRoomTemplateCost(id);
+      if (id === 'yard-basic') {
+        expect(quote).toEqual({ orderCount: 0, materials: [], catalogueCostMinorUnits: 0 });
+        continue;
+      }
       expect(quote.orderCount).toBeGreaterThan(0);
       expect(quote.materials.every((item) => item.quantity > 0)).toBe(true);
       expect(quote.catalogueCostMinorUnits).toBeGreaterThan(0);
