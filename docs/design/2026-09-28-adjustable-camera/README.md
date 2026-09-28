@@ -217,6 +217,19 @@ after integration on this branch. The owner-requested zone reservation from
 is on `main` yet. The Save/Load room-plan browser flow exposed an intermittent
 long reload; investigate that before treating the complete flow as verified.
 
+**Room-plan integration checkpoint (`df0a94910`, 2026-09-28):** the optional
+angled route now includes Common Room, Security Office and Storage Room plans
+alongside the earlier rooms. Each new plan has a whole-footprint preview, a
+material quote, one-click placement, and a Full HD browser flow covering
+Save/Load and a blocked-placement preflight. Canteen and Large Cell can be
+rotated 90 degrees. Wheel zoom, WASD/arrow panning and middle-button drag have
+passed their focused real-browser checks. The main integration branch also
+contains repairs to four historical test fixtures that placed beds on the
+protected approaches to completed cell doors; the door protection itself was
+preserved. These changes are pushed on PR #1623, with exact-head CI still the
+shipping gate. Blender ground polishing and further wall modules remain on
+separate art branches; this checkpoint does not claim production release.
+
 Keep three isolated worktrees moving in parallel: (1) Blender modules and
 consistent camera poses, (2) square-first construction and ready-made rooms,
 and (3) Full HD HUD, controls and visible template previews. The renderer
