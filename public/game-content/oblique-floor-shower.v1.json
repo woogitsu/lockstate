@@ -1,0 +1,487 @@
+{
+  "schemaVersion": 1,
+  "assetId": "floor.shower.ceramic",
+  "source": "environment.mvp.catalog.blend",
+  "sourceSha256": "57db9afb7e48996cef9aaedda72b8e874e865eb56862ee4add8b177a9713887d",
+  "sourceDependencies": [],
+  "resolutionPx": [
+    512,
+    512
+  ],
+  "nominalPixelsPerTile": 64,
+  "pivotPx": [
+    256,
+    256
+  ],
+  "cameraTargetTiles": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "projection": "orthographic",
+  "yawDegrees": [
+    -180,
+    -165,
+    -150,
+    -135,
+    -120,
+    -105,
+    -90,
+    -75,
+    -60,
+    -45,
+    -30,
+    -15,
+    0,
+    15,
+    30,
+    45,
+    60,
+    75,
+    90,
+    105,
+    120,
+    135,
+    150,
+    165
+  ],
+  "elevationDegrees": [
+    25,
+    45,
+    65
+  ],
+  "frames": [
+    {
+      "yawDegrees": -180,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-shower-yaw-180-elev25.32a898ad38cf.png",
+      "sha256": "32a898ad38cf83fa56513de1027641bb5502a9e01789522a73e83f4fac9c0400"
+    },
+    {
+      "yawDegrees": -180,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-shower-yaw-180-elev45.837f4e58d68d.png",
+      "sha256": "837f4e58d68dcc0443de82f4d73614a5af7e0357b3b6e5805ab8af44fab214d0"
+    },
+    {
+      "yawDegrees": -180,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-shower-yaw-180-elev65.ea16171bb5c6.png",
+      "sha256": "ea16171bb5c6964b23e6df87f6c5ed43ec5d0bda661150623399a4777965cc99"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-shower-yaw-165-elev25.619d773000c1.png",
+      "sha256": "619d773000c14999e35d8336f0a8bcebacb4aa5ed81f1382cac0543286642371"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-shower-yaw-165-elev45.bf2bc143fc47.png",
+      "sha256": "bf2bc143fc47e252c8b1d34b2052be486dd9278c019ac7dd39cc39f86cf5b73c"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-shower-yaw-165-elev65.c1f2f48ea70a.png",
+      "sha256": "c1f2f48ea70a23437fc12ec4d96dad482c83b18825472c61d655baa21047fe55"
+    },
+    {
+      "yawDegrees": -150,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-shower-yaw-150-elev25.37d0da0e9d45.png",
+      "sha256": "37d0da0e9d459693f8020cf1df333a6b7ffef52eba9fe8bd13b33a0fd646dc22"
+    },
+    {
+      "yawDegrees": -150,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-shower-yaw-150-elev45.3174aea4c353.png",
+      "sha256": "3174aea4c353bee5234c832f786d75ee5b82503c39aab81fa68c55e160ee1608"
+    },
+    {
+      "yawDegrees": -150,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-shower-yaw-150-elev65.f2e95c02a36f.png",
+      "sha256": "f2e95c02a36f71a01c794c2d1c60a2831cd5d09d3f475e6fda642080cddfed7a"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-shower-yaw-135-elev25.aca47a4cbd53.png",
+      "sha256": "aca47a4cbd5308496489f864b6bd5bbd328acaa422ebccbdfa56321052e5d8d2"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-shower-yaw-135-elev45.e393501cc4c1.png",
+      "sha256": "e393501cc4c1fc2d4a72cbae376f00b7e6f7c89afda4ae22f5a68eb5ed10fe88"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-shower-yaw-135-elev65.f4d574b1e976.png",
+      "sha256": "f4d574b1e976e61551e3e92b60ffb9c54400428b425d85401531aff6aa7c5a78"
+    },
+    {
+      "yawDegrees": -120,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-shower-yaw-120-elev25.4986c1be365a.png",
+      "sha256": "4986c1be365a28b265d3222a39aa3c431b02e62093b5665442f1f92381344989"
+    },
+    {
+      "yawDegrees": -120,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-shower-yaw-120-elev45.a0c38179c6fa.png",
+      "sha256": "a0c38179c6fa94a12e9c625be67fee0f29ced784556901cee706ade78ff07720"
+    },
+    {
+      "yawDegrees": -120,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-shower-yaw-120-elev65.08c7aeab23fc.png",
+      "sha256": "08c7aeab23fcb44ae17b883224464edfa3cdc7ab6c430a76b69c1c89db44b239"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-shower-yaw-105-elev25.9b9442c90115.png",
+      "sha256": "9b9442c90115a5c291153d01b9a4d2ebbb5fabf7de54e9980cedd78cc909b109"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-shower-yaw-105-elev45.9bc1ffd50ecc.png",
+      "sha256": "9bc1ffd50ecce4faf1a48bd5ef1a3d3296a0d23661641192d9d79529e2d7da56"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-shower-yaw-105-elev65.b8e0bd64231a.png",
+      "sha256": "b8e0bd64231ad921d0975db0052dbc532dd9ab30f600b0251a2b5ad54acad04f"
+    },
+    {
+      "yawDegrees": -90,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-shower-yaw-90-elev25.378f9b36623d.png",
+      "sha256": "378f9b36623dda6eac37f630c9b502b104c86e6e54553267fcc9783ae6c3a967"
+    },
+    {
+      "yawDegrees": -90,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-shower-yaw-90-elev45.24ad1d0cabc9.png",
+      "sha256": "24ad1d0cabc98bc7e3f134509736dd45d3b51f83e1e6ae1455a3c167fda68036"
+    },
+    {
+      "yawDegrees": -90,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-shower-yaw-90-elev65.a68ed33dc301.png",
+      "sha256": "a68ed33dc3012d939c024f4d83081e803a7eac2b21147065ff0303c5cd3969dc"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-shower-yaw-75-elev25.67b54a2fe593.png",
+      "sha256": "67b54a2fe593fe92318b65c19e1c9df29c99bf2aea26a0dd020dd9c6291e9b12"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-shower-yaw-75-elev45.005cd68ea048.png",
+      "sha256": "005cd68ea0482cf61c1de9425859175effea52d27403bfa75aa13e96c7d04665"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-shower-yaw-75-elev65.563c16faed38.png",
+      "sha256": "563c16faed38441bc934cd260f6e34cd2603b52ff147999fad0e88841c6e1a42"
+    },
+    {
+      "yawDegrees": -60,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-shower-yaw-60-elev25.ce54e5dbffcb.png",
+      "sha256": "ce54e5dbffcbf60c4977a9e5206cf4f6d5edca88e5a674578eb5746dc9fba4e7"
+    },
+    {
+      "yawDegrees": -60,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-shower-yaw-60-elev45.0a6867e468e3.png",
+      "sha256": "0a6867e468e3793dc750ca382553e1366e73232ebe3cc6447d1cae863f27f1ae"
+    },
+    {
+      "yawDegrees": -60,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-shower-yaw-60-elev65.c99bfb7453b9.png",
+      "sha256": "c99bfb7453b92225be5d55e218a329e12038f658d2754d576d747b114f45e24a"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-shower-yaw-45-elev25.9963932097a4.png",
+      "sha256": "9963932097a404fe201ff6187afb0099a2150c97c2c4c9cd69eb5e8c4eb20a9f"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-shower-yaw-45-elev45.cc1519c12f3e.png",
+      "sha256": "cc1519c12f3e8fe7955481ca254867bcf8828974fa3847f977d997c5d3fd5b7a"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-shower-yaw-45-elev65.1f347a4c7307.png",
+      "sha256": "1f347a4c7307cc5612c4c395fa623ad3b3dee9d1d814dd6dd7b61a7a19e25844"
+    },
+    {
+      "yawDegrees": -30,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-shower-yaw-30-elev25.a5807f7047cf.png",
+      "sha256": "a5807f7047cf5f53fad307cc0f76b7e0daf43f5eadf509a2f407e8a5f8c95463"
+    },
+    {
+      "yawDegrees": -30,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-shower-yaw-30-elev45.a205ad7d3bf1.png",
+      "sha256": "a205ad7d3bf1a68eaa5851478d569dab0ec9ab3c69636b4c4eb44ab46cd7a37f"
+    },
+    {
+      "yawDegrees": -30,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-shower-yaw-30-elev65.57a1f6ff2c17.png",
+      "sha256": "57a1f6ff2c178d39e52f6fb3a68fd4eb15f9bdb027392506172482ae0bbb9dd5"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-shower-yaw-15-elev25.7946d729f92e.png",
+      "sha256": "7946d729f92ebda77ac974f10124d1937f370bfa0a25e12e16274a5fbdf60353"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-shower-yaw-15-elev45.dcb5945d19be.png",
+      "sha256": "dcb5945d19be16a0ac66cc3450c48f4cdf25e251574950f309344a614775879f"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-shower-yaw-15-elev65.d473278e6a34.png",
+      "sha256": "d473278e6a34f5b168f0e42026d107a2818dceb65b1fd59fcb7514869485eb43"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-shower-yaw+00-elev25.888f6ab08fde.png",
+      "sha256": "888f6ab08fde1b474da5c46510aa9237f67262626aaef6a2f61205d7c868e611"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-shower-yaw+00-elev45.37787f2f6055.png",
+      "sha256": "37787f2f6055e46767dd6d5e8f6982223342f04655c7d0f309a62574b6f6850f"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-shower-yaw+00-elev65.4ab575792576.png",
+      "sha256": "4ab575792576b5e7518788a437410a2d45cb9eb04a665d0ad2805b2f4dfd71d0"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-shower-yaw+15-elev25.ac9a5c3b3fe8.png",
+      "sha256": "ac9a5c3b3fe89dfc1265e8deea3cd9873ee593d14c11362bdf62370408174f58"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-shower-yaw+15-elev45.21c1cda4003d.png",
+      "sha256": "21c1cda4003d56a9fc7ca255836eaa05fa252a7b7c2169ad065afcf61e0a4d23"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-shower-yaw+15-elev65.d5be07357de9.png",
+      "sha256": "d5be07357de9b96b6cffbc176b39f969363ca27f3f14e4a6fa9bfcb6556d054c"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-shower-yaw+30-elev25.086fb80d48da.png",
+      "sha256": "086fb80d48da1890dfb4ea86846bfba3f360d9bee545c646920a18b7e0ab9a1f"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-shower-yaw+30-elev45.ae8e5c534f90.png",
+      "sha256": "ae8e5c534f90f96e9892fd6b9a19626feb023de4684dc1a14b42a9afa90c3e0d"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-shower-yaw+30-elev65.91277afcf135.png",
+      "sha256": "91277afcf1357007ad6a95a977e859bb91572e687d0aaf5b4f95e9f37e60ba46"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-shower-yaw+45-elev25.4ca788748262.png",
+      "sha256": "4ca7887482624b78f84cb605a5f54459c9d9a67739cf8f20fcf7512effb404da"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-shower-yaw+45-elev45.df5a5bb13a12.png",
+      "sha256": "df5a5bb13a126f71b21e7d6bce36ce0a82cfbf9810b69fc4246c2ab59fe2a197"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-shower-yaw+45-elev65.29aea78de4d7.png",
+      "sha256": "29aea78de4d7f3f9153b07573edbc611eb794c19f72c6774e455d4ce92285dd8"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-shower-yaw+60-elev25.bee381a942e3.png",
+      "sha256": "bee381a942e3daebdd7a34e63e7ca1254845584bae1745fe0abf2028984a0946"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-shower-yaw+60-elev45.37e63f20d3ea.png",
+      "sha256": "37e63f20d3eaffcd4dbdcc4eb572fe82cb91bde48e8416b7c2c84f6df3080542"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-shower-yaw+60-elev65.3c58f1e8a8da.png",
+      "sha256": "3c58f1e8a8dadd3b87633ee7085cf2bbf25cba2fe0797db791df26481894fe34"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-shower-yaw+75-elev25.c985b67799be.png",
+      "sha256": "c985b67799beac1d71200400cd25888dd1c41420be09ae00534ce9fdb1641e42"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-shower-yaw+75-elev45.208b65d24da2.png",
+      "sha256": "208b65d24da2aab34988baa0b715ebb7351547e567244a4510bc1527bcafa46c"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-shower-yaw+75-elev65.d7711bad9d37.png",
+      "sha256": "d7711bad9d372d87aa89a6a53ef0e2bfe992192f6f2a50875d2a52591dbf83a6"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-shower-yaw+90-elev25.8deff1822889.png",
+      "sha256": "8deff1822889d85bf4629741c46ce74d02f8dd56cb4af8623266288acc7907f7"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-shower-yaw+90-elev45.5b3d32dc8b63.png",
+      "sha256": "5b3d32dc8b63f92d867462fef0be32fa99ab82b82ca4f7b8918ce8e576b4423d"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-shower-yaw+90-elev65.25b41a5802fe.png",
+      "sha256": "25b41a5802fedeffca40b12fa115fc60e2653f41071599fa793593f305105a56"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-shower-yaw+105-elev25.fa2869793fe7.png",
+      "sha256": "fa2869793fe701b842f01381abc0fb13e2782df6536f5e98e718e3d189eb9305"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-shower-yaw+105-elev45.ffd6a54bdf08.png",
+      "sha256": "ffd6a54bdf080ed337315d68497836f4596ea46e8bc1aea2f6d5904c78a93485"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-shower-yaw+105-elev65.44609b8e3923.png",
+      "sha256": "44609b8e3923af326f6664679601a05359f5a2b014f23cd1d5fd93c69458d4a2"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-shower-yaw+120-elev25.427468b5dda9.png",
+      "sha256": "427468b5dda9d0ff70ef8ec9dff48bc439c4f0101c0f11b86bdfa3ad545660b2"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-shower-yaw+120-elev45.60d585ad5774.png",
+      "sha256": "60d585ad5774a49894e868c9b1b14c667a24e0107e7e1d166480bd912ccb4051"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-shower-yaw+120-elev65.cda676633542.png",
+      "sha256": "cda676633542479835267c52ba17e7d70ce0f799eb1bd5ec5a659687f9a28a7d"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-shower-yaw+135-elev25.fc9faf77e04c.png",
+      "sha256": "fc9faf77e04cf317fa8ca7072d612392b3262bfd9497647774aed3485d7d7f84"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-shower-yaw+135-elev45.0175859b531b.png",
+      "sha256": "0175859b531bbba4cd5603ba02c4d102add67cbaa1ab51af81586d25560bd3a8"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-shower-yaw+135-elev65.fca6103ff9f9.png",
+      "sha256": "fca6103ff9f9a137f1261af4f4f25250ba9b3c075ed7b78cbf1ab244aa4ff7ed"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-shower-yaw+150-elev25.3109322bcf30.png",
+      "sha256": "3109322bcf305b85718b4947f43f8644925af94ac271c1ca66c374abf4226aa0"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-shower-yaw+150-elev45.171fedf19229.png",
+      "sha256": "171fedf192291250c2e604ebedea019ec81405b98f36e476f94455ab0b82986c"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-shower-yaw+150-elev65.3bacc3e7bf7c.png",
+      "sha256": "3bacc3e7bf7c724c2aa4677d9b438ecbcf440922ff3ad2441a98fe0dc96dbed3"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/floor-shower-yaw+165-elev25.1b72686ff3c5.png",
+      "sha256": "1b72686ff3c5fa1930069c52a7b73c3ed0124e94a5bd48b1ded0c76ef1f268da"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/floor-shower-yaw+165-elev45.d48bc3d1133a.png",
+      "sha256": "d48bc3d1133a65e130a0d841fadd5d6b5229bb778732a91e9f9fb127ef7cf3d2"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/floor-shower-yaw+165-elev65.d3fdbad84fbe.png",
+      "sha256": "d3fdbad84fbec84abdc1119e0bfbed66336e0503f436df1ad4e2ed23d639393a"
+    }
+  ]
+}
