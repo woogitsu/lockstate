@@ -511,10 +511,11 @@ const refreshObliqueTemplateGhost = (): void => {
 };
 const cameraPlacementActive = (): boolean =>
   (buildTool?.isArmed() ?? false) || (roomTool?.isArmed() ?? false) || (objectTool?.isArmed() ?? false) || (obliqueTemplateTool?.isArmed() ?? false);
-// A square Build gesture keeps the left button; yaw/tilt use keyboard, HUD,
-// or the right button. Other placement modes retain their current angle lock.
+// Room plans keep their left-click placement gesture while the angled camera
+// may turn through the HUD, keyboard, or right-button drag. Other placement
+// tools retain the existing angle lock until their gesture model is isolated.
 const cameraAnglePlacementBlocked = (): boolean =>
-  (roomTool?.isArmed() ?? false) || (objectTool?.isArmed() ?? false) || (obliqueTemplateTool?.isArmed() ?? false);
+  (roomTool?.isArmed() ?? false) || (objectTool?.isArmed() ?? false);
 const cameraContexts = () => {
   if (document.querySelector('dialog[open], [role="dialog"][aria-modal="true"]')) return ['modal'] as const;
   if (document.activeElement?.matches('input, textarea, select, [contenteditable="true"]')) return ['text-entry'] as const;
