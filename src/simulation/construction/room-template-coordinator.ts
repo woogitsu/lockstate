@@ -1,4 +1,4 @@
-import { instantiateRoomTemplate, type RoomTemplatePlan } from '../../content/room-template-catalog';
+import { instantiateRoomTemplate, roomTemplateOriginFitsSafeCoordinates, type RoomTemplatePlan } from '../../content/room-template-catalog';
 import type { SystemRegistration, SimulationContext } from '../kernel/system';
 import type { PlacedObjectRegistry } from '../objects/placed-object-registry';
 import type { ObjectPlacementService } from '../objects/object-placement-service';
@@ -100,6 +100,11 @@ export class RoomTemplateCoordinator implements SystemRegistration {
   }
 
   public place(request: PendingRoomTemplate): RoomTemplatePlacement {
+    if (!roomTemplateOriginFitsSafeCoordinates(request.templateId, request.origin)) {
+      return { ok: false, reason: 'unowned-land', tile: {
+        x: tileCoordinate(request.origin.x), y: tileCoordinate(request.origin.y),
+      } };
+    }
     const built = createRoomTemplateBuildPlan(request.templateId, request.origin, request.mirrorX, request.sequence);
     const verdict = this.preflight(built.plan);
     if (!verdict.ok) return verdict;
