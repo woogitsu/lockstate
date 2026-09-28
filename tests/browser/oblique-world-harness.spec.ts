@@ -89,3 +89,18 @@ test('real render feed cell keeps one build square under the cursor while the sc
   expect(actorAfter?.x).not.toBe(actorBefore?.x);
   expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.paintCounts().ground)).toBe(staticPaints);
 });
+
+test('Full HD scene selects both corner orientations and one T without doubling the shared wall', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/tests/browser/oblique-world-harness.html');
+  await page.evaluate(() => window.lockstateObliqueWorldHarness.ready());
+  for (const yaw of [-45, 0, 45]) {
+    await page.evaluate((angle) => window.lockstateObliqueWorldHarness.setPose(angle, 45), yaw);
+    const keys = await page.evaluate(() => window.lockstateObliqueWorldHarness.artTextureKeys());
+    expect(keys.filter((key) => key.includes('wall-junction-t-west-full'))).toHaveLength(1);
+    expect(keys.filter((key) => key.includes('wall-corner-north-east-full'))).toHaveLength(1);
+    expect(keys.filter((key) => key.includes('wall-corner-south-east-full'))).toHaveLength(1);
+    expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.artErrors())).toEqual([]);
+    await page.screenshot({ path: testInfo.outputPath(`junction-yaw${yaw}-fullhd.png`) });
+  }
+});

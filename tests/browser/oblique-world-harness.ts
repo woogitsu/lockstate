@@ -18,6 +18,7 @@ export interface ObliqueWorldHarness {
   artTextureKeys(): readonly string[];
   loadedArtTextureCount(): number;
   artCatalogCount(): number;
+  artErrors(): readonly string[];
   cutawayWallIds(): readonly string[];
   actorArtPosition(): Point | undefined;
   moveActorToTile(tileX: number): Promise<void>;
@@ -52,6 +53,10 @@ for (let y = 1; y <= 4; y += 1) {
   world.setLeftEdge(tile(1, y), 1);
   world.setLeftEdge(tile(5, y), 1);
 }
+// The existing top edge at (4,5) meets the west wall on both sides at (5,5).
+// The edge at (2,5) meets only the northern west segment at (3,4).
+world.setLeftEdge(tile(5, 5), 1);
+world.setLeftEdge(tile(3, 4), 1);
 const frame: RenderFrame = {
   revision: 1,
   world: WorldRenderView.fromSnapshot(world.snapshot()),
@@ -107,6 +112,7 @@ window.lockstateObliqueWorldHarness = {
   artTextureKeys: () => scene.artTextureKeys,
   loadedArtTextureCount: () => scene.loadedArtTextureCount,
   artCatalogCount: () => artCatalogs.size,
+  artErrors: () => scene.artErrors,
   cutawayWallIds: () => scene.cutawayWallIds,
   actorArtPosition: () => scene.actorArtPosition,
   cameraAngles: () => ({ yawRadians: scene.cameraPose.yawRadians, elevationRadians: scene.cameraPose.elevationRadians }),
