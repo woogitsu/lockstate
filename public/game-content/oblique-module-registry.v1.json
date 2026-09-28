@@ -26,6 +26,10 @@
       "manifest": "/game-content/oblique-cell-door-open.v1.json"
     },
     {
+      "assetId": "door.interior.open.cutaway",
+      "manifest": "/game-content/oblique-cell-door-north-cutaway.v1.json"
+    },
+    {
       "assetId": "door.interior.open.west.full",
       "manifest": "/game-content/oblique-cell-door-west-full.v1.json"
     },

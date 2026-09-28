@@ -464,6 +464,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private cutawayArtAssetId(item: ObliqueSolid): string | undefined {
     if (item.artAssetId === 'wall.interior.module.full') return 'wall.interior.module.cutaway';
     if (item.artAssetId === 'wall.interior.module.west.full') return 'wall.interior.module.west.cutaway';
+    if (item.artAssetId === 'door.interior.open.full') return 'door.interior.open.cutaway';
     if (item.artAssetId === 'door.interior.open.west.full') return 'door.interior.open.west.cutaway';
     if (item.artAssetId === 'door.shower.privacy.open.full') return 'door.shower.privacy.open.cutaway';
     return undefined;
