@@ -111,7 +111,18 @@ export class RoomTemplateCoordinator implements SystemRegistration {
     for (const request of this.pending) {
       const built = createRoomTemplateBuildPlan(request.templateId, request.origin, request.mirrorX, request.sequence);
       const states = built.shellOrderIds.map((id) => this.construction.getOrder(id)?.state);
-      if (states.some((state) => state === undefined || state === 'cancelled' || state === 'failed')) continue;
+      if (states.some((state) => state === undefined || state === 'cancelled' || state === 'failed')) {
+        // A grouped room gesture must not keep building a partial shell after
+        // one member is lost. This includes completed orders: cancelOrder
+        // reverses their world geometry as it does for construction Undo.
+        for (const id of built.shellOrderIds) {
+          const order = this.construction.getOrder(id);
+          if (order !== undefined && order.state !== 'cancelled' && order.state !== 'failed') {
+            this.construction.cancelOrder(id);
+          }
+        }
+        continue;
+      }
       if (states.some((state) => state !== 'completed')) {
         remaining.push(request);
         continue;
