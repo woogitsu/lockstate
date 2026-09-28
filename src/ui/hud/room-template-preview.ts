@@ -134,6 +134,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
       'storage-rack-wooden': 'object.storage-rack.name',
       'desk-wooden': 'object.desk.name',
       'loading-dock-door-wooden': 'object.loading-dock-door.name',
+      'utility-panel-brick': 'object.utility-panel.name',
     };
     contents.textContent = [...counts].map(([objectId, count]) => t(HUD_MESSAGE_KEY.templateObjectCount, { name: t(objectNames[objectId]!), count })).join(' · ');
     materials.hidden = true;
