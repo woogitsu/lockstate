@@ -152,6 +152,10 @@
     {
       "assetId": "furniture.corridor.bench.variants",
       "manifest": "/game-content/oblique-canteen-bench.v1.json"
+    },
+    {
+      "assetId": "floor.reception.linoleum",
+      "manifest": "/game-content/oblique-floor-reception.v1.json"
     }
   ]
 }

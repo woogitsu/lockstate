@@ -53,6 +53,11 @@ describe('oblique projection of an actual simulation snapshot', () => {
     expect(artForStructure('bench-wooden')).toBe('furniture.corridor.bench.variants');
     expect(artForNorthEdge(2, shower!.numericId)).toBe('door.shower.privacy.open.full');
   });
+  it('gives a completed Reception an indoor floor distinct from surrounding compacted earth', () => {
+    const reception = defaultRoomContentRegistry.getById('room.reception');
+    expect(reception).toBeDefined();
+    expect(artForGround(reception!.numericId, 0)).toBe('floor.reception.linoleum');
+  });
   it('reads loaded ground, distinct wall and door edges, a whole bed, and the actor without duplicating a finished wall', () => {
     const projected = projectObliqueWorldFrame(frame(), pose);
     expect(projected.loadedTilesVisited).toBe(64);
