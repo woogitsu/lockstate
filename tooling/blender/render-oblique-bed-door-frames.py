@@ -42,6 +42,24 @@ def append_collection(path: Path, name: str):
     return collection
 
 
+def add_cutaway_threshold(frame) -> None:
+    """Keep the low doorway legible after the tall, open leaf is cut away."""
+    bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, 0.018))
+    threshold = bpy.context.object
+    threshold.name = "Cutaway door threshold"
+    for linked in list(threshold.users_collection):
+        linked.objects.unlink(threshold)
+    frame.objects.link(threshold)
+    threshold.dimensions = (0.76, 0.20, 0.036)
+    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+    surface = bpy.data.materials.new("Cutaway threshold graphite")
+    surface.diffuse_color = (0.29, 0.30, 0.29, 1)
+    surface.use_nodes = True
+    surface.node_tree.nodes.get("Principled BSDF").inputs["Base Color"].default_value = surface.diffuse_color
+    surface.node_tree.nodes.get("Principled BSDF").inputs["Roughness"].default_value = 0.84
+    threshold.data.materials.append(surface)
+
+
 def setup_scene() -> None:
     bpy.ops.wm.read_factory_settings(use_empty=True)
     scene = bpy.context.scene

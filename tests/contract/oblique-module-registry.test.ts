@@ -65,6 +65,9 @@ describe('oblique cell module registry', () => {
     const guard = parseObliqueModuleCatalog(json('/game-content/oblique-actor-guard.v1.json'));
     const westDoor = parseObliqueModuleCatalog(json('/game-content/oblique-cell-door-west-full.v1.json'));
     const lowWestDoor = parseObliqueModuleCatalog(json('/game-content/oblique-cell-door-west-cutaway.v1.json'));
+    expect(westDoor.source).toBe('door.interior.leaf.open.blend');
+    expect(lowWestDoor.source).toBe('wall.interior.cutaway.blend');
+    expect(lowWestDoor.sourceDependencies).toEqual([]);
     for (let index = 0; index < westDoor.frames.length; index += 1) {
       expect(lowWestDoor.frames[index]!.yawDegrees).toBe(westDoor.frames[index]!.yawDegrees);
       expect(lowWestDoor.frames[index]!.elevationDegrees).toBe(westDoor.frames[index]!.elevationDegrees);
@@ -103,9 +106,11 @@ describe('oblique cell module registry', () => {
       expect(southEastCutaway.frames[index]!.sha256).not.toBe(southEastFull.frames[index]!.sha256);
     }
     const door = parseObliqueModuleCatalog(json('/game-content/oblique-cell-door-open.v1.json'));
+    expect(door.source).toBe('door.interior.leaf.open.blend');
     expect(door.sourceDependencies?.map((dependency) => dependency.source)).toEqual(['wall.interior.cutaway.blend']);
     const lowNorthDoor = parseObliqueModuleCatalog(json('/game-content/oblique-cell-door-north-cutaway.v1.json'));
-    expect(lowNorthDoor.sourceDependencies?.map((dependency) => dependency.source)).toEqual(['wall.interior.cutaway.blend']);
+    expect(lowNorthDoor.source).toBe('wall.interior.cutaway.blend');
+    expect(lowNorthDoor.sourceDependencies).toEqual([]);
     for (const frame of door.frames) {
       const lowFrame = lowNorthDoor.frames.find((candidate) => candidate.yawDegrees === frame.yawDegrees
         && candidate.elevationDegrees === frame.elevationDegrees);
