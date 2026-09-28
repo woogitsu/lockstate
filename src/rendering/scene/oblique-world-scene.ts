@@ -254,6 +254,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
       let task = this.pendingArtLoads.get(frame.image);
       if (task === undefined) {
         task = ensureObliqueModuleFrameTexture(this, catalog, this.pose)
+          .then(() => undefined)
           .finally(() => { this.pendingArtLoads.delete(frame.image); });
         this.pendingArtLoads.set(frame.image, task);
       }
