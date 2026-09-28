@@ -84,6 +84,14 @@ export interface LockstateActorMotionHarness {
   publicationCount(): number;
   /** Every actor sprite currently on the display list, in the order Phaser holds them. */
   actorSprites(): readonly SpritePosition[];
+  /** Actual Phaser image geometry and camera projection for one drawn actor. */
+  actorFootAtZoom(zoom: number): {
+    readonly world: { readonly x: number; readonly y: number };
+    readonly origin: { readonly x: number; readonly y: number };
+    readonly frame: { readonly width: number; readonly height: number };
+    readonly screenFoot: { readonly x: number; readonly y: number };
+    readonly projectedWorld: { readonly x: number; readonly y: number };
+  } | undefined;
   /**
    * Every currently-drawn sprite whose texture key names this logical asset
    * id -- the generic form `actorSprites()` cannot be, since that reads the

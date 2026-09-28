@@ -95,3 +95,29 @@ test.describe('the renderer draws a guard', () => {
     expect(prisonerSprites[0]).toMatchObject({ x: expect.any(Number), y: expect.any(Number) });
   });
 });
+
+test('the authored prisoner foot stays on its world point at near and far zoom (#32)', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto(HARNESS);
+  await page.evaluate(async () => window.lockstateActorMotionHarness!.ready);
+  await page.evaluate(() => window.lockstateActorMotionHarness!.publishActor(1, { x: 6, y: 6 }, { x: 0, y: 0 }));
+  await page.waitForFunction(() => window.lockstateActorMotionHarness!.actorSprites().length === 1);
+
+  for (const zoom of [0.5, 4]) {
+    await page.evaluate((level) => window.lockstateActorMotionHarness!.actorFootAtZoom(level), zoom);
+    const before = await page.evaluate(() => window.lockstateActorMotionHarness!.framesDrawn());
+    await page.waitForFunction((frame) => window.lockstateActorMotionHarness!.framesDrawn() >= frame + 2, before);
+    const actor = await page.evaluate((level) => window.lockstateActorMotionHarness!.actorFootAtZoom(level), zoom);
+    expect(actor).toBeDefined();
+    expect(actor!.frame).toEqual({ width: 256, height: 384 });
+    expect(actor!.origin.x).toBeCloseTo(128 / 256, 6);
+    expect(actor!.origin.y).toBeCloseTo(352 / 384, 6);
+    expect(actor!.world.x).toBe(6.5 * 64);
+    expect(actor!.world.y).toBe(6.5 * 64);
+    expect(actor!.projectedWorld.x).toBeCloseTo(actor!.world.x, 4);
+    expect(actor!.projectedWorld.y).toBeCloseTo(actor!.world.y, 4);
+    if (process.env['LOCKSTATE_CAPTURE_ACTOR_ZOOM_ART'] === '1') {
+      await page.screenshot({ path: testInfo.outputPath(`actor-foot-zoom-${zoom}-1920x1080.png`) });
+    }
+  }
+});
