@@ -210,7 +210,7 @@ const REQUIRED_WIRINGS: readonly RequiredWiring[] = [
   },
 ];
 
-const source = stripComments(readFileSync(MAIN_PATH, 'utf8'));
+const source = stripComments(readFileSync(MAIN_PATH, 'utf8')).replace(/\r\n/g, '\n');
 
 describe('the composition root still connects what only it can connect', () => {
   it('reads a real composition root, so the assertions below cannot pass vacuously', () => {

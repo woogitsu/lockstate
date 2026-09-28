@@ -765,6 +765,39 @@ describe('the reader that asks the worker what the rooms are missing', () => {
     expect(channel.sent).toHaveLength(1);
   });
 
+  it('counts the unfinished 101st room and asks for its detail beyond the list window', async () => {
+    const source = registryOf(
+      ...Array.from({ length: 100 }, (_, index) => cell(10_000 + index, 0, ['sleep-surface', 'sanitation'])),
+      cell(10_100, 0, []),
+    );
+    const firstPage = projectRoomList(source);
+    expect(firstPage.rooms.rows).toHaveLength(100);
+    expect(firstPage.totals.instances).toBe(101);
+    expect(firstPage.rooms.rows.every((row) => row.requirementSummary.missingCapability === 0)).toBe(true);
+    expect(roomNeedsFromProjections(firstPage, [])).toMatchObject({
+      totalRooms: 101,
+      unfinishedRooms: 1,
+      totalNeeds: 2,
+    });
+
+    const channel = new FakeChannel();
+    let next = 0;
+    const reader = new RoomNeedsReader(channel, {
+      generateMessageId: () => `req-${String((next += 1))}`,
+      replyTimeoutMs: 1_000,
+    });
+    const pending = reader.read();
+    await settle();
+    channel.deliver(reply(channel.idOf(0), 'hud/room-list', firstPage));
+    await settle();
+    expect(channel.payloadOf(1)).toEqual({
+      projectionId: 'hud/room-detail',
+      target: { kind: 'id', id: 'room.cell:10100:0' },
+    });
+    channel.deliver(reply(channel.idOf(1), 'hud/room-detail', projectRoomDetail(source, 'room.cell:10100:0')));
+    await expect(pending).resolves.toMatchObject({ totalRooms: 101, unfinishedRooms: 1, totalNeeds: 2 });
+  });
+
   it('refuses to stack a second question on a cadence, and leaves the readout alone', async () => {
     // The counts channel publishes up to twice a second and this rides it, so
     // the answer that matters is what a *second* call does while the first is

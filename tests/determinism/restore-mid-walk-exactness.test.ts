@@ -93,8 +93,8 @@ interface Staffing {
   readonly admissionGapTicks?: number;
 }
 
-/** Six rows of six cells, for the crowded case: `cellRect`'s two rows hold only twelve. */
-const CROWDED_ROWS = [1, 5, 9, 14, 18, 22] as const;
+/** Six possible rows of six cells; 24 admissions use the first four. */
+const CROWDED_ROWS = [1, 6, 11, 16, 21, 26] as const;
 
 function crowdedCellRect(index: number) {
   return { x: 1 + (index % 6) * 3, y: CROWDED_ROWS[Math.floor(index / 6)]!, width: 2, height: 3 };
@@ -434,10 +434,13 @@ describe('a save written before the walk was saved (#1373 compatibility)', () =>
 });
 
 /**
- * **A KNOWN DIVERGENCE, PINNED SO IT CANNOT BE FORGOTTEN OR SILENTLY FIXED.**
- * This case asserts that the save *does not* restore to the same prison, and
- * it is written to go red the day that stops being true. The case that goes
- * red then should be inverted to require equality, not deleted.
+ * The old fixture pinned a known cache-warmth divergence. Its crowded cell
+ * rows were four tiles apart, putting the lower beds on the upper cells'
+ * protected exterior door approaches. The build guard now correctly refuses
+ * those 12 beds. Five-tile spacing builds the intended 24-cell prison and
+ * still defers route requests at the tick-3461 block change. In this legal
+ * geometry the saved and continuous runs agree through tick 3463, so the
+ * assertion below follows the original instruction to require equality.
  *
  * `workBudgetPerTick` (2,000 expanded nodes) binds when enough prisoners ask
  * for a route on the same tick. Here that is 24 prisoners in six rows of
@@ -447,11 +450,10 @@ describe('a save written before the walk was saved (#1373 compatibility)', () =>
  * searches the saved one had already paid for, and on a binding tick it stops
  * serving at a different request.
  *
- * Measured through a real save and restore: every save taken 1 to 40 ticks
- * before the block change served a different set by tick 3463. With 36
- * prisoners admitted 7 apart, the same happened for every save taken 1 to 600
- * ticks before tick 5801. Replaying each binding tick's pending queue warm
- * against cold, the served set differed on 13 of 331 binding ticks.
+ * The old, invalid fixture measured different served sets for saves 1 to 40
+ * ticks before the block change. That observation cannot be used as a
+ * regression baseline for a prison whose beds were refused. The general
+ * cache-warmth risk remains documented by ADR 0059.
  *
  * **Why it is pinned rather than fixed.** Charging the budget what a request
  * costs cold was built, made both cases equal, and was withdrawn by the commit after it, whose message carries the measurements:
@@ -460,8 +462,8 @@ describe('a save written before the walk was saved (#1373 compatibility)', () =>
  * accepting this is ADR 0007's owner's to make, and ADR 0059's amendment under
  * "Determinism" states it.
  */
-describe('a save taken before the navigation budget binds (#1373, KNOWN DIVERGENCE)', () => {
-  it('24 prisoners at the tick-3461 block change: a save 1 tick before it serves a different set', { timeout: 120_000 }, () => {
+describe('a save taken before the navigation budget binds (#1373)', () => {
+  it('24 prisoners at the tick-3461 block change restore exactly even with deferred routes', { timeout: 120_000 }, () => {
     const staffing: Staffing = { ...PRISONERS_ONLY, cells: 24, admissionGapTicks: 7 };
     const binds = 3_461;
     const continuous = buildPrison(staffing);
@@ -476,7 +478,6 @@ describe('a save taken before the navigation budget binds (#1373, KNOWN DIVERGEN
     expect(captured(restored), 'the restore itself is still a fixed point').toBe(captured(base));
     stepTo(restored, binds + 2);
     const differences = firstDifferences(JSON.parse(captured(continuous)), JSON.parse(captured(restored)));
-    expect(differences.length, 'the divergence this case pins has gone: invert it to require equality').toBeGreaterThan(0);
-    expect(differences[0]).toMatch(/^\.simulation\.inFlight\.navigation\.pending/);
+    expect(differences, 'a binding navigation budget must not change the saved future in this legal prison').toEqual([]);
   });
 });

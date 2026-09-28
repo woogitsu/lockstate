@@ -3,6 +3,7 @@ import {
   loadAccessibilitySettings,
   loadLanguageSettings,
   loadLayoutSettings,
+  loadInputSettings,
   loadThemeSettings,
   resolveBrowserKeyValueStore,
   saveLanguageSettings,
@@ -10,6 +11,7 @@ import {
   saveThemeSettings,
   saveAccessibilitySettings,
   subscribeToSettingsChanges,
+  KeyboardInputAdapter,
 } from './input';
 import {
   type LanguagePreference,
@@ -34,10 +36,22 @@ import { DemoActorFeed, isDemoActorsRequested } from './rendering/feed/demo-acto
 import { EMPTY_RENDER_FRAME, type RenderFeed } from './rendering/feed/render-feed';
 import { SimulationSnapshotFeed } from './rendering/feed/simulation-snapshot-feed';
 import { WorldScene } from './rendering/scene/world-scene';
+import { ObliqueWorldScene } from './rendering/scene/oblique-world-scene';
+import { projectedTileQuad } from './rendering/camera/oblique-geometry';
+import { fetchObliqueModuleSet } from './rendering/assets/oblique-module-registry';
+import { CameraPoseInputAdapter, type CameraPoseAction } from './input/camera-pose-input';
+import { createObliqueMinimapReader } from './ui/oblique-minimap-reader';
 import { VOID_COLOR } from './rendering/world/appearance';
 import { applyAccessibilitySettings, createDisplayScaleControl } from './ui/display-scale';
 import { createThemeControl, createThemeController, resolveSystemThemeQuery } from './ui/theme';
 import { SavePanel } from './ui/save-panel';
+import { createSimulationRoomTemplatePreflight, createSimulationRoomTemplateQuote } from './ui/simulation-room-template-port';
+import { createObliqueTemplateGhost, type ObliqueTemplateGhostView } from './ui/hud/oblique-template-ghost';
+import { buildCatalogueRowLabel } from './ui/hud/build-panel';
+import { wallDragCatalogueValue, wallDragPreviewTiles, type WallPreviewTile } from './ui/hud/oblique-wall-drag-preview';
+import type { RoomTemplateTool, RoomTemplatePreflight, RoomTemplateCostQuote } from './ui/room-template-tool';
+import type { RoomTemplatePlan } from './content/room-template-catalog';
+import { placeObliqueTemplateIfCurrent } from './ui/oblique-template-placement';
 import { ManageSavesPanel } from './ui/account/manage-saves-panel';
 import {
   EMPTY_HUD_VIEW_MODEL,
@@ -384,6 +398,144 @@ const roomTool = commandSender === undefined ? undefined : new RoomTool();
  * of the two tools a row arms is decided in the `arm-build-tool` branch below.
  */
 const objectTool = commandSender === undefined ? undefined : new ObjectTool();
+const roomTemplatePreflight = simulation === undefined || commandSender === undefined
+  ? undefined
+  : createSimulationRoomTemplatePreflight(simulation);
+
+const obliquePreviewRequested = new URL(window.location.href).searchParams.get('oblique-preview') === '1';
+let obliqueCameraScene: ObliqueWorldScene | undefined;
+let cameraHud: HudHandle | undefined;
+let cameraInput: CameraPoseInputAdapter | undefined;
+const readObliqueMinimap = createObliqueMinimapReader(renderFeed);
+let obliqueTemplateTool: RoomTemplateTool | undefined;
+let obliqueTemplateGhost: ObliqueTemplateGhostView | undefined;
+let obliqueTemplateHover: { readonly x: number; readonly y: number } | undefined;
+let obliqueSquareGhost: SVGSVGElement | undefined;
+let obliqueSquareGhostRoot: HTMLDivElement | undefined;
+let obliqueSquareGhostNotice: HTMLDivElement | undefined;
+let obliqueBuildCatalogue: HudBuildViewModel | undefined;
+let obliqueWallDragTiles: readonly WallPreviewTile[] | undefined;
+let obliqueTemplatePlan: RoomTemplatePlan | undefined;
+let obliqueTemplateVerdict: RoomTemplatePreflight | undefined;
+let obliqueTemplateQuote: RoomTemplateCostQuote | undefined;
+let obliqueTemplateRevision = 0;
+const templateQuoteReader = simulation === undefined ? undefined : createSimulationRoomTemplateQuote(simulation);
+const paintObliqueSquareGhost = (): void => {
+  const ghost = obliqueSquareGhost;
+  if (ghost === undefined) return;
+  const tile = obliqueTemplateHover;
+  const wallArmed = buildTool?.isArmed() === true && buildTool.squareFootprint();
+  const objectFootprint = objectTool?.isArmed() === true && !objectTool.isRemoving() ? objectTool.footprint() : undefined;
+  if ((!wallArmed && objectFootprint === undefined) || tile === undefined || obliqueCameraScene === undefined) {
+    if (obliqueSquareGhostRoot !== undefined) obliqueSquareGhostRoot.hidden = true;
+    ghost.replaceChildren();
+    buildTool?.targetSquares(undefined);
+    objectTool?.target(undefined);
+    return;
+  }
+  const pose = obliqueCameraScene.cameraPose;
+  ghost.setAttribute('viewBox', `0 0 ${pose.viewport.width} ${pose.viewport.height}`);
+  const width = objectFootprint?.width ?? 1;
+  const height = objectFootprint?.height ?? 1;
+  const polygons: SVGPolygonElement[] = [];
+  const squares = wallArmed
+    ? (obliqueWallDragTiles ?? [tile])
+    : wallDragPreviewTiles(tile, { x: tile.x + width - 1, y: tile.y + height - 1 });
+  for (const { x, y } of squares) {
+    const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+    polygon.setAttribute('points', projectedTileQuad(x, y, pose).map((point) => `${point.x},${point.y}`).join(' '));
+    polygon.setAttribute('data-tile-x', String(x));
+    polygon.setAttribute('data-tile-y', String(y));
+    polygons.push(polygon);
+  }
+  ghost.replaceChildren(...polygons);
+  if (obliqueSquareGhostRoot !== undefined) obliqueSquareGhostRoot.hidden = false;
+  const selectedId = wallArmed ? buildTool?.selectedDefinitionId : objectTool?.selectedDefinitionId;
+  const buildable = obliqueBuildCatalogue?.buildables.find(({ definitionId }) => definitionId === selectedId);
+  if (obliqueSquareGhostNotice !== undefined && buildable !== undefined) {
+    const unitLabel = buildCatalogueRowLabel(
+      (key, args) => localizer.format(key, args),
+      buildable,
+      buildable.placementCostMinorUnits === undefined ? undefined : localizer.formatNumber(buildable.placementCostMinorUnits),
+    );
+    const total = wallArmed && obliqueWallDragTiles !== undefined
+      ? wallDragCatalogueValue(buildable.placementCostMinorUnits, squares.length)
+      : undefined;
+    const label = total === undefined ? unitLabel : localizer.format(HUD_MESSAGE_KEY.templateCatalogueValue, { total: localizer.formatNumber(total) });
+    if (obliqueSquareGhostNotice.textContent !== label) obliqueSquareGhostNotice.textContent = label;
+  }
+  if (wallArmed) buildTool?.targetSquares(squares);
+  else objectTool?.target({ tileX: tile.x, tileY: tile.y, width, height });
+};
+const paintObliqueTemplateGhost = (): void => {
+  if (obliqueTemplateTool?.isArmed() && obliqueTemplatePlan !== undefined && obliqueCameraScene !== undefined) {
+    const pose = obliqueCameraScene.cameraPose;
+    obliqueTemplateGhost?.update(obliqueTemplatePlan, {
+      viewport: pose.viewport,
+      tileQuad: (x, y) => projectedTileQuad(x, y, pose),
+    }, obliqueTemplateVerdict, obliqueTemplateQuote);
+  } else obliqueTemplateGhost?.clear();
+};
+const obliqueTemplateOriginAt = (tile: { readonly x: number; readonly y: number }, tool: RoomTemplateTool): { x: number; y: number } => {
+  const plan = tool.planAt({ x: 0, y: 0 });
+  return { x: tile.x - Math.floor(plan.width / 2), y: tile.y - Math.floor(plan.height / 2) };
+};
+const refreshObliqueTemplateGhost = (): void => {
+  const revision = ++obliqueTemplateRevision;
+  const tool = obliqueTemplateTool;
+  const tile = obliqueTemplateHover;
+  if (tool === undefined || !tool.isArmed() || tile === undefined) {
+    obliqueTemplatePlan = undefined;
+    obliqueTemplateVerdict = undefined;
+    obliqueTemplateQuote = undefined;
+    paintObliqueTemplateGhost();
+    refreshCameraControls();
+    return;
+  }
+  const origin = obliqueTemplateOriginAt(tile, tool);
+  obliqueTemplatePlan = tool.planAt(origin);
+  obliqueTemplateVerdict = undefined;
+  obliqueTemplateQuote = undefined;
+  paintObliqueTemplateGhost();
+  refreshCameraControls();
+  void tool.inspectAt(origin).then(({ verdict }) => {
+    if (revision !== obliqueTemplateRevision) return;
+    obliqueTemplateVerdict = verdict;
+    paintObliqueTemplateGhost();
+  }).catch(() => { if (revision === obliqueTemplateRevision) obliqueTemplateGhost?.clear(); });
+  void templateQuoteReader?.(tool.selectedTemplateId()).then((quote) => {
+    if (revision !== obliqueTemplateRevision) return;
+    obliqueTemplateQuote = quote;
+    paintObliqueTemplateGhost();
+  }).catch(() => { /* The footprint remains useful without a catalogue quote. */ });
+};
+const cameraPlacementActive = (): boolean =>
+  (buildTool?.isArmed() ?? false) || (roomTool?.isArmed() ?? false) || (objectTool?.isArmed() ?? false) || (obliqueTemplateTool?.isArmed() ?? false);
+const cameraContexts = () => {
+  if (document.querySelector('dialog[open], [role="dialog"][aria-modal="true"]')) return ['modal'] as const;
+  if (document.activeElement?.matches('input, textarea, select, [contenteditable="true"]')) return ['text-entry'] as const;
+  return ['world'] as const;
+};
+const refreshCameraControls = (): void => {
+  cameraHud?.setCameraPoseAvailable(cameraInput?.canActivate() ?? false);
+  obliqueCameraScene?.setGroundGridEmphasis(cameraPlacementActive());
+};
+const activateCameraPose = (action: CameraPoseAction): void => {
+  cameraInput?.activate(action);
+  refreshCameraControls();
+};
+if (obliquePreviewRequested) {
+  window.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && cameraContexts()[0] === 'world' && cameraPlacementActive()) {
+      buildTool?.standDown();
+      event.preventDefault();
+      return;
+    }
+    if (cameraInput?.keyDown(event)) event.preventDefault();
+  });
+  document.addEventListener('focusin', refreshCameraControls);
+  document.addEventListener('focusout', () => queueMicrotask(refreshCameraControls));
+}
 
 /**
  * The footprint of the object a buildable places, in tiles, or `undefined` for
@@ -693,12 +845,147 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
   },
   render: {
     antialias: true,
+    // Oblique displays a precomposed viewport image; canvas MSAA adds a full-screen resolve.
+    // Keep LINEAR texture filtering for the authored art, and preserve top-down canvas MSAA.
+    antialiasGL: !obliquePreviewRequested,
     roundPixels: false,
     pixelArt: false,
   },
 };
 
-new Phaser.Game(gameConfig);
+const game = new Phaser.Game(gameConfig);
+
+// The angled renderer first runs against the same live RenderFeed as the
+// standard scene behind an explicit preview URL. Full-square wall and object
+// presses plus room plans share the live worker command port; other gestures
+// remain on WorldScene until their projected targets are represented.
+if (obliquePreviewRequested) {
+  game.events.once(Phaser.Core.Events.READY, () => {
+    void fetchObliqueModuleSet().then((artCatalogs) => {
+      const obliqueScene = new ObliqueWorldScene({
+        feed: renderFeed,
+        artCatalogs,
+        onPoseChanged: (pose) => {
+          cameraHud?.updateCameraPose(pose);
+          cameraHud?.updateMinimap(readObliqueMinimap(pose));
+          refreshCameraControls();
+          paintObliqueTemplateGhost();
+          paintObliqueSquareGhost();
+        },
+        canRotate: () => cameraInput?.canActivate() ?? false,
+        onGroundHover: (tile) => {
+          obliqueTemplateHover = tile === undefined ? undefined : { x: tile.tileX, y: tile.tileY };
+          refreshObliqueTemplateGhost();
+          paintObliqueSquareGhost();
+        },
+        onTileGesturePreview: (start, end) => {
+          obliqueWallDragTiles = start !== undefined && buildTool?.isArmed() && buildTool.squareFootprint()
+            ? wallDragPreviewTiles(start, end ?? start)
+            : undefined;
+          paintObliqueSquareGhost();
+        },
+        onTileGesture: (tiles, edge) => {
+          const first = tiles[0];
+          if (first === undefined) return;
+          const { x: tileX, y: tileY } = first;
+          if (buildTool?.isArmed() && buildTool.squareFootprint()) {
+            buildTool.placeSquares(tiles);
+            return;
+          }
+          if (tiles.length !== 1) return;
+          if (objectTool?.isArmed() && objectTool.isRemoving()) {
+            objectTool.place({ tileX, tileY, edge });
+            return;
+          }
+          if (objectTool?.isArmed() && !objectTool.isRemoving()) {
+            if (obliqueTemplateHover?.x !== tileX || obliqueTemplateHover.y !== tileY) return;
+            objectTool.place({ tileX, tileY });
+            return;
+          }
+          const tile = obliqueTemplateHover;
+          const tool = obliqueTemplateTool;
+          if (tool === undefined || !tool.isArmed() || tile?.x !== tileX || tile.y !== tileY || obliqueTemplateVerdict?.ok !== true) return;
+          const placementRevision = ++obliqueTemplateRevision;
+          obliqueTemplateVerdict = undefined;
+          paintObliqueTemplateGhost();
+          void placeObliqueTemplateIfCurrent(tool, obliqueTemplateOriginAt(tile, tool),
+            () => placementRevision === obliqueTemplateRevision && tool.isArmed(),
+          ).then(() => {
+            if (placementRevision === obliqueTemplateRevision) refreshObliqueTemplateGhost();
+          }).catch(() => {
+            if (placementRevision === obliqueTemplateRevision) refreshObliqueTemplateGhost();
+          });
+        },
+      });
+      game.scene.add('oblique-world', obliqueScene, false);
+      obliqueScene.events.once(Phaser.Scenes.Events.CREATE, () => {
+        obliqueCameraScene = obliqueScene;
+        const panBindings = loadInputSettings(resolveBrowserKeyValueStore()).keyboardBindings;
+        const panKeyboard = new KeyboardInputAdapter(panBindings, cameraContexts);
+        const panCodes = new Set(panBindings.filter((binding) => binding.action === 'camera.up'
+          || binding.action === 'camera.down' || binding.action === 'camera.left' || binding.action === 'camera.right')
+          .map((binding) => binding.code));
+        window.addEventListener('keydown', (event) => {
+          if (cameraContexts()[0] !== 'world' || event.ctrlKey || event.altKey || event.metaKey) return;
+          panKeyboard.keyDown(event);
+          if (panCodes.has(event.code)) event.preventDefault();
+        });
+        window.addEventListener('keyup', (event) => { panKeyboard.keyUp(event); });
+        window.addEventListener('blur', () => { panKeyboard.releaseAll(); });
+        let previousFrame = performance.now();
+        const stepPan = (now: number): void => {
+          const elapsed = Math.min(50, now - previousFrame);
+          previousFrame = now;
+          const horizontal = Number(panKeyboard.isActive('camera.right')) - Number(panKeyboard.isActive('camera.left'));
+          const vertical = Number(panKeyboard.isActive('camera.down')) - Number(panKeyboard.isActive('camera.up'));
+          if (horizontal !== 0 || vertical !== 0) obliqueScene.stepCameraPan(horizontal * elapsed * 0.6, vertical * elapsed * 0.6);
+          requestAnimationFrame(stepPan);
+        };
+        requestAnimationFrame(stepPan);
+        let middlePan: { readonly pointerId: number; readonly x: number; readonly y: number } | undefined;
+        window.addEventListener('blur', () => { middlePan = undefined; });
+        game.canvas.addEventListener('auxclick', (event) => { if (event.button === 1) event.preventDefault(); });
+        game.canvas.addEventListener('pointerdown', (event) => {
+          if (event.button !== 1) return;
+          event.preventDefault();
+          middlePan = { pointerId: event.pointerId, x: event.clientX, y: event.clientY };
+          game.canvas.setPointerCapture(event.pointerId);
+        });
+        game.canvas.addEventListener('pointermove', (event) => {
+          if (middlePan?.pointerId !== event.pointerId) return;
+          const bounds = game.canvas.getBoundingClientRect();
+          obliqueScene.stepCameraPan(
+            -(event.clientX - middlePan.x) * game.canvas.width / bounds.width,
+            -(event.clientY - middlePan.y) * game.canvas.height / bounds.height,
+          );
+          middlePan = { pointerId: event.pointerId, x: event.clientX, y: event.clientY };
+        });
+        const endMiddlePan = (event: PointerEvent): void => {
+          if (middlePan?.pointerId === event.pointerId) middlePan = undefined;
+        };
+        game.canvas.addEventListener('pointerup', endMiddlePan);
+        game.canvas.addEventListener('pointercancel', endMiddlePan);
+        game.canvas.addEventListener('wheel', (event) => {
+          if (event.ctrlKey || event.altKey || event.metaKey || event.shiftKey || event.deltaY === 0) return;
+          event.preventDefault();
+          const bounds = game.canvas.getBoundingClientRect();
+          obliqueScene.stepCameraZoom(event.deltaY < 0 ? 'in' : 'out', {
+            x: (event.clientX - bounds.left) * game.canvas.width / bounds.width,
+            y: (event.clientY - bounds.top) * game.canvas.height / bounds.height,
+          });
+        }, { passive: false });
+        cameraInput = new CameraPoseInputAdapter(obliqueScene, cameraContexts, cameraPlacementActive);
+        cameraHud?.updateCameraPose(obliqueScene.cameraPose);
+        refreshCameraControls();
+        game.scene.stop('WorldScene');
+        document.body.dataset.obliquePreview = 'ready';
+      });
+      game.scene.start('oblique-world');
+    }).catch((error: unknown) => {
+      console.warn('Angled camera preview unavailable; the standard world remains active.', error);
+    });
+  });
+}
 
 /**
  * `?actors=demo` puts scripted actors on screen.
@@ -2604,8 +2891,16 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
    */
   const layoutStore = resolveBrowserKeyValueStore();
 
+  const initialBuildCatalogue = buildCatalogue();
+  obliqueBuildCatalogue = initialBuildCatalogue;
   hud = mountHud(app, {
     localizer,
+    ...(obliquePreviewRequested ? {
+      cameraPose: { yawRadians: -Math.PI / 4, elevationRadians: Math.PI / 4 },
+      onCameraPoseAction: activateCameraPose,
+    } : {}),
+    ...(roomTemplatePreflight === undefined ? {} : { roomTemplatePreflight }),
+    ...(simulation === undefined ? {} : { roomTemplateQuote: createSimulationRoomTemplateQuote(simulation) }),
     layout: loadLayoutSettings(layoutStore),
     // Persisted first and painted second, exactly as the interface scale is:
     // `saveLayoutSettings` swallows a refusal by design, so the write cannot
@@ -2629,7 +2924,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     // Spread rather than passed as `undefined`: `exactOptionalPropertyTypes`
     // is on, so an absent notice has to be an absent property.
     ...(simulationUnavailable ? { unavailable: SIMULATION_UNAVAILABLE_NOTICE } : {}),
-    build: buildCatalogue(),
+    build: initialBuildCatalogue,
     staff: staffRoster(),
     /*
      * The room catalogue, passed at mount for the reason the buildable one is:
@@ -2688,7 +2983,9 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
      * unconditionally -- it exists from the top of this module regardless of
      * whether a worker started, exactly like every other camera control.
      */
-    onMinimapNavigate: (point) => worldScene.navigateToMinimapPoint(point.fx, point.fy),
+    onMinimapNavigate: (point) => obliquePreviewRequested
+      ? obliqueCameraScene?.navigateToMinimapPoint(point.fx, point.fy) ?? false
+      : worldScene.navigateToMinimapPoint(point.fx, point.fy),
     /*
      * And the HUD's zoom pair, joined to the same camera on the same terms
      * (issue #1023). `ZOOM_BOUNDS` has allowed a fifteen-fold range since the
@@ -2703,10 +3000,29 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
      * the simulation could refuse.
      */
     onCameraZoom: (direction) => {
-      worldScene.stepCameraZoom(direction);
+      if (obliquePreviewRequested) obliqueCameraScene?.stepCameraZoom(direction);
+      else worldScene.stepCameraZoom(direction);
+    },
+    onCameraPan: (direction) => {
+      if (obliquePreviewRequested) {
+        const delta = 128;
+        obliqueCameraScene?.stepCameraPan(
+          direction === 'left' ? -delta : direction === 'right' ? delta : 0,
+          direction === 'up' ? -delta : direction === 'down' ? delta : 0,
+        );
+      } else worldScene.stepCameraPan(direction);
     },
     onIntent: (intent: HudIntent) => {
       switch (intent.kind) {
+        case 'place-room-template':
+          requireSimulation(commands).submit({
+            type: 'PlaceRoomTemplate',
+            templateId: intent.templateId,
+            origin: intent.origin,
+            ...(intent.mirrorX === undefined ? {} : { mirrorX: intent.mirrorX }),
+            ...(intent.quarterTurns === undefined ? {} : { quarterTurns: intent.quarterTurns }),
+          });
+          return;
         /*
          * Chrome -- the HUD has already applied it locally -- with one half
          * outside the HUD: which tab is showing decides whether the room
@@ -2733,6 +3049,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
          */
         case 'select-tab': {
           activeTab = intent.tab;
+          queueMicrotask(refreshCameraControls);
           if (activeTab === 'manage') void manageSavesPanel?.refresh();
           /*
            * **Asked for on arrival at every tab now, and never cleared on
@@ -2898,6 +3215,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
             // panel already has.
             tool?.setArmed(false);
             objects?.setArmed(intent.armed, { removing: true });
+            refreshCameraControls();
             return;
           }
 
@@ -2905,10 +3223,14 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           if (footprint !== undefined && intent.definitionId !== undefined) {
             tool?.setArmed(false);
             objects?.setArmed(intent.armed, { definitionId: intent.definitionId, footprint, removing: false });
+            refreshCameraControls();
+            paintObliqueSquareGhost();
             return;
           }
           objects?.setArmed(false, { removing: false });
           tool?.setArmed(intent.armed, intent.definitionId);
+          refreshCameraControls();
+          paintObliqueSquareGhost();
           return;
         }
 
@@ -2928,6 +3250,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
             ...(intent.roomId === undefined ? {} : { roomId: intent.roomId }),
             removing: intent.removing,
           });
+          refreshCameraControls();
           return;
 
         case 'set-clock':
@@ -3243,6 +3566,20 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
            * and is now one transaction.
            */
           const transactionId = `build-${crypto.randomUUID()}`;
+          if (intent.footprint === 'square') {
+            for (const square of intent.squares) {
+              sender.submit({
+                type: 'PlaceBuildOrder',
+                orderId: `order-${crypto.randomUUID()}`,
+                definitionId: intent.definitionId,
+                x: square.x,
+                y: square.y,
+                footprint: 'square',
+                transactionId,
+              });
+            }
+            return;
+          }
           for (const edge of intent.edges) {
             // A throw ends the run here rather than firing eleven more doomed
             // commands at a worker that has already said no -- and it is the
@@ -3849,8 +4186,33 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     },
     onError: (failure) => console.warn('HUD action failed', failure),
   });
+  if (obliquePreviewRequested) {
+    cameraHud = hud;
+    obliqueTemplateTool = hud.roomTemplateTool;
+    obliqueTemplateGhost = createObliqueTemplateGhost(localizer);
+    document.body.append(obliqueTemplateGhost.element);
+    obliqueSquareGhostRoot = document.createElement('div');
+    obliqueSquareGhostRoot.className = 'oblique-square-ghost';
+    obliqueSquareGhost = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    obliqueSquareGhost.classList.add('oblique-square-ghost__map');
+    obliqueSquareGhost.setAttribute('aria-hidden', 'true');
+    obliqueSquareGhostNotice = document.createElement('div');
+    obliqueSquareGhostNotice.className = 'oblique-square-ghost__notice';
+    obliqueSquareGhostNotice.setAttribute('role', 'status');
+    obliqueSquareGhostRoot.append(obliqueSquareGhost, obliqueSquareGhostNotice);
+    obliqueSquareGhostRoot.hidden = true;
+    document.body.append(obliqueSquareGhostRoot);
+    obliqueTemplateTool?.onSelectionChanged(refreshObliqueTemplateGhost);
+    if (obliqueCameraScene !== undefined) hud.updateCameraPose(obliqueCameraScene.cameraPose);
+    window.setInterval(() => {
+      if (obliqueCameraScene !== undefined) hud.updateMinimap(readObliqueMinimap(obliqueCameraScene.cameraPose));
+    }, 250);
+    refreshObliqueTemplateGhost();
+    refreshCameraControls();
+  }
   // The renderer owns the projection and camera; the HUD only paints it.
-  worldScene.setMinimapSink((view) => hud?.updateMinimap(view));
+  worldScene.setMinimapSink((view) => { if (!obliquePreviewRequested) hud?.updateMinimap(view); });
+  worldScene.setTemplateGhostPort(hud.roomTemplateTool);
 
   /*
    * The build identity, in the corner, from first paint.

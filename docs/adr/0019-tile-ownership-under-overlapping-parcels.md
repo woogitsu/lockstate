@@ -328,8 +328,8 @@ re-grepped rather than carried over.*
 > production call sites, and still these three modules — and all three line
 > numbers are history.** Opened rather than offset:
 > `src/simulation/construction/system.ts:587`,
-> `src/simulation/rooms/zoning.ts:555` and
-> `src/simulation/objects/object-placement-service.ts:526`. The declaration is
+> `src/simulation/rooms/zoning.ts:562` and
+> `src/simulation/objects/object-placement-service.ts:531`. The declaration is
 > the one anchor in this amendment that has not moved at all: `canBuildAt` is
 > still declared at `src/simulation/world/buildability.ts:16`, which is the
 > anchor issue #274's row 8 cited and got right.
@@ -361,9 +361,9 @@ owned chunk and no parcels (`src/simulation/runtime/new-session.ts:279-281`). So
 
 > **Re-verified 2026-09-15: every structural claim in that sentence still
 > holds, and every number in it has moved.** `registerParcel` is declared at
-> `src/simulation/world/sparse-world.ts:596`, its sole call in `src/` is
-> `src/simulation/world/sparse-world.ts:844`, that call is still inside
-> `fromSnapshot` (`src/simulation/world/sparse-world.ts:771`), and
+> `src/simulation/world/sparse-world.ts:619`, its sole call in `src/` is
+> `src/simulation/world/sparse-world.ts:875`, that call is still inside
+> `fromSnapshot` (`src/simulation/world/sparse-world.ts:797`), and
 > `world = new SparseWorld(32);` is at
 > `src/simulation/runtime/new-session.ts:436`, still followed immediately by the
 > one `load` and the one `setOwned` on `:437-438`. **So the reachability
@@ -421,7 +421,7 @@ edited. Recorded together so the next reader can re-run them in one pass:
 `registerParcel` has one production call site; nothing in `src/` registers a
 parcel outside a snapshot restore; `isTileOwnedBy` is the only definition of tile
 ownership and both `SparseWorld.isTileOwned` (`sparse-world.ts:585`) and
-`WorldRenderView.isTileOwned` (`src/rendering/world/world-view.ts:232`) call it;
+`WorldRenderView.isTileOwned` (`src/rendering/world/world-view.ts:237`) call it;
 and no module under `src/rendering/` implements an ownership rule of its own.
 
 > **Re-run 2026-09-15, in one pass exactly as this paragraph asks. All four
@@ -430,14 +430,14 @@ and no module under `src/rendering/` implements an ownership rule of its own.
 > imported once under `src/rendering/` at
 > `src/rendering/world/world-view.ts:6`; and no module under `src/rendering/`
 > computes ownership itself. `world-view.ts` delegates — its own comment at
-> `src/rendering/world/world-view.ts:230-231` reads *"The rule is not
+> `src/rendering/world/world-view.ts:235-236` reads *"The rule is not
 > implemented here: it is `isTileOwnedBy`, in `src/simulation/world`"* — and
-> `src/rendering/phaser/tile-layer.ts:389-392`, the only other reader, asks
+> `src/rendering/phaser/tile-layer.ts:390-393`, the only other reader, asks
 > `world.isTileOwned(...)` four times and decides nothing of its own.
 >
 > **Both anchors in the sentence have drifted and are re-aimed:**
-> `SparseWorld.isTileOwned` is at `src/simulation/world/sparse-world.ts:680` and
-> `WorldRenderView.isTileOwned` at `src/rendering/world/world-view.ts:253`. The
+> `SparseWorld.isTileOwned` is at `src/simulation/world/sparse-world.ts:703` and
+> `WorldRenderView.isTileOwned` at `src/rendering/world/world-view.ts:258`. The
 > paragraph's closing warning is unchanged and still the thing to watch: the day
 > either of the first two absences stops being true is the day this ADR's
 > reachability section has to be rewritten rather than amended. The

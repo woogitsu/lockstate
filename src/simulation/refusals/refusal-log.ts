@@ -652,6 +652,7 @@ export const ZONE_REFUSAL_REASONS: Readonly<Record<ZoneRoomRefusalReason, Refusa
   'not-enclosed': 'zone.not-enclosed',
   'out-of-bounds': 'zone.out-of-bounds',
   'overlaps-existing-room': 'zone.overlaps-existing-room',
+  'overlaps-pending-template': 'zone.overlaps-pending-template',
   'unknown-room-type': 'zone.unknown-room-type',
   'unowned-land': 'zone.unowned-land',
 };
@@ -801,6 +802,7 @@ export function zoneRefusalSupersessionKey(
     case 'out-of-bounds':
     case 'unowned-land':
     case 'overlaps-existing-room':
+    case 'overlaps-pending-template':
     case 'not-enclosed':
       return zoneAreaSupersessionKey(x, y, width, height);
     case 'below-minimum-size':

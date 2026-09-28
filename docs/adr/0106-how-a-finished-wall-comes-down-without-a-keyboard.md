@@ -105,7 +105,7 @@ each was re-found by its text on this tree rather than trusted from either.
 
 - **`Remove` does not claim the job the docblock hands it, and says so.** The
   control's own locale string, `hud.build.remove-hint`
-  (`src/content/default-locale-en.ts:2433`; the anchor read `:2429`, then `:2424`, then `:1739`, which was
+  (`src/content/default-locale-en.ts:2463`; the anchor read `:2429`, then `:2424`, then `:1739`, which was
   a *mention* of the key inside another string's docblock rather than the
   declaration, and was re-aimed onto the declaration itself on 2026-09-19 after
   #1292 grew this file, then `:2318` -- the same declaration, before the two
@@ -139,7 +139,7 @@ each was re-found by its text on this tree rather than trusted from either.
   queued."*
 - **The resolver a `Remove` press reaches is tile-and-object-shaped by
   construction, not by oversight.** `ObjectPlacementService.remove` (class at
-  `src/simulation/objects/object-placement-service.ts:455`, method at `:646`)
+  `src/simulation/objects/object-placement-service.ts:455`, `export class ObjectPlacementService`, method at `:646`)
   tries exactly two things at the pressed tile, in order: a placed object
   (`this.placedObjects.objectAt(tile)`, `:649`) and a still-building object
   order (`this.orderBuildingObjectAt(tile)`, `:716`, which matches only orders
@@ -206,7 +206,7 @@ keyboard one that reaches the whole undo stack rather than one wall.
 ### 4. Why `RemoveObject` cannot be widened cheaply, and why that reframes the cost rather than removing it
 
 `RemoveObject`'s own routing comment
-(`src/simulation/runtime/session-commands.ts:71-74`) states its scope
+(`src/simulation/runtime/session-commands.ts:78`) states its scope
 narrowly: *"the same service's other half: a placement and a removal are one
 gesture with a mode … routed side by side (ADR 0028 phase 3)."*
 `ObjectPlacementService` owns a *registry of placed objects*; it does not own

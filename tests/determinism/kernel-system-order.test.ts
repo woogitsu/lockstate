@@ -431,6 +431,7 @@ describe('kernel system ordering', () => {
       { id: 'prisoners.needs-decay', order: 60 },
       { id: 'prisoners.discharge', order: 65 },
       { id: 'construction', order: 100 },
+      { id: 'room-templates', order: 101 },
       { id: 'procurement', order: 110 },
       { id: 'economy.state-income', order: 120 },
       { id: 'economy.payroll', order: 130 },

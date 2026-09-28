@@ -61,7 +61,7 @@ and every `file:line` below resolves there unless the text says otherwise.
 > **Measured, so the size of the gap is a figure rather than an impression.**
 > Of the **22** rooted `file:line` anchors between *Decision* and the end of
 > *Consequences*, **five** still land on what their sentence names
-> (`src/rendering/world/world-view.ts:117`,
+> (`src/rendering/world/world-view.ts:121`,
 > `src/rendering/phaser/tile-layer.ts:358-366`,
 > `src/rendering/build/edge-picking.ts:26`,
 > `src/rendering/phaser/build-overlay.ts:30` and `src/ui/primitives/icon.ts:16`)
@@ -156,7 +156,7 @@ introduced.
 > (`docs/AGENT_WORKFLOW.md` §4: a correction is no more durable than the claim
 > it corrected). Read on 2026-09-15 at `origin/main` `e044a3e8`: `HudIntent` is
 > `src/ui/hud/hud.ts:365-738` and declares **twenty-two** members, still three
-> of them room-related; `HudRoomGesture` is at `src/ui/hud/hud.ts:181`
+> of them room-related; `HudRoomGesture` is at `src/ui/hud/hud.ts:186`
 > (the anchor read `:174`; both numbers are re-derived at the end of this
 > paragraph). Re-opened 2026-09-16 after this
 > branch merged `origin/main`: `HudIntent` still spans `:365-738`, still
@@ -168,7 +168,7 @@ room"* lands on a type that is about nothing else. **Re-derived whole on
 2026-09-19, because #1292 inserted a sixth tab and a `select-incident` intent
 into this file: `HudIntent` is `src/ui/hud/hud.ts:372-792` and declares
 **twenty-four** members, and `export type HudRoomGesture` is at
-`src/ui/hud/hud.ts:181`.** The twenty-two above was right for its span and its
+`src/ui/hud/hud.ts:186`.** The twenty-two above was right for its span and its
 date and is kept: two members have arrived since, `select-prisoner` on `main`
 with ADR 0115's roster split and `select-incident` with the Security section,
 and *"still three of them room-related"* is unaffected by either. **That
@@ -339,7 +339,7 @@ zone should be undoable at all is left open in §*What this does not settle*.
 **An accepted zone is visible with no renderer work at all.** The zoning plane
 is already projected, decoded and painted per tile with a per-category tint:
 `src/simulation/presentation/world-projection.ts:16,44` carries `zoning` in the
-chunk projection → `src/rendering/world/world-view.ts:117` decodes the RLE and
+chunk projection → `src/rendering/world/world-view.ts:121` decodes the RLE and
 `:180` reads it per tile → `src/rendering/phaser/tile-layer.ts:358-366` fills the
 tile with `zoningTint` (`src/rendering/world/appearance.ts:114`) at
 `ZONING_TINT_ALPHA` (`:99`). This is true of all three alternatives and is not
@@ -920,7 +920,7 @@ Left open deliberately, and none of them decided in code.
    unfixable is the part that was wrong.** `dea529c` (#337, 2026-08-26 22:01
    UTC, on `main`) narrowed removal to the instance: `collectRemovableRegion`
    (`src/simulation/rooms/zoning.ts:965`) resolves each covered tile through
-   `roomInstanceContaining` (`src/simulation/rooms/zoning.ts:968`;
+   `roomInstanceContaining` (`src/simulation/rooms/zoning.ts:975`;
    `src/simulation/objects/room-capacity.ts:90`; those three anchors read
    `:808`, `:811` and `:83`) and clears *that instance's*
    rectangle, so clipping one corner of one of two touching cells removes one

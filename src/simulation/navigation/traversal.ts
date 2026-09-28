@@ -53,6 +53,7 @@ export type EdgeStanding =
  */
 export function edgeStanding(world: SparseWorld, doors: DoorRegistry, from: TilePosition, to: TilePosition): EdgeStanding {
   const edge = resolveEdge(world, from, to);
+  if (edge.squareWall) return { kind: 'wall', wallValue: 1 };
   const door = doors.getByEdge(edge.ownerTile, edge.side);
   if (door !== undefined) return { kind: 'door', door };
   if (edge.wallValue !== 0) return { kind: 'wall', wallValue: edge.wallValue };

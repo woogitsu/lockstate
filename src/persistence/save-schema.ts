@@ -126,6 +126,7 @@ const serializedChunkStateSchema = z
     terrain: terrainRleSchema.optional(),
     topEdge: terrainRleSchema.optional(),
     leftEdge: terrainRleSchema.optional(),
+    squareStructure: z.array(z.tuple([z.number().int().min(0).max(3), z.number().int().positive()])).optional(),
     zoning: terrainRleSchema.optional(),
   })
   .strict();
@@ -184,6 +185,9 @@ const buildOrderSchema = z
      * so no migration step is needed and none is added.
      */
     edge: z.enum(['north', 'west']).optional(),
+    footprint: z.literal('square').optional(),
+    /** Additive: older build orders without this field retain orientation 0. */
+    objectOrientation: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]).optional(),
     /**
      * Where the order sits in the sequence of gestures the player made
      * ([ADR 0082](../../docs/adr/0082-what-order-build-orders-are-carried-out-in.md),
@@ -1644,11 +1648,33 @@ const contrabandSectionV7Schema = contrabandSectionSchema.extend({
     ])),
   }).strict(),
 }).strict();
+const roomTemplateRequestV7Schema = z.object({
+  templateId: z.enum(['cell-basic', 'cell-large', 'shower-room', 'canteen-basic', 'kitchen-basic', 'cell-row-four', 'infirmary-basic', 'laundry-basic', 'classroom-basic', 'common-room-basic', 'security-office-basic', 'storage-room-basic', 'staff-room-basic', 'solitary-cell-basic', 'delivery-bay-basic', 'holding-cell-basic', 'reception-basic']),
+  origin: z.object({ x: z.number().int().safe(), y: z.number().int().safe() }).strict(),
+  mirrorX: z.boolean(),
+  /** Additive V7 field. Absent on older pending gestures means unrotated. */
+  quarterTurns: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]).optional(),
+  sequence: z.number().int().nonnegative(),
+}).strict().refine((request) => (request.quarterTurns ?? 0) === 0 ||
+  request.templateId === 'canteen-basic' || request.templateId === 'cell-large' ||
+  (request.templateId === 'cell-row-four' && request.quarterTurns === 2), {
+  message: 'This saved room plan has no valid quarter-turn layout.',
+  path: ['quarterTurns'],
+});
 const sessionSystemsV7Schema = sessionSystemsV6Schema.extend({
   prisoners: prisonersSectionV7Schema,
   navigation: navigationSectionSchema.omit({ work: true }),
   security: securitySectionV7Schema,
   contraband: contrabandSectionV7Schema,
+  // Optional V7 extension: saves from before authored template gestures have
+  // no pending template to resume. The embedded version allows a future
+  // planner to migrate its own queue contract without changing that meaning.
+  roomTemplates: z.object({
+    version: z.literal(1),
+    pending: z.array(roomTemplateRequestV7Schema),
+    // Optional additive state; earlier saves had no room-plan undo metadata.
+    undone: z.array(roomTemplateRequestV7Schema).optional(),
+  }).strict().optional(),
 }).strict();
 
 // --- Envelope ---

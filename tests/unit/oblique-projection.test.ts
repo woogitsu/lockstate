@@ -4,6 +4,8 @@ import {
   screenToGround,
   visibleGroundBounds,
   changeObliquePoseAtScreenPoint,
+  zoomObliqueCameraAtScreenPoint,
+  panObliqueCameraByScreenDelta,
   obliqueFromTopDown,
   type ObliqueCameraState,
 } from '../../src/rendering/camera/oblique-projection';
@@ -43,6 +45,26 @@ describe('oblique ground-plane projection', () => {
     expect(groundAfter.y).toBeCloseTo(groundBefore.y, 9);
     expect(turned.yawRadians).toBe(Math.PI / 3);
     expect(turned.elevationRadians).toBe(Math.PI / 4);
+  });
+
+  it('keeps the exact pointed ground position under the cursor while zooming at an angle', () => {
+    const angled = { ...camera, yawRadians: Math.PI / 4, elevationRadians: Math.PI / 3 };
+    const pointer = { x: 1330, y: 710 };
+    const before = screenToGround(pointer, angled);
+    const zoomed = zoomObliqueCameraAtScreenPoint(angled, pointer, 2.5);
+    const after = screenToGround(pointer, zoomed);
+    expect(after.x).toBeCloseTo(before.x, 9);
+    expect(after.y).toBeCloseTo(before.y, 9);
+  });
+
+  it('pans along screen axes at an angle without changing zoom or orientation', () => {
+    const angled = { ...camera, yawRadians: -Math.PI / 4, elevationRadians: Math.PI / 3 };
+    const source = screenToGround({ x: 1020, y: 590 }, angled);
+    const panned = panObliqueCameraByScreenDelta(angled, 60, 50);
+    expect(groundToScreen(source, panned).x).toBeCloseTo(960, 9);
+    expect(groundToScreen(source, panned).y).toBeCloseTo(540, 9);
+    expect(panned.zoom).toBe(angled.zoom);
+    expect(panned.yawRadians).toBe(angled.yawRadians);
   });
 
   it('culls by the inverse projection of all four viewport corners', () => {
