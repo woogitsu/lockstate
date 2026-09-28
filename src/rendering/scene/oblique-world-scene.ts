@@ -29,6 +29,8 @@ function lowerTop(footprint: TileQuad, top: TileQuad, fraction: number): TileQua
 export interface ObliqueWorldSceneOptions {
   readonly feed: RenderFeed;
   readonly onTileSelected?: (tileX: number, tileY: number) => void;
+  /** A completed left-button ground gesture, reported as whole square tiles. */
+  readonly onTileGesture?: (tiles: readonly { readonly x: number; readonly y: number }[]) => void;
   readonly onGroundHover?: (tile: { readonly tileX: number; readonly tileY: number } | undefined) => void;
   /** The HUD follows every scene-side pose change, including pointer drags. */
   readonly onPoseChanged?: (pose: ObliqueCameraState) => void;
@@ -47,6 +49,8 @@ export interface ObliqueWorldSceneOptions {
 export class ObliqueWorldScene extends Phaser.Scene {
   private readonly feed: RenderFeed;
   private readonly onTileSelected: ((tileX: number, tileY: number) => void) | undefined;
+  private readonly onTileGesture: ((tiles: readonly { readonly x: number; readonly y: number }[]) => void) | undefined;
+  private leftGesture: { readonly pointerId: number; readonly x: number; readonly y: number } | undefined;
   private readonly onGroundHover: ((tile: { readonly tileX: number; readonly tileY: number } | undefined) => void) | undefined;
   private readonly onPoseChanged: ((pose: ObliqueCameraState) => void) | undefined;
   private readonly canRotate: () => boolean;
@@ -80,6 +84,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     super({ key: 'oblique-world' });
     this.feed = options.feed;
     this.onTileSelected = options.onTileSelected;
+    this.onTileGesture = options.onTileGesture;
     this.onGroundHover = options.onGroundHover;
     this.onPoseChanged = options.onPoseChanged;
     this.canRotate = options.canRotate ?? (() => true);
@@ -127,7 +132,8 @@ export class ObliqueWorldScene extends Phaser.Scene {
       const tileX = worldToTile(world.x);
       const tileY = worldToTile(world.y);
       this.selected = { tileX, tileY };
-      this.onTileSelected?.(tileX, tileY);
+      if (this.onTileGesture === undefined) this.onTileSelected?.(tileX, tileY);
+      else this.leftGesture = { pointerId: pointer.id, x: tileX, y: tileY };
       this.paintSelection();
       if (this.lastProjection !== undefined) {
         this.paintRaised(this.lastProjection);
@@ -157,8 +163,29 @@ export class ObliqueWorldScene extends Phaser.Scene {
       this.turnPointerId = undefined;
       this.turnPointerAt = undefined;
     };
-    this.input.on('pointerup', stopTurn);
-    this.input.on('pointerupoutside', stopTurn);
+    this.input.on('pointerup', (pointer: Phaser.Input.Pointer) => {
+      stopTurn(pointer);
+      const start = this.leftGesture;
+      if (start === undefined || pointer.id !== start.pointerId) return;
+      this.leftGesture = undefined;
+      const world = screenToGround({ x: pointer.x, y: pointer.y }, this.pose);
+      const endX = worldToTile(world.x);
+      const endY = worldToTile(world.y);
+      const width = Math.abs(endX - start.x) + 1;
+      const height = Math.abs(endY - start.y) + 1;
+      if (width * height > 4096) return;
+      const tiles: { x: number; y: number }[] = [];
+      for (let y = Math.min(start.y, endY); y <= Math.max(start.y, endY); y += 1) {
+        for (let x = Math.min(start.x, endX); x <= Math.max(start.x, endX); x += 1) {
+          tiles.push({ x, y });
+        }
+      }
+      this.onTileGesture?.(tiles);
+    });
+    this.input.on('pointerupoutside', (pointer: Phaser.Input.Pointer) => {
+      stopTurn(pointer);
+      if (pointer.id === this.leftGesture?.pointerId) this.leftGesture = undefined;
+    });
     this.input.on('gameout', () => {
       this.hoverPointerAt = undefined;
       this.emitGroundHover();

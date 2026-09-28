@@ -839,12 +839,15 @@ if (obliquePreviewRequested) {
           refreshObliqueTemplateGhost();
           paintObliqueSquareGhost();
         },
-        onTileSelected: (tileX, tileY) => {
+        onTileGesture: (tiles) => {
+          const first = tiles[0];
+          if (first === undefined) return;
+          const { x: tileX, y: tileY } = first;
           if (buildTool?.isArmed() && buildTool.squareFootprint()) {
-            if (obliqueTemplateHover?.x !== tileX || obliqueTemplateHover.y !== tileY) return;
-            buildTool.placeSquares([{ x: tileX, y: tileY }]);
+            buildTool.placeSquares(tiles);
             return;
           }
+          if (tiles.length !== 1) return;
           const tile = obliqueTemplateHover;
           const tool = obliqueTemplateTool;
           if (tool === undefined || !tool.isArmed() || tile?.x !== tileX || tile.y !== tileY || obliqueTemplateVerdict?.ok !== true) return;
