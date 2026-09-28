@@ -127,6 +127,15 @@ describe('Container: transactional reserve/withdraw/deposit', () => {
     expect(restored.reservedOf('item.brick')).toBe(3);
     expect(restored.quantityOf('item.wood-plank')).toBe(5);
   });
+
+  it('lets the final zero row clear an earlier saved stock and reservation for the same item', () => {
+    const container = new Container('c1');
+    container.loadSnapshot([['item.brick', 5, 2], ['item.brick', 0, 0]]);
+
+    expect(container.quantityOf('item.brick')).toBe(0);
+    expect(container.reservedOf('item.brick')).toBe(0);
+    expect(container.getSnapshot()).toEqual([]);
+  });
 });
 
 describe('ContainerRegistry', () => {
