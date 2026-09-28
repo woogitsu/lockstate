@@ -39,4 +39,17 @@ test('Full HD cancelled room plan can be placed again while paused through save 
   await restored.getByRole('spinbutton', { name: 'Plan origin X' }).fill('10');
   await restored.getByRole('spinbutton', { name: 'Plan origin Y' }).fill('10');
   await expect(restored.getByRole('status')).toContainText('clear');
+  await restored.getByRole('button', { name: 'Place room plan' }).click();
+  await expect(restored.getByRole('status')).toContainText('submitted');
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Save now' }).click();
+  await expect(page.locator('.save-panel__status')).toContainText('Saved (generation ');
+  await page.reload();
+  await page.locator('.save-panel__item button').filter({ hasText: 'Load' }).first().click();
+  await page.getByRole('button', { name: 'Build', exact: true }).click();
+  await page.getByRole('button', { name: 'Room plans', exact: true }).click();
+  const replaced = page.getByRole('dialog', { name: 'Room plans' });
+  await replaced.getByRole('spinbutton', { name: 'Plan origin X' }).fill('10');
+  await replaced.getByRole('spinbutton', { name: 'Plan origin Y' }).fill('10');
+  await expect(replaced.getByRole('status')).toContainText('blocked');
 });
