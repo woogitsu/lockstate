@@ -264,6 +264,8 @@ const constructionSnapshotSchema = z
      */
     currentTransaction: z.array(z.string()).optional(),
     currentTransactionId: z.string().optional(),
+    /** Additive history guard: older saves retain their previous restore behavior. */
+    newerActionThanTheStackTop: z.boolean().optional(),
   })
   .strict();
 

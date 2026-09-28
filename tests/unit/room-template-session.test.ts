@@ -21,6 +21,27 @@ describe('room template session command', () => {
     expect(restored.roomTemplates.snapshot().pending).toEqual([]);
   });
 
+  it('does not let Undo reach through a shell-free Yard to cancel an older wall, including after reload', () => {
+    const runtime = createNewSimulationRuntime(72);
+    runtime.kernel.submitCommand('older-wall', 0, runtime.kernel.tick, packCommand({
+      type: 'PlaceBuildOrder', orderId: 'older-wall', definitionId: 'wall-brick', x: 5, y: 5, footprint: 'square',
+      transactionId: 'older-wall-gesture',
+    }));
+    runtime.kernel.step();
+    runtime.kernel.submitCommand('yard', 1, runtime.kernel.tick, packCommand({
+      type: 'PlaceRoomTemplate', templateId: 'yard-basic', origin: { x: 10, y: 10 },
+    }));
+    runtime.kernel.step();
+    expect(runtime.prisoners.roomInstances.getById('room.yard:10:10')).toBeDefined();
+    expect(runtime.construction.undoWouldReachPastTheLatestAction).toBe(true);
+    const restored = restoreSimulationRuntime(captureSessionSnapshot(runtime)).runtime;
+    expect(restored.construction.undoWouldReachPastTheLatestAction).toBe(true);
+    restored.kernel.submitCommand('undo-after-yard', 2, restored.kernel.tick, packCommand({ type: 'Undo' }));
+    restored.kernel.step();
+    expect(restored.construction.getOrder('older-wall')?.state).not.toBe('cancelled');
+    expect(restored.prisoners.roomInstances.getById('room.yard:10:10')).toBeDefined();
+  });
+
   it('reserves the entire pending plan, including empty interior squares, through save and load', () => {
     const runtime = createNewSimulationRuntime(72);
     expect(runtime.roomTemplates.place({ templateId: 'canteen-basic', origin: { x: 10, y: 10 }, mirrorX: false, sequence: 0 }, runtime.kernel.tick)).toEqual({ ok: true });

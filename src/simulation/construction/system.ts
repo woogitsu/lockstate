@@ -37,6 +37,8 @@ export interface ConstructionSnapshot {
    * `registerTransactionOrder(id, undefined)` produces.
    */
   readonly currentTransactionId?: string;
+  /** Accepted action outside construction history after its top entry. Absent in older saves preserves prior restore behavior. */
+  readonly newerActionThanTheStackTop?: boolean;
 }
 
 /**
@@ -2192,6 +2194,7 @@ export class ConstructionSystem implements SystemRegistration {
       // emitted before this field existed.
       ...(this.currentTransaction.length === 0 ? {} : { currentTransaction: [...this.currentTransaction] }),
       ...(this.currentTransactionId === undefined ? {} : { currentTransactionId: this.currentTransactionId }),
+      ...(this.newerActionThanTheStackTop ? { newerActionThanTheStackTop: true } : {}),
     };
   }
 
@@ -2250,6 +2253,7 @@ export class ConstructionSystem implements SystemRegistration {
     // default here rather than a migration step (#108).
     this.currentTransaction = data.currentTransaction === undefined ? [] : [...data.currentTransaction];
     this.currentTransactionId = data.currentTransactionId;
+    this.newerActionThanTheStackTop = data.newerActionThanTheStackTop ?? false;
   }
 
   /**
