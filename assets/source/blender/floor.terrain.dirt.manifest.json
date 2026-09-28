@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "source": "floor.terrain.dirt.blend",
-  "sha256": "94a350625fe10e857883eb3b25fe4481a6311691af91430fa1a62889bf135c36",
+  "sha256": "8499f28817e0dae006961f2e4da635af983dff86741fd12ac285fbaec2d3a01d",
   "assetIds": [
     "floor.terrain.dirt"
   ],
@@ -13,5 +13,5 @@
     0.5,
     0.5
   ],
-  "material": "matte compacted earth"
+  "material": "matte warm compacted earth"
 }
