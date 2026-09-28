@@ -230,6 +230,19 @@ preserved. These changes are pushed on PR #1623, with exact-head CI still the
 shipping gate. Blender ground polishing and further wall modules remain on
 separate art branches; this checkpoint does not claim production release.
 
+**Art and catalogue integration checkpoint (2026-09-28):** Staff Room and
+Solitary Cell have joined the same real command, footprint, quote and Save/Load
+path as the earlier room plans. The integration branch now also includes the
+Blender ground frame reduction, textured terrain, additional wall corners and
+T junctions, north-door cutaway, and a quiet Browse grid that becomes stronger
+when any placement tool is armed. The Full HD app test places a Basic cell plan,
+shows the Build footprint and then checks three Browse camera angles; focused
+scene tests cover the completed cell and the grid contrast. These changes are
+on draft PR #1623. A placed plan remains a construction order, so its
+translucent walls are not proof that builders have completed the room. The new
+angle is still opt-in, and exact-head CI plus a fully built prison playtest are
+required before release.
+
 Keep three isolated worktrees moving in parallel: (1) Blender modules and
 consistent camera poses, (2) square-first construction and ready-made rooms,
 and (3) Full HD HUD, controls and visible template previews. The renderer

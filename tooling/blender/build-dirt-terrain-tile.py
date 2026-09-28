@@ -41,12 +41,30 @@ def main() -> None:
     noise.inputs["Roughness"].default_value = 0.58
     ramp = tree.nodes.new("ShaderNodeValToRGB")
     ramp.color_ramp.elements[0].position = 0.18
-    ramp.color_ramp.elements[0].color = (0.105, 0.070, 0.043, 1)
+    ramp.color_ramp.elements[0].color = (0.100, 0.084, 0.052, 1)
     ramp.color_ramp.elements[1].position = 0.82
-    ramp.color_ramp.elements[1].color = (0.180, 0.128, 0.083, 1)
+    ramp.color_ramp.elements[1].color = (0.172, 0.151, 0.093, 1)
+    moss_noise = tree.nodes.new("ShaderNodeTexNoise")
+    moss_noise.noise_dimensions = "2D"
+    moss_noise.inputs["Scale"].default_value = 5.0
+    moss_noise.inputs["Detail"].default_value = 2.0
+    moss_threshold = tree.nodes.new("ShaderNodeValToRGB")
+    moss_threshold.color_ramp.elements[0].position = 0.59
+    moss_threshold.color_ramp.elements[1].position = 0.74
+    moss_strength = tree.nodes.new("ShaderNodeMath")
+    moss_strength.operation = "MULTIPLY"
+    moss_strength.inputs[1].default_value = 0.35
+    mottled_soil = tree.nodes.new("ShaderNodeMixRGB")
+    mottled_soil.blend_type = "MIX"
+    mottled_soil.inputs[2].default_value = (0.080, 0.145, 0.060, 1)
     tree.links.new(position.outputs["Position"], noise.inputs["Vector"])
     tree.links.new(noise.outputs["Fac"], ramp.inputs["Fac"])
-    tree.links.new(ramp.outputs["Color"], principled.inputs["Base Color"])
+    tree.links.new(position.outputs["Position"], moss_noise.inputs["Vector"])
+    tree.links.new(moss_noise.outputs["Fac"], moss_threshold.inputs["Fac"])
+    tree.links.new(moss_threshold.outputs["Color"], moss_strength.inputs[0])
+    tree.links.new(moss_strength.outputs[0], mottled_soil.inputs[0])
+    tree.links.new(ramp.outputs["Color"], mottled_soil.inputs[1])
+    tree.links.new(mottled_soil.outputs["Color"], principled.inputs["Base Color"])
 
     collection = bpy.data.collections.new(ASSET_ID)
     scene.collection.children.link(collection)

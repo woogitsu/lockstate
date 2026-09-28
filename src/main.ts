@@ -518,6 +518,7 @@ const cameraContexts = () => {
 };
 const refreshCameraControls = (): void => {
   cameraHud?.setCameraPoseAvailable(cameraInput?.canActivate() ?? false);
+  obliqueCameraScene?.setGroundGridEmphasis(cameraPlacementActive());
 };
 const activateCameraPose = (action: CameraPoseAction): void => {
   cameraInput?.activate(action);

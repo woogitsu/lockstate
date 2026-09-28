@@ -5,13 +5,13 @@
   "sourceSha256": "cdd904daaf309c3c992047d65f1d1b79be84169daf2f6bfe01b98776e6a7526b",
   "sourceDependencies": [],
   "resolutionPx": [
-    512,
-    512
+    128,
+    128
   ],
   "nominalPixelsPerTile": 64,
   "pivotPx": [
-    256,
-    256
+    64,
+    64
   ],
   "cameraTargetTiles": [
     0.0,
@@ -54,434 +54,434 @@
     {
       "yawDegrees": -180,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-180-elev25.033b70c0d7b2.png",
-      "sha256": "033b70c0d7b23932ff49f5f9997de95bcdcbf7e8fef7c207ec53b8eb49a3c677"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-180-elev25.3d7f1fe8dab3.png",
+      "sha256": "3d7f1fe8dab3435a42b459662ac2b0db2e870d4128f2a8b2c7b71c759acb6b6d"
     },
     {
       "yawDegrees": -180,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-180-elev45.cfed8fc6206b.png",
-      "sha256": "cfed8fc6206b1409f60e7164021692f5f27d2b348c9827fa565977d3b043fca3"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-180-elev45.0f6085331420.png",
+      "sha256": "0f6085331420fd32ec0b9e7f1f27fd3f69c4e389237bf3568c69ec6a75b7d1f0"
     },
     {
       "yawDegrees": -180,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-180-elev65.a19f06c683fa.png",
-      "sha256": "a19f06c683fa4d0ec58b1f64cfd2e4bc8e3f658999d2f149e1aa6b8b0b82a64f"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-180-elev65.0d08f3a46ff4.png",
+      "sha256": "0d08f3a46ff4a253edfd2313f7d99e542d244894707c8ed663621b0a946a7ed0"
     },
     {
       "yawDegrees": -165,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-165-elev25.73c3d22479cc.png",
-      "sha256": "73c3d22479ccca89e8bd2bf63652ac16f2d05745e0086a90fa1c1ab73313f2b2"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-165-elev25.e8d5dc962675.png",
+      "sha256": "e8d5dc9626751a2557c42cd50f10b1dbda42c12ec1e181c3d4524cba52df349a"
     },
     {
       "yawDegrees": -165,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-165-elev45.c68aec22d7a2.png",
-      "sha256": "c68aec22d7a226647d3f59011385421321fae31b256acc6f890c405c702fb91e"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-165-elev45.9bd99c7c15d3.png",
+      "sha256": "9bd99c7c15d3eedbde27e118206f654428a7fa7dcb7c56715aaf101e2d89acd2"
     },
     {
       "yawDegrees": -165,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-165-elev65.98a910ca5c7d.png",
-      "sha256": "98a910ca5c7d7b37bc80faac2cb20ce782bc74a825b1c975af34dee79da3f109"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-165-elev65.5f8ed6b48673.png",
+      "sha256": "5f8ed6b486739bb9eb939264a654ece12f782d29c437f33c43235a1bd240ab33"
     },
     {
       "yawDegrees": -150,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-150-elev25.d81d59bcb0c3.png",
-      "sha256": "d81d59bcb0c3424a6a080e0e80156bf49658f53f5bee9cf39bf8cc0903af40c3"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-150-elev25.65e65c5b6bbd.png",
+      "sha256": "65e65c5b6bbd215917db13135513a193160330df7b9ef83b49fec8045f33ce56"
     },
     {
       "yawDegrees": -150,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-150-elev45.e2014d0d58eb.png",
-      "sha256": "e2014d0d58ebbb0764b88cc13fbd700860faff61b8f16ef72884a75fc0006fc9"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-150-elev45.4c9dfb5a3da4.png",
+      "sha256": "4c9dfb5a3da482ba7ce0fd066c39bebace06fe752b45dde2ddc276bfd8f0f345"
     },
     {
       "yawDegrees": -150,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-150-elev65.939bc055f14b.png",
-      "sha256": "939bc055f14bbec124b2397294bfbd1669a1ff562b12affdcf0ae6198795da9a"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-150-elev65.59d6ee90679a.png",
+      "sha256": "59d6ee90679a97d28e4fafbaaa5dd96e1625d3683f3ca2eaea2a00e00066d224"
     },
     {
       "yawDegrees": -135,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-135-elev25.9fe94db1a3b0.png",
-      "sha256": "9fe94db1a3b04c2656a19900c5418974be14c65c70516f11c34f4dd266c6252f"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-135-elev25.66f4b2036fe0.png",
+      "sha256": "66f4b2036fe00d9af79c614ff13d11a4892cda37d69010a038c5a620370de545"
     },
     {
       "yawDegrees": -135,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-135-elev45.2d7fe47b6118.png",
-      "sha256": "2d7fe47b61187f5e53412b20d1aa07f74fe45fcce07e84a7ab3d14c97ec806fe"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-135-elev45.89f39879cafe.png",
+      "sha256": "89f39879cafe8e545d9ab7dad6a4847b82d87917b8baf1247c63f689efeb734a"
     },
     {
       "yawDegrees": -135,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-135-elev65.a8e387aa2431.png",
-      "sha256": "a8e387aa2431ff70fc144ae74ae374e8abc7277eb46de075c64dc2c4a1ada6f2"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-135-elev65.252751313f9c.png",
+      "sha256": "252751313f9c003f6328ce66b50528a9544a28be9487228e4f9e9a47cdd7ffbb"
     },
     {
       "yawDegrees": -120,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-120-elev25.c978fdbd97ac.png",
-      "sha256": "c978fdbd97acf6b3a99841b73278a59179f03d8355f0deb42407686f82c87bc1"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-120-elev25.29b61b92c301.png",
+      "sha256": "29b61b92c301b1403d3e6a183cfb82c52c2bbe8a0c8e24e086139a2df7a3e232"
     },
     {
       "yawDegrees": -120,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-120-elev45.d9fa08c06e39.png",
-      "sha256": "d9fa08c06e3921b60d488f1530528dcf151e5e20e9d1e6da73c6c89ddfd0f57d"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-120-elev45.1199856fdc00.png",
+      "sha256": "1199856fdc0009ee121782b4428bd1bb68f9a0c8f7275855c3492d456b78ca46"
     },
     {
       "yawDegrees": -120,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-120-elev65.74197295b719.png",
-      "sha256": "74197295b719d9af05d31f700c8a1bbddb0af96b01e8118a0b1b6c682854dad8"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-120-elev65.f14b054daaf3.png",
+      "sha256": "f14b054daaf3e7b7ecef5ae4ee6f6c195944dd405efcd6b5afd60edde194ffaa"
     },
     {
       "yawDegrees": -105,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-105-elev25.cd2a1b379da2.png",
-      "sha256": "cd2a1b379da2e2999ea8a7d5407d4f5afbc41db26aa97ac068940137b683b12e"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-105-elev25.c1f44b0975f0.png",
+      "sha256": "c1f44b0975f09f1b77d0a8f2cd216f86c83f29cf692a445e2cb877343965fc63"
     },
     {
       "yawDegrees": -105,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-105-elev45.e0fb1064e05c.png",
-      "sha256": "e0fb1064e05c0a6f749ac8afa52c4d6608c543d686c7ef2aca3d4c335fd69e7c"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-105-elev45.014283e0d798.png",
+      "sha256": "014283e0d79892869ca579d67ec1ba23b3b19458586b2b97d1587bdd9db8a61f"
     },
     {
       "yawDegrees": -105,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-105-elev65.3316e8c942d5.png",
-      "sha256": "3316e8c942d5245edb9bc85c494ed93023a1382bdec33aa65e2be5768ada8284"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-105-elev65.9a601d9ee284.png",
+      "sha256": "9a601d9ee2849f92b28d1f0ed279f59303c8fc7a7d32d2eeb8d26e52d97cf8e4"
     },
     {
       "yawDegrees": -90,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-90-elev25.b73df0f07f65.png",
-      "sha256": "b73df0f07f65a644fad486c1e4a82c6a2b57e16657212299f8dde06e0b64b34a"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-90-elev25.2803c98ba0fa.png",
+      "sha256": "2803c98ba0fae9cf829c24f4c025205850663a3e9cf60a08cc52d2ae2ad01b12"
     },
     {
       "yawDegrees": -90,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-90-elev45.5077226f4908.png",
-      "sha256": "5077226f4908d5ec57da371cb7606391abb6c68e6407162386bbbb41be706e71"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-90-elev45.2b8ba36cb43a.png",
+      "sha256": "2b8ba36cb43af84311f14c4e2ede76b3ea35cec621eb745c5fa04d9eb85c4bf1"
     },
     {
       "yawDegrees": -90,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-90-elev65.184683ecf52f.png",
-      "sha256": "184683ecf52f630be85dad660c00313b994947150321a3fab9906912c5615b63"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-90-elev65.ed6e94a202a4.png",
+      "sha256": "ed6e94a202a44f1acc55bb812d535d4a600aea2035bb2bb9fdd7790a09e0c523"
     },
     {
       "yawDegrees": -75,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-75-elev25.46662cb5eb38.png",
-      "sha256": "46662cb5eb3821d55f68ba3c8091836c0b61a54fce3ecfb8b104a154d4193947"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-75-elev25.d8729c32689c.png",
+      "sha256": "d8729c32689c90b1c444c83844f3990597658b146a309b097a8910c238f4f20e"
     },
     {
       "yawDegrees": -75,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-75-elev45.a173ab47a2d4.png",
-      "sha256": "a173ab47a2d495befaf5cc0ececd6ec278f768750874c311e7ecc09b60861b0f"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-75-elev45.548fcb05b95a.png",
+      "sha256": "548fcb05b95af61e0f6f9c3a8946b6787c726dff5f9e8d951c45faadce3dee5f"
     },
     {
       "yawDegrees": -75,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-75-elev65.2428529cc93e.png",
-      "sha256": "2428529cc93e8121608938cb470c260c48c3ebaeee2de7058ca415fa69e9f4fc"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-75-elev65.bf9a734c7ea1.png",
+      "sha256": "bf9a734c7ea17399bffca0595931de922469a54366e197bcc86e87029aa2094c"
     },
     {
       "yawDegrees": -60,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-60-elev25.3435ed878e74.png",
-      "sha256": "3435ed878e74d0906156b13222dd1619bd491d90ab45ab8e6bc111daf0b05294"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-60-elev25.47f8639179b4.png",
+      "sha256": "47f8639179b40d69ee9718949b4fdfc1bb0682e0e48f63f5287a7f2699577dde"
     },
     {
       "yawDegrees": -60,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-60-elev45.7e23f3f0d6c2.png",
-      "sha256": "7e23f3f0d6c22e6153e1b41917bd9435c3be33fe44529f0ac3969199b7950877"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-60-elev45.09e5a0df41cd.png",
+      "sha256": "09e5a0df41cda7916693ed418e835e14728e3162642beeeaf521404704110657"
     },
     {
       "yawDegrees": -60,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-60-elev65.314d35b71b3c.png",
-      "sha256": "314d35b71b3c6faa4f4d38cd973eb635afd2450ed9535a12d74294b5799a96cc"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-60-elev65.4b6b9f63320a.png",
+      "sha256": "4b6b9f63320ac3e2aeae3dd3937ea7cce94f8ff63b98c2ae8bba9f0d958224d1"
     },
     {
       "yawDegrees": -45,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-45-elev25.9dc413b3acf8.png",
-      "sha256": "9dc413b3acf82142179016b48dbca835ef35f012cec652033499ceaf541b9934"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-45-elev25.7fb317d85578.png",
+      "sha256": "7fb317d8557830270dd12c3ebf02bee4514c1a4eb735341bca905df4be25a763"
     },
     {
       "yawDegrees": -45,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-45-elev45.544cf9e7903b.png",
-      "sha256": "544cf9e7903b4ed343cd7cde54c72bcbc13fc2800f78d6c7b9c411ce9c20ee92"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-45-elev45.c07bdc4b76ab.png",
+      "sha256": "c07bdc4b76ab6476561be6eb739c5a7978342554a86b9154f8a30f908f84e449"
     },
     {
       "yawDegrees": -45,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-45-elev65.057d570581b8.png",
-      "sha256": "057d570581b8ed547097196da3fb0f3fe3955808cc31aaaf447f2511da47716d"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-45-elev65.428a5ffa95e4.png",
+      "sha256": "428a5ffa95e4db97448019b6c9de729148ddcb10fd153fc810c14ab0d69b7252"
     },
     {
       "yawDegrees": -30,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-30-elev25.bfb401dba98e.png",
-      "sha256": "bfb401dba98e27f36b0fd20cc217be983b0a10413695cad4293f7bd0cafd03b6"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-30-elev25.47382e9aa5d7.png",
+      "sha256": "47382e9aa5d74a2355f64a9d0b37c33d3752e0fb50ad4858404e2a3740cb19c5"
     },
     {
       "yawDegrees": -30,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-30-elev45.ea92dd563ddd.png",
-      "sha256": "ea92dd563ddd5caf7c3df22b080eb651f4ec92df87502a14b9eb24a109c783ad"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-30-elev45.73fdbacf8b8b.png",
+      "sha256": "73fdbacf8b8b7661b399003971706e77656a235bb6aac400c26e12cd10faa2e8"
     },
     {
       "yawDegrees": -30,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-30-elev65.e177615d7675.png",
-      "sha256": "e177615d767556c906104435198aa792b8be4f09896fef5456611644256b59af"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-30-elev65.72b53116dd97.png",
+      "sha256": "72b53116dd97b4a782a5398800a6543ed513da698cb255fde8e0b74cba261617"
     },
     {
       "yawDegrees": -15,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-15-elev25.434bb05aa2e8.png",
-      "sha256": "434bb05aa2e8572be4c2d28b1730ec83e4f122cdc85e80c3e5dd4f2f6fb2b0e3"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-15-elev25.26a037150496.png",
+      "sha256": "26a03715049661044b5f858324771b616efd7e1469fe70dc3257b716aaee69b5"
     },
     {
       "yawDegrees": -15,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-15-elev45.9a4c52b54a49.png",
-      "sha256": "9a4c52b54a4904ee65194aa73d3995f95ee5234cafb626f0e403d2250d4fe892"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-15-elev45.548d73d0fbf5.png",
+      "sha256": "548d73d0fbf5fc8ede015b1fed8599a66f73ed2b8a1290c4e1d355fc96d72e3f"
     },
     {
       "yawDegrees": -15,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-15-elev65.d4665df149d7.png",
-      "sha256": "d4665df149d775f69ab99fa27b1961bf35a07510db6faae0156dac0b45b7d9ae"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-15-elev65.9e3af80f38a1.png",
+      "sha256": "9e3af80f38a174271177af86d7b848497b3476033352973e20466cf54f4f1abe"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+00-elev25.1a105588197a.png",
-      "sha256": "1a105588197a0c7a9926492de0f2cbd0e64054c79682b4f613cc4e1336e103bb"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+00-elev25.fe6af79c5db5.png",
+      "sha256": "fe6af79c5db57d684e840b1d5a5b0ea1eee0f57216ed0341f6a823d85274d29c"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+00-elev45.405a9ec36180.png",
-      "sha256": "405a9ec361807581c886b28f89369081c8b7a70bcc7067c9b8a8bf10cf211aae"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+00-elev45.764a0888b672.png",
+      "sha256": "764a0888b67266a22fbac459761815278d0594c06450106f34e9deef22462525"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+00-elev65.088b7602b0f4.png",
-      "sha256": "088b7602b0f4a92492c6bba622e20ca840c06b8a29ed149610ee51d264ecfc9f"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+00-elev65.057d247d322d.png",
+      "sha256": "057d247d322d6705a8fe9a9c03242508bfaaccc93d225947c9f08ef8c2186e3b"
     },
     {
       "yawDegrees": 15,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+15-elev25.a5ee14477d64.png",
-      "sha256": "a5ee14477d642c65b6268c0cc6a269c2c0d0f1c876f5c03bb6f9eea7c4682886"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+15-elev25.19186989fe82.png",
+      "sha256": "19186989fe828a539d2326774a0dd80ac29ae88f6c78a48bbdf438e36c399bd6"
     },
     {
       "yawDegrees": 15,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+15-elev45.26919a165b9d.png",
-      "sha256": "26919a165b9d15bec32d905b1211217d82ea9a3f0619ff22c205b85844b0585e"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+15-elev45.73e5afcb4fdd.png",
+      "sha256": "73e5afcb4fdd839cac593a68617297ba01bc13d674cee2f7352196a4c57151c5"
     },
     {
       "yawDegrees": 15,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+15-elev65.9f25ed1646f1.png",
-      "sha256": "9f25ed1646f11051847fc095fe01e69571cb1beea1adfa4441e14887b479c077"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+15-elev65.15dbb786acc4.png",
+      "sha256": "15dbb786acc41da010cf5aeccf70504851319861b53465f44d1796d3d99d65ae"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+30-elev25.86b57cd75741.png",
-      "sha256": "86b57cd757416d082582740c6dcabbba3c6783da29deaab67b377b3d9e019122"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+30-elev25.af0bac55ff7e.png",
+      "sha256": "af0bac55ff7ea58b0bc236282c82f02db3dd6597158b22c0f0bb3bcde8977eb0"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+30-elev45.c0c549435a48.png",
-      "sha256": "c0c549435a483e0829bbfbdf392abc43c5e2f5c439af40d5c04e5e5f9ece10a1"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+30-elev45.8c65ac9341a1.png",
+      "sha256": "8c65ac9341a1533cc2d2e2f5ca07cdb7e05b0a89521af8bfc2aef79fe748b332"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+30-elev65.333ed38837c3.png",
-      "sha256": "333ed38837c3306354cc2a73630124f565fa55bacac7525031505c0524526c95"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+30-elev65.3905e2845c12.png",
+      "sha256": "3905e2845c12f492e5b824ef11b9a5fc86299c8ac6d0c9d34496600a4aa0a3cc"
     },
     {
       "yawDegrees": 45,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+45-elev25.51f09a5da024.png",
-      "sha256": "51f09a5da02464d4530dcd5a223da86f045e543b1dfe19e1e473c36a16208d03"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+45-elev25.8bc01ef8b76b.png",
+      "sha256": "8bc01ef8b76be46e49b4aa32fe58f106ea112e5e6a42a3c053a1622d8397d496"
     },
     {
       "yawDegrees": 45,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+45-elev45.922b2b576f05.png",
-      "sha256": "922b2b576f056ee490fe4394cfc476880e1b5ff92674b476df90d0c8e98ef9f9"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+45-elev45.d5d6a0b0443a.png",
+      "sha256": "d5d6a0b0443a485e94222b4c6df342c87f0ab0148d2024180b331b56682ae6bd"
     },
     {
       "yawDegrees": 45,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+45-elev65.d7f533a48c65.png",
-      "sha256": "d7f533a48c65aa85eb804db7ce8a62032938746a92f5f0aeb78f39c224d27523"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+45-elev65.223a8c3092e3.png",
+      "sha256": "223a8c3092e3adaf705c53044e6626b6450fc19ae50867c7bf252d1ccbb52796"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+60-elev25.ae4d75255b96.png",
-      "sha256": "ae4d75255b96804dfa01576a5636ad0a79890de4427ad506cdf82b5961f52edf"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+60-elev25.4dcbc65d37c9.png",
+      "sha256": "4dcbc65d37c998ee709d4186d1291b18af6a3be69e570e8fd7653a9dabc47443"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+60-elev45.241110c3f2d5.png",
-      "sha256": "241110c3f2d5b55fed95f8dc5c2778c2ebe7f72cba26d9183156f52227b8ea66"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+60-elev45.bd3dfd7fa6a1.png",
+      "sha256": "bd3dfd7fa6a160f8e00ed40f0d000ff5d80a2fbdf90768703e0271bb85d62ddb"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+60-elev65.fcec5c28734b.png",
-      "sha256": "fcec5c28734bd6a40b9159fba38c954aed7e277bc0e3c94874322c4d73b3cfa3"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+60-elev65.8f304210b7c7.png",
+      "sha256": "8f304210b7c742f974b8fe1f01b48687c40dc1469fd33dabcbd9a1fb56968634"
     },
     {
       "yawDegrees": 75,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+75-elev25.8625d870ec3d.png",
-      "sha256": "8625d870ec3d570e0542f75bfa66aeb7899d7acf67d568d6970b24407087b45d"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+75-elev25.891d8acc3a4f.png",
+      "sha256": "891d8acc3a4fde6a513b3d7610bd70e47867b2fceaacee1bd5f4bab41ecc5587"
     },
     {
       "yawDegrees": 75,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+75-elev45.a74c06b9aa39.png",
-      "sha256": "a74c06b9aa39514bb330c2c45e506bc874a5ddf44fec2d874d70c7e70d01b23e"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+75-elev45.972f1a7f1f36.png",
+      "sha256": "972f1a7f1f361451135374cc05f27d6a728a6be3813cc8da95781b72ede72b3a"
     },
     {
       "yawDegrees": 75,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+75-elev65.d7c405beb12d.png",
-      "sha256": "d7c405beb12d0e701e628717bbc8865a03ae6db221d25b5cd8ef25a731d00e28"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+75-elev65.42636273f3d1.png",
+      "sha256": "42636273f3d1980b5f0c915df7f187a922c11a43eeb2b8ec05d995c0b6e53f70"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+90-elev25.602918079b83.png",
-      "sha256": "602918079b83f57fa39d0c071386bb4c8455e2d48a7816b29229fcabc99edceb"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+90-elev25.3fff089b2d54.png",
+      "sha256": "3fff089b2d54ccf8c7c5f8312900e670b59b207c2117e31635ce5b38107996dc"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+90-elev45.6e5e00585927.png",
-      "sha256": "6e5e005859275e75f7e3e72cc5f1264fba557ad525761734b5473ecff3b5c07d"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+90-elev45.5bbd52c4c415.png",
+      "sha256": "5bbd52c4c41517f86783de9213f95a14df8c79a758c8b7a22eaad07354c96c6d"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+90-elev65.cb22a68ba3aa.png",
-      "sha256": "cb22a68ba3aa41e65a6846ab323f1da235f38dc2acf11b369c2d6b329aa44582"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+90-elev65.420e71299211.png",
+      "sha256": "420e71299211c555b5724e3a728201b1216ea6e5688611cbc8183db33c8f24fa"
     },
     {
       "yawDegrees": 105,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+105-elev25.977e0241c7e9.png",
-      "sha256": "977e0241c7e973f2661c213b36923699bd7184d47a6e955bcf8c9150bda19fb4"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+105-elev25.e6bcffacc3aa.png",
+      "sha256": "e6bcffacc3aa05df336e8c90f39f1f826e0bdd9a419291bb7fddd14aa4cb58c5"
     },
     {
       "yawDegrees": 105,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+105-elev45.8264da9dfc07.png",
-      "sha256": "8264da9dfc07afee4d185175a8e637c510de0cd1d265fdfc927731f96d36e023"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+105-elev45.e0b7171545c2.png",
+      "sha256": "e0b7171545c29679ab7074d2ed1d79830bcbcd778f0fa3379a16bb187fbdb979"
     },
     {
       "yawDegrees": 105,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+105-elev65.54c36311ddb3.png",
-      "sha256": "54c36311ddb32bdca10b48a1156330a8d90a1366656f6f2b7067a06d4e4bbf52"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+105-elev65.4b5e0e37ba1c.png",
+      "sha256": "4b5e0e37ba1cdb100f26d51e1141b5793fa1a7d14a3e24c24ae21e9ab80d13b7"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+120-elev25.8007e6d53c18.png",
-      "sha256": "8007e6d53c18b5d60c003d5208bed391ab595b8900a274f5b30020ac533fa99f"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+120-elev25.22c612a4b8a4.png",
+      "sha256": "22c612a4b8a44edbe46d5124c1fbcd8fe97427e71d599ac40b88ec589d77072c"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+120-elev45.7a90780ff85c.png",
-      "sha256": "7a90780ff85caae9e72646c0308dd714ec5904645adaf81aa370ad4e2c4afedd"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+120-elev45.c87549d69903.png",
+      "sha256": "c87549d699030149a5f84f6322b4633b7e54efd4fb34b2fd1307293a905e7614"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+120-elev65.2014948743f7.png",
-      "sha256": "2014948743f77895160a992550162d8ca9f1610e0ac002430b9e3e1301318e81"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+120-elev65.2dad77e008d9.png",
+      "sha256": "2dad77e008d94e41d1f55e653d087a8aa6713c56e48047cffe56e176bf381f97"
     },
     {
       "yawDegrees": 135,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+135-elev25.cb08f57ae8f6.png",
-      "sha256": "cb08f57ae8f6a4ea80548be002ae3f7dbdbdae2a4bac05e5e6721c10fc445083"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+135-elev25.da9c59ca7694.png",
+      "sha256": "da9c59ca76943123ba7a2d85236cbad28f1ebde214589f4573c5300082536160"
     },
     {
       "yawDegrees": 135,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+135-elev45.d059412afe23.png",
-      "sha256": "d059412afe23eb488d2b5a6e8455be343ba5460c31a89e41b7dd7702d37f0d67"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+135-elev45.73a107e67e7c.png",
+      "sha256": "73a107e67e7c5aae07c4d5613e947ed7279311f1e77f499b09b3f9debbde0e4c"
     },
     {
       "yawDegrees": 135,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+135-elev65.6a58fe68961a.png",
-      "sha256": "6a58fe68961a04f75d7bd99344f9c6db350f147e9efc97be5b14995bb66f97c2"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+135-elev65.72082a0dbf2a.png",
+      "sha256": "72082a0dbf2a918efd6c7e82a74007f36dee523a28c531468db01a3b91217313"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+150-elev25.768195ed35c4.png",
-      "sha256": "768195ed35c480fc8725ca59ab97e554f5dc3dc99bf0a96a9a426ee00e850361"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+150-elev25.87897c4a8cb2.png",
+      "sha256": "87897c4a8cb2d3db954430d9a1d20fb65bd9039a12b9bbbc05a34b59280b1eab"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+150-elev45.5285cecdc6be.png",
-      "sha256": "5285cecdc6be3a35c9662a89a90360eb97c36a08d34a8e25739b39bbb6f0ae09"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+150-elev45.a4a3dae66868.png",
+      "sha256": "a4a3dae668689a7eb11a32fc4c76eaeaf67238d3ebd4a55b1f7c6a98ae2f37d8"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+150-elev65.b3b0ef765929.png",
-      "sha256": "b3b0ef765929d45ba11ae37bbcad6c50f2e7c03ec6785d6c35ae653b9a8ae9c2"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+150-elev65.152af382fb19.png",
+      "sha256": "152af382fb19ef0b6d16b6def6fdf251f36888179d42c55901c0e337db83c538"
     },
     {
       "yawDegrees": 165,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+165-elev25.e9436cd7bf21.png",
-      "sha256": "e9436cd7bf2132a240c49839f835a2c62960b49886c36c59363ae50f1628c1e9"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+165-elev25.af81663b6b33.png",
+      "sha256": "af81663b6b334ded71cd35d82b631d76f8fcc6eec75f0e6d1b0b9fca9417bb9f"
     },
     {
       "yawDegrees": 165,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+165-elev45.5cd699b93cac.png",
-      "sha256": "5cd699b93cac96741fe80af25720211eb90b72bc5a57e03085c116321b8fef80"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+165-elev45.4b38e585a07a.png",
+      "sha256": "4b38e585a07abb5a56dc3b6543032f5d053308912679f618babbee79a3bf84d0"
     },
     {
       "yawDegrees": 165,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+165-elev65.ed23521a6db2.png",
-      "sha256": "ed23521a6db2a864ad044ec30d27f26c45f1fb324f758f77f9f5698510b6efe0"
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw+165-elev65.47dacef78cd7.png",
+      "sha256": "47dacef78cd7d3c774766d98224a567b5b2f184eb944eff8593f77ecf3cdfaa7"
     }
   ]
 }

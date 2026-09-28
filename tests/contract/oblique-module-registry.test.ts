@@ -10,12 +10,12 @@ const digest = (bytes: Buffer) => createHash('sha256').update(bytes).digest('hex
 const json = (path: string): unknown => JSON.parse(readFileSync(join(root, 'public', path.slice(1)), 'utf8')) as unknown;
 
 describe('oblique cell module registry', () => {
-  it('publishes twenty-eight logical modules with complete hashed poses and a shared ground pivot', () => {
+  it('publishes thirty-five logical modules with complete hashed poses and a shared ground pivot', () => {
     const registry = parseObliqueModuleRegistry(json('/game-content/oblique-module-registry.v1.json'));
     expect(registry.entries.map((entry) => entry.assetId)).toEqual([
       'wall.interior.module.full', 'wall.interior.module.west.full', 'wall.interior.module.cutaway',
       'wall.interior.module.west.cutaway',
-      'furniture.cell.bed.single.variants', 'door.interior.open.full',
+      'furniture.cell.bed.single.variants', 'door.interior.open.full', 'door.interior.open.cutaway',
       'door.interior.open.west.full', 'door.interior.open.west.cutaway',
       'fixture.cell.toilet_sink', 'furniture.storage.rack.wooden', 'furniture.chair.wooden',
       'floor.cell.sealed-concrete', 'floor.linoleum.institutional', 'floor.canteen.terrazzo',
@@ -27,19 +27,23 @@ describe('oblique cell module registry', () => {
       'floor.terrain.grass',
       'floor.terrain.dirt-grass.edge.north', 'floor.terrain.dirt-grass.edge.east',
       'floor.terrain.dirt-grass.edge.south', 'floor.terrain.dirt-grass.edge.west',
+      'wall.interior.corner.inner.north-east.full', 'wall.interior.corner.inner.north-east.cutaway',
+      'wall.interior.corner.inner.south-east.full', 'wall.interior.corner.inner.south-east.cutaway',
+      'wall.interior.junction.t.west.full', 'wall.interior.junction.t.west.cutaway',
     ]);
     for (const entry of registry.entries) {
       const catalog = parseObliqueModuleCatalog(json(entry.manifest));
       expect(catalog.assetId).toBe(entry.assetId);
-      expect(catalog.resolutionPx).toEqual([512, 512]);
+      const isGround = entry.assetId.startsWith('floor.');
+      expect(catalog.resolutionPx).toEqual(isGround ? [128, 128] : [512, 512]);
       expect(catalog.nominalPixelsPerTile).toBe(64);
-      expect(catalog.pivotPx).toEqual([256, 256]);
+      expect(catalog.pivotPx).toEqual(isGround ? [64, 64] : [256, 256]);
       expect(catalog.cameraTargetTiles).toEqual([0, 0, 0]);
-      expect(catalog.yawDegrees).toEqual(entry.assetId.startsWith('wall.interior.module.') || entry.assetId.startsWith('wall.interior.corner.') || entry.assetId.startsWith('floor.') || entry.assetId.startsWith('actor.') || entry.assetId.startsWith('door.interior.open.west.') || entry.assetId.startsWith('door.shower.privacy.') || entry.assetId === 'fixture.shower.head'
+      expect(catalog.yawDegrees).toEqual(entry.assetId.startsWith('wall.interior.module.') || entry.assetId.startsWith('wall.interior.corner.') || entry.assetId.startsWith('wall.interior.junction.') || entry.assetId.startsWith('floor.') || entry.assetId.startsWith('actor.') || entry.assetId === 'door.interior.open.cutaway' || entry.assetId.startsWith('door.interior.open.west.') || entry.assetId.startsWith('door.shower.privacy.') || entry.assetId === 'fixture.shower.head'
         ? Array.from({ length: 24 }, (_, index) => -180 + index * 15)
         : [-45, 0, 45]);
       expect(catalog.elevationDegrees).toEqual([25, 45, 65]);
-      expect(catalog.frames).toHaveLength(entry.assetId.startsWith('wall.interior.module.') || entry.assetId.startsWith('wall.interior.corner.') || entry.assetId.startsWith('floor.') || entry.assetId.startsWith('actor.') || entry.assetId.startsWith('door.interior.open.west.') || entry.assetId.startsWith('door.shower.privacy.') || entry.assetId === 'fixture.shower.head' ? 72 : 9);
+      expect(catalog.frames).toHaveLength(entry.assetId.startsWith('wall.interior.module.') || entry.assetId.startsWith('wall.interior.corner.') || entry.assetId.startsWith('wall.interior.junction.') || entry.assetId.startsWith('floor.') || entry.assetId.startsWith('actor.') || entry.assetId === 'door.interior.open.cutaway' || entry.assetId.startsWith('door.interior.open.west.') || entry.assetId.startsWith('door.shower.privacy.') || entry.assetId === 'fixture.shower.head' ? 72 : 9);
       expect(digest(readFileSync(join(root, 'assets/source/blender', catalog.source)))).toBe(catalog.sourceSha256);
       for (const dependency of catalog.sourceDependencies ?? []) {
         expect(digest(readFileSync(join(root, 'assets/source/blender', dependency.source)))).toBe(dependency.sha256);
@@ -47,7 +51,7 @@ describe('oblique cell module registry', () => {
       for (const frame of catalog.frames) {
         const bytes = readFileSync(join(root, 'public', frame.image.slice(1)));
         expect(bytes.subarray(0, 8).toString('hex')).toBe('89504e470d0a1a0a');
-        expect([bytes.readUInt32BE(16), bytes.readUInt32BE(20), bytes[25]]).toEqual([512, 512, 6]);
+        expect([bytes.readUInt32BE(16), bytes.readUInt32BE(20), bytes[25]]).toEqual([isGround ? 128 : 512, isGround ? 128 : 512, 6]);
         expect(digest(bytes)).toBe(frame.sha256);
         expect(frame.image).toContain(`.${frame.sha256.slice(0, 12)}.png`);
         expect(selectObliqueModuleFrame(catalog, {
@@ -74,6 +78,11 @@ describe('oblique cell module registry', () => {
     const west = parseObliqueModuleCatalog(json('/game-content/oblique-wall-west.v1.json'));
     const cutaway = parseObliqueModuleCatalog(json('/game-content/oblique-wall-cutaway.v1.json'));
     const westCutaway = parseObliqueModuleCatalog(json('/game-content/oblique-wall-west-cutaway.v1.json'));
+    const northEastFull = parseObliqueModuleCatalog(json('/game-content/oblique-wall-corner-north-east-full.v1.json'));
+    const northEastCutaway = parseObliqueModuleCatalog(json('/game-content/oblique-wall-corner-north-east-cutaway.v1.json'));
+    const northWestFull = parseObliqueModuleCatalog(json('/game-content/oblique-wall-corner-north-west-full.v1.json'));
+    const southEastFull = parseObliqueModuleCatalog(json('/game-content/oblique-wall-corner-south-east-full.v1.json'));
+    const southEastCutaway = parseObliqueModuleCatalog(json('/game-content/oblique-wall-corner-south-east-cutaway.v1.json'));
     for (let index = 0; index < full.frames.length; index += 1) {
       expect(west.frames[index]!.yawDegrees).toBe(full.frames[index]!.yawDegrees);
       expect(west.frames[index]!.elevationDegrees).toBe(full.frames[index]!.elevationDegrees);
@@ -84,9 +93,25 @@ describe('oblique cell module registry', () => {
       expect(westCutaway.frames[index]!.yawDegrees).toBe(cutaway.frames[index]!.yawDegrees);
       expect(westCutaway.frames[index]!.elevationDegrees).toBe(cutaway.frames[index]!.elevationDegrees);
       expect(westCutaway.frames[index]!.sha256).not.toBe(cutaway.frames[index]!.sha256);
+      expect(northEastFull.frames[index]!.yawDegrees).toBe(northWestFull.frames[index]!.yawDegrees);
+      expect(northEastCutaway.frames[index]!.elevationDegrees).toBe(northEastFull.frames[index]!.elevationDegrees);
+      expect(northEastFull.frames[index]!.sha256).not.toBe(northWestFull.frames[index]!.sha256);
+      expect(northEastCutaway.frames[index]!.sha256).not.toBe(northEastFull.frames[index]!.sha256);
+      expect(southEastFull.frames[index]!.yawDegrees).toBe(northEastFull.frames[index]!.yawDegrees);
+      expect(southEastCutaway.frames[index]!.elevationDegrees).toBe(southEastFull.frames[index]!.elevationDegrees);
+      expect(southEastFull.frames[index]!.sha256).not.toBe(northEastFull.frames[index]!.sha256);
+      expect(southEastCutaway.frames[index]!.sha256).not.toBe(southEastFull.frames[index]!.sha256);
     }
     const door = parseObliqueModuleCatalog(json('/game-content/oblique-cell-door-open.v1.json'));
     expect(door.sourceDependencies?.map((dependency) => dependency.source)).toEqual(['wall.interior.cutaway.blend']);
+    const lowNorthDoor = parseObliqueModuleCatalog(json('/game-content/oblique-cell-door-north-cutaway.v1.json'));
+    expect(lowNorthDoor.sourceDependencies?.map((dependency) => dependency.source)).toEqual(['wall.interior.cutaway.blend']);
+    for (const frame of door.frames) {
+      const lowFrame = lowNorthDoor.frames.find((candidate) => candidate.yawDegrees === frame.yawDegrees
+        && candidate.elevationDegrees === frame.elevationDegrees);
+      expect(lowFrame).toBeDefined();
+      expect(lowFrame!.sha256).not.toBe(frame.sha256);
+    }
   });
 
   it('rejects duplicate registry identities', () => {

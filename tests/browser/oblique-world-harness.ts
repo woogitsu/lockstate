@@ -13,18 +13,21 @@ export interface ObliqueWorldHarness {
   ready(): Promise<void>;
   setPose(yawDegrees: number, elevationDegrees: number): Promise<void>;
   pointAtTile(tileX: number, tileY: number): Point;
+  pointAtGround(tileX: number, tileY: number): Point;
   selected(): { readonly tileX: number; readonly tileY: number } | undefined;
   paintCounts(): { readonly ground: number; readonly raised: number };
   groundArtPaintCount(): number;
   artTextureKeys(): readonly string[];
   loadedArtTextureCount(): number;
   artCatalogCount(): number;
+  artErrors(): readonly string[];
   cutawayWallIds(): readonly string[];
   actorArtPosition(): Point | undefined;
   moveActorToTile(tileX: number): Promise<void>;
   cameraAngles(): { readonly yawRadians: number; readonly elevationRadians: number };
   poseChangeCount(): number;
   setRotationEnabled(enabled: boolean): void;
+  setBuildGrid(active: boolean): void;
   hovered(): { readonly tileX: number; readonly tileY: number } | undefined;
   tileAtScreen(point: Point): { readonly tileX: number; readonly tileY: number };
   cameraTargetAndZoom(): { readonly x: number; readonly y: number; readonly zoom: number };
@@ -45,6 +48,9 @@ for (let y = 0; y < 8; y += 1) {
   for (let x = 0; x < 8; x += 1) world.setTerrain(tile(x, y), 'concrete');
 }
 world.setTerrain(tile(0, 0), 'dirt');
+world.setTerrain(tile(1, 0), 'dirt');
+world.setTerrain(tile(6, 6), 'dirt');
+world.setTerrain(tile(7, 6), 'dirt');
 world.setTerrain(tile(0, 1), 'grass');
 for (let y = 2; y <= 4; y += 1) {
   for (let x = 2; x <= 4; x += 1) world.setZoning(tile(x, y), 1);
@@ -59,6 +65,10 @@ for (let y = 1; y <= 4; y += 1) {
   world.setLeftEdge(tile(1, y), 1);
   world.setLeftEdge(tile(5, y), 1);
 }
+// The existing top edge at (4,5) meets the west wall on both sides at (5,5).
+// The edge at (2,5) meets only the northern west segment at (3,4).
+world.setLeftEdge(tile(5, 5), 1);
+world.setLeftEdge(tile(3, 4), 1);
 const frame: RenderFrame = {
   revision: 1,
   world: WorldRenderView.fromSnapshot(world.snapshot()),
@@ -109,17 +119,22 @@ window.lockstateObliqueWorldHarness = {
   pointAtTile(tileX, tileY) {
     return groundToScreen({ x: (tileX + 0.5) * TILE_SIZE_PX, y: (tileY + 0.5) * TILE_SIZE_PX }, scene.cameraPose);
   },
+  pointAtGround(tileX, tileY) {
+    return groundToScreen({ x: tileX * TILE_SIZE_PX, y: tileY * TILE_SIZE_PX }, scene.cameraPose);
+  },
   selected: () => scene.selectedTile,
   paintCounts: () => scene.paintCounts,
   groundArtPaintCount: () => scene.groundArtPaintCount,
   artTextureKeys: () => scene.artTextureKeys,
   loadedArtTextureCount: () => scene.loadedArtTextureCount,
   artCatalogCount: () => artCatalogs.size,
+  artErrors: () => scene.artErrors,
   cutawayWallIds: () => scene.cutawayWallIds,
   actorArtPosition: () => scene.actorArtPosition,
   cameraAngles: () => ({ yawRadians: scene.cameraPose.yawRadians, elevationRadians: scene.cameraPose.elevationRadians }),
   poseChangeCount: () => poseChangeCount,
   setRotationEnabled(enabled) { rotationEnabled = enabled; },
+  setBuildGrid(active) { scene.setGroundGridEmphasis(active); },
   hovered: () => hovered,
   tileAtScreen(point) {
     const ground = screenToGround(point, scene.cameraPose);

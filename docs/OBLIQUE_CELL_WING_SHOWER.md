@@ -42,7 +42,7 @@ wall hides some of the shower; scene-level cutaway selection remains the
 integration owner's work. This PR supplies selectable art modules, not an
 automatic consumer in the unmerged world scene.
 
-To reproduce, serve the worktree with Vite, set the preview-origin environment variable to
+To reproduce, serve the worktree with Vite, set the LOCKSTATE_PREVIEW_ORIGIN environment variable to
 that local origin, and run `node tooling/qa-oblique-cell-wing.mjs`. Set
 `LOCKSTATE_SHOW_SHOWER=0` for the baseline images. Render the art with pinned
 Blender 5.2 using `blender -b -t 4 --python-exit-code 1 --python

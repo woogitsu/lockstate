@@ -102,7 +102,8 @@ def main() -> None:
         if asset_id == "fixture.shower.head":
             mount_shower_head(collection)
         bpy.context.view_layer.update()
-        modules.render_module(asset_id, slug, modules.CATALOG, [])
+        modules.render_module(asset_id, slug, modules.CATALOG, [],
+                              resolution_px=128 if asset_id == "floor.shower.ceramic" else 512)
         collection.hide_render = True
     registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
     ids = {asset_id for asset_id, _ in ASSETS}
