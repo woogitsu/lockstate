@@ -3,6 +3,7 @@ import {
   loadAccessibilitySettings,
   loadLanguageSettings,
   loadLayoutSettings,
+  loadInputSettings,
   loadThemeSettings,
   resolveBrowserKeyValueStore,
   saveLanguageSettings,
@@ -10,6 +11,7 @@ import {
   saveThemeSettings,
   saveAccessibilitySettings,
   subscribeToSettingsChanges,
+  KeyboardInputAdapter,
 } from './input';
 import {
   type LanguagePreference,
@@ -914,6 +916,51 @@ if (obliquePreviewRequested) {
       game.scene.add('oblique-world', obliqueScene, false);
       obliqueScene.events.once(Phaser.Scenes.Events.CREATE, () => {
         obliqueCameraScene = obliqueScene;
+        const panBindings = loadInputSettings(resolveBrowserKeyValueStore()).keyboardBindings;
+        const panKeyboard = new KeyboardInputAdapter(panBindings, cameraContexts);
+        const panCodes = new Set(panBindings.filter((binding) => binding.action === 'camera.up'
+          || binding.action === 'camera.down' || binding.action === 'camera.left' || binding.action === 'camera.right')
+          .map((binding) => binding.code));
+        window.addEventListener('keydown', (event) => {
+          if (cameraContexts()[0] !== 'world' || event.ctrlKey || event.altKey || event.metaKey) return;
+          panKeyboard.keyDown(event);
+          if (panCodes.has(event.code)) event.preventDefault();
+        });
+        window.addEventListener('keyup', (event) => { panKeyboard.keyUp(event); });
+        window.addEventListener('blur', () => { panKeyboard.releaseAll(); });
+        let previousFrame = performance.now();
+        const stepPan = (now: number): void => {
+          const elapsed = Math.min(50, now - previousFrame);
+          previousFrame = now;
+          const horizontal = Number(panKeyboard.isActive('camera.right')) - Number(panKeyboard.isActive('camera.left'));
+          const vertical = Number(panKeyboard.isActive('camera.down')) - Number(panKeyboard.isActive('camera.up'));
+          if (horizontal !== 0 || vertical !== 0) obliqueScene.stepCameraPan(horizontal * elapsed * 0.6, vertical * elapsed * 0.6);
+          requestAnimationFrame(stepPan);
+        };
+        requestAnimationFrame(stepPan);
+        let middlePan: { readonly pointerId: number; readonly x: number; readonly y: number } | undefined;
+        window.addEventListener('blur', () => { middlePan = undefined; });
+        game.canvas.addEventListener('auxclick', (event) => { if (event.button === 1) event.preventDefault(); });
+        game.canvas.addEventListener('pointerdown', (event) => {
+          if (event.button !== 1) return;
+          event.preventDefault();
+          middlePan = { pointerId: event.pointerId, x: event.clientX, y: event.clientY };
+          game.canvas.setPointerCapture(event.pointerId);
+        });
+        game.canvas.addEventListener('pointermove', (event) => {
+          if (middlePan?.pointerId !== event.pointerId) return;
+          const bounds = game.canvas.getBoundingClientRect();
+          obliqueScene.stepCameraPan(
+            -(event.clientX - middlePan.x) * game.canvas.width / bounds.width,
+            -(event.clientY - middlePan.y) * game.canvas.height / bounds.height,
+          );
+          middlePan = { pointerId: event.pointerId, x: event.clientX, y: event.clientY };
+        });
+        const endMiddlePan = (event: PointerEvent): void => {
+          if (middlePan?.pointerId === event.pointerId) middlePan = undefined;
+        };
+        game.canvas.addEventListener('pointerup', endMiddlePan);
+        game.canvas.addEventListener('pointercancel', endMiddlePan);
         game.canvas.addEventListener('wheel', (event) => {
           if (event.ctrlKey || event.altKey || event.metaKey || event.shiftKey || event.deltaY === 0) return;
           event.preventDefault();
