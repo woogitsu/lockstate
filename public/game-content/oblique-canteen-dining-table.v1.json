@@ -1,0 +1,487 @@
+{
+  "schemaVersion": 1,
+  "assetId": "furniture.dining.table.wooden",
+  "source": "environment.mvp.catalog.blend",
+  "sourceSha256": "57db9afb7e48996cef9aaedda72b8e874e865eb56862ee4add8b177a9713887d",
+  "sourceDependencies": [],
+  "resolutionPx": [
+    512,
+    512
+  ],
+  "nominalPixelsPerTile": 64,
+  "pivotPx": [
+    256,
+    256
+  ],
+  "cameraTargetTiles": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "projection": "orthographic",
+  "yawDegrees": [
+    -180,
+    -165,
+    -150,
+    -135,
+    -120,
+    -105,
+    -90,
+    -75,
+    -60,
+    -45,
+    -30,
+    -15,
+    0,
+    15,
+    30,
+    45,
+    60,
+    75,
+    90,
+    105,
+    120,
+    135,
+    150,
+    165
+  ],
+  "elevationDegrees": [
+    25,
+    45,
+    65
+  ],
+  "frames": [
+    {
+      "yawDegrees": -180,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw-180-elev25.d13134044086.png",
+      "sha256": "d13134044086872cedcc40126b73049ec6c52a405f69695b8b558bcaba2b96cf"
+    },
+    {
+      "yawDegrees": -180,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw-180-elev45.aa4b64c1ca54.png",
+      "sha256": "aa4b64c1ca5421936ddf376b70e0c74f531215a522dbea119b568445ec45afb8"
+    },
+    {
+      "yawDegrees": -180,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw-180-elev65.5af0ff4a03ba.png",
+      "sha256": "5af0ff4a03bac98e56fd1936ab7e13f1b1a2df16548a53e256957e1bcb975f39"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw-165-elev25.ac69dbccaa76.png",
+      "sha256": "ac69dbccaa7641390c72914c0aeb8ce19ab037627344a2ac661717f2a577ccbd"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw-165-elev45.b551dd906a0d.png",
+      "sha256": "b551dd906a0dd666563ac0cbdb0f9f2d2ff91ebbf384b6b0736e910f2ef0a6a4"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw-165-elev65.ae9b77a3403c.png",
+      "sha256": "ae9b77a3403c295fcc97d66df8abf41bdc9f880ea23fc026e2450304181cc7fb"
+    },
+    {
+      "yawDegrees": -150,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw-150-elev25.e9a99271ecef.png",
+      "sha256": "e9a99271ecef31fcb30bb0b82bbcc91209dd3179736e7bc22d306ebc2caf186f"
+    },
+    {
+      "yawDegrees": -150,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw-150-elev45.5e87e6e28491.png",
+      "sha256": "5e87e6e28491bfd4170e57f5e6cb50dabc6032820e0d86f9c5cccbcb9d5ae563"
+    },
+    {
+      "yawDegrees": -150,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw-150-elev65.b4c08b0cfb36.png",
+      "sha256": "b4c08b0cfb36f889f3e5848f9be66daa083a0e15ff96815ed0d8225ebf226555"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw-135-elev25.09cc81d336c3.png",
+      "sha256": "09cc81d336c3ecda65670458cf0707eb9b5d38537c711d847def3e9565906e8e"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw-135-elev45.2e8d32119ec3.png",
+      "sha256": "2e8d32119ec300e8bf5911ff2aa5a761c23b423e1d267789700b1d85e53688a2"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw-135-elev65.9464c683581a.png",
+      "sha256": "9464c683581aa385d04c8a51739f50c6c3440d44f1223e5fd08143ebba683a20"
+    },
+    {
+      "yawDegrees": -120,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw-120-elev25.716b61869bab.png",
+      "sha256": "716b61869bab2a09129ada22dc4397eb1c046e4db0ea2e691bb014d72068bc3c"
+    },
+    {
+      "yawDegrees": -120,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw-120-elev45.f557192c49cd.png",
+      "sha256": "f557192c49cd3ba40a03935d626aa3e99ba8ed990b81750e32891448973ffd54"
+    },
+    {
+      "yawDegrees": -120,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw-120-elev65.bb0e25ee6056.png",
+      "sha256": "bb0e25ee605681d374950b128553303a5492d1c61df97ee952b51c9122146c39"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw-105-elev25.93ab62c8b5a1.png",
+      "sha256": "93ab62c8b5a10e2fdca7fa3bb3a6bf779da16781fb17c8f5848f95e77e32ec7a"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw-105-elev45.0ed2a088c6d6.png",
+      "sha256": "0ed2a088c6d6ea2b2684dde0f2d3c88b6f1423d9eff64e7210037c906787ff7f"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw-105-elev65.34f9b70a1c12.png",
+      "sha256": "34f9b70a1c12c6a8f1d48ba70ac946f976ea38a7fbb636d32ec05595b05a8b12"
+    },
+    {
+      "yawDegrees": -90,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw-90-elev25.d2f346ad582f.png",
+      "sha256": "d2f346ad582ff9040a1390cbb82960304792724db6480909a02b8b773ce01a97"
+    },
+    {
+      "yawDegrees": -90,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw-90-elev45.efd1e7397a59.png",
+      "sha256": "efd1e7397a59cfd641f46f527618fcab3d9f76f9b39bb5aacefea2a87f7f8765"
+    },
+    {
+      "yawDegrees": -90,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw-90-elev65.9b5ec5cccdf7.png",
+      "sha256": "9b5ec5cccdf796c04fa07402a772d0f79332475969e6320b2050b1669a09b0e7"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw-75-elev25.a4e729acb25d.png",
+      "sha256": "a4e729acb25d57d8091e53ee406e83aa76fd228ea8d8080d46c29752ba18f607"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw-75-elev45.7add4eb99d28.png",
+      "sha256": "7add4eb99d28cce8e55ca6a3bd3cc7ba02233141339b08d9cf40c66971c24a40"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw-75-elev65.dac5aee09fbb.png",
+      "sha256": "dac5aee09fbb8e9ea8c8f3dc9c7772ba0c45dcd3af1854f911587d1aa96f87bf"
+    },
+    {
+      "yawDegrees": -60,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw-60-elev25.b84a02c28f21.png",
+      "sha256": "b84a02c28f21476f9014ce5ec76315bc23052fb38b4d15ad9c522eb59150005d"
+    },
+    {
+      "yawDegrees": -60,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw-60-elev45.5465879864fc.png",
+      "sha256": "5465879864fcf5cbfffcd80c7d7959908b43581e9910dc6f9489dd8becf4b95c"
+    },
+    {
+      "yawDegrees": -60,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw-60-elev65.d0cdb65691f0.png",
+      "sha256": "d0cdb65691f07083a93e1a295aa109e62d6470c5f60ae038ed594372d45f78a6"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw-45-elev25.6053ed35a3f5.png",
+      "sha256": "6053ed35a3f5f37fd94c7dae002efac368a34fccfdeb1d3316a13a2ce494c282"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw-45-elev45.d982d862e9bb.png",
+      "sha256": "d982d862e9bb0c7aa8701c3acf8d77afe6e1d0d7bff49b6fb11115e6564a9a90"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw-45-elev65.56a422bbaf7a.png",
+      "sha256": "56a422bbaf7aa6bf1c7ef6d96c6648e206e642f6fcdcc16821431feb1ffb16e7"
+    },
+    {
+      "yawDegrees": -30,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw-30-elev25.f50ca55926a7.png",
+      "sha256": "f50ca55926a7fe8dc66b3449a13e693e4da693d8da217fef5e9abd8b3ba71599"
+    },
+    {
+      "yawDegrees": -30,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw-30-elev45.209cc706ddec.png",
+      "sha256": "209cc706ddec50078cab23c91293d95e3e49c38b59d0f329a3a4daa7c8d83063"
+    },
+    {
+      "yawDegrees": -30,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw-30-elev65.6d8b565f4bdf.png",
+      "sha256": "6d8b565f4bdfca9fb8dcbadcae2526a7bebb23543280306dc264e554a55c5ab7"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw-15-elev25.d3538bb1891f.png",
+      "sha256": "d3538bb1891fa7584030408085ac7837b38ac4290d7b31c86a19bfa6ebffb8ca"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw-15-elev45.87bb486adc47.png",
+      "sha256": "87bb486adc47eed15cc3ad805cfb3554cec18fc15367eec8407f17b3836ac6f3"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw-15-elev65.14fa75f92cf0.png",
+      "sha256": "14fa75f92cf0469a81a6b888b050738dc1807a2ffb7f964d8aac5c19e8af4e76"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw+00-elev25.1a7c8dedcb21.png",
+      "sha256": "1a7c8dedcb216823fa95021200fcf90fd3dfb3de7c31e02543b38912aff8a9d4"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw+00-elev45.6fd95a0f4d3a.png",
+      "sha256": "6fd95a0f4d3ac20738c12698cca69006c8b6ac0e1a8cebe40d565cb4b5cae9d9"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw+00-elev65.5d4382e2121b.png",
+      "sha256": "5d4382e2121b5b8538c183272f91393c4fa7f12752648b289b5fd2ae4fb03b55"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw+15-elev25.9cb4eebbff10.png",
+      "sha256": "9cb4eebbff10c2cc1089cb2c1a6e1cd32741f8bbe8e2fedc8d8cee00ff8bbf1b"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw+15-elev45.a8c39e91ece6.png",
+      "sha256": "a8c39e91ece66d9318378649d09ca10122f9e66b336b7285c1ca56cce90badbc"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw+15-elev65.1201945c1d06.png",
+      "sha256": "1201945c1d0605c387fb186886fbe5c1cf3660e906c4970e2b0ea96cda6f0aec"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw+30-elev25.a3989e24263f.png",
+      "sha256": "a3989e24263f2ceeef4eea5d57b9804883ce4491e4a25fe3f7ff2daf9f7f1595"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw+30-elev45.f1329570d2a3.png",
+      "sha256": "f1329570d2a32aeb7321d59a2fb6374ded5722f6205ee0bb493c15bb2d1c2201"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw+30-elev65.7c109772ea16.png",
+      "sha256": "7c109772ea16785030f290d5f060ddee810e6290ae3266c3d65b7ab9c69981ed"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw+45-elev25.dd7557f1e46e.png",
+      "sha256": "dd7557f1e46e416831ff482a6bb88a5ad9d065142156c850e2c949037d7c6dcd"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw+45-elev45.0a83d0036ab5.png",
+      "sha256": "0a83d0036ab59c699987e83bb12547b123bd80cdbae12b148a16fb6043a14957"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw+45-elev65.6c0d31b14927.png",
+      "sha256": "6c0d31b149273e2202218d801e6d6b10391682b7548c98c767c0279eb8cba925"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw+60-elev25.a1e7d3a52d20.png",
+      "sha256": "a1e7d3a52d20e4b90fb8efdf9e4ad7d722e1ecaa3438ca2e5c9bf54867172eb6"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw+60-elev45.cc06e8e7d9f1.png",
+      "sha256": "cc06e8e7d9f17a5b83f366a78f227acc1ddb62d7d0b8ba7a0adf2b038864b46d"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw+60-elev65.9037d272ed96.png",
+      "sha256": "9037d272ed96d55541e7ef61489bf1a06d2cdb626ec8508342e134aa4addebb7"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw+75-elev25.22b09bc1f608.png",
+      "sha256": "22b09bc1f60848ee9f934fa185f89b53472805cf687c040fd9c4ec57c70a968f"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw+75-elev45.44e1c4c82a7d.png",
+      "sha256": "44e1c4c82a7da0f57105d3dc65aff7426f505da4896a1e1156f483f30db10235"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw+75-elev65.95800869814f.png",
+      "sha256": "95800869814ff740e850fc95256b2c7ca8906f7636fcd703d544e9271eed9286"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw+90-elev25.09cf137c54fa.png",
+      "sha256": "09cf137c54faf9e4fd1c892add8e6a22b954b8d0594d5838a322374fe5ada078"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw+90-elev45.5c11f0b74493.png",
+      "sha256": "5c11f0b74493447a71cc57a52367537920fd5d1154de0265189a1f26840e6c1a"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw+90-elev65.0cdd928a6527.png",
+      "sha256": "0cdd928a65275de3505165c3f88358ea7401a3fce12ac1280e67a9fcca476072"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw+105-elev25.a2ebb271d6de.png",
+      "sha256": "a2ebb271d6decddee0c9efc4e02da83ccb6c7449bc75514f840eb5578b80bab4"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw+105-elev45.c1d0f67812cb.png",
+      "sha256": "c1d0f67812cbbbc1ccb6c194cf0759eb27835868f11af91b6f7edfb920fa5a6f"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw+105-elev65.4e6b7c0fb159.png",
+      "sha256": "4e6b7c0fb159ac6bcb6cb6bf876901c7be19b4296642d4fd2c352d8750bcd6b6"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw+120-elev25.6013cff82990.png",
+      "sha256": "6013cff8299055db7912b2945b03aba9de299542d1e0bbe6f939be371625527c"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw+120-elev45.e7d1cd3e7e3e.png",
+      "sha256": "e7d1cd3e7e3e9c568d47af6e043c5400de3dfc97a029bc3c8aecbd8d43c3a3e8"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw+120-elev65.2e3bf86a2d11.png",
+      "sha256": "2e3bf86a2d11c8135bf4cf4e7aebdde7b43535a3cefb973344a8c64acd53c840"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw+135-elev25.2f936cfd0de9.png",
+      "sha256": "2f936cfd0de97baeff18ae67ddf5062ce22821b179b152039ba921e2a8d90fc4"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw+135-elev45.9b33e592fe5f.png",
+      "sha256": "9b33e592fe5f49c312168d56481c41ed0e43db69286c00f8f1ab86d1ffdec103"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw+135-elev65.aad488b68f3a.png",
+      "sha256": "aad488b68f3aa17b4ad2e5a04bf23d87cfd660238ea07fc22cd30b3fa28dd72b"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw+150-elev25.17a1db4b7d4a.png",
+      "sha256": "17a1db4b7d4ad4695990450650f379582f284e2a7e322d4977a7dd936f9cc5a3"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw+150-elev45.7abd280a0553.png",
+      "sha256": "7abd280a0553433b9e39ebe9dfc520de9ab9d136884923b9fa5d3f1dda0d5fde"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw+150-elev65.a56ea54c8d3c.png",
+      "sha256": "a56ea54c8d3c813686b01765fe7e30f93cd02f07a4fed86cf9affa8ca4910472"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw+165-elev25.7032e8a9192d.png",
+      "sha256": "7032e8a9192d8b3532402625d4e611b20cc49cb58b63c60a506d6a5735f724c3"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw+165-elev45.a1c3f72ba844.png",
+      "sha256": "a1c3f72ba844911baf0c45e5046d60013adb03e23852212e3e6cc9e1a43b4704"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/canteen-dining-table-yaw+165-elev65.e2cf22d62467.png",
+      "sha256": "e2cf22d624677d91318ae2711cd0d9dbed27ab32c1d776502f81a3efbad3f7eb"
+    }
+  ]
+}
