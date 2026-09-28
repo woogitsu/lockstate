@@ -87,6 +87,27 @@ describe('ContrabandRegistry: introduction, movement, stash and confiscation', (
     expect(restored.byHolder('cell', 'cell-1').map((item) => item.id)).toEqual(['item-1']);
     expect(restored.byHolder('cell', 'cell-2')).toEqual([]); // item-2 was confiscated -- not re-indexed on restore
   });
+
+  it('indexes only the final saved row when an item id appears twice', () => {
+    const source = new ContrabandRegistry();
+    source.introduce('item-1', 'contraband.phone', { kind: 'prisoner', id: '7' }, { sourceType: 'visit', sourceId: 'v1', introducedAtTick: 0 });
+    const concealed = source.getSnapshot()[0]!;
+    source.confiscate('item-1');
+    const confiscated = source.getSnapshot()[0]!;
+
+    const restored = new ContrabandRegistry();
+    restored.loadSnapshot([concealed, confiscated]);
+
+    expect(restored.get('item-1')?.state).toBe('confiscated');
+    expect(restored.byHolder('prisoner', '7')).toEqual([]);
+    expect(restored.departHolder('prisoner', '7', 10)).toEqual([]);
+
+    const moved = new ContrabandRegistry();
+    const atAnotherHolder = { ...concealed[1], holder: { kind: 'prisoner' as const, id: '8' } };
+    moved.loadSnapshot([concealed, ['item-1', atAnotherHolder]]);
+    expect(moved.byHolder('prisoner', '7')).toEqual([]);
+    expect(moved.byHolder('prisoner', '8').map((item) => item.id)).toEqual(['item-1']);
+  });
 });
 
 describe('a holder who leaves takes what they were concealing with them', () => {

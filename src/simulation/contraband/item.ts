@@ -210,6 +210,11 @@ export class ContrabandRegistry {
     for (const [id, rest] of snapshot) {
       const record: ContrabandRecord = { id, ...rest, movementLog: rest.movementLog.map((entry) => ({ ...entry })) };
       this.records.set(id, record);
+    }
+    // A save may repeat an id. The map keeps its final row, so index only
+    // those surviving records; an earlier concealed row must not make a later
+    // confiscated or departed item searchable again.
+    for (const [id, record] of this.records) {
       if (record.state === 'concealed') this.indexAdd(record.holder, id);
     }
   }
