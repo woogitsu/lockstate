@@ -1630,6 +1630,8 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.template-catalogue-value-unavailable': 'Wartość katalogowa jest niedostępna. Sprawdź wymagane materiały.',
   'hud.build.template-cell-row-four': 'Rząd czterech cel',
   'hud.build.template-arm-hint': 'Wybrano: {name}. Wskaż mapę, aby obejrzeć cały wzór. Kliknij wolny obrys, aby zlecić budowę. Środkowy przycisk myszy lub strzałki poruszają kamerą.',
+  'hud.build.template-interior': 'Wnętrze',
+  'hud.build.template-dock-marker': 'Znacznik rampy (nie jest przejściem)',
 };
 
 export const localePlCatalog: LocalizationCatalog = buildLocalizationCatalog(plMessages);

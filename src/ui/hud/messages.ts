@@ -544,6 +544,8 @@ export const HUD_MESSAGE_KEY = {
   templateWall: 'hud.build.template-wall',
   templateDoor: 'hud.build.template-door',
   templateFurniture: 'hud.build.template-furniture',
+  templateInterior: 'hud.build.template-interior',
+  templateDockMarker: 'hud.build.template-dock-marker',
   templateBed: 'hud.build.template-bed',
   templateToilet: 'hud.build.template-toilet',
   templateShower: 'hud.build.template-shower',
