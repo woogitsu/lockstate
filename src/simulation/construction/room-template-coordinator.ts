@@ -23,6 +23,8 @@ export interface PendingRoomTemplate {
 export interface RoomTemplateCoordinatorSnapshot {
   readonly version: 1;
   readonly pending: readonly PendingRoomTemplate[];
+  /** Additive V7 field: older saves without undone gestures restore an empty list. */
+  readonly undone?: readonly PendingRoomTemplate[];
 }
 
 /** Finishes zoning only after every authored shell order has actually built. */
@@ -31,6 +33,7 @@ export class RoomTemplateCoordinator implements SystemRegistration {
   public readonly order = 101;
   public readonly schedule = { intervalTicks: 10, phaseTicks: 0 };
   private pending: PendingRoomTemplate[] = [];
+  private undone: PendingRoomTemplate[] = [];
 
   public constructor(
     private readonly world: SparseWorld,
@@ -81,6 +84,19 @@ export class RoomTemplateCoordinator implements SystemRegistration {
         tile.y >= pending.origin.y && tile.y < pending.origin.y + pending.height),
     );
     if (!verdict.ok) return verdict;
+    // A later plan must not build its perimeter on the outside approach of an
+    // earlier pending doorway. Rectangle overlap alone misses adjacent plans.
+    const wallSquares = new Set(plan.wallSquares.map((square) => `${square.x}:${square.y}`));
+    for (const pending of pendingPlans) {
+      for (const door of pending.doorSquares) {
+        if (door.y !== pending.origin.y + pending.height - 1) continue;
+        const outsideY = door.y + 1;
+        if (!wallSquares.has(`${door.x}:${outsideY}`)) continue;
+        return { ok: false, reason: 'structure-occupied', tile: {
+          x: tileCoordinate(door.x), y: tileCoordinate(outsideY),
+        } };
+      }
+    }
     for (const door of plan.doorSquares) {
       if (door.y !== plan.origin.y + plan.height - 1) continue;
       const tile = { x: tileCoordinate(door.x), y: tileCoordinate(door.y) };
@@ -127,6 +143,8 @@ export class RoomTemplateCoordinator implements SystemRegistration {
 
   public update(context: SimulationContext): void {
     this.reconcileCancelledShells();
+    this.undone = this.undone.filter((request) =>
+      this.construction.canRedoOrdersTogether(this.shellOrderIds(request)));
     const remaining: PendingRoomTemplate[] = [];
     for (const request of this.pending) {
       const built = createRoomTemplateBuildPlan(request.templateId, request.origin, request.mirrorX, request.sequence);
@@ -168,7 +186,7 @@ export class RoomTemplateCoordinator implements SystemRegistration {
   /** Command dispatch also runs while paused, so release invalidated plans then. */
   public reconcileCancelledShells(): void {
     this.pending = this.pending.filter((request) => {
-      const shellOrderIds = createRoomTemplateBuildPlan(request.templateId, request.origin, request.mirrorX, request.sequence).shellOrderIds;
+      const shellOrderIds = this.shellOrderIds(request);
       if (!shellOrderIds.some((id) => {
         const state = this.construction.getOrder(id)?.state;
         return state === undefined || state === 'cancelled' || state === 'failed';
@@ -181,16 +199,46 @@ export class RoomTemplateCoordinator implements SystemRegistration {
           this.construction.cancelOrder(id);
         }
       }
+      if (this.construction.canRedoOrdersTogether(shellOrderIds)) this.undone.push(request);
       return false;
     });
   }
 
+  /** Reconnect Redo's reapproved shell transaction to its saved room/furniture obligation. */
+  public reconcileRedoneShells(): void {
+    this.undone = this.undone.filter((request) => {
+      const ids = this.shellOrderIds(request);
+      const states = ids.map((id) => this.construction.getOrder(id)?.state);
+      if (states.every((state) => state !== undefined && state !== 'cancelled' && state !== 'failed')) {
+        this.pending.push(request);
+        return false;
+      }
+      if (this.construction.canRedoOrdersTogether(ids)) return true;
+      // A partial Redo must not leave a paid shell with no room obligation.
+      for (const id of ids) {
+        const order = this.construction.getOrder(id);
+        if (order !== undefined && order.state !== 'cancelled' && order.state !== 'failed') this.construction.cancelOrder(id);
+      }
+      return false;
+    });
+    this.pending.sort((a, b) => a.sequence - b.sequence);
+  }
+
+  private shellOrderIds(request: PendingRoomTemplate): readonly string[] {
+    return createRoomTemplateBuildPlan(request.templateId, request.origin, request.mirrorX, request.sequence).shellOrderIds;
+  }
+
   public snapshot(): RoomTemplateCoordinatorSnapshot {
-    return { version: 1, pending: this.pending.map((entry) => ({ ...entry, origin: { ...entry.origin } })) };
+    const undone = this.undone.filter((request) => this.construction.canRedoOrdersTogether(this.shellOrderIds(request)));
+    const copy = (entry: PendingRoomTemplate) => ({ ...entry, origin: { ...entry.origin } });
+    return { version: 1, pending: this.pending.map(copy), ...(undone.length === 0 ? {} : { undone: undone.map(copy) }) };
   }
 
   public loadSnapshot(snapshot: RoomTemplateCoordinatorSnapshot | undefined): void {
     this.pending = snapshot?.pending.map((entry) => ({ ...entry, origin: { ...entry.origin } })) ?? [];
     this.pending.sort((a, b) => a.sequence - b.sequence);
+    this.undone = snapshot?.undone?.filter((request) =>
+      this.construction.canRedoOrdersTogether(this.shellOrderIds(request)))
+      .map((entry) => ({ ...entry, origin: { ...entry.origin } })) ?? [];
   }
 }
