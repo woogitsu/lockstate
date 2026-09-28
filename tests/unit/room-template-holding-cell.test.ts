@@ -15,7 +15,9 @@ it.each([false, true])('builds a Holding Cell with bench and clear door after sa
   const plan = instantiateRoomTemplate(templateId, origin, { mirrorX });
   expect(plan).toMatchObject({ width: 4, height: 4,
     zone: { roomId: 'room.holding-cell', x: 6, y: 6, width: 2, height: 2 } });
-  expect(plan.doorSquares).toHaveLength(1);
+  expect(plan.wallSquares).toHaveLength(11);
+  expect(plan.doorSquares).toEqual([{ x: mirrorX ? 7 : 6, y: 8 }]);
+  expect(plan.objects[0]).toMatchObject({ x: 6, y: 6 });
   expect(plan.objects.map((object) => object.buildableId)).toEqual(['bench-wooden']);
   expect(projectRoomTemplateCost(templateId)).toEqual({ orderCount: 13, materials: [
     { itemId: 'item.brick', quantity: 22 },
@@ -50,6 +52,9 @@ it.each([false, true])('builds a Holding Cell with bench and clear door after sa
   expect(restored.roomTemplates.snapshot().pending).toHaveLength(0);
   expect(restored.construction.allOrders().every((order) => order.state === 'completed')).toBe(true);
   expect(restored.placedObjects.getSnapshot()).toHaveLength(1);
+  expect(restored.placedObjects.isTileOccupied({ x: tileCoordinate(6), y: tileCoordinate(6) })).toBe(true);
+  expect(restored.placedObjects.isTileOccupied({ x: tileCoordinate(7), y: tileCoordinate(6) })).toBe(true);
+  expect(restored.roomTemplates.preflight(plan)).toMatchObject({ ok: false, reason: 'structure-occupied' });
   expect(restored.placedObjects.isTileOccupied({ x: tileCoordinate(mirrorX ? 7 : 6), y: tileCoordinate(7) })).toBe(false);
   expect(projectRoomDetail(restored.prisoners, 'room.holding-cell:6:6', {
     placedObjects: restored.placedObjects,
