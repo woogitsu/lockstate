@@ -114,6 +114,7 @@ const frame: RenderFrame = {
     { id: 'waste-bin-1', definitionId: 'object.waste-bin', tileX: 4, tileY: 2, phase: 'built' },
     { id: 'dining-table-1', definitionId: 'dining-table-wooden', tileX: 1, tileY: 6, phase: 'built' },
     { id: 'bench-1', definitionId: 'bench-wooden', tileX: 5, tileY: 6, phase: 'built' },
+    { id: 'prep-counter-1', definitionId: 'prep-counter-brick', tileX: 5, tileY: 7, phase: 'built' },
     { id: 'shower-1', definitionId: 'shower-head-brick', tileX: 6, tileY: 2, phase: 'built' },
     ...largeBeds,
   ],
