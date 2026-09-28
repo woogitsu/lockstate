@@ -96,6 +96,44 @@ test('new-session runtime wires contraband, intelligence and search through the 
   expect(runtime.confiscations.all()).toHaveLength(1);
 });
 
+test('a person search does not complete against a prisoner who left before staffing', () => {
+  const runtime = createNewSimulationRuntime();
+  const origin = { x: tileCoordinate(0), y: tileCoordinate(0) };
+  const prisonerId = runtime.prisoners.admitPrisoner({ sentenceLengthTicks: 200_000, priorIncidents: 0 }, origin);
+  useSearchPolicy(runtime, { scope: 'person', requiredGuardCount: 1, dwellTicksPerTarget: 5, baseDetectionProbability: 1, concealmentPenaltyPerPoint: 0, intelligenceConfidenceBonus: 0 });
+  for (let index = 0; index < 4; index += 1) runtime.securityGuards.hire('staff-role.guard', origin);
+  runtime.searchSystem.submitOrder({ id: 'departed-person', scope: 'person', targets: [{ holderKind: 'prisoner', holderId: String(prisonerId) }] });
+  expect(runtime.prisoners.releasePrisoner(prisonerId)).toBe(true);
+
+  for (let tick = 0; tick < 500 && runtime.searchSystem.orderIds().length > 0; tick += 1) runtime.kernel.step();
+
+  expect(runtime.searchSystem.orderIds()).toEqual([]);
+  expect(runtime.searchSystem.getMetrics().searchesCompleted).toBe(0);
+  expect(runtime.searchSystem.getMetrics().searchesCancelled).toBe(1);
+});
+
+test('an active person search releases its guard when the prisoner leaves', () => {
+  const runtime = createNewSimulationRuntime();
+  const guardTile = { x: tileCoordinate(0), y: tileCoordinate(0) };
+  const prisonerTile = { x: tileCoordinate(16), y: tileCoordinate(16) };
+  const prisonerId = runtime.prisoners.admitPrisoner({ sentenceLengthTicks: 200_000, priorIncidents: 0 }, prisonerTile);
+  useSearchPolicy(runtime, { scope: 'person', requiredGuardCount: 1, dwellTicksPerTarget: 5, baseDetectionProbability: 1, concealmentPenaltyPerPoint: 0, intelligenceConfidenceBonus: 0 });
+  for (let index = 0; index < 4; index += 1) runtime.securityGuards.hire('staff-role.guard', guardTile);
+  runtime.searchSystem.submitOrder({ id: 'departed-active-person', scope: 'person', targets: [{ holderKind: 'prisoner', holderId: String(prisonerId) }] });
+  for (let tick = 0; tick < 100 && runtime.searchSystem.getJobState('departed-active-person') === undefined; tick += 1) runtime.kernel.step();
+  expect(runtime.searchSystem.getJobState('departed-active-person')).toBeDefined();
+  const guardId = runtime.searchSystem.getSnapshot().active.find(([id]) => id === 'departed-active-person')?.[1].guardIds[0];
+  expect(guardId).toBeDefined();
+  expect(runtime.prisoners.releasePrisoner(prisonerId)).toBe(true);
+
+  for (let tick = 0; tick < 100 && runtime.searchSystem.getJobState('departed-active-person') !== undefined; tick += 1) runtime.kernel.step();
+
+  expect(runtime.searchSystem.getJobState('departed-active-person')).toBeUndefined();
+  expect(runtime.searchSystem.claimedGuardIds()).not.toContain(guardId);
+  expect(runtime.searchSystem.getMetrics().searchesCancelled).toBeGreaterThanOrEqual(1);
+  expect(runtime.searchSystem.getMetrics().searchesCompleted).toBe(0);
+});
+
 test('new-session runtime wires the incident pipeline through real sectors, guards and navigation', () => {
   const runtime = createNewSimulationRuntime();
 

@@ -1231,7 +1231,9 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
 
   const locateSearchTarget: TargetLocationResolver = (target: SearchTarget) => {
     if (target.holderKind === 'prisoner') {
-      const index = prisoners.entityStore.getIndex(Number(target.holderId));
+      const entityId = Number(target.holderId);
+      if (!prisoners.entityStore.isAlive(entityId)) return undefined;
+      const index = prisoners.entityStore.getIndex(entityId);
       return { x: tileCoordinate(prisoners.position.tileX[index]!), y: tileCoordinate(prisoners.position.tileY[index]!) };
     }
     if (target.holderKind === 'staff') {
