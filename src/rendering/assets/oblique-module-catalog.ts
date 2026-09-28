@@ -10,6 +10,7 @@ export const obliqueModuleSchema = z.object({
   schemaVersion: z.literal(1),
   assetId: z.string().min(1), source: z.string().endsWith('.blend'),
   sourceSha256: z.string().regex(/^[0-9a-f]{64}$/),
+  sourceDependencies: z.array(z.object({ source: z.string().endsWith('.blend'), sha256: z.string().regex(/^[0-9a-f]{64}$/) }).strict()).optional(),
   resolutionPx: z.tuple([z.number().int().positive(), z.number().int().positive()]),
   nominalPixelsPerTile: z.number().positive(),
   pivotPx: z.tuple([z.number(), z.number()]),
