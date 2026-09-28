@@ -81,20 +81,16 @@ const PRISONERS = 24;
  * would now house two prisoners out of 24 and the file's subject -- 24
  * prisoners contending for a room -- would quietly stop existing.
  *
- * The **origin and the object count are unchanged**: twelve 2x3 cells,
- * `room.cell`'s own authored minimum, tile the same corner of the world with
- * the same 24 beds and 24 toilets and the same bill. What is new is the
- * interior walls and a door per cell.
+ * The **object count is unchanged**: twelve 2x3 cells, `room.cell`'s own
+ * authored minimum, carry the same 24 beds and 24 toilets and the same bill.
+ * What is new is the interior walls and a door per cell.
  *
- * The two rows are separated by an open corridor at `y = 3` rather than being
- * stacked against each other, so that **every cell's door opens onto open
- * ground**. Stacked, the upper row's only way out was through the cell below
- * it, and 24 prisoners routing to two shower heads through another prisoner's
- * cell left one of them at hygiene 0.0 -- which is the exact floor the case
- * below exists to say nobody reaches. The rectangle is therefore 12x7 where
- * the dormitory was 12x6; nothing else about the prison moved.
+ * The rows start at y=0 and y=5, leaving two open corridor rows. A one-row
+ * separation placed the lower row's beds on the upper row's exterior door
+ * approaches, which the build guard now correctly refuses. Both rows have
+ * open approaches with this 12x8 footprint; the object bill is unchanged.
  */
-const CELL_RECTS = [0, 4].flatMap((y) => [0, 2, 4, 6, 8, 10].map((x) => ({ x, y, width: 2, height: 3 } as const)));
+const CELL_RECTS = [0, 5].flatMap((y) => [0, 2, 4, 6, 8, 10].map((x) => ({ x, y, width: 2, height: 3 } as const)));
 
 /** Two beds and two toilets per cell -- 24 and 24, the same objects and the same bill as the dormitory carried. */
 const BED_TILES = CELL_RECTS.flatMap((rect) => [{ x: rect.x, y: rect.y }, { x: rect.x + 1, y: rect.y }]);
@@ -271,7 +267,7 @@ function watched(tables: number): WatchedRun {
 const repeated = (value: number, times: number): readonly number[] => Array.from({ length: times }, () => value);
 
 describe('twenty-four prisoners and a canteen that seats six', () => {
-  it('names the twelve prisoners who lose the room, which no counter in this repository could do before', () => {
+  it('identifies prisoners who lose canteen seats, which no counter in this repository could do before', () => {
     const run = watched(2);
 
     expect(run.runtime.refusals.count, 'an overlapping footprint would be a refusal, not a wrong number').toBe(0);
@@ -285,10 +281,9 @@ describe('twenty-four prisoners and a canteen that seats six', () => {
     expect(run.diningCeiling).toBeLessThan(PRISONERS);
 
     /*
-     * **What the independent watcher sees**: a caste. Six prisoners eat in the
-     * canteen eleven times across the twelve days, six eat nine times, and the
-     * remaining twelve never sit down in it at all. This is the array ADR 0062
-     * had to build a test-only per-prisoner counter to obtain.
+     * **What the independent watcher sees**: unequal access. The count is
+     * measured without reading the production substitution counter. Four
+     * prisoners never sit in the canteen in the current two-corridor layout.
      *
      * **It read `8 / 6 / 3` until issue #588, and the caste has hardened.**
      * `action.sleep` stopped carrying `safety: 0.2` (the owner's ruling on
@@ -317,31 +312,29 @@ describe('twenty-four prisoners and a canteen that seats six', () => {
      * 24 prisoners standing in one room have identical travel, so the scan's
      * entity-index tie-break decided the whole outcome and the answer came out
      * in index order. Housed two to a cell they no longer share a route, and
-     * the same 24 prisoners take
+     * the same 24 prisoners took, with one corridor row,
      * `[11, 2, 2, 11, 10, 12, 0, 0, 8, 10, 9, 8, 0, 5, 5, 0, 0, 9, 0, 4, 4, 10, 9, 9]`
-     * canteen meals: 130 in total against 120, six still shut out, and which
-     * six is no longer a function of when they arrived.
+     * canteen meals: 130 in total against 120, six shut out. The current two
+     * corridor rows avoid protected door approaches: 136 meals, four shut out.
      *
      * The array read `[...repeated(11, 6), ...repeated(9, 6), ...repeated(0, 12)]`
      * before it, `8 / 6 / 3` before issue #588. **What the assertions under it
      * are for is unchanged**, and one of them had to be re-derived rather than
      * re-baselined; see the note on the separation below.
      */
-    expect(run.canteenEntries).toEqual([11, 2, 2, 11, 10, 12, 0, 0, 8, 10, 9, 8, 0, 5, 5, 0, 0, 9, 0, 4, 4, 10, 9, 9]);
+    expect(run.canteenEntries).toEqual([9, 2, 2, 7, 9, 11, 0, 0, 4, 9, 6, 4, 0, 6, 6, 0, 8, 10, 8, 4, 4, 9, 9, 9]);
 
     /*
-     * **And what the production counter sees, with no watcher at all: the same
-     * twelve.** `contendedSubstitutionCycles` is a canteen refusal in this
-     * prison by construction -- nothing else here has a ceiling that can bind
-     * -- and prisoners 12 to 23 carry six or seven of them each against one or
-     * three for the twelve who eat more often.
+     * **And what the production counter sees, with no watcher at all:**
+     * `contendedSubstitutionCycles` counts canteen refusals in this prison by
+     * construction -- nothing else here has a ceiling that can bind.
      */
     // `[...repeated(0, 6), ...repeated(1, 6), ...repeated(11, 12)]` until issue
     // #961 split the dormitory into twelve cells; 3 / 1 / 7 / 6 until issue
     // #588, for the reason the array above gives. **Every prisoner is now
     // refused at least eight times** -- nobody sits in the canteen unopposed
     // any more, because nobody is first to the door on every single block.
-    expect(run.contendedSubstitutionCycles).toEqual([9, 18, 18, 9, 10, 8, 11, 11, 12, 10, 11, 12, 20, 15, 15, 20, 20, 11, 20, 16, 16, 10, 11, 11]);
+    expect(run.contendedSubstitutionCycles).toEqual([10, 18, 18, 13, 10, 9, 11, 11, 16, 11, 14, 16, 20, 14, 14, 20, 12, 10, 12, 16, 16, 11, 11, 11]);
 
     /*
      * The claim stated as a *separation* rather than as the literal above, so
@@ -355,15 +348,11 @@ describe('twenty-four prisoners and a canteen that seats six', () => {
       .sort((a, b) => run.contendedSubstitutionCycles[b]! - run.contendedSubstitutionCycles[a]! || a - b)
       .slice(0, 12);
     /*
-     * **This line asserted set equality and no longer can, which is recorded
-     * rather than relaxed.** In the dormitory prison the twelve who ate least
-     * *were* the twelve refused most, exactly. In the twelve-cell prison the
-     * two lists agree on **ten of twelve**: prisoners 6 and 7 eat in the
-     * canteen not once and are refused 11 times each, while 8 and 11 eat eight
-     * times and are refused 12 -- a prisoner who falls back to
-     * `action.eat-in-cell` early accrues fewer refusals than one who keeps
-     * trying and keeps losing, and with individual cells the two behaviours
-     * stop coinciding.
+     * In the dormitory prison the twelve who ate least were the twelve refused
+     * most. In the current twelve-cell prison the lists agree on ten of
+     * twelve: prisoners 6 and 7 never sit in the canteen but have fewer
+     * refusals than prisoners 3 and 14, who continue to try. Falling back to
+     * `action.eat-in-cell` stops a prisoner accruing canteen refusals.
      *
      * Pinned as the exact overlap rather than as "at least", so it fails in
      * **both** directions: a change that restored the perfect correlation
@@ -386,7 +375,7 @@ describe('twenty-four prisoners and a canteen that seats six', () => {
     expect(metrics.substitutionCycles).toBe(run.substitutionCycles.reduce((total, count) => total + count, 0));
     expect(metrics.contendedSubstitutionCycles).toBe(run.contendedSubstitutionCycles.reduce((total, count) => total + count, 0));
     // 4,818 / 138 until issue #961's twelve cells; 4,782 / 102 until issue #588.
-    expect(metrics).toMatchObject({ substitutionCycles: 5_080, contendedSubstitutionCycles: 324, routeFailures: 0 });
+    expect(metrics).toMatchObject({ substitutionCycles: 5_090, contendedSubstitutionCycles: 324, routeFailures: 0 });
     expect(metrics.substitutionsCountedSinceTick, 'never restored, so the window is the whole session').toBe(0);
 
     /*
@@ -402,7 +391,7 @@ describe('twenty-four prisoners and a canteen that seats six', () => {
      */
     // `[...repeated(194, 6), ...repeated(197, 6), ...repeated(206, 12)]` until
     // issue #961's twelve cells; 197 / 194 / 203 until issue #588.
-    expect(run.substitutionCycles).toEqual([193, 216, 216, 203, 194, 213, 214, 214, 207, 215, 207, 207, 219, 215, 215, 219, 219, 207, 219, 215, 215, 215, 216, 207]);
+    expect(run.substitutionCycles).toEqual([195, 216, 216, 211, 195, 214, 214, 214, 215, 216, 214, 215, 219, 214, 214, 219, 207, 206, 207, 215, 215, 216, 216, 207]);
     /*
      * **12,100 / 3,500 / 4,300 until the hire, and the claim under it has
      * inverted.** The line here used to read *"the contended canteen genuinely
@@ -424,22 +413,23 @@ describe('twenty-four prisoners and a canteen that seats six', () => {
      * **`[...repeated(27_500, 12), ...repeated(27_300, 12)]` until issue #961's
      * twelve cells**, and the pair of literals that followed it -- prisoner 0
      * against prisoner 23, 200 units apart -- went with the caste. The hunger
-     * floor is now read off the two prisoners the array itself names as worst
-     * served, which is the same claim asked of the run rather than of the
-     * arrival order: **the hungriest prisoners in this prison are among those
-     * the canteen shuts out**, and the gap to the best-fed one is real.
+     * floor is now read from the whole array. Four prisoners share the worst
+     * floor: two never reach the canteen, while two eat there nine times. Seat
+     * count alone therefore does not explain hunger; the gap to the best-fed
+     * prisoner is still measurable.
      */
     expect(run.lowestHunger).toEqual([
-      35_300, 35_300, 35_300, 35_700, 36_100, 35_100, 27_500, 27_500, 34_900, 35_100, 34_700, 34_900,
-      35_300, 34_700, 34_700, 35_300, 35_300, 34_700, 35_300, 34_700, 34_700, 35_500, 35_500, 34_700,
+      27_500, 35_300, 34_900, 34_700, 27_500, 35_100, 27_500, 27_500, 34_700, 35_100, 34_700, 34_700,
+      35_300, 34_700, 34_700, 35_300, 34_900, 34_700, 34_900, 34_700, 34_700, 35_100, 35_100, 34_700,
     ]);
     const hungriest = [...run.lowestHunger.keys()].sort((a, b) => run.lowestHunger[a]! - run.lowestHunger[b]! || a - b).slice(0, 2);
-    expect(hungriest, 'the two hungriest prisoners').toEqual([6, 7]);
-    expect(hungriest.map((n) => run.canteenEntries[n]), 'and neither of them ever sat down in the canteen').toEqual([0, 0]);
+    expect(hungriest, 'the two hungriest prisoners').toEqual([0, 4]);
+    expect([6, 7].map((n) => run.lowestHunger[n]), 'two shut-out prisoners reach the same minimum').toEqual([27_500, 27_500]);
+    expect([6, 7].map((n) => run.canteenEntries[n]), 'those prisoners never sat in the canteen').toEqual([0, 0]);
     expect(
       Math.max(...run.lowestHunger) - Math.min(...run.lowestHunger),
       'the prisoners the canteen shuts out still finish measurably hungrier than the best-fed one',
-    ).toBe(8_600);
+    ).toBe(7_800);
   });
 
   it('reads exactly zero the moment the canteen seats everybody, so it is counting refusals and not meals', () => {
@@ -466,7 +456,7 @@ describe('twenty-four prisoners and a canteen that seats six', () => {
     // `repeated(185, PRISONERS)` until issue #961's twelve cells -- one
     // dormitory gave every prisoner the same walk and therefore the same
     // count; 174 until issue #588.
-    expect(control.substitutionCycles).toEqual([185, 190, 190, 195, 185, 205, 190, 190, 190, 205, 195, 190, 190, 195, 195, 190, 190, 195, 190, 195, 195, 205, 205, 195]);
+    expect(control.substitutionCycles).toEqual([185, 190, 190, 195, 185, 205, 190, 190, 195, 205, 195, 195, 190, 195, 195, 190, 190, 195, 190, 195, 195, 205, 205, 195]);
   });
 
   it('separates a room that is full from a room nobody built, which `unmetDemandCycles` reads as 0 either way', () => {
