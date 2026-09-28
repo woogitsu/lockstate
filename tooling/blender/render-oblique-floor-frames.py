@@ -15,9 +15,9 @@ modules = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(modules)
 
 FLOORS = (
-    ("floor.cell.sealed-concrete", "floor-cell"),
-    ("floor.linoleum.institutional", "floor-corridor"),
-    ("floor.canteen.terrazzo", "floor-canteen"),
+    ("floor.cell.sealed-concrete", "floor-cell", modules.ROOT / "assets/source/blender/floor.cell.warm-concrete.blend"),
+    ("floor.linoleum.institutional", "floor-corridor", modules.CATALOG),
+    ("floor.canteen.terrazzo", "floor-canteen", modules.CATALOG),
 )
 REGISTRY = modules.ROOT / "public/game-content/oblique-module-registry.v1.json"
 
@@ -26,24 +26,28 @@ def main() -> None:
     modules.pipeline_common.require_blender_version()
     modules.setup_scene()
     modules.YAW = tuple(range(-180, 180, 15))
-    for asset_id, slug in FLOORS:
-        collection = modules.append_collection(modules.CATALOG, asset_id)
+    for asset_id, slug, source in FLOORS:
+        collection = modules.append_collection(source, asset_id)
         origin = next((item for item in collection.all_objects
                        if item.name == asset_id + ".origin"), None)
         if origin is None:
             raise RuntimeError(f"{asset_id} has no tile origin")
         origin.location = (0, 0, 0)
         bpy.context.view_layer.update()
-        modules.render_module(asset_id, slug, modules.CATALOG, [], resolution_px=128)
+        modules.render_module(asset_id, slug, source, [], resolution_px=128)
         collection.hide_render = True
 
     registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
-    floor_ids = {asset_id for asset_id, _ in FLOORS}
-    entries = [entry for entry in registry["entries"] if entry["assetId"] not in floor_ids]
-    entries.extend({"assetId": asset_id, "manifest": f"/game-content/oblique-{slug}.v1.json"}
-                   for asset_id, slug in FLOORS)
-    modules.pipeline_common.write_text(REGISTRY,
-        json.dumps({"schemaVersion": 1, "entries": entries}, indent=2) + "\n")
+    entries = registry["entries"]
+    for asset_id, slug, _ in FLOORS:
+        updated = {"assetId": asset_id, "manifest": f"/game-content/oblique-{slug}.v1.json"}
+        index = next((index for index, entry in enumerate(entries)
+                      if entry["assetId"] == asset_id), None)
+        if index is None:
+            entries.append(updated)
+        else:
+            entries[index] = updated
+    modules.pipeline_common.write_text(REGISTRY, json.dumps(registry, indent=2) + "\n")
 
 
 if __name__ == "__main__":
