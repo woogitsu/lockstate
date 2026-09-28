@@ -192,14 +192,11 @@ function compareInstanceIds(left: string, right: string): number {
  * What the panel renders, from the list and whichever details were fetched.
  *
  * Pure, and every number in it is the projection's. `totalRooms` is
- * `totals.instances`, which counts every registered instance whatever window
- * was asked for; `unfinishedRooms` and `totalNeeds` are counted over the rows
- * that came back, which is the projection's default window
- * (`DEFAULT_VIEW_MODEL_PAGE_LIMIT`, 100) because `read()` asks for no window of
- * its own. In a prison with more than a hundred rooms those two therefore
- * describe the first hundred; `HudRoomNeedsViewModel` says so, and asking for
- * every row to make a two-number summary exact would be an unbounded read on a
- * cadence.
+ * `totals.instances`; `unfinishedRooms` and `totalNeeds` come from the
+ * worker's `roomNeedsSummary`. All three cover every registered room even
+ * when the list carries only its default window of 100 rows. The worker has
+ * already projected every row to build `totals`, so sending the aggregate
+ * adds no second read or unbounded reply on the HUD cadence.
  *
  * A detail whose room names a `roomNameKey` the catalogue does not define is
  * skipped rather than carried: there is no name for the line to print, and this
@@ -318,18 +315,10 @@ export function roomNeedsFromProjections(
   list: RoomListViewModel,
   details: readonly RoomDetailViewModel[],
 ): HudRoomNeedsViewModel {
-  const rows = list.rooms.rows;
-  let unfinishedRooms = 0;
-  let totalNeeds = 0;
-  for (const row of rows) {
-    // `shortfallOf`, so the header's two figures count the same thing
-    // `unfinishedRoomIds` selects and sorts on -- a missing doorway included
-    // (#938).
-    const missing = shortfallOf(row);
-    if (missing <= 0) continue;
-    unfinishedRooms += 1;
-    totalNeeds += missing;
-  }
+  // The list page may hold only the first 100 rooms. The worker computed these
+  // figures over every row before paging, so the badge cannot silently call a
+  // prison ready when its unfinished room sits in the next window.
+  const { unfinishedRooms, totalNeeds } = list.roomNeedsSummary;
 
   /*
    * Every unmet requirement of every room that was asked about, and **no cap
@@ -485,7 +474,10 @@ export class RoomNeedsReader {
       // publication asks again, off a list that no longer holds the room that
       // moved, and the header's counts come from that list either way.
       let asked = 0;
-      for (const instanceId of unfinishedRoomIds(list.view)) {
+      const first = list.view.roomNeedsSummary.firstUnfinishedRoomId;
+      const unfinishedIds = unfinishedRoomIds(list.view);
+      const ids = first === undefined ? unfinishedIds : [first, ...unfinishedIds.filter((id) => id !== first)];
+      for (const instanceId of ids) {
         if (asked >= ROOM_NEEDS_ROOMS_LIMIT) break;
         asked += 1;
         const reply = await this.requester.request<RoomDetailViewModel>('hud/room-detail', {
