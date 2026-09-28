@@ -10,13 +10,14 @@ const digest = (bytes: Buffer) => createHash('sha256').update(bytes).digest('hex
 const json = (path: string): unknown => JSON.parse(readFileSync(join(root, 'public', path.slice(1)), 'utf8')) as unknown;
 
 describe('oblique cell module registry', () => {
-  it('publishes eleven logical modules with complete hashed poses and a shared ground pivot', () => {
+  it('publishes thirteen logical modules with complete hashed poses and a shared ground pivot', () => {
     const registry = parseObliqueModuleRegistry(json('/game-content/oblique-module-registry.v1.json'));
     expect(registry.entries.map((entry) => entry.assetId)).toEqual([
       'wall.interior.module.full', 'wall.interior.module.west.full', 'wall.interior.module.cutaway',
       'furniture.cell.bed.single.variants', 'door.interior.open.full',
       'fixture.cell.toilet_sink', 'furniture.storage.rack.wooden', 'furniture.chair.wooden',
       'floor.cell.sealed-concrete', 'floor.linoleum.institutional', 'floor.canteen.terrazzo',
+      'actor.prisoner.base', 'actor.guard.base',
     ]);
     for (const entry of registry.entries) {
       const catalog = parseObliqueModuleCatalog(json(entry.manifest));
@@ -25,11 +26,11 @@ describe('oblique cell module registry', () => {
       expect(catalog.nominalPixelsPerTile).toBe(64);
       expect(catalog.pivotPx).toEqual([256, 256]);
       expect(catalog.cameraTargetTiles).toEqual([0, 0, 0]);
-      expect(catalog.yawDegrees).toEqual(entry.assetId.startsWith('wall.interior.module.') || entry.assetId.startsWith('floor.')
+      expect(catalog.yawDegrees).toEqual(entry.assetId.startsWith('wall.interior.module.') || entry.assetId.startsWith('floor.') || entry.assetId.startsWith('actor.')
         ? Array.from({ length: 24 }, (_, index) => -180 + index * 15)
         : [-45, 0, 45]);
       expect(catalog.elevationDegrees).toEqual([25, 45, 65]);
-      expect(catalog.frames).toHaveLength(entry.assetId.startsWith('wall.interior.module.') || entry.assetId.startsWith('floor.') ? 72 : 9);
+      expect(catalog.frames).toHaveLength(entry.assetId.startsWith('wall.interior.module.') || entry.assetId.startsWith('floor.') || entry.assetId.startsWith('actor.') ? 72 : 9);
       expect(digest(readFileSync(join(root, 'assets/source/blender', catalog.source)))).toBe(catalog.sourceSha256);
       for (const dependency of catalog.sourceDependencies ?? []) {
         expect(digest(readFileSync(join(root, 'assets/source/blender', dependency.source)))).toBe(dependency.sha256);
@@ -47,6 +48,13 @@ describe('oblique cell module registry', () => {
       }
     }
     const full = parseObliqueModuleCatalog(json('/game-content/oblique-modules.v1.json'));
+    const prisoner = parseObliqueModuleCatalog(json('/game-content/oblique-actor-prisoner.v1.json'));
+    const guard = parseObliqueModuleCatalog(json('/game-content/oblique-actor-guard.v1.json'));
+    for (let index = 0; index < prisoner.frames.length; index += 1) {
+      expect(guard.frames[index]!.yawDegrees).toBe(prisoner.frames[index]!.yawDegrees);
+      expect(guard.frames[index]!.elevationDegrees).toBe(prisoner.frames[index]!.elevationDegrees);
+      expect(guard.frames[index]!.sha256).not.toBe(prisoner.frames[index]!.sha256);
+    }
     const west = parseObliqueModuleCatalog(json('/game-content/oblique-wall-west.v1.json'));
     const cutaway = parseObliqueModuleCatalog(json('/game-content/oblique-wall-cutaway.v1.json'));
     for (let index = 0; index < full.frames.length; index += 1) {
