@@ -204,6 +204,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
       return roomTemplateOriginFitsSafeCoordinates(selectedId, tile, halfTurn ? 2 : 0);
     };
     let revision = 0;
+    let placementPending = false;
     refreshPlacement = async (): Promise<void> => {
       const current = ++revision;
       place.disabled = true;
@@ -220,7 +221,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
       try {
         const { plan, verdict } = await tool.inspectAt(tile);
         if (current !== revision) return;
-        place.disabled = !verdict.ok;
+        place.disabled = placementPending || !verdict.ok;
         for (const square of diagram.children) square.classList.remove('hud-template__tile--blocked');
         if (!verdict.ok) {
           const localX = verdict.tile.x - plan.origin.x;
@@ -247,6 +248,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
       const tile = origin();
       if (tile === undefined || !wholePlanFitsSafeTiles(tile) || place.disabled) return;
       const current = ++revision;
+      placementPending = true;
       place.disabled = true;
       try {
         const result = await tool.placeAt(tile);
@@ -254,6 +256,9 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
           t(result.reason === 'unowned-land' ? HUD_MESSAGE_KEY.templateUnownedLand : HUD_MESSAGE_KEY.templateBlocked);
       } catch {
         if (current === revision) status.textContent = t(HUD_MESSAGE_KEY.templateUnavailable);
+      } finally {
+        placementPending = false;
+        if (current !== revision && dialog.open) void refreshPlacement();
       }
       // Keep this origin locked after queuing. The worker may not have run the
       // command yet, so an immediate read can still say "clear" and allow a
