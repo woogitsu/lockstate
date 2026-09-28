@@ -1681,7 +1681,7 @@
   color: var(--text-body);
   overflow: auto;
 }
-.hud-template::backdrop { background: rgb(0 0 0 / 55%); }
+.hud-template::backdrop { background: var(--surface-dialog-backdrop); }
 .hud-template__header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
 .hud-template__header h2 { margin: 0; font-size: var(--text-size-value); }
 .hud-template__choices { display: flex; flex-wrap: wrap; gap: var(--space-2); }

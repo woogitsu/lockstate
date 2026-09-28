@@ -1094,6 +1094,8 @@ export interface MountHudOptions {
 
 export interface HudHandle {
   readonly element: HTMLElement;
+  /** Shared input state for the world ghost; absent without a worker. */
+  readonly roomTemplateTool?: RoomTemplateTool;
   /**
    * A slot at the top of the HUD's right rail for a panel the **host** owns.
    *
@@ -1997,6 +1999,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * The notification still cannot reject into the void.
    */
   const dispatchShell = (action: HudShellAction, intent: HudIntent): void => {
+    if (action.kind === 'select-tab' && action.tab !== 'build') roomTemplateTool?.standDown();
     applyState(hudShellReducer(state, action));
     runReported(intent.kind, () => options.onIntent?.(intent), reportError);
   };
@@ -2301,6 +2304,11 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   const buildPanel: BuildPanel = createBuildPanel({
     localizer,
     ...(roomTemplateTool === undefined ? {} : { roomTemplateTool }),
+    onArmRoomTemplate: () => {
+      buildPanel.standDown();
+      roomsPanel.standDown();
+      roomTemplateTool?.arm();
+    },
     model: options.build ?? { buildables: [], origin: { x: 0, y: 0 } },
     onPlace: (intent) => {
       /*
@@ -2359,6 +2367,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       );
     },
     onArm: (armed, definitionId, removing) => {
+      if (armed) roomTemplateTool?.standDown();
       runReported(
         'arm-build-tool',
         () => options.onIntent?.({ kind: 'arm-build-tool', armed, definitionId, removing }),
@@ -2467,6 +2476,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       dispatchCommand({ kind: 'unzone-room', area }, roomsPanel.submitControl);
     },
     onArm: (armed, armOptions) => {
+      if (armed) roomTemplateTool?.standDown();
       runReported(
         'arm-room-tool',
         () =>
@@ -2846,6 +2856,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   options.toolStandDown?.attachStandDown(() => {
     buildPanel.standDown();
     roomsPanel.standDown();
+    roomTemplateTool?.standDown();
   });
 
   /**
@@ -3462,6 +3473,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
 
   return {
     element: hud,
+    ...(roomTemplateTool === undefined ? {} : { roomTemplateTool }),
     asideSlot: aside,
     manageSavesSlot,
     brandSlot: strip.brandSlot,

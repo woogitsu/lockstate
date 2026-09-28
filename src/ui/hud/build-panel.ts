@@ -159,6 +159,7 @@ export interface BuildPanelOptions {
   readonly localizer: HudLocalizer;
   readonly model: HudBuildViewModel;
   readonly roomTemplateTool?: RoomTemplateTool;
+  readonly onArmRoomTemplate?: () => void;
   /** The numeric route: place exactly one order at the coordinates shown. */
   readonly onPlace: (intent: BuildPanelIntent) => void;
   /**
@@ -1087,7 +1088,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     paintCatalogue();
     revealSelectedRow();
   });
-  const templatePreview = createRoomTemplatePreview(localizer, options.roomTemplateTool);
+  const templatePreview = createRoomTemplatePreview(localizer, options.roomTemplateTool, options.onArmRoomTemplate);
   const catalogueActions = element('div', {
     className: 'hud-build__catalogue-actions',
     children: categoryOptions.length === 0 ? [templatePreview.openButton] : [categoryFilter, templatePreview.openButton],

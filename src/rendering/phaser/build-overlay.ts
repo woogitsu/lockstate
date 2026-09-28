@@ -1,5 +1,7 @@
 import Phaser from 'phaser';
 import type { EdgeTarget } from '../build/edge-picking';
+import type { RoomTemplatePlan } from '../../content/room-template-catalog';
+import type { TemplateGhostVerdict } from '../build/template-ghost';
 import { TILE_SIZE_PX } from '../tile-metrics';
 import { EDGE_WALL_APPEARANCE, EDGE_WALL_THICKNESS_TILES, PLANNED_ALPHA } from '../world/appearance';
 
@@ -64,6 +66,35 @@ export class BuildOverlay {
       const top = square.y * TILE_SIZE_PX;
       this.graphics.fillRect(left, top, TILE_SIZE_PX, TILE_SIZE_PX);
       this.graphics.strokeRect(left + 1, top + 1, TILE_SIZE_PX - 2, TILE_SIZE_PX - 2);
+    }
+  }
+
+  /** Every footprint square is visible. The doorway is revealed only by a clear worker verdict. */
+  public updateTemplate(plan: RoomTemplatePlan, verdict: TemplateGhostVerdict | undefined): void {
+    this.graphics.clear();
+    const blocked = verdict?.ok === false;
+    const wall = new Set(plan.wallSquares.map(({ x, y }) => `${x},${y}`));
+    const door = new Set(plan.doorSquares.map(({ x, y }) => `${x},${y}`));
+    const objects = new Set(plan.objects.map(({ x, y }) => `${x},${y}`));
+    for (let y = plan.origin.y; y < plan.origin.y + plan.height; y += 1) {
+      for (let x = plan.origin.x; x < plan.origin.x + plan.width; x += 1) {
+        const key = `${x},${y}`;
+        const isBlockedTile = blocked && verdict.tile?.x === x && verdict.tile?.y === y;
+        const fill = isBlockedTile ? 0xb23b45 : wall.has(key) ? 0x5c7480 : 0x9db5b9;
+        this.graphics.fillStyle(fill, isBlockedTile ? 0.72 : 0.38);
+        this.graphics.fillRect(x * TILE_SIZE_PX, y * TILE_SIZE_PX, TILE_SIZE_PX, TILE_SIZE_PX);
+        this.graphics.lineStyle(1, blocked ? 0xb23b45 : 0x245c63, 0.9);
+        this.graphics.strokeRect(x * TILE_SIZE_PX + 1, y * TILE_SIZE_PX + 1, TILE_SIZE_PX - 2, TILE_SIZE_PX - 2);
+        // A pending or refused preflight must not show an apparent entrance.
+        if (verdict?.ok === true && door.has(key)) {
+          this.graphics.fillStyle(0x008b88, 0.9);
+          this.graphics.fillRect(x * TILE_SIZE_PX + 8, y * TILE_SIZE_PX + 8, TILE_SIZE_PX - 16, TILE_SIZE_PX - 16);
+        }
+        if (objects.has(key)) {
+          this.graphics.fillStyle(0x173843, 0.8);
+          this.graphics.fillCircle((x + 0.5) * TILE_SIZE_PX, (y + 0.5) * TILE_SIZE_PX, TILE_SIZE_PX * 0.13);
+        }
+      }
     }
   }
 
