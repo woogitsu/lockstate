@@ -676,6 +676,14 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.zoom.title': 'Powiększenie',
   'hud.zoom.in': 'Przybliż',
   'hud.zoom.out': 'Oddal',
+  'hud.camera-angle.title': 'Kąt kamery',
+  'hud.camera-angle.yaw-left': 'Obróć w lewo',
+  'hud.camera-angle.yaw-right': 'Obróć w prawo',
+  'hud.camera-angle.elevation-up': 'Pochyl w górę',
+  'hud.camera-angle.elevation-down': 'Pochyl w dół',
+  'hud.camera-angle.reset': 'Przywróć kąt',
+  'hud.camera-angle.yaw': 'Obrót',
+  'hud.camera-angle.elevation': 'Pochylenie',
 
   'hud.tabs.title': 'Sekcje więzienia',
   /*

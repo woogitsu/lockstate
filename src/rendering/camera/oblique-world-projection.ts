@@ -1,0 +1,159 @@
+import type { RenderActor, RenderFrame } from '../feed/render-feed';
+import {
+  BUILDING_ALPHA,
+  EDGE_WALL_THICKNESS_TILES,
+  PLANNED_ALPHA,
+  edgeAppearance,
+  structureAppearance,
+  terrainAppearance,
+  zoningTint,
+} from '../world/appearance';
+import { isDrawnAsWorldEdge } from '../world/structures';
+import { createTileSample } from '../world/world-view';
+import { TILE_SIZE_PX, tileRangeContains, visibleTileRange } from '../tile-metrics';
+import { groundToScreen, visibleGroundBounds, type ObliqueCameraState } from './oblique-projection';
+import { obliqueDepthForAnchor, projectedRectPrism, projectedTileQuad, type TileQuad } from './oblique-geometry';
+import type { Point } from './coordinates';
+import { artForGround, artForNorthEdge, artForWestEdge, artForStructure } from './oblique-art-mapping';
+
+export interface ObliqueGroundTile {
+  readonly tileX: number;
+  readonly tileY: number;
+  readonly quad: TileQuad;
+  readonly fill: number;
+  readonly zoningTint: number | undefined;
+  readonly owned: boolean;
+  readonly artAssetId: string | undefined;
+}
+
+export interface ObliqueSolid {
+  readonly kind: 'north-edge' | 'west-edge' | 'structure';
+  readonly id: string;
+  readonly tileX: number;
+  readonly tileY: number;
+  readonly footprint: TileQuad;
+  readonly top: TileQuad;
+  readonly topFill: number;
+  readonly sideFill: number;
+  readonly alpha: number;
+  readonly viewDepth: number;
+  /** The optional Blender module shares this solid's ground anchor. */
+  readonly artAssetId: string | undefined;
+}
+
+export interface ObliqueActorPoint {
+  readonly kind: 'actor';
+  readonly id: number;
+  readonly foot: Point;
+  readonly head: Point;
+  readonly viewDepth: number;
+  readonly artAssetId: string;
+}
+
+export interface ObliqueWorldProjection {
+  readonly ground: readonly ObliqueGroundTile[];
+  /** Sort together with actors before painting so turning the view changes occlusion. */
+  readonly raised: readonly (ObliqueSolid | ObliqueActorPoint)[];
+  readonly loadedTilesVisited: number;
+}
+
+export function projectObliqueActors(actors: readonly RenderActor[], camera: ObliqueCameraState): ObliqueActorPoint[] {
+  const range = visibleTileRange(visibleGroundBounds(camera), 3);
+  const projected: ObliqueActorPoint[] = [];
+  for (const actor of actors) {
+    if (!tileRangeContains(range, actor.tileX, actor.tileY)) continue;
+    const x = (actor.tileX + 0.5) * TILE_SIZE_PX;
+    const y = (actor.tileY + 0.5) * TILE_SIZE_PX;
+    projected.push({
+      kind: 'actor', id: actor.id,
+      foot: groundToScreen({ x, y }, camera),
+      head: groundToScreen({ x, y, z: 0.8 * TILE_SIZE_PX }, camera),
+      viewDepth: obliqueDepthForAnchor({ x, y }, camera.yawRadians),
+      artAssetId: actor.assetId,
+    });
+  }
+  return projected;
+}
+
+export function sortObliqueRaised(items: (ObliqueSolid | ObliqueActorPoint)[]): void {
+  items.sort((a, b) => a.viewDepth - b.viewDepth || a.kind.localeCompare(b.kind) || String(a.id).localeCompare(String(b.id)));
+}
+
+/**
+ * Projects a real immutable render frame without changing the simulation grid.
+ * The current world stores walls on tile edges; their prisms therefore occupy
+ * the same 0.22-tile strips. The square-wall migration may replace those with
+ * full-tile structures without making this painter invent collision geometry.
+ */
+export function projectObliqueWorldFrame(frame: RenderFrame, camera: ObliqueCameraState): ObliqueWorldProjection {
+  const range = visibleTileRange(visibleGroundBounds(camera), 3);
+  const ground: ObliqueGroundTile[] = [];
+  const raised: (ObliqueSolid | ObliqueActorPoint)[] = [];
+  const world = frame.world;
+  const size = world.chunkSize;
+  const sample = createTileSample();
+  let loadedTilesVisited = 0;
+
+  const edge = (kind: 'north-edge' | 'west-edge', tileX: number, tileY: number, value: number): void => {
+    const appearance = edgeAppearance(value);
+    const x = tileX * TILE_SIZE_PX;
+    const y = tileY * TILE_SIZE_PX;
+    const thickness = EDGE_WALL_THICKNESS_TILES * TILE_SIZE_PX;
+    const width = kind === 'north-edge' ? TILE_SIZE_PX : thickness;
+    const depth = kind === 'north-edge' ? thickness : TILE_SIZE_PX;
+    const geometry = projectedRectPrism(x, y, width, depth, appearance.heightTiles * TILE_SIZE_PX, camera);
+    raised.push({
+      kind, id: `${kind}:${tileX}:${tileY}`, tileX, tileY,
+      ...geometry, topFill: appearance.topFill, sideFill: appearance.sideFill, alpha: 1,
+      viewDepth: obliqueDepthForAnchor({ x: x + width / 2, y: y + depth / 2 }, camera.yawRadians),
+      artAssetId: kind === 'north-edge' ? artForNorthEdge(value) : artForWestEdge(value),
+    });
+  };
+
+  // Visit only materialised chunks intersecting the inverse-projected view.
+  // A sparse world with two far-apart chunks never scans the gap between them.
+  for (const position of world.loadedChunkPositions) {
+    const minX = Math.max(range.minTileX, position.chunkX * size);
+    const maxX = Math.min(range.maxTileX, (position.chunkX + 1) * size - 1);
+    const minY = Math.max(range.minTileY, position.chunkY * size);
+    const maxY = Math.min(range.maxTileY, (position.chunkY + 1) * size - 1);
+    for (let tileY = minY; tileY <= maxY; tileY += 1) {
+      for (let tileX = minX; tileX <= maxX; tileX += 1) {
+        world.readTile(tileX, tileY, sample);
+        loadedTilesVisited += 1;
+        const terrain = terrainAppearance(sample.terrainNumericId);
+        ground.push({
+          tileX, tileY, quad: projectedTileQuad(tileX, tileY, camera),
+          fill: (tileX + tileY) % 2 === 0 ? terrain.fill : terrain.fillAlternate,
+          zoningTint: zoningTint(sample.zoning), owned: sample.owned,
+          artAssetId: artForGround(sample.zoning),
+        });
+        if (sample.topEdge !== 0) edge('north-edge', tileX, tileY, sample.topEdge);
+        if (sample.leftEdge !== 0) edge('west-edge', tileX, tileY, sample.leftEdge);
+      }
+    }
+  }
+
+  for (const structure of frame.structures) {
+    if (!tileRangeContains(range, structure.tileX, structure.tileY)) continue;
+    world.readTile(structure.tileX, structure.tileY, sample);
+    if (isDrawnAsWorldEdge(structure) && (sample.topEdge !== 0 || sample.leftEdge !== 0)) continue;
+    const appearance = structureAppearance(structure.definitionId);
+    const x = structure.tileX * TILE_SIZE_PX;
+    const y = structure.tileY * TILE_SIZE_PX;
+    const width = appearance.footprintTiles.width * TILE_SIZE_PX;
+    const depth = appearance.footprintTiles.height * TILE_SIZE_PX;
+    const geometry = projectedRectPrism(x, y, width, depth, appearance.heightTiles * TILE_SIZE_PX, camera);
+    raised.push({
+      kind: 'structure', id: structure.id, tileX: structure.tileX, tileY: structure.tileY,
+      ...geometry, topFill: appearance.topFill, sideFill: appearance.sideFill,
+      alpha: structure.phase === 'planned' ? PLANNED_ALPHA : structure.phase === 'building' ? BUILDING_ALPHA : 1,
+      viewDepth: obliqueDepthForAnchor({ x: x + width / 2, y: y + depth / 2 }, camera.yawRadians),
+      artAssetId: structure.phase === 'built' ? artForStructure(structure.definitionId) : undefined,
+    });
+  }
+
+  raised.push(...projectObliqueActors(frame.actors, camera));
+  sortObliqueRaised(raised);
+  return { ground, raised, loadedTilesVisited };
+}

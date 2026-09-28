@@ -3,6 +3,7 @@ import type { RoomTemplateId } from '../../content/room-template-catalog';
 import type { MinimapView } from '../../shared/minimap-view';
 import type { RoomTemplateCostQuote, RoomTemplateTool } from '../room-template-tool';
 import { RoomTemplateTool as RoomTemplateToolState, type RoomTemplatePlacementRequest, type RoomTemplatePreflight } from '../room-template-tool';
+import type { CameraPoseAction } from '../../input/camera-pose-input';
 import { DEFAULT_LAYOUT_SETTINGS, type LayoutSettings } from '../../input/layout-preference';
 import type { MessageParameters } from '../../services/localization/format';
 import { hostRefusalReason } from '../host-refusal';
@@ -20,6 +21,7 @@ import { type ListRow, createListRow } from '../primitives/list-row';
 import { type Panel, createPanel } from '../primitives/panel';
 import { type TabButton, createTabButton } from '../primitives/tab-button';
 import { type BuildPanel, type BuildPanelTarget, createBuildPanel } from './build-panel';
+import { createCameraAngleControl } from './camera-angle-control';
 import { type IntakePanel, createIntakePanel } from './intake-panel';
 import { type OverviewPanel, createOverviewPanel } from './overview-panel';
 import { type RegimePanel, createRegimePanel } from './regime-panel';
@@ -1067,6 +1069,9 @@ export interface MountHudOptions {
    * every harness in `tests/browser/` that does not pass it.
    */
   readonly onCameraZoom?: (direction: 'in' | 'out') => void;
+  /** Present only when the host has mounted an angle-capable camera. */
+  readonly onCameraPoseAction?: (action: CameraPoseAction) => void;
+  readonly cameraPose?: { readonly yawRadians: number; readonly elevationRadians: number };
   /**
    * Receives every player action, and may be async.
    *
@@ -1145,6 +1150,8 @@ export interface HudHandle {
   update(viewModel: HudViewModel): void;
   /** Paints a read-only projection supplied by the world renderer. */
   updateMinimap(view: MinimapView | undefined): void;
+  updateCameraPose(pose: { readonly yawRadians: number; readonly elevationRadians: number }): void;
+  setCameraPoseAvailable(available: boolean): void;
   /** Makes the empty-session minimap a truthful, inert instruction. */
   setMinimapSessionActive(active: boolean): void;
   /**
@@ -2290,7 +2297,23 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     children: [zoomLegend, zoomOut.element, zoomIn.element],
   });
 
-  corner = element('div', { className: 'hud__corner', children: [zoomControl, minimapPanel.element] });
+  const angleControl = options.onCameraPoseAction === undefined || options.cameraPose === undefined
+    ? undefined
+    : createCameraAngleControl({
+      title: t(HUD_MESSAGE_KEY.cameraAngleTitle),
+      yawLeft: t(HUD_MESSAGE_KEY.cameraAngleYawLeft),
+      yawRight: t(HUD_MESSAGE_KEY.cameraAngleYawRight),
+      elevationUp: t(HUD_MESSAGE_KEY.cameraAngleElevationUp),
+      elevationDown: t(HUD_MESSAGE_KEY.cameraAngleElevationDown),
+      reset: t(HUD_MESSAGE_KEY.cameraAngleReset),
+      yaw: t(HUD_MESSAGE_KEY.cameraAngleYaw),
+      elevation: t(HUD_MESSAGE_KEY.cameraAngleElevation),
+    }, options.onCameraPoseAction);
+  if (angleControl !== undefined && options.cameraPose !== undefined) angleControl.updatePose(options.cameraPose);
+  corner = element('div', {
+    className: 'hud__corner',
+    children: [zoomControl, ...(angleControl === undefined ? [] : [angleControl.element]), minimapPanel.element],
+  });
 
   // ---- bottom-right build panel ------------------------------------
   // Placing an order is a *command*: it asks the host to change the
@@ -3483,6 +3506,8 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     preferencesSlot: layout.preferencesSlot,
     update,
     updateMinimap,
+    updateCameraPose: (pose) => angleControl?.updatePose(pose),
+    setCameraPoseAvailable: (available) => angleControl?.setAvailable(available),
     setMinimapSessionActive,
     setBuildTarget: (target) => buildPanel.setTarget(target),
     setUnavailable,

@@ -34,6 +34,9 @@ import { DemoActorFeed, isDemoActorsRequested } from './rendering/feed/demo-acto
 import { EMPTY_RENDER_FRAME, type RenderFeed } from './rendering/feed/render-feed';
 import { SimulationSnapshotFeed } from './rendering/feed/simulation-snapshot-feed';
 import { WorldScene } from './rendering/scene/world-scene';
+import { ObliqueWorldScene } from './rendering/scene/oblique-world-scene';
+import { fetchObliqueModuleSet } from './rendering/assets/oblique-module-registry';
+import { CameraPoseInputAdapter, type CameraPoseAction } from './input/camera-pose-input';
 import { VOID_COLOR } from './rendering/world/appearance';
 import { applyAccessibilitySettings, createDisplayScaleControl } from './ui/display-scale';
 import { createThemeControl, createThemeController, resolveSystemThemeQuery } from './ui/theme';
@@ -389,6 +392,32 @@ const roomTemplatePreflight = simulation === undefined || commandSender === unde
   ? undefined
   : createSimulationRoomTemplatePreflight(simulation);
 
+const obliquePreviewRequested = new URL(window.location.href).searchParams.get('oblique-preview') === '1';
+let obliqueCameraScene: ObliqueWorldScene | undefined;
+let cameraHud: HudHandle | undefined;
+let cameraInput: CameraPoseInputAdapter | undefined;
+const cameraPlacementActive = (): boolean =>
+  (buildTool?.isArmed() ?? false) || (roomTool?.isArmed() ?? false) || (objectTool?.isArmed() ?? false);
+const cameraContexts = () => {
+  if (document.querySelector('dialog[open], [role="dialog"][aria-modal="true"]')) return ['modal'] as const;
+  if (document.activeElement?.matches('input, textarea, select, [contenteditable="true"]')) return ['text-entry'] as const;
+  return ['world'] as const;
+};
+const refreshCameraControls = (): void => {
+  cameraHud?.setCameraPoseAvailable(cameraInput?.canActivate() ?? false);
+};
+const activateCameraPose = (action: CameraPoseAction): void => {
+  cameraInput?.activate(action);
+  refreshCameraControls();
+};
+if (obliquePreviewRequested) {
+  window.addEventListener('keydown', (event) => {
+    if (cameraInput?.keyDown(event)) event.preventDefault();
+  });
+  document.addEventListener('focusin', refreshCameraControls);
+  document.addEventListener('focusout', () => queueMicrotask(refreshCameraControls));
+}
+
 /**
  * The footprint of the object a buildable places, in tiles, or `undefined` for
  * a buildable that places none.
@@ -702,7 +731,39 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
   },
 };
 
-new Phaser.Game(gameConfig);
+const game = new Phaser.Game(gameConfig);
+
+// The angled renderer first runs against the same live RenderFeed as the
+// standard scene behind an explicit preview URL. Building still belongs to
+// WorldScene; this gate lets browser QA exercise a real prison without exposing
+// a view whose construction gestures are not wired up yet.
+if (obliquePreviewRequested) {
+  game.events.once(Phaser.Core.Events.READY, () => {
+    void fetchObliqueModuleSet().then((artCatalogs) => {
+      const obliqueScene = new ObliqueWorldScene({
+        feed: renderFeed,
+        artCatalogs,
+        onPoseChanged: (pose) => {
+          cameraHud?.updateCameraPose(pose);
+          refreshCameraControls();
+        },
+        canRotate: () => cameraInput?.canActivate() ?? false,
+      });
+      game.scene.add('oblique-world', obliqueScene, false);
+      obliqueScene.events.once(Phaser.Scenes.Events.CREATE, () => {
+        obliqueCameraScene = obliqueScene;
+        cameraInput = new CameraPoseInputAdapter(obliqueScene, cameraContexts, cameraPlacementActive);
+        cameraHud?.updateCameraPose(obliqueScene.cameraPose);
+        refreshCameraControls();
+        game.scene.stop('WorldScene');
+        document.body.dataset.obliquePreview = 'ready';
+      });
+      game.scene.start('oblique-world');
+    }).catch((error: unknown) => {
+      console.warn('Angled camera preview unavailable; the standard world remains active.', error);
+    });
+  });
+}
 
 /**
  * `?actors=demo` puts scripted actors on screen.
@@ -2612,6 +2673,10 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     localizer,
     ...(roomTemplatePreflight === undefined ? {} : { roomTemplatePreflight }),
     ...(simulation === undefined ? {} : { roomTemplateQuote: createSimulationRoomTemplateQuote(simulation) }),
+    ...(obliquePreviewRequested ? {
+      cameraPose: { yawRadians: -Math.PI / 4, elevationRadians: Math.PI / 4 },
+      onCameraPoseAction: activateCameraPose,
+    } : {}),
     layout: loadLayoutSettings(layoutStore),
     // Persisted first and painted second, exactly as the interface scale is:
     // `saveLayoutSettings` swallows a refusal by design, so the write cannot
@@ -2747,6 +2812,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
          */
         case 'select-tab': {
           activeTab = intent.tab;
+          queueMicrotask(refreshCameraControls);
           if (activeTab === 'manage') void manageSavesPanel?.refresh();
           /*
            * **Asked for on arrival at every tab now, and never cleared on
@@ -2912,6 +2978,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
             // panel already has.
             tool?.setArmed(false);
             objects?.setArmed(intent.armed, { removing: true });
+            refreshCameraControls();
             return;
           }
 
@@ -2919,10 +2986,12 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           if (footprint !== undefined && intent.definitionId !== undefined) {
             tool?.setArmed(false);
             objects?.setArmed(intent.armed, { definitionId: intent.definitionId, footprint, removing: false });
+            refreshCameraControls();
             return;
           }
           objects?.setArmed(false, { removing: false });
           tool?.setArmed(intent.armed, intent.definitionId);
+          refreshCameraControls();
           return;
         }
 
@@ -2942,6 +3011,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
             ...(intent.roomId === undefined ? {} : { roomId: intent.roomId }),
             removing: intent.removing,
           });
+          refreshCameraControls();
           return;
 
         case 'set-clock':
@@ -3877,6 +3947,11 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     },
     onError: (failure) => console.warn('HUD action failed', failure),
   });
+  if (obliquePreviewRequested) {
+    cameraHud = hud;
+    if (obliqueCameraScene !== undefined) hud.updateCameraPose(obliqueCameraScene.cameraPose);
+    refreshCameraControls();
+  }
   // The renderer owns the projection and camera; the HUD only paints it.
   worldScene.setMinimapSink((view) => hud?.updateMinimap(view));
   worldScene.setTemplateGhostPort(hud.roomTemplateTool);

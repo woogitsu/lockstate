@@ -514,6 +514,30 @@
    wrapped one would take the row past the tap targets beside it. */
 .hud-zoom__legend { flex: none; }
 
+/* Mounted beside the zoom island only while the oblique camera is active. */
+.hud-camera-angle {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--space-2);
+  align-self: flex-start;
+  max-width: min(396px, 100%);
+  margin-bottom: var(--space-2);
+  padding: var(--space-2);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+}
+.hud-camera-angle__legend,
+.hud-camera-angle__reading { grid-column: 1 / -1; }
+.hud-camera-angle__reading { font-variant-numeric: tabular-nums; }
+.hud-camera-angle__button {
+  min-width: 0;
+  min-height: var(--tap-target);
+  padding-inline: var(--space-1);
+  white-space: normal;
+}
+.hud__corner .hud-camera-angle__button { pointer-events: auto; }
+
 /* The frame scales with the rest of the interface (#545): it is a HUD panel
    like any other, and a minimap that stayed a fixed width while the type
    inside it grew would be the one island the scale did not reach.
