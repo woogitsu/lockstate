@@ -878,7 +878,7 @@ if (obliquePreviewRequested) {
             : undefined;
           paintObliqueSquareGhost();
         },
-        onTileGesture: (tiles) => {
+        onTileGesture: (tiles, edge) => {
           const first = tiles[0];
           if (first === undefined) return;
           const { x: tileX, y: tileY } = first;
@@ -888,7 +888,7 @@ if (obliquePreviewRequested) {
           }
           if (tiles.length !== 1) return;
           if (objectTool?.isArmed() && objectTool.isRemoving()) {
-            objectTool.place({ tileX, tileY });
+            objectTool.place({ tileX, tileY, edge });
             return;
           }
           if (objectTool?.isArmed() && !objectTool.isRemoving()) {
