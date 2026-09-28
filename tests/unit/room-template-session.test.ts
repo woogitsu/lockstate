@@ -11,6 +11,18 @@ import type { SessionSnapshotBundle } from '../../src/simulation/runtime/restore
 const tile = (x: number, y: number) => ({ x: tileCoordinate(x), y: tileCoordinate(y) });
 
 describe('room template session command', () => {
+  it('reserves the entire pending plan, including empty interior squares, through save and load', () => {
+    const runtime = createNewSimulationRuntime(72);
+    expect(runtime.roomTemplates.place({ templateId: 'canteen-basic', origin: { x: 10, y: 10 }, mirrorX: false, sequence: 0 })).toEqual({ ok: true });
+    const nested = createRoomTemplateBuildPlan('kitchen-basic', { x: 11, y: 11 }, false, 1).plan;
+    expect(runtime.roomTemplates.preflight(nested)).toEqual({
+      ok: false, reason: 'structure-occupied', tile: tile(11, 11),
+    });
+    const restored = restoreSimulationRuntime(captureSessionSnapshot(runtime)).runtime;
+    expect(restored.roomTemplates.preflight(nested)).toEqual({
+      ok: false, reason: 'structure-occupied', tile: tile(11, 11),
+    });
+  });
   it('preflights the whole footprint of a pending two-square object, including its non-anchor square', () => {
     const runtime = createNewSimulationRuntime(72);
     const desk = createBuildOrder('pending-desk', 'desk-wooden', tile(9, 10), undefined, 0);

@@ -1,4 +1,4 @@
-import type { RoomTemplatePlan } from '../../content/room-template-catalog';
+import { instantiateRoomTemplate, type RoomTemplatePlan } from '../../content/room-template-catalog';
 import type { SystemRegistration, SimulationContext } from '../kernel/system';
 import type { PlacedObjectRegistry } from '../objects/placed-object-registry';
 import type { ObjectPlacementService } from '../objects/object-placement-service';
@@ -43,6 +43,10 @@ export class RoomTemplateCoordinator implements SystemRegistration {
       order.state !== 'cancelled' && order.state !== 'failed' && order.state !== 'completed');
     const objectClaims = new Set<string>();
     const structureClaims = new Set<string>();
+    // Shell orders claim only perimeter tiles. Until zoning completes, the
+    // interior is still empty world, but it belongs to the same atomic plan.
+    const pendingPlans = this.pending.map((request) =>
+      instantiateRoomTemplate(request.templateId, request.origin, { mirrorX: request.mirrorX }));
     for (const order of active) {
       const objectId = BUILDABLE_REGISTRY.get(order.definitionId)?.placesObjectId;
       if (objectId === undefined) {
@@ -64,7 +68,9 @@ export class RoomTemplateCoordinator implements SystemRegistration {
       this.world,
       plan,
       (tile) => this.placedObjects.isTileOccupied(tile) || objectClaims.has(tileKey(tile)),
-      (tile) => structureClaims.has(tileKey(tile)),
+      (tile) => structureClaims.has(tileKey(tile)) || pendingPlans.some((pending) =>
+        tile.x >= pending.origin.x && tile.x < pending.origin.x + pending.width &&
+        tile.y >= pending.origin.y && tile.y < pending.origin.y + pending.height),
     );
   }
 
