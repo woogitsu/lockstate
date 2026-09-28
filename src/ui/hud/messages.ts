@@ -523,6 +523,7 @@ export const HUD_MESSAGE_KEY = {
   templatePlansShort: 'hud.build.templates-short',
   templatePreviewOnly: 'hud.build.template-preview-only',
   templatePositionHint: 'hud.build.template-position-hint',
+  templateArmHint: 'hud.build.template-arm-hint',
   templateX: 'hud.build.template-x',
   templateY: 'hud.build.template-y',
   templateMirror: 'hud.build.template-mirror',

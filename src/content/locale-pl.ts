@@ -1628,6 +1628,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.template-catalogue-value': 'Wartość katalogowa: {total}. Posiadane materiały mogą obniżyć wydatek.',
   'hud.build.template-catalogue-value-unavailable': 'Wartość katalogowa jest niedostępna. Sprawdź wymagane materiały.',
   'hud.build.template-cell-row-four': 'Rząd czterech cel',
+  'hud.build.template-arm-hint': 'Wskaż mapę, aby obejrzeć cały wzór. Kliknij wolny obrys, aby zlecić budowę. Środkowy przycisk myszy lub strzałki poruszają kamerą.',
 };
 
 export const localePlCatalog: LocalizationCatalog = buildLocalizationCatalog(plMessages);
