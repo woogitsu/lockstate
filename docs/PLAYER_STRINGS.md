@@ -22,7 +22,7 @@ Nothing mechanical can. That argument belongs in a docblock beside that code —
 `hud.alert.event.construction.undo-refused-newer-action` is the worked example, arguing
 each of its three clauses at the code that decides it.
 
-## The 554 authored sentences
+## The 562 authored sentences
 
 Source: `src/content/default-locale-en.ts`, in the order they are declared.
 
@@ -582,4 +582,12 @@ Source: `src/content/default-locale-en.ts`, in the order they are declared.
 | `display.language.polish` | Polski | `src/content/default-locale-en.ts:4482` |
 | `display.language.cycle` | Change the interface language and reload the game | `src/content/default-locale-en.ts:4490` |
 | `app.shell.label` | Lockstate game application | `src/content/default-locale-en.ts:4500` |
+| `hud.camera-angle.title` | Camera angle | `src/content/default-locale-en.ts:4501` |
+| `hud.camera-angle.yaw-left` | Turn left | `src/content/default-locale-en.ts:4502` |
+| `hud.camera-angle.yaw-right` | Turn right | `src/content/default-locale-en.ts:4503` |
+| `hud.camera-angle.elevation-up` | Tilt up | `src/content/default-locale-en.ts:4504` |
+| `hud.camera-angle.elevation-down` | Tilt down | `src/content/default-locale-en.ts:4505` |
+| `hud.camera-angle.reset` | Reset angle | `src/content/default-locale-en.ts:4506` |
+| `hud.camera-angle.yaw` | Turn | `src/content/default-locale-en.ts:4507` |
+| `hud.camera-angle.elevation` | Tilt | `src/content/default-locale-en.ts:4508` |
 
