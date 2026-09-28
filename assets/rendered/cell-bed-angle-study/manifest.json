@@ -1,0 +1,295 @@
+{
+  "schemaVersion": 1,
+  "source": "cell-bed-angle-study.blend",
+  "cellSource": "interior-cell-angle-study.blend",
+  "cellSourceSha256": "e6ce317e56353f4adec264e9d6b2c85646653de935e9cdab764cb37d11e02e4d",
+  "bedCatalogSource": "environment.mvp.catalog.blend",
+  "bedCatalogSha256": "57db9afb7e48996cef9aaedda72b8e874e865eb56862ee4add8b177a9713887d",
+  "bedCollection": "furniture.cell.bed.single.variants",
+  "bedOriginTile": [
+    1.0,
+    2.1,
+    0.0
+  ],
+  "resolution": [
+    1920,
+    1080
+  ],
+  "projection": "orthographic",
+  "orthoScale": 30.0,
+  "nominalPixelsPerTile": 64.0,
+  "target": [
+    0.0,
+    1.0,
+    1.0
+  ],
+  "lighting": {
+    "type": "one area light",
+    "location": [
+      -4,
+      -5,
+      9
+    ],
+    "energy": 900,
+    "size": 5
+  },
+  "yawDegrees": [
+    -45,
+    0,
+    45
+  ],
+  "elevationDegrees": [
+    25,
+    45,
+    65
+  ],
+  "entries": [
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 25,
+      "furnishedImage": "bed-yaw-45-elev25.png",
+      "furnishedSha256": "a24246033dc056f25951874e35f458c3c9c043126a53f59c9e0acf8696fa1632",
+      "silhouetteImage": "bed-yaw-45-elev25-silhouette.png",
+      "silhouetteSha256": "e29649109213bacb943ab8d708ec0d8fde176433be607629292ad4a68f4e07e2",
+      "silhouette": {
+        "opaquePixelCount": 5992,
+        "boundsPx": [
+          892,
+          484,
+          1019,
+          585
+        ],
+        "widthPx": 127,
+        "heightPx": 101
+      },
+      "cameraLocation": [
+        -8.485281,
+        -7.485281,
+        6.595692
+      ]
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 45,
+      "furnishedImage": "bed-yaw-45-elev45.png",
+      "furnishedSha256": "5c935eda77aee05f37e3d90477a882ecf101f69177fe09d4b3ff5f0855bac1ad",
+      "silhouetteImage": "bed-yaw-45-elev45-silhouette.png",
+      "silhouetteSha256": "0b761ed00026afdb9d50abef30b3995f4b8772a020e9ac89603a9fac551390b8",
+      "silhouette": {
+        "opaquePixelCount": 6858,
+        "boundsPx": [
+          892,
+          437,
+          1019,
+          563
+        ],
+        "widthPx": 127,
+        "heightPx": 126
+      },
+      "cameraLocation": [
+        -8.485281,
+        -7.485281,
+        13.0
+      ]
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 65,
+      "furnishedImage": "bed-yaw-45-elev65.png",
+      "furnishedSha256": "7f5d75a01585d7e7854cf34205fc63f4e09fd6801ecbc1b2794727013388bf95",
+      "silhouetteImage": "bed-yaw-45-elev65-silhouette.png",
+      "silhouetteSha256": "1db38b1bb966d8e820befb4a160e6e153744e0ddd6a1184eb1136ad576aa6a0b",
+      "silhouette": {
+        "opaquePixelCount": 7326,
+        "boundsPx": [
+          892,
+          402,
+          1019,
+          538
+        ],
+        "widthPx": 127,
+        "heightPx": 136
+      },
+      "cameraLocation": [
+        -8.485281,
+        -7.485281,
+        26.734083
+      ]
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 25,
+      "furnishedImage": "bed-yaw+00-elev25.png",
+      "furnishedSha256": "d43bf9c61f0918e71b697e9f6f780dd3a5191e1e6d6eb21072d3de6c314f3cfc",
+      "silhouetteImage": "bed-yaw+00-elev25-silhouette.png",
+      "silhouetteSha256": "d5681df342435595faf775f541820c82721beecf6e10c4d8acea5c90369db601",
+      "silhouette": {
+        "opaquePixelCount": 4902,
+        "boundsPx": [
+          992,
+          495,
+          1056,
+          594
+        ],
+        "widthPx": 64,
+        "heightPx": 99
+      },
+      "cameraLocation": [
+        0.0,
+        -11.0,
+        6.595692
+      ]
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 45,
+      "furnishedImage": "bed-yaw+00-elev45.png",
+      "furnishedSha256": "8484519bb7c6dc55caaf2a39897f302cb908ae59325023498578a547a96b06f3",
+      "silhouetteImage": "bed-yaw+00-elev45-silhouette.png",
+      "silhouetteSha256": "74fb4857e5eb7e44e44eff73d622332e9f09dd6b1bcb878922f4c9b72efcd72a",
+      "silhouette": {
+        "opaquePixelCount": 6417,
+        "boundsPx": [
+          992,
+          456,
+          1056,
+          578
+        ],
+        "widthPx": 64,
+        "heightPx": 122
+      },
+      "cameraLocation": [
+        0.0,
+        -11.0,
+        13.0
+      ]
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 65,
+      "furnishedImage": "bed-yaw+00-elev65.png",
+      "furnishedSha256": "a0496c714c7e6ee7811629b2d3a8114c7067a05a58c6ca99332732f74d79ee13",
+      "silhouetteImage": "bed-yaw+00-elev65-silhouette.png",
+      "silhouetteSha256": "c8909dc9f300a5fd61978579f44c7e497f14b845eebf7ded0acf9992e6e4a34e",
+      "silhouette": {
+        "opaquePixelCount": 7159,
+        "boundsPx": [
+          992,
+          427,
+          1056,
+          558
+        ],
+        "widthPx": 64,
+        "heightPx": 131
+      },
+      "cameraLocation": [
+        0.0,
+        -11.0,
+        26.734083
+      ]
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 25,
+      "furnishedImage": "bed-yaw+45-elev25.png",
+      "furnishedSha256": "f3c6e8c11814887cf5e4f92a55f3167672516f565e2e54047d1c510e109bb8be",
+      "silhouetteImage": "bed-yaw+45-elev25-silhouette.png",
+      "silhouetteSha256": "2e2a640262c5f113dbafe1b07dab6bc6750f81c7777a454ac28ae1b86c29ed19",
+      "silhouette": {
+        "opaquePixelCount": 5982,
+        "boundsPx": [
+          992,
+          521,
+          1118,
+          623
+        ],
+        "widthPx": 126,
+        "heightPx": 102
+      },
+      "cameraLocation": [
+        8.485281,
+        -7.485281,
+        6.595692
+      ]
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 45,
+      "furnishedImage": "bed-yaw+45-elev45.png",
+      "furnishedSha256": "0a9370ec1f07d2ffb47b19eb56c14b8bc1cb82484aec005a4152c9a473834d88",
+      "silhouetteImage": "bed-yaw+45-elev45-silhouette.png",
+      "silhouetteSha256": "6b04b6ff4623eca7e0401572d309b12ce50a68421b5b77a6aa3c048691c7f736",
+      "silhouette": {
+        "opaquePixelCount": 6837,
+        "boundsPx": [
+          992,
+          501,
+          1118,
+          627
+        ],
+        "widthPx": 126,
+        "heightPx": 126
+      },
+      "cameraLocation": [
+        8.485281,
+        -7.485281,
+        13.0
+      ]
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 65,
+      "furnishedImage": "bed-yaw+45-elev65.png",
+      "furnishedSha256": "980c5247231762ab80e01125a87c5651b324f59455d85a8abecde49e2cecbeb4",
+      "silhouetteImage": "bed-yaw+45-elev65-silhouette.png",
+      "silhouetteSha256": "0d404e4da8a2e39f48d086e8649013e53961904b75c3f78e97547806a538443a",
+      "silhouette": {
+        "opaquePixelCount": 7318,
+        "boundsPx": [
+          992,
+          484,
+          1118,
+          620
+        ],
+        "widthPx": 126,
+        "heightPx": 136
+      },
+      "cameraLocation": [
+        8.485281,
+        -7.485281,
+        26.734083
+      ]
+    }
+  ],
+  "cutawayCandidate": {
+    "selectionRule": {
+      "yawDegreesAtLeast": 30,
+      "elevationDegreesAtMost": 30
+    },
+    "referenceImage": "bed-yaw+45-elev25.png",
+    "image": "bed-yaw+45-elev25-east-cutaway.png",
+    "sha256": "0b194655495d7bad5a45092c5c49ab7b7f18c921508c887bcf913334bdf3ef16",
+    "yawDegrees": 45,
+    "elevationDegrees": 25,
+    "changedInstances": [
+      {
+        "name": "east wall 1",
+        "assetId": "wall.interior.module.cutaway"
+      },
+      {
+        "name": "east wall 2",
+        "assetId": "wall.interior.module.cutaway"
+      },
+      {
+        "name": "east wall 3",
+        "assetId": "wall.interior.module.cutaway"
+      },
+      {
+        "name": "north-east corner",
+        "assetId": "wall.interior.corner.outer.cutaway"
+      }
+    ],
+    "visibleBlanketPixelsBefore": 0,
+    "visibleBlanketPixelsAfter": 728
+  }
+}
