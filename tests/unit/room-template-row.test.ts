@@ -90,9 +90,11 @@ it('rolls back earlier cells if a later designation refuses after the shell fini
   const first = instantiateRoomTemplate('cell-row-four', origin).zones[0]!;
   const originalZone = runtime.roomZoning.zone.bind(runtime.roomZoning);
   let calls = 0;
-  vi.spyOn(runtime.roomZoning, 'zone').mockImplementation((request, tick) => {
+  vi.spyOn(runtime.roomZoning, 'zone').mockImplementation((request, tick, templateSequence) => {
     calls += 1;
-    return originalZone(calls === 2 ? { ...request, x: first.x, y: first.y } : request, tick);
+    // Preserve the originating template sequence so its own reserved footprint
+    // does not reject the first designation before the injected second failure.
+    return originalZone(calls === 2 ? { ...request, x: first.x, y: first.y } : request, tick, templateSequence);
   });
   runtime.kernel.submitCommand('row-refusal', 0, runtime.kernel.tick, packCommand({
     type: 'PlaceRoomTemplate', templateId: 'cell-row-four', origin,
