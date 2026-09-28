@@ -153,6 +153,7 @@ test('whole-square dirt grid stays legible above Blender ground at three yaw ang
   await page.goto('/tests/browser/oblique-world-harness.html');
   await page.waitForFunction(() => window.lockstateObliqueWorldHarness !== undefined);
   await page.evaluate(() => window.lockstateObliqueWorldHarness.ready());
+  await page.evaluate(() => window.lockstateObliqueWorldHarness.setBuildGrid(true));
   for (const yaw of [-45, 0, 45]) {
     await page.evaluate((angle) => window.lockstateObliqueWorldHarness.setPose(angle, 45), yaw);
     const points = await page.evaluate(() => ({
@@ -199,4 +200,51 @@ test('selected cell shows the north door cutaway Blender module', async ({ page 
     expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.artErrors())).toEqual([]);
     await page.screenshot({ path: testInfo.outputPath(`north-door-cutaway-yaw${yaw}-fullhd.png`) });
   }
+});
+
+test('built cell keeps a quiet browse grid and a strong build hover', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/tests/browser/oblique-world-harness.html');
+  await page.waitForFunction(() => window.lockstateObliqueWorldHarness !== undefined);
+  await page.evaluate(() => window.lockstateObliqueWorldHarness.ready());
+  await page.evaluate(() => window.lockstateObliqueWorldHarness.setPose(-45, 45));
+  const points = await page.evaluate(() => ({
+    edge: window.lockstateObliqueWorldHarness.pointAtGround(7, 6.5),
+    left: window.lockstateObliqueWorldHarness.pointAtGround(6.8, 6.5),
+    right: window.lockstateObliqueWorldHarness.pointAtGround(7.2, 6.5),
+  }));
+  const screenshot = await page.screenshot({ path: testInfo.outputPath('browse-grid-before-fullhd.png') });
+  const contrast = await page.evaluate(async ({ data, points }) => {
+    const image = new Image();
+    image.src = data;
+    await image.decode();
+    const canvas = document.createElement('canvas');
+    canvas.width = image.width;
+    canvas.height = image.height;
+    const context = canvas.getContext('2d');
+    if (context === null) throw new Error('Screenshot canvas unavailable');
+    context.drawImage(image, 0, 0);
+    const luminance = (x: number, y: number): number => {
+      const pixel = context.getImageData(Math.round(x), Math.round(y), 1, 1).data;
+      return 0.2126 * pixel[0]! + 0.7152 * pixel[1]! + 0.0722 * pixel[2]!;
+    };
+    const edge = Math.min(...[-1, 0, 1].flatMap((dx) => [-1, 0, 1]
+      .map((dy) => luminance(points.edge.x + dx, points.edge.y + dy))));
+    return Math.min(luminance(points.left.x, points.left.y),
+      luminance(points.right.x, points.right.y)) - edge;
+  }, { data: `data:image/png;base64,${screenshot.toString('base64')}`, points });
+  expect(contrast).toBeLessThan(12);
+  await page.evaluate(() => window.lockstateObliqueWorldHarness.setPose(0, 45));
+  await page.screenshot({ path: testInfo.outputPath('browse-grid-yaw0-fullhd.png') });
+  await page.evaluate(() => window.lockstateObliqueWorldHarness.setPose(45, 45));
+  const browseYaw45 = await page.screenshot({ path: testInfo.outputPath('browse-grid-yaw45-fullhd.png') });
+  const beforeToggle = await page.evaluate(() => window.lockstateObliqueWorldHarness.paintCounts().ground);
+  await page.evaluate(() => window.lockstateObliqueWorldHarness.setBuildGrid(true));
+  const build = await page.screenshot({ path: testInfo.outputPath('build-grid-yaw45-fullhd.png') });
+  expect(build.equals(browseYaw45)).toBe(false);
+  expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.paintCounts().ground)).toBe(beforeToggle);
+  const hover = await page.evaluate(() => window.lockstateObliqueWorldHarness.pointAtTile(6, 6));
+  await page.mouse.move(hover.x, hover.y);
+  const active = await page.screenshot({ path: testInfo.outputPath('build-hover-yaw45-fullhd.png') });
+  expect(active.equals(build)).toBe(false);
 });

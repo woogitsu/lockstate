@@ -27,6 +27,7 @@ export interface ObliqueWorldHarness {
   cameraAngles(): { readonly yawRadians: number; readonly elevationRadians: number };
   poseChangeCount(): number;
   setRotationEnabled(enabled: boolean): void;
+  setBuildGrid(active: boolean): void;
   hovered(): { readonly tileX: number; readonly tileY: number } | undefined;
   tileAtScreen(point: Point): { readonly tileX: number; readonly tileY: number };
   cameraTargetAndZoom(): { readonly x: number; readonly y: number; readonly zoom: number };
@@ -133,6 +134,7 @@ window.lockstateObliqueWorldHarness = {
   cameraAngles: () => ({ yawRadians: scene.cameraPose.yawRadians, elevationRadians: scene.cameraPose.elevationRadians }),
   poseChangeCount: () => poseChangeCount,
   setRotationEnabled(enabled) { rotationEnabled = enabled; },
+  setBuildGrid(active) { scene.setGroundGridEmphasis(active); },
   hovered: () => hovered,
   tileAtScreen(point) {
     const ground = screenToGround(point, scene.cameraPose);
