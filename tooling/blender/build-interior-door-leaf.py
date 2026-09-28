@@ -56,11 +56,8 @@ def box(collection, parent, name, location, dimensions, surface, bevel=0.0):
 
 
 def round_hardware(collection, parent, name, location, radius, surface):
-    bpy.ops.mesh.primitive_uv_sphere_add(segments=16, ring_count=8, radius=radius)
-    obj = bpy.context.object
-    obj.name = name
-    for linked in list(obj.users_collection):
-        linked.objects.unlink(obj)
+    mesh = pipeline_common.uv_sphere_mesh(name + " mesh", radius=radius, segments=16, ring_count=8)
+    obj = bpy.data.objects.new(name, mesh)
     collection.objects.link(obj)
     obj.parent = parent
     obj.location = location

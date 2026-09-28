@@ -203,10 +203,13 @@ def main():
     # gameplay animation or changing the actor pipeline.
     box("actor legs", (-0.65, 2.0, 0.48), (0.28, 0.30, 0.82), uniform)
     box("actor torso", (-0.65, 2.0, 1.14), (0.45, 0.27, 0.70), uniform)
-    bpy.ops.mesh.primitive_uv_sphere_add(segments=16, ring_count=8, radius=0.22,
-                                         location=(-0.65, 2.0, 1.68))
-    bpy.context.object.name = "actor head stand-in"
-    bpy.context.object.data.materials.append(skin)
+    head = pipeline_common.add_mesh_object(
+        "actor head stand-in",
+        pipeline_common.uv_sphere_mesh("actor head stand-in mesh", radius=0.22,
+                                       segments=16, ring_count=8),
+        (-0.65, 2.0, 1.68),
+    )
+    head.data.materials.append(skin)
     # The open leaf is a scene stand-in; the Blender kit provides the frame.
     box("open door leaf stand-in", (0.36, -0.30, 1.03), (0.10, 0.76, 2.04), door, 30)
 
