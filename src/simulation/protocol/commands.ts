@@ -91,7 +91,7 @@ export const zoneRoomSchema = z.object({
 /** One atomic authored template gesture; the worker expands its complete footprint. */
 export const placeRoomTemplateSchema = z.object({
   type: z.literal('PlaceRoomTemplate'),
-  templateId: z.enum(['cell-basic', 'cell-large', 'shower-room', 'canteen-basic', 'kitchen-basic', 'cell-row-four']),
+  templateId: z.enum(['cell-basic', 'cell-large', 'shower-room', 'canteen-basic', 'kitchen-basic', 'cell-row-four', 'infirmary-basic']),
   origin: z.object({ x: z.number().int().safe(), y: z.number().int().safe() }).strict(),
   mirrorX: z.boolean().optional(),
 }).strict();
