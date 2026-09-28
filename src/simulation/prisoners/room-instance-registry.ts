@@ -1350,12 +1350,13 @@ export class RoomInstanceRegistry {
     for (const [instanceId, occupants] of snapshot) {
       const target = this.occupants.get(instanceId);
       if (target === undefined) throw new RangeError(`Snapshot references unknown room instance id "${instanceId}".`);
+      const before = target.size;
       for (const entityId of occupants) target.add(entityId);
       // Recounted from the restored sets rather than trusted from the payload:
       // a save is a file the player's browser produced, and a duplicate entity
-      // id inside one instance's list must not become an extra occupied place
-      // the state pays for.
-      this.occupiedPlaceCount += target.size;
+      // id inside one instance's list, or a repeated instance row, must not
+      // become an extra occupied place.
+      this.occupiedPlaceCount += target.size - before;
     }
   }
 }
