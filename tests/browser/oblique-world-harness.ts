@@ -26,6 +26,9 @@ export interface ObliqueWorldHarness {
   setRotationEnabled(enabled: boolean): void;
   hovered(): { readonly tileX: number; readonly tileY: number } | undefined;
   tileAtScreen(point: Point): { readonly tileX: number; readonly tileY: number };
+  cameraTargetAndZoom(): { readonly x: number; readonly y: number; readonly zoom: number };
+  stepCameraZoom(direction: 'in' | 'out'): void;
+  navigateToMinimapPoint(fx: number, fy: number): boolean;
 }
 
 declare global {
@@ -40,10 +43,12 @@ world.setOwned(origin, true);
 for (let y = 0; y < 8; y += 1) {
   for (let x = 0; x < 8; x += 1) world.setTerrain(tile(x, y), 'concrete');
 }
+world.setTerrain(tile(0, 0), 'dirt');
 for (let y = 2; y <= 4; y += 1) {
   for (let x = 2; x <= 4; x += 1) world.setZoning(tile(x, y), 1);
 }
 world.setZoning(tile(6, 2), 7);
+world.setTopEdge(tile(6, 3), 2);
 for (let x = 1; x <= 4; x += 1) {
   world.setTopEdge(tile(x, 1), 1);
   world.setTopEdge(tile(x, 5), x === 3 ? 2 : 1);
@@ -117,6 +122,9 @@ window.lockstateObliqueWorldHarness = {
     const ground = screenToGround(point, scene.cameraPose);
     return { tileX: worldToTile(ground.x), tileY: worldToTile(ground.y) };
   },
+  cameraTargetAndZoom: () => ({ ...scene.cameraPose.target, zoom: scene.cameraPose.zoom }),
+  stepCameraZoom: (direction) => scene.stepCameraZoom(direction),
+  navigateToMinimapPoint: (fx, fy) => scene.navigateToMinimapPoint(fx, fy),
   async moveActorToTile(tileX) {
     actorTileX = tileX;
     await new Promise<void>((resolve) => { game.events.once(Phaser.Core.Events.POST_RENDER, () => resolve()); });

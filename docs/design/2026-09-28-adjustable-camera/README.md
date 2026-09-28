@@ -196,6 +196,10 @@ input seam for the square/template ghost and its checked placement command.
 Shower-room zoning and finished shower heads select the matching Blender
 modules. The remaining gate is to wire the actual template tool and its
 preflight verdict to those ports, then prove the placed room survives Save/Load.
+For a shower room north of its entrance, the north-edge door selects the
+Blender privacy frame and switches to its cutaway frame when it would hide the
+selected tile. West-edge doors continue using their west-facing module; the
+privacy frame has no west-facing geometry yet.
 
 **Highest-priority continuation for every future session:** keep those three
 workers directed at this camera/building/art delivery until the selectable

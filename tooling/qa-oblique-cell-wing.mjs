@@ -5,13 +5,14 @@ import { chromium } from '@playwright/test';
 
 const origin = process.env.LOCKSTATE_PREVIEW_ORIGIN ?? 'http://127.0.0.1:5187';
 const showerArt = process.env.LOCKSTATE_SHOW_SHOWER !== '0';
+const showerDoor = process.env.LOCKSTATE_SHOW_SHOWER_DOOR !== '0';
 const browser = await chromium.launch({ headless: true });
 try {
   const page = await browser.newPage({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 });
   await page.goto(`${origin}/art-angle-preview.html`, { waitUntil: 'networkidle' });
   const captures = [];
   for (const yaw of [-90, -45, 0, 45, 90]) {
-    const result = await page.evaluate(async ({ yaw, showerArt }) => {
+    const result = await page.evaluate(async ({ yaw, showerArt, showerDoor }) => {
       const registry = await (await fetch('/game-content/oblique-module-registry.v1.json')).json();
       const catalogs = new Map();
       for (const entry of registry.entries) catalogs.set(entry.assetId, await (await fetch(entry.manifest)).json());
@@ -38,6 +39,7 @@ try {
         raised.push({ id: cutaway ? 'wall.interior.module.cutaway' : 'wall.interior.module.west.full', x, y: 1.25 });
       }
       if (showerArt) raised.push({ id: 'fixture.shower.head', x: 8, y: 2 });
+      if (showerDoor) raised.push({ id: cutaway ? 'door.shower.privacy.open.cutaway' : 'door.shower.privacy.open.full', x: 7, y: -0.5 });
       const elevation = 45;
       const select = (id) => {
         const catalog = catalogs.get(id);
@@ -82,8 +84,8 @@ try {
       ctx.font = '24px sans-serif';
       ctx.fillText(`Four cells + corridor + shower | yaw ${yaw}° | elevation 45° | native 64 px/tile`, 34, 48);
       return { modules: used.length, uniqueImages: images.size };
-    }, { yaw, showerArt });
-    const path = join(tmpdir(), `lockstate-oblique-cell-wing-${showerArt ? 'after' : 'before'}-yaw${yaw}.png`);
+    }, { yaw, showerArt, showerDoor });
+    const path = join(tmpdir(), `lockstate-oblique-cell-wing-door-${showerDoor ? 'after' : 'before'}-yaw${yaw}.png`);
     await page.screenshot({ path });
     captures.push({ yaw, path, ...result });
   }

@@ -15,6 +15,7 @@ import { groundToScreen, visibleGroundBounds, type ObliqueCameraState } from './
 import { obliqueDepthForAnchor, projectedRectPrism, projectedTileQuad, type TileQuad } from './oblique-geometry';
 import type { Point } from './coordinates';
 import { artForGround, artForNorthEdge, artForWestEdge, artForStructure } from './oblique-art-mapping';
+import { DOOR_EDGE_NUMERIC_ID } from '../../simulation/construction/definition';
 
 export interface ObliqueGroundTile {
   readonly tileX: number;
@@ -92,6 +93,7 @@ export function projectObliqueWorldFrame(frame: RenderFrame, camera: ObliqueCame
   const world = frame.world;
   const size = world.chunkSize;
   const sample = createTileSample();
+  const northSample = createTileSample();
   let loadedTilesVisited = 0;
 
   const edge = (kind: 'north-edge' | 'west-edge', tileX: number, tileY: number, value: number): void => {
@@ -102,11 +104,14 @@ export function projectObliqueWorldFrame(frame: RenderFrame, camera: ObliqueCame
     const width = kind === 'north-edge' ? TILE_SIZE_PX : thickness;
     const depth = kind === 'north-edge' ? thickness : TILE_SIZE_PX;
     const geometry = projectedRectPrism(x, y, width, depth, appearance.heightTiles * TILE_SIZE_PX, camera);
+    if (kind === 'north-edge' && value === DOOR_EDGE_NUMERIC_ID) world.readTile(tileX, tileY - 1, northSample);
     raised.push({
       kind, id: `${kind}:${tileX}:${tileY}`, tileX, tileY,
       ...geometry, topFill: appearance.topFill, sideFill: appearance.sideFill, alpha: 1,
       viewDepth: obliqueDepthForAnchor({ x: x + width / 2, y: y + depth / 2 }, camera.yawRadians),
-      artAssetId: kind === 'north-edge' ? artForNorthEdge(value) : artForWestEdge(value),
+      artAssetId: kind === 'north-edge'
+        ? artForNorthEdge(value, value === DOOR_EDGE_NUMERIC_ID ? northSample.zoning : undefined)
+        : artForWestEdge(value),
     });
   };
 
@@ -126,7 +131,7 @@ export function projectObliqueWorldFrame(frame: RenderFrame, camera: ObliqueCame
           tileX, tileY, quad: projectedTileQuad(tileX, tileY, camera),
           fill: (tileX + tileY) % 2 === 0 ? terrain.fill : terrain.fillAlternate,
           zoningTint: zoningTint(sample.zoning), owned: sample.owned,
-          artAssetId: artForGround(sample.zoning),
+          artAssetId: artForGround(sample.zoning, sample.terrainNumericId),
         });
         if (sample.topEdge !== 0) edge('north-edge', tileX, tileY, sample.topEdge);
         if (sample.leftEdge !== 0) edge('west-edge', tileX, tileY, sample.leftEdge);

@@ -15,6 +15,8 @@ import { ensureObliqueModuleFrameTexture } from '../phaser/oblique-module-textur
 
 const DEFAULT_YAW_RADIANS = -Math.PI / 4;
 const DEFAULT_ELEVATION_RADIANS = Math.PI / 4;
+const ZOOM_BOUNDS = { min: 0.2, max: 3 } as const;
+const ZOOM_STEP = 1.25;
 
 function lowerTop(footprint: TileQuad, top: TileQuad, fraction: number): TileQuad {
   const corner = (index: 0 | 1 | 2 | 3): Point => ({
@@ -208,6 +210,38 @@ export class ObliqueWorldScene extends Phaser.Scene {
     void this.ensureArtForCurrentPose().catch((error: unknown) => { this.artLoadErrors.push(String(error)); });
   }
 
+  /** The visible zoom controls must change the active angled camera, not the dormant top-down scene. */
+  public stepCameraZoom(direction: 'in' | 'out'): void {
+    const factor = direction === 'in' ? ZOOM_STEP : 1 / ZOOM_STEP;
+    const zoom = Math.min(ZOOM_BOUNDS.max, Math.max(ZOOM_BOUNDS.min, this.pose.zoom * factor));
+    if (zoom === this.pose.zoom) return;
+    this.pose = { ...this.pose, zoom };
+    this.poseRevision += 1;
+    this.onPoseChanged?.(this.pose);
+    this.emitGroundHover();
+    this.repaint();
+  }
+
+  /** Point the angled view at the same loaded-world location selected on the minimap. */
+  public navigateToMinimapPoint(fx: number, fy: number): boolean {
+    const bounds = this.lastFrame?.world.loadedBounds;
+    if (bounds === undefined || !Number.isFinite(fx) || !Number.isFinite(fy)) return false;
+    const clampedX = Math.min(1, Math.max(0, fx));
+    const clampedY = Math.min(1, Math.max(0, fy));
+    this.pose = {
+      ...this.pose,
+      target: {
+        x: (bounds.minTileX + clampedX * (bounds.maxTileX - bounds.minTileX + 1)) * TILE_SIZE_PX,
+        y: (bounds.minTileY + clampedY * (bounds.maxTileY - bounds.minTileY + 1)) * TILE_SIZE_PX,
+      },
+    };
+    this.poseRevision += 1;
+    this.onPoseChanged?.(this.pose);
+    this.emitGroundHover();
+    this.repaint();
+    return true;
+  }
+
   /** Resolve only the authored frames nearest to the active camera pose. */
   public async ensureArtForCurrentPose(): Promise<void> {
     const pending: Promise<void>[] = [];
@@ -351,6 +385,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
       return 'wall.interior.module.cutaway';
     }
     if (item.artAssetId === 'door.interior.open.west.full') return 'door.interior.open.west.cutaway';
+    if (item.artAssetId === 'door.shower.privacy.open.full') return 'door.shower.privacy.open.cutaway';
     return undefined;
   }
 

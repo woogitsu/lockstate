@@ -5,7 +5,7 @@ import { projectObliqueWorldFrame } from '../../src/rendering/camera/oblique-wor
 import type { ObliqueCameraState } from '../../src/rendering/camera/oblique-projection';
 import type { RenderFrame } from '../../src/rendering/feed/render-feed';
 import { WorldRenderView } from '../../src/rendering/world/world-view';
-import { artForGround, artForStructure } from '../../src/rendering/camera/oblique-art-mapping';
+import { artForGround, artForNorthEdge, artForStructure } from '../../src/rendering/camera/oblique-art-mapping';
 import { defaultRoomContentRegistry } from '../../src/content/room-catalog';
 
 const tile = (x: number, y: number) => ({ x: tileCoordinate(x), y: tileCoordinate(y) });
@@ -45,7 +45,10 @@ describe('oblique projection of an actual simulation snapshot', () => {
     const shower = defaultRoomContentRegistry.getById('room.shower-room');
     expect(shower).toBeDefined();
     expect(artForGround(shower!.numericId)).toBe('floor.shower.ceramic');
+    expect(artForGround(0, 0)).toBe('floor.terrain.dirt');
+    expect(artForGround(0, 1)).toBeUndefined();
     expect(artForStructure('shower-head-brick')).toBe('fixture.shower.head');
+    expect(artForNorthEdge(2, shower!.numericId)).toBe('door.shower.privacy.open.full');
   });
   it('reads loaded ground, distinct wall and door edges, a whole bed, and the actor without duplicating a finished wall', () => {
     const projected = projectObliqueWorldFrame(frame(), pose);

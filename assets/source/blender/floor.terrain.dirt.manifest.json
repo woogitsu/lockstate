@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "source": "floor.terrain.dirt.blend",
+  "sha256": "2a2d0e050be49ef762dfe77789f06653d3fdf36f0fa71bc9f371407fc1e3393f",
+  "assetIds": [
+    "floor.terrain.dirt"
+  ],
+  "footprintTiles": [
+    1,
+    1
+  ],
+  "pivotTile": [
+    0.5,
+    0.5
+  ],
+  "material": "matte compacted earth"
+}
