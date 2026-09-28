@@ -6,8 +6,12 @@ The real `projectObliqueWorldFrame` emits each wall as a **whole one-tile edge**
 Replacing both runtime edge sprites with either original corner would therefore
 leave a half-tile gap on both sides.
 
-This update extends only the arm ends to **1.0 tile** in Blender, retaining the
-source wall thickness, plaster, blue-grey coping and cutaway height. It updates
+This update extends only the arm ends to cover **one whole runtime edge** in
+Blender, retaining the source wall thickness, plaster, blue-grey coping and
+cutaway height. The 0.11-tile anchor inset makes the source coordinates
+asymmetric: NE uses `(1.11, 0.89)` and SE uses `(1.11, 1.11)` before rotation.
+After the inset, their far ends meet the neighboring whole-edge sprites.
+It updates
 the four existing `wall.interior.corner.inner.north-east/south-east.full/cutaway`
 catalogs (24 yaw × 3 elevations each). The source `.blend` is unchanged; the
 deterministic geometry transform is in `pipeline_common.py` and both render
@@ -30,23 +34,25 @@ vertex inset by half the wall thickness on both axes:
 `groundToScreen({ x: (cx + 0.11) * 64, y: (cy + 0.11) * 64 }, camera)`.
 Keep the image pivot `(256,256)` and the existing 64 px/tile scale. The pure
 grid vertex `(cx*64,cy*64)` produced visibly stepped joins in the real
-projection comparison; the 0.11-tile inset reduced that mismatch. Automatic
+projection comparison; a 1.00-tile Blender reach with that inset left a
+0.11-tile gap at the far end. The asymmetric reach above removed it. Automatic
 selection and occlusion belong to the integrator's scene PR; this art PR does
 not change the projector or scene.
 
 ## Measured proof
 
 Blender 5.2.1's arm verifier failed on the old geometry with
-`full leaves a runtime half-edge gap: (0.5, 0.5)` (exit 1), then passed both
-full and cutaway variants at `(1.0, 1.0)` (exit 0). Re-rendering all four
+`north-east full leaves a runtime edge gap: (0.5, 0.5)` (exit 1), then passed
+both full and cutaway variants at NE `(1.11, 0.89)` and SE `(1.11, 1.11)`
+(exit 0). Re-rendering all four
 catalogs independently yielded byte-identical manifests:
 
 | Catalog | SHA-256 |
 | --- | --- |
-| north-east full | `93edb5f7076d846b56da30678f48ebc9d9bc8850d2ec2f9e3379e8b04abcd4ba` |
-| north-east cutaway | `badd1d44650acc13f57fc0fba083bc4d51e8e6b25cf9e7a8aa6692358377b385` |
-| south-east full | `a3f1faf3f1bd63bf92e206062b3abc1e7de79e9cdd8a4bfafb92e2b6cb505f3` |
-| south-east cutaway | `9bd2bf06046f9cdda283b99f2c012bea7168ccf83d884160fff199f01a6b08f4` |
+| north-east full | `a984a9fb158aad07b104350b731d9a638dcaee9f1e1f78a92d14b94a6a4fd53a` |
+| north-east cutaway | `6b361c07c6d741f0fa6a51602ba523a4acdbf6e85bcb03e810772edb27d57208` |
+| south-east full | `ab27e36d9fc03256dcb3df37e82d8083aacc81e97af3f5a636d396e738b87ee8` |
+| south-east cutaway | `3c6232fdea33ef503cad4cc6224924f23b94778bfc9f57611b3b85df005ecc9f` |
 
 The Full HD 1920×1080 browser harness imports the **real**
 `projectObliqueWorldFrame` from the integrator's oblique branch, builds wall

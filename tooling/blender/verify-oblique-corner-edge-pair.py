@@ -21,17 +21,20 @@ def main() -> None:
     pipeline_common.require_blender_version()
     bpy.ops.wm.open_mainfile(filepath=str(SOURCE))
     baseline_only = "--baseline-only" in sys.argv
-    for variant in ("full", "cutaway"):
-        collection = bpy.data.collections[f"wall.interior.corner.inner.{variant}"]
-        source_reach = (reach(collection, "x"), reach(collection, "y"))
-        if source_reach != (0.5, 0.5):
-            raise RuntimeError(f"Unexpected {variant} source reach: {source_reach}")
-        if not baseline_only:
-            pipeline_common.extend_inner_corner_to_edge_pair(collection)
-        edge_reach = (reach(collection, "x"), reach(collection, "y"))
-        if any(abs(value - 1.0) > 1e-6 for value in edge_reach):
-            raise RuntimeError(f"{variant} leaves a runtime half-edge gap: {edge_reach}")
-        print(f"{variant}: source={source_reach}, runtime={edge_reach}")
+    for side, expected in (("north-east", (1.11, 0.89)),
+                           ("south-east", (1.11, 1.11))):
+        for variant in ("full", "cutaway"):
+            collection = bpy.data.collections[f"wall.interior.corner.inner.{variant}"]
+            source_reach = (reach(collection, "x"), reach(collection, "y"))
+            if source_reach != (0.5, 0.5):
+                raise RuntimeError(f"Unexpected {variant} source reach: {source_reach}")
+            if not baseline_only:
+                pipeline_common.extend_inner_corner_to_edge_pair(collection, expected)
+            edge_reach = (reach(collection, "x"), reach(collection, "y"))
+            if any(abs(actual - target) > 1e-6 for actual, target in zip(edge_reach, expected)):
+                raise RuntimeError(f"{side} {variant} leaves a runtime edge gap: {edge_reach}")
+            print(f"{side} {variant}: source={source_reach}, runtime={edge_reach}")
+        bpy.ops.wm.open_mainfile(filepath=str(SOURCE))
 
 
 if __name__ == "__main__":
