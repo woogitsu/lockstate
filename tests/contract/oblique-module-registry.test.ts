@@ -10,10 +10,10 @@ const digest = (bytes: Buffer) => createHash('sha256').update(bytes).digest('hex
 const json = (path: string): unknown => JSON.parse(readFileSync(join(root, 'public', path.slice(1)), 'utf8')) as unknown;
 
 describe('oblique cell module registry', () => {
-  it('publishes seven logical modules with complete hashed poses and a shared ground pivot', () => {
+  it('publishes eight logical modules with complete hashed poses and a shared ground pivot', () => {
     const registry = parseObliqueModuleRegistry(json('/game-content/oblique-module-registry.v1.json'));
     expect(registry.entries.map((entry) => entry.assetId)).toEqual([
-      'wall.interior.module.full', 'wall.interior.module.cutaway',
+      'wall.interior.module.full', 'wall.interior.module.west.full', 'wall.interior.module.cutaway',
       'furniture.cell.bed.single.variants', 'door.interior.open.full',
       'fixture.cell.toilet_sink', 'furniture.storage.rack.wooden', 'furniture.chair.wooden',
     ]);
@@ -46,8 +46,12 @@ describe('oblique cell module registry', () => {
       }
     }
     const full = parseObliqueModuleCatalog(json('/game-content/oblique-modules.v1.json'));
+    const west = parseObliqueModuleCatalog(json('/game-content/oblique-wall-west.v1.json'));
     const cutaway = parseObliqueModuleCatalog(json('/game-content/oblique-wall-cutaway.v1.json'));
     for (let index = 0; index < full.frames.length; index += 1) {
+      expect(west.frames[index]!.yawDegrees).toBe(full.frames[index]!.yawDegrees);
+      expect(west.frames[index]!.elevationDegrees).toBe(full.frames[index]!.elevationDegrees);
+      expect(west.frames[index]!.sha256).not.toBe(full.frames[index]!.sha256);
       expect(cutaway.frames[index]!.yawDegrees).toBe(full.frames[index]!.yawDegrees);
       expect(cutaway.frames[index]!.elevationDegrees).toBe(full.frames[index]!.elevationDegrees);
       expect(cutaway.frames[index]!.sha256).not.toBe(full.frames[index]!.sha256);

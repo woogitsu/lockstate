@@ -6,6 +6,10 @@
       "manifest": "/game-content/oblique-modules.v1.json"
     },
     {
+      "assetId": "wall.interior.module.west.full",
+      "manifest": "/game-content/oblique-wall-west.v1.json"
+    },
+    {
       "assetId": "wall.interior.module.cutaway",
       "manifest": "/game-content/oblique-wall-cutaway.v1.json"
     },
