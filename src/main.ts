@@ -403,11 +403,32 @@ let cameraInput: CameraPoseInputAdapter | undefined;
 let obliqueTemplateTool: RoomTemplateTool | undefined;
 let obliqueTemplateGhost: ObliqueTemplateGhostView | undefined;
 let obliqueTemplateHover: { readonly x: number; readonly y: number } | undefined;
+let obliqueSquareGhost: SVGSVGElement | undefined;
 let obliqueTemplatePlan: RoomTemplatePlan | undefined;
 let obliqueTemplateVerdict: RoomTemplatePreflight | undefined;
 let obliqueTemplateQuote: RoomTemplateCostQuote | undefined;
 let obliqueTemplateRevision = 0;
 const templateQuoteReader = simulation === undefined ? undefined : createSimulationRoomTemplateQuote(simulation);
+const paintObliqueSquareGhost = (): void => {
+  const ghost = obliqueSquareGhost;
+  if (ghost === undefined) return;
+  const tile = obliqueTemplateHover;
+  if (!buildTool?.isArmed() || !buildTool.squareFootprint() || tile === undefined || obliqueCameraScene === undefined) {
+    ghost.setAttribute('hidden', '');
+    ghost.replaceChildren();
+    buildTool?.targetSquares(undefined);
+    return;
+  }
+  const pose = obliqueCameraScene.cameraPose;
+  ghost.setAttribute('viewBox', `0 0 ${pose.viewport.width} ${pose.viewport.height}`);
+  const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+  polygon.setAttribute('points', projectedTileQuad(tile.x, tile.y, pose).map(({ x, y }) => `${x},${y}`).join(' '));
+  polygon.setAttribute('data-tile-x', String(tile.x));
+  polygon.setAttribute('data-tile-y', String(tile.y));
+  ghost.replaceChildren(polygon);
+  ghost.removeAttribute('hidden');
+  buildTool.targetSquares([tile]);
+};
 const paintObliqueTemplateGhost = (): void => {
   if (obliqueTemplateTool?.isArmed() && obliqueTemplatePlan !== undefined && obliqueCameraScene !== undefined) {
     const pose = obliqueCameraScene.cameraPose;
@@ -793,9 +814,9 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
 const game = new Phaser.Game(gameConfig);
 
 // The angled renderer first runs against the same live RenderFeed as the
-// standard scene behind an explicit preview URL. Building still belongs to
-// WorldScene; this gate lets browser QA exercise a real prison without exposing
-// a view whose construction gestures are not wired up yet.
+// standard scene behind an explicit preview URL. Full-square wall presses and
+// room plans share the live worker command port; other construction gestures
+// remain on WorldScene until their projected targets are represented.
 if (obliquePreviewRequested) {
   game.events.once(Phaser.Core.Events.READY, () => {
     void fetchObliqueModuleSet().then((artCatalogs) => {
@@ -806,13 +827,20 @@ if (obliquePreviewRequested) {
           cameraHud?.updateCameraPose(pose);
           refreshCameraControls();
           paintObliqueTemplateGhost();
+          paintObliqueSquareGhost();
         },
         canRotate: () => cameraInput?.canActivate() ?? false,
         onGroundHover: (tile) => {
           obliqueTemplateHover = tile === undefined ? undefined : { x: tile.tileX, y: tile.tileY };
           refreshObliqueTemplateGhost();
+          paintObliqueSquareGhost();
         },
         onTileSelected: (tileX, tileY) => {
+          if (buildTool?.isArmed() && buildTool.squareFootprint()) {
+            if (obliqueTemplateHover?.x !== tileX || obliqueTemplateHover.y !== tileY) return;
+            buildTool.placeSquares([{ x: tileX, y: tileY }]);
+            return;
+          }
           const tile = obliqueTemplateHover;
           const tool = obliqueTemplateTool;
           if (tool === undefined || !tool.isArmed() || tile?.x !== tileX || tile.y !== tileY || obliqueTemplateVerdict?.ok !== true) return;
@@ -3068,6 +3096,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           objects?.setArmed(false, { removing: false });
           tool?.setArmed(intent.armed, intent.definitionId);
           refreshCameraControls();
+          paintObliqueSquareGhost();
           return;
         }
 
@@ -4028,6 +4057,11 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     obliqueTemplateTool = hud.roomTemplateTool;
     obliqueTemplateGhost = createObliqueTemplateGhost(localizer);
     document.body.append(obliqueTemplateGhost.element);
+    obliqueSquareGhost = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    obliqueSquareGhost.classList.add('oblique-square-ghost');
+    obliqueSquareGhost.setAttribute('aria-hidden', 'true');
+    obliqueSquareGhost.setAttribute('hidden', '');
+    document.body.append(obliqueSquareGhost);
     obliqueTemplateTool?.onSelectionChanged(refreshObliqueTemplateGhost);
     if (obliqueCameraScene !== undefined) hud.updateCameraPose(obliqueCameraScene.cameraPose);
     refreshObliqueTemplateGhost();
