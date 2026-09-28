@@ -13,10 +13,10 @@ try {
     for (const yaw of [-90, -45, 0, 45, 90]) {
       const result = await page.evaluate(async ({ side, yaw }) => {
         const [{ SparseWorld }, { WorldRenderView }, { projectObliqueWorldFrame }, { groundToScreen }] = await Promise.all([
-          import('/src/simulation/world/sparse-world.ts'),
-          import('/src/rendering/world/world-view.ts'),
-          import('/src/rendering/camera/oblique-world-projection.ts'),
-          import('/src/rendering/camera/oblique-projection.ts'),
+          import(new URL('/src/simulation/world/sparse-world.ts', window.location.origin).pathname),
+          import(new URL('/src/rendering/world/world-view.ts', window.location.origin).pathname),
+          import(new URL('/src/rendering/camera/oblique-world-projection.ts', window.location.origin).pathname),
+          import(new URL('/src/rendering/camera/oblique-projection.ts', window.location.origin).pathname),
         ]);
         const world = new SparseWorld(8);
         world.load({ x: 0, y: 0 });
@@ -63,6 +63,7 @@ try {
         const canvas = document.createElement('canvas'); canvas.width = 1920; canvas.height = 1080;
         document.body.append(canvas);
         const ctx = canvas.getContext('2d');
+        if (ctx === null) throw new Error('The browser did not provide a 2D canvas context.');
         const paint = (after, offset) => {
           ctx.fillStyle = '#344048'; ctx.fillRect(offset, 0, 960, 1080);
           ctx.save(); ctx.translate(offset, 0);
