@@ -19,15 +19,17 @@ function completedCell() {
 
 it.each([false, true])('refuses furniture placed after an ordinary pending square wall (restore=%s)', (restore) => {
   let runtime = completedCell();
+  // (11,15) is the Cell's protected doorway approach. Keep this fixture on
+  // a free interior square so it tests furniture versus a queued wall.
   runtime.kernel.submitCommand('wall', 1, runtime.kernel.tick, packCommand({
     type: 'PlaceBuildOrder', orderId: 'wall-before-toilet', definitionId: 'wall-brick',
-    x: 11, y: 15, footprint: 'square',
+    x: 12, y: 13, footprint: 'square',
   }));
   runtime.kernel.step();
   expect(runtime.construction.getOrder('wall-before-toilet')?.state).not.toBe('failed');
   if (restore) runtime = restoreSimulationRuntime(captureSessionSnapshot(runtime)).runtime;
   runtime.kernel.submitCommand('toilet', 2, runtime.kernel.tick, packCommand({
-    type: 'PlaceObject', orderId: 'toilet-after-wall', definitionId: 'toilet-brick', x: 11, y: 15,
+    type: 'PlaceObject', orderId: 'toilet-after-wall', definitionId: 'toilet-brick', x: 12, y: 13,
   }));
   runtime.kernel.step();
   expect(runtime.construction.getOrder('toilet-after-wall')).toBeUndefined();
@@ -38,7 +40,7 @@ it.each([false, true])('refuses furniture placed after an ordinary pending squar
   }));
   runtime.kernel.step();
   runtime.kernel.submitCommand('retry-toilet', 4, runtime.kernel.tick, packCommand({
-    type: 'PlaceObject', orderId: 'toilet-after-cancel', definitionId: 'toilet-brick', x: 11, y: 15,
+    type: 'PlaceObject', orderId: 'toilet-after-cancel', definitionId: 'toilet-brick', x: 12, y: 13,
   }));
   runtime.kernel.step();
   expect(runtime.construction.getOrder('toilet-after-cancel')?.state).not.toBe('failed');
