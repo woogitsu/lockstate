@@ -2393,7 +2393,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       );
     },
     onArm: (armed, definitionId, removing) => {
-      if (armed) roomTemplateTool?.standDown();
+      roomTemplateTool?.standDown();
       runReported(
         'arm-build-tool',
         () => options.onIntent?.({ kind: 'arm-build-tool', armed, definitionId, removing }),
@@ -2517,6 +2517,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     },
     classifyArea: classifyRoomArea,
   });
+  roomTemplateTool?.onSelectionChanged(() => buildPanel.setTemplateArmed(roomTemplateTool.isArmed()));
 
   /*
    * The world's room gesture, joined to the panel rather than to the gate.
