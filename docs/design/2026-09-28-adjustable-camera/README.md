@@ -195,6 +195,18 @@ endpoints so the HUD can paint the exact pending footprint and total catalogue
 estimate. Ground frame crop, batched texture loading and corner modules remain
 in separate PRs until their exact-head CI is green and integration passes.
 
+**Integration checkpoint (`3ff00027a`, 2026-09-28):** the oblique scene now
+accepts a screen-space zoom pivot and pan deltas, preserving the pointed ground
+square through a pose change. The Full HD route also exercises the existing
+Build remove tool against completed wall edges, and leaves modified keyboard
+shortcuts to the browser. The HUD worker has reproduced a wheel-zoom pointer
+drift in Build and is wiring this scene port to fix it. For #1663 the owner
+chose to block overlapping zones while a paid room template is pending; PR
+#1680 contains that behavior and still needs integration. Separate draft PRs
+#1714 and #1716 cover 90-degree Canteen and Large Cell plans with Save/Load.
+The Blender ground, texture-loader and corner work is pushed on isolated
+branches; these slices are not yet declared shipped or on production.
+
 Keep three isolated worktrees moving in parallel: (1) Blender modules and
 consistent camera poses, (2) square-first construction and ready-made rooms,
 and (3) Full HD HUD, controls and visible template previews. The renderer
