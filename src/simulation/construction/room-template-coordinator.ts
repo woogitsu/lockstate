@@ -5,6 +5,7 @@ import type { ObjectPlacementService } from '../objects/object-placement-service
 import { objectFootprintTiles, tileKey } from '../objects/placed-object';
 import type { RoomZoningService } from '../rooms/zoning';
 import type { SparseWorld } from '../world/sparse-world';
+import type { TilePosition } from '../world/coordinates';
 import type { ConstructionSystem } from './system';
 import { createRoomTemplateBuildPlan } from './room-template-build-plan';
 import { BUILDABLE_REGISTRY } from './definition';
@@ -72,6 +73,16 @@ export class RoomTemplateCoordinator implements SystemRegistration {
         tile.x >= pending.origin.x && tile.x < pending.origin.x + pending.width &&
         tile.y >= pending.origin.y && tile.y < pending.origin.y + pending.height),
     );
+  }
+
+  /** The pending gesture reserves every square, even before its shell is visible. */
+  public claimsPendingFootprint(tile: TilePosition, orderSequence: number | undefined): boolean {
+    return this.pending.some((request) => {
+      if (orderSequence === request.sequence) return false;
+      const plan = instantiateRoomTemplate(request.templateId, request.origin, { mirrorX: request.mirrorX });
+      return tile.x >= plan.origin.x && tile.x < plan.origin.x + plan.width &&
+        tile.y >= plan.origin.y && tile.y < plan.origin.y + plan.height;
+    });
   }
 
   public place(request: PendingRoomTemplate): RoomTemplatePlacement {
