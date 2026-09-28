@@ -528,6 +528,7 @@ export const HUD_MESSAGE_KEY = {
   templateX: 'hud.build.template-x',
   templateY: 'hud.build.template-y',
   templateMirror: 'hud.build.template-mirror',
+  templateRotateHalf: 'hud.build.template-rotate-half',
   templatePlace: 'hud.build.template-place',
   templateMap: 'hud.build.template-map',
   templateInvalidPosition: 'hud.build.template-invalid-position',

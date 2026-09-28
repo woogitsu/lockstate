@@ -15,6 +15,21 @@ describe('room-template HUD tool contract', () => {
     expect(preflight).toHaveBeenCalledWith({ templateId: 'cell-large', origin: { x: 10, y: 20 }, mirrorX: true });
   });
 
+  it('keeps the half-turned row identical in the ghost, worker preflight, and placement request', async () => {
+    const preflight = vi.fn(async () => ({ ok: true as const }));
+    const place = vi.fn(async () => {});
+    const tool = new RoomTemplateTool({ preflight, place });
+    tool.select('cell-row-four', true, 2);
+    const { plan } = await tool.inspectAt({ x: 10, y: 10 });
+    expect({ width: plan.width, height: plan.height }).toEqual({ width: 7, height: 16 });
+    expect(plan.doorSquares.map(({ x, y }) => ({ x, y })).sort((a, b) => a.y - b.y || a.x - b.x)).toEqual([
+      { x: 11, y: 16 }, { x: 14, y: 16 }, { x: 11, y: 19 }, { x: 14, y: 19 },
+    ]);
+    expect(preflight).toHaveBeenCalledWith({ templateId: 'cell-row-four', origin: { x: 10, y: 10 }, mirrorX: true, quarterTurns: 2 });
+    expect(await tool.placeAt({ x: 10, y: 10 })).toEqual({ ok: true });
+    expect(place).toHaveBeenCalledWith({ templateId: 'cell-row-four', origin: { x: 10, y: 10 }, mirrorX: true, quarterTurns: 2 });
+  });
+
   it('refuses before submission if any square is blocked, then submits one template request when clear', async () => {
     let blocked = true;
     const place = vi.fn(async () => {});
