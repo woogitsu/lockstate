@@ -22,7 +22,7 @@ Nothing mechanical can. That argument belongs in a docblock beside that code —
 `hud.alert.event.construction.undo-refused-newer-action` is the worked example, arguing
 each of its three clauses at the code that decides it.
 
-## The 605 authored sentences
+## The 610 authored sentences
 
 Source: `src/content/default-locale-en.ts`, in the order they are declared.
 
@@ -623,14 +623,19 @@ Source: `src/content/default-locale-en.ts`, in the order they are declared.
 | `hud.camera-angle.elevation-up` | Tilt up | `src/content/default-locale-en.ts:4539` |
 | `hud.camera-angle.elevation-down` | Tilt down | `src/content/default-locale-en.ts:4540` |
 | `hud.camera-angle.reset` | Reset angle | `src/content/default-locale-en.ts:4541` |
-| `hud.camera-angle.yaw` | Turn | `src/content/default-locale-en.ts:4542` |
-| `hud.camera-angle.elevation` | Tilt | `src/content/default-locale-en.ts:4543` |
-| `hud.build.template-materials` | Materials: {materials} | `src/content/default-locale-en.ts:4544` |
-| `hud.build.template-catalogue-value` | Catalogue value: {total}. Materials already held may lower the amount spent. | `src/content/default-locale-en.ts:4545` |
-| `hud.build.template-zero-cost` | Catalogue value: 0. No materials required. | `src/content/default-locale-en.ts:4546` |
-| `hud.build.template-catalogue-value-unavailable` | Catalogue value unavailable. Check the material requirements. | `src/content/default-locale-en.ts:4547` |
-| `hud.build.template-cell-row-four` | Four-cell row | `src/content/default-locale-en.ts:4548` |
-| `hud.build.template-arm-hint` | Selected: {name}. Point at the map to preview the whole room plan. Click a clear footprint to submit it. Middle drag or arrow keys move the camera. | `src/content/default-locale-en.ts:4549` |
-| `hud.build.template-interior` | Interior | `src/content/default-locale-en.ts:4550` |
-| `hud.build.template-dock-marker` | Dock marker (not a passage) | `src/content/default-locale-en.ts:4551` |
+| `hud.camera-angle.yaw-left-short` | Left | `src/content/default-locale-en.ts:4542` |
+| `hud.camera-angle.yaw-right-short` | Right | `src/content/default-locale-en.ts:4543` |
+| `hud.camera-angle.elevation-up-short` | Up | `src/content/default-locale-en.ts:4544` |
+| `hud.camera-angle.elevation-down-short` | Down | `src/content/default-locale-en.ts:4545` |
+| `hud.camera-angle.reset-short` | Reset | `src/content/default-locale-en.ts:4546` |
+| `hud.camera-angle.yaw` | Turn | `src/content/default-locale-en.ts:4547` |
+| `hud.camera-angle.elevation` | Tilt | `src/content/default-locale-en.ts:4548` |
+| `hud.build.template-materials` | Materials: {materials} | `src/content/default-locale-en.ts:4549` |
+| `hud.build.template-catalogue-value` | Catalogue value: {total}. Materials already held may lower the amount spent. | `src/content/default-locale-en.ts:4550` |
+| `hud.build.template-zero-cost` | Catalogue value: 0. No materials required. | `src/content/default-locale-en.ts:4551` |
+| `hud.build.template-catalogue-value-unavailable` | Catalogue value unavailable. Check the material requirements. | `src/content/default-locale-en.ts:4552` |
+| `hud.build.template-cell-row-four` | Four-cell row | `src/content/default-locale-en.ts:4553` |
+| `hud.build.template-arm-hint` | Selected: {name}. Point at the map to preview the whole room plan. Click a clear footprint to submit it. Middle drag or arrow keys move the camera. | `src/content/default-locale-en.ts:4554` |
+| `hud.build.template-interior` | Interior | `src/content/default-locale-en.ts:4555` |
+| `hud.build.template-dock-marker` | Dock marker (not a passage) | `src/content/default-locale-en.ts:4556` |
 
