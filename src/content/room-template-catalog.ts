@@ -20,17 +20,17 @@ export interface RoomTemplatePlan {
   readonly height: number;
   readonly wallSquares: readonly TemplateSquare[];
   readonly doorSquares: readonly TemplateDoorSquare[];
-  readonly zone: { readonly roomId: 'room.cell' | 'room.shower-room' | 'room.canteen' | 'room.kitchen' | 'room.infirmary' | 'room.laundry' | 'room.classroom' | 'room.common-room' | 'room.security-office' | 'room.storage-room' | 'room.staff-room' | 'room.solitary-cell'; readonly x: number; readonly y: number; readonly width: number; readonly height: number };
+  readonly zone: { readonly roomId: 'room.cell' | 'room.shower-room' | 'room.canteen' | 'room.kitchen' | 'room.infirmary' | 'room.laundry' | 'room.classroom' | 'room.common-room' | 'room.security-office' | 'room.storage-room' | 'room.staff-room' | 'room.solitary-cell' | 'room.delivery-bay'; readonly x: number; readonly y: number; readonly width: number; readonly height: number };
   /** Every separately designated room; `zone` retains the first for older readers. */
   readonly zones: readonly RoomTemplatePlan['zone'][];
   readonly objects: readonly { readonly buildableId: RoomTemplateObjectId; readonly x: number; readonly y: number; readonly orientation?: 0 | 1 | 2 | 3 }[];
 }
 
 /** Player-facing choices; backend-authored additions can join after HUD copy and controls land. */
-export const ROOM_TEMPLATE_IDS = ['cell-basic', 'cell-large', 'shower-room', 'cell-row-four', 'canteen-basic', 'kitchen-basic', 'infirmary-basic', 'laundry-basic', 'classroom-basic', 'common-room-basic', 'security-office-basic', 'storage-room-basic', 'staff-room-basic', 'solitary-cell-basic'] as const;
+export const ROOM_TEMPLATE_IDS = ['cell-basic', 'cell-large', 'shower-room', 'cell-row-four', 'canteen-basic', 'kitchen-basic', 'infirmary-basic', 'laundry-basic', 'classroom-basic', 'common-room-basic', 'security-office-basic', 'storage-room-basic', 'staff-room-basic', 'solitary-cell-basic', 'delivery-bay-basic'] as const;
 export type RoomTemplateId = (typeof ROOM_TEMPLATE_IDS)[number];
 export type AuthoredRoomTemplateId = RoomTemplateId;
-type RoomTemplateObjectId = 'bed-wooden' | 'toilet-brick' | 'shower-head-brick' | 'dining-table-wooden' | 'bench-wooden' | 'stove-brick' | 'prep-counter-brick' | 'fridge-brick' | 'medical-bed-wooden' | 'medicine-cabinet-wooden' | 'washing-machine-brick' | 'bookshelf-wooden' | 'chair-wooden' | 'security-console-brick' | 'storage-rack-wooden' | 'desk-wooden';
+type RoomTemplateObjectId = 'bed-wooden' | 'toilet-brick' | 'shower-head-brick' | 'dining-table-wooden' | 'bench-wooden' | 'stove-brick' | 'prep-counter-brick' | 'fridge-brick' | 'medical-bed-wooden' | 'medicine-cabinet-wooden' | 'washing-machine-brick' | 'bookshelf-wooden' | 'chair-wooden' | 'security-console-brick' | 'storage-rack-wooden' | 'desk-wooden' | 'loading-dock-door-wooden';
 
 /** Authored object names resolve to the same catalogue footprint used by placement. */
 const TEMPLATE_OBJECT_IDS: Readonly<Record<RoomTemplateObjectId, string>> = {
@@ -50,6 +50,7 @@ const TEMPLATE_OBJECT_IDS: Readonly<Record<RoomTemplateObjectId, string>> = {
   'security-console-brick': 'object.security-console',
   'storage-rack-wooden': 'object.storage-rack',
   'desk-wooden': 'object.desk',
+  'loading-dock-door-wooden': 'object.loading-dock-door',
 };
 
 /** Full occupied furniture squares, shared by catalogue diagram and world ghost. */
@@ -167,6 +168,13 @@ const TEMPLATES: Readonly<Record<Exclude<AuthoredRoomTemplateId, 'cell-row-four'
       { buildableId: 'bed-wooden', x: 2, y: 1 },
       { buildableId: 'toilet-brick', x: 1, y: 1 },
     ],
+  },
+  'delivery-bay-basic': {
+    width: 6, height: 6, roomId: 'room.delivery-bay', doorX: 2,
+    // The 3×1 dock marker touches the room's northern boundary. It is a
+    // capability object, not a navigable wall door; the southern door serves
+    // the actual walk into the bay.
+    objects: [{ buildableId: 'loading-dock-door-wooden', x: 1, y: 1, width: 3 }],
   },
 };
 

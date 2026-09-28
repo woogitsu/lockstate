@@ -248,6 +248,14 @@ The buttons move the angled scene even while Build is armed; their right/left
 round trip returns the same hovered build square without submitting a world
 command. The stopped top-down scene keeps its own pan route.
 
+**Delivery Bay plan integration:** the Build catalogue now offers a 6 × 6
+Delivery Bay with a 4 × 4 interior, a three-square dock marker on its northern
+side and a separate walkable southern entrance. The preview uses all 36
+occupied squares and quotes the catalogue value before the click. The real
+worker Full HD flow and the player-facing EN/PL Full HD flow both reached
+Save, reload and a blocked duplicate placement. This remains part of the
+optional angled route until its integration PR clears the release gates.
+
 Keep three isolated worktrees moving in parallel: (1) Blender modules and
 consistent camera poses, (2) square-first construction and ready-made rooms,
 and (3) Full HD HUD, controls and visible template previews. The renderer
