@@ -1,4 +1,4 @@
-import { copyFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { assertSourceInputsAreImages, readSourceHead } from './source-art-lfs-guard.mjs';
@@ -18,12 +18,13 @@ if (intake.schemaVersion !== 1 || !Array.isArray(intake.entries)) throw new Erro
  * executed -- not merely read -- by
  * `tests/foundation/art-catalog-generator-contract.test.ts`.
  *
- * Awaited before the `rm` on purpose. A guard that fires after the output
- * directory is gone has already done the damage.
+ * Awaited before publishing. This directory also holds Blender renders, so
+ * regenerating owner sheets must never remove the whole directory.
  */
 await assertSourceInputsAreImages({ entries: intake.entries, readHead: readSourceHead(sourceDir) });
 
-await rm(outputDir, { recursive: true, force: true });
+// Both owner-sheet and Blender URLs are content-hashed and cached immutably.
+// Keep previously published names for clients that still reference them.
 await mkdir(outputDir, { recursive: true });
 const entries = [];
 for (const assetId of [...intake.entries].sort()) {
