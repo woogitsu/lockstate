@@ -84,7 +84,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
   let halfTurnLabel: HTMLElement | undefined;
   let rotationSelect: HTMLSelectElement | undefined;
   let rotationLabel: HTMLElement | undefined;
-  const supportsQuarterTurns = (id: RoomTemplateId): boolean => id === 'canteen-basic';
+  const supportsQuarterTurns = (id: RoomTemplateId): boolean => id === 'canteen-basic' || id === 'cell-large';
   let quoteRevision = 0;
   async function refreshQuote(id: RoomTemplateId, revision: number): Promise<void> {
     if (quote === undefined) return;
