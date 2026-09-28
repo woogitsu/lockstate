@@ -3,6 +3,7 @@ export interface WallPreviewTile { readonly x: number; readonly y: number }
 /** The same full-square rectangle the release gesture promises to place. */
 export function wallDragPreviewTiles(start: WallPreviewTile, end: WallPreviewTile): readonly WallPreviewTile[] {
   if (![start.x, start.y, end.x, end.y].every(Number.isSafeInteger)) return [];
+  if ((Math.abs(end.x - start.x) + 1) * (Math.abs(end.y - start.y) + 1) > 4096) return [];
   const tiles: WallPreviewTile[] = [];
   const minX = Math.min(start.x, end.x);
   const maxX = Math.max(start.x, end.x);

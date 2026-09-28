@@ -46,6 +46,7 @@ import { SavePanel } from './ui/save-panel';
 import { createSimulationRoomTemplatePreflight, createSimulationRoomTemplateQuote } from './ui/simulation-room-template-port';
 import { createObliqueTemplateGhost, type ObliqueTemplateGhostView } from './ui/hud/oblique-template-ghost';
 import { buildCatalogueRowLabel } from './ui/hud/build-panel';
+import { wallDragCatalogueValue, wallDragPreviewTiles, type WallPreviewTile } from './ui/hud/oblique-wall-drag-preview';
 import type { RoomTemplateTool, RoomTemplatePreflight, RoomTemplateCostQuote } from './ui/room-template-tool';
 import type { RoomTemplatePlan } from './content/room-template-catalog';
 import { placeObliqueTemplateIfCurrent } from './ui/oblique-template-placement';
@@ -411,6 +412,7 @@ let obliqueSquareGhost: SVGSVGElement | undefined;
 let obliqueSquareGhostRoot: HTMLDivElement | undefined;
 let obliqueSquareGhostNotice: HTMLDivElement | undefined;
 let obliqueBuildCatalogue: HudBuildViewModel | undefined;
+let obliqueWallDragTiles: readonly WallPreviewTile[] | undefined;
 let obliqueTemplatePlan: RoomTemplatePlan | undefined;
 let obliqueTemplateVerdict: RoomTemplatePreflight | undefined;
 let obliqueTemplateQuote: RoomTemplateCostQuote | undefined;
@@ -434,28 +436,33 @@ const paintObliqueSquareGhost = (): void => {
   const width = objectFootprint?.width ?? 1;
   const height = objectFootprint?.height ?? 1;
   const polygons: SVGPolygonElement[] = [];
-  for (let y = tile.y; y < tile.y + height; y += 1) {
-    for (let x = tile.x; x < tile.x + width; x += 1) {
-      const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-      polygon.setAttribute('points', projectedTileQuad(x, y, pose).map((point) => `${point.x},${point.y}`).join(' '));
-      polygon.setAttribute('data-tile-x', String(x));
-      polygon.setAttribute('data-tile-y', String(y));
-      polygons.push(polygon);
-    }
+  const squares = wallArmed
+    ? (obliqueWallDragTiles ?? [tile])
+    : wallDragPreviewTiles(tile, { x: tile.x + width - 1, y: tile.y + height - 1 });
+  for (const { x, y } of squares) {
+    const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+    polygon.setAttribute('points', projectedTileQuad(x, y, pose).map((point) => `${point.x},${point.y}`).join(' '));
+    polygon.setAttribute('data-tile-x', String(x));
+    polygon.setAttribute('data-tile-y', String(y));
+    polygons.push(polygon);
   }
   ghost.replaceChildren(...polygons);
   if (obliqueSquareGhostRoot !== undefined) obliqueSquareGhostRoot.hidden = false;
   const selectedId = wallArmed ? buildTool?.selectedDefinitionId : objectTool?.selectedDefinitionId;
   const buildable = obliqueBuildCatalogue?.buildables.find(({ definitionId }) => definitionId === selectedId);
   if (obliqueSquareGhostNotice !== undefined && buildable !== undefined) {
-    const label = buildCatalogueRowLabel(
+    const unitLabel = buildCatalogueRowLabel(
       (key, args) => localizer.format(key, args),
       buildable,
       buildable.placementCostMinorUnits === undefined ? undefined : localizer.formatNumber(buildable.placementCostMinorUnits),
     );
+    const total = wallArmed && obliqueWallDragTiles !== undefined
+      ? wallDragCatalogueValue(buildable.placementCostMinorUnits, squares.length)
+      : undefined;
+    const label = total === undefined ? unitLabel : localizer.format(HUD_MESSAGE_KEY.templateCatalogueValue, { total: localizer.formatNumber(total) });
     if (obliqueSquareGhostNotice.textContent !== label) obliqueSquareGhostNotice.textContent = label;
   }
-  if (wallArmed) buildTool?.targetSquares([tile]);
+  if (wallArmed) buildTool?.targetSquares(squares);
   else objectTool?.target({ tileX: tile.x, tileY: tile.y, width, height });
 };
 const paintObliqueTemplateGhost = (): void => {
@@ -863,6 +870,12 @@ if (obliquePreviewRequested) {
         onGroundHover: (tile) => {
           obliqueTemplateHover = tile === undefined ? undefined : { x: tile.tileX, y: tile.tileY };
           refreshObliqueTemplateGhost();
+          paintObliqueSquareGhost();
+        },
+        onTileGesturePreview: (start, end) => {
+          obliqueWallDragTiles = start !== undefined && buildTool?.isArmed() && buildTool.squareFootprint()
+            ? wallDragPreviewTiles(start, end ?? start)
+            : undefined;
           paintObliqueSquareGhost();
         },
         onTileGesture: (tiles) => {

@@ -9,6 +9,7 @@ describe('oblique full-square wall drag preview', () => {
     expect(forward[0]).toEqual({ x: 16, y: 16 });
     expect(forward[8]).toEqual({ x: 18, y: 18 });
     expect(wallDragPreviewTiles({ x: Number.MAX_SAFE_INTEGER, y: 0 }, { x: Number.MAX_SAFE_INTEGER, y: 0 })).toEqual([{ x: Number.MAX_SAFE_INTEGER, y: 0 }]);
+    expect(wallDragPreviewTiles({ x: 0, y: 0 }, { x: 64, y: 63 })).toEqual([]);
   });
 
   it('quotes the simulation-derived catalogue unit price without implying actual debit', () => {

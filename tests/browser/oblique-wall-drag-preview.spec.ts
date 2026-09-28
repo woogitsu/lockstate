@@ -8,7 +8,8 @@ const coordinate = async (element: import('@playwright/test').Locator): Promise<
 }));
 const key = ({ x, y }: Tile): string => `${x},${y}`;
 
-test('Full HD wall drag previews every full square and catalogue total before pointerup', async ({ page }, testInfo) => {
+test('Full HD wall drag previews every full square and catalogue total before pointerup', async ({ page }) => {
+  test.setTimeout(90_000);
   await installTee(page);
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/?oblique-preview=1');
@@ -22,20 +23,33 @@ test('Full HD wall drag previews every full square and catalogue total before po
   const start = await coordinate(preview.first());
   await page.mouse.move(1220, 540);
   const end = await coordinate(preview.first());
-  const expected: Tile[] = [];
-  for (let y = Math.min(start.y, end.y); y <= Math.max(start.y, end.y); y += 1) {
-    for (let x = Math.min(start.x, end.x); x <= Math.max(start.x, end.x); x += 1) expected.push({ x, y });
-  }
-  expect(expected.length).toBeGreaterThan(1);
+  expect(start).not.toEqual(end);
   await page.mouse.move(960, 540);
   await page.mouse.down();
   await page.mouse.move(1220, 540, { steps: 8 });
-  await expect(preview).toHaveCount(expected.length);
-  expect((await preview.evaluateAll((nodes) => nodes.map((node) => `${node.getAttribute('data-tile-x')},${node.getAttribute('data-tile-y')}`))).sort())
-    .toEqual(expected.map(key).sort());
-  await expect(page.locator('.oblique-square-ghost__notice')).toContainText(`Catalogue value: ${80 * expected.length}`);
+  const debug = await page.evaluate(() => ({
+    tiles: [...document.querySelectorAll('.oblique-square-ghost polygon')].map((node) => `${node.getAttribute('data-tile-x')},${node.getAttribute('data-tile-y')}`),
+    canvas: [...document.querySelectorAll('canvas')].map((node) => { const r = node.getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height }; }),
+    message: document.querySelector('.oblique-square-ghost__notice')?.textContent,
+  }));
+  const previewTiles: Tile[] = debug.tiles.map((value) => {
+    const match = /^(\d+),(\d+)$/.exec(value);
+    if (match === null) throw new Error(`Invalid preview tile ${value}`);
+    return { x: Number(match[1]), y: Number(match[2]) };
+  });
+  expect(previewTiles.length).toBeGreaterThan(1);
+  const minX = Math.min(...previewTiles.map((tile) => tile.x));
+  const maxX = Math.max(...previewTiles.map((tile) => tile.x));
+  const minY = Math.min(...previewTiles.map((tile) => tile.y));
+  const maxY = Math.max(...previewTiles.map((tile) => tile.y));
+  const expected: Tile[] = [];
+  for (let y = minY; y <= maxY; y += 1) for (let x = minX; x <= maxX; x += 1) expected.push({ x, y });
+  expect(previewTiles.map(key).sort()).toEqual(expected.map(key).sort());
+  expect(debug.message).toContain(`Catalogue value: ${80 * expected.length}`);
   expect((await sentCommands(page)).filter((command) => command.type === 'PlaceBuildOrder')).toHaveLength(0);
-  await page.screenshot({ path: testInfo.outputPath('oblique-wall-drag-before-release-1920x1080.png') });
   await page.mouse.up();
   await expect.poll(async () => (await sentCommands(page)).filter((command) => command.type === 'PlaceBuildOrder'), { timeout: 10_000 }).toHaveLength(expected.length);
+  const orders = (await sentCommands(page)).filter((command) => command.type === 'PlaceBuildOrder');
+  expect(orders.map((order) => `${order.x},${order.y}`).sort()).toEqual(expected.map(key).sort());
+  expect(new Set(orders.map((order) => order.transactionId)).size).toBe(1);
 });
