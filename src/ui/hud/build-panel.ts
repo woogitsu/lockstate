@@ -242,6 +242,8 @@ export interface BuildPanel {
   /** Current numeric-route selection, exposed so a test can assert it without reading the DOM. */
   getSelection(): BuildPanelIntent | undefined;
   isArmed(): boolean;
+  /** Hide the saved buildable choice while a room plan owns the next map click. */
+  setTemplateArmed(armed: boolean): void;
   /** Whether the armed gesture removes rather than places. Exposed for the same reason `isArmed` is: a test should not have to read the DOM. */
   isRemoving(): boolean;
   /** Live feedback from the world. `undefined` clears the readout. */
@@ -1001,6 +1003,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   let tileY = Math.trunc(model.origin.y);
   let edge: HudBuildEdge = HUD_DEFAULT_BUILD_EDGE;
   let armed = false;
+  let templateArmed = false;
   /** Whether the armed gesture takes an object away instead of placing one (ADR 0028 phase 3). */
   let removing = false;
   /** Whether the buy row is disclosed. Closed on arrival -- see `.hud-build__buy` in `hud.css`. */
@@ -1138,14 +1141,15 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   const paintCatalogue = (): void => {
     focusRing = buildCatalogueFocusRing(model.buildables, activeCategoryId, selectedId);
     const selected = selectedBuildable();
-    selectedSummary.textContent = selected === undefined ? '' : t(selected.labelKey);
+    selectedSummary.textContent = selected === undefined || templateArmed ? '' : t(selected.labelKey);
     const visible = new Set(focusRing.visibleIds);
     for (const [id, row] of rows) {
-      row.setBadge(id === selectedId ? { tone: 'info', text: t(HUD_MESSAGE_KEY.buildSelected) } : undefined);
-      row.element.dataset['selected'] = id === selectedId ? 'true' : 'false';
+      const chosen = !templateArmed && id === selectedId;
+      row.setBadge(chosen ? { tone: 'info', text: t(HUD_MESSAGE_KEY.buildSelected) } : undefined);
+      row.element.dataset['selected'] = chosen ? 'true' : 'false';
       // `aria-checked` is the *machine* carrier of which buildable is chosen,
       // as it is in `rooms-panel.ts`; the badge above stays the visual one.
-      row.element.setAttribute('aria-checked', id === selectedId ? 'true' : 'false');
+      row.element.setAttribute('aria-checked', chosen ? 'true' : 'false');
       /*
        * `hidden` rather than a class, so a filtered row lays out no box at all
        * and the list's `scrollHeight` really is the filtered list's height --
@@ -3287,6 +3291,11 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     sellControl: sellSubmit.element,
     getSelection: readSelection,
     isArmed: () => armed,
+    setTemplateArmed(next): void {
+      if (templateArmed === next) return;
+      templateArmed = next;
+      paintCatalogue();
+    },
     isRemoving: () => removing,
     setTarget,
     setBuildQueue(next: HudBuildQueueViewModel | undefined): void {
