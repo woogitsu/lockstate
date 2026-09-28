@@ -79,5 +79,9 @@ test('Full HD oblique Remove takes down a completed wall order', async ({ page }
   await expect.poll(async () => (await sentCommands(page)).filter((command) => command.type === 'RemoveWall').length).toBe(1);
   const removal = (await sentCommands(page)).find((command) => command.type === 'RemoveWall');
   expect(removal).toMatchObject({ x: target.x, y: target.y, edge: 'north' });
+  await page.waitForTimeout(500);
   await expect(page.locator('.hud__refusal')).toBeHidden();
+  await page.mouse.click(point.x, point.y);
+  await expect.poll(async () => (await sentCommands(page)).filter((command) => command.type === 'RemoveWall').length).toBe(2);
+  await expect(page.locator('.hud__refusal')).toContainText('Nothing was removed');
 });
