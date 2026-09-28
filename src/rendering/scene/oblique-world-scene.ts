@@ -164,12 +164,12 @@ export class ObliqueWorldScene extends Phaser.Scene {
       this.hoverPointerAt = { x: pointer.x, y: pointer.y };
       this.emitGroundHover();
       if (pointer.button === 2 && !pointer.wasTouch) {
-        if (!this.canRotate()) return;
+        if (this.leftGesture !== undefined || !this.canRotate()) return;
         this.turnPointerId = pointer.id;
         this.turnPointerAt = { x: pointer.x, y: pointer.y };
         return;
       }
-      if (pointer.button !== 0) return;
+      if (pointer.button !== 0 || this.turnPointerId !== undefined) return;
       const world = screenToGround({ x: pointer.x, y: pointer.y }, this.pose);
       const tileX = worldToTile(world.x);
       const tileY = worldToTile(world.y);
@@ -215,6 +215,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     };
     this.input.on('pointerup', (pointer: Phaser.Input.Pointer) => {
       stopTurn(pointer);
+      if (pointer.button !== 0) return;
       const start = this.leftGesture;
       if (start === undefined || pointer.id !== start.pointerId) return;
       this.leftGesture = undefined;

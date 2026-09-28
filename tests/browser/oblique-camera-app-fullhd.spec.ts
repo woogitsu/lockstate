@@ -1,6 +1,8 @@
 import { expect, test } from './network-changed-fixture';
+import { installTee, sentCommands } from './playtest-harness';
 
-test('Full HD oblique camera controls the real world and stands down during Build', async ({ page }, testInfo) => {
+test('Full HD oblique camera controls the real world while Build is armed', async ({ page }, testInfo) => {
+  await installTee(page);
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/?oblique-preview=1');
   await page.getByRole('button', { name: /New prison|Nowe więzienie/ }).click();
@@ -30,12 +32,16 @@ test('Full HD oblique camera controls the real world and stands down during Buil
 
   await page.locator('.ui-tab[data-tab="build"]').click();
   await page.getByRole('button', { name: /Place on map|Stawiaj na mapie/ }).click();
-  await expect(angle.getByRole('button', { name: /Turn right|Obróć w prawo/ })).toBeDisabled();
+  await expect(angle.getByRole('button', { name: /Turn right|Obróć w prawo/ })).toBeEnabled();
   const armedPose = await reading.textContent();
   await page.keyboard.press('e');
+  await expect(reading).not.toHaveText(armedPose ?? '');
+  const afterKey = await reading.textContent();
   await page.mouse.move(700, 400);
   await page.mouse.down({ button: 'right' });
   await page.mouse.move(800, 420, { steps: 5 });
   await page.mouse.up({ button: 'right' });
-  await expect(reading).toHaveText(armedPose ?? '');
+  await expect(reading).not.toHaveText(afterKey ?? '');
+  expect((await sentCommands(page)).filter((command) => command.type === 'PlaceBuildOrder')).toHaveLength(0);
+  await expect(page.locator('.oblique-square-ghost polygon').first()).toBeVisible();
 });
