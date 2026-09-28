@@ -1,4 +1,4 @@
-import type { RoomTemplateId } from '../../content/room-template-catalog';
+import type { AuthoredRoomTemplateId } from '../../content/room-template-catalog';
 import { createRoomTemplateBuildPlan } from '../construction/room-template-build-plan';
 import { getBuildableDefinition, type MaterialRequirement } from '../construction/definition';
 import { placementCostMinorUnits } from '../economy/placement-cost';
@@ -11,7 +11,7 @@ export interface RoomTemplateCostView {
 }
 
 /** A static quote over the exact orders the coordinator will submit. */
-export function projectRoomTemplateCost(templateId: RoomTemplateId): RoomTemplateCostView {
+export function projectRoomTemplateCost(templateId: AuthoredRoomTemplateId): RoomTemplateCostView {
   const { orders } = createRoomTemplateBuildPlan(templateId, { x: 0, y: 0 }, false, 0);
   const quantities = new Map<string, number>();
   for (const order of orders) {
@@ -19,7 +19,7 @@ export function projectRoomTemplateCost(templateId: RoomTemplateId): RoomTemplat
       quantities.set(material.itemId, (quantities.get(material.itemId) ?? 0) + material.quantity);
     }
   }
-  const materials = [...quantities].sort(([left], [right]) => left.localeCompare(right))
+  const materials = [...quantities].sort(([left], [right]) => left < right ? -1 : left > right ? 1 : 0)
     .map(([itemId, quantity]) => ({ itemId, quantity }));
   const catalogueCostMinorUnits = placementCostMinorUnits(materials);
   return {

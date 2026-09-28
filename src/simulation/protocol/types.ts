@@ -345,6 +345,7 @@ export const PROJECTION_IDS = [
   'hud/incident-detail',
   'world/render-snapshot',
   'world/room-template-preflight',
+  'world/room-template-cost',
 ] as const;
 
 export type ProjectionId = (typeof PROJECTION_IDS)[number];
@@ -389,7 +390,7 @@ const projectionTargetSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('id'), id: identifierSchema }).strict(),
   z.object({
     kind: z.literal('room-template'),
-    templateId: z.enum(['cell-basic', 'cell-large', 'shower-room']),
+    templateId: z.enum(['cell-basic', 'cell-large', 'shower-room', 'cell-row-four']),
     origin: z.object({ x: z.number().int().safe(), y: z.number().int().safe() }).strict(),
     mirrorX: z.boolean().optional(),
   }).strict(),
