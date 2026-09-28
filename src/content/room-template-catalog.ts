@@ -34,7 +34,7 @@ interface TemplateDefinition {
   readonly height: number;
   readonly roomId: RoomTemplatePlan['zone']['roomId'];
   readonly doorX: number;
-  readonly objects: readonly { readonly buildableId: RoomTemplateObjectId; readonly x: number; readonly y: number }[];
+  readonly objects: readonly { readonly buildableId: RoomTemplateObjectId; readonly x: number; readonly y: number; readonly width?: number }[];
 }
 
 const TEMPLATES: Readonly<Record<Exclude<AuthoredRoomTemplateId, 'cell-row-four'>, TemplateDefinition>> = {
@@ -57,19 +57,19 @@ const TEMPLATES: Readonly<Record<Exclude<AuthoredRoomTemplateId, 'cell-row-four'
   'canteen-basic': {
     width: 8, height: 8, roomId: 'room.canteen', doorX: 3,
     objects: [
-      { buildableId: 'dining-table-wooden', x: 1, y: 1 },
-      { buildableId: 'dining-table-wooden', x: 4, y: 1 },
-      { buildableId: 'bench-wooden', x: 1, y: 3 },
-      { buildableId: 'bench-wooden', x: 4, y: 3 },
-      { buildableId: 'bench-wooden', x: 1, y: 5 },
-      { buildableId: 'bench-wooden', x: 4, y: 5 },
+      { buildableId: 'dining-table-wooden', x: 1, y: 1, width: 3 },
+      { buildableId: 'dining-table-wooden', x: 4, y: 1, width: 3 },
+      { buildableId: 'bench-wooden', x: 1, y: 3, width: 2 },
+      { buildableId: 'bench-wooden', x: 4, y: 3, width: 2 },
+      { buildableId: 'bench-wooden', x: 1, y: 5, width: 2 },
+      { buildableId: 'bench-wooden', x: 4, y: 5, width: 2 },
     ],
   },
   'kitchen-basic': {
     width: 6, height: 6, roomId: 'room.kitchen', doorX: 2,
     objects: [
-      { buildableId: 'stove-brick', x: 1, y: 1 },
-      { buildableId: 'prep-counter-brick', x: 3, y: 1 },
+      { buildableId: 'stove-brick', x: 1, y: 1, width: 2 },
+      { buildableId: 'prep-counter-brick', x: 3, y: 1, width: 2 },
       { buildableId: 'fridge-brick', x: 1, y: 3 },
     ],
   },
@@ -113,7 +113,9 @@ export function instantiateRoomTemplate(
     doorSquares,
     zone: { roomId: definition.roomId, x: origin.x + 1, y: origin.y + 1, width: width - 2, height: height - 2 },
     zones: [{ roomId: definition.roomId, x: origin.x + 1, y: origin.y + 1, width: width - 2, height: height - 2 }],
-    objects: definition.objects.map((object) => ({ buildableId: object.buildableId, ...square(object.x, object.y) })),
+    // Placed objects grow east from their anchor. Mirror the complete width,
+    // rather than only the anchor, so the far tile stays inside the room.
+    objects: definition.objects.map((object) => ({ buildableId: object.buildableId, ...square(object.x + (options.mirrorX === true ? (object.width ?? 1) - 1 : 0), object.y) })),
   };
 }
 
@@ -153,7 +155,9 @@ function instantiateCellRow(origin: TemplateSquare, mirrorX: boolean): RoomTempl
         roomId: 'room.cell', x: origin.x + (mirrorX ? 6 - (cellX + 2) : cellX + 1),
         y: origin.y + cellY + 1, width: 2, height: 5,
       });
-      const bed = square(cellX + 1, cellY + (northFacing ? 5 : 1));
+      // Beds occupy two north-south tiles; the northern bank must leave its
+      // last perimeter row clear just as the southern bank leaves its first.
+      const bed = square(cellX + 1, cellY + (northFacing ? 4 : 1));
       const toilet = square(cellX + 2, cellY + (northFacing ? 2 : 4));
       objects.push({ buildableId: 'bed-wooden', ...bed }, { buildableId: 'toilet-brick', ...toilet });
     }
