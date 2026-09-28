@@ -9,6 +9,7 @@ import {
   unmetNeedCount,
 } from '../../src/simulation/economy/income';
 import { combineRegimeOverrides, HIGH_RISK_REGIME, GENERAL_POPULATION_REGIME } from '../../src/simulation/prisoners/regime';
+import { classificationGroupIndex } from '../../src/simulation/prisoners/components';
 import { buildPrisonerScenarioFixture, type PrisonerScenarioFixture } from '../helpers/prisoner-fixture';
 
 const RNG_STREAM = 'prisoners.classification';
@@ -40,6 +41,29 @@ function accommodationCatalogIdOf(fixture: PrisonerScenarioFixture, entityId: nu
 }
 
 describe('SanctionSystem: the follow-through half of a solitary sanction (issue #80)', () => {
+  it('ends a high-risk prisoner sanction while their regular accommodation remains the same solitary cell', () => {
+    const fixture = buildPrisonerScenarioFixture({ capacity: 10, cellCount: 4, sanctionPolicy: { solitaryTermTicks: 50 } });
+    const kernel = makeKernel();
+    fixture.registerOn(kernel);
+    const entityId = fixture.prisoners.admitPrisoner(GENERAL_ADMISSION, fixture.originTile);
+    completeIntake(kernel);
+    const index = fixture.prisoners.entityStore.getIndex(entityId);
+    const oldInstanceId = fixture.prisoners.coldState.getAccommodation(entityId)!;
+    fixture.prisoners.roomInstances.release(oldInstanceId, entityId);
+    fixture.prisoners.roomInstances.assign('solitary-cell-0', entityId);
+    fixture.prisoners.coldState.setAccommodation(entityId, 'solitary-cell-0');
+    fixture.prisoners.records.classificationGroupIndex[index] = classificationGroupIndex('high-risk');
+    fixture.prisoners.records.riskTier[index] = 3;
+
+    fixture.prisoners.imposeSolitarySanction(entityId, kernel.tick);
+    const endTick = fixture.prisoners.records.solitarySanctionEndTick[index]!;
+    while (kernel.tick < endTick + 10) kernel.step();
+
+    expect(fixture.prisoners.records.solitarySanctionEndTick[index]).toBe(0);
+    expect(fixture.prisoners.isServingSolitarySanction(entityId)).toBe(false);
+    expect(fixture.prisoners.coldState.getAccommodation(entityId)).toBe('solitary-cell-0');
+    expect(fixture.prisoners.sanctionSystem.getMetrics().releaseBacklogTicks).toBe(0);
+  });
   it('relocates a sanctioned prisoner into solitary, restricts their day, moves the count the ADR 0064 grant is priced from, and releases them on schedule', () => {
     const fixture = buildPrisonerScenarioFixture({ capacity: 10, cellCount: 4, sanctionPolicy: { solitaryTermTicks: 200 } });
     const kernel = makeKernel();
