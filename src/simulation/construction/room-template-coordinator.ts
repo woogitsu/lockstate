@@ -88,25 +88,10 @@ export class RoomTemplateCoordinator implements SystemRegistration {
     );
     if (!verdict.ok) return verdict;
     // A later plan must not build its perimeter on the outside approach of an
-    // earlier pending doorway. Rectangle overlap alone misses adjacent plans.
-    const wallSquares = new Set(plan.wallSquares.map((square) => `${square.x}:${square.y}`));
-    for (const pending of pendingPlans) {
-      for (const door of pending.doorSquares) {
-        if (door.y !== pending.origin.y + pending.height - 1) continue;
-        const outsideY = door.y + 1;
-        if (!wallSquares.has(`${door.x}:${outsideY}`)) continue;
-        return { ok: false, reason: 'structure-occupied', tile: {
-          x: tileCoordinate(door.x), y: tileCoordinate(outsideY),
-        } };
-      }
-    }
-    // Completed plans leave the pending ledger, but their door and zoned room
-    // remain in the world. A later wall must not cover that outside approach.
+    // earlier pending or completed doorway. Rectangle overlap misses both.
     for (const wall of plan.wallSquares) {
-      if (!Number.isSafeInteger(wall.y - 2)) continue;
-      const doorTile = { x: tileCoordinate(wall.x), y: tileCoordinate(wall.y - 1) };
-      const roomTile = { x: tileCoordinate(wall.x), y: tileCoordinate(wall.y - 2) };
-      if (this.doors.getByEdge(doorTile, 'top') === undefined || this.world.getZoning(roomTile) === 0) continue;
+      const tile = { x: tileCoordinate(wall.x), y: tileCoordinate(wall.y) };
+      if (!this.claimsRoomDoorApproachTile(tile)) continue;
       return { ok: false, reason: 'structure-occupied', tile: {
         x: tileCoordinate(wall.x), y: tileCoordinate(wall.y),
       } };
@@ -197,21 +182,33 @@ export class RoomTemplateCoordinator implements SystemRegistration {
     this.pending = remaining;
   }
 
-  /** Reserve the sole outside approach of a pending south-facing template door against later opaque walls. */
-  public claimsPendingDoorApproach(order: BuildOrder): boolean {
+  /** Reserve either side's outside approach after a room plan is queued or completed. */
+  public claimsRoomDoorApproach(order: BuildOrder): boolean {
     if (BUILDABLE_REGISTRY.get(order.definitionId)?.category !== 'wall') return false;
     if (order.footprint !== 'square' && resolveBuildEdge(order) !== 'north') return false;
-    return this.claimsPendingDoorApproachTile(order.location, order.placementSequence);
+    return this.claimsRoomDoorApproachTile(order.location, order.placementSequence);
   }
 
-  public claimsPendingDoorApproachTile(tile: TilePosition, orderSequence?: number): boolean {
-    return this.pending.some((request) => {
+  public claimsRoomDoorApproachTile(tile: TilePosition, orderSequence?: number): boolean {
+    const pendingClaims = this.pending.some((request) => {
       if (request.sequence === orderSequence) return false;
       const plan = instantiateRoomTemplate(request.templateId, request.origin, { mirrorX: request.mirrorX });
-      return plan.doorSquares.some((door) =>
-        door.y === plan.origin.y + plan.height - 1 &&
-        door.x === tile.x && door.y + 1 === tile.y);
+      return plan.doorSquares.some((door) => door.x === tile.x && (
+        (door.y === plan.origin.y + plan.height - 1 && door.y + 1 === tile.y) ||
+        (door.y === plan.origin.y && door.y - 1 === tile.y)));
     });
+    if (pendingClaims) return true;
+    // A completed plan no longer has a pending request. Its registered door
+    // and zoned interior are the durable evidence of the approach to protect.
+    // South: approach, door, interior are y, y-1, y-2. North-facing row:
+    // approach, door square, order/room tile are y, y+1, y+2.
+    const doorAt = (doorY: number, roomY: number): boolean => {
+      if (!Number.isSafeInteger(doorY) || !Number.isSafeInteger(roomY)) return false;
+      const doorTile = { x: tile.x, y: tileCoordinate(doorY) };
+      const roomTile = { x: tile.x, y: tileCoordinate(roomY) };
+      return this.doors.getByEdge(doorTile, 'top') !== undefined && this.world.getZoning(roomTile) !== 0;
+    };
+    return doorAt(tile.y - 1, tile.y - 2) || doorAt(tile.y + 2, tile.y + 2);
   }
 
   /** Command dispatch also runs while paused, so release invalidated plans then. */
