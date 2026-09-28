@@ -268,7 +268,7 @@ answers it.
 nothing about **whether this particular occurrence is worth publishing, and on
 which of the channel's two surfaces** — and that second question did not exist
 when 0087 was written. `EVENT_PRESENTATION.surfaces`
-(`src/ui/simulation-events.ts:464-474`) was added on 2026-09-05, four days
+(`src/ui/simulation-events.ts:464-474`, `readonly surfaces: 'band-and-log' | 'log-only';`) was added on 2026-09-05, four days
 later, by the owner's ruling on #966 site 2, and its docblock is explicit that
 the routing *"is now a decision somebody has to take per member"*.
 
@@ -426,7 +426,7 @@ Against the two surfaces:
 
 - **The band.** Its dwell floor is **600 ms** with severity promotion
   (`src/ui/hud/event-band-dwell.ts`, the owner's ruling on ADR 0084 decision 4,
-  described at `src/ui/simulation-events.ts:345-346`). **At x4, 625 ms between
+  described at `src/ui/simulation-events.ts:345-346`, where `EVENT_BAND_DWELL_FLOOR_MS = 600` is pinned). **At x4, 625 ms between
   completions clears that floor by 25 ms**, so a player building continuously
   at x4 would hold the band with completion lines for the whole programme. An
   `'info'` line cannot displace a dwelling `'warning'` or `'danger'` — the
