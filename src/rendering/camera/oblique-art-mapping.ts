@@ -14,6 +14,7 @@ const OBJECT_ART: Readonly<Record<string, string>> = {
   'object.toilet': 'fixture.cell.toilet_sink',
   'object.storage-rack': 'furniture.storage.rack.wooden',
   'object.chair': 'furniture.chair.wooden',
+  'object.desk': 'furniture.office.desk.employee.variants',
   'object.shower-head': 'fixture.shower.head',
   'object.dining-table': 'furniture.dining.table.wooden',
   'object.bench': 'furniture.corridor.bench.variants',
