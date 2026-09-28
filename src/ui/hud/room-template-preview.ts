@@ -25,6 +25,7 @@ export const ROOM_TEMPLATE_NAME_KEYS: Record<RoomTemplateId, LocalizationKey> = 
   'delivery-bay-basic': 'room.delivery-bay.name',
   'reception-basic': 'room.reception.name',
   'utility-room-basic': 'room.utility-room.name',
+  'garbage-room-basic': 'room.garbage-room.name',
 };
 
 /** A catalogue of authored plans. Selection previews geometry; it never places an order. */
@@ -135,6 +136,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
       'desk-wooden': 'object.desk.name',
       'loading-dock-door-wooden': 'object.loading-dock-door.name',
       'utility-panel-brick': 'object.utility-panel.name',
+      'waste-bin-brick': 'object.waste-bin.name',
     };
     contents.textContent = [...counts].map(([objectId, count]) => t(HUD_MESSAGE_KEY.templateObjectCount, { name: t(objectNames[objectId]!), count })).join(' · ');
     materials.hidden = true;
