@@ -1,0 +1,114 @@
+import { expect, test } from './network-changed-fixture';
+import { countsSeries, installTee, sentCommands } from './playtest-harness';
+
+test('Full HD Build offers quarter turns only for authored room plans that support them', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/index.html');
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await page.getByRole('button', { name: 'Build', exact: true }).click();
+  await page.getByRole('button', { name: 'Room plans', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Room plans' });
+  const rotation = dialog.getByRole('combobox', { name: 'Rotation' });
+  await expect(rotation).toBeHidden();
+  await dialog.getByRole('button', { name: 'Canteen', exact: true }).click();
+  await expect(rotation).toBeVisible();
+  await expect(rotation.locator('option')).toHaveText(['0°', '90°', '180°', '270°']);
+  await rotation.selectOption('1');
+  await expect(rotation).toHaveValue('1');
+  await dialog.getByRole('checkbox', { name: 'Mirror horizontally' }).check();
+  await expect(rotation).toHaveValue('1');
+  await dialog.getByRole('button', { name: 'Large cell', exact: true }).click();
+  await expect(rotation).toBeHidden();
+  await expect(dialog.getByRole('checkbox', { name: 'Rotate 180°' })).toBeHidden();
+  await dialog.getByRole('button', { name: 'Four-cell row', exact: true }).click();
+  await expect(rotation).toBeHidden();
+  await expect(dialog.getByRole('checkbox', { name: 'Rotate 180°' })).toBeVisible();
+  await dialog.getByRole('button', { name: 'Basic cell', exact: true }).click();
+  await expect(rotation).toBeHidden();
+});
+
+test('Full HD rotated Canteen keeps its quote, doorway and occupied footprint after Save/Load', async ({ page }) => {
+  test.setTimeout(180_000);
+  await installTee(page);
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/index.html');
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await page.getByRole('button', { name: 'Build', exact: true }).click();
+  await page.getByRole('button', { name: 'Room plans', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Room plans' });
+  await dialog.getByRole('button', { name: 'Canteen', exact: true }).click();
+  const quote = dialog.locator('.hud-template__catalogue-value');
+  await expect(quote).toContainText('Catalogue value:');
+  const unturnedQuote = await quote.textContent();
+  const doorIndices = () => dialog.locator('.hud-template__diagram .hud-template__tile--door').evaluateAll((tiles) =>
+    tiles.map((tile) => Array.prototype.indexOf.call(tile.parentElement!.children, tile) as number));
+  expect(await doorIndices()).toEqual([59]);
+  await dialog.getByRole('combobox', { name: 'Rotation' }).selectOption('1');
+  expect(await doorIndices()).toEqual([24]);
+  await expect(quote).toHaveText(unturnedQuote!);
+  await dialog.getByRole('checkbox', { name: 'Mirror horizontally' }).check();
+  await expect(dialog.getByRole('combobox', { name: 'Rotation' })).toHaveValue('1');
+  expect(await doorIndices()).toEqual([32]);
+  await expect(quote).toHaveText(unturnedQuote!);
+  await dialog.getByRole('spinbutton', { name: 'Plan origin X' }).fill('10');
+  await dialog.getByRole('spinbutton', { name: 'Plan origin Y' }).fill('10');
+  await expect(dialog.getByRole('status')).toContainText('clear');
+  await dialog.getByRole('button', { name: 'Place room plan' }).click();
+  await expect.poll(async () => (await sentCommands(page)).filter((command) => command.type === 'PlaceRoomTemplate')).toEqual([
+    { type: 'PlaceRoomTemplate', templateId: 'canteen-basic', origin: { x: 10, y: 10 }, mirrorX: true, quarterTurns: 1 },
+  ]);
+  await dialog.getByRole('button', { name: 'Close plans' }).click();
+  await page.getByRole('button', { name: 'Play at normal speed' }).click();
+  await page.getByRole('button', { name: 'Fast forward' }).click();
+  await page.getByRole('button', { name: 'Fast forward' }).click();
+  await expect.poll(async () => (await countsSeries(page)).at(-1)?.rooms, { timeout: 120_000 }).toBe(1);
+  await expect(page.locator('.hud-build')).not.toHaveAttribute('data-queued', /[1-9]/, { timeout: 120_000 });
+  await page.getByRole('button', { name: 'Save now' }).click();
+  await expect(page.locator('.save-panel__status')).toContainText('Saved (generation ');
+  await page.reload();
+  await page.locator('.save-panel__item button').filter({ hasText: 'Load' }).first().click();
+  await expect.poll(async () => (await countsSeries(page)).at(-1)?.rooms).toBe(1);
+  await page.getByRole('button', { name: 'Build', exact: true }).click();
+  await page.getByRole('button', { name: 'Room plans', exact: true }).click();
+  const restored = page.getByRole('dialog', { name: 'Room plans' });
+  await restored.getByRole('button', { name: 'Canteen', exact: true }).click();
+  await restored.getByRole('combobox', { name: 'Rotation' }).selectOption('1');
+  await restored.getByRole('checkbox', { name: 'Mirror horizontally' }).check();
+  await restored.getByRole('spinbutton', { name: 'Plan origin X' }).fill('10');
+  await restored.getByRole('spinbutton', { name: 'Plan origin Y' }).fill('10');
+  await expect(restored.getByRole('status')).toContainText('blocked');
+  await expect(restored.getByRole('button', { name: 'Place room plan' })).toBeDisabled();
+});
+
+test('Full HD Large Cell keeps 90°/270° out of Build and submits its unchanged plan', async ({ page }) => {
+  await installTee(page);
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/index.html');
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await page.getByRole('button', { name: 'Build', exact: true }).click();
+  await page.getByRole('button', { name: 'Room plans', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Room plans' });
+  await dialog.getByRole('button', { name: 'Large cell', exact: true }).click();
+  await expect(dialog.getByRole('combobox', { name: 'Rotation' })).toBeHidden();
+  await expect(dialog.locator('.hud-template__dimensions')).toHaveText('6 × 7 tiles');
+  await expect(dialog.locator('.hud-template__catalogue-value')).toContainText('Catalogue value:');
+  await dialog.getByRole('spinbutton', { name: 'Plan origin X' }).fill('10');
+  await dialog.getByRole('spinbutton', { name: 'Plan origin Y' }).fill('10');
+  await expect(dialog.getByRole('status')).toContainText('clear');
+  await dialog.getByRole('button', { name: 'Place room plan' }).click();
+  await expect.poll(async () => (await sentCommands(page)).filter((command) => command.type === 'PlaceRoomTemplate')).toEqual([
+    { type: 'PlaceRoomTemplate', templateId: 'cell-large', origin: { x: 10, y: 10 } },
+  ]);
+});
+
+test('Polish Full HD Build names the supported room rotation truthfully', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.addInitScript(() => localStorage.setItem('lockstate.settings.language', JSON.stringify({ version: 1, preference: 'pl' })));
+  await page.goto('/?oblique-preview=1');
+  await page.getByRole('button', { name: 'Nowe więzienie' }).click();
+  await page.locator('.ui-tab[data-tab="build"]').click();
+  await page.getByRole('button', { name: 'Wzory pomieszczeń' }).click();
+  const dialog = page.getByRole('dialog', { name: 'Wzory pomieszczeń' });
+  await dialog.getByRole('button', { name: 'Stołówka', exact: true }).click();
+  await expect(dialog.getByRole('combobox', { name: 'Obrót' })).toBeVisible();
+});

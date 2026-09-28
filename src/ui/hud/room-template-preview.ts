@@ -1,4 +1,5 @@
 import { ROOM_TEMPLATE_IDS, instantiateRoomTemplate, roomTemplateObjectSquares, type RoomTemplateId } from '../../content/room-template-catalog';
+import type { TemplateQuarterTurns } from '../../content/room-template-rotation-geometry';
 import { defaultItemRegistry } from '../../content/item-catalog';
 import type { LocalizationKey } from '../../content/localization';
 import { element, nextUiId } from '../primitives/dom';
@@ -78,8 +79,12 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
   let selectedId: RoomTemplateId = ROOM_TEMPLATE_IDS[0];
   let mirrorX = false;
   let halfTurn = false;
+  let quarterTurns: TemplateQuarterTurns = 0;
   let halfTurnCheckbox: HTMLInputElement | undefined;
   let halfTurnLabel: HTMLElement | undefined;
+  let rotationSelect: HTMLSelectElement | undefined;
+  let rotationLabel: HTMLElement | undefined;
+  const supportsQuarterTurns = (id: RoomTemplateId): boolean => id === 'canteen-basic';
   let quoteRevision = 0;
   async function refreshQuote(id: RoomTemplateId, revision: number): Promise<void> {
     if (quote === undefined) return;
@@ -105,11 +110,15 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
     }
   }
   function select(id: RoomTemplateId): void {
+    if (id !== selectedId) quarterTurns = 0;
     selectedId = id;
     if (id !== 'cell-row-four') halfTurn = false;
     if (halfTurnCheckbox !== undefined) halfTurnCheckbox.checked = halfTurn;
     if (halfTurnLabel !== undefined) halfTurnLabel.hidden = id !== 'cell-row-four';
-    tool?.select(id, mirrorX, halfTurn ? 2 : 0);
+    if (rotationSelect !== undefined) rotationSelect.value = String(quarterTurns);
+    if (rotationLabel !== undefined) rotationLabel.hidden = !supportsQuarterTurns(id);
+    const turns: TemplateQuarterTurns = id === 'cell-row-four' ? (halfTurn ? 2 : 0) : supportsQuarterTurns(id) ? quarterTurns : 0;
+    tool?.select(id, mirrorX, turns);
     const plan = tool?.planAt({ x: 0, y: 0 }) ?? instantiateRoomTemplate(id, { x: 0, y: 0 }, { mirrorX });
     for (const [rowId, button] of buttons) button.setAttribute('aria-pressed', rowId === id ? 'true' : 'false');
     dimensions.textContent = t(HUD_MESSAGE_KEY.templateSize, { width: plan.width, height: plan.height });
@@ -175,6 +184,10 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
     halfTurnCheckbox = element('input', { attributes: { type: 'checkbox' } });
     halfTurnLabel = element('label', { children: [halfTurnCheckbox, element('span', { text: t(HUD_MESSAGE_KEY.templateRotateHalf) })] });
     halfTurnLabel.hidden = true;
+    rotationSelect = element('select', { children: ([0, 1, 2, 3] as const).map((turns) =>
+      element('option', { text: `${turns * 90}°`, attributes: { value: String(turns) } })) });
+    rotationLabel = element('label', { children: [element('span', { text: t(HUD_MESSAGE_KEY.templateRotation) }), rotationSelect] });
+    rotationLabel.hidden = true;
     const place = element('button', { text: t(HUD_MESSAGE_KEY.templatePlace), attributes: { type: 'button' } });
     const map = element('button', { text: t(HUD_MESSAGE_KEY.templateMap), attributes: { type: 'button' } });
     const status = element('p', { className: 'hud-template__status', attributes: { role: 'status' } });
@@ -227,6 +240,10 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
       halfTurn = halfTurnCheckbox?.checked === true;
       select(selectedId);
     });
+    rotationSelect.addEventListener('change', () => {
+      quarterTurns = Number(rotationSelect?.value) as TemplateQuarterTurns;
+      select(selectedId);
+    });
     place.addEventListener('click', async () => {
       const tile = origin();
       if (tile === undefined || !wholePlanFitsSafeTiles(tile) || place.disabled) return;
@@ -257,6 +274,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
         element('label', { className: 'hud-template__coordinate', children: [element('span', { text: t(HUD_MESSAGE_KEY.templateY) }), y] }),
         element('label', { children: [mirror, element('span', { text: t(HUD_MESSAGE_KEY.templateMirror) })] }),
         halfTurnLabel,
+        rotationLabel,
         place, map, status,
       ],
     }));

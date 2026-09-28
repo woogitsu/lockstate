@@ -2308,6 +2308,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.template-y': 'Plan origin Y',
   'hud.build.template-mirror': 'Mirror horizontally',
   'hud.build.template-rotate-half': 'Rotate 180°',
+  'hud.build.template-rotation': 'Rotation',
   'hud.build.template-place': 'Place room plan',
   'hud.build.template-map': 'Place on map',
   'hud.build.template-invalid-position': 'Enter whole-number coordinates.',
