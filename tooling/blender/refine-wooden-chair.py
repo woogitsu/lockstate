@@ -61,14 +61,19 @@ def make_cylinder(name, location, radius, depth, material, vertices=16):
     return obj
 
 
-# A broad uninterrupted seat reads as a single chair rather than a bench.
-# The narrow front edge and two wood-grain seams remain visible at tile scale.
+# The v3 reference has three distinct seat boards. Leave enough dark space
+# between them to survive the 256-to-64 px atlas reduction.
 make_box("seat underframe", (0, 0.075, 0.49), (0.65, 0.56, 0.075), "Canteen worn steel", 0.018)
-make_box("wooden seat", (0, 0.075, 0.568), (0.59, 0.52, 0.08), "Corridor bench worn wood plank 0", 0.055)
+for index, y in enumerate((-0.10, 0.075, 0.25)):
+    make_box(f"wooden seat board {index}", (0, y, 0.568), (0.59, 0.145, 0.08),
+        f"Corridor bench worn wood plank {index}", 0.025)
+    for x in (-0.255, 0.255):
+        make_cylinder(f"seat board rivet {index} {x}", (x, y, 0.612),
+            0.013, 0.008, "Canteen worn steel", 12)
 make_box("front seat edge", (0, 0.344, 0.57), (0.56, 0.025, 0.058), "Canteen worn steel", 0.006)
 
 # Put real air between the seat and the raised back. The back's frame and
-# broad walnut rail form a separate silhouette in the straight-down render.
+# two walnut rails form a separate silhouette in the straight-down render.
 for x in (-0.32, 0.32):
     make_cylinder(f"rear post {x}", (x, -0.43, 0.66), 0.039, 1.32, "Canteen worn steel")
     make_cylinder(f"rear foot {x}", (x, -0.43, 0.035), 0.066, 0.07, "shade")
@@ -76,10 +81,14 @@ for x in (-0.32, 0.32):
     make_cylinder(f"front foot {x}", (x, 0.405, 0.035), 0.063, 0.07, "shade")
     make_box(f"back bracket {x}", (x, -0.323, 0.79), (0.055, 0.205, 0.055), "Canteen worn steel", 0.012)
 
-make_box("dark back inset", (0, -0.435, 1.02), (0.63, 0.135, 0.10), "shade", 0.026)
-make_box("walnut back rail", (0, -0.435, 1.085), (0.61, 0.12, 0.09), "Corridor bench worn wood plank 1", 0.034)
-make_box("back edge highlight", (0, -0.488, 1.14), (0.55, 0.012, 0.007), "Canteen worn steel", 0.003)
+for index, (y, z) in enumerate(((-0.52, 1.12), (-0.36, 1.00))):
+    make_box(f"walnut back rail {index}", (0, y, z), (0.61, 0.105, 0.08),
+        f"Corridor bench worn wood plank {index + 1}", 0.025)
+    for x in (-0.255, 0.255):
+        make_cylinder(f"back rail rivet {index} {x}", (x, y, z + 0.045),
+            0.013, 0.008, "Canteen worn steel", 12)
 
-assert len(collection.objects) == 17, "chair refinement has unexpected geometry"
+assert len(collection.objects) == 28, "chair refinement has unexpected geometry"
 assert all(obj == origin or obj.name.startswith(prefix) for obj in collection.objects)
+bpy.context.preferences.filepaths.save_version = 0
 bpy.ops.wm.save_as_mainfile(filepath=bpy.data.filepath)
