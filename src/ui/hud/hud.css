@@ -514,6 +514,30 @@
    wrapped one would take the row past the tap targets beside it. */
 .hud-zoom__legend { flex: none; }
 
+/* Mounted beside the zoom island only while the oblique camera is active. */
+.hud-camera-angle {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--space-2);
+  align-self: flex-start;
+  max-width: min(396px, 100%);
+  margin-bottom: var(--space-2);
+  padding: var(--space-2);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+}
+.hud-camera-angle__legend,
+.hud-camera-angle__reading { grid-column: 1 / -1; }
+.hud-camera-angle__reading { font-variant-numeric: tabular-nums; }
+.hud-camera-angle__button {
+  min-width: 0;
+  min-height: var(--tap-target);
+  padding-inline: var(--space-1);
+  white-space: normal;
+}
+.hud__corner .hud-camera-angle__button { pointer-events: auto; }
+
 /* The frame scales with the rest of the interface (#545): it is a HUD panel
    like any other, and a minimap that stayed a fixed width while the type
    inside it grew would be the one island the scale did not reach.
@@ -7328,3 +7352,32 @@
 .hud-template__catalogue-value { margin: var(--space-2) 0; text-align: center; overflow-wrap: anywhere; }
 .hud-template__catalogue-value { color: var(--text-heading); }
 .hud-template__placement .hud-template__coordinate { flex-direction: column; align-items: stretch; gap: var(--space-1); }
+
+.oblique-template-ghost { position: fixed; inset: 0; z-index: calc(var(--hud-layer) - 1); pointer-events: none; }
+.oblique-template-ghost[hidden] { display: none; }
+.oblique-template-ghost__map { width: 100%; height: 100%; }
+.oblique-template-ghost__map polygon { fill: var(--accent-soft); fill-opacity: .52; stroke: var(--accent-deep); stroke-width: 2; vector-effect: non-scaling-stroke; }
+.oblique-template-ghost__map polygon[data-kind='wall'] { fill: var(--text-muted); fill-opacity: .64; }
+.oblique-template-ghost__map polygon[data-kind='furniture'] { fill: var(--text-heading); fill-opacity: .67; }
+.oblique-template-ghost__map polygon[data-kind='door'] { fill: var(--accent); fill-opacity: .82; }
+.oblique-template-ghost[data-verdict='pending'] .oblique-template-ghost__map polygon { stroke-dasharray: 5 4; }
+.oblique-template-ghost[data-verdict='blocked'] .oblique-template-ghost__map polygon { stroke: var(--status-danger); }
+.oblique-template-ghost__map polygon[data-kind='blocked'] { fill: var(--status-danger); fill-opacity: .76; }
+.oblique-template-ghost__notice {
+  position: absolute;
+  left: 50%;
+  bottom: var(--space-4);
+  transform: translateX(-50%);
+  display: grid;
+  gap: var(--space-1);
+  box-sizing: border-box;
+  max-width: min(34rem, calc(100vw - 36rem));
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface-raised);
+  color: var(--text-body);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-md);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.oblique-template-ghost__cost { color: var(--text-muted); }

@@ -140,6 +140,10 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
       const next = { x: Number(x.value), y: Number(y.value) };
       return Number.isSafeInteger(next.x) && Number.isSafeInteger(next.y) ? next : undefined;
     };
+    const wholePlanFitsSafeTiles = (tile: { readonly x: number; readonly y: number }): boolean => {
+      const plan = instantiateRoomTemplate(selectedId, { x: 0, y: 0 }, { mirrorX });
+      return Number.isSafeInteger(tile.x + plan.width - 1) && Number.isSafeInteger(tile.y + plan.height - 1);
+    };
     let revision = 0;
     refreshPlacement = async (): Promise<void> => {
       const current = ++revision;
@@ -147,6 +151,10 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
       const tile = origin();
       if (tile === undefined) {
         status.textContent = t(HUD_MESSAGE_KEY.templateInvalidPosition);
+        return;
+      }
+      if (!wholePlanFitsSafeTiles(tile)) {
+        status.textContent = t(HUD_MESSAGE_KEY.templateOutsideSafeTiles);
         return;
       }
       try {
@@ -173,7 +181,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
     });
     place.addEventListener('click', async () => {
       const tile = origin();
-      if (tile === undefined || place.disabled) return;
+      if (tile === undefined || !wholePlanFitsSafeTiles(tile) || place.disabled) return;
       place.disabled = true;
       try {
         const result = await tool.placeAt(tile);

@@ -171,7 +171,7 @@ function templatePortRoute(): Route | undefined {
   const preview = readSource('src/ui/hud/room-template-preview.ts');
   const tool = readSource('src/ui/room-template-tool.ts');
   if (!hud.includes("kind: 'place-room-template'") || !hud.includes('new RoomTemplateToolState({') ||
-      !hud.includes('roomTemplateTool }),') || !build.includes('createRoomTemplatePreview(localizer, options.roomTemplateTool, options.onArmRoomTemplate)') ||
+      !hud.includes('roomTemplateTool }),') || !build.includes('createRoomTemplatePreview(localizer, options.roomTemplateTool, options.onArmRoomTemplate, options.roomTemplateQuote)') ||
       !preview.includes("place.addEventListener('click'") || !preview.includes('await tool.placeAt(tile)') ||
       !tool.includes('await this.port.place(request)')) return undefined;
   const line = preview.slice(0, preview.indexOf("place.addEventListener('click'")).split('\n').length;

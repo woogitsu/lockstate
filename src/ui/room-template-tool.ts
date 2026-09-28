@@ -45,13 +45,22 @@ export class RoomTemplateTool {
     for (const listener of this.selectionListeners) listener();
   }
 
+  /** A ghost needs a repaint when either the selected variant or armed state changes. */
   public onSelectionChanged(listener: () => void): () => void {
     this.selectionListeners.add(listener);
     return () => this.selectionListeners.delete(listener);
   }
 
-  public arm(): void { this.armed = true; }
-  public standDown(): void { this.armed = false; }
+  public arm(): void {
+    if (this.armed) return;
+    this.armed = true;
+    for (const listener of this.selectionListeners) listener();
+  }
+  public standDown(): void {
+    if (!this.armed) return;
+    this.armed = false;
+    for (const listener of this.selectionListeners) listener();
+  }
   public isArmed(): boolean { return this.armed; }
 
   public planAt(origin: TemplateSquare): RoomTemplatePlan {

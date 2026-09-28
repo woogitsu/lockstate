@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "source": "door.interior.leaf.open.blend",
+  "assetId": "door.interior.leaf.open",
+  "sha256": "48a27d1b212e88121e6b55661452f70df1129e78f8825eebc3913db1d5aeaf5f",
+  "footprintTiles": [
+    1,
+    1
+  ],
+  "pivotTile": [
+    0.5,
+    0.5
+  ],
+  "hingeWorld": [
+    -0.36,
+    0.0,
+    0.0
+  ],
+  "leafClearWidthTiles": 0.76,
+  "leafHeightTiles": 2.28,
+  "openDegrees": -125,
+  "swingsToward": "corridor (negative Y)",
+  "frameAsset": "wall.interior.doorframe.full"
+}

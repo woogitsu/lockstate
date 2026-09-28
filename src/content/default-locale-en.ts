@@ -2308,8 +2308,10 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.template-place': 'Place room plan',
   'hud.build.template-map': 'Place on map',
   'hud.build.template-invalid-position': 'Enter whole-number coordinates.',
+  'hud.build.template-outside-safe-tiles': 'The plan extends outside valid map coordinates.',
   'hud.build.template-ready': 'This footprint is clear.',
   'hud.build.template-blocked': 'This footprint is blocked. Choose another position.',
+  'hud.build.template-unowned-land': 'This plan reaches land you do not own. Choose another position.',
   'hud.build.template-unavailable': 'Placement check is unavailable. Try again.',
   'hud.build.template-submitted': 'Room plan submitted.',
   'hud.build.template-close': 'Close plans',
@@ -4530,6 +4532,14 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.template-catalogue-value': 'Catalogue value: {total}. Materials already held may lower the amount spent.',
   'hud.build.template-catalogue-value-unavailable': 'Catalogue value unavailable. Check the material requirements.',
   'hud.build.template-cell-row-four': 'Four-cell row',
+  'hud.camera-angle.title': 'Camera angle',
+  'hud.camera-angle.yaw-left': 'Turn left',
+  'hud.camera-angle.yaw-right': 'Turn right',
+  'hud.camera-angle.elevation-up': 'Tilt up',
+  'hud.camera-angle.elevation-down': 'Tilt down',
+  'hud.camera-angle.reset': 'Reset angle',
+  'hud.camera-angle.yaw': 'Turn',
+  'hud.camera-angle.elevation': 'Tilt',
 };
 
 /**
