@@ -66,12 +66,12 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
       element('div', { className: 'hud-template__header', children: [title, closeButton] }),
       element('p', { text: t(tool === undefined ? HUD_MESSAGE_KEY.templatePreviewOnly : HUD_MESSAGE_KEY.templatePositionHint) }),
       choices,
+      catalogueValue,
       dimensions,
       diagram,
       legend,
       contents,
       materials,
-      catalogueValue,
     ],
   });
   title.id = nextUiId('hud-template-title');
