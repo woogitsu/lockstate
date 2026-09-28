@@ -9,11 +9,12 @@ const root = join(__dirname, '../..');
 const digest = (bytes: Buffer) => createHash('sha256').update(bytes).digest('hex');
 const json = (path: string): unknown => JSON.parse(readFileSync(join(root, 'public', path.slice(1)), 'utf8')) as unknown;
 
-describe('oblique bed and open-door modules', () => {
-  it('publishes three logical modules with complete 3×3 hashed poses and a shared ground pivot', () => {
+describe('oblique cell module registry', () => {
+  it('publishes six logical modules with complete 3×3 hashed poses and a shared ground pivot', () => {
     const registry = parseObliqueModuleRegistry(json('/game-content/oblique-module-registry.v1.json'));
     expect(registry.entries.map((entry) => entry.assetId)).toEqual([
       'wall.interior.module.full', 'furniture.cell.bed.single.variants', 'door.interior.open.full',
+      'fixture.cell.toilet_sink', 'furniture.storage.rack.wooden', 'furniture.chair.wooden',
     ]);
     for (const entry of registry.entries) {
       const catalog = parseObliqueModuleCatalog(json(entry.manifest));

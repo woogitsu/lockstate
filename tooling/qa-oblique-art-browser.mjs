@@ -31,17 +31,32 @@ try {
   const door = await page.locator('body').getAttribute('data-loaded-frame');
   if (!door?.includes('cell-door-open-yaw-45-elev65.')) throw new Error(`Wrong door frame: ${door}`);
   const doorScreen = await page.screenshot({ path: join(tmpdir(), 'lockstate-oblique-door-yaw-45-elev65.png') });
+  const cellScreenshots = [];
+  for (const [assetId, slug] of [
+    ['fixture.cell.toilet_sink', 'cell-toilet'],
+    ['furniture.storage.rack.wooden', 'cell-storage-rack'],
+    ['furniture.chair.wooden', 'cell-chair'],
+  ]) {
+    await page.locator(`[data-asset-id="${assetId}"]`).click();
+    await page.locator('[data-axis="yaw"][data-angle="45"]').click();
+    await page.locator('[data-axis="elevation"][data-angle="25"]').click();
+    const frame = await page.locator('body').getAttribute('data-loaded-frame');
+    if (!frame?.includes(`${slug}-yaw+45-elev25.`)) throw new Error(`Wrong ${assetId} frame: ${frame}`);
+    const path = join(tmpdir(), `lockstate-oblique-${slug}-yaw45-elev25.png`);
+    await page.screenshot({ path });
+    cellScreenshots.push({ assetId, frame, path });
+  }
   if (createHash('sha256').update(before).digest('hex') === createHash('sha256').update(after).digest('hex')) {
     throw new Error('Angle change left the Full HD screenshot unchanged.');
   }
   if (createHash('sha256').update(after).digest('hex') === createHash('sha256').update(doorScreen).digest('hex')) {
     throw new Error('Module change left the Full HD screenshot unchanged.');
   }
-  if (images.length !== 27 || images.some((image) => image.status !== 200)) {
-    throw new Error(`Expected 27 successfully loaded angle textures, got ${JSON.stringify(images)}.`);
+  if (images.length !== 54 || images.some((image) => image.status !== 200)) {
+    throw new Error(`Expected 54 successfully loaded angle textures, got ${JSON.stringify(images)}.`);
   }
   if (failures.length > 0) throw new Error(`Browser errors: ${failures.join('; ')}`);
-  console.log(JSON.stringify({ viewport: '1920x1080', initial, selected, door, imagesLoaded: images.length,
+  console.log(JSON.stringify({ viewport: '1920x1080', initial, selected, door, cellScreenshots, imagesLoaded: images.length,
     screenshots: [join(tmpdir(), 'lockstate-oblique-wall-yaw0-elev45.png'),
       join(tmpdir(), 'lockstate-oblique-bed-yaw45-elev25.png'),
       join(tmpdir(), 'lockstate-oblique-door-yaw-45-elev65.png')] }, null, 2));
