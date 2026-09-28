@@ -23,9 +23,11 @@ describe('oblique cell module registry', () => {
       expect(catalog.nominalPixelsPerTile).toBe(64);
       expect(catalog.pivotPx).toEqual([256, 256]);
       expect(catalog.cameraTargetTiles).toEqual([0, 0, 0]);
-      expect(catalog.yawDegrees).toEqual([-45, 0, 45]);
+      expect(catalog.yawDegrees).toEqual(entry.assetId === 'wall.interior.module.full'
+        ? Array.from({ length: 24 }, (_, index) => -180 + index * 15)
+        : [-45, 0, 45]);
       expect(catalog.elevationDegrees).toEqual([25, 45, 65]);
-      expect(catalog.frames).toHaveLength(9);
+      expect(catalog.frames).toHaveLength(entry.assetId === 'wall.interior.module.full' ? 72 : 9);
       expect(digest(readFileSync(join(root, 'assets/source/blender', catalog.source)))).toBe(catalog.sourceSha256);
       for (const dependency of catalog.sourceDependencies ?? []) {
         expect(digest(readFileSync(join(root, 'assets/source/blender', dependency.source)))).toBe(dependency.sha256);
