@@ -21,6 +21,10 @@ export interface ObliqueWorldHarness {
   projectedGroundTileCount(): number;
   paintedGroundTileCount(): number;
   visibleUncachedGroundObjectCount(): number;
+  raisedArtImageCount(): number;
+  projectedRaisedObjectCount(): number;
+  visibleUncachedRaisedObjectCount(): number;
+  estimatedTextureBytes(): number;
   artTextureKeys(): readonly string[];
   loadedArtTextureCount(): number;
   artCatalogCount(): number;
@@ -44,7 +48,8 @@ declare global {
 }
 
 const tile = (x: number, y: number) => ({ x: tileCoordinate(x), y: tileCoordinate(y) });
-const world = new SparseWorld(8);
+const largeStress = new URL(window.location.href).searchParams.has('large-stress');
+const world = new SparseWorld(largeStress ? 32 : 8);
 const origin = { x: chunkCoordinate(0), y: chunkCoordinate(0) };
 world.load(origin);
 world.setOwned(origin, true);
@@ -76,18 +81,41 @@ for (let y = 1; y <= 4; y += 1) {
 // The edge at (2,5) meets only the northern west segment at (3,4).
 world.setLeftEdge(tile(5, 5), 1);
 world.setLeftEdge(tile(3, 4), 1);
+const largeBeds: RenderFrame['structures'][number][] = [];
+if (largeStress) {
+  for (let chunkY = 0; chunkY < 2; chunkY += 1) for (let chunkX = 0; chunkX < 2; chunkX += 1) {
+    if (chunkX === 0 && chunkY === 0) continue;
+    const position = { x: chunkCoordinate(chunkX), y: chunkCoordinate(chunkY) };
+    world.load(position);
+    world.setOwned(position, true);
+  }
+  for (let y = 0; y < 64; y += 1) for (let x = 0; x < 64; x += 1) world.setTerrain(tile(x, y), 'dirt');
+  for (let y = 8; y <= 50; y += 6) for (let x = 8; x <= 50; x += 6) {
+    for (let offset = 0; offset < 5; offset += 1) {
+      world.setTopEdge(tile(x + offset, y), 1);
+      world.setTopEdge(tile(x + offset, y + 4), 1);
+      world.setLeftEdge(tile(x, y + offset), 1);
+      world.setLeftEdge(tile(x + 4, y + offset), 1);
+    }
+    for (let dy = 1; dy < 4; dy += 1) for (let dx = 1; dx < 4; dx += 1) {
+      world.setZoning(tile(x + dx, y + dy), 1);
+    }
+    largeBeds.push({ id: `stress-bed-${x}-${y}`, definitionId: 'bed-wooden', tileX: x + 2, tileY: y + 2, phase: 'built' });
+  }
+}
 const frame: RenderFrame = {
   revision: 1,
   world: WorldRenderView.fromSnapshot(world.snapshot()),
   structures: [
     { id: 'bed-1', definitionId: 'bed-wooden', tileX: 2, tileY: 2, phase: 'built' },
     { id: 'shower-1', definitionId: 'shower-head-brick', tileX: 6, tileY: 2, phase: 'built' },
+    ...largeBeds,
   ],
-  actors: [{ id: 7, assetId: 'actor.prisoner.base', tileX: 3, tileY: 3, deltaX: 0, deltaY: 0 }],
+  actors: [{ id: 7, assetId: 'actor.prisoner.base', tileX: largeStress ? 33 : 3, tileY: largeStress ? 33 : 3, deltaX: 0, deltaY: 0 }],
   rooms: [],
   roomConditions: [],
 };
-let actorTileX = 3;
+let actorTileX = largeStress ? 33 : 3;
 let rotationEnabled = true;
 let poseChangeCount = 0;
 let hovered: { tileX: number; tileY: number } | undefined;
@@ -136,6 +164,19 @@ window.lockstateObliqueWorldHarness = {
   projectedGroundTileCount: () => scene.projectedGroundTileCount,
   paintedGroundTileCount: () => scene.paintedGroundTileCount,
   visibleUncachedGroundObjectCount: () => scene.visibleUncachedGroundObjectCount,
+  raisedArtImageCount: () => scene.raisedArtImageCount,
+  projectedRaisedObjectCount: () => scene.projectedRaisedObjectCount,
+  visibleUncachedRaisedObjectCount: () => scene.visibleUncachedRaisedObjectCount,
+  estimatedTextureBytes: () => {
+    const loaded = new Set<string>();
+    let bytes = scene.cameraPose.viewport.width * scene.cameraPose.viewport.height * 4 * 2;
+    for (const catalog of artCatalogs.values()) for (const artFrame of catalog.frames) {
+      if (loaded.has(artFrame.image) || !scene.textures.exists(artFrame.image)) continue;
+      loaded.add(artFrame.image);
+      bytes += catalog.resolutionPx[0] * catalog.resolutionPx[1] * 4;
+    }
+    return bytes;
+  },
   artTextureKeys: () => scene.artTextureKeys,
   loadedArtTextureCount: () => scene.loadedArtTextureCount,
   artCatalogCount: () => artCatalogs.size,
