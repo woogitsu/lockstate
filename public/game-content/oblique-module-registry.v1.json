@@ -120,6 +120,14 @@
     {
       "assetId": "wall.interior.corner.inner.north-east.cutaway",
       "manifest": "/game-content/oblique-wall-corner-north-east-cutaway.v1.json"
+    },
+    {
+      "assetId": "wall.interior.corner.inner.south-east.full",
+      "manifest": "/game-content/oblique-wall-corner-south-east-full.v1.json"
+    },
+    {
+      "assetId": "wall.interior.corner.inner.south-east.cutaway",
+      "manifest": "/game-content/oblique-wall-corner-south-east-cutaway.v1.json"
     }
   ]
 }
