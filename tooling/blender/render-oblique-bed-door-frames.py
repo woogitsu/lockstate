@@ -54,21 +54,7 @@ def setup_scene() -> None:
     scene.render.image_settings.file_format = "PNG"
     scene.render.image_settings.color_mode = "RGBA"
     pipeline_common.apply_deterministic_render_settings(scene)
-    scene.view_settings.view_transform = "Standard"
-    scene.view_settings.look = "Medium High Contrast"
-    world = bpy.data.worlds.new("neutral studio")
-    scene.world = world
-    world.use_nodes = True
-    background = world.node_tree.nodes.get("Background")
-    background.inputs["Color"].default_value = (0.72, 0.77, 0.82, 1)
-    background.inputs["Strength"].default_value = 0.7
-    light_data = bpy.data.lights.new("soft north-west light", "AREA")
-    light_data.energy = 600
-    light_data.shape = "DISK"
-    light_data.size = 5
-    light = bpy.data.objects.new("soft north-west light", light_data)
-    scene.collection.objects.link(light)
-    light.location = (-3, -4, 7)
+    pipeline_common.configure_oblique_module_lighting(scene)
     camera_data = bpy.data.cameras.new("oblique module camera")
     camera_data.type = "ORTHO"
     camera_data.ortho_scale = 8.0
