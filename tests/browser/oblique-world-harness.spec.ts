@@ -51,6 +51,7 @@ test('real render feed cell keeps one build square under the cursor while the sc
   expect(loadedArt.some((key) => key.includes('floor-cell'))).toBe(true);
   expect(loadedArt.some((key) => key.includes('floor-shower'))).toBe(true);
   expect(loadedArt.some((key) => key.includes('shower-head'))).toBe(true);
+  expect(loadedArt.some((key) => key.includes('shower-privacy-door-full'))).toBe(true);
   expect(loadedArt.some((key) => key.includes('actor-prisoner'))).toBe(true);
   expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.loadedArtTextureCount()))
     .toBeLessThanOrEqual(await page.evaluate(() => window.lockstateObliqueWorldHarness.artCatalogCount()));
@@ -82,6 +83,12 @@ test('real render feed cell keeps one build square under the cursor while the sc
   }
   expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.loadedArtTextureCount()))
     .toBeLessThanOrEqual(4 * await page.evaluate(() => window.lockstateObliqueWorldHarness.artCatalogCount()));
+  await page.evaluate(() => window.lockstateObliqueWorldHarness.setPose(0, 45));
+  const showerPoint = await page.evaluate(() => window.lockstateObliqueWorldHarness.pointAtTile(6, 2));
+  await page.mouse.click(showerPoint.x, showerPoint.y);
+  expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.cutawayWallIds())).toContain('north-edge:6:3');
+  expect((await page.evaluate(() => window.lockstateObliqueWorldHarness.artTextureKeys()))
+    .some((key) => key.includes('shower-privacy-door-cutaway'))).toBe(true);
   const actorBefore = await page.evaluate(() => window.lockstateObliqueWorldHarness.actorArtPosition());
   const staticPaints = await page.evaluate(() => window.lockstateObliqueWorldHarness.paintCounts().ground);
   await page.evaluate(() => window.lockstateObliqueWorldHarness.moveActorToTile(4));

@@ -27,7 +27,12 @@ export function artForGround(zoningNumericId: number): string | undefined {
   return room === undefined ? undefined : ROOM_FLOOR_ART[room.id];
 }
 
-export function artForNorthEdge(edgeNumericId: number): string | undefined {
+export function artForNorthEdge(edgeNumericId: number, northZoningNumericId?: number): string | undefined {
+  if (edgeNumericId === DOOR_EDGE_NUMERIC_ID &&
+      northZoningNumericId !== undefined &&
+      defaultRoomContentRegistry.getByNumericId(northZoningNumericId)?.id === 'room.shower-room') {
+    return 'door.shower.privacy.open.full';
+  }
   return NORTH_EDGE_ART.get(edgeNumericId);
 }
 

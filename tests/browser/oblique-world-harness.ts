@@ -44,6 +44,7 @@ for (let y = 2; y <= 4; y += 1) {
   for (let x = 2; x <= 4; x += 1) world.setZoning(tile(x, y), 1);
 }
 world.setZoning(tile(6, 2), 7);
+world.setTopEdge(tile(6, 3), 2);
 for (let x = 1; x <= 4; x += 1) {
   world.setTopEdge(tile(x, 1), 1);
   world.setTopEdge(tile(x, 5), x === 3 ? 2 : 1);

@@ -351,6 +351,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
       return 'wall.interior.module.cutaway';
     }
     if (item.artAssetId === 'door.interior.open.west.full') return 'door.interior.open.west.cutaway';
+    if (item.artAssetId === 'door.shower.privacy.open.full') return 'door.shower.privacy.open.cutaway';
     return undefined;
   }
 
