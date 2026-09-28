@@ -68,6 +68,14 @@
     {
       "assetId": "wall.interior.corner.inner.north-west.cutaway",
       "manifest": "/game-content/oblique-wall-corner-north-west-cutaway.v1.json"
+    },
+    {
+      "assetId": "floor.shower.ceramic",
+      "manifest": "/game-content/oblique-floor-shower.v1.json"
+    },
+    {
+      "assetId": "fixture.shower.head",
+      "manifest": "/game-content/oblique-shower-head.v1.json"
     }
   ]
 }
