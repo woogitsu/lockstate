@@ -808,6 +808,12 @@ export class ConstructionSystem implements SystemRegistration {
     this.newerActionThanTheStackTop = true;
   }
 
+  /** An accepted build gesture with no orders starts a new history branch. */
+  public noteAcceptedBuildGestureWithoutOrders(): void {
+    this.noteActionThatDoesNotWriteTheUndoStack();
+    this.redoStack = [];
+  }
+
   /**
    * Whether a press of `Undo` would reach past the player's own latest action.
    *
