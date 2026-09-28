@@ -22,6 +22,25 @@ test('Full HD worker builds a complete Infirmary and restores its footprint', as
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/index.html');
   await page.getByRole('button', { name: 'New prison' }).click();
+  const roomRow = async () => page.evaluate(async () => {
+    const worker = (window as unknown as { roomPlanWorker?: Worker }).roomPlanWorker;
+    if (worker === undefined) throw new Error('simulation worker was not captured');
+    const messageId = crypto.randomUUID();
+    return new Promise<{ access?: string; requirementSummary?: { missingCapability?: number } } | undefined>((resolve, reject) => {
+      const timeout = setTimeout(() => { worker.removeEventListener('message', receive); reject(new Error('room-list projection timed out')); }, 5_000);
+      const receive = (event: MessageEvent) => {
+        const message = event.data as { kind?: string; replyTo?: string; payload?: { view?: { data?: unknown } } };
+        if (message.kind !== 'simulation/projection' || message.replyTo !== messageId) return;
+        clearTimeout(timeout);
+        worker.removeEventListener('message', receive);
+        const data = message.payload?.view?.data as { rooms?: { rows?: Array<{ access?: string; requirementSummary?: { missingCapability?: number } }> } } | undefined;
+        resolve(data?.rooms?.rows?.[0]);
+      };
+      worker.addEventListener('message', receive);
+      worker.postMessage({ protocolVersion: 1, messageId, kind: 'simulation/request-projection',
+        payload: { projectionId: 'hud/room-list' } });
+    });
+  });
   await expect.poll(() => page.evaluate(() =>
     ((window as unknown as { lockstateFromWorker?: Array<{ kind: string }> }).lockstateFromWorker ?? [])
       .some((message) => message.kind === 'simulation/ready'))).toBe(true);
@@ -42,6 +61,7 @@ test('Full HD worker builds a complete Infirmary and restores its footprint', as
   await page.getByRole('button', { name: 'Fast forward' }).click();
   await page.getByRole('button', { name: 'Fast forward' }).click();
   await expect.poll(async () => (await countsSeries(page)).at(-1)?.rooms, { timeout: 120_000 }).toBe(1);
+  await expect.poll(roomRow, { timeout: 120_000 }).toMatchObject({ access: 'doorway', requirementSummary: { missingCapability: 0 } });
   await expect(page.locator('.hud-build')).not.toHaveAttribute('data-queued', /[1-9]/, { timeout: 120_000 });
   await page.screenshot({ path: testInfo.outputPath('infirmary-complete-fullhd.png') });
 
@@ -62,4 +82,5 @@ test('Full HD worker builds a complete Infirmary and restores its footprint', as
       replyTo?: string; payload?: { view?: { data?: { ok?: boolean; reason?: string } } };
     }> }).roomPlanProjections ?? []).find((message) => message.replyTo === 'infirmary.restored')?.payload?.view?.data,
   )).toMatchObject({ ok: false, reason: 'structure-occupied' });
+  await expect.poll(roomRow).toMatchObject({ access: 'doorway', requirementSummary: { missingCapability: 0 } });
 });
