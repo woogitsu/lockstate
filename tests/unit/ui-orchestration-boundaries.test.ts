@@ -578,6 +578,13 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
       'Type-only: `ObjectToolPort` and `TileRect` from `src/rendering/build/area-picking`. The exact shape of `room-tool.ts`\'s entry below and the same argument one gesture over again: `ObjectToolPort` is a port the renderer *offers* -- the scene reports the tile a press landed on and asks this module for the footprint to draw -- so the direction is UI-onto-a-renderer-contract rather than UI-into-renderer-internals, and it is erased. It is a third module rather than more methods on `BuildTool` because the three ports carry different shapes and this one holds a footprint, which the class that lays walls has no concept of; `src/ui/object-tool.ts`\'s header states that rule against `BuildTool`\'s own. A value import here would mean the orchestrator had started calling into the renderer, which is what both of the other two entries say too.',
   },
   {
+    file: 'src/ui/room-template-tool.ts',
+    tree: 'content',
+    kind: 'value',
+    reason:
+      'Value: instantiateRoomTemplate from the authored content catalogue produces the exact full-square plan used for both the preview and worker placement request. The tool reads definitions and sends an intent; authoritative collision and ownership stay in the worker.',
+  },
+  {
     file: 'src/ui/room-tool.ts',
     tree: 'rendering',
     kind: 'type-only',
@@ -611,6 +618,13 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
     kind: 'type-only',
     reason:
       'Type-only: `RoomListViewModel` and `RoomDetailViewModel` from `src/simulation/presentation/room-projection`. The fifth of the translators outside `src/ui/hud/`, and the first that reads a *pulled* read model rather than a publication: it names the two view-model shapes `hud/room-list` and `hud/room-detail` answer with, and turns the `missing-capability` verdict inside them into `HudRoomNeedsViewModel`. Erased, so no simulation code runs on its account -- the projections themselves execute in the worker, and everything this module knows about the channel it gets from `src/ui/simulation-projections.ts` beside it, which is an intra-tree import. A `value` import appearing here would mean the readout had started projecting rooms on the main thread from state it does not own, which is the second source of truth `AGENTS.md` boundary 1 forbids and the reason the verdict is asked for rather than computed.',
+  },
+  {
+    file: 'src/ui/simulation-room-template-port.ts',
+    tree: 'simulation',
+    kind: 'type-only',
+    reason:
+      'Type-only: SimulationMessageChannel names the worker query boundary. The adapter sends a read-only preflight request through the existing projection requester; it does not import or execute simulation state on the main thread.',
   },
   {
     file: 'src/ui/telemetry-consent-prompt.ts',
@@ -693,6 +707,7 @@ describe('UI orchestration boundaries', () => {
       'src/ui/language.ts',
       'src/ui/object-tool.ts',
       'src/ui/prisoner-sentence.ts',
+      'src/ui/room-template-tool.ts',
       'src/ui/room-tool.ts',
       'src/ui/save-panel-delete.ts',
       'src/ui/save-panel-messages.ts',
@@ -714,6 +729,7 @@ describe('UI orchestration boundaries', () => {
       'src/ui/simulation-projections.ts',
       'src/ui/simulation-regime.ts',
       'src/ui/simulation-room-needs.ts',
+      'src/ui/simulation-room-template-port.ts',
       'src/ui/simulation-security.ts',
       'src/ui/simulation-staff-coverage.ts',
       'src/ui/simulation-staff-roster.ts',
