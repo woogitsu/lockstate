@@ -10,6 +10,7 @@ import { tileAcrossEdge, type ConstructionSystem } from './system';
 import { createRoomTemplateBuildPlan } from './room-template-build-plan';
 import { BUILDABLE_REGISTRY, occupiesTileEdge } from './definition';
 import { resolveBuildEdge } from './build-order';
+import type { BuildOrder } from './build-order';
 import { validateRoomTemplatePlacement, type RoomTemplatePlacement } from './room-template-placement';
 
 export interface PendingRoomTemplate {
@@ -181,6 +182,19 @@ export class RoomTemplateCoordinator implements SystemRegistration {
       }
     }
     this.pending = remaining;
+  }
+
+  /** Reserve the sole outside approach of a pending south-facing template door against later opaque walls. */
+  public claimsPendingDoorApproach(order: BuildOrder): boolean {
+    if (BUILDABLE_REGISTRY.get(order.definitionId)?.category !== 'wall') return false;
+    if (order.footprint !== 'square' && resolveBuildEdge(order) !== 'north') return false;
+    return this.pending.some((request) => {
+      if (request.sequence === order.placementSequence) return false;
+      const plan = instantiateRoomTemplate(request.templateId, request.origin, { mirrorX: request.mirrorX });
+      return plan.doorSquares.some((door) =>
+        door.y === plan.origin.y + plan.height - 1 &&
+        door.x === order.location.x && door.y + 1 === order.location.y);
+    });
   }
 
   /** Command dispatch also runs while paused, so release invalidated plans then. */
