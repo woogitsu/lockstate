@@ -1629,6 +1629,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   construction.setRoomTemplateDoorApproachClaims((order) => roomTemplates.claimsRoomDoorApproach(order));
   construction.setCompletedDoorClaimsSquare((tile) => doorConstruction.claimsSquare(tile));
   construction.setObjectClaimsSquare((tile) => objectPlacement!.claimsTileForSquareWall(tile));
+  objectPlacement.setDoorSquareClaim((tile) => construction.claimsPendingDoorSquare(tile));
   objectPlacement.setRoomDoorApproachClaim((tile) => roomTemplates.claimsRoomDoorApproachTile(tile));
   roomZoning.setPendingTemplateClaim((tile, sequence) => roomTemplates.claimsPendingFootprint(tile, sequence));
   kernel.registerSystem(roomTemplates);

@@ -460,9 +460,14 @@ export class ObjectPlacementService {
   /** The same window for the other gesture; see `recentRemovalRefusals`. */
   private readonly removalRefusals: RemoveObjectRefusal[] = [];
   private roomDoorApproachClaim?: (tile: TilePosition) => boolean;
+  private doorSquareClaim?: (tile: TilePosition) => boolean;
 
   public setRoomDoorApproachClaim(reader: (tile: TilePosition) => boolean): void {
     this.roomDoorApproachClaim = reader;
+  }
+
+  public setDoorSquareClaim(reader: (tile: TilePosition) => boolean): void {
+    this.doorSquareClaim = reader;
   }
 
   public constructor(
@@ -539,6 +544,7 @@ export class ObjectPlacementService {
       // complete object footprint keeps its far tile from entering that wall.
       if (this.world.getSquareStructure(tile) !== 0 || this.placedObjects.isTileOccupied(tile) ||
           claimed.has(tileKey(tile)) || pendingSquareWalls.has(tileKey(tile)) ||
+          this.doorSquareClaim?.(tile) === true ||
           this.roomDoorApproachClaim?.(tile) === true) {
         return this.refuse('tile-occupied', request, tick, tile);
       }

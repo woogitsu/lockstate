@@ -329,7 +329,7 @@ re-grepped rather than carried over.*
 > numbers are history.** Opened rather than offset:
 > `src/simulation/construction/system.ts:704`,
 > `src/simulation/rooms/zoning.ts:562` and
-> `src/simulation/objects/object-placement-service.ts:535`. The declaration is
+> `src/simulation/objects/object-placement-service.ts:540`. The declaration is
 > the one anchor in this amendment that has not moved at all: `canBuildAt` is
 > still declared at `src/simulation/world/buildability.ts:16`, which is the
 > anchor issue #274's row 8 cited and got right.

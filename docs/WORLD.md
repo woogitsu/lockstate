@@ -118,7 +118,7 @@ pricing, selection and UI; it is not the ownership test.
 It has three production callers, each supplying its own requirement set:
 `ConstructionSystem.submitOrder` (`src/simulation/construction/system.ts:704`,
 inside `admits`, with `SUBMISSION_REQUIREMENT`), `ObjectPlacementService`
-(`src/simulation/objects/object-placement-service.ts:535`,
+(`src/simulation/objects/object-placement-service.ts:540`,
 `PLACEMENT_REQUIREMENT`) and room zoning (`src/simulation/rooms/zoning.ts:562`,
 `ZONING_REQUIREMENT`). **This document said "its one production caller" from
 `f1d5c30` until this correction**; the second arrived at `041a379` (#269) and

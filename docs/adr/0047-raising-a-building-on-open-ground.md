@@ -261,8 +261,8 @@ feature with a reader and no producer.
 ### Walls, doors and the build queue
 
 - A wall is an edge value. `finalizeConstruction`
-  (`src/simulation/construction/system.ts:2084`) writes it through `writeEdge`
-  (`:2206`, called at `:2105`), which calls `setTopEdge`/`setLeftEdge` and
+  (`src/simulation/construction/system.ts:2085`) writes it through `writeEdge`
+  (`:2207`, called at `:2106`), which calls `setTopEdge`/`setLeftEdge` and
   therefore bumps `geometryRevision`.
 - `BuildableCategory` is `'wall' | 'object' | 'utility'`
   (`src/simulation/construction/definition.ts:6`). `wall-brick` is the only
