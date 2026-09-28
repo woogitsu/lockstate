@@ -131,7 +131,7 @@ export function projectObliqueWorldFrame(frame: RenderFrame, camera: ObliqueCame
           tileX, tileY, quad: projectedTileQuad(tileX, tileY, camera),
           fill: (tileX + tileY) % 2 === 0 ? terrain.fill : terrain.fillAlternate,
           zoningTint: zoningTint(sample.zoning), owned: sample.owned,
-          artAssetId: artForGround(sample.zoning),
+          artAssetId: artForGround(sample.zoning, sample.terrainNumericId),
         });
         if (sample.topEdge !== 0) edge('north-edge', tileX, tileY, sample.topEdge);
         if (sample.leftEdge !== 0) edge('west-edge', tileX, tileY, sample.leftEdge);

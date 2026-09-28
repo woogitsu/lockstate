@@ -45,6 +45,8 @@ describe('oblique projection of an actual simulation snapshot', () => {
     const shower = defaultRoomContentRegistry.getById('room.shower-room');
     expect(shower).toBeDefined();
     expect(artForGround(shower!.numericId)).toBe('floor.shower.ceramic');
+    expect(artForGround(0, 0)).toBe('floor.terrain.dirt');
+    expect(artForGround(0, 1)).toBeUndefined();
     expect(artForStructure('shower-head-brick')).toBe('fixture.shower.head');
     expect(artForNorthEdge(2, shower!.numericId)).toBe('door.shower.privacy.open.full');
   });

@@ -1,6 +1,7 @@
 import { DOOR_EDGE_NUMERIC_ID, WALL_EDGE_NUMERIC_ID } from '../../simulation/construction/definition';
 import { catalogueObjectId } from '../world/structures';
 import { defaultRoomContentRegistry } from '../../content/room-catalog';
+import { DEFAULT_TERRAIN_DEFINITIONS } from '../../simulation/world/terrain';
 
 /** Authored modules currently match a north edge or a catalogued object origin. */
 const NORTH_EDGE_ART: ReadonlyMap<number, string> = new Map([
@@ -21,10 +22,15 @@ const ROOM_FLOOR_ART: Readonly<Record<string, string>> = {
   'room.canteen': 'floor.canteen.terrazzo',
   'room.shower-room': 'floor.shower.ceramic',
 };
+const DIRT_TERRAIN_NUMERIC_ID = DEFAULT_TERRAIN_DEFINITIONS.find((terrain) => terrain.id === 'dirt')?.numericId;
 
-export function artForGround(zoningNumericId: number): string | undefined {
+export function artForGround(zoningNumericId: number, terrainNumericId?: number): string | undefined {
   const room = defaultRoomContentRegistry.getByNumericId(zoningNumericId);
-  return room === undefined ? undefined : ROOM_FLOOR_ART[room.id];
+  const roomFloor = room === undefined ? undefined : ROOM_FLOOR_ART[room.id];
+  if (roomFloor !== undefined) return roomFloor;
+  return terrainNumericId !== undefined && terrainNumericId === DIRT_TERRAIN_NUMERIC_ID
+    ? 'floor.terrain.dirt'
+    : undefined;
 }
 
 export function artForNorthEdge(edgeNumericId: number, northZoningNumericId?: number): string | undefined {
