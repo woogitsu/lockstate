@@ -304,13 +304,18 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.paintGroundHover();
   }
 
-  private emitGroundHover(): void {
+  private emitGroundHover(cameraMoved = false): void {
     const world = this.hoverPointerAt === undefined ? undefined : screenToGround(this.hoverPointerAt, this.pose);
     const next = world === undefined ? undefined : { tileX: worldToTile(world.x), tileY: worldToTile(world.y) };
     if (next?.tileX === this.hovered?.tileX && next?.tileY === this.hovered?.tileY) return;
     this.hovered = next;
     this.paintGroundHover();
     this.onGroundHover?.(next);
+    // A pan or turn can move the ground under a held pointer without a
+    // pointermove. Match the rectangle to the tile that pointerup will pick.
+    if (cameraMoved && this.leftGesture !== undefined && next !== undefined) {
+      this.onTileGesturePreview?.(this.leftGesture, { x: next.tileX, y: next.tileY });
+    }
   }
 
   /** Shared entry point for mouse drag, remappable keyboard actions and HUD buttons. */
@@ -320,7 +325,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.pose = changeObliquePoseAtScreenPoint(this.pose, screen, yawRadians, elevation);
     this.poseRevision += 1;
     this.onPoseChanged?.(this.pose);
-    this.emitGroundHover();
+    this.emitGroundHover(true);
     this.repaint();
     void this.ensureArtForCurrentPose().catch((error: unknown) => { this.artLoadErrors.push(String(error)); });
   }
@@ -337,7 +342,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     );
     this.poseRevision += 1;
     this.onPoseChanged?.(this.pose);
-    this.emitGroundHover();
+    this.emitGroundHover(true);
     this.repaint();
   }
 
@@ -347,7 +352,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.pose = panObliqueCameraByScreenDelta(this.pose, screenDx, screenDy);
     this.poseRevision += 1;
     this.onPoseChanged?.(this.pose);
-    this.emitGroundHover();
+    this.emitGroundHover(true);
     this.repaint();
   }
 
@@ -366,7 +371,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     };
     this.poseRevision += 1;
     this.onPoseChanged?.(this.pose);
-    this.emitGroundHover();
+    this.emitGroundHover(true);
     this.repaint();
     return true;
   }
@@ -405,7 +410,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
       this.pose = { ...this.pose, viewport };
       this.poseRevision += 1;
       this.onPoseChanged?.(this.pose);
-      this.emitGroundHover();
+      this.emitGroundHover(true);
     }
     const frame = this.feed.readFrame(time / 1000);
     if (!this.framedWorld && frame.world.loadedBounds !== undefined) {
@@ -420,7 +425,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
       this.framedWorld = true;
       this.poseRevision += 1;
       this.onPoseChanged?.(this.pose);
-      this.emitGroundHover();
+      this.emitGroundHover(true);
     }
     this.lastFrame = frame;
     this.repaint();
