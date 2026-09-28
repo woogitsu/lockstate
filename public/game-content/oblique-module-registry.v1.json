@@ -148,6 +148,10 @@
     {
       "assetId": "furniture.dining.table.wooden",
       "manifest": "/game-content/oblique-canteen-dining-table.v1.json"
+    },
+    {
+      "assetId": "furniture.corridor.bench.variants",
+      "manifest": "/game-content/oblique-canteen-bench.v1.json"
     }
   ]
 }
