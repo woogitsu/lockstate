@@ -61,7 +61,7 @@ export class CameraPoseInputAdapter {
 
   /** The same entry point is intended for the future on-screen buttons. */
   public activate(action: CameraPoseAction): boolean {
-    if (!this.available()) return false;
+    if (!this.canActivate()) return false;
     const { yawRadians: yaw, elevationRadians: elevation } = this.camera.cameraPose;
     switch (action) {
       case 'yaw-left': this.camera.setPoseRadians(yaw - YAW_STEP, elevation); break;
@@ -80,7 +80,7 @@ export class CameraPoseInputAdapter {
     readonly dy: number;
     readonly pivot?: { readonly x: number; readonly y: number };
   }): boolean {
-    if (gesture.button !== 2 || !this.available() || !Number.isFinite(gesture.dx) || !Number.isFinite(gesture.dy)) return false;
+    if (gesture.button !== 2 || !this.canActivate() || !Number.isFinite(gesture.dx) || !Number.isFinite(gesture.dy)) return false;
     if (gesture.dx === 0 && gesture.dy === 0) return false;
     const { yawRadians: yaw, elevationRadians: elevation } = this.camera.cameraPose;
     this.camera.setPoseRadians(
@@ -91,7 +91,8 @@ export class CameraPoseInputAdapter {
     return true;
   }
 
-  private available(): boolean {
+  /** The same decision the host uses to enable or disable on-screen controls. */
+  public canActivate(): boolean {
     const contexts = this.activeContexts();
     return !this.isPlacementActive()
       && !contexts.includes('text-entry')
