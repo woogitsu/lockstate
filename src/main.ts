@@ -3017,6 +3017,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
             templateId: intent.templateId,
             origin: intent.origin,
             ...(intent.mirrorX === undefined ? {} : { mirrorX: intent.mirrorX }),
+            ...(intent.quarterTurns === undefined ? {} : { quarterTurns: intent.quarterTurns }),
           });
           return;
         /*

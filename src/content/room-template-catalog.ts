@@ -1,5 +1,6 @@
 /** Player-authored plans use occupied squares; the simulation never infers them from a rendered wall face. */
 import { defaultObjectRegistry } from './object-catalog';
+import { rotateRoomTemplateLayout, type TemplateQuarterTurns } from './room-template-rotation-geometry';
 
 export interface TemplateSquare {
   readonly x: number;
@@ -59,8 +60,10 @@ export function roomTemplateObjectSquares(plan: RoomTemplatePlan): readonly Temp
     const footprint = defaultObjectRegistry.getById(TEMPLATE_OBJECT_IDS[object.buildableId])?.footprint;
     if (footprint === undefined) throw new Error(`Missing footprint for room template object: ${object.buildableId}`);
     const squares: TemplateSquare[] = [];
-    for (let dy = 0; dy < footprint.height; dy += 1) {
-      for (let dx = 0; dx < footprint.width; dx += 1) squares.push({ x: object.x + dx, y: object.y + dy });
+    const width = (object.orientation ?? 0) % 2 === 0 ? footprint.width : footprint.height;
+    const height = (object.orientation ?? 0) % 2 === 0 ? footprint.height : footprint.width;
+    for (let dy = 0; dy < height; dy += 1) {
+      for (let dx = 0; dx < width; dx += 1) squares.push({ x: object.x + dx, y: object.y + dy });
     }
     return squares;
   });
@@ -235,6 +238,32 @@ export function roomTemplateOriginFitsSafeCoordinates(id: AuthoredRoomTemplateId
     origin.y <= Number.MAX_SAFE_INTEGER - dimensions.height &&
     origin.x <= Number.MAX_SAFE_INTEGER - width &&
     origin.y <= Number.MAX_SAFE_INTEGER - height;
+}
+
+/** Use one authored rotation for worker orders, HUD tiles, and world ghosts. */
+export function orientRoomTemplatePlan(plan: RoomTemplatePlan, quarterTurns: TemplateQuarterTurns): RoomTemplatePlan {
+  if (quarterTurns === 0) return plan;
+  if (plan.id !== 'canteen-basic' && plan.id !== 'cell-large' &&
+      !(plan.id === 'cell-row-four' && quarterTurns === 2)) {
+    throw new RangeError(`Room template ${plan.id} has no valid quarter-turn layout.`);
+  }
+  const rotated = rotateRoomTemplateLayout(plan, quarterTurns, (buildableId) => {
+    const footprint = defaultObjectRegistry.getById(TEMPLATE_OBJECT_IDS[buildableId])?.footprint;
+    if (footprint === undefined) throw new RangeError(`No object footprint for ${buildableId}.`);
+    return footprint;
+  });
+  return {
+    ...plan,
+    width: rotated.width,
+    height: rotated.height,
+    wallSquares: rotated.walls,
+    doorSquares: rotated.doors.map(({ square, orderEdge }) => ({
+      ...square, orderTile: { x: orderEdge.x, y: orderEdge.y }, edge: orderEdge.edge,
+    })),
+    zones: rotated.zones,
+    zone: rotated.zones[0]!,
+    objects: rotated.objects.map(({ buildableId, x, y, orientation }) => ({ buildableId, x, y, orientation })),
+  };
 }
 
 /** Four basic Cells share party walls across each bank of a clear two-tile corridor. */

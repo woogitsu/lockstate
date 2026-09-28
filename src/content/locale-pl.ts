@@ -1080,6 +1080,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.template-x': 'Początek wzoru X',
   'hud.build.template-y': 'Początek wzoru Y',
   'hud.build.template-mirror': 'Odbij poziomo',
+  'hud.build.template-rotate-half': 'Obróć o 180°',
   'hud.build.template-place': 'Postaw wzór pomieszczenia',
   'hud.build.template-map': 'Postaw na mapie',
   'hud.build.template-invalid-position': 'Wpisz całkowite współrzędne.',

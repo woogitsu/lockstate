@@ -75,6 +75,9 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
   const buttons = new Map<RoomTemplateId, HTMLButtonElement>();
   let selectedId: RoomTemplateId = ROOM_TEMPLATE_IDS[0];
   let mirrorX = false;
+  let halfTurn = false;
+  let halfTurnCheckbox: HTMLInputElement | undefined;
+  let halfTurnLabel: HTMLElement | undefined;
   let quoteRevision = 0;
   async function refreshQuote(id: RoomTemplateId, revision: number): Promise<void> {
     if (quote === undefined) return;
@@ -101,8 +104,11 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
   }
   function select(id: RoomTemplateId): void {
     selectedId = id;
-    tool?.select(id, mirrorX);
-    const plan = instantiateRoomTemplate(id, { x: 0, y: 0 }, { mirrorX });
+    if (id !== 'cell-row-four') halfTurn = false;
+    if (halfTurnCheckbox !== undefined) halfTurnCheckbox.checked = halfTurn;
+    if (halfTurnLabel !== undefined) halfTurnLabel.hidden = id !== 'cell-row-four';
+    tool?.select(id, mirrorX, halfTurn ? 2 : 0);
+    const plan = tool?.planAt({ x: 0, y: 0 }) ?? instantiateRoomTemplate(id, { x: 0, y: 0 }, { mirrorX });
     for (const [rowId, button] of buttons) button.setAttribute('aria-pressed', rowId === id ? 'true' : 'false');
     dimensions.textContent = t(HUD_MESSAGE_KEY.templateSize, { width: plan.width, height: plan.height });
     const counts = new Map<string, number>();
@@ -164,6 +170,9 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
     const x = element('input', { attributes: { type: 'number', step: '1', value: '0', 'aria-label': t(HUD_MESSAGE_KEY.templateX) } });
     const y = element('input', { attributes: { type: 'number', step: '1', value: '0', 'aria-label': t(HUD_MESSAGE_KEY.templateY) } });
     const mirror = element('input', { attributes: { type: 'checkbox' } });
+    halfTurnCheckbox = element('input', { attributes: { type: 'checkbox' } });
+    halfTurnLabel = element('label', { children: [halfTurnCheckbox, element('span', { text: t(HUD_MESSAGE_KEY.templateRotateHalf) })] });
+    halfTurnLabel.hidden = true;
     const place = element('button', { text: t(HUD_MESSAGE_KEY.templatePlace), attributes: { type: 'button' } });
     const map = element('button', { text: t(HUD_MESSAGE_KEY.templateMap), attributes: { type: 'button' } });
     const status = element('p', { className: 'hud-template__status', attributes: { role: 'status' } });
@@ -174,7 +183,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
       return Number.isSafeInteger(next.x) && Number.isSafeInteger(next.y) ? next : undefined;
     };
     const wholePlanFitsSafeTiles = (tile: { readonly x: number; readonly y: number }): boolean => {
-      const plan = instantiateRoomTemplate(selectedId, { x: 0, y: 0 }, { mirrorX });
+      const plan = tool.planAt({ x: 0, y: 0 });
       return Number.isSafeInteger(tile.x + plan.width - 1) && Number.isSafeInteger(tile.y + plan.height - 1);
     };
     let revision = 0;
@@ -209,7 +218,10 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
     y.addEventListener('input', () => void refreshPlacement());
     mirror.addEventListener('change', () => {
       mirrorX = mirror.checked;
-      tool.select(selectedId, mirrorX);
+      select(selectedId);
+    });
+    halfTurnCheckbox.addEventListener('change', () => {
+      halfTurn = halfTurnCheckbox?.checked === true;
       select(selectedId);
     });
     place.addEventListener('click', async () => {
@@ -236,6 +248,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
         element('label', { className: 'hud-template__coordinate', children: [element('span', { text: t(HUD_MESSAGE_KEY.templateX) }), x] }),
         element('label', { className: 'hud-template__coordinate', children: [element('span', { text: t(HUD_MESSAGE_KEY.templateY) }), y] }),
         element('label', { children: [mirror, element('span', { text: t(HUD_MESSAGE_KEY.templateMirror) })] }),
+        halfTurnLabel,
         place, map, status,
       ],
     }));
