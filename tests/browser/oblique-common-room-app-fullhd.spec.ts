@@ -14,6 +14,8 @@ test('Full HD angled Build places and restores the complete Common Room plan', a
   await dialog.getByRole('button', { name: 'Common Room', exact: true }).click();
   await expect(dialog.locator('.hud-template__catalogue-value')).toContainText('2,425');
   await dialog.getByRole('button', { name: 'Place on map' }).click();
+  await expect(page.locator('.hud-build__arm-hint')).toContainText('whole room plan');
+  await expect(page.locator('.hud-build__arm-hint')).not.toContainText('wall');
   const ghost = page.locator('.oblique-template-ghost');
   await page.mouse.move(960, 540);
   await expect(ghost).toHaveAttribute('data-verdict', 'clear');

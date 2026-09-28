@@ -62,6 +62,8 @@ test('Polish Full HD Build names the Storage Room before placement', async ({ pa
   await expect(dialog.locator('.hud-template__contents')).toContainText('Regał magazynowy × 2');
   await expect(dialog.locator('.hud-template__materials')).toContainText('Cegła × 30');
   await dialog.getByRole('button', { name: 'Postaw na mapie' }).click();
+  await expect(page.locator('.hud-build__arm-hint')).toContainText('cały wzór');
+  await expect(page.locator('.hud-build__arm-hint')).not.toContainText('ścianę');
   await page.mouse.move(960, 540);
   await expect(page.locator('.oblique-template-ghost').getByRole('status')).toContainText('Magazyn, 5 × 5 pól');
 });

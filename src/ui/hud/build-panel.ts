@@ -1629,6 +1629,10 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
    */
   orderNote.hidden = true;
 
+  const paintArmHint = (): void => {
+    armHint.textContent = t(templateArmed ? HUD_MESSAGE_KEY.templateArmHint : armedHintKey(selectedBuildable(), removing));
+  };
+
   function paintArmed(): void {
     // "Armed" on the arm button means armed *to place*, which is what its label
     // and its pressed state are about. A tool armed to remove is armed, and this
@@ -1663,7 +1667,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     // `place-object` or `place-build-order`. Reading one field for both means
     // the sentence cannot describe a gesture other than the one the panel
     // would perform. Removal still wins over both: it names no row.
-    armHint.textContent = t(armedHintKey(selectedBuildable(), removing));
+    paintArmHint();
 
     // The numeric route follows the mode too, or the one submit button would
     // say "Place order" and clear a tile.
@@ -3295,6 +3299,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       if (templateArmed === next) return;
       templateArmed = next;
       paintCatalogue();
+      paintArmHint();
     },
     isRemoving: () => removing,
     setTarget,
