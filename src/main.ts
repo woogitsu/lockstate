@@ -845,6 +845,9 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
   },
   render: {
     antialias: true,
+    // Oblique displays a precomposed viewport image; canvas MSAA adds a full-screen resolve.
+    // Keep LINEAR texture filtering for the authored art, and preserve top-down canvas MSAA.
+    antialiasGL: !obliquePreviewRequested,
     roundPixels: false,
     pixelArt: false,
   },
