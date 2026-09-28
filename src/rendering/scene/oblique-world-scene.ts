@@ -7,13 +7,24 @@ import {
   screenToGround,
   type ObliqueCameraState,
 } from '../camera/oblique-projection';
-import { projectedTileQuad, type TileQuad } from '../camera/oblique-geometry';
+import { obliqueDepthForAnchor, projectedTileQuad, type TileQuad } from '../camera/oblique-geometry';
 import { projectObliqueActors, projectObliqueWorldFrame, sortObliqueRaised, type ObliqueActorPoint, type ObliqueSolid, type ObliqueWorldProjection } from '../camera/oblique-world-projection';
 import type { Point } from '../camera/coordinates';
+import { selectObliqueModuleFrame, type ObliqueModuleCatalog } from '../assets/oblique-module-catalog';
+
+function lowerTop(footprint: TileQuad, top: TileQuad, fraction: number): TileQuad {
+  const corner = (index: 0 | 1 | 2 | 3): Point => ({
+    x: footprint[index].x + (top[index].x - footprint[index].x) * fraction,
+    y: footprint[index].y + (top[index].y - footprint[index].y) * fraction,
+  });
+  return [corner(0), corner(1), corner(2), corner(3)];
+}
 
 export interface ObliqueWorldSceneOptions {
   readonly feed: RenderFeed;
   readonly onTileSelected?: (tileX: number, tileY: number) => void;
+  /** Optional Blender modules; the scene still renders valid geometry without them. */
+  readonly artCatalogs?: ReadonlyMap<string, ObliqueModuleCatalog>;
 }
 
 /**
@@ -25,6 +36,7 @@ export interface ObliqueWorldSceneOptions {
 export class ObliqueWorldScene extends Phaser.Scene {
   private readonly feed: RenderFeed;
   private readonly onTileSelected: ((tileX: number, tileY: number) => void) | undefined;
+  private readonly artCatalogs: ReadonlyMap<string, ObliqueModuleCatalog>;
   private groundGraphics!: Phaser.GameObjects.Graphics;
   private selectionGraphics!: Phaser.GameObjects.Graphics;
   private raisedGraphics!: Phaser.GameObjects.Graphics;
@@ -41,11 +53,22 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private actorPositions: { id: number; tileX: number; tileY: number }[] = [];
   private groundPaints = 0;
   private raisedPaints = 0;
+  private artImages: Phaser.GameObjects.Image[] = [];
 
   public constructor(options: ObliqueWorldSceneOptions) {
     super({ key: 'oblique-world' });
     this.feed = options.feed;
     this.onTileSelected = options.onTileSelected;
+    this.artCatalogs = options.artCatalogs ?? new Map();
+  }
+
+  public preload(): void {
+    const seen = new Set<string>();
+    for (const catalog of this.artCatalogs.values()) for (const frame of catalog.frames) {
+      if (seen.has(frame.image)) continue;
+      seen.add(frame.image);
+      this.load.image(frame.image, frame.image);
+    }
   }
 
   public create(): void {
@@ -74,6 +97,10 @@ export class ObliqueWorldScene extends Phaser.Scene {
       this.selected = { tileX, tileY };
       this.onTileSelected?.(tileX, tileY);
       this.paintSelection();
+      if (this.lastProjection !== undefined) {
+        this.paintRaised(this.lastProjection);
+        this.paintArt(this.lastProjection);
+      }
     });
     this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
       if (pointer.id !== this.turnPointerId || this.turnPointerAt === undefined) return;
@@ -99,6 +126,12 @@ export class ObliqueWorldScene extends Phaser.Scene {
   public get selectedTile(): { readonly tileX: number; readonly tileY: number } | undefined { return this.selected; }
   public get paintCounts(): { readonly ground: number; readonly raised: number } {
     return { ground: this.groundPaints, raised: this.raisedPaints };
+  }
+  public get artTextureKeys(): readonly string[] { return this.artImages.map((item) => item.texture.key); }
+  public get cutawayWallIds(): readonly string[] {
+    return this.lastProjection?.raised
+      .filter((item): item is ObliqueSolid => item.kind !== 'actor' && this.cutsAwayForSelection(item))
+      .map((item) => item.id) ?? [];
   }
 
   /** Shared entry point for mouse drag, remappable keyboard actions and HUD buttons. */
@@ -176,11 +209,56 @@ export class ObliqueWorldScene extends Phaser.Scene {
         raised.fillCircle(item.head.x, item.head.y, 8 * this.pose.zoom);
         continue;
       }
+      const cutaway = this.cutsAwayForSelection(item);
+      if (!cutaway && this.artFrame(item) !== undefined) continue;
+      const top = cutaway ? lowerTop(item.footprint, item.top, 0.18) : item.top;
       for (let side = 0; side < 4; side += 1) {
         const next = (side + 1) % 4;
-        this.fillQuad(raised, [item.footprint[side]!, item.footprint[next]!, item.top[next]!, item.top[side]!], item.sideFill, item.alpha);
+        this.fillQuad(raised, [item.footprint[side]!, item.footprint[next]!, top[next]!, top[side]!], item.sideFill, item.alpha);
       }
-      this.fillQuad(raised, item.top, item.topFill, item.alpha);
+      this.fillQuad(raised, top, item.topFill, item.alpha);
+    }
+  }
+
+  /** Lower only a nearby wall between the camera and the selected ground square. */
+  private cutsAwayForSelection(item: ObliqueSolid): boolean {
+    if (this.selected === undefined || (item.kind !== 'north-edge' && item.kind !== 'west-edge')) return false;
+    if (Math.abs(item.tileX - this.selected.tileX) > 2 || Math.abs(item.tileY - this.selected.tileY) > 2) return false;
+    const selectedDepth = obliqueDepthForAnchor({
+      x: (this.selected.tileX + 0.5) * TILE_SIZE_PX,
+      y: (this.selected.tileY + 0.5) * TILE_SIZE_PX,
+    }, this.pose.yawRadians);
+    return item.viewDepth > selectedDepth + TILE_SIZE_PX * 0.25;
+  }
+
+  private artFrame(item: ObliqueSolid): { readonly catalog: ObliqueModuleCatalog; readonly image: string } | undefined {
+    if (item.artAssetId === undefined) return undefined;
+    const catalog = this.artCatalogs.get(item.artAssetId);
+    if (catalog === undefined) return undefined;
+    const frame = selectObliqueModuleFrame(catalog, this.pose);
+    return this.textures.exists(frame.image) ? { catalog, image: frame.image } : undefined;
+  }
+
+  private paintArt(projection: ObliqueWorldProjection): void {
+    for (const image of this.artImages) image.destroy();
+    this.artImages = [];
+    for (const item of projection.raised) {
+      if (item.kind === 'actor') continue;
+      if (this.cutsAwayForSelection(item)) continue;
+      const art = this.artFrame(item);
+      if (art === undefined) continue;
+      const anchor = {
+        x: item.footprint.reduce((sum, corner) => sum + corner.x, 0) / 4,
+        y: item.footprint.reduce((sum, corner) => sum + corner.y, 0) / 4,
+      };
+      const [width, height] = art.catalog.resolutionPx;
+      const [pivotX, pivotY] = art.catalog.pivotPx;
+      const image = this.add.image(anchor.x, anchor.y, art.image)
+        .setOrigin(pivotX / width, pivotY / height)
+        .setScale(this.pose.zoom)
+        .setAlpha(item.alpha)
+        .setDepth(2 + item.viewDepth / 10_000);
+      this.artImages.push(image);
     }
   }
 
@@ -210,6 +288,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
       this.paintGround(projection);
       this.paintSelection();
       this.paintRaised(projection);
+      this.paintArt(projection);
       return;
     }
     if (!this.actorsMoved(frame.actors)) return;

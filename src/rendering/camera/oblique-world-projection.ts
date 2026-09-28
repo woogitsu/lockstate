@@ -14,6 +14,7 @@ import { TILE_SIZE_PX, tileRangeContains, visibleTileRange } from '../tile-metri
 import { groundToScreen, visibleGroundBounds, type ObliqueCameraState } from './oblique-projection';
 import { obliqueDepthForAnchor, projectedRectPrism, projectedTileQuad, type TileQuad } from './oblique-geometry';
 import type { Point } from './coordinates';
+import { artForNorthEdge, artForStructure } from './oblique-art-mapping';
 
 export interface ObliqueGroundTile {
   readonly tileX: number;
@@ -35,6 +36,8 @@ export interface ObliqueSolid {
   readonly sideFill: number;
   readonly alpha: number;
   readonly viewDepth: number;
+  /** The optional Blender module shares this solid's ground anchor. */
+  readonly artAssetId: string | undefined;
 }
 
 export interface ObliqueActorPoint {
@@ -100,6 +103,7 @@ export function projectObliqueWorldFrame(frame: RenderFrame, camera: ObliqueCame
       kind, id: `${kind}:${tileX}:${tileY}`, tileX, tileY,
       ...geometry, topFill: appearance.topFill, sideFill: appearance.sideFill, alpha: 1,
       viewDepth: obliqueDepthForAnchor({ x: x + width / 2, y: y + depth / 2 }, camera.yawRadians),
+      artAssetId: kind === 'north-edge' ? artForNorthEdge(value) : undefined,
     });
   };
 
@@ -141,6 +145,7 @@ export function projectObliqueWorldFrame(frame: RenderFrame, camera: ObliqueCame
       ...geometry, topFill: appearance.topFill, sideFill: appearance.sideFill,
       alpha: structure.phase === 'planned' ? PLANNED_ALPHA : structure.phase === 'building' ? BUILDING_ALPHA : 1,
       viewDepth: obliqueDepthForAnchor({ x: x + width / 2, y: y + depth / 2 }, camera.yawRadians),
+      artAssetId: structure.phase === 'built' ? artForStructure(structure.definitionId) : undefined,
     });
   }
 

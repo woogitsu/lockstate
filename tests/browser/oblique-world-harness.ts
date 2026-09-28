@@ -7,6 +7,7 @@ import { groundToScreen } from '../../src/rendering/camera/oblique-projection';
 import { TILE_SIZE_PX } from '../../src/rendering/tile-metrics';
 import type { RenderFrame } from '../../src/rendering/feed/render-feed';
 import type { Point } from '../../src/rendering/camera/coordinates';
+import { fetchObliqueModuleSet } from '../../src/rendering/assets/oblique-module-registry';
 
 export interface ObliqueWorldHarness {
   ready(): Promise<void>;
@@ -14,6 +15,8 @@ export interface ObliqueWorldHarness {
   pointAtTile(tileX: number, tileY: number): Point;
   selected(): { readonly tileX: number; readonly tileY: number } | undefined;
   paintCounts(): { readonly ground: number; readonly raised: number };
+  artTextureKeys(): readonly string[];
+  cutawayWallIds(): readonly string[];
 }
 
 declare global {
@@ -50,7 +53,8 @@ const ready = new Promise<void>((resolve) => { resolveReady = resolve; });
 class HarnessScene extends ObliqueWorldScene {
   public override create(): void { super.create(); resolveReady(); }
 }
-const scene = new HarnessScene({ feed: { readFrame: () => frame } });
+const artCatalogs = await fetchObliqueModuleSet();
+const scene = new HarnessScene({ feed: { readFrame: () => frame }, artCatalogs });
 const game = new Phaser.Game({
   type: Phaser.AUTO,
   parent: 'oblique-world-root',
@@ -73,4 +77,6 @@ window.lockstateObliqueWorldHarness = {
   },
   selected: () => scene.selectedTile,
   paintCounts: () => scene.paintCounts,
+  artTextureKeys: () => scene.artTextureKeys,
+  cutawayWallIds: () => scene.cutawayWallIds,
 };
