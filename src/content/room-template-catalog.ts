@@ -20,14 +20,14 @@ export interface RoomTemplatePlan {
   readonly height: number;
   readonly wallSquares: readonly TemplateSquare[];
   readonly doorSquares: readonly TemplateDoorSquare[];
-  readonly zone: { readonly roomId: 'room.cell' | 'room.shower-room' | 'room.canteen' | 'room.kitchen' | 'room.infirmary' | 'room.laundry' | 'room.classroom' | 'room.common-room' | 'room.security-office' | 'room.storage-room' | 'room.staff-room'; readonly x: number; readonly y: number; readonly width: number; readonly height: number };
+  readonly zone: { readonly roomId: 'room.cell' | 'room.shower-room' | 'room.canteen' | 'room.kitchen' | 'room.infirmary' | 'room.laundry' | 'room.classroom' | 'room.common-room' | 'room.security-office' | 'room.storage-room' | 'room.staff-room' | 'room.solitary-cell'; readonly x: number; readonly y: number; readonly width: number; readonly height: number };
   /** Every separately designated room; `zone` retains the first for older readers. */
   readonly zones: readonly RoomTemplatePlan['zone'][];
   readonly objects: readonly { readonly buildableId: RoomTemplateObjectId; readonly x: number; readonly y: number; readonly orientation?: 0 | 1 | 2 | 3 }[];
 }
 
 /** Player-facing choices; backend-authored additions can join after HUD copy and controls land. */
-export const ROOM_TEMPLATE_IDS = ['cell-basic', 'cell-large', 'shower-room', 'cell-row-four', 'canteen-basic', 'kitchen-basic', 'infirmary-basic', 'laundry-basic', 'classroom-basic', 'common-room-basic', 'security-office-basic', 'storage-room-basic', 'staff-room-basic'] as const;
+export const ROOM_TEMPLATE_IDS = ['cell-basic', 'cell-large', 'shower-room', 'cell-row-four', 'canteen-basic', 'kitchen-basic', 'infirmary-basic', 'laundry-basic', 'classroom-basic', 'common-room-basic', 'security-office-basic', 'storage-room-basic', 'staff-room-basic', 'solitary-cell-basic'] as const;
 export type RoomTemplateId = (typeof ROOM_TEMPLATE_IDS)[number];
 export type AuthoredRoomTemplateId = RoomTemplateId;
 type RoomTemplateObjectId = 'bed-wooden' | 'toilet-brick' | 'shower-head-brick' | 'dining-table-wooden' | 'bench-wooden' | 'stove-brick' | 'prep-counter-brick' | 'fridge-brick' | 'medical-bed-wooden' | 'medicine-cabinet-wooden' | 'washing-machine-brick' | 'bookshelf-wooden' | 'chair-wooden' | 'security-console-brick' | 'storage-rack-wooden' | 'desk-wooden';
@@ -159,6 +159,13 @@ const TEMPLATES: Readonly<Record<Exclude<AuthoredRoomTemplateId, 'cell-row-four'
       { buildableId: 'desk-wooden', x: 1, y: 1, width: 2 },
       { buildableId: 'chair-wooden', x: 1, y: 3 },
       { buildableId: 'chair-wooden', x: 3, y: 3 },
+    ],
+  },
+  'solitary-cell-basic': {
+    width: 4, height: 4, roomId: 'room.solitary-cell', doorX: 1,
+    objects: [
+      { buildableId: 'bed-wooden', x: 2, y: 1 },
+      { buildableId: 'toilet-brick', x: 1, y: 1 },
     ],
   },
 };
