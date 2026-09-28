@@ -629,7 +629,7 @@ export class ConstructionSystem implements SystemRegistration {
     }
 
     if (order.footprint === 'square' &&
-        (this.pendingDoorClaimsSquare(order.location) || this.completedDoorClaimsSquare?.(order.location) === true)) {
+        (this.claimsPendingDoorSquare(order.location) || this.completedDoorClaimsSquare?.(order.location) === true)) {
       this.setState(order, 'failed');
       order.failReason = 'unbuildable';
       this.orders.set(order.id, order);
@@ -707,7 +707,7 @@ export class ConstructionSystem implements SystemRegistration {
   }
 
   /** A door still in the queue reserves the square on each side of its edge. */
-  private pendingDoorClaimsSquare(tile: TilePosition): boolean {
+  public claimsPendingDoorSquare(tile: TilePosition): boolean {
     for (const order of this.orders.values()) {
       if (order.state === 'completed' || order.state === 'cancelled' || order.state === 'failed' ||
           BUILDABLE_REGISTRY.get(order.definitionId)?.placesDoor === undefined) continue;
@@ -717,6 +717,7 @@ export class ConstructionSystem implements SystemRegistration {
     }
     return false;
   }
+
 
   private squareWallClaimsTile(tile: TilePosition): boolean {
     if (this.world.getSquareStructure(tile) !== 0) return true;
