@@ -23,7 +23,7 @@ def main() -> None:
     modules.setup_scene()
     modules.YAW = tuple(range(-180, 180, 15))
     modules.append_collection(SOURCE, ASSET_ID)
-    modules.render_module(ASSET_ID, SLUG, SOURCE, [])
+    modules.render_module(ASSET_ID, SLUG, SOURCE, [], resolution_px=128)
     registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
     entries = [entry for entry in registry["entries"] if entry["assetId"] != ASSET_ID]
     entries.append({"assetId": ASSET_ID,

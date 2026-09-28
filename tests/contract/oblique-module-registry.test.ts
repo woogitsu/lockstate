@@ -33,9 +33,10 @@ describe('oblique cell module registry', () => {
     for (const entry of registry.entries) {
       const catalog = parseObliqueModuleCatalog(json(entry.manifest));
       expect(catalog.assetId).toBe(entry.assetId);
-      expect(catalog.resolutionPx).toEqual([512, 512]);
+      const isGround = entry.assetId.startsWith('floor.');
+      expect(catalog.resolutionPx).toEqual(isGround ? [128, 128] : [512, 512]);
       expect(catalog.nominalPixelsPerTile).toBe(64);
-      expect(catalog.pivotPx).toEqual([256, 256]);
+      expect(catalog.pivotPx).toEqual(isGround ? [64, 64] : [256, 256]);
       expect(catalog.cameraTargetTiles).toEqual([0, 0, 0]);
       expect(catalog.yawDegrees).toEqual(entry.assetId.startsWith('wall.interior.module.') || entry.assetId.startsWith('wall.interior.corner.') || entry.assetId.startsWith('floor.') || entry.assetId.startsWith('actor.') || entry.assetId.startsWith('door.interior.open.west.') || entry.assetId.startsWith('door.shower.privacy.') || entry.assetId === 'fixture.shower.head'
         ? Array.from({ length: 24 }, (_, index) => -180 + index * 15)
@@ -49,7 +50,7 @@ describe('oblique cell module registry', () => {
       for (const frame of catalog.frames) {
         const bytes = readFileSync(join(root, 'public', frame.image.slice(1)));
         expect(bytes.subarray(0, 8).toString('hex')).toBe('89504e470d0a1a0a');
-        expect([bytes.readUInt32BE(16), bytes.readUInt32BE(20), bytes[25]]).toEqual([512, 512, 6]);
+        expect([bytes.readUInt32BE(16), bytes.readUInt32BE(20), bytes[25]]).toEqual([isGround ? 128 : 512, isGround ? 128 : 512, 6]);
         expect(digest(bytes)).toBe(frame.sha256);
         expect(frame.image).toContain(`.${frame.sha256.slice(0, 12)}.png`);
         expect(selectObliqueModuleFrame(catalog, {

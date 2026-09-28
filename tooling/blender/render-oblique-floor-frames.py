@@ -34,7 +34,7 @@ def main() -> None:
             raise RuntimeError(f"{asset_id} has no tile origin")
         origin.location = (0, 0, 0)
         bpy.context.view_layer.update()
-        modules.render_module(asset_id, slug, modules.CATALOG, [])
+        modules.render_module(asset_id, slug, modules.CATALOG, [], resolution_px=128)
         collection.hide_render = True
 
     registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
