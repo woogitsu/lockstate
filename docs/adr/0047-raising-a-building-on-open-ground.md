@@ -89,11 +89,11 @@ defect one level up and with a longer explanation.
 a plain defect.** `submitOrder` asks `canBuildAt(this.world, order.location, …)`
 (`src/simulation/construction/system.ts:619`), and `canBuildAt` tests ownership
 of the order's own tile and nothing else
-(`src/simulation/world/buildability.ts:26`).
+(`src/simulation/world/buildability.ts:16`).
 
 (**Two corrections to the sentence above, marked rather than overwritten,
 2026-09-15.** *Where:* the `canBuildAt` call this document cited as `:266` is
-now inside `admits` (`src/simulation/construction/system.ts:615`), which
+now inside `admits` (`src/simulation/construction/system.ts:610`), which
 `submitOrder` (`:540`) calls once per tile — decision 6 below landed and the
 extraction is what landing it looked like. Decision 6's own amendment block
 already recorded that move and gave `admits` as `:353`; **that block and this
@@ -229,7 +229,7 @@ chunk — `chunkTerrain`, `chunkTopEdge`, `chunkLeftEdge`, `chunkZoning`
 `ensureStorageMap`, `:585`). All four serialize as optional RLE fields on
 `SerializedChunkState` (`:45`), and `decodeChunk`'s `allowedKeys` lists exactly
 those four as optional (`:191`). The save boundary mirrors it
-(`src/persistence/save-schema.ts:126`–`:129`, `terrain` / `topEdge` / `leftEdge`
+(`src/persistence/save-schema.ts:130`–`:133`, `terrain` / `topEdge` / `leftEdge`
 / `zoning`, each `terrainRleSchema.optional()`; this branch wrote `:115`–`:118`
 on 2026-09-15 and by 2026-09-16, when it merged `origin/main`, that span was a
 blank line and the first three lines of `serializedChunkStateSchema`'s
@@ -261,7 +261,7 @@ feature with a reader and no producer.
 ### Walls, doors and the build queue
 
 - A wall is an edge value. `finalizeConstruction`
-  (`src/simulation/construction/system.ts:1965`) writes it through `writeEdge`
+  (`src/simulation/construction/system.ts:1981`) writes it through `writeEdge`
   (`:2031`, called at `:1934`), which calls `setTopEdge`/`setLeftEdge` and
   therefore bumps `geometryRevision`.
 - `BuildableCategory` is `'wall' | 'object' | 'utility'`
@@ -512,7 +512,7 @@ cannot be built.
 `terrain`, `topEdge`, `leftEdge` and `zoning` in `SerializedChunkState`
 (`src/simulation/world/sparse-world.ts:45`), in `decodeChunk`'s optional list
 (`:191`) and in `serializedChunkStateSchema`
-(`src/persistence/save-schema.ts:126`–`:129`; the anchor read `:115`–`:118`
+(`src/persistence/save-schema.ts:130`–`:133`; the anchor read `:115`–`:118`
 until 2026-09-16, as above).
 
 `AGENTS.md` boundary 7 **is** engaged here — unlike ADR 0045 decision 4, this
@@ -618,7 +618,7 @@ same tool.
 
 **The pacing risk, derived rather than guessed.** The clock steps every 50 ms at
 speed 1 (`src/simulation/clock/fixed-step-clock.ts:29`), `ConstructionSystem`
-runs every ten ticks (`src/simulation/construction/system.ts:347`), and one
+runs every ten ticks (`intervalTicks: 10` at `src/simulation/construction/system.ts:347`), and one
 order is in progress at a time. So the crew completes **at most one order every
 500 ms at speed 1**, or one every 125 ms at speed 4. A 10×10 slab is 100 orders
 and therefore **at least 50 seconds of watching at speed 1**; a 20×20 slab is at

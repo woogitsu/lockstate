@@ -3,8 +3,8 @@
 ## Status
 Accepted. The `GlobalTopologyId` remedy this ADR's Consequences left as a
 follow-up has landed: PR #295 (issue #112) made `nextGlobalId` a local of
-`recomputeGlobalTopology` (`src/simulation/rooms/topology.ts:256`, incremented
-at `:262`) instead of instance state, so ids are handed out from 1 in canonical
+`recomputeGlobalTopology` (`src/simulation/rooms/topology.ts:265`, incremented
+at `:271`) instead of instance state, so ids are handed out from 1 in canonical
 sorted order on every recompute and `GlobalTopologyId` meets the category-2
 requirement below. The residue that change recorded rather than removed —
 `chunkTopologies` was never evicted, so an id was no longer a function of
