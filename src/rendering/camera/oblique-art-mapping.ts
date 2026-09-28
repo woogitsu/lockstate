@@ -23,6 +23,7 @@ const ROOM_FLOOR_ART: Readonly<Record<string, string>> = {
   'room.cell': 'floor.cell.sealed-concrete',
   'room.canteen': 'floor.canteen.terrazzo',
   'room.shower-room': 'floor.shower.ceramic',
+  'room.reception': 'floor.reception.linoleum',
 };
 const DIRT_TERRAIN_NUMERIC_ID = DEFAULT_TERRAIN_DEFINITIONS.find((terrain) => terrain.id === 'dirt')?.numericId;
 export const GRASS_TERRAIN_NUMERIC_ID = DEFAULT_TERRAIN_DEFINITIONS.find((terrain) => terrain.id === 'grass')?.numericId;

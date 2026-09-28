@@ -20,6 +20,7 @@ FLOORS = (
     ("floor.cell.sealed-concrete", "floor-cell", modules.ROOT / "assets/source/blender/floor.cell.warm-concrete.blend"),
     ("floor.linoleum.institutional", "floor-corridor", modules.CATALOG),
     ("floor.canteen.terrazzo", "floor-canteen", modules.ROOT / "assets/source/blender/floor.canteen.warm-terrazzo.blend"),
+    ("floor.reception.linoleum", "floor-reception", modules.ROOT / "assets/source/blender/floor.reception.linoleum.blend"),
 )
 REGISTRY = modules.ROOT / "public/game-content/oblique-module-registry.v1.json"
 
