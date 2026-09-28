@@ -13,6 +13,7 @@ export interface ObliqueWorldHarness {
   ready(): Promise<void>;
   setPose(yawDegrees: number, elevationDegrees: number): Promise<void>;
   pointAtTile(tileX: number, tileY: number): Point;
+  pointAtGround(tileX: number, tileY: number): Point;
   selected(): { readonly tileX: number; readonly tileY: number } | undefined;
   paintCounts(): { readonly ground: number; readonly raised: number };
   groundArtPaintCount(): number;
@@ -46,6 +47,9 @@ for (let y = 0; y < 8; y += 1) {
   for (let x = 0; x < 8; x += 1) world.setTerrain(tile(x, y), 'concrete');
 }
 world.setTerrain(tile(0, 0), 'dirt');
+world.setTerrain(tile(1, 0), 'dirt');
+world.setTerrain(tile(6, 6), 'dirt');
+world.setTerrain(tile(7, 6), 'dirt');
 world.setTerrain(tile(0, 1), 'grass');
 for (let y = 2; y <= 4; y += 1) {
   for (let x = 2; x <= 4; x += 1) world.setZoning(tile(x, y), 1);
@@ -113,6 +117,9 @@ window.lockstateObliqueWorldHarness = {
   },
   pointAtTile(tileX, tileY) {
     return groundToScreen({ x: (tileX + 0.5) * TILE_SIZE_PX, y: (tileY + 0.5) * TILE_SIZE_PX }, scene.cameraPose);
+  },
+  pointAtGround(tileX, tileY) {
+    return groundToScreen({ x: tileX * TILE_SIZE_PX, y: tileY * TILE_SIZE_PX }, scene.cameraPose);
   },
   selected: () => scene.selectedTile,
   paintCounts: () => scene.paintCounts,

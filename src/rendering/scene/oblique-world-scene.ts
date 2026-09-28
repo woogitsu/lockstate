@@ -64,6 +64,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private readonly canRotate: () => boolean;
   private readonly artCatalogs: ReadonlyMap<string, ObliqueModuleCatalog>;
   private groundGraphics!: Phaser.GameObjects.Graphics;
+  private groundGridGraphics!: Phaser.GameObjects.Graphics;
   private selectionGraphics!: Phaser.GameObjects.Graphics;
   private raisedGraphics!: Phaser.GameObjects.Graphics;
   private pose!: ObliqueCameraState;
@@ -116,6 +117,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
   public create(): void {
     this.cameras.main.setBackgroundColor(VOID_COLOR);
     this.groundGraphics = this.add.graphics().setScrollFactor(0).setDepth(0);
+    this.groundGridGraphics = this.add.graphics().setScrollFactor(0).setDepth(0.4);
     this.selectionGraphics = this.add.graphics().setScrollFactor(0).setDepth(0.5);
     this.raisedGraphics = this.add.graphics().setScrollFactor(0).setDepth(1);
     this.pose = {
@@ -373,16 +375,18 @@ export class ObliqueWorldScene extends Phaser.Scene {
 
   private paintGround(projection: ObliqueWorldProjection): void {
     const ground = this.groundGraphics;
+    const grid = this.groundGridGraphics;
     ground.clear();
+    grid.clear();
     this.groundPaints += 1;
     for (const tile of projection.ground) {
       this.fillQuad(ground, tile.quad, tile.fill);
       if (tile.zoningTint !== undefined) this.fillQuad(ground, tile.quad, tile.zoningTint, ZONING_TINT_ALPHA);
       if (!tile.owned) this.fillQuad(ground, tile.quad, UNOWNED_SHADE_COLOR, UNOWNED_SHADE_ALPHA);
-      ground.lineStyle(1, 0x26323b, 0.45);
+      grid.lineStyle(Math.max(1.5, this.pose.zoom), 0x26323b, 0.7);
       for (let side = 0; side < 4; side += 1) {
         const next = (side + 1) % 4;
-        ground.lineBetween(tile.quad[side]!.x, tile.quad[side]!.y, tile.quad[next]!.x, tile.quad[next]!.y);
+        grid.lineBetween(tile.quad[side]!.x, tile.quad[side]!.y, tile.quad[next]!.x, tile.quad[next]!.y);
       }
     }
   }
