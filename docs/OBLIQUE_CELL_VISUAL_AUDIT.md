@@ -54,3 +54,35 @@ hashes. The actor manifests changed in all 144 frame hashes after the intended
 lighting correction. The pinned live Blender determinism test and the oblique
 registry/catalog contracts passed; the 1920×1080 captures were visually
 reviewed at native and 2× scale.
+
+## North-west corner follow-up
+
+The source wall kit already had `wall.interior.corner.inner.full` and
+`wall.interior.corner.inner.cutaway`, but neither had oblique frames in the
+runtime registry. The follow-up publisher rotates those same authored meshes
+by −90° to point the two arms east and south for the cell's north-west join.
+It publishes 72 yaw/elevation poses for each height with the shared 512×512
+frame, 64 px/tile scale, and `(256,256)` pivot. The manifests are selected by
+the existing oblique module loader; the game scene still needs to choose this
+corner identity at a matching join.
+
+The comparison harness uses `LOCKSTATE_USE_CORNER=0` for the pair of straight
+pieces and the default setting for the authored corner. The same cell,
+corridor, actors and bed are used in each pair:
+
+| Yaw | Straight join | Authored corner |
+| --- | --- | --- |
+| −90° | [PNG](evidence/oblique-cell-corner/lockstate-oblique-cell-corner-before-yaw-90.png) | [PNG](evidence/oblique-cell-corner/lockstate-oblique-cell-corner-after-yaw-90.png) |
+| −45° | [PNG](evidence/oblique-cell-corner/lockstate-oblique-cell-corner-before-yaw-45.png) | [PNG](evidence/oblique-cell-corner/lockstate-oblique-cell-corner-after-yaw-45.png) |
+| 0° | [PNG](evidence/oblique-cell-corner/lockstate-oblique-cell-corner-before-yaw0.png) | [PNG](evidence/oblique-cell-corner/lockstate-oblique-cell-corner-after-yaw0.png) |
+| 45° | [PNG](evidence/oblique-cell-corner/lockstate-oblique-cell-corner-before-yaw45.png) | [PNG](evidence/oblique-cell-corner/lockstate-oblique-cell-corner-after-yaw45.png) |
+| 90° | [PNG](evidence/oblique-cell-corner/lockstate-oblique-cell-corner-before-yaw90.png) | [PNG](evidence/oblique-cell-corner/lockstate-oblique-cell-corner-after-yaw90.png) |
+
+At yaw 45° the straight pieces leave crossed metal caps above the join; the
+authored corner forms one continuous cap and plaster face. At yaw 0° and 90°
+the cap and vertical face also line up without a projecting straight-piece
+end. At negative yaw the low corner preserves visibility into the cell. The
+comparison is a browser module composition; it does not prove the unmerged
+world scene's occlusion or automatic corner selection. A repeated Blender 5.2.1
+render produced the same 144 image hashes. The registry/catalog test first
+failed for the two missing entries, then passed with 17 complete entries.
