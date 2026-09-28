@@ -14,7 +14,7 @@ import { rovingTabStop } from '../primitives/roving-focus';
 import { bindRovingFocusKeydown } from '../primitives/roving-focus-keydown';
 import { HUD_MESSAGE_KEY } from './messages';
 import { assignPooledRows } from './pooled-row-binding';
-import { createRoomTemplatePreview } from './room-template-preview';
+import { createRoomTemplatePreview, ROOM_TEMPLATE_NAME_KEYS } from './room-template-preview';
 import type { RoomTemplateCostQuote, RoomTemplateTool } from '../room-template-tool';
 import { toggleRemovalMode } from './tool-arming';
 import {
@@ -1630,7 +1630,9 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   orderNote.hidden = true;
 
   const paintArmHint = (): void => {
-    armHint.textContent = t(templateArmed ? HUD_MESSAGE_KEY.templateArmHint : armedHintKey(selectedBuildable(), removing));
+    armHint.textContent = templateArmed && options.roomTemplateTool !== undefined
+      ? t(HUD_MESSAGE_KEY.templateArmHint, { name: t(ROOM_TEMPLATE_NAME_KEYS[options.roomTemplateTool.selectedTemplateId()]) })
+      : t(armedHintKey(selectedBuildable(), removing));
   };
 
   function paintArmed(): void {
@@ -3296,7 +3298,8 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     getSelection: readSelection,
     isArmed: () => armed,
     setTemplateArmed(next): void {
-      if (templateArmed === next) return;
+      // Selection changes call this even when the tool stays armed: the name
+      // beside the placement guidance must follow the next command's plan.
       templateArmed = next;
       paintCatalogue();
       paintArmHint();

@@ -625,5 +625,5 @@ Source: `src/content/default-locale-en.ts`, in the order they are declared.
 | `hud.build.template-catalogue-value` | Catalogue value: {total}. Materials already held may lower the amount spent. | `src/content/default-locale-en.ts:4541` |
 | `hud.build.template-catalogue-value-unavailable` | Catalogue value unavailable. Check the material requirements. | `src/content/default-locale-en.ts:4542` |
 | `hud.build.template-cell-row-four` | Four-cell row | `src/content/default-locale-en.ts:4543` |
-| `hud.build.template-arm-hint` | Point at the map to preview the whole room plan. Click a clear footprint to submit it. Middle drag or arrow keys move the camera. | `src/content/default-locale-en.ts:4544` |
+| `hud.build.template-arm-hint` | Selected: {name}. Point at the map to preview the whole room plan. Click a clear footprint to submit it. Middle drag or arrow keys move the camera. | `src/content/default-locale-en.ts:4544` |
 
