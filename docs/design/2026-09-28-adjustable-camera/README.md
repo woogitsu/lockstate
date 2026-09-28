@@ -243,6 +243,11 @@ translucent walls are not proof that builders have completed the room. The new
 angle is still opt-in, and exact-head CI plus a fully built prison playtest are
 required before release.
 
+The same Full HD branch now exposes on-screen pan arrows in the camera controls.
+The buttons move the angled scene even while Build is armed; their right/left
+round trip returns the same hovered build square without submitting a world
+command. The stopped top-down scene keeps its own pan route.
+
 Keep three isolated worktrees moving in parallel: (1) Blender modules and
 consistent camera poses, (2) square-first construction and ready-made rooms,
 and (3) Full HD HUD, controls and visible template previews. The renderer

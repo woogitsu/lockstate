@@ -770,6 +770,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
    *   display-scale control already took "interface".
    */
   'hud.zoom.title': 'Zoom',
+  'hud.camera.controls': 'Camera controls',
   'hud.zoom.in': 'Zoom in',
   'hud.zoom.out': 'Zoom out',
 

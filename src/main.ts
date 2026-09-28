@@ -3000,6 +3000,15 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       if (obliquePreviewRequested) obliqueCameraScene?.stepCameraZoom(direction);
       else worldScene.stepCameraZoom(direction);
     },
+    onCameraPan: (direction) => {
+      if (obliquePreviewRequested) {
+        const delta = 128;
+        obliqueCameraScene?.stepCameraPan(
+          direction === 'left' ? -delta : direction === 'right' ? delta : 0,
+          direction === 'up' ? -delta : direction === 'down' ? delta : 0,
+        );
+      } else worldScene.stepCameraPan(direction);
+    },
     onIntent: (intent: HudIntent) => {
       switch (intent.kind) {
         case 'place-room-template':

@@ -33,6 +33,27 @@ test('Full HD angled world responds to the visible zoom control', async ({ page 
   await page.screenshot({ path: testInfo.outputPath('oblique-after-zoom-fullhd.png') });
 });
 
+test('Full HD angled world pans from on-screen buttons while Build is armed', async ({ page }, testInfo) => {
+  await installTee(page);
+  await openWorld(page);
+  await page.getByRole('button', { name: 'Build', exact: true }).click();
+  await page.locator('.hud-build__list [data-buildable="wall-brick"]').click();
+  await page.getByRole('button', { name: 'Place on map', exact: true }).click();
+  await page.mouse.move(960, 540);
+  const square = page.locator('.oblique-square-ghost polygon').first();
+  await expect(square).toBeVisible();
+  const tileAt = async () => square.evaluate((element) => `${element.getAttribute('data-tile-x')}/${element.getAttribute('data-tile-y')}`);
+  const before = await tileAt();
+  await page.getByRole('button', { name: 'Pan camera right', exact: true }).click();
+  await page.mouse.move(960, 540);
+  await expect.poll(tileAt).not.toBe(before);
+  await page.getByRole('button', { name: 'Pan camera left', exact: true }).click();
+  await page.mouse.move(960, 540);
+  await expect.poll(tileAt).toBe(before);
+  expect((await sentCommands(page)).filter((command) => command.type === 'PlaceBuildOrder')).toHaveLength(0);
+  await page.screenshot({ path: testInfo.outputPath('oblique-onscreen-pan-fullhd.png') });
+});
+
 test('Full HD angled world zooms with the wheel over the map', async ({ page }) => {
   test.setTimeout(120_000);
   await openWorld(page);

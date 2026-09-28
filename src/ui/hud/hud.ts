@@ -1069,6 +1069,7 @@ export interface MountHudOptions {
    * every harness in `tests/browser/` that does not pass it.
    */
   readonly onCameraZoom?: (direction: 'in' | 'out') => void;
+  readonly onCameraPan?: (direction: 'up' | 'down' | 'left' | 'right') => void;
   /** Present only when the host has mounted an angle-capable camera. */
   readonly onCameraPoseAction?: (action: CameraPoseAction) => void;
   readonly cameraPose?: { readonly yawRadians: number; readonly elevationRadians: number };
@@ -2282,6 +2283,16 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     },
   });
   zoomIn.element.classList.add('hud-zoom__in');
+  const panButtons = (['left', 'up', 'down', 'right'] as const).map((direction) => {
+    const button = createIconButton({
+      icon: `pan-${direction}`,
+      label: t(`input.action.camera.${direction}`),
+      variant: 'bordered',
+      onActivate: () => options.onCameraPan?.(direction),
+    });
+    button.element.classList.add('hud-pan__button');
+    return button.element;
+  });
   const zoomControl = element('div', {
     className: 'hud-zoom',
     attributes: {
@@ -2290,11 +2301,11 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       // that also has an interface scale. The same word is on screen in the
       // legend, so this is a machine-readable copy of a visible label rather
       // than the only place the meaning exists.
-      'aria-label': t(HUD_MESSAGE_KEY.zoomRegion),
+      'aria-label': t('hud.camera.controls'),
     },
     // Out before in, so the pair reads left to right the way a range does and
     // the way the keys do on the row they are bound to.
-    children: [zoomLegend, zoomOut.element, zoomIn.element],
+    children: [zoomLegend, ...panButtons, zoomOut.element, zoomIn.element],
   });
 
   const angleControl = options.onCameraPoseAction === undefined || options.cameraPose === undefined

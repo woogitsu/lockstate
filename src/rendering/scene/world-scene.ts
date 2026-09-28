@@ -1064,6 +1064,16 @@ export class WorldScene extends Phaser.Scene {
     this.stepZoom(direction === 'in' ? KEYBOARD_ZOOM_STEP : 1 / KEYBOARD_ZOOM_STEP);
   }
 
+  /** Move by a fixed screen distance, independent of zoom, like a short held arrow key. */
+  public stepCameraPan(direction: 'up' | 'down' | 'left' | 'right'): void {
+    const camera = this.cameras.main;
+    const distance = 128 / camera.zoom;
+    if (direction === 'left') camera.scrollX -= distance;
+    if (direction === 'right') camera.scrollX += distance;
+    if (direction === 'up') camera.scrollY -= distance;
+    if (direction === 'down') camera.scrollY += distance;
+  }
+
   // ---- build tool ---------------------------------------------------
   //
   // The interaction is **modal**, and deliberately so. The alternative --
