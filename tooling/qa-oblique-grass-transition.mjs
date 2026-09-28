@@ -29,6 +29,7 @@ try {
       canvas.height = 1080;
       document.body.append(canvas);
       const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('2D canvas context unavailable');
       ctx.fillStyle = '#344048';
       ctx.fillRect(0, 0, 1920, 1080);
       const rad = yaw * Math.PI / 180;
@@ -40,8 +41,8 @@ try {
         for (let y = -14; y < 14; y += 1) {
           const center = project(x + 0.5, y + 0.5);
           const isGrass = x >= 0 && y >= -5 && y < 6;
-          if (!isGrass) ctx.drawImage(dirtImage, center.x - 256, center.y - 256);
-          else if (withBlender) ctx.drawImage(grassImage, center.x - 256, center.y - 256);
+          if (!isGrass) ctx.drawImage(dirtImage, center.x - dirt.pivotPx[0], center.y - dirt.pivotPx[1]);
+          else if (withBlender) ctx.drawImage(grassImage, center.x - grass.pivotPx[0], center.y - grass.pivotPx[1]);
           else {
             const corners = [[x, y], [x + 1, y], [x + 1, y + 1], [x, y + 1]];
             ctx.beginPath();

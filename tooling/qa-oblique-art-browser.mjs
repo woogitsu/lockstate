@@ -41,7 +41,7 @@ try {
       captures.push(path);
     }
   }
-  if (images.length !== 24) throw new Error(`Full yaw sweep should fetch 24 wall frames, got ${images.length}.`);
+  if (Number(images.length) !== 24) throw new Error(`Full yaw sweep should fetch 24 wall frames, got ${images.length}.`);
   const beforeCacheHit = images.length;
   await page.locator('[data-axis="yaw"][data-angle="-180"]').click();
   await page.waitForFunction(() => document.body.dataset.loadedFrame?.includes('yaw-180-elev45'));

@@ -28,10 +28,10 @@ try {
         if (!pose) throw new Error(`Missing ${direction} edge pose ${yaw}/45`);
         const image = new Image();
         image.src = pose.image;
-        edgeImages.set(direction, image);
+        edgeImages.set(direction, { image, pivot: edge.pivotPx });
       }
       await Promise.all([dirtImage.decode(), grassImage.decode(),
-        ...[...edgeImages.values()].map((image) => image.decode())]);
+        ...[...edgeImages.values()].map(({ image }) => image.decode())]);
       document.body.replaceChildren();
       document.body.style.margin = '0';
       const canvas = document.createElement('canvas');
@@ -39,6 +39,7 @@ try {
       canvas.height = 1080;
       document.body.append(canvas);
       const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('2D canvas context unavailable');
       ctx.fillStyle = '#344048';
       ctx.fillRect(0, 0, 1920, 1080);
       const rad = yaw * Math.PI / 180;
@@ -50,8 +51,8 @@ try {
         for (let y = -14; y < 14; y += 1) {
           const center = project(x + 0.5, y + 0.5);
           const isGrass = x >= -5 && x <= 5 && y >= -5 && y <= 5;
-          if (!isGrass) ctx.drawImage(dirtImage, center.x - 256, center.y - 256);
-          else ctx.drawImage(grassImage, center.x - 256, center.y - 256);
+          if (!isGrass) ctx.drawImage(dirtImage, center.x - dirt.pivotPx[0], center.y - dirt.pivotPx[1]);
+          else ctx.drawImage(grassImage, center.x - grass.pivotPx[0], center.y - grass.pivotPx[1]);
         }
       }
       if (withEdge) {
@@ -64,7 +65,8 @@ try {
             if (y === 5) directions.push('south');
             if (x === -5) directions.push('west');
             for (const direction of directions) {
-              ctx.drawImage(edgeImages.get(direction), center.x - 256, center.y - 256);
+              const edge = edgeImages.get(direction);
+              ctx.drawImage(edge.image, center.x - edge.pivot[0], center.y - edge.pivot[1]);
             }
           }
         }

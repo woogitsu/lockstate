@@ -8,7 +8,7 @@ The real selected-cell harness at 1920×1080 showed separate short posts along t
 
 `wall.interior.module.west.cutaway` is rendered from the existing authored `wall.interior.module.cutaway` collection in `wall.interior.cutaway.blend`, rotated a quarter turn in Blender before the standard camera loop. It has 24 yaw × 3 elevation transparent frames, 512×512 RGBA, 64 nominal pixels per tile, and pivot `(256,256)`. Its manifest is `public/game-content/oblique-wall-west-cutaway.v1.json`. The new atlas uses the same material, height and footprint as the north-edge cutaway and shares pose indices with `wall.interior.module.west.full`.
 
-To integrate in the game, map `wall.interior.module.west.full` to `wall.interior.module.west.cutaway` in `ObliqueWorldScene.cutawayArtAssetId`. The catalog and textures are already discoverable through the shared module registry. This PR does not edit the scene or its projection.
+To integrate in the game, map `wall.interior.module.west.full` to `wall.interior.module.west.cutaway` in the planned ObliqueWorldScene cutaway selection method. That scene method has not landed on this branch. The catalog and textures are already discoverable through the shared module registry. This PR does not edit the scene or its projection.
 
 ## Full HD gate
 
