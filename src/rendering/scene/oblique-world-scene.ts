@@ -68,6 +68,8 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private groundGridGraphics!: Phaser.GameObjects.Graphics;
   private groundComposite!: Phaser.GameObjects.RenderTexture;
   private raisedComposite!: Phaser.GameObjects.RenderTexture;
+  private displayComposite!: Phaser.GameObjects.RenderTexture;
+  private displayCompositeDirty = false;
   private groundHoverGraphics!: Phaser.GameObjects.Graphics;
   private selectionGraphics!: Phaser.GameObjects.Graphics;
   private raisedGraphics!: Phaser.GameObjects.Graphics;
@@ -131,10 +133,17 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.raisedGraphics = this.add.graphics().setScrollFactor(0).setDepth(1);
     this.raisedComposite = this.add.renderTexture(0, 0, this.cameras.main.width, this.cameras.main.height)
       .setOrigin(0, 0).setScrollFactor(0).setDepth(1);
+    this.displayComposite = this.add.renderTexture(0, 0, this.cameras.main.width, this.cameras.main.height)
+      .setOrigin(0, 0).setScrollFactor(0).setDepth(1);
+    this.groundComposite.removeFromDisplayList();
+    this.raisedComposite.removeFromDisplayList();
+    this.groundHoverGraphics.removeFromDisplayList();
+    this.selectionGraphics.removeFromDisplayList();
     const restoreComposites = (): void => {
       if (this.lastProjection !== undefined) {
         this.refreshGroundComposite();
         this.refreshRaisedComposite();
+        this.refreshDisplayComposite();
       }
     };
     this.game.renderer.on(Phaser.Renderer.Events.RESTORE_WEBGL, restoreComposites);
@@ -257,6 +266,10 @@ export class ObliqueWorldScene extends Phaser.Scene {
   public get projectedRaisedObjectCount(): number { return this.lastProjection?.raised.length ?? 0; }
   public get visibleUncachedRaisedObjectCount(): number {
     return [this.raisedGraphics, ...this.artImages, ...this.actorArtImages]
+      .filter((object) => object.visible && object.displayList !== null).length;
+  }
+  public get visibleViewportCompositeCount(): number {
+    return [this.groundComposite, this.raisedComposite, this.displayComposite]
       .filter((object) => object.visible && object.displayList !== null).length;
   }
   public get artTextureKeys(): readonly string[] {
@@ -411,6 +424,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     }
     this.lastFrame = frame;
     this.repaint();
+    if (this.displayCompositeDirty) this.refreshDisplayComposite();
   }
 
   private fillQuad(graphics: Phaser.GameObjects.Graphics, quad: TileQuad, color: number, alpha = 1): void {
@@ -459,6 +473,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private paintGroundHover(): void {
     const graphics = this.groundHoverGraphics;
     graphics.clear();
+    this.displayCompositeDirty = true;
     if (!this.buildGridEmphasis || this.hovered === undefined) return;
     const quad = projectedTileQuad(this.hovered.tileX, this.hovered.tileY, this.pose);
     graphics.fillStyle(0xe1bb57, 0.12);
@@ -515,6 +530,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.groundGraphics.removeFromDisplayList();
     this.groundGridGraphics.removeFromDisplayList();
     for (const image of this.groundArtImages) image.removeFromDisplayList();
+    this.displayCompositeDirty = true;
   }
 
   /** Keep depth-sorted walls and actors in one viewport texture until their projection changes. */
@@ -526,10 +542,26 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.raisedComposite.render();
     this.raisedGraphics.removeFromDisplayList();
     for (const image of images) image.removeFromDisplayList();
+    this.displayCompositeDirty = true;
+  }
+
+  /** Resolve the ground highlights behind raised art in one displayed viewport image. */
+  private refreshDisplayComposite(): void {
+    this.displayComposite.resize(this.pose.viewport.width, this.pose.viewport.height);
+    this.displayComposite.clear();
+    this.displayComposite.draw([
+      this.groundComposite,
+      this.selectionGraphics,
+      this.groundHoverGraphics,
+      this.raisedComposite,
+    ]);
+    this.displayComposite.render();
+    this.displayCompositeDirty = false;
   }
 
   private paintSelection(): void {
     this.selectionGraphics.clear();
+    this.displayCompositeDirty = true;
     if (this.selected === undefined) return;
     this.fillQuad(this.selectionGraphics, projectedTileQuad(this.selected.tileX, this.selected.tileY, this.pose), 0xe1bb57, 0.8);
   }

@@ -24,6 +24,7 @@ export interface ObliqueWorldHarness {
   raisedArtImageCount(): number;
   projectedRaisedObjectCount(): number;
   visibleUncachedRaisedObjectCount(): number;
+  visibleViewportCompositeCount(): number;
   estimatedTextureBytes(): number;
   artTextureKeys(): readonly string[];
   loadedArtTextureCount(): number;
@@ -167,9 +168,10 @@ window.lockstateObliqueWorldHarness = {
   raisedArtImageCount: () => scene.raisedArtImageCount,
   projectedRaisedObjectCount: () => scene.projectedRaisedObjectCount,
   visibleUncachedRaisedObjectCount: () => scene.visibleUncachedRaisedObjectCount,
+  visibleViewportCompositeCount: () => scene.visibleViewportCompositeCount,
   estimatedTextureBytes: () => {
     const loaded = new Set<string>();
-    let bytes = scene.cameraPose.viewport.width * scene.cameraPose.viewport.height * 4 * 2;
+    let bytes = scene.cameraPose.viewport.width * scene.cameraPose.viewport.height * 4 * 3;
     for (const catalog of artCatalogs.values()) for (const artFrame of catalog.frames) {
       if (loaded.has(artFrame.image) || !scene.textures.exists(artFrame.image)) continue;
       loaded.add(artFrame.image);

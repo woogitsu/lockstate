@@ -38,6 +38,7 @@ test('Full HD angled 64 × 64 cell fixture keeps the large world visible', async
       projectedRaised: harness.projectedRaisedObjectCount(),
       raisedArt: harness.raisedArtImageCount(),
       visibleUncachedRaised: harness.visibleUncachedRaisedObjectCount(),
+      visibleViewportComposites: harness.visibleViewportCompositeCount(),
       loadedTextures: harness.loadedArtTextureCount(),
       estimatedTextureBytes: harness.estimatedTextureBytes(),
       artErrors: harness.artErrors(),
@@ -54,6 +55,7 @@ test('Full HD angled 64 × 64 cell fixture keeps the large world visible', async
   expect(metrics.projectedRaised).toBeGreaterThan(400);
   expect(metrics.raisedArt).toBeGreaterThan(100);
   expect(metrics.visibleUncachedRaised).toBe(0);
+  expect(metrics.visibleViewportComposites).toBe(1);
   expect(metrics.estimatedTextureBytes).toBeLessThan(64 * 1024 * 1024);
   expect(metrics.artErrors).toEqual([]);
   const pick = await page.evaluate(() => window.lockstateObliqueWorldHarness.pointAtTile(34, 34));
