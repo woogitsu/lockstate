@@ -677,6 +677,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.camera.controls': 'Sterowanie kamerą',
   'hud.zoom.in': 'Przybliż',
   'hud.zoom.out': 'Oddal',
+  'hud.template.fit-view': 'Dopasuj plan do widoku',
   'hud.camera-angle.title': 'Kąt kamery',
   'hud.camera-angle.yaw-left': 'Obróć w lewo',
   'hud.camera-angle.yaw-right': 'Obróć w prawo',

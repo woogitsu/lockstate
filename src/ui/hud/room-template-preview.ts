@@ -1,4 +1,4 @@
-import { ROOM_TEMPLATE_IDS, instantiateRoomTemplate, roomTemplateObjectSquares, type RoomTemplateId } from '../../content/room-template-catalog';
+import { ROOM_TEMPLATE_IDS, instantiateRoomTemplate, roomTemplateObjectSquares, type RoomTemplateId, type RoomTemplatePlan } from '../../content/room-template-catalog';
 import { defaultItemRegistry } from '../../content/item-catalog';
 import type { LocalizationKey } from '../../content/localization';
 import { element, nextUiId } from '../primitives/dom';
@@ -27,7 +27,7 @@ export const ROOM_TEMPLATE_NAME_KEYS: Record<RoomTemplateId, LocalizationKey> = 
 };
 
 /** A catalogue of authored plans. Selection previews geometry; it never places an order. */
-export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTemplateTool, onArmMap?: () => void, quote?: (id: RoomTemplateId) => Promise<RoomTemplateCostQuote>): { readonly openButton: HTMLButtonElement; readonly dialog: HTMLDialogElement } {
+export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTemplateTool, onArmMap?: () => void, quote?: (id: RoomTemplateId) => Promise<RoomTemplateCostQuote>, onFitPlan?: (plan: RoomTemplatePlan) => void): { readonly openButton: HTMLButtonElement; readonly dialog: HTMLDialogElement } {
   const t = (key: LocalizationKey, parameters?: Record<string, string | number>): string => localizer.format(key, parameters);
   const openButton = element('button', {
     className: 'hud-build__template-open',
@@ -177,6 +177,10 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
     halfTurnLabel.hidden = true;
     const place = element('button', { text: t(HUD_MESSAGE_KEY.templatePlace), attributes: { type: 'button' } });
     const map = element('button', { text: t(HUD_MESSAGE_KEY.templateMap), attributes: { type: 'button' } });
+    const fit = onFitPlan === undefined ? undefined : element('button', {
+      className: 'hud-template__fit', text: t(HUD_MESSAGE_KEY.templateFitView), attributes: { type: 'button' },
+    });
+    if (fit !== undefined) fit.disabled = true;
     const status = element('p', { className: 'hud-template__status', attributes: { role: 'status' } });
     place.disabled = true;
     const origin = (): { x: number; y: number } | undefined => {
@@ -193,6 +197,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
       const current = ++revision;
       place.disabled = true;
       const tile = origin();
+      if (fit !== undefined) fit.disabled = tile === undefined || !wholePlanFitsSafeTiles(tile);
       if (tile === undefined) {
         status.textContent = t(HUD_MESSAGE_KEY.templateInvalidPosition);
         return;
@@ -244,6 +249,12 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
       onArmMap?.();
       dialog.close();
     });
+    fit?.addEventListener('click', () => {
+      const tile = origin();
+      if (tile === undefined || !wholePlanFitsSafeTiles(tile)) return;
+      onFitPlan?.(tool.planAt(tile));
+      dialog.close();
+    });
     dialog.append(element('div', {
       className: 'hud-template__placement',
       children: [
@@ -251,7 +262,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
         element('label', { className: 'hud-template__coordinate', children: [element('span', { text: t(HUD_MESSAGE_KEY.templateY) }), y] }),
         element('label', { children: [mirror, element('span', { text: t(HUD_MESSAGE_KEY.templateMirror) })] }),
         halfTurnLabel,
-        place, map, status,
+        place, map, ...(fit === undefined ? [] : [fit]), status,
       ],
     }));
   }

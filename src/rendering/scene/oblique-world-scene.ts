@@ -5,6 +5,7 @@ import { TILE_SIZE_PX, worldToTile } from '../tile-metrics';
 import { VOID_COLOR, ZONING_TINT_ALPHA, UNOWNED_SHADE_ALPHA, UNOWNED_SHADE_COLOR } from '../world/appearance';
 import {
   changeObliquePoseAtScreenPoint,
+  fitObliqueGroundRectangle,
   groundToScreen,
   panObliqueCameraByScreenDelta,
   screenToGround,
@@ -345,6 +346,27 @@ export class ObliqueWorldScene extends Phaser.Scene {
   public stepCameraPan(screenDx: number, screenDy: number): void {
     if (!Number.isFinite(screenDx) || !Number.isFinite(screenDy) || (screenDx === 0 && screenDy === 0)) return;
     this.pose = panObliqueCameraByScreenDelta(this.pose, screenDx, screenDy);
+    this.poseRevision += 1;
+    this.onPoseChanged?.(this.pose);
+    this.emitGroundHover();
+    this.repaint();
+  }
+
+  /** An explicit HUD action frames a selected tile area inside the usable central view. */
+  public fitGroundTileArea(area: { readonly x: number; readonly y: number; readonly width: number; readonly height: number }): void {
+    if (![area.x, area.y, area.width, area.height].every(Number.isSafeInteger) || area.width <= 0 || area.height <= 0) return;
+    const { width, height } = this.pose.viewport;
+    this.pose = fitObliqueGroundRectangle(this.pose, {
+      left: area.x * TILE_SIZE_PX,
+      top: area.y * TILE_SIZE_PX,
+      right: (area.x + area.width) * TILE_SIZE_PX,
+      bottom: (area.y + area.height) * TILE_SIZE_PX,
+    }, {
+      left: width * 0.21,
+      right: width * 0.79,
+      top: height * 0.17,
+      bottom: height * 0.83,
+    }, ZOOM_BOUNDS.min, ZOOM_BOUNDS.max);
     this.poseRevision += 1;
     this.onPoseChanged?.(this.pose);
     this.emitGroundHover();

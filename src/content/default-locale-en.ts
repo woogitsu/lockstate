@@ -773,6 +773,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.camera.controls': 'Camera controls',
   'hud.zoom.in': 'Zoom in',
   'hud.zoom.out': 'Zoom out',
+  'hud.template.fit-view': 'Fit plan in view',
 
   'hud.minimap.title': 'Minimap',
   /*
