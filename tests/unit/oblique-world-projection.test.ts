@@ -51,6 +51,7 @@ describe('oblique projection of an actual simulation snapshot', () => {
     expect(artForStructure('object.sink')).toBe('fixture.cell.sink');
     expect(artForStructure('object.waste-bin')).toBe('fixture.cell.waste_bin');
     expect(artForStructure('dining-table-wooden')).toBe('furniture.dining.table.wooden');
+    expect(artForStructure('bench-wooden')).toBe('furniture.corridor.bench.variants');
     expect(artForStructure('wall-brick')).toBe('wall.square.brick.low');
     expect(artForNorthEdge(2, shower!.numericId)).toBe('door.shower.privacy.open.full');
   });

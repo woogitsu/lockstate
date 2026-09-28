@@ -88,6 +88,7 @@ test('one camera turn batches newly loaded Blender frames into one ground repain
 test('real render feed cell keeps one build square under the cursor while the scene turns', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/tests/browser/oblique-world-harness.html');
+  await page.waitForFunction(() => window.lockstateObliqueWorldHarness !== undefined);
   await page.evaluate(() => window.lockstateObliqueWorldHarness.ready());
   await expect(page.locator('canvas')).toBeVisible();
   const loadedArt = await page.evaluate(() => window.lockstateObliqueWorldHarness.artTextureKeys());
@@ -98,6 +99,7 @@ test('real render feed cell keeps one build square under the cursor while the sc
   expect(loadedArt.some((key) => key.includes('cell-sink'))).toBe(true);
   expect(loadedArt.some((key) => key.includes('cell-waste-bin'))).toBe(true);
   expect(loadedArt.some((key) => key.includes('dining-table'))).toBe(true);
+  expect(loadedArt.some((key) => key.includes('corridor-bench'))).toBe(true);
   expect(loadedArt.some((key) => key.includes('floor-cell'))).toBe(true);
   expect(loadedArt.some((key) => key.includes('floor-terrain-dirt'))).toBe(true);
   expect(loadedArt.some((key) => key.includes('floor-terrain-grass'))).toBe(true);
@@ -126,6 +128,7 @@ test('real render feed cell keeps one build square under the cursor while the sc
       expect(artAfterSelection.some((key) => key.includes('cell-sink'))).toBe(true);
       expect(artAfterSelection.some((key) => key.includes('cell-waste-bin'))).toBe(true);
       expect(artAfterSelection.some((key) => key.includes('dining-table'))).toBe(true);
+      expect(artAfterSelection.some((key) => key.includes('corridor-bench'))).toBe(true);
       expect(artAfterSelection.some((key) => key.includes('wall-module-cutaway'))).toBe(true);
       expect(artAfterSelection.some((key) => key.includes('wall-module-west-cutaway'))).toBe(true);
       const cutaway = await page.evaluate(() => window.lockstateObliqueWorldHarness.cutawayWallIds());
