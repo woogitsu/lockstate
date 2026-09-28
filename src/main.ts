@@ -887,6 +887,10 @@ if (obliquePreviewRequested) {
             return;
           }
           if (tiles.length !== 1) return;
+          if (objectTool?.isArmed() && objectTool.isRemoving()) {
+            objectTool.place({ tileX, tileY });
+            return;
+          }
           if (objectTool?.isArmed() && !objectTool.isRemoving()) {
             if (obliqueTemplateHover?.x !== tileX || obliqueTemplateHover.y !== tileY) return;
             objectTool.place({ tileX, tileY });
