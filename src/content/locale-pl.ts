@@ -854,6 +854,8 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.alert.refusal.zone.out-of-bounds': 'Nie wyznaczono pomieszczenia — część tego obszaru leży poza mapą.',
   'hud.alert.refusal.zone.overlaps-existing-room':
     'Nie wyznaczono pomieszczenia — nachodzi na pomieszczenie, które już tam jest.',
+  'hud.alert.refusal.zone.overlaps-pending-template':
+    'Nie wyznaczono pomieszczenia — na tym obszarze trwa budowa gotowego wzoru.',
   'hud.alert.refusal.zone.unknown-room-type':
     'Nie wyznaczono pomieszczenia — to więzienie nie zna takiego typu pomieszczenia.',
   'hud.alert.refusal.zone.unowned-land': 'Nie wyznaczono pomieszczenia — nie cała ta ziemia należy do ciebie.',
