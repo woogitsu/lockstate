@@ -16,6 +16,7 @@ export const ROOM_TEMPLATE_NAME_KEYS: Record<RoomTemplateId, LocalizationKey> = 
   'infirmary-basic': 'room.infirmary.name',
   'classroom-basic': 'room.classroom.name',
   'laundry-basic': 'room.laundry.name',
+  'common-room-basic': 'room.common-room.name',
 };
 
 /** A catalogue of authored plans. Selection previews geometry; it never places an order. */

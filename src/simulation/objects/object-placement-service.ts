@@ -116,6 +116,8 @@ export interface PlaceObjectRequest {
   /** Anchor tile: the footprint's top-left corner. */
   readonly x: number;
   readonly y: number;
+  /** Internal template placement only; absent for today's PlaceObject command. */
+  readonly orientation?: ObjectOrientation;
 }
 
 /**
@@ -449,7 +451,7 @@ export interface RemovedObjectNoticePort {
   recordObjectRemoved(tick: number): void;
 }
 
-/** The orientation every placement gets, until a rotate control exists. See `ObjectOrientation`. */
+/** Ordinary object placements default to orientation zero; room templates may specify a quarter turn. */
 const DEFAULT_PLACEMENT_ORIENTATION: ObjectOrientation = 0;
 
 export class ObjectPlacementService {
@@ -457,10 +459,10 @@ export class ObjectPlacementService {
   private readonly refusals: PlaceObjectRefusal[] = [];
   /** The same window for the other gesture; see `recentRemovalRefusals`. */
   private readonly removalRefusals: RemoveObjectRefusal[] = [];
-  private pendingRoomDoorApproachClaim?: (tile: TilePosition) => boolean;
+  private roomDoorApproachClaim?: (tile: TilePosition) => boolean;
 
-  public setPendingRoomDoorApproachClaim(reader: (tile: TilePosition) => boolean): void {
-    this.pendingRoomDoorApproachClaim = reader;
+  public setRoomDoorApproachClaim(reader: (tile: TilePosition) => boolean): void {
+    this.roomDoorApproachClaim = reader;
   }
 
   public constructor(
@@ -522,7 +524,8 @@ export class ObjectPlacementService {
     }
 
     const anchor: TilePosition = { x: tileCoordinate(request.x), y: tileCoordinate(request.y) };
-    const footprint = objectFootprintTiles(objectDefinition, anchor, DEFAULT_PLACEMENT_ORIENTATION);
+    const orientation = request.orientation ?? DEFAULT_PLACEMENT_ORIENTATION;
+    const footprint = objectFootprintTiles(objectDefinition, anchor, orientation);
     const claimed = this.tilesClaimedByOrdersInFlight();
 
     for (const tile of footprint) {
@@ -534,7 +537,7 @@ export class ObjectPlacementService {
       // A full-square wall occupies ground, not a legacy edge. Checking the
       // complete object footprint keeps its far tile from entering that wall.
       if (this.world.getSquareStructure(tile) !== 0 || this.placedObjects.isTileOccupied(tile) ||
-          claimed.has(tileKey(tile)) || this.pendingRoomDoorApproachClaim?.(tile) === true) {
+          claimed.has(tileKey(tile)) || this.roomDoorApproachClaim?.(tile) === true) {
         return this.refuse('tile-occupied', request, tick, tile);
       }
     }
@@ -552,7 +555,8 @@ export class ObjectPlacementService {
     // the build queue (ADR 0082, #722) -- a bed placed after three hundred
     // walls waits for the three hundred, which is decision 1 read literally
     // over *every* build order rather than over walls alone.
-    this.orders.submitOrder(createBuildOrder(request.orderId, definition.id, anchor, undefined, placementSequence));
+    this.orders.submitOrder(createBuildOrder(request.orderId, definition.id, anchor, undefined, placementSequence,
+      undefined, request.orientation));
     /*
      * One press, one undo step -- and the transaction id has to be *given* for
      * that to be true.
@@ -803,8 +807,8 @@ export class ObjectPlacementService {
    * room resolves nothing, which is the same statement `place` refuses to let a
    * player make.
    */
-  public onOrderCompleted(objectId: string, anchor: TilePosition): boolean {
-    if (!this.placedObjects.place(placedObjectAt(objectId, anchor, DEFAULT_PLACEMENT_ORIENTATION))) return false;
+  public onOrderCompleted(objectId: string, anchor: TilePosition, orientation: ObjectOrientation = DEFAULT_PLACEMENT_ORIENTATION): boolean {
+    if (!this.placedObjects.place(placedObjectAt(objectId, anchor, orientation))) return false;
     this.resolver.resolveContaining(anchor);
     return true;
   }
@@ -942,7 +946,7 @@ export class ObjectPlacementService {
       if (objectId === undefined) continue;
       const objectDefinition = this.placedObjects.definitionOf(objectId);
       if (objectDefinition === undefined) continue;
-      yield { order, objectId, tiles: objectFootprintTiles(objectDefinition, order.location, DEFAULT_PLACEMENT_ORIENTATION) };
+      yield { order, objectId, tiles: objectFootprintTiles(objectDefinition, order.location, order.objectOrientation ?? DEFAULT_PLACEMENT_ORIENTATION) };
     }
   }
 

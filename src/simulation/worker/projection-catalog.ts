@@ -499,7 +499,7 @@ export const PROJECTION_CATALOG: Readonly<Record<ProjectionId, ProjectionCatalog
     project: (runtime, _tick, request) => {
       const target = request.target;
       if (target?.kind !== 'room-template') throw new Error('Room template target required');
-      return { view: projectRoomTemplatePreflight(runtime.roomTemplates, target.templateId, target.origin, target.mirrorX) as unknown as JsonValue };
+      return { view: projectRoomTemplatePreflight(runtime.roomTemplates, target.templateId, target.origin, target.mirrorX, target.quarterTurns) as unknown as JsonValue };
     },
   },
   'world/room-template-cost': {
