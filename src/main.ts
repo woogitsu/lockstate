@@ -2756,7 +2756,9 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
      * unconditionally -- it exists from the top of this module regardless of
      * whether a worker started, exactly like every other camera control.
      */
-    onMinimapNavigate: (point) => worldScene.navigateToMinimapPoint(point.fx, point.fy),
+    onMinimapNavigate: (point) => obliquePreviewRequested
+      ? obliqueCameraScene?.navigateToMinimapPoint(point.fx, point.fy) ?? false
+      : worldScene.navigateToMinimapPoint(point.fx, point.fy),
     /*
      * And the HUD's zoom pair, joined to the same camera on the same terms
      * (issue #1023). `ZOOM_BOUNDS` has allowed a fifteen-fold range since the
@@ -2771,7 +2773,8 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
      * the simulation could refuse.
      */
     onCameraZoom: (direction) => {
-      worldScene.stepCameraZoom(direction);
+      if (obliquePreviewRequested) obliqueCameraScene?.stepCameraZoom(direction);
+      else worldScene.stepCameraZoom(direction);
     },
     onIntent: (intent: HudIntent) => {
       switch (intent.kind) {

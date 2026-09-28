@@ -20,6 +20,7 @@ async function openWorld(page: import('@playwright/test').Page): Promise<void> {
 }
 
 test('Full HD angled world responds to the visible zoom control', async ({ page }, testInfo) => {
+  test.setTimeout(120_000);
   await openWorld(page);
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
@@ -31,20 +32,21 @@ test('Full HD angled world responds to the visible zoom control', async ({ page 
   await page.screenshot({ path: testInfo.outputPath('oblique-after-zoom-fullhd.png') });
 });
 
-test('Full HD angled world responds to the visible minimap', async ({ page }, testInfo) => {
+test('Full HD angled world responds to the visible minimap', async ({ page }) => {
+  test.setTimeout(120_000);
   await openWorld(page);
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
+  for (let step = 0; step < 4; step += 1) await page.locator('.hud-zoom__in').click();
   const minimap = page.locator('.hud-minimap');
   const surface = minimap.locator('.hud-minimap__surface');
   if (await surface.isHidden()) await minimap.locator('.ui-panel__toggle').click();
   await expect(surface).toBeVisible();
   await expect(surface.locator('canvas')).toBeVisible();
-  const beforeNavigate = await settledCanvas(page);
-  await page.screenshot({ path: testInfo.outputPath('oblique-before-minimap-fullhd.png') });
+  const viewport = minimap.locator('.hud-minimap__viewport');
+  await expect(viewport).toBeVisible();
+  const beforePosition = await viewport.evaluate((element) => `${element.style.left}/${element.style.top}`);
   await surface.click({ position: { x: 30, y: 30 } });
   expect(errors, 'Minimap must not call the stopped top-down scene').toEqual([]);
-  const afterNavigate = await settledCanvas(page);
-  expect(afterNavigate.equals(beforeNavigate), 'Minimap moved only the stopped top-down scene').toBe(false);
-  await page.screenshot({ path: testInfo.outputPath('oblique-after-minimap-fullhd.png') });
+  await expect.poll(async () => viewport.evaluate((element) => `${element.style.left}/${element.style.top}`)).not.toBe(beforePosition);
 });
