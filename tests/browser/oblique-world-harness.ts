@@ -25,6 +25,7 @@ export interface ObliqueWorldHarness {
   projectedRaisedObjectCount(): number;
   visibleUncachedRaisedObjectCount(): number;
   visibleViewportCompositeCount(): number;
+  canvasAntialiasEnabled(): boolean;
   estimatedTextureBytes(): number;
   artTextureKeys(): readonly string[];
   loadedArtTextureCount(): number;
@@ -142,7 +143,7 @@ const game = new Phaser.Game({
   scene: [scene],
   backgroundColor: '#0b0e12',
   scale: { mode: Phaser.Scale.RESIZE, autoCenter: Phaser.Scale.CENTER_BOTH },
-  render: { antialias: true, roundPixels: false, pixelArt: false },
+  render: { antialias: true, antialiasGL: false, roundPixels: false, pixelArt: false },
 });
 
 window.lockstateObliqueWorldHarness = {
@@ -169,6 +170,7 @@ window.lockstateObliqueWorldHarness = {
   projectedRaisedObjectCount: () => scene.projectedRaisedObjectCount,
   visibleUncachedRaisedObjectCount: () => scene.visibleUncachedRaisedObjectCount,
   visibleViewportCompositeCount: () => scene.visibleViewportCompositeCount,
+  canvasAntialiasEnabled: () => (game.renderer as Phaser.Renderer.WebGL.WebGLRenderer).gl.getContextAttributes()?.antialias ?? false,
   estimatedTextureBytes: () => {
     const loaded = new Set<string>();
     let bytes = scene.cameraPose.viewport.width * scene.cameraPose.viewport.height * 4 * 3;
