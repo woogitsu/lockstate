@@ -42,9 +42,9 @@ choose the corner piece when such edges meet.
 
 ## Reproduce
 
-Serve this worktree with Vite and set `LOCKSTATE_PREVIEW_ORIGIN` to that local
+Serve this worktree with Vite and set the LOCKSTATE_PREVIEW_ORIGIN environment variable to that local
 origin. Run `node tooling/qa-oblique-cell-composite.mjs` for the current art.
-Set `LOCKSTATE_ACTOR_BASELINE_REF` to the parent commit and run the same command
+Set the LOCKSTATE_ACTOR_BASELINE_REF environment variable to the parent commit and run the same command
 for the prior actor manifests. The captures are written to the system temp
 directory. Re-render actors with pinned Blender 5.2 using
 `blender -b -t 4 --python tooling/blender/render-oblique-actor-frames.py`.
