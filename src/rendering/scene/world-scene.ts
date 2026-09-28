@@ -1429,7 +1429,7 @@ export class WorldScene extends Phaser.Scene {
   private previewTemplateHover(pointer: Phaser.Input.Pointer): void {
     const port = this.templateGhostPort;
     if (port === undefined) return;
-    const tile = this.squareAt(this.worldPointOf(pointer));
+    const tile = this.templateOriginAt(pointer, port);
     const plan = port.planAt(tile);
     const oldDoor = this.templatePlan?.doorSquares[0];
     const newDoor = plan.doorSquares[0];
@@ -1450,6 +1450,36 @@ export class WorldScene extends Phaser.Scene {
     });
   }
 
+  /** Keep a large plan under the pointer as a whole, rather than anchoring its top corner there. */
+  private templateOriginAt(pointer: Phaser.Input.Pointer, port: TemplateGhostPort): TemplateSquare {
+    const hovered = this.squareAt(this.worldPointOf(pointer));
+    const size = port.planAt(hovered);
+    if (size.width <= 8 && size.height <= 8) return hovered;
+    const camera = this.cameras.main;
+    // The top HUD covers part of the canvas; leave enough air around the
+    // complete plan that its first and last row remain legible at Full HD.
+    const margin = TILE_SIZE_PX * 5;
+    const fitZoom = Math.min(
+      camera.zoom,
+      (camera.width - margin) / (size.width * TILE_SIZE_PX),
+      (camera.height - margin) / (size.height * TILE_SIZE_PX),
+    );
+    if (fitZoom < camera.zoom && fitZoom >= ZOOM_BOUNDS.min) {
+      const next = zoomAtScreenPoint(this.cameraState(), { x: pointer.x, y: pointer.y }, fitZoom, ZOOM_BOUNDS);
+      camera.setZoom(next.zoom);
+      camera.setScroll(next.scroll.x, next.scroll.y);
+    }
+    const centre = this.squareAt(this.worldPointOf(pointer));
+    const bounds = this.lastLoadedBounds;
+    const x = centre.x - Math.floor(size.width / 2);
+    const y = centre.y - Math.floor(size.height / 2);
+    if (bounds === undefined) return { x, y };
+    return {
+      x: Math.max(bounds.minTileX, Math.min(x, bounds.maxTileX - size.width + 1)),
+      y: Math.max(bounds.minTileY, Math.min(y, bounds.maxTileY - size.height + 1)),
+    };
+  }
+
   private beginTemplate(pointer: Phaser.Input.Pointer): void {
     this.templatePointerId = pointer.id;
     this.previewTemplateHover(pointer);
@@ -1458,9 +1488,10 @@ export class WorldScene extends Phaser.Scene {
   private commitTemplate(pointer: Phaser.Input.Pointer): boolean {
     if (this.templatePointerId !== pointer.id) return false;
     this.templatePointerId = undefined;
-    const tile = this.squareAt(this.worldPointOf(pointer));
-    const origin = this.templateOrigin;
     const port = this.templateGhostPort;
+    if (port === undefined) return true;
+    const tile = this.templateOriginAt(pointer, port);
+    const origin = this.templateOrigin;
     if (origin === undefined || port === undefined || this.templateVerdict?.ok !== true ||
         origin.x !== tile.x || origin.y !== tile.y) return true;
     // The worker can answer after the pointer has moved or another tool has
