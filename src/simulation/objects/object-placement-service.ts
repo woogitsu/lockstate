@@ -527,6 +527,7 @@ export class ObjectPlacementService {
     const orientation = request.orientation ?? DEFAULT_PLACEMENT_ORIENTATION;
     const footprint = objectFootprintTiles(objectDefinition, anchor, orientation);
     const claimed = this.tilesClaimedByOrdersInFlight();
+    const pendingSquareWalls = this.tilesClaimedByPendingSquareWalls();
 
     for (const tile of footprint) {
       const { chunk } = tileToChunk(tile, this.world.tileChunkSize);
@@ -537,7 +538,8 @@ export class ObjectPlacementService {
       // A full-square wall occupies ground, not a legacy edge. Checking the
       // complete object footprint keeps its far tile from entering that wall.
       if (this.world.getSquareStructure(tile) !== 0 || this.placedObjects.isTileOccupied(tile) ||
-          claimed.has(tileKey(tile)) || this.roomDoorApproachClaim?.(tile) === true) {
+          claimed.has(tileKey(tile)) || pendingSquareWalls.has(tileKey(tile)) ||
+          this.roomDoorApproachClaim?.(tile) === true) {
         return this.refuse('tile-occupied', request, tick, tile);
       }
     }
@@ -914,6 +916,17 @@ export class ObjectPlacementService {
     const claimed = new Set<string>();
     for (const entry of this.ordersBuildingObjects()) {
       for (const tile of entry.tiles) claimed.add(tileKey(tile));
+    }
+    return claimed;
+  }
+
+  /** A square wall claims ground before its geometry reaches the world. */
+  private tilesClaimedByPendingSquareWalls(): ReadonlySet<string> {
+    const claimed = new Set<string>();
+    for (const order of this.orders.allOrders()) {
+      if (order.footprint !== 'square' || order.state === 'completed' ||
+          order.state === 'cancelled' || order.state === 'failed') continue;
+      claimed.add(tileKey(order.location));
     }
     return claimed;
   }
