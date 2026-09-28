@@ -44,4 +44,12 @@ test('Full HD oblique camera controls the real world while Build is armed', asyn
   await expect(reading).not.toHaveText(afterKey ?? '');
   expect((await sentCommands(page)).filter((command) => command.type === 'PlaceBuildOrder')).toHaveLength(0);
   await expect(page.locator('.oblique-square-ghost polygon').first()).toBeVisible();
+  await page.mouse.move(960, 540);
+  await page.mouse.down({ button: 'left' });
+  await page.mouse.down({ button: 'right' });
+  await page.mouse.move(1040, 540, { steps: 3 });
+  await page.mouse.up({ button: 'right' });
+  expect((await sentCommands(page)).filter((command) => command.type === 'PlaceBuildOrder')).toHaveLength(0);
+  await page.mouse.up({ button: 'left' });
+  await expect.poll(async () => (await sentCommands(page)).filter((command) => command.type === 'PlaceBuildOrder').length).toBeGreaterThan(0);
 });
