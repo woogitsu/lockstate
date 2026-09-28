@@ -7090,11 +7090,12 @@
   }
 
   .hud[data-layout-navigation-placement='rail'] .hud-tabs__inner > .ui-tab {
-    flex-direction: column;
-    justify-content: center;
-    gap: var(--space-1);
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: var(--space-2);
     min-height: calc(var(--tap-target) + var(--space-2));
     padding-inline: var(--space-1);
+    text-align: left;
   }
 
   .hud[data-layout-navigation-placement='rail'] .hud-tabs__inner > .ui-tab[data-active='true'] {

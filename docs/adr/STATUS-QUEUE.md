@@ -792,12 +792,18 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `c8d25355` (**v0.0.795**) by the delta method,
+Re-anchored at `main` @ `ad6bf7a5` (**v0.0.805**) by re-reading §§3-6
+against the eleven non-release first-parent landings since `c8d25355`.
+The new §3 entry records the changed paths, decision census and live
+discrepancies. Neither staleness budget changes.
+
+**The previous anchor, retained as history.** It read: *"Re-anchored at `main` @
+`c8d25355` (**v0.0.795**) by the delta method,"* and continued:
 from `dbd24ea3`, the last tree whose window the dated §3 reading actually
 describes. That reading's header was later moved to `42fc9649` without moving
-its `9e6361c9..dbd24ea3` window or its nine-landing count. The new §3 entry
+its `9e6361c9..dbd24ea3` window or its nine-landing count. Its §3 entry
 records the larger re-reading, including that mismatch; neither staleness
-budget changes.
+budget changed.
 
 **The previous anchor, retained as history.** It read: *"Re-anchored at `main` @
 `42fc9649` (**v0.0.784**) by the delta method,"* and continued:
@@ -21810,6 +21816,51 @@ all. **So "exactly one" is exact about a measurable class and silent about the
 class this file's findings usually come from**, and the honest reading of it is
 that hand re-aiming got 81 of 83 anchors right in the part of the corpus a gate
 can check, with the unchecked part unmeasured in both directions.
+
+## 3. The 2026-09-28 pass: eleven landings, Full HD HUD and camera foundation, no status flip
+
+Read at `ad6bf7a5` (**v0.0.805**). The `c8d25355..ad6bf7a5` first-parent
+window contains **eleven non-release landings and ten release commits**; its
+diff has 68 changed paths. The merged work includes Full HD HUD revisions,
+save-list presentation and the adjustable-camera projection foundation. The
+`main` verify run 36416539305 failed exactly one of 5,736 tests: the anchor
+staleness check counted eleven landings against its budget of ten. The staging
+workflow reported a blocked deployment after that red gate. This reading
+addresses the gate without increasing its budget; it is not evidence that
+the camera preview has shipped as the default game view.
+
+**The decision census did not flip.** The index still has 117 numbered rows,
+42 `Proposed` and 75 `Accepted`, with **Next free number: 0124**. Six numbered
+ADR files in the window adjust source coordinates or record that the local
+save list gained a consumer; the index's one changed row adjusts description,
+not status. §2 still has nine live entries. No new owner decision is inferred
+from a merge or from the presence of production code.
+
+**§4's deployment constraint is still unverified outside the repository.**
+`docs/DEPLOYMENT.md` and `.github/workflows/migrate-database.yml` are
+unchanged in this window. The deployment document's six-row table is still
+at `:200-207`; its paragraphs beginning *"`migrate-database.yml` has three
+runs"* and *"Read that row as 'on every merge'"* remain at `:219` and `:221`.
+The workflow still exposes `workflow_dispatch` at `:34`, not a per-merge
+production-project check. Repository evidence cannot establish the live
+Supabase integration setting; ADR 0016 §2 remains a watch item.
+
+**§5's two stale-writer discrepancies still stand.** The persistence document
+and session controller did not change in this window. `docs/PERSISTENCE.md`
+still says at `:2857-2858` that the manual stale refusal follows one retry;
+`src/persistence/session/session-controller.ts:1032` still returns a foreign
+durable revision immediately. The document's departed-writer bullet at
+`:2862-2864` still says there is no report, while `saveNow` returns a failed
+result for a manual save whose session changed at `:1081-1086`. The HUD and
+`main.ts` *did* change; their moved source coordinates were re-aimed in the
+six affected ADR documents rather than being treated as decision flips.
+
+**§6's status-reference gate remains in place.** Its test is unchanged in the
+window and still checks the numbered ADR floor at `:405`, the corpus walk at
+`:434`, and parsed status claims at `:438`. The document/index census above
+agrees. Claims without a numbered ADR, negations, dated research and applied
+migrations remain outside that gate; this pass re-read the live claims the
+changed paths could affect, not every historical coordinate in this archive.
 
 ## 3. The 2026-09-26 pass: the previous anchor outran its own reading
 
