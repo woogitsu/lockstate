@@ -67,6 +67,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private groundGraphics!: Phaser.GameObjects.Graphics;
   private groundGridGraphics!: Phaser.GameObjects.Graphics;
   private groundComposite!: Phaser.GameObjects.RenderTexture;
+  private raisedComposite!: Phaser.GameObjects.RenderTexture;
   private groundHoverGraphics!: Phaser.GameObjects.Graphics;
   private selectionGraphics!: Phaser.GameObjects.Graphics;
   private raisedGraphics!: Phaser.GameObjects.Graphics;
@@ -128,12 +129,17 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.groundHoverGraphics = this.add.graphics().setScrollFactor(0).setDepth(0.6);
     this.selectionGraphics = this.add.graphics().setScrollFactor(0).setDepth(0.5);
     this.raisedGraphics = this.add.graphics().setScrollFactor(0).setDepth(1);
-    const restoreGround = (): void => {
-      if (this.lastProjection !== undefined) this.refreshGroundComposite();
+    this.raisedComposite = this.add.renderTexture(0, 0, this.cameras.main.width, this.cameras.main.height)
+      .setOrigin(0, 0).setScrollFactor(0).setDepth(1);
+    const restoreComposites = (): void => {
+      if (this.lastProjection !== undefined) {
+        this.refreshGroundComposite();
+        this.refreshRaisedComposite();
+      }
     };
-    this.game.renderer.on(Phaser.Renderer.Events.RESTORE_WEBGL, restoreGround);
+    this.game.renderer.on(Phaser.Renderer.Events.RESTORE_WEBGL, restoreComposites);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
-      this.game.renderer.off(Phaser.Renderer.Events.RESTORE_WEBGL, restoreGround);
+      this.game.renderer.off(Phaser.Renderer.Events.RESTORE_WEBGL, restoreComposites);
     });
     this.pose = {
       target: { x: 0, y: 0 },
@@ -167,6 +173,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
       if (this.lastProjection !== undefined) {
         this.paintRaised(this.lastProjection);
         this.paintArt(this.lastProjection);
+        this.refreshRaisedComposite();
       }
     });
     this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
@@ -243,8 +250,14 @@ export class ObliqueWorldScene extends Phaser.Scene {
   public get projectedGroundTileCount(): number { return this.lastProjection?.ground.length ?? 0; }
   public get paintedGroundTileCount(): number { return this.paintedGroundTiles; }
   public get visibleUncachedGroundObjectCount(): number {
-    return Number(this.groundGraphics.visible) + Number(this.groundGridGraphics.visible) +
-      this.groundArtImages.filter((image) => image.visible).length;
+    return [this.groundGraphics, this.groundGridGraphics, ...this.groundArtImages]
+      .filter((object) => object.visible && object.displayList !== null).length;
+  }
+  public get raisedArtImageCount(): number { return this.artImages.length; }
+  public get projectedRaisedObjectCount(): number { return this.lastProjection?.raised.length ?? 0; }
+  public get visibleUncachedRaisedObjectCount(): number {
+    return [this.raisedGraphics, ...this.artImages, ...this.actorArtImages]
+      .filter((object) => object.visible && object.displayList !== null).length;
   }
   public get artTextureKeys(): readonly string[] {
     return [...this.groundArtImages, ...this.artImages, ...this.actorArtImages].map((item) => item.texture.key);
@@ -369,6 +382,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
       this.paintRaised(this.lastProjection);
       this.paintArt(this.lastProjection);
       this.paintActorArt(this.lastProjection);
+      this.refreshRaisedComposite();
     }
   }
 
@@ -498,9 +512,20 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.groundComposite.clear();
     this.groundComposite.draw([this.groundGraphics, ...this.groundArtImages, this.groundGridGraphics]);
     this.groundComposite.render();
-    this.groundGraphics.setVisible(false);
-    this.groundGridGraphics.setVisible(false);
-    for (const image of this.groundArtImages) image.setVisible(false);
+    this.groundGraphics.removeFromDisplayList();
+    this.groundGridGraphics.removeFromDisplayList();
+    for (const image of this.groundArtImages) image.removeFromDisplayList();
+  }
+
+  /** Keep depth-sorted walls and actors in one viewport texture until their projection changes. */
+  private refreshRaisedComposite(): void {
+    this.raisedComposite.resize(this.pose.viewport.width, this.pose.viewport.height);
+    this.raisedComposite.clear();
+    const images = [...this.artImages, ...this.actorArtImages].sort((a, b) => a.depth - b.depth);
+    this.raisedComposite.draw([this.raisedGraphics, ...images]);
+    this.raisedComposite.render();
+    this.raisedGraphics.removeFromDisplayList();
+    for (const image of images) image.removeFromDisplayList();
   }
 
   private paintSelection(): void {
@@ -673,6 +698,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
       this.paintRaised(projection);
       this.paintArt(projection);
       this.paintActorArt(projection);
+      this.refreshRaisedComposite();
       return;
     }
     if (!this.actorsMoved(frame.actors)) return;
@@ -683,5 +709,6 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.rememberActors(frame.actors);
     this.paintRaised(this.lastProjection);
     this.paintActorArt(this.lastProjection);
+    this.refreshRaisedComposite();
   }
 }
