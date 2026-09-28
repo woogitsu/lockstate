@@ -390,7 +390,7 @@ export class ConstructionSystem implements SystemRegistration {
   private currentTransaction: string[] = [];
   private currentTransactionId: string | undefined;
   private pendingRoomTemplateClaims?: (tile: TilePosition, sequence: number | undefined) => boolean;
-  private pendingRoomTemplateDoorApproachClaims?: (order: BuildOrder) => boolean;
+  private roomTemplateDoorApproachClaims?: (order: BuildOrder) => boolean;
   private objectClaimsSquare?: (tile: TilePosition) => boolean;
 
   /** The session supplies its live template reservations after both systems exist. */
@@ -398,8 +398,8 @@ export class ConstructionSystem implements SystemRegistration {
     this.pendingRoomTemplateClaims = reader;
   }
 
-  public setPendingRoomTemplateDoorApproachClaims(reader: (order: BuildOrder) => boolean): void {
-    this.pendingRoomTemplateDoorApproachClaims = reader;
+  public setRoomTemplateDoorApproachClaims(reader: (order: BuildOrder) => boolean): void {
+    this.roomTemplateDoorApproachClaims = reader;
   }
 
   public setObjectClaimsSquare(reader: (tile: TilePosition) => boolean): void {
@@ -624,7 +624,7 @@ export class ConstructionSystem implements SystemRegistration {
     // own shell/furniture orders retain the plan's sequence and may enter.
     const across = order.footprint !== 'square' && occupiesTileEdge(definition)
       ? tileAcrossEdge(order.location, resolveBuildEdge(order)) : undefined;
-    if (this.pendingRoomTemplateDoorApproachClaims?.(order) === true ||
+    if (this.roomTemplateDoorApproachClaims?.(order) === true ||
         this.pendingRoomTemplateClaims?.(order.location, order.placementSequence) === true ||
         (across !== undefined && this.pendingRoomTemplateClaims?.(across, order.placementSequence) === true)) {
       this.setState(order, 'failed');
