@@ -7,6 +7,7 @@ import { projectRoomTemplateCost } from '../../src/simulation/presentation/room-
 import { projectRoomDetail } from '../../src/simulation/presentation/room-projection';
 import { captureSessionSnapshot, restoreSimulationRuntime, type SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
 import { createSaveEnvelope, decodeSaveEnvelope } from '../../src/persistence/save-schema';
+import { tileCoordinate } from '../../src/simulation/world/coordinates';
 
 const templateId = 'yard-basic' as AuthoredRoomTemplateId;
 
@@ -44,6 +45,12 @@ it('designates the whole 8×8 Yard without buying or building a shell, including
   const restored = restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle).runtime;
   expect(restored.roomTemplates.snapshot().pending).toHaveLength(0);
   expect(restored.construction.allOrders()).toEqual([]);
+  for (let y = 10; y < 18; y += 1) {
+    for (let x = 10; x < 18; x += 1) {
+      expect(restored.world.getZoning({ x: tileCoordinate(x), y: tileCoordinate(y) })).toBe(9);
+    }
+  }
+  expect(restored.world.getZoning({ x: tileCoordinate(18), y: tileCoordinate(10) })).toBe(0);
   expect(projectRoomDetail(restored.prisoners, 'room.yard:10:10', {
     placedObjects: restored.placedObjects,
     perimeter: { edges: restored.world, doors: restored.navigation.doors, regions: restored.navigation.getGraph() },
