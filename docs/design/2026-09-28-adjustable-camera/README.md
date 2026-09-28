@@ -64,9 +64,9 @@ in the unrelated HUD differed by one RGB level. The test now compares only
 the plan footprint and waits for its worker verdict. All three canteen
 browser scenarios passed locally. The suite also now uses two independent
 browser workers on CI, with one locally; five representative Full HD camera,
-placement and canteen tests passed together with two workers. The new exact
-head is `e7462ac66`; its full CI is running, so these focused checks are not
-yet proof of a green release gate.
+placement and canteen tests passed together with two workers. The current
+integration head still needs full CI; these focused checks are not proof of a
+green release gate.
 
 The parallel slices stay isolated and stacked: cell sink [#1794](https://github.com/woogitsu/lockstate/pull/1794),
 waste bin [#1797](https://github.com/woogitsu/lockstate/pull/1797),
