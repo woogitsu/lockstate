@@ -58,6 +58,10 @@
       "manifest": "/game-content/oblique-corridor-bench.v1.json"
     },
     {
+      "assetId": "furniture.kitchen.prep_counter",
+      "manifest": "/game-content/oblique-prep-counter.v1.json"
+    },
+    {
       "assetId": "furniture.storage.rack.wooden",
       "manifest": "/game-content/oblique-cell-storage-rack.v1.json"
     },

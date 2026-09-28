@@ -16,6 +16,7 @@ const OBJECT_ART: Readonly<Record<string, string>> = {
   'object.waste-bin': 'fixture.cell.waste_bin',
   'object.dining-table': 'furniture.dining.table.wooden',
   'object.bench': 'furniture.corridor.bench.variants',
+  'object.prep-counter': 'furniture.kitchen.prep_counter',
   'object.storage-rack': 'furniture.storage.rack.wooden',
   'object.chair': 'furniture.chair.wooden',
   'object.shower-head': 'fixture.shower.head',
