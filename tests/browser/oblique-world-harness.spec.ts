@@ -41,4 +41,10 @@ test('real render feed cell keeps one build square under the cursor while the sc
     await page.screenshot({ path: testInfo.outputPath(`render-feed-yaw${yaw}-elev${elevation}-fullhd.png`) });
   }
   expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.loadedArtTextureCount())).toBeLessThan(70);
+  const actorBefore = await page.evaluate(() => window.lockstateObliqueWorldHarness.actorArtPosition());
+  const staticPaints = await page.evaluate(() => window.lockstateObliqueWorldHarness.paintCounts().ground);
+  await page.evaluate(() => window.lockstateObliqueWorldHarness.moveActorToTile(4));
+  const actorAfter = await page.evaluate(() => window.lockstateObliqueWorldHarness.actorArtPosition());
+  expect(actorAfter?.x).not.toBe(actorBefore?.x);
+  expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.paintCounts().ground)).toBe(staticPaints);
 });

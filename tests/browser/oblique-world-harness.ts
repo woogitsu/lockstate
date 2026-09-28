@@ -18,6 +18,8 @@ export interface ObliqueWorldHarness {
   artTextureKeys(): readonly string[];
   loadedArtTextureCount(): number;
   cutawayWallIds(): readonly string[];
+  actorArtPosition(): Point | undefined;
+  moveActorToTile(tileX: number): Promise<void>;
 }
 
 declare global {
@@ -51,6 +53,7 @@ const frame: RenderFrame = {
   rooms: [],
   roomConditions: [],
 };
+let actorTileX = 3;
 
 let resolveReady!: () => void;
 const ready = new Promise<void>((resolve) => { resolveReady = resolve; });
@@ -58,7 +61,10 @@ class HarnessScene extends ObliqueWorldScene {
   public override create(): void { super.create(); resolveReady(); }
 }
 const artCatalogs = await fetchObliqueModuleSet();
-const scene = new HarnessScene({ feed: { readFrame: () => frame }, artCatalogs });
+const scene = new HarnessScene({
+  feed: { readFrame: () => ({ ...frame, actors: [{ ...frame.actors[0]!, tileX: actorTileX }] }) },
+  artCatalogs,
+});
 const game = new Phaser.Game({
   type: Phaser.AUTO,
   parent: 'oblique-world-root',
@@ -85,4 +91,9 @@ window.lockstateObliqueWorldHarness = {
   artTextureKeys: () => scene.artTextureKeys,
   loadedArtTextureCount: () => scene.loadedArtTextureCount,
   cutawayWallIds: () => scene.cutawayWallIds,
+  actorArtPosition: () => scene.actorArtPosition,
+  async moveActorToTile(tileX) {
+    actorTileX = tileX;
+    await new Promise<void>((resolve) => { game.events.once(Phaser.Core.Events.POST_RENDER, () => resolve()); });
+  },
 };

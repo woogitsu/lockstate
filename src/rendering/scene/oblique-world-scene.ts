@@ -142,6 +142,10 @@ export class ObliqueWorldScene extends Phaser.Scene {
   public get artTextureKeys(): readonly string[] {
     return [...this.groundArtImages, ...this.artImages, ...this.actorArtImages].map((item) => item.texture.key);
   }
+  public get actorArtPosition(): Point | undefined {
+    const image = this.actorArtImages[0];
+    return image === undefined ? undefined : { x: image.x, y: image.y };
+  }
   public get loadedArtTextureCount(): number {
     const keys = new Set<string>();
     for (const catalog of this.artCatalogs.values()) for (const frame of catalog.frames) {
