@@ -36,6 +36,10 @@ repaired them and the focused 34 tests pass. Wait for the new exact-head run.
 The next separate art/HUD/gameplay slices are [Reception floor #1788](https://github.com/woogitsu/lockstate/pull/1788),
 [200% minimap clearance #1786](https://github.com/woogitsu/lockstate/pull/1786)
 and [Canteen rotation control #1787](https://github.com/woogitsu/lockstate/pull/1787).
+The desk replacement is [#1792](https://github.com/woogitsu/lockstate/pull/1792),
+and [#1793](https://github.com/woogitsu/lockstate/pull/1793) proves that a room
+template can stay armed while the player turns the camera: right-drag rotates,
+left-click places the exact ghost, and Save/Load restores it.
 They must be integrated onto one later branch and checked together, including
 tile picking, collisions, cost, construction completion and Save/Load.
 The workers then continue with Reception desk art, Large Cell rotation and
