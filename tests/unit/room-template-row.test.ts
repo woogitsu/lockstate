@@ -7,6 +7,7 @@ import { projectRoomTemplateCost } from '../../src/simulation/presentation/room-
 import { captureSessionSnapshot, restoreSimulationRuntime, type SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
 import { createSaveEnvelope, decodeSaveEnvelope } from '../../src/persistence/save-schema';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
+import { projectRoomList } from '../../src/simulation/presentation/room-projection';
 
 function saveAndLoad(runtime: ReturnType<typeof createNewSimulationRuntime>) {
   const bundle = captureSessionSnapshot(runtime);
@@ -173,6 +174,10 @@ it.each([false, true])('half-turns the complete four-cell row and restores its p
     expect(runtime.navigation.doors.getByEdge({ x: tileCoordinate(edgeTile.x), y: tileCoordinate(edgeTile.y) }, 'top')).toBeDefined();
   }
   expect(runtime.placedObjects.all().filter((object) => object.orientation === 2)).toHaveLength(8);
+  const list = projectRoomList(runtime.prisoners, {}, { placedObjects: runtime.placedObjects,
+    perimeter: { edges: runtime.world, doors: runtime.navigation.doors, regions: runtime.navigation.getGraph() } });
+  expect(list.rooms.rows).toHaveLength(4);
+  expect(list.rooms.rows.every((row) => row.requirementSummary.missingCapability === 0 && row.access === 'doorway')).toBe(true);
   for (const [index, y] of [17, 18].entries()) {
     const orderId = `turned-row-approach-${index}`;
     runtime.kernel.submitCommand(orderId, index + 1, runtime.kernel.tick, packCommand({
