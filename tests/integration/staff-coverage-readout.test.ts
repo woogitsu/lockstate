@@ -93,7 +93,9 @@ function twelveCellPrison(): SimulationRuntime {
   const runtime = createNewSimulationRuntime(SEED);
   submit(runtime, 'buy-plank', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: 60 }));
   for (let index = 0; index < 12; index += 1) {
-    const rect = { x: 4 + (index % 6) * 3, y: 6 + Math.floor(index / 6) * 4, width: 2, height: 3 };
+    // Two corridor rows keep each lower bed off the upper cell's exterior
+    // door approach. The build guard correctly rejects that old placement.
+    const rect = { x: 4 + (index % 6) * 3, y: 6 + Math.floor(index / 6) * 5, width: 2, height: 3 };
     wallRoomPerimeter(runtime.world, rect, { doors: runtime.navigation.doors });
     submit(runtime, `zone-${String(index)}`, packCommand({ type: 'ZoneRoom', roomId: 'room.cell', ...rect }));
     submit(runtime, `bed-${String(index)}`, packCommand({ type: 'PlaceObject', orderId: `bed-${String(index)}`, definitionId: 'bed-wooden', x: rect.x, y: rect.y }));
