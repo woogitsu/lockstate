@@ -469,6 +469,11 @@ const activateCameraPose = (action: CameraPoseAction): void => {
 };
 if (obliquePreviewRequested) {
   window.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && cameraContexts()[0] === 'world' && cameraPlacementActive()) {
+      buildTool?.standDown();
+      event.preventDefault();
+      return;
+    }
     if (cameraInput?.keyDown(event)) event.preventDefault();
   });
   document.addEventListener('focusin', refreshCameraControls);
