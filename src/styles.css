@@ -32,6 +32,32 @@ canvas {
   display: block;
 }
 
+/* The empty world is a planning sheet, not a black uninitialized renderer.
+   It paints only while the central start route is visible, never claims terrain,
+   and never becomes the pointer target in place of the canvas. */
+@media (min-width: 1920px) and (min-height: 1080px) {
+  #app:has(> .empty-world-prompt:not([hidden]))::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background-color: var(--surface-sunken);
+  }
+
+  #app:has(> .empty-world-prompt:not([hidden]))::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background-color: var(--border-hairline);
+    mask-image: url('./ui/empty-grid-mask.svg');
+    mask-size: 48px 48px;
+    mask-repeat: repeat;
+  }
+}
+
 .empty-world-prompt:not([hidden]) {
   position: fixed;
   /* The route belongs to the world, below the HUD's interactive chrome.
