@@ -402,12 +402,9 @@ export function armedHintKey(buildable: HudBuildableViewModel | undefined, remov
  * on the two locale entries in `default-locale-en.ts` for the full
  * verification: what the two keys say, and the code that makes each true.
  *
- * Branched on `buildable.placesObject`, the same fact `armedHintKey` above
- * branches its own two sentences on: `true` (nineteen rows) is one press, one
- * tile, one command (`ObjectTool.place`), so a flat price stays true; `false`
- * (`wall-brick`, `door-wooden`) reaches the drag-a-run route
- * (`BuildTool.place`), so the price must name its unit or a run of several
- * would be underquoted by the same factor.
+ * The wall tool now drags whole squares (`BuildTool.placeSquares`), while the
+ * door still occupies an edge. Both can multiply a unit price in a run, but
+ * naming the wall unit a segment would describe the wrong geometry.
  *
  * `total` arrives pre-formatted, exactly as `formatBuildQueueOrderText` and
  * `formatPendingDeliveryText` below take theirs: number formatting is
@@ -430,9 +427,11 @@ export function buildCatalogueRowLabel(
   const name = t(buildable.labelKey);
   if (total === undefined) return name;
   return t(
-    buildable.placesObject
-      ? HUD_MESSAGE_KEY.buildCatalogueRowPrice
-      : HUD_MESSAGE_KEY.buildCatalogueRowPriceSegment,
+    buildable.definitionId === 'wall-brick'
+      ? HUD_MESSAGE_KEY.buildCatalogueRowPriceSquare
+      : buildable.placesObject
+        ? HUD_MESSAGE_KEY.buildCatalogueRowPrice
+        : HUD_MESSAGE_KEY.buildCatalogueRowPriceSegment,
     { buildable: name, total },
   );
 }

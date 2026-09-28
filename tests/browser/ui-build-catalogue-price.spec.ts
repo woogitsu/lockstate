@@ -68,6 +68,19 @@ const EXPECTED = new Map(
 );
 
 test.describe('the Build catalogue quotes the simulation (#1160)', () => {
+  test('Full HD wall rate names a square and door rate names an edge segment in English and Polish', async ({ page }) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await openApp(page);
+    await page.locator('.ui-tab[data-tab="build"]').click();
+    await expect(page.locator('[data-buildable="wall-brick"]')).toContainText('Brick wall · 80 per square');
+    await expect(page.locator('[data-buildable="door-wooden"]')).toContainText('Wooden door · 65 per segment');
+
+    await page.addInitScript(() => localStorage.setItem('lockstate.settings.language', JSON.stringify({ version: 1, preference: 'pl' })));
+    await page.reload();
+    await page.locator('.ui-tab[data-tab="build"]').click();
+    await expect(page.locator('[data-buildable="wall-brick"]')).toContainText('Ściana z cegły · 80 za pole');
+    await expect(page.locator('[data-buildable="door-wooden"]')).toContainText('Drewniane drzwi · 65 za segment');
+  });
   test('every buildable has a row, and each row carries its own price', async ({ page }) => {
     await openApp(page);
     await page.locator('.ui-tab[data-tab="build"]').click();

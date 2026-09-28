@@ -2363,24 +2363,24 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
    */
   'hud.build.catalogue-row-price': '{buildable} · {total}',
   /**
-   * The per-segment twin of the key above, for the **two** rows a flat price
-   * would misstate: `wall-brick` and `door-wooden`, the only two rows
-   * answering `false` to `placesObject`. Both occupy a tile edge and both
-   * reach `BuildTool.place` (`src/ui/build-tool.ts:235`) through the
-   * `place-build-order` route `hud.ts` sends for `placesObject === false`
-   * (searched: `dispatchCommand({ kind: 'place-build-order', ...order })`,
-   * fed by `BuildTool.attachOrders`, which takes "the whole run" as one call)
-   * -- so a drag across several tile edges places several segments in one
-   * gesture, and `ProcurementSystem`/the treasury charge once per segment.
+   * A door still occupies an edge, so its catalogue price is per segment.
+   * Brick walls now occupy complete squares, with their separate per-square
+   * key below. Both rates name the unit a dragged run multiplies.
    *
-   * `wall-brick` costs 80 a segment (`unitPriceMinorUnits: 40` ×
-   * `quantity: 2`, `definition.ts:89`): a drag of seven is 560, not 80, and
-   * `'{buildable} · {total}'` alone would have promised the smaller number for
-   * the larger charge -- exactly the false promise reservation 4 exists to
-   * stop. Naming the unit is the whole fix: `'{buildable} · {total} per
-   * segment'` stays true of a one-tap door (`door-wooden`, 65) and of a
-   * sixty-segment wall alike, because it never claims to be the total, only
-   * the rate.
+   * `BuildTool.place` receives edge targets for `door-wooden`; its one
+   * order is the unit this sentence calls a segment. A wall run instead goes
+   * through `BuildTool.placeSquares`, which deduplicates square targets and
+   * submits one order for each. Both routes can be reached by a drag, so
+   * neither row may show only a flat price for the entire gesture.
+   *
+   * The per-square wall figure remains 80: `wall-brick` requires two bricks
+   * in `simulation/construction/definition.ts`, and the procurement
+   * catalogue prices one brick at 40. Seven selected squares therefore
+   * represent seven orders with a catalogue value of 560, before any held
+   * stock lowers the actual purchase. The text names the quoted unit;
+   * it does not promise that every gesture costs only that figure.
+   * The door's edge rate remains 65 for one segment.
+   *
    */
   'hud.build.catalogue-row-price-segment': '{buildable} · {total} per segment',
   'hud.build.placement': 'Where',
@@ -4530,6 +4530,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.template-catalogue-value': 'Catalogue value: {total}. Materials already held may lower the amount spent.',
   'hud.build.template-catalogue-value-unavailable': 'Catalogue value unavailable. Check the material requirements.',
   'hud.build.template-cell-row-four': 'Four-cell row',
+  'hud.build.catalogue-row-price-square': '{buildable} · {total} per square',
 };
 
 /**

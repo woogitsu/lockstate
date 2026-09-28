@@ -22,7 +22,7 @@ Nothing mechanical can. That argument belongs in a docblock beside that code —
 `hud.alert.event.construction.undo-refused-newer-action` is the worked example, arguing
 each of its three clauses at the code that decides it.
 
-## The 586 authored sentences
+## The 587 authored sentences
 
 Source: `src/content/default-locale-en.ts`, in the order they are declared.
 
@@ -614,4 +614,5 @@ Source: `src/content/default-locale-en.ts`, in the order they are declared.
 | `hud.build.template-catalogue-value` | Catalogue value: {total}. Materials already held may lower the amount spent. | `src/content/default-locale-en.ts:4530` |
 | `hud.build.template-catalogue-value-unavailable` | Catalogue value unavailable. Check the material requirements. | `src/content/default-locale-en.ts:4531` |
 | `hud.build.template-cell-row-four` | Four-cell row | `src/content/default-locale-en.ts:4532` |
+| `hud.build.catalogue-row-price-square` | {buildable} · {total} per square | `src/content/default-locale-en.ts:4533` |
 

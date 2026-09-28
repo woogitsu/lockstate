@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { SIMULATION_ENUM_GROUPS, deriveSimulationMessageKey, type SimulationEnumGroup } from '../../src/content';
 import { MAX_RUN_SEGMENTS } from '../../src/rendering/build/edge-picking';
 import { Localizer, buildMessageCatalog, defaultMessageCatalogEn } from '../../src/services/localization';
+import { messageCatalogPl } from '../../src/services/localization/pl-catalog';
 import { BUILD_EDGES, DEFAULT_BUILD_EDGE } from '../../src/simulation/construction';
 import {
   BUILD_CATEGORY_ALL,
@@ -169,9 +170,8 @@ describe('the armed hint says what the armed gesture does (#904)', () => {
  * All 21 rows used to show zero digits, in the visible label or anywhere
  * else, with the price reachable only behind a press on the buy disclosure.
  * `buildCatalogueRowLabel` is the fix, folding the price into the row's own
- * label on `hud.security.hire`'s shipped shape -- and, since a wall or door
- * row's cost is per segment rather than per press, it must say so or a drag
- * of several would be underquoted by the same factor.
+ * label on `hud.security.hire`'s shipped shape. The wall rate is per square,
+ * the door rate per edge segment; either drag can multiply the unit price.
  */
 describe('the catalogue row states its own price (#901)', () => {
   const localizer = new Localizer({ locale: 'en', catalogs: [defaultMessageCatalogEn] });
@@ -195,10 +195,9 @@ describe('the catalogue row states its own price (#901)', () => {
   });
 
   it('names the unit for a row whose press can drag a run of several', () => {
-    // The exact defect a flat price would reproduce: a drag of several tile
-    // edges costs several times the quoted number, so the sentence must say
-    // "per segment" or it promises the smaller figure for the larger charge.
-    expect(buildCatalogueRowLabel(t, row(false), '80')).toBe('Bed · 80 per segment');
+    // A wall drag multiplies squares; an edge-door row keeps segments.
+    expect(buildCatalogueRowLabel(t, row(false), '80')).toBe('Bed · 80 per square');
+    expect(buildCatalogueRowLabel(t, { ...row(false), definitionId: 'door-wooden' }, '65')).toBe('Bed · 65 per segment');
   });
 
   it('gives the two shapes different sentences, which is the whole of the fix', () => {
@@ -226,8 +225,10 @@ describe('the catalogue row states its own price (#901)', () => {
     };
     const label = buildCatalogueRowLabel(t, wallBrick, localizer.formatNumber(80));
     expect(label).toContain('Brick wall');
-    expect(label, 'the number a segment actually costs').toContain('80');
-    expect(label, 'the unit the number is per, or a run overcharges silently').toContain('per segment');
+    expect(label, 'the number a whole square actually costs').toContain('80');
+    expect(label, 'the new wall tool orders complete squares').toBe('Brick wall · 80 per square');
+    const pl = new Localizer({ locale: 'pl', catalogs: [defaultMessageCatalogEn, messageCatalogPl] });
+    expect(buildCatalogueRowLabel((key, parameters) => pl.format(key, parameters), wallBrick, '80')).toBe('Ściana z cegły · 80 za pole');
   });
 });
 

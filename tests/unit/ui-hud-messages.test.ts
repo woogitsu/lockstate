@@ -308,6 +308,7 @@ describe('every HUD message key resolves in the bundled default locale', () => {
       'hud.overview.wages',
       'hud.overview.income-note',
       'hud.build.catalogue-row-price',
+      'hud.build.catalogue-row-price-square',
       'hud.build.catalogue-row-price-segment',
     ]);
 

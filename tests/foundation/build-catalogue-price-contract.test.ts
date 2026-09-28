@@ -35,9 +35,9 @@ import type { HudBuildableViewModel } from '../../src/ui/hud/view-model';
  *     provisioned. A contract at the foundation layer over the same content
  *     runs in the gate every agent can run, in milliseconds.
  *  2. **It asserts `toContain(price)`.** A substring is satisfied equally by
- *     `Brick wall - 80` and `Brick wall - 80 per segment`, so inverting
- *     `buildCatalogueRowLabel`'s per-segment branch passes it. That branch is
- *     a player-visible claim about money -- a drag of twelve wall segments
+ *     `Brick wall - 80` and `Brick wall - 80 per square`, so inverting
+ *     `buildCatalogueRowLabel`'s unit branch passes it. That branch is
+ *     a player-visible claim about money -- a drag of twelve wall squares
  *     costs twelve times the quoted figure -- so this file asserts the whole
  *     rendered sentence rather than a substring of it.
  *  3. **Nothing pinned the divergence condition.** `placement-cost.ts` states
@@ -172,24 +172,24 @@ describe('every buildable states the price the simulation reports (#1160 exit cr
       const rendered = buildCatalogueRowLabel(t, model, localizer.formatNumber(Number(total)));
       const name = localizer.format(String(key));
       const figure = localizer.formatNumber(Number(expectedMinorUnits));
-      const expected = model.placesObject ? `${name} · ${figure}` : `${name} · ${figure} per segment`;
+      const expected = definition.id === 'wall-brick'
+        ? `${name} · ${figure} per square`
+        : model.placesObject ? `${name} · ${figure}` : `${name} · ${figure} per segment`;
       expect(rendered, `${definition.id} states the wrong price`).toBe(expected);
       sentences.push(`${definition.id}\t${rendered}`);
     }
     expect(sentences.length).toBe(21);
   });
 
-  it('says "per segment" on exactly the rows a single drag can multiply', () => {
-    // `BuildTool.place` submits one order per deduplicated edge segment, so a
-    // row routed through it is charged per segment and a flat price would
-    // underquote a drag of several by that factor. The two rows that place no
-    // object are exactly the two that take that route -- the wall, and the
-    // door, which is `category: 'object'` but places a door on an edge rather
-    // than an object on a tile (#531).
+  it('distinguishes square walls from edge doors while both runs multiply the unit price', () => {
+    // The wall tool submits one order per deduplicated square; the door tool
+    // keeps edge segments. Both rates name the unit a drag multiplies.
     const perSegment = buildables
       .filter((definition) => definition.placesObjectId === undefined)
       .map((definition) => definition.id);
     expect([...perSegment].sort()).toEqual(['door-wooden', 'wall-brick']);
+    expect(buildCatalogueRowLabel(t, viewModelFor(BUILDABLE_REGISTRY.get('wall-brick')!, HUD_MESSAGE_KEY.buildableWallBrick), '80')).toContain('per square');
+    expect(buildCatalogueRowLabel(t, viewModelFor(BUILDABLE_REGISTRY.get('door-wooden')!, HUD_MESSAGE_KEY.buildableDoorWooden), '65')).toContain('per segment');
   });
 
   it("agrees, today, with the formula the panel used to run -- and says why that is not luck", () => {

@@ -1091,6 +1091,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.template-aria-label': '{name}, {width} × {height} pól',
   'hud.build.catalogue-empty': 'Nie ma nic do zbudowania',
   'hud.build.catalogue-row-price': '{buildable} · {total}',
+  'hud.build.catalogue-row-price-square': '{buildable} · {total} za pole',
   'hud.build.catalogue-row-price-segment': '{buildable} · {total} za segment',
   'hud.build.selected': 'Wybrane',
   'hud.build.placement': 'Gdzie',
