@@ -848,7 +848,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     world,
     new ContainerMaterialsProvider(constructionMaterials),
     {
-      onOrderCompleted: (objectId, anchor) => objectPlacement?.onOrderCompleted(objectId, anchor) ?? false,
+      onOrderCompleted: (objectId, anchor, orientation) => objectPlacement?.onOrderCompleted(objectId, anchor, orientation) ?? false,
       onOrderReverted: (objectId, anchor) => objectPlacement?.onOrderReverted(objectId, anchor) ?? false,
     },
     doorConstruction,

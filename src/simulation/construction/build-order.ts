@@ -1,4 +1,5 @@
 import { type TilePosition } from '../world/coordinates';
+import type { ObjectOrientation } from '../objects/placed-object';
 
 export type BuildOrderLifecycleState =
   | 'planned'
@@ -137,6 +138,8 @@ export interface BuildOrder {
   readonly edge?: BuildEdge;
   /** New construction occupies the named tile itself; absent preserves legacy edge orders and saves. */
   readonly footprint?: 'square';
+  /** Absent means the legacy unrotated object footprint. Ignored for walls and doors. */
+  readonly objectOrientation?: ObjectOrientation;
 
   /**
    * Where this order sits in the sequence of gestures the player made
@@ -182,6 +185,7 @@ export function createBuildOrder(
   edge?: BuildEdge,
   placementSequence?: number,
   footprint?: 'square',
+  objectOrientation?: ObjectOrientation,
 ): BuildOrder {
   return {
     id,
@@ -193,6 +197,7 @@ export function createBuildOrder(
     // in the schema.
     ...(edge === undefined ? {} : { edge }),
     ...(footprint === undefined ? {} : { footprint }),
+    ...(objectOrientation === undefined ? {} : { objectOrientation }),
     // Same spread, same three reasons, plus a fourth that is this field's own:
     // an order with an explicit `placementSequence: undefined` is *not* the
     // same value as one with no key, and `BuildOrder.placementSequence`'s

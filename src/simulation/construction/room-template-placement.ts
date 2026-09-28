@@ -38,15 +38,24 @@ export function validateRoomTemplatePlacement(
       if (objectOccupies(tile)) return { ok: false, reason: 'object-occupied', tile };
     }
   }
-  // A south-facing doorway needs its outside approach open. Its door edge is
-  // between the interior and the perimeter gap; an older edge wall just beyond
-  // that gap would otherwise pass the rectangle scan and seal the entrance.
+  // Every doorway needs its outside approach open. The door edge separates
+  // interior from its perimeter square; an older wall beyond that gap would
+  // otherwise pass the rectangle scan and seal a turned plan's entrance.
   for (const door of plan.doorSquares) {
-    if (door.y !== plan.origin.y + plan.height - 1) continue;
-    const outsideY = door.y + 1;
-    if (!Number.isSafeInteger(outsideY)) continue;
-    const outside = { x: tileCoordinate(door.x), y: tileCoordinate(outsideY) };
-    if (world.getSquareStructure(outside) !== 0 || structureIsClaimed(outside) || world.getTopEdge(outside) !== 0) {
+    const north = door.y === plan.origin.y;
+    const south = door.y === plan.origin.y + plan.height - 1;
+    const west = door.x === plan.origin.x;
+    const east = door.x === plan.origin.x + plan.width - 1;
+    const outsideX = door.x + (west ? -1 : east ? 1 : 0);
+    const outsideY = door.y + (north ? -1 : south ? 1 : 0);
+    if (!Number.isSafeInteger(outsideX) || !Number.isSafeInteger(outsideY)) continue;
+    const doorTile = { x: tileCoordinate(door.x), y: tileCoordinate(door.y) };
+    const outside = { x: tileCoordinate(outsideX), y: tileCoordinate(outsideY) };
+    const edgeBlocked = north ? world.getTopEdge(doorTile) !== 0 :
+      south ? world.getTopEdge(outside) !== 0 :
+      west ? world.getLeftEdge(doorTile) !== 0 :
+      east && world.getLeftEdge(outside) !== 0;
+    if (world.getSquareStructure(outside) !== 0 || structureIsClaimed(outside) || edgeBlocked) {
       return { ok: false, reason: 'structure-occupied', tile: { x: tileCoordinate(door.x), y: tileCoordinate(door.y) } };
     }
     if (objectOccupies(outside)) {
