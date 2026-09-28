@@ -85,6 +85,7 @@ function builtCellSave(): string {
     orders: [
       { ...createBuildOrder('cell-bed', 'bed-wooden', tile(15, 15)), state: 'completed', progress: 30 },
       { ...createBuildOrder('cell-toilet', 'toilet-brick', tile(16, 15)), state: 'completed', progress: 30 },
+      { ...createBuildOrder('cell-chair', 'chair-wooden', tile(16, 16)), state: 'completed', progress: 30 },
     ],
     undoStack: [], redoStack: [],
   });
@@ -93,6 +94,9 @@ function builtCellSave(): string {
   }
   if (!runtime.placedObjects.place(placedObjectAt('object.toilet', tile(16, 15), 0))) {
     throw new Error('Cell toilet did not fit the authored room.');
+  }
+  if (!runtime.placedObjects.place(placedObjectAt('object.chair', tile(16, 16), 0))) {
+    throw new Error('Cell chair did not fit the authored room.');
   }
   const bundle = captureSessionSnapshot(runtime);
   restoreSimulationRuntime(bundle);
@@ -103,7 +107,7 @@ function builtCellSave(): string {
   }));
 }
 
-test('a saved bed-and-toilet cell stays readable in the real Full HD app across camera poses and load', async ({ page }, testInfo) => {
+test('a saved furnished cell stays readable in the real Full HD app across camera poses and load', async ({ page }, testInfo) => {
   test.setTimeout(60_000);
   await page.setViewportSize({ width: 1920, height: 1080 });
   const errors: string[] = [];
@@ -111,6 +115,8 @@ test('a saved bed-and-toilet cell stays readable in the real Full HD app across 
   let bedResponses = 0;
   const toiletFrames = new Set<string>();
   let toiletResponses = 0;
+  const chairFrames = new Set<string>();
+  let chairResponses = 0;
   page.on('pageerror', (error) => errors.push(error.message));
   page.on('response', (response) => {
     const url = response.url();
@@ -121,6 +127,10 @@ test('a saved bed-and-toilet cell stays readable in the real Full HD app across 
     if (response.ok() && url.includes('/assets/environment/oblique/cell-toilet-yaw') && url.endsWith('.png')) {
       toiletFrames.add(new URL(url).pathname);
       toiletResponses += 1;
+    }
+    if (response.ok() && url.includes('/assets/environment/oblique/cell-chair-yaw') && url.endsWith('.png')) {
+      chairFrames.add(new URL(url).pathname);
+      chairResponses += 1;
     }
   });
   await page.goto('/?oblique-preview=1');
@@ -150,6 +160,7 @@ test('a saved bed-and-toilet cell stays readable in the real Full HD app across 
   const shallow = await page.screenshot({ path: testInfo.outputPath('warm-cell-app-yaw-minus45-elev25-fullhd.png') });
   await expect.poll(() => bedFrames.size).toBeGreaterThan(0);
   await expect.poll(() => toiletFrames.size).toBeGreaterThan(0);
+  await expect.poll(() => chairFrames.size).toBeGreaterThan(0);
   expect(await visibleBedBlanketPixels(page, shallow)).toBeGreaterThan(700);
   expect(await cutawayDoorWoodPixels(page, shallow, [1015, 565, 1060, 645]),
     'the near cutaway doorway must not leave a detached low timber slab').toBeLessThan(20);
@@ -159,6 +170,7 @@ test('a saved bed-and-toilet cell stays readable in the real Full HD app across 
   const front = await page.screenshot({ path: testInfo.outputPath('warm-cell-app-yaw0-elev45-fullhd.png') });
   await expect.poll(() => bedFrames.size).toBeGreaterThan(1);
   await expect.poll(() => toiletFrames.size).toBeGreaterThan(1);
+  await expect.poll(() => chairFrames.size).toBeGreaterThan(1);
   expect(await visibleBedBlanketPixels(page, front)).toBeGreaterThan(700);
   expect(await cutawayDoorWoodPixels(page, front, [840, 620, 910, 705])).toBeLessThan(20);
   for (let step = 0; step < 3; step += 1) await angle.getByRole('button', { name: 'Turn right' }).click();
@@ -167,15 +179,18 @@ test('a saved bed-and-toilet cell stays readable in the real Full HD app across 
   const high = await page.screenshot({ path: testInfo.outputPath('warm-cell-app-yaw45-elev65-fullhd.png') });
   await expect.poll(() => bedFrames.size).toBeGreaterThan(2);
   await expect.poll(() => toiletFrames.size).toBeGreaterThan(2);
+  await expect.poll(() => chairFrames.size).toBeGreaterThan(2);
   expect(await visibleBedBlanketPixels(page, high)).toBeGreaterThan(700);
   expect(await cutawayDoorWoodPixels(page, high, [720, 565, 800, 635])).toBeLessThan(20);
   const responsesBeforeReload = bedResponses;
   const toiletResponsesBeforeReload = toiletResponses;
+  const chairResponsesBeforeReload = chairResponses;
   await page.reload({ waitUntil: 'domcontentloaded' });
   await page.locator('.save-panel__item button').filter({ hasText: 'Load' }).first().click();
   await expect(page.locator('body[data-oblique-preview="ready"]')).toBeVisible();
   await expect.poll(() => bedResponses).toBeGreaterThan(responsesBeforeReload);
   await expect.poll(() => toiletResponses).toBeGreaterThan(toiletResponsesBeforeReload);
+  await expect.poll(() => chairResponses).toBeGreaterThan(chairResponsesBeforeReload);
   await page.locator('#game-root canvas').screenshot({ path: testInfo.outputPath('warm-cell-app-after-load-canvas-fullhd.png') });
   expect(errors).toEqual([]);
 });
