@@ -16,7 +16,7 @@ export interface RoomTemplatePlan {
   readonly height: number;
   readonly wallSquares: readonly TemplateSquare[];
   readonly doorSquares: readonly TemplateDoorSquare[];
-  readonly zone: { readonly roomId: 'room.cell' | 'room.shower-room' | 'room.canteen' | 'room.kitchen' | 'room.infirmary' | 'room.laundry'; readonly x: number; readonly y: number; readonly width: number; readonly height: number };
+  readonly zone: { readonly roomId: 'room.cell' | 'room.shower-room' | 'room.canteen' | 'room.kitchen' | 'room.infirmary' | 'room.laundry' | 'room.classroom'; readonly x: number; readonly y: number; readonly width: number; readonly height: number };
   /** Every separately designated room; `zone` retains the first for older readers. */
   readonly zones: readonly RoomTemplatePlan['zone'][];
   readonly objects: readonly { readonly buildableId: RoomTemplateObjectId; readonly x: number; readonly y: number }[];
@@ -25,8 +25,8 @@ export interface RoomTemplatePlan {
 /** Player-facing choices; backend-authored additions can join after HUD copy and controls land. */
 export const ROOM_TEMPLATE_IDS = ['cell-basic', 'cell-large', 'shower-room', 'cell-row-four', 'canteen-basic', 'kitchen-basic'] as const;
 export type RoomTemplateId = (typeof ROOM_TEMPLATE_IDS)[number];
-export type AuthoredRoomTemplateId = RoomTemplateId | 'infirmary-basic' | 'laundry-basic';
-type RoomTemplateObjectId = 'bed-wooden' | 'toilet-brick' | 'shower-head-brick' | 'dining-table-wooden' | 'bench-wooden' | 'stove-brick' | 'prep-counter-brick' | 'fridge-brick' | 'medical-bed-wooden' | 'medicine-cabinet-wooden' | 'washing-machine-brick';
+export type AuthoredRoomTemplateId = RoomTemplateId | 'infirmary-basic' | 'laundry-basic' | 'classroom-basic';
+type RoomTemplateObjectId = 'bed-wooden' | 'toilet-brick' | 'shower-head-brick' | 'dining-table-wooden' | 'bench-wooden' | 'stove-brick' | 'prep-counter-brick' | 'fridge-brick' | 'medical-bed-wooden' | 'medicine-cabinet-wooden' | 'washing-machine-brick' | 'bookshelf-wooden' | 'chair-wooden';
 
 interface TemplateDefinition {
   readonly width: number;
@@ -84,6 +84,16 @@ const TEMPLATES: Readonly<Record<Exclude<AuthoredRoomTemplateId, 'cell-row-four'
     objects: [
       { buildableId: 'washing-machine-brick', x: 1, y: 1, width: 2 },
       { buildableId: 'washing-machine-brick', x: 1, y: 3, width: 2 },
+    ],
+  },
+  'classroom-basic': {
+    width: 7, height: 7, roomId: 'room.classroom', doorX: 3,
+    objects: [
+      { buildableId: 'bookshelf-wooden', x: 1, y: 1, width: 2 },
+      { buildableId: 'chair-wooden', x: 1, y: 3 },
+      { buildableId: 'chair-wooden', x: 2, y: 3 },
+      { buildableId: 'chair-wooden', x: 3, y: 3 },
+      { buildableId: 'chair-wooden', x: 4, y: 3 },
     ],
   },
 };
