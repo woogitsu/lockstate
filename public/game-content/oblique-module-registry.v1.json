@@ -156,6 +156,10 @@
     {
       "assetId": "floor.reception.linoleum",
       "manifest": "/game-content/oblique-floor-reception.v1.json"
+    },
+    {
+      "assetId": "furniture.office.desk.employee.variants",
+      "manifest": "/game-content/oblique-reception-employee-desk.v1.json"
     }
   ]
 }
