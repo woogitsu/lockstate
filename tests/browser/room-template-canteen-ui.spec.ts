@@ -46,3 +46,26 @@ test('Polish Full HD Build labels the canteen plan and its furniture', async ({ 
   await expect(dialog.locator('.hud-template__catalogue-value')).toContainText('Wartość katalogowa: 3135');
   await page.screenshot({ path: testInfo.outputPath('canteen-plan-fullhd-pl.png') });
 });
+
+test('Full HD stationary canteen ghost changes when Mirror X changes', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/index.html');
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await page.getByRole('button', { name: 'Build', exact: true }).click();
+  await page.getByRole('button', { name: 'Room plans', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Room plans' });
+  await dialog.getByRole('button', { name: 'Canteen', exact: true }).click();
+  await dialog.getByRole('button', { name: 'Place on map' }).click();
+  await page.mouse.move(850, 480);
+  const canvas = page.locator('#game-root canvas');
+  const before = await canvas.screenshot();
+  await page.getByRole('button', { name: 'Room plans', exact: true }).click();
+  await dialog.getByRole('checkbox', { name: 'Mirror horizontally' }).check();
+  await dialog.getByRole('button', { name: 'Close' }).click();
+  await expect.poll(async () => (await canvas.screenshot()).equals(before)).toBe(false);
+  await page.screenshot({ path: testInfo.outputPath('mirrored-canteen-ghost-fullhd.png') });
+  await page.getByRole('button', { name: 'Room plans', exact: true }).click();
+  await dialog.getByRole('checkbox', { name: 'Mirror horizontally' }).uncheck();
+  await dialog.getByRole('button', { name: 'Close' }).click();
+  await expect.poll(async () => (await canvas.screenshot()).equals(before)).toBe(true);
+});
