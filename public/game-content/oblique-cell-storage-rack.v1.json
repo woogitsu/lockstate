@@ -20,9 +20,30 @@
   ],
   "projection": "orthographic",
   "yawDegrees": [
+    -180,
+    -165,
+    -150,
+    -135,
+    -120,
+    -105,
+    -90,
+    -75,
+    -60,
     -45,
+    -30,
+    -15,
     0,
-    45
+    15,
+    30,
+    45,
+    60,
+    75,
+    90,
+    105,
+    120,
+    135,
+    150,
+    165
   ],
   "elevationDegrees": [
     25,
@@ -30,6 +51,168 @@
     65
   ],
   "frames": [
+    {
+      "yawDegrees": -180,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw-180-elev25.953bec591835.png",
+      "sha256": "953bec591835c4f29ee572ec93fd1d532cdd6948627c6f8a71c4c319faf236be"
+    },
+    {
+      "yawDegrees": -180,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw-180-elev45.ddc21da71949.png",
+      "sha256": "ddc21da71949c4f9c954975a5142bea8196767369e4fff948139501d2ebb68a8"
+    },
+    {
+      "yawDegrees": -180,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw-180-elev65.5882cf28d75a.png",
+      "sha256": "5882cf28d75a00e454aa901fdc839b6bb10ab8faedc3e18aef1f86af5c55e048"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw-165-elev25.f998341e9408.png",
+      "sha256": "f998341e9408819bc13bb29867fe6184df1167733d03d8b12204ca2fdc0f1415"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw-165-elev45.66312e4d38b3.png",
+      "sha256": "66312e4d38b30a079ad8a1ed42e1ddc290feff117d4456fa3a1d5ed3aaa40b11"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw-165-elev65.5e0270f03ea6.png",
+      "sha256": "5e0270f03ea628d0712f314c8e8c0db4ef487500173a5b0306029fa95840b9d1"
+    },
+    {
+      "yawDegrees": -150,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw-150-elev25.23db940117d7.png",
+      "sha256": "23db940117d7ad19657539f5acf5ea40d6102d436526e9c3f543aa4c2f6559b0"
+    },
+    {
+      "yawDegrees": -150,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw-150-elev45.4187dc18fc19.png",
+      "sha256": "4187dc18fc197d1551c9edfc1f7f6981dfcdc1eb8f1c6b0a4095cc63078af912"
+    },
+    {
+      "yawDegrees": -150,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw-150-elev65.78d3d51d5d73.png",
+      "sha256": "78d3d51d5d73b5ae325b9cbaf9c46855ab0e480db82169b89f18f78eba145134"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw-135-elev25.33d7b7e04000.png",
+      "sha256": "33d7b7e040006040da08dc798bf5966b2a14e77dbb4266ce9ce9e5aa15204bbb"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw-135-elev45.da7bc5a2662e.png",
+      "sha256": "da7bc5a2662ecabbb06e360fee0d314bbd61dd1f01f15adfb0ca65905c4153fb"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw-135-elev65.4790119df847.png",
+      "sha256": "4790119df8474ca29f5f976f5d2dae60926cbd28e385ddfe49431d039aec865e"
+    },
+    {
+      "yawDegrees": -120,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw-120-elev25.1cc196e2a80a.png",
+      "sha256": "1cc196e2a80afa1a259c04f24f07111a601716ed43b1da9157b2d4ca5c7e4bef"
+    },
+    {
+      "yawDegrees": -120,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw-120-elev45.7074b0ee0c63.png",
+      "sha256": "7074b0ee0c631586a175b2a2db0f9add467316a6f6cd8f86fa9bc38733add82e"
+    },
+    {
+      "yawDegrees": -120,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw-120-elev65.fbf9813dcb4e.png",
+      "sha256": "fbf9813dcb4eb0d0150c8e40a458daece64ef0ee2fae639fbd15638f0393ac4a"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw-105-elev25.91e74fff121e.png",
+      "sha256": "91e74fff121e499fcd3ba3bac958c5e4d306a25b4302554a3b15e8116aa062dc"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw-105-elev45.7275742ab11c.png",
+      "sha256": "7275742ab11c8e145cd6bbcfdbcc0f5523b039cad84df62f412d261e0b8e1f17"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw-105-elev65.a48bbea557a0.png",
+      "sha256": "a48bbea557a028789691ccf5a0303c1937f239e9c03cb714173759656e145869"
+    },
+    {
+      "yawDegrees": -90,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw-90-elev25.098a34e0341d.png",
+      "sha256": "098a34e0341dc1b8daec1f2ff65c9d884240d7d64760a0c12d289303d10c0fa9"
+    },
+    {
+      "yawDegrees": -90,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw-90-elev45.93919a00169f.png",
+      "sha256": "93919a00169fdcf32d51c2af5c70f92e3fc7f39f955eb955f1a7aa48e577d1ac"
+    },
+    {
+      "yawDegrees": -90,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw-90-elev65.81e244ce7e99.png",
+      "sha256": "81e244ce7e99dfe5fe7ee068cb8278c977658c0b9c27b23944191f71423ffa6a"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw-75-elev25.0c44477ca15e.png",
+      "sha256": "0c44477ca15e035cd556828df561f65a62f5cf2100ac3761708d18a9dd96272c"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw-75-elev45.51d8c05e5c0d.png",
+      "sha256": "51d8c05e5c0dd34225c1d1821c65365aec3a1b6a7f16b89dcc13bd0deb71a626"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw-75-elev65.6e26a7de677b.png",
+      "sha256": "6e26a7de677b1f52c30ee66f2f71be652acd65b35a7759a70751e3dc1c9f9dbd"
+    },
+    {
+      "yawDegrees": -60,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw-60-elev25.2e41185d1974.png",
+      "sha256": "2e41185d1974dca6c709381bdc53b20797310dd73808e0348f3299393ec407ac"
+    },
+    {
+      "yawDegrees": -60,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw-60-elev45.e94aefd518fc.png",
+      "sha256": "e94aefd518fc4c801bfe4fc8b4805a7248f1a0da46b3bd293d8d6424d5b883ab"
+    },
+    {
+      "yawDegrees": -60,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw-60-elev65.d6947f582f59.png",
+      "sha256": "d6947f582f594ee44844f425db558b7498945b9f4b81f19aff64d655594ac1d1"
+    },
     {
       "yawDegrees": -45,
       "elevationDegrees": 25,
@@ -47,6 +230,42 @@
       "elevationDegrees": 65,
       "image": "/assets/environment/oblique/cell-storage-rack-yaw-45-elev65.212f0f284fa6.png",
       "sha256": "212f0f284fa6c2a8899049f0e3341474dd26fcc7b6adb70950db79a625a0d79b"
+    },
+    {
+      "yawDegrees": -30,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw-30-elev25.61697b4c9569.png",
+      "sha256": "61697b4c95691b16a262c3595042a963760b56a532b65050016ba59b11766110"
+    },
+    {
+      "yawDegrees": -30,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw-30-elev45.ad10fa57359a.png",
+      "sha256": "ad10fa57359abde7154d14c13b3d06d746728040de0fb8585c3780d76750c996"
+    },
+    {
+      "yawDegrees": -30,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw-30-elev65.3a63d9bb8322.png",
+      "sha256": "3a63d9bb8322ec3ddf81b8f5736dd4053134398bace3d2032237b8849a8086c9"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw-15-elev25.f2b62838a37f.png",
+      "sha256": "f2b62838a37f65813a48d40b5c5ded087ee4dd99c4c1b1ff0e02d789f5fe6ec8"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw-15-elev45.4fdf80fcc652.png",
+      "sha256": "4fdf80fcc652e2093b4697f674a293cee5542a31a9a20500b84bd41e2da575d0"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw-15-elev65.bfcc48db36b6.png",
+      "sha256": "bfcc48db36b6e9b1705248b87c23c11b23767b7dfa8a683c25d0cd96cc17f4a8"
     },
     {
       "yawDegrees": 0,
@@ -67,6 +286,42 @@
       "sha256": "1e3a7bb118c5188883bab86accf0a474e042847c9cabe806ded0ed039b38cf60"
     },
     {
+      "yawDegrees": 15,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw+15-elev25.f7f310da9d64.png",
+      "sha256": "f7f310da9d64a4366709f1f2dc6bb77f9c734b3ce9375b6d1a284d3cc2495837"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw+15-elev45.9a40bbd114a7.png",
+      "sha256": "9a40bbd114a779886ca5c2947f8aa4c07394930d207e6784647a24a7ea8bf371"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw+15-elev65.4f9c5166d9fc.png",
+      "sha256": "4f9c5166d9fc8f16c14cbe3d834ed54512ae5ddd8982c770c6c0c871d2350d41"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw+30-elev25.5d47a4ca2e13.png",
+      "sha256": "5d47a4ca2e138c2db5b4a0efc939e419b2255896ac7192eca65290bee405752b"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw+30-elev45.ad4b89cc11bf.png",
+      "sha256": "ad4b89cc11bf54aac612b94766a4d13c4ff9d9d46c5739df7604180c737241b1"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw+30-elev65.02556ac684e1.png",
+      "sha256": "02556ac684e1df487d9f92f60be22a637acb60a282e98e5b465401488c476805"
+    },
+    {
       "yawDegrees": 45,
       "elevationDegrees": 25,
       "image": "/assets/environment/oblique/cell-storage-rack-yaw+45-elev25.6e7653d43559.png",
@@ -83,6 +338,150 @@
       "elevationDegrees": 65,
       "image": "/assets/environment/oblique/cell-storage-rack-yaw+45-elev65.0aa6843fd6e7.png",
       "sha256": "0aa6843fd6e7b8b24ebf3acde511da40b77206e1c748ff898465abf302186354"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw+60-elev25.c80bd0bf7fb7.png",
+      "sha256": "c80bd0bf7fb7b588cadbc1fcc4d62d487c911f178a7d539fc5b915b7a8db5e75"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw+60-elev45.d89b7a67071c.png",
+      "sha256": "d89b7a67071ccbeed1e7d793ac2d36579394b388bc6609c12a79bd09b7825933"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw+60-elev65.5864846d5e3b.png",
+      "sha256": "5864846d5e3b2a83a8f35313f95e015e088992dd5372df15d8074a0689852dfc"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw+75-elev25.32921ae8a15c.png",
+      "sha256": "32921ae8a15cb6048f1c7dd745bfcc4aefbdd4574390494aae97c930336eab22"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw+75-elev45.136c9fffe04b.png",
+      "sha256": "136c9fffe04bf6d2f824413ce353b043c7b07f947363f766869c4487f9af69ed"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw+75-elev65.9df4181635df.png",
+      "sha256": "9df4181635df30ecf056c02a0fcd894bb0c5c101c4127ef46814a78221f80485"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw+90-elev25.1020be6a9e19.png",
+      "sha256": "1020be6a9e1957994fe1aa2ffa9b219f25ceb3bcd5bd245da89e45adca26bb55"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw+90-elev45.e8468e6ec5f3.png",
+      "sha256": "e8468e6ec5f367f70516242153a87ca2ce7ace0fb10503ceb35b117802b142af"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw+90-elev65.4e5ad69e4ee0.png",
+      "sha256": "4e5ad69e4ee0076bd63bdf96466f432a6fd04faaa8f39ec5c6350461479cb93c"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw+105-elev25.e8d1a8e2f2b4.png",
+      "sha256": "e8d1a8e2f2b4a1d5a08fbcc3a1c5e9d44ae2d036458909e3f09a133e2f3f3bfa"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw+105-elev45.eadd9d870099.png",
+      "sha256": "eadd9d8700997ebaf8ed21452ec6b522b7cd389a4337031a06c2200db28bc2f1"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw+105-elev65.c64ef24c801c.png",
+      "sha256": "c64ef24c801ce3614a05a32552ada249b695ee6aae3255b4b3b493dddad38a87"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw+120-elev25.a7aaba790fcd.png",
+      "sha256": "a7aaba790fcd35b0423339bcdb8def934116147d0408e9e55e2cb81670bb7bd7"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw+120-elev45.1acdfb14503d.png",
+      "sha256": "1acdfb14503d8d89e8b37f8db031ef3c4796c24a8bbd62e947e446eb35a75464"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw+120-elev65.eb86bc93aa19.png",
+      "sha256": "eb86bc93aa19743dc33684400590f0d1d6380318f82eb47719313e47d9627cb0"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw+135-elev25.069807798b17.png",
+      "sha256": "069807798b178006a17c9a746b58a0528728790516bc40405d17a4390504e3ce"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw+135-elev45.b14c01a41878.png",
+      "sha256": "b14c01a41878ef724f996988323a5990e4ce1cdab284c7597266f5ac5614078a"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw+135-elev65.c5bb2ece54d9.png",
+      "sha256": "c5bb2ece54d920583584b262d01f5c275a56fb741d04a7c0c1461d49ae5b68bd"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw+150-elev25.502629606539.png",
+      "sha256": "5026296065399d80ed09f5fedeb5fe17afce7a0d6d77c1056d1326e745f60a0d"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw+150-elev45.ba38082382f3.png",
+      "sha256": "ba38082382f3cd02587fca40d4e169d25a51d7b3ce6e0c5c86126ee2e5e24f18"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw+150-elev65.4e726f8e9b86.png",
+      "sha256": "4e726f8e9b8625456531735f9a59807c666d58ab9aa7fdf2c5256805c4e7f2ea"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw+165-elev25.97d71a9767de.png",
+      "sha256": "97d71a9767de96ae05d6d1c2ea80a8f1656f1fe4b56436055d07297020293291"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw+165-elev45.97ceb0c2488b.png",
+      "sha256": "97ceb0c2488b96d8422ea165be37597c8e28d7ef7c631b67965f4b10120a931d"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/cell-storage-rack-yaw+165-elev65.b1e6d6697f9e.png",
+      "sha256": "b1e6d6697f9eaab064510c6bb1ab85ecbd3b33cd82ee065d141e13ad09408c67"
     }
   ]
 }
