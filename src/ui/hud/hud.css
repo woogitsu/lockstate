@@ -552,6 +552,48 @@
   .hud-camera-panels { flex-direction: column; align-items: flex-start; }
   .hud-camera-panels > .hud-camera-angle { margin-bottom: var(--space-2); }
 }
+/* At Full HD browser zoom the effective CSS viewport can be 960x540 even
+ * though the physical display remains 1920x1080. The HUD's status rows and
+ * right inspector then leave less height than the angle buttons plus minimap
+ * need. Keep just this camera stack scrollable inside its existing corner;
+ * scrolling the entire HUD column would also move Alerts and the world-facing
+ * Build tools, while clipping this stack made every lower camera action inert.
+ */
+@media (max-height: 600px) {
+  .hud[data-layout-navigation-placement='drawer'] .hud__corner {
+    padding-block: var(--space-1);
+  }
+  .hud[data-layout-navigation-placement='drawer'] .hud-zoom {
+    margin-bottom: 0;
+  }
+  .hud[data-layout-navigation-placement='drawer'] .hud-camera-panels {
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    scrollbar-gutter: stable;
+    /* The minimap heading toggle extends beyond the flex panel's measured
+     * scroll height at this breakpoint. Reserve one tap target so its whole
+     * press area can be scrolled into the camera viewport. */
+    padding-bottom: var(--tap-target);
+  }
+  .hud[data-layout-navigation-placement='drawer'] .hud-camera-panels > .hud-minimap {
+    /* Otherwise the minimap section shrinks below its own header height and
+     * clips the toggle before the outer camera viewport can scroll to it. */
+    flex: 0 0 auto;
+  }
+  .hud[data-layout-navigation-placement='drawer'] .hud-camera-panels > .hud-camera-angle {
+    /* The drawer trigger occupies the top-left of this same short grid row.
+     * Offset the angle actions beside it, and cap their width so the Reset
+     * button still clears the right-hand Build inspector. */
+    margin-left: calc(var(--tap-target) - var(--space-2));
+    max-width: max(0px, calc(100vw - 684px));
+  }
+  :root[data-ui-scale-step='200'] .hud[data-layout-navigation-placement='drawer'] .hud-navigation-drawer__trigger > span:last-child {
+    /* At the largest scale, its translated visible caption makes the drawer
+     * trigger 182px wide and covers the first angle action in this row. Its
+     * icon plus the existing screen-reader label still name the control. */
+    display: none;
+  }
+}
 .hud-camera-angle__legend,
 .hud-camera-angle__reading { grid-column: 1 / -1; }
 .hud-camera-angle__reading { font-variant-numeric: tabular-nums; }
