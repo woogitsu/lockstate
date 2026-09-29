@@ -1,4 +1,4 @@
-﻿import sys
+import sys
 sys.path.insert(0, __import__('os').path.dirname(__file__))
 import pipeline_common
 pipeline_common.require_blender_version()

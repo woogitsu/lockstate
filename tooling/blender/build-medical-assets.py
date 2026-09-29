@@ -1,4 +1,4 @@
-﻿import sys
+import sys
 sys.path.insert(0, __import__('os').path.dirname(__file__))
 import pipeline_common
 pipeline_common.require_blender_version()
@@ -31,4 +31,3 @@ objs=[]; objs += [cube("cabinet_body",(0,0,.62),(.82,.72,1.18),body,.06),cube("i
 for z in (.28,.62,.96): objs.append(cube("shelf",(0,-.02,z),(.68,.62,.04),body,.015))
 for x in (-.20,.20): objs += [cube("door",(x,.38,.62),(.37,.04,1.02),body,.03),cube("handle",(x*.55,.415,.62),(.035,.035,.20),handle,.012)]
 save("fixture.medicine-cabinet.variants",objs)
-
