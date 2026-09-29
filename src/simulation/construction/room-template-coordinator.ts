@@ -193,6 +193,8 @@ export class RoomTemplateCoordinator implements SystemRegistration {
     }
     const placedObjectOrderIds: string[] = [];
     for (const order of built.orders.slice(built.shellOrderIds.length)) {
+      const existing = this.construction.getOrder(order.id);
+      if (existing !== undefined && existing.state !== 'cancelled' && existing.state !== 'failed') continue;
       const outcome = this.objectPlacement.place({
         orderId: order.id,
         definitionId: order.definitionId,
