@@ -224,7 +224,7 @@ So what can change a pixel without a message reaching this thread is anything
 that changes `world` or `structures`:
 
 1. **The world's own layers.** `TileSample`'s six fields are enumerated in one
-   line — `return { loaded: false, terrainNumericId: 0, topEdge: 0, leftEdge: 0, zoning: 0, owned: false };`
+   line — `return { loaded: false, terrainNumericId: 0, topEdge: 0, leftEdge: 0, squareStructure: 0, zoning: 0, owned: false };`
    (verbatim in `src/rendering/world/world-view.ts`) — and `readTile` fills them
    from three different places: **four** out of chunk layers (`terrainNumericId`,
    `topEdge`, `leftEdge`, `zoning`), `loaded` out of whether the chunk is

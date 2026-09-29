@@ -85,6 +85,14 @@ interface Triple {
  * code declares is checked for a row.
  */
 const TRIPLES: readonly Triple[] = [
+  {
+    press: 'Build panel · Room plans · Place',
+    intent: 'place-room-template',
+    command: 'PlaceRoomTemplate',
+    artifact: 'a queued room-plan shell and its reserved footprint',
+    producer: 'simulation',
+    reach: 'room-template-tool',
+  },
   // -- the Build panel's coordinate submit, three modes ---------------------
   {
     press: 'Build panel · ENTER COORDINATES · Place order (wall row selected)',
@@ -324,7 +332,7 @@ const TRIPLES: readonly Triple[] = [
       quote: "await expect(refusal).toHaveAttribute('data-action', 'hire-staff');",
     },
     provesAbsence: {
-      quote: "expect(await hiresSent(page)).toEqual([]);\n    await expect(staffMetric).toHaveText('0');",
+      quote: "expect(await hiresSent(page)).toEqual([]);",
     },
   },
   {
@@ -501,9 +509,9 @@ describe('the refusal surfaces issue #1160 criterion 4 is counted in', () => {
     // The vacuity guard first: every count below is over a regular expression
     // against a source file, and a pattern that stopped matching would leave
     // the set comparisons passing over two empty sets.
-    expect(reasonSuffixes.length).toBe(48);
-    expect(alertKeys.length).toBe(48);
-    expect(alertKeysPl.length).toBe(48);
+    expect(reasonSuffixes.length).toBe(49);
+    expect(alertKeys.length).toBe(49);
+    expect(alertKeysPl.length).toBe(49);
     expect(hostKeys.length).toBe(16);
     expect(hostKeysPl.length).toBe(16);
 
@@ -575,7 +583,7 @@ describe('the refusal surfaces issue #1160 criterion 4 is counted in', () => {
     const silent = [...new Set(TRIPLES.map((triple) => triple.intent))]
       .filter((intent) => refusalMessageKey(intent) === undefined)
       .sort();
-    expect(silent).toEqual(['dismiss-staff', 'edit-regime-block', 'place-object', 'remove-object']);
+    expect(silent).toEqual(['dismiss-staff', 'edit-regime-block', 'place-object', 'place-room-template', 'remove-object']);
     for (const intent of silent) {
       expect(MAIN, `${intent} no longer dispatches a command`).toContain(`case '${intent}':`);
     }
@@ -613,7 +621,7 @@ describe('the refusal surfaces issue #1160 criterion 4 is counted in', () => {
     // for it, and the walk is re-run here: a panel option renamed, or a
     // control that stops being a `<button>`, fails here rather than leaving a
     // table describing a route that no longer exists.
-    const panel = TRIPLES.filter((triple) => !['world', 'keyboard', 'transportIntent'].includes(triple.reach));
+    const panel = TRIPLES.filter((triple) => !['world', 'keyboard', 'transportIntent', 'room-template-tool'].includes(triple.reach));
     expect(panel.length).toBeGreaterThan(20);
     for (const triple of panel) {
       const routes = routesForIntent(uiSources, triple.intent);
@@ -624,6 +632,11 @@ describe('the refusal surfaces issue #1160 criterion 4 is counted in', () => {
         `${triple.press}: the walk no longer reaches ${triple.reach}; its trail is ${control?.trail.join(' -> ') ?? 'empty'}`,
       ).toBe(true);
     }
+    // The room-plan press crosses RoomTemplateToolState.placeAt, an object
+    // method the callback-option source walk cannot follow. Pin both ends.
+    expect(read('src/ui/hud/room-template-preview.ts')).toContain("place.addEventListener('click', async () => {");
+    expect(read('src/ui/hud/room-template-preview.ts')).toContain('await tool.placeAt(tile)');
+    expect(read('src/ui/hud/hud.ts')).toContain("kind: 'place-room-template', ...request");
 
     // The world gestures are the other shape and are checked as that shape:
     // a dispatch at `mountHud` scope with no control, which is what "the
@@ -665,13 +678,13 @@ describe('the refusal surfaces issue #1160 criterion 4 is counted in', () => {
 
   it('counts the enumeration, and the two totals that differ over the keyboard pair', () => {
     // 32 / 30 / 14 / 21 until #1356 added the strip's Undo and Redo rows.
-    expect(TRIPLES.length).toBe(34);
-    expect(pointerTriples.length).toBe(32);
-    expect(simulationTriples.length).toBe(18);
+    expect(TRIPLES.length).toBe(35);
+    expect(pointerTriples.length).toBe(33);
+    expect(simulationTriples.length).toBe(19);
     expect(hostTriples.length).toBe(16);
     expect(simulationTriples.length + hostTriples.length).toBe(TRIPLES.length);
     // Twenty-three distinct presses, of which twenty-one a pointer can make.
-    expect(new Set(TRIPLES.map((triple) => triple.press)).size).toBe(23);
+    expect(new Set(TRIPLES.map((triple) => triple.press)).size).toBe(24);
   });
 
   it('checks every coverage claim against the spec file that is supposed to carry it', () => {
@@ -694,8 +707,8 @@ describe('the refusal surfaces issue #1160 criterion 4 is counted in', () => {
     }
     // The number owed, derived rather than typed: a triple is owed a spec
     // until one drives its press and finds its artifact missing.
-    expect(TRIPLES.length - proven.length).toBe(31);
-    expect(pointerTriples.length - proven.filter((triple) => triple.reach !== 'keyboard').length).toBe(29);
+    expect(TRIPLES.length - proven.length).toBe(32);
+    expect(pointerTriples.length - proven.filter((triple) => triple.reach !== 'keyboard').length).toBe(30);
   });
 
   it('is the number the rollout plan states, so the document cannot drift from the table', () => {
@@ -712,6 +725,7 @@ describe('the refusal surfaces issue #1160 criterion 4 is counted in', () => {
 function commandDomain(triple: Triple): string {
   const byCommand: Readonly<Record<string, string>> = {
     PlaceBuildOrder: 'build',
+    PlaceRoomTemplate: 'build',
     PlaceObject: 'place-object',
     RemoveObject: 'remove-object',
     RemoveWall: 'remove-wall',

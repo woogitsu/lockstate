@@ -1,0 +1,161 @@
+"""Publish isolated bed and complete open door modules in the wall pose grid."""
+from __future__ import annotations
+
+import hashlib
+import importlib.util
+import json
+import math
+import sys
+from pathlib import Path
+
+import bpy
+from mathutils import Vector
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import pipeline_common
+
+_wall_spec = importlib.util.spec_from_file_location(
+    "build_interior_wall_module", Path(__file__).with_name("build-interior-wall-module.py"))
+assert _wall_spec and _wall_spec.loader
+_wall_module = importlib.util.module_from_spec(_wall_spec)
+_wall_spec.loader.exec_module(_wall_module)
+strip_png_metadata = _wall_module.strip_png_metadata
+
+ROOT = Path(__file__).resolve().parents[2]
+OUTPUT = ROOT / "public/assets/environment/oblique"
+CATALOG = ROOT / "assets/source/blender/environment.mvp.catalog.blend"
+WALL = ROOT / "assets/source/blender/wall.interior.cutaway.blend"
+LEAF = ROOT / "assets/source/blender/door.interior.leaf.open.blend"
+YAW = (-45, 0, 45)
+ELEVATION = (25, 45, 65)
+TARGET = Vector((0, 0, 0))
+RADIUS = 12.0
+
+
+def append_collection(path: Path, name: str):
+    with bpy.data.libraries.load(str(path), link=False) as (available, loaded):
+        if name not in available.collections:
+            raise RuntimeError(f"{path.name} lacks {name}")
+        loaded.collections = [name]
+    collection = loaded.collections[0]
+    bpy.context.scene.collection.children.link(collection)
+    return collection
+
+
+def add_cutaway_threshold(frame) -> None:
+    """Keep the low doorway legible after the tall, open leaf is cut away."""
+    bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, 0.018))
+    threshold = bpy.context.object
+    threshold.name = "Cutaway door threshold"
+    for linked in list(threshold.users_collection):
+        linked.objects.unlink(threshold)
+    frame.objects.link(threshold)
+    threshold.dimensions = (0.76, 0.20, 0.036)
+    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+    surface = bpy.data.materials.new("Cutaway threshold graphite")
+    surface.diffuse_color = (0.29, 0.30, 0.29, 1)
+    surface.use_nodes = True
+    surface.node_tree.nodes.get("Principled BSDF").inputs["Base Color"].default_value = surface.diffuse_color
+    surface.node_tree.nodes.get("Principled BSDF").inputs["Roughness"].default_value = 0.84
+    threshold.data.materials.append(surface)
+
+
+def setup_scene() -> None:
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    scene = bpy.context.scene
+    scene.render.engine = "BLENDER_EEVEE"
+    scene.eevee.taa_render_samples = 64
+    scene.eevee.use_raytracing = False
+    scene.render.film_transparent = True
+    scene.render.resolution_x = scene.render.resolution_y = 512
+    scene.render.resolution_percentage = 100
+    scene.render.image_settings.file_format = "PNG"
+    scene.render.image_settings.color_mode = "RGBA"
+    pipeline_common.apply_deterministic_render_settings(scene)
+    pipeline_common.configure_oblique_module_lighting(scene)
+    camera_data = bpy.data.cameras.new("oblique module camera")
+    camera_data.type = "ORTHO"
+    camera_data.ortho_scale = 8.0
+    camera = bpy.data.objects.new("oblique module camera", camera_data)
+    scene.collection.objects.link(camera)
+    scene.camera = camera
+
+
+def render_module(asset_id: str, slug: str, source: Path, dependencies: list[Path],
+                  resolution_px: int = 512) -> None:
+    scene = bpy.context.scene
+    scene.render.resolution_x = scene.render.resolution_y = resolution_px
+    scene.camera.data.ortho_scale = resolution_px / 64.0
+    OUTPUT.mkdir(parents=True, exist_ok=True)
+    frames = []
+    for yaw in YAW:
+        for elevation in ELEVATION:
+            azimuth = math.radians(yaw)
+            pitch = math.radians(elevation)
+            scene.camera.location = (TARGET.x + RADIUS * math.sin(azimuth),
+                                     TARGET.y - RADIUS * math.cos(azimuth),
+                                     TARGET.z + RADIUS * math.tan(pitch))
+            scene.camera.rotation_euler = (TARGET - scene.camera.location).to_track_quat("-Z", "Y").to_euler()
+            stem = f"{slug}-yaw{yaw:+03d}-elev{elevation:02d}"
+            staging = OUTPUT / f"{stem}.staging.png"
+            scene.render.filepath = str(staging)
+            bpy.ops.render.render(write_still=True)
+            strip_png_metadata(staging)
+            digest = hashlib.sha256(staging.read_bytes()).hexdigest()
+            final = OUTPUT / f"{stem}.{digest[:12]}.png"
+            staging.replace(final)
+            frames.append({"yawDegrees": yaw, "elevationDegrees": elevation,
+                           "image": f"/assets/environment/oblique/{final.name}",
+                           "sha256": digest})
+    manifest = {"schemaVersion": 1, "assetId": asset_id, "source": source.name,
+                "sourceSha256": hashlib.sha256(source.read_bytes()).hexdigest(),
+                "sourceDependencies": [{"source": path.name,
+                                        "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
+                                       for path in dependencies],
+                "resolutionPx": [resolution_px, resolution_px], "nominalPixelsPerTile": 64,
+                "pivotPx": [resolution_px // 2, resolution_px // 2], "cameraTargetTiles": list(TARGET),
+                "projection": "orthographic", "yawDegrees": list(YAW),
+                "elevationDegrees": list(ELEVATION), "frames": frames}
+    path = ROOT / f"public/game-content/oblique-{slug}.v1.json"
+    pipeline_common.write_text(path, json.dumps(manifest, indent=2) + "\n")
+
+
+def main() -> None:
+    pipeline_common.require_blender_version()
+    setup_scene()
+    bed_id = "furniture.cell.bed.single.variants"
+    bed = append_collection(CATALOG, bed_id)
+    origin = next((item for item in bed.all_objects if item.name == bed_id + ".origin"), None)
+    if origin is None:
+        raise RuntimeError("Cell bed source lacks bottom-center origin")
+    origin.location = (0, 0, 0)  # source catalog distributes models among gallery slots
+    bpy.context.view_layer.update()
+    render_module(bed_id, "cell-bed", CATALOG, [])
+    bed.hide_render = True
+
+    frame = append_collection(WALL, "wall.interior.doorframe.full")
+    leaf = append_collection(LEAF, "door.interior.leaf.open")
+    bpy.context.view_layer.update()
+    render_module("door.interior.open.full", "cell-door-open", LEAF, [WALL])
+    frame.hide_render = True
+    leaf.hide_render = True
+    registry_path = ROOT / "public/game-content/oblique-module-registry.v1.json"
+    registry = json.loads(registry_path.read_text(encoding="utf-8")) if registry_path.exists() else {
+        "schemaVersion": 1, "entries": []}
+    for updated in [
+        {"assetId": bed_id, "manifest": "/game-content/oblique-cell-bed.v1.json"},
+        {"assetId": "door.interior.open.full", "manifest": "/game-content/oblique-cell-door-open.v1.json"},
+    ]:
+        entries = registry["entries"]
+        index = next((index for index, entry in enumerate(entries)
+                      if entry["assetId"] == updated["assetId"]), None)
+        if index is None:
+            entries.append(updated)
+        else:
+            entries[index] = updated
+    pipeline_common.write_text(registry_path,
+                               json.dumps(registry, indent=2) + "\n")
+
+
+if __name__ == "__main__":
+    main()

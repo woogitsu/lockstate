@@ -977,6 +977,16 @@ records with a named entry apiece.
 > for the refusal to leave standing. The sentence under the table that calls
 > the undo pair *"a key chord and nothing else"* is history in the same way.
 
+> **AMENDED 2026-09-28 FOR `PlaceRoomTemplate`.** The Build panel's Room plans
+> button and Place control now form another simulation press. The table is **35
+> triples** (nineteen simulation, sixteen host), **33** pointer triples,
+> **24 presses** of which **22** a pointer can make, **3 discharged**, and **32
+> owed**, or **30** on the pointer-only reading. Its preflight and final
+> command can disagree as the world changes, so the worker refusal remains a
+> real surface. The static walk stops at `RoomTemplateToolState.placeAt`;
+> `refusal-surface-enumeration-contract` pins the button, method call, and
+> `HudIntent` dispatch directly. The earlier figures remain above as history.
+
 **Eight triples are driven and only three are discharged, and the gap is the
 useful part of this pass.** Five specs reach a real refusal through a real
 press and assert the sentence, the band, the alerts row, the marked control —

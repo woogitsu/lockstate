@@ -1402,18 +1402,18 @@
     {
       "assetId": "floor.canteen.terrazzo",
       "image": "floor.canteen.terrazzo.png",
-      "sha256": "ed4339ecbef4d51769bc5e1ff655fa510d3fb873d0106e50819c42d4b88c1d6c",
-      "pixelSha256": "8888193aee2853bc36e569d930807c03de7cbbc82a362c0ff43d6f8eb8c9fb4a",
+      "sha256": "a1f31f17de5a327f36605d69251bc76d91dc7b82aa5970e82b665659dbfcb800",
+      "pixelSha256": "35c1ff084892f0743c75abde79805a60470a1f35a87fc26af9a1a8036ae9538b",
       "footprintTiles": {
         "width": 1.0,
         "height": 1.0
       },
       "frameTiles": {
-        "width": 1.0,
-        "height": 1.0
+        "width": 1.000001,
+        "height": 1.000001
       },
       "marginFraction": 0.0,
-      "overhangsFootprint": false,
+      "overhangsFootprint": true,
       "sizePx": {
         "width": 256,
         "height": 256
@@ -1425,7 +1425,8 @@
         "width": 256,
         "height": 256,
         "opaquePixels": 65536
-      }
+      },
+      "sourceCatalog": "assets/source/blender/floor.canteen.warm-terrazzo.blend"
     },
     {
       "assetId": "floor.infirmary.vinyl",

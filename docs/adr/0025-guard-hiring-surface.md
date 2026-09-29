@@ -156,7 +156,7 @@ today, so a panel put there competes with nothing.
 
 ### The consumer is finished, four systems are waiting on it, and nothing in the application can reach it
 
-`GuardRoster.hire` (`src/simulation/security/guard-roster.ts:89`; the anchor
+`GuardRoster.hire` (`src/simulation/security/guard-roster.ts:89`, `public hire`; the anchor
 read `:75`) is complete.
 It spawns an entity in the roster's own `EntityStore`, mints an actor name
 through the ADR 0015 seam when the session supplied one, and writes a
@@ -173,7 +173,7 @@ and its restore path already reasons about a guard caught mid-travel.
 > **Not since this ADR's own surface shipped** (#302, and the Status block
 > above says so). `GuardRoster.hire` is called from
 > `src/simulation/staff/hiring.ts:221`, which
-> `src/simulation/runtime/session-commands.ts:736` reaches on a `HireStaff`
+> `src/simulation/runtime/session-commands.ts:732` reaches on a `HireStaff`
 > command. This paragraph and the *Consequences* bullet *"`GuardRoster.hire`
 > gains its first production caller"* have therefore disagreed with each other
 > inside one file for as long as the implementation has existed; the Context is
@@ -227,7 +227,7 @@ the eight ids as having no consumer anywhere at all.
 The HUD may not import the simulation. That is `AGENTS.md` boundary 1 in its
 strongest form for `src/ui/hud/**`, and `tests/unit/ui-hud-messages.test.ts`
 asserts it by scanning for the import. So the HUD cannot build a command: it
-emits a `HudIntent` (`export type HudIntent =`, `src/ui/hud/hud.ts:376`; the
+emits a `HudIntent` (`export type HudIntent =`, `src/ui/hud/hud.ts:380`; the
 anchor read `:372`, then `:365`, itself the re-aim of `:322`, itself the 2026-09-06 re-aim
 of `:270`) and `src/main.ts` turns it into
 one, in the `onIntent` switch. The two most recent producers took exactly that
@@ -293,7 +293,7 @@ Selecting Security today changes the tab bar's `aria-current`, sets
 > §4). `HUD_TAB_IDS` is `['overview', 'build', 'zones', 'manage', 'day-plan']`
 > (`src/ui/hud/hud-state.ts:159`; the anchor read `:77`, then `:118`, then `:150`), five members, and the Staff panel this
 > decision placed is mounted on `manage`:
-> `staffPanel.setVisible(state.activeTab === 'manage')` (`src/ui/hud/hud.ts:2611`;
+> `staffPanel.setVisible(state.activeTab === 'manage')` (`src/ui/hud/hud.ts:3033`;
 > the anchor read `:2506`, a bare `*/`. [ADR 0022](./0022-room-zoning-surface.md)'s
 > copy of this same claim was re-aimed to `:2558` and this one was not — the same
 > sentence cited twice, corrected once. **Both now read `:2611`**: #1279 inserted
@@ -320,7 +320,7 @@ Selecting Security today changes the tab bar's `aria-current`, sets
 > > and the new `security` section paints the four HUD read models that had a
 > > route out of the worker and no painter. **Nothing about decision 1 moves
 > > with it**: `staffPanel.setVisible(state.activeTab === 'manage')` is at
-> > `src/ui/hud/hud.ts:3010` (the anchor read `:3006`, then 2993, then 2957, then 2917, then 2611, then 2759, then 2837,
+> > `src/ui/hud/hud.ts:3033` (the anchor read `:3006`, then 2993, then 2957, then 2917, then 2611, then 2759, then 2837,
 > > then 2887, then 2980, then 2963, then 2987; re-aimed onto the quoted line by `grep -n` rather than by
 > > arithmetic, on `ba1c0a87` merged with `49cd2fbd`, again on 2026-09-22 after
 > > ADR 0122's `show-alert-place` intent member was added to the union above

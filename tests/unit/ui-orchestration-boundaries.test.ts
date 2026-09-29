@@ -167,6 +167,27 @@ const gatedFiles = [...orchestrationFiles, ...gatedHereFiles];
  */
 const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
   {
+    file: 'src/ui/oblique-minimap-reader.ts',
+    tree: 'rendering',
+    kind: 'value',
+    reason:
+      'Value: the angled-camera minimap reader projects the published render feed and converts the camera ground bounds into the existing minimap viewport. It reads presentation data only and does not construct a simulation or issue commands.',
+  },
+  {
+    file: 'src/ui/oblique-minimap-reader.ts',
+    tree: 'shared',
+    kind: 'type-only',
+    reason:
+      'Type-only: MinimapView defines the returned projection consumed by the HUD. This erased import shares the viewport shape with the top-down minimap without giving the reader any storage or simulation authority.',
+  },
+  {
+    file: 'src/ui/oblique-template-placement.ts',
+    tree: 'content',
+    kind: 'type-only',
+    reason:
+      'Type-only: TemplateSquare names the snapped origin handed to the room-template tool. The helper only guards a late worker reply against a newer selection; it reads no catalogue values and creates no simulation state.',
+  },
+  {
     file: 'src/ui/build-tool.ts',
     tree: 'rendering',
     kind: 'type-only',
@@ -578,6 +599,13 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
       'Type-only: `ObjectToolPort` and `TileRect` from `src/rendering/build/area-picking`. The exact shape of `room-tool.ts`\'s entry below and the same argument one gesture over again: `ObjectToolPort` is a port the renderer *offers* -- the scene reports the tile a press landed on and asks this module for the footprint to draw -- so the direction is UI-onto-a-renderer-contract rather than UI-into-renderer-internals, and it is erased. It is a third module rather than more methods on `BuildTool` because the three ports carry different shapes and this one holds a footprint, which the class that lays walls has no concept of; `src/ui/object-tool.ts`\'s header states that rule against `BuildTool`\'s own. A value import here would mean the orchestrator had started calling into the renderer, which is what both of the other two entries say too.',
   },
   {
+    file: 'src/ui/room-template-tool.ts',
+    tree: 'content',
+    kind: 'value',
+    reason:
+      'Value: instantiateRoomTemplate from the authored content catalogue produces the exact full-square plan used for both the preview and worker placement request. The tool reads definitions and sends an intent; authoritative collision and ownership stay in the worker.',
+  },
+  {
     file: 'src/ui/room-tool.ts',
     tree: 'rendering',
     kind: 'type-only',
@@ -611,6 +639,20 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
     kind: 'type-only',
     reason:
       'Type-only: `RoomListViewModel` and `RoomDetailViewModel` from `src/simulation/presentation/room-projection`. The fifth of the translators outside `src/ui/hud/`, and the first that reads a *pulled* read model rather than a publication: it names the two view-model shapes `hud/room-list` and `hud/room-detail` answer with, and turns the `missing-capability` verdict inside them into `HudRoomNeedsViewModel`. Erased, so no simulation code runs on its account -- the projections themselves execute in the worker, and everything this module knows about the channel it gets from `src/ui/simulation-projections.ts` beside it, which is an intra-tree import. A `value` import appearing here would mean the readout had started projecting rooms on the main thread from state it does not own, which is the second source of truth `AGENTS.md` boundary 1 forbids and the reason the verdict is asked for rather than computed.',
+  },
+  {
+    file: 'src/ui/simulation-room-template-port.ts',
+    tree: 'simulation',
+    kind: 'type-only',
+    reason:
+      'Type-only: SimulationMessageChannel names the worker query boundary. The adapter sends a read-only preflight request through the existing projection requester; it does not import or execute simulation state on the main thread.',
+  },
+  {
+    file: 'src/ui/simulation-room-template-port.ts',
+    tree: 'content',
+    kind: 'type-only',
+    reason:
+      'Type-only: RoomTemplateId names the authored catalogue choice used by the worker cost query. The UI adapter does not import catalogue values or derive costs; it asks the worker for the current quote and returns its read model to the HUD.',
   },
   {
     file: 'src/ui/telemetry-consent-prompt.ts',
@@ -692,7 +734,10 @@ describe('UI orchestration boundaries', () => {
       'src/ui/language-messages.ts',
       'src/ui/language.ts',
       'src/ui/object-tool.ts',
+      'src/ui/oblique-minimap-reader.ts',
+      'src/ui/oblique-template-placement.ts',
       'src/ui/prisoner-sentence.ts',
+      'src/ui/room-template-tool.ts',
       'src/ui/room-tool.ts',
       'src/ui/save-panel-delete.ts',
       'src/ui/save-panel-messages.ts',
@@ -714,6 +759,7 @@ describe('UI orchestration boundaries', () => {
       'src/ui/simulation-projections.ts',
       'src/ui/simulation-regime.ts',
       'src/ui/simulation-room-needs.ts',
+      'src/ui/simulation-room-template-port.ts',
       'src/ui/simulation-security.ts',
       'src/ui/simulation-staff-coverage.ts',
       'src/ui/simulation-staff-roster.ts',

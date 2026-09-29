@@ -28,7 +28,17 @@ Terrain definitions are data-driven records with stable string IDs, packed numer
 
 ## Wall geometry lives on tile edges
 
-A wall is not a tile. Each loaded chunk carries two more packed
+This section describes the **historical** wall and door format. The 2026-09-27
+whole-square construction redesign (#1585) adds an optional `squareStructure`
+plane to each chunk: `0` is empty, `1` is a wall square, `2` is a door with
+north-south passage, and `3` is a door with east-west passage. An older
+snapshot has no such plane and restores it as all zeroes.
+Existing `topEdge` and `leftEdge` values retain their original meanings, so
+loading an old prison never moves its walls. The new plane has its own accessor
+and RLE snapshot field; the player-facing Build tool must not use it until
+navigation, enclosure, collision, rendering and removal consume it together.
+
+In the historical format a wall is not a tile. Each loaded chunk carries two more packed
 `Uint8Array(chunkSize * chunkSize)` layers beside terrain — `topEdge` and
 `leftEdge` — where a non-zero value means "a wall segment runs along this
 tile's north (respectively west) boundary". Only two of the four edges are
@@ -108,7 +118,7 @@ pricing, selection and UI; it is not the ownership test.
 It has three production callers, each supplying its own requirement set:
 `ConstructionSystem.submitOrder` (`src/simulation/construction/system.ts:587`,
 inside `admits`, with `SUBMISSION_REQUIREMENT`), `ObjectPlacementService`
-(`src/simulation/objects/object-placement-service.ts:526`,
+(`src/simulation/objects/object-placement-service.ts:531`,
 `PLACEMENT_REQUIREMENT`) and room zoning (`src/simulation/rooms/zoning.ts:555`,
 `ZONING_REQUIREMENT`). **This document said "its one production caller" from
 `f1d5c30` until this correction**; the second arrived at `041a379` (#269) and
@@ -135,7 +145,7 @@ of both and satisfied by either. The world keeps one slot per edge and keeps it
 on the north and west side, so the south face of owned land is addressed as the
 north edge of the first unowned row and its east face as the west edge of the
 first unowned column; `ConstructionSystem.submitOrder`
-(`src/simulation/construction/system.ts:540`) asks `admits` (`:583`) about the
+(`src/simulation/construction/system.ts:643`) asks `admits` (`:667`) about the
 order's own tile and, only if that refuses, about the tile across the named
 edge. Non-edge buildables are unaffected — an object is addressed by a tile and
 has no far side, which is what `occupiesTileEdge` decides — and the refusal the

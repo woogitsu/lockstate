@@ -7,6 +7,9 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
 /**
  * **A wall the player finishes while somebody is walking towards it is a wall
  * to them too.**
+ * The earlier fixture closed the cell door's immediate outside approach.
+ * That is now correctly refused to preserve a completed room's access. This
+ * fixture closes the next corridor edge instead, where the player may build.
  *
  * ## The finding this file settles
  *
@@ -52,8 +55,9 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  *   `DEFAULT_WALK_SUBTILE_UNITS_PER_TICK` -- against roughly eighty ticks for a
  *   `wall-brick` order to travel `approved -> materials-pending -> assigned ->
  *   in-progress -> completed` at `ConstructionSystem`'s ten-tick cadence.
- * - `(28, 30)` is walled on its west and east sides, so the cell's doorway is
- *   reachable only from `(28, 31)`. The order therefore closes the one edge
+ * - The two corridor tiles outside the door are walled on their west and east
+ *   sides, so the cell's doorway is reachable only through the build edge.
+ *   The order therefore closes the one edge
  *   every route into that cell must cross, and the test does not have to guess
  *   which tiles the router chose.
  * - The test asserts the prisoner was **more than one tile short** of the edge
@@ -71,11 +75,11 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
 
 const SEED = 0x0b1ec7;
 
-/** `room.cell`'s authored 2x3 minimum, in the corner diagonally opposite the arrival tile. */
-const CELL_RECT = { x: 28, y: 27, width: 2, height: 3 } as const;
-/** Where the cell's doorway is approached from, and the far side of the edge the player closes. */
-const APPROACH_XY = { x: 28, y: 31 } as const;
-const DOORWAY_XY = { x: 28, y: 30 } as const;
+/** `room.cell`'s authored 2x3 minimum, far from arrival with corridor ground inside the owned chunk. */
+const CELL_RECT = { x: 28, y: 25, width: 2, height: 3 } as const;
+/** Outer and inner corridor tiles of the build edge, one tile beyond the protected door approach. */
+const APPROACH_XY = { x: 28, y: 30 } as const;
+const DOORWAY_XY = { x: 28, y: 29 } as const;
 
 const ARRIVAL = { x: 1, y: 1 } as const;
 const ADMISSION = { sentenceLengthTicks: 100_000, priorIncidents: 0 } as const;
@@ -139,11 +143,13 @@ function prisonWithOneDistantCell(): SimulationRuntime {
   submit(runtime, 'buy-brick', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-2', itemId: 'item.brick', quantity: 6 }));
 
   wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
-  // The doorway tile is a cul-de-sac: west and east closed, so the only way in
-  // is from the row below. That is what makes the edge the player closes the
-  // one edge every route to this cell has to cross.
+  // Two corridor tiles are a cul-de-sac: west and east closed, so the only way
+  // in is from the row below. The inner tile remains the room door's protected
+  // approach, while the outer tile's north edge is a legal build location.
   runtime.world.setLeftEdge(DOORWAY, FIXTURE_WALL);
   runtime.world.setLeftEdge(tile(DOORWAY.x + 1, DOORWAY.y), FIXTURE_WALL);
+  runtime.world.setLeftEdge(tile(DOORWAY.x, DOORWAY.y - 1), FIXTURE_WALL);
+  runtime.world.setLeftEdge(tile(DOORWAY.x + 1, DOORWAY.y - 1), FIXTURE_WALL);
 
   submit(runtime, 'zone-cell', packCommand({ type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT }));
   submit(runtime, 'bed', packCommand({ type: 'PlaceObject', orderId: 'o-bed', definitionId: 'bed-wooden', x: CELL_RECT.x, y: CELL_RECT.y }));
@@ -181,6 +187,7 @@ function walkThenWall(): Observation {
   // the bricks are in stock, and ADR 0029 decision 2 gives a traveller no
   // claim on anything.
   submit(runtime, 'wall', packCommand({ type: 'PlaceBuildOrder', orderId: 'o-wall', definitionId: 'wall-brick', x: APPROACH_XY.x, y: APPROACH_XY.y, edge: 'north' }));
+  expect(runtime.refusals.count, 'the corridor build must be a legal player command').toBe(0);
 
   let sealedAtTick = -1;
   let walkingWhenSealed = false;
