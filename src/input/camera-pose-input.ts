@@ -88,6 +88,8 @@ export class CameraPoseInputAdapter {
     readonly pivot?: { readonly x: number; readonly y: number };
   }): boolean {
     if (gesture.button !== 2 || !this.canActivate() || !Number.isFinite(gesture.dx) || !Number.isFinite(gesture.dy)) return false;
+    if (gesture.pivot !== undefined
+      && (!Number.isFinite(gesture.pivot.x) || !Number.isFinite(gesture.pivot.y))) return false;
     if (gesture.dx === 0 && gesture.dy === 0) return false;
     const { yawRadians: yaw, elevationRadians: elevation } = this.camera.cameraPose;
     this.camera.setPoseRadians(

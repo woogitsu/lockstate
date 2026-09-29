@@ -82,6 +82,31 @@ test('camera shortcuts stop during text focus and armed placement', async ({ pag
   expect(await page.evaluate(() => (window as typeof window & { cameraAngleKeyCalls: string[] }).cameraAngleKeyCalls)).toHaveLength(5);
 });
 
+test('camera pointer rotation ignores an invalid pivot instead of poisoning the pose', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/index.html');
+  await page.evaluate(async () => {
+    const { CameraPoseInputAdapter } = await import('../../src/input/camera-pose-input');
+    const calls: unknown[] = [];
+    const camera = {
+      cameraPose: { yawRadians: 0, elevationRadians: Math.PI / 4 },
+      setPoseRadians(yawRadians: number, elevationRadians: number, pivot?: { x: number; y: number }): void {
+        calls.push({ yawRadians, elevationRadians, pivot });
+        this.cameraPose = { yawRadians, elevationRadians };
+      },
+    };
+    const adapter = new CameraPoseInputAdapter(camera, () => ['world'], () => false);
+    const rejected = adapter.pointerDrag({ button: 2, dx: 8, dy: -4, pivot: { x: Number.NaN, y: 20 } });
+    const accepted = adapter.pointerDrag({ button: 2, dx: 8, dy: -4, pivot: { x: 100, y: 200 } });
+    Object.assign(window, { cameraPivotCalls: calls, cameraPivotRejected: rejected, cameraPivotAccepted: accepted });
+  });
+  expect(await page.evaluate(() => (window as typeof window & { cameraPivotRejected: boolean }).cameraPivotRejected)).toBe(false);
+  expect(await page.evaluate(() => (window as typeof window & { cameraPivotAccepted: boolean }).cameraPivotAccepted)).toBe(true);
+  expect(await page.evaluate(() => (window as typeof window & { cameraPivotCalls: unknown[] }).cameraPivotCalls)).toEqual([
+    { yawRadians: 0.04, elevationRadians: Math.PI / 4 + 0.02, pivot: { x: 100, y: 200 } },
+  ]);
+});
+
 test('Full HD angle controls remain distinct from the minimap at larger interface scales', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/index.html');
