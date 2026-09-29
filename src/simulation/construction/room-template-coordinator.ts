@@ -189,8 +189,9 @@ export class RoomTemplateCoordinator implements SystemRegistration {
       }
       zoned.push(zone);
     }
+    const placedObjectOrderIds: string[] = [];
     for (const order of built.orders.slice(built.shellOrderIds.length)) {
-      this.objectPlacement.place({
+      const outcome = this.objectPlacement.place({
         orderId: order.id,
         definitionId: order.definitionId,
         x: order.location.x,
@@ -198,6 +199,17 @@ export class RoomTemplateCoordinator implements SystemRegistration {
         transactionId: `room-template-${request.sequence}`,
         ...(order.objectOrientation === undefined ? {} : { orientation: order.objectOrientation }),
       }, tick, request.sequence);
+      if (outcome.kind === 'refused') {
+        // The world may have changed after preflight and while the shell was
+        // being built. Keep the template atomic: undo zoning and every order
+        // already accepted for this gesture, including furniture, so a late
+        // footprint collision cannot leave a paid room without its contents.
+        for (const previous of zoned.reverse()) this.roomZoning.unzone(previous, tick);
+        for (const id of placedObjectOrderIds) this.construction.cancelOrder(id);
+        for (const id of built.shellOrderIds) this.construction.cancelOrder(id);
+        return false;
+      }
+      placedObjectOrderIds.push(outcome.orderId);
     }
     return true;
   }
