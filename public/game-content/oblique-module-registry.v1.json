@@ -50,6 +50,10 @@
       "manifest": "/game-content/oblique-shower-head.v1.json"
     },
     {
+      "assetId": "fixture.ceiling_light.panel.variants",
+      "manifest": "/game-content/oblique-ceiling-light.v1.json"
+    },
+    {
       "assetId": "fixture.cell.waste_bin",
       "manifest": "/game-content/oblique-cell-waste-bin.v1.json"
     },
