@@ -105,7 +105,7 @@ each was re-found by its text on this tree rather than trusted from either.
 
 - **`Remove` does not claim the job the docblock hands it, and says so.** The
   control's own locale string, `hud.build.remove-hint`
-  (`src/content/default-locale-en.ts:2463`; the anchor read `:2429`, then `:2424`, then `:1739`, which was
+  (`src/content/default-locale-en.ts:2467`; the anchor read `:2429`, then `:2424`, then `:1739`, which was
   a *mention* of the key inside another string's docblock rather than the
   declaration, and was re-aimed onto the declaration itself on 2026-09-19 after
   #1292 grew this file, then `:2318` -- the same declaration, before the two
@@ -120,7 +120,7 @@ each was re-found by its text on this tree rather than trusted from either.
   > started it. A finished one is not refunded.
 
   > **AND IT NO LONGER READS THAT WAY, WHICH IS FOUND HERE RATHER THAN FIXED
-  > HERE.** Opened at `src/content/default-locale-en.ts:2362` (now `:2433`) on 2026-09-19
+  > HERE.** Opened at `src/content/default-locale-en.ts:2467` (now `:2433`) on 2026-09-19
   > while re-aiming the anchor above, the string begins *"Press any tile of an
   > object, **or a finished wall**, to take it away"* — the rest is word for
   > word what is quoted. So the sentence under the quotation, *"Every clause is
@@ -149,14 +149,14 @@ each was re-found by its text on this tree rather than trusted from either.
   value `ConstructionSystem` wrote and the `'completed'` order that wrote it.
   Falling through both arms returns `{ kind: 'refused', reason:
   'nothing-to-remove' }` (`RemoveObjectRefusalReason`, `:207`), which
-  `src/simulation/runtime/session-commands.ts:793` turns into the sentence
+  `src/simulation/runtime/session-commands.ts:1015` turns into the sentence
   the issue quotes.
 
 ### 2. The positive control, re-opened from the issue's own comment
 
 The comment on the issue (2026-09-04) recorded the other arm of the same
 standing run: disarm `Remove`, press `Z` once. `ConstructionSystem.cancelOrder`
-(`src/simulation/construction/system.ts:941-990`) is unconditional on state
+(`src/simulation/construction/system.ts:901-912`) is unconditional on state
 beyond `isCancellable`, and for a `'completed'` order it sets `hadGeometry =
 true` (`:949`) and calls `this.revertConstruction(order)` (`:951`), which
 rewrites the edge the order wrote — falling to whatever *other* completed
@@ -186,11 +186,11 @@ src/ui/hud/projection.ts, messages.ts, hud.ts          … comments and refusal 
 src/ui/simulation-*.ts (4 files)                       … comments
 src/content/default-locale-en.ts                        … comments
 src/main.ts:2495                                        … comment
-src/main.ts:2498: requireSimulation(commands).submit({ type: 'CancelBuildOrder', orderId: intent.orderId });
+src/main.ts:3353: requireSimulation(commands).submit({ type: 'CancelBuildOrder', orderId: intent.orderId });
 ```
 
 Same finding the comment already closed, re-run on this tree: **one
-producer**, `src/main.ts:2498`, under `case 'cancel-build-order':` at `:2497`,
+producer**, `src/main.ts:3353`, under `case 'cancel-build-order':` at `:2497`,
 fed by the queue row's intent. `CancelBuildOrder`'s own decode
 (`src/simulation/protocol/commands.ts`) carries only `orderId` on the wire —
 no location, no edge — and its handler
