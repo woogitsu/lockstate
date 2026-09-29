@@ -10,18 +10,18 @@ const digest = (bytes: Buffer) => createHash('sha256').update(bytes).digest('hex
 const json = (path: string): unknown => JSON.parse(readFileSync(join(root, 'public', path.slice(1)), 'utf8')) as unknown;
 
 describe('oblique cell module registry', () => {
-  it('publishes forty-three logical modules with complete hashed poses and a shared ground pivot', () => {
+  it('publishes forty-five logical modules with complete hashed poses and a shared ground pivot', () => {
     const registry = parseObliqueModuleRegistry(json('/game-content/oblique-module-registry.v1.json'));
     expect(registry.entries.map((entry) => entry.assetId)).toEqual([
       'wall.interior.module.full', 'wall.interior.module.west.full', 'wall.interior.module.cutaway',
       'wall.interior.module.west.cutaway',
       'furniture.cell.bed.single.variants', 'door.interior.open.full', 'door.interior.open.cutaway',
       'door.interior.open.west.full', 'door.interior.open.west.cutaway',
-      'fixture.cell.toilet_sink', 'fixture.cell.sink', 'fixture.cell.waste_bin', 'furniture.dining.table.wooden', 'furniture.corridor.bench.variants', 'furniture.kitchen.prep_counter', 'furniture.kitchen.stove', 'furniture.kitchen.fridge', 'furniture.storage.rack.wooden', 'furniture.chair.wooden',
+      'fixture.cell.sink', 'fixture.cell.toilet_sink', 'fixture.shower.head', 'fixture.ceiling_light.panel.variants', 'perimeter.light.pole.variants', 'fixture.cell.waste_bin', 'furniture.dining.table.wooden', 'furniture.corridor.bench.variants', 'furniture.kitchen.prep_counter', 'furniture.kitchen.stove', 'furniture.kitchen.fridge', 'furniture.medical.cabinet', 'furniture.medical.bed.single', 'furniture.storage.rack.wooden', 'furniture.chair.wooden',
       'floor.cell.sealed-concrete', 'floor.linoleum.institutional', 'floor.canteen.terrazzo',
       'actor.prisoner.base', 'actor.guard.base',
       'wall.interior.corner.inner.north-west.full', 'wall.interior.corner.inner.north-west.cutaway',
-      'floor.shower.ceramic', 'fixture.shower.head',
+      'floor.shower.ceramic',
       'door.shower.privacy.open.full', 'door.shower.privacy.open.cutaway',
       'floor.terrain.dirt',
       'floor.terrain.grass',
@@ -40,7 +40,7 @@ describe('oblique cell module registry', () => {
       expect(catalog.nominalPixelsPerTile).toBe(64);
       expect(catalog.pivotPx).toEqual(isGround ? [64, 64] : [256, 256]);
       expect(catalog.cameraTargetTiles).toEqual([0, 0, 0]);
-      const isDense = entry.assetId === 'fixture.cell.sink' || entry.assetId === 'fixture.cell.waste_bin' || entry.assetId === 'furniture.dining.table.wooden' || entry.assetId === 'furniture.corridor.bench.variants' || entry.assetId === 'furniture.kitchen.prep_counter' || entry.assetId === 'furniture.kitchen.stove' || entry.assetId === 'furniture.kitchen.fridge';
+      const isDense = entry.assetId === 'furniture.cell.bed.single.variants' || entry.assetId === 'fixture.cell.sink' || entry.assetId === 'fixture.cell.toilet_sink' || entry.assetId === 'fixture.shower.head' || entry.assetId === 'fixture.ceiling_light.panel.variants' || entry.assetId === 'perimeter.light.pole.variants' || entry.assetId === 'fixture.cell.waste_bin' || entry.assetId === 'furniture.dining.table.wooden' || entry.assetId === 'furniture.corridor.bench.variants' || entry.assetId === 'furniture.kitchen.prep_counter' || entry.assetId === 'furniture.kitchen.stove' || entry.assetId === 'furniture.kitchen.fridge' || entry.assetId === 'furniture.medical.cabinet' || entry.assetId === 'furniture.medical.bed.single';
       const isWide = entry.assetId.startsWith('wall.interior.module.') || entry.assetId.startsWith('wall.interior.corner.') || entry.assetId.startsWith('wall.interior.junction.') || entry.assetId === 'wall.square.brick.low' || entry.assetId.startsWith('floor.') || entry.assetId.startsWith('actor.') || entry.assetId === 'door.interior.open.cutaway' || entry.assetId.startsWith('door.interior.open.west.') || entry.assetId.startsWith('door.shower.privacy.') || entry.assetId === 'fixture.shower.head';
       expect(catalog.yawDegrees).toEqual(isDense
         ? [-165, -135, -105, -75, -45, -15, 15, 45, 75, 105, 135, 165]

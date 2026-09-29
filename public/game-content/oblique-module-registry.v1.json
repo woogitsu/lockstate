@@ -38,12 +38,24 @@
       "manifest": "/game-content/oblique-cell-door-west-cutaway.v1.json"
     },
     {
+      "assetId": "fixture.cell.sink",
+      "manifest": "/game-content/oblique-cell-sink.v1.json"
+    },
+    {
       "assetId": "fixture.cell.toilet_sink",
       "manifest": "/game-content/oblique-cell-toilet.v1.json"
     },
     {
-      "assetId": "fixture.cell.sink",
-      "manifest": "/game-content/oblique-cell-sink.v1.json"
+      "assetId": "fixture.shower.head",
+      "manifest": "/game-content/oblique-shower-head.v1.json"
+    },
+    {
+      "assetId": "fixture.ceiling_light.panel.variants",
+      "manifest": "/game-content/oblique-ceiling-light.v1.json"
+    },
+    {
+      "assetId": "perimeter.light.pole.variants",
+      "manifest": "/game-content/oblique-light-pole.v1.json"
     },
     {
       "assetId": "fixture.cell.waste_bin",
@@ -68,6 +80,14 @@
     {
       "assetId": "furniture.kitchen.fridge",
       "manifest": "/game-content/oblique-kitchen-fridge.v1.json"
+    },
+    {
+      "assetId": "furniture.medical.cabinet",
+      "manifest": "/game-content/oblique-medical-cabinet.v1.json"
+    },
+    {
+      "assetId": "furniture.medical.bed.single",
+      "manifest": "/game-content/oblique-medical-bed.v1.json"
     },
     {
       "assetId": "furniture.storage.rack.wooden",
@@ -108,10 +128,6 @@
     {
       "assetId": "floor.shower.ceramic",
       "manifest": "/game-content/oblique-floor-shower.v1.json"
-    },
-    {
-      "assetId": "fixture.shower.head",
-      "manifest": "/game-content/oblique-shower-head.v1.json"
     },
     {
       "assetId": "door.shower.privacy.open.full",

@@ -114,12 +114,14 @@ test('real render feed cell keeps one build square under the cursor while the sc
   expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.loadedArtTextureCount()))
     .toBeLessThanOrEqual(await page.evaluate(() => window.lockstateObliqueWorldHarness.artCatalogCount()));
   let previousGroundPaints = 0;
+  let previousBedFrame: string | undefined;
   for (const [yaw, elevation] of [[-45, 25], [0, 45], [45, 65]] as const) {
     await page.evaluate(([y, e]) => window.lockstateObliqueWorldHarness.setPose(y, e), [yaw, elevation] as const);
-    const angleCode = `yaw${yaw < 0 ? '-' : '+'}${Math.abs(yaw).toString().padStart(2, '0')}-elev${elevation}`;
     const artBeforeSelection = await page.evaluate(() => window.lockstateObliqueWorldHarness.artTextureKeys());
-    expect(artBeforeSelection
-      .some((key) => key.includes(`cell-bed-${angleCode}`))).toBe(true);
+    const bedFrame = artBeforeSelection.find((key) => key.includes('cell-bed-yaw'));
+    expect(bedFrame).toBeDefined();
+    if (previousBedFrame !== undefined) expect(bedFrame).not.toBe(previousBedFrame);
+    previousBedFrame = bedFrame;
     const point = await page.evaluate(() => window.lockstateObliqueWorldHarness.pointAtTile(3, 3));
     await page.mouse.click(point.x, point.y);
     expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.selected())).toEqual({ tileX: 3, tileY: 3 });

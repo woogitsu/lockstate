@@ -1,0 +1,478 @@
+{
+  "schemaVersion": 1,
+  "assetId": "fixture.ceiling_light.panel.variants",
+  "source": "environment.mvp.catalog.blend",
+  "sourceSha256": "57db9afb7e48996cef9aaedda72b8e874e865eb56862ee4add8b177a9713887d",
+  "sourceDependencies": [],
+  "resolutionPx": [
+    512,
+    512
+  ],
+  "nominalPixelsPerTile": 64,
+  "pivotPx": [
+    256,
+    256
+  ],
+  "cameraTargetTiles": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "projection": "orthographic",
+  "yawDegrees": [
+    -165,
+    -135,
+    -105,
+    -75,
+    -45,
+    -15,
+    15,
+    45,
+    75,
+    105,
+    135,
+    165
+  ],
+  "elevationDegrees": [
+    20,
+    30,
+    40,
+    50,
+    60,
+    70
+  ],
+  "frames": [
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/ceiling-light-yaw-165-elev20.e7505e2c3c57.png",
+      "sha256": "e7505e2c3c5722e6ab212ab3d1b9ffcde0d89e57e1d04dffa663a28bdc876cd2"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/ceiling-light-yaw-165-elev30.e3b78b164910.png",
+      "sha256": "e3b78b1649104ced12318368b656b4b95e878b822ff94b072b17dffb7a1de95c"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/ceiling-light-yaw-165-elev40.1ec34947cc85.png",
+      "sha256": "1ec34947cc8581853a67e25688ad7c90f7240ed1919b42b6bd42dd296ca86c79"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/ceiling-light-yaw-165-elev50.c02c950c1294.png",
+      "sha256": "c02c950c12941df75a26184d9fdd886d7513b49fcde5abb248779f95eb32978b"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/ceiling-light-yaw-165-elev60.5f1629aebb6a.png",
+      "sha256": "5f1629aebb6a09b05f9a1a505fd0c793de97260a8fdba50c4e6db96dbbfce622"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/ceiling-light-yaw-165-elev70.544da604ae61.png",
+      "sha256": "544da604ae616077c7e520c171358950a763540f880dc6bd48d7250a137f14f9"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/ceiling-light-yaw-135-elev20.ed26772451e5.png",
+      "sha256": "ed26772451e522252beebb22daa0d97ab8b98ea2bbb65e855107ba0d19e5ad7e"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/ceiling-light-yaw-135-elev30.0579cb7f588a.png",
+      "sha256": "0579cb7f588afc1163096b5e47c97ed31002fcc96594aafdfa76b711adc0889e"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/ceiling-light-yaw-135-elev40.b8c1ce2cf9c3.png",
+      "sha256": "b8c1ce2cf9c3ffde74c8a46905cd7ce3b0e3b8d8904111730579f3e8da924af3"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/ceiling-light-yaw-135-elev50.6d38379f1dae.png",
+      "sha256": "6d38379f1daeef37b123868a3aebdf6a4daaf7c98974e444c06a2bbf80317d1e"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/ceiling-light-yaw-135-elev60.7cc582a8912b.png",
+      "sha256": "7cc582a8912b271b71340f576cd6b0b9ed8685cfa0398161e8755c1001e067a9"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/ceiling-light-yaw-135-elev70.0b1a1048951e.png",
+      "sha256": "0b1a1048951eff76208efaabd671707994c653fda30d01866d7a56b735ef371c"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/ceiling-light-yaw-105-elev20.a0d582c64f77.png",
+      "sha256": "a0d582c64f779c59ae2b3da4a219137e7ff8e1c419da3782e9a574d80db23cee"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/ceiling-light-yaw-105-elev30.df75b1b7387b.png",
+      "sha256": "df75b1b7387b550c3c8e7641f1f0d914210a42cdf897eae7e1c3d4a588b22873"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/ceiling-light-yaw-105-elev40.2cdf1d063e7b.png",
+      "sha256": "2cdf1d063e7b0962a55d16fad2fcbc31120874fbd4cd0a46358007be8aac2203"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/ceiling-light-yaw-105-elev50.58879450223f.png",
+      "sha256": "58879450223f2b91f1ff6a4fe2f96860a4c73dc4bdd0f601f7ede8166e562e7c"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/ceiling-light-yaw-105-elev60.3125391fe553.png",
+      "sha256": "3125391fe5533848504c84ab21773c253a1e58c4251f997dd5725c865a934cd2"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/ceiling-light-yaw-105-elev70.1343726c7842.png",
+      "sha256": "1343726c78423e20273806b68ed6dc9be04e3c5e2c0416d55fbf12c4e1a936db"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/ceiling-light-yaw-75-elev20.054a7aff7cd0.png",
+      "sha256": "054a7aff7cd06cd006b49effbf638f04911f8f951f77af9e059f6208715e1ad6"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/ceiling-light-yaw-75-elev30.5307c970457d.png",
+      "sha256": "5307c970457d8757881436a506b3270646a021b1ddd79cc2d44a90f60b8e6f02"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/ceiling-light-yaw-75-elev40.82c82ea92704.png",
+      "sha256": "82c82ea927047f245e19f250413ea8923ba72a8c363b995781c6583703842915"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/ceiling-light-yaw-75-elev50.589f2496b460.png",
+      "sha256": "589f2496b460e4ecdc9c541583bcc3a72e81fc4d8e42eca0d5ac44632b1d4b1b"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/ceiling-light-yaw-75-elev60.65bbabb36974.png",
+      "sha256": "65bbabb369745b3ec3a71f4f0a2f80998d26b9b805773df9e26fca0874eeb565"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/ceiling-light-yaw-75-elev70.550f47c53591.png",
+      "sha256": "550f47c535910c001190124da7187574ef06f49647e482519113710aed45f6ba"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/ceiling-light-yaw-45-elev20.e41e37ad2f92.png",
+      "sha256": "e41e37ad2f9269441bc00fb9654cd576920fb37e46b656dac9f42613baaa4ef1"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/ceiling-light-yaw-45-elev30.28530494038a.png",
+      "sha256": "28530494038aeee078788c5fde92b1d4c513fbc95088a0943fd60ef3b448aec6"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/ceiling-light-yaw-45-elev40.104cbe70a4ca.png",
+      "sha256": "104cbe70a4ca245f0ccae3707224f97a54cc48c4447a7a6236a0d4054513a9d9"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/ceiling-light-yaw-45-elev50.c954ef7b3190.png",
+      "sha256": "c954ef7b31904150a87456a03be16cb2f400e7c1a0c0c81c39fe479652780996"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/ceiling-light-yaw-45-elev60.c4ce8c22632f.png",
+      "sha256": "c4ce8c22632f152de2721fe23d05017b038e9a72d1cf49432bd48f2869c12d8d"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/ceiling-light-yaw-45-elev70.d83a6486f22d.png",
+      "sha256": "d83a6486f22ddcd864b1da4d5913ab141830b119beb8ba56c6506c2a177a89c1"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/ceiling-light-yaw-15-elev20.ad46673811a6.png",
+      "sha256": "ad46673811a618cbad8f5a98a723f3a50f10ea566752a9b0be3a0aac0dd2037c"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/ceiling-light-yaw-15-elev30.3d6858776635.png",
+      "sha256": "3d6858776635ebb6b1f8960ccc2ea9be07406533c10ba74fc42dac0bf88c9617"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/ceiling-light-yaw-15-elev40.b7b44b90d02f.png",
+      "sha256": "b7b44b90d02ff5c893c984760599e110884949a1434dd4faaf6dea9fd3e91774"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/ceiling-light-yaw-15-elev50.5beff24b00f7.png",
+      "sha256": "5beff24b00f77fd3e50f00b49442ab94612472bcdd1a339e50da0d03cb08bd8b"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/ceiling-light-yaw-15-elev60.ff0bd39d8ca0.png",
+      "sha256": "ff0bd39d8ca025487e01a57b311ddd1402abaeaa28d16412f7ac0d35e7c69319"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/ceiling-light-yaw-15-elev70.d3f40bc8094c.png",
+      "sha256": "d3f40bc8094c3a78ae3b84cbc8a4275006b1d97d7a4111277c389d06bf973674"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/ceiling-light-yaw+15-elev20.c3a5e71faf2c.png",
+      "sha256": "c3a5e71faf2cf5a9284f1b26b5b898baee45dffbbc3180416d7b3b96c9683bc3"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/ceiling-light-yaw+15-elev30.fd21b6c2f82a.png",
+      "sha256": "fd21b6c2f82a5b115b29a893478416bc6e9b3ad7de9220a7655fd680ccf6c680"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/ceiling-light-yaw+15-elev40.d860c4e7501a.png",
+      "sha256": "d860c4e7501adad03b2aeb73d61733ecf8b054ec82363995941469bda8d497e4"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/ceiling-light-yaw+15-elev50.00f1b1dae5ec.png",
+      "sha256": "00f1b1dae5ec2df912db0fcca82b5276624e3f6ebba4b24ebdaa31da66c1c2cd"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/ceiling-light-yaw+15-elev60.139b70f3c0a9.png",
+      "sha256": "139b70f3c0a9a2af55ad9808c85f0eca86f8877786457a75fe6d3f31f509b867"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/ceiling-light-yaw+15-elev70.e3dfd03f9469.png",
+      "sha256": "e3dfd03f9469f34f7c75d4e580626edbb24bebfe0cf254db4ff0178db3711a77"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/ceiling-light-yaw+45-elev20.68a97eac6b8e.png",
+      "sha256": "68a97eac6b8e6798de0836aa6dd79b79eb54de7967a3a582a6288b19cd30dd69"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/ceiling-light-yaw+45-elev30.89c78e6c4c02.png",
+      "sha256": "89c78e6c4c0205fe79c51619e00d82f15542e68e6b3294b156d1e8b668fdb830"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/ceiling-light-yaw+45-elev40.5e87f9eb1d85.png",
+      "sha256": "5e87f9eb1d856e2b6743b3aa35ff76d2b1d1f46dbbf66f13951bd7939e77af95"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/ceiling-light-yaw+45-elev50.556aead11ed2.png",
+      "sha256": "556aead11ed25d301797878f10c1fc25bc7f941e9d12e998e47d3351eadc3ffb"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/ceiling-light-yaw+45-elev60.8b84bf1257a7.png",
+      "sha256": "8b84bf1257a7a7a92fdf659e897953ccf41a5131fd47e30c70c7d5225fd874ae"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/ceiling-light-yaw+45-elev70.aaf9b720c62d.png",
+      "sha256": "aaf9b720c62d14e88fb9a419329ff8bde52b0fc006575a362da7c014ead45ba5"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/ceiling-light-yaw+75-elev20.64eb868db7e6.png",
+      "sha256": "64eb868db7e69d4170b5aafb769b9c4818f498a9d509f3c6b1418d441d080756"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/ceiling-light-yaw+75-elev30.e8fb01b84696.png",
+      "sha256": "e8fb01b84696e1fe93e5bd8dc577f8af039846ecb3c8d07a39479d90d384febb"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/ceiling-light-yaw+75-elev40.41bc4a846a6a.png",
+      "sha256": "41bc4a846a6aad557a9bfbffcdee723781c77d525cee89d25eb3acef757151ea"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/ceiling-light-yaw+75-elev50.1419c4779b44.png",
+      "sha256": "1419c4779b4455e392b9217e8287a07dcf39a82d6a05dc05359f1b7758060ebb"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/ceiling-light-yaw+75-elev60.7fd8f06f7fa5.png",
+      "sha256": "7fd8f06f7fa58f84e5d0831f3148334f271fab216fea504e2eb38c8aa3ea4382"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/ceiling-light-yaw+75-elev70.5e220d4bcce1.png",
+      "sha256": "5e220d4bcce110ebbbb9a07ad2011c302d9525bdf30714679f7b99025b7fff32"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/ceiling-light-yaw+105-elev20.2b4cddac8eb6.png",
+      "sha256": "2b4cddac8eb625a049229f094d45952a9674177236b249b7c86d5e68513e3b18"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/ceiling-light-yaw+105-elev30.4e7bfe0843ff.png",
+      "sha256": "4e7bfe0843fff1d972e3c006cdc5b69ebed22ebb363b885b2a8d8ef8f4dc0ef6"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/ceiling-light-yaw+105-elev40.6b544cca3271.png",
+      "sha256": "6b544cca3271e913b90be5e1b223075b4030e0bc8077e14d6207a72e14800cb6"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/ceiling-light-yaw+105-elev50.6e5593bf9e19.png",
+      "sha256": "6e5593bf9e197ddef8e6dcdfcb9afb70fb3c275e89dc30a88918ada271457477"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/ceiling-light-yaw+105-elev60.53113cd90dfa.png",
+      "sha256": "53113cd90dfa7876d0402bdea0b3817a6c43756dbea16a68c7b5e4e6e253181c"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/ceiling-light-yaw+105-elev70.50da7ffb7b8e.png",
+      "sha256": "50da7ffb7b8ea6ac6344b78bad2a26f7efb2072c26438ba6a3222342f14aca1f"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/ceiling-light-yaw+135-elev20.22e5c55e5c55.png",
+      "sha256": "22e5c55e5c551547db6d5d658dea374aec615319dfc3e7af7813f08c1e14fb21"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/ceiling-light-yaw+135-elev30.00b85d9b07e8.png",
+      "sha256": "00b85d9b07e8f26bad8c37d2628d8dd43d1d10f800da3fdc6d9ab47fb9678d5e"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/ceiling-light-yaw+135-elev40.c3a66a70dcd7.png",
+      "sha256": "c3a66a70dcd717e0123ad41751d32bd16fb229116628d7eeafa46be517e92e04"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/ceiling-light-yaw+135-elev50.aa3854eb6d30.png",
+      "sha256": "aa3854eb6d3063ca9da4256aa6c74d5701112ca130d99728d2a81ff9f62ef470"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/ceiling-light-yaw+135-elev60.439473fe9d06.png",
+      "sha256": "439473fe9d061d22baf356c52c96294520d829b8c2e69546bdaccb5a4defed51"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/ceiling-light-yaw+135-elev70.cb9961cca4e7.png",
+      "sha256": "cb9961cca4e741aaaee0ea82e93f99ea1257de022ce31fb3c2a2e312c3533988"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/ceiling-light-yaw+165-elev20.aa9d20907d75.png",
+      "sha256": "aa9d20907d75c6dd5658a7c236b0094cab3f4f89fffab00d29e3e8fdd5919a47"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/ceiling-light-yaw+165-elev30.30d339011e4d.png",
+      "sha256": "30d339011e4dd16831e0b25eb05baa5620a2c3b1758fd9da784e0f4af8042618"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/ceiling-light-yaw+165-elev40.bb7f0d5bd781.png",
+      "sha256": "bb7f0d5bd781d3d73bc82abbdd380c98de5e4d9fa0318ed4eda25b640766f002"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/ceiling-light-yaw+165-elev50.9aa0a33a6eb4.png",
+      "sha256": "9aa0a33a6eb4bf3db79c7c9427a7e6f5bed5a23b52194cbc2f3a896ad099ddbb"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/ceiling-light-yaw+165-elev60.cf0561f5b564.png",
+      "sha256": "cf0561f5b564116feb1ec3c61f75bfbd9f65340a3cd4277f77148a7eccc53218"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/ceiling-light-yaw+165-elev70.7f1e98e36a07.png",
+      "sha256": "7f1e98e36a07dc4c464c68d42a1e9a9bed32fc97a8302c15f42d4f2c7a027cbb"
+    }
+  ]
+}
