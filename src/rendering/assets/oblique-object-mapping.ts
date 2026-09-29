@@ -10,7 +10,5 @@ export function obliqueAssetIdForObject(objectId: string): string | undefined {
   return OBLIQUE_OBJECT_ASSET_IDS[objectId];
 }
 
-export function obliqueCatalogForObject(objectId: string, catalogs: ReadonlyMap<string, ObliqueModuleCatalog>): ObliqueModuleCatalog | undefined {
-  const assetId = obliqueAssetIdForObject(objectId);
-  return assetId === undefined ? undefined : catalogs.get(assetId);
-}
+export function obliqueCatalogForObject(objectId: string, catalogs: ReadonlyMap<string, ObliqueModuleCatalog>): ObliqueModuleCatalog | undefined {`n  const assetId = obliqueAssetIdForObject(objectId);`n  if (assetId === undefined) return undefined;`n  // Fail closed when the registry did not load or omitted this mapped asset.`n  return catalogs.get(assetId);`n}
+
