@@ -46,6 +46,10 @@
       "manifest": "/game-content/oblique-cell-toilet.v1.json"
     },
     {
+      "assetId": "fixture.shower.head",
+      "manifest": "/game-content/oblique-shower-head.v1.json"
+    },
+    {
       "assetId": "fixture.cell.waste_bin",
       "manifest": "/game-content/oblique-cell-waste-bin.v1.json"
     },
@@ -116,10 +120,6 @@
     {
       "assetId": "floor.shower.ceramic",
       "manifest": "/game-content/oblique-floor-shower.v1.json"
-    },
-    {
-      "assetId": "fixture.shower.head",
-      "manifest": "/game-content/oblique-shower-head.v1.json"
     },
     {
       "assetId": "door.shower.privacy.open.full",
