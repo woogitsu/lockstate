@@ -130,8 +130,8 @@
     {
       "assetId": "floor.canteen.terrazzo",
       "contentVersion": 1,
-      "image": "source-art/rendered.floor.canteen.terrazzo.ed4339ecbef4.png",
-      "sha256": "ed4339ecbef4d51769bc5e1ff655fa510d3fb873d0106e50819c42d4b88c1d6c",
+      "image": "source-art/rendered.floor.canteen.terrazzo.a1f31f17de5a.png",
+      "sha256": "a1f31f17de5a327f36605d69251bc76d91dc7b82aa5970e82b665659dbfcb800",
       "dimensionsPx": {
         "width": 256,
         "height": 256
@@ -141,14 +141,14 @@
         "height": 1
       },
       "frameTiles": {
-        "width": 1,
-        "height": 1
+        "width": 1.000001,
+        "height": 1.000001
       },
       "frameAspectDriftFromFootprint": 0,
       "sourceAttribution": {
         "license": "project-rendered, reproducible",
         "producedBy": "tooling/blender/render-environment-objects.py",
-        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "catalog": "assets/source/blender/floor.canteen.warm-terrazzo.blend",
         "blenderVersion": "5.2.1"
       }
     },

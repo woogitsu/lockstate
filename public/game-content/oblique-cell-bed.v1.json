@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "assetId": "furniture.cell.bed.single.variants",
+  "source": "environment.mvp.catalog.blend",
+  "sourceSha256": "57db9afb7e48996cef9aaedda72b8e874e865eb56862ee4add8b177a9713887d",
+  "sourceDependencies": [],
+  "resolutionPx": [
+    512,
+    512
+  ],
+  "nominalPixelsPerTile": 64,
+  "pivotPx": [
+    256,
+    256
+  ],
+  "cameraTargetTiles": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "projection": "orthographic",
+  "yawDegrees": [
+    -45,
+    0,
+    45
+  ],
+  "elevationDegrees": [
+    25,
+    45,
+    65
+  ],
+  "frames": [
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/cell-bed-yaw-45-elev25.c106e7f3c86c.png",
+      "sha256": "c106e7f3c86c929ed0083d394699bf0418b3e30f3c69a18e136e39c15aeb8d35"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/cell-bed-yaw-45-elev45.74095e5922cd.png",
+      "sha256": "74095e5922cdc2e62fc7826a20ff9848e2583227f3bdf428b2a9855894d14243"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/cell-bed-yaw-45-elev65.914d7d5022ed.png",
+      "sha256": "914d7d5022edb25f5961515ca5dd49bd77178d6e1f26bfa2e5149d95c97461ae"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/cell-bed-yaw+00-elev25.302740e4c6f8.png",
+      "sha256": "302740e4c6f82eabc58e03b0b19b0511c6cdab4d3f81fc0fbc365cde911aacc9"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/cell-bed-yaw+00-elev45.1868e6e8c57a.png",
+      "sha256": "1868e6e8c57a2ab724e7035b9457d11774ee13d8dc791044781e2d0e940d8b38"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/cell-bed-yaw+00-elev65.bc9e07be5f41.png",
+      "sha256": "bc9e07be5f4172c2d705e9bb5aba793df6e1a825d992cc5a896c1505c7a261ac"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/cell-bed-yaw+45-elev25.b4c70164296e.png",
+      "sha256": "b4c70164296e92ef64b0b14b9632247260b10a08f6812cc81bfbec5bdd1fcab0"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/cell-bed-yaw+45-elev45.3f76b3fdc902.png",
+      "sha256": "3f76b3fdc902c6c51c1dc6f172ac4f8f6e3c5bd20575a5710846800d309d07ff"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/cell-bed-yaw+45-elev65.cf896ba5922c.png",
+      "sha256": "cf896ba5922cba5bd3fd4c6d14e65c0051d923992732421c913cf166b57840db"
+    }
+  ]
+}
