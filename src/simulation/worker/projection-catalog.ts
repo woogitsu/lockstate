@@ -14,6 +14,7 @@ import {
   projectPrisonerRoster,
   projectRoomDetail,
   projectRoomList,
+  projectRoomTemplatePreflight,
   projectSecurity,
   projectStaff,
   projectStatusStrip,
@@ -21,6 +22,7 @@ import {
   type ViewModelPage,
 } from '../presentation';
 import { HUD_VIEW_MODEL_SCHEMA_ID } from '../presentation/view-model';
+import { projectRoomTemplateCost } from '../presentation/room-template-cost';
 import type { EntityId } from '../entity/entity-store';
 import { PROJECTION_IDS, type ProjectionId, type ProjectionTarget } from '../protocol/types';
 import type { SimulationRuntime } from '../runtime/new-session';
@@ -109,7 +111,7 @@ export interface ProjectionResult {
 }
 
 /** What a request may name, and what the worker rejects when it names the wrong thing. */
-export type ProjectionTargetKind = 'none' | 'entity' | 'id';
+export type ProjectionTargetKind = 'none' | 'entity' | 'id' | 'room-template';
 
 export interface ProjectionCatalogEntry {
   /**
@@ -488,6 +490,28 @@ export const PROJECTION_CATALOG: Readonly<Record<ProjectionId, ProjectionCatalog
     paged: false,
     target: 'none',
     project: (runtime) => ({ view: projectWorldForRendering(runtime.world) as unknown as JsonValue }),
+  },
+  'world/room-template-preflight': {
+    schemaId: 'room-template-placement',
+    schemaVersion: 1,
+    paged: false,
+    target: 'room-template',
+    project: (runtime, _tick, request) => {
+      const target = request.target;
+      if (target?.kind !== 'room-template') throw new Error('Room template target required');
+      return { view: projectRoomTemplatePreflight(runtime.roomTemplates, target.templateId, target.origin, target.mirrorX) as unknown as JsonValue };
+    },
+  },
+  'world/room-template-cost': {
+    schemaId: 'room-template-cost',
+    schemaVersion: 1,
+    paged: false,
+    target: 'room-template',
+    project: (_runtime, _tick, request) => {
+      const target = request.target;
+      if (target?.kind !== 'room-template') throw new Error('Room template target required');
+      return { view: projectRoomTemplateCost(target.templateId) as unknown as JsonValue };
+    },
   },
 };
 

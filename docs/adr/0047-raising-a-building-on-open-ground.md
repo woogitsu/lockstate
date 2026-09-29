@@ -204,7 +204,7 @@ Every anchor below was opened.
   (`src/simulation/runtime/new-session.ts:436-438`). Chunk size 32, so the playable
   world is tiles `0..31` square.
 - **Nothing in `src/` can buy land.** `canPurchaseParcel`
-  (`src/simulation/world/sparse-world.ts:702`) and `getParcelPrice` (`:711`) have no
+  (`src/simulation/world/sparse-world.ts:725`) and `getParcelPrice` (`:734`) have no
   caller outside their own file, `registerParcel`'s only `src/` call site is
   `fromSnapshot` re-registering what a save carried
   (`src/simulation/world/tile-ownership.ts:17` says so and it is still true),
@@ -225,7 +225,7 @@ Every anchor below was opened.
 
 `SparseWorld` keeps four parallel `Uint8Array(size*size)` planes per loaded
 chunk — `chunkTerrain`, `chunkTopEdge`, `chunkLeftEdge`, `chunkZoning`
-(`src/simulation/world/sparse-world.ts:284`–`:287`, allocated on demand through
+(`src/simulation/world/sparse-world.ts:289`–`:287`, allocated on demand through
 `ensureStorageMap`, `:585`). All four serialize as optional RLE fields on
 `SerializedChunkState` (`:45`), and `decodeChunk`'s `allowedKeys` lists exactly
 those four as optional (`:191`). The save boundary mirrors it
@@ -254,7 +254,7 @@ Six definitions, including `grass` (`src/simulation/world/terrain.ts:22`) and
 (`src/rendering/world/appearance.ts:66`, `:68`). **Nothing in `src/` writes
 terrain**: `grep -rn "setTerrain\|fillTerrain" --include=*.ts src/` returns only
 the definitions in `sparse-world.ts` themselves. `getTerrainNumericId` returns
-`0` for an absent plane (`src/simulation/world/sparse-world.ts:476`), and `0` is
+`0` for an absent plane (`src/simulation/world/sparse-world.ts:481`), and `0` is
 `dirt`. So the shipped world is dirt everywhere and the terrain layer is a
 feature with a reader and no producer.
 
@@ -316,7 +316,7 @@ its first producer.
 
 **One consequence to know before taking it.** The implicit default terrain of a
 plane that was never written is `0` = `dirt`
-(`src/simulation/world/sparse-world.ts:476`). If a later chunk is materialised —
+(`src/simulation/world/sparse-world.ts:481`). If a later chunk is materialised —
 which decision 6 can cause, see its consequences — it arrives dirt, and there is
 a visible seam against the grass. Two exits: fill each chunk as it materialises,
 or give `SparseWorld` a `defaultTerrainNumericId`, which is a snapshot field and
@@ -326,9 +326,9 @@ renumbering terrain ids; `0` is persisted in every existing save.
 ### 2. A foundation is a floor value in a fifth per-chunk plane
 
 `SparseWorld` gains `chunkFloor`, a fifth `Uint8Array(size*size)` beside the
-four it already declares at `src/simulation/world/sparse-world.ts:284-287`, with
+four it already declares at `src/simulation/world/sparse-world.ts:289-292`, with
 `getFloor`/`setFloor` written exactly like `getZoning`/`setZoning`
-(`src/simulation/world/sparse-world.ts:554`, `:558`).
+(`src/simulation/world/sparse-world.ts:577`, `:581`).
 The stored value is a floor material's `numericId` from a small content
 catalogue; `0` means bare ground.
 
@@ -486,7 +486,7 @@ in bounds when either adjacent tile is in a materialised chunk.
 
 1. **Completing such an order materialises the far chunk.** `writeEdge` →
    `setTopEdge` → `setMapValue` → `load(chunk)`
-   (`src/simulation/world/sparse-world.ts:538` → `:572` → `:372`). A fresh 32×32 chunk appears in
+   (`src/simulation/world/sparse-world.ts:547` → `:595` → `:600`). A fresh 32×32 chunk appears in
    the world, in the snapshot, and — because the render view draws every
    `loaded` chunk — on screen, as a block of unowned ground where there was
    void. That is a **visible** change and it should be a deliberate one.
@@ -572,7 +572,7 @@ claims in this corpus; this document does not intend to be the first.
   unchanged and ADR 0038 decision 2's absence rule is not engaged.
 - **The plane serializes through the one run-length codec** the save format
   already uses (`encodeTerrainRle`/`decodeTerrainRle`,
-  `src/simulation/world/sparse-world.ts:179`, `:183`), so its round trip is the round
+  `src/simulation/world/sparse-world.ts:184`, `:183`), so its round trip is the round
   trip four planes already have, including the `maxValue: 255` rejection.
 - **Ordering of writes does not matter.** A floor value is a per-tile
   assignment, not an accumulation, so a slab paved in any order is the same

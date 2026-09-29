@@ -460,6 +460,7 @@ export class TileLayer {
     const top = content.tileY * TILE_SIZE_PX;
     const edgeTileXs = new Set<number>();
     for (const edge of content.edges) edgeTileXs.add(edge.tileX);
+    for (const square of content.squares) edgeTileXs.add(square.tileX);
 
     // North edges, merged into runs. A run is one sprite; a run with no art is
     // still painted tile by tile, so the blocks are exactly what they were.
@@ -502,6 +503,19 @@ export class TileLayer {
         continue;
       }
       this.paintSlab(graphics, left, top, thickness, TILE_SIZE_PX, appearance, 1);
+    }
+
+    // The occupied ground square and raised face are drawn separately. The
+    // outline stays on the exact tile the player selected even though the top
+    // face rises north of it, so height cannot masquerade as footprint.
+    for (const square of content.squares) {
+      const left = square.tileX * TILE_SIZE_PX;
+      const appearance = structureAppearance(square.value === 1 ? 'wall-brick' : 'door-wooden');
+      graphics.fillStyle(appearance.outline, 0.8);
+      graphics.fillRect(left, top, TILE_SIZE_PX, TILE_SIZE_PX);
+      this.paintSlab(graphics, left, top, TILE_SIZE_PX, TILE_SIZE_PX, appearance, 1);
+      graphics.lineStyle(2, appearance.outline, 1);
+      graphics.strokeRect(left + 1, top + 1, TILE_SIZE_PX - 2, TILE_SIZE_PX - 2);
     }
 
     for (const structure of content.structures) {

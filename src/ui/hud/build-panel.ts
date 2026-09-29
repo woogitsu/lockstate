@@ -1,4 +1,5 @@
 import type { LocalizationKey } from '../../content/localization';
+import type { RoomTemplateId } from '../../content/room-template-catalog';
 import { deriveSimulationMessageKey } from '../../content/simulation-message-keys';
 import type { MessageParameters } from '../../services/localization/format';
 import { freshUnfurnishedPrison, pressAffordabilityVerdict, purchasePreviewMinorUnits, sellBackPreviewMinorUnits } from '../affordability';
@@ -13,6 +14,8 @@ import { rovingTabStop } from '../primitives/roving-focus';
 import { bindRovingFocusKeydown } from '../primitives/roving-focus-keydown';
 import { HUD_MESSAGE_KEY } from './messages';
 import { assignPooledRows } from './pooled-row-binding';
+import { createRoomTemplatePreview } from './room-template-preview';
+import type { RoomTemplateCostQuote, RoomTemplateTool } from '../room-template-tool';
 import { toggleRemovalMode } from './tool-arming';
 import {
   HUD_BUILD_EDGES,
@@ -156,6 +159,9 @@ export interface BuildPanelTarget {
 export interface BuildPanelOptions {
   readonly localizer: HudLocalizer;
   readonly model: HudBuildViewModel;
+  readonly roomTemplateTool?: RoomTemplateTool;
+  readonly roomTemplateQuote?: (id: RoomTemplateId) => Promise<RoomTemplateCostQuote>;
+  readonly onArmRoomTemplate?: () => void;
   /** The numeric route: place exactly one order at the coordinates shown. */
   readonly onPlace: (intent: BuildPanelIntent) => void;
   /**
@@ -350,7 +356,7 @@ export function buildEdgeChoiceOptions(t: Translate): readonly ChoiceOption[] {
  * which is what makes that pair unable to disagree.
  */
 export function edgeChooserShown(buildable: HudBuildableViewModel | undefined, removing: boolean): boolean {
-  return !removing && buildable?.occupiesEdge === true;
+  return !removing && buildable?.occupiesEdge === true && buildable.definitionId !== 'wall-brick';
 }
 
 /**
@@ -381,6 +387,7 @@ export function edgeChooserShown(buildable: HudBuildableViewModel | undefined, r
  */
 export function armedHintKey(buildable: HudBuildableViewModel | undefined, removing: boolean): LocalizationKey {
   if (removing) return HUD_MESSAGE_KEY.buildRemoveHint;
+  if (buildable?.definitionId === 'wall-brick') return HUD_MESSAGE_KEY.buildArmHintSquare;
   return buildable?.placesObject === true ? HUD_MESSAGE_KEY.buildArmHintObject : HUD_MESSAGE_KEY.buildArmHint;
 }
 
@@ -1083,6 +1090,11 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     paintCatalogue();
     revealSelectedRow();
   });
+  const templatePreview = createRoomTemplatePreview(localizer, options.roomTemplateTool, options.onArmRoomTemplate, options.roomTemplateQuote);
+  const catalogueActions = element('div', {
+    className: 'hud-build__catalogue-actions',
+    children: categoryOptions.length === 0 ? [templatePreview.openButton] : [categoryFilter, templatePreview.openButton],
+  });
 
   /**
    * Scrolls the list, and only the list, until the selected row is inside it.
@@ -1321,7 +1333,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
      * control that can only be pressed to no effect. `hud.css` styles both
      * shapes of this header for that reason.
      */
-    ...(categoryOptions.length === 0 ? {} : { headerAction: categoryFilter }),
+    headerAction: catalogueActions,
   });
   // The one section the panel's height budget is allowed to take space from,
   // named so `hud.css` can say which one it is (issue #143). Every other block
@@ -3141,6 +3153,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       },
     },
   });
+  panel.element.append(templatePreview.dialog);
   panel.body.append(
     catalogue.element,
     element('div', {

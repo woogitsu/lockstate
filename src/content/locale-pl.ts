@@ -854,6 +854,8 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.alert.refusal.zone.out-of-bounds': 'Nie wyznaczono pomieszczenia — część tego obszaru leży poza mapą.',
   'hud.alert.refusal.zone.overlaps-existing-room':
     'Nie wyznaczono pomieszczenia — nachodzi na pomieszczenie, które już tam jest.',
+  'hud.alert.refusal.zone.overlaps-pending-template':
+    'Nie wyznaczono pomieszczenia — na tym obszarze trwa budowa gotowego wzoru.',
   'hud.alert.refusal.zone.unknown-room-type':
     'Nie wyznaczono pomieszczenia — to więzienie nie zna takiego typu pomieszczenia.',
   'hud.alert.refusal.zone.unowned-land': 'Nie wyznaczono pomieszczenia — nie cała ta ziemia należy do ciebie.',
@@ -1062,6 +1064,33 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   // =====================================================================
   'hud.build.title': 'Budowa',
   'hud.build.catalogue': 'Co zbudować',
+  'hud.build.templates': 'Wzory pomieszczeń',
+  'hud.build.templates-short': 'Wzory',
+  'hud.build.template-preview-only': 'Tylko podgląd. Wybierz wzór, aby obejrzeć jego układ; stawianie nie jest jeszcze dostępne.',
+  'hud.build.template-position-hint': 'Wybierz początek. Przed postawieniem sprawdzimy cały obrys wzoru.',
+  'hud.build.template-x': 'Początek wzoru X',
+  'hud.build.template-y': 'Początek wzoru Y',
+  'hud.build.template-mirror': 'Odbij poziomo',
+  'hud.build.template-place': 'Postaw wzór pomieszczenia',
+  'hud.build.template-map': 'Postaw na mapie',
+  'hud.build.template-invalid-position': 'Wpisz całkowite współrzędne.',
+  'hud.build.template-ready': 'Cały obrys jest wolny.',
+  'hud.build.template-blocked': 'Obrys jest zajęty. Wybierz inne miejsce.',
+  'hud.build.template-unavailable': 'Nie można sprawdzić miejsca. Spróbuj ponownie.',
+  'hud.build.template-submitted': 'Zlecono postawienie wzoru.',
+  'hud.build.template-close': 'Zamknij wzory',
+  'hud.build.template-cell-basic': 'Cela podstawowa',
+  'hud.build.template-cell-large': 'Cela duża',
+  'hud.build.template-shower-room': 'Łaźnia',
+  'hud.build.template-wall': 'Ściana',
+  'hud.build.template-door': 'Drzwi',
+  'hud.build.template-furniture': 'Wyposażenie',
+  'hud.build.template-bed': 'Łóżko',
+  'hud.build.template-toilet': 'Toaleta',
+  'hud.build.template-shower': 'Prysznic',
+  'hud.build.template-size': '{width} × {height} pól',
+  'hud.build.template-object-count': '{name} × {count}',
+  'hud.build.template-aria-label': '{name}, {width} × {height} pól',
   'hud.build.catalogue-empty': 'Nie ma nic do zbudowania',
   'hud.build.catalogue-row-price': '{buildable} · {total}',
   'hud.build.catalogue-row-price-segment': '{buildable} · {total} za segment',
@@ -1087,6 +1116,8 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.arm': 'Stawiaj na mapie',
   'hud.build.arm-hint':
     'Kliknij krawędź pola, aby postawić ścianę. Przeciągnij wzdłuż niej, aby położyć cały ciąg. Dwa palce, środkowy przycisk i strzałki nadal poruszają kamerą.',
+  'hud.build.arm-hint-square':
+    'Kliknij całe pole, aby postawić ścianę. Przeciągnij przez pola, aby ułożyć ciąg. Podświetlone kwadraty to dokładny obszar budowy. Dwa palce, środkowy przycisk i strzałki nadal poruszają kamerą.',
   'hud.build.arm-hint-object':
     'Kliknij pole wewnątrz wyznaczonego pomieszczenia, aby go postawić. Jedno naciśnięcie, jeden obiekt. Dwa palce, środkowy przycisk i strzałki nadal poruszają kamerą.',
   'hud.build.disarm': 'Przestań stawiać',
@@ -1583,6 +1614,10 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   // save first -- so both halves of the sentence are true of the code.
   'display.language.cycle': 'Zmień język interfejsu i przeładuj grę',
   'app.shell.label': 'Aplikacja gry Lockstate',
+  'hud.build.template-materials': 'Materiały: {materials}',
+  'hud.build.template-catalogue-value': 'Wartość katalogowa: {total}. Posiadane materiały mogą obniżyć wydatek.',
+  'hud.build.template-catalogue-value-unavailable': 'Wartość katalogowa jest niedostępna. Sprawdź wymagane materiały.',
+  'hud.build.template-cell-row-four': 'Rząd czterech cel',
 };
 
 export const localePlCatalog: LocalizationCatalog = buildLocalizationCatalog(plMessages);

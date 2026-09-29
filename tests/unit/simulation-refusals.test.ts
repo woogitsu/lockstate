@@ -281,6 +281,7 @@ describe('the wire vocabulary is exactly what the sixteen domains can produce', 
       'not-enclosed': 'zone.not-enclosed',
       'out-of-bounds': 'zone.out-of-bounds',
       'overlaps-existing-room': 'zone.overlaps-existing-room',
+      'overlaps-pending-template': 'zone.overlaps-pending-template',
       'unknown-room-type': 'zone.unknown-room-type',
       'unowned-land': 'zone.unowned-land',
     });

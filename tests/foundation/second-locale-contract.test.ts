@@ -350,6 +350,7 @@ describe('every non-default catalogue is well-formed, without being required to 
  *
  * What the list still does is unchanged: a counted message added without an
  * entry here fails on the commit that adds it.
+ * The room-template furniture label added one more formula in September 2026.
  */
 const FLAT_MESSAGES_WITH_COUNT = [
   'hud.alert.occurrences',
@@ -359,6 +360,9 @@ const FLAT_MESSAGES_WITH_COUNT = [
   'hud.build.delivery',
   'hud.build.queue-count',
   'hud.build.queue-more',
+  // A mathematical inventory label, "Bed × 2" / "Łóżko × 2": no word
+  // agrees with the count, so every plural category has the same form.
+  'hud.build.template-object-count',
   // The Sell control's own label (ADR 0075 decision 3, invoked by ADR 0096
   // decision 3(b)), in `hud.build.buy-submit`'s own flat shape and for the
   // same reason: it is player-visible copy, and authoring plural forms for
