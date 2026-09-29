@@ -1,4 +1,4 @@
-﻿name: CI
+name: CI
 
 on:
   push:
@@ -1004,4 +1004,3 @@ jobs:
           # upload that fails the job for finding nothing would turn a
           # diagnosable failure into two.
           if-no-files-found: ignore
-
