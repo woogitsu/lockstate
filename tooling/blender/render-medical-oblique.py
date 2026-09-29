@@ -1,4 +1,4 @@
-﻿import bpy,sys,os,math,hashlib,json,struct,zlib
+import bpy,sys,os,math,hashlib,json,struct,zlib
 from pathlib import Path
 root=Path(sys.argv[sys.argv.index('--')+1]) if '--' in sys.argv else Path('public/assets/environment/oblique')
 root.mkdir(parents=True,exist_ok=True)
@@ -17,4 +17,3 @@ def render(asset,file,foot):
  return frames
 for asset,file,foot in [(a,f,(1,2) if 'bed' in a else (1,1)) for a,f in assets]:
  frames=render(asset,file,foot); man={'schemaVersion':1,'assetId':asset,'source':'assets/source/blender/'+file,'sourceSha256':hashlib.sha256((Path('assets/source/blender')/file).read_bytes()).hexdigest(),'resolutionPx':[128,128],'nominalPixelsPerTile':64,'pivotPx':[64,64],'cameraTargetTiles':[foot[0]/2,foot[1]/2,0.5],'projection':'orthographic','yawDegrees':yaws,'elevationDegrees':elevs,'frames':frames}; (root.parent.parent.parent/'game-content'/('oblique-'+asset.replace('.variants','')+'.v1.json')).parent.mkdir(parents=True,exist_ok=True); (root.parent.parent.parent/'game-content'/('oblique-'+asset.replace('.variants','')+'.v1.json')).write_text(json.dumps(man,indent=2)+'\n')
-
