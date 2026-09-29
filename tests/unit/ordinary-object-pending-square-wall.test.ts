@@ -68,3 +68,11 @@ it('checks every furniture square but keeps an edge wall compatible', () => {
   runtime.kernel.step();
   expect(runtime.construction.getOrder('toilet-with-edge-wall')?.state).not.toBe('failed');
 });
+
+it('groups completed template furniture with its shell transaction', () => {
+  const runtime = completedCell();
+  const furniture = runtime.construction.allOrders().find((order) => order.definitionId === 'bed-wooden');
+  expect(furniture).toBeDefined();
+  const latest = runtime.construction.snapshot().undoStack.at(-1) ?? [];
+  expect(latest).toContain(furniture!.id);
+});
