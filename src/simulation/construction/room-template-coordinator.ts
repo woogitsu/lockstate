@@ -30,6 +30,7 @@ export interface RoomTemplateCoordinatorSnapshot {
   readonly pending: readonly PendingRoomTemplate[];
   /** Additive V7 field: older saves without undone gestures restore an empty list. */
   readonly undone?: readonly PendingRoomTemplate[];
+  readonly completed?: readonly PendingRoomTemplate[];
 }
 
 /** Finishes zoning only after every authored shell order has actually built. */
@@ -39,6 +40,7 @@ export class RoomTemplateCoordinator implements SystemRegistration {
   public readonly schedule = { intervalTicks: 10, phaseTicks: 0 };
   private pending: PendingRoomTemplate[] = [];
   private undone: PendingRoomTemplate[] = [];
+  private completed: PendingRoomTemplate[] = [];
 
   public constructor(
     private readonly world: SparseWorld,
@@ -211,6 +213,7 @@ export class RoomTemplateCoordinator implements SystemRegistration {
       }
       placedObjectOrderIds.push(outcome.orderId);
     }
+    this.completed.push({ ...request, origin: { ...request.origin } });
     return true;
   }
 
@@ -259,6 +262,13 @@ export class RoomTemplateCoordinator implements SystemRegistration {
 
   /** Command dispatch also runs while paused, so release invalidated plans then. */
   public reconcileCancelledShells(): void {
+    this.completed = this.completed.filter((request) => {
+      const ids = this.shellOrderIds(request);
+      if (!ids.some((id) => this.construction.getOrder(id)?.state === 'cancelled')) return true;
+      for (const zone of this.planFor(request).zones) this.roomZoning.unzone(zone, 0);
+      if (this.construction.canRedoOrdersTogether(ids)) this.undone.push(request);
+      return false;
+    });
     this.pending = this.pending.filter((request) => {
       const shellOrderIds = this.shellOrderIds(request);
       if (!shellOrderIds.some((id) => {
@@ -309,7 +319,8 @@ export class RoomTemplateCoordinator implements SystemRegistration {
   public snapshot(): RoomTemplateCoordinatorSnapshot {
     const undone = this.undone.filter((request) => this.construction.canRedoOrdersTogether(this.shellOrderIds(request)));
     const copy = (entry: PendingRoomTemplate) => ({ ...entry, origin: { ...entry.origin } });
-    return { version: 1, pending: this.pending.map(copy), ...(undone.length === 0 ? {} : { undone: undone.map(copy) }) };
+    const completed = this.completed;
+    return { version: 1, pending: this.pending.map(copy), ...(undone.length === 0 ? {} : { undone: undone.map(copy) }), ...(completed.length === 0 ? {} : { completed: completed.map(copy) }) };
   }
 
   public loadSnapshot(snapshot: RoomTemplateCoordinatorSnapshot | undefined): void {
@@ -318,5 +329,6 @@ export class RoomTemplateCoordinator implements SystemRegistration {
     this.undone = snapshot?.undone?.filter((request) =>
       this.construction.canRedoOrdersTogether(this.shellOrderIds(request)))
       .map((entry) => ({ ...entry, origin: { ...entry.origin } })) ?? [];
+    this.completed = snapshot?.completed?.map((entry) => ({ ...entry, origin: { ...entry.origin } })) ?? [];
   }
 }
