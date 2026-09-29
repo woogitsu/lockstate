@@ -289,6 +289,25 @@ describe('submitOrder refuses an order on unowned land (#215)', () => {
     construction(world).submitOrder(order);
     expect(order.state, 'terrain is deliberately not enforced at submission (#215)').toBe('approved');
   });
+
+  it('refuses a full-square build through an occupied object tile but leaves edge geometry alone', () => {
+    const world = worldWith(true);
+    const occupied = tile(4, 6);
+    const sink = {
+      isTileOccupied: (candidate: typeof occupied) => candidate.x === occupied.x && candidate.y === occupied.y,
+      onOrderCompleted: () => true,
+      onOrderReverted: () => true,
+    };
+
+    const wall = createBuildOrder('wall-through-desk', 'bed-wooden', occupied);
+    new ConstructionSystem(world, undefined, sink).submitOrder(wall);
+    expect(wall.state).toBe('failed');
+    expect(wall.failReason).toBe('unbuildable');
+
+    const edge = createBuildOrder('edge-beside-desk', 'wall-brick', occupied, 'north');
+    new ConstructionSystem(world, undefined, sink).submitOrder(edge);
+    expect(edge.state).toBe('approved');
+  });
 });
 
 function construction(world: SparseWorld): ConstructionSystem {

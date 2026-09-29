@@ -246,6 +246,7 @@ const SUBMISSION_FAIL_REASONS: Readonly<Record<string, BuildOrderFailReason>> = 
  * `ObjectPlacementService` documents the one interleaving that produces it.
  */
 export interface ObjectPlacementSink {
+  isTileOccupied(tile: TilePosition): boolean;
   onOrderCompleted(objectId: string, anchor: TilePosition): boolean;
   onOrderReverted(objectId: string, anchor: TilePosition): boolean;
 }
@@ -589,10 +590,11 @@ export class ConstructionSystem implements SystemRegistration {
       return;
     }
 
-    const refusal = this.admits(order.location);
+    const checkObjectOccupancy = !occupiesTileEdge(definition);
+    const refusal = this.admits(order.location, checkObjectOccupancy);
     if (refusal !== undefined) {
       const across = occupiesTileEdge(definition) ? tileAcrossEdge(order.location, resolveBuildEdge(order)) : undefined;
-      if (across === undefined || this.admits(across) !== undefined) {
+      if (across === undefined || this.admits(across, checkObjectOccupancy) !== undefined) {
         this.setState(order, 'failed');
         order.failReason = refusal;
         this.orders.set(order.id, order);
@@ -612,9 +614,11 @@ export class ConstructionSystem implements SystemRegistration {
    * edge can be asked the identical question -- a second copy of the pair is
    * how the two sides of one wall would come to be judged by different rules.
    */
-  private admits(tile: TilePosition): BuildOrderFailReason | undefined {
+  private admits(tile: TilePosition, checkObjectOccupancy = true): BuildOrderFailReason | undefined {
     const { chunk } = tileToChunk(tile, this.world.tileChunkSize);
     if (this.world.getChunk(chunk) === undefined) return 'out-of-bounds';
+
+    if (checkObjectOccupancy && this.objectPlacement?.isTileOccupied(tile)) return 'unbuildable';
 
     const buildability = canBuildAt(this.world, tile, SUBMISSION_REQUIREMENT);
     if (buildability.buildable) return undefined;
