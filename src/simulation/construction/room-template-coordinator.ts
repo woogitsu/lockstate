@@ -223,8 +223,9 @@ export class RoomTemplateCoordinator implements SystemRegistration {
     if (pendingClaims) return true;
     // A completed plan no longer has a pending request. Its registered door
     // and zoned interior are the durable evidence of the approach to protect.
-    // South: approach, door, interior are y, y-1, y-2. North-facing row:
-    // approach, door square, order/room tile are y, y+1, y+2.
+    // Protect both the outside approach and the perimeter square occupied by
+    // the door. A full-square wall on that door square otherwise overlays the
+    // completed entrance even though the approach remains empty.
     const doorAt = (doorY: number, roomY: number): boolean => {
       if (!Number.isSafeInteger(doorY) || !Number.isSafeInteger(roomY)) return false;
       const doorTile = { x: tile.x, y: tileCoordinate(doorY) };
@@ -237,8 +238,10 @@ export class RoomTemplateCoordinator implements SystemRegistration {
       const roomTile = { x: tileCoordinate(roomX), y: tile.y };
       return this.doors.getByEdge(doorTile, 'left') !== undefined && this.world.getZoning(roomTile) !== 0;
     };
-    return doorAt(tile.y - 1, tile.y - 2) || doorAt(tile.y + 2, tile.y + 2) ||
-      sideDoorAt(tile.x - 1, tile.x - 2) || sideDoorAt(tile.x + 2, tile.x + 2);
+    return doorAt(tile.y - 1, tile.y - 2) || doorAt(tile.y, tile.y - 1) ||
+      doorAt(tile.y + 1, tile.y + 1) || doorAt(tile.y + 2, tile.y + 2) ||
+      sideDoorAt(tile.x - 1, tile.x - 2) || sideDoorAt(tile.x, tile.x - 1) ||
+      sideDoorAt(tile.x + 1, tile.x + 1) || sideDoorAt(tile.x + 2, tile.x + 2);
   }
 
   /** Command dispatch also runs while paused, so release invalidated plans then. */
