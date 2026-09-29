@@ -1,5 +1,6 @@
 import type { ObliqueAnglePose } from './oblique-module-catalog';
 import type { ResolvedObliqueFrame } from './oblique-frame-loader';
+import { TILE_SIZE_PX } from '../tile-metrics';
 
 export interface ObliqueModuleLayerInput {
   readonly frame: ResolvedObliqueFrame;
@@ -16,6 +17,6 @@ export interface ObliqueModuleLayer {
 
 /** Pure projection payload for a renderer; no Phaser or scene dependency. */
 export function projectObliqueModuleLayer(input: ObliqueModuleLayerInput): ObliqueModuleLayer {
-  const scale = input.frame.nominalPixelsPerTile / 16;
+  const scale = input.frame.nominalPixelsPerTile / TILE_SIZE_PX;
   return { image: input.frame.frame.image, pivotPx: input.frame.pivotPx, scale, solid: input.solid };
 }
