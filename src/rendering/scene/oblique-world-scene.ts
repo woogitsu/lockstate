@@ -243,7 +243,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     });
     this.input.on('gameout', () => {
       this.hoverPointerAt = undefined;
-      this.emitGroundHover();
+      this.emitGroundHover();`r`n      // Release secondary-button capture when leaving before pointerupoutside.`r`n      this.turnPointerId = undefined;`r`n      this.turnPointerAt = undefined;
       if (this.leftGesture !== undefined) {
         this.leftGesture = undefined;
         this.onTileGesturePreview?.(undefined);
