@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+﻿import { describe, expect, it } from 'vitest';
 import { obliqueAssetIdForObject } from '../../src/rendering/assets/oblique-object-mapping';
 describe('medical oblique object mapping', () => {
  it.each([
@@ -15,8 +15,8 @@ import { parseObliqueModuleRegistry } from '../../src/rendering/assets/oblique-m
 const registry = {
  schemaVersion: 1,
  entries: [
-  { assetId: 'furniture.medical-bed.variants', manifest: '/game-content/oblique-furniture.medical-bed.v1.json' },
-  { assetId: 'fixture.medicine-cabinet.variants', manifest: '/game-content/oblique-fixture.medicine-cabinet.v1.json' },
+  { assetId: 'furniture.medical-bed.variants', manifest: '/game-content/oblique-furniture-medical-bed.v1.json' },
+  { assetId: 'fixture.medicine-cabinet.variants', manifest: '/game-content/oblique-fixture-medicine-cabinet.v1.json' },
  ],
 };
 it('registry contains both medical mapped assets', () => {
