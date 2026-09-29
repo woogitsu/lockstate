@@ -6743,6 +6743,32 @@ test.describe('the assembled application', () => {
     }
   });
 
+  test('the selected room stays in view when the interface scale grows (#1648)', async ({ page }) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await openApp(page);
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await page.locator('.ui-tab[data-tab="zones"]').click();
+    await expect(page.locator('.hud-rooms')).toBeVisible();
+
+    const selectedRowInView = async (): Promise<boolean> =>
+      page.evaluate(() => {
+        const row = document.querySelector<HTMLElement>('.hud-rooms__rows [data-room="room.cell"]');
+        const list = document.querySelector<HTMLElement>('.hud-rooms__list');
+        if (row === null || list === null || row.dataset['selected'] !== 'true') return false;
+        const rowBox = row.getBoundingClientRect();
+        const listBox = list.getBoundingClientRect();
+        return rowBox.height > 0 && rowBox.top >= listBox.top - 0.5 && rowBox.bottom <= listBox.bottom + 0.5;
+      });
+
+    expect(await selectedRowInView(), 'the selected Cell row must be visible at 100%').toBe(true);
+    const scale = page.locator('.display-scale__cycle');
+    for (const expected of ['125%', '150%']) {
+      await scale.click();
+      await expect(page.locator('.display-scale__value')).toHaveText(expected);
+      expect(await selectedRowInView(), `the selected Cell row must be visible at ${expected}`).toBe(true);
+    }
+  });
+
   test('no room type in the catalogue pushes the Rooms panel past its fold (#529)', async ({ page }) => {
     /*
      * `test.slow()` triples the 60 s budget, and unlike its three siblings this

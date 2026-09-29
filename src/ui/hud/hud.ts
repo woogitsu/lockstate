@@ -3459,6 +3459,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     getLayout: () => layout.getSettings(),
     refreshLayout: () => {
       layout.refresh();
+      roomsPanel.refreshLayout();
     },
     setLayout: (settings: LayoutSettings) => {
       layout.setSettings(settings);
