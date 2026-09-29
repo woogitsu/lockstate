@@ -21,13 +21,13 @@ it.each([false, true])('refuses furniture placed after an ordinary pending squar
   let runtime = completedCell();
   runtime.kernel.submitCommand('wall', 1, runtime.kernel.tick, packCommand({
     type: 'PlaceBuildOrder', orderId: 'wall-before-toilet', definitionId: 'wall-brick',
-    x: 11, y: 15, footprint: 'square',
+    x: 20, y: 20, footprint: 'square',
   }));
   runtime.kernel.step();
   expect(runtime.construction.getOrder('wall-before-toilet')?.state).not.toBe('failed');
   if (restore) runtime = restoreSimulationRuntime(captureSessionSnapshot(runtime)).runtime;
   runtime.kernel.submitCommand('toilet', 2, runtime.kernel.tick, packCommand({
-    type: 'PlaceObject', orderId: 'toilet-after-wall', definitionId: 'toilet-brick', x: 11, y: 15,
+    type: 'PlaceObject', orderId: 'toilet-after-wall', definitionId: 'toilet-brick', x: 20, y: 20,
   }));
   runtime.kernel.step();
   expect(runtime.construction.getOrder('toilet-after-wall')).toBeUndefined();
@@ -38,7 +38,7 @@ it.each([false, true])('refuses furniture placed after an ordinary pending squar
   }));
   runtime.kernel.step();
   runtime.kernel.submitCommand('retry-toilet', 4, runtime.kernel.tick, packCommand({
-    type: 'PlaceObject', orderId: 'toilet-after-cancel', definitionId: 'toilet-brick', x: 11, y: 15,
+    type: 'PlaceObject', orderId: 'toilet-after-cancel', definitionId: 'toilet-brick', x: 20, y: 20,
   }));
   runtime.kernel.step();
   expect(runtime.construction.getOrder('toilet-after-cancel')?.state).not.toBe('failed');
@@ -48,22 +48,22 @@ it('checks every furniture square but keeps an edge wall compatible', () => {
   const runtime = completedCell();
   runtime.kernel.submitCommand('wall', 1, runtime.kernel.tick, packCommand({
     type: 'PlaceBuildOrder', orderId: 'wall-at-desk-end', definitionId: 'wall-brick',
-    x: 12, y: 15, footprint: 'square',
+    x: 21, y: 20, footprint: 'square',
   }));
   runtime.kernel.step();
   runtime.kernel.submitCommand('desk', 2, runtime.kernel.tick, packCommand({
-    type: 'PlaceObject', orderId: 'desk-across-wall', definitionId: 'desk-wooden', x: 11, y: 15,
+    type: 'PlaceObject', orderId: 'desk-across-wall', definitionId: 'desk-wooden', x: 20, y: 20,
   }));
   runtime.kernel.step();
   expect(runtime.construction.getOrder('desk-across-wall')).toBeUndefined();
   runtime.kernel.submitCommand('edge-wall', 3, runtime.kernel.tick, packCommand({
     type: 'PlaceBuildOrder', orderId: 'ordinary-edge-wall', definitionId: 'wall-brick',
-    x: 11, y: 14, edge: 'west',
+    x: 20, y: 19, edge: 'west',
   }));
   runtime.kernel.step();
   expect(runtime.construction.getOrder('ordinary-edge-wall')?.state).not.toBe('failed');
   runtime.kernel.submitCommand('toilet', 4, runtime.kernel.tick, packCommand({
-    type: 'PlaceObject', orderId: 'toilet-with-edge-wall', definitionId: 'toilet-brick', x: 11, y: 14,
+    type: 'PlaceObject', orderId: 'toilet-with-edge-wall', definitionId: 'toilet-brick', x: 20, y: 19,
   }));
   runtime.kernel.step();
   expect(runtime.construction.getOrder('toilet-with-edge-wall')?.state).not.toBe('failed');
