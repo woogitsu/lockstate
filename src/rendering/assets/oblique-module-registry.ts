@@ -20,8 +20,32 @@ export function parseObliqueModuleRegistry(input: unknown): ObliqueModuleRegistr
 }
 
 /** Resolve stable logical IDs to verified per-module catalogs before loading Phaser textures. */
-export async function fetchObliqueModuleSet(url = '/game-content/oblique-module-registry.v1.json'):
-  Promise<Map<string, ObliqueModuleCatalog>> {
+const moduleSetCache = new Map<string, Promise<Map<string, ObliqueModuleCatalog>>>();
+
+export interface ObliqueModuleLoadOptions {
+  /** A verified catalog set used when the network registry is unavailable. */
+  readonly fallback?: ReadonlyMap<string, ObliqueModuleCatalog>;
+}
+
+export function clearObliqueModuleSetCache(): void { moduleSetCache.clear(); }
+
+export async function fetchObliqueModuleSet(
+  url = '/game-content/oblique-module-registry.v1.json',
+  options: ObliqueModuleLoadOptions = {},
+): Promise<Map<string, ObliqueModuleCatalog>> {
+  const cached = moduleSetCache.get(url);
+  if (cached) return new Map(await cached);
+  const load = loadObliqueModuleSet(url);
+  moduleSetCache.set(url, load);
+  try { return new Map(await load); }
+  catch (error) {
+    moduleSetCache.delete(url);
+    if (options.fallback) return new Map(options.fallback);
+    throw error;
+  }
+}
+
+async function loadObliqueModuleSet(url: string): Promise<Map<string, ObliqueModuleCatalog>> {
   const response = await fetch(url);
   if (!response.ok) throw new Error(`Failed to load oblique module registry: HTTP ${response.status}.`);
   const registry = parseObliqueModuleRegistry(await response.json());
