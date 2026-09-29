@@ -70,6 +70,10 @@
       "manifest": "/game-content/oblique-kitchen-fridge.v1.json"
     },
     {
+      "assetId": "furniture.medical.cabinet",
+      "manifest": "/game-content/oblique-medical-cabinet.v1.json"
+    },
+    {
       "assetId": "furniture.storage.rack.wooden",
       "manifest": "/game-content/oblique-cell-storage-rack.v1.json"
     },
