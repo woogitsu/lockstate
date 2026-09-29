@@ -68,12 +68,13 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private groundGraphics!: Phaser.GameObjects.Graphics;
   private groundGridGraphics!: Phaser.GameObjects.Graphics;
   private groundComposite!: Phaser.GameObjects.RenderTexture;
-  private raisedComposite!: Phaser.GameObjects.RenderTexture;
+  private staticRaisedComposite!: Phaser.GameObjects.RenderTexture;
   private displayComposite!: Phaser.GameObjects.RenderTexture;
   private displayCompositeDirty = false;
   private groundHoverGraphics!: Phaser.GameObjects.Graphics;
   private selectionGraphics!: Phaser.GameObjects.Graphics;
   private raisedGraphics!: Phaser.GameObjects.Graphics;
+  private actorGraphics!: Phaser.GameObjects.Graphics;
   private pose!: ObliqueCameraState;
   private framedWorld = false;
   private selected: { tileX: number; tileY: number } | undefined;
@@ -92,9 +93,13 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private groundArtPaints = 0;
   private paintedGroundTiles = 0;
   private raisedPaints = 0;
+  private staticRaisedCompositions = 0;
   private artImages: Phaser.GameObjects.Image[] = [];
   private groundArtImages: Phaser.GameObjects.Image[] = [];
   private actorArtImages: Phaser.GameObjects.Image[] = [];
+  private staticArtBounds: { image: Phaser.GameObjects.Image; left: number; right: number; top: number; bottom: number }[] = [];
+  private readonly opaqueTextureBounds = new Map<string, { left: number; right: number; top: number; bottom: number }>();
+  private dynamicRaisedImages: Phaser.GameObjects.Image[] = [];
   private readonly pendingArtLoads = new Map<string, Promise<void>>();
   private readonly artLoadErrors: string[] = [];
 
@@ -132,17 +137,19 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.groundHoverGraphics = this.add.graphics().setScrollFactor(0).setDepth(0.6);
     this.selectionGraphics = this.add.graphics().setScrollFactor(0).setDepth(0.5);
     this.raisedGraphics = this.add.graphics().setScrollFactor(0).setDepth(1);
-    this.raisedComposite = this.add.renderTexture(0, 0, this.cameras.main.width, this.cameras.main.height)
+    this.actorGraphics = this.add.graphics().setScrollFactor(0).setDepth(1.5);
+    this.staticRaisedComposite = this.add.renderTexture(0, 0, this.cameras.main.width, this.cameras.main.height)
       .setOrigin(0, 0).setScrollFactor(0).setDepth(1);
     this.displayComposite = this.add.renderTexture(0, 0, this.cameras.main.width, this.cameras.main.height)
       .setOrigin(0, 0).setScrollFactor(0).setDepth(1);
     this.groundComposite.removeFromDisplayList();
-    this.raisedComposite.removeFromDisplayList();
+    this.staticRaisedComposite.removeFromDisplayList();
     this.groundHoverGraphics.removeFromDisplayList();
     this.selectionGraphics.removeFromDisplayList();
     const restoreComposites = (): void => {
       if (this.lastProjection !== undefined) {
         this.refreshGroundComposite();
+        this.refreshStaticRaisedComposite();
         this.refreshRaisedComposite();
         this.refreshDisplayComposite();
       }
@@ -183,6 +190,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
       if (this.lastProjection !== undefined) {
         this.paintRaised(this.lastProjection);
         this.paintArt(this.lastProjection);
+        this.refreshStaticRaisedComposite();
         this.refreshRaisedComposite();
       }
     });
@@ -265,13 +273,17 @@ export class ObliqueWorldScene extends Phaser.Scene {
       .filter((object) => object.visible && object.displayList !== null).length;
   }
   public get raisedArtImageCount(): number { return this.artImages.length; }
+  public get staticRaisedCompositionCount(): number { return this.staticRaisedCompositions; }
+  public get dynamicRaisedImageCount(): number { return this.dynamicRaisedImages.length; }
   public get projectedRaisedObjectCount(): number { return this.lastProjection?.raised.length ?? 0; }
   public get visibleUncachedRaisedObjectCount(): number {
-    return [this.raisedGraphics, ...this.artImages, ...this.actorArtImages]
+    // Dynamic actors and their foreground occluders intentionally remain on
+    // the display list; only the static raised scene must be cached.
+    return [this.raisedGraphics, ...this.artImages.filter((image) => !this.dynamicRaisedImages.includes(image))]
       .filter((object) => object.visible && object.displayList !== null).length;
   }
   public get visibleViewportCompositeCount(): number {
-    return [this.groundComposite, this.raisedComposite, this.displayComposite]
+    return [this.groundComposite, this.staticRaisedComposite, this.displayComposite]
       .filter((object) => object.visible && object.displayList !== null).length;
   }
   public get artTextureKeys(): readonly string[] {
@@ -423,6 +435,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
       this.paintRaised(this.lastProjection);
       this.paintArt(this.lastProjection);
       this.paintActorArt(this.lastProjection);
+      this.refreshStaticRaisedComposite();
       this.refreshRaisedComposite();
     }
   }
@@ -488,7 +501,8 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private paintGroundGrid(projection: ObliqueWorldProjection): void {
     const grid = this.groundGridGraphics;
     grid.clear();
-    grid.lineStyle(Math.max(1.5, this.pose.zoom), 0x26323b, this.buildGridEmphasis ? 0.65 : 0.09);
+    if (!this.buildGridEmphasis) return;
+    grid.lineStyle(Math.max(1.5, this.pose.zoom), 0x26323b, 0.65);
     for (const tile of projection.ground) {
       if (!this.quadVisible(tile.quad)) continue;
       for (let side = 0; side < 4; side += 1) {
@@ -561,16 +575,81 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.displayCompositeDirty = true;
   }
 
-  /** Keep depth-sorted walls and actors in one viewport texture until their projection changes. */
-  private refreshRaisedComposite(): void {
-    this.raisedComposite.resize(this.pose.viewport.width, this.pose.viewport.height);
-    this.raisedComposite.clear();
-    const images = [...this.artImages, ...this.actorArtImages].sort((a, b) => a.depth - b.depth);
-    this.raisedComposite.draw([this.raisedGraphics, ...images]);
-    this.raisedComposite.render();
+  /** Static walls and furniture only change when the world or camera changes. */
+  private refreshStaticRaisedComposite(): void {
+    this.staticRaisedCompositions += 1;
+    this.staticRaisedComposite.resize(this.pose.viewport.width, this.pose.viewport.height);
+    this.staticRaisedComposite.clear();
+    this.staticRaisedComposite.draw([this.raisedGraphics, ...this.artImages].sort((a, b) => a.depth - b.depth));
+    this.staticRaisedComposite.render();
     this.raisedGraphics.removeFromDisplayList();
-    for (const image of images) image.removeFromDisplayList();
+    this.staticArtBounds = this.artImages.map((image) => {
+      const bounds = this.opaqueImageBounds(image);
+      image.removeFromDisplayList();
+      return { image, ...bounds };
+    });
     this.displayCompositeDirty = true;
+  }
+
+  /** Source images have generous transparent margins; use visible pixels for occlusion culling. */
+  private opaqueImageBounds(image: Phaser.GameObjects.Image): { left: number; right: number; top: number; bottom: number } {
+    const key = image.texture.key;
+    let trim = this.opaqueTextureBounds.get(key);
+    if (trim === undefined) {
+      const source = image.texture.getSourceImage();
+      const width = image.width;
+      const height = image.height;
+      trim = { left: 0, right: width, top: 0, bottom: height };
+      if (source instanceof HTMLImageElement || source instanceof HTMLCanvasElement) {
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const context = canvas.getContext('2d', { willReadFrequently: true });
+        if (context !== null) {
+          context.drawImage(source, 0, 0, width, height);
+          const pixels = context.getImageData(0, 0, width, height).data;
+          let left = width;
+          let right = 0;
+          let top = height;
+          let bottom = 0;
+          for (let y = 0; y < height; y += 1) for (let x = 0; x < width; x += 1) {
+            if (pixels[(y * width + x) * 4 + 3]! === 0) continue;
+            left = Math.min(left, x);
+            right = Math.max(right, x + 1);
+            top = Math.min(top, y);
+            bottom = Math.max(bottom, y + 1);
+          }
+          if (right > left && bottom > top) trim = { left, right, top, bottom };
+        }
+      }
+      this.opaqueTextureBounds.set(key, trim);
+    }
+    const originX = image.x - image.originX * image.displayWidth;
+    const originY = image.y - image.originY * image.displayHeight;
+    return {
+      left: originX + trim.left * image.scaleX,
+      right: originX + trim.right * image.scaleX,
+      top: originY + trim.top * image.scaleY,
+      bottom: originY + trim.bottom * image.scaleY,
+    };
+  }
+
+  /** Track only foreground art that can cover a moving actor. */
+  private refreshRaisedComposite(): void {
+    for (const image of this.dynamicRaisedImages) {
+      if (image.scene !== undefined) image.removeFromDisplayList();
+    }
+    const foreground = new Set<Phaser.GameObjects.Image>();
+    for (const actor of this.actorArtImages) {
+      const bounds = this.opaqueImageBounds(actor);
+      for (const art of this.staticArtBounds) {
+        if (art.image.depth > actor.depth && art.left < bounds.right && art.right > bounds.left &&
+            art.top < bounds.bottom && art.bottom > bounds.top) foreground.add(art.image);
+      }
+    }
+    this.dynamicRaisedImages = [...this.actorArtImages, ...foreground].sort((a, b) => a.depth - b.depth);
+    this.actorGraphics.addToDisplayList();
+    for (const image of this.dynamicRaisedImages) image.setScrollFactor(0).addToDisplayList();
   }
 
   /** Resolve the ground highlights behind raised art in one displayed viewport image. */
@@ -581,7 +660,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
       this.groundComposite,
       this.selectionGraphics,
       this.groundHoverGraphics,
-      this.raisedComposite,
+      this.staticRaisedComposite,
     ]);
     this.displayComposite.render();
     this.displayCompositeDirty = false;
@@ -601,11 +680,6 @@ export class ObliqueWorldScene extends Phaser.Scene {
     const junctions = this.wallJunctions(projection);
     for (const item of projection.raised) {
       if (item.kind === 'actor') {
-        if (this.actorArtFrame(item) !== undefined) continue;
-        raised.lineStyle(13 * this.pose.zoom, 0xdd8342, 1);
-        raised.lineBetween(item.head.x, item.head.y + 8 * this.pose.zoom, item.foot.x, item.foot.y);
-        raised.fillStyle(0xffbd78, 1);
-        raised.fillCircle(item.head.x, item.head.y, 8 * this.pose.zoom);
         continue;
       }
       if (junctions.consumedIds.has(item.id)) continue;
@@ -711,12 +785,20 @@ export class ObliqueWorldScene extends Phaser.Scene {
   }
 
   private paintActorArt(projection: ObliqueWorldProjection): void {
+    const actors = this.actorGraphics;
+    actors.clear();
     for (const image of this.actorArtImages) image.destroy();
     this.actorArtImages = [];
     for (const item of projection.raised) {
       if (item.kind !== 'actor') continue;
       const art = this.actorArtFrame(item);
-      if (art === undefined) continue;
+      if (art === undefined) {
+        actors.lineStyle(13 * this.pose.zoom, 0xdd8342, 1);
+        actors.lineBetween(item.head.x, item.head.y + 8 * this.pose.zoom, item.foot.x, item.foot.y);
+        actors.fillStyle(0xffbd78, 1);
+        actors.fillCircle(item.head.x, item.head.y, 8 * this.pose.zoom);
+        continue;
+      }
       const [width, height] = art.catalog.resolutionPx;
       const [pivotX, pivotY] = art.catalog.pivotPx;
       this.actorArtImages.push(this.add.image(item.foot.x, item.foot.y, art.image)
@@ -758,6 +840,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
       this.paintRaised(projection);
       this.paintArt(projection);
       this.paintActorArt(projection);
+      this.refreshStaticRaisedComposite();
       this.refreshRaisedComposite();
       return;
     }
@@ -767,7 +850,6 @@ export class ObliqueWorldScene extends Phaser.Scene {
     sortObliqueRaised(raised);
     this.lastProjection = { ...this.lastProjection, raised };
     this.rememberActors(frame.actors);
-    this.paintRaised(this.lastProjection);
     this.paintActorArt(this.lastProjection);
     this.refreshRaisedComposite();
   }
