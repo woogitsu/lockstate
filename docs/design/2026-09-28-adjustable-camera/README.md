@@ -376,9 +376,11 @@ The combined branch passed TypeScript and 124 focused unit/contract checks.
 
 The 64 × 64 Full HD benchmark exposed a release blocker at 271.5 ms/frame at
 zoom 0.64. Profiling traced this to the raised display list, rather than the
-simulation update. A second render texture pass measured 31.0 ms median and
-32.5 ms p95, with 43.5 MiB of textures; this still needs integration and a
-combined-app check. The art pass is replacing temporary brown square wall
+simulation update. PR #1820 separates static raised art from the dynamic actor
+layer and uses alpha-aware bounds for foreground occluders. The combined app
+benchmark now measures 17.7 ms median and 21.5 ms p95 for actor movement, with
+zero static recompositions; the exact-head browser gate remains required before
+calling this release-ready. The art pass is replacing temporary brown square wall
 blocks with Blender masonry. Two older cell angle-study manifests reference
 the previous wall-source hash and need matching renders before exact-head CI.
 The status-queue anchor repair is in PR #1753 awaiting its browser gate.

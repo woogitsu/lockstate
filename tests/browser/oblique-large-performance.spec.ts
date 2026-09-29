@@ -37,6 +37,7 @@ test('Full HD angled 64 × 64 cell fixture keeps the large world visible', async
       groundArt: harness.groundArtImageCount(),
       projectedRaised: harness.projectedRaisedObjectCount(),
       raisedArt: harness.raisedArtImageCount(),
+      dynamicRaisedArt: harness.dynamicRaisedImageCount(),
       visibleUncachedRaised: harness.visibleUncachedRaisedObjectCount(),
       visibleViewportComposites: harness.visibleViewportCompositeCount(),
       canvasAntialias: harness.canvasAntialiasEnabled(),
@@ -55,6 +56,7 @@ test('Full HD angled 64 × 64 cell fixture keeps the large world visible', async
   expect(metrics.projectedGround).toBeGreaterThan(1_024);
   expect(metrics.projectedRaised).toBeGreaterThan(400);
   expect(metrics.raisedArt).toBeGreaterThan(100);
+  expect(metrics.dynamicRaisedArt).toBeLessThan(16);
   expect(metrics.visibleUncachedRaised).toBe(0);
   expect(metrics.visibleViewportComposites).toBe(1);
   expect(metrics.canvasAntialias).toBe(false);
@@ -71,4 +73,24 @@ test('Full HD angled 64 × 64 cell fixture keeps the large world visible', async
   expect(actorAfter).toBeDefined();
   expect(actorAfter?.x).not.toBe(actorBefore?.x);
   expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.visibleUncachedRaisedObjectCount())).toBe(0);
+  const movement = await page.evaluate(async () => {
+    const harness = window.lockstateObliqueWorldHarness;
+    const staticBefore = harness.staticRaisedCompositionCount();
+    const durations: number[] = [];
+    for (let step = 0; step < 12; step += 1) {
+      const start = performance.now();
+      await harness.moveActorToTile(step % 2 === 0 ? 35 : 34);
+      durations.push(performance.now() - start);
+    }
+    durations.sort((a, b) => a - b);
+    return {
+      staticCompositions: harness.staticRaisedCompositionCount() - staticBefore,
+      medianMs: durations[Math.floor(durations.length / 2)],
+      p95Ms: durations[Math.floor(durations.length * 0.95)],
+    };
+  });
+  console.log('OBLIQUE_ACTOR_MOVEMENT', JSON.stringify(movement));
+  expect(movement.staticCompositions).toBe(0);
+  expect(movement.p95Ms).toBeLessThan(100);
+  await page.screenshot({ path: testInfo.outputPath('oblique-large-actor-occlusion-fullhd.png') });
 });

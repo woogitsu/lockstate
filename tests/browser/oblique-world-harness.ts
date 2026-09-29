@@ -22,6 +22,8 @@ export interface ObliqueWorldHarness {
   paintedGroundTileCount(): number;
   visibleUncachedGroundObjectCount(): number;
   raisedArtImageCount(): number;
+  staticRaisedCompositionCount(): number;
+  dynamicRaisedImageCount(): number;
   projectedRaisedObjectCount(): number;
   visibleUncachedRaisedObjectCount(): number;
   visibleViewportCompositeCount(): number;
@@ -167,6 +169,8 @@ window.lockstateObliqueWorldHarness = {
   paintedGroundTileCount: () => scene.paintedGroundTileCount,
   visibleUncachedGroundObjectCount: () => scene.visibleUncachedGroundObjectCount,
   raisedArtImageCount: () => scene.raisedArtImageCount,
+  staticRaisedCompositionCount: () => scene.staticRaisedCompositionCount,
+  dynamicRaisedImageCount: () => scene.dynamicRaisedImageCount,
   projectedRaisedObjectCount: () => scene.projectedRaisedObjectCount,
   visibleUncachedRaisedObjectCount: () => scene.visibleUncachedRaisedObjectCount,
   visibleViewportCompositeCount: () => scene.visibleViewportCompositeCount,
