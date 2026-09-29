@@ -1,4 +1,4 @@
-﻿import bpy,sys,os,math,hashlib,json
+﻿import bpy,sys,os,math,hashlib,json,struct,zlib
 from pathlib import Path
 root=Path(sys.argv[sys.argv.index('--')+1]) if '--' in sys.argv else Path('public/assets/environment/oblique')
 root.mkdir(parents=True,exist_ok=True)
@@ -9,11 +9,12 @@ def render(asset,file,foot):
  cam=bpy.data.cameras.new('ObliqueCamera'); co=bpy.data.objects.new('ObliqueCamera',cam); bpy.context.collection.objects.link(co); scene.camera=co; cam.type='ORTHO'; cam.ortho_scale=max(foot)*1.35
  for yd in yaws:
   for ed in elevs:
-   y=math.radians(yd); e=math.radians(ed); co.location=(4*math.cos(e)*math.cos(y),4*math.cos(e)*math.sin(y),4*math.sin(e)); co.rotation_euler=(math.pi/2-e,0,y+math.pi/2); scene.render.filepath=str(root/f'{asset}-yaw{yd:+03d}-elev{ed:02d}.png'); bpy.ops.render.render(write_still=True)
- frames=[]
+   y=math.radians(yd); e=math.radians(ed); co.location=(4*math.cos(e)*math.cos(y),4*math.cos(e)*math.sin(y),4*math.sin(e)); co.rotation_euler=(math.pi/2-e,0,y+math.pi/2); scene.render.filepath=str(root/f'{asset}-yaw{yd:+03d}-elev{ed:02d}.png'); bpy.ops.render.render(write_still=True); normalize(Path(scene.render.filepath))
+ def normalize(path):\n blob=path.read_bytes(); off=8; hdr=None; data=b''; keep=[]\n while off<len(blob):\n  n=struct.unpack('>I',blob[off:off+4])[0]; k=blob[off+4:off+8]; d=blob[off+8:off+8+n]; off += 12+n\n  if k==b'IHDR': hdr=d\n  elif k==b'IDAT': data += d\n  elif k in (b'sRGB',b'gAMA',b'cHRM',b'iCCP'): keep.append((k,d))\n w,h,depth,ct,comp,filt,inter=struct.unpack('>IIBBBBB',hdr)\n raw=zlib.decompress(data); stride=w*4; rows=[]; pos=0; prev=bytearray(stride)\n for _ in range(h):\n  ft=raw[pos]; pos+=1; row=bytearray(raw[pos:pos+stride]); pos+=stride\n  if ft==1:\n   for i in range(4,stride): row[i]=(row[i]+row[i-4])&255\n  elif ft==2:\n   for i in range(stride): row[i]=(row[i]+prev[i])&255\n  elif ft==3:\n   for i in range(stride): row[i]=(row[i]+((row[i-4] if i>=4 else 0)+prev[i]>>1))&255\n  elif ft!=0: raise ValueError('unsupported PNG filter')\n  rows.append(row); prev=row\n def chunk(k,d): return struct.pack('>I',len(d))+k+d+struct.pack('>I',zlib.crc32(k+d)&0xffffffff)\n body=b'\\x89PNG\\r\\n\\x1a\\n'+chunk(b'IHDR',hdr)+b''.join(chunk(k,d) for k,d in keep)+chunk(b'IDAT',zlib.compress(b''.join(b'\\0'+bytes(r) for r in rows),9))+chunk(b'IEND',b'')\n path.write_bytes(body)\n frames=[]
  for yd in yaws:
   for ed in elevs:
    p=root/f'{asset}-yaw{yd:+03d}-elev{ed:02d}.png'; frames.append({'yawDegrees':yd,'elevationDegrees':ed,'image':'/assets/environment/oblique/'+p.name,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()})
  return frames
 for asset,file,foot in [(a,f,(1,2) if 'bed' in a else (1,1)) for a,f in assets]:
  frames=render(asset,file,foot); man={'schemaVersion':1,'assetId':asset,'source':'assets/source/blender/'+file,'sourceSha256':hashlib.sha256((Path('assets/source/blender')/file).read_bytes()).hexdigest(),'resolutionPx':[128,128],'nominalPixelsPerTile':64,'pivotPx':[64,64],'cameraTargetTiles':[foot[0]/2,foot[1]/2,0.5],'projection':'orthographic','yawDegrees':yaws,'elevationDegrees':elevs,'frames':frames}; (root.parent.parent.parent/'game-content'/('oblique-'+asset.replace('.variants','')+'.v1.json')).parent.mkdir(parents=True,exist_ok=True); (root.parent.parent.parent/'game-content'/('oblique-'+asset.replace('.variants','')+'.v1.json')).write_text(json.dumps(man,indent=2)+'\n')
+
