@@ -2,6 +2,7 @@ import { expect, it } from 'vitest';
 import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { captureSessionSnapshot, restoreSimulationRuntime } from '../../src/simulation/runtime/restore-session';
+import { createSaveEnvelope, decodeSaveEnvelope } from '../../src/persistence/save-schema';
 
 function completedCell() {
   const runtime = createNewSimulationRuntime(73);
@@ -74,6 +75,29 @@ it('groups completed template furniture with its shell transaction', () => {
   const furniture = runtime.construction.allOrders().find((order) => order.definitionId === 'bed-wooden');
   expect(furniture).toBeDefined();
   const snapshot = runtime.construction.snapshot();
+  const latest = snapshot.currentTransaction ?? snapshot.undoStack.at(-1) ?? [];
+  expect(latest).toContain(furniture!.id);
+});
+
+it('preserves the shared room and furniture transaction through Save/Load', () => {
+  const source = completedCell();
+  const bundle = captureSessionSnapshot(source);
+  const envelope = createSaveEnvelope({
+    gameVersion: 'test', prisonId: 'room-transaction', revision: 1,
+    createdAt: 1_700_000_000_000, updatedAt: 1_700_000_000_001,
+    kernel: bundle.kernel, world: bundle.world, construction: bundle.construction,
+    ...(bundle.entities === undefined ? {} : { entities: bundle.entities }),
+    ...(bundle.simulation === undefined ? {} : { simulation: bundle.simulation }),
+    ...(bundle.identity === undefined ? {} : { identity: bundle.identity }),
+    ...(bundle.masterSeed === undefined ? {} : { masterSeed: bundle.masterSeed }),
+  });
+  const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope)) as unknown);
+  expect(decoded.ok).toBe(true);
+  if (!decoded.ok) throw new Error('room transaction save did not decode');
+  const restored = restoreSimulationRuntime(decoded.value.payload as unknown as ReturnType<typeof captureSessionSnapshot>).runtime;
+  const furniture = restored.construction.allOrders().find((order) => order.definitionId === 'bed-wooden');
+  expect(furniture).toBeDefined();
+  const snapshot = restored.construction.snapshot();
   const latest = snapshot.currentTransaction ?? snapshot.undoStack.at(-1) ?? [];
   expect(latest).toContain(furniture!.id);
 });

@@ -1676,6 +1676,7 @@ const sessionSystemsV7Schema = sessionSystemsV6Schema.extend({
     pending: z.array(roomTemplateRequestV7Schema),
     // Optional additive state; earlier saves had no room-plan undo metadata.
     undone: z.array(roomTemplateRequestV7Schema).optional(),
+    completed: z.array(roomTemplateRequestV7Schema).optional(),
   }).strict().optional(),
 }).strict();
 
