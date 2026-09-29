@@ -2,7 +2,7 @@ import type { ContentRegistry } from '../../content/registry';
 import { defaultSecurityGradeRegistry, type SecurityGradeDefinition } from '../../content/security-grade-catalog';
 import { constructedDoorIdFor, type DoorRegistry, type DoorSide } from '../navigation/door';
 import { createGradedDoor } from '../security/sector';
-import type { TilePosition } from '../world/coordinates';
+import { tileCoordinate, type TilePosition } from '../world/coordinates';
 import type { BuildEdge } from './build-order';
 import { getBuildableDefinition } from './definition';
 import type { DoorPlacementSink } from './system';
@@ -47,6 +47,16 @@ export class DoorConstructionService implements DoorPlacementSink {
     private readonly doors: DoorRegistry,
     private readonly grades: ContentRegistry<SecurityGradeDefinition> = defaultSecurityGradeRegistry,
   ) {}
+
+  /** A whole-square wall on either side would leave this built door unopenable. */
+  public claimsSquare(tile: TilePosition): boolean {
+    if (this.doors.getByEdge(tile, 'top') !== undefined ||
+        this.doors.getByEdge(tile, 'left') !== undefined) return true;
+    if (Number.isSafeInteger(tile.y + 1) &&
+        this.doors.getByEdge({ x: tile.x, y: tileCoordinate(tile.y + 1) }, 'top') !== undefined) return true;
+    return Number.isSafeInteger(tile.x + 1) &&
+      this.doors.getByEdge({ x: tileCoordinate(tile.x + 1), y: tile.y }, 'left') !== undefined;
+  }
 
   /**
    * A door order finished: the door goes into the registry.
