@@ -32,6 +32,8 @@ function buildWorld(): SparseWorld {
   world.setTerrain(tile(2, 1), 'water');
   world.setTopEdge(tile(2, 3), 1);
   world.setLeftEdge(tile(5, 3), 1);
+  world.setSquareStructure(tile(6, 3), 1);
+  world.setSquareStructure(tile(7, 3), 2);
   world.setZoning(tile(4, 4), 1);
   world.registerParcel({ id: 'north-field', bounds: createParcelRect(0, -8, 8, 8), basePrice: 100 });
   world.setParcelOwned('north-field', true);
@@ -56,6 +58,12 @@ describe('world render view', () => {
     expect(sample.leftEdge).toBe(0);
     view.readTile(5, 3, sample);
     expect(sample.leftEdge).toBe(1);
+    view.readTile(6, 3, sample);
+    expect(sample.squareStructure).toBe(1);
+    view.readTile(7, 3, sample);
+    expect(sample.squareStructure).toBe(2);
+    view.readTile(0, 0, sample);
+    expect(sample.squareStructure).toBe(0);
 
     view.readTile(4, 4, sample);
     expect(sample.zoning).toBe(1);
@@ -335,6 +343,10 @@ describe('row index', () => {
     expect(rows.get(3)?.edges).toEqual([
       { tileX: 2, top: 1, left: 0 },
       { tileX: 5, top: 0, left: 1 },
+    ]);
+    expect(rows.get(3)?.squares).toEqual([
+      { tileX: 6, value: 1 },
+      { tileX: 7, value: 2 },
     ]);
     expect(rows.get(3)?.structures).toEqual([]);
     expect(rows.get(2)?.structures.map((structure) => structure.id)).toEqual(['a', 'b']);

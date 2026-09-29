@@ -7,6 +7,7 @@ import { SnapshotRefusedError } from '../runtime/restore-refusal';
 import { SparseWorld } from '../world/sparse-world';
 import { type BuildabilityRequirement, canBuildAt } from '../world/buildability';
 import { type TilePosition, tileCoordinate, tileToChunk } from '../world/coordinates';
+import type { ObjectOrientation } from '../objects/placed-object';
 
 export interface ConstructionSnapshot {
   readonly orders: readonly BuildOrder[];
@@ -36,6 +37,8 @@ export interface ConstructionSnapshot {
    * `registerTransactionOrder(id, undefined)` produces.
    */
   readonly currentTransactionId?: string;
+  /** Accepted action outside construction history after its top entry. Absent in older saves preserves prior restore behavior. */
+  readonly newerActionThanTheStackTop?: boolean;
 }
 
 /**
@@ -160,7 +163,7 @@ function requiredQuantitiesByItemId(definition: BuildableDefinition): Map<string
  * anything. The caller reads `undefined` as "no far side to fall back on",
  * which leaves such an order refused for its own tile exactly as before.
  */
-function tileAcrossEdge(location: TilePosition, edge: BuildEdge): TilePosition | undefined {
+export function tileAcrossEdge(location: TilePosition, edge: BuildEdge): TilePosition | undefined {
   const x = edge === 'west' ? location.x - 1 : location.x;
   const y = edge === 'north' ? location.y - 1 : location.y;
   if (!Number.isSafeInteger(x) || !Number.isSafeInteger(y)) return undefined;
@@ -246,7 +249,7 @@ const SUBMISSION_FAIL_REASONS: Readonly<Record<string, BuildOrderFailReason>> = 
  * `ObjectPlacementService` documents the one interleaving that produces it.
  */
 export interface ObjectPlacementSink {
-  onOrderCompleted(objectId: string, anchor: TilePosition): boolean;
+  onOrderCompleted(objectId: string, anchor: TilePosition, orientation?: ObjectOrientation): boolean;
   onOrderReverted(objectId: string, anchor: TilePosition): boolean;
 }
 
@@ -389,6 +392,28 @@ export class ConstructionSystem implements SystemRegistration {
   private newerActionThanTheStackTop = false;
   private currentTransaction: string[] = [];
   private currentTransactionId: string | undefined;
+  private pendingRoomTemplateClaims?: (tile: TilePosition, sequence: number | undefined) => boolean;
+  private roomTemplateDoorApproachClaims?: (order: BuildOrder) => boolean;
+  private completedDoorClaimsSquare?: (tile: TilePosition) => boolean;
+  private objectClaimsSquare?: (tile: TilePosition) => boolean;
+
+  /** The session supplies its live template reservations after both systems exist. */
+  public setPendingRoomTemplateClaims(reader: (tile: TilePosition, sequence: number | undefined) => boolean): void {
+    this.pendingRoomTemplateClaims = reader;
+  }
+
+  public setRoomTemplateDoorApproachClaims(reader: (order: BuildOrder) => boolean): void {
+    this.roomTemplateDoorApproachClaims = reader;
+  }
+
+  /** The door registry remains authoritative after a door order completes or a save loads. */
+  public setCompletedDoorClaimsSquare(reader: (tile: TilePosition) => boolean): void {
+    this.completedDoorClaimsSquare = reader;
+  }
+
+  public setObjectClaimsSquare(reader: (tile: TilePosition) => boolean): void {
+    this.objectClaimsSquare = reader;
+  }
 
   public constructor(
     private readonly world: SparseWorld,
@@ -582,6 +607,63 @@ export class ConstructionSystem implements SystemRegistration {
       return;
     }
 
+    if (order.footprint === 'square' && definition.category !== 'wall') {
+      this.setState(order, 'failed');
+      order.failReason = 'unbuildable';
+      this.orders.set(order.id, order);
+      return;
+    }
+
+    if (order.footprint === 'square' && this.world.getSquareStructure(order.location) !== 0) {
+      this.setState(order, 'failed');
+      order.failReason = 'duplicate-order';
+      this.orders.set(order.id, order);
+      return;
+    }
+
+    if (order.footprint === 'square' && this.objectClaimsSquare?.(order.location) === true) {
+      this.setState(order, 'failed');
+      order.failReason = 'unbuildable';
+      this.orders.set(order.id, order);
+      return;
+    }
+
+    if (order.footprint === 'square' &&
+        (this.pendingDoorClaimsSquare(order.location) || this.completedDoorClaimsSquare?.(order.location) === true)) {
+      this.setState(order, 'failed');
+      order.failReason = 'unbuildable';
+      this.orders.set(order.id, order);
+      return;
+    }
+
+    // A door occupies an edge, but a whole-square wall on either side still
+    // blocks that crossing. Check queued walls too: a door accepted while the
+    // crew builds the wall would otherwise finish as an unusable portal.
+    if (definition.placesDoor !== undefined) {
+      const acrossDoor = tileAcrossEdge(order.location, resolveBuildEdge(order));
+      if (this.squareWallClaimsTile(order.location) ||
+          (acrossDoor !== undefined && this.squareWallClaimsTile(acrossDoor))) {
+        this.setState(order, 'failed');
+        order.failReason = 'unbuildable';
+        this.orders.set(order.id, order);
+        return;
+      }
+    }
+
+    // A room plan owns its entire rectangle while its shell is in flight,
+    // including empty interior squares that have no world geometry yet. Its
+    // own shell/furniture orders retain the plan's sequence and may enter.
+    const across = order.footprint !== 'square' && occupiesTileEdge(definition)
+      ? tileAcrossEdge(order.location, resolveBuildEdge(order)) : undefined;
+    if (this.roomTemplateDoorApproachClaims?.(order) === true ||
+        this.pendingRoomTemplateClaims?.(order.location, order.placementSequence) === true ||
+        (across !== undefined && this.pendingRoomTemplateClaims?.(across, order.placementSequence) === true)) {
+      this.setState(order, 'failed');
+      order.failReason = 'unbuildable';
+      this.orders.set(order.id, order);
+      return;
+    }
+
     if (this.duplicateClaim(order, definition) !== undefined) {
       this.setState(order, 'failed');
       order.failReason = 'duplicate-order';
@@ -591,7 +673,8 @@ export class ConstructionSystem implements SystemRegistration {
 
     const refusal = this.admits(order.location);
     if (refusal !== undefined) {
-      const across = occupiesTileEdge(definition) ? tileAcrossEdge(order.location, resolveBuildEdge(order)) : undefined;
+      const across = order.footprint !== 'square' && occupiesTileEdge(definition)
+        ? tileAcrossEdge(order.location, resolveBuildEdge(order)) : undefined;
       if (across === undefined || this.admits(across) !== undefined) {
         this.setState(order, 'failed');
         order.failReason = refusal;
@@ -619,6 +702,28 @@ export class ConstructionSystem implements SystemRegistration {
     const buildability = canBuildAt(this.world, tile, SUBMISSION_REQUIREMENT);
     if (buildability.buildable) return undefined;
     return SUBMISSION_FAIL_REASONS[buildability.reason] ?? 'unbuildable';
+  }
+
+  /** A door still in the queue reserves the square on each side of its edge. */
+  private pendingDoorClaimsSquare(tile: TilePosition): boolean {
+    for (const order of this.orders.values()) {
+      if (order.state === 'completed' || order.state === 'cancelled' || order.state === 'failed' ||
+          BUILDABLE_REGISTRY.get(order.definitionId)?.placesDoor === undefined) continue;
+      const across = tileAcrossEdge(order.location, resolveBuildEdge(order));
+      if ((order.location.x === tile.x && order.location.y === tile.y) ||
+          (across !== undefined && across.x === tile.x && across.y === tile.y)) return true;
+    }
+    return false;
+  }
+
+  private squareWallClaimsTile(tile: TilePosition): boolean {
+    if (this.world.getSquareStructure(tile) !== 0) return true;
+    for (const order of this.orders.values()) {
+      if (order.footprint !== 'square' || order.state === 'completed' ||
+          order.state === 'cancelled' || order.state === 'failed') continue;
+      if (order.location.x === tile.x && order.location.y === tile.y) return true;
+    }
+    return false;
   }
 
   /**
@@ -708,6 +813,7 @@ export class ConstructionSystem implements SystemRegistration {
       if (existing.state === 'cancelled' || existing.state === 'failed') continue;
       if (existing.state === 'completed' && isObjectBuildable) continue;
       if (existing.definitionId !== order.definitionId) continue;
+      if (existing.footprint !== order.footprint) continue;
       if (existing.location.x !== order.location.x || existing.location.y !== order.location.y) continue;
       if (resolveBuildEdge(existing) !== edge) continue;
       return existing;
@@ -750,6 +856,12 @@ export class ConstructionSystem implements SystemRegistration {
    */
   public noteActionThatDoesNotWriteTheUndoStack(): void {
     this.newerActionThanTheStackTop = true;
+  }
+
+  /** An accepted build gesture with no orders starts a new history branch. */
+  public noteAcceptedBuildGestureWithoutOrders(): void {
+    this.noteActionThatDoesNotWriteTheUndoStack();
+    this.redoStack = [];
   }
 
   /**
@@ -904,6 +1016,11 @@ export class ConstructionSystem implements SystemRegistration {
     // change exists to fix.
     this.newerActionThanTheStackTop = false;
     return true;
+  }
+
+  /** Whether one Undo transaction still offers every order of a room plan for Redo. */
+  public canRedoOrdersTogether(orderIds: readonly string[]): boolean {
+    return this.redoStack.some((transaction) => orderIds.every((id) => transaction.includes(id)));
   }
 
   /**
@@ -1964,6 +2081,10 @@ export class ConstructionSystem implements SystemRegistration {
    */
   private finalizeConstruction(order: BuildOrder): void {
     const definition = getBuildableDefinition(order.definitionId);
+    if (order.footprint === 'square') {
+      this.world.setSquareStructure(order.location, 1);
+      return;
+    }
     const edgeValue = edgeNumericIdFor(definition);
     if (edgeValue === 0) {
       // The branch this comment used to end at with "a future object placement
@@ -1972,7 +2093,7 @@ export class ConstructionSystem implements SystemRegistration {
       // and the room it stands in has its capacity re-derived on the same call
       // (ADR 0028 decision 2, moment one of three).
       if (definition.placesObjectId !== undefined) {
-        this.objectPlacement?.onOrderCompleted(definition.placesObjectId, order.location);
+        this.objectPlacement?.onOrderCompleted(definition.placesObjectId, order.location, order.objectOrientation ?? 0);
       }
       this.markGeometryChanged(order.location);
       return;
@@ -2013,6 +2134,10 @@ export class ConstructionSystem implements SystemRegistration {
    */
   private revertConstruction(order: BuildOrder): void {
     const definition = getBuildableDefinition(order.definitionId);
+    if (order.footprint === 'square') {
+      this.world.setSquareStructure(order.location, 0);
+      return;
+    }
     const edgeValue = edgeNumericIdFor(definition);
     if (edgeValue === 0) {
       // The object leaves with the order, for the reason a wall's edge does:
@@ -2125,6 +2250,7 @@ export class ConstructionSystem implements SystemRegistration {
       // emitted before this field existed.
       ...(this.currentTransaction.length === 0 ? {} : { currentTransaction: [...this.currentTransaction] }),
       ...(this.currentTransactionId === undefined ? {} : { currentTransactionId: this.currentTransactionId }),
+      ...(this.newerActionThanTheStackTop ? { newerActionThanTheStackTop: true } : {}),
     };
   }
 
@@ -2183,6 +2309,7 @@ export class ConstructionSystem implements SystemRegistration {
     // default here rather than a migration step (#108).
     this.currentTransaction = data.currentTransaction === undefined ? [] : [...data.currentTransaction];
     this.currentTransactionId = data.currentTransactionId;
+    this.newerActionThanTheStackTop = data.newerActionThanTheStackTop ?? false;
   }
 
   /**

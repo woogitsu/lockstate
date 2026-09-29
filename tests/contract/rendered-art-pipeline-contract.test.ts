@@ -25,6 +25,18 @@ const root = resolve(import.meta.dirname, '..', '..');
  * the source-art generator's own guard.
  */
 describe('rendered-art pipeline contract', () => {
+  it('attributes the isolated Canteen floor to its own Blender source', async () => {
+    const sidecar = JSON.parse(await readFile(resolve(root, 'assets/rendered/environment/environment-objects.render.json'), 'utf8')) as {
+      entries: Array<{ assetId: string; sourceCatalog?: string }>;
+    };
+    const catalog = JSON.parse(await readFile(resolve(root, 'public/game-content/rendered-art.v1.json'), 'utf8')) as {
+      entries: Array<{ assetId: string; sourceAttribution: { catalog: string } }>;
+    };
+    const source = 'assets/source/blender/floor.canteen.warm-terrazzo.blend';
+    expect(sidecar.entries.find((entry) => entry.assetId === 'floor.canteen.terrazzo')?.sourceCatalog).toBe(source);
+    expect(catalog.entries.find((entry) => entry.assetId === 'floor.canteen.terrazzo')?.sourceAttribution.catalog).toBe(source);
+  });
+
   it('rejects catalog paths that could escape the rendered-art roots', () => {
     expect(isSafeRenderedArtPath('source-art/rendered.furniture.kitchen.stove.abc123.png')).toBe(true);
     expect(isSafeRenderedArtPath('source-art/../secrets.json')).toBe(false);

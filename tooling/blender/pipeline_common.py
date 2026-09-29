@@ -102,6 +102,32 @@ def apply_deterministic_render_settings(scene: bpy.types.Scene) -> None:
     image_settings.compression = 15
 
 
+def configure_oblique_module_lighting(scene: bpy.types.Scene) -> None:
+    """Give isolated oblique assets one authored light direction and colour grade.
+
+    Actor source files contain the lighting for their older directional atlas.
+    Disable it before adding the same studio used by environment modules.
+    """
+    for obj in scene.objects:
+        if obj.type == "LIGHT":
+            obj.hide_render = True
+    scene.view_settings.view_transform = "Standard"
+    scene.view_settings.look = "Medium High Contrast"
+    world = bpy.data.worlds.new("neutral oblique studio")
+    scene.world = world
+    world.use_nodes = True
+    background = world.node_tree.nodes.get("Background")
+    background.inputs["Color"].default_value = (0.72, 0.77, 0.82, 1)
+    background.inputs["Strength"].default_value = 0.7
+    light_data = bpy.data.lights.new("soft north-west light", "AREA")
+    light_data.energy = 600
+    light_data.shape = "DISK"
+    light_data.size = 5
+    light = bpy.data.objects.new("soft north-west light", light_data)
+    scene.collection.objects.link(light)
+    light.location = (-3, -4, 7)
+
+
 def write_text(path: Path, text: str) -> None:
     """Write UTF-8 text with LF endings on every platform.
 
@@ -202,3 +228,40 @@ def add_mesh_object(name: str, mesh: bpy.types.Mesh, location: tuple[float, floa
     item.location = location
     bpy.context.collection.objects.link(item)
     return item
+
+
+def extend_inner_corner_to_edge_pair(
+    collection: bpy.types.Collection, arm_reach: tuple[float, float],
+) -> None:
+    """Make both corner arms replace whole 1-tile runtime edges.
+
+    The authored inner-corner source reaches only 0.5 tile from the pivot.
+    Stretch the positive arm ends while preserving the 0.25-tile wall
+    thickness and central joint. Runtime sprites anchor 0.11 tile inside the
+    world edge; the reach on each axis therefore depends on the arm direction
+    so its far end lands on the next grid line. A private mesh copy avoids
+    changing the source collection shared by other renders.
+    """
+    core_half_width = 0.125
+    source_arm_end = 0.5
+    for item in collection.all_objects:
+        if item.type != "MESH":
+            continue
+        item.data = item.data.copy()
+        for vertex in item.data.vertices:
+            for axis, edge_arm_end in zip(("x", "y"), arm_reach):
+                value = getattr(vertex.co, axis)
+                if value > core_half_width:
+                    arm_stretch = (edge_arm_end - core_half_width) / (source_arm_end - core_half_width)
+                    setattr(vertex.co, axis,
+                            core_half_width + (value - core_half_width) * arm_stretch)
+        item.data.update()
+
+    points = [vertex.co for item in collection.all_objects if item.type == "MESH"
+              for vertex in item.data.vertices]
+    if not points:
+        raise RuntimeError(f"No inner-corner mesh in {collection.name}")
+    for axis, edge_arm_end in zip(("x", "y"), arm_reach):
+        reach = max(getattr(point, axis) for point in points)
+        if abs(reach - edge_arm_end) > 1e-6:
+            raise RuntimeError(f"{collection.name} {axis} arm ends at {reach}, expected 1 tile")

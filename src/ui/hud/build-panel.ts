@@ -1,4 +1,5 @@
 import type { LocalizationKey } from '../../content/localization';
+import type { RoomTemplateId, RoomTemplatePlan } from '../../content/room-template-catalog';
 import { deriveSimulationMessageKey } from '../../content/simulation-message-keys';
 import type { MessageParameters } from '../../services/localization/format';
 import { freshUnfurnishedPrison, pressAffordabilityVerdict, purchasePreviewMinorUnits, sellBackPreviewMinorUnits } from '../affordability';
@@ -13,6 +14,8 @@ import { rovingTabStop } from '../primitives/roving-focus';
 import { bindRovingFocusKeydown } from '../primitives/roving-focus-keydown';
 import { HUD_MESSAGE_KEY } from './messages';
 import { assignPooledRows } from './pooled-row-binding';
+import { createRoomTemplatePreview, ROOM_TEMPLATE_NAME_KEYS } from './room-template-preview';
+import type { RoomTemplateCostQuote, RoomTemplateTool } from '../room-template-tool';
 import { toggleRemovalMode } from './tool-arming';
 import {
   HUD_BUILD_EDGES,
@@ -156,6 +159,10 @@ export interface BuildPanelTarget {
 export interface BuildPanelOptions {
   readonly localizer: HudLocalizer;
   readonly model: HudBuildViewModel;
+  readonly roomTemplateTool?: RoomTemplateTool;
+  readonly roomTemplateQuote?: (id: RoomTemplateId) => Promise<RoomTemplateCostQuote>;
+  readonly onArmRoomTemplate?: () => void;
+  readonly onFitRoomTemplate?: (plan: RoomTemplatePlan) => void;
   /** The numeric route: place exactly one order at the coordinates shown. */
   readonly onPlace: (intent: BuildPanelIntent) => void;
   /**
@@ -236,6 +243,8 @@ export interface BuildPanel {
   /** Current numeric-route selection, exposed so a test can assert it without reading the DOM. */
   getSelection(): BuildPanelIntent | undefined;
   isArmed(): boolean;
+  /** Hide the saved buildable choice while a room plan owns the next map click. */
+  setTemplateArmed(armed: boolean): void;
   /** Whether the armed gesture removes rather than places. Exposed for the same reason `isArmed` is: a test should not have to read the DOM. */
   isRemoving(): boolean;
   /** Live feedback from the world. `undefined` clears the readout. */
@@ -350,7 +359,7 @@ export function buildEdgeChoiceOptions(t: Translate): readonly ChoiceOption[] {
  * which is what makes that pair unable to disagree.
  */
 export function edgeChooserShown(buildable: HudBuildableViewModel | undefined, removing: boolean): boolean {
-  return !removing && buildable?.occupiesEdge === true;
+  return !removing && buildable?.occupiesEdge === true && buildable.definitionId !== 'wall-brick';
 }
 
 /**
@@ -381,6 +390,7 @@ export function edgeChooserShown(buildable: HudBuildableViewModel | undefined, r
  */
 export function armedHintKey(buildable: HudBuildableViewModel | undefined, removing: boolean): LocalizationKey {
   if (removing) return HUD_MESSAGE_KEY.buildRemoveHint;
+  if (buildable?.definitionId === 'wall-brick') return HUD_MESSAGE_KEY.buildArmHintSquare;
   return buildable?.placesObject === true ? HUD_MESSAGE_KEY.buildArmHintObject : HUD_MESSAGE_KEY.buildArmHint;
 }
 
@@ -994,6 +1004,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   let tileY = Math.trunc(model.origin.y);
   let edge: HudBuildEdge = HUD_DEFAULT_BUILD_EDGE;
   let armed = false;
+  let templateArmed = false;
   /** Whether the armed gesture takes an object away instead of placing one (ADR 0028 phase 3). */
   let removing = false;
   /** Whether the buy row is disclosed. Closed on arrival -- see `.hud-build__buy` in `hud.css`. */
@@ -1083,6 +1094,11 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     paintCatalogue();
     revealSelectedRow();
   });
+  const templatePreview = createRoomTemplatePreview(localizer, options.roomTemplateTool, options.onArmRoomTemplate, options.roomTemplateQuote, options.onFitRoomTemplate);
+  const catalogueActions = element('div', {
+    className: 'hud-build__catalogue-actions',
+    children: categoryOptions.length === 0 ? [templatePreview.openButton] : [categoryFilter, templatePreview.openButton],
+  });
 
   /**
    * Scrolls the list, and only the list, until the selected row is inside it.
@@ -1126,14 +1142,15 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   const paintCatalogue = (): void => {
     focusRing = buildCatalogueFocusRing(model.buildables, activeCategoryId, selectedId);
     const selected = selectedBuildable();
-    selectedSummary.textContent = selected === undefined ? '' : t(selected.labelKey);
+    selectedSummary.textContent = selected === undefined || templateArmed ? '' : t(selected.labelKey);
     const visible = new Set(focusRing.visibleIds);
     for (const [id, row] of rows) {
-      row.setBadge(id === selectedId ? { tone: 'info', text: t(HUD_MESSAGE_KEY.buildSelected) } : undefined);
-      row.element.dataset['selected'] = id === selectedId ? 'true' : 'false';
+      const chosen = !templateArmed && id === selectedId;
+      row.setBadge(chosen ? { tone: 'info', text: t(HUD_MESSAGE_KEY.buildSelected) } : undefined);
+      row.element.dataset['selected'] = chosen ? 'true' : 'false';
       // `aria-checked` is the *machine* carrier of which buildable is chosen,
       // as it is in `rooms-panel.ts`; the badge above stays the visual one.
-      row.element.setAttribute('aria-checked', id === selectedId ? 'true' : 'false');
+      row.element.setAttribute('aria-checked', chosen ? 'true' : 'false');
       /*
        * `hidden` rather than a class, so a filtered row lays out no box at all
        * and the list's `scrollHeight` really is the filtered list's height --
@@ -1321,7 +1338,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
      * control that can only be pressed to no effect. `hud.css` styles both
      * shapes of this header for that reason.
      */
-    ...(categoryOptions.length === 0 ? {} : { headerAction: categoryFilter }),
+    headerAction: catalogueActions,
   });
   // The one section the panel's height budget is allowed to take space from,
   // named so `hud.css` can say which one it is (issue #143). Every other block
@@ -1613,6 +1630,12 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
    */
   orderNote.hidden = true;
 
+  const paintArmHint = (): void => {
+    armHint.textContent = templateArmed && options.roomTemplateTool !== undefined
+      ? t(HUD_MESSAGE_KEY.templateArmHint, { name: t(ROOM_TEMPLATE_NAME_KEYS[options.roomTemplateTool.selectedTemplateId()]) })
+      : t(armedHintKey(selectedBuildable(), removing));
+  };
+
   function paintArmed(): void {
     // "Armed" on the arm button means armed *to place*, which is what its label
     // and its pressed state are about. A tool armed to remove is armed, and this
@@ -1647,7 +1670,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     // `place-object` or `place-build-order`. Reading one field for both means
     // the sentence cannot describe a gesture other than the one the panel
     // would perform. Removal still wins over both: it names no row.
-    armHint.textContent = t(armedHintKey(selectedBuildable(), removing));
+    paintArmHint();
 
     // The numeric route follows the mode too, or the one submit button would
     // say "Place order" and clear a tile.
@@ -3141,6 +3164,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       },
     },
   });
+  panel.element.append(templatePreview.dialog);
   panel.body.append(
     catalogue.element,
     element('div', {
@@ -3274,6 +3298,13 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     sellControl: sellSubmit.element,
     getSelection: readSelection,
     isArmed: () => armed,
+    setTemplateArmed(next): void {
+      // Selection changes call this even when the tool stays armed: the name
+      // beside the placement guidance must follow the next command's plan.
+      templateArmed = next;
+      paintCatalogue();
+      paintArmHint();
+    },
     isRemoving: () => removing,
     setTarget,
     setBuildQueue(next: HudBuildQueueViewModel | undefined): void {

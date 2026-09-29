@@ -37,7 +37,7 @@ async function read(relativePath: string): Promise<string> {
  * convenience. Reformatting either side fails this test; that is intended
  * rather than tolerated, because a reformat is a reason to look at both.
  */
-describe('the Rooms-panel shortfall predicate, written twice (#1006)', () => {
+describe('the Rooms-panel shortfall predicate, shared with the worker (#1006)', () => {
   /*
    * **Widened by ADR 0108, and the widening is the exact drift this contract
    * exists for.** It used to read `(row.access === 'no-way-in' ? 1 : 0)`. A
@@ -52,6 +52,7 @@ describe('the Rooms-panel shortfall predicate, written twice (#1006)', () => {
   it('is spelled identically in the panel and in the worker system that announces it', async () => {
     const panel = await read('src/ui/simulation-room-needs.ts');
     const worker = await read('src/simulation/rooms/room-needs-cleared-notice.ts');
+    const projection = await read('src/simulation/presentation/room-projection.ts');
 
     // Vacuity guards. Each side must still hold the construct this pins,
     // otherwise the assertion below passes by comparing nothing.
@@ -73,6 +74,10 @@ describe('the Rooms-panel shortfall predicate, written twice (#1006)', () => {
       worker,
       `\`room-needs-cleared-notice.ts\` no longer spells the shortfall as \`${EXPRESSION}\`, so the worker and the panel can now disagree about which rooms are ready -- and the worker is the one that talks to the player.`,
     ).toContain(EXPRESSION);
+    expect(
+      projection,
+      'the prison-wide room-needs summary must count the same missing objects and access as the panel and readiness notice',
+    ).toContain(`const shortfall = ${EXPRESSION};`);
   });
 
   /*

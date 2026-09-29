@@ -1,0 +1,246 @@
+import { describe, expect, it } from 'vitest';
+import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { captureSessionSnapshot, restoreSimulationRuntime } from '../../src/simulation/runtime/restore-session';
+import { packCommand } from '../../src/simulation/protocol/commands';
+import { tileCoordinate } from '../../src/simulation/world/coordinates';
+import { createRoomTemplateBuildPlan } from '../../src/simulation/construction/room-template-build-plan';
+import { createBuildOrder } from '../../src/simulation/construction/build-order';
+import { createSaveEnvelope, decodeSaveEnvelope } from '../../src/persistence/save-schema';
+import type { SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
+
+const tile = (x: number, y: number) => ({ x: tileCoordinate(x), y: tileCoordinate(y) });
+
+describe('room template session command', () => {
+  it('designates a shell-free Yard on the placement press without advancing the clock, including after reload', () => {
+    const runtime = createNewSimulationRuntime(72);
+    expect(runtime.roomTemplates.place({ templateId: 'yard-basic', origin: { x: 10, y: 10 }, mirrorX: false, sequence: 0 }, runtime.kernel.tick)).toEqual({ ok: true });
+    expect(runtime.prisoners.roomInstances.getById('room.yard:10:10')).toBeDefined();
+    expect(runtime.roomTemplates.snapshot().pending).toEqual([]);
+    const restored = restoreSimulationRuntime(captureSessionSnapshot(runtime)).runtime;
+    expect(restored.prisoners.roomInstances.getById('room.yard:10:10')).toBeDefined();
+    expect(restored.roomTemplates.snapshot().pending).toEqual([]);
+  });
+
+  it('does not let Undo reach through a shell-free Yard to cancel an older wall, including after reload', () => {
+    const runtime = createNewSimulationRuntime(72);
+    runtime.kernel.submitCommand('older-wall', 0, runtime.kernel.tick, packCommand({
+      type: 'PlaceBuildOrder', orderId: 'older-wall', definitionId: 'wall-brick', x: 5, y: 5, footprint: 'square',
+      transactionId: 'older-wall-gesture',
+    }));
+    runtime.kernel.step();
+    runtime.kernel.submitCommand('yard', 1, runtime.kernel.tick, packCommand({
+      type: 'PlaceRoomTemplate', templateId: 'yard-basic', origin: { x: 10, y: 10 },
+    }));
+    runtime.kernel.step();
+    expect(runtime.prisoners.roomInstances.getById('room.yard:10:10')).toBeDefined();
+    expect(runtime.construction.undoWouldReachPastTheLatestAction).toBe(true);
+    const restored = restoreSimulationRuntime(captureSessionSnapshot(runtime)).runtime;
+    expect(restored.construction.undoWouldReachPastTheLatestAction).toBe(true);
+    restored.kernel.submitCommand('undo-after-yard', 2, restored.kernel.tick, packCommand({ type: 'Undo' }));
+    restored.kernel.step();
+    expect(restored.construction.getOrder('older-wall')?.state).not.toBe('cancelled');
+    expect(restored.prisoners.roomInstances.getById('room.yard:10:10')).toBeDefined();
+  });
+
+  it('reserves the entire pending plan, including empty interior squares, through save and load', () => {
+    const runtime = createNewSimulationRuntime(72);
+    expect(runtime.roomTemplates.place({ templateId: 'canteen-basic', origin: { x: 10, y: 10 }, mirrorX: false, sequence: 0 }, runtime.kernel.tick)).toEqual({ ok: true });
+    const nested = createRoomTemplateBuildPlan('kitchen-basic', { x: 11, y: 11 }, false, 1).plan;
+    expect(runtime.roomTemplates.preflight(nested)).toEqual({
+      ok: false, reason: 'structure-occupied', tile: tile(11, 11),
+    });
+    const restored = restoreSimulationRuntime(captureSessionSnapshot(runtime)).runtime;
+    expect(restored.roomTemplates.preflight(nested)).toEqual({
+      ok: false, reason: 'structure-occupied', tile: tile(11, 11),
+    });
+  });
+  it('preflights the whole footprint of a pending two-square object, including its non-anchor square', () => {
+    const runtime = createNewSimulationRuntime(72);
+    const desk = createBuildOrder('pending-desk', 'desk-wooden', tile(9, 10), undefined, 0);
+    runtime.construction.submitOrder(desk);
+    expect(desk.state).not.toBe('failed');
+    const plan = createRoomTemplateBuildPlan('cell-basic', { x: 10, y: 10 }, false, 1).plan;
+
+    expect(runtime.roomTemplates.preflight(plan)).toEqual({
+      ok: false, reason: 'object-occupied', tile: tile(10, 10),
+    });
+    expect(runtime.construction.allOrders()).toHaveLength(1);
+    const restored = restoreSimulationRuntime(captureSessionSnapshot(runtime)).runtime;
+    expect(restored.roomTemplates.preflight(plan)).toEqual({
+      ok: false, reason: 'object-occupied', tile: tile(10, 10),
+    });
+  });
+  it('reports the first unowned square through the existing construction refusal channel', () => {
+    const runtime = createNewSimulationRuntime(72);
+    runtime.kernel.submitCommand('template-unowned', 0, runtime.kernel.tick, packCommand({
+      type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 29, y: 5 },
+    }));
+    runtime.kernel.step();
+    expect(runtime.refusals.last).toMatchObject({ reason: 'build.unowned-land', tile: tile(32, 5) });
+    expect(runtime.construction.allOrders()).toEqual([]);
+  });
+
+  it('refuses an occupied footprint atomically before any shell order enters the queue', () => {
+    const runtime = createNewSimulationRuntime(72);
+    runtime.world.setSquareStructure(tile(7, 7), 1);
+    runtime.kernel.submitCommand('template-0', 0, runtime.kernel.tick, packCommand({
+      type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 5, y: 5 },
+    }));
+    runtime.kernel.step();
+    expect(runtime.construction.allOrders()).toEqual([]);
+    expect(runtime.roomTemplates.snapshot().pending).toEqual([]);
+    expect(runtime.refusals.last).toMatchObject({ reason: 'build.unbuildable', tile: tile(7, 7) });
+  });
+
+  it('rejects an overlapping second template while the first shell is still queued', () => {
+    const runtime = createNewSimulationRuntime(72);
+    runtime.kernel.submitCommand('template-0', 0, runtime.kernel.tick, packCommand({
+      type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 5, y: 5 },
+    }));
+    runtime.kernel.submitCommand('template-1', 1, runtime.kernel.tick, packCommand({
+      type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 6, y: 5 },
+    }));
+    runtime.kernel.step();
+    expect(runtime.roomTemplates.snapshot().pending).toHaveLength(1);
+    expect(runtime.construction.allOrders()).toHaveLength(createRoomTemplateBuildPlan('cell-basic', { x: 5, y: 5 }, false, 0).shellOrderIds.length);
+    expect(runtime.refusals.last).toMatchObject({ reason: 'build.unbuildable' });
+  });
+
+  it('cancels the rest of a room plan when one shell order is cancelled', () => {
+    const runtime = createNewSimulationRuntime(72);
+    runtime.kernel.submitCommand('template-0', 0, runtime.kernel.tick, packCommand({
+      type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 5, y: 5 },
+    }));
+    runtime.kernel.step();
+    const shell = runtime.construction.allOrders().filter((order) => order.id.startsWith('room-template-'));
+    expect(shell.length).toBeGreaterThan(1);
+    runtime.construction.cancelOrder(shell[0]!.id);
+    for (let tick = 0; tick < 11; tick += 1) runtime.kernel.step();
+    expect(runtime.roomTemplates.snapshot().pending).toEqual([]);
+    expect(shell.every((order) => order.state === 'cancelled')).toBe(true);
+  });
+
+  it('releases the whole cancelled plan before the next command can reuse its footprint', () => {
+    const runtime = createNewSimulationRuntime(72);
+    runtime.kernel.submitCommand('template-0', 0, runtime.kernel.tick, packCommand({
+      type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 5, y: 5 },
+    }));
+    runtime.kernel.step();
+    const shell = runtime.construction.allOrders().filter((order) => order.id.startsWith('room-template-'));
+    runtime.kernel.submitCommand('cancel-shell', 1, runtime.kernel.tick, packCommand({
+      type: 'CancelBuildOrder', orderId: shell[0]!.id, expectedRevision: runtime.construction.revisionOf(shell[0]!.id),
+    }));
+    runtime.kernel.step();
+    expect(runtime.roomTemplates.snapshot().pending).toEqual([]);
+    expect(shell.every((order) => order.state === 'cancelled')).toBe(true);
+    expect(runtime.roomTemplates.preflight(createRoomTemplateBuildPlan('cell-basic', { x: 5, y: 5 }, false, 2).plan)).toEqual({ ok: true });
+  });
+
+  it('releases the same paused footprint after Undo cancels its grouped shell', () => {
+    const runtime = createNewSimulationRuntime(72);
+    runtime.kernel.submitCommand('template-0', 0, runtime.kernel.tick, packCommand({
+      type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 5, y: 5 },
+    }));
+    runtime.kernel.step();
+    runtime.kernel.submitCommand('undo-template', 1, runtime.kernel.tick, packCommand({ type: 'Undo' }));
+    runtime.kernel.step();
+    expect(runtime.roomTemplates.snapshot().pending).toEqual([]);
+    expect(runtime.roomTemplates.preflight(createRoomTemplateBuildPlan('cell-basic', { x: 5, y: 5 }, false, 2).plan)).toEqual({ ok: true });
+  });
+
+  it('reverses built shell squares when a later room-plan order is cancelled', () => {
+    const runtime = createNewSimulationRuntime(72);
+    runtime.kernel.submitCommand('template-0', 0, runtime.kernel.tick, packCommand({
+      type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 5, y: 5 },
+    }));
+    runtime.kernel.step();
+    const shell = runtime.construction.allOrders().filter((order) => order.id.startsWith('room-template-'));
+    for (let tick = 0; tick < 20000 && !shell.some((order) => order.state === 'completed'); tick += 1) runtime.kernel.step();
+    const completed = shell.find((order) => order.state === 'completed');
+    const unfinished = shell.find((order) => order.state !== 'completed');
+    expect(completed).toBeDefined();
+    expect(unfinished).toBeDefined();
+    runtime.construction.cancelOrder(unfinished!.id);
+    for (let tick = 0; tick < 11; tick += 1) runtime.kernel.step();
+    expect(shell.every((order) => order.state === 'cancelled')).toBe(true);
+    expect(runtime.world.getSquareStructure(completed!.location)).toBe(0);
+    expect(runtime.roomTemplates.snapshot().pending).toEqual([]);
+  }, 30000);
+
+  it('accepts one complete shell and preserves its pending zoning obligation over save/reload', () => {
+    const runtime = createNewSimulationRuntime(72);
+    runtime.kernel.submitCommand('template-0', 0, runtime.kernel.tick, packCommand({
+      type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 5, y: 5 },
+    }));
+    runtime.kernel.step();
+    const before = runtime.roomTemplates.snapshot();
+    expect(before.pending).toEqual([{ templateId: 'cell-basic', origin: { x: 5, y: 5 }, mirrorX: false, sequence: 0 }]);
+    expect(runtime.construction.allOrders()).toHaveLength(createRoomTemplateBuildPlan('cell-basic', { x: 5, y: 5 }, false, 0).shellOrderIds.length);
+    expect(runtime.construction.allOrders().every((order) => order.state !== 'failed')).toBe(true);
+
+    const bundle = captureSessionSnapshot(runtime);
+    const envelope = createSaveEnvelope({
+      gameVersion: 'lockstate-0.0.0', prisonId: 'room-template-test', revision: 1,
+      createdAt: 1_700_000_000_000, updatedAt: 1_700_000_000_001,
+      ...(bundle.masterSeed === undefined ? {} : { masterSeed: bundle.masterSeed }),
+      kernel: bundle.kernel, world: bundle.world, construction: bundle.construction,
+      ...(bundle.entities === undefined ? {} : { entities: bundle.entities }),
+      ...(bundle.simulation === undefined ? {} : { simulation: bundle.simulation }),
+      ...(bundle.identity === undefined ? {} : { identity: bundle.identity }),
+    });
+    const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope)) as unknown);
+    expect(decoded).toMatchObject({ ok: true, migrated: false });
+    if (!decoded.ok) throw new Error('Room template save must decode');
+    const restored = restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle);
+    expect(restored.runtime.roomTemplates.snapshot()).toEqual(before);
+    expect(restored.runtime.construction.allOrders()).toEqual(runtime.construction.allOrders());
+    for (let tick = 0; tick < 4000; tick += 1) {
+      runtime.kernel.step();
+      restored.runtime.kernel.step();
+      if (runtime.roomTemplates.snapshot().pending.length === 0 &&
+          runtime.construction.allOrders().every((order) => order.state === 'completed')) break;
+    }
+    expect(runtime.roomTemplates.snapshot().pending).toEqual([]);
+    expect(restored.runtime.roomTemplates.snapshot().pending).toEqual([]);
+    expect(restored.runtime.construction.allOrders()).toEqual(runtime.construction.allOrders());
+    expect(restored.runtime.placedObjects.getSnapshot()).toEqual(runtime.placedObjects.getSnapshot());
+  });
+
+  it('builds, zones and furnishes a real Cell through scheduled construction', () => {
+    const runtime = createNewSimulationRuntime(73);
+    runtime.kernel.submitCommand('template-0', 0, runtime.kernel.tick, packCommand({
+      type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 5, y: 5 },
+    }));
+    for (let tick = 0; tick < 20000 && (runtime.roomTemplates.snapshot().pending.length > 0 || tick === 0); tick += 1) {
+      runtime.kernel.step();
+    }
+    expect(runtime.roomTemplates.snapshot().pending).toEqual([]);
+    expect(runtime.prisoners.roomInstances.getById('room.cell:6:6')).toBeDefined();
+    const objectOrders = runtime.construction.allOrders().filter((order) => order.id.includes('-2-object-'));
+    expect(objectOrders).toHaveLength(2);
+    for (let tick = 0; tick < 5000 && objectOrders.some((order) => order.state !== 'completed'); tick += 1) {
+      runtime.kernel.step();
+    }
+    expect(objectOrders.every((order) => order.state === 'completed')).toBe(true);
+    expect(runtime.placedObjects.isTileOccupied(tile(6, 6))).toBe(true);
+    expect(runtime.placedObjects.isTileOccupied(tile(7, 9))).toBe(true);
+  }, 30000);
+
+  it.each([
+    ['cell-large', 'room.cell:6:6'],
+    ['shower-room', 'room.shower-room:6:6'],
+    ['canteen-basic', 'room.canteen:6:6'],
+  ] as const)('builds, zones and furnishes %s through scheduled construction', (templateId, instanceId) => {
+    const runtime = createNewSimulationRuntime(73);
+    runtime.kernel.submitCommand('template-0', 0, runtime.kernel.tick, packCommand({
+      type: 'PlaceRoomTemplate', templateId, origin: { x: 5, y: 5 },
+    }));
+    for (let tick = 0; tick < 25000; tick += 1) {
+      runtime.kernel.step();
+      const objects = runtime.construction.allOrders().filter((order) => order.id.includes('-2-object-'));
+      if (runtime.roomTemplates.snapshot().pending.length === 0 && objects.length === (templateId === 'canteen-basic' ? 6 : 2) && objects.every((order) => order.state === 'completed')) break;
+    }
+    expect(runtime.prisoners.roomInstances.getById(instanceId)).toBeDefined();
+    expect(runtime.construction.allOrders().filter((order) => order.id.includes('-2-object-')).every((order) => order.state === 'completed')).toBe(true);
+  }, 30000);
+});

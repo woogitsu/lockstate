@@ -182,7 +182,7 @@ import { describe, expect, it } from 'vitest';
  *    from this gate is gone — and a window where the two disagree is now
  *    visible in the failure text instead of being invisible in the pass.
  * 3. **`tooling/anchor-budget-spend.mjs` still counts releases**, and
- *    `ANCHOR_STALENESS_BUDGET_RELEASES` is still the number it mirrors
+ *    the former release-count budget is still the number it mirrors
  *    (`anchor-budget-spend-annotation.test.ts` pins the two together, which is
  *    why that constant stays declared here rather than being renamed away).
  *    So the annotation `version.yml` prints at the release commit and the gate

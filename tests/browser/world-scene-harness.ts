@@ -113,11 +113,17 @@ const feed: RenderFeed = {
  * was shown.
  */
 let buildArmed = false;
+let squareBuildArmed = false;
 const placed: EdgeTarget[][] = [];
 let targeted: readonly EdgeTarget[] | undefined;
+const placedSquares: { readonly x: number; readonly y: number }[][] = [];
+let targetedSquares: readonly { readonly x: number; readonly y: number }[] | undefined;
 
 const buildTool: BuildToolPort = {
   isArmed: () => buildArmed,
+  squareFootprint: () => squareBuildArmed,
+  placeSquares: (squares) => { placedSquares.push([...squares]); },
+  targetSquares: (squares) => { targetedSquares = squares === undefined ? undefined : [...squares]; },
   place: (segments) => {
     placed.push([...segments]);
   },
@@ -321,7 +327,14 @@ const harness: LockstateWorldSceneHarness = {
   },
   armBuildTool: (armed) => {
     buildArmed = armed;
+    squareBuildArmed = false;
   },
+  armSquareBuildTool: (armed) => {
+    buildArmed = armed;
+    squareBuildArmed = armed;
+  },
+  placedSquareRuns: () => placedSquares.map((run) => [...run]),
+  targetedSquareRun: () => targetedSquares === undefined ? undefined : [...targetedSquares],
   standDownRequests: () => standDownRequests,
   isAnyToolArmed: () => buildArmed || objectArmed || roomArmed,
   placedRuns: () => placed.map((run) => run.map(toHarnessEdge)),

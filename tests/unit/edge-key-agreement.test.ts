@@ -85,7 +85,9 @@ function placedEdges(segments: readonly EdgeTarget[]): readonly string[] {
   // One gesture is one order (#225), so a run that reported two would be a
   // different defect and this would say so rather than silently flattening.
   expect(orders.length, 'a single gesture must report exactly one order').toBe(1);
-  return orders[0]!.edges.map((edge) => `${edge.x},${edge.y},${edge.edge}`);
+  const edges = orders[0]!.edges;
+  if (edges === undefined) throw new Error('The legacy edge route reported square geometry.');
+  return edges.map((edge) => `${edge.x},${edge.y},${edge.edge}`);
 }
 
 describe('the two spellings of an edge key are one format', () => {

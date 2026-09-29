@@ -1,5 +1,6 @@
 import { SparseWorld } from '../world/sparse-world';
 import { type ChunkPosition, type TilePosition, chunkCoordinate, tileCoordinate, tileToChunk, chunkKey } from '../world/coordinates';
+import { squareBoundary } from '../world/square-boundary';
 
 export type GlobalTopologyId = number;
 export type ChunkRegionId = number;
@@ -51,6 +52,10 @@ export class TopologyManager {
   // This would be used later to query if a global room is enclosed, etc.
 
   constructor(private readonly world: SparseWorld) {}
+
+  private openBoundary(a: TilePosition, b: TilePosition, legacyEdge: number): boolean {
+    return legacyEdge === 0 && squareBoundary(this.world, a, b) === 'open';
+  }
 
   public update(chunks: Iterable<import('../world/sparse-world').ChunkState>): void {
     let globalTopologyDirty = false;
@@ -129,22 +134,26 @@ export class TopologyManager {
           // Check right: (lx+1, ly). Separated by (lx+1, ly)'s leftEdge
           if (lx + 1 < size) {
             const edge = this.world.getLeftEdge({ x: tileCoordinate(globalX + 1), y: tileCoordinate(globalY) });
-            if (edge === 0 && tileRegions[ly * size + (lx + 1)] === 0) stack.push({lx: lx + 1, ly});
+            if (this.openBoundary({ x: tileCoordinate(globalX), y: tileCoordinate(globalY) }, { x: tileCoordinate(globalX + 1), y: tileCoordinate(globalY) }, edge)
+              && tileRegions[ly * size + (lx + 1)] === 0) stack.push({lx: lx + 1, ly});
           }
           // Check left: (lx-1, ly). Separated by (lx, ly)'s leftEdge
           if (lx - 1 >= 0) {
             const edge = this.world.getLeftEdge({ x: tileCoordinate(globalX), y: tileCoordinate(globalY) });
-            if (edge === 0 && tileRegions[ly * size + (lx - 1)] === 0) stack.push({lx: lx - 1, ly});
+            if (this.openBoundary({ x: tileCoordinate(globalX), y: tileCoordinate(globalY) }, { x: tileCoordinate(globalX - 1), y: tileCoordinate(globalY) }, edge)
+              && tileRegions[ly * size + (lx - 1)] === 0) stack.push({lx: lx - 1, ly});
           }
           // Check down: (lx, ly+1). Separated by (lx, ly+1)'s topEdge
           if (ly + 1 < size) {
             const edge = this.world.getTopEdge({ x: tileCoordinate(globalX), y: tileCoordinate(globalY + 1) });
-            if (edge === 0 && tileRegions[(ly + 1) * size + lx] === 0) stack.push({lx, ly: ly + 1});
+            if (this.openBoundary({ x: tileCoordinate(globalX), y: tileCoordinate(globalY) }, { x: tileCoordinate(globalX), y: tileCoordinate(globalY + 1) }, edge)
+              && tileRegions[(ly + 1) * size + lx] === 0) stack.push({lx, ly: ly + 1});
           }
           // Check up: (lx, ly-1). Separated by (lx, ly)'s topEdge
           if (ly - 1 >= 0) {
             const edge = this.world.getTopEdge({ x: tileCoordinate(globalX), y: tileCoordinate(globalY) });
-            if (edge === 0 && tileRegions[(ly - 1) * size + lx] === 0) stack.push({lx, ly: ly - 1});
+            if (this.openBoundary({ x: tileCoordinate(globalX), y: tileCoordinate(globalY) }, { x: tileCoordinate(globalX), y: tileCoordinate(globalY - 1) }, edge)
+              && tileRegions[(ly - 1) * size + lx] === 0) stack.push({lx, ly: ly - 1});
           }
         }
       }
@@ -202,7 +211,7 @@ export class TopologyManager {
             const globalX = (cx + 1) * size;
             const globalY = cy * size + ly;
             const edge = this.world.getLeftEdge({ x: tileCoordinate(globalX), y: tileCoordinate(globalY) });
-            if (edge === 0) {
+            if (this.openBoundary({ x: tileCoordinate(globalX - 1), y: tileCoordinate(globalY) }, { x: tileCoordinate(globalX), y: tileCoordinate(globalY) }, edge)) {
               addEdge(`${key}:${regionA}`, `${rightKey}:${regionB}`);
             }
           }
@@ -224,7 +233,7 @@ export class TopologyManager {
             const globalX = cx * size + lx;
             const globalY = (cy + 1) * size;
             const edge = this.world.getTopEdge({ x: tileCoordinate(globalX), y: tileCoordinate(globalY) });
-            if (edge === 0) {
+            if (this.openBoundary({ x: tileCoordinate(globalX), y: tileCoordinate(globalY - 1) }, { x: tileCoordinate(globalX), y: tileCoordinate(globalY) }, edge)) {
               addEdge(`${key}:${regionA}`, `${bottomKey}:${regionB}`);
             }
           }

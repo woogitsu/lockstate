@@ -1,0 +1,36 @@
+import { expect, test } from './network-changed-fixture';
+import { installTee, sentCommands } from './playtest-harness';
+
+test('Full HD room ghost previews the complete plan before the same world press submits it', async ({ page }, testInfo) => {
+  await installTee(page);
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/index.html');
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await expect(page.locator('.save-panel__item[data-active="true"]')).toBeVisible();
+  await page.getByRole('button', { name: 'Build', exact: true }).click();
+  await page.getByRole('button', { name: 'Room plans', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Room plans' });
+  await dialog.getByRole('button', { name: 'Basic cell' }).click();
+  await dialog.getByRole('button', { name: 'Place on map' }).click();
+  await expect(dialog).toBeHidden();
+  const canvas = page.locator('#game-root canvas');
+  const before = await canvas.screenshot();
+  await page.mouse.move(960, 540);
+  await expect.poll(async () => (await canvas.screenshot()).equals(before)).toBe(false);
+  await page.screenshot({ path: testInfo.outputPath('template-ghost-ready-fullhd.png') });
+  expect((await sentCommands(page)).filter((command) => command.type === 'PlaceRoomTemplate')).toHaveLength(0);
+  await page.mouse.click(960, 540);
+  await expect.poll(async () => (await sentCommands(page)).filter((command) => command.type === 'PlaceRoomTemplate')).toHaveLength(1);
+  const [command] = (await sentCommands(page)).filter((entry) => entry.type === 'PlaceRoomTemplate');
+  expect(command).toMatchObject({ type: 'PlaceRoomTemplate', templateId: 'cell-basic' });
+  expect(command?.origin).toMatchObject({ x: expect.any(Number), y: expect.any(Number) });
+  await page.screenshot({ path: testInfo.outputPath('template-ghost-submitted-fullhd.png') });
+  await page.getByRole('button', { name: 'Room plans', exact: true }).click();
+  await dialog.getByRole('button', { name: 'Place on map' }).click();
+  await page.mouse.move(840, 500);
+  await page.mouse.move(960, 540);
+  await page.waitForTimeout(250);
+  await page.screenshot({ path: testInfo.outputPath('template-ghost-blocked-fullhd.png') });
+  await page.mouse.click(960, 540);
+  expect((await sentCommands(page)).filter((entry) => entry.type === 'PlaceRoomTemplate')).toHaveLength(1);
+});

@@ -163,6 +163,28 @@ const mainSource = sources.find((source) => source.file === 'src/main.ts');
 
 const COMMAND_TYPES: readonly string[] = simulationCommandSchema.options.map((option) => option.shape.type.value);
 
+/** The template tool crosses a stateful preflight port, not a plain callback hop. */
+function templatePortRoute(): Route | undefined {
+  const readSource = (file: string): string => sources.find((source) => source.file === file)?.text ?? '';
+  const hud = readSource('src/ui/hud/hud.ts');
+  const build = readSource('src/ui/hud/build-panel.ts');
+  const preview = readSource('src/ui/hud/room-template-preview.ts');
+  const tool = readSource('src/ui/room-template-tool.ts');
+  if (!hud.includes("kind: 'place-room-template'") || !hud.includes('new RoomTemplateToolState({') ||
+      !hud.includes('roomTemplateTool }),') || !build.includes('createRoomTemplatePreview(localizer, options.roomTemplateTool, options.onArmRoomTemplate, options.roomTemplateQuote, options.onFitRoomTemplate)') ||
+      !preview.includes("place.addEventListener('click'") || !preview.includes('await tool.placeAt(tile)') ||
+      !tool.includes('await this.port.place(request)')) return undefined;
+  const line = preview.slice(0, preview.indexOf("place.addEventListener('click'")).split('\n').length;
+  return {
+    intent: 'place-room-template', outcome: 'control', tag: 'button',
+    classes: ['hud-template__placement'],
+    at: `src/ui/hud/room-template-preview.ts:${line}`,
+    trail: ['src/ui/hud/hud.ts RoomTemplateToolState({ place })',
+      'src/ui/hud/build-panel.ts createRoomTemplatePreview({ roomTemplateTool })',
+      `src/ui/hud/room-template-preview.ts:${line} place.addEventListener('click')`],
+  };
+}
+
 const SPEC = stripComments(readFileSync(join(ROOT, 'tests', 'browser', 'app-shell.spec.ts'), 'utf8'));
 
 /**
@@ -245,7 +267,10 @@ interface Verdict {
 
 const verdicts: readonly Verdict[] = COMMAND_TYPES.map((command): Verdict => {
   const intents = intentKindsFor(command);
-  const routes = intents.flatMap((intent) => routesForIntent(uiSources, intent));
+  const routes = [
+    ...intents.flatMap((intent) => routesForIntent(uiSources, intent)),
+    ...(command === 'PlaceRoomTemplate' && templatePortRoute() !== undefined ? [templatePortRoute()!] : []),
+  ];
   const control = routes.find((route) => route.outcome === 'control');
   return {
     command,
@@ -281,7 +306,7 @@ describe('every declared command has a control the layout sweep can press, or is
     expect(sources.length).toBeGreaterThan(50);
     expect(uiSources.length).toBeGreaterThan(20);
     expect(mainSource, 'the composition root moved; this gate reads the intent-to-command mapping out of it').toBeDefined();
-    expect(COMMAND_TYPES.length).toBe(18);
+    expect(COMMAND_TYPES.length).toBe(19);
 
     // Every command is reached from at least one `case` clause in the
     // composition root. A command whose clause disappeared would otherwise
@@ -427,7 +452,7 @@ describe('every declared command has a control the layout sweep can press, or is
     const withControl = verdicts.filter((verdict) => verdict.control !== undefined);
     // Sixteen and two until #1356 gave `Undo` and `Redo` the status strip's
     // buttons.
-    expect(withControl.length).toBe(18);
+    expect(withControl.length).toBe(19);
     expect(COMMAND_TYPES.length - withControl.length).toBe(0);
     expect(verdicts.filter((verdict) => verdict.exemptClasses.length > 0).map((verdict) => verdict.command)).toEqual([
       'ReleaseGuardAssignment',
@@ -441,6 +466,7 @@ describe('every declared command has a control the layout sweep can press, or is
     // follow. The chain is pinned whole below so that it is the strip's own
     // buttons that answer for the pair, not some other icon button.
     expect([...new Set(withControl.map((verdict) => fileOf(verdict.control?.at ?? '')))].sort()).toEqual([
+      'src/ui/hud/room-template-preview.ts',
       'src/ui/primitives/action-button.ts',
       'src/ui/primitives/icon-button.ts',
       'src/ui/primitives/toggle-group.ts',

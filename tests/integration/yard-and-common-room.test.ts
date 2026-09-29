@@ -104,9 +104,13 @@ function prison(yardRect: { readonly x: number; readonly y: number; readonly wid
   CELLS.forEach((rect, n) => {
     wallRoomPerimeter(runtime.world, rect, { doors: runtime.navigation.doors });
     submit(runtime, `zc${String(n)}`, packCommand({ type: 'ZoneRoom', roomId: 'room.cell', ...rect }));
-    submit(runtime, `bed${String(n)}`, packCommand({ type: 'PlaceObject', orderId: `bed-${String(n)}`, definitionId: 'bed-wooden', x: rect.x, y: rect.y }));
+    // The preceding cell's south door approaches the next row at rect.y.
+    // Keep the 1x2 bed on the other two interior squares so the real doorway
+    // guard does not correctly refuse four of the six fixture cells.
+    submit(runtime, `bed${String(n)}`, packCommand({ type: 'PlaceObject', orderId: `bed-${String(n)}`, definitionId: 'bed-wooden', x: rect.x, y: rect.y + 1 }));
     submit(runtime, `wc${String(n)}`, packCommand({ type: 'PlaceObject', orderId: `wc-${String(n)}`, definitionId: 'toilet-brick', x: rect.x + 1, y: rect.y }));
   });
+  expect(runtime.refusals.count, 'all six furnished cells must be accepted before recreation is measured').toBe(0);
 
   // No walls: `room.yard` authors `outdoors`, which is the whole of what makes
   // it free -- 64 tiles of open ground, no materials and no money.

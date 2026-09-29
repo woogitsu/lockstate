@@ -20,6 +20,7 @@ import {
   ConstructionSystem,
   DoorConstructionService,
 } from '../construction';
+import { RoomTemplateCoordinator } from '../construction/room-template-coordinator';
 import {
   DEFAULT_INCIDENT_RESPONSE_POLICY,
   GangRegistry,
@@ -142,6 +143,7 @@ export interface SimulationRuntime {
   readonly kernel: Kernel;
   readonly world: SparseWorld;
   readonly construction: ConstructionSystem;
+  readonly roomTemplates: RoomTemplateCoordinator;
   /**
    * The prison's money, what it has bought, and what the state pays for
    * running the place (#96, #89, #29).
@@ -833,7 +835,13 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    * already draws from, so **nothing about either binding is persisted** and
    * `ContainerMaterialsProvider` and `ConstructionSystem` are untouched.
    */
-  const deliveryCarryRoute = new DeliveryBayCarryRoute(prisoners.roomInstances, containers, jobs, CONSTRUCTION_MATERIALS_CONTAINER_ID);
+  const deliveryCarryRoute = new DeliveryBayCarryRoute(prisoners.roomInstances, containers, jobs,
+    CONSTRUCTION_MATERIALS_CONTAINER_ID, () => {
+      for (let index = 0; index <= prisoners.entityStore.maxActiveIndex; index += 1) {
+        if (prisoners.entityStore.isIndexAlive(index)) return true;
+      }
+      return false;
+    });
   const procurement = new ProcurementSystem(treasury, constructionMaterials, deliveryCarryRoute);
   /*
    * The treasury is the third argument since #703 ruling 12: an order is funded
@@ -846,7 +854,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     world,
     new ContainerMaterialsProvider(constructionMaterials),
     {
-      onOrderCompleted: (objectId, anchor) => objectPlacement?.onOrderCompleted(objectId, anchor) ?? false,
+      onOrderCompleted: (objectId, anchor, orientation) => objectPlacement?.onOrderCompleted(objectId, anchor, orientation) ?? false,
       onOrderReverted: (objectId, anchor) => objectPlacement?.onOrderReverted(objectId, anchor) ?? false,
     },
     doorConstruction,
@@ -1616,6 +1624,14 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   });
 
   kernel.registerSystem(construction);
+  const roomTemplates = new RoomTemplateCoordinator(world, construction, roomZoning, placedObjects, objectPlacement, navigation.doors);
+  construction.setPendingRoomTemplateClaims((tile, sequence) => roomTemplates.claimsPendingFootprint(tile, sequence));
+  construction.setRoomTemplateDoorApproachClaims((order) => roomTemplates.claimsRoomDoorApproach(order));
+  construction.setCompletedDoorClaimsSquare((tile) => doorConstruction.claimsSquare(tile));
+  construction.setObjectClaimsSquare((tile) => objectPlacement!.claimsTileForSquareWall(tile));
+  objectPlacement.setRoomDoorApproachClaim((tile) => roomTemplates.claimsRoomDoorApproachTile(tile));
+  roomZoning.setPendingTemplateClaim((tile, sequence) => roomTemplates.claimsPendingFootprint(tile, sequence));
+  kernel.registerSystem(roomTemplates);
   kernel.registerSystem(procurement);
   kernel.registerSystem(stateIncome);
   kernel.registerSystem(payroll);
@@ -1633,7 +1649,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   kernel.registerSystem(searchSystem);
   kernel.registerSystem(incidentResponseSystem);
   kernel.setCommandHandler(
-    createSessionCommandHandler(construction, procurement, roomZoning, staffHiring, prisoners, objectPlacement, guardRelease, staffDismissal, refusals, events),
+    createSessionCommandHandler(construction, procurement, roomZoning, staffHiring, prisoners, objectPlacement, guardRelease, staffDismissal, refusals, events, roomTemplates),
   );
 
   return {
@@ -1641,6 +1657,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     kernel,
     world,
     construction,
+    roomTemplates,
     treasury,
     procurement,
     justInTimeMaterials,
