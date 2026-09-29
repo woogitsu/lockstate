@@ -226,6 +226,8 @@ export interface RoomsPanel {
   getPendingArea(): RoomsPanelArea | undefined;
   isArmed(): boolean;
   isRemoving(): boolean;
+  /** Re-checks the selected row after its scrollport has been re-laid out. */
+  refreshLayout(): void;
   /** Live feedback from the world. `undefined` clears the readout and the pending rectangle. */
   setArea(area: RoomsPanelArea | undefined): void;
   /**
@@ -2124,6 +2126,9 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
     getPendingArea: () => pending,
     isArmed: () => armed,
     isRemoving: () => removing,
+    refreshLayout(): void {
+      if (!panel.element.hidden) revealInitialSelection();
+    },
     setArea(next: RoomsPanelArea | undefined): void {
       area = next;
       paintArea();
