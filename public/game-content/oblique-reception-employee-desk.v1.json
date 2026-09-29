@@ -1,0 +1,487 @@
+{
+  "schemaVersion": 1,
+  "assetId": "furniture.office.desk.employee.variants",
+  "source": "furniture.office.desk.employee.blend",
+  "sourceSha256": "4a7134622b170fae660aeb1a8155aa9adee4b54cff02c2fcdd8a0ea19dd7218c",
+  "sourceDependencies": [],
+  "resolutionPx": [
+    512,
+    512
+  ],
+  "nominalPixelsPerTile": 64,
+  "pivotPx": [
+    256,
+    256
+  ],
+  "cameraTargetTiles": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "projection": "orthographic",
+  "yawDegrees": [
+    -180,
+    -165,
+    -150,
+    -135,
+    -120,
+    -105,
+    -90,
+    -75,
+    -60,
+    -45,
+    -30,
+    -15,
+    0,
+    15,
+    30,
+    45,
+    60,
+    75,
+    90,
+    105,
+    120,
+    135,
+    150,
+    165
+  ],
+  "elevationDegrees": [
+    25,
+    45,
+    65
+  ],
+  "frames": [
+    {
+      "yawDegrees": -180,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw-180-elev25.e062408d7327.png",
+      "sha256": "e062408d73276a39efdebe23a768cc4ee85ee19216f733a63b620d1e35a9d2f5"
+    },
+    {
+      "yawDegrees": -180,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw-180-elev45.674f7c3a2ddc.png",
+      "sha256": "674f7c3a2ddc83a715b08aa3891bf52db81531a3f5367dafcf8fea530df38ff2"
+    },
+    {
+      "yawDegrees": -180,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw-180-elev65.c74424e9a423.png",
+      "sha256": "c74424e9a423c69fd92b14edf7f314ef68ef1d1e1538fc16a6e2deccaa7c5232"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw-165-elev25.be51bcc88384.png",
+      "sha256": "be51bcc883848ba82ea35976ed80b766ec516354cb87b07942fb70f8429169bc"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw-165-elev45.a80d3d1c7e47.png",
+      "sha256": "a80d3d1c7e474b88105bb15b6668e638959769ad6b0734b889c8f1739bcf0792"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw-165-elev65.1123b6c05617.png",
+      "sha256": "1123b6c0561748e00d3182344efb5edc53d921c2066fa08337314c0e78ff2ec7"
+    },
+    {
+      "yawDegrees": -150,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw-150-elev25.a24ac7708062.png",
+      "sha256": "a24ac7708062aa5ccc6aebffd5fa5f114fbe65180682a576dfb5eb03c85f3451"
+    },
+    {
+      "yawDegrees": -150,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw-150-elev45.735dfa72c124.png",
+      "sha256": "735dfa72c1240ac544d50869e50b5f8b68550ed622fb6efd75d05788458d3ea3"
+    },
+    {
+      "yawDegrees": -150,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw-150-elev65.9c3d3dcab6e1.png",
+      "sha256": "9c3d3dcab6e1942384609ce9144b7388f8e60a1065c572026a2d4b5a1c6bfbb1"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw-135-elev25.571e8b47a422.png",
+      "sha256": "571e8b47a422c4b4967e801223cfe07f198bc896d98e8ef43aa0ab942620b5df"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw-135-elev45.8f350e593537.png",
+      "sha256": "8f350e593537c2f196360fa35b219eca409cc8e2e1d748384391ef87fcf14d11"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw-135-elev65.5834b50fb911.png",
+      "sha256": "5834b50fb91127f451c9b3209f756ca337472007068549bcbd93499f00c69ba7"
+    },
+    {
+      "yawDegrees": -120,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw-120-elev25.f656d4d59936.png",
+      "sha256": "f656d4d5993638165d7d8c6f87f397ea45fb6078ef5b3a4cc3dddaeb4c6bea6d"
+    },
+    {
+      "yawDegrees": -120,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw-120-elev45.82dc0b2c8629.png",
+      "sha256": "82dc0b2c8629fb5c1afe182a4fd62c453996c94c0bcafab3c36ff7f100ae8380"
+    },
+    {
+      "yawDegrees": -120,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw-120-elev65.dcf46c2945ea.png",
+      "sha256": "dcf46c2945ea3a1ec377b15a424eda2045c1220dffff88379bdc5675da69f7ac"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw-105-elev25.121a39d7e04a.png",
+      "sha256": "121a39d7e04ab0fb34a510807c8bd952ca5b7ec33dd197baa5e6610802eff8a1"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw-105-elev45.b5d4329570ed.png",
+      "sha256": "b5d4329570ed5ba21febc1eeebd9d41cdea177a0a782a0b24521a8d64c9a0619"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw-105-elev65.f6a95f248dfe.png",
+      "sha256": "f6a95f248dfecba3682368f7cf3f9c55721de4a80d20290b948bc9630daf538a"
+    },
+    {
+      "yawDegrees": -90,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw-90-elev25.bc0bea23c620.png",
+      "sha256": "bc0bea23c62036ae20deb958bd975f777ad08b7cbd0c57e58feced5965e95669"
+    },
+    {
+      "yawDegrees": -90,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw-90-elev45.70e2b253d93b.png",
+      "sha256": "70e2b253d93b92c883c296918f785e774ab366cee8f49c81939e6734bdeb4d70"
+    },
+    {
+      "yawDegrees": -90,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw-90-elev65.b1afb8508fbd.png",
+      "sha256": "b1afb8508fbd463a14306bedc6941164618328391271a9ddc4ae40cf64d39e68"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw-75-elev25.ff7a31d003c4.png",
+      "sha256": "ff7a31d003c4c15c7ced5a69e9bc2fa51b9b076a7ae7ed7b4bf811c86620af44"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw-75-elev45.aab5c280fc3f.png",
+      "sha256": "aab5c280fc3f22f791c371c6b551e9196be52118ede9c6cf0aedc786606521cb"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw-75-elev65.61686823a164.png",
+      "sha256": "61686823a164ae28006cbe7043ffad2d19eb456c2cdbd6f2d79acddb48de56c6"
+    },
+    {
+      "yawDegrees": -60,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw-60-elev25.3f35fa275217.png",
+      "sha256": "3f35fa275217966d6c918f1aa0ca5bfd4d9f72de87386020222991205cb55244"
+    },
+    {
+      "yawDegrees": -60,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw-60-elev45.8f960df3cbdb.png",
+      "sha256": "8f960df3cbdb9f523710431a273b8709b5c66f9b418e719fd2eccb6f16d00664"
+    },
+    {
+      "yawDegrees": -60,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw-60-elev65.6a5d61a44f60.png",
+      "sha256": "6a5d61a44f606d72f0b87a93c948d43be353d20d8a2e4656bdfad2f6b6b61a38"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw-45-elev25.a23993aaffc5.png",
+      "sha256": "a23993aaffc5678af989b2cae5c8a4257386d14a541b61ea4a59b38bd6f8d98f"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw-45-elev45.40d08ed8a94c.png",
+      "sha256": "40d08ed8a94c851d3805c228735de01b16466e688dd4530ef8847d0830d3ba2c"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw-45-elev65.d28ecfafe84f.png",
+      "sha256": "d28ecfafe84f0e632eae37f829218b898fe00da04aff7857ceb5f388a8a298f0"
+    },
+    {
+      "yawDegrees": -30,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw-30-elev25.5ce0ae474bb9.png",
+      "sha256": "5ce0ae474bb9ce8a115172f29dac8c620d679b6e1ffc368b11e12e7396c51c3e"
+    },
+    {
+      "yawDegrees": -30,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw-30-elev45.59112c69984c.png",
+      "sha256": "59112c69984cfcd58722a31bcd2327d915ec40928aa2f3e14c34930a88bfd10f"
+    },
+    {
+      "yawDegrees": -30,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw-30-elev65.9ec1d7845319.png",
+      "sha256": "9ec1d7845319f344d541e7548864e2bdd807d0eb8ead4e604fd88f1a85a8ce5b"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw-15-elev25.a6c1d54d57bf.png",
+      "sha256": "a6c1d54d57bfb24fc24842a006643d1ff2f5f00e141c985fc054abef96bf6b46"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw-15-elev45.6c69c8ce8b6f.png",
+      "sha256": "6c69c8ce8b6fea4897a0c07602e22f683f8fedb056c8eaec79747a0df44bb086"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw-15-elev65.f549368c0ef4.png",
+      "sha256": "f549368c0ef4a12568d6521a5dc203a2cd355d3dfa56869848fde6f83d94f1f8"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw+00-elev25.50fa3a7ce0f7.png",
+      "sha256": "50fa3a7ce0f79542f83231c6da4a69bea04297928c118ed7ff4ed67e3b2b4ed3"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw+00-elev45.780d256b2c8d.png",
+      "sha256": "780d256b2c8df205cca43ccbfc17f42b7fbc80e605c9f8d020481e225295500e"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw+00-elev65.905eb4c0d632.png",
+      "sha256": "905eb4c0d632ee65574872d8adcf0c78553f0f91feda739b1bdee9b81d92afa5"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw+15-elev25.70903e45a0d1.png",
+      "sha256": "70903e45a0d144da62f0713921a210d8a81f94bbcc06619978b6cd1dfc23d027"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw+15-elev45.cb3577bfefde.png",
+      "sha256": "cb3577bfefde60c16b26828284fbbcbc853bfb60f52eda98ccded06cf56f1e34"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw+15-elev65.922b8edad56d.png",
+      "sha256": "922b8edad56d9ae37b0c6018ac07f2d9e22db51d495d9ef2e7ee01581150158c"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw+30-elev25.d896e5c5ee5e.png",
+      "sha256": "d896e5c5ee5e5a5e064bfecd8ffbb3aca32a35ce12d3688d40ec8c16f2942f2a"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw+30-elev45.02f726593b42.png",
+      "sha256": "02f726593b42efb482604d5fb736aaa81c616e039ce7db095029095bfd6a5088"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw+30-elev65.311068fb9b7b.png",
+      "sha256": "311068fb9b7b5682ad99a206c69052551ab866d16eaec5f0154961562254edb4"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw+45-elev25.8312da40892a.png",
+      "sha256": "8312da40892a8edd83a4b5068faf2204ca54bc0f0c67572c7d15e0c9889d5f54"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw+45-elev45.d6e422925f4f.png",
+      "sha256": "d6e422925f4ff7001537916032c58177979079356609d14616a77f09b9e95031"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw+45-elev65.61546bc0558c.png",
+      "sha256": "61546bc0558cc0bd8c145fb2b4972e7b081a2f0061f1bf76a9f52ef104245fdf"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw+60-elev25.22479972c6dd.png",
+      "sha256": "22479972c6dd1c4c4d5c98243a9cb6bed687a783db88ad451a4d6b041865949e"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw+60-elev45.cea08da0bb0f.png",
+      "sha256": "cea08da0bb0f896d0e722fe54a60d951da760639c99925b1df3e22bbc3ced87c"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw+60-elev65.b68b611337f3.png",
+      "sha256": "b68b611337f3c9cfc8cb3004e19bf62d017c2de40e4fcef876e34806f3888a7d"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw+75-elev25.91468fea2b54.png",
+      "sha256": "91468fea2b54b16364d8297072fbf1e14c946ac35883224b1bfdcc75e7e24632"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw+75-elev45.b69cb41a351e.png",
+      "sha256": "b69cb41a351ebed7ad51612db0cfea5450b771ef8b1dfbd7a1ee33499862b3ca"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw+75-elev65.f7dd42a0d30a.png",
+      "sha256": "f7dd42a0d30abcf13c338dda0cad089bdad86d28606095e871cd3504f2d3aaf5"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw+90-elev25.36da7668efe1.png",
+      "sha256": "36da7668efe1dfce2e0fba5ac12e276ec6f1c7b384c90e3286f2e4f8cf4ed442"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw+90-elev45.9a83a2827714.png",
+      "sha256": "9a83a28277149e0ee3b7eaba95047232b5b6539e2e14b80fa074a52b4a06e759"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw+90-elev65.84fc8a6a8384.png",
+      "sha256": "84fc8a6a8384715a7165208b4f1d5d3077e30f6d68c009f501a46dfbe7cabc13"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw+105-elev25.4a3c7a49ff47.png",
+      "sha256": "4a3c7a49ff47389ebae68aaf5fa728a36182fa943a01136f7ce0138e14c0a6f0"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw+105-elev45.168c205fef04.png",
+      "sha256": "168c205fef045c0617976c5f4f2be9af38a9421b63e8044c90a281393c5f939c"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw+105-elev65.8ba35acae7fb.png",
+      "sha256": "8ba35acae7fb3d2250cf6437e0b6fbedeca454687ca19f4a01d969c33e4366f9"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw+120-elev25.c7e5b37d4a7f.png",
+      "sha256": "c7e5b37d4a7f4eced9c4c6850e055de23e7e3fc57570562e7bcbc3b7bdab7d7b"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw+120-elev45.a574c0c683d8.png",
+      "sha256": "a574c0c683d8690b6ad881b9da3459d7a5dede970de63e22b00ed78a37e752b0"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw+120-elev65.6a3be1b5c354.png",
+      "sha256": "6a3be1b5c354a0e495f498680df2a628410c19d9f8b2379448d276bb887b80f2"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw+135-elev25.22f19aa06967.png",
+      "sha256": "22f19aa06967ee3c81036c3881b738efed0cae24dbf354f96d3e88c876b2f8b2"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw+135-elev45.e21e62a2abb7.png",
+      "sha256": "e21e62a2abb7a88fcd967c61266fcf815492b864fa0ae1bbf7b8d5e582ae4a18"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw+135-elev65.f35f1d7d4422.png",
+      "sha256": "f35f1d7d4422d940c579857a1e3b88932cd0c6bf8fbce4532f96bc6c8621a512"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw+150-elev25.bad84830082e.png",
+      "sha256": "bad84830082e8c981a33e33d3ba2a205f5a18ae3d52f79afac0418da11a1e0db"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw+150-elev45.031b30f38ac9.png",
+      "sha256": "031b30f38ac9ae041792c067e838d2caf89698d2e477920309684fc3afcf0aef"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw+150-elev65.3f27f1288851.png",
+      "sha256": "3f27f1288851c9bf2dc88fbb33c5a5143979f4ec56c33999d6dab6e837231c95"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw+165-elev25.727cfe4021ac.png",
+      "sha256": "727cfe4021ac6de170fc8dc831e03338be0bdbb6548be12170e02517cffdbbe4"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw+165-elev45.8a9393317003.png",
+      "sha256": "8a939331700338f085cae296ddbfa91d7fc37ee9b285b0aa90cd29872011c49c"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/reception-employee-desk-yaw+165-elev65.f6b3ad91c3dc.png",
+      "sha256": "f6b3ad91c3dc3a313a45fe8e4d9cfbb44716779a8ef515bf41091f8eca20515f"
+    }
+  ]
+}

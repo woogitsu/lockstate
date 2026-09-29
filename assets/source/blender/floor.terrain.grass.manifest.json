@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "source": "floor.terrain.grass.blend",
+  "sha256": "fdda59be6549fcdef8a4dd4382a50ad67a5668ff9b8c3c86006cdb779665cf68",
+  "assetIds": [
+    "floor.terrain.grass"
+  ],
+  "footprintTiles": [
+    1,
+    1
+  ],
+  "pivotTile": [
+    0.5,
+    0.5
+  ],
+  "material": "periodic olive turf"
+}

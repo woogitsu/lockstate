@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "assetId": "fixture.cell.toilet_sink",
+  "source": "environment.mvp.catalog.blend",
+  "sourceSha256": "57db9afb7e48996cef9aaedda72b8e874e865eb56862ee4add8b177a9713887d",
+  "sourceDependencies": [],
+  "resolutionPx": [
+    512,
+    512
+  ],
+  "nominalPixelsPerTile": 64,
+  "pivotPx": [
+    256,
+    256
+  ],
+  "cameraTargetTiles": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "projection": "orthographic",
+  "yawDegrees": [
+    -45,
+    0,
+    45
+  ],
+  "elevationDegrees": [
+    25,
+    45,
+    65
+  ],
+  "frames": [
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/cell-toilet-yaw-45-elev25.808e6ad98183.png",
+      "sha256": "808e6ad98183ef50ab82b7b066a25338fd0eb8859d3ed89ff920557f3142ac4f"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/cell-toilet-yaw-45-elev45.a77c422bf8ee.png",
+      "sha256": "a77c422bf8eed722a89a92d2aea288968ff9e07d4c0bb640a5bd136612b3ab62"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/cell-toilet-yaw-45-elev65.603f0c720314.png",
+      "sha256": "603f0c72031456ecf1b5dd26ce66cf87efa9465d218f02f6d1a45b007fb3d876"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/cell-toilet-yaw+00-elev25.baf4a9435103.png",
+      "sha256": "baf4a9435103d9df91b0ae4a89332e38f493e732a08cfe6c16d6ebb11a758ba3"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/cell-toilet-yaw+00-elev45.aa2b4eb4d68d.png",
+      "sha256": "aa2b4eb4d68dae39d05e42f22ba38d6cdafc7073355d461ff313d1c1aa8d2148"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/cell-toilet-yaw+00-elev65.e880fee2c501.png",
+      "sha256": "e880fee2c501f911d11a1a9e09a8d087f7313ca942d434b355df5d2f846c72bc"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/cell-toilet-yaw+45-elev25.d1383ad9602d.png",
+      "sha256": "d1383ad9602da0919ce2a3866678b7b2361209a44e6ac9d7948ec580a02a6094"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/cell-toilet-yaw+45-elev45.25ade4728e1e.png",
+      "sha256": "25ade4728e1e5d085cb876e720d058bdc4a56831ef56e8683c4d59442f80863b"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/cell-toilet-yaw+45-elev65.f55016319d2b.png",
+      "sha256": "f55016319d2b74190051570e42e2779db071ceeb328643b71f81799974e713da"
+    }
+  ]
+}
