@@ -469,7 +469,17 @@
 /* When there is nothing to act on, let the empty message use the compact
    minimap column. Active alerts retain the wider line length for their text
    and dismiss controls. */
-:root[data-ui-scale-enlarged='true'] .hud__corner > .hud-alerts--detached:has([data-alert='empty']) {
+:root[data-ui-scale-enlarged='true'] .hud__corner {
+  /* The zoom island still contributes its legacy 396px scaled width.
+   * Cap the whole corner so a 200% Full HD viewport never loses the map
+   * to a 752px detached card. */
+  width: min(600px, 100%);
+}
+
+:root[data-ui-scale-enlarged='true'] .hud__corner > .hud-alerts--detached {
+  /* At 200% active alerts used the legacy 396px column and expanded the
+   * corner to 752px. Keep the actionable card in the same compact column
+   * as the minimap so the world retains its Full HD width. */
   width: calc(270px * var(--ui-scale));
 }
 
