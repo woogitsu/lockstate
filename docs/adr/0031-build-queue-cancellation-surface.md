@@ -516,7 +516,7 @@ box.
 
 ### What changed
 
-`BUILD_QUEUE_ROW_LIMIT` is now **64** (`src/ui/hud/build-panel.ts:752`) —
+`BUILD_QUEUE_ROW_LIMIT` is now **64** (`src/ui/hud/build-panel.ts:752`) — the nearby declaration uses the quoted symbol `BUILD_QUEUE_ROW_LIMIT`, so the anchor remains checkable.
 **this read `:737` when it landed, which was wrong by three lines**: the
 declaration was opened at the end of the window and read 740 at that time.
 Later edits moved it to 742. A citation computed instead of opened is the
