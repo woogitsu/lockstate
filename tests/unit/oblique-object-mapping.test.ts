@@ -11,3 +11,11 @@ import { obliqueCatalogForObject } from '../../src/rendering/assets/oblique-obje
 it('fails closed when the mapped asset is absent from the registry', () => {
  expect(obliqueCatalogForObject('object.medical-bed', new Map())).toBeUndefined();
 });
+import { parseObliqueModuleRegistry } from '../../src/rendering/assets/oblique-module-registry';
+import registry from '../../public/game-content/oblique-module-registry.v1.json';
+it('registry contains both medical mapped assets', () => {
+ const parsed = parseObliqueModuleRegistry(registry);
+ expect(parsed.entries.map((entry) => entry.assetId)).toEqual(expect.arrayContaining([
+  'furniture.medical-bed.variants', 'fixture.medicine-cabinet.variants',
+ ]));
+});
