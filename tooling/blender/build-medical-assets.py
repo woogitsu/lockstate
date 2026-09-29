@@ -10,7 +10,11 @@ bpy.ops.wm.read_factory_settings(use_empty=True)
 def mat(name,color,metal=0.0,rough=.5):
  m=bpy.data.materials.new(name); m.diffuse_color=(*color,1); m.metallic=metal; m.roughness=rough; return m
 def cube(name,loc,scale,ma,bev=.04):
- bpy.ops.mesh.primitive_cube_add(size=1, location=loc); o=bpy.context.object; o.name=name; o.dimensions=scale; bpy.ops.object.transform_apply(location=False,rotation=False,scale=True); o.data.materials.append(ma)
+ x,y,z=(v/2 for v in scale)
+ verts=[(-x,-y,-z),(x,-y,-z),(x,y,-z),(-x,y,-z),(-x,-y,z),(x,-y,z),(x,y,z),(-x,y,z)]
+ faces=[(0,1,2,3),(4,7,6,5),(0,4,5,1),(1,5,6,2),(2,6,7,3),(4,0,3,7)]
+ mesh=bpy.data.meshes.new(name+"Mesh"); mesh.from_pydata(verts,[],faces); mesh.update()
+ o=bpy.data.objects.new(name,mesh); bpy.context.collection.objects.link(o); o.location=loc; o.data.materials.append(ma)
  if bev: mod=o.modifiers.new("soft_edges","BEVEL"); mod.width=bev; mod.segments=2
  return o
 def save(asset, objects):
