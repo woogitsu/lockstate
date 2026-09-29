@@ -1,0 +1,478 @@
+{
+  "schemaVersion": 1,
+  "assetId": "perimeter.light.pole.variants",
+  "source": "environment.mvp.catalog.blend",
+  "sourceSha256": "57db9afb7e48996cef9aaedda72b8e874e865eb56862ee4add8b177a9713887d",
+  "sourceDependencies": [],
+  "resolutionPx": [
+    512,
+    512
+  ],
+  "nominalPixelsPerTile": 64,
+  "pivotPx": [
+    256,
+    256
+  ],
+  "cameraTargetTiles": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "projection": "orthographic",
+  "yawDegrees": [
+    -165,
+    -135,
+    -105,
+    -75,
+    -45,
+    -15,
+    15,
+    45,
+    75,
+    105,
+    135,
+    165
+  ],
+  "elevationDegrees": [
+    20,
+    30,
+    40,
+    50,
+    60,
+    70
+  ],
+  "frames": [
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/light-pole-yaw-165-elev20.105b183d1e27.png",
+      "sha256": "105b183d1e2753d85122ae55fceaf97c6c65297dd424a1e004926a9b4c9bf3dd"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/light-pole-yaw-165-elev30.0a990807de3f.png",
+      "sha256": "0a990807de3f3b0f9a7effa1c11fd9ceb79f5dee03a21fff67f040132903c366"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/light-pole-yaw-165-elev40.f0db9f0c3379.png",
+      "sha256": "f0db9f0c3379a5e784fe2ebcf9d92aeab38ee172d5a219821c941a186da454c5"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/light-pole-yaw-165-elev50.97fed46810f4.png",
+      "sha256": "97fed46810f40fde05180577a294f0d18c87a0856069bbcc674866f602bee925"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/light-pole-yaw-165-elev60.aa5aae5343cd.png",
+      "sha256": "aa5aae5343cd6631ae106d133b4683e26697a32bf3e8b064daf0ee61499dc78e"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/light-pole-yaw-165-elev70.e0793d9c705a.png",
+      "sha256": "e0793d9c705a3440f4450ffc62be14a2453c8d93a61bec0f65d17d5ac24f101d"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/light-pole-yaw-135-elev20.582548a647e1.png",
+      "sha256": "582548a647e1cf32552b4e1274fb0d1a8b99cf2861022eca6ca8aa6ef5f42dbd"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/light-pole-yaw-135-elev30.51d4c5d9e5f7.png",
+      "sha256": "51d4c5d9e5f7f1fb5488a47c2565636aa2d02d164c14a29b32a4c0767185d256"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/light-pole-yaw-135-elev40.667c651fe1ca.png",
+      "sha256": "667c651fe1ca29f1858d75ecf52182c335ffec9e922fc44c8e1f676c4f251390"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/light-pole-yaw-135-elev50.975c114bdb74.png",
+      "sha256": "975c114bdb74255e5963f017c0de7c31ace7efacdcac1d52c348bbd9d1f037d5"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/light-pole-yaw-135-elev60.55466ff60f73.png",
+      "sha256": "55466ff60f737e30076bd35a1bc66cca5e15f9eb0fdcc566c84bc834d9281c7d"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/light-pole-yaw-135-elev70.20b31a99f2a4.png",
+      "sha256": "20b31a99f2a445f1c540ec657158a5e61488a71d6e5368f54240a84c318fd421"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/light-pole-yaw-105-elev20.fae667b6bb5c.png",
+      "sha256": "fae667b6bb5c3af51d52a4c116e57cb2b7405fc889d6e4f5e9de8899a68d1a81"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/light-pole-yaw-105-elev30.c10cd121e0eb.png",
+      "sha256": "c10cd121e0eb1f03004b17e829fa8641686be14cd7e463881a57c42b285cabbd"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/light-pole-yaw-105-elev40.1be8b0f75370.png",
+      "sha256": "1be8b0f753701b1feefcf7957764d0f3ea1b62eb4e6180917fb2501202c9d516"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/light-pole-yaw-105-elev50.c5da7b01abc0.png",
+      "sha256": "c5da7b01abc0e9f6def2acf7ad32af8345b8d12379bfc0ab88095a0032130694"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/light-pole-yaw-105-elev60.0d95e1f26695.png",
+      "sha256": "0d95e1f2669502a8d2d7f1f0f5214d99f514a961397d42f41dbd00d9ef053832"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/light-pole-yaw-105-elev70.3eb48ded922d.png",
+      "sha256": "3eb48ded922df39d68352a7ff691f3a50078330a7b89de061279d64694f43c9e"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/light-pole-yaw-75-elev20.9daaf30dd6a9.png",
+      "sha256": "9daaf30dd6a92bddec2e07c9d412406abfcccfd2dd6adaa531956e0b18eecd2f"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/light-pole-yaw-75-elev30.5b2701d363cf.png",
+      "sha256": "5b2701d363cf3e6ddd931c20fdbd26986d05723413c8c6b2efd2cb514ca69dc0"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/light-pole-yaw-75-elev40.65c732336286.png",
+      "sha256": "65c732336286c9a5a536d84b06ba6dddc3f5a9a46f176ae2f5f0b86333d2893d"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/light-pole-yaw-75-elev50.67e6b9d4d5c6.png",
+      "sha256": "67e6b9d4d5c699df62e1dea90e3f4a0d058904853fb6f89b0e4eeef2391b7bd2"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/light-pole-yaw-75-elev60.74813c6f019e.png",
+      "sha256": "74813c6f019ea17fbbfb439c3d50c77d8bc4647f1c99ec8982ec4c6c73e0071e"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/light-pole-yaw-75-elev70.43b8ab0fc1a7.png",
+      "sha256": "43b8ab0fc1a76c6e2e5e6b25a62309d1a9694b96a920968d976ba07d1db82121"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/light-pole-yaw-45-elev20.727f9b08da9a.png",
+      "sha256": "727f9b08da9aedcb2ae4da1bc0b2c533f9fff5c030cc3135ad4e097b8db4259a"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/light-pole-yaw-45-elev30.9f8ed6cc5cb4.png",
+      "sha256": "9f8ed6cc5cb4476082d0d150e94e5dec1696afd32121647f17f3dfffe2fa9129"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/light-pole-yaw-45-elev40.38936778fc21.png",
+      "sha256": "38936778fc218b240856ba9da24f9e0011d9730a548f855df22c2d115852ac80"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/light-pole-yaw-45-elev50.42ff860f7183.png",
+      "sha256": "42ff860f71832b55a7315dce89330830af45857adf3f5c1232220cb07568c3b5"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/light-pole-yaw-45-elev60.97b73accf9b4.png",
+      "sha256": "97b73accf9b4be64ae7d42a44d7e7168e7281a48251151b5d547fa05ae033676"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/light-pole-yaw-45-elev70.22c80ad63924.png",
+      "sha256": "22c80ad63924b3eb748e21f68b5fda9be6d1f51ed97861d55d1f14c461ab06fc"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/light-pole-yaw-15-elev20.2444855cba3d.png",
+      "sha256": "2444855cba3d9c28e47857a6f4f03d7e099b9d04214dc4e734122cb3b5377d81"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/light-pole-yaw-15-elev30.a6ca64285e9f.png",
+      "sha256": "a6ca64285e9f75cdb8f6cbab6bcca505d89425c0df2815a76dd5a2194a52b0df"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/light-pole-yaw-15-elev40.763992561340.png",
+      "sha256": "763992561340121ba0870989b238d6152040b248a492ed21ed27066ef47d7d85"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/light-pole-yaw-15-elev50.90c877c4d93b.png",
+      "sha256": "90c877c4d93be91afafd6094a1eeaf2d70fbfa1335b071c4c3770d6319daff0f"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/light-pole-yaw-15-elev60.1360cb9003c4.png",
+      "sha256": "1360cb9003c43aa489828ec2e70f5f9a71f037818d71affb3551f3b2ff2758d7"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/light-pole-yaw-15-elev70.1e5ac9beb53e.png",
+      "sha256": "1e5ac9beb53e61c85147b7d32d76f61dcdd2802690be270d2b0ab1cb58cbea90"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/light-pole-yaw+15-elev20.91a369057b09.png",
+      "sha256": "91a369057b0919d3dfbfe394fae0cf9e0edc128bca5ac35f5cee354ed02f6671"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/light-pole-yaw+15-elev30.b5ac602e18c4.png",
+      "sha256": "b5ac602e18c469e9662b2cfc715488bd0c30551bb7519ae7cdc732eefdb857e9"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/light-pole-yaw+15-elev40.dfb23f59bc15.png",
+      "sha256": "dfb23f59bc150f7907c7a473cf0f7a186bd2a17974fa4707bc6912312b3de46d"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/light-pole-yaw+15-elev50.0af394db0137.png",
+      "sha256": "0af394db01371b3fb946b162739f0a0700052eb09ff2a409e12f0e35658a5cc0"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/light-pole-yaw+15-elev60.88614dc95586.png",
+      "sha256": "88614dc955862a4ce7b36de5abd569bf140fb366761bf5009ec289095707e4ae"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/light-pole-yaw+15-elev70.bf4c76c44556.png",
+      "sha256": "bf4c76c445562c5ef77c5b3dbad8033362176578605ed131a5e5ac3c00fced13"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/light-pole-yaw+45-elev20.52e868b1d02c.png",
+      "sha256": "52e868b1d02c3283c1c33984630135962be69e3b710f35e1d1b00d78708d7407"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/light-pole-yaw+45-elev30.62ca2fb34eca.png",
+      "sha256": "62ca2fb34ecaddb6caddcae3edb5951df66533733e104bff4869beb8a190a183"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/light-pole-yaw+45-elev40.9ab74e26370d.png",
+      "sha256": "9ab74e26370d6547ffab30b06e8f4cfad7308f4e90474fbbcf1f778c80805d03"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/light-pole-yaw+45-elev50.c09f93f38525.png",
+      "sha256": "c09f93f3852582d443df13f0a96eba5983026b6522f87905c02db0a57ac42dbd"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/light-pole-yaw+45-elev60.944deb9c1267.png",
+      "sha256": "944deb9c126742bac5bc824f6e177a916711e8cc1c4a58321d38f9efa77c0974"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/light-pole-yaw+45-elev70.3244fb1e1959.png",
+      "sha256": "3244fb1e1959356d214e729fb4b5fd7b1181693d0b63d8f48604662c17165ab0"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/light-pole-yaw+75-elev20.140350463680.png",
+      "sha256": "1403504636805b1cb499471dde234f9187cb5c6336616cb45b2d7da7d10c609a"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/light-pole-yaw+75-elev30.00d5ed615256.png",
+      "sha256": "00d5ed615256c1edead7ee0b080b28b18fc7a86a7e51acafa5b6bc16c36d0fb5"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/light-pole-yaw+75-elev40.d0b3a162b2df.png",
+      "sha256": "d0b3a162b2dfe147650131c0f8880bd894307dc565e87a95c9a85e5a431bcd61"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/light-pole-yaw+75-elev50.fdbd65e42e49.png",
+      "sha256": "fdbd65e42e493cb3f38d5dc9fb780e88a2855e3ddc73803cfee824b60f1f0ad5"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/light-pole-yaw+75-elev60.1669955f884f.png",
+      "sha256": "1669955f884ff02fa867c385f19bc984a579aa8def46d4624a186af1ed30e09c"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/light-pole-yaw+75-elev70.b50b67747cf6.png",
+      "sha256": "b50b67747cf65cbc530d61e267a4030ed898887c6e5986bebae91e7e8e1baa63"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/light-pole-yaw+105-elev20.a905091eee25.png",
+      "sha256": "a905091eee25fa86a148ce004a02dc0239f6f6d65a06da534e56b59807ffbc66"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/light-pole-yaw+105-elev30.a8e2bac7b0f7.png",
+      "sha256": "a8e2bac7b0f718751d0cd7cfbd05bba10a0f272d7e708347c22f16c7cc42a780"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/light-pole-yaw+105-elev40.dc8640a03ad8.png",
+      "sha256": "dc8640a03ad82156f5c50f59d706e3bf45e7292b64bf0f2f9b86da8bd4db4a96"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/light-pole-yaw+105-elev50.4858ce3a0ec0.png",
+      "sha256": "4858ce3a0ec0cea5e807b8f5b1100e823999c8bac5982794329f8d8d7c57be6b"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/light-pole-yaw+105-elev60.38f43a7cb87c.png",
+      "sha256": "38f43a7cb87cef7c21380f191946f4263eba9a28006e318fab50882abce02df6"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/light-pole-yaw+105-elev70.d6f3d3d56a55.png",
+      "sha256": "d6f3d3d56a551de9c2906d66be63df5b8d27daf452f2aff225c633cbc5aed72e"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/light-pole-yaw+135-elev20.477a389373b3.png",
+      "sha256": "477a389373b3f59a0ecd507a86d10aabe859498a9009378d8ad6f8dc21034712"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/light-pole-yaw+135-elev30.84bfac19d23b.png",
+      "sha256": "84bfac19d23bf771aad9015c8d0d76839b4eff4f09e7807e973a6bea46cee767"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/light-pole-yaw+135-elev40.2b72049f75b3.png",
+      "sha256": "2b72049f75b35b8d9471effb0e5ac380a7663965f4f71a849a3e98a85f5a4495"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/light-pole-yaw+135-elev50.48d7c70ab359.png",
+      "sha256": "48d7c70ab359349f59171ca4e83a0646d3dccd57955a8c9d61659c21e951926d"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/light-pole-yaw+135-elev60.428873500909.png",
+      "sha256": "4288735009096f361a8381dee691e614523b17c4c0c2248129174b1eaa841936"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/light-pole-yaw+135-elev70.68a4958659f5.png",
+      "sha256": "68a4958659f5c46c5e0acb8b4eb73b6b36679c84920d2513c76e6dcaacaee92e"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/light-pole-yaw+165-elev20.d96945d7225d.png",
+      "sha256": "d96945d7225dab518d3aa428613f14deafd1664f392978f0b31eb3f836c91acd"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/light-pole-yaw+165-elev30.ea613153348b.png",
+      "sha256": "ea613153348b354c36f523db0b6c2731858cbc64725abf0f32e7985856e97be9"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/light-pole-yaw+165-elev40.a6a0c58f766e.png",
+      "sha256": "a6a0c58f766ee6415c2b2ef057c7d96f2b79c7f12219b2f31e8eab54a455a4a3"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/light-pole-yaw+165-elev50.ebe720b46a15.png",
+      "sha256": "ebe720b46a1551f6dfa9084e74e147bfe1328e1dd62e3a2926ce93c7344157eb"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/light-pole-yaw+165-elev60.0833484821ef.png",
+      "sha256": "0833484821ef111e6a26b9b81f35c65160983d5af69236bb14c50048c213513f"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/light-pole-yaw+165-elev70.1acca146eddf.png",
+      "sha256": "1acca146eddf0589364572ea582940357ae3ff1f52b5a1fb9c99d026ee304c83"
+    }
+  ]
+}

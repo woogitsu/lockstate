@@ -54,6 +54,10 @@
       "manifest": "/game-content/oblique-ceiling-light.v1.json"
     },
     {
+      "assetId": "perimeter.light.pole.variants",
+      "manifest": "/game-content/oblique-light-pole.v1.json"
+    },
+    {
       "assetId": "fixture.cell.waste_bin",
       "manifest": "/game-content/oblique-cell-waste-bin.v1.json"
     },
