@@ -74,6 +74,10 @@
       "manifest": "/game-content/oblique-medical-cabinet.v1.json"
     },
     {
+      "assetId": "furniture.medical.bed.single",
+      "manifest": "/game-content/oblique-medical-bed.v1.json"
+    },
+    {
       "assetId": "furniture.storage.rack.wooden",
       "manifest": "/game-content/oblique-cell-storage-rack.v1.json"
     },
