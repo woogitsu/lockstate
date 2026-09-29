@@ -305,7 +305,20 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
     }));
   }
   for (const id of ROOM_TEMPLATE_IDS) {
-    const button = element('button', { text: t(ROOM_TEMPLATE_NAME_KEYS[id]), attributes: { type: 'button' } });
+    // Include the footprint in the accessible name so keyboard and screen-reader
+    // users can choose a plan by the shape it will paint, without opening each
+    // preview first. The visible label stays short and unchanged.
+    const footprint = instantiateRoomTemplate(id, { x: 0, y: 0 });
+    const button = element('button', {
+      text: t(ROOM_TEMPLATE_NAME_KEYS[id]),
+      attributes: {
+        type: 'button',
+        'aria-label': t(HUD_MESSAGE_KEY.templateAriaLabel, {
+          name: t(ROOM_TEMPLATE_NAME_KEYS[id]), width: footprint.width, height: footprint.height,
+        }),
+        'aria-pressed': 'false',
+      },
+    });
     button.addEventListener('click', () => select(id));
     buttons.set(id, button);
     choices.append(button);

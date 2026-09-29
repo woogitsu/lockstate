@@ -87,7 +87,7 @@ defect one level up and with a longer explanation.
 
 **What actually causes it is an asymmetry in one predicate, and the asymmetry is
 a plain defect.** `submitOrder` asks `canBuildAt(this.world, order.location, …)`
-(`src/simulation/construction/system.ts:619`), and `canBuildAt` tests ownership
+(`src/simulation/construction/system.ts:619`, `duplicate-order`), and `canBuildAt` tests ownership
 of the order's own tile and nothing else
 (`src/simulation/world/buildability.ts:26`).
 
@@ -141,7 +141,7 @@ exposes no enclosure query, that its `update()` has no caller, and that the
 topological reading of `enclosed` therefore is not implementable today. The
 first two claims hold — `TopologyManager.update`
 (`src/simulation/rooms/topology.ts:55`) is absent from the `registerSystem`
-block, where `navigation` is present (`src/simulation/runtime/new-session.ts:1639`).
+block, where `navigation` is present (`src/simulation/runtime/new-session.ts:1640`).
 
 **But the same flood fill runs every tick, in navigation, and is registered.**
 `buildNavigationGraph` (`src/simulation/navigation/region-graph.ts:106`)
