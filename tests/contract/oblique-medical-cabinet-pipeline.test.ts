@@ -12,6 +12,6 @@ describe('oblique medical cabinet Blender pipeline', () => {
     expect(source).toContain('modules.YAW = tuple(-165 + index * 30 for index in range(12))');
     expect(source).toContain('modules.ELEVATION = (20, 30, 40, 50, 60, 70)');
     expect(source.indexOf('modules.render_module(')).toBeLessThan(source.indexOf('existing = json.loads('));
-    expect(source).toContain('manifest: f\"/game-content/oblique-{SLUG}.v1.json\"');
+    expect(source).toContain('\"manifest\": f\"/game-content/oblique-{SLUG}.v1.json\"');
   });
 });
