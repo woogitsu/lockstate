@@ -12,7 +12,13 @@ it('fails closed when the mapped asset is absent from the registry', () => {
  expect(obliqueCatalogForObject('object.medical-bed', new Map())).toBeUndefined();
 });
 import { parseObliqueModuleRegistry } from '../../src/rendering/assets/oblique-module-registry';
-const registry = { schemaVersion: 1, entries: [\n { assetId: 'furniture.medical-bed.variants', manifest: '/game-content/oblique-furniture.medical-bed.v1.json' },\n { assetId: 'fixture.medicine-cabinet.variants', manifest: '/game-content/oblique-fixture.medicine-cabinet.v1.json' },\n ] };
+const registry = {
+ schemaVersion: 1,
+ entries: [
+  { assetId: 'furniture.medical-bed.variants', manifest: '/game-content/oblique-furniture.medical-bed.v1.json' },
+  { assetId: 'fixture.medicine-cabinet.variants', manifest: '/game-content/oblique-fixture.medicine-cabinet.v1.json' },
+ ],
+};
 it('registry contains both medical mapped assets', () => {
  const parsed = parseObliqueModuleRegistry(registry);
  expect(parsed.entries.map((entry) => entry.assetId)).toEqual(expect.arrayContaining([
