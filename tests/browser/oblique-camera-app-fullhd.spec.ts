@@ -30,6 +30,18 @@ test('Full HD oblique camera controls the real world while Build is armed', asyn
   await page.mouse.up({ button: 'right' });
   await expect(reading).not.toHaveText(priorDrag ?? '');
 
+  // Leaving while holding right must release turn capture.
+  await page.mouse.move(700, 400);
+  await page.mouse.down({ button: 'right' });
+  await page.mouse.move(2500, 1200, { steps: 2 });
+  await page.mouse.move(700, 400);
+  await page.mouse.up({ button: 'right' });
+  const afterCanvasExit = await reading.textContent();
+  await page.mouse.down({ button: 'right' });
+  await page.mouse.move(800, 420, { steps: 5 });
+  await page.mouse.up({ button: 'right' });
+  await expect(reading).not.toHaveText(afterCanvasExit ?? '');
+
   await page.locator('.ui-tab[data-tab="build"]').click();
   await page.getByRole('button', { name: /Place on map|Stawiaj na mapie/ }).click();
   await expect(angle.getByRole('button', { name: /Turn right|Obróć w prawo/ })).toBeEnabled();
