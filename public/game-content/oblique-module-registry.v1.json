@@ -38,12 +38,12 @@
       "manifest": "/game-content/oblique-cell-door-west-cutaway.v1.json"
     },
     {
-      "assetId": "fixture.cell.toilet_sink",
-      "manifest": "/game-content/oblique-cell-toilet.v1.json"
-    },
-    {
       "assetId": "fixture.cell.sink",
       "manifest": "/game-content/oblique-cell-sink.v1.json"
+    },
+    {
+      "assetId": "fixture.cell.toilet_sink",
+      "manifest": "/game-content/oblique-cell-toilet.v1.json"
     },
     {
       "assetId": "fixture.cell.waste_bin",
