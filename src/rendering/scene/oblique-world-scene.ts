@@ -502,7 +502,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     const grid = this.groundGridGraphics;
     grid.clear();
     if (!this.buildGridEmphasis) return;
-    grid.lineStyle(Math.max(1.5, this.pose.zoom), 0x26323b, 0.65);
+    grid.lineStyle(Math.max(1.5, this.pose.zoom), 0x26323b, 0.5);
     for (const tile of projection.ground) {
       if (!this.quadVisible(tile.quad)) continue;
       for (let side = 0; side < 4; side += 1) {
