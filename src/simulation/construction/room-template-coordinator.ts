@@ -195,6 +195,7 @@ export class RoomTemplateCoordinator implements SystemRegistration {
         definitionId: order.definitionId,
         x: order.location.x,
         y: order.location.y,
+        transactionId: `room-template-${request.sequence}`,
         ...(order.objectOrientation === undefined ? {} : { orientation: order.objectOrientation }),
       }, tick, request.sequence);
     }

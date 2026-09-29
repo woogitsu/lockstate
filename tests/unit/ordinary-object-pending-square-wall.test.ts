@@ -73,6 +73,7 @@ it('groups completed template furniture with its shell transaction', () => {
   const runtime = completedCell();
   const furniture = runtime.construction.allOrders().find((order) => order.definitionId === 'bed-wooden');
   expect(furniture).toBeDefined();
-  const latest = runtime.construction.snapshot().undoStack.at(-1) ?? [];
+  const snapshot = runtime.construction.snapshot();
+  const latest = snapshot.currentTransaction ?? snapshot.undoStack.at(-1) ?? [];
   expect(latest).toContain(furniture!.id);
 });

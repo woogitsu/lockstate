@@ -116,6 +116,8 @@ export interface PlaceObjectRequest {
   /** Anchor tile: the footprint's top-left corner. */
   readonly x: number;
   readonly y: number;
+  /** Internal room-template grouping; absent for ordinary placements. */
+  readonly transactionId?: string;
   /** Internal template placement only; absent for today's PlaceObject command. */
   readonly orientation?: ObjectOrientation;
 }
@@ -501,7 +503,7 @@ export class ObjectPlacementService {
    * order with no ordinal sorts exactly where it sorted before the field
    * existed -- see `compareBuildOrderExecution`.
    */
-  public place(request: PlaceObjectRequest, tick: number, placementSequence?: number, transactionId?: string): PlaceObjectOutcome {
+  public place(request: PlaceObjectRequest, tick: number, placementSequence?: number): PlaceObjectOutcome {
     const definition = BUILDABLE_REGISTRY.get(request.definitionId);
     if (definition === undefined) return this.refuse('unknown-buildable', request, tick);
 
@@ -577,7 +579,7 @@ export class ObjectPlacementService {
      * be a field with no reader. A gesture that placed several objects at once
      * would need one, and decision 5 refuses that gesture.
      */
-    this.orders.registerTransactionOrder(request.orderId, transactionId ?? request.orderId);
+    this.orders.registerTransactionOrder(request.orderId, request.transactionId ?? request.orderId);
 
     return { kind: 'ordered', orderId: request.orderId, objectId, anchorTile: anchor, roomInstanceId: room.instanceId };
   }
