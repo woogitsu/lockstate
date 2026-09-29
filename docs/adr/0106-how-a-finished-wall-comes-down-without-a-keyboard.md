@@ -139,7 +139,7 @@ each was re-found by its text on this tree rather than trusted from either.
   queued."*
 - **The resolver a `Remove` press reaches is tile-and-object-shaped by
   construction, not by oversight.** `ObjectPlacementService.remove` (class at
-  `src/simulation/objects/object-placement-service.ts:457`, `export class ObjectPlacementService`, method at `:646`)
+  `src/simulation/objects/object-placement-service.ts:455`, `export class ObjectPlacementService`, method at `:646`)
   tries exactly two things at the pressed tile, in order: a placed object
   (`this.placedObjects.objectAt(tile)`, `:649`) and a still-building object
   order (`this.orderBuildingObjectAt(tile)`, `:716`, which matches only orders
@@ -149,14 +149,14 @@ each was re-found by its text on this tree rather than trusted from either.
   value `ConstructionSystem` wrote and the `'completed'` order that wrote it.
   Falling through both arms returns `{ kind: 'refused', reason:
   'nothing-to-remove' }` (`RemoveObjectRefusalReason`, `:207`), which
-  `src/simulation/runtime/session-commands.ts:153` turns into the sentence
+  `src/simulation/runtime/session-commands.ts:1015` turns into the sentence
   the issue quotes.
 
 ### 2. The positive control, re-opened from the issue's own comment
 
 The comment on the issue (2026-09-04) recorded the other arm of the same
 standing run: disarm `Remove`, press `Z` once. `ConstructionSystem.cancelOrder`
-(`src/simulation/construction/system.ts:941-990`) is unconditional on state
+(`src/simulation/construction/system.ts:901-912`) is unconditional on state
 beyond `isCancellable`, and for a `'completed'` order it sets `hadGeometry =
 true` (`:949`) and calls `this.revertConstruction(order)` (`:951`), which
 rewrites the edge the order wrote — falling to whatever *other* completed
@@ -186,11 +186,11 @@ src/ui/hud/projection.ts, messages.ts, hud.ts          … comments and refusal 
 src/ui/simulation-*.ts (4 files)                       … comments
 src/content/default-locale-en.ts                        … comments
 src/main.ts:2495                                        … comment
-src/main.ts:2498: requireSimulation(commands).submit({ type: 'CancelBuildOrder', orderId: intent.orderId });
+src/main.ts:3353: requireSimulation(commands).submit({ type: 'CancelBuildOrder', orderId: intent.orderId });
 ```
 
 Same finding the comment already closed, re-run on this tree: **one
-producer**, `src/main.ts:2498`, under `case 'cancel-build-order':` at `:2497`,
+producer**, `src/main.ts:3353`, under `case 'cancel-build-order':` at `:2497`,
 fed by the queue row's intent. `CancelBuildOrder`'s own decode
 (`src/simulation/protocol/commands.ts`) carries only `orderId` on the wire —
 no location, no edge — and its handler
