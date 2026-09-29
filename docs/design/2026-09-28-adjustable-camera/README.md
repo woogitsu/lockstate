@@ -176,6 +176,18 @@ rather than the frame-cost acceptance test for a large prison.
 
 ## First Blender modules inside the actual scene
 
+### Asset pipeline recheck — 2026-09-29
+
+The pinned Blender 5.2.1 executable was rerun against the canonical
+`environment.mvp.catalog.blend` for `furniture.storage.rack.wooden` using the
+repository's refinement and environment-render scripts. The resulting
+256×256 PNG has SHA-256
+`43bb88659bec3f6e79393bdac3aaf3fc4df78d803301a1f3ccB5514e419f3bc4`
+and matches the committed runtime source-art file byte for byte.
+This confirms that the rack shown by the oblique scene is still reproducible
+from the committed Blender source; it does not create a new asset or claim a
+new camera angle.
+
 The composition branch joins the camera scene to authored north and west wall,
 cutaway wall, north and west doors, bed, toilet, rack and chair modules. Cell and canteen
 zoning select their matching Blender floor tile, while unzoned ground retains
