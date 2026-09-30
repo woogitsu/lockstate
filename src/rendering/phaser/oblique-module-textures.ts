@@ -13,7 +13,7 @@ export async function registerObliqueModuleTextures(
   if (missing.length === 0) return;
   await new Promise<void>((resolve, reject) => {
     const failures: string[] = [];
-    const onError = (file: { key?: string }): void => failures.push(file.key ?? 'unknown');
+    const onError = (file: { key?: string }): void => { failures.push(file.key ?? 'unknown'); };
     scene.load.on(Phaser.Loader.Events.FILE_LOAD_ERROR, onError);
     scene.load.once(Phaser.Loader.Events.COMPLETE, () => {
       scene.load.off(Phaser.Loader.Events.FILE_LOAD_ERROR, onError);
