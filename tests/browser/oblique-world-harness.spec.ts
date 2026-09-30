@@ -6,6 +6,10 @@ test('real render feed cell keeps one build square under the cursor while the sc
   await page.goto('/tests/browser/oblique-world-harness.html');
   await page.evaluate(() => window.lockstateObliqueWorldHarness.ready());
   await expect(page.locator('canvas')).toBeVisible();
+  expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.medicalObliqueInspection())).toEqual([
+    { objectId: 'object.medical-bed', assetId: 'furniture.medical-bed.variants', footprint: { width: 1, height: 2 } },
+    { objectId: 'object.medicine-cabinet', assetId: 'fixture.medicine-cabinet.variants', footprint: { width: 1, height: 1 } },
+  ]);
   let previousGroundPaints = 0;
   for (const [yaw, elevation] of [[-45, 25], [0, 45], [45, 65]] as const) {
     await page.evaluate(([y, e]) => window.lockstateObliqueWorldHarness.setPose(y, e), [yaw, elevation] as const);

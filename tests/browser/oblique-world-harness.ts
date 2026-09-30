@@ -7,6 +7,14 @@ import { groundToScreen } from '../../src/rendering/camera/oblique-projection';
 import { TILE_SIZE_PX } from '../../src/rendering/tile-metrics';
 import type { RenderFrame } from '../../src/rendering/feed/render-feed';
 import type { Point } from '../../src/rendering/camera/coordinates';
+import { defaultObjectRegistry } from '../../src/content/object-catalog';
+import { obliqueAssetIdForObject } from '../../src/rendering/assets/oblique-object-mapping';
+
+export interface MedicalObliqueInspection {
+  readonly objectId: 'object.medical-bed' | 'object.medicine-cabinet';
+  readonly assetId: string | undefined;
+  readonly footprint: { readonly width: number; readonly height: number };
+}
 
 export interface ObliqueWorldHarness {
   ready(): Promise<void>;
@@ -14,6 +22,7 @@ export interface ObliqueWorldHarness {
   pointAtTile(tileX: number, tileY: number): Point;
   selected(): { readonly tileX: number; readonly tileY: number } | undefined;
   paintCounts(): { readonly ground: number; readonly raised: number };
+  medicalObliqueInspection(): readonly MedicalObliqueInspection[];
 }
 
 declare global {
@@ -73,4 +82,9 @@ window.lockstateObliqueWorldHarness = {
   },
   selected: () => scene.selectedTile,
   paintCounts: () => scene.paintCounts,
+  medicalObliqueInspection: () => (['object.medical-bed', 'object.medicine-cabinet'] as const).map((objectId) => {
+    const definition = defaultObjectRegistry.getById(objectId);
+    if (definition === undefined) throw new Error(`Missing medical object ${objectId}`);
+    return { objectId, assetId: obliqueAssetIdForObject(objectId), footprint: definition.footprint };
+  }),
 };
