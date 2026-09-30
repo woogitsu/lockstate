@@ -30,7 +30,23 @@ body {
 
 canvas {
   display: block;
+}/* A fresh page has no terrain to render yet. Keep the map canvas as the
+   pointer target, but give the empty state a quiet planning surface instead
+   of exposing Phaser's near-black void behind the start card (#1580). */
+#app:has(.empty-world-prompt:not([hidden]))::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background-color: var(--surface-base);
+  background-image:
+    linear-gradient(135deg, color-mix(in srgb, var(--border) 28%, transparent) 1px, transparent 1px),
+    linear-gradient(315deg, color-mix(in srgb, var(--border) 18%, transparent) 1px, transparent 1px);
+  background-size: 64px 64px;
+  opacity: 0.72;
 }
+
 
 .empty-world-prompt:not([hidden]) {
   position: fixed;
