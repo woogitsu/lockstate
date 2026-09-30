@@ -296,6 +296,9 @@ export class GuardRoster {
       // rather than left pointing at waypoints nothing will ever finish.
       this.locomotion.clear();
       for (const [entityId, record] of snapshot.records) {
+        // The entity snapshot is authoritative. A stale roster row must not
+        // become a paid or dispatchable guard after restore.
+        if (!this.entityStore.isAlive(entityId)) continue;
         const restored: GuardRecord = { ...record };
         if (restored.deploymentPhase === 'travelling') settleRestoredTraveller(restored);
         this.records.set(entityId, restored);
@@ -312,6 +315,10 @@ export class GuardRoster {
     // the same one exception for the same reason.
     this.locomotion.loadSnapshot(travel.locomotion);
     for (const [entityId, record] of snapshot.records) {
+      if (!this.entityStore.isAlive(entityId)) {
+        this.locomotion.forget(entityId);
+        continue;
+      }
       const restored: GuardRecord = { ...record };
       if (restored.pathRequestId !== undefined && !travel.knowsRequest(restored.pathRequestId)) {
         restored.pathRequestId = undefined;

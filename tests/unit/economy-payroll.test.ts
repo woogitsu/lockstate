@@ -288,6 +288,22 @@ describe('the day the treasury cannot pay', () => {
 });
 
 describe('what survives a save', () => {
+  it('does not bill a restored roster record for a staff entity that is no longer alive', () => {
+    const original = rosterOf(CLERK);
+    const [departed] = original.allGuardIds();
+    const staleRecord = original.getSnapshot().records[0]!;
+    original.forget(departed!);
+    const deadStore = original.getSnapshot().entityStore;
+
+    for (const withTravel of [false, true]) {
+      const restored = new GuardRoster(32);
+      const snapshot = { entityStore: deadStore, records: [staleRecord] as const };
+      if (withTravel) restored.loadSnapshot(snapshot, { locomotion: original.locomotion.getSnapshot(), knowsRequest: () => false });
+      else restored.loadSnapshot(snapshot);
+      expect(dailyWageBillMinorUnits(restored, ROLES.registry), `withTravel=${withTravel}`).toBe(0);
+    }
+  });
+
   it('snapshots the arrears and restores them', () => {
     const first = payrollOnlyKernel(rosterOf(CHIEF), 500);
     step(first.kernel, DAY_LENGTH_TICKS);
