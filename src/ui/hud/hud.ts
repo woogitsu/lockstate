@@ -2307,7 +2307,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
           { kind: 'place-room-template', ...template },
           control,
         ),
-        onPreflight: options.roomTemplate.onPreflight,
+        ...(options.roomTemplate.onPreflight === undefined ? {} : { onPreflight: options.roomTemplate.onPreflight }),
       },
     }),
     onPlace: (intent) => {
