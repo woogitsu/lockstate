@@ -224,6 +224,7 @@ describe('a prison with a furnished laundry', () => {
       'action.laundry-work': 2_756, // 2,420
       'action.free-association': 1_140, // 1,740
     });
+    expect(withMachines.runtime.roomFilth.filthOf(LAUNDRY_ID), 'completed laundry shifts leave filth on the real room instance').toBeGreaterThan(0);
 
     /*
      * **The player-visible consequence, and the assertion decay cannot

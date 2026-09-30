@@ -433,6 +433,7 @@ describe('kernel system ordering', () => {
       { id: 'construction', order: 100 },
       { id: 'procurement', order: 110 },
       { id: 'economy.state-income', order: 120 },
+      { id: 'economy.room-filth', order: 121 },
       { id: 'economy.payroll', order: 130 },
       { id: 'economy.insolvency-rungs', order: 135 },
       { id: 'rooms.needs-cleared-notice', order: 140 },

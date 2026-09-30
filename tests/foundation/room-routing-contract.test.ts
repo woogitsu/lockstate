@@ -114,7 +114,7 @@ const UNROUTED: Readonly<Record<string, string>> = {
   'room.delivery-bay':
     'ADR 0017 names it the physical route for procured materials and ADR 0093 built it, so `delivery-access` now has a reader: `DeliveryBayCarryRoute` (`src/simulation/operations/delivery-route.ts`) takes the first bay instance holding it and binds `container:<instanceId>` to it. No prisoner is *routed into* the bay even so -- `action.carry`\'s target is `{ kind: \'job-board\' }`, `resolveTargetInstance` answers a job rather than a `RoomInstance`, the carrier walks to `job.sourceTile` (which happens to be the bay\'s anchor), and `currentActionTargetInstanceId` is deliberately not written for a carry (ADR 0093 decision 1). No `DEFAULT_ACTIONS` entry names `room.delivery-bay`, no `AccommodationPolicy` does, and no sanction does.',
   'room.garbage-room':
-    '`object.waste-bin`\'s `waste-disposal` capability has no reader, and nothing in `src/simulation/` produces waste for it to take: there is no quantity a bin could hold and no job that empties one.',
+    '`RoomFilthSystem` reads `object.waste-bin`\'s `waste-disposal` capability to clear accumulated filth at the day boundary, but no prisoner action routes into the garbage room: disposal is a facility-wide first version without a carry job.',
   'room.holding-cell':
     'Its only authored object requirement is `object.bench`, which declares `seating` and `recreation` and not `sleep-surface` -- so `deriveRoomCapacity` gives every holding cell `residentCapacity: 0` and `findAvailableResidence` can never answer one. Naming it in an `AccommodationPolicy` alone would change nothing.',
   // `room.infirmary` left this list at #589 (the owner's ruling of

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Container } from '../../src/simulation/operations/inventory';
-import { STATE_INCOME_UNMET_NEED_LEVEL, isNeedUnmetForStateIncome } from '../../src/simulation/economy/income';
+import { STATE_INCOME_UNMET_NEED_LEVEL, isNeedUnmetForStateIncome, stateIncomeForCompletedDay, STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS } from '../../src/simulation/economy/income';
+import { placedObjectAt } from '../../src/simulation/objects';
 import { DEFAULT_ACTIONS } from '../../src/simulation/prisoners/actions';
 import { ACTION_PHASES } from '../../src/simulation/prisoners/components';
 import { NEED_MAX } from '../../src/simulation/prisoners/needs';
@@ -219,6 +220,35 @@ function chosenAtHunger(level: number): Chosen {
 }
 
 describe('the owner\'s amendment of 2026-09-02: the need wins when it is urgent', () => {
+  it('records a completed kitchen shift as filth for the worker', () => {
+    const runtime = prisonWithAKitchen();
+    const entityId = runtime.prisoners.entityStore.getIdByIndex(0);
+    const index = runtime.prisoners.entityStore.getIndex(entityId);
+    runtime.prisoners.needs.set(index, 'hunger', URGENT_HUNGER);
+    const kitchen = runtime.prisoners.roomInstances.allByRoomCatalogId('room.kitchen')[0]!;
+    for (let step = 0; step < 500 && runtime.roomFilth.filthOf(kitchen.instanceId) === 0; step += 1) {
+      runtime.prisoners.needs.set(index, 'hunger', URGENT_HUNGER);
+      runtime.kernel.step();
+    }
+    expect(runtime.roomFilth.filthOf(kitchen.instanceId), 'a completed live shift must produce filth').toBeGreaterThan(0);
+    expect(runtime.roomFilth.hasDirtyRoomUse(entityId)).toBe(true);
+    const withoutDisposal = stateIncomeForCompletedDay(runtime.prisoners);
+    runtime.prisoners.roomInstances.register({
+      instanceId: 'shift-test-garbage', roomCatalogId: 'room.garbage-room',
+      anchorTile: { x: tileCoordinate(30), y: tileCoordinate(30) }, width: 2, height: 2,
+      residentCapacity: 0, concurrentUseCapacity: 0, concurrentUseCapacityByCapability: [],
+      objectCapabilities: [], openArea: false,
+    });
+    for (const x of [30, 31]) {
+      expect(runtime.placedObjects.place(placedObjectAt('object.waste-bin', { x: tileCoordinate(x), y: tileCoordinate(30) }, 0))).toBe(true);
+    }
+    runtime.roomCapacity.resolveAll();
+    expect(runtime.prisoners.wasteDisposalAvailable()).toBe(true);
+    expect(stateIncomeForCompletedDay(runtime.prisoners)).toBe(withoutDisposal);
+    while (runtime.kernel.tick < 2_400) runtime.kernel.step();
+    expect(runtime.roomFilth.filthOf(kitchen.instanceId), 'the serviced day boundary clears the accumulated filth').toBe(0);
+    expect(runtime.roomFilth.hasDirtyRoomUse(entityId)).toBe(false);
+  });
   it('is measured inside a work block that offers both an errand and a shift, or nothing below means anything', () => {
     const block = resolveActiveRegimeBlock(GENERAL_POPULATION_REGIME, DECIDE_AT);
     expect(block.allowedCategories, `tick ${DECIDE_AT} is not in a work block`).toContain('work');

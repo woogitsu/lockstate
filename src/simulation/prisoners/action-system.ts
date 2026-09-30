@@ -464,6 +464,7 @@ export class ActionSystem implements SystemRegistration {
      * silently half-wired board.
      */
     private readonly carry?: CarryJobExecutor,
+    private readonly onCompletedRoomUse?: (roomCatalogId: string, roomInstanceId: string, entityId: number) => void,
   ) {}
 
   public getMetrics(): ActionMetrics {
@@ -801,6 +802,10 @@ export class ActionSystem implements SystemRegistration {
       // clears `injured`; every other action reaches this line having changed
       // nothing but need levels, exactly as before.
       if (action === TREATMENT_ACTION) this.records.injured[index] = 0;
+      if (action.target.kind === 'room-catalog-id') {
+        const roomInstanceId = this.coldState.getActionTarget(entityId);
+        if (roomInstanceId !== undefined) this.onCompletedRoomUse?.(action.target.roomCatalogId, roomInstanceId, entityId);
+      }
       this.releaseUseClaim(entityId);
       this.currentAction.phase[index] = phaseIndex('idle');
       this.coldState.setActionTarget(entityId, undefined);

@@ -37,6 +37,7 @@ import {
   type SectorRiskSampler,
 } from '../incidents';
 import { InsolvencyRungSystem, JustInTimeMaterialsService, LoanBook, PayrollSystem, ProcurementSystem, StateIncomeSystem, Treasury, TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS, type LoanTerms } from '../economy';
+import { RoomFilthLedger, RoomFilthSystem } from '../economy/room-filth';
 import { SimulationEventLog } from '../events';
 import { createIntakeHousedNotice } from '../events/intake-housed-notice';
 import { createResidentRelocationNotice } from '../events/resident-relocation-notice';
@@ -172,6 +173,7 @@ export interface SimulationRuntime {
    */
   readonly justInTimeMaterials: JustInTimeMaterialsService;
   readonly stateIncome: StateIncomeSystem;
+  readonly roomFilth: RoomFilthLedger;
   /**
    * ADR 0075 decision 2's loan book, or `undefined` when no terms were
    * supplied — which is every session `src/` builds today. See
@@ -592,9 +594,11 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    * hundred lines below.
    */
   const events = new SimulationEventLog();
+  const roomFilth = new RoomFilthLedger();
 
   const prisoners = new PrisonerOperationsRuntime({
     capacity: DEFAULT_PRISONER_CAPACITY,
+    roomFilth,
     navigation,
     events,
     identity: actorIdentity,
@@ -989,6 +993,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    */
   const loans = options.loanTerms === undefined ? undefined : new LoanBook(treasury, options.loanTerms);
   const stateIncome = new StateIncomeSystem(treasury, prisoners, loans);
+  const roomFilthSystem = new RoomFilthSystem(roomFilth, prisoners.roomInstances);
 
   // Empty until a session/scenario places real generators/consumers --
   // same "no fabricated default content" convention as `containers`/`jobs`.
@@ -1618,6 +1623,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   kernel.registerSystem(construction);
   kernel.registerSystem(procurement);
   kernel.registerSystem(stateIncome);
+  kernel.registerSystem(roomFilthSystem);
   kernel.registerSystem(payroll);
   kernel.registerSystem(insolvencyRungs);
   kernel.registerSystem(roomNeedsClearedNotice);
@@ -1645,6 +1651,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     procurement,
     justInTimeMaterials,
     stateIncome,
+    roomFilth,
     loans,
     payroll,
     insolvencyRungs,

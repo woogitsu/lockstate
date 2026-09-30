@@ -3,7 +3,7 @@ import { type Page, expect, test } from './network-changed-fixture';
 import './ui-harness-api';
 
 /**
- * *"Unmet needs have withheld {withheld} of today's grant so far"* on the
+ * The grant-withholding explanation, including dirty-room use (#595), on the
  * `EARNED TODAY` chip, in a real browser (issue #890).
  *
  * ## What this covers that `pnpm test` cannot
@@ -101,7 +101,7 @@ async function show(page: Page, next: HudCountsViewModel): Promise<ChipReading> 
   });
 }
 
-test.describe('the EARNED TODAY chip says what unmet needs withheld (#890)', () => {
+test.describe('the EARNED TODAY chip explains what reduced the grant (#890, #595)', () => {
   // The binding viewport, as every layout decision in this repository is
   // argued against -- and the one where the row is tightest, so `onScreen`
   // below is asserted where it is hardest to keep.
@@ -122,7 +122,7 @@ test.describe('the EARNED TODAY chip says what unmet needs withheld (#890)', () 
     // which is the reason this figure crosses as a number rather than a
     // string the projection formatted.
     expect(withholding.title).toBe(
-      "Unmet needs have withheld 96,400 of today's grant so far — the state pays less for a resident whose needs are going unmet, and meeting one puts that share back.",
+      "The state has withheld 96,400 of today's grant so far. Unmet needs and use of dirty rooms reduce the payment; meeting a need restores its share, and a garbage room with a waste bin clears filth at the day boundary.",
     );
     // A hover reaches one player and not the other, so the same sentence is in
     // the DOM as screen-reader text.

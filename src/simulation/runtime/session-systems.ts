@@ -1,5 +1,6 @@
 import { isOpenAreaRoom } from '../../content/room-catalog';
 import type { PayrollSnapshot, ProcurementSnapshot, TreasurySnapshot } from '../economy';
+import type { RoomFilthSnapshot } from '../economy/room-filth';
 import type { ConfiscationEvent } from '../contraband/confiscation';
 import { applyDefaultSearchPolicies } from '../contraband/default-search-policies';
 import type { InformantRecord } from '../contraband/informants';
@@ -476,6 +477,8 @@ export interface EncodedObjects {
 export interface EncodedEconomy {
   readonly treasury: TreasurySnapshot;
   readonly procurement: ProcurementSnapshot;
+  /** Absent in saves written before sanitation existed: no room had accumulated filth. */
+  readonly roomFilth?: RoomFilthSnapshot;
   /**
    * Wages billed and not paid
    * ([ADR 0042](../../../docs/adr/0042-attaching-consequences-to-the-simulation-loop.md)
@@ -753,6 +756,7 @@ export function captureSessionSystems(runtime: SimulationRuntime): EncodedSessio
     economy: {
       treasury: runtime.treasury.snapshot(),
       procurement: runtime.procurement.snapshot(),
+      roomFilth: runtime.roomFilth.snapshot(),
       // Emitted unconditionally by a live capture, zero and all -- the same
       // distinction the `objects` section draws below: a prison that owes
       // nothing writes `{ unpaidWagesMinorUnits: 0 }`, which says "nothing is
@@ -1081,6 +1085,7 @@ export function restoreSessionSystems(
   if (systems.economy !== undefined) {
     runtime.treasury.restore(systems.economy.treasury);
     runtime.procurement.restore(systems.economy.procurement);
+    if (systems.economy.roomFilth !== undefined) runtime.roomFilth.loadSnapshot(systems.economy.roomFilth);
     // Absent on every save written before payroll existed, and the runtime
     // then keeps the zero arrears `createNewSimulationRuntime` gave it -- which
     // is what a prison that could not owe a wage actually owed.

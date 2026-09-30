@@ -436,7 +436,12 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
    * `overdraftBadge`'s: a sentence present in every screenshot is one nobody
    * reads in the screenshot it matters in.
    *
-   * **What each clause claims, and where it is true.**
+   * **Historical claim, superseded by #595.** The clauses below described
+   * the grant before completed kitchen, canteen and laundry use could also
+   * withhold a share. They no longer describe every cause of the displayed
+   * total; the replacement sentence below names both causes and the actual
+   * cleanup boundary.
+   * **What each old clause claimed, and where it was true.**
    *  - *"Unmet needs have withheld {withheld} of today's grant so far"*:
    *    `{withheld}` is `counts.stateIncomeWithheldTodayMinorUnits`, which
    *    `projectStatusStrip` computes as
@@ -482,7 +487,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
    * no chip width and paints no colour.
    */
   'hud.status.earned-withheld':
-    "Unmet needs have withheld {withheld} of today's grant so far — the state pays less for a resident whose needs are going unmet, and meeting one puts that share back.",
+    "The state has withheld {withheld} of today's grant so far. Unmet needs and use of dirty rooms reduce the payment; meeting a need restores its share, and a garbage room with a waste bin clears filth at the day boundary.",
   'hud.status.occupancy': 'Cell occupancy',
   'hud.status.occupancy-value': '{value} of {capacity}',
   'hud.status.incidents-clear': 'Clear',

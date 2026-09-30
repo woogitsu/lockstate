@@ -585,17 +585,13 @@ export const BUILDABLE_REGISTRY = new Map<string, BuildableDefinition>([
    * requirement in `src/content/room-catalog.ts` is satisfiable through
    * `PlaceObject`, which is the whole of ADR 0028 phase 4.
    *
-   * **Four of the five capabilities here are gated by nothing**, and that is
-   * this group's honest summary rather than a defect in it. `'surveillance'`,
-   * `'item-storage'`, `'delivery-access'`, `'waste-disposal'` and
-   * `'utility-control'` appear in no `DEFAULT_ACTIONS` entry and in no other
-   * room's requirements, so furnishing these five rooms makes their
-   * requirements read `'satisfied-by-capability'` and changes no prisoner's
-   * behaviour. The systems that would consume them are a security-deployment
-   * system, #99's salvage destination, ADR 0017's procurement route, and a
-   * maintenance job system -- none of which exists. A room a player can finish
-   * and see reported as complete is what this phase owes them; the behaviour is
-   * owed by those systems.
+   * None of these five capabilities gates a `DEFAULT_ACTIONS` entry directly.
+   * That was once described here as five capabilities with no reader, but
+   * delivery access now routes carried stock to the bay, item storage picks
+   * its destination, and waste disposal clears kitchen, canteen and laundry
+   * filth at the day boundary (#595). Surveillance and utility control still
+   * have no gameplay reader on this branch. Room completeness alone is not a
+   * promise that an action targets the room.
    */
   ['security-console-brick', {
     id: 'security-console-brick',

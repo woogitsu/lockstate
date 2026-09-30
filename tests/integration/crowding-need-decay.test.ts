@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { createSaveEnvelope, decodeSaveEnvelope } from '../../src/persistence/save-schema';
-import { STATE_INCOME_UNMET_NEED_LEVEL, stateIncomeForCompletedDay } from '../../src/simulation/economy/income';
+import { STATE_INCOME_UNMET_NEED_LEVEL, STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS, stateIncomeForCompletedDay } from '../../src/simulation/economy/income';
+import { placedObjectAt } from '../../src/simulation/objects';
+import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { SIMULATION_PROTOCOL_VERSION, type WorkerToMainMessage } from '../../src/simulation/protocol/types';
 import { HUD_VIEW_MODEL_SCHEMA_VERSION } from '../../src/simulation/presentation/view-model';
@@ -69,6 +71,7 @@ const CELL_COUNT = 12;
 const ARRIVAL = { x: 16, y: 16 } as const;
 const SHOWER = { x: 26, y: 1, width: 3, height: 3 } as const;
 const CANTEEN = { x: 19, y: 6, width: 6, height: 6 } as const;
+const GARBAGE = { x: 30, y: 5, width: 2, height: 2 } as const;
 const YARD = { x: 20, y: 20, width: 8, height: 8 } as const;
 const ADMISSION = { sentenceLengthTicks: 400_000, priorIncidents: 0 } as const;
 
@@ -96,10 +99,11 @@ function prison(prisoners: number, guards: number): SimulationRuntime {
   submit(runtime, 'buy-planks', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-p', itemId: 'item.wood-plank', quantity: CELL_COUNT + 14 }));
   submit(runtime, 'buy-bricks', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-b', itemId: 'item.brick', quantity: CELL_COUNT + 2 }));
   for (const rect of cells) wallRoomPerimeter(runtime.world, rect, { doors: runtime.navigation.doors });
-  for (const rect of [SHOWER, CANTEEN, YARD]) wallRoomPerimeter(runtime.world, rect, { doors: runtime.navigation.doors });
+  for (const rect of [SHOWER, CANTEEN, GARBAGE, YARD]) wallRoomPerimeter(runtime.world, rect, { doors: runtime.navigation.doors });
   cells.forEach((rect, index) => submit(runtime, `zone-c${String(index)}`, packCommand({ type: 'ZoneRoom', roomId: 'room.cell', ...rect })));
   submit(runtime, 'zone-shower', packCommand({ type: 'ZoneRoom', roomId: 'room.shower-room', ...SHOWER }));
   submit(runtime, 'zone-canteen', packCommand({ type: 'ZoneRoom', roomId: 'room.canteen', ...CANTEEN }));
+  submit(runtime, 'zone-garbage', packCommand({ type: 'ZoneRoom', roomId: 'room.garbage-room', ...GARBAGE }));
   submit(runtime, 'zone-yard', packCommand({ type: 'ZoneRoom', roomId: 'room.yard', ...YARD }));
   cells.forEach((rect, index) => {
     submit(runtime, `bed${String(index)}`, packCommand({ type: 'PlaceObject', orderId: `bed${String(index)}`, definitionId: 'bed-wooden', x: rect.x, y: rect.y }));
@@ -107,6 +111,10 @@ function prison(prisoners: number, guards: number): SimulationRuntime {
   });
   submit(runtime, 'sh0', packCommand({ type: 'PlaceObject', orderId: 'sh0', definitionId: 'shower-head-brick', x: SHOWER.x, y: SHOWER.y }));
   submit(runtime, 'sh1', packCommand({ type: 'PlaceObject', orderId: 'sh1', definitionId: 'shower-head-brick', x: SHOWER.x + 1, y: SHOWER.y }));
+  for (const x of [GARBAGE.x, GARBAGE.x + 1]) {
+    expect(runtime.placedObjects.place(placedObjectAt('object.waste-bin', { x: tileCoordinate(x), y: tileCoordinate(GARBAGE.y) }, 0))).toBe(true);
+  }
+  runtime.roomCapacity.resolveAll();
   submit(runtime, 'dt1', packCommand({ type: 'PlaceObject', orderId: 'dt1', definitionId: 'dining-table-wooden', x: CANTEEN.x, y: CANTEEN.y }));
   submit(runtime, 'dt2', packCommand({ type: 'PlaceObject', orderId: 'dt2', definitionId: 'dining-table-wooden', x: CANTEEN.x + 3, y: CANTEEN.y }));
   for (let index = 0; index < 4; index += 1) {
@@ -119,6 +127,7 @@ function prison(prisoners: number, guards: number): SimulationRuntime {
     }));
   }
   stepTo(runtime, START);
+  expect(runtime.prisoners.wasteDisposalAvailable(), 'crowding control needs working waste disposal to isolate safety').toBe(true);
   for (let guard = 0; guard < guards; guard += 1) {
     submit(runtime, `hire${String(guard)}`, packCommand({ type: 'HireStaff', staffRoleId: 'staff-role.guard', ...ARRIVAL }));
   }
@@ -134,7 +143,13 @@ function dailyIncome(runtime: SimulationRuntime, days: number): number[] {
   const income: number[] = [];
   for (let day = 1; day <= days; day += 1) {
     stepTo(runtime, endOfDay(day));
-    income.push(stateIncomeForCompletedDay(runtime.prisoners));
+    // This suite isolates safety decay from the later sanitation reader (#595).
+    // Count today's dirty-room users before the boundary clears the ledger,
+    // and add only that independent 40-share back to the observed grant.
+    const sanitationWithheld = runtime.prisoners.roomInstances.residentIdsWithExistingPlace()
+      .filter((id) => runtime.roomFilth.hasDirtyRoomUse(id)).length
+      * STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS;
+    income.push(stateIncomeForCompletedDay(runtime.prisoners) + sanitationWithheld);
   }
   return income;
 }

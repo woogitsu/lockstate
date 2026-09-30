@@ -1929,6 +1929,17 @@ to ADR 0098's original evenly spaced eighteen-hue palette, not a claim that
 colour alone identifies a room or a reopening of #1061. The owner selected an
 agent-written option, so this has the weaker provenance of a clickable choice.
 
+**34. Persist room filth for #595 (2026-09-27).** The agent presented the
+optional save field `simulation.economy.roomFilth` in PR #1541 and the rule
+that older saves without it start with empty filth state. The owner selected:
+
+> Tak — zatwierdzam pole i zgodność ze starszymi zapisami (zalecane)
+
+This releases the save-format reservation for that field and compatibility
+rule only. It does not release another saved field, a database migration, or
+a different treatment of older saves. The quoted label was written by the
+agent and clicked by the owner.
+
 
 ## Required workflow for every issue
 Before coding:
