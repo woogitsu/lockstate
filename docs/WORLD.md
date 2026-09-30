@@ -28,7 +28,17 @@ Terrain definitions are data-driven records with stable string IDs, packed numer
 
 ## Wall geometry lives on tile edges
 
-A wall is not a tile. Each loaded chunk carries two more packed
+This section describes the **historical** wall and door format. The 2026-09-27
+whole-square construction redesign (#1585) adds an optional `squareStructure`
+plane to each chunk: `0` is empty, `1` is a wall square, `2` is a door with
+north-south passage, and `3` is a door with east-west passage. An older
+snapshot has no such plane and restores it as all zeroes.
+Existing `topEdge` and `leftEdge` values retain their original meanings, so
+loading an old prison never moves its walls. The new plane has its own accessor
+and RLE snapshot field; the player-facing Build tool must not use it until
+navigation, enclosure, collision, rendering and removal consume it together.
+
+In the historical format a wall is not a tile. Each loaded chunk carries two more packed
 `Uint8Array(chunkSize * chunkSize)` layers beside terrain — `topEdge` and
 `leftEdge` — where a non-zero value means "a wall segment runs along this
 tile's north (respectively west) boundary". Only two of the four edges are

@@ -167,7 +167,7 @@ matters here.** Its own comment states the cost of getting it wrong:
 
 And the marker moves on exactly the write that creates or destroys a room
 rectangle. `SparseWorld.setZoning` (`:558-562`) calls `markContentChanged`,
-which calls `markDrawnWorldChanged()` at `src/simulation/world/sparse-world.ts:908`,
+which calls `markDrawnWorldChanged()` at `src/simulation/world/sparse-world.ts:939`,
 under a comment naming the reason:
 
 `ADR 0099 decision 3's first bullet, met at the one place all four of them already converge.`
@@ -293,7 +293,7 @@ contract is a per-operation cost table (chunk paint 73.25 µs, `buildRowIndex`
 74.83 µs, `mergeFloorRects` worst case 141.42 µs, `docs/RENDERING.md:86-97`),
 and `TileLayer.update` is called from Phaser's own per-rendered-frame callback —
 display refresh rate, not 20 Hz — staying cheap only because of its early-out on
-an unchanged revision (`src/rendering/phaser/tile-layer.ts:139-147`).
+an unchanged revision (`src/rendering/phaser/tile-layer.ts:144-152`).
 `tests/perf/` does not help: MEASURED by running it here, `pnpm test:perf` is
 **4 files, 36 tests, 108.30 s**, every one of them persistence, localization or
 reachability, and **none** importing anything from `src/rendering/`. (The wall
