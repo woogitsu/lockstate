@@ -431,6 +431,7 @@ const TRIPLES: readonly Triple[] = [
  * a press with no refusal surface at all is a finding, not a gap in the table.
  */
 const NO_REFUSAL_SURFACE: Readonly<Record<string, string>> = {
+  PlaceRoomTemplate: 'The room-template control has no independent host refusal surface: preflight and placement are delegated to the simulation worker, whose construction refusal channel remains the single player-facing surface. Keep this exclusion until a distinct host refusal sentence is intentionally added.',
   DismissAlert:
     'The alerts row dismiss button. It is the one command intent that can reach neither producer: `refusalMessageKey` ' +
     'answers `undefined` for `dismiss-alert`, so a host refusal paints nothing, and no `RefusalReason` carries a ' +
@@ -712,6 +713,7 @@ describe('the refusal surfaces issue #1160 criterion 4 is counted in', () => {
 function commandDomain(triple: Triple): string {
   const byCommand: Readonly<Record<string, string>> = {
     PlaceBuildOrder: 'build',
+    PlaceRoomTemplate: 'build',
     PlaceObject: 'place-object',
     RemoveObject: 'remove-object',
     RemoveWall: 'remove-wall',

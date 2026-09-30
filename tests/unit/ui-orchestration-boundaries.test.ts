@@ -606,6 +606,18 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
       "Type-only: `BuildQueueViewModel` from `src/simulation/presentation/construction-projection`. The sixth of the translators outside `src/ui/hud/` and the second that reads a *pulled* read model, so it is `simulation-room-needs.ts`'s entry above one projection over: it names the view-model shape `hud/build-queue` answers with and turns it into `HudBuildQueueViewModel`. Erased, so no simulation code runs on its account -- the projection executes in the worker, and everything this module knows about the channel it gets from `src/ui/simulation-projections.ts` beside it, which is an intra-tree import. A `value` import appearing here would mean the queue had started being derived on the main thread from orders it does not own, which is the second source of truth `AGENTS.md` boundary 1 forbids -- and it would be worse here than for the room readout, because every row this produces carries an order id that a press *cancels*.",
   },
   {
+    file: 'src/ui/simulation-room-template-preflight.ts',
+    tree: 'content',
+    kind: 'type-only',
+    reason: 'Type-only: `RoomTemplateId` and `TemplateSquare` from `src/content/room-template-catalog`. The preflight reader names the stable template and tile coordinates crossing the projection boundary; it does not execute content code, and the catalog remains the single owner of template ids.',
+  },
+  {
+    file: 'src/ui/simulation-room-template-preflight.ts',
+    tree: 'simulation',
+    kind: 'type-only',
+    reason: 'Type-only: `RoomTemplatePlacement` from `src/simulation/construction/room-template-placement`. The reader exposes the worker projection result as a typed placement while keeping construction logic in the simulation tree; the import is erased and cannot create a second source of truth.',
+  },
+  {
     file: 'src/ui/simulation-room-needs.ts',
     tree: 'simulation',
     kind: 'type-only',
@@ -714,6 +726,7 @@ describe('UI orchestration boundaries', () => {
       'src/ui/simulation-projections.ts',
       'src/ui/simulation-regime.ts',
       'src/ui/simulation-room-needs.ts',
+      'src/ui/simulation-room-template-preflight.ts',
       'src/ui/simulation-security.ts',
       'src/ui/simulation-staff-coverage.ts',
       'src/ui/simulation-staff-roster.ts',
