@@ -2,6 +2,7 @@
 
 /** Stable object-id to oblique asset mapping. Unknown objects fail closed so the flat fallback remains authoritative. */
 export const OBLIQUE_OBJECT_ASSET_IDS: Readonly<Record<string, string>> = Object.freeze({
+  'object.dining-table': 'furniture.dining.table.wooden',
   'object.medical-bed': 'furniture.medical-bed.variants',
   'object.medicine-cabinet': 'fixture.medicine-cabinet.variants',
 });
