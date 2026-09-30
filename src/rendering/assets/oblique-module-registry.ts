@@ -5,7 +5,10 @@ export const obliqueModuleRegistrySchema = z.object({
   schemaVersion: z.literal(1),
   entries: z.array(z.object({
     assetId: z.string().min(1),
-    manifest: z.string().regex(/^\/game-content\/oblique-[a-z0-9-]+\.v1\.json$/),
+    // Asset ids use dot-separated namespaces (for example
+    // `furniture.medical-bed`), and the authored manifest keeps that name.
+    // Accept dots in the filename while retaining the fixed oblique/v1 path.
+    manifest: z.string().regex(/^\/game-content\/oblique-[a-z0-9.-]+\.v1\.json$/),
   }).strict()).min(1),
 }).strict();
 
