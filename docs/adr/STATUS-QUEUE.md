@@ -792,10 +792,12 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `ad6bf7a5` (**v0.0.805**) by re-reading §§3-6
-against the eleven non-release first-parent landings since `c8d25355`.
-The new §3 entry records the changed paths, decision census and live
+Re-anchored at `main` @ `c478bf81` (**v0.0.818**) by re-reading ??3-6
+against the eleven non-release first-parent landings since `ad6bf7a5`.
+The new ?3 entry records the changed paths, decision census and live
 discrepancies. Neither staleness budget changes.
+
+**The previous anchor, retained as history.** It read: *"Re-anchored at `main` @ `ad6bf7a5` (**v0.0.805**) by re-reading §§3-6 against the eleven non-release first-parent landings since `c8d25355`. The new §3 entry records the changed paths, decision census and live discrepancies. Neither staleness budget changes."*, and continued:
 
 **The previous anchor, retained as history.** It read: *"Re-anchored at `main` @
 `c8d25355` (**v0.0.795**) by the delta method,"* and continued:
