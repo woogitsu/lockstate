@@ -1,4 +1,4 @@
-import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { assertSourceInputsAreImages, readSourceHead } from './source-art-lfs-guard.mjs';
@@ -155,8 +155,11 @@ for (const assetId of PUBLISHED_ASSET_IDS) {
  */
 await assertSourceInputsAreImages({ entries: PUBLISHED_ASSET_IDS, readHead: readSourceHead(renderedDir) });
 
-await mkdir(outputDir, { recursive: true });
-const entries = [];
+// Preflight every hash before publishing the first byte. A mismatch late in
+// the sorted list previously left all earlier copies behind while the manifest
+// still described the old batch. Keep the checked buffers so publication uses
+// exactly the bytes that passed preflight, even if a source changes afterwards.
+const prepared = [];
 for (const assetId of [...PUBLISHED_ASSET_IDS].sort()) {
   const sidecarEntry = sidecarById.get(assetId);
   const input = path.join(renderedDir, sidecarEntry.image);
@@ -169,8 +172,7 @@ for (const assetId of [...PUBLISHED_ASSET_IDS].sort()) {
     );
   }
   const image = `rendered.${assetId}.${hash.slice(0, 12)}.png`;
-  await copyFile(input, path.join(outputDir, image));
-  entries.push({
+  prepared.push({ image, buffer, entry: {
     assetId,
     contentVersion: 1,
     image: `source-art/${image}`,
@@ -185,8 +187,13 @@ for (const assetId of [...PUBLISHED_ASSET_IDS].sort()) {
       catalog: sidecar.catalog,
       blenderVersion: sidecar.blenderVersion,
     },
-  });
+  } });
 }
+await mkdir(outputDir, { recursive: true });
+for (const { image, buffer } of prepared) {
+  await writeFile(path.join(outputDir, image), buffer);
+}
+const entries = prepared.map(({ entry }) => entry);
 await mkdir(path.dirname(outputManifest), { recursive: true });
 await writeFile(outputManifest, `${JSON.stringify({ schemaVersion: 1, kind: 'lockstate.rendered-art-catalog', entries }, null, 2)}\n`);
 console.log(`Generated ${entries.length} content-addressed rendered-art entries.`);
