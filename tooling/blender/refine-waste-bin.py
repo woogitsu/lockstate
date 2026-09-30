@@ -5,6 +5,7 @@ rebuilt from fixed dimensions and names, so repeated runs are idempotent.
 """
 
 import sys
+import math
 from pathlib import Path
 
 import bpy
@@ -39,6 +40,7 @@ teal_light = material("Waste bin refinement lit enamel", (0.24, 0.54, 0.55))
 dark = material("Waste bin refinement black cavity", (0.018, 0.028, 0.031))
 steel = material("Waste bin refinement brushed steel", (0.53, 0.57, 0.57), 0.38)
 paper = material("Waste bin refinement pale paper", (0.73, 0.72, 0.64))
+paper_fold = material("Waste bin refinement paper folds", (0.57, 0.56, 0.50))
 orange = material("Waste bin refinement orange scrap", (0.55, 0.23, 0.11))
 
 
@@ -79,6 +81,25 @@ def torus(name, x, y, z, radius, thickness, mat):
     return attach(bpy.context.object, name, mat)
 
 
+def crumpled_paper(name, x, y, z, scale, mat, angle):
+    # Fixed vertex and face order makes both the fold offsets and rendered
+    # pixels reproducible. The ico-sphere operator reorders faces between runs.
+    mesh = pipeline_common.uv_sphere_mesh(name, segments=8, ring_count=4)
+    obj = pipeline_common.add_mesh_object(name, mesh,
+        (ORIGIN.location.x + x, ORIGIN.location.y + y, z))
+    for index, vertex in enumerate(obj.data.vertices):
+        vertex.co.x *= 1 + 0.19 * math.sin(index * 2.41 + angle)
+        vertex.co.y *= 1 + 0.16 * math.cos(index * 1.73 - angle)
+        vertex.co.z *= 1 + 0.13 * math.sin(index * 1.17)
+    obj.scale = scale
+    obj.rotation_euler.z = angle
+    attach(obj, name, mat)
+    obj.data.materials.append(paper_fold)
+    for index, polygon in enumerate(obj.data.polygons):
+        polygon.material_index = 1 if index % 5 == 0 else 0
+    return obj
+
+
 # The body is a broad teal shape with a dark opening; the shell remains visible
 # outside the cavity even when the 256 px render is drawn in a 64 px tile.
 cylinder("tapered shell", 0, 0.055, 0.37, 0.355, 0.69, teal)
@@ -93,16 +114,20 @@ box("raised rectangular lid", 0, -0.33, 0.885, 0.65, 0.26, 0.07, teal_light, 0.0
 box("lid dark inset", 0, -0.335, 0.923, 0.51, 0.15, 0.009, teal, 0.025)
 box("lid front edge", 0, -0.205, 0.929, 0.62, 0.032, 0.014, steel, 0.006)
 
-for index, (x, y, angle) in enumerate(((-0.10, 0.04, 0.35), (0.09, -0.055, -0.36))):
-    scrap = box(f"paper {index}", x, y, 0.772, 0.11, 0.09, 0.018, paper, 0.005)
-    scrap.rotation_euler.z = angle
-card = box("orange discarded card", 0.10, 0.15, 0.773, 0.13, 0.08, 0.02, orange, 0.005)
+for index, (x, y, z, scale, angle) in enumerate((
+    (-0.11, 0.01, 0.795, (0.115, 0.10, 0.065), 0.35),
+    (0.10, -0.04, 0.792, (0.10, 0.09, 0.06), -0.36),
+    (-0.015, 0.155, 0.785, (0.09, 0.08, 0.055), -0.48),
+)):
+    crumpled_paper(f"paper {index}", x, y, z, scale, paper, angle)
+card = box("orange discarded card", 0.12, 0.15, 0.790, 0.16, 0.12, 0.02, orange, 0.005)
 card.rotation_euler.z = 0.18
 
 box("pedal linkage", 0, 0.40, 0.10, 0.08, 0.19, 0.05, teal, 0.01)
 box("broad pedal", 0, 0.475, 0.125, 0.30, 0.13, 0.05, steel, 0.018)
 box("pedal grip", 0, 0.476, 0.155, 0.22, 0.072, 0.009, dark, 0.006)
 
-assert len(COLLECTION.objects) == 16, "waste bin refinement has unexpected geometry"
+assert len(COLLECTION.objects) == 17, "waste bin refinement has unexpected geometry"
 assert all(obj == ORIGIN or obj.name.startswith(PREFIX) for obj in COLLECTION.objects)
+bpy.context.preferences.filepaths.save_version = 0
 bpy.ops.wm.save_as_mainfile(filepath=bpy.data.filepath)

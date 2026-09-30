@@ -626,6 +626,22 @@ function buildFrame(): RenderFrame {
       tileY: FIXTURE.utilityFloorMinTileY,
       phase: 'built' as const,
     }] : []),
+    ...(includeStaffFloor ? [
+      {
+        id: 'staff-floor-bin-west',
+        definitionId: 'waste-bin-brick',
+        tileX: FIXTURE.staffFloorMinTileX,
+        tileY: FIXTURE.staffFloorMinTileY,
+        phase: 'built' as const,
+      },
+      {
+        id: 'staff-floor-bin-east',
+        definitionId: 'waste-bin-brick',
+        tileX: FIXTURE.staffFloorMaxTileX,
+        tileY: FIXTURE.staffFloorMinTileY,
+        phase: 'built' as const,
+      },
+    ] : []),
   ];
 
   return {

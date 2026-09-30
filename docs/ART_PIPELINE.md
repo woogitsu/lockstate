@@ -502,6 +502,16 @@ band with recessed dark diagonal cuts now reads as hazard paint. Full HD
 WorldScene captures compare the same built Utility Room at zoom 1 and 3.
 The utility capability and room rules are unchanged.
 
+**2026-09-27 waste bin revision:** the existing buildable 1×1 pedal bin keeps
+its circular metal shell, hinged lid, pedal and room rules. The two small flat
+paper scraps in its opening now have three larger faceted, irregular forms and
+a more visible orange card, following the four-view waste-bin concept. Rebuild
+the Blender collection with `tooling/blender/refine-waste-bin.py`, then render
+`fixture.cell.waste_bin` through the environment-object pipeline. Two
+independent Blender 5.2.1 renders matched byte for byte. Full HD WorldScene
+captures compare two built bins in a Staff Room at zoom 1 and 3; the browser
+test also verifies that both use the waste-bin atlas frame.
+
 **2026-09-23 addition, without rewriting the earlier comparison:** the new
 `furniture.dining.table.wooden` model no longer uses only flat materials. The
 owner's Prison Architect references and a generated four-view concept informed
