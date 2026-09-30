@@ -249,11 +249,10 @@ describe('what a released prisoner must be dropped from (ADR 0026 question 2)', 
     // every other line here is: a container that silently stopped holding the
     // prisoner must fail here rather than make the release look complete.
     expect({ paths: before, riotIndex: holds('incidents.openRiotCountByParticipant') }).toMatchObject({ riotIndex: 1 });
-    // 9, from 8: the errand is two hits rather than the pool's one -- the
-    // board's worker index *and* the job's own `assignedWorkerId`, which is the
-    // field that index is derived from. Both have to go, and both do: ending
-    // the job clears the index and moves the job to a terminal state.
-    expect({ paths: before, releaseRelevant: releaseRelevant(before).length }).toMatchObject({ releaseRelevant: 9 });
+    // The errand contributes both the board's worker index and the job's own
+    // `assignedWorkerId`; ending it must clear both. The persisted cell-sharing
+    // assessment adds a record and room index, which release must also clear.
+    expect({ paths: before, releaseRelevant: releaseRelevant(before).length }).toMatchObject({ releaseRelevant: 12 });
 
     expect(runtime.prisoners.releasePrisoner(entityId)).toBe(true);
 

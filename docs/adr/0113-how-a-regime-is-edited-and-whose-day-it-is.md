@@ -226,7 +226,7 @@ only what schedule is looked up under each existing id.
 
 ### The shape
 
-`SAVE_SCHEMA_VERSION` is 5 (`src/persistence/save-schema.ts:37`). This is a
+`SAVE_SCHEMA_VERSION` was 5 at this decision (`src/persistence/save-schema.ts:41`; now 8). This is a
 new **required** section — not an optional field folded into an existing one
 under ADR 0038 §1's "no version bump needed" rule, because absence here is
 genuinely ambiguous: an old save has no recorded schedule at all, and there is

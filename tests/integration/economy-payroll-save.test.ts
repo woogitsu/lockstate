@@ -365,6 +365,7 @@ describe('the historical chain still walks a save older than the field', () => {
     // 0113: it is V6's required section and no V4 build wrote one. `inFlight`
     // too, since issue #1373, and for the same reason.
     const { objects: _objects, alerts: _alerts, regimeSchedules: _regimeSchedules, inFlight: _inFlight, ...simulation } = captured.simulation;
+    const { cellSharingAssessments: _cellSharingAssessments, ...v4Prisoners } = captured.simulation.prisoners;
     const { payroll: _payroll, ...economy } = captured.economy;
     const payload = {
       kernel: bundle.kernel,
@@ -375,7 +376,7 @@ describe('the historical chain still walks a save older than the field', () => {
         ...simulation,
         economy,
         prisoners: {
-          ...captured.simulation.prisoners,
+          ...v4Prisoners,
           roomInstanceDefinitions: captured.simulation.prisoners.roomInstanceDefinitions.map((instance) => ({
             instanceId: instance.instanceId,
             roomCatalogId: instance.roomCatalogId,
@@ -422,6 +423,6 @@ describe('the version this all rests on', () => {
     // precisely because its absence is *not* unambiguous once a schedule can be
     // edited. Version 7 relocates travel fields (#1459), still unrelated to
     // payroll's optional section.
-    expect(SAVE_SCHEMA_VERSION).toBe(7);
+    expect(SAVE_SCHEMA_VERSION).toBe(8);
   });
 });

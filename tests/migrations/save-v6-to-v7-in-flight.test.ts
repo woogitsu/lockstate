@@ -21,7 +21,9 @@ function envelopeFrom(payload: SaveEnvelopeV6['payload']): SaveEnvelopeV6 {
 
 function capturedV6(): SaveEnvelopeV6 {
   const bundle = captureSessionSnapshot(createNewSimulationRuntime(0x1376));
-  return envelopeFrom(bundle as SaveEnvelopeV6['payload']);
+  if (bundle.simulation === undefined) throw new Error('captured session must have systems');
+  const { cellSharingAssessments: _assessments, ...prisoners } = bundle.simulation.prisoners;
+  return envelopeFrom({ ...bundle, simulation: { ...bundle.simulation, prisoners } } as SaveEnvelopeV6['payload']);
 }
 
 describe('V6 to V7 in-flight migration', () => {

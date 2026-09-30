@@ -12,6 +12,7 @@ import type {
   SaveEnvelopeV5,
   SaveEnvelopeV6,
   SaveEnvelopeV7,
+  SaveEnvelopeV8,
   SavePayloadV1,
   SavePayloadV3,
   SavePayloadV4,
@@ -602,4 +603,29 @@ export function migrateSaveEnvelopeV6ToV7(input: SaveEnvelopeV6): SaveEnvelopeV7
     checksum: computeSaveChecksum(migratedPayload as unknown as JsonValue),
     payload: migratedPayload,
   } as SaveEnvelopeV7;
+}
+
+/**
+ * V7 has no record of the rating that led to an existing placement. Keep the
+ * assessment list empty rather than inventing an old decision. On restore the
+ * live cell occupants are assessed with source `restored` at the resume tick.
+ */
+export function migrateSaveEnvelopeV7ToV8(input: SaveEnvelopeV7): SaveEnvelopeV8 {
+  const { saveSchemaVersion: _version, checksum: _checksum, payload, ...metadata } = input;
+  const simulation = payload.simulation === undefined
+    ? undefined
+    : {
+        ...payload.simulation,
+        prisoners: { ...payload.simulation.prisoners, cellSharingAssessments: [] },
+      };
+  const migratedPayload = {
+    ...payload,
+    ...(simulation === undefined ? {} : { simulation }),
+  } as SaveEnvelopeV8['payload'];
+  return {
+    saveSchemaVersion: 8,
+    ...metadata,
+    checksum: computeSaveChecksum(migratedPayload as unknown as JsonValue),
+    payload: migratedPayload,
+  } as SaveEnvelopeV8;
 }

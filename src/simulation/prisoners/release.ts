@@ -125,6 +125,7 @@ export interface PrisonerReleaseSurfaces {
    */
   readonly locomotion?: { forget(key: number): void };
   readonly contraband?: PrisonerContrabandReleasePort;
+  readonly cellSharingAssessments?: { forget(entityId: EntityId): void };
 }
 
 /**
@@ -205,6 +206,7 @@ export function releasePrisoner(surfaces: PrisonerReleaseSurfaces, entityId: Ent
   surfaces.locomotion?.forget(index);
 
   roomInstances.releaseEntity(entityId);
+  surfaces.cellSharingAssessments?.forget(entityId);
   coldState.release(entityId);
 
   surfaces.identity?.release('prisoner', entityId);

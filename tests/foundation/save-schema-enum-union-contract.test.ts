@@ -8,6 +8,7 @@ import type { InformantHolderKind } from '../../src/simulation/contraband/inform
 import type { IntelligenceSourceType, IntelligenceTargetKind } from '../../src/simulation/contraband/intelligence';
 import type { SearchScope } from '../../src/simulation/contraband/search-policy';
 import type { SearchJobState } from '../../src/simulation/contraband/search-system';
+import type { CellSharingAssessment } from '../../src/simulation/prisoners/cell-sharing-assessment';
 import type { IncidentState, IncidentType } from '../../src/simulation/incidents/incident';
 import type { DoorSide, DoorState } from '../../src/simulation/navigation/door';
 import type { RouteFailureReason } from '../../src/simulation/navigation/route';
@@ -132,6 +133,12 @@ interface EnumUnionPair {
 }
 
 const PAIRS: readonly EnumUnionPair[] = [
+  {
+    site: 'cellSharingAssessmentSchema.source',
+    union: 'CellSharingAssessment.source (src/simulation/prisoners/cell-sharing-assessment.ts)',
+    members: unionMembers<CellSharingAssessment['source']>()(['placement', 'restored']),
+    readerOnly: [],
+  },
   {
     site: 'savedSearchJobStateSchema',
     union: 'SearchJobState (src/simulation/contraband/search-system.ts:22)',

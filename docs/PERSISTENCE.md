@@ -135,6 +135,17 @@ validation remains frozen, and an older save with no travel data still has no
 `inFlight` section after migration. This is a local save-envelope migration;
 `supabase/migrations/` is unchanged.
 
+**V8 cell-sharing assessment, 2026-09-26 (#79).** The owner chose to record
+the rating at cell placement and reassess it when occupants or classification
+change. A live save now carries each resident's first and current ratings,
+their assessment ticks, and the ordered inputs used for change detection.
+The V7→V8 migration adds an empty assessment list: no V7 file recorded the
+original placement verdict, so the migration cannot invent one. On restore,
+existing occupied cells receive a current assessment marked `restored`; later
+changes revise it without claiming that it was measured at placement. A new
+admission records `placement` instead. This is a local envelope migration;
+`supabase/migrations/` is unchanged.
+
 **The ninth is the one whose bump was authorised and not spent, which is the
 case this section had not yet had.** The owner's #589 ruling said
 `SAVE_SCHEMA_VERSION` would move by one field. It does not, because the three
