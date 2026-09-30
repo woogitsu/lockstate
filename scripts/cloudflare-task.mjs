@@ -101,7 +101,9 @@ function run(command, args, env = process.env) {
       cwd: repositoryRoot,
       env,
       stdio: 'inherit',
-      shell: process.platform === 'win32',
+      // Every call uses process.execPath, an executable rather than a .cmd shim.
+      // A shell would split absolute script paths at spaces on Windows.
+      shell: false,
     });
 
     child.once('error', reject);
