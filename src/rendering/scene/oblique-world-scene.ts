@@ -176,6 +176,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     const raised = this.raisedGraphics;
     raised.clear();
     this.raisedPaints += 1;
+    const seenFurniture = new Set<string>();
     for (const item of projection.raised) {
       if (item.kind === 'actor') {
         raised.lineStyle(13 * this.pose.zoom, 0xdd8342, 1);
@@ -189,6 +190,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
         this.fillQuad(raised, [item.footprint[side]!, item.footprint[next]!, item.top[next]!, item.top[side]!], item.sideFill, item.alpha);
       }
       if (item.kind === 'structure' && item.assetId !== undefined) {
+        seenFurniture.add(item.id);
         const catalog = this.obliqueCatalogs.get(item.assetId);
         if (catalog !== undefined) {
           const frame = selectObliqueModuleFrame(catalog, this.pose);
@@ -200,9 +202,14 @@ export class ObliqueWorldScene extends Phaser.Scene {
           if (sprite !== undefined) {
             sprite.setTexture(frame.image).setDepth(item.viewDepth).setVisible(true);
             sprite.setPosition(item.footprint[0]!.x, item.footprint[0]!.y);
+            sprite.setOrigin(catalog.pivotPx[0] / Math.max(1, catalog.resolutionPx[0]), catalog.pivotPx[1] / Math.max(1, catalog.resolutionPx[1]));
+            sprite.setScale((catalog.nominalPixelsPerTile * 1) / Math.max(1, catalog.resolutionPx[0]));
           }
         }
       }
+    for (const [id, sprite] of this.furnitureSprites) {
+      if (!seenFurniture.has(id)) sprite.setVisible(false);
+    }
       this.fillQuad(raised, item.top, item.topFill, item.alpha);
     }
   }
