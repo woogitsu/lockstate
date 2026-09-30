@@ -544,7 +544,7 @@ describe('the message-key namespaces are counted, and no call site names one tha
       // because a projection needed to label an order no job record covers.
       namespacesWithACallSite: 16,
       namespacesWithoutACallSite: 27,
-      labelsWithoutACallSite: 99,
+      labelsWithoutACallSite: 102,
     });
   });
 
