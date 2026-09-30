@@ -71,9 +71,9 @@ and the reason is mechanical rather than a matter of design taste.
 
 The defect is a consequence of where an edge is stored.
 `roomPerimeterEnclosure` reads a rectangle's south boundary as the north edge of
-the row **below** it (`src/simulation/rooms/enclosure.ts:219-221`) and its east
+the row **below** it (`src/simulation/rooms/enclosure.ts:219-221`, `roomPerimeterEnclosure`) and its east
 boundary as the west edge of the column to its **right**
-(`src/simulation/rooms/enclosure.ts:230-232`). Those two edges are stored on tiles
+(`src/simulation/rooms/enclosure.ts:230-232`, `getLeftEdge`). Those two edges are stored on tiles
 outside the rectangle. If the rectangle is flush against the edge of owned land,
 those tiles are unowned, and `ConstructionSystem.submitOrder` refuses a wall
 there.
@@ -87,9 +87,9 @@ defect one level up and with a longer explanation.
 
 **What actually causes it is an asymmetry in one predicate, and the asymmetry is
 a plain defect.** `submitOrder` asks `canBuildAt(this.world, order.location, …)`
-(`src/simulation/construction/system.ts:619`), and `canBuildAt` tests ownership
+(`src/simulation/construction/system.ts:619`, `submitOrder`), and `canBuildAt` tests ownership
 of the order's own tile and nothing else
-(`src/simulation/world/buildability.ts:26`).
+(`src/simulation/world/buildability.ts:26`, `canBuildAt`).
 
 (**Two corrections to the sentence above, marked rather than overwritten,
 2026-09-15.** *Where:* the `canBuildAt` call this document cited as `:266` is
@@ -109,7 +109,7 @@ decision:
 > tile across the edge it occupies: every boundary edge of an owned parcel has
 > unowned land on the far side, and a prison is a perimeter.
 
-`tests/unit/construction-ownership.test.ts:124` pins it — *"checks the order's
+`tests/unit/construction-ownership.test.ts:124`, `approves an edge order` pins it — *"checks the order's
 own tile, not the tile across the edge it occupies"* — with a fixture whose
 order tile is owned and whose far tile is not.
 
@@ -140,7 +140,7 @@ ADR 0045 decision 8 records that `TopologyManager` does region detection and
 exposes no enclosure query, that its `update()` has no caller, and that the
 topological reading of `enclosed` therefore is not implementable today. The
 first two claims hold — `TopologyManager.update`
-(`src/simulation/rooms/topology.ts:55`) is absent from the `registerSystem`
+(`src/simulation/rooms/topology.ts:55`, `update`) is absent from the `registerSystem`
 block, where `navigation` is present (`src/simulation/runtime/new-session.ts:1607`).
 
 **But the same flood fill runs every tick, in navigation, and is registered.**
@@ -149,7 +149,7 @@ partitions every loaded chunk's tiles into maximal sets connected across
 zero-valued edges (`src/simulation/navigation/region-graph.ts:148`), returns
 `tileToRegion` and `regionTiles`, caches the result against a geometry
 signature, and `NavigationSystem.getGraph()`
-(`src/simulation/navigation/navigation-system.ts:341`) hands it out already
+(`src/simulation/navigation/navigation-system.ts:341`, `getGraph`) hands it out already
 rebuilt if stale. `docs/NAVIGATION.md` describes it in the same words
 `TopologyManager` would need: *"the world's tiles are partitioned into regions —
 maximal sets of tiles connected by plain open boundaries (no wall, no door)"*.
@@ -201,10 +201,10 @@ Every anchor below was opened.
 
 - A new session owns exactly one chunk: `new SparseWorld(32)`, `world.load(...)`,
   `world.setOwned(initialChunk, true)`
-  (`src/simulation/runtime/new-session.ts:436-438`). Chunk size 32, so the playable
+  (`src/simulation/runtime/new-session.ts:436-438`, `fillTerrain`). Chunk size 32, so the playable
   world is tiles `0..31` square.
 - **Nothing in `src/` can buy land.** `canPurchaseParcel`
-  (`src/simulation/world/sparse-world.ts:725`) and `getParcelPrice` (`:734`) have no
+  (`src/simulation/world/sparse-world.ts:702`) and `getParcelPrice` (`:711`) have no
   caller outside their own file, `registerParcel`'s only `src/` call site is
   `fromSnapshot` re-registering what a save carried
   (`src/simulation/world/tile-ownership.ts:17` says so and it is still true),
@@ -225,7 +225,7 @@ Every anchor below was opened.
 
 `SparseWorld` keeps four parallel `Uint8Array(size*size)` planes per loaded
 chunk — `chunkTerrain`, `chunkTopEdge`, `chunkLeftEdge`, `chunkZoning`
-(`src/simulation/world/sparse-world.ts:289`–`:287`, allocated on demand through
+(`src/simulation/world/sparse-world.ts:284`–`:287`, allocated on demand through
 `ensureStorageMap`, `:585`). All four serialize as optional RLE fields on
 `SerializedChunkState` (`:45`), and `decodeChunk`'s `allowedKeys` lists exactly
 those four as optional (`:191`). The save boundary mirrors it
@@ -254,21 +254,21 @@ Six definitions, including `grass` (`src/simulation/world/terrain.ts:22`) and
 (`src/rendering/world/appearance.ts:66`, `:68`). **Nothing in `src/` writes
 terrain**: `grep -rn "setTerrain\|fillTerrain" --include=*.ts src/` returns only
 the definitions in `sparse-world.ts` themselves. `getTerrainNumericId` returns
-`0` for an absent plane (`src/simulation/world/sparse-world.ts:481`), and `0` is
+`0` for an absent plane (`src/simulation/world/sparse-world.ts:476`, `dirt`), and `0` is
 `dirt`. So the shipped world is dirt everywhere and the terrain layer is a
 feature with a reader and no producer.
 
 ### Walls, doors and the build queue
 
 - A wall is an edge value. `finalizeConstruction`
-  (`src/simulation/construction/system.ts:1965`) writes it through `writeEdge`
+  (`src/simulation/construction/system.ts:1965`, `finalizeConstruction`) writes it through `writeEdge`
   (`:2031`, called at `:1934`), which calls `setTopEdge`/`setLeftEdge` and
   therefore bumps `geometryRevision`.
 - `BuildableCategory` is `'wall' | 'object' | 'utility'`
   (`src/simulation/construction/definition.ts:6`). `wall-brick` is the only
   `'wall'`; a door is an `'object'` row carrying `placesDoor`.
 - Cancelling a `completed` order reverses its geometry
-  (`src/simulation/construction/system.ts:1044`–`:1046`, `revertConstruction` at
+  (`src/simulation/construction/system.ts:1044`, `revertConstruction`–`:1046`, `revertConstruction` at
   `:1966`), rewriting the edge from any other completed order that still claims
   it rather than clearing it.
 - **The crew is one.** `ConstructionSystem.update` runs on
@@ -307,7 +307,7 @@ design is not inventing a layer; it is landing a listed one.
 ### 1. Owned land is grass, and that is one line
 
 `fillTerrain(initialChunk, 'grass')` beside
-`src/simulation/runtime/new-session.ts:436-438`. The definition exists, the
+`src/simulation/runtime/new-session.ts:436-438`, `fillTerrain`. The definition exists, the
 appearance row exists, and RLE makes a uniform chunk one run.
 
 **This is separable and should ship on its own**, because it is the visible half
@@ -316,7 +316,7 @@ its first producer.
 
 **One consequence to know before taking it.** The implicit default terrain of a
 plane that was never written is `0` = `dirt`
-(`src/simulation/world/sparse-world.ts:481`). If a later chunk is materialised —
+(`src/simulation/world/sparse-world.ts:476`, `dirt`). If a later chunk is materialised —
 which decision 6 can cause, see its consequences — it arrives dirt, and there is
 a visible seam against the grass. Two exits: fill each chunk as it materialises,
 or give `SparseWorld` a `defaultTerrainNumericId`, which is a snapshot field and
@@ -326,9 +326,9 @@ renumbering terrain ids; `0` is persisted in every existing save.
 ### 2. A foundation is a floor value in a fifth per-chunk plane
 
 `SparseWorld` gains `chunkFloor`, a fifth `Uint8Array(size*size)` beside the
-four it already declares at `src/simulation/world/sparse-world.ts:289-292`, with
+four it already declares at `src/simulation/world/sparse-world.ts:284-287`, with
 `getFloor`/`setFloor` written exactly like `getZoning`/`setZoning`
-(`src/simulation/world/sparse-world.ts:577`, `:581`).
+(`src/simulation/world/sparse-world.ts:554`, `:558`).
 The stored value is a floor material's `numericId` from a small content
 catalogue; `0` means bare ground.
 
@@ -409,7 +409,7 @@ was the alternative and is rejected because "indoors" is the conclusion, not the
 missing thing.
 
 **Where it runs: inside the existing per-tile loop**, after bounds and ownership
-and beside the overlap check (`src/simulation/rooms/zoning.ts:554`–`:558`). Not
+and beside the overlap check (`src/simulation/rooms/zoning.ts:554`, `out-of-bounds`–`:558`). Not
 as a fifth pass. Three reasons, and they agree:
 
 - It is one array read per tile, on tiles the loop already visits, so it is free
@@ -456,7 +456,7 @@ the owner wants it, it is a change to ADR 0045 decision 8 and theirs to make.
 > player actually met was `out-of-bounds` rather than `unowned-land`, because
 > with one owned chunk the two faces coincide with the edge of the materialised
 > world; and the `canBuildAt` line this document cites as
-> `src/simulation/construction/system.ts:266` has moved into `admits`
+> `src/simulation/construction/system.ts:266`, `admits` has moved into `admits`
 > (`:353`), called from `submitOrder` (`:313`).
 >
 > **All three of those line numbers have since drifted, and the block above is
@@ -478,7 +478,7 @@ unaffected: an object is addressed by a tile and has no far side.
 predicate that already distinguishes the two.
 
 **Bounds.** The same widening is needed on the out-of-bounds check
-(`src/simulation/construction/system.ts:617`), or the south face of the world's
+(`src/simulation/construction/system.ts:617`, `private admits`), or the south face of the world's
 own frontier stays refused before ownership is ever consulted. An edge order is
 in bounds when either adjacent tile is in a materialised chunk.
 
@@ -486,7 +486,7 @@ in bounds when either adjacent tile is in a materialised chunk.
 
 1. **Completing such an order materialises the far chunk.** `writeEdge` →
    `setTopEdge` → `setMapValue` → `load(chunk)`
-   (`src/simulation/world/sparse-world.ts:547` → `:595` → `:600`). A fresh 32×32 chunk appears in
+   (`src/simulation/world/sparse-world.ts:538` → `:572` → `:372`). A fresh 32×32 chunk appears in
    the world, in the snapshot, and — because the render view draws every
    `loaded` chunk — on screen, as a block of unowned ground where there was
    void. That is a **visible** change and it should be a deliberate one.
@@ -495,7 +495,7 @@ in bounds when either adjacent tile is in a materialised chunk.
    has a visible edge from the first frame instead of growing one when a wall
    completes. It costs eight chunks of planes and it is the shape land purchase
    will want anyway. Recommended, but separable and not decided here.
-2. **`docs/WORLD.md`'s sentence and `tests/unit/construction-ownership.test.ts:124`'s
+2. **`docs/WORLD.md`'s sentence and `tests/unit/construction-ownership.test.ts:124`, `approves an edge order`'s
    title become wrong even though the test stays green.** Its fixture has one
    owned side and passes under either rule; what changes is the claim the title
    makes. Both need the same edit, and a test whose name asserts the opposite of
@@ -572,7 +572,7 @@ claims in this corpus; this document does not intend to be the first.
   unchanged and ADR 0038 decision 2's absence rule is not engaged.
 - **The plane serializes through the one run-length codec** the save format
   already uses (`encodeTerrainRle`/`decodeTerrainRle`,
-  `src/simulation/world/sparse-world.ts:184`, `:183`), so its round trip is the round
+  `src/simulation/world/sparse-world.ts:179`, `:183`), so its round trip is the round
   trip four planes already have, including the `maxValue: 255` rejection.
 - **Ordering of writes does not matter.** A floor value is a per-tile
   assignment, not an accumulation, so a slab paved in any order is the same
@@ -617,8 +617,8 @@ drag against different tools, and steps 3 and 5 are the same drag against the
 same tool.
 
 **The pacing risk, derived rather than guessed.** The clock steps every 50 ms at
-speed 1 (`src/simulation/clock/fixed-step-clock.ts:29`), `ConstructionSystem`
-runs every ten ticks (`src/simulation/construction/system.ts:347`), and one
+speed 1 (`src/simulation/clock/fixed-step-clock.ts:29`, `ConstructionSystem`), `ConstructionSystem`
+runs every ten ticks (`src/simulation/construction/system.ts:347`, `ConstructionSystem`), and one
 order is in progress at a time. So the crew completes **at most one order every
 500 ms at speed 1**, or one every 125 ms at speed 4. A 10×10 slab is 100 orders
 and therefore **at least 50 seconds of watching at speed 1**; a 20×20 slab is at
@@ -684,7 +684,7 @@ any of them.
 **The smallest coherent first slice is phase 0**, and it is not the building
 layer. It is roughly one predicate in `submitOrder`, a widening of the bounds
 check beside it, one new test per face, an edit to
-`tests/unit/construction-ownership.test.ts:124`'s title and to `docs/WORLD.md`'s
+`tests/unit/construction-ownership.test.ts:124`, `approves an edge order`'s title and to `docs/WORLD.md`'s
 sentence. If the owner reads only one part of this document, that is the part
 that fixes what they were shown.
 
