@@ -13,6 +13,7 @@ import {
   type PrisonerDayGrantSource,
 } from '../../src/simulation/economy';
 import { LoanBook, Treasury } from '../../src/simulation/economy';
+import { EntityStore } from '../../src/simulation/entity/entity-store';
 import { Kernel } from '../../src/simulation/kernel';
 import { NEED_IDS, NEED_MAX, NeedsComponent, type NeedId } from '../../src/simulation/prisoners/needs';
 import {
@@ -73,7 +74,7 @@ function registryWithOccupiedCells(occupied: number, freeCells = 0): RoomInstanc
 function prisonOf(registry: RoomInstanceRegistry, capacity = 64): PrisonerDayGrantSource {
   return {
     roomInstances: registry,
-    entityStore: { getIndex: (entityId: number) => entityId },
+    entityStore: { getIndex: (entityId: number) => entityId, isAlive: () => true },
     needs: new NeedsComponent(capacity),
   };
 }
@@ -532,6 +533,16 @@ describe('what a prisoner-day pays, given how many needs are unmet and what one 
     const registry = registryWithOccupiedCells(2);
     expect(registry.assign('cell-0', 99)).toBe(false);
     expect(stateIncomeForCompletedDay(prisonOf(registry))).toBe(600);
+  });
+
+  it('does not pay for a restored room claim whose prisoner is no longer alive', () => {
+    const registry = registryWithOccupiedCells(0, 1);
+    const entityStore = new EntityStore(2);
+    const departed = entityStore.spawn();
+    entityStore.destroy(departed);
+    registry.loadSnapshot([['cell-0', [departed]]]);
+
+    expect(stateIncomeForCompletedDay({ roomInstances: registry, entityStore, needs: new NeedsComponent(2) })).toBe(0);
   });
 
   it('credits what the day is worth through a real kernel day, not merely from the pure function', () => {
