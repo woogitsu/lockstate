@@ -1,4 +1,4 @@
-import type { RoomTemplateId } from '../../content/room-template-catalog';
+﻿import type { RoomTemplateId } from '../../content/room-template-catalog';
 
 export interface RoomTemplatePlacementIntent {
   readonly templateId: RoomTemplateId;

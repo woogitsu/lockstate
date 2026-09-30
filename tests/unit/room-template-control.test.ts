@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+﻿import { describe, expect, it, vi } from 'vitest';
 import type { RoomTemplatePlacementIntent } from '../../src/ui/hud/room-template-control';
 
 describe('room template HUD intent', () => {

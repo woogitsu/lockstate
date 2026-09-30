@@ -2630,6 +2630,15 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     // is on, so an absent notice has to be an absent property.
     ...(simulationUnavailable ? { unavailable: SIMULATION_UNAVAILABLE_NOTICE } : {}),
     build: buildCatalogue(),
+    roomTemplate: {
+      label: 'Place room template',
+      templateId: 'cell-basic',
+      origin: NEW_PRISON_ORIGIN_TILE,
+      onPlace: (template) => requireSimulation(commands).submit({
+        type: 'PlaceRoomTemplate', templateId: template.templateId, origin: template.origin,
+        ...(template.mirrorX ? { mirrorX: true } : {}),
+      }),
+    },
     staff: staffRoster(),
     /*
      * The room catalogue, passed at mount for the reason the buildable one is:
@@ -3318,6 +3327,15 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
             definitionId: intent.definitionId,
             x: intent.x,
             y: intent.y,
+          });
+          return;
+
+        case 'place-room-template':
+          requireSimulation(commands).submit({
+            type: 'PlaceRoomTemplate',
+            templateId: intent.templateId,
+            origin: intent.origin,
+            ...(intent.mirrorX ? { mirrorX: true } : {}),
           });
           return;
 
