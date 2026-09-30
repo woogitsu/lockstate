@@ -1,5 +1,5 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, relative, sep } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { stripComments } from '../helpers/canonical-iteration';
 
@@ -27,7 +27,7 @@ function collectTypeScriptFiles(directory: string): readonly string[] {
 }
 
 function read(path: string): { readonly relative: string; readonly source: string } {
-  return { relative: path.slice(SOURCE_ROOT.length + 1), source: readFileSync(path, 'utf8') };
+  return { relative: relative(SOURCE_ROOT, path).split(sep).join('/'), source: readFileSync(path, 'utf8') };
 }
 
 const serviceFiles = collectTypeScriptFiles(join(SOURCE_ROOT, 'services')).map(read);
@@ -370,7 +370,7 @@ describe('trusted services layer boundaries', () => {
     for (const { relative, source } of serviceFiles) {
       if (!source.includes('@supabase/supabase-js')) continue;
       expect(relative, 'only the entitlements read adapter may reference Supabase').toBe(
-        join('services', 'entitlements', 'client.ts'),
+        'services/entitlements/client.ts',
       );
       expect(source, `${relative} must import Supabase types only`).toMatch(
         /import type \{[^}]*\} from '@supabase\/supabase-js'/,
