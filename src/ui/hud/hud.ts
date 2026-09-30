@@ -2303,10 +2303,9 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     ...(options.roomTemplate === undefined ? {} : {
       roomTemplate: {
         ...options.roomTemplate,
-        onPlace: (template: RoomTemplatePlacementIntent, control: HTMLButtonElement) => dispatchCommand(
-          { kind: 'place-room-template', ...template },
-          control,
-        ),
+        onPlace: function onPlaceRoomTemplate(template: RoomTemplatePlacementIntent, control: HTMLButtonElement): void {
+          dispatchCommand({ kind: 'place-room-template', ...template }, control);
+        },
         ...(options.roomTemplate.onPreflight === undefined ? {} : { onPreflight: options.roomTemplate.onPreflight }),
       },
     }),

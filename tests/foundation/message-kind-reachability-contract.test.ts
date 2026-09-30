@@ -945,7 +945,7 @@ describe('every protocol message kind has a sender, and every sent kind can be p
     expect([...unreachableWorkerToMain]).toEqual(['protocol/handshake-accepted', 'protocol/pong']);
 
     const sent = ALL_KINDS.filter((kind) => sendingFiles(kind).length > 0);
-    expect(sent.length).toBe(18);
+    expect(sent.length).toBe(19);
     expect(ALL_KINDS.length - sent.length).toBe(2);
     expect(sent.length - unreachableWorkerToMain.length).toBe(16);
   });
