@@ -88,7 +88,6 @@ const ROOT = resolve(__dirname, '../..');
  * one.
  */
 const NO_CONTROL_ISSUES_IT: Readonly<Record<string, string>> = {
-  PlaceRoomTemplate: 'The room-template control is mounted through the nested roomTemplate option and its named callback is dispatched by the HUD; the generic reachability walker cannot follow this nested factory path yet, so retain an explicit accounting entry until the walker learns this route.',
   // Empty since #1356. `Undo` and `Redo` were the two entries -- keyboard-only,
   // reached from `BuildTool`'s `KeyZ`/`KeyY` through the one computed-kind
   // dispatch in `src/ui/hud/hud.ts` -- and both now reach the status strip's
@@ -282,7 +281,7 @@ describe('every declared command has a control the layout sweep can press, or is
     expect(sources.length).toBeGreaterThan(50);
     expect(uiSources.length).toBeGreaterThan(20);
     expect(mainSource, 'the composition root moved; this gate reads the intent-to-command mapping out of it').toBeDefined();
-    expect(COMMAND_TYPES.length).toBe(18);
+    expect(COMMAND_TYPES.length).toBe(19);
 
     // Every command is reached from at least one `case` clause in the
     // composition root. A command whose clause disappeared would otherwise
@@ -428,7 +427,7 @@ describe('every declared command has a control the layout sweep can press, or is
     const withControl = verdicts.filter((verdict) => verdict.control !== undefined);
     // Sixteen and two until #1356 gave `Undo` and `Redo` the status strip's
     // buttons.
-    expect(withControl.length).toBe(18);
+    expect(withControl.length).toBe(19);
     expect(COMMAND_TYPES.length - withControl.length).toBe(0);
     expect(verdicts.filter((verdict) => verdict.exemptClasses.length > 0).map((verdict) => verdict.command)).toEqual([
       'ReleaseGuardAssignment',
