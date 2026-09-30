@@ -300,17 +300,12 @@ test.describe('the Staff panel held-guards block', () => {
       guards: [guard(5, 'deployment'), guard(6, 'incident-response'), guard(9, 'incident-response')],
     });
     const advanced = await probe(page);
-    expect(advanced.held.rows.map((row) => row.guardId)).toEqual(['', '5', '6']);
-    // The freed place keeps its box rather than collapsing, because collapsing
-    // it would slide the two rows below it up a row's height into whatever
-    // pointer is resting there -- the same defect by geometry instead of by
-    // binding.
-    expect(advanced.held.rows).toHaveLength(3);
-    // It names nobody and says so: no label, and `aria-disabled` rather than
-    // `disabled`, because `createBusyGroup` assigns `disabled` to every member
-    // on every busy transition and would clear it. The authority that stops a
-    // press is `row.guardId === undefined` in the panel, not this attribute.
-    expect(advanced.held.rows[0]?.labelText).toBe('');
+    expect(advanced.held.rows.map((row) => row.guardId)).toEqual(['5', '6']);
+    // The freed leading slot collapses, while the two surviving controls keep
+    // their screen coordinates under the bottom-anchored layout.
+    expect(advanced.held.rows).toHaveLength(2);
+    // The hidden slot names nobody and remains inert while its settle timer runs.
+    expect(advanced.held.rows.every((row) => row.guardId !== '4')).toBe(true);
     expect(
       await page.evaluate(
         () =>
@@ -334,7 +329,7 @@ test.describe('the Staff panel held-guards block', () => {
       unassigned: 4,
       guards: [guard(5, 'deployment'), guard(6, 'incident-response'), guard(9, 'incident-response')],
     });
-    expect((await probe(page)).held.rows.map((row) => row.guardId)).toEqual(['', '5', '6']);
+    expect((await probe(page)).held.rows.map((row) => row.guardId)).toEqual(['5', '6']);
 
     // Past the window the waiting guard takes it, so the block does not go on
     // drawing two rows for four held guards for ever.

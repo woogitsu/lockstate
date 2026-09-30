@@ -1919,6 +1919,7 @@
 .hud-staff__held-list:not([hidden]) {
   display: flex;
   flex-direction: column;
+  justify-content: flex-end;
   gap: var(--hud-build-map-gutter);
 }
 
@@ -2247,6 +2248,9 @@
 .hud-build__queue-list:not([hidden]) {
   display: flex;
   flex-direction: column;
+  /* Align short pools to the bottom without pushing an overfull queue above
+     scrollTop 0, where its first Cancel buttons cannot be reached. */
+  justify-content: safe flex-end;
   gap: var(--hud-build-map-gutter);
   /*
    * The list is the scroll region and its box is three rows tall, which is the
@@ -2668,6 +2672,7 @@
 .hud-build__delivery-list:not([hidden]) {
   display: flex;
   flex-direction: column;
+  justify-content: flex-end;
   gap: var(--hud-build-map-gutter);
 }
 

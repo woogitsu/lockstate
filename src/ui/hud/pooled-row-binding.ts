@@ -88,22 +88,10 @@
  *    geometry rather than by binding. Only the trailing run of empty rows gives
  *    its boxes up, and giving those up moves nothing.
  *
- * **Neither half is about a pixel, and one measurement says that is a gap
- * rather than a simplification (#1294, 2026-09-17).** `.hud__side` carries
- * `margin-top: auto`, so the rail this function's four callers all live in is
- * anchored to the **bottom** of the viewport: a block that changes height moves
- * its own rows rather than the space below them. Measured in a browser at
- * 1280x800 on the Staff panel's held-guards block, one held guard whose hold
- * ends as another guard is claimed: the Release box sat at y=690 before the
- * publication, and after it the freed place sat at y=635 with the **arriving
- * guard's** Release at y=690 -- the pixel the departed guard's was on. The same
- * anchoring moves three rows by 3-5px when a held row's two-line sentence is
- * blanked and the row gets shorter. The Build panel's two lists do not show it
- * (a one-line label shorter than its 44px control changes no height, and
- * `ui-pending-deliveries.spec.ts` asserts the surviving boxes to the pixel), so
- * this is the half of the invariant none of the four fixes reaches rather than
- * a defect any of them introduced. #1294 carries the measurement and what a fix
- * would have to decide.
+ * **Pixels are part of the contract now (#1294, ADR 0124).** The four HUD
+ * callers request the bottom anchor. Vacant leading slots may collapse; the
+ * remaining slots keep their distance from the list's bottom. Their layout
+ * height and scroll position are preserved by `pooled-row-layout.ts`.
  *
  * `settleMs` is the caller's figure -- `BUILD_QUEUE_ROW_SETTLE_MS` in
  * `build-panel.ts` carries it and what bounds it from below. It is the weakest
@@ -161,7 +149,7 @@ export type PooledRowAssignment =
    * up would move that row. See the header.
    */
   | { readonly kind: 'holds-open' }
-  /** Names nothing and has no box. Only ever in the trailing run. */
+  /** Names nothing and has no box. In a bottom pool, only in the leading run. */
   | { readonly kind: 'empty' };
 
 export type PooledRowAnchor = 'top' | 'bottom';
@@ -227,21 +215,21 @@ export function assignPooledRows(
    * this pass it still names an item and the guard below excludes it.
    */
   const arriving = [...new Set(itemIds)].filter((itemId) => !held.has(itemId));
-  let next = 0;
+  // Visit bottom slots first, but preserve the producer's top-to-bottom order.
+  let next = anchor === 'bottom' ? arriving.length - 1 : 0;
   for (const [orderedIndex, row] of orderedRows.entries()) {
     if (assignments[orderedIndex]?.kind !== 'holds-open') continue;
     if (row.itemId !== undefined) continue;
     if (row.freedAtMs !== undefined && nowMs - row.freedAtMs < settleMs) continue;
     const itemId = arriving[next];
     if (itemId === undefined) break;
-    next += 1;
+    next += anchor === 'bottom' ? -1 : 1;
     assignments[orderedIndex] = { kind: 'fills', itemId };
   }
 
   /*
-   * Pass three: which rows still naming nothing may give their boxes up. Only
-   * the trailing run, because dropping a box with an occupied row after it
-   * moves that row -- the header's point 2.
+   * Pass three: which rows still naming nothing may give their boxes up. The
+   * trailing run in logical order is the leading run in a bottom-anchored list.
    */
   let occupiedBelow = false;
   for (let index = assignments.length - 1; index >= 0; index -= 1) {

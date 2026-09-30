@@ -21878,7 +21878,9 @@ did not publish (run 36269260231). Those are consequences of the red gate,
 not evidence that the in-flight save change itself failed a simulation test.
 
 **The decision census did not flip.** The ADR index still has 117 numbered
-rows, 42 `Proposed` and 75 `Accepted`, with **Next free number: 0124**.
+rows, 42 `Proposed` and 75 `Accepted`; 0124 was the next free number
+at that snapshot. This PR adds accepted ADR 0124, so the index now states
+**Next free number: 0125** (118 rows: 42 Proposed, 76 Accepted).
 The one changed index row rewrites description, not status. §2 still has nine
 live entries. This is a count of the current index and the named entries,
 not an inference from which PRs merged or from the new save format.
@@ -22009,7 +22011,7 @@ and #1400. The window includes 31 `src/` paths, 41 `tests/` paths and 31
 
 **The ADR census changed by decisions, not by arrivals.** The numbered ADR
 files still total **117**, with no new numbered document above 0123 and the
-index still naming **Next free number: 0124**. Each document's Status and its
+index then naming 0124 as the next free number. Each document's Status and its
 index row now yield **42 Proposed and 75 Accepted**, against 47 and 70 at the old
 anchor. The five owner acceptances recorded in the changed rows are ADR 0052,
 0054, 0090, 0092 and decision 1 of 0095; ADR 0002's row was amended but was

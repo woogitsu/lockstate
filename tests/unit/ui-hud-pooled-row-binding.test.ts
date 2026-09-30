@@ -166,6 +166,11 @@ describe('assignPooledRows', () => {
       { kind: 'empty' },
       { kind: 'fills', itemId: 'a' },
     ]);
+    expect(assignPooledRows(fresh(3), ['a', 'b', 'c'], 0, SETTLE, 'bottom')).toEqual([
+      { kind: 'fills', itemId: 'a' },
+      { kind: 'fills', itemId: 'b' },
+      { kind: 'fills', itemId: 'c' },
+    ]);
   });
 
   it('holds the invariant across a whole queue draining through a three-row pool', () => {
