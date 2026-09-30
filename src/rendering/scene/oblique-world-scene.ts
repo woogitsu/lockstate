@@ -106,6 +106,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
 
   public get cameraPose(): ObliqueCameraState { return this.pose; }
   public ready(): Promise<void> { return this.texturesReady; }
+  public furnitureSpriteFrame(id: string): string | undefined { return this.furnitureSprites.get(id)?.texture.key; }
   public get selectedTile(): { readonly tileX: number; readonly tileY: number } | undefined { return this.selected; }
   public get paintCounts(): { readonly ground: number; readonly raised: number } {
     return { ground: this.groundPaints, raised: this.raisedPaints };
