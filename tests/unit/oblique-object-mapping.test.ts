@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { obliqueAssetIdForObject } from '../../src/rendering/assets/oblique-object-mapping';
+import { obliqueAssetIdForObject, obliqueCanonicalAssetIdForObject } from '../../src/rendering/assets/oblique-object-mapping';
 describe('medical oblique object mapping', () => {
  it.each([
   ['object.medical-bed','furniture.medical-bed.variants'],
@@ -24,4 +24,17 @@ it('registry contains both medical mapped assets', () => {
  expect(parsed.entries.map((entry) => entry.assetId)).toEqual(expect.arrayContaining([
   'furniture.medical-bed.variants', 'fixture.medicine-cabinet.variants',
  ]));
+});
+
+describe('oblique canonical aliases', () => {
+ it.each([
+  ['wall.interior.module', {}, 'wall.interior.module.full'],
+  ['door.interior', {}, 'door.interior.open.full'],
+  ['door.interior', { edge: 'west' }, 'door.interior.open.west.full'],
+  ['door.interior', { cutaway: true }, 'door.interior.open.cutaway'],
+  ['door.interior', { edge: 'west', cutaway: true }, 'door.interior.open.west.cutaway'],
+ ] as const)('resolves %s', (objectId, options, expected) => {
+  expect(obliqueCanonicalAssetIdForObject(objectId, options)).toBe(expected);
+ });
+ it('fails closed for unknown ids', () => expect(obliqueCanonicalAssetIdForObject('object.unknown')).toBeUndefined());
 });

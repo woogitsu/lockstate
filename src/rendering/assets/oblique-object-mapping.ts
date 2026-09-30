@@ -19,3 +19,22 @@ export function obliqueCatalogForObject(
   // Fail closed when the registry did not load or omitted this mapped asset.
   return catalogs.get(assetId);
 }
+
+export type ObliqueWallEdge = 'north' | 'west';
+export interface ObliqueObjectAliasOptions {
+  readonly edge?: ObliqueWallEdge;
+  readonly cutaway?: boolean;
+}
+
+/** Resolve approved legacy logical ids to canonical registry asset ids. Unknown ids fail closed. */
+export function obliqueCanonicalAssetIdForObject(
+  objectId: string,
+  options: ObliqueObjectAliasOptions = {},
+): string | undefined {
+  if (objectId === 'wall.interior.module') return 'wall.interior.module.full';
+  if (objectId !== 'door.interior') return obliqueAssetIdForObject(objectId);
+  if (options.edge === 'west') {
+    return options.cutaway ? 'door.interior.open.west.cutaway' : 'door.interior.open.west.full';
+  }
+  return options.cutaway ? 'door.interior.open.cutaway' : 'door.interior.open.full';
+}
