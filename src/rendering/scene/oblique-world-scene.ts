@@ -10,6 +10,7 @@ import {
 import { projectedTileQuad, type TileQuad } from '../camera/oblique-geometry';
 import { projectObliqueActors, projectObliqueWorldFrame, sortObliqueRaised, type ObliqueActorPoint, type ObliqueSolid, type ObliqueWorldProjection } from '../camera/oblique-world-projection';
 import type { Point } from '../camera/coordinates';
+import type { MinimapView } from '../../shared/minimap-view';
 import type { ObliqueModuleCatalog } from '../assets/oblique-module-catalog';
 import { selectObliqueModuleFrame } from '../assets/oblique-module-catalog';
 import { registerObliqueModuleTextures } from '../phaser/oblique-module-textures';
@@ -48,6 +49,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private readonly obliqueCatalogs: ReadonlyMap<string, ObliqueModuleCatalog>;
   private readonly furnitureSprites = new Map<string, Phaser.GameObjects.Image>();
   private texturesReady: Promise<void> = Promise.resolve();
+  private minimapSink: ((view: MinimapView | undefined) => void) | undefined;
 
   public constructor(options: ObliqueWorldSceneOptions) {
     super({ key: 'oblique-world' });
@@ -111,6 +113,29 @@ export class ObliqueWorldScene extends Phaser.Scene {
   public get paintCounts(): { readonly ground: number; readonly raised: number } {
     return { ground: this.groundPaints, raised: this.raisedPaints };
   }
+
+  public navigateToTile(tileX: number, tileY: number): boolean {
+    this.pose = { ...this.pose, target: { x: (tileX + 0.5) * TILE_SIZE_PX, y: (tileY + 0.5) * TILE_SIZE_PX } };
+    this.poseRevision += 1;
+    this.repaint();
+    return true;
+  }
+
+  public navigateToMinimapPoint(fx: number, fy: number): boolean {
+    const bounds = this.lastFrame?.world.loadedBounds;
+    if (bounds === undefined) return false;
+    const x = bounds.minTileX + Math.min(1, Math.max(0, fx)) * (bounds.maxTileX - bounds.minTileX + 1);
+    const y = bounds.minTileY + Math.min(1, Math.max(0, fy)) * (bounds.maxTileY - bounds.minTileY + 1);
+    return this.navigateToTile(Math.floor(x), Math.floor(y));
+  }
+
+  public stepCameraZoom(direction: 'in' | 'out'): void {
+    this.pose = { ...this.pose, zoom: Math.min(4, Math.max(0.25, this.pose.zoom * (direction === 'in' ? 1.1 : 1 / 1.1))) };
+    this.poseRevision += 1;
+    this.repaint();
+  }
+
+  public setMinimapSink(sink: (view: MinimapView | undefined) => void): void { this.minimapSink = sink; }
 
   /** Shared entry point for mouse drag, remappable keyboard actions and HUD buttons. */
   public setPoseRadians(yawRadians: number, elevationRadians: number, pivot?: Point): void {

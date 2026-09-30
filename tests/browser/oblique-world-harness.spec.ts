@@ -5,6 +5,7 @@ test('real render feed cell keeps one build square under the cursor while the sc
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/tests/browser/oblique-world-harness.html');
   await page.evaluate(() => window.lockstateObliqueWorldHarness.ready());
+  expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.cameraPorts())).toEqual({ tile: true, minimap: true, zoom: true, sink: true });
   await expect(page.locator('canvas')).toBeVisible();
   expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.medicalObliqueInspection())).toEqual([
     { objectId: 'object.medical-bed', assetId: 'furniture.medical-bed.variants', footprint: { width: 1, height: 2 } },

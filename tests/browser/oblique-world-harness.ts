@@ -26,6 +26,7 @@ export interface ObliqueWorldHarness {
   selected(): { readonly tileX: number; readonly tileY: number } | undefined;
   paintCounts(): { readonly ground: number; readonly raised: number };
   medicalObliqueInspection(): readonly MedicalObliqueInspection[];
+  cameraPorts(): { tile: boolean; minimap: boolean; zoom: boolean; sink: boolean };
 }
 
 declare global {
@@ -107,4 +108,5 @@ window.lockstateObliqueWorldHarness = {
     if (definition === undefined) throw new Error(`Missing medical object ${objectId}`);
     return { objectId, assetId: obliqueAssetIdForObject(objectId), footprint: definition.footprint };
   }),
+  cameraPorts: () => ({ tile: scene.navigateToTile(3, 3), minimap: scene.navigateToMinimapPoint(0.5, 0.5), zoom: (scene.stepCameraZoom('in'), true), sink: (scene.setMinimapSink(() => undefined), true) }),
 };
