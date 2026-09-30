@@ -10,10 +10,14 @@ import {
 import { projectedTileQuad, type TileQuad } from '../camera/oblique-geometry';
 import { projectObliqueActors, projectObliqueWorldFrame, sortObliqueRaised, type ObliqueActorPoint, type ObliqueSolid, type ObliqueWorldProjection } from '../camera/oblique-world-projection';
 import type { Point } from '../camera/coordinates';
+import type { ObliqueModuleCatalog } from '../assets/oblique-module-catalog';
+import { selectObliqueModuleFrame } from '../assets/oblique-module-catalog';
+import { registerObliqueModuleTextures } from '../phaser/oblique-module-textures';
 
 export interface ObliqueWorldSceneOptions {
   readonly feed: RenderFeed;
   readonly onTileSelected?: (tileX: number, tileY: number) => void;
+  readonly obliqueCatalogs?: ReadonlyMap<string, ObliqueModuleCatalog>;
 }
 
 /**
@@ -41,11 +45,15 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private actorPositions: { id: number; tileX: number; tileY: number }[] = [];
   private groundPaints = 0;
   private raisedPaints = 0;
+  private readonly obliqueCatalogs: ReadonlyMap<string, ObliqueModuleCatalog>;
+  private readonly furnitureSprites = new Map<string, Phaser.GameObjects.Image>();
+  private texturesReady: Promise<void> = Promise.resolve();
 
   public constructor(options: ObliqueWorldSceneOptions) {
     super({ key: 'oblique-world' });
     this.feed = options.feed;
     this.onTileSelected = options.onTileSelected;
+    this.obliqueCatalogs = options.obliqueCatalogs ?? new Map();
   }
 
   public create(): void {
@@ -61,6 +69,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
       elevationRadians: Math.PI / 4,
     };
     this.input.mouse?.disableContextMenu();
+    this.texturesReady = registerObliqueModuleTextures(this, this.obliqueCatalogs).then(() => { this.repaint(); });
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       if (pointer.button === 2 && !pointer.wasTouch) {
         this.turnPointerId = pointer.id;
@@ -96,6 +105,8 @@ export class ObliqueWorldScene extends Phaser.Scene {
   }
 
   public get cameraPose(): ObliqueCameraState { return this.pose; }
+  public ready(): Promise<void> { return this.texturesReady; }
+  public furnitureSpriteFrame(id: string): string | undefined { return this.furnitureSprites.get(id)?.texture.key; }
   public get selectedTile(): { readonly tileX: number; readonly tileY: number } | undefined { return this.selected; }
   public get paintCounts(): { readonly ground: number; readonly raised: number } {
     return { ground: this.groundPaints, raised: this.raisedPaints };
@@ -168,6 +179,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     const raised = this.raisedGraphics;
     raised.clear();
     this.raisedPaints += 1;
+    const seenFurniture = new Set<string>();
     for (const item of projection.raised) {
       if (item.kind === 'actor') {
         raised.lineStyle(13 * this.pose.zoom, 0xdd8342, 1);
@@ -180,6 +192,27 @@ export class ObliqueWorldScene extends Phaser.Scene {
         const next = (side + 1) % 4;
         this.fillQuad(raised, [item.footprint[side]!, item.footprint[next]!, item.top[next]!, item.top[side]!], item.sideFill, item.alpha);
       }
+      if (item.kind === 'structure' && item.assetId !== undefined) {
+        seenFurniture.add(item.id);
+        const catalog = this.obliqueCatalogs.get(item.assetId);
+        if (catalog !== undefined) {
+          const frame = selectObliqueModuleFrame(catalog, this.pose);
+          let sprite = this.furnitureSprites.get(item.id);
+          if (sprite === undefined && this.textures.exists(frame.image)) {
+            sprite = this.add.image(item.footprint[0]!.x, item.footprint[0]!.y, frame.image);
+            this.furnitureSprites.set(item.id, sprite);
+          }
+          if (sprite !== undefined) {
+            sprite.setTexture(frame.image).setDepth(item.viewDepth).setVisible(true);
+            sprite.setPosition(item.footprint[0]!.x, item.footprint[0]!.y);
+            sprite.setOrigin(catalog.pivotPx[0] / Math.max(1, catalog.resolutionPx[0]), catalog.pivotPx[1] / Math.max(1, catalog.resolutionPx[1]));
+            sprite.setScale((catalog.nominalPixelsPerTile * 1) / Math.max(1, catalog.resolutionPx[0]));
+          }
+        }
+      }
+    for (const [id, sprite] of this.furnitureSprites) {
+      if (!seenFurniture.has(id)) sprite.setVisible(false);
+    }
       this.fillQuad(raised, item.top, item.topFill, item.alpha);
     }
   }
