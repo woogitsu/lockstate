@@ -34,8 +34,11 @@ for (const uiScale of [100, 200] as const) {
       const readings = [...panel.querySelectorAll<HTMLElement>('.hud-regime__block-name, .hud-regime__block-progress')];
       const metrics = [...document.querySelectorAll<HTMLElement>('.hud-strip__metrics > .ui-stat')];
       const stripBox = document.querySelector<HTMLElement>('.hud-strip__metrics')!.getBoundingClientRect();
-      const saves = [...document.querySelectorAll<HTMLElement>('.save-panel__actions .save-panel__button')];
-      const saveBox = document.querySelector<HTMLElement>('.save-panel')!.getBoundingClientRect();
+      const savePanel = document.querySelector<HTMLElement>('.save-panel')!;
+      const saveBox = savePanel.getBoundingClientRect();
+      const create = savePanel.querySelector<HTMLElement>('.save-panel__create')!;
+      const createBox = create.getBoundingClientRect();
+      const hit = document.elementFromPoint(createBox.x + createBox.width / 2, createBox.y + createBox.height / 2);
       return {
         headerCount: headers.length,
         headersFit: headers.every((header) => {
@@ -53,7 +56,10 @@ for (const uiScale of [100, 200] as const) {
           return box.left >= stripBox.left - 1 && box.right <= stripBox.right + 1
             && box.top >= stripBox.top - 1 && box.bottom <= stripBox.bottom + 1;
         }),
-        savesFit: saves.length === 4 && saves.every((save) => save.getBoundingClientRect().bottom <= saveBox.bottom + 1),
+        savesFit: !savePanel.querySelector('details')!.open
+          && savePanel.querySelectorAll('.save-panel__actions .save-panel__button').length === 3
+          && createBox.bottom <= saveBox.bottom + 1
+          && (hit === create || create.contains(hit)),
         mapHit: document.elementFromPoint(960, 540)?.tagName,
       };
     });
