@@ -901,6 +901,7 @@ export interface MountHudOptions {
     readonly label: string;
     readonly templateId: RoomTemplatePlacementIntent['templateId'];
     readonly origin: RoomTemplatePlacementIntent['origin'];
+    readonly onPreflight?: (intent: RoomTemplatePlacementIntent) => Promise<boolean>;
   };
   /**
    * What the Rooms panel may offer (ADR 0022, amended).
@@ -2306,6 +2307,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
           { kind: 'place-room-template', ...template },
           control,
         ),
+        onPreflight: options.roomTemplate.onPreflight,
       },
     }),
     onPlace: (intent) => {

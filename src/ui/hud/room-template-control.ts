@@ -12,6 +12,7 @@ export interface RoomTemplateControlOptions {
   readonly origin: { readonly x: number; readonly y: number };
   readonly mirrorX?: boolean;
   readonly onPlace: (intent: RoomTemplatePlacementIntent, control: HTMLButtonElement) => void;
+  readonly onPreflight?: (intent: RoomTemplatePlacementIntent) => Promise<boolean>;
 }
 
 /** Build UI control for the atomic PlaceRoomTemplate command. */
@@ -20,10 +21,10 @@ export function createRoomTemplateControl(options: RoomTemplateControlOptions): 
   button.type = 'button';
   button.className = 'ui-action hud-build__room-template';
   button.textContent = options.label;
-  button.addEventListener('click', () => options.onPlace({
-    templateId: options.templateId,
-    origin: { ...options.origin },
-    mirrorX: options.mirrorX === true,
-  }, button));
+  button.addEventListener('click', async () => {
+    const intent = { templateId: options.templateId, origin: { ...options.origin }, mirrorX: options.mirrorX === true } satisfies RoomTemplatePlacementIntent;
+    if (options.onPreflight !== undefined && !(await options.onPreflight(intent))) return;
+    options.onPlace(intent, button);
+  });
   return button;
 }

@@ -201,7 +201,7 @@ export interface BuildPanelOptions {
    * out of the same disclosure.
    */
   readonly onSell: (intent: BuildPanelPurchaseIntent) => void;
-  readonly roomTemplate?: { readonly label: string; readonly templateId: RoomTemplatePlacementIntent['templateId']; readonly origin: RoomTemplatePlacementIntent['origin']; readonly onPlace: (intent: RoomTemplatePlacementIntent, control: HTMLButtonElement) => void };
+  readonly roomTemplate?: { readonly label: string; readonly templateId: RoomTemplatePlacementIntent['templateId']; readonly origin: RoomTemplatePlacementIntent['origin']; readonly onPlace: (intent: RoomTemplatePlacementIntent, control: HTMLButtonElement) => void; readonly onPreflight?: (intent: RoomTemplatePlacementIntent) => Promise<boolean> };
 }
 
 export interface BuildPanel {
