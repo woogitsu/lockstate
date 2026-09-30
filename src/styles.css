@@ -40,10 +40,6 @@ canvas {
   z-index: 1;
   pointer-events: none;
   background-color: var(--surface-base);
-  background-image:
-    linear-gradient(135deg, color-mix(in srgb, var(--border) 28%, transparent) 1px, transparent 1px),
-    linear-gradient(315deg, color-mix(in srgb, var(--border) 18%, transparent) 1px, transparent 1px);
-  background-size: 64px 64px;
   opacity: 0.72;
 }
 

@@ -4,10 +4,10 @@ test('empty Full HD world uses an inert planning surface behind the start card (
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/index.html');
   await expect(page.locator('.empty-world-prompt')).toBeVisible();
-  await expect.poll(() => page.evaluate(() => getComputedStyle(document.querySelector('#app')!, '::before').backgroundImage)).not.toBe('none');
+  await expect.poll(() => page.evaluate(() => getComputedStyle(document.querySelector('#app')!, '::before').backgroundColor)).not.toBe('rgba(0, 0, 0, 0)');
   expect(await page.evaluate(() => document.elementFromPoint(960, 540)?.tagName)).toBe('CANVAS');
 
   await page.locator('.empty-world-prompt').getByRole('button', { name: 'Create a prison' }).click();
   await expect(page.locator('.empty-world-prompt')).toBeHidden();
-  await expect.poll(() => page.evaluate(() => getComputedStyle(document.querySelector('#app')!, '::before').backgroundImage)).toBe('none');
+  await expect.poll(() => page.evaluate(() => getComputedStyle(document.querySelector('#app')!, '::before').content)).toBe('none');
 });
