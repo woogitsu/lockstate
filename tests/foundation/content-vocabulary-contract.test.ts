@@ -487,7 +487,7 @@ describe('the message-key namespaces are counted, and no call site names one tha
       // `action` namespace already has a call site so neither unreachable
       // count moves either.
     }).toEqual({
-      namespaces: 42,
+      namespaces: 43,
       // 173 until ADR 0061 gave `ContrabandState` a third member,
       // `'departed'` -- a prisoner who leaves takes what they were concealing
       // with them. One label added to an existing namespace, so `namespaces`
@@ -516,7 +516,7 @@ describe('the message-key namespaces are counted, and no call site names one tha
       // to label exactly the ids its declaration declares, so an entry has to
       // exist the moment the catalogue holds one. `action.kitchen-work`'s
       // label is still a draft; only the carry's was ruled on.
-      labels: 178,
+      labels: 181,
       // 11 on `main` before issue #533, which itself moved this line from 10;
       // #533 gives `deployment-phase` its first call site, so it is 12. The
       // Staff panel's roster block labels what each staff member is doing, and
@@ -543,7 +543,7 @@ describe('the message-key namespaces are counted, and no call site names one tha
       // in the case of `search-order-state`, whose `'queued'` member exists
       // because a projection needed to label an order no job record covers.
       namespacesWithACallSite: 16,
-      namespacesWithoutACallSite: 26,
+      namespacesWithoutACallSite: 27,
       labelsWithoutACallSite: 99,
     });
   });
