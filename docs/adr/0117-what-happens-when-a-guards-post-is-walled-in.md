@@ -146,7 +146,7 @@ and both edges, plus the bricks and the build time for all four.
 
 **That does not make it unreachable, and the reason is the coincidence ADR 0036
 decision 2 calls load-bearing.** (16, 16) is `NEW_PRISON_ORIGIN_TILE`
-(`src/main.ts:869`) — the tile the Build panel's x/y fields **start on**. A
+(`src/main.ts:882`, `NEW_PRISON_ORIGIN_TILE`) — the tile the Build panel's x/y fields **start on**. A
 player who opens the Build panel and presses without editing the coordinates is
 building on the post tile, and four such presses is a small 2×2-ish wall stub
 or the first corner of a room. The realistic route is not malice; it is a
@@ -156,7 +156,7 @@ not yet having cut the doorway.
 **Measured through the real build path**, on the same fixture: `PurchaseMaterials`
 for 12 `item.brick`, then the four `PlaceBuildOrder` presses above — **zero
 refusals**, all four accepted, all four completed. Nothing in `REFUSAL_REASONS`
-(`src/simulation/protocol/types.ts:1395`) concerns a security post, and no
+(`src/simulation/protocol/types.ts:1375`, `PlaceBuildOrder`) concerns a security post, and no
 build refusal today looks at a sector.
 
 ### 1b. It is not silent — it is *worse* than silent, because the one readout a player has is false half the time
@@ -166,7 +166,7 @@ priced without.
 
 `CoverageReportEntry.assigned` counts *"guards assigned to the sector, whether
 already on-post or still travelling there"* — its own docstring, at
-`src/simulation/security/deployment-system.ts:18` — and
+`src/simulation/security/deployment-system.ts:290`, `assignedGuardCountFor` — and
 `assignedGuardCountFor` (`:119-125`) counts every guard whose phase is not
 `'unassigned'`. The stranded guard is not standing still in one phase; it
 **cycles**. `DeploymentSystem.schedule` is `{ intervalTicks: 10, phaseTicks: 0 }`
@@ -186,7 +186,7 @@ ticks: **100 ticks report `shortage: 0` and 100 report `shortage: 1`.** Exactly
 half.
 
 `shortage: 0` is what the Staff panel renders as
-`hud.security.coverage-met` — **"Covered"** (`src/content/default-locale-en.ts:2685`)
+`hud.security.coverage-met` — **"Covered"** (`src/content/default-locale-en.ts:3074`, `hud.security.coverage-met`)
 — beside `hud.security.coverage-summary`, **"{assigned} of {required}"**
 (`:2684`), i.e. **"1 of 1 · Covered"**. The other half of the time it renders
 `hud.security.coverage-unguarded`, **"Unguarded"** (`:2861`), with
@@ -245,7 +245,7 @@ moving.
 **One caveat, and it is a trap for the next person to measure this.**
 `RemoveWall` resolves a press to *the completed build order claiming that edge*
 (`ConstructionSystem.completedOrderClaimingEdge`,
-`src/simulation/construction/system.ts:1496`). A wall written straight into the
+`src/simulation/construction/system.ts:1532`, `remove-wall.nothing-to-remove`). A wall written straight into the
 edge layer by a test fixture has no order behind it, so `RemoveWall` refuses it
 `remove-wall.nothing-to-remove` — which is exactly what happened on the first
 run of this probe and is a property of the fixture, not of the game. Every
@@ -255,7 +255,7 @@ recovery figure above is from walls built by real commands.
 
 `IncidentResponseSystem` sends a responder to
 `this.sectors.requireDefinition(incident.sectorId).postTile`
-(`src/simulation/incidents/response-system.ts:501`) — the same tile. So a
+(`src/simulation/incidents/response-system.ts:95`, `IncidentResponseSystem`) — the same tile. So a
 sealed post takes the response with it.
 
 ADR 0036 decision 8's own fixture, re-run on seed `0x396` with and without the
@@ -328,11 +328,11 @@ ADR 0036 rejected the third candidate partly because *"a refusal raised on a
 state rather than a command … is a shape this repository does not have yet"*,
 and [ADR 0087](./0087-whether-a-refusal-is-an-event-or-a-condition.md) decision
 2 was where it was being decided. **It was decided, ruled on and built.**
-`PRISON_CONDITIONS` (`src/simulation/protocol/types.ts:668`) is a closed union
+`PRISON_CONDITIONS` (`src/simulation/protocol/types.ts:699`, `PRISON_CONDITIONS`) is a closed union
 of four members today — `construction.unfunded`, `intake.no-place`,
 `treasury.construction-refused`, `treasury.deliveries-refused` — produced by the
 pure function `computeStandingPrisonConditions`
-(`src/simulation/presentation/status-strip-projection.ts:253`) and published on
+(`src/simulation/presentation/status-strip-projection.ts:277`, `computeStandingPrisonConditions`) and published on
 `statusCountsSchema.conditions`, an array bounded by the union's own length
 (`types.ts:1234`).
 
