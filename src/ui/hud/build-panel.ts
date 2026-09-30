@@ -14,6 +14,7 @@ import { bindRovingFocusKeydown } from '../primitives/roving-focus-keydown';
 import { HUD_MESSAGE_KEY } from './messages';
 import { assignPooledRows } from './pooled-row-binding';
 import { toggleRemovalMode } from './tool-arming';
+import { createRoomTemplateControl, type RoomTemplatePlacementIntent } from './room-template-control';
 import {
   HUD_BUILD_EDGES,
   HUD_DEFAULT_BUILD_EDGE,
@@ -200,6 +201,7 @@ export interface BuildPanelOptions {
    * out of the same disclosure.
    */
   readonly onSell: (intent: BuildPanelPurchaseIntent) => void;
+  readonly roomTemplate?: { readonly label: string; readonly templateId: RoomTemplatePlacementIntent['templateId']; readonly origin: RoomTemplatePlacementIntent['origin']; readonly onPlace: (intent: RoomTemplatePlacementIntent, control: HTMLButtonElement) => void; readonly onPreflight?: (intent: RoomTemplatePlacementIntent) => Promise<boolean> };
 }
 
 export interface BuildPanel {
@@ -3142,7 +3144,12 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       },
     },
   });
+  const roomTemplateControl = options.roomTemplate === undefined ? undefined : createRoomTemplateControl({
+    ...options.roomTemplate,
+    onPlace: options.roomTemplate.onPlace,
+  });
   panel.body.append(
+    ...(roomTemplateControl === undefined ? [] : [roomTemplateControl]),
     catalogue.element,
     element('div', {
       className: 'hud-build__map',
@@ -3269,6 +3276,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       sellSubmit.element,
       ...queueRows.map((row) => row.cancel.element),
       ...deliveryRows.map((row) => row.cancel.element),
+      ...(roomTemplateControl === undefined ? [] : [roomTemplateControl]),
     ],
     submitControl: submit.element,
     purchaseControl: buySubmit.element,

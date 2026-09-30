@@ -17,6 +17,7 @@ import { type ListRow, createListRow } from '../primitives/list-row';
 import { type Panel, createPanel } from '../primitives/panel';
 import { type TabButton, createTabButton } from '../primitives/tab-button';
 import { type BuildPanel, type BuildPanelTarget, createBuildPanel } from './build-panel';
+import type { RoomTemplatePlacementIntent } from './room-template-control';
 import { type IntakePanel, createIntakePanel } from './intake-panel';
 import { type OverviewPanel, createOverviewPanel } from './overview-panel';
 import { type RegimePanel, createRegimePanel } from './regime-panel';
@@ -409,6 +410,7 @@ export type HudIntent =
    * one as an open question.
    */
   | ({ readonly kind: 'place-object' } & HudObjectPlacement)
+  | ({ readonly kind: 'place-room-template' } & RoomTemplatePlacementIntent)
   /**
    * Take away the object on one tile (ADR 0028 phase 3).
    *
@@ -894,6 +896,13 @@ export interface MountHudOptions {
    * a coordinate field mid-edit.
    */
   readonly build?: HudBuildViewModel;
+  /** Optional atomic room-template control supplied by the composition root. */
+  readonly roomTemplate?: {
+    readonly label: string;
+    readonly templateId: RoomTemplatePlacementIntent['templateId'];
+    readonly origin: RoomTemplatePlacementIntent['origin'];
+    readonly onPreflight?: (intent: RoomTemplatePlacementIntent) => Promise<boolean>;
+  };
   /**
    * What the Rooms panel may offer (ADR 0022, amended).
    *
@@ -2291,6 +2300,15 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   const buildPanel: BuildPanel = createBuildPanel({
     localizer,
     model: options.build ?? { buildables: [], origin: { x: 0, y: 0 } },
+    ...(options.roomTemplate === undefined ? {} : {
+      roomTemplate: {
+        ...options.roomTemplate,
+        onPlace: function onPlaceRoomTemplate(template: RoomTemplatePlacementIntent, control: HTMLButtonElement): void {
+          dispatchCommand({ kind: 'place-room-template', ...template }, control);
+        },
+        ...(options.roomTemplate.onPreflight === undefined ? {} : { onPreflight: options.roomTemplate.onPreflight }),
+      },
+    }),
     onPlace: (intent) => {
       /*
        * Two commands from one control, chosen by what the selected row *is*

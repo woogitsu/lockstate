@@ -327,6 +327,7 @@ const PAINTERS = [
   'simulation-prisoner-roster.ts',
   'simulation-regime.ts',
   'simulation-room-needs.ts',
+  'simulation-room-template-preflight.ts',
   'simulation-security.ts',
   'simulation-staff-coverage.ts',
   // Issue #533. The **second** reader of `hud/staff`, beside

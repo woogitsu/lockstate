@@ -81,6 +81,9 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   // Room types -- `room.*.name`. The Rooms panel's catalogue rows, and the
   // `{room}` parameter of several sentences.
   // ---------------------------------------------------------------------
+  'room-template.cell-basic.name': 'Cela podstawowa',
+  'room-template.cell-large.name': 'Cela du?a',
+  'room-template.shower-room.name': '?a?nia',
   'room.cell.name': 'Cela',
   'room.holding-cell.name': 'Cela przejściowa',
   'room.solitary-cell.name': 'Cela izolacyjna',
@@ -1142,6 +1145,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.buildable.wall-brick': 'Ściana z cegły',
   'hud.build.buildable.door-wooden': 'Drewniane drzwi',
   'hud.build.category': 'Kategoria',
+  'hud.build.room-template': 'Wstaw szablon pomieszczenia',
   'hud.build.category-all': 'Wszystko',
   'hud.build.category.structure': 'Ściany i drzwi',
 
