@@ -2634,10 +2634,6 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       label: 'Place room template',
       templateId: 'cell-basic',
       origin: NEW_PRISON_ORIGIN_TILE,
-      onPlace: (template) => requireSimulation(commands).submit({
-        type: 'PlaceRoomTemplate', templateId: template.templateId, origin: template.origin,
-        ...(template.mirrorX ? { mirrorX: true } : {}),
-      }),
     },
     staff: staffRoster(),
     /*

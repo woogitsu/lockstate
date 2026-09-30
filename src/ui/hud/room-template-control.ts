@@ -11,7 +11,7 @@ export interface RoomTemplateControlOptions {
   readonly templateId: RoomTemplateId;
   readonly origin: { readonly x: number; readonly y: number };
   readonly mirrorX?: boolean;
-  readonly onPlace: (intent: RoomTemplatePlacementIntent) => void;
+  readonly onPlace: (intent: RoomTemplatePlacementIntent, control: HTMLButtonElement) => void;
 }
 
 /** Build UI control for the atomic PlaceRoomTemplate command. */
@@ -24,6 +24,6 @@ export function createRoomTemplateControl(options: RoomTemplateControlOptions): 
     templateId: options.templateId,
     origin: { ...options.origin },
     mirrorX: options.mirrorX === true,
-  }));
+  }, button));
   return button;
 }

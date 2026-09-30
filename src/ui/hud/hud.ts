@@ -901,7 +901,6 @@ export interface MountHudOptions {
     readonly label: string;
     readonly templateId: RoomTemplatePlacementIntent['templateId'];
     readonly origin: RoomTemplatePlacementIntent['origin'];
-    readonly onPlace?: (intent: RoomTemplatePlacementIntent) => void;
   };
   /**
    * What the Rooms panel may offer (ADR 0022, amended).
@@ -2300,8 +2299,14 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   const buildPanel: BuildPanel = createBuildPanel({
     localizer,
     model: options.build ?? { buildables: [], origin: { x: 0, y: 0 } },
-    ...(options.roomTemplate?.onPlace === undefined ? {} : {
-      roomTemplate: { ...options.roomTemplate, onPlace: options.roomTemplate.onPlace },
+    ...(options.roomTemplate === undefined ? {} : {
+      roomTemplate: {
+        ...options.roomTemplate,
+        onPlace: (template: RoomTemplatePlacementIntent, control: HTMLButtonElement) => dispatchCommand(
+          { kind: 'place-room-template', ...template },
+          control,
+        ),
+      },
     }),
     onPlace: (intent) => {
       /*
