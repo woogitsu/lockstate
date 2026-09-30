@@ -47,6 +47,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private raisedPaints = 0;
   private readonly obliqueCatalogs: ReadonlyMap<string, ObliqueModuleCatalog>;
   private readonly furnitureSprites = new Map<string, Phaser.GameObjects.Image>();
+  private texturesReady: Promise<void> = Promise.resolve();
 
   public constructor(options: ObliqueWorldSceneOptions) {
     super({ key: 'oblique-world' });
@@ -68,7 +69,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
       elevationRadians: Math.PI / 4,
     };
     this.input.mouse?.disableContextMenu();
-    void registerObliqueModuleTextures(this, this.obliqueCatalogs).then(() => this.repaint());
+    this.texturesReady = registerObliqueModuleTextures(this, this.obliqueCatalogs).then(() => { this.repaint(); });
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       if (pointer.button === 2 && !pointer.wasTouch) {
         this.turnPointerId = pointer.id;
@@ -104,6 +105,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
   }
 
   public get cameraPose(): ObliqueCameraState { return this.pose; }
+  public ready(): Promise<void> { return this.texturesReady; }
   public get selectedTile(): { readonly tileX: number; readonly tileY: number } | undefined { return this.selected; }
   public get paintCounts(): { readonly ground: number; readonly raised: number } {
     return { ground: this.groundPaints, raised: this.raisedPaints };
