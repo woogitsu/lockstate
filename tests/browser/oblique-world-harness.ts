@@ -66,7 +66,11 @@ let game!: Phaser.Game;
 let resolveBootstrap!: () => void;
 const bootstrapReady = new Promise<void>((resolve) => { resolveBootstrap = resolve; });
 void (async () => {
-  const catalogs = await fetchObliqueModuleSet();
+  let catalogs: ReadonlyMap<string, import('../../src/rendering/assets/oblique-module-catalog').ObliqueModuleCatalog> = new Map();
+  try {
+    const timeout = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('oblique registry timeout')), 10_000));
+    catalogs = await Promise.race([fetchObliqueModuleSet(), timeout]);
+  } catch { /* harness keeps geometry fallback when assets are unavailable */ }
   scene = new HarnessScene({ feed: { readFrame: () => frame }, obliqueCatalogs: catalogs });
   game = new Phaser.Game({
   type: Phaser.AUTO,
@@ -78,7 +82,7 @@ void (async () => {
   scale: { mode: Phaser.Scale.RESIZE, autoCenter: Phaser.Scale.CENTER_BOTH },
     render: { antialias: true, roundPixels: false, pixelArt: false },
   });
-  await scene.ready();
+  await scene.ready().catch(() => undefined);
   resolveBootstrap();
 })();
 
