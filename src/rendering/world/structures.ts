@@ -21,6 +21,8 @@ export interface RenderStructure {
   readonly tileX: number;
   readonly tileY: number;
   readonly phase: StructurePhase;
+  /** Catalogued object id when this buildable places furniture. */
+  readonly objectId?: string;
 }
 
 function phaseOf(state: string): StructurePhase | undefined {
@@ -101,12 +103,14 @@ export function structuresFromConstruction(snapshot: ConstructionSnapshot): read
   for (const order of snapshot.orders) {
     const phase = phaseOf(order.state);
     if (phase === undefined) continue;
+    const objectId = catalogueObjectId(order.definitionId);
     structures.push({
       id: order.id,
       definitionId: order.definitionId,
       tileX: order.location.x,
       tileY: order.location.y,
       phase,
+      ...(objectId === undefined ? {} : { objectId }),
     });
   }
 
