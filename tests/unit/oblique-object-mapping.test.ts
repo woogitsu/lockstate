@@ -2,10 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { obliqueAssetIdForObject, obliqueCanonicalAssetIdForObject } from '../../src/rendering/assets/oblique-object-mapping';
 describe('medical oblique object mapping', () => {
  it.each([
+  ['object.bed','furniture.cell.bed.single.variants'],
   ['object.medical-bed','furniture.medical-bed.variants'],
   ['object.medicine-cabinet','fixture.medicine-cabinet.variants'],
  ] as const)('maps %s to registered asset', (objectId, assetId) => expect(obliqueAssetIdForObject(objectId)).toBe(assetId));
- it('fails closed for unknown ids', () => expect(obliqueAssetIdForObject('object.bed')).toBeUndefined());
+ it('fails closed for unknown ids', () => expect(obliqueAssetIdForObject('object.dining-table')).toBeUndefined());
 });
 import { obliqueCatalogForObject } from '../../src/rendering/assets/oblique-object-mapping';
 it('fails closed when the mapped asset is absent from the registry', () => {
@@ -15,6 +16,7 @@ import { parseObliqueModuleRegistry } from '../../src/rendering/assets/oblique-m
 const registry = {
  schemaVersion: 1,
  entries: [
+  { assetId: 'furniture.cell.bed.single.variants', manifest: '/game-content/oblique-cell-bed.v1.json' },
   { assetId: 'furniture.medical-bed.variants', manifest: '/game-content/oblique-furniture-medical-bed.v1.json' },
   { assetId: 'fixture.medicine-cabinet.variants', manifest: '/game-content/oblique-fixture-medicine-cabinet.v1.json' },
  ],
@@ -22,6 +24,7 @@ const registry = {
 it('registry contains both medical mapped assets', () => {
  const parsed = parseObliqueModuleRegistry(registry);
  expect(parsed.entries.map((entry) => entry.assetId)).toEqual(expect.arrayContaining([
+  'furniture.cell.bed.single.variants',
   'furniture.medical-bed.variants', 'fixture.medicine-cabinet.variants',
  ]));
 });

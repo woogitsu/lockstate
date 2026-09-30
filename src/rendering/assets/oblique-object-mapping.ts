@@ -2,6 +2,10 @@
 
 /** Stable object-id to oblique asset mapping. Unknown objects fail closed so the flat fallback remains authoritative. */
 export const OBLIQUE_OBJECT_ASSET_IDS: Readonly<Record<string, string>> = Object.freeze({
+  // The standard cell bed is a 1x2 object; keep its full footprint available
+  // to the oblique consumer so mirrored room plans do not fall back to a
+  // single-tile placeholder.
+  'object.bed': 'furniture.cell.bed.single.variants',
   'object.medical-bed': 'furniture.medical-bed.variants',
   'object.medicine-cabinet': 'fixture.medicine-cabinet.variants',
 });
