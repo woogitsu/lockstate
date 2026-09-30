@@ -215,12 +215,12 @@ not a projection detail: it is a destructive control aimed by a hidden number.
 
 > **Both numbers in that paragraph have since moved, and both moved away from
 > it — so the paragraph is dated rather than rewritten.** `BUILD_QUEUE_ROW_LIMIT`
-> is **64** today (`src/ui/hud/build-panel.ts:740`), not three, and
+> is **64** today (`src/ui/hud/build-panel.ts:742`), not three, and
 > `build-panel.ts:2445-2455` records the change in its own words — *"which was
 > free while the limit was three and is not free at sixty-four"*. And the order
 > the fold lays out is no longer ascending id: `projectBuildQueue` sorts the
 > pending orders with `compareBuildOrderExecution`
-> (`src/simulation/presentation/construction-projection.ts:358-360`), which is
+> (`src/simulation/presentation/construction-projection.ts:357-360`), which is
 > this ADR's own decision, shipped. So the *"three of them to cancel, chosen at
 > random"* shape is gone twice over — the window is wider and the window is
 > ordered.
@@ -244,9 +244,9 @@ not a projection detail: it is a destructive control aimed by a hidden number.
 
 **The id is minted on the main thread and crosses the protocol as an opaque
 string.** `placeBuildOrderSchema` types it `orderId: z.string()`
-(`src/simulation/protocol/commands.ts:53-60`) — deliberately looser than
+(`src/simulation/protocol/commands.ts:53-60, `placeBuildOrderSchema``) — deliberately looser than
 `PurchaseMaterials.orderId`, and `:145-149` says why. The handler passes it
-straight into `createBuildOrder` (`src/simulation/construction/handler.ts:87-96`)
+straight into `createBuildOrder` (`src/simulation/construction/handler.ts:87-96, `createBuildOrder``)
 and nothing in `src/simulation/` parses, slices or derives anything from it: its
 only two uses are as the `Map` key (`system.ts:349`) and as the sort key
 (`system.ts:1534-1535`).
