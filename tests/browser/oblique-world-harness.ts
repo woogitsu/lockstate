@@ -19,6 +19,7 @@ import { fetchObliqueModuleSet } from '../../src/rendering/assets/oblique-module
 
 export interface ObliqueWorldHarness {
   ready(): Promise<void>;
+  registryStatus(): 'loaded' | 'missing';
   furnitureSpriteFrame(id: string): string | undefined;
   setPose(yawDegrees: number, elevationDegrees: number): Promise<void>;
   pointAtTile(tileX: number, tileY: number): Point;
@@ -63,6 +64,7 @@ class HarnessScene extends ObliqueWorldScene {
 }
 let scene!: HarnessScene;
 let game!: Phaser.Game;
+let registryState: 'loaded' | 'missing' = 'missing';
 let resolveBootstrap!: () => void;
 const bootstrapReady = new Promise<void>((resolve) => { resolveBootstrap = resolve; });
 void (async () => {
@@ -70,6 +72,7 @@ void (async () => {
   try {
     const timeout = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('oblique registry timeout')), 10_000));
     catalogs = await Promise.race([fetchObliqueModuleSet(), timeout]);
+    registryState = 'loaded';
   } catch { /* harness keeps geometry fallback when assets are unavailable */ }
   scene = new HarnessScene({ feed: { readFrame: () => frame }, obliqueCatalogs: catalogs });
   game = new Phaser.Game({
@@ -88,6 +91,7 @@ void (async () => {
 
 window.lockstateObliqueWorldHarness = {
   ready: async () => { await bootstrapReady; await ready; await scene.ready(); },
+  registryStatus: () => registryState,
   furnitureSpriteFrame: (id) => scene.furnitureSpriteFrame(id),
   async setPose(yawDegrees, elevationDegrees) {
     scene.setPoseRadians(yawDegrees * Math.PI / 180, elevationDegrees * Math.PI / 180);
