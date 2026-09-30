@@ -2633,7 +2633,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     ...(simulationUnavailable ? { unavailable: SIMULATION_UNAVAILABLE_NOTICE } : {}),
     build: buildCatalogue(),
     roomTemplate: {
-      label: 'Place room template',
+      label: localizer.format(HUD_MESSAGE_KEY.buildRoomTemplate),
       templateId: 'cell-basic',
       origin: NEW_PRISON_ORIGIN_TILE,
       ...(roomTemplatePreflightReader === undefined ? {} : {

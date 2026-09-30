@@ -1118,6 +1118,7 @@ export const HUD_MESSAGE_KEY = {
    *     read it off.
    */
   buildCategory: 'hud.build.category',
+  buildRoomTemplate: 'hud.build.room-template',
   buildCategoryAll: 'hud.build.category-all',
   buildCategoryStructure: 'hud.build.category.structure',
 

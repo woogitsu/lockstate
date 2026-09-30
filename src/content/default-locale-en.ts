@@ -2678,6 +2678,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   // authored category, so a name that describes the rows is honest where a
   // name that implies a taxonomy is not.
   'hud.build.category': 'Category',
+  'hud.build.room-template': 'Place room template',
   'hud.build.category-all': 'Everything',
   'hud.build.category.structure': 'Walls and doors',
 

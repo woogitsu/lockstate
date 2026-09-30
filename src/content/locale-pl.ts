@@ -1145,6 +1145,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.buildable.wall-brick': 'Ściana z cegły',
   'hud.build.buildable.door-wooden': 'Drewniane drzwi',
   'hud.build.category': 'Kategoria',
+  'hud.build.room-template': 'Wstaw szablon pomieszczenia',
   'hud.build.category-all': 'Wszystko',
   'hud.build.category.structure': 'Ściany i drzwi',
 
