@@ -43,7 +43,9 @@
      notice would sit *on* the world, and this HUD's rule is that it frames
      the world and never covers it -- as rows they borrow their band from the
      middle instead. */
-  grid-template-rows: auto auto auto auto minmax(0, 1fr) auto;
+  /* Reserve the event band row even while hidden. This keeps a later alert
+     from taking space from the Rooms panel at 900x600 (#985). */
+  grid-template-rows: auto auto auto minmax(32px, auto) minmax(0, 1fr) auto;
   grid-template-areas:
     'strip'
     'unavailable'

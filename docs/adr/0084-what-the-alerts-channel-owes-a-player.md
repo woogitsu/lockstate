@@ -1,5 +1,9 @@
 # ADR 0084: What the alerts channel owes a player
 
+## Amendment, 2026-09-30: reserve the event row at compact desktop sizes
+
+The owner chose a fixed row reservation for issue [#985](https://github.com/woogitsu/lockstate/issues/985). The event band keeps a minimum `32px` grid row even while its element is hidden, including at `900x600`. A later event therefore cannot take the Rooms panel's flexible space or clip its list. The band remains visually hidden until it has content; this amendment changes only the grid allocation and does not alter event dismissal, persistence, or message timing.
+
 > **0084 was assigned centrally**: `docs/adr/README.md`'s own **Next free
 > number: 0084** line (`:240`, unchanged by this draft's own header note) and
 > `max + 1` recomputed off disk (highest on disk is 0083, one file per number,
