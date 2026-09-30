@@ -1599,7 +1599,8 @@ test.describe('HUD shell', () => {
       // The page really laid out, before a single number below is trusted.
       const before = await rows(page);
       expect(before, '`.hud` is not the six-row grid this test is about').toHaveLength(6);
-      expect(before[EVENT_ROW], 'the band already had a row before anything raised it').toBe(0);
+      const reservedRow = before[EVENT_ROW];
+      expect(reservedRow, 'the approved event-row reservation is missing').toBeGreaterThanOrEqual(32);
       await expect(band).toBeHidden();
 
       await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), withEvent(1));
@@ -1633,7 +1634,7 @@ test.describe('HUD shell', () => {
       await expect(band, 'the band never let go of its row').toBeHidden({ timeout: EVENT_BAND_HOLD_CEILING_MS * 2 });
 
       const after = await rows(page);
-      expect(after[EVENT_ROW], 'the band went quiet and kept its row, which is #985 exactly').toBe(0);
+      expect(after[EVENT_ROW], 'the band released its content but kept the approved reservation').toBe(reservedRow);
       expect(after, 'the grid did not return to the shape it had before anything happened').toEqual(before);
     });
 
@@ -1655,7 +1656,7 @@ test.describe('HUD shell', () => {
         await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), withEvent(1));
       }
       await expect(band, 'a republication of the same event raised the band again').toBeHidden();
-      expect((await rows(page))[EVENT_ROW]).toBe(0);
+      expect((await rows(page))[EVENT_ROW]).toBeGreaterThanOrEqual(32);
 
       // A *new* event still speaks, which is what makes the assertion above a
       // release rather than a band that has stopped working.
