@@ -21817,6 +21817,21 @@ class this file's findings usually come from**, and the honest reading of it is
 that hand re-aiming got 81 of 83 anchors right in the part of the corpus a gate
 can check, with the unchecked part unmeasured in both directions.
 
+## 3. The 2026-09-30 pass: eleven landings, oblique assets and citation repairs
+
+Read at `c478bf81` (**v0.0.818**). The `ad6bf7a5..c478bf81` first-parent
+window contains **eleven non-release landings and eleven release commits**.
+Its landings cover oblique rendering, medical assets, interface scaling,
+module registry caching and ADR quotation-anchor repairs. The anchor gate
+counted eleven landings against the unchanged budget of ten; this entry
+re-anchors the reading without changing that budget.
+
+**The decision census remains a reading, not an inference.** The index and
+numbered ADR files were re-read on this tree; no status flip is inferred from
+assets, runtime changes or quotation repairs. The live status-reference and
+quotation gates remain part of ??5-6, and historical paragraphs below remain
+records of their own trees.
+
 ## 3. The 2026-09-28 pass: eleven landings, Full HD HUD and camera foundation, no status flip
 
 Read at `ad6bf7a5` (**v0.0.805**). The `c8d25355..ad6bf7a5` first-parent
