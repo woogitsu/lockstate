@@ -31,7 +31,12 @@ export function obliqueCanonicalAssetIdForObject(
   objectId: string,
   options: ObliqueObjectAliasOptions = {},
 ): string | undefined {
-  if (objectId === 'wall.interior.module') return 'wall.interior.module.full';
+  if (objectId === 'wall.interior.module') {
+    if (options.edge === 'west') {
+      return options.cutaway ? 'wall.interior.module.west.cutaway' : 'wall.interior.module.west.full';
+    }
+    return options.cutaway ? 'wall.interior.module.cutaway' : 'wall.interior.module.full';
+  }
   if (objectId !== 'door.interior') return obliqueAssetIdForObject(objectId);
   if (options.edge === 'west') {
     return options.cutaway ? 'door.interior.open.west.cutaway' : 'door.interior.open.west.full';

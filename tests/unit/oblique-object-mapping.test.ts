@@ -29,6 +29,9 @@ it('registry contains both medical mapped assets', () => {
 describe('oblique canonical aliases', () => {
  it.each([
   ['wall.interior.module', {}, 'wall.interior.module.full'],
+  ['wall.interior.module', { cutaway: true }, 'wall.interior.module.cutaway'],
+  ['wall.interior.module', { edge: 'west' }, 'wall.interior.module.west.full'],
+  ['wall.interior.module', { edge: 'west', cutaway: true }, 'wall.interior.module.west.cutaway'],
   ['door.interior', {}, 'door.interior.open.full'],
   ['door.interior', { edge: 'west' }, 'door.interior.open.west.full'],
   ['door.interior', { cutaway: true }, 'door.interior.open.cutaway'],
