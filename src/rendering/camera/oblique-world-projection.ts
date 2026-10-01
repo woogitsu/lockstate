@@ -1,3 +1,5 @@
+import { selectActorPose } from '../actors/actor-pose';
+import type { AtlasDirection } from '../assets/atlas-manifest';
 import { obliqueAssetIdForActor } from '../assets/oblique-actor-mapping';
 import type { RenderActor, RenderFrame } from '../feed/render-feed';
 import {
@@ -47,8 +49,12 @@ export interface ObliqueSolid {
   readonly assetId?: string;
 }
 
+const ACTOR_HEADING: Record<AtlasDirection, number> = { south: 0, southEast: Math.PI / 4, east: Math.PI / 2, northEast: 3 * Math.PI / 4, north: Math.PI, northWest: -3 * Math.PI / 4, west: -Math.PI / 2, southWest: -Math.PI / 4 };
+
 export interface ObliqueActorPoint {
   readonly kind: 'actor';
+  /** Camera yaw relative to the simulation-published world facing. */
+  readonly assetYawRadians: number;
   readonly tileX: number;
   readonly tileY: number;
   readonly assetId?: string;
@@ -74,6 +80,7 @@ export function projectObliqueActors(actors: readonly RenderActor[], camera: Obl
     const y = (actor.tileY + 0.5) * TILE_SIZE_PX;
     const assetId = obliqueAssetIdForActor(actor.assetId);
     projected.push({
+      assetYawRadians: camera.yawRadians - ACTOR_HEADING[selectActorPose(actor).direction],
       kind: 'actor', id: actor.id, tileX: actor.tileX + 0.5, tileY: actor.tileY + 0.5,
       ...(assetId === undefined ? {} : { assetId }),
       foot: groundToScreen({ x, y }, camera),

@@ -154,3 +154,29 @@ test('moving actors keep authored solid images while their depth order changes',
   expect(visibleLowerBodyPixels, 'the wall still hides an actor behind it after movement').toBe(0);
   for (const slot of final.solidSlots) expect(slot.depth, `depth of ${slot.id}`).toBeCloseTo(slot.expectedDepth, 8);
 });
+
+
+test('same-role actor headings remain independent and update while standing still', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/tests/browser/oblique-preset-art-qa.html?preset=kitchen-basic&actorDepth=1&actorArt=1');
+  await expect.poll(() => page.evaluate(() => typeof window.lockstatePresetArtQA?.ready)).toBe('function');
+  await page.evaluate(() => window.lockstatePresetArtQA.ready());
+  await page.evaluate(() => window.lockstatePresetArtQA.setPose(90, 45));
+  await page.evaluate(() => window.lockstatePresetArtQA.setActors([
+    { id: 10, assetId: 'actor.guard.base', tileX: 9, tileY: 12, deltaX: 1, deltaY: 0 },
+    { id: 11, assetId: 'actor.guard.base', tileX: 11, tileY: 12, deltaX: 0, deltaY: 0, facing: 'north' },
+    { id: 12, assetId: 'actor.guard.base', tileX: 13, tileY: 12, deltaX: 0, deltaY: 1 },
+  ]));
+  await expect.poll(() => page.evaluate(() => window.lockstatePresetArtQA.report().actorImages.slice().sort()))
+    .toEqual([-90, 0, 90].map(yaw => `oblique:actor.guard.base:${yaw}:45`).sort());
+  const before = await page.locator('canvas').screenshot();
+  await page.screenshot({ path: testInfo.outputPath('guard-independent-world-headings.png') });
+  await page.evaluate(() => window.lockstatePresetArtQA.setActors([
+    { id: 10, assetId: 'actor.guard.base', tileX: 9, tileY: 12, deltaX: 1, deltaY: 0 },
+    { id: 11, assetId: 'actor.guard.base', tileX: 11, tileY: 12, deltaX: 0, deltaY: 0, facing: 'south' },
+    { id: 12, assetId: 'actor.guard.base', tileX: 13, tileY: 12, deltaX: 0, deltaY: 1 },
+  ]));
+  await expect.poll(() => page.evaluate(() => window.lockstatePresetArtQA.report().actorImages.slice().sort()))
+    .toEqual([0, 90, 90].map(yaw => `oblique:actor.guard.base:${yaw}:45`).sort());
+  expect((await page.locator('canvas').screenshot()).equals(before)).toBe(false);
+});

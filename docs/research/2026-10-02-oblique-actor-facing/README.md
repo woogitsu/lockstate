@@ -24,3 +24,11 @@ Verification: the generator completed all eight SHA-checked cases. Temporarily r
 ## Runtime boundary
 
 `RenderActor` carries `deltaX`, `deltaY` and optional `facing`, but the current `actors-from-snapshot.ts` publisher passes zero movement and no facing for prisoner/guard. The angled projection currently drops these fields and selects a camera-only actor frame. The consumer needs to retain or derive a *world* heading when movement is available, then apply the formula above. A stationary actor can keep the last supplied facing; if neither movement nor facing exists, South is the honest default. The present snapshot cannot recover a prior travel direction after stopping. This study changes no production scene, save format, movement or camera code.
+
+## Runtime consumer integration for issue1927
+
+The combined branch now selects the existing eight-direction world motion contract through selectActorPose, then subtracts its south-based heading from camera yaw. Actor frame identity is keyed by actor id rather than shared role id, so simultaneous guards may face different ways. Actor-only updates compare supplied motion, facing and role as well as position; changing facing at a fixed tile repaints the actual image. No simulation, protocol or save fields change. Missing movement/facing still uses the existing South default, and unknown art retains the Graphics fallback.
+
+Before implementation, the focused projection case failed three missing relative yaws; restoration passes4/4. Deliberately replacing the real scene's relative-yaw selector with camera yaw alone makes the actual browser case fail: all three keys become90 degrees rather than-90,0,90. Restoring the selector passes1/1 in6.9seconds (13.9seconds suite), including a second stationary facing-only update from North to South. The screenshot below was visually inspected. Root focused projection/modal/research verification passes13/13 and TypeScript passes. This consumes published headings, not a new walking animation or an assertion that the current immutable snapshot publishes movement.
+
+![Independent authored headings in the actual scene](guard-independent-world-headings.png)

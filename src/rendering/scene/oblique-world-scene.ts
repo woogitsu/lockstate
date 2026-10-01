@@ -77,13 +77,14 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private lastPaintedRevision = -1;
   private poseRevision = 0;
   private lastPaintedPoseRevision = -1;
-  private actorPositions: { id: number; tileX: number; tileY: number }[] = [];
+  private actorPositions: RenderActor[] = [];
   private groundPaints = 0;
   private raisedPaints = 0;
   private minimapSink: ((view: MinimapView | undefined) => void) | undefined;
   private readonly readyPromise: Promise<void>;
   private resolveReady!: () => void;
   private readonly assetTextureKeys = new Map<string, string>();
+  private readonly actorTextureKeys = new Map<number, string>();
   private readonly queuedAssetTextures = new Map<string, string>();
   private readonly loadingAssetTextureKeys = new Set<string>();
   private readonly failedAssetTextureKeys = new Set<string>();
@@ -215,6 +216,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     window.addEventListener('blur', cancelOnBlur);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.actorImagePool.clear();
+      this.actorTextureKeys.clear();
       window.removeEventListener('keydown', keyDown);
       window.removeEventListener('keyup', keyUp);
       window.removeEventListener('blur', cancelOnBlur);
@@ -532,7 +534,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.actorImagePool.retain(new Set(projection.raised
       .filter((item) => item.kind === 'actor' && item.assetId !== undefined
         && this.catalogs.has(item.assetId)
-        && this.textures.exists(this.assetTextureKeys.get(item.assetId) ?? ''))
+        && this.textures.exists(this.actorTextureKeys.get(Number(item.id)) ?? ''))
       .map((item) => Number(item.id))));
     if (!preserveSolids) {
       for (const image of this.assetImages) image.destroy();
@@ -596,17 +598,20 @@ export class ObliqueWorldScene extends Phaser.Scene {
 
   /** Keep each visible object on the catalog frame nearest the current camera pose. */
   private selectPoseTextures(projection: ObliqueWorldProjection): void {
+    this.actorTextureKeys.clear();
     for (const item of projection.raised) {
       if (item.assetId === undefined) continue;
       const catalog = this.catalogs.get(item.assetId);
       if (catalog === undefined) continue;
-      const frame = selectObliqueModuleFrame(catalog, this.pose);
+      const frame = selectObliqueModuleFrame(catalog, item.kind === 'actor'
+        ? { ...this.pose, yawRadians: item.assetYawRadians } : this.pose);
       const key = `oblique:${item.assetId}:${frame.yawDegrees}:${frame.elevationDegrees}`;
       if (this.textures.exists(key)) {
-        this.assetTextureKeys.set(item.assetId, key);
+        if (item.kind === 'actor') this.actorTextureKeys.set(item.id, key);
+        else this.assetTextureKeys.set(item.assetId, key);
       } else {
         // A previous pose must never be painted onto the new geometry.
-        this.assetTextureKeys.delete(item.assetId);
+        if (item.kind !== 'actor') this.assetTextureKeys.delete(item.assetId);
         if (!this.loadingAssetTextureKeys.has(key) && !this.failedAssetTextureKeys.has(key)) {
           this.queuedAssetTextures.set(key, frame.image);
         }
@@ -642,7 +647,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     if (item.assetId === undefined) return undefined;
     const catalog = this.catalogs.get(item.assetId);
     if (catalog === undefined) return undefined;
-    const textureKey = this.assetTextureKeys.get(item.assetId);
+    const textureKey = item.kind === 'actor' ? this.actorTextureKeys.get(item.id) : this.assetTextureKeys.get(item.assetId);
     if (textureKey === undefined || !this.textures.exists(textureKey)) return undefined;
     const [targetX, targetY, targetZ] = catalog.cameraTargetTiles;
     const anchor = groundToScreen({
@@ -684,13 +689,15 @@ export class ObliqueWorldScene extends Phaser.Scene {
     for (let index = 0; index < actors.length; index += 1) {
       const actor = actors[index]!;
       const last = this.actorPositions[index]!;
-      if (actor.id !== last.id || actor.tileX !== last.tileX || actor.tileY !== last.tileY) return true;
+      if (actor.id !== last.id || actor.tileX !== last.tileX || actor.tileY !== last.tileY
+          || actor.assetId !== last.assetId || actor.deltaX !== last.deltaX
+          || actor.deltaY !== last.deltaY || actor.facing !== last.facing) return true;
     }
     return false;
   }
 
   private rememberActors(actors: readonly RenderActor[]): void {
-    this.actorPositions = actors.map(({ id, tileX, tileY }) => ({ id, tileX, tileY }));
+    this.actorPositions = actors.map(actor => ({ ...actor }));
   }
 
   private repaint(): void {

@@ -25,6 +25,15 @@ describe('authored actor anchors in the angled world', () => {
     expect(actors[0]!.viewDepth).toBe(actors[1]!.viewDepth);
   });
 
+  it('selects independent authored headings relative to the camera', () => {
+    const actors = projectObliqueActors([
+      { id: 1, assetId: GUARD_ACTOR_ASSET_ID, tileX: 1, tileY: 1, deltaX: 1, deltaY: 0 },
+      { id: 2, assetId: GUARD_ACTOR_ASSET_ID, tileX: 1, tileY: 1, deltaX: 0, deltaY: 0, facing: 'north' },
+      { id: 3, assetId: GUARD_ACTOR_ASSET_ID, tileX: 1, tileY: 1, deltaX: 0, deltaY: 1 },
+    ], { ...pose, yawRadians: Math.PI / 2 });
+    expect(actors.map(actor => actor.assetYawRadians)).toEqual([0, -Math.PI / 2, Math.PI / 2]);
+  });
+
   it('retains an explicit graphics fallback for an unregistered role', () => {
     const [actor] = projectObliqueActors([
       { id: 3, assetId: 'actor.unregistered', tileX: 1.25, tileY: 2.5, deltaX: 0, deltaY: 0 },
