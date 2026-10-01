@@ -18,10 +18,9 @@ describe('room template session command', () => {
     ['desk-wooden', 4, 5],
   ] as const)('refuses a template over the second square of a queued %s anchored outside it', (definitionId, x, y) => {
     const runtime = createNewSimulationRuntime(72);
-    runtime.kernel.submitCommand('object-0', 0, runtime.kernel.tick, packCommand({
-      type: 'PlaceObject', orderId: 'pending-object', definitionId, x, y,
-    }));
-    runtime.kernel.submitCommand('template-1', 1, runtime.kernel.tick, packCommand({
+    runtime.construction.submitOrder(createBuildOrder('pending-object', definitionId, tile(x, y), undefined, 0));
+    expect(runtime.construction.getOrder('pending-object')).toBeDefined();
+    runtime.kernel.submitCommand('template-0', 0, runtime.kernel.tick, packCommand({
       type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 5, y: 5 },
     }));
     runtime.kernel.step();
