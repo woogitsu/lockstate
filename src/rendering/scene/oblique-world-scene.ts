@@ -314,8 +314,8 @@ export class ObliqueWorldScene extends Phaser.Scene {
 
   public get cameraPose(): ObliqueCameraState { return this.pose; }
   /** Apply an explicitly chosen preview candidate; no mode is selected here. */
-  public applyCameraFit(fit: ObliqueFitResult): boolean {
-    if (!fit.fits || fit.camera.viewport.width !== this.cameras.main.width ||
+  public applyCameraFit(fit: ObliqueFitResult, draftPartialPreview = false): boolean {
+    if ((!fit.fits && !draftPartialPreview) || fit.camera.viewport.width !== this.cameras.main.width ||
       fit.camera.viewport.height !== this.cameras.main.height) return false;
     groundToScreen({ x: 0, y: 0 }, fit.camera);
     this.pose = fit.camera;
