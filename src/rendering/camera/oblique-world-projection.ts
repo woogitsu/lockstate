@@ -1,3 +1,4 @@
+import { obliqueAssetIdForActor } from '../assets/oblique-actor-mapping';
 import type { RenderActor, RenderFrame } from '../feed/render-feed';
 import {
   BUILDING_ALPHA,
@@ -48,6 +49,9 @@ export interface ObliqueSolid {
 
 export interface ObliqueActorPoint {
   readonly kind: 'actor';
+  readonly tileX: number;
+  readonly tileY: number;
+  readonly assetId?: string;
   readonly id: number;
   readonly foot: Point;
   readonly head: Point;
@@ -68,8 +72,10 @@ export function projectObliqueActors(actors: readonly RenderActor[], camera: Obl
     if (!tileRangeContains(range, actor.tileX, actor.tileY)) continue;
     const x = (actor.tileX + 0.5) * TILE_SIZE_PX;
     const y = (actor.tileY + 0.5) * TILE_SIZE_PX;
+    const assetId = obliqueAssetIdForActor(actor.assetId);
     projected.push({
-      kind: 'actor', id: actor.id,
+      kind: 'actor', id: actor.id, tileX: actor.tileX + 0.5, tileY: actor.tileY + 0.5,
+      ...(assetId === undefined ? {} : { assetId }),
       foot: groundToScreen({ x, y }, camera),
       head: groundToScreen({ x, y, z: 0.8 * TILE_SIZE_PX }, camera),
       viewDepth: obliqueDepthForAnchor({ x, y }, camera.yawRadians),

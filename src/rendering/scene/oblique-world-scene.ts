@@ -514,6 +514,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.raisedPaints += 1;
     for (const [index, item] of projection.raised.entries()) {
       if (item.kind === 'actor') {
+        if (this.paintAsset(item, index, projection.raised.length)) continue;
         visibleActors.add(item.id);
         let actors = this.actorGraphics.get(item.id);
         if (actors === undefined) {
@@ -550,7 +551,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
   /** Keep each visible object on the catalog frame nearest the current camera pose. */
   private selectPoseTextures(projection: ObliqueWorldProjection): void {
     for (const item of projection.raised) {
-      if (item.kind === 'actor' || item.assetId === undefined) continue;
+      if (item.assetId === undefined) continue;
       const catalog = this.catalogs.get(item.assetId);
       if (catalog === undefined) continue;
       const frame = selectObliqueModuleFrame(catalog, this.pose);
@@ -591,7 +592,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
   }
 
   /** Load and paint one authored PNG for every mapped solid; graphics remain the fail-closed fallback. */
-  private paintAsset(item: ObliqueSolid, index: number, itemCount: number): boolean {
+  private paintAsset(item: ObliqueSolid | ObliqueActorPoint, index: number, itemCount: number): boolean {
     if (item.assetId === undefined) return false;
     const catalog = this.catalogs.get(item.assetId);
     if (catalog === undefined) return false;
@@ -606,7 +607,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     const image = this.add.image(anchor.x, anchor.y, textureKey).setDepth(2 + 0.9 * index / itemCount);
     image.setOrigin(catalog.pivotPx[0] / catalog.resolutionPx[0], catalog.pivotPx[1] / catalog.resolutionPx[1]);
     image.setScale(TILE_SIZE_PX * this.pose.zoom / catalog.nominalPixelsPerTile);
-    image.setAlpha(item.alpha);
+    image.setAlpha(item.kind === 'actor' ? 1 : item.alpha);
     this.assetImages.push(image);
     return true;
   }
