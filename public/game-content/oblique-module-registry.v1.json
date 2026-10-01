@@ -180,6 +180,10 @@
                     {
                         "assetId":  "utility.utility-panel.variants",
                         "manifest":  "/game-content/oblique-utility.utility-panel.v1.json"
+                    },
+                    {
+                        "assetId":  "fixture.cell.waste_bin",
+                        "manifest":  "/game-content/oblique-fixture-cell-waste-bin.v1.json"
                     }
                 ]
 }
