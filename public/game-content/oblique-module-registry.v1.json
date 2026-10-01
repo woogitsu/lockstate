@@ -189,6 +189,10 @@
                         "assetId":  "furniture.kitchen.stove.variants",
                         "manifest":  "/game-content/oblique-furniture.kitchen-stove.v1.json"
                     }
+                    ,{
+                        "assetId":  "furniture.kitchen.prep-counter.variants",
+                        "manifest":  "/game-content/oblique-furniture.kitchen-prep-counter.v1.json"
+                    }
                 ]
 }
 
