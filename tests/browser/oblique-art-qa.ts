@@ -35,7 +35,10 @@ const frame: RenderFrame = {
   actors: [], rooms: [], roomConditions: [],
 };
 
-const scene = new ObliqueWorldScene({ feed: { readFrame: () => frame }, catalogs });
+const scene = new ObliqueWorldScene({
+  feed: { readFrame: () => frame }, catalogs,
+  keyValueStore: { getItem: () => null, setItem: () => {} },
+});
 const game = new Phaser.Game({
   type: Phaser.AUTO, parent: 'oblique-art-root', width: window.innerWidth, height: window.innerHeight,
   scene: [scene], backgroundColor: '#0b0e12',
