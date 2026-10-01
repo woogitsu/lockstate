@@ -441,6 +441,7 @@ describe('the treasury spent to nothing on one legal purchase (ECON-002)', () =>
       'HireStaff',
       'PlaceBuildOrder',
       'PlaceObject',
+      'PlaceRoomTemplate',
       'PurchaseMaterials',
       'Redo',
       'ReleaseGuardAssignment',

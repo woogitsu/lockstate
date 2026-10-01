@@ -126,6 +126,7 @@ const serializedChunkStateSchema = z
     terrain: terrainRleSchema.optional(),
     topEdge: terrainRleSchema.optional(),
     leftEdge: terrainRleSchema.optional(),
+    squareStructure: z.array(z.tuple([z.number().int().min(0).max(2), z.number().int().positive()])).optional(),
     zoning: terrainRleSchema.optional(),
   })
   .strict();
@@ -184,6 +185,7 @@ const buildOrderSchema = z
      * so no migration step is needed and none is added.
      */
     edge: z.enum(['north', 'west']).optional(),
+    footprint: z.literal('square').optional(),
     /**
      * Where the order sits in the sequence of gestures the player made
      * ([ADR 0082](../../docs/adr/0082-what-order-build-orders-are-carried-out-in.md),
@@ -1644,11 +1646,27 @@ const contrabandSectionV7Schema = contrabandSectionSchema.extend({
     ])),
   }).strict(),
 }).strict();
+const roomTemplateRequestV7Schema = z.object({
+  templateId: z.enum(['cell-basic', 'cell-large', 'shower-room', 'canteen-basic', 'kitchen-basic', 'cell-row-four', 'holding-cell-basic', 'solitary-cell-basic', 'reception-basic', 'laundry-basic', 'yard-basic', 'common-room-basic', 'classroom-basic', 'infirmary-basic', 'security-office-basic', 'staff-room-basic', 'storage-room-basic', 'delivery-bay-basic', 'garbage-room-basic', 'utility-room-basic']),
+  origin: z.object({ x: z.number().int().safe(), y: z.number().int().safe() }).strict(),
+  mirrorX: z.boolean(),
+  sequence: z.number().int().nonnegative(),
+}).strict();
 const sessionSystemsV7Schema = sessionSystemsV6Schema.extend({
   prisoners: prisonersSectionV7Schema,
   navigation: navigationSectionSchema.omit({ work: true }),
   security: securitySectionV7Schema,
   contraband: contrabandSectionV7Schema,
+  // Optional V7 extension: saves from before authored template gestures have
+  // no pending template to resume. The embedded version allows a future
+  // planner to migrate its own queue contract without changing that meaning.
+  roomTemplates: z.object({
+    version: z.literal(1),
+    pending: z.array(roomTemplateRequestV7Schema),
+    // Optional additive state; earlier saves had no room-plan undo metadata.
+    undone: z.array(roomTemplateRequestV7Schema).optional(),
+    completed: z.array(roomTemplateRequestV7Schema).optional(),
+  }).strict().optional(),
 }).strict();
 
 // --- Envelope ---

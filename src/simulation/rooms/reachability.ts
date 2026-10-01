@@ -1,3 +1,4 @@
+import { getTopBarrier, getLeftBarrier } from '../world/barriers';
 import { tileCoordinate, tileKey, type TilePosition } from '../world/coordinates';
 import { roomPerimeterEnclosure, roomPerimeterHoldsDoor, type RoomDoorReader, type RoomEdgeReader, type TileRectangle } from './enclosure';
 
@@ -233,17 +234,17 @@ function opensOutOfLoadedArea(
   // of them -- never materialises a `TilePosition` at all.
   if (!regions.tileToRegion.has(keyAt(x + 1, y))) {
     const east = tileAt(x + 1, y);
-    if (world.getLeftEdge(east) === 0 || doors.getByEdge(east, 'left') !== undefined) return true;
+    if (getLeftBarrier(world, east) === 0 || doors.getByEdge(east, 'left') !== undefined) return true;
   }
   if (!regions.tileToRegion.has(keyAt(x - 1, y))) {
-    if (world.getLeftEdge(position) === 0 || doors.getByEdge(position, 'left') !== undefined) return true;
+    if (getLeftBarrier(world, position) === 0 || doors.getByEdge(position, 'left') !== undefined) return true;
   }
   if (!regions.tileToRegion.has(keyAt(x, y + 1))) {
     const south = tileAt(x, y + 1);
-    if (world.getTopEdge(south) === 0 || doors.getByEdge(south, 'top') !== undefined) return true;
+    if (getTopBarrier(world, south) === 0 || doors.getByEdge(south, 'top') !== undefined) return true;
   }
   if (!regions.tileToRegion.has(keyAt(x, y - 1))) {
-    if (world.getTopEdge(position) === 0 || doors.getByEdge(position, 'top') !== undefined) return true;
+    if (getTopBarrier(world, position) === 0 || doors.getByEdge(position, 'top') !== undefined) return true;
   }
   return false;
 }

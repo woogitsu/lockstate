@@ -389,6 +389,12 @@ export class ConstructionSystem implements SystemRegistration {
   private newerActionThanTheStackTop = false;
   private currentTransaction: string[] = [];
   private currentTransactionId: string | undefined;
+  private pendingRoomTemplateClaims?: (tile: TilePosition, sequence: number | undefined) => boolean;
+
+  /** The session supplies its live template reservations after both systems exist. */
+  public setPendingRoomTemplateClaims(reader: (tile: TilePosition, sequence: number | undefined) => boolean): void {
+    this.pendingRoomTemplateClaims = reader;
+  }
 
   public constructor(
     private readonly world: SparseWorld,
@@ -582,6 +588,33 @@ export class ConstructionSystem implements SystemRegistration {
       return;
     }
 
+    if (order.footprint === 'square' && definition.category !== 'wall') {
+      this.setState(order, 'failed');
+      order.failReason = 'unbuildable';
+      this.orders.set(order.id, order);
+      return;
+    }
+
+    if (order.footprint === 'square' && this.world.getSquareStructure(order.location) !== 0) {
+      this.setState(order, 'failed');
+      order.failReason = 'duplicate-order';
+      this.orders.set(order.id, order);
+      return;
+    }
+
+    // A room plan owns its entire rectangle while its shell is in flight,
+    // including empty interior squares that have no world geometry yet. Its
+    // own shell/furniture orders retain the plan's sequence and may enter.
+    const across = order.footprint !== 'square' && occupiesTileEdge(definition)
+      ? tileAcrossEdge(order.location, resolveBuildEdge(order)) : undefined;
+    if (this.pendingRoomTemplateClaims?.(order.location, order.placementSequence) === true ||
+        (across !== undefined && this.pendingRoomTemplateClaims?.(across, order.placementSequence) === true)) {
+      this.setState(order, 'failed');
+      order.failReason = 'unbuildable';
+      this.orders.set(order.id, order);
+      return;
+    }
+
     if (this.duplicateClaim(order, definition) !== undefined) {
       this.setState(order, 'failed');
       order.failReason = 'duplicate-order';
@@ -591,7 +624,8 @@ export class ConstructionSystem implements SystemRegistration {
 
     const refusal = this.admits(order.location);
     if (refusal !== undefined) {
-      const across = occupiesTileEdge(definition) ? tileAcrossEdge(order.location, resolveBuildEdge(order)) : undefined;
+      const across = order.footprint !== 'square' && occupiesTileEdge(definition)
+        ? tileAcrossEdge(order.location, resolveBuildEdge(order)) : undefined;
       if (across === undefined || this.admits(across) !== undefined) {
         this.setState(order, 'failed');
         order.failReason = refusal;
@@ -708,6 +742,7 @@ export class ConstructionSystem implements SystemRegistration {
       if (existing.state === 'cancelled' || existing.state === 'failed') continue;
       if (existing.state === 'completed' && isObjectBuildable) continue;
       if (existing.definitionId !== order.definitionId) continue;
+      if (existing.footprint !== order.footprint) continue;
       if (existing.location.x !== order.location.x || existing.location.y !== order.location.y) continue;
       if (resolveBuildEdge(existing) !== edge) continue;
       return existing;
@@ -904,6 +939,11 @@ export class ConstructionSystem implements SystemRegistration {
     // change exists to fix.
     this.newerActionThanTheStackTop = false;
     return true;
+  }
+
+  /** Whether one Undo transaction still offers every order of a room plan for Redo. */
+  public canRedoOrdersTogether(orderIds: readonly string[]): boolean {
+    return this.redoStack.some((transaction) => orderIds.every((id) => transaction.includes(id)));
   }
 
   /**
@@ -1964,6 +2004,10 @@ export class ConstructionSystem implements SystemRegistration {
    */
   private finalizeConstruction(order: BuildOrder): void {
     const definition = getBuildableDefinition(order.definitionId);
+    if (order.footprint === 'square') {
+      this.world.setSquareStructure(order.location, 1);
+      return;
+    }
     const edgeValue = edgeNumericIdFor(definition);
     if (edgeValue === 0) {
       // The branch this comment used to end at with "a future object placement
@@ -2013,6 +2057,10 @@ export class ConstructionSystem implements SystemRegistration {
    */
   private revertConstruction(order: BuildOrder): void {
     const definition = getBuildableDefinition(order.definitionId);
+    if (order.footprint === 'square') {
+      this.world.setSquareStructure(order.location, 0);
+      return;
+    }
     const edgeValue = edgeNumericIdFor(definition);
     if (edgeValue === 0) {
       // The object leaves with the order, for the reason a wall's edge does:

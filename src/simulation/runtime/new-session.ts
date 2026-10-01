@@ -20,6 +20,7 @@ import {
   ConstructionSystem,
   DoorConstructionService,
 } from '../construction';
+import { RoomTemplateCoordinator } from '../construction/room-template-coordinator';
 import {
   DEFAULT_INCIDENT_RESPONSE_POLICY,
   GangRegistry,
@@ -142,6 +143,7 @@ export interface SimulationRuntime {
   readonly kernel: Kernel;
   readonly world: SparseWorld;
   readonly construction: ConstructionSystem;
+  readonly roomTemplates: RoomTemplateCoordinator;
   /**
    * The prison's money, what it has bought, and what the state pays for
    * running the place (#96, #89, #29).
@@ -1616,6 +1618,9 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   });
 
   kernel.registerSystem(construction);
+  const roomTemplates = new RoomTemplateCoordinator(world, construction, roomZoning, placedObjects, objectPlacement);
+  construction.setPendingRoomTemplateClaims((tile, sequence) => roomTemplates.claimsPendingFootprint(tile, sequence));
+  kernel.registerSystem(roomTemplates);
   kernel.registerSystem(procurement);
   kernel.registerSystem(stateIncome);
   kernel.registerSystem(payroll);
@@ -1633,7 +1638,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   kernel.registerSystem(searchSystem);
   kernel.registerSystem(incidentResponseSystem);
   kernel.setCommandHandler(
-    createSessionCommandHandler(construction, procurement, roomZoning, staffHiring, prisoners, objectPlacement, guardRelease, staffDismissal, refusals, events),
+    createSessionCommandHandler(construction, procurement, roomZoning, staffHiring, prisoners, objectPlacement, guardRelease, staffDismissal, refusals, events, roomTemplates),
   );
 
   return {
@@ -1641,6 +1646,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     kernel,
     world,
     construction,
+    roomTemplates,
     treasury,
     procurement,
     justInTimeMaterials,

@@ -52,6 +52,9 @@ export type EdgeStanding =
  * reaching here is a defect in the caller rather than an edge to describe.
  */
 export function edgeStanding(world: SparseWorld, doors: DoorRegistry, from: TilePosition, to: TilePosition): EdgeStanding {
+  if (world.getSquareStructure(from) === 1 || world.getSquareStructure(to) === 1) {
+    return { kind: 'wall', wallValue: 1 };
+  }
   const edge = resolveEdge(world, from, to);
   const door = doors.getByEdge(edge.ownerTile, edge.side);
   if (door !== undefined) return { kind: 'door', door };

@@ -21,6 +21,7 @@ export interface RenderStructure {
   readonly tileX: number;
   readonly tileY: number;
   readonly phase: StructurePhase;
+  readonly footprint?: 'square';
 }
 
 function phaseOf(state: string): StructurePhase | undefined {
@@ -62,7 +63,7 @@ function phaseOf(state: string): StructurePhase | undefined {
  * those unconditionally would make its walls disappear.
  */
 export function isDrawnAsWorldEdge(structure: RenderStructure): boolean {
-  if (structure.phase !== 'built') return false;
+  if (structure.phase !== 'built' || structure.footprint === 'square') return false;
   const definition = BUILDABLE_REGISTRY.get(structure.definitionId);
   return definition !== undefined && occupiesTileEdge(definition);
 }
@@ -107,6 +108,7 @@ export function structuresFromConstruction(snapshot: ConstructionSnapshot): read
       tileX: order.location.x,
       tileY: order.location.y,
       phase,
+      ...(order.footprint === undefined ? {} : { footprint: order.footprint }),
     });
   }
 
@@ -117,4 +119,9 @@ export function structuresFromConstruction(snapshot: ConstructionSnapshot): read
       (left.id < right.id ? -1 : left.id > right.id ? 1 : 0),
   );
   return structures;
+}
+
+/** A saved occupied square remains drawable even without its construction history. */
+export function squareWallStructure(tileX: number, tileY: number): RenderStructure {
+  return { id: `square-wall:${tileX}:${tileY}`, definitionId: 'wall-brick', tileX, tileY, phase: 'built', footprint: 'square' };
 }

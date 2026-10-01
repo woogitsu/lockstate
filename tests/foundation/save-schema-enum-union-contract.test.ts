@@ -3,6 +3,7 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import type { BuildEdge, BuildOrderLifecycleState } from '../../src/simulation/construction/build-order';
+import type { AuthoredRoomTemplateId } from '../../src/content/room-template-catalog';
 import type { ContrabandHolderKind, ContrabandSourceType, ContrabandState } from '../../src/simulation/contraband/item';
 import type { InformantHolderKind } from '../../src/simulation/contraband/informants';
 import type { IntelligenceSourceType, IntelligenceTargetKind } from '../../src/simulation/contraband/intelligence';
@@ -132,6 +133,12 @@ interface EnumUnionPair {
 }
 
 const PAIRS: readonly EnumUnionPair[] = [
+  {
+    site: 'roomTemplateRequestV7Schema.templateId',
+    union: 'AuthoredRoomTemplateId (src/content/room-template-catalog.ts)',
+    members: unionMembers<AuthoredRoomTemplateId>()(['cell-basic', 'cell-large', 'shower-room', 'cell-row-four', 'canteen-basic', 'kitchen-basic', 'holding-cell-basic', 'solitary-cell-basic', 'reception-basic', 'laundry-basic', 'yard-basic', 'common-room-basic', 'classroom-basic', 'infirmary-basic', 'security-office-basic', 'staff-room-basic', 'storage-room-basic', 'delivery-bay-basic', 'garbage-room-basic', 'utility-room-basic']),
+    readerOnly: [],
+  },
   {
     site: 'savedSearchJobStateSchema',
     union: 'SearchJobState (src/simulation/contraband/search-system.ts:22)',

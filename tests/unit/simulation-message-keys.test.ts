@@ -125,6 +125,12 @@ const UNLABELLED: readonly UnlabelledEnum[] = [
       'Wire protocol message kinds (ADR 0003). They travel between the main thread and the worker and are never rendered; a player never sees "load-snapshot".',
   },
   {
+    sourceFile: 'src/content/room-template-catalog.ts',
+    declaration: 'ROOM_TEMPLATE_IDS',
+    reason:
+      'Authored room-plan identifiers used by the Build catalogue. They select a complete construction plan and are never rendered as labels; each visible plan name is an authored `hud.build.template-*` key in the HUD registry.',
+  },
+  {
     sourceFile: 'src/simulation/protocol/types.ts',
     declaration: 'WORKER_TO_MAIN_MESSAGE_KINDS',
     reason:
