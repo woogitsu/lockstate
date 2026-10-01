@@ -362,7 +362,7 @@ export class ConstructionSystem implements SystemRegistration {
 
   // A transaction is just a list of order IDs.
   /** Runtime ports for real non-order transactions; their ids share history ordering. */
-  private readonly reversibleWorldTransactions = new Map<string, { readonly undo: () => boolean; readonly redo: () => boolean }>();
+  private readonly reversibleWorldTransactions = new Map<string, { readonly undo: () => boolean; readonly redo: () => boolean; readonly canUndo: () => boolean; readonly canRedo: () => boolean }>();
   private undoStack: string[][] = [];
   private redoStack: string[][] = [];
   /**
@@ -753,7 +753,7 @@ export class ConstructionSystem implements SystemRegistration {
   }
 
   /** Reattach an explicitly saved world gesture without altering its saved history. */
-  public attachReversibleWorldTransaction(id: string, port: { readonly undo: () => boolean; readonly redo: () => boolean }): void {
+  public attachReversibleWorldTransaction(id: string, port: { readonly undo: () => boolean; readonly redo: () => boolean; readonly canUndo: () => boolean; readonly canRedo: () => boolean }): void {
     this.reversibleWorldTransactions.set(id, port);
   }
 
@@ -2293,6 +2293,8 @@ export class ConstructionSystem implements SystemRegistration {
       this.currentTransaction.length > 0 ? this.currentTransaction : this.undoStack[this.undoStack.length - 1];
     if (transaction === undefined) return false;
     return transaction.some((orderId) => {
+      const external = this.reversibleWorldTransactions.get(orderId);
+      if (external !== undefined) return external.canUndo();
       const order = this.orders.get(orderId);
       return order !== undefined && isCancellable(order.state);
     });
@@ -2322,6 +2324,9 @@ export class ConstructionSystem implements SystemRegistration {
   public get redoWouldReapplySomething(): boolean {
     const transaction = this.redoStack[this.redoStack.length - 1];
     if (transaction === undefined) return false;
-    return transaction.some((orderId) => this.orders.get(orderId)?.state === 'cancelled');
+    return transaction.some((orderId) => {
+      const external = this.reversibleWorldTransactions.get(orderId);
+      return external === undefined ? this.orders.get(orderId)?.state === 'cancelled' : external.canRedo();
+    });
   }
 }
