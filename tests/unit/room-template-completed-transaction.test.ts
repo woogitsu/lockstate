@@ -1,4 +1,5 @@
 import { expect, it } from 'vitest';
+import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { ROOM_TEMPLATE_IDS, instantiateRoomTemplate } from '../../src/content/room-template-catalog';
 import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { captureSessionSnapshot, restoreSimulationRuntime, type SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
@@ -82,5 +83,19 @@ it('keeps two shell-free yards ordered across pending Undo, Save/Load and Redo w
   submit(5, 'Undo');
   expect(runtime.prisoners.roomInstances.getById('room.yard:5:5')).toBeUndefined();
   expect(runtime.prisoners.roomInstances.getById('room.yard:20:5')).toBeUndefined();
+  expect(runtime.construction.allOrders()).toEqual([]);
+});
+
+it('does not revive an undone Yard obligation when its Redo preflight fails', () => {
+  const runtime = createNewSimulationRuntime(73);
+  runtime.kernel.submitCommand('yard', 0, runtime.kernel.tick, packCommand({ type: 'PlaceRoomTemplate', templateId: 'yard-basic', origin: { x: 5, y: 5 } }));
+  finish(runtime);
+  runtime.kernel.submitCommand('undo', 1, runtime.kernel.tick, packCommand({ type: 'Undo' }));
+  runtime.kernel.step();
+  runtime.world.setTopEdge({ x: tileCoordinate(5), y: tileCoordinate(5) }, 1);
+  runtime.kernel.submitCommand('redo', 2, runtime.kernel.tick, packCommand({ type: 'Redo' }));
+  runtime.kernel.step();
+  expect(runtime.roomTemplates.snapshot().pending).toEqual([]);
+  expect(runtime.prisoners.roomInstances.getById('room.yard:5:5')).toBeUndefined();
   expect(runtime.construction.allOrders()).toEqual([]);
 });
