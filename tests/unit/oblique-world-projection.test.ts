@@ -5,6 +5,7 @@ import { projectObliqueWorldFrame } from '../../src/rendering/camera/oblique-wor
 import type { ObliqueCameraState } from '../../src/rendering/camera/oblique-projection';
 import type { RenderFrame } from '../../src/rendering/feed/render-feed';
 import { WorldRenderView } from '../../src/rendering/world/world-view';
+import { instantiateRoomTemplate } from '../../src/content/room-template-catalog';
 
 const tile = (x: number, y: number) => ({ x: tileCoordinate(x), y: tileCoordinate(y) });
 
@@ -39,6 +40,34 @@ const pose: ObliqueCameraState = {
 };
 
 describe('oblique projection of an actual simulation snapshot', () => {
+  it.each(['kitchen-basic', 'laundry-basic'] as const)('opens furnishing-blocking near walls in %s', (preset) => {
+    const plan = instantiateRoomTemplate(preset, { x: 4, y: 4 });
+    const world = new SparseWorld(32);
+    const origin = { x: chunkCoordinate(0), y: chunkCoordinate(0) };
+    world.load(origin);
+    world.setOwned(origin, true);
+    for (const square of plan.wallSquares) world.setSquareStructure(tile(square.x, square.y), 1);
+    for (const zone of plan.zones) for (let y = zone.y; y < zone.y + zone.height; y += 1)
+      for (let x = zone.x; x < zone.x + zone.width; x += 1) world.setZoning(tile(x, y), 1);
+    const furnished: RenderFrame = {
+      revision: 1, world: WorldRenderView.fromSnapshot(world.snapshot()),
+      structures: plan.objects.map((object, index) => ({
+        id: `fixture-${index}`, definitionId: object.buildableId,
+        tileX: object.x, tileY: object.y, phase: 'built' as const,
+      })),
+      actors: [], rooms: [], roomConditions: [],
+    };
+    const raised = projectObliqueWorldFrame(furnished, { ...pose, yawRadians: Math.PI / 4 }).raised;
+    const visible = new Set(raised.filter(item => item.kind === 'structure').map(item => item.id));
+    const hidden = plan.wallSquares.filter(wall => !visible.has(`square-wall:${wall.x}:${wall.y}`));
+    expect(hidden, 'only near wall squares obscuring the sink or right-hand machine should disappear')
+      .toEqual([{ x: 9, y: 5 }, { x: 9, y: 6 }]);
+    expect(visible.has('square-wall:4:5'), 'far perimeter remains visible').toBe(true);
+    expect(visible.has('square-wall:9:8'), 'near wall without a fixture stays low').toBe(true);
+    expect(raised.filter(item => item.kind === 'structure' && item.assetId === 'wall.square.brick.low').length)
+      .toBeGreaterThan(0);
+    for (const wall of hidden) expect(world.getSquareStructure(tile(wall.x, wall.y))).toBe(1);
+  });
   it('lowers only the near perimeter wall of a furnished cell as yaw reverses', () => {
     const cell = new SparseWorld(8);
     const origin = { x: chunkCoordinate(0), y: chunkCoordinate(0) };
