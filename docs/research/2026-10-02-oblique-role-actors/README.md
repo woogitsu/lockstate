@@ -1,0 +1,7 @@
+# Existing staff roles in the angled view
+
+The Blender sources `actor.cook.base.blend`, `actor.medic.base.blend`, and `actor.staff.base.blend` already contain authored role detail and packed fabric textures. This work reuses those sources; it does not model duplicate actors or change their atlas rigs. The cook has a continuous apron and marked cap, the medic has a cap cross and side kit, and staff has a blue shoulder yoke and tool pouch. The renderer rejects a source if those defining objects or either rig pivot is missing, or if a texture is left unpacked.
+
+The new `tooling/blender/render-role-actors-oblique.py` exports the same 24 yaw × 3 elevation catalog, 512×512 frame, 64 nominal pixels per tile, `pivotPx: [256, 256]`, and `[0, 0, 0]` camera target as the existing guard and prisoner catalogs. It first produced one real Blender preview per source at yaw 45°, elevation 45°: [cook](cook-preview-yaw45-elev45.png), [medic](medic-preview-yaw45-elev45.png), [staff](staff-preview-yaw45-elev45.png).
+
+The transparent-pixel bounds of these previews are cook `(236,167)–(273,265)`, medic `(236,167)–(273,265)`, and staff `(236,171)–(274,265)`. The already published guard at the same pose is `(237,169)–(273,269)`, so the role sprites occupy almost the same on-screen scale with feet near the same pivot. These previews are source and size evidence, not yet production integration. The remaining step is to publish and verify all 72 poses per role, register the manifests, and then connect role IDs in the consumer separately.
