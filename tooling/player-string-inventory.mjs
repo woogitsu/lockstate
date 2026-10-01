@@ -323,7 +323,9 @@ export function renderInventory({ entries }) {
   lines.push('| Key | Ships today | At |');
   lines.push('| --- | --- | --- |');
   for (const entry of entries) {
-    lines.push(`| \`${escapeCell(entry.key)}\` | ${escapeCell(entry.value)} | \`${LOCALE_SOURCE_PATH}:${String(entry.line)}\` |`);
+    // Quote the source key beside the coordinate. A bare dotted key is treated
+    // as a filename by the documentation quotation gate, not as checkable code.
+    lines.push(`| \`${escapeCell(entry.key)}\` | ${escapeCell(entry.value)} | \`${LOCALE_SOURCE_PATH}:${String(entry.line)}\`, \`'${escapeCell(entry.key)}'\` |`);
   }
   lines.push('');
   return lines.join('\n');
