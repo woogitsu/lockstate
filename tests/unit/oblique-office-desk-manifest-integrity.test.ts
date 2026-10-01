@@ -26,7 +26,7 @@ describe('generic office desk oblique art', () => {
       .toBe(`/game-content/${manifestName}`);
     const catalog = parseObliqueModuleCatalog(readJson(`game-content/${manifestName}`));
     expect(catalog.assetId).toBe('furniture.office.desk.generic');
-    expect(catalog.cameraTargetTiles).toEqual([1, 0.5, 0.55]);
+    expect(catalog.cameraTargetTiles).toEqual([1, 0.5, 0.4]);
     expect(catalog.yawDegrees).toHaveLength(12);
     expect(catalog.elevationDegrees).toHaveLength(6);
     expect(catalog.frames).toHaveLength(72);
