@@ -1,4 +1,4 @@
-﻿# What the owner still has to decide, and where an accepted decision contradicts the code
+# What the owner still has to decide, and where an accepted decision contradicts the code
 
 This file is for the repository owner and nobody else. It exists because
 `docs/adr/README.md` reports statuses and `tests/foundation/adr-numbering-contract.test.ts`
@@ -792,10 +792,12 @@ dependency set, every file ADR 0056's entry cites *is* in it, and the delta
 intersection for this anchor would have handed a reader eleven files and not
 this one.
 
-Re-anchored at `main` @ `c478bf81` (**v0.0.818**) by re-reading ??3-6
-against the eleven non-release first-parent landings since `ad6bf7a5`.
-The new ?3 entry records the changed paths, decision census and live
+Re-anchored at `main` @ `171d7dc5` (**v0.0.829**) by re-reading §§3-6
+against the eleven non-release first-parent landings since `c478bf81`.
+The new §3 entry records the changed paths, decision census and live
 discrepancies. Neither staleness budget changes.
+
+**The previous anchor, retained as history.** It read: *"Re-anchored at `main` @ `c478bf81` (**v0.0.818**) by re-reading ??3-6 against the eleven non-release first-parent landings since `ad6bf7a5`. The new ?3 entry records the changed paths, decision census and live discrepancies. Neither staleness budget changes."*
 
 **The previous anchor, retained as history.** It read: *"Re-anchored at `main` @ `ad6bf7a5` (**v0.0.805**) by re-reading §§3-6 against the eleven non-release first-parent landings since `c8d25355`. The new §3 entry records the changed paths, decision census and live discrepancies. Neither staleness budget changes."*, and continued:
 
@@ -21818,6 +21820,54 @@ all. **So "exactly one" is exact about a measurable class and silent about the
 class this file's findings usually come from**, and the honest reading of it is
 that hand re-aiming got 81 of 83 anchors right in the part of the corpus a gate
 can check, with the unchecked part unmeasured in both directions.
+
+## 3. The 2026-10-01 pass: eleven landings, utility art, camera port and room selection
+
+Read at `171d7dc5` (**v0.0.829**). The `c478bf81..171d7dc5` window contains
+**eleven non-release first-parent landings, eleven release commits and 24 total
+commits**, with **243 changed paths**. The landings refresh this queue, add the
+shared camera port, accept dotted registry manifests, register all oblique
+manifests, add loading-dock/security-console/utility-panel Blender assets,
+repair ADR source citations, pin actor foot pivots across zoom, register utility
+modules and preserve selected rooms after a scale refresh. The gate was read
+red before this change: eleven landings against its unchanged budget of ten.
+
+**The decision census is unchanged.** The numbered ADR index has **117 rows**,
+**75 Accepted and 42 Proposed**, with **Next free number: 0124**. The numbering
+contract verifies the document/index pairing. No numbered ADR was added and no
+status line or index row changed in this window; the two changed numbered ADRs,
+0047 and 0117, adjust source anchors rather than approve decisions. Their diffs
+were opened, including the enclosure/buildability/terrain and staff-coverage
+references. §2's headings still contain nine live decision entries and six
+historical/meta entries besides its rule preamble.
+
+**§4 remains a watch item, not a verified hosted setting.** Deployment prose
+and the database workflow are byte-identical across this window. The six-row
+table remains at `docs/DEPLOYMENT.md:200-207`; the paragraphs beginning
+*"`migrate-database.yml` has three runs"* and *"Read that row as"* remain at
+`:219` and `:221`. The workflow still declares `workflow_dispatch` at `:34`.
+Repository evidence does not establish the live Supabase dashboard constraint
+or whether the integration targets a separate production project.
+
+**§5's two stale-writer discrepancies still stand.** Both source and prose
+are unchanged across the window and were opened again. The manual-refusal
+paragraph at `docs/PERSISTENCE.md:2857-2858` still says the refusal follows one
+retry; `session-controller.ts:1032` still returns a foreign durable revision
+immediately. The departed-writer bullet at `:2862-2864` still says no report,
+while the manual `saveNow` branch at `:1081-1086` returns a failed result when
+the captured session disappears. This reading changes neither approved behavior
+nor player-facing wording.
+
+**§6's mechanical checks and their limits were read separately.** Numbering
+and verbatim-quotation contracts passed on this tree. The native Windows
+status-reference run failed on 94 claims, including its own historical example
+and dated research: labels contain backslashes while the documented exclusions
+match forward slashes. This is an execution-platform limitation of that scan,
+not 94 newly inferred decision reversals. Its test file did not change in this
+window. The existing numbered-ADR floor, corpus walk and parsed-claim checks
+remain; the known semantic blind spots (unnumbered claims, negations, dated
+research and immutable migrations) remain too. Historical readings below retain
+their own evidence and are not certified as current coordinates by this pass.
 
 ## 3. The 2026-09-30 pass: eleven landings, oblique assets and citation repairs
 
