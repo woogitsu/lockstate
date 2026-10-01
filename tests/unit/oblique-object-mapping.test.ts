@@ -19,7 +19,8 @@ describe('medical oblique object mapping', () => {
   const catalogs = new Map([[security.assetId, security], [dock.assetId, dock]]);
   expect(obliqueCatalogForObject('object.security-console', catalogs)).toBe(security);
   expect(obliqueCatalogForObject('object.loading-dock-door', catalogs)).toBe(dock);
-  expect(obliqueAssetIdForObject('object.bed')).toBeUndefined();
+  expect(obliqueAssetIdForObject('object.unknown-fixture')).toBeUndefined();
+  expect(obliqueCatalogForObject('object.bed', catalogs)).toBeUndefined();
  });
 });
 it('fails closed when the mapped asset is absent from the registry', () => {

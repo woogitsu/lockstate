@@ -289,3 +289,31 @@ Reopened live ownership declarations and object-removal class/method references 
 
 Merged HUD mouse integration 2a4c65e079 and camera inventory follow-up 3237bc451e into the full catalogue root. Integration exposed two template labels outside HUD_MESSAGE_KEY, CRLF-sensitive composition source matching on Windows, and shifted live quote anchors. Registry references and line-ending normalization fix those failures without removing pinned wiring. Removing the production staff-coverage cadence call fails the contract (1 red); restoring it passes both composition and HUD registry suites (40 tests). Quotation plus those two suites pass 52 tests; TypeScript passes. Full runtime Blender validation and Yard reversible zoning remain independent active work; no release claim is made.
 
+
+## Pointer interruption safety, issue1907
+
+Four production-path tests reproduced unintended template placement after pointer cancellation, lost capture, release outside the map, and switching templates during an unfinished press. The bridge now binds the press to both pointer ID and selection revision and clears it on interruption, outside release, window blur and Escape. A fresh press still places the selected plan. Focus-loss regression coverage is included; focused bridge/tool/composition tests pass 36 tests and TypeScript passes. No new player copy or save-format field is introduced.
+
+
+## Accepted command versus newer hover, issue1908
+
+A delayed room-plan confirmation was discarded when moving the cursor triggered a newer hover query, leaving the tool armed after placement. The production-path test fails before the fix (armed true instead of false). Accepted placement now disarms the matching original selection irrespective of newer hover queries; stale refusals still cannot repaint newer previews, and a newly armed selection is protected from older confirmations. Eleven bridge/tool tests and TypeScript pass. This is a source integration checkpoint; browser acceptance remains separate.
+
+
+## Near-wall visibility integrated checkpoint
+
+Merged camera agent47eee44860 into the combined feature root. The pure world projection lowers camera-facing walls with room interiors behind them, switches the matching authored cutaway asset, preserves full door height and never changes the worker's occupied square, edge, collision or saved world. Agent proof includes yaw0/elevation45 and yaw180/elevation65 FullHD browser cases (2 green); identity-height mutation makes the pixel test red. Root integration passes six suites75tests including completed-room Save/Load/Undo/Redo and whole-room catalogue/protocol cases; TypeScript passes. This does not replace true Blender-runtime QA or owner approval of the pending save metadata.
+
+
+## All twenty plans reversible backend integration
+
+Integrated Yard source checkpoints53009f866b/c0c6011646/d3b2ad35ec. Yard records an actual reversible zoning gesture in shared history, without fabricating a wall BuildOrder or consuming materials. Its hooks are reattached from existing plan metadata after load; the status projection exposes Undo/Redo availability. Rejected Redo is guarded against resurrecting an empty-shell plan. Root transaction/Redo/complete-catalogue suites pass65tests and TypeScript. Player success wording remains owner-reserved and pending; this integration is draft, with browser Yard acceptance not yet established because the QA worker bootstrap did not complete.
+
+## Full room fixture art mapping checkpoint
+
+Integrated the authored art composition7dd7075d1f into the feature root. A new catalogue-derived check found fourteen missing fixture mappings before integration and five afterward: bed, toilet, shower head, dining table and bench. Those five now resolve to existing Blender pose catalogs. All nineteen fixture types in the twenty plans resolve through the production object mapping to registered catalogs with complete pose grids and Blender source declarations; mapping/projection/coverage suites pass46tests after the observed red cases. This checks routing and catalog metadata, not PNG completeness or final runtime appearance. Full-square wall geometry and actual textured Full HD play remain separate acceptance work.
+
+Removing the production bed mapping deliberately makes the coverage suite fail one of twenty cases; restoring it returns20green. Camera checkpoints34c58dd4ed and16b5ccee28 now pin the full/low heights to0.75/0.34 tiles and lower camera-facing corner walls with diagonally adjacent interiors. Root projection/catalogue/research-index checks pass29tests. Research records for real mouse placement, completed square walls and Yard history are indexed; native Windows CRLF and linked path separators no longer create false index failures.
+
+The earlier Yard browser bootstrap limitation was superseded by the built-game test committed in423628c04e: real Full HD64-square ghost, interruption without placement, fresh mouse placement, and Save/Load between Undo and Redo passed in11.2seconds. No wall BuildOrder was created; room count went1 to0 to1. Save-field approval and truthful success wording remain pending owner decisions, so the combined feature PR remains draft.
+

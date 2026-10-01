@@ -26,6 +26,7 @@ export function installRoomTemplateWorldBridge(canvas: HTMLCanvasElement, tool: 
   let selection = -1;
   let requestRevision = 0;
   let downPointer: number | undefined;
+  let downSelection: number | undefined;
   let painted = '';
   let disposed = false;
 
@@ -59,23 +60,37 @@ export function installRoomTemplateWorldBridge(canvas: HTMLCanvasElement, tool: 
     return true;
   };
   const pointerMove = (event: PointerEvent): void => { capture(event); };
-  const pointerDown = (event: PointerEvent): void => { if (capture(event)) downPointer = event.pointerId; };
+  const resetPress = (): void => { downPointer = undefined; downSelection = undefined; };
+  const pointerDown = (event: PointerEvent): void => {
+    if (capture(event)) { downPointer = event.pointerId; downSelection = tool.revision; }
+  };
   const pointerUp = (event: PointerEvent): void => {
-    if (!capture(event) || downPointer !== event.pointerId || origin === undefined) return;
-    downPointer = undefined;
+    const captured = capture(event);
+    const matches = downPointer === event.pointerId && downSelection === tool.revision;
+    resetPress();
+    if (!captured || !matches || origin === undefined) return;
     const selected = tool.revision;
     const destination = { ...origin };
     const current = ++requestRevision;
     void tool.placeAt(destination).then(result => {
-      if (disposed || selected !== tool.revision || current !== requestRevision || !tool.isArmed()) return;
+      if (disposed || selected !== tool.revision || !tool.isArmed()) return;
+      // Hover queries can supersede the preview while this committed command is
+      // awaiting confirmation. They must not discard its accepted result.
       if (result.ok) { tool.standDown(); plan = undefined; }
-      else if (result.reason !== 'busy') { verdict = result; painted = ''; }
+      else if (current === requestRevision && result.reason !== 'busy') { verdict = result; painted = ''; }
     }).catch(() => { if (current === requestRevision) verdict = undefined; });
   };
   const cancel = (event: KeyboardEvent): void => {
-    if (event.key === 'Escape' && tool.isArmed()) { tool.standDown(); plan = undefined; requestRevision += 1; }
+    if (event.key === 'Escape' && tool.isArmed()) { resetPress(); tool.standDown(); plan = undefined; requestRevision += 1; }
   };
+  const interrupted = (event: PointerEvent): void => { if (event.pointerId === downPointer) resetPress(); };
+  // A release outside the canvas must not become a later placement on re-entry.
+  const outsideRelease = (event: PointerEvent): void => { if (event.target !== canvas) interrupted(event); };
   for (const [kind, handler] of [['pointermove', pointerMove], ['pointerdown', pointerDown], ['pointerup', pointerUp]] as const) canvas.addEventListener(kind, handler, true);
+  canvas.addEventListener('pointercancel', interrupted, true);
+  canvas.addEventListener('lostpointercapture', interrupted, true);
+  window.addEventListener('pointerup', outsideRelease);
+  window.addEventListener('blur', resetPress);
   window.addEventListener('keydown', cancel, true);
 
   const paint = (): void => {
@@ -125,6 +140,10 @@ export function installRoomTemplateWorldBridge(canvas: HTMLCanvasElement, tool: 
   return () => {
     disposed = true; layer.remove();
     for (const [kind, handler] of [['pointermove', pointerMove], ['pointerdown', pointerDown], ['pointerup', pointerUp]] as const) canvas.removeEventListener(kind, handler, true);
+    canvas.removeEventListener('pointercancel', interrupted, true);
+    canvas.removeEventListener('lostpointercapture', interrupted, true);
+    window.removeEventListener('pointerup', outsideRelease);
+    window.removeEventListener('blur', resetPress);
     window.removeEventListener('keydown', cancel, true);
   };
 }

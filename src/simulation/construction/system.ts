@@ -361,6 +361,8 @@ export class ConstructionSystem implements SystemRegistration {
   private orderRevisions = new Map<string, number>();
 
   // A transaction is just a list of order IDs.
+  /** Runtime ports for real non-order transactions; their ids share history ordering. */
+  private readonly reversibleWorldTransactions = new Map<string, { readonly undo: () => boolean; readonly redo: () => boolean; readonly canUndo: () => boolean; readonly canRedo: () => boolean }>();
   private undoStack: string[][] = [];
   private redoStack: string[][] = [];
   /**
@@ -750,6 +752,21 @@ export class ConstructionSystem implements SystemRegistration {
     return undefined;
   }
 
+  /** Reattach an explicitly saved world gesture without altering its saved history. */
+  public attachReversibleWorldTransaction(id: string, port: { readonly undo: () => boolean; readonly redo: () => boolean; readonly canUndo: () => boolean; readonly canRedo: () => boolean }): void {
+    this.reversibleWorldTransactions.set(id, port);
+  }
+
+  /** A zoning gesture is a real transaction, not a construction order with fake geometry. */
+  public beginReversibleWorldTransaction(id: string): void {
+    if (!this.reversibleWorldTransactions.has(id)) throw new Error('World transaction must have a reversible port.');
+    if (this.currentTransaction.length > 0) this.undoStack.push([...this.currentTransaction]);
+    this.currentTransaction = [id];
+    this.currentTransactionId = id;
+    this.redoStack = [];
+    this.newerActionThanTheStackTop = false;
+  }
+
   public registerTransactionOrder(orderId: string, transactionId?: string): void {
     if (transactionId !== this.currentTransactionId) {
       if (this.currentTransaction.length > 0) {
@@ -875,6 +892,11 @@ export class ConstructionSystem implements SystemRegistration {
     let spendDestroyed = false;
 
     for (const orderId of transaction) {
+      const worldTransaction = this.reversibleWorldTransactions.get(orderId);
+      if (worldTransaction !== undefined) {
+        if (worldTransaction.undo()) redoTransaction.push(orderId);
+        continue;
+      }
       const order = this.orders.get(orderId);
       if (!order) continue;
 
@@ -919,6 +941,11 @@ export class ConstructionSystem implements SystemRegistration {
     const undoTransaction: string[] = [];
 
     for (const orderId of transaction) {
+      const worldTransaction = this.reversibleWorldTransactions.get(orderId);
+      if (worldTransaction !== undefined) {
+        if (worldTransaction.redo()) undoTransaction.push(orderId);
+        continue;
+      }
       const order = this.orders.get(orderId);
       if (!order) continue;
       
@@ -2266,6 +2293,8 @@ export class ConstructionSystem implements SystemRegistration {
       this.currentTransaction.length > 0 ? this.currentTransaction : this.undoStack[this.undoStack.length - 1];
     if (transaction === undefined) return false;
     return transaction.some((orderId) => {
+      const external = this.reversibleWorldTransactions.get(orderId);
+      if (external !== undefined) return external.canUndo();
       const order = this.orders.get(orderId);
       return order !== undefined && isCancellable(order.state);
     });
@@ -2295,6 +2324,9 @@ export class ConstructionSystem implements SystemRegistration {
   public get redoWouldReapplySomething(): boolean {
     const transaction = this.redoStack[this.redoStack.length - 1];
     if (transaction === undefined) return false;
-    return transaction.some((orderId) => this.orders.get(orderId)?.state === 'cancelled');
+    return transaction.some((orderId) => {
+      const external = this.reversibleWorldTransactions.get(orderId);
+      return external === undefined ? this.orders.get(orderId)?.state === 'cancelled' : external.canRedo();
+    });
   }
 }

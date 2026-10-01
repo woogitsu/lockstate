@@ -112,6 +112,10 @@ export class RoomTemplateCoordinator implements SystemRegistration {
       accepted.push(order.id);
     }
     for (const id of accepted) this.construction.registerTransactionOrder(id, `room-template-${request.sequence}`);
+    if (built.shellOrderIds.length === 0) {
+      this.attachZoningTransaction(request);
+      this.construction.beginReversibleWorldTransaction(this.zoningTransactionId(request));
+    }
     this.pending.push({ ...request, origin: { ...request.origin } });
     this.pending.sort((a, b) => a.sequence - b.sequence);
     return { ok: true };
@@ -120,7 +124,7 @@ export class RoomTemplateCoordinator implements SystemRegistration {
   public update(context: SimulationContext): void {
     this.reconcileCancelledShells();
     this.undone = this.undone.filter((request) =>
-      this.construction.canRedoOrdersTogether(this.shellOrderIds(request)));
+      this.construction.canRedoOrdersTogether(this.historyEntryIds(request)));
     const remaining: PendingRoomTemplate[] = [];
     for (const request of this.pending) {
       const built = createRoomTemplateBuildPlan(request.templateId, request.origin, request.mirrorX, request.sequence);
@@ -208,6 +212,7 @@ export class RoomTemplateCoordinator implements SystemRegistration {
   public reconcileRedoneShells(): void {
     this.undone = this.undone.filter((request) => {
       const ids = this.shellOrderIds(request);
+      if (ids.length === 0) return this.construction.canRedoOrdersTogether(this.historyEntryIds(request));
       const states = ids.map((id) => this.construction.getOrder(id)?.state);
       if (states.every((state) => state !== undefined && state !== 'cancelled' && state !== 'failed')) {
         this.pending.push(request);
@@ -224,12 +229,52 @@ export class RoomTemplateCoordinator implements SystemRegistration {
     this.pending.sort((a, b) => a.sequence - b.sequence);
   }
 
+  private zoningTransactionId(request: PendingRoomTemplate): string { return `room-zoning-${request.sequence}`; }
+
+  private historyEntryIds(request: PendingRoomTemplate): readonly string[] {
+    const orders = this.shellOrderIds(request);
+    return orders.length === 0 ? [this.zoningTransactionId(request)] : orders;
+  }
+
+  /** Yard owns an actual zoning obligation and writes no shell orders or materials. */
+  private attachZoningTransaction(request: PendingRoomTemplate): void {
+    this.construction.attachReversibleWorldTransaction(this.zoningTransactionId(request), {
+      canUndo: () => [...this.pending, ...this.completed].some(entry => entry.sequence === request.sequence),
+      canRedo: () => this.undone.some(entry => entry.sequence === request.sequence) &&
+        this.preflight(instantiateRoomTemplate(request.templateId, request.origin, { mirrorX: request.mirrorX })).ok,
+      undo: () => {
+        const pending = this.pending.some(entry => entry.sequence === request.sequence);
+        const completed = this.completed.some(entry => entry.sequence === request.sequence);
+        if (!pending && !completed) return false;
+        if (completed) {
+          const plan = instantiateRoomTemplate(request.templateId, request.origin, { mirrorX: request.mirrorX });
+          for (const zone of plan.zones) {
+            if (this.roomZoning.unzone(zone, 0).kind === 'refused') return false;
+          }
+        }
+        this.pending = this.pending.filter(entry => entry.sequence !== request.sequence);
+        this.completed = this.completed.filter(entry => entry.sequence !== request.sequence);
+        this.undone.push({ ...request, origin: { ...request.origin } });
+        return true;
+      },
+      redo: () => {
+        if (!this.undone.some(entry => entry.sequence === request.sequence)) return false;
+        const plan = instantiateRoomTemplate(request.templateId, request.origin, { mirrorX: request.mirrorX });
+        if (!this.preflight(plan).ok) return false;
+        this.undone = this.undone.filter(entry => entry.sequence !== request.sequence);
+        this.pending.push({ ...request, origin: { ...request.origin } });
+        this.pending.sort((a, b) => a.sequence - b.sequence);
+        return true;
+      },
+    });
+  }
+
   private shellOrderIds(request: PendingRoomTemplate): readonly string[] {
     return createRoomTemplateBuildPlan(request.templateId, request.origin, request.mirrorX, request.sequence).shellOrderIds;
   }
 
   public snapshot(): RoomTemplateCoordinatorSnapshot {
-    const undone = this.undone.filter((request) => this.construction.canRedoOrdersTogether(this.shellOrderIds(request)));
+    const undone = this.undone.filter((request) => this.construction.canRedoOrdersTogether(this.historyEntryIds(request)));
     const copy = (entry: PendingRoomTemplate) => ({ ...entry, origin: { ...entry.origin } });
     return { version: 1, pending: this.pending.map(copy), ...(undone.length === 0 ? {} : { undone: undone.map(copy) }), ...(this.completed.length === 0 ? {} : { completed: this.completed.map(copy) }) };
   }
@@ -239,7 +284,10 @@ export class RoomTemplateCoordinator implements SystemRegistration {
     this.pending = snapshot?.pending.map((entry) => ({ ...entry, origin: { ...entry.origin } })) ?? [];
     this.pending.sort((a, b) => a.sequence - b.sequence);
     this.undone = snapshot?.undone?.filter((request) =>
-      this.construction.canRedoOrdersTogether(this.shellOrderIds(request)))
+      this.construction.canRedoOrdersTogether(this.historyEntryIds(request)))
       .map((entry) => ({ ...entry, origin: { ...entry.origin } })) ?? [];
+    for (const request of [...this.pending, ...this.completed, ...this.undone]) {
+      if (this.shellOrderIds(request).length === 0) this.attachZoningTransaction(request);
+    }
   }
 }

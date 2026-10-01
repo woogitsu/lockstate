@@ -1,4 +1,6 @@
 import { expect, it } from 'vitest';
+import { editHistoryAvailability } from '../../src/simulation/construction/handler';
+import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { ROOM_TEMPLATE_IDS, instantiateRoomTemplate } from '../../src/content/room-template-catalog';
 import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { captureSessionSnapshot, restoreSimulationRuntime, type SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
@@ -36,14 +38,15 @@ function worldContents(runtime: ReturnType<typeof createNewSimulationRuntime>) {
   return { ...snapshot, chunks: snapshot.chunks.map(({ geometryRevision: _geometryRevision, contentRevision: _contentRevision, ...planes }) => planes) };
 }
 
-// Shell-free Yard needs a zoning transaction, rather than a fake construction order.
-it.each(ROOM_TEMPLATE_IDS.filter((id) => id !== 'yard-basic'))('undoes and redoes completed %s with all fixtures and zoning across actual save envelopes', (templateId) => {
+// Every plan, including a shell-free Yard, is one reversible player gesture.
+it.each(ROOM_TEMPLATE_IDS)('undoes and redoes completed %s with all fixtures and zoning across actual save envelopes', (templateId) => {
   let runtime = createNewSimulationRuntime(73);
   const plan = instantiateRoomTemplate(templateId, { x: 5, y: 5 });
   runtime.kernel.submitCommand('template', 0, runtime.kernel.tick, packCommand({ type: 'PlaceRoomTemplate', templateId, origin: plan.origin }));
   finish(runtime);
   const completedWorld = worldContents(runtime);
   runtime = reload(runtime);
+  expect(editHistoryAvailability(runtime.construction).undo).toBe(true);
   expect(runtime.roomTemplates.snapshot().completed).toHaveLength(1);
   runtime.kernel.submitCommand('undo', 1, runtime.kernel.tick, packCommand({ type: 'Undo' }));
   runtime.kernel.step();
@@ -52,9 +55,89 @@ it.each(ROOM_TEMPLATE_IDS.filter((id) => id !== 'yard-basic'))('undoes and redoe
   expect(runtime.construction.allOrders().every((order) => order.state === 'cancelled')).toBe(true);
   runtime = reload(runtime);
   expect(runtime.roomTemplates.snapshot().undone).toHaveLength(1);
+  expect(editHistoryAvailability(runtime.construction).redo).toBe(true);
   runtime.kernel.submitCommand('redo', 2, runtime.kernel.tick, packCommand({ type: 'Redo' }));
   finish(runtime);
   expect(runtime.placedObjects.getSnapshot()).toHaveLength(plan.objects.length);
   for (const zone of plan.zones) expect(runtime.prisoners.roomInstances.getById(`${zone.roomId}:${zone.x}:${zone.y}`)).toBeDefined();
   expect(worldContents(runtime)).toEqual(completedWorld);
+});
+
+it('keeps two shell-free yards ordered across pending Undo, Save/Load and Redo without a fake build order', () => {
+  let runtime = createNewSimulationRuntime(73);
+  const submit = (sequence: number, type: 'PlaceRoomTemplate' | 'Undo' | 'Redo', origin = { x: 5, y: 5 }) => {
+    runtime.kernel.submitCommand(`yard-${sequence}`, sequence, runtime.kernel.tick, packCommand(type === 'PlaceRoomTemplate' ? { type, templateId: 'yard-basic', origin } : { type }));
+    runtime.kernel.step();
+  };
+  submit(0, 'PlaceRoomTemplate');
+  finish(runtime);
+  submit(1, 'PlaceRoomTemplate', { x: 20, y: 5 });
+  expect(runtime.roomTemplates.snapshot().pending).toHaveLength(1);
+  submit(2, 'Undo');
+  expect(runtime.roomTemplates.snapshot().pending).toHaveLength(0);
+  expect(runtime.prisoners.roomInstances.getById('room.yard:5:5')).toBeDefined();
+  expect(runtime.prisoners.roomInstances.getById('room.yard:20:5')).toBeUndefined();
+  expect(runtime.construction.allOrders()).toEqual([]);
+  runtime = reload(runtime);
+  submit(3, 'Redo');
+  finish(runtime);
+  expect(runtime.prisoners.roomInstances.getById('room.yard:20:5')).toBeDefined();
+  submit(4, 'Undo');
+  submit(5, 'Undo');
+  expect(runtime.prisoners.roomInstances.getById('room.yard:5:5')).toBeUndefined();
+  expect(runtime.prisoners.roomInstances.getById('room.yard:20:5')).toBeUndefined();
+  expect(runtime.construction.allOrders()).toEqual([]);
+});
+
+it('does not revive an undone Yard obligation when its Redo preflight fails', () => {
+  const runtime = createNewSimulationRuntime(73);
+  runtime.kernel.submitCommand('yard', 0, runtime.kernel.tick, packCommand({ type: 'PlaceRoomTemplate', templateId: 'yard-basic', origin: { x: 5, y: 5 } }));
+  finish(runtime);
+  runtime.kernel.submitCommand('undo', 1, runtime.kernel.tick, packCommand({ type: 'Undo' }));
+  runtime.kernel.step();
+  runtime.world.setTopEdge({ x: tileCoordinate(5), y: tileCoordinate(5) }, 1);
+  runtime.kernel.submitCommand('redo', 2, runtime.kernel.tick, packCommand({ type: 'Redo' }));
+  runtime.kernel.step();
+  expect(runtime.roomTemplates.snapshot().pending).toEqual([]);
+  expect(runtime.prisoners.roomInstances.getById('room.yard:5:5')).toBeUndefined();
+  expect(runtime.construction.allOrders()).toEqual([]);
+});
+
+it('preserves mixed wall, indoor plan and Yard history ordering through encoded Save/Load', () => {
+  let runtime = createNewSimulationRuntime(73);
+  let sequence = 0;
+  const send = (command: Parameters<typeof packCommand>[0]) => {
+    runtime.kernel.submitCommand(`mixed-${sequence}`, sequence++, runtime.kernel.tick, packCommand(command));
+    runtime.kernel.step();
+  };
+  send({ type: 'PlaceBuildOrder', orderId: 'standalone-wall', definitionId: 'wall-brick', x: 2, y: 2, edge: 'north', transactionId: 'wall-gesture' });
+  finish(runtime);
+  send({ type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 20, y: 5 } });
+  finish(runtime);
+  send({ type: 'PlaceRoomTemplate', templateId: 'yard-basic', origin: { x: 5, y: 20 } });
+  finish(runtime);
+  const completed = worldContents(runtime);
+  runtime = reload(runtime);
+  send({ type: 'Undo' });
+  expect(runtime.prisoners.roomInstances.getById('room.yard:5:20')).toBeUndefined();
+  const cellZone = instantiateRoomTemplate('cell-basic', { x: 20, y: 5 }).zones[0]!;
+  expect(runtime.prisoners.roomInstances.getById(`${cellZone.roomId}:${cellZone.x}:${cellZone.y}`)).toBeDefined();
+  expect(runtime.construction.allOrders().find(order => order.id === 'standalone-wall')?.state).toBe('completed');
+  runtime = reload(runtime);
+  send({ type: 'Undo' });
+  expect(runtime.placedObjects.getSnapshot()).toEqual([]);
+  expect(runtime.construction.allOrders().find(order => order.id === 'standalone-wall')?.state).toBe('completed');
+  runtime = reload(runtime);
+  send({ type: 'Undo' });
+  expect(runtime.construction.allOrders().find(order => order.id === 'standalone-wall')?.state).toBe('cancelled');
+  for (let index = 0; index < 3; index += 1) {
+    runtime = reload(runtime);
+    expect(editHistoryAvailability(runtime.construction).redo).toBe(true);
+    send({ type: 'Redo' });
+    for (let tick = 0; tick < 25000; tick += 1) {
+      runtime.kernel.step();
+      if (runtime.roomTemplates.snapshot().pending.length === 0 && runtime.construction.allOrders().every(order => order.state === 'completed' || order.state === 'cancelled')) break;
+    }
+  }
+  expect(worldContents(runtime)).toEqual(completed);
 });
