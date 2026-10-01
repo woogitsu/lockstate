@@ -13,7 +13,7 @@ for (const viewport of [{ width: 1920, height: 1080 }, { width: 2560, height: 14
       return { content: style.content, backgroundImage: style.backgroundImage };
     });
     expect(planningSurface.content).toBe('""');
-    expect(planningSurface.backgroundImage).toContain('repeating-linear-gradient');
+    expect(planningSurface.backgroundImage).toContain('url(');
     const minimap = page.locator('.hud-minimap__surface');
     await expect(minimap).toBeDisabled();
     await expect(minimap).toHaveAccessibleName('Create or load a prison to see the map');
