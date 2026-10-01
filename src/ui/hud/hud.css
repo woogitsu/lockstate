@@ -7299,3 +7299,27 @@
     --hud-rail-panel-width: max(var(--hud-inspector-width), calc(280px * var(--ui-scale)));
   }
 }
+
+/*
+ * A visible event message is allowed to borrow a row from the middle of the
+ * HUD.  At 200% interface scale on a short desktop viewport (900x600), that
+ * leaves less than the natural height of the two rail slots.  The flex
+ * defaults keep the aside at its 25% floor and let the lower slot paint past
+ * the rail, which puts Save and Regime controls below the viewport (#985).
+ * Both slots are scroll containers already, so they can share the reduced
+ * rail height without losing controls.  Scope this to the enlarged short
+ * layout; ordinary desktop geometry and the Full HD layout stay unchanged.
+ */
+@media (min-width: 721px) and (max-height: 700px) {
+  :root[data-ui-scale-enlarged='true']
+    .hud:has(> .hud__event:not([hidden]))
+    .hud__aside,
+  :root[data-ui-scale-enlarged='true']
+    .hud:has(> .hud__event:not([hidden]))
+    .hud__side {
+    flex: 1 1 0;
+    min-height: 0;
+    margin-top: 0;
+    overflow-y: auto;
+  }
+}
