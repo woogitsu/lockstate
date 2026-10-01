@@ -9,7 +9,7 @@ const NAME_KEYS: Record<RoomTemplateId, LocalizationKey> = {
   'cell-basic': HUD_MESSAGE_KEY.buildTemplateCellBasic,
   'cell-large': HUD_MESSAGE_KEY.buildTemplateCellLarge,
   'shower-room': HUD_MESSAGE_KEY.buildTemplateShowerRoom,
-  'cell-row-four': 'hud.build.template-cell-row-four',
+  'cell-row-four': HUD_MESSAGE_KEY.buildTemplateCellRowFour,
   'canteen-basic': 'room.canteen.name',
   'kitchen-basic': 'room.kitchen.name',
   'holding-cell-basic': 'room.holding-cell.name',
@@ -125,7 +125,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
   // as a working build action while that backend is missing.
   let refreshPlacement = async (): Promise<void> => {};
   if (tool !== undefined) {
-    const onMap = element('button', { text: t('hud.build.template-on-map'), attributes: { type: 'button' } });
+    const onMap = element('button', { text: t(HUD_MESSAGE_KEY.buildTemplateOnMap), attributes: { type: 'button' } });
     onMap.addEventListener('click', () => { tool.arm(); dialog.close(); });
     dialog.append(onMap);
     const x = element('input', { attributes: { type: 'number', step: '1', value: '0', 'aria-label': t(HUD_MESSAGE_KEY.buildTemplateX) } });

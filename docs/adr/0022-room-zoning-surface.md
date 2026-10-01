@@ -821,7 +821,7 @@ because "renders no panel" and "unclaimed" are different facts:
 > **Two of those three tab ids no longer exist**, and the list is kept as the
 > record of what was weighed. Under ADR 0112 decision 3 the Staff panel is on
 > `manage` — `staffPanel.setVisible(state.activeTab === 'manage')`
-> (`src/ui/hud/hud.ts:2611`; the anchor read `:2506` when this branch was
+> (`src/ui/hud/hud.ts:3039`; the anchor read `:2506` when this branch was
 > written, and was a bare `*/` by the time it merged `origin/main` on
 > 2026-09-16; `:2558` was the re-aim taken that day, and #1279 moved the call
 > again to `:2611` — three coordinates for one unchanged line of code, which is
