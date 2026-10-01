@@ -9,7 +9,9 @@ Save/Load restores the external transaction handlers from room-template state.
 The existing history availability projection now exposes those transactions
 so the actual HUD Undo and Redo controls are enabled when appropriate.
 
-Standalone backend commits: `53009f866b`, `c0c6011646`, `d3b2ad35ec`.
+Published integration commits: `3c09c601d1`, `4440bcb79b`, `722034332f`.
+This corrects the earlier references to unpublished standalone commits; the
+integrated patches carry the same backend changes and are reachable on GitHub.
 The combined QA branch includes the interrupted-pointer fix `b7a8c9ddac`.
 
 ## Evidence obtained

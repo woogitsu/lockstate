@@ -768,7 +768,6 @@ const UNVERIFIED_BUDGET: Readonly<Record<string, number>> = {
   'docs/adr/0026-entity-id-lifetime.md': 3,
   'docs/adr/0028-object-placement-and-derived-room-capacity.md': 19,
   'docs/adr/0029-concurrent-room-use-claims.md': 6,
-  'docs/adr/0031-build-queue-cancellation-surface.md': 1,
   'docs/adr/0034-releasing-a-claimed-guard.md': 6,
   'docs/adr/0038-what-makes-a-save-compatible.md': 16,
   'docs/adr/0039-a-keyboard-route-to-room-zoning.md': 4,
