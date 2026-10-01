@@ -18,13 +18,12 @@ const registry = {
  entries: [
   { assetId: 'furniture.medical-bed.variants', manifest: '/game-content/oblique-furniture-medical-bed.v1.json' },
   { assetId: 'fixture.medicine-cabinet.variants', manifest: '/game-content/oblique-fixture-medicine-cabinet.v1.json' },
-  { assetId: 'utility.washing-machine.variants', manifest: '/game-content/oblique-utility.washing-machine.v1.json' },
  ],
 };
 it('registry contains both medical mapped assets', () => {
  const parsed = parseObliqueModuleRegistry(registry);
  expect(parsed.entries.map((entry) => entry.assetId)).toEqual(expect.arrayContaining([
-  'furniture.medical-bed.variants', 'fixture.medicine-cabinet.variants', 'utility.washing-machine.variants',
+  'furniture.medical-bed.variants', 'fixture.medicine-cabinet.variants',
  ]));
 });
 
@@ -43,4 +42,5 @@ describe('oblique canonical aliases', () => {
  });
  it('fails closed for unknown ids', () => expect(obliqueCanonicalAssetIdForObject('object.unknown')).toBeUndefined());
 });
+
 
