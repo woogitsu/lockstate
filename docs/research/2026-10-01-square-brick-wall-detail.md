@@ -1,0 +1,9 @@
+# Square brick walls: Blender detail pass
+
+The existing `wall.square.brick.full` and `.low` models were rebuilt with visible staggered brick faces, recessed mortar joints, and four slightly varied sandstone cap stones. This is a detail pass on the accepted one-tile models; it adds no new asset IDs or gameplay rules. Their exact Blender bounds remain **1×1 tile**, with full height **0.75 tile** and cutaway height **0.34 tile**. The full model has 52 individual side bricks; the low model has 20.
+
+At 45° yaw and 45° elevation: [full wall render](../../public/assets/environment/oblique/square-brick-full-wall-yaw+045-elev45.e2008e3c6820.png) and [cutaway wall render](../../public/assets/environment/oblique/square-brick-low-wall-yaw+045-elev45.ff3fc20b583f.png). The earlier full model was nearly flat on top and had only horizontal side stripes; [previous full render](https://github.com/woogitsu/lockstate/blob/1d41b9a4ee/public/assets/environment/oblique/square-brick-full-wall-yaw%2B045-elev45.f216081f32de.png) records that baseline. The color range remains warm lime and sandstone with charcoal footing.
+
+`tooling/blender/build-square-brick-oblique.py` is the source generator. `tooling/blender/verify-square-brick-oblique.py` independently checks exact XY/Z bounds and the authored brick/cap object counts in both `.blend` files. `tooling/blender/render-square-brick-oblique.py` rendered 72 yaw/elevation combinations for each model, normalized PNG metadata, and rejected any silhouette touching its render border. The manifests record Blender source hashes and every frame hash. `tests/unit/oblique-square-brick-wall-catalog.test.ts` verifies the two source hashes and all 144 rendered PNG hashes against the manifests.
+
+These standalone renders show model detail. Scene-level 1920×1080 visual QA should check whether the masonry still reads at game zoom and with both full and cutaway walls next to room fixtures.
