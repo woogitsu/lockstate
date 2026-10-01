@@ -53,6 +53,10 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private readonly readyPromise: Promise<void>;
   private resolveReady!: () => void;
   private readonly assetTextureKeys = new Map<string, string>();
+  private readonly queuedAssetTextures = new Map<string, string>();
+  private readonly loadingAssetTextureKeys = new Set<string>();
+  private readonly failedAssetTextureKeys = new Set<string>();
+  private assetTextureLoaderRunning = false;
   private assetImages: Phaser.GameObjects.Image[] = [];
 
   public constructor(options: ObliqueWorldSceneOptions) {
@@ -242,6 +246,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
 
   private paintRaised(projection: ObliqueWorldProjection): void {
     const raised = this.raisedGraphics;
+    this.selectPoseTextures(projection);
     raised.clear();
     for (const image of this.assetImages) image.destroy();
     this.assetImages = [];
@@ -263,6 +268,49 @@ export class ObliqueWorldScene extends Phaser.Scene {
     }
   }
 
+  /** Keep each visible object on the catalog frame nearest the current camera pose. */
+  private selectPoseTextures(projection: ObliqueWorldProjection): void {
+    for (const item of projection.raised) {
+      if (item.kind === 'actor' || item.assetId === undefined) continue;
+      const catalog = this.catalogs.get(item.assetId);
+      if (catalog === undefined) continue;
+      const frame = selectObliqueModuleFrame(catalog, this.pose);
+      const key = `oblique:${item.assetId}:${frame.yawDegrees}:${frame.elevationDegrees}`;
+      if (this.textures.exists(key)) {
+        this.assetTextureKeys.set(item.assetId, key);
+      } else {
+        // A previous pose must never be painted onto the new geometry.
+        this.assetTextureKeys.delete(item.assetId);
+        if (!this.loadingAssetTextureKeys.has(key) && !this.failedAssetTextureKeys.has(key)) {
+          this.queuedAssetTextures.set(key, frame.image);
+        }
+      }
+    }
+    this.flushAssetTextureQueue();
+  }
+
+  private flushAssetTextureQueue(): void {
+    if (this.assetTextureLoaderRunning || this.queuedAssetTextures.size === 0) return;
+    const batch = [...this.queuedAssetTextures];
+    this.queuedAssetTextures.clear();
+    this.assetTextureLoaderRunning = true;
+    for (const [key, url] of batch) {
+      this.loadingAssetTextureKeys.add(key);
+      this.load.image(key, url);
+    }
+    this.load.once(Phaser.Loader.Events.COMPLETE, () => {
+      for (const [key] of batch) {
+        this.loadingAssetTextureKeys.delete(key);
+        if (!this.textures.exists(key)) this.failedAssetTextureKeys.add(key);
+      }
+      this.assetTextureLoaderRunning = false;
+      this.lastPaintedPoseRevision = -1;
+      this.repaint();
+      this.flushAssetTextureQueue();
+    });
+    this.load.start();
+  }
+
   /** Load and paint one authored PNG for every mapped solid; graphics remain the fail-closed fallback. */
   private paintAsset(item: ObliqueSolid): void {
     if (item.assetId === undefined) return;
@@ -279,8 +327,8 @@ export class ObliqueWorldScene extends Phaser.Scene {
     if (this.catalogs.size === 0) return;
     const pending: { assetId: string; key: string; url: string }[] = [];
     for (const [assetId, catalog] of this.catalogs) {
-      const key = `oblique:${assetId}`;
       const frame = selectObliqueModuleFrame(catalog, this.pose);
+      const key = `oblique:${assetId}:${frame.yawDegrees}:${frame.elevationDegrees}`;
       pending.push({ assetId, key, url: frame.image });
       this.load.image(key, frame.image);
     }
@@ -289,6 +337,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
       this.load.start();
     });
     for (const item of pending) if (this.textures.exists(item.key)) this.assetTextureKeys.set(item.assetId, item.key);
+    this.lastPaintedPoseRevision = -1;
     this.repaint();
   }
 

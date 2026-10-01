@@ -22,4 +22,11 @@ describe('utility oblique manifest integration', () => {
     expect(frame.elevationDegrees).toBe(40);
     expect(frame.image).toMatch(/^\/assets\/environment\/oblique\/.+\.png$/);
   });
+
+  it('selects 180° from the 0..330° authored grid when the camera crosses the signed seam', () => {
+    const catalog = parseObliqueModuleCatalog(readJson('oblique-fixture-cell-waste-bin.v1.json'));
+    const frame = selectObliqueModuleFrame(catalog, { yawRadians: Math.PI, elevationRadians: 20 * Math.PI / 180 });
+    expect(frame.yawDegrees).toBe(180);
+    expect(frame.elevationDegrees).toBe(20);
+  });
 });
