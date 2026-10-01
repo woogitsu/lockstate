@@ -8,6 +8,12 @@ for (const viewport of [{ width: 1920, height: 1080 }, { width: 2560, height: 14
     const prompt = page.locator('.empty-world-prompt');
     await expect(prompt).toBeVisible();
     await expect(prompt).toHaveAccessibleName('Start a prison');
+    const planningSurface = await prompt.evaluate((element) => {
+      const style = getComputedStyle(element, '::before');
+      return { content: style.content, backgroundImage: style.backgroundImage };
+    });
+    expect(planningSurface.content).toBe('""');
+    expect(planningSurface.backgroundImage).toContain('repeating-linear-gradient');
     const minimap = page.locator('.hud-minimap__surface');
     await expect(minimap).toBeDisabled();
     await expect(minimap).toHaveAccessibleName('Create or load a prison to see the map');

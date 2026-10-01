@@ -55,6 +55,38 @@ canvas {
   touch-action: auto;
 }
 
+/*
+ * An empty session still needs a readable planning surface. Phaser paints its
+ * unloaded world as the void colour, which made the largest area of the Full
+ * HD start screen a flat near-black rectangle behind this card (#1580). Keep
+ * the canvas as the pointer target, but give the card a theme-aware grid that
+ * sits behind it and quietly establishes the same tile scale used after a
+ * prison is created. The pseudo-element is scoped to the visible empty state,
+ * so it disappears as soon as a session is created or loaded.
+ */
+.empty-world-prompt:not([hidden])::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-color: var(--surface-base);
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0,
+      transparent calc(64px - var(--hairline)),
+      var(--border-hairline) 64px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent calc(64px - var(--hairline)),
+      var(--border-hairline) 64px
+    );
+  opacity: 0.92;
+}
+
 .empty-world-prompt__actions button {
   pointer-events: auto;
 }
