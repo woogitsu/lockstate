@@ -104,6 +104,13 @@ export class ObliqueWorldScene extends Phaser.Scene {
     };
     this.input.on('pointerup', stopTurn);
     this.input.on('pointerupoutside', stopTurn);
+    // Arrow keys provide the same small, reversible camera turns as the
+    // right-button drag. Keep this on the scene input so HUD controls and
+    // remapped bindings can call setPoseRadians through the same seam.
+    this.input.keyboard?.on('keydown-LEFT', () => this.turnByKeyboard(-1, 0));
+    this.input.keyboard?.on('keydown-RIGHT', () => this.turnByKeyboard(1, 0));
+    this.input.keyboard?.on('keydown-UP', () => this.turnByKeyboard(0, 1));
+    this.input.keyboard?.on('keydown-DOWN', () => this.turnByKeyboard(0, -1));
   }
 
   public get cameraPose(): ObliqueCameraState { return this.pose; }
@@ -144,6 +151,13 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.pose = changeObliquePoseAtScreenPoint(this.pose, screen, yawRadians, elevation);
     this.poseRevision += 1;
     this.repaint();
+  }
+
+  private turnByKeyboard(yawSteps: number, elevationSteps: number): void {
+    this.setPoseRadians(
+      this.pose.yawRadians + yawSteps * Math.PI / 18,
+      this.pose.elevationRadians + elevationSteps * Math.PI / 36,
+    );
   }
 
   public override update(time: number): void {

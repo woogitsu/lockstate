@@ -17,6 +17,12 @@ test('real render feed cell keeps one build square under the cursor while the sc
   expect(afterDrag.elevationDegrees).not.toBeCloseTo(beforeDrag.elevationDegrees, 3);
   expect(afterDrag.elevationDegrees).toBeGreaterThanOrEqual(20);
   expect(afterDrag.elevationDegrees).toBeLessThanOrEqual(80);
+  const beforeKeyboard = await page.evaluate(() => window.lockstateObliqueWorldHarness.cameraPose());
+  await page.keyboard.press('ArrowLeft');
+  await page.keyboard.press('ArrowUp');
+  const afterKeyboard = await page.evaluate(() => window.lockstateObliqueWorldHarness.cameraPose());
+  expect(afterKeyboard.yawDegrees).toBeLessThan(beforeKeyboard.yawDegrees);
+  expect(afterKeyboard.elevationDegrees).toBeGreaterThan(beforeKeyboard.elevationDegrees);
   expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.medicalObliqueInspection())).toEqual([
     { objectId: 'object.medical-bed', assetId: 'furniture.medical-bed.variants', footprint: { width: 1, height: 2 } },
     { objectId: 'object.medicine-cabinet', assetId: 'fixture.medicine-cabinet.variants', footprint: { width: 1, height: 1 } },
