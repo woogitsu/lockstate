@@ -3,6 +3,8 @@ import type { RoomTemplatePlan, TemplateSquare, RoomTemplateCostQuote, RoomTempl
 interface Point { readonly x: number; readonly y: number }
 export interface RoomTemplateWorldBridgeOptions {
   readonly tileSize: number;
+  readonly preparePreview?: (screen: Point, physicalMove: boolean) => void;
+  readonly resetPreview?: () => void;
   readonly pick: (screen: Point) => TemplateSquare;
   readonly project: (world: Point) => Point;
   readonly objectFootprint: (id: string) => { readonly width: number; readonly height: number } | undefined;
@@ -31,9 +33,10 @@ export function installRoomTemplateWorldBridge(canvas: HTMLCanvasElement, tool: 
   let disposed = false;
   let lastScreen: Point | undefined;
 
-  const move = (screen: Point): void => {
+  const move = (screen: Point, physicalMove = false): void => {
     if (!tool.isArmed()) return;
     lastScreen = screen;
+    options.preparePreview?.(screen, physicalMove);
     const next = options.pick(screen);
     if (origin?.x === next.x && origin.y === next.y && selection === tool.revision) return;
     origin = next;
@@ -58,7 +61,7 @@ export function installRoomTemplateWorldBridge(canvas: HTMLCanvasElement, tool: 
     if (!tool.isArmed() || (event.buttons & 6) !== 0 || (event.type !== 'pointermove' && event.button !== 0)) return false;
     event.preventDefault();
     event.stopImmediatePropagation();
-    move(screenOf(event));
+    move(screenOf(event), true);
     return true;
   };
   const pointerMove = (event: PointerEvent): void => {
@@ -86,7 +89,7 @@ export function installRoomTemplateWorldBridge(canvas: HTMLCanvasElement, tool: 
     }).catch(() => { if (current === requestRevision) verdict = undefined; });
   };
   const cancel = (event: KeyboardEvent): void => {
-    if (event.key === 'Escape' && tool.isArmed()) { resetPress(); tool.standDown(); plan = undefined; requestRevision += 1; }
+    if (event.key === 'Escape' && tool.isArmed()) { resetPress(); options.resetPreview?.(); tool.standDown(); plan = undefined; requestRevision += 1; }
   };
   const interrupted = (event: PointerEvent): void => { if (event.pointerId === downPointer) resetPress(); };
   // A release outside the canvas must not become a later placement on re-entry.
@@ -103,7 +106,7 @@ export function installRoomTemplateWorldBridge(canvas: HTMLCanvasElement, tool: 
     // Keyboard pan/turn/tilt changes picking without a pointer event. Refresh
     // the cursor footprint before painting; move deduplicates unchanged tiles.
     if (tool.isArmed() && lastScreen !== undefined) move(lastScreen);
-    else if (!tool.isArmed()) lastScreen = undefined;
+    else if (!tool.isArmed()) { lastScreen = undefined; options.resetPreview?.(); }
     layer.hidden = !tool.isArmed() || plan === undefined;
     if (tool.isArmed() && origin !== undefined && selection !== tool.revision) {
       origin = undefined;
