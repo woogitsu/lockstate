@@ -7,6 +7,10 @@ for (const mode of ['top-down', 'oblique']) test(`${mode}: Full HD room catalogu
   await page.goto(mode === 'oblique' ? '/?renderer=oblique' : '/');
   await page.getByRole('button', { name: 'New prison' }).click();
   await expect(page.locator('.hud-clock__day')).toHaveText('1');
+  if (mode === 'oblique') {
+    await page.getByRole('button', { name: 'Rotate camera right', exact: true }).click();
+    await page.getByRole('button', { name: 'Raise camera angle', exact: true }).click();
+  }
   await page.getByRole('button', { name: 'Build', exact: true }).click();
   await page.getByRole('button', { name: 'Room plans', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'Room plans' });

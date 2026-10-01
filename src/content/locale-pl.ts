@@ -1130,7 +1130,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   // alone, and numerals do not decline.
   'hud.build.target-value': '{x}, {y} · {edge}',
   'hud.build.target-run': '{count} × {edge} od {x}, {y}',
-  'hud.build.target-squares': '{count} pełnych pól od {x}, {y} · wartość katalogowa {cost}',
+  'hud.build.target-squares': { one: '{count} pe\u0142ne pole od {x}, {y} | warto\u015b\u0107 katalogowa {cost}', few: '{count} pe\u0142ne pola od {x}, {y} | warto\u015b\u0107 katalogowa {cost}', many: '{count} pe\u0142nych p\u00f3l od {x}, {y} | warto\u015b\u0107 katalogowa {cost}', other: '{count} pe\u0142nego pola od {x}, {y} | warto\u015b\u0107 katalogowa {cost}' },
   'hud.build.target-tile': '{x}, {y}',
   'hud.build.coordinates': 'Wpisz współrzędne',
   'hud.build.coordinates-hint': 'Droga przez klawiaturę. Wskazanie na mapie jest szybsze.',
