@@ -1599,7 +1599,7 @@ test.describe('HUD shell', () => {
       // The page really laid out, before a single number below is trusted.
       const before = await rows(page);
       expect(before, '`.hud` is not the six-row grid this test is about').toHaveLength(6);
-      const reservedRow = before[EVENT_ROW];
+      const reservedRow = before[EVENT_ROW] ?? 0;
       expect(reservedRow, 'the approved event-row reservation is missing').toBeGreaterThanOrEqual(32);
       await expect(band).toBeHidden();
 
