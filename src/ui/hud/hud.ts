@@ -2349,6 +2349,13 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
         );
         return;
       }
+      if (intent.squareFootprint === true) {
+        dispatchCommand({
+          kind: 'place-build-order', definitionId: intent.definitionId,
+          edges: [], squares: [{ x: intent.x, y: intent.y }],
+        }, buildPanel.submitControl);
+        return;
+      }
       // A run of one. The numeric route names exactly one edge, and it says
       // so in the same shape a drag does so that the host has one case to
       // handle and the gate has one action id to key on.

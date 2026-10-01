@@ -38,6 +38,8 @@ test('an angled world gesture reaches the real build command and survives save/l
   await page.mouse.move(900, 540);
   await page.mouse.down({ button: 'left' });
   await page.mouse.move(1060, 540, { steps: 8 });
+  await expect(page.locator('.hud-build__target-value')).toContainText('whole squares');
+  await expect(page.locator('.hud-build__target-value')).toContainText('catalogue value');
   await page.mouse.up({ button: 'left' });
   await expect.poll(async () => page.evaluate(() =>
     ((window as Window & { lockstateSentToWorker?: unknown[] }).lockstateSentToWorker ?? [])

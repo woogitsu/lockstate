@@ -1088,6 +1088,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.catalogue-empty': 'Nie ma nic do zbudowania',
   'hud.build.catalogue-row-price': '{buildable} · {total}',
   'hud.build.catalogue-row-price-segment': '{buildable} · {total} za segment',
+  'hud.build.catalogue-row-price-square': '{buildable} · {total} za pole',
   'hud.build.selected': 'Wybrane',
   'hud.build.placement': 'Gdzie',
   // *pole*, not *kafelek*: a Polish strategy game calls a grid square a pole.
@@ -1110,6 +1111,8 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.arm': 'Stawiaj na mapie',
   'hud.build.arm-hint':
     'Kliknij krawędź pola, aby postawić ścianę. Przeciągnij wzdłuż niej, aby położyć cały ciąg. Dwa palce, środkowy przycisk i strzałki nadal poruszają kamerą.',
+  'hud.build.arm-hint-square':
+    'Kliknij całe pole, aby postawić ścianę. Przeciągnij przez pola, aby położyć cały ciąg. Dwa palce, środkowy przycisk i strzałki nadal poruszają kamerą.',
   'hud.build.arm-hint-object':
     'Kliknij pole wewnątrz wyznaczonego pomieszczenia, aby go postawić. Jedno naciśnięcie, jeden obiekt. Dwa palce, środkowy przycisk i strzałki nadal poruszają kamerą.',
   'hud.build.disarm': 'Przestań stawiać',
@@ -1123,6 +1126,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   // alone, and numerals do not decline.
   'hud.build.target-value': '{x}, {y} · {edge}',
   'hud.build.target-run': '{count} × {edge} od {x}, {y}',
+  'hud.build.target-squares': '{count} pełnych pól od {x}, {y} · wartość katalogowa {cost}',
   'hud.build.target-tile': '{x}, {y}',
   'hud.build.coordinates': 'Wpisz współrzędne',
   'hud.build.coordinates-hint': 'Droga przez klawiaturę. Wskazanie na mapie jest szybsze.',

@@ -132,6 +132,7 @@ import {
   MAX_PURCHASE_QUANTITY,
   TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
   placementCostMinorUnits,
+  placementRunCatalogueCostMinorUnits,
   staffDailyWageMinorUnits,
 } from './simulation/economy';
 import { staffHireCostMinorUnits } from './simulation/staff';
@@ -1050,6 +1051,7 @@ function buildCatalogue(): HudBuildViewModel {
       // the rule is written, which is what `submitOrder` already calls and
       // what `docs/NAVIGATION.md` said this surface was owed.
       occupiesEdge: occupiesTileEdge(definition),
+      squareFootprint: definition.category === 'wall',
       // Which group the catalogue's filter puts this row in, and what that
       // group is called (ADR 0035). Both are answers only this layer can give:
       // the id is simulation content and the key is a localization key, and the
@@ -2973,7 +2975,6 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           }
           objects?.setArmed(false, { removing: false });
           tool?.setArmed(intent.armed, intent.definitionId,
-            worldScene instanceof ObliqueWorldScene &&
             BUILDABLE_REGISTRY.get(intent.definitionId ?? '')?.category === 'wall');
           return;
         }
@@ -4234,7 +4235,17 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
   observeChromeRowOverflow(chromeRow, [displayScale.element, themeControl.element]);
   hud.preferencesSlot.append(languageControl.element);
 
-  tool?.attachReadout((target) => hud?.setBuildTarget(target));
+  tool?.attachReadout((target) => {
+    if (target?.squareRun !== true || target.definitionId === undefined) {
+      hud?.setBuildTarget(target);
+      return;
+    }
+    const definition = BUILDABLE_REGISTRY.get(target.definitionId);
+    const catalogueCostMinorUnits = definition === undefined
+      ? undefined
+      : placementRunCatalogueCostMinorUnits(definition.materialsRequired, target.segments ?? 1);
+    hud?.setBuildTarget(catalogueCostMinorUnits === undefined ? target : { ...target, catalogueCostMinorUnits });
+  });
   return hud;
 }
 

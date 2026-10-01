@@ -268,7 +268,10 @@ export class BuildTool
 
   public targetSquares(squares: readonly SquareTarget[] | undefined): void {
     const first = squares?.[0];
-    this.readout?.(first === undefined ? undefined : { x: first.x, y: first.y, segments: squares?.length ?? 0 });
+    this.readout?.(first === undefined ? undefined : {
+      x: first.x, y: first.y, segments: squares?.length ?? 0, squareRun: true,
+      ...(this.definitionId === undefined ? {} : { definitionId: this.definitionId }),
+    });
   }
 
   /**
