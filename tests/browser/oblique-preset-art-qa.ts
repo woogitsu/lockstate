@@ -86,6 +86,8 @@ interface Report {
   readonly zoningNumericIds: readonly number[];
   readonly builtFixtureCount: number;
   readonly builtWallCount: number;
+  readonly projectedFixtureCount: number;
+  readonly projectedSolidCount: number;
   readonly projectedAssetIds: readonly string[];
   readonly missingAssetIds: readonly string[];
   readonly loadedTextureKeys: readonly string[];
@@ -123,6 +125,8 @@ window.lockstatePresetArtQA = {
       preset,
       zoningNumericIds: plan.zones.map((zone) => world.getZoning({ x: tileCoordinate(zone.x), y: tileCoordinate(zone.y) })),
       builtFixtureCount: structures.length, builtWallCount: plan.wallSquares.length,
+      projectedFixtureCount: solids.filter((item) => String(item.id).startsWith('fixture-')).length,
+      projectedSolidCount: solids.length,
       projectedAssetIds: [...new Set(assetIds)].sort(),
       missingAssetIds: solids.filter((item) => item.assetId === undefined || !catalogs.has(item.assetId)).map((item) => String(item.id)),
       loadedTextureKeys: [...privateScene.assetTextureKeys.values()].sort(),

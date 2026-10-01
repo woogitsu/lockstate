@@ -26,14 +26,15 @@ for (const preset of ROOM_TEMPLATE_IDS) {
         window.lockstatePresetArtQA.setPose(yawDegrees, elevationDegrees), [yaw, elevation] as [number, number]);
       await expect.poll(() => page.evaluate(() => {
         const report = window.lockstatePresetArtQA.report();
-        return report.imageCount === report.builtFixtureCount + report.builtWallCount
+        return report.imageCount === report.projectedSolidCount
           && report.expectedTextureKeys.every((key) => report.loadedTextureKeys.includes(key));
       })).toBe(true);
       const report = await page.evaluate(() => window.lockstatePresetArtQA.report());
       expect(report.zoningNumericIds).toEqual(instantiateRoomTemplate(preset, { x: 4, y: 4 }).zones.map((zone) =>
         defaultRoomContentRegistry.getById(zone.roomId)!.numericId));
       expect(report.missingAssetIds).toEqual([]);
-      expect(report.imageCount).toBe(report.builtFixtureCount + report.builtWallCount);
+      expect(report.projectedFixtureCount).toBe(report.builtFixtureCount);
+      expect(report.imageCount).toBe(report.projectedSolidCount);
       expect(report.fallbackCommands).toBe(0);
       for (const key of report.expectedTextureKeys) expect(report.loadedTextureKeys).toContain(key);
       if ((yaw === 45 && ['classroom-basic', 'kitchen-basic', 'infirmary-basic', 'laundry-basic'].includes(preset))
