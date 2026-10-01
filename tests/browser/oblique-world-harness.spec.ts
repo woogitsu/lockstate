@@ -42,3 +42,66 @@ test('near wall pixels lower around a furnished cell as yaw and elevation change
     await page.screenshot({ path: testInfo.outputPath(`furnished-cell-yaw${yaw}-elev${elevation}-cutaway-fullhd.png`) });
   }
 });
+
+test('square Build ghost follows a stationary cursor when the camera turns', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/tests/browser/oblique-world-harness.html');
+  await page.evaluate(() => window.lockstateObliqueWorldHarness.ready());
+  await page.evaluate(() => window.lockstateObliqueWorldHarness.armSquareBuild(true));
+  await page.evaluate(() => window.lockstateObliqueWorldHarness.setPose(0, 45));
+  const pointer = { x: 1100, y: 580 };
+  await page.mouse.move(pointer.x, pointer.y);
+  const initial = await page.evaluate(() => window.lockstateObliqueWorldHarness.targetSquares());
+  await page.evaluate(() => window.lockstateObliqueWorldHarness.setPose(37, 25));
+  const expected = (() => {
+    const yaw = 37 * Math.PI / 180;
+    const elevation = 25 * Math.PI / 180;
+    const across = (pointer.x - 960) / 1.25;
+    const depth = (pointer.y - 540) / (1.25 * Math.sin(elevation));
+    return [{
+      x: Math.floor((4 * 64 + Math.cos(yaw) * across + Math.sin(yaw) * depth) / 64),
+      y: Math.floor((4 * 64 - Math.sin(yaw) * across + Math.cos(yaw) * depth) / 64),
+    }];
+  })();
+  expect(initial).not.toEqual(expected);
+  expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.targetSquares()),
+    'the preview still addressed the old ground square without pointer motion').toEqual(expected);
+  await page.mouse.click(pointer.x, pointer.y);
+  expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.placedSquares().at(-1))).toEqual(expected);
+});
+
+test('square Build preview and command agree across intermediate angles, drag directions and map edge', async ({ page }) => {
+  test.setTimeout(120_000);
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/tests/browser/oblique-world-harness.html');
+  await page.evaluate(() => window.lockstateObliqueWorldHarness.ready());
+  await page.evaluate(() => window.lockstateObliqueWorldHarness.armSquareBuild(true));
+  for (const [yaw, elevation] of [[37, 25], [-63, 65]] as const) {
+    await page.evaluate(([y, e]) => window.lockstateObliqueWorldHarness.setPose(y, e), [yaw, elevation] as const);
+    for (const [from, to] of [
+      [{ x: 2, y: 2 }, { x: 5, y: 2 }],
+      [{ x: 5, y: 2 }, { x: 2, y: 2 }],
+      [{ x: 2, y: 2 }, { x: 2, y: 5 }],
+      [{ x: 2, y: 5 }, { x: 2, y: 2 }],
+      [{ x: 0, y: 0 }, { x: 0, y: 3 }],
+      [{ x: 7, y: 7 }, { x: 7, y: 4 }],
+    ] as const) {
+      const start = await page.evaluate((tile) => window.lockstateObliqueWorldHarness.pointAtTile(tile.x, tile.y), from);
+      const end = await page.evaluate((tile) => window.lockstateObliqueWorldHarness.pointAtTile(tile.x, tile.y), to);
+      const count = Math.abs(to.x - from.x) + Math.abs(to.y - from.y) + 1;
+      const expected = Array.from({ length: count }, (_, index) => ({
+        x: from.x + Math.sign(to.x - from.x) * index,
+        y: from.y + Math.sign(to.y - from.y) * index,
+      }));
+      await page.mouse.move(start.x, start.y);
+      await page.mouse.down({ button: 'left' });
+      await page.mouse.move(end.x, end.y, { steps: 6 });
+      expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.targetSquares()),
+        `preview mismatch yaw ${yaw}, elevation ${elevation}, ${JSON.stringify(from)} to ${JSON.stringify(to)}`)
+        .toEqual(expected);
+      await page.mouse.up({ button: 'left' });
+      expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.placedSquares().at(-1)),
+        `placed footprint mismatch yaw ${yaw}, elevation ${elevation}`).toEqual(expected);
+    }
+  }
+});

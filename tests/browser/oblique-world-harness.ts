@@ -10,6 +10,7 @@ import type { RenderFrame } from '../../src/rendering/feed/render-feed';
 import type { Point } from '../../src/rendering/camera/coordinates';
 import { defaultObjectRegistry } from '../../src/content/object-catalog';
 import { obliqueAssetIdForObject } from '../../src/rendering/assets/oblique-object-mapping';
+import type { SquareTarget } from '../../src/rendering/build/square-picking';
 
 export interface MedicalObliqueInspection {
   readonly objectId: 'object.medical-bed' | 'object.medicine-cabinet';
@@ -26,6 +27,9 @@ export interface ObliqueWorldHarness {
   medicalObliqueInspection(): readonly MedicalObliqueInspection[];
   setCellInterior(enabled: boolean): Promise<void>;
   wallClip(tileX: number, tileY: number): { readonly x: number; readonly y: number; readonly width: number; readonly height: number };
+  armSquareBuild(armed: boolean): void;
+  targetSquares(): readonly SquareTarget[] | undefined;
+  placedSquares(): readonly (readonly SquareTarget[])[];
 }
 
 declare global {
@@ -64,12 +68,22 @@ let frame: RenderFrame = {
 
 let resolveReady!: () => void;
 const ready = new Promise<void>((resolve) => { resolveReady = resolve; });
+let buildArmed = false;
+let buildTarget: readonly SquareTarget[] | undefined;
+const buildPlacements: (readonly SquareTarget[])[] = [];
 class HarnessScene extends ObliqueWorldScene {
   public override create(): void { super.create(); resolveReady(); }
 }
 const scene = new HarnessScene({
   feed: { readFrame: () => frame },
   keyValueStore: { getItem: () => null, setItem: () => {} },
+  buildTool: {
+    isArmed: () => buildArmed,
+    usesSquareFootprint: () => true,
+    place: () => { throw new Error('Square Build sent an edge gesture'); },
+    placeSquares: (squares) => { buildPlacements.push([...squares]); },
+    targetSquares: (squares) => { buildTarget = squares === undefined ? undefined : [...squares]; },
+  },
 });
 const game = new Phaser.Game({
   type: Phaser.AUTO,
@@ -84,6 +98,9 @@ const game = new Phaser.Game({
 
 window.lockstateObliqueWorldHarness = {
   ready: () => ready,
+  armSquareBuild(armed) { buildArmed = armed; },
+  targetSquares: () => buildTarget,
+  placedSquares: () => buildPlacements,
   async setPose(yawDegrees, elevationDegrees) {
     scene.setPoseRadians(yawDegrees * Math.PI / 180, elevationDegrees * Math.PI / 180);
     await new Promise<void>((resolve) => { game.events.once(Phaser.Core.Events.POST_RENDER, () => resolve()); });
