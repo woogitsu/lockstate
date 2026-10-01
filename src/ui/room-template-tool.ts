@@ -11,7 +11,15 @@ export type RoomTemplatePreflight =
   | { readonly ok: true }
   | { readonly ok: false; readonly reason: 'unowned-land' | 'structure-occupied' | 'object-occupied'; readonly tile: TemplateSquare };
 
+export interface RoomTemplateCostQuote {
+  readonly orderCount: number;
+  readonly materials: readonly { readonly itemId: string; readonly quantity: number }[];
+  readonly catalogueCostMinorUnits?: number;
+}
+
 export interface RoomTemplatePlacementPort {
+  readonly quote?: (templateId: RoomTemplateId) => Promise<RoomTemplateCostQuote>;
+  readonly onArm?: () => void;
   /** Read-only worker query over every square, including the room's future objects. */
   preflight(request: RoomTemplatePlacementRequest): Promise<RoomTemplatePreflight>;
   /** Backend must validate again and commit atomically; preflight can become stale. */
@@ -26,13 +34,22 @@ export class RoomTemplateTool {
   private selected: RoomTemplateId = 'cell-basic';
   private mirrorX = false;
   private busy = false;
+  private armed = false;
+  private selectionRevision = 0;
 
   public constructor(private readonly port: RoomTemplatePlacementPort) {}
 
   public select(templateId: RoomTemplateId, mirrorX = false): void {
+    if (this.selected !== templateId || this.mirrorX !== mirrorX) this.selectionRevision += 1;
     this.selected = templateId;
     this.mirrorX = mirrorX;
   }
+
+  public get revision(): number { return this.selectionRevision; }
+  public isArmed(): boolean { return this.armed; }
+  public arm(): void { this.port.onArm?.(); this.armed = true; this.selectionRevision += 1; }
+  public standDown(): void { if (this.armed) this.selectionRevision += 1; this.armed = false; }
+  public async quote(): Promise<RoomTemplateCostQuote | undefined> { return this.port.quote?.(this.selected); }
 
   public planAt(origin: TemplateSquare): RoomTemplatePlan {
     return instantiateRoomTemplate(this.selected, origin, { mirrorX: this.mirrorX });
