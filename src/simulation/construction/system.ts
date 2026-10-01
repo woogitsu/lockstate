@@ -2043,12 +2043,6 @@ export class ConstructionSystem implements SystemRegistration {
     const definition = getBuildableDefinition(order.definitionId);
     if (order.footprint === 'square') {
       this.world.setSquareStructure(order.location, 0);
-      if (definition.category === 'wall') {
-        const edge = resolveBuildEdge(order);
-        this.writeEdge(order.location, edge, this.remainingEdgeValue(order, edge));
-      } else {
-        this.world.setSquareStructure(order.location, 0);
-      }
       return;
     }
     const edgeValue = edgeNumericIdFor(definition);

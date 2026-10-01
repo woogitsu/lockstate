@@ -29,9 +29,9 @@ export function createRoomTemplateBuildPlan(
     const top = plan.origin.y;
     const right = left + plan.width - 1;
     const bottom = top + plan.height - 1;
-    if (square.y === top) return { location: { x: square.x, y: square.y }, edge: 'north' };
+    if (square.y === top) return { location: { x: square.x, y: square.y + 1 }, edge: 'north' };
     if (square.y === bottom) return { location: { x: square.x, y: square.y + 1 }, edge: 'north' };
-    if (square.x === left) return { location: { x: square.x, y: square.y }, edge: 'west' };
+    if (square.x === left) return { location: { x: square.x + 1, y: square.y }, edge: 'west' };
     if (square.x === right) return { location: { x: square.x + 1, y: square.y }, edge: 'west' };
     throw new RangeError(`Room template wall square ${square.x},${square.y} is not on the perimeter.`);
   };

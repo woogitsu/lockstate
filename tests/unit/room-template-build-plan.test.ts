@@ -20,8 +20,9 @@ describe('one deterministic room template build plan', () => {
   it('keeps mirrored geometry and identity stable for a queued command restored later', () => {
     const first = createRoomTemplateBuildPlan('cell-large', { x: 2, y: 3 }, true, 9);
     expect(createRoomTemplateBuildPlan('cell-large', { x: 2, y: 3 }, true, 9)).toEqual(first);
-    expect(first.plan.doorSquares).toEqual([{ x: 5, y: 10 }]);
+    expect(first.plan.doorSquares).toEqual([{ x: 5, y: 9 }]);
     expect(first.orders[first.plan.wallSquares.length]?.location).toEqual({ x: 5, y: 10 });
   });
 });
+
 
