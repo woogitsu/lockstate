@@ -36,3 +36,31 @@ describe('room-template HUD tool contract', () => {
 });
 
 
+
+describe('room-template mouse arming', () => {
+  it('stays inactive while browsing, and changes revision when replacing an armed plan', () => {
+    const tool = new RoomTemplateTool({ preflight: async () => ({ ok: true }), place: async () => {} });
+    expect(tool.isArmed()).toBe(false);
+    tool.select('cell-basic');
+    expect(tool.isArmed()).toBe(false);
+    tool.arm();
+    expect(tool.isArmed()).toBe(true);
+    const first = tool.revision;
+    tool.select('cell-large');
+    expect(tool.revision).toBeGreaterThan(first);
+    tool.standDown();
+    expect(tool.isArmed()).toBe(false);
+  });
+});
+
+it('drops a pending preflight when its chosen plan was replaced', async () => {
+  let resolve!: (value: { readonly ok: true }) => void;
+  const place = vi.fn(async () => {});
+  const tool = new RoomTemplateTool({ preflight: () => new Promise(done => { resolve = done; }), place });
+  tool.arm();
+  const pending = tool.placeAt({ x: 3, y: 4 });
+  tool.select('yard-basic');
+  resolve({ ok: true });
+  await pending;
+  expect(place).not.toHaveBeenCalled();
+});
