@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { ROOM_TEMPLATE_IDS } from '../../src/content/room-template-catalog';
+import { roomPerimeterEnclosure } from '../../src/simulation/rooms/enclosure';
 import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { captureSessionSnapshot, restoreSimulationRuntime } from '../../src/simulation/runtime/restore-session';
 import { packCommand } from '../../src/simulation/protocol/commands';
@@ -86,26 +88,42 @@ describe('room template session command', () => {
     expect(restored.runtime.world.snapshot()).toEqual(runtime.world.snapshot());
   });
 
-  it('builds, zones and furnishes a real Cell through scheduled construction', () => {
+  it.each(ROOM_TEMPLATE_IDS)('builds, zones, furnishes and reloads a real %s through scheduled construction', (templateId) => {
     const runtime = createNewSimulationRuntime(73);
     runtime.kernel.submitCommand('template-0', 0, runtime.kernel.tick, packCommand({
-      type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 5, y: 5 },
+      type: 'PlaceRoomTemplate', templateId, origin: { x: 5, y: 5 },
     }));
     for (let tick = 0; tick < 20000 && (runtime.roomTemplates.snapshot().pending.length > 0 || tick === 0); tick += 1) {
       runtime.kernel.step();
     }
     expect(runtime.roomTemplates.snapshot().pending).toEqual([]);
-    expect(runtime.prisoners.roomInstances.getById('room.cell:6:6')).toBeDefined();
+    const preview = createRoomTemplateBuildPlan(templateId, { x: 5, y: 5 }, false, 0).plan;
+    expect(runtime.prisoners.roomInstances.getById(`${preview.zone.roomId}:6:6`)).toBeDefined();
     const objectOrders = runtime.construction.allOrders().filter((order) => order.id.includes('-2-object-'));
-    expect(objectOrders).toHaveLength(2);
+    expect(objectOrders).toHaveLength(preview.objects.length);
     for (let tick = 0; tick < 5000 && objectOrders.some((order) => order.state !== 'completed'); tick += 1) {
       runtime.kernel.step();
     }
     expect(objectOrders.every((order) => order.state === 'completed')).toBe(true);
-    expect(runtime.placedObjects.isTileOccupied(tile(6, 6))).toBe(true);
-    expect(runtime.placedObjects.isTileOccupied(tile(7, 9))).toBe(true);
-    const preview = createRoomTemplateBuildPlan('cell-basic', { x: 5, y: 5 }, false, 0).plan;
+    for (const object of preview.objects) expect(runtime.placedObjects.isTileOccupied(tile(object.x, object.y))).toBe(true);
     for (const square of preview.wallSquares) expect(runtime.world.getSquareStructure(tile(square.x, square.y))).toBe(1);
     for (const object of preview.objects) expect(runtime.world.getSquareStructure(tile(object.x, object.y))).toBe(0);
+    const bundle = captureSessionSnapshot(runtime);
+    const envelope = createSaveEnvelope({
+      gameVersion: 'lockstate-0.0.0', prisonId: 'room-template-test', revision: 1,
+      createdAt: 1_700_000_000_000, updatedAt: 1_700_000_000_001,
+      ...(bundle.masterSeed === undefined ? {} : { masterSeed: bundle.masterSeed }),
+      kernel: bundle.kernel, world: bundle.world, construction: bundle.construction,
+      ...(bundle.entities === undefined ? {} : { entities: bundle.entities }),
+      ...(bundle.simulation === undefined ? {} : { simulation: bundle.simulation }),
+      ...(bundle.identity === undefined ? {} : { identity: bundle.identity }),
+    });
+    const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope)) as unknown);
+    expect(decoded).toMatchObject({ ok: true, migrated: false });
+    if (!decoded.ok) throw new Error('Room template save must decode');
+    const restored = restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle);
+    expect(restored.runtime.world.snapshot()).toEqual(runtime.world.snapshot());
+    expect(restored.runtime.placedObjects.getSnapshot()).toEqual(runtime.placedObjects.getSnapshot());
+    expect(roomPerimeterEnclosure(restored.runtime.world, preview.zone).enclosure).toBe('sealed');
   }, 30000);
 });
