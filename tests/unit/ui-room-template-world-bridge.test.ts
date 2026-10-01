@@ -14,9 +14,9 @@ class ElementStub extends EventTarget {
   }
 }
 
-function pointer(target: EventTarget, kind: string): void {
+function pointer(target: EventTarget, kind: string, clientX = 800): void {
   const event = new Event(kind, { cancelable: true });
-  Object.assign(event, { pointerId: 7, button: 0, buttons: kind === 'pointerdown' ? 1 : 0, clientX: 800, clientY: 400 });
+  Object.assign(event, { pointerId: 7, button: 0, buttons: kind === 'pointerdown' ? 1 : 0, clientX, clientY: 400 });
   target.dispatchEvent(event);
 }
 
@@ -30,7 +30,7 @@ function harness(): { canvas: ElementStub; window: EventTarget; tool: RoomTempla
   const tool = new RoomTemplateTool({ preflight: async () => ({ ok: true }), place });
   tool.arm();
   const dispose = installRoomTemplateWorldBridge(canvas as unknown as HTMLCanvasElement, tool, {
-    tileSize: 32, pick: () => ({ x: 12, y: 8 }), project: p => p,
+    tileSize: 32, pick: p => ({ x: Math.floor(p.x / 32) - 13, y: Math.floor(p.y / 32) - 4 }), project: p => p,
     objectFootprint: () => undefined, label: () => '',
   });
   return { canvas, window, tool, place, dispose };
@@ -39,6 +39,39 @@ function harness(): { canvas: ElementStub; window: EventTarget; tool: RoomTempla
 afterEach(() => vi.unstubAllGlobals());
 
 describe('room plan pointer gesture ownership', () => {
+  it('disarms after an accepted placement even if the cursor moved while confirmation was pending', async () => {
+    const h = harness();
+    let accept!: () => void;
+    h.place.mockImplementationOnce(() => new Promise<void>(resolve => { accept = resolve; }));
+    pointer(h.canvas, 'pointerdown');
+    pointer(h.canvas, 'pointerup');
+    await vi.waitFor(() => expect(h.place).toHaveBeenCalledOnce());
+    pointer(h.canvas, 'pointermove', 832);
+    accept();
+    await vi.waitFor(() => expect(h.tool.isArmed()).toBe(false));
+    pointer(h.canvas, 'pointerdown', 832);
+    pointer(h.canvas, 'pointerup', 832);
+    await Promise.resolve(); await Promise.resolve();
+    expect(h.place).toHaveBeenCalledOnce();
+    h.dispose();
+  });
+
+  it('does not disarm a newly armed tool when an older placement confirmation arrives', async () => {
+    const h = harness();
+    let accept!: () => void;
+    h.place.mockImplementationOnce(() => new Promise<void>(resolve => { accept = resolve; }));
+    pointer(h.canvas, 'pointerdown');
+    pointer(h.canvas, 'pointerup');
+    await vi.waitFor(() => expect(h.place).toHaveBeenCalledOnce());
+    h.tool.standDown();
+    h.tool.select('yard-basic');
+    h.tool.arm();
+    accept();
+    await Promise.resolve(); await Promise.resolve(); await Promise.resolve();
+    expect(h.tool.isArmed()).toBe(true);
+    h.dispose();
+  });
+
   it.each(['pointercancel', 'lostpointercapture'])('does not place after %s interrupts a press', async kind => {
     const h = harness();
     pointer(h.canvas, 'pointerdown');

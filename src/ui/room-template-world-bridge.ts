@@ -73,9 +73,11 @@ export function installRoomTemplateWorldBridge(canvas: HTMLCanvasElement, tool: 
     const destination = { ...origin };
     const current = ++requestRevision;
     void tool.placeAt(destination).then(result => {
-      if (disposed || selected !== tool.revision || current !== requestRevision || !tool.isArmed()) return;
+      if (disposed || selected !== tool.revision || !tool.isArmed()) return;
+      // Hover queries can supersede the preview while this committed command is
+      // awaiting confirmation. They must not discard its accepted result.
       if (result.ok) { tool.standDown(); plan = undefined; }
-      else if (result.reason !== 'busy') { verdict = result; painted = ''; }
+      else if (current === requestRevision && result.reason !== 'busy') { verdict = result; painted = ''; }
     }).catch(() => { if (current === requestRevision) verdict = undefined; });
   };
   const cancel = (event: KeyboardEvent): void => {

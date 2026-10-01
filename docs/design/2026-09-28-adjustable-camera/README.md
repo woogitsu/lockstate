@@ -267,3 +267,8 @@ Merged HUD mouse integration 2a4c65e079 and camera inventory follow-up 3237bc451
 
 Four production-path tests reproduced unintended template placement after pointer cancellation, lost capture, release outside the map, and switching templates during an unfinished press. The bridge now binds the press to both pointer ID and selection revision and clears it on interruption, outside release, window blur and Escape. A fresh press still places the selected plan. Focus-loss regression coverage is included; focused bridge/tool/composition tests pass 36 tests and TypeScript passes. No new player copy or save-format field is introduced.
 
+
+## Accepted command versus newer hover, issue1908
+
+A delayed room-plan confirmation was discarded when moving the cursor triggered a newer hover query, leaving the tool armed after placement. The production-path test fails before the fix (armed true instead of false). Accepted placement now disarms the matching original selection irrespective of newer hover queries; stale refusals still cannot repaint newer previews, and a newly armed selection is protected from older confirmations. Eleven bridge/tool tests and TypeScript pass. This is a source integration checkpoint; browser acceptance remains separate.
+
