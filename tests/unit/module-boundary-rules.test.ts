@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { repositoryPathLabel } from '../helpers/repository-path-label';
 import {
   SIMULATION_CONSTRUCTION_FORMS,
   describeConstructionSite,
@@ -454,7 +455,7 @@ function collectTypeScriptFiles(directory: string): readonly string[] {
 }
 
 const simulationSources: readonly ScannedSource[] = collectTypeScriptFiles(SIMULATION_ROOT).map((path) => ({
-  file: path,
+  file: repositoryPathLabel(path),
   source: readFileSync(path, 'utf8'),
 }));
 
