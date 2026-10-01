@@ -196,6 +196,10 @@
                     {
                         "assetId":  "furniture.kitchen.fridge.variants",
                         "manifest":  "/game-content/oblique-furniture.kitchen-fridge.v1.json"
+                    },
+                    {
+                        "assetId":  "utility.washing-machine.variants",
+                        "manifest":  "/game-content/oblique-utility.washing-machine.v1.json"
                     }
                 ]
 }
