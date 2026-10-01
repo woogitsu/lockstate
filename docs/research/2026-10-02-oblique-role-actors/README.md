@@ -21,3 +21,7 @@ The actual Full HD scene at45-degree yaw/elevation displays all three new role f
 ![Blender cook medic and staff in the actual angled scene](blender-role-actors-fullhd.png)
 
 The new role check uses an explicit render-feed fixture. The current session snapshot decoder publishes prisoners and guards, not cook/medic/staff positions. This change does not invent staff simulation positions or prove those populations' gameplay lifecycle, walking animation, facing, or Save/Load. That remaining integration must be completed before claiming that all five populations are active in gameplay. This is feature-branch runtime evidence, not a production release.
+
+## Corrected orientation runtime acceptance, 2026-10-02
+
+After integrating all 216 regenerated frames with the guard azimuth convention, the same actual canonical cook/medic/staff pixel case passes 1/1 in 14.4 seconds (15.8 seconds suite). The Full HD image above has been replaced with that corrected run and visually inspected. The earlier four-case result predates this orientation correction; population lifecycle limits above still apply.

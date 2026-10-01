@@ -239,6 +239,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 | [2026-10-02 oblique role actors](./2026-10-02-oblique-role-actors/README.md) | Do existing cook, medic and staff Blender sources match the prisoner/guard angled actor scale and foot pivot? | Three real Blender role previews, 216 hashed poses, source-detail audit, alpha-bound comparison and catalog mutation proof; runtime consumer mapping follows. |
 | [2026-10-02 native modal keyboard](./2026-10-02-native-modal-keyboard/README.md) | Does an open room-plan dialog prevent keyboard camera movement and return focus afterward? | Actual production canvas red/green mutation, Tab containment, Escape focus return and resumed camera controls for issue1918. |
 | [2026-10-02 keyboard template rearm](./2026-10-02-keyboard-template-rearm/README.md) | Can every room plan be selected and rearmed using only the keyboard from a genuine map hover? | Actual Full HD twenty-plan keyboard, mirror, quote and Escape checks, prior hidden-ghost failure and mutation evidence for issue1923. |
+| [2026-10-02 template tooltip clearance](./2026-10-02-template-tooltip-clearance/README.md) | Can a large projected plan retain its visible floor while showing construction cost? | Full HD baseline covers 17 squares; geometric placement restores zero overlap in measured center and edge views. |
 
 ### Findings from the first four records that changed a decision
 
