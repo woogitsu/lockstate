@@ -205,3 +205,13 @@ hide interiors, no HUD or text, 16:9 1920 × 1080, no copied game art.” Add:
 - Wall/cutaway Blender kit: `codex/wall-cutaway-art-2026-09-28`.
 - On-screen camera pan: #1590. Rotation input contract: #1591. Both are separate
   from the renderer's still-missing angled projection.
+
+### Kitchen fridge Blender module (2026-10-01)
+
+The kitchen lane now also has a one-tile refrigerator source at
+`assets/source/blender/furniture.kitchen.fridge.variants.blend`, with 72
+transparent yaw/elevation frames and a verified catalog at
+`public/game-content/oblique-furniture.kitchen-fridge.v1.json`. It is registered
+as `furniture.kitchen.fridge.variants`. Like the stove module above, this is
+real authored art and a loader-ready catalog; the production renderer still
+needs the object-sprite consumer and Full HD placement/depth/Save-Load proof.
