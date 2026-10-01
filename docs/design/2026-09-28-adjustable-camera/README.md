@@ -262,3 +262,8 @@ Reopened live ownership declarations and object-removal class/method references 
 
 Merged HUD mouse integration 2a4c65e079 and camera inventory follow-up 3237bc451e into the full catalogue root. Integration exposed two template labels outside HUD_MESSAGE_KEY, CRLF-sensitive composition source matching on Windows, and shifted live quote anchors. Registry references and line-ending normalization fix those failures without removing pinned wiring. Removing the production staff-coverage cadence call fails the contract (1 red); restoring it passes both composition and HUD registry suites (40 tests). Quotation plus those two suites pass 52 tests; TypeScript passes. Full runtime Blender validation and Yard reversible zoning remain independent active work; no release claim is made.
 
+
+## Pointer interruption safety, issue1907
+
+Four production-path tests reproduced unintended template placement after pointer cancellation, lost capture, release outside the map, and switching templates during an unfinished press. The bridge now binds the press to both pointer ID and selection revision and clears it on interruption, outside release, window blur and Escape. A fresh press still places the selected plan. Focus-loss regression coverage is included; focused bridge/tool/composition tests pass 36 tests and TypeScript passes. No new player copy or save-format field is introduced.
+
