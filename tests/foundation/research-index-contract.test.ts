@@ -132,7 +132,7 @@ function pathsLinkedFromIndexedRecords(): Set<string> {
       const target = match[1];
       if (target === undefined) continue;
       const resolved = resolve(join(RESEARCH_ROOT, row.target, '..'), target);
-      linked.add(relative(RESEARCH_ROOT, resolved));
+      linked.add(relative(RESEARCH_ROOT, resolved).replaceAll('\\', '/'));
     }
   }
   return linked;
