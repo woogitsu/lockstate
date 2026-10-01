@@ -37,7 +37,7 @@ export function createRoomTemplateBuildPlan(
   };
   const walls = plan.wallSquares.map((square, index) => {
     const edge = edgeForWall(square);
-    return createBuildOrder(`${prefix}-0-wall-${index.toString().padStart(3, '0')}`, 'wall-brick', location(edge.location), edge.edge, sequence);
+    return createBuildOrder(`${prefix}-0-wall-${index.toString().padStart(3, '0')}`, 'wall-brick', location(edge.location), edge.edge, sequence, 'square');
   });
   const doors = plan.doorSquares.map((square, index) =>
     createBuildOrder(`${prefix}-1-door-${index.toString().padStart(3, '0')}`, 'door-wooden', location(square), 'north', sequence));
