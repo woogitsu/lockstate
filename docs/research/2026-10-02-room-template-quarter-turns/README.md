@@ -68,3 +68,27 @@ A derived order-orientation lookup from template history could avoid the second 
 5. Verify existing room minimum-size semantics before changing any validator: the Basic cell becomes5×2, while room requirements currently express minWidth/minHeight. If orientation-independent minimum dimensions require a new gameplay rule, propose that specific choice to the owner rather than silently accepting it.
 6. Add actual UI quarter-turn control, fit-revision refresh and exact fixture footprint preview; preserve the approved origin lock until physical movement. Camera yaw remains independent of template rotation.
 7. Prove pending and completed Save/Load, collision refusal, partial-build Undo/Redo and real Full HD preview→click for all four orientations. The current geometry/adapter proofs are prerequisites, not delivery of those runtime paths.
+
+
+## Safe final bounds and independent preview checkpoint
+
+The isolated follow-up adds a dormant content preview DTO using the transformed
+wall, door, floor and complete fixture tile extents. It exposes dimensions,
+orientation and fixture count without adding a control, command or save field.
+It is preparation for integration after the owner answers the two draft decisions;
+it is not an enabled quarter-turn feature in the running game.
+
+A new boundary regression found a real defect in the prepared geometry: a valid
+180-degree basic-cell footprint at `MAX_SAFE_INTEGER - 4` was rejected because
+rotation validated an unused intermediate 90-degree extent. The original source
+failed this regression (1 red / 43 green). Direct local transforms now validate
+only the requested final footprint; no unsafe transient world-coordinate sums are
+needed. Final rotated coordinates and canonical door descriptors are checked for
+all 20 plans at both signed safe-integer limits, including inverse rotation.
+
+The preview test independently rotates each individual authored occupied tile
+and compares the complete role-tagged tile set for every plan, both mirrors and
+all four orientations. Replacing complete fixture rectangles with 1x1 anchors
+made 16 of its 21 cases fail. Restoring the source gave 109 passing cases across
+rotation, construction descriptor, preview and catalogue suites; TypeScript also
+passed. No browser was started and no production default was activated.

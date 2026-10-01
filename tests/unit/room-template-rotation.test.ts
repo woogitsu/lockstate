@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { ROOM_TEMPLATE_IDS, instantiateRoomTemplate } from '../../src/content/room-template-catalog';
 import { defaultObjectRegistry } from '../../src/content/object-catalog';
 import { getBuildableDefinition } from '../../src/simulation/construction/definition';
+import { roomTemplateConstructionGeometry } from '../../src/content/room-template-construction-geometry';
 import { rotateRoomTemplateGeometry } from '../../src/content/room-template-rotation';
 
 const footprint = (id: string) => defaultObjectRegistry.getById(getBuildableDefinition(id).placesObjectId!)!.footprint;
@@ -55,9 +56,30 @@ describe('dormant room-plan quarter-turn geometry', () => {
       }
     }
   });
+  it('accepts a safe final half-turn without requiring an unused intermediate footprint', () => {
+    const plan = instantiateRoomTemplate('cell-basic', {x:Number.MAX_SAFE_INTEGER-4,y:0});
+    const turned = rotateRoomTemplateGeometry(plan,2,footprint);
+    expect([turned.width,turned.height]).toEqual([4,7]);
+    expect(rotateRoomTemplateGeometry(turned,2,footprint)).toEqual(rotateRoomTemplateGeometry(plan,0,footprint));
+  });
   it('refuses non-integral rotations and a swapped footprint outside safe coordinates', () => {
     const plan=instantiateRoomTemplate('cell-basic',{x:Number.MAX_SAFE_INTEGER-4,y:0});
     expect(()=>rotateRoomTemplateGeometry(plan,1,footprint)).toThrow(RangeError);
     expect(()=>rotateRoomTemplateGeometry(plan,0.5,footprint)).toThrow(RangeError);
   });
+});
+
+it.each(ROOM_TEMPLATE_IDS)('%s keeps every rotated coordinate safe at both signed world limits', id => {
+  const shape=instantiateRoomTemplate(id,{x:0,y:0});
+  const extent=Math.max(shape.width,shape.height);
+  for(const edge of [Number.MIN_SAFE_INTEGER,Number.MAX_SAFE_INTEGER-extent]) {
+    const plan=instantiateRoomTemplate(id,{x:edge,y:edge});
+    for(let turns=0;turns<4;turns+=1) {
+      const rotated=rotateRoomTemplateGeometry(plan,turns,footprint);
+      const orders=roomTemplateConstructionGeometry(rotated);
+      const coordinates=[...orders.walls,...orders.doors,...orders.objects,...rotated.wallSquares,...rotated.doorSquares,...rotated.objects,...rotated.zones];
+      expect(coordinates.every(p=>Number.isSafeInteger(p.x)&&Number.isSafeInteger(p.y))).toBe(true);
+      expect(rotateRoomTemplateGeometry(rotated,-turns,footprint)).toEqual(rotateRoomTemplateGeometry(plan,0,footprint));
+    }
+  }
 });
