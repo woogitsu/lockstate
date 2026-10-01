@@ -69,3 +69,21 @@ describe('oblique projection of an actual simulation snapshot', () => {
     expect(initial.raised.map((item) => item.id)).not.toEqual(turned.raised.map((item) => item.id));
   });
 });
+
+describe('canonical oblique object assets', () => {
+  it('projects wall and door aliases to their full registry variants and rejects unknown objects', () => {
+    const source = frame();
+    const projected = projectObliqueWorldFrame({
+      ...source,
+      structures: [
+        ...source.structures,
+        { id: 'wall-module', definitionId: 'interior-wall', objectId: 'wall.interior.module', tileX: 5, tileY: 3, phase: 'built' },
+        { id: 'door-module', definitionId: 'interior-door', objectId: 'door.interior', tileX: 6, tileY: 3, phase: 'built' },
+        { id: 'unknown', definitionId: 'unknown', objectId: 'object.unknown', tileX: 7, tileY: 3, phase: 'built' },
+      ],
+    }, pose);
+    expect(projected.raised.find((item) => item.id === 'wall-module')?.assetId).toBe('wall.interior.module.full');
+    expect(projected.raised.find((item) => item.id === 'door-module')?.assetId).toBe('door.interior.open.full');
+    expect(projected.raised.find((item) => item.id === 'unknown')?.assetId).toBeUndefined();
+  });
+});

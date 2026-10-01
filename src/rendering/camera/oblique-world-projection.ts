@@ -14,7 +14,7 @@ import { TILE_SIZE_PX, tileRangeContains, visibleTileRange } from '../tile-metri
 import { groundToScreen, visibleGroundBounds, type ObliqueCameraState } from './oblique-projection';
 import { obliqueDepthForAnchor, projectedRectPrism, projectedTileQuad, type TileQuad } from './oblique-geometry';
 import type { Point } from './coordinates';
-import { obliqueAssetIdForObject } from '../assets/oblique-object-mapping';
+import { obliqueCanonicalAssetIdForObject } from '../assets/oblique-object-mapping';
 
 export interface ObliqueGroundTile {
   readonly tileX: number;
@@ -145,7 +145,7 @@ export function projectObliqueWorldFrame(frame: RenderFrame, camera: ObliqueCame
       alpha: structure.phase === 'planned' ? PLANNED_ALPHA : structure.phase === 'building' ? BUILDING_ALPHA : 1,
       viewDepth: obliqueDepthForAnchor({ x: x + width / 2, y: y + depth / 2 }, camera.yawRadians),
       ...(structure.objectId === undefined ? {} : { objectId: structure.objectId }),
-      ...(structure.objectId === undefined ? {} : (() => { const assetId = obliqueAssetIdForObject(structure.objectId); return assetId === undefined ? {} : { assetId }; })()),
+      ...(structure.objectId === undefined ? {} : (() => { const assetId = obliqueCanonicalAssetIdForObject(structure.objectId); return assetId === undefined ? {} : { assetId }; })()),
     });
   }
 
