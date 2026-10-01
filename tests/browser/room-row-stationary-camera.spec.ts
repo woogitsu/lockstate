@@ -1,21 +1,6 @@
 import { expect, test } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
 
-async function cursorInOriginSquare(page: import('@playwright/test').Page, cursor: { x: number; y: number }): Promise<boolean> {
-  return page.locator('.room-template-world-ghost polygon').first().evaluate((polygon, point) => {
-    const vertices = (polygon.getAttribute('points') ?? '').trim().split(/\s+/).map(pair => pair.split(',').map(Number));
-    const svg = polygon.closest('svg')!;
-    const rect = svg.getBoundingClientRect();
-    const box = svg.viewBox.baseVal;
-    const p = { x: (point.x - rect.x) * box.width / rect.width, y: (point.y - rect.y) * box.height / rect.height };
-    const crosses = vertices.map(([x, y], i) => {
-      const [nextX, nextY] = vertices[(i + 1) % vertices.length]!;
-      return (nextX! - x!) * (p.y - y!) - (nextY! - y!) * (p.x - x!);
-    });
-    return crosses.every(cross => cross >= -0.01) || crosses.every(cross => cross <= 0.01);
-  }, cursor);
-}
-
 test('mirrored four-cell row exact ghost follows stationary cursor through camera turn and rejects overlap', async ({ page }, testInfo) => {
   await installTee(page);
   // The shared tee excludes large projections. Capture only this small reply
@@ -49,24 +34,35 @@ test('mirrored four-cell row exact ghost follows stationary cursor through camer
   const ghost = page.locator('.room-template-world-ghost');
   await expect(ghost.locator('polygon')).toHaveCount(112);
   await expect(ghost).toHaveAttribute('data-ready', 'clear');
-  expect(await cursorInOriginSquare(page, cursor)).toBe(true);
+  const chosenOrigin = await page.evaluate(() => {
+    const messages = (window as unknown as { lockstateSentToWorker: Array<{ payload?: { projectionId?: string; target?: { origin: { x: number; y: number } } } }> }).lockstateSentToWorker;
+    return messages.filter(message => message.payload?.projectionId === 'world/room-template-preflight').at(-1)!.payload!.target!.origin;
+  });
   const before = await ghost.locator('polygon').first().getAttribute('points');
   await page.keyboard.down('KeyE');
   await page.waitForTimeout(250);
   await page.keyboard.up('KeyE');
   await expect.poll(() => ghost.locator('polygon').first().getAttribute('points')).not.toBe(before);
   await page.screenshot({ path: testInfo.outputPath('mirrored-row-turned-stationary-cursor.png') });
-  await expect.poll(() => cursorInOriginSquare(page, cursor)).toBe(true);
+  // Approved fit/pan moves the camera while retaining the world origin.
+  // Full visibility replaces the old cursor-hotspot assertion.
+  await expect.poll(() => ghost.locator('polygon').evaluateAll(polygons => polygons.every(polygon => {
+    const rect = polygon.getBoundingClientRect();
+    return rect.left >= 0 && rect.right <= innerWidth && rect.top >= document.querySelector('.hud-strip')!.getBoundingClientRect().bottom && rect.bottom <= innerHeight;
+  }))).toBe(true);
+  const originCentre = await ghost.locator('polygon').first().evaluate(polygon => {
+    const rect = polygon.getBoundingClientRect(); return { x: (rect.left + rect.right) / 2, y: (rect.top + rect.bottom) / 2 };
+  });
   await expect(ghost).toHaveAttribute('data-ready', 'clear');
   await page.mouse.click(cursor.x, cursor.y);
-  await expect.poll(async () => (await sentCommands(page)).filter(command => command.type === 'PlaceRoomTemplate')).toMatchObject([{ type: 'PlaceRoomTemplate', templateId: 'cell-row-four', mirrorX: true }]);
+  await expect.poll(async () => (await sentCommands(page)).filter(command => command.type === 'PlaceRoomTemplate')).toMatchObject([{ type: 'PlaceRoomTemplate', templateId: 'cell-row-four', mirrorX: true, origin: chosenOrigin }]);
   await page.getByRole('button', { name: 'Room plans', exact: true }).click();
   await dialog.getByRole('button', { name: 'Place on map', exact: true }).click();
-  await page.mouse.move(cursor.x, cursor.y);
+  await page.mouse.move(originCentre.x, originCentre.y);
   await expect(ghost).toHaveAttribute('data-ready', 'blocked');
   const preflightReplies = () => page.evaluate(() => (window as unknown as { rowPreflightReplies: unknown[] }).rowPreflightReplies.length);
   const beforeRefusal = await preflightReplies();
-  await page.mouse.click(cursor.x, cursor.y);
+  await page.mouse.click(originCentre.x, originCentre.y);
   await expect.poll(preflightReplies).toBeGreaterThan(beforeRefusal);
   expect(await page.evaluate(() => (window as unknown as { rowPreflightReplies: Array<{ payload: { view: { data: { ok: boolean } } } }> }).rowPreflightReplies.at(-1)?.payload.view.data.ok)).toBe(false);
   expect((await sentCommands(page)).filter(command => command.type === 'PlaceRoomTemplate')).toHaveLength(1);
