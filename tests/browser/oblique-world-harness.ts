@@ -1,4 +1,4 @@
-import Phaser from 'phaser';
+﻿import Phaser from 'phaser';
 import { chunkCoordinate, tileCoordinate } from '../../src/simulation/world/coordinates';
 import { SparseWorld } from '../../src/simulation/world/sparse-world';
 import { WorldRenderView } from '../../src/rendering/world/world-view';
@@ -67,6 +67,7 @@ let scene!: HarnessScene;
 let game!: Phaser.Game;
 let registryState: 'loaded' | 'missing' = 'missing';
 let registryFailure: string | undefined;
+let sceneReadyFailure: string | undefined;
 let resolveBootstrap!: () => void;
 const bootstrapReady = new Promise<void>((resolve) => { resolveBootstrap = resolve; });
 void (async () => {
@@ -89,12 +90,12 @@ void (async () => {
   scale: { mode: Phaser.Scale.RESIZE, autoCenter: Phaser.Scale.CENTER_BOTH },
     render: { antialias: true, roundPixels: false, pixelArt: false },
   });
-  await scene.ready().catch(() => undefined);
+  try { await scene.ready(); } catch (error) { sceneReadyFailure = error instanceof Error ? error.message : String(error); registryFailure ??= sceneReadyFailure; }
   resolveBootstrap();
 })();
 
 window.lockstateObliqueWorldHarness = {
-  ready: async () => { await bootstrapReady; await ready; await scene.ready(); },
+  ready: async () => { await bootstrapReady; await ready; if (registryFailure !== undefined) throw new Error(Oblique harness bootstrap failed: ); await scene.ready(); },
   registryStatus: () => registryState,
   registryError: () => registryFailure,
   furnitureSpriteFrame: (id) => scene.furnitureSpriteFrame(id),
@@ -113,3 +114,4 @@ window.lockstateObliqueWorldHarness = {
     return { objectId, assetId: obliqueAssetIdForObject(objectId), footprint: definition.footprint };
   }),
 };
+
