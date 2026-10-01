@@ -224,6 +224,8 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 | [2026-09-25 incident threshold and containment #975](./2026-09-25-incident-threshold-containment-975.md) | Does moving the incident risk threshold change containment outcomes on the same seeded command stream? | Measured one overcrowded prison over sixteen in-game days with 2, 4 and 7 guards and three threshold values. With only the two guards needed for posts, no incident was contained at any threshold; with seven, every incident was contained. Raising the threshold produced one more incident by the fixed endpoint in this fixture, so it is not a monotone difficulty dial. No balance value or production behaviour was changed. |
 | [2026-09-27 square construction and room templates](./2026-09-27-square-building-and-room-templates.md) | What geometry and player flow answer the owner's full-square wall and ready cell request? | Implementation brief for #1585 and #1586; preserves historical edge geometry in old saves while new work uses square footprints. |
 
+| [2026-10-01 native Windows build argv](./2026-10-01-native-windows-build-argv.md) | Why does the official build fail below a Windows path containing spaces (#1542)? | Verified shell path splitting before Vite; direct Node argv restores the complete production build without deployment configuration changes. |
+
 ### Findings from the first four records that changed a decision
 
 Recorded here because each contradicted something the project believed, and a
