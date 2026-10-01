@@ -207,8 +207,8 @@ test.describe('the world scene keyboard', () => {
   });
 
   test('stops mid-hold when focus moves into a text field (#201)', async ({ page }) => {
-    // `isActive` re-reads the context on every call, so this should hold without
-    // any extra machinery -- and it is the case a player actually hits, tabbing
+    // The scene suspends camera effects while text entry owns focus, without
+    // releasing the adapter's keydown action. A player can hit this by tabbing
     // into a field while still leaning on a movement key.
     await openHarness(page);
     const start = await scrollX(page);

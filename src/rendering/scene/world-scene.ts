@@ -750,11 +750,16 @@ export class WorldScene extends Phaser.Scene {
   public override update(time: number, delta: number): void {
     const camera = this.cameras.main;
     const speed = (PAN_SPEED_WORLD_UNITS_PER_MS * delta) / camera.zoom;
-    const horizontal = Number(this.keyboard.isActive('camera.right')) - Number(this.keyboard.isActive('camera.left'));
-    const vertical = Number(this.keyboard.isActive('camera.down')) - Number(this.keyboard.isActive('camera.up'));
-    if (horizontal !== 0 || vertical !== 0) {
-      camera.scrollX += horizontal * speed;
-      camera.scrollY += vertical * speed;
+    // The adapter preserves the action selected at keydown until keyup (#1479).
+    // Text focus suspends its camera effect without reinterpreting or releasing
+    // that held action, so typing cannot move the world underneath the field.
+    if (!isTextEntryFocused()) {
+      const horizontal = Number(this.keyboard.isActive('camera.right')) - Number(this.keyboard.isActive('camera.left'));
+      const vertical = Number(this.keyboard.isActive('camera.down')) - Number(this.keyboard.isActive('camera.up'));
+      if (horizontal !== 0 || vertical !== 0) {
+        camera.scrollX += horizontal * speed;
+        camera.scrollY += vertical * speed;
+      }
     }
 
     // Disarming while a run is in progress, or while a ghost is showing,
