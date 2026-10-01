@@ -2434,6 +2434,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.remove-submit': 'Remove object here',
   'hud.build.disarm': 'Stop placing',
   'hud.build.arm-hint': 'Click a tile edge to place a wall. Drag along it to lay a run. Two fingers, the middle button or the arrow keys still move the camera.',
+  'hud.build.arm-hint-square': 'Click a whole tile to place a wall. Drag across tiles to lay a row. The highlighted squares are the exact footprint. Two fingers, the middle button or the arrow keys still move the camera.',
   /*
    * The same hint for a buildable that stands on a **tile** rather than on an
    * edge (issue #904).
@@ -2677,6 +2678,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   // authored category, so a name that describes the rows is honest where a
   // name that implies a taxonomy is not.
   'hud.build.category': 'Category',
+  'hud.build.room-template': 'Place room template',
   'hud.build.category-all': 'Everything',
   'hud.build.category.structure': 'Walls and doors',
 

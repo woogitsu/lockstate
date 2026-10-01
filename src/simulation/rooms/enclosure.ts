@@ -1,4 +1,5 @@
 import { tileCoordinate, type TilePosition } from '../world/coordinates';
+import { squareBoundary } from '../world/square-boundary';
 
 /**
  * Whether a zoned rectangle is walled in along its own boundary.
@@ -167,6 +168,13 @@ export interface RoomEnclosureResult {
 export interface RoomEdgeReader {
   getTopEdge(tile: TilePosition): number;
   getLeftEdge(tile: TilePosition): number;
+  getSquareStructure?(tile: TilePosition): number;
+}
+
+function perimeterFaceClosed(world: RoomEdgeReader, inside: TilePosition, outside: TilePosition, legacyEdge: number): boolean {
+  if (legacyEdge !== 0) return true;
+  if (world.getSquareStructure === undefined) return false;
+  return squareBoundary({ getSquareStructure: (tile) => world.getSquareStructure!(tile) }, inside, outside) !== 'open';
 }
 
 /**
@@ -211,24 +219,24 @@ export function roomPerimeterEnclosure(world: RoomEdgeReader, rectangle: TileRec
 
   for (let x = left; x <= right; x += 1) {
     // The rectangle's top boundary: this tile's own north edge.
-    if (world.getTopEdge(tile(x, top)) === 0) {
+    if (!perimeterFaceClosed(world, tile(x, top), tile(x, top - 1), world.getTopEdge(tile(x, top)))) {
       return { enclosure: 'open', gap: { tile: tile(x, top), edge: 'north' } };
     }
   }
   for (let x = left; x <= right; x += 1) {
     // Its bottom boundary: the north edge of the row below it.
-    if (world.getTopEdge(tile(x, bottom + 1)) === 0) {
+    if (!perimeterFaceClosed(world, tile(x, bottom), tile(x, bottom + 1), world.getTopEdge(tile(x, bottom + 1)))) {
       return { enclosure: 'open', gap: { tile: tile(x, bottom + 1), edge: 'north' } };
     }
   }
   for (let y = top; y <= bottom; y += 1) {
-    if (world.getLeftEdge(tile(left, y)) === 0) {
+    if (!perimeterFaceClosed(world, tile(left, y), tile(left - 1, y), world.getLeftEdge(tile(left, y)))) {
       return { enclosure: 'open', gap: { tile: tile(left, y), edge: 'west' } };
     }
   }
   for (let y = top; y <= bottom; y += 1) {
     // Its east boundary: the west edge of the column to its right.
-    if (world.getLeftEdge(tile(right + 1, y)) === 0) {
+    if (!perimeterFaceClosed(world, tile(right, y), tile(right + 1, y), world.getLeftEdge(tile(right + 1, y)))) {
       return { enclosure: 'open', gap: { tile: tile(right + 1, y), edge: 'west' } };
     }
   }

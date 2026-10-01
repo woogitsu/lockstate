@@ -608,6 +608,17 @@ export const SIMULATION_ENUM_GROUPS = [
     labels: { 'metadata-only': 'Not Loaded', loaded: 'Loaded' },
   },
   {
+    namespace: 'room-template',
+    sourceFile: 'src/content/room-template-catalog.ts',
+    declaration: 'RoomTemplateId',
+    form: 'string-union',
+    labels: {
+      'cell-basic': 'Basic Cell',
+      'cell-large': 'Large Cell',
+      'shower-room': 'Shower Room',
+    },
+  },
+  {
     namespace: 'room-requirement',
     sourceFile: 'src/content/room-catalog.ts',
     declaration: 'roomRequirementSchema',

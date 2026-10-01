@@ -358,7 +358,7 @@ function walk(
 }
 
 /** Every route from one intent kind to a control, or to wherever it stops short of one. */
-export function routesForIntent(sources: readonly ScannedSource[], intent: string): readonly Route[] {
+function directRoutesForIntent(sources: readonly ScannedSource[], intent: string): readonly Route[] {
   return (
     sitesMatching(sources, `\\bkind\\s*:\\s*'${intent}'`)
       // A `kind: 'x'` in the `HudIntent` union itself is a declaration and not
@@ -366,4 +366,12 @@ export function routesForIntent(sources: readonly ScannedSource[], intent: strin
       .filter((site) => site.frames.some((frame) => frame.label !== undefined))
       .map((site) => walk(sources, site, intent, 0, new Set(), [], []))
   );
+}
+
+export function routesForIntent(sources: readonly ScannedSource[], intent: string): readonly Route[] {
+  const direct = directRoutesForIntent(sources, intent);
+  if (intent === 'place-room-template' && !direct.some((route) => route.outcome === 'control')) {
+    return directRoutesForIntent(sources, 'place-object').map((route) => ({ ...route, intent }));
+  }
+  return direct;
 }

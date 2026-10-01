@@ -81,6 +81,9 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   // Room types -- `room.*.name`. The Rooms panel's catalogue rows, and the
   // `{room}` parameter of several sentences.
   // ---------------------------------------------------------------------
+  'room-template.cell-basic.name': 'Cela podstawowa',
+  'room-template.cell-large.name': 'Cela du?a',
+  'room-template.shower-room.name': '?a?nia',
   'room.cell.name': 'Cela',
   'room.holding-cell.name': 'Cela przejściowa',
   'room.solitary-cell.name': 'Cela izolacyjna',
@@ -1087,6 +1090,8 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.arm': 'Stawiaj na mapie',
   'hud.build.arm-hint':
     'Kliknij krawędź pola, aby postawić ścianę. Przeciągnij wzdłuż niej, aby położyć cały ciąg. Dwa palce, środkowy przycisk i strzałki nadal poruszają kamerą.',
+  'hud.build.arm-hint-square':
+    'Kliknij całe pole, aby postawić ścianę. Przeciągnij przez pola, aby ułożyć ciąg. Podświetlone kwadraty to dokładny obszar budowy. Dwa palce, środkowy przycisk i strzałki nadal poruszają kamerą.',
   'hud.build.arm-hint-object':
     'Kliknij pole wewnątrz wyznaczonego pomieszczenia, aby go postawić. Jedno naciśnięcie, jeden obiekt. Dwa palce, środkowy przycisk i strzałki nadal poruszają kamerą.',
   'hud.build.disarm': 'Przestań stawiać',
@@ -1140,6 +1145,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.buildable.wall-brick': 'Ściana z cegły',
   'hud.build.buildable.door-wooden': 'Drewniane drzwi',
   'hud.build.category': 'Kategoria',
+  'hud.build.room-template': 'Wstaw szablon pomieszczenia',
   'hud.build.category-all': 'Wszystko',
   'hud.build.category.structure': 'Ściany i drzwi',
 

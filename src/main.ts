@@ -82,6 +82,7 @@ import {
 import { hudCountsFromWorkerMessage, hudEditHistoryFromWorkerMessage, hudOverviewFromWorkerMessage } from './ui/simulation-counts';
 import { hudZoningFromWorkerMessage } from './ui/simulation-zoning';
 import { BuildQueueReader } from './ui/simulation-build-queue';
+import { RoomTemplatePreflightReader } from './ui/simulation-room-template-preflight';
 import { ContrabandReader } from './ui/simulation-contraband';
 import { IncidentsReader } from './ui/simulation-incidents';
 import { IntakePipelineReader } from './ui/simulation-intake';
@@ -1492,6 +1493,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
    * wrong figure to promise. See that ADR's unsigned amendment of 2026-09-02.
    */
   const roomNeedsReader = client === undefined ? undefined : new RoomNeedsReader(client);
+  const roomTemplatePreflightReader = client === undefined ? undefined : new RoomTemplatePreflightReader(client);
   /*
    * What is still waiting to be built, on the same terms as the room readout
    * above and for the same three reasons -- with one difference that is the
@@ -2630,6 +2632,14 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     // is on, so an absent notice has to be an absent property.
     ...(simulationUnavailable ? { unavailable: SIMULATION_UNAVAILABLE_NOTICE } : {}),
     build: buildCatalogue(),
+    roomTemplate: {
+      label: localizer.format(HUD_MESSAGE_KEY.buildRoomTemplate),
+      templateId: 'cell-basic',
+      origin: NEW_PRISON_ORIGIN_TILE,
+      ...(roomTemplatePreflightReader === undefined ? {} : {
+        onPreflight: async (template) => (await roomTemplatePreflightReader.read(template.templateId, template.origin, template.mirrorX))?.ok === true,
+      }),
+    },
     staff: staffRoster(),
     /*
      * The room catalogue, passed at mount for the reason the buildable one is:
@@ -3243,6 +3253,20 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
            * and is now one transaction.
            */
           const transactionId = `build-${crypto.randomUUID()}`;
+          if (intent.footprint === 'square') {
+            for (const square of intent.squares) {
+              sender.submit({
+                type: 'PlaceBuildOrder',
+                orderId: `order-${crypto.randomUUID()}`,
+                definitionId: intent.definitionId,
+                x: square.x,
+                y: square.y,
+                footprint: 'square',
+                transactionId,
+              });
+            }
+            return;
+          }
           for (const edge of intent.edges) {
             // A throw ends the run here rather than firing eleven more doomed
             // commands at a worker that has already said no -- and it is the
@@ -3304,6 +3328,15 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
             definitionId: intent.definitionId,
             x: intent.x,
             y: intent.y,
+          });
+          return;
+
+        case 'place-room-template':
+          requireSimulation(commands).submit({
+            type: 'PlaceRoomTemplate',
+            templateId: intent.templateId,
+            origin: intent.origin,
+            ...(intent.mirrorX ? { mirrorX: true } : {}),
           });
           return;
 

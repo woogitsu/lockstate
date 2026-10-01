@@ -76,6 +76,7 @@ const HUD_MODULE_NAMES = [
   'regime-panel.ts',
   'rooms-panel.ts',
   'roster-panel.ts',
+  'room-template-control.ts',
   'security-panel.ts',
   'staff-panel.ts',
   'status-strip.ts',

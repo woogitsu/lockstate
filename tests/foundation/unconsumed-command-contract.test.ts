@@ -349,7 +349,7 @@ describe('every declared simulation command either has a producer or is accounte
     // `case 'purchase-materials':` -- rather than spending time on the list
     // below. The seventh correction of the same shape.
     expect(producerSources.length).toBeGreaterThan(50);
-    expect(COMMAND_TYPES.length).toBe(18);
+    expect(COMMAND_TYPES.length).toBe(19);
 
     expect(producersOf('PlaceBuildOrder')).toEqual(['src/main.ts']);
     expect(producersOf('PurchaseMaterials')).toEqual(['src/main.ts']);
@@ -552,6 +552,6 @@ describe('every declared simulation command either has a producer or is accounte
     // what this pair of assertions is for -- a nineteenth command added with no
     // producer fails here as well as failing the accounting above.
     expect(unproducedTypes.length).toBe(0);
-    expect(COMMAND_TYPES.length - unproducedTypes.length).toBe(18);
+    expect(COMMAND_TYPES.length - unproducedTypes.length).toBe(19);
   });
 });
