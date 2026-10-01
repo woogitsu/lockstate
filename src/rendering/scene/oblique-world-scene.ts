@@ -6,6 +6,7 @@ import { TILE_SIZE_PX, worldToTile } from '../tile-metrics';
 import { VOID_COLOR, ZONING_TINT_ALPHA, UNOWNED_SHADE_ALPHA, UNOWNED_SHADE_COLOR } from '../world/appearance';
 import {
   changeObliquePoseAtScreenPoint,
+  groundToScreen,
   screenToGround,
   visibleGroundBounds,
   type ObliqueCameraState,
@@ -72,6 +73,10 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private readonly readyPromise: Promise<void>;
   private resolveReady!: () => void;
   private readonly assetTextureKeys = new Map<string, string>();
+  private readonly queuedAssetTextures = new Map<string, string>();
+  private readonly loadingAssetTextureKeys = new Set<string>();
+  private readonly failedAssetTextureKeys = new Set<string>();
+  private assetTextureLoaderRunning = false;
   private assetImages: Phaser.GameObjects.Image[] = [];
   private gesture: { pointerId: number; kind: 'build' | 'room' | 'object'; press: WorldPoint; current: WorldPoint } | undefined;
   private hoveredWorldPoint: WorldPoint | undefined;
@@ -450,6 +455,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
 
   private paintRaised(projection: ObliqueWorldProjection): void {
     const raised = this.raisedGraphics;
+    this.selectPoseTextures(projection);
     raised.clear();
     const actors = this.actorGraphics;
     actors.clear();
@@ -464,33 +470,88 @@ export class ObliqueWorldScene extends Phaser.Scene {
         actors.fillCircle(item.head.x, item.head.y, 8 * this.pose.zoom);
         continue;
       }
+      // The prism is a fallback for assets that are absent or still loading.
+      // Keeping it under an authored frame makes furniture appear to float on
+      // a solid blue block, especially at shallow elevations.
+      if (this.paintAsset(item, index, projection.raised.length)) continue;
       for (let side = 0; side < 4; side += 1) {
         const next = (side + 1) % 4;
         this.fillQuad(raised, [item.footprint[side]!, item.footprint[next]!, item.top[next]!, item.top[side]!], item.sideFill, item.alpha);
       }
       this.fillQuad(raised, item.top, item.topFill, item.alpha);
-      this.paintAsset(item, index, projection.raised.length);
     }
   }
 
+  /** Keep each visible object on the catalog frame nearest the current camera pose. */
+  private selectPoseTextures(projection: ObliqueWorldProjection): void {
+    for (const item of projection.raised) {
+      if (item.kind === 'actor' || item.assetId === undefined) continue;
+      const catalog = this.catalogs.get(item.assetId);
+      if (catalog === undefined) continue;
+      const frame = selectObliqueModuleFrame(catalog, this.pose);
+      const key = `oblique:${item.assetId}:${frame.yawDegrees}:${frame.elevationDegrees}`;
+      if (this.textures.exists(key)) {
+        this.assetTextureKeys.set(item.assetId, key);
+      } else {
+        // A previous pose must never be painted onto the new geometry.
+        this.assetTextureKeys.delete(item.assetId);
+        if (!this.loadingAssetTextureKeys.has(key) && !this.failedAssetTextureKeys.has(key)) {
+          this.queuedAssetTextures.set(key, frame.image);
+        }
+      }
+    }
+    this.flushAssetTextureQueue();
+  }
+
+  private flushAssetTextureQueue(): void {
+    if (this.assetTextureLoaderRunning || this.queuedAssetTextures.size === 0) return;
+    const batch = [...this.queuedAssetTextures];
+    this.queuedAssetTextures.clear();
+    this.assetTextureLoaderRunning = true;
+    for (const [key, url] of batch) {
+      this.loadingAssetTextureKeys.add(key);
+      this.load.image(key, url);
+    }
+    this.load.once(Phaser.Loader.Events.COMPLETE, () => {
+      for (const [key] of batch) {
+        this.loadingAssetTextureKeys.delete(key);
+        if (!this.textures.exists(key)) this.failedAssetTextureKeys.add(key);
+      }
+      this.assetTextureLoaderRunning = false;
+      this.lastPaintedPoseRevision = -1;
+      this.repaint();
+      this.flushAssetTextureQueue();
+    });
+    this.load.start();
+  }
+
   /** Load and paint one authored PNG for every mapped solid; graphics remain the fail-closed fallback. */
-  private paintAsset(item: ObliqueSolid, index: number, itemCount: number): void {
-    if (item.assetId === undefined) return;
+  private paintAsset(item: ObliqueSolid, index: number, itemCount: number): boolean {
+    if (item.assetId === undefined) return false;
+    const catalog = this.catalogs.get(item.assetId);
+    if (catalog === undefined) return false;
     const textureKey = this.assetTextureKeys.get(item.assetId);
-    if (textureKey === undefined || !this.textures.exists(textureKey)) return;
-    const centre = item.top.reduce((sum, point) => ({ x: sum.x + point.x / 4, y: sum.y + point.y / 4 }), { x: 0, y: 0 });
-    const image = this.add.image(centre.x, centre.y, textureKey).setDepth(2 + 0.9 * index / itemCount);
-    image.setOrigin(0.5, 0.75);
+    if (textureKey === undefined || !this.textures.exists(textureKey)) return false;
+    const [targetX, targetY, targetZ] = catalog.cameraTargetTiles;
+    const anchor = groundToScreen({
+      x: (item.tileX + targetX) * TILE_SIZE_PX,
+      y: (item.tileY + targetY) * TILE_SIZE_PX,
+      z: targetZ * TILE_SIZE_PX,
+    }, this.pose);
+    const image = this.add.image(anchor.x, anchor.y, textureKey).setDepth(2 + 0.9 * index / itemCount);
+    image.setOrigin(catalog.pivotPx[0] / catalog.resolutionPx[0], catalog.pivotPx[1] / catalog.resolutionPx[1]);
+    image.setScale(TILE_SIZE_PX * this.pose.zoom / catalog.nominalPixelsPerTile);
     image.setAlpha(item.alpha);
     this.assetImages.push(image);
+    return true;
   }
 
   private async loadCatalogTextures(): Promise<void> {
     if (this.catalogs.size === 0) return;
     const pending: { assetId: string; key: string; url: string }[] = [];
     for (const [assetId, catalog] of this.catalogs) {
-      const key = `oblique:${assetId}`;
       const frame = selectObliqueModuleFrame(catalog, this.pose);
+      const key = `oblique:${assetId}:${frame.yawDegrees}:${frame.elevationDegrees}`;
       pending.push({ assetId, key, url: frame.image });
       this.load.image(key, frame.image);
     }
@@ -499,6 +560,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
       this.load.start();
     });
     for (const item of pending) if (this.textures.exists(item.key)) this.assetTextureKeys.set(item.assetId, item.key);
+    this.lastPaintedPoseRevision = -1;
     this.repaint();
   }
 

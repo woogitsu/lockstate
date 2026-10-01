@@ -45,11 +45,12 @@ function closest(value: number, options: readonly number[]): number {
 
 function closestYaw(value: number, options: readonly number[]): number {
   if (!Number.isFinite(value)) throw new RangeError('Camera yaw must be finite.');
-  // The authored grid uses [-180, 180). A +179° camera must select -180°,
-  // not jump backward to +165° merely because the numbers straddle a seam.
-  const normalized = ((value + 180) % 360 + 360) % 360 - 180;
+  // Catalogs may use either [-180, 180) or [0, 360). Compare circular
+  // distance so both grids select the same physical viewing direction.
+  const normalized = ((value % 360) + 360) % 360;
   const distance = (option: number): number => {
-    const difference = Math.abs(option - normalized);
+    const normalizedOption = ((option % 360) + 360) % 360;
+    const difference = Math.abs(normalizedOption - normalized);
     return Math.min(difference, 360 - difference);
   };
   return options.reduce((best, option) => distance(option) < distance(best) ? option : best);

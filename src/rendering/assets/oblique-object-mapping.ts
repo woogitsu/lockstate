@@ -4,9 +4,19 @@
 export const OBLIQUE_OBJECT_ASSET_IDS: Readonly<Record<string, string>> = Object.freeze({
   'object.medical-bed': 'furniture.medical-bed.variants',
   'object.medicine-cabinet': 'fixture.medicine-cabinet.variants',
+  'object.storage-rack': 'furniture.storage.rack.wooden',
+  'object.chair': 'furniture.chair.wooden',
+  'object.prep-counter': 'furniture.kitchen.prep-counter.variants',
   'object.security-console': 'utility.security-console.variants',
   'object.loading-dock-door': 'utility.loading-dock-door.variants',
   'object.utility-panel': 'utility.utility-panel.variants',
+  'object.washing-machine': 'utility.washing-machine.variants',
+  'object.stove': 'furniture.kitchen.stove.variants',
+  'object.fridge': 'furniture.kitchen.fridge.variants',
+  'object.bookshelf': 'furniture.library.bookshelf.variants',
+  'object.waste-bin': 'fixture.cell.waste_bin',
+  'object.desk': 'furniture.office.desk.generic',
+  'object.sink': 'fixture.cell.sink.handwash',
 });
 
 export function obliqueAssetIdForObject(objectId: string): string | undefined {
@@ -46,3 +56,4 @@ export function obliqueCanonicalAssetIdForObject(
   }
   return options.cutaway ? 'door.interior.open.cutaway' : 'door.interior.open.full';
 }
+
