@@ -1,3 +1,5 @@
+import { computeObliqueFit } from './rendering/camera/oblique-fit';
+import { RoomTemplatePreviewFitController } from './ui/room-template-preview-fit';
 import { formatRoomTemplateQuote } from './ui/hud/room-template-quote';
 import Phaser from 'phaser';
 import {
@@ -4637,13 +4639,43 @@ if (roomTemplateTool !== undefined) {
   const installPlanGhost = (): void => {
     const canvas = appRoot?.querySelector('canvas');
     if (canvas === null || canvas === undefined) return;
+    const pickTemplateSquare = (point: { x: number; y: number }): { x: number; y: number } => {
+      const world = worldScene instanceof ObliqueWorldScene ? screenToGround(point, worldScene.cameraPose) : worldScene.cameras.main.getWorldPoint(point.x, point.y);
+      return { x: Math.floor(world.x / TILE_SIZE_PX), y: Math.floor(world.y / TILE_SIZE_PX) };
+    };
+    const fitController = worldScene instanceof ObliqueWorldScene ? new RoomTemplatePreviewFitController({
+      pick: pickTemplateSquare,
+      size: () => roomTemplateTool.planAt({ x: 0, y: 0 }),
+      revision: () => roomTemplateTool.revision,
+      fit: (origin, size, cursorScreen) => {
+        if (!(worldScene instanceof ObliqueWorldScene)) return false;
+        const rect = canvas.getBoundingClientRect();
+        if (rect.width <= 0 || rect.height <= 0) return false;
+        const bounds = (selector: string) => appRoot?.querySelector(selector)?.getBoundingClientRect();
+        const left = Math.max(bounds('.hud__tabs')?.right ?? rect.left, bounds('.hud__corner')?.right ?? rect.left);
+        const right = bounds('.hud__rail')?.left ?? rect.right;
+        const top = bounds('.hud-strip')?.bottom ?? rect.top;
+        const sx = canvas.width / rect.width, sy = canvas.height / rect.height;
+        const safeScreenBounds = { left: (left - rect.left) * sx + 8, right: (right - rect.left) * sx - 8, top: (top - rect.top) * sy + 8, bottom: canvas.height - 8 };
+        if (safeScreenBounds.right <= safeScreenBounds.left || safeScreenBounds.bottom <= safeScreenBounds.top) return false;
+        const groundBounds = { left: origin.x * TILE_SIZE_PX, top: origin.y * TILE_SIZE_PX, right: (origin.x + size.width) * TILE_SIZE_PX, bottom: (origin.y + size.height) * TILE_SIZE_PX };
+        const projected = [
+          { x: groundBounds.left, y: groundBounds.top }, { x: groundBounds.right, y: groundBounds.top },
+          { x: groundBounds.right, y: groundBounds.bottom }, { x: groundBounds.left, y: groundBounds.bottom },
+        ].map(point => groundToScreen(point, worldScene.cameraPose));
+        if (projected.every(point => point.x >= safeScreenBounds.left && point.x <= safeScreenBounds.right && point.y >= safeScreenBounds.top && point.y <= safeScreenBounds.bottom)) return false;
+        const fit = computeObliqueFit({ camera: worldScene.cameraPose, groundBounds, safeScreenBounds, cursorScreen, mode: 'pan-locked' });
+        return worldScene.applyCameraFit(fit);
+      },
+    }) : undefined;
     installRoomTemplateWorldBridge(canvas, roomTemplateTool, {
       tileSize: TILE_SIZE_PX,
       objectFootprint: objectFootprintOf,
-      pick: point => {
-        const world = worldScene instanceof ObliqueWorldScene ? screenToGround(point, worldScene.cameraPose) : worldScene.cameras.main.getWorldPoint(point.x, point.y);
-        return { x: Math.floor(world.x / TILE_SIZE_PX), y: Math.floor(world.y / TILE_SIZE_PX) };
-      },
+      ...(fitController === undefined ? {} : {
+        preparePreview: (point, physicalMove) => fitController.prepare(point, physicalMove),
+        resetPreview: () => fitController.reset(),
+      }),
+      pick: point => fitController?.pick(point) ?? pickTemplateSquare(point),
       project: point => {
         if (worldScene instanceof ObliqueWorldScene) return groundToScreen(point, worldScene.cameraPose);
         const camera = worldScene.cameras.main;
