@@ -55,7 +55,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private selectionGraphics!: Phaser.GameObjects.Graphics;
   private gestureGraphics!: Phaser.GameObjects.Graphics;
   private raisedGraphics!: Phaser.GameObjects.Graphics;
-  private actorGraphics!: Phaser.GameObjects.Graphics;
+  private readonly actorGraphics = new Map<number, Phaser.GameObjects.Graphics>();
   private pose!: ObliqueCameraState;
   private framedWorld = false;
   private selected: { tileX: number; tileY: number } | undefined;
@@ -124,7 +124,6 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.selectionGraphics = this.add.graphics().setScrollFactor(0).setDepth(0.5);
     this.gestureGraphics = this.add.graphics().setScrollFactor(0).setDepth(4);
     this.raisedGraphics = this.add.graphics().setScrollFactor(0).setDepth(1);
-    this.actorGraphics = this.add.graphics().setScrollFactor(0).setDepth(3);
     this.pose = {
       target: { x: 0, y: 0 },
       viewport: { width: this.cameras.main.width, height: this.cameras.main.height },
@@ -457,13 +456,22 @@ export class ObliqueWorldScene extends Phaser.Scene {
     const raised = this.raisedGraphics;
     this.selectPoseTextures(projection);
     raised.clear();
-    const actors = this.actorGraphics;
-    actors.clear();
+    const visibleActors = new Set<number>();
     for (const image of this.assetImages) image.destroy();
     this.assetImages = [];
     this.raisedPaints += 1;
     for (const [index, item] of projection.raised.entries()) {
       if (item.kind === 'actor') {
+        visibleActors.add(item.id);
+        let actors = this.actorGraphics.get(item.id);
+        if (actors === undefined) {
+          actors = this.add.graphics().setScrollFactor(0);
+          this.actorGraphics.set(item.id, actors);
+        }
+        // Actors and authored solids share the already sorted world order.
+        // A single graphics layer above all PNGs makes prisoners behind walls
+        // appear on the wall texture, regardless of their simulation position.
+        actors.clear().setDepth(2 + 0.9 * index / projection.raised.length);
         actors.lineStyle(13 * this.pose.zoom, 0xdd8342, 1);
         actors.lineBetween(item.head.x, item.head.y + 8 * this.pose.zoom, item.foot.x, item.foot.y);
         actors.fillStyle(0xffbd78, 1);
@@ -479,6 +487,11 @@ export class ObliqueWorldScene extends Phaser.Scene {
         this.fillQuad(raised, [item.footprint[side]!, item.footprint[next]!, item.top[next]!, item.top[side]!], item.sideFill, item.alpha);
       }
       this.fillQuad(raised, item.top, item.topFill, item.alpha);
+    }
+    for (const [id, graphics] of this.actorGraphics) {
+      if (visibleActors.has(id)) continue;
+      graphics.destroy();
+      this.actorGraphics.delete(id);
     }
   }
 

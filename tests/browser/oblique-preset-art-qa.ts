@@ -81,6 +81,7 @@ const game = new Phaser.Game({
 });
 
 interface Report {
+  readonly actors: readonly { id: number; foot: { x: number; y: number } }[];
   readonly preset: string;
   readonly zoningNumericIds: readonly number[];
   readonly builtFixtureCount: number;
@@ -118,6 +119,7 @@ window.lockstatePresetArtQA = {
       raisedGraphics: Phaser.GameObjects.Graphics;
     };
     return {
+      actors: projection.raised.filter((item) => item.kind === 'actor').map((item) => ({ id: item.id, foot: item.foot })),
       preset,
       zoningNumericIds: plan.zones.map((zone) => world.getZoning({ x: tileCoordinate(zone.x), y: tileCoordinate(zone.y) })),
       builtFixtureCount: structures.length, builtWallCount: plan.wallSquares.length,
