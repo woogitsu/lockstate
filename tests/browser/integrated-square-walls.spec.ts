@@ -160,3 +160,68 @@ for (const renderer of ['top-down', 'oblique'] as const) {
     await page.screenshot({ path: testInfo.outputPath(renderer + '-reloaded-cell.png') });
   });
 }
+
+test('authored cell floor keeps its exact tile after production Save/Load in angled view', async ({ page }, testInfo) => {
+  const save = completedCellSave();
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/?renderer=oblique');
+  await expect(page.locator('#game-root canvas')).toBeVisible();
+  await page.getByRole('button', { name: 'New prison', exact: true }).click();
+  const chooser = page.waitForEvent('filechooser');
+  await page.getByRole('button', { name: 'Import', exact: true }).click();
+  await (await chooser).setFiles({ name: 'completed-cell-floor.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(save)) });
+  await page.locator('.save-panel__item').getByRole('button', { name: 'Load', exact: true }).click();
+  await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
+  await page.getByRole('button', { name: 'Pause', exact: true }).click();
+  const minimap = page.locator('.hud-minimap__surface');
+  const bounds = await minimap.boundingBox();
+  if (bounds === null) throw new Error('minimap must be visible');
+  const focusSavedCell = () => minimap.click({ position: { x: bounds.width * 0.24, y: bounds.height * 0.24 } });
+  await focusSavedCell();
+
+  // Read the middle of saved world tile (6,8), where there is no furniture or
+  // wall, and tile (10,8) just outside the authored cell. The location is
+  // calculated independently of the scene implementation at its initial pose.
+  const evidence = async () => {
+    const shot = await page.locator('#game-root canvas').screenshot();
+    return page.evaluate(async base64 => {
+      const bitmap = await createImageBitmap(await (await fetch('data:image/png;base64,' + base64)).blob());
+      const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
+      const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0);
+      const rgba = context.getImageData(0, 0, canvas.width, canvas.height).data;
+      const sample = (tileX: number, tileY: number) => {
+        const dx = (tileX + 0.5 - 32 * 0.24) * 64;
+        const dy = (tileY + 0.5 - 32 * 0.24) * 64;
+        const yaw = -Math.PI / 4;
+        const x = Math.round(canvas.width / 2 + (Math.cos(yaw) * dx - Math.sin(yaw) * dy) * 1.25);
+        const y = Math.round(canvas.height / 2 + (Math.sin(yaw) * dx + Math.cos(yaw) * dy) * Math.SQRT1_2 * 1.25);
+        const colors = new Set<string>();
+        let brightness = 0;
+        for (let py = y - 6; py < y + 6; py += 1) {
+          for (let px = x - 6; px < x + 6; px += 1) {
+            const i = (py * canvas.width + px) * 4;
+            const r = rgba[i] ?? 0, g = rgba[i + 1] ?? 0, b = rgba[i + 2] ?? 0;
+            colors.add(`${r},${g},${b}`);
+            brightness += (r + g + b) / 3;
+          }
+        }
+        return { colors: colors.size, brightness: brightness / 144 };
+      };
+      return { inside: sample(6, 8), outside: sample(10, 8) };
+    }, shot.toString('base64'));
+  };
+  await expect.poll(async () => (await evidence()).inside.colors).toBeGreaterThan(12);
+  const before = await evidence();
+  expect(before.inside.brightness - before.outside.brightness, 'Blender cell floor must occupy the saved room, not the adjacent terrain').toBeGreaterThan(45);
+  await page.screenshot({ path: testInfo.outputPath('authored-cell-floor-before-save.png') });
+  await page.getByRole('button', { name: 'Save now', exact: true }).click();
+  await expect(page.locator('.save-panel__status')).toContainText('Saved');
+  await page.locator('.save-panel__item').getByRole('button', { name: 'Load', exact: true }).click();
+  await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
+  await focusSavedCell();
+  const after = await evidence();
+  expect(after.inside.colors, 'authored texture detail survives Save/Load').toBeGreaterThan(12);
+  expect(after.inside.brightness - after.outside.brightness, 'the floor remains on its authored room tile').toBeGreaterThan(45);
+  expect(after, 'Save/Load must reproduce the same cell-floor pixels').toEqual(before);
+  await page.screenshot({ path: testInfo.outputPath('authored-cell-floor-after-load.png') });
+});
