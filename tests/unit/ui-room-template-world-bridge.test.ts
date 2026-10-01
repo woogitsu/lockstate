@@ -23,7 +23,7 @@ function pointer(target: EventTarget, kind: string, clientX = 800): void {
   target.dispatchEvent(event);
 }
 
-function harness(): { canvas: ElementStub; window: EventTarget; tool: RoomTemplateTool; place: ReturnType<typeof vi.fn>; dispose: () => void } {
+function harness(preparePreview?: (screen: { x: number; y: number }, physical: boolean) => void): { canvas: ElementStub; window: EventTarget; tool: RoomTemplateTool; place: ReturnType<typeof vi.fn>; dispose: () => void } {
   const canvas = new ElementStub();
   const window = new EventTarget();
   vi.stubGlobal('window', window);
@@ -34,7 +34,7 @@ function harness(): { canvas: ElementStub; window: EventTarget; tool: RoomTempla
   tool.arm();
   const dispose = installRoomTemplateWorldBridge(canvas as unknown as HTMLCanvasElement, tool, {
     tileSize: 32, pick: p => ({ x: Math.floor(p.x / 32) - 13, y: Math.floor(p.y / 32) - 4 }), project: p => p,
-    objectFootprint: () => undefined, label: () => '',
+    objectFootprint: () => undefined, label: () => '', ...(preparePreview === undefined ? {} : { preparePreview }),
   });
   return { canvas, window, tool, place, dispose };
 }
@@ -42,6 +42,17 @@ function harness(): { canvas: ElementStub; window: EventTarget; tool: RoomTempla
 afterEach(() => vi.unstubAllGlobals());
 
 describe('room plan pointer gesture ownership', () => {
+  it('reports physical movement during camera-button gestures without placing', () => {
+    const prepare = vi.fn();
+    const h = harness(prepare);
+    const event = new Event('pointermove', { cancelable: true });
+    Object.assign(event, { pointerId: 7, button: 2, buttons: 2, clientX: 810, clientY: 400 });
+    h.canvas.dispatchEvent(event);
+    expect(prepare).toHaveBeenCalledWith({ x: 810, y: 400 }, true);
+    expect(h.place).not.toHaveBeenCalled();
+    h.dispose();
+  });
+
   it('disarms after an accepted placement even if the cursor moved while confirmation was pending', async () => {
     const h = harness();
     let accept!: () => void;

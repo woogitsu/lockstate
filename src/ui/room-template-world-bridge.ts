@@ -65,7 +65,12 @@ export function installRoomTemplateWorldBridge(canvas: HTMLCanvasElement, tool: 
     return true;
   };
   const pointerMove = (event: PointerEvent): void => {
-    if (tool.isArmed()) lastScreen = screenOf(event);
+    if (tool.isArmed()) {
+      lastScreen = screenOf(event);
+      // Physical movement unlocks a fitted origin even during a camera-button
+      // gesture; that gesture still cannot submit a building command.
+      options.preparePreview?.(lastScreen, true);
+    }
     capture(event);
   };
   const resetPress = (): void => { downPointer = undefined; downSelection = undefined; };
