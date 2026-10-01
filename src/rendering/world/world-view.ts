@@ -201,7 +201,11 @@ export class WorldRenderView {
    * own per-frame, row-major tile paint relies on.
    */
   public getSquareStructure(tile: TilePosition): number {
-    return this.chunks.get(this.chunkKeyFor(tile.x, tile.y))?.squareStructure?.[this.indexInChunk(tile.x, tile.y)] ?? 0;
+    return this.getSquareStructureAt(tile.x, tile.y);
+  }
+
+  public getSquareStructureAt(tileX: number, tileY: number): number {
+    return this.chunks.get(this.chunkKeyFor(tileX, tileY))?.squareStructure?.[this.indexInChunk(tileX, tileY)] ?? 0;
   }
 
   public getTopEdge(tile: TilePosition): number {

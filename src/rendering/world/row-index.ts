@@ -1,3 +1,4 @@
+import { squareWallStructure } from './structures';
 import type { RenderStructure } from './structures';
 import { createTileSample, type WorldRenderView } from './world-view';
 
@@ -49,8 +50,9 @@ export interface RowContent {
 }
 
 /**
- * Rows are keyed by tile Y. `structures` keeps the order it arrived in, which
- * `structuresFromConstruction` already made deterministic.
+ * Rows are keyed by tile Y. Saved square walls are discovered in row order;
+ * matching completed orders provide their stable identities without duplicate
+ * paint. Other construction structures retain their input order.
  */
 export function buildRowIndex(
   world: WorldRenderView,
@@ -77,6 +79,8 @@ export function buildRowIndex(
   const positions = world.loadedChunkPositions;
   const size = world.chunkSize;
   const sample = createTileSample();
+  const squareOrders = new Map(structures.filter((entry) => entry.phase === 'built' && entry.footprint === 'square')
+    .map((entry) => [`${entry.tileX}:${entry.tileY}`, entry]));
 
   let bandStart = 0;
   while (bandStart < positions.length) {
@@ -92,6 +96,9 @@ export function buildRowIndex(
         for (let localX = 0; localX < size; localX += 1) {
           const tileX = originTileX + localX;
           world.readTile(tileX, tileY, sample);
+          if (world.getSquareStructureAt(tileX, tileY) === 1) {
+            rowFor(tileY).structures.push(squareOrders.get(`${tileX}:${tileY}`) ?? squareWallStructure(tileX, tileY));
+          }
           if (sample.topEdge === 0 && sample.leftEdge === 0) continue;
           rowFor(tileY).edges.push({ tileX, top: sample.topEdge, left: sample.leftEdge });
         }
@@ -101,7 +108,10 @@ export function buildRowIndex(
     bandStart = bandEnd;
   }
 
-  for (const structure of structures) rowFor(structure.tileY).structures.push(structure);
+  for (const structure of structures) {
+    if (structure.phase === 'built' && structure.footprint === 'square' && world.getSquareStructureAt(structure.tileX, structure.tileY) === 1) continue;
+    rowFor(structure.tileY).structures.push(structure);
+  }
 
   return rows;
 }

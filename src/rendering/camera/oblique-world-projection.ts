@@ -8,7 +8,7 @@ import {
   terrainAppearance,
   zoningTint,
 } from '../world/appearance';
-import { isDrawnAsWorldEdge } from '../world/structures';
+import { isDrawnAsWorldEdge, squareWallStructure, type RenderStructure } from '../world/structures';
 import { createTileSample } from '../world/world-view';
 import { TILE_SIZE_PX, tileRangeContains, visibleTileRange } from '../tile-metrics';
 import { groundToScreen, visibleGroundBounds, type ObliqueCameraState } from './oblique-projection';
@@ -75,9 +75,8 @@ export function sortObliqueRaised(items: (ObliqueSolid | ObliqueActorPoint)[]): 
 
 /**
  * Projects a real immutable render frame without changing the simulation grid.
- * The current world stores walls on tile edges; their prisms therefore occupy
- * the same 0.22-tile strips. The square-wall migration may replace those with
- * full-tile structures without making this painter invent collision geometry.
+ * Legacy edges retain their narrow prisms. Occupied wall squares draw full-tile
+ * prisms from the saved world layer, independently of construction history.
  */
 export function projectObliqueWorldFrame(frame: RenderFrame, camera: ObliqueCameraState): ObliqueWorldProjection {
   const range = visibleTileRange(visibleGroundBounds(camera), 3);
@@ -103,6 +102,23 @@ export function projectObliqueWorldFrame(frame: RenderFrame, camera: ObliqueCame
     });
   };
 
+  const squareOrders = new Map(frame.structures.filter((entry) => entry.phase === 'built' && entry.footprint === 'square')
+    .map((entry) => [`${entry.tileX}:${entry.tileY}`, entry]));
+  const structureSolid = (structure: RenderStructure): void => {
+    const appearance = structureAppearance(structure.definitionId);
+    const x = structure.tileX * TILE_SIZE_PX;
+    const y = structure.tileY * TILE_SIZE_PX;
+    const width = appearance.footprintTiles.width * TILE_SIZE_PX;
+    const depth = appearance.footprintTiles.height * TILE_SIZE_PX;
+    const geometry = projectedRectPrism(x, y, width, depth, appearance.heightTiles * TILE_SIZE_PX, camera);
+    raised.push({
+      kind: 'structure', id: structure.id, tileX: structure.tileX, tileY: structure.tileY,
+      ...geometry, topFill: appearance.topFill, sideFill: appearance.sideFill,
+      alpha: structure.phase === 'planned' ? PLANNED_ALPHA : structure.phase === 'building' ? BUILDING_ALPHA : 1,
+      viewDepth: obliqueDepthForAnchor({ x: x + width / 2, y: y + depth / 2 }, camera.yawRadians),
+    });
+  };
+
   // Visit only materialised chunks intersecting the inverse-projected view.
   // A sparse world with two far-apart chunks never scans the gap between them.
   for (const position of world.loadedChunkPositions) {
@@ -120,6 +136,9 @@ export function projectObliqueWorldFrame(frame: RenderFrame, camera: ObliqueCame
           fill: (tileX + tileY) % 2 === 0 ? terrain.fill : terrain.fillAlternate,
           zoningTint: zoningTint(sample.zoning), owned: sample.owned,
         });
+        if (world.getSquareStructureAt(tileX, tileY) === 1) {
+          structureSolid(squareOrders.get(`${tileX}:${tileY}`) ?? squareWallStructure(tileX, tileY));
+        }
         if (sample.topEdge !== 0) edge('north-edge', tileX, tileY, sample.topEdge);
         if (sample.leftEdge !== 0) edge('west-edge', tileX, tileY, sample.leftEdge);
       }
@@ -128,20 +147,10 @@ export function projectObliqueWorldFrame(frame: RenderFrame, camera: ObliqueCame
 
   for (const structure of frame.structures) {
     if (!tileRangeContains(range, structure.tileX, structure.tileY)) continue;
+    if (structure.phase === 'built' && structure.footprint === 'square' && world.getSquareStructureAt(structure.tileX, structure.tileY) === 1) continue;
     world.readTile(structure.tileX, structure.tileY, sample);
     if (isDrawnAsWorldEdge(structure) && (sample.topEdge !== 0 || sample.leftEdge !== 0)) continue;
-    const appearance = structureAppearance(structure.definitionId);
-    const x = structure.tileX * TILE_SIZE_PX;
-    const y = structure.tileY * TILE_SIZE_PX;
-    const width = appearance.footprintTiles.width * TILE_SIZE_PX;
-    const depth = appearance.footprintTiles.height * TILE_SIZE_PX;
-    const geometry = projectedRectPrism(x, y, width, depth, appearance.heightTiles * TILE_SIZE_PX, camera);
-    raised.push({
-      kind: 'structure', id: structure.id, tileX: structure.tileX, tileY: structure.tileY,
-      ...geometry, topFill: appearance.topFill, sideFill: appearance.sideFill,
-      alpha: structure.phase === 'planned' ? PLANNED_ALPHA : structure.phase === 'building' ? BUILDING_ALPHA : 1,
-      viewDepth: obliqueDepthForAnchor({ x: x + width / 2, y: y + depth / 2 }, camera.yawRadians),
-    });
+    structureSolid(structure);
   }
 
   raised.push(...projectObliqueActors(frame.actors, camera));
