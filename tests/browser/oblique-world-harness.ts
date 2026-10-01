@@ -72,7 +72,8 @@ const bootstrapReady = new Promise<void>((resolve) => { resolveBootstrap = resol
 void (async () => {
   let catalogs: ReadonlyMap<string, import('../../src/rendering/assets/oblique-module-catalog').ObliqueModuleCatalog> = new Map();
   try {
-    catalogs = (await resolveObliqueCatalogs(true)) ?? new Map();
+    const timeout = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('oblique registry timeout after 10000ms')), 10_000));
+    catalogs = (await Promise.race([resolveObliqueCatalogs(true), timeout])) ?? new Map();
     registryState = 'loaded';
   } catch (error) {
     registryFailure = error instanceof Error ? error.message : String(error);
