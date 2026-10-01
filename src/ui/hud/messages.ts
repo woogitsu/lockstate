@@ -562,6 +562,7 @@ export const HUD_MESSAGE_KEY = {
   buildEdge: 'hud.build.edge',
   buildSubmit: 'hud.build.submit',
   buildNote: 'hud.build.note',
+  buildTemplateCatalogueValue: 'hud.build.template-catalogue-value',
   buildTemplates: 'hud.build.templates',
   buildTemplatesShort: 'hud.build.templates-short',
   buildTemplatePreviewOnly: 'hud.build.template-preview-only',

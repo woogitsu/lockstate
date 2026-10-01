@@ -1,3 +1,4 @@
+import { HUD_MESSAGE_KEY } from './messages';
 import { defaultItemRegistry } from '../../content/item-catalog';
 import type { LocalizationKey } from '../../content/localization';
 import type { RoomTemplateCostQuote } from '../room-template-tool';
@@ -12,6 +13,6 @@ export function formatRoomTemplateQuote(localizer: HudLocalizer, quote: RoomTemp
   });
   return [
     ...materials,
-    ...(quote.catalogueCostMinorUnits === undefined ? [] : [localizer.format('hud.build.template-catalogue-value', { value: localizer.formatNumber(quote.catalogueCostMinorUnits) })]),
+    ...(quote.catalogueCostMinorUnits === undefined ? [] : [localizer.format(HUD_MESSAGE_KEY.buildTemplateCatalogueValue, { value: localizer.formatNumber(quote.catalogueCostMinorUnits) })]),
   ].join(' · ');
 }

@@ -76,6 +76,7 @@ const HUD_MODULE_NAMES = [
   'projection.ts',
   'regime-panel.ts',
   'room-template-preview.ts',
+  'room-template-quote.ts',
   'rooms-panel.ts',
   'roster-panel.ts',
   'security-panel.ts',
