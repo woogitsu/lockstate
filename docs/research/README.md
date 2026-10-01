@@ -229,6 +229,9 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 | [2026-10-01 Yard history](./2026-10-01-yard-history/README.md) | Can shell-free Yard zoning be undone and redone after Save/Load? | Backend transaction and actual built-game Full HD browser evidence; no fabricated wall order or release claim. |
 | [2026-10-01 room plan cards](./2026-10-01-room-plan-cards/README.md) | Can twenty plans be compared before selection while the largest plan keeps its controls visible? | Actual Full HD cards, dimensions, authored footprint and mouse arming evidence; deliberate mutation acceptance remains pending. |
 | [2026-10-01 oblique preset art](./2026-10-01-oblique-preset-art/README.md) | Do the authored fixtures and square walls render as Blender textures in representative room plans? | Four actual ObliqueWorldScene rooms at three Full HD poses with zero fallback draws; screenshots expose remaining near-wall visibility limitations. |
+| [2026-10-01 room plan quote](./2026-10-01-room-plan-quote/README.md) | Are materials and catalogue value visible before mouse placement? | Worker-derived dialog and ghost quote, including Yard zero value. |
+| [2026-10-01 coordinate independence](./2026-10-01-map-quote-coordinate-independence/README.md) | Does an invalid advanced coordinate erase the independent map quote? | Red/green Full HD regression and actual placement for issue1912. |
+| [2026-10-01 actor wall depth](./2026-10-01-oblique-actor-depth/README.md) | Do walls occlude actors behind them while foreground actors stay visible? | Actual scene before/after frames and pixel mutation regression for issue1913. |
 
 ### Findings from the first four records that changed a decision
 
@@ -342,8 +345,3 @@ and it stopped one step short of its own consequence.
   caller in `src/` — the same class as issue #287's two uncalled capabilities,
   three layers deeper.
 
-## Full HD angled-room integration evidence, 2026-10-01
-
-- [Room-plan materials and catalogue value](2026-10-01-room-plan-quote/README.md): worker-derived quote in the dialog and map ghost, including Yard zero value.
-- [Map quote independent of advanced coordinates](2026-10-01-map-quote-coordinate-independence/README.md): red/green Full HD mouse-placement regression for #1912.
-- [Actor and wall depth](2026-10-01-oblique-actor-depth/README.md): actual scene before/after screenshots and pixel mutation regression for #1913.
