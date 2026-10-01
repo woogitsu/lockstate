@@ -88,6 +88,7 @@ const game = new Phaser.Game({
 
 interface Report {
   readonly actorSlots: readonly { id: number; token: number }[];
+  readonly solidSlots: readonly { id: string; token: number; depth: number; expectedDepth: number }[];
   readonly actorImages: readonly string[];
   readonly floorTextures: readonly string[];
   readonly floorMeshCount: number;
@@ -113,6 +114,8 @@ declare global {
 }
 const actorTokens = new WeakMap<Phaser.GameObjects.Image, number>();
 let nextActorToken = 0;
+const solidTokens = new WeakMap<Phaser.GameObjects.Image, number>();
+let nextSolidToken = 0;
 window.lockstatePresetArtQA = {
   async setActors(actors) {
     frame = { ...frame, actors };
@@ -140,11 +143,19 @@ window.lockstatePresetArtQA = {
     const privateScene = scene as unknown as {
       assetTextureKeys: Map<string, string>;
       assetImages: Phaser.GameObjects.Image[];
+      solidImages: Map<string, Phaser.GameObjects.Image>;
       actorImagePool: { active: Map<number, Phaser.GameObjects.Image> };
       raisedGraphics: Phaser.GameObjects.Graphics;
       floorMeshes: Phaser.GameObjects.Mesh2D[];
     };
     return {
+      solidSlots: [...privateScene.solidImages].map(([id, image]) => {
+        let token = solidTokens.get(image);
+        if (token === undefined) { token = ++nextSolidToken; solidTokens.set(image, token); }
+        const index = projection.raised.findIndex(item => item.kind !== 'actor' && `${item.kind}:${item.id}` === id);
+        if (index < 0) throw new Error(`Unprojected solid image ${id}`);
+        return { id, token, depth: image.depth, expectedDepth: 2 + 0.9 * index / projection.raised.length };
+      }),
       actorSlots: [...privateScene.actorImagePool.active].map(([id, image]) => {
         let token = actorTokens.get(image);
         if (token === undefined) { token = ++nextActorToken; actorTokens.set(image, token); }
