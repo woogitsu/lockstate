@@ -141,8 +141,10 @@ module registry before constructing Phaser, passes the verified catalogs into
 ports as the top-down scene. A catalog failure paints an explicit startup error
 instead of silently falling back. The default URL keeps the registry-free
 `WorldScene` path. This branch also paints the first authored PNG frame for
-mapped walls, doors and objects over the geometric fallback; the remaining
-cutaway and full square construction gates are still separate.
+mapped walls, doors and objects over the geometric fallback. The opt-in scene
+now forwards build, room and object gestures through the established tool ports,
+projects their live tile footprints, and keeps the minimap, zoom and Save/Load
+paths active. The cutaway and full square construction gates remain separate.
 
 ## Active delivery lanes
 
