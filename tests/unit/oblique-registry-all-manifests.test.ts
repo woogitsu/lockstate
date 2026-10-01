@@ -9,7 +9,7 @@ const readJson = (name: string): unknown => JSON.parse(readFileSync(new URL(name
 describe('oblique registry catalog integrity', () => {
   it('parses every registered wall, door, and furniture manifest', () => {
     const registry = parseObliqueModuleRegistry(readJson('oblique-module-registry.v1.json'));
-    const selected = registry.entries.filter(({ assetId }) => /^(wall|door|furniture\.)/.test(assetId));
+    const selected = registry.entries.filter(({ assetId }) => /^(wall|door|furniture\.|fixture\.|utility\.)/.test(assetId));
     expect(selected.length).toBeGreaterThan(0);
     for (const entry of selected) {
       const catalog = parseObliqueModuleCatalog(readJson(entry.manifest.replace('/game-content/', '')));

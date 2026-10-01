@@ -168,6 +168,18 @@
                     {
                         "assetId":  "fixture.medicine-cabinet.variants",
                         "manifest":  "/game-content/oblique-fixture.medicine-cabinet.v1.json"
+                    },
+                    {
+                        "assetId":  "utility.security-console.variants",
+                        "manifest":  "/game-content/oblique-utility.security-console.v1.json"
+                    },
+                    {
+                        "assetId":  "utility.loading-dock-door.variants",
+                        "manifest":  "/game-content/oblique-utility.loading-dock-door.v1.json"
+                    },
+                    {
+                        "assetId":  "utility.utility-panel.variants",
+                        "manifest":  "/game-content/oblique-utility.utility-panel.v1.json"
                     }
                 ]
 }

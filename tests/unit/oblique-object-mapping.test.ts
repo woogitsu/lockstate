@@ -1,13 +1,22 @@
 import { describe, expect, it } from 'vitest';
-import { obliqueAssetIdForObject, obliqueCanonicalAssetIdForObject } from '../../src/rendering/assets/oblique-object-mapping';
+import { obliqueAssetIdForObject, obliqueCanonicalAssetIdForObject, obliqueCatalogForObject } from '../../src/rendering/assets/oblique-object-mapping';
 describe('medical oblique object mapping', () => {
  it.each([
   ['object.medical-bed','furniture.medical-bed.variants'],
   ['object.medicine-cabinet','fixture.medicine-cabinet.variants'],
+  ['object.security-console','utility.security-console.variants'],
+  ['object.loading-dock-door','utility.loading-dock-door.variants'],
+  ['object.utility-panel','utility.utility-panel.variants'],
  ] as const)('maps %s to registered asset', (objectId, assetId) => expect(obliqueAssetIdForObject(objectId)).toBe(assetId));
- it('fails closed for unknown ids', () => expect(obliqueAssetIdForObject('object.bed')).toBeUndefined());
+ it('resolves mapped catalogs and fails closed for unknown ids', () => {
+  const security = { assetId: 'utility.security-console.variants' } as any;
+  const dock = { assetId: 'utility.loading-dock-door.variants' } as any;
+  const catalogs = new Map([[security.assetId, security], [dock.assetId, dock]]);
+  expect(obliqueCatalogForObject('object.security-console', catalogs)).toBe(security);
+  expect(obliqueCatalogForObject('object.loading-dock-door', catalogs)).toBe(dock);
+  expect(obliqueAssetIdForObject('object.bed')).toBeUndefined();
+ });
 });
-import { obliqueCatalogForObject } from '../../src/rendering/assets/oblique-object-mapping';
 it('fails closed when the mapped asset is absent from the registry', () => {
  expect(obliqueCatalogForObject('object.medical-bed', new Map())).toBeUndefined();
 });
