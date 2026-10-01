@@ -75,7 +75,6 @@ void (async () => {
   try {
     const timeout = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('oblique registry timeout after 10000ms')), 10_000));
     catalogs = (await Promise.race([resolveObliqueCatalogs(true), timeout])) ?? new Map();
-    registryState = 'loaded';
   } catch (error) {
     registryFailure = error instanceof Error ? error.message : String(error);
   }
@@ -90,7 +89,11 @@ void (async () => {
   scale: { mode: Phaser.Scale.RESIZE, autoCenter: Phaser.Scale.CENTER_BOTH },
     render: { antialias: true, roundPixels: false, pixelArt: false },
   });
-  try { await scene.ready(); } catch (error) { sceneReadyFailure = error instanceof Error ? error.message : String(error); registryFailure ??= sceneReadyFailure; }
+  await ready;
+  try {
+    await scene.ready();
+    registryState = 'loaded';
+  } catch (error) { sceneReadyFailure = error instanceof Error ? error.message : String(error); registryFailure ??= sceneReadyFailure; }
   resolveBootstrap();
 })();
 
