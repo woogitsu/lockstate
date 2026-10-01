@@ -1,6 +1,43 @@
 import { expect, test } from './network-changed-fixture';
 import type {} from './oblique-preset-art-qa';
 
+test('canonical cook medic and staff frames produce visible Blender pixels', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/tests/browser/oblique-preset-art-qa.html?preset=kitchen-basic&actorDepth=1&actorArt=1');
+  await expect.poll(() => page.evaluate(() => typeof window.lockstatePresetArtQA?.ready)).toBe('function');
+  await page.evaluate(() => window.lockstatePresetArtQA.ready());
+  await page.evaluate(() => window.lockstatePresetArtQA.setPose(45, 45));
+  await page.evaluate(() => window.lockstatePresetArtQA.setActors(['cook', 'medic', 'staff'].map((role, id) => ({
+    id: id + 10, assetId: `actor.${role}.base`, tileX: 10 + id * 2, tileY: 12, deltaX: 0, deltaY: 0,
+  }))));
+  await expect.poll(() => page.evaluate(() => [...window.lockstatePresetArtQA.report().actorImages].sort()))
+    .toEqual(['cook', 'medic', 'staff'].map(role => `oblique:actor.${role}.base:45:45`));
+  const shown = await page.locator('canvas').screenshot();
+  await page.screenshot({ path: testInfo.outputPath('blender-role-actors-fullhd.png') });
+  await page.evaluate(() => window.lockstatePresetArtQA.setActorImagesVisible(false));
+  const hidden = await page.locator('canvas').screenshot();
+  const changes = await page.evaluate(async ({ shown, hidden }) => {
+    async function pixels(base64: string) {
+      const bitmap = await createImageBitmap(await (await fetch('data:image/png;base64,' + base64)).blob());
+      const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
+      const ctx = canvas.getContext('2d')!; ctx.drawImage(bitmap, 0, 0); bitmap.close();
+      return { width: canvas.width, data: ctx.getImageData(0, 0, canvas.width, canvas.height).data };
+    }
+    const a = await pixels(shown); const b = await pixels(hidden);
+    return window.lockstatePresetArtQA.report().actors.map(actor => {
+      let changed = 0;
+      for (let y = Math.floor(actor.foot.y) - 100; y < Math.floor(actor.foot.y) + 10; y += 1) {
+        for (let x = Math.floor(actor.foot.x) - 30; x < Math.floor(actor.foot.x) + 30; x += 1) {
+          const at = (y * a.width + x) * 4;
+          if ([0, 1, 2].some(channel => Math.abs(a.data[at + channel]! - b.data[at + channel]!) > 8)) changed += 1;
+        }
+      }
+      return changed;
+    });
+  }, { shown: shown.toString('base64'), hidden: hidden.toString('base64') });
+  for (const changed of changes) expect(changed).toBeGreaterThan(100);
+});
+
 test('authored prisoner and guard pixels share wall depth at Full HD', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/tests/browser/oblique-preset-art-qa.html?preset=kitchen-basic&actorDepth=1&actorArt=1');

@@ -12,6 +12,7 @@ import { chunkCoordinate, tileCoordinate } from '../../src/simulation/world/coor
 import { SparseWorld } from '../../src/simulation/world/sparse-world';
 import { WorldRenderView } from '../../src/rendering/world/world-view';
 import type { RenderFrame } from '../../src/rendering/feed/render-feed';
+import { PRISONER_ACTOR_ASSET_ID, GUARD_ACTOR_ASSET_ID } from '../../src/rendering/feed/actors-from-snapshot';
 
 const allowed = ROOM_TEMPLATE_IDS;
 const selected = new URLSearchParams(window.location.search).get('preset');
@@ -46,9 +47,9 @@ const structures = plan.objects.map((object, index) => ({
 let frame: RenderFrame = {
   revision: 1, world: WorldRenderView.fromSnapshot(world.snapshot()), structures,
   actors: actorDepthProbe ? [
-    { id: 1, assetId: 'actor.prisoner', tileX: 3.5, tileY: 5.5, deltaX: 0, deltaY: 0 },
-    { id: 2, assetId: 'actor.prisoner', tileX: 10, tileY: 8, deltaX: 0, deltaY: 0 },
-    ...(actorArtProbe ? [{ id: 3, assetId: 'actor.guard', tileX: 11, tileY: 10, deltaX: 0, deltaY: 0 }] : []),
+    { id: 1, assetId: PRISONER_ACTOR_ASSET_ID, tileX: 3.5, tileY: 5.5, deltaX: 0, deltaY: 0 },
+    { id: 2, assetId: PRISONER_ACTOR_ASSET_ID, tileX: 10, tileY: 8, deltaX: 0, deltaY: 0 },
+    ...(actorArtProbe ? [{ id: 3, assetId: GUARD_ACTOR_ASSET_ID, tileX: 11, tileY: 10, deltaX: 0, deltaY: 0 }] : []),
   ] : [], rooms: [], roomConditions: [],
 };
 
@@ -56,6 +57,7 @@ const expectedAssets = new Set<string>(['wall.square.brick.full', 'wall.square.b
 if (actorArtProbe) {
   expectedAssets.add('actor.prisoner.base');
   expectedAssets.add('actor.guard.base');
+  for (const role of ['cook', 'medic', 'staff']) expectedAssets.add(`actor.${role}.base`);
 }
 for (const structure of structures) {
   const logicalId = catalogueObjectId(structure.definitionId);
