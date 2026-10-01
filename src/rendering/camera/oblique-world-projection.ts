@@ -154,8 +154,8 @@ export function projectObliqueWorldFrame(frame: RenderFrame, camera: ObliqueCame
     const width = appearance.footprintTiles.width * TILE_SIZE_PX;
     const depth = appearance.footprintTiles.height * TILE_SIZE_PX;
     const geometry = projectedRectPrism(x, y, width, depth, (cutaway ? cutawayHeight(appearance.heightTiles) : appearance.heightTiles) * TILE_SIZE_PX, camera);
-    const assetId = appearance.kind === 'wall'
-      ? obliqueCanonicalAssetIdForObject('wall.interior.module', { cutaway })
+    const assetId = structure.phase === 'built' && appearance.kind === 'wall'
+      ? cutaway ? 'wall.square.brick.low' : 'wall.square.brick.full'
       : obliqueCanonicalAssetIdForObject(catalogueObjectId(structure.definitionId) ?? structure.definitionId);
     raised.push({
       kind: 'structure', id: structure.id, tileX: structure.tileX, tileY: structure.tileY,
