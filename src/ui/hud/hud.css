@@ -23,6 +23,7 @@
      than the viewport and carry the centred tab bar off the right edge with
      it. Observed at 375px before this was pinned. */
   grid-template-columns: minmax(0, 1fr);
+  --hud-event-row-reservation: 0px;
   /* `minmax(0, 1fr)` on the middle row for the same reason as the column
      above, in the other axis: a bare `1fr` row is floored at its items'
      min-content, so a middle-row item taller than the space available grows
@@ -45,7 +46,7 @@
      middle instead. */
   /* Reserve the event band row even while hidden. This keeps a later alert
      from taking space from the Rooms panel at 900x600 (#985). */
-  grid-template-rows: auto auto auto minmax(32px, auto) minmax(0, 1fr) auto;
+  grid-template-rows: auto auto auto minmax(var(--hud-event-row-reservation), auto) minmax(0, 1fr) auto;
   grid-template-areas:
     'strip'
     'unavailable'
@@ -1226,6 +1227,10 @@
    had done anything at all. */
 .hud__event[hidden] { display: none; }
 
+@media (min-width: 721px) {
+  .hud { --hud-event-row-reservation: 32px; }
+}
+
 /* Wraps rather than truncates, for the reason the refusal text does: there is
    no hover on touch, and a sentence that ends in an ellipsis is one the player
    cannot read. */
@@ -1961,6 +1966,12 @@
    dismissed. No `margin-left: auto` -- the queue count sits beside its eyebrow
    rather than at the panel edge, and two section headers in one rail that
    placed their figures differently would read as two designs. */
+.ui-panel.hud-staff .ui-section__header,
+.ui-panel.hud-staff .ui-section__header-row {
+  flex: 0 0 auto;
+  min-height: max-content;
+}
+
 .hud-staff__roster-count {
   font-variant-numeric: tabular-nums;
   color: var(--text-subtle);

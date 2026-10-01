@@ -156,7 +156,7 @@ describe('the device tier', () => {
 describe('the event band reservation', () => {
   it('keeps a row for a future alert while the event element is hidden', () => {
     const css = readFileSync(new URL('../../src/ui/hud/hud.css', import.meta.url), 'utf8');
-    expect(css).toContain('grid-template-rows: auto auto auto minmax(32px, auto) minmax(0, 1fr) auto;');
+    expect(css).toContain('grid-template-rows: auto auto auto minmax(var(--hud-event-row-reservation), auto) minmax(0, 1fr) auto;');
     expect(css).toContain('.hud__event[hidden] { display: none; }');
   });
 });

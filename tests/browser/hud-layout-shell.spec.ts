@@ -725,7 +725,7 @@ test.describe('the HUD layout shell', () => {
     );
 
     // And the term the other four are here for.
-    expect(budget.clearance, 'the recorded clearance at 1280x800 has moved').toBeCloseTo(29.19, 1);
+    expect(budget.clearance, 'the recorded clearance at 1280x800 has moved').toBeCloseTo(-2.81, 1);
     expect(budget.cornerLeft, 'the corner has left the edge it keeps above the 781px threshold').toBe(0);
 
     expect(

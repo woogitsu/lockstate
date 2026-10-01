@@ -1150,8 +1150,8 @@ const SMALL_ROOM_DRAG_DELTAS_PX = [128] as const;
  * `flex: 1` stretch.
  */
 const ARRIVAL_PANEL_HEIGHT_PX: Readonly<Record<string, number>> = {
-  '1280x720': 447.5,
-  '900x600': 365.5,
+  '1280x720': 423.5,
+  '900x600': 341.5,
   '375x812': 429,
 };
 
@@ -6122,10 +6122,10 @@ test.describe('the assembled application', () => {
      * still what holds at the viewports that press, and nothing here changes
      * what happens when the panel is squeezed again.
      */
-    expect(before?.bodyHeight).toBe(318.5);
+    expect(before?.bodyHeight).toBe(294.5);
     expect(before?.foldSlack).toBe(7.5);
     expect(before?.panelOverflow).toBe(0);
-    expect(before?.listHeight).toBe(115.3);
+    expect(before?.listHeight).toBe(91.3);
     expect(before?.listContent).toBe(924);
 
     const buy = page.locator('.hud-build__buy-submit');

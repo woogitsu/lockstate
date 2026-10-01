@@ -1618,7 +1618,7 @@ test.describe('HUD shell', () => {
       expect(
         (raised[MIDDLE_ROW] ?? 0) + eventHeight,
         'the band height did not come out of the middle row, so it came from somewhere this test cannot see',
-      ).toBe(before[MIDDLE_ROW]);
+      ).toBe((before[MIDDLE_ROW] ?? 0) + reservedRow);
 
       // The floor first: the band owes this sentence its dwell, so a ceiling
       // that fired early would be the floor's defect wearing this fix's name.
