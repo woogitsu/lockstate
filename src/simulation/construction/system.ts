@@ -1984,6 +1984,7 @@ export class ConstructionSystem implements SystemRegistration {
       // A wall's square is the authored build footprint; its visible and
       // navigable geometry remains the canonical edge used by enclosure.
       // Other square buildables write the tile structure as before.
+      this.world.setSquareStructure(order.location, 1);
       if (definition.category === 'wall') {
         this.writeEdge(order.location, resolveBuildEdge(order), edgeNumericIdFor(definition));
       } else {
