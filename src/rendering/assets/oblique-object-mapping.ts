@@ -7,6 +7,7 @@ export const OBLIQUE_OBJECT_ASSET_IDS: Readonly<Record<string, string>> = Object
   'object.security-console': 'utility.security-console.variants',
   'object.loading-dock-door': 'utility.loading-dock-door.variants',
   'object.utility-panel': 'utility.utility-panel.variants',
+  'object.bookshelf': 'furniture.library.bookshelf.variants',
 });
 
 export function obliqueAssetIdForObject(objectId: string): string | undefined {
@@ -46,3 +47,4 @@ export function obliqueCanonicalAssetIdForObject(
   }
   return options.cutaway ? 'door.interior.open.cutaway' : 'door.interior.open.full';
 }
+
