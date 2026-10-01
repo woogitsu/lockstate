@@ -245,3 +245,8 @@ The #1657 full reversible transaction direction is implemented for nineteen indo
 Five suites pass136tests and TypeScript, including nineteen completed indoor-room build/save/load/Undo/save/load/Redo cycles. A production mutation grouping furniture separately fails the Basic Cell transaction case; restored tests pass. Cache geometry/content revisions correctly increase across Undo/Redo, so content comparison checks every saved plane while excluding only those revision counters. Shell-free Yard still requires a proper zoning transaction; no fake construction order is introduced to pretend it is finished.
 
 CI repair PR1895 merged at bf976ac9fe after exact head560cc632f929 passed all checks and mergeability was CLEAN. Serial main CI run36905140655 is in progress; no further main merge is authorized by a partially completed run.
+
+## Documentation gate integration checkpoint, 2026-10-01
+
+Reopened live ownership declarations and object-removal class/method references after the full-plan stack shifted source coordinates. Quoted actual declarations beside the anchors without raising budgets. The archived enclosure fault still points past EOF; its diagnostic now records the actual 296-line file. Three documentation suites pass 19 tests after the previously observed quotation budget failure. Feature root remains draft pending the two save-field decision; HUD mouse integration is pushed in draft PR1906, and Yard transaction implementation continues separately.
+
