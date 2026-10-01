@@ -269,3 +269,12 @@ an oblique object-sprite consumer for `object.stove`, then verify placement,
 cutaway/depth ordering and Save/Load in the real Full HD scene. The module is
 therefore a concrete art increment, not a claim that the complete angled mode
 has shipped.
+### Kitchen fridge Blender module (2026-10-01)
+
+The kitchen lane now also has a one-tile refrigerator source at
+`assets/source/blender/furniture.kitchen.fridge.variants.blend`, with 72
+transparent yaw/elevation frames and a verified catalog at
+`public/game-content/oblique-furniture.kitchen-fridge.v1.json`. It is registered
+as `furniture.kitchen.fridge.variants`. Like the stove module above, this is
+real authored art and a loader-ready catalog; the production renderer still
+needs the object-sprite consumer and Full HD placement/depth/Save-Load proof.
