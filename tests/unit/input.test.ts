@@ -299,6 +299,20 @@ describe('semantic input', () => {
     expect(loadAccessibilitySettings(store)).toEqual(accessibility);
   });
 
+  it('adds new angle defaults to an older preference without replacing a custom key', () => {
+    const store = new MemoryStore();
+    const oldBindings = DEFAULT_KEYBOARD_BINDINGS
+      .filter((binding) => !binding.action.startsWith('camera.rotate.') && !binding.action.startsWith('camera.tilt.'))
+      .map((binding) => binding.code === 'KeyW' ? { ...binding, code: 'KeyQ' } : binding);
+    store.setItem('lockstate.settings.input', JSON.stringify({ version: 1, keyboardBindings: oldBindings }));
+    const loaded = loadInputSettings(store).keyboardBindings;
+    expect(loaded.find((binding) => binding.action === 'camera.up' && binding.code === 'KeyQ')).toBeDefined();
+    expect(loaded.find((binding) => binding.action === 'camera.rotate.left')).toBeUndefined();
+    expect(loaded.find((binding) => binding.action === 'camera.rotate.right')?.code).toBe('KeyE');
+    expect(loaded.find((binding) => binding.action === 'camera.tilt.up')?.code).toBe('KeyR');
+    expect(loaded.find((binding) => binding.action === 'camera.tilt.down')?.code).toBe('KeyF');
+  });
+
   it('only persists a remap once it is conflict-free', () => {
     const store = new MemoryStore();
     saveInputSettings(store, DEFAULT_INPUT_SETTINGS);

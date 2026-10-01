@@ -698,8 +698,9 @@ try {
     createWorld: createTopDownWorldScene,
     createOblique: (catalogs) => new ObliqueWorldScene({
       feed: renderFeed,
+      keyValueStore: resolveBrowserKeyValueStore(),
       catalogs,
-      ...(buildTool === undefined ? {} : { buildTool }),
+      ...(buildTool === undefined ? {} : { buildTool, editHistory: buildTool, toolStandDown: buildTool }),
       ...(roomTool === undefined ? {} : { roomTool }),
       ...(objectTool === undefined ? {} : { objectTool }),
     }),

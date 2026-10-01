@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import type { KeyValueStore } from '../../shared/key-value-store';
+import { KeyboardInputAdapter, isTextEntryFocused, loadInputSettings, type SemanticActionEvent } from '../../input';
 import type { RenderActor, RenderFeed, RenderFrame } from '../feed/render-feed';
 import { TILE_SIZE_PX, worldToTile } from '../tile-metrics';
 import { VOID_COLOR, ZONING_TINT_ALPHA, UNOWNED_SHADE_ALPHA, UNOWNED_SHADE_COLOR } from '../world/appearance';
@@ -16,15 +18,18 @@ import type { MinimapView } from '../../shared/minimap-view';
 import { projectMinimap } from '../world/minimap-projection';
 import type { ObliqueModuleCatalog } from '../assets/oblique-module-catalog';
 import { selectObliqueModuleFrame } from '../assets/oblique-module-catalog';
-import { edgeRunFromDrag, pickEdgeAtWorld, type BuildToolPort, type WorldPoint } from '../build/edge-picking';
+import { edgeRunFromDrag, pickEdgeAtWorld, type BuildToolPort, type EditHistoryPort, type ToolStandDownPort, type WorldPoint } from '../build/edge-picking';
 import { footprintRectAt, pickTileAtWorld, tileRectFromDrag, type ObjectToolPort, type RoomToolPort, type TileRect } from '../build/area-picking';
 
 export interface ObliqueWorldSceneOptions {
   readonly feed: RenderFeed;
+  readonly keyValueStore: KeyValueStore;
   /** Catalogs verified by the composition root before Phaser starts. */
   readonly catalogs?: ReadonlyMap<string, ObliqueModuleCatalog>;
   readonly onTileSelected?: (tileX: number, tileY: number) => void;
   readonly buildTool?: BuildToolPort;
+  readonly editHistory?: EditHistoryPort;
+  readonly toolStandDown?: ToolStandDownPort;
   readonly roomTool?: RoomToolPort;
   readonly objectTool?: ObjectToolPort;
 }
@@ -40,8 +45,11 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private readonly catalogs: ReadonlyMap<string, ObliqueModuleCatalog>;
   private readonly onTileSelected: ((tileX: number, tileY: number) => void) | undefined;
   private readonly buildTool: BuildToolPort | undefined;
+  private readonly editHistory: EditHistoryPort | undefined;
+  private readonly toolStandDown: ToolStandDownPort | undefined;
   private readonly roomTool: RoomToolPort | undefined;
   private readonly objectTool: ObjectToolPort | undefined;
+  private readonly keyboard: KeyboardInputAdapter;
   private groundGraphics!: Phaser.GameObjects.Graphics;
   private selectionGraphics!: Phaser.GameObjects.Graphics;
   private gestureGraphics!: Phaser.GameObjects.Graphics;
@@ -78,8 +86,14 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.catalogs = options.catalogs ?? new Map();
     this.onTileSelected = options.onTileSelected;
     this.buildTool = options.buildTool;
+    this.editHistory = options.editHistory;
+    this.toolStandDown = options.toolStandDown;
     this.roomTool = options.roomTool;
     this.objectTool = options.objectTool;
+    this.keyboard = new KeyboardInputAdapter(
+      loadInputSettings(options.keyValueStore).keyboardBindings,
+      () => (isTextEntryFocused() ? ['text-entry'] : ['world']),
+    );
     this.readyPromise = new Promise<void>((resolve) => { this.resolveReady = resolve; });
   }
 
@@ -178,9 +192,17 @@ export class ObliqueWorldScene extends Phaser.Scene {
       this.hoveredWorldPoint = undefined;
       this.paintGesturePreview();
     });
-    const cancelOnBlur = (): void => this.cancelGesture();
+    const keyDown = (event: KeyboardEvent): void => this.handleActionEvents(this.keyboard.keyDown(event));
+    const keyUp = (event: KeyboardEvent): void => { this.keyboard.keyUp(event); };
+    const cancelOnBlur = (): void => { this.keyboard.releaseAll(); this.cancelGesture(); };
+    window.addEventListener('keydown', keyDown);
+    window.addEventListener('keyup', keyUp);
     window.addEventListener('blur', cancelOnBlur);
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => window.removeEventListener('blur', cancelOnBlur));
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      window.removeEventListener('keydown', keyDown);
+      window.removeEventListener('keyup', keyUp);
+      window.removeEventListener('blur', cancelOnBlur);
+    });
     void this.loadCatalogTextures().finally(() => this.resolveReady());
   }
 
@@ -316,7 +338,35 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.paintGesturePreview();
   }
 
-  public override update(time: number): void {
+  private handleActionEvents(events: readonly SemanticActionEvent[]): void {
+    for (const event of events) {
+      if (event.phase !== 'started') continue;
+      if (event.action === 'camera.zoom.in') this.stepCameraZoom('in');
+      else if (event.action === 'camera.zoom.out') this.stepCameraZoom('out');
+      else if (event.action === 'build.cancel') {
+        const hadGesture = this.gesture !== undefined;
+        this.cancelGesture();
+        if (!hadGesture) this.toolStandDown?.standDown();
+      } else if (event.action === 'edit.undo') this.editHistory?.undo();
+      else if (event.action === 'edit.redo') this.editHistory?.redo();
+    }
+  }
+
+  public override update(time: number, delta: number): void {
+    const horizontal = Number(this.keyboard.isActive('camera.right')) - Number(this.keyboard.isActive('camera.left'));
+    const vertical = Number(this.keyboard.isActive('camera.down')) - Number(this.keyboard.isActive('camera.up'));
+    if (horizontal !== 0 || vertical !== 0) {
+      const screen = { x: this.pose.viewport.width / 2 + horizontal * 0.6 * delta,
+        y: this.pose.viewport.height / 2 + vertical * 0.6 * delta };
+      this.pose = { ...this.pose, target: screenToGround(screen, this.pose) };
+      this.poseRevision += 1;
+    }
+    const turn = Number(this.keyboard.isActive('camera.rotate.right')) - Number(this.keyboard.isActive('camera.rotate.left'));
+    const tilt = Number(this.keyboard.isActive('camera.tilt.up')) - Number(this.keyboard.isActive('camera.tilt.down'));
+    if (turn !== 0 || tilt !== 0) {
+      this.setPoseRadians(this.pose.yawRadians + turn * delta * 0.0015,
+        this.pose.elevationRadians + tilt * delta * 0.0015);
+    }
     const viewport = { width: this.cameras.main.width, height: this.cameras.main.height };
     if (viewport.width !== this.pose.viewport.width || viewport.height !== this.pose.viewport.height) {
       this.pose = { ...this.pose, viewport };

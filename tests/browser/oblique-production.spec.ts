@@ -71,3 +71,44 @@ test('the minimap and HUD zoom move the active angled camera', async ({ page }) 
   const afterZoom = await canvas.screenshot();
   expect(afterZoom.equals(afterNavigate), 'HUD zoom did not change the angled world image').toBe(false);
 });
+
+test('remappable keyboard pans, turns and tilts the angled world without moving while typing', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/?renderer=oblique');
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await expect(page.locator('.hud-clock__day')).toHaveText('1');
+  const canvas = page.locator('#game-root canvas');
+  const initial = await canvas.screenshot();
+  await page.keyboard.down('ArrowRight');
+  await page.waitForTimeout(250);
+  await page.keyboard.up('ArrowRight');
+  const panned = await canvas.screenshot();
+  expect(panned.equals(initial), 'ArrowRight did not pan the angled ground').toBe(false);
+  await page.keyboard.down('KeyE');
+  await page.waitForTimeout(250);
+  await page.keyboard.up('KeyE');
+  const turned = await canvas.screenshot();
+  expect(turned.equals(panned), 'E did not turn the angled ground').toBe(false);
+  await page.keyboard.down('KeyR');
+  await page.waitForTimeout(250);
+  await page.keyboard.up('KeyR');
+  await page.waitForTimeout(100);
+  const tilted = await canvas.screenshot();
+  expect(tilted.equals(turned), 'R did not change the viewing angle').toBe(false);
+  const textBox = await page.evaluate(() => {
+    const field = document.createElement('input');
+    field.id = 'oblique-keyboard-focus-check';
+    field.style.position = 'fixed';
+    field.style.top = '150px';
+    document.body.append(field);
+    field.focus();
+    return field.id;
+  });
+  await expect(page.locator(`#${textBox}`)).toBeFocused();
+  const focusedBaseline = await canvas.screenshot();
+  await page.keyboard.down('ArrowRight');
+  await page.waitForTimeout(250);
+  await page.keyboard.up('ArrowRight');
+  expect((await canvas.screenshot()).equals(focusedBaseline), 'camera moved while a text field had focus').toBe(true);
+  await page.locator(`#${textBox}`).evaluate((field) => field.remove());
+});

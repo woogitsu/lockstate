@@ -33,6 +33,10 @@ export const DEFAULT_KEYBOARD_BINDINGS: readonly KeyboardBinding[] = [
   { device: 'keyboard', code: 'ArrowRight', action: 'camera.right', contexts: ['world', 'construction'] },
   { device: 'keyboard', code: 'Equal', action: 'camera.zoom.in', contexts: ['world', 'construction'] },
   { device: 'keyboard', code: 'Minus', action: 'camera.zoom.out', contexts: ['world', 'construction'] },
+  { device: 'keyboard', code: 'KeyQ', action: 'camera.rotate.left', contexts: ['world', 'construction'] },
+  { device: 'keyboard', code: 'KeyE', action: 'camera.rotate.right', contexts: ['world', 'construction'] },
+  { device: 'keyboard', code: 'KeyR', action: 'camera.tilt.up', contexts: ['world', 'construction'] },
+  { device: 'keyboard', code: 'KeyF', action: 'camera.tilt.down', contexts: ['world', 'construction'] },
   { device: 'keyboard', code: 'Escape', action: 'build.cancel', contexts: ['world', 'construction', 'modal'] },
   // Undo and redo the last build gesture (#261). The transaction stack
   // `ConstructionSystem` maintains could be pushed and never popped: `undo()`
