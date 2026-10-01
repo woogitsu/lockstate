@@ -8,10 +8,9 @@ import {
   terrainAppearance,
   zoningTint,
 } from '../world/appearance';
-import { catalogueObjectId, isDrawnAsWorldEdge } from '../world/structures';
+import { catalogueObjectId, isDrawnAsWorldEdge, squareWallStructure, type RenderStructure } from '../world/structures';
 import { obliqueCanonicalAssetIdForObject } from '../assets/oblique-object-mapping';
 import { DOOR_EDGE_NUMERIC_ID } from '../../simulation/construction/definition';
-import { squareWallStructure, type RenderStructure } from '../world/structures';
 import { createTileSample } from '../world/world-view';
 import { TILE_SIZE_PX, tileRangeContains, visibleTileRange } from '../tile-metrics';
 import { groundToScreen, visibleGroundBounds, type ObliqueCameraState } from './oblique-projection';

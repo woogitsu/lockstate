@@ -345,6 +345,7 @@ export const PROJECTION_IDS = [
   'hud/incident-detail',
   'world/render-snapshot',
   'world/room-template-preflight',
+  'world/room-template-cost',
 ] as const;
 
 export type ProjectionId = (typeof PROJECTION_IDS)[number];

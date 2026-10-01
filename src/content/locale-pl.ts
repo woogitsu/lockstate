@@ -1069,6 +1069,9 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.template-x': 'Początek wzoru X',
   'hud.build.template-y': 'Początek wzoru Y',
   'hud.build.template-mirror': 'Odbij poziomo',
+  'hud.build.template-on-map': 'Postaw na mapie',
+  'hud.build.template-map-hint': 'Kliknij map\u0119, aby postawi\u0107; Esc anuluje.',
+  'hud.build.template-catalogue-value': 'Katalogowa warto\u015b\u0107 materia\u0142\u00f3w: {value}',
   'hud.build.template-place': 'Postaw wzór pomieszczenia',
   'hud.build.template-invalid-position': 'Wpisz całkowite współrzędne.',
   'hud.build.template-ready': 'Cały obrys jest wolny.',
@@ -1089,6 +1092,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.catalogue-empty': 'Nie ma nic do zbudowania',
   'hud.build.catalogue-row-price': '{buildable} · {total}',
   'hud.build.catalogue-row-price-segment': '{buildable} · {total} za segment',
+  'hud.build.catalogue-row-price-square': '{buildable} · {total} za pole',
   'hud.build.selected': 'Wybrane',
   'hud.build.placement': 'Gdzie',
   // *pole*, not *kafelek*: a Polish strategy game calls a grid square a pole.
@@ -1111,6 +1115,8 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.arm': 'Stawiaj na mapie',
   'hud.build.arm-hint':
     'Kliknij krawędź pola, aby postawić ścianę. Przeciągnij wzdłuż niej, aby położyć cały ciąg. Dwa palce, środkowy przycisk i strzałki nadal poruszają kamerą.',
+  'hud.build.arm-hint-square':
+    'Kliknij całe pole, aby postawić ścianę. Przeciągnij przez pola, aby położyć cały ciąg. Dwa palce, środkowy przycisk i strzałki nadal poruszają kamerą.',
   'hud.build.arm-hint-object':
     'Kliknij pole wewnątrz wyznaczonego pomieszczenia, aby go postawić. Jedno naciśnięcie, jeden obiekt. Dwa palce, środkowy przycisk i strzałki nadal poruszają kamerą.',
   'hud.build.disarm': 'Przestań stawiać',
@@ -1124,6 +1130,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   // alone, and numerals do not decline.
   'hud.build.target-value': '{x}, {y} · {edge}',
   'hud.build.target-run': '{count} × {edge} od {x}, {y}',
+  'hud.build.target-squares': { one: '{count} pe\u0142ne pole od {x}, {y} | warto\u015b\u0107 katalogowa {cost}', few: '{count} pe\u0142ne pola od {x}, {y} | warto\u015b\u0107 katalogowa {cost}', many: '{count} pe\u0142nych p\u00f3l od {x}, {y} | warto\u015b\u0107 katalogowa {cost}', other: '{count} pe\u0142nego pola od {x}, {y} | warto\u015b\u0107 katalogowa {cost}' },
   'hud.build.target-tile': '{x}, {y}',
   'hud.build.coordinates': 'Wpisz współrzędne',
   'hud.build.coordinates-hint': 'Droga przez klawiaturę. Wskazanie na mapie jest szybsze.',

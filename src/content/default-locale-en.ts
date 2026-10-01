@@ -2305,6 +2305,9 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.template-x': 'Plan origin X',
   'hud.build.template-y': 'Plan origin Y',
   'hud.build.template-mirror': 'Mirror horizontally',
+  'hud.build.template-on-map': 'Place on map',
+  'hud.build.template-map-hint': 'Click map to place; Esc cancels.',
+  'hud.build.template-catalogue-value': 'Materials catalogue value: {value}',
   'hud.build.template-place': 'Place room plan',
   'hud.build.template-invalid-position': 'Enter whole-number coordinates.',
   'hud.build.template-ready': 'This footprint is clear.',
@@ -2380,6 +2383,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
    * the rate.
    */
   'hud.build.catalogue-row-price-segment': '{buildable} · {total} per segment',
+  'hud.build.catalogue-row-price-square': '{buildable} · {total} per square',
   'hud.build.placement': 'Where',
   'hud.build.tile-x': 'Tile X',
   'hud.build.tile-y': 'Tile Y',
@@ -2458,6 +2462,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.remove-submit': 'Remove object here',
   'hud.build.disarm': 'Stop placing',
   'hud.build.arm-hint': 'Click a tile edge to place a wall. Drag along it to lay a run. Two fingers, the middle button or the arrow keys still move the camera.',
+  'hud.build.arm-hint-square': 'Click a whole square to place a wall. Drag across squares to lay a run. Two fingers, the middle button or the arrow keys still move the camera.',
   /*
    * The same hint for a buildable that stands on a **tile** rather than on an
    * edge (issue #904).
@@ -2498,6 +2503,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.target-none': 'Point at the world',
   'hud.build.target-value': '{x}, {y} · {edge}',
   'hud.build.target-run': '{count} × {edge} from {x}, {y}',
+  'hud.build.target-squares': { one: '{count} whole square from {x}, {y} | catalogue value {cost}', other: '{count} whole squares from {x}, {y} | catalogue value {cost}' },
   'hud.build.target-tile': '{x}, {y}',
   'hud.build.coordinates': 'Enter coordinates',
   'hud.build.coordinates-hint': 'The keyboard route. Pointing at the map is quicker.',

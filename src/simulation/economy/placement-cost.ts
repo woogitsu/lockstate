@@ -83,3 +83,14 @@ export function placementCostMinorUnits(
   }
   return total;
 }
+
+/** Catalogue value of a whole-square run; actual debit may be lower when stock is held. */
+export function placementRunCatalogueCostMinorUnits(
+  requirements: readonly MaterialRequirement[],
+  count: number,
+): number | undefined {
+  if (!Number.isSafeInteger(count) || count < 0) return undefined;
+  const unit = placementCostMinorUnits(requirements);
+  if (unit === undefined || !Number.isSafeInteger(unit * count)) return undefined;
+  return unit * count;
+}
