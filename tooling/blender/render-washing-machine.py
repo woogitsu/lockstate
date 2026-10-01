@@ -26,8 +26,32 @@ def png_chunk(kind, data):
 
 
 def normalize(path: Path) -> None:
-    # Blender PNG bytes are retained; no metadata rewrite is needed for this asset.
-    return
+    blob = path.read_bytes(); offset = 8; header = None; compressed = b""; metadata = []
+    while offset < len(blob):
+        length = struct.unpack(">I", blob[offset:offset + 4])[0]; kind = blob[offset + 4:offset + 8]
+        data = blob[offset + 8:offset + 8 + length]; offset += 12 + length
+        if kind == b"IHDR": header = data
+        elif kind == b"IDAT": compressed += data
+        elif kind in (b"sRGB", b"gAMA", b"cHRM", b"iCCP"): metadata.append((kind, data))
+    if header is None: raise ValueError(f"missing IHDR in {path}")
+    width, height, depth, color_type, compression, filter_method, interlace = struct.unpack(">IIBBBBB", header)
+    if (depth, color_type, compression, filter_method, interlace) != (8, 6, 0, 0, 0): raise ValueError(f"unsupported PNG format in {path}")
+    raw = zlib.decompress(compressed); stride = width * 4; rows = []; position = 0; previous = bytearray(stride)
+    for _ in range(height):
+        filter_type = raw[position]; position += 1; row = bytearray(raw[position:position + stride]); position += stride
+        for i in range(stride):
+            left = row[i - 4] if i >= 4 else 0; up = previous[i]
+            if filter_type == 1: row[i] = (row[i] + left) & 255
+            elif filter_type == 2: row[i] = (row[i] + up) & 255
+            elif filter_type == 3: row[i] = (row[i] + ((left + up) >> 1)) & 255
+            elif filter_type == 4:
+                ul = previous[i - 4] if i >= 4 else 0; p0 = left + up - ul; pa = abs(p0-left); pb = abs(p0-up); pc = abs(p0-ul); pred = left if pa <= pb and pa <= pc else (up if pb <= pc else ul); row[i] = (row[i] + pred) & 255
+            elif filter_type != 0: raise ValueError(f"unsupported PNG filter {filter_type}")
+        rows.append(row); previous = row
+    encoded = b"".join(b"\x00" + bytes(row) for row in rows)
+    def chunk(kind, data): return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data) & 0xffffffff)
+    result = b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", header) + b"".join(chunk(k,d) for k,d in metadata) + chunk(b"IDAT", zlib.compress(encoded, 9)) + chunk(b"IEND", b"")
+    path.write_bytes(result)
 
 def render(asset_id: str, source_file: str, footprint) -> list[dict]:
     source_path = REPO_ROOT / "assets/source/blender" / source_file
