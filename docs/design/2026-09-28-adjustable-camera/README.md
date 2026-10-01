@@ -277,3 +277,8 @@ A delayed room-plan confirmation was discarded when moving the cursor triggered 
 
 Merged camera agent47eee44860 into the combined feature root. The pure world projection lowers camera-facing walls with room interiors behind them, switches the matching authored cutaway asset, preserves full door height and never changes the worker's occupied square, edge, collision or saved world. Agent proof includes yaw0/elevation45 and yaw180/elevation65 FullHD browser cases (2 green); identity-height mutation makes the pixel test red. Root integration passes six suites75tests including completed-room Save/Load/Undo/Redo and whole-room catalogue/protocol cases; TypeScript passes. This does not replace true Blender-runtime QA or owner approval of the pending save metadata.
 
+
+## All twenty plans reversible backend integration
+
+Integrated Yard source checkpoints53009f866b/c0c6011646/d3b2ad35ec. Yard records an actual reversible zoning gesture in shared history, without fabricating a wall BuildOrder or consuming materials. Its hooks are reattached from existing plan metadata after load; the status projection exposes Undo/Redo availability. Rejected Redo is guarded against resurrecting an empty-shell plan. Root transaction/Redo/complete-catalogue suites pass65tests and TypeScript. Player success wording remains owner-reserved and pending; this integration is draft, with browser Yard acceptance not yet established because the QA worker bootstrap did not complete.
+
