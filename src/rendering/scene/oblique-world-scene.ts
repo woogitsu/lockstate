@@ -4,6 +4,7 @@ import { TILE_SIZE_PX, worldToTile } from '../tile-metrics';
 import { VOID_COLOR, ZONING_TINT_ALPHA, UNOWNED_SHADE_ALPHA, UNOWNED_SHADE_COLOR } from '../world/appearance';
 import {
   changeObliquePoseAtScreenPoint,
+  groundToScreen,
   screenToGround,
   visibleGroundBounds,
   type ObliqueCameraState,
@@ -393,12 +394,15 @@ export class ObliqueWorldScene extends Phaser.Scene {
         actors.fillCircle(item.head.x, item.head.y, 8 * this.pose.zoom);
         continue;
       }
+      // The prism is a fallback for assets that are absent or still loading.
+      // Keeping it under an authored frame makes furniture appear to float on
+      // a solid blue block, especially at shallow elevations.
+      if (this.paintAsset(item, index, projection.raised.length)) continue;
       for (let side = 0; side < 4; side += 1) {
         const next = (side + 1) % 4;
         this.fillQuad(raised, [item.footprint[side]!, item.footprint[next]!, item.top[next]!, item.top[side]!], item.sideFill, item.alpha);
       }
       this.fillQuad(raised, item.top, item.topFill, item.alpha);
-      this.paintAsset(item, index, projection.raised.length);
     }
   }
 
@@ -446,15 +450,24 @@ export class ObliqueWorldScene extends Phaser.Scene {
   }
 
   /** Load and paint one authored PNG for every mapped solid; graphics remain the fail-closed fallback. */
-  private paintAsset(item: ObliqueSolid, index: number, itemCount: number): void {
-    if (item.assetId === undefined) return;
+  private paintAsset(item: ObliqueSolid, index: number, itemCount: number): boolean {
+    if (item.assetId === undefined) return false;
+    const catalog = this.catalogs.get(item.assetId);
+    if (catalog === undefined) return false;
     const textureKey = this.assetTextureKeys.get(item.assetId);
-    if (textureKey === undefined || !this.textures.exists(textureKey)) return;
-    const centre = item.top.reduce((sum, point) => ({ x: sum.x + point.x / 4, y: sum.y + point.y / 4 }), { x: 0, y: 0 });
-    const image = this.add.image(centre.x, centre.y, textureKey).setDepth(2 + 0.9 * index / itemCount);
-    image.setOrigin(0.5, 0.75);
+    if (textureKey === undefined || !this.textures.exists(textureKey)) return false;
+    const [targetX, targetY, targetZ] = catalog.cameraTargetTiles;
+    const anchor = groundToScreen({
+      x: (item.tileX + targetX) * TILE_SIZE_PX,
+      y: (item.tileY + targetY) * TILE_SIZE_PX,
+      z: targetZ * TILE_SIZE_PX,
+    }, this.pose);
+    const image = this.add.image(anchor.x, anchor.y, textureKey).setDepth(2 + 0.9 * index / itemCount);
+    image.setOrigin(catalog.pivotPx[0] / catalog.resolutionPx[0], catalog.pivotPx[1] / catalog.resolutionPx[1]);
+    image.setScale(TILE_SIZE_PX * this.pose.zoom / catalog.nominalPixelsPerTile);
     image.setAlpha(item.alpha);
     this.assetImages.push(image);
+    return true;
   }
 
   private async loadCatalogTextures(): Promise<void> {

@@ -50,6 +50,9 @@ declare global {
       setPose(yawDegrees: number, elevationDegrees: number): Promise<void>;
       keys(): Record<string, string | undefined>;
       shownImages(): number;
+      fallbackCommands(): number;
+      zoomIn(): Promise<void>;
+      imageWidths(): number[];
     };
   }
 }
@@ -65,4 +68,13 @@ window.lockstateObliqueArtQa = {
     return Object.fromEntries(entries.map(([id]) => [id, map.get(id)]));
   },
   shownImages: () => (scene as unknown as { assetImages: Phaser.GameObjects.Image[] }).assetImages.length,
+  fallbackCommands: () => {
+    const graphics = (scene as unknown as { raisedGraphics: Phaser.GameObjects.Graphics }).raisedGraphics;
+    return (graphics as unknown as { commandBuffer: unknown[] }).commandBuffer.length;
+  },
+  async zoomIn() {
+    scene.stepCameraZoom('in');
+    await new Promise<void>((resolve) => game.events.once(Phaser.Core.Events.POST_RENDER, () => resolve()));
+  },
+  imageWidths: () => (scene as unknown as { assetImages: Phaser.GameObjects.Image[] }).assetImages.map((image) => image.displayWidth),
 };

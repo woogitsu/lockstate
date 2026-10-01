@@ -15,6 +15,14 @@ test('three authored furniture textures follow camera yaw and elevation at Full 
       'fixture.cell.sink.handwash': `oblique:fixture.cell.sink.handwash:${yaw}:${elevation}`,
     });
     await expect.poll(() => page.evaluate(() => window.lockstateObliqueArtQa.shownImages())).toBe(3);
+    expect(await page.evaluate(() => window.lockstateObliqueArtQa.fallbackCommands())).toBe(0);
     await page.screenshot({ path: testInfo.outputPath(`models-yaw-${yaw}-elev-${elevation}-fullhd.png`) });
+  }
+  const widths = await page.evaluate(() => window.lockstateObliqueArtQa.imageWidths());
+  await page.evaluate(() => window.lockstateObliqueArtQa.zoomIn());
+  const zoomedWidths = await page.evaluate(() => window.lockstateObliqueArtQa.imageWidths());
+  expect(zoomedWidths).toHaveLength(widths.length);
+  for (let index = 0; index < widths.length; index += 1) {
+    expect(zoomedWidths[index]).toBeCloseTo(widths[index]! * 1.25, 5);
   }
 });
