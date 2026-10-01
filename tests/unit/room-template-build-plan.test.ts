@@ -2,6 +2,17 @@ import { describe, expect, it } from 'vitest';
 import { createRoomTemplateBuildPlan } from '../../src/simulation/construction/room-template-build-plan';
 
 describe('one deterministic room template build plan', () => {
+  it.each(['cell-basic', 'cell-large', 'shower-room'] as const)('keeps %s wall orders on the exact preview squares', (id) => {
+    for (const mirror of [false, true]) {
+      const built = createRoomTemplateBuildPlan(id, { x: 5, y: 5 }, mirror, 0);
+      const walls = built.orders.filter((order) => order.footprint === 'square');
+      expect(walls.map((order) => order.location)).toEqual(built.plan.wallSquares);
+      for (const object of built.plan.objects) {
+        expect(walls.some((order) => order.location.x === object.x && order.location.y === object.y)).toBe(false);
+      }
+    }
+  });
+
   it('orders every square wall, one north-facing door and the furniture after the shell', () => {
     const built = createRoomTemplateBuildPlan('cell-basic', { x: 10, y: 20 }, false, 42);
     expect(built.orders).toHaveLength(built.plan.wallSquares.length + built.plan.doorSquares.length + built.plan.objects.length);
