@@ -29,3 +29,6 @@ If the viewport has no candidate large enough for this measured readout outside 
 ![Edge mirrored row after yaw, with genuine worker refusal](tooltip-edge.png)
 
 The screenshots were opened for visual inspection. This branch is a pushed integration checkpoint and is not evidence of publication to main.
+## Combined root acceptance
+
+After integration with the approved full-footprint camera fit and keyboard rearm fixes, the unchanged Full HD mirrored-row clearance case passes 1/1 in 13.5 seconds (21.1 seconds including setup). Root focused UI unit verification passes 16/16, research index 5/5, and TypeScript compilation passes. Browser startup prewarm reports 1287 ms; the gameplay test budget is unchanged.
