@@ -32,10 +32,12 @@ export function installRoomTemplateWorldBridge(canvas: HTMLCanvasElement, tool: 
   let painted = '';
   let disposed = false;
   let lastScreen: Point | undefined;
+  let mapHover: Point | undefined;
 
   const move = (screen: Point, physicalMove = false): void => {
     if (!tool.isArmed()) return;
     lastScreen = screen;
+    if (physicalMove) mapHover = screen;
     options.preparePreview?.(screen, physicalMove);
     const next = options.pick(screen);
     if (origin?.x === next.x && origin.y === next.y && selection === tool.revision) return;
@@ -65,13 +67,25 @@ export function installRoomTemplateWorldBridge(canvas: HTMLCanvasElement, tool: 
     return true;
   };
   const pointerMove = (event: PointerEvent): void => {
+    mapHover = screenOf(event);
     if (tool.isArmed()) {
-      lastScreen = screenOf(event);
+      lastScreen = mapHover;
       // Physical movement unlocks a fitted origin even during a camera-button
       // gesture; that gesture still cannot submit a building command.
       options.preparePreview?.(lastScreen, true);
     }
     capture(event);
+  };
+  // Only a real canvas hover may survive keyboard selection/re-arming. UI
+  // pointer coordinates never become a world origin or retain an obsolete one.
+  const outsidePointerMove = (event: PointerEvent): void => {
+    if (event.target === canvas) return;
+    mapHover = undefined;
+    lastScreen = undefined;
+    origin = undefined;
+    plan = undefined;
+    requestRevision += 1;
+    options.resetPreview?.();
   };
   const resetPress = (): void => { downPointer = undefined; downSelection = undefined; };
   const pointerDown = (event: PointerEvent): void => {
@@ -103,6 +117,7 @@ export function installRoomTemplateWorldBridge(canvas: HTMLCanvasElement, tool: 
   canvas.addEventListener('pointercancel', interrupted, true);
   canvas.addEventListener('lostpointercapture', interrupted, true);
   window.addEventListener('pointerup', outsideRelease);
+  window.addEventListener('pointermove', outsidePointerMove);
   window.addEventListener('blur', resetPress);
   window.addEventListener('keydown', cancel, true);
 
@@ -110,7 +125,10 @@ export function installRoomTemplateWorldBridge(canvas: HTMLCanvasElement, tool: 
     if (disposed) return;
     // Keyboard pan/turn/tilt changes picking without a pointer event. Refresh
     // the cursor footprint before painting; move deduplicates unchanged tiles.
-    if (tool.isArmed() && lastScreen !== undefined) move(lastScreen);
+    if (tool.isArmed()) {
+      const hover = lastScreen ?? mapHover;
+      if (hover !== undefined) move(hover);
+    }
     else if (!tool.isArmed()) { lastScreen = undefined; options.resetPreview?.(); }
     layer.hidden = !tool.isArmed() || plan === undefined;
     if (tool.isArmed() && origin !== undefined && selection !== tool.revision) {
@@ -160,6 +178,7 @@ export function installRoomTemplateWorldBridge(canvas: HTMLCanvasElement, tool: 
     canvas.removeEventListener('pointercancel', interrupted, true);
     canvas.removeEventListener('lostpointercapture', interrupted, true);
     window.removeEventListener('pointerup', outsideRelease);
+    window.removeEventListener('pointermove', outsidePointerMove);
     window.removeEventListener('blur', resetPress);
     window.removeEventListener('keydown', cancel, true);
   };

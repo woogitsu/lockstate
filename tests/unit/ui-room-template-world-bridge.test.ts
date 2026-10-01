@@ -165,3 +165,35 @@ it('keeps a mirrored four-cell row under a stationary cursor when the camera pic
   await vi.waitFor(() => expect(place).toHaveBeenCalledWith({ templateId: 'cell-row-four', origin: { x: 29, y: 12 }, mirrorX: true }));
   dispose();
 });
+
+
+it('starts and re-arms a keyboard-selected plan from the unchanged map hover', () => {
+  const canvas = new ElementStub();
+  const events = new EventTarget();
+  vi.stubGlobal('window', events);
+  vi.stubGlobal('document', { createElement: () => new ElementStub(), createElementNS: () => new ElementStub() });
+  let frame!: () => void;
+  vi.stubGlobal('requestAnimationFrame', (callback: () => void) => { frame = callback; });
+  const preflight = vi.fn(async () => ({ ok: true as const }));
+  const tool = new RoomTemplateTool({ preflight, place: async () => {} });
+  const dispose = installRoomTemplateWorldBridge(canvas as unknown as HTMLCanvasElement, tool, {
+    tileSize: 32, pick: p => ({ x: Math.floor(p.x / 32), y: Math.floor(p.y / 32) }), project: p => p, objectFootprint: () => undefined, label: () => '',
+  });
+  pointer(canvas, 'pointermove');
+  frame();
+  expect(preflight).not.toHaveBeenCalled();
+  tool.select('cell-row-four', true); tool.arm(); frame();
+  expect(preflight).toHaveBeenLastCalledWith({ templateId: 'cell-row-four', origin: { x: 25, y: 12 }, mirrorX: true });
+  const escape = new Event('keydown'); Object.assign(escape, { key: 'Escape' }); events.dispatchEvent(escape);
+  frame();
+  tool.select('yard-basic'); tool.arm(); frame();
+  expect(preflight).toHaveBeenLastCalledWith({ templateId: 'yard-basic', origin: { x: 25, y: 12 } });
+  events.dispatchEvent(escape); frame();
+  const queries = preflight.mock.calls.length;
+  pointer(events, 'pointermove', 300); // Physical movement over UI, not the canvas.
+  tool.arm(); frame();
+  expect(preflight).toHaveBeenCalledTimes(queries);
+  pointer(canvas, 'pointermove', 832); frame();
+  expect(preflight).toHaveBeenLastCalledWith({ templateId: 'yard-basic', origin: { x: 26, y: 12 } });
+  dispose();
+});
