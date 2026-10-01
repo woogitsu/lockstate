@@ -18,6 +18,23 @@ async function cursorInOriginSquare(page: import('@playwright/test').Page, curso
 
 test('mirrored four-cell row exact ghost follows stationary cursor through camera turn and rejects overlap', async ({ page }, testInfo) => {
   await installTee(page);
+  // The shared tee excludes large projections. Capture only this small reply
+  // to await the authoritative rejected second click rather than a timer.
+  await page.addInitScript(() => {
+    const NativeWorker = window.Worker;
+    const replies: unknown[] = [];
+    class PreflightTee extends NativeWorker {
+      public constructor(url: string | URL, options?: WorkerOptions) {
+        super(url, options);
+        this.addEventListener('message', event => {
+          const message = event.data as { kind?: string; payload?: { projectionId?: string } };
+          if (message.kind === 'simulation/projection' && message.payload?.projectionId === 'world/room-template-preflight') replies.push(message);
+        });
+      }
+    }
+    window.Worker = PreflightTee;
+    (window as unknown as { rowPreflightReplies: unknown[] }).rowPreflightReplies = replies;
+  });
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/?renderer=oblique');
   await page.getByRole('button', { name: 'New prison' }).click();
@@ -47,9 +64,10 @@ test('mirrored four-cell row exact ghost follows stationary cursor through camer
   await dialog.getByRole('button', { name: 'Place on map', exact: true }).click();
   await page.mouse.move(cursor.x, cursor.y);
   await expect(ghost).toHaveAttribute('data-ready', 'blocked');
-  const preflightReplies = () => page.evaluate(() => ((window as unknown as { lockstateFromWorker?: Array<{ kind: string; payload?: { projectionId?: string } }> }).lockstateFromWorker ?? []).filter(message => message.kind === 'simulation/projection' && message.payload?.projectionId === 'world/room-template-preflight').length);
+  const preflightReplies = () => page.evaluate(() => (window as unknown as { rowPreflightReplies: unknown[] }).rowPreflightReplies.length);
   const beforeRefusal = await preflightReplies();
   await page.mouse.click(cursor.x, cursor.y);
   await expect.poll(preflightReplies).toBeGreaterThan(beforeRefusal);
+  expect(await page.evaluate(() => (window as unknown as { rowPreflightReplies: Array<{ payload: { view: { data: { ok: boolean } } } }> }).rowPreflightReplies.at(-1)?.payload.view.data.ok)).toBe(false);
   expect((await sentCommands(page)).filter(command => command.type === 'PlaceRoomTemplate')).toHaveLength(1);
 });
