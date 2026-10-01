@@ -9,6 +9,9 @@ const NAME_KEYS: Record<RoomTemplateId, LocalizationKey> = {
   'cell-basic': HUD_MESSAGE_KEY.buildTemplateCellBasic,
   'cell-large': HUD_MESSAGE_KEY.buildTemplateCellLarge,
   'shower-room': HUD_MESSAGE_KEY.buildTemplateShowerRoom,
+  'cell-row-four': 'hud.build.template-cell-row-four',
+  'canteen-basic': 'room.canteen.name',
+  'kitchen-basic': 'room.kitchen.name',
 };
 
 /** A catalogue of authored plans. Selection previews geometry; it never places an order. */
@@ -65,6 +68,11 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
       'bed-wooden': HUD_MESSAGE_KEY.buildTemplateBed,
       'toilet-brick': HUD_MESSAGE_KEY.buildTemplateToilet,
       'shower-head-brick': HUD_MESSAGE_KEY.buildTemplateShower,
+      'dining-table-wooden': 'object.dining-table.name',
+      'bench-wooden': 'object.bench.name',
+      'stove-brick': 'object.stove.name',
+      'prep-counter-brick': 'object.prep-counter.name',
+      'fridge-brick': 'object.fridge.name',
     };
     contents.textContent = [...counts].map(([objectId, count]) => `${t(objectNames[objectId]!) } × ${count}`).join(' · ');
     diagram.setAttribute('aria-label', `${t(NAME_KEYS[id])}, ${plan.width} × ${plan.height}`);

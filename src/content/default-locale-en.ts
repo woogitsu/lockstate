@@ -2315,6 +2315,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.template-cell-basic': 'Basic cell',
   'hud.build.template-cell-large': 'Large cell',
   'hud.build.template-shower-room': 'Shower room',
+  'hud.build.template-cell-row-four': 'Four-cell row',
   'hud.build.template-wall': 'Wall',
   'hud.build.template-door': 'Door',
   'hud.build.template-furniture': 'Furniture',

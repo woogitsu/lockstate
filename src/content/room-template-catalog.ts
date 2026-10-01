@@ -22,11 +22,9 @@ export interface RoomTemplatePlan {
   readonly objects: readonly { readonly buildableId: RoomTemplateObjectId; readonly x: number; readonly y: number }[];
 }
 
-export const ROOM_TEMPLATE_IDS = ['cell-basic', 'cell-large', 'shower-room'] as const;
-// The four-cell block is accepted by the simulation before its HUD preset is
-// surfaced; the UI catalog adds it once its name and full preview are ready.
+export const ROOM_TEMPLATE_IDS = ['cell-basic', 'cell-large', 'shower-room', 'cell-row-four', 'canteen-basic', 'kitchen-basic'] as const;
 export type RoomTemplateId = (typeof ROOM_TEMPLATE_IDS)[number];
-export type AuthoredRoomTemplateId = RoomTemplateId | 'cell-row-four' | 'canteen-basic' | 'kitchen-basic';
+export type AuthoredRoomTemplateId = RoomTemplateId;
 type RoomTemplateObjectId = 'bed-wooden' | 'toilet-brick' | 'shower-head-brick' | 'dining-table-wooden' | 'bench-wooden' | 'stove-brick' | 'prep-counter-brick' | 'fridge-brick';
 
 interface TemplateDefinition {
