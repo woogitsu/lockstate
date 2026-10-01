@@ -7375,3 +7375,8 @@
 .room-template-world-ghost[hidden] { display: none; }
 .room-template-world-ghost svg { width: 100%; height: 100%; }
 .room-template-world-ghost__label { position: absolute; max-width: 340px; padding: 8px 12px; color: var(--text-body); background: var(--surface-raised); border: 1px solid var(--accent); border-radius: var(--radius-md); }
+
+.hud-template__quote { color: var(--text-body); font-weight: 600; }
+.hud-template__coordinates { margin-top: var(--space-3); }
+.hud-template__coordinates summary { cursor: pointer; min-height: var(--tap-target); display: list-item; }
+.hud-template__placement label:has(input[type='number']) { display: grid; gap: var(--space-1); }

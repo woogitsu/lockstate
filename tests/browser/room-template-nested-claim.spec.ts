@@ -11,6 +11,7 @@ test('Full HD nested room plan is blocked while outer plan is still pending, inc
   await page.getByRole('button', { name: 'Room plans', exact: true }).click();
   let dialog = page.getByRole('dialog', { name: 'Room plans' });
   await dialog.getByRole('button', { name: 'Canteen', exact: true }).click();
+  if (!await dialog.getByRole('spinbutton', { name: 'Plan origin X' }).isVisible()) await dialog.getByText('Enter coordinates', { exact: true }).click();
   await dialog.getByRole('spinbutton', { name: 'Plan origin X' }).fill('10');
   await dialog.getByRole('spinbutton', { name: 'Plan origin Y' }).fill('10');
   await expect(dialog.getByRole('status')).toContainText('clear');
@@ -24,6 +25,7 @@ test('Full HD nested room plan is blocked while outer plan is still pending, inc
   await page.getByRole('button', { name: 'Room plans', exact: true }).click();
   dialog = page.getByRole('dialog', { name: 'Room plans' });
   await dialog.getByRole('button', { name: 'Kitchen', exact: true }).click();
+  if (!await dialog.getByRole('spinbutton', { name: 'Plan origin X' }).isVisible()) await dialog.getByText('Enter coordinates', { exact: true }).click();
   await dialog.getByRole('spinbutton', { name: 'Plan origin X' }).fill('11');
   await dialog.getByRole('spinbutton', { name: 'Plan origin Y' }).fill('11');
   await expect(dialog.getByRole('status')).toContainText('blocked');
@@ -39,6 +41,7 @@ test('Full HD nested room plan is blocked while outer plan is still pending, inc
   await page.getByRole('button', { name: 'Room plans', exact: true }).click();
   const restored = page.getByRole('dialog', { name: 'Room plans' });
   await restored.getByRole('button', { name: 'Kitchen', exact: true }).click();
+  if (!await restored.getByRole('spinbutton', { name: 'Plan origin X' }).isVisible()) await restored.getByText('Enter coordinates', { exact: true }).click();
   await restored.getByRole('spinbutton', { name: 'Plan origin X' }).fill('11');
   await restored.getByRole('spinbutton', { name: 'Plan origin Y' }).fill('11');
   await expect(restored.getByRole('status')).toContainText('blocked');

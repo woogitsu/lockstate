@@ -1,3 +1,4 @@
+import { formatRoomTemplateQuote } from './ui/hud/room-template-quote';
 import Phaser from 'phaser';
 import {
   loadAccessibilitySettings,
@@ -4651,7 +4652,7 @@ if (roomTemplateTool !== undefined) {
       label: (quote, verdict) => [
         localizer.format('hud.build.template-map-hint'),
         verdict?.ok === true ? localizer.format('hud.build.template-ready') : verdict?.ok === false ? localizer.format('hud.build.template-blocked') : localizer.format('hud.build.template-unavailable'),
-        ...(quote?.catalogueCostMinorUnits === undefined ? [] : [localizer.format('hud.build.template-catalogue-value', { value: String(quote.catalogueCostMinorUnits) })]),
+        ...(quote === undefined ? [] : [formatRoomTemplateQuote(localizer, quote)]),
       ].join(' | '),
     });
   };

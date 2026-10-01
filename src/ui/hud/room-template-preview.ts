@@ -4,6 +4,7 @@ import { element, nextUiId } from '../primitives/dom';
 import type { HudLocalizer } from './view-model';
 import type { RoomTemplateTool } from '../room-template-tool';
 import { HUD_MESSAGE_KEY } from './messages';
+import { formatRoomTemplateQuote } from './room-template-quote';
 
 const NAME_KEYS: Record<RoomTemplateId, LocalizationKey> = {
   'cell-basic': HUD_MESSAGE_KEY.buildTemplateCellBasic,
@@ -44,6 +45,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
   });
   const choices = element('div', { className: 'hud-template__choices', attributes: { role: 'group', 'aria-label': t(HUD_MESSAGE_KEY.buildTemplates) } });
   const dimensions = element('p', { className: 'hud-template__dimensions' });
+  const quoteReadout = element('p', { className: 'hud-template__quote', attributes: { 'aria-live': 'polite' } });
   const contents = element('p', { className: 'hud-template__contents' });
   const diagram = element('div', { className: 'hud-template__diagram', attributes: { role: 'img' } });
   const legend = element('div', {
@@ -59,6 +61,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
       element('p', { text: t(tool === undefined ? HUD_MESSAGE_KEY.buildTemplatePreviewOnly : HUD_MESSAGE_KEY.buildTemplatePositionHint) }),
       choices,
       dimensions,
+      quoteReadout,
       diagram,
       legend,
       contents,
@@ -148,14 +151,16 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
     refreshPlacement = async (): Promise<void> => {
       const current = ++revision;
       place.disabled = true;
+      quoteReadout.textContent = '';
       const tile = origin();
       if (tile === undefined) {
         status.textContent = t(HUD_MESSAGE_KEY.buildTemplateInvalidPosition);
         return;
       }
       try {
-        const { plan, verdict } = await tool.inspectAt(tile);
+        const [{ plan, verdict }, quote] = await Promise.all([tool.inspectAt(tile), tool.quote()]);
         if (current !== revision) return;
+        quoteReadout.textContent = formatRoomTemplateQuote(localizer, quote);
         place.disabled = !verdict.ok;
         for (const square of diagram.children) square.classList.remove('hud-template__tile--blocked');
         if (!verdict.ok) {
@@ -188,10 +193,22 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
       // command yet, so an immediate read can still say "clear" and allow a
       // second press. Editing the origin or choice asks for a fresh verdict.
     });
-    dialog.append(element('div', {
-      className: 'hud-template__placement',
-      children: [x, y, element('label', { children: [mirror, element('span', { text: t(HUD_MESSAGE_KEY.buildTemplateMirror) })] }), place, status],
+    dialog.append(element('label', { children: [mirror, element('span', { text: t(HUD_MESSAGE_KEY.buildTemplateMirror) })] }));
+    dialog.append(element('details', {
+      className: 'hud-template__coordinates',
+      children: [
+        element('summary', { text: t(HUD_MESSAGE_KEY.buildCoordinates) }),
+        element('div', {
+          className: 'hud-template__placement',
+          children: [
+            element('label', { children: [element('span', { text: t(HUD_MESSAGE_KEY.buildTemplateX) }), x] }),
+            element('label', { children: [element('span', { text: t(HUD_MESSAGE_KEY.buildTemplateY) }), y] }),
+            place,
+          ],
+        }),
+      ],
     }));
+    dialog.append(status);
   }
   for (const id of ROOM_TEMPLATE_IDS) {
     const plan = instantiateRoomTemplate(id, { x: 0, y: 0 });
