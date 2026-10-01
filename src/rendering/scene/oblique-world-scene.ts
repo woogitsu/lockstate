@@ -17,6 +17,7 @@ import type { Point } from '../camera/coordinates';
 import { selectObliqueModuleFrame, type ObliqueModuleCatalog } from '../assets/oblique-module-catalog';
 import { ensureObliqueModuleFrameTexture } from '../phaser/oblique-module-textures';
 import { selectObliqueWallJunctions } from './oblique-wall-junctions';
+import { isRoomFacingCutawayWall } from './oblique-room-cutaway';
 
 const DEFAULT_YAW_RADIANS = -Math.PI / 4;
 const DEFAULT_ELEVATION_RADIANS = Math.PI / 4;
@@ -482,9 +483,12 @@ export class ObliqueWorldScene extends Phaser.Scene {
     }
   }
 
-  /** Lower only a nearby wall between the camera and the selected ground square. */
+  /** Open the visible side of a known room; selection still reveals nearby unzoned walls. */
   private cutsAwayForSelection(item: ObliqueSolid): boolean {
-    if (this.selected === undefined || (item.kind !== 'north-edge' && item.kind !== 'west-edge')) return false;
+    if (item.kind !== 'north-edge' && item.kind !== 'west-edge') return false;
+    if (isRoomFacingCutawayWall({ kind: item.kind, tileX: item.tileX, tileY: item.tileY }, this.lastFrame?.rooms ?? [],
+      this.pose.yawRadians * 180 / Math.PI, this.pose.elevationRadians * 180 / Math.PI)) return true;
+    if (this.selected === undefined) return false;
     if (Math.abs(item.tileX - this.selected.tileX) > 2 || Math.abs(item.tileY - this.selected.tileY) > 2) return false;
     const selectedDepth = obliqueDepthForAnchor({
       x: (this.selected.tileX + 0.5) * TILE_SIZE_PX,
