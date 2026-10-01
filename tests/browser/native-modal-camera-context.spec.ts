@@ -37,3 +37,26 @@ test('room-plan card focus excludes keyboard camera movement until Escape closes
   await page.keyboard.up('KeyE');
   expect((await page.screenshot({ clip })).equals(closed), 'world camera resumes after modal close').toBe(false);
 });
+
+test('a camera key first pressed in a native modal stays disarmed when the modal closes mid-hold', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/?renderer=oblique');
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await page.getByRole('button', { name: 'Build', exact: true }).click();
+  await page.getByRole('button', { name: 'Room plans', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Room plans' });
+  await dialog.getByRole('button', { name: 'Four-cell row', exact: true }).focus();
+  expect(await dialog.evaluate(element => element.matches(':modal'))).toBe(true);
+  await page.keyboard.down('KeyE');
+  await page.keyboard.press('Escape');
+  await expect(dialog).not.toBeVisible();
+  const clip = { x: 132, y: 140, width: 240, height: 240 };
+  const closed = await page.screenshot({ clip });
+  await page.waitForTimeout(300);
+  expect((await page.screenshot({ clip })).equals(closed), 'modal-origin KeyE must not rotate after focus returns to world').toBe(true);
+  await page.keyboard.up('KeyE');
+  await page.keyboard.down('KeyE');
+  await page.waitForTimeout(300);
+  await page.keyboard.up('KeyE');
+  expect((await page.screenshot({ clip })).equals(closed), 'a fresh world KeyE still rotates the camera').toBe(false);
+});

@@ -16,8 +16,12 @@ export class KeyboardInputAdapter {
 
   public keyDown(event: KeyboardEventLike): readonly SemanticActionEvent[] {
     if (event.repeat || this.pressedCodes.has(event.code)) return [];
+    const started = this.eventsFor(event.code, 'started');
+    // A key pressed while a field or modal owns focus must not become a held
+    // world action merely because focus moves to the canvas before key-up.
+    if (started.length === 0) return [];
     this.pressedCodes.add(event.code);
-    return this.eventsFor(event.code, 'started');
+    return started;
   }
 
   public keyUp(event: KeyboardEventLike): readonly SemanticActionEvent[] {
