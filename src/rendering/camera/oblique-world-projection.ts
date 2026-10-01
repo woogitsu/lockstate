@@ -16,6 +16,9 @@ import { TILE_SIZE_PX, tileRangeContains, visibleTileRange } from '../tile-metri
 import { groundToScreen, visibleGroundBounds, type ObliqueCameraState } from './oblique-projection';
 import { obliqueDepthForAnchor, projectedRectPrism, projectedTileQuad, type TileQuad } from './oblique-geometry';
 import type { Point } from './coordinates';
+import { terrainFloorSpriteByNumericId, zonedFloorSprite } from '../world/environment-art';
+import type { EnvironmentSpriteId } from '../assets/environment-sprites';
+import { zoningTintAlphaOverArt } from '../world/appearance';
 
 export interface ObliqueGroundTile {
   readonly tileX: number;
@@ -24,6 +27,8 @@ export interface ObliqueGroundTile {
   readonly fill: number;
   readonly zoningTint: number | undefined;
   readonly owned: boolean;
+  readonly floorSprite?: EnvironmentSpriteId;
+  readonly zoningArtAlpha?: number;
 }
 
 export interface ObliqueSolid {
@@ -216,10 +221,13 @@ export function projectObliqueWorldFrame(frame: RenderFrame, camera: ObliqueCame
         world.readTile(tileX, tileY, sample);
         loadedTilesVisited += 1;
         const terrain = terrainAppearance(sample.terrainNumericId);
+        const floorSprite = zonedFloorSprite(sample.zoning) ?? terrainFloorSpriteByNumericId(sample.terrainNumericId);
         ground.push({
           tileX, tileY, quad: projectedTileQuad(tileX, tileY, camera),
           fill: (tileX + tileY) % 2 === 0 ? terrain.fill : terrain.fillAlternate,
           zoningTint: zoningTint(sample.zoning), owned: sample.owned,
+          ...(floorSprite === undefined ? {} : { floorSprite }),
+          zoningArtAlpha: zoningTintAlphaOverArt(sample.zoning),
         });
         if (world.getSquareStructureAt(tileX, tileY) === 1) {
           structureSolid(squareOrders.get(`${tileX}:${tileY}`) ?? squareWallStructure(tileX, tileY));

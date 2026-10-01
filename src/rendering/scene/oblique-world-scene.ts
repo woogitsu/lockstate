@@ -21,6 +21,9 @@ import { selectObliqueModuleFrame } from '../assets/oblique-module-catalog';
 import { edgeRunFromDrag, pickEdgeAtWorld, type BuildToolPort, type EditHistoryPort, type ToolStandDownPort, type WorldPoint } from '../build/edge-picking';
 import { squareRun, type SquareBuildToolPort } from '../build/square-picking';
 import { footprintRectAt, pickTileAtWorld, tileRectFromDrag, type ObjectToolPort, type RoomToolPort, type TileRect } from '../build/area-picking';
+import { obliqueFloorBatches } from '../camera/oblique-ground-art';
+import { ENVIRONMENT_SPRITES } from '../assets/environment-sprites';
+import { RenderedArtCatalog } from '../assets/rendered-art-catalog';
 
 export interface ObliqueWorldSceneOptions {
   readonly feed: RenderFeed;
@@ -52,6 +55,8 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private readonly objectTool: ObjectToolPort | undefined;
   private readonly keyboard: KeyboardInputAdapter;
   private groundGraphics!: Phaser.GameObjects.Graphics;
+  private groundOverlayGraphics!: Phaser.GameObjects.Graphics;
+  private floorMeshes: Phaser.GameObjects.Mesh2D[] = [];
   private selectionGraphics!: Phaser.GameObjects.Graphics;
   private gestureGraphics!: Phaser.GameObjects.Graphics;
   private raisedGraphics!: Phaser.GameObjects.Graphics;
@@ -121,6 +126,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
   public create(): void {
     this.cameras.main.setBackgroundColor(VOID_COLOR);
     this.groundGraphics = this.add.graphics().setScrollFactor(0).setDepth(0);
+    this.groundOverlayGraphics = this.add.graphics().setScrollFactor(0).setDepth(0.2);
     this.selectionGraphics = this.add.graphics().setScrollFactor(0).setDepth(0.5);
     this.gestureGraphics = this.add.graphics().setScrollFactor(0).setDepth(4);
     this.raisedGraphics = this.add.graphics().setScrollFactor(0).setDepth(1);
@@ -203,7 +209,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
       window.removeEventListener('keyup', keyUp);
       window.removeEventListener('blur', cancelOnBlur);
     });
-    void this.loadCatalogTextures().finally(() => this.resolveReady());
+    void this.loadCatalogTextures().then(() => this.loadFloorTextures()).finally(() => this.resolveReady());
   }
 
   private worldPointOf(pointer: Phaser.Input.Pointer): WorldPoint {
@@ -432,18 +438,59 @@ export class ObliqueWorldScene extends Phaser.Scene {
 
   private paintGround(projection: ObliqueWorldProjection): void {
     const ground = this.groundGraphics;
+    const overlay = this.groundOverlayGraphics;
     ground.clear();
+    overlay.clear();
+    for (const mesh of this.floorMeshes) mesh.destroy();
+    this.floorMeshes = [];
+    const painted = new Set<string>();
+    if (this.game.renderer.type === Phaser.WEBGL) {
+      for (const batch of obliqueFloorBatches(projection.ground)) {
+        const key = `oblique-floor:${batch.assetId}`;
+        if (!this.textures.exists(key)) continue;
+        const mesh = new Phaser.GameObjects.Mesh2D(this, 0, 0, key, batch.vertices, batch.indices, true);
+        mesh.setScrollFactor(0).setDepth(0.1).buildOrderedIndices(1, true);
+        this.add.existing(mesh);
+        this.floorMeshes.push(mesh);
+        painted.add(batch.assetId);
+      }
+    }
     this.groundPaints += 1;
     for (const tile of projection.ground) {
       this.fillQuad(ground, tile.quad, tile.fill);
-      if (tile.zoningTint !== undefined) this.fillQuad(ground, tile.quad, tile.zoningTint, ZONING_TINT_ALPHA);
-      if (!tile.owned) this.fillQuad(ground, tile.quad, UNOWNED_SHADE_COLOR, UNOWNED_SHADE_ALPHA);
-      ground.lineStyle(1, 0x26323b, 0.45);
+      const definition = tile.floorSprite === undefined ? undefined : ENVIRONMENT_SPRITES[tile.floorSprite];
+      const hasArt = definition?.kind === 'rendered-art' && painted.has(definition.renderedArtId);
+      if (tile.zoningTint !== undefined) this.fillQuad(overlay, tile.quad, tile.zoningTint, hasArt ? tile.zoningArtAlpha ?? ZONING_TINT_ALPHA : ZONING_TINT_ALPHA);
+      if (!tile.owned) this.fillQuad(overlay, tile.quad, UNOWNED_SHADE_COLOR, UNOWNED_SHADE_ALPHA);
+      overlay.lineStyle(1, 0x26323b, 0.45);
       for (let side = 0; side < 4; side += 1) {
         const next = (side + 1) % 4;
-        ground.lineBetween(tile.quad[side]!.x, tile.quad[side]!.y, tile.quad[next]!.x, tile.quad[next]!.y);
+        overlay.lineBetween(tile.quad[side]!.x, tile.quad[side]!.y, tile.quad[next]!.x, tile.quad[next]!.y);
       }
     }
+  }
+
+  /** Reuse the existing Blender material catalogue; absent art keeps the
+   * ordinary ground fill. Separate texture keys cannot replace object poses. */
+  private async loadFloorTextures(): Promise<void> {
+    let catalog: RenderedArtCatalog;
+    try { catalog = await RenderedArtCatalog.load(); } catch { return; }
+    const pending = new Map<string, string>();
+    for (const [id, definition] of Object.entries(ENVIRONMENT_SPRITES)) {
+      if ((!id.startsWith('env.floor.') && !id.startsWith('env.terrain.')) || definition.kind !== 'rendered-art') continue;
+      if (!catalog.has(definition.renderedArtId)) continue;
+      const key = `oblique-floor:${definition.renderedArtId}`;
+      if (!this.textures.exists(key)) pending.set(key, catalog.imageUrl(definition.renderedArtId));
+    }
+    if (pending.size > 0) {
+      for (const [key, url] of pending) this.load.image(key, url);
+      await new Promise<void>((resolve) => {
+        this.load.once(Phaser.Loader.Events.COMPLETE, () => resolve());
+        this.load.start();
+      });
+    }
+    this.lastPaintedPoseRevision = -1;
+    this.repaint();
   }
 
   private paintSelection(): void {
