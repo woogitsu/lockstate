@@ -6,8 +6,14 @@ import { ObliqueWorldScene } from '../../src/rendering/scene/oblique-world-scene
 import { parseObliqueModuleCatalog } from '../../src/rendering/assets/oblique-module-catalog';
 import type { RenderFrame } from '../../src/rendering/feed/render-feed';
 
-const response = await fetch('/game-content/oblique-furniture.medical-bed.v1.json');
-if (!response.ok) throw new Error(`Cannot load medical bed art: ${response.status}`);
+const asset = new URLSearchParams(window.location.search).get('asset');
+const fixture = asset === 'storage-rack'
+  ? { manifest: 'oblique-cell-storage-rack.v1.json', definitionId: 'object.storage-rack' }
+  : asset === 'chair'
+    ? { manifest: 'oblique-cell-chair.v1.json', definitionId: 'object.chair' }
+    : { manifest: 'oblique-furniture.medical-bed.v1.json', definitionId: 'object.medical-bed' };
+const response = await fetch(`/game-content/${fixture.manifest}`);
+if (!response.ok) throw new Error(`Cannot load oblique art: ${response.status}`);
 const catalog = parseObliqueModuleCatalog(await response.json());
 const world = new SparseWorld(16);
 const origin = { x: chunkCoordinate(0), y: chunkCoordinate(0) };
@@ -19,7 +25,7 @@ for (let y = 0; y < 16; y += 1) for (let x = 0; x < 16; x += 1) {
 const frame: RenderFrame = {
   revision: 1,
   world: WorldRenderView.fromSnapshot(world.snapshot()),
-  structures: [{ id: 'medical-bed-qa', definitionId: 'object.medical-bed', tileX: 7, tileY: 7, phase: 'built' }],
+  structures: [{ id: 'art-qa', definitionId: fixture.definitionId, tileX: 7, tileY: 7, phase: 'built' }],
   actors: [], rooms: [], roomConditions: [],
 };
 const scene = new ObliqueWorldScene({
