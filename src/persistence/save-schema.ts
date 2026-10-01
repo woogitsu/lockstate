@@ -1657,7 +1657,7 @@ const sessionSystemsV7Schema = sessionSystemsV6Schema.extend({
   roomTemplates: z.object({
     version: z.literal(1),
     pending: z.array(z.object({
-      templateId: z.enum(['cell-basic', 'cell-large', 'shower-room', 'canteen-basic', 'kitchen-basic', 'cell-row-four']),
+      templateId: z.enum(['cell-basic', 'cell-large', 'shower-room', 'canteen-basic', 'kitchen-basic', 'cell-row-four', 'holding-cell-basic', 'solitary-cell-basic', 'reception-basic', 'laundry-basic', 'yard-basic', 'common-room-basic', 'classroom-basic', 'infirmary-basic', 'security-office-basic', 'staff-room-basic', 'storage-room-basic', 'delivery-bay-basic', 'garbage-room-basic', 'utility-room-basic']),
       origin: z.object({ x: z.number().int().safe(), y: z.number().int().safe() }).strict(),
       mirrorX: z.boolean(),
       sequence: z.number().int().nonnegative(),

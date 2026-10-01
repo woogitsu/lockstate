@@ -12,6 +12,20 @@ const NAME_KEYS: Record<RoomTemplateId, LocalizationKey> = {
   'cell-row-four': 'hud.build.template-cell-row-four',
   'canteen-basic': 'room.canteen.name',
   'kitchen-basic': 'room.kitchen.name',
+  'holding-cell-basic': 'room.holding-cell.name',
+  'solitary-cell-basic': 'room.solitary-cell.name',
+  'reception-basic': 'room.reception.name',
+  'laundry-basic': 'room.laundry.name',
+  'yard-basic': 'room.yard.name',
+  'common-room-basic': 'room.common-room.name',
+  'classroom-basic': 'room.classroom.name',
+  'infirmary-basic': 'room.infirmary.name',
+  'security-office-basic': 'room.security-office.name',
+  'staff-room-basic': 'room.staff-room.name',
+  'storage-room-basic': 'room.storage-room.name',
+  'delivery-bay-basic': 'room.delivery-bay.name',
+  'garbage-room-basic': 'room.garbage-room.name',
+  'utility-room-basic': 'room.utility-room.name',
 };
 
 /** A catalogue of authored plans. Selection previews geometry; it never places an order. */
@@ -73,6 +87,17 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
       'stove-brick': 'object.stove.name',
       'prep-counter-brick': 'object.prep-counter.name',
       'fridge-brick': 'object.fridge.name',
+      'desk-wooden': 'object.desk.name',
+      'chair-wooden': 'object.chair.name',
+      'washing-machine-brick': 'object.washing-machine.name',
+      'bookshelf-wooden': 'object.bookshelf.name',
+      'medical-bed-wooden': 'object.medical-bed.name',
+      'medicine-cabinet-wooden': 'object.medicine-cabinet.name',
+      'security-console-brick': 'object.security-console.name',
+      'storage-rack-wooden': 'object.storage-rack.name',
+      'loading-dock-door-wooden': 'object.loading-dock-door.name',
+      'waste-bin-brick': 'object.waste-bin.name',
+      'utility-panel-brick': 'object.utility-panel.name',
     };
     contents.textContent = [...counts].map(([objectId, count]) => `${t(objectNames[objectId]!) } × ${count}`).join(' · ');
     diagram.setAttribute('aria-label', `${t(NAME_KEYS[id])}, ${plan.width} × ${plan.height}`);

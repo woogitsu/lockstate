@@ -16,22 +16,23 @@ export interface RoomTemplatePlan {
   readonly height: number;
   readonly wallSquares: readonly TemplateSquare[];
   readonly doorSquares: readonly TemplateDoorSquare[];
-  readonly zone: { readonly roomId: 'room.cell' | 'room.shower-room' | 'room.canteen' | 'room.kitchen'; readonly x: number; readonly y: number; readonly width: number; readonly height: number };
+  readonly zone: { readonly roomId: `room.${string}`; readonly x: number; readonly y: number; readonly width: number; readonly height: number };
   /** Every separately designated room; `zone` retains the first for older readers. */
   readonly zones: readonly RoomTemplatePlan['zone'][];
   readonly objects: readonly { readonly buildableId: RoomTemplateObjectId; readonly x: number; readonly y: number }[];
 }
 
-export const ROOM_TEMPLATE_IDS = ['cell-basic', 'cell-large', 'shower-room', 'cell-row-four', 'canteen-basic', 'kitchen-basic'] as const;
+export const ROOM_TEMPLATE_IDS = ['cell-basic', 'cell-large', 'shower-room', 'cell-row-four', 'canteen-basic', 'kitchen-basic', 'holding-cell-basic', 'solitary-cell-basic', 'reception-basic', 'laundry-basic', 'yard-basic', 'common-room-basic', 'classroom-basic', 'infirmary-basic', 'security-office-basic', 'staff-room-basic', 'storage-room-basic', 'delivery-bay-basic', 'garbage-room-basic', 'utility-room-basic'] as const;
 export type RoomTemplateId = (typeof ROOM_TEMPLATE_IDS)[number];
 export type AuthoredRoomTemplateId = RoomTemplateId;
-type RoomTemplateObjectId = 'bed-wooden' | 'toilet-brick' | 'shower-head-brick' | 'dining-table-wooden' | 'bench-wooden' | 'stove-brick' | 'prep-counter-brick' | 'fridge-brick';
+type RoomTemplateObjectId = 'bed-wooden' | 'toilet-brick' | 'shower-head-brick' | 'dining-table-wooden' | 'bench-wooden' | 'stove-brick' | 'prep-counter-brick' | 'fridge-brick' | 'desk-wooden' | 'chair-wooden' | 'washing-machine-brick' | 'bookshelf-wooden' | 'medical-bed-wooden' | 'medicine-cabinet-wooden' | 'security-console-brick' | 'storage-rack-wooden' | 'loading-dock-door-wooden' | 'waste-bin-brick' | 'utility-panel-brick';
 
 interface TemplateDefinition {
   readonly width: number;
   readonly height: number;
   readonly roomId: RoomTemplatePlan['zone']['roomId'];
   readonly doorX: number;
+  readonly outdoors?: boolean;
   readonly objects: readonly { readonly buildableId: RoomTemplateObjectId; readonly x: number; readonly y: number; readonly width?: number }[];
 }
 
@@ -71,6 +72,59 @@ const TEMPLATES: Readonly<Record<Exclude<AuthoredRoomTemplateId, 'cell-row-four'
       { buildableId: 'fridge-brick', x: 1, y: 3 },
     ],
   },
+  'holding-cell-basic': {
+    width: 6, height: 6, roomId: 'room.holding-cell', doorX: 2,
+    objects: [{ buildableId: 'bench-wooden', x: 1, y: 1, width: 2 }, { buildableId: 'bench-wooden', x: 3, y: 3, width: 2 }],
+  },
+  'solitary-cell-basic': {
+    width: 4, height: 6, roomId: 'room.solitary-cell', doorX: 1,
+    objects: [{ buildableId: 'bed-wooden', x: 1, y: 1 }, { buildableId: 'toilet-brick', x: 2, y: 3 }],
+  },
+  'reception-basic': {
+    width: 6, height: 6, roomId: 'room.reception', doorX: 2,
+    objects: [{ buildableId: 'desk-wooden', x: 1, y: 1, width: 2 }, { buildableId: 'chair-wooden', x: 1, y: 2 }, { buildableId: 'chair-wooden', x: 3, y: 3 }],
+  },
+  'laundry-basic': {
+    width: 6, height: 6, roomId: 'room.laundry', doorX: 2,
+    objects: [{ buildableId: 'washing-machine-brick', x: 1, y: 1, width: 2 }, { buildableId: 'washing-machine-brick', x: 3, y: 1, width: 2 }],
+  },
+  'yard-basic': { width: 8, height: 8, roomId: 'room.yard', doorX: 0, outdoors: true, objects: [] },
+  'common-room-basic': {
+    width: 7, height: 7, roomId: 'room.common-room', doorX: 3,
+    objects: [{ buildableId: 'bench-wooden', x: 1, y: 1, width: 2 }, { buildableId: 'bench-wooden', x: 3, y: 3, width: 2 }],
+  },
+  'classroom-basic': {
+    width: 7, height: 7, roomId: 'room.classroom', doorX: 3,
+    objects: [{ buildableId: 'bookshelf-wooden', x: 1, y: 1, width: 2 }, { buildableId: 'chair-wooden', x: 1, y: 3 }, { buildableId: 'chair-wooden', x: 3, y: 3 }, { buildableId: 'chair-wooden', x: 1, y: 4 }, { buildableId: 'chair-wooden', x: 3, y: 4 }],
+  },
+  'infirmary-basic': {
+    width: 6, height: 6, roomId: 'room.infirmary', doorX: 2,
+    objects: [{ buildableId: 'medical-bed-wooden', x: 1, y: 1 }, { buildableId: 'medicine-cabinet-wooden', x: 3, y: 1 }],
+  },
+  'security-office-basic': {
+    width: 5, height: 5, roomId: 'room.security-office', doorX: 2,
+    objects: [{ buildableId: 'security-console-brick', x: 1, y: 1, width: 2 }],
+  },
+  'staff-room-basic': {
+    width: 6, height: 6, roomId: 'room.staff-room', doorX: 2,
+    objects: [{ buildableId: 'desk-wooden', x: 1, y: 1, width: 2 }, { buildableId: 'chair-wooden', x: 1, y: 2 }, { buildableId: 'chair-wooden', x: 3, y: 3 }],
+  },
+  'storage-room-basic': {
+    width: 5, height: 5, roomId: 'room.storage-room', doorX: 2,
+    objects: [{ buildableId: 'storage-rack-wooden', x: 1, y: 1 }, { buildableId: 'storage-rack-wooden', x: 3, y: 1 }],
+  },
+  'delivery-bay-basic': {
+    width: 6, height: 6, roomId: 'room.delivery-bay', doorX: 2,
+    objects: [{ buildableId: 'loading-dock-door-wooden', x: 1, y: 1, width: 3 }],
+  },
+  'garbage-room-basic': {
+    width: 4, height: 4, roomId: 'room.garbage-room', doorX: 1,
+    objects: [{ buildableId: 'waste-bin-brick', x: 1, y: 1 }, { buildableId: 'waste-bin-brick', x: 2, y: 1 }],
+  },
+  'utility-room-basic': {
+    width: 4, height: 4, roomId: 'room.utility-room', doorX: 1,
+    objects: [{ buildableId: 'utility-panel-brick', x: 2, y: 1 }],
+  },
 };
 
 /**
@@ -97,11 +151,13 @@ export function instantiateRoomTemplate(
 
   for (let y = 0; y < height; y += 1) {
     for (let x = 0; x < width; x += 1) {
-      if (x !== 0 && x !== width - 1 && y !== 0 && y !== height - 1) continue;
+      if (definition.outdoors === true || (x !== 0 && x !== width - 1 && y !== 0 && y !== height - 1)) continue;
       (x === definition.doorX && y === height - 1 ? doorSquares : wallSquares).push(square(x, y));
     }
   }
 
+  const inset = definition.outdoors === true ? 0 : 1;
+  const zone = { roomId: definition.roomId, x: origin.x + inset, y: origin.y + inset, width: width - 2 * inset, height: height - 2 * inset };
   return {
     id,
     origin: { x: origin.x, y: origin.y },
@@ -109,8 +165,8 @@ export function instantiateRoomTemplate(
     height,
     wallSquares,
     doorSquares,
-    zone: { roomId: definition.roomId, x: origin.x + 1, y: origin.y + 1, width: width - 2, height: height - 2 },
-    zones: [{ roomId: definition.roomId, x: origin.x + 1, y: origin.y + 1, width: width - 2, height: height - 2 }],
+    zone,
+    zones: [zone],
     // Placed objects grow east from their anchor. Mirror the complete width,
     // rather than only the anchor, so the far tile stays inside the room.
     objects: definition.objects.map((object) => ({ buildableId: object.buildableId, ...square(object.x + (options.mirrorX === true ? (object.width ?? 1) - 1 : 0), object.y) })),
