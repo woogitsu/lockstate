@@ -142,6 +142,10 @@
                         "manifest":  "/game-content/oblique-wall-junction-t-west-cutaway.v1.json"
                     },
                     {
+                        "assetId":  "wall.square.brick.full",
+                        "manifest":  "/game-content/oblique-square-brick-full-wall.v1.json"
+                    },
+                    {
                         "assetId":  "wall.square.brick.low",
                         "manifest":  "/game-content/oblique-square-brick-low-wall.v1.json"
                     },
