@@ -22,7 +22,7 @@ Nothing mechanical can. That argument belongs in a docblock beside that code —
 `hud.alert.event.construction.undo-refused-newer-action` is the worked example, arguing
 each of its three clauses at the code that decides it.
 
-## The 554 authored sentences
+## The 558 authored sentences
 
 Source: `src/content/default-locale-en.ts`, in the order they are declared.
 
@@ -559,27 +559,31 @@ Source: `src/content/default-locale-en.ts`, in the order they are declared.
 | `input.action.camera.right` | Pan camera right | `src/content/default-locale-en.ts:4376` |
 | `input.action.camera.zoom.in` | Zoom in | `src/content/default-locale-en.ts:4377` |
 | `input.action.camera.zoom.out` | Zoom out | `src/content/default-locale-en.ts:4378` |
-| `input.action.selection.primary` | Select | `src/content/default-locale-en.ts:4379` |
-| `input.action.build.confirm` | Confirm placement | `src/content/default-locale-en.ts:4380` |
-| `input.action.build.cancel` | Cancel | `src/content/default-locale-en.ts:4383` |
-| `input.action.edit.undo` | Undo | `src/content/default-locale-en.ts:4387` |
-| `input.action.edit.redo` | Redo | `src/content/default-locale-en.ts:4388` |
-| `brand.region` | Lockstate build | `src/content/default-locale-en.ts:4393` |
-| `brand.wordmark` | LockState.io | `src/content/default-locale-en.ts:4396` |
-| `brand.stage` | PRE-ALPHA | `src/content/default-locale-en.ts:4404` |
-| `brand.build` | v{version} · {commit} | `src/content/default-locale-en.ts:4413` |
-| `brand.description` | Lockstate, {stage} build, version {version}, commit {commit}. | `src/content/default-locale-en.ts:4417` |
-| `display.scale.region` | Interface scale | `src/content/default-locale-en.ts:4433` |
-| `display.scale.cycle` | Change the interface scale | `src/content/default-locale-en.ts:4434` |
-| `display.theme.region` | Theme | `src/content/default-locale-en.ts:4450` |
-| `display.theme.system` | System | `src/content/default-locale-en.ts:4451` |
-| `display.theme.light` | Light | `src/content/default-locale-en.ts:4452` |
-| `display.theme.dark` | Dark | `src/content/default-locale-en.ts:4453` |
-| `display.theme.cycle` | Change the interface theme | `src/content/default-locale-en.ts:4454` |
-| `display.language.region` | Language | `src/content/default-locale-en.ts:4479` |
-| `display.language.automatic` | Automatic ({language}) | `src/content/default-locale-en.ts:4480` |
-| `display.language.english` | English | `src/content/default-locale-en.ts:4481` |
-| `display.language.polish` | Polski | `src/content/default-locale-en.ts:4482` |
-| `display.language.cycle` | Change the interface language and reload the game | `src/content/default-locale-en.ts:4490` |
-| `app.shell.label` | Lockstate game application | `src/content/default-locale-en.ts:4500` |
+| `input.action.camera.rotate.left` | Rotate camera left | `src/content/default-locale-en.ts:4379` |
+| `input.action.camera.rotate.right` | Rotate camera right | `src/content/default-locale-en.ts:4380` |
+| `input.action.camera.tilt.up` | Raise camera angle | `src/content/default-locale-en.ts:4381` |
+| `input.action.camera.tilt.down` | Lower camera angle | `src/content/default-locale-en.ts:4382` |
+| `input.action.selection.primary` | Select | `src/content/default-locale-en.ts:4383` |
+| `input.action.build.confirm` | Confirm placement | `src/content/default-locale-en.ts:4384` |
+| `input.action.build.cancel` | Cancel | `src/content/default-locale-en.ts:4387` |
+| `input.action.edit.undo` | Undo | `src/content/default-locale-en.ts:4391` |
+| `input.action.edit.redo` | Redo | `src/content/default-locale-en.ts:4392` |
+| `brand.region` | Lockstate build | `src/content/default-locale-en.ts:4397` |
+| `brand.wordmark` | LockState.io | `src/content/default-locale-en.ts:4400` |
+| `brand.stage` | PRE-ALPHA | `src/content/default-locale-en.ts:4408` |
+| `brand.build` | v{version} · {commit} | `src/content/default-locale-en.ts:4417` |
+| `brand.description` | Lockstate, {stage} build, version {version}, commit {commit}. | `src/content/default-locale-en.ts:4421` |
+| `display.scale.region` | Interface scale | `src/content/default-locale-en.ts:4437` |
+| `display.scale.cycle` | Change the interface scale | `src/content/default-locale-en.ts:4438` |
+| `display.theme.region` | Theme | `src/content/default-locale-en.ts:4454` |
+| `display.theme.system` | System | `src/content/default-locale-en.ts:4455` |
+| `display.theme.light` | Light | `src/content/default-locale-en.ts:4456` |
+| `display.theme.dark` | Dark | `src/content/default-locale-en.ts:4457` |
+| `display.theme.cycle` | Change the interface theme | `src/content/default-locale-en.ts:4458` |
+| `display.language.region` | Language | `src/content/default-locale-en.ts:4483` |
+| `display.language.automatic` | Automatic ({language}) | `src/content/default-locale-en.ts:4484` |
+| `display.language.english` | English | `src/content/default-locale-en.ts:4485` |
+| `display.language.polish` | Polski | `src/content/default-locale-en.ts:4486` |
+| `display.language.cycle` | Change the interface language and reload the game | `src/content/default-locale-en.ts:4494` |
+| `app.shell.label` | Lockstate game application | `src/content/default-locale-en.ts:4504` |
 
