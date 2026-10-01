@@ -139,10 +139,10 @@ each was re-found by its text on this tree rather than trusted from either.
   queued."*
 - **The resolver a `Remove` press reaches is tile-and-object-shaped by
   construction, not by oversight.** `ObjectPlacementService.remove` (class at
-  `src/simulation/objects/object-placement-service.ts:455`, method at `:646`)
+  `src/simulation/objects/object-placement-service.ts:457`, `export class ObjectPlacementService {`, method at `:648`)
   tries exactly two things at the pressed tile, in order: a placed object
-  (`this.placedObjects.objectAt(tile)`, `:649`) and a still-building object
-  order (`this.orderBuildingObjectAt(tile)`, `:716`, which matches only orders
+  (`this.placedObjects.objectAt(tile)`, `:651`) and a still-building object
+  order (`this.orderBuildingObjectAt(tile)`, `:718`, which matches only orders
   whose buildable `placesObjectId !== undefined`). Neither branch can ever
   match a wall: a wall's buildable has no `placesObjectId`, and a completed
   wall leaves no row in `placedObjects` at all — its only record is the edge

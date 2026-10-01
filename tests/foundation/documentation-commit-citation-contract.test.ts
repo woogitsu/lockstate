@@ -1,3 +1,4 @@
+import { repositoryPathLabel } from '../helpers/repository-path-label';
 import { spawnSync } from 'node:child_process';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
@@ -573,7 +574,7 @@ const citations: readonly Citation[] = scannedFiles.flatMap((path) => {
     const token = match[1]!;
     if ([...NOT_A_COMMIT.keys()].some((shape) => shape.test(token))) continue;
     const line = contents.slice(0, match.index).split('\n').length;
-    found.push({ source: `${relative(REPOSITORY_ROOT, path)}:${String(line)}`, token });
+    found.push({ source: `${repositoryPathLabel(relative(REPOSITORY_ROOT, path))}:${String(line)}`, token });
   }
   return found;
 });

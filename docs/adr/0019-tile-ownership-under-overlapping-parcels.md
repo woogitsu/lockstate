@@ -436,8 +436,8 @@ and no module under `src/rendering/` implements an ownership rule of its own.
 > `world.isTileOwned(...)` four times and decides nothing of its own.
 >
 > **Both anchors in the sentence have drifted and are re-aimed:**
-> `SparseWorld.isTileOwned` is at `src/simulation/world/sparse-world.ts:680` and
-> `WorldRenderView.isTileOwned` at `src/rendering/world/world-view.ts:253`. The
+> `SparseWorld.isTileOwned` is at `src/simulation/world/sparse-world.ts:703` (`public isTileOwned(tile: TilePosition): boolean {`) and
+> `WorldRenderView.isTileOwned` at `src/rendering/world/world-view.ts:263` (`public isTileOwned(`). Re-opened on 2026-10-01; the previous coordinates were 680 and 253. The
 > paragraph's closing warning is unchanged and still the thing to watch: the day
 > either of the first two absences stops being true is the day this ADR's
 > reachability section has to be rewritten rather than amended. The

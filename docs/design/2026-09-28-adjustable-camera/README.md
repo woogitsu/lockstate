@@ -252,6 +252,7 @@ The #1657 full reversible transaction direction is implemented for nineteen indo
 Five suites pass136tests and TypeScript, including nineteen completed indoor-room build/save/load/Undo/save/load/Redo cycles. A production mutation grouping furniture separately fails the Basic Cell transaction case; restored tests pass. Cache geometry/content revisions correctly increase across Undo/Redo, so content comparison checks every saved plane while excluding only those revision counters. Shell-free Yard still requires a proper zoning transaction; no fake construction order is introduced to pretend it is finished.
 
 CI repair PR1895 merged at bf976ac9fe after exact head560cc632f929 passed all checks and mergeability was CLEAN. Serial main CI run36905140655 is in progress; no further main merge is authorized by a partially completed run.
+
 ## Blender stove module (2026-10-01)
 
 A production-ready source asset is now authored for the kitchen lane:
@@ -269,6 +270,7 @@ an oblique object-sprite consumer for `object.stove`, then verify placement,
 cutaway/depth ordering and Save/Load in the real Full HD scene. The module is
 therefore a concrete art increment, not a claim that the complete angled mode
 has shipped.
+
 ### Kitchen fridge Blender module (2026-10-01)
 
 The kitchen lane now also has a one-tile refrigerator source at
@@ -278,3 +280,12 @@ transparent yaw/elevation frames and a verified catalog at
 as `furniture.kitchen.fridge.variants`. Like the stove module above, this is
 real authored art and a loader-ready catalog; the production renderer still
 needs the object-sprite consumer and Full HD placement/depth/Save-Load proof.
+## Documentation gate integration checkpoint, 2026-10-01
+
+Reopened live ownership declarations and object-removal class/method references after the full-plan stack shifted source coordinates. Quoted actual declarations beside the anchors without raising budgets. The archived enclosure fault still points past EOF; its diagnostic now records the actual 296-line file. Three documentation suites pass 19 tests after the previously observed quotation budget failure. Feature root remains draft pending the two save-field decision; HUD mouse integration is pushed in draft PR1906, and Yard transaction implementation continues separately.
+
+
+## Combined camera and mouse-build checkpoint
+
+Merged HUD mouse integration 2a4c65e079 and camera inventory follow-up 3237bc451e into the full catalogue root. Integration exposed two template labels outside HUD_MESSAGE_KEY, CRLF-sensitive composition source matching on Windows, and shifted live quote anchors. Registry references and line-ending normalization fix those failures without removing pinned wiring. Removing the production staff-coverage cadence call fails the contract (1 red); restoring it passes both composition and HUD registry suites (40 tests). Quotation plus those two suites pass 52 tests; TypeScript passes. Full runtime Blender validation and Yard reversible zoning remain independent active work; no release claim is made.
+

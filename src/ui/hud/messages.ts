@@ -576,6 +576,8 @@ export const HUD_MESSAGE_KEY = {
   buildTemplateUnavailable: 'hud.build.template-unavailable',
   buildTemplateSubmitted: 'hud.build.template-submitted',
   buildTemplateClose: 'hud.build.template-close',
+  buildTemplateCellRowFour: 'hud.build.template-cell-row-four',
+  buildTemplateOnMap: 'hud.build.template-on-map',
   buildTemplateCellBasic: 'hud.build.template-cell-basic',
   buildTemplateCellLarge: 'hud.build.template-cell-large',
   buildTemplateShowerRoom: 'hud.build.template-shower-room',
