@@ -816,6 +816,8 @@ export interface HudBuildableViewModel {
    * `category === 'wall'`. The difference is a door.
    */
   readonly occupiesEdge: boolean;
+  /** Structural wall occupies a full square; the edge chooser is for doors only. */
+  readonly squareFootprint?: boolean;
   /**
    * Whether this buildable puts a discrete object on a tile (ADR 0028 phase 1).
    *

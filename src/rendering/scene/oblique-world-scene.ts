@@ -18,6 +18,7 @@ import { projectMinimap } from '../world/minimap-projection';
 import type { ObliqueModuleCatalog } from '../assets/oblique-module-catalog';
 import { selectObliqueModuleFrame } from '../assets/oblique-module-catalog';
 import { edgeRunFromDrag, pickEdgeAtWorld, type BuildToolPort, type EditHistoryPort, type ToolStandDownPort, type WorldPoint } from '../build/edge-picking';
+import { squareRun, type SquareBuildToolPort } from '../build/square-picking';
 import { footprintRectAt, pickTileAtWorld, tileRectFromDrag, type ObjectToolPort, type RoomToolPort, type TileRect } from '../build/area-picking';
 
 export interface ObliqueWorldSceneOptions {
@@ -26,7 +27,7 @@ export interface ObliqueWorldSceneOptions {
   /** Catalogs verified by the composition root before Phaser starts. */
   readonly catalogs?: ReadonlyMap<string, ObliqueModuleCatalog>;
   readonly onTileSelected?: (tileX: number, tileY: number) => void;
-  readonly buildTool?: BuildToolPort;
+  readonly buildTool?: BuildToolPort & SquareBuildToolPort;
   readonly editHistory?: EditHistoryPort;
   readonly toolStandDown?: ToolStandDownPort;
   readonly roomTool?: RoomToolPort;
@@ -43,7 +44,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private feed: RenderFeed;
   private readonly catalogs: ReadonlyMap<string, ObliqueModuleCatalog>;
   private readonly onTileSelected: ((tileX: number, tileY: number) => void) | undefined;
-  private readonly buildTool: BuildToolPort | undefined;
+  private readonly buildTool: (BuildToolPort & SquareBuildToolPort) | undefined;
   private readonly editHistory: EditHistoryPort | undefined;
   private readonly toolStandDown: ToolStandDownPort | undefined;
   private readonly roomTool: RoomToolPort | undefined;
@@ -214,6 +215,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
 
   private clearToolTargets(): void {
     this.buildTool?.target?.(undefined);
+    this.buildTool?.targetSquares?.(undefined);
     this.roomTool?.target?.(undefined);
     this.objectTool?.target?.(undefined);
   }
@@ -231,6 +233,22 @@ export class ObliqueWorldScene extends Phaser.Scene {
     }
     if (gesture === undefined) { this.clearToolTargets(); return; }
     if (gesture.kind === 'build') {
+      if (this.buildTool?.usesSquareFootprint() === true) {
+        const from = pickTileAtWorld(gesture.press);
+        const to = pickTileAtWorld(gesture.current);
+        const squares = squareRun({ x: from.tileX, y: from.tileY }, { x: to.tileX, y: to.tileY });
+        this.buildTool.targetSquares?.(squares);
+        for (const square of squares) {
+          const quad = projectedTileQuad(square.x, square.y, this.pose);
+          this.fillQuad(graphics, quad, 0xe1bb57, 0.48);
+          graphics.lineStyle(3, 0xffe19b, 1);
+          for (let side = 0; side < 4; side += 1) {
+            const next = (side + 1) % 4;
+            graphics.lineBetween(quad[side]!.x, quad[side]!.y, quad[next]!.x, quad[next]!.y);
+          }
+        }
+        return;
+      }
       const segments = edgeRunFromDrag(gesture.press, gesture.current);
       this.buildTool?.target?.(segments);
       for (const segment of segments) {
@@ -264,9 +282,17 @@ export class ObliqueWorldScene extends Phaser.Scene {
     const gesture = this.gesture;
     if (gesture === undefined) return;
     const rect = this.gestureRect(gesture);
-    const segments = gesture.kind === 'build' ? edgeRunFromDrag(gesture.press, gesture.current) : undefined;
+    const squareBuild = gesture.kind === 'build' && this.buildTool?.usesSquareFootprint() === true;
+    const segments = gesture.kind === 'build' && !squareBuild ? edgeRunFromDrag(gesture.press, gesture.current) : undefined;
+    const squares = squareBuild ? (() => {
+      const from = pickTileAtWorld(gesture.press);
+      const to = pickTileAtWorld(gesture.current);
+      return squareRun({ x: from.tileX, y: from.tileY }, { x: to.tileX, y: to.tileY });
+    })() : undefined;
     this.cancelGesture();
-    if (gesture.kind === 'build' && this.buildTool?.isArmed() === true && segments !== undefined) {
+    if (gesture.kind === 'build' && this.buildTool?.isArmed() === true && squares !== undefined) {
+      this.buildTool.placeSquares(squares);
+    } else if (gesture.kind === 'build' && this.buildTool?.isArmed() === true && segments !== undefined) {
       this.buildTool.place(segments);
     } else if (gesture.kind === 'room' && this.roomTool?.isArmed() === true && rect !== undefined) {
       this.roomTool.place(rect);
