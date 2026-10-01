@@ -104,3 +104,31 @@ test.describe('Polish empty-session labels (#1534)', () => {
     await expect(page.locator('.hud-minimap__surface')).toHaveAccessibleName('Utwórz lub wczytaj więzienie, aby zobaczyć mapę');
   });
 });
+
+test('empty Full HD planning surface paints pixels above the world canvas (#1580)', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'light' });
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/index.html');
+  await expect(page.locator('.empty-world-prompt')).toBeVisible();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  // This patch is outside the prompt, navigation, minimap and save rail.
+  // Decode the composited screenshot: a correct CSS value alone cannot prove
+  // the pseudo-element is actually painted above the WebGL canvas.
+  const screenshot = await page.screenshot({ clip: { x: 850, y: 280, width: 24, height: 24 } });
+  const brightness = await page.evaluate(async (bytes) => {
+    const bitmap = await createImageBitmap(new Blob([new Uint8Array(bytes)], { type: 'image/png' }));
+    const canvas = document.createElement('canvas');
+    canvas.width = bitmap.width;
+    canvas.height = bitmap.height;
+    const context = canvas.getContext('2d')!;
+    context.drawImage(bitmap, 0, 0);
+    bitmap.close();
+    const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
+    let sum = 0;
+    for (let index = 0; index < pixels.length; index += 4) {
+      sum += (pixels[index]! + pixels[index + 1]! + pixels[index + 2]!) / 3;
+    }
+    return sum / (pixels.length / 4);
+  }, Array.from(screenshot));
+  expect(brightness).toBeGreaterThan(180);
+});
