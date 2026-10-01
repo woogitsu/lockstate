@@ -10,6 +10,7 @@ import {
 import { projectedTileQuad, type TileQuad } from '../camera/oblique-geometry';
 import { projectObliqueActors, projectObliqueWorldFrame, sortObliqueRaised, type ObliqueActorPoint, type ObliqueSolid, type ObliqueWorldProjection } from '../camera/oblique-world-projection';
 import type { Point } from '../camera/coordinates';
+import type { MinimapView } from '../../shared/minimap-view';
 import type { ObliqueModuleCatalog } from '../assets/oblique-module-catalog';
 import { selectObliqueModuleFrame } from '../assets/oblique-module-catalog';
 import { registerObliqueModuleTextures } from '../phaser/oblique-module-textures';
@@ -37,6 +38,11 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private selected: { tileX: number; tileY: number } | undefined;
   private turnPointerId: number | undefined;
   private turnPointerAt: Point | undefined;
+  /** Keep keyboard callbacks stable so a restarted scene can detach them. */
+  private readonly onKeyLeft = (): void => this.turnByKeyboard(-1, 0);
+  private readonly onKeyRight = (): void => this.turnByKeyboard(1, 0);
+  private readonly onKeyUp = (): void => this.turnByKeyboard(0, 1);
+  private readonly onKeyDown = (): void => this.turnByKeyboard(0, -1);
   private lastFrame: RenderFrame | undefined;
   private lastProjection: ObliqueWorldProjection | undefined;
   private lastPaintedRevision = -1;
@@ -48,6 +54,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private readonly obliqueCatalogs: ReadonlyMap<string, ObliqueModuleCatalog>;
   private readonly furnitureSprites = new Map<string, Phaser.GameObjects.Image>();
   private texturesReady: Promise<void> = Promise.resolve();
+  private minimapSink: ((view: MinimapView | undefined) => void) | undefined;
 
   public constructor(options: ObliqueWorldSceneOptions) {
     super({ key: 'oblique-world' });
@@ -102,6 +109,23 @@ export class ObliqueWorldScene extends Phaser.Scene {
     };
     this.input.on('pointerup', stopTurn);
     this.input.on('pointerupoutside', stopTurn);
+    // Arrow keys provide the same small, reversible camera turns as the
+    // right-button drag. Keep this on the scene input so HUD controls and
+    // remapped bindings can call setPoseRadians through the same seam.
+    this.input.keyboard?.on('keydown-LEFT', this.onKeyLeft);
+    this.input.keyboard?.on('keydown-RIGHT', this.onKeyRight);
+    this.input.keyboard?.on('keydown-UP', this.onKeyUp);
+    this.input.keyboard?.on('keydown-DOWN', this.onKeyDown);
+    // A scene can be stopped and started when the renderer switches between
+    // the flat and oblique presentations. Detach our handlers at shutdown so
+    // each key press rotates once after a restart instead of accumulating
+    // callbacks from every previous scene instance.
+    this.events.once('shutdown', () => {
+      this.input.keyboard?.off('keydown-LEFT', this.onKeyLeft);
+      this.input.keyboard?.off('keydown-RIGHT', this.onKeyRight);
+      this.input.keyboard?.off('keydown-UP', this.onKeyUp);
+      this.input.keyboard?.off('keydown-DOWN', this.onKeyDown);
+    });
   }
 
   public get cameraPose(): ObliqueCameraState { return this.pose; }
@@ -112,6 +136,29 @@ export class ObliqueWorldScene extends Phaser.Scene {
     return { ground: this.groundPaints, raised: this.raisedPaints };
   }
 
+  public navigateToTile(tileX: number, tileY: number): boolean {
+    this.pose = { ...this.pose, target: { x: (tileX + 0.5) * TILE_SIZE_PX, y: (tileY + 0.5) * TILE_SIZE_PX } };
+    this.poseRevision += 1;
+    this.repaint();
+    return true;
+  }
+
+  public navigateToMinimapPoint(fx: number, fy: number): boolean {
+    const bounds = this.lastFrame?.world.loadedBounds;
+    if (bounds === undefined) return false;
+    const x = bounds.minTileX + Math.min(1, Math.max(0, fx)) * (bounds.maxTileX - bounds.minTileX + 1);
+    const y = bounds.minTileY + Math.min(1, Math.max(0, fy)) * (bounds.maxTileY - bounds.minTileY + 1);
+    return this.navigateToTile(Math.floor(x), Math.floor(y));
+  }
+
+  public stepCameraZoom(direction: 'in' | 'out'): void {
+    this.pose = { ...this.pose, zoom: Math.min(4, Math.max(0.25, this.pose.zoom * (direction === 'in' ? 1.1 : 1 / 1.1))) };
+    this.poseRevision += 1;
+    this.repaint();
+  }
+
+  public setMinimapSink(sink: (view: MinimapView | undefined) => void): void { this.minimapSink = sink; }
+
   /** Shared entry point for mouse drag, remappable keyboard actions and HUD buttons. */
   public setPoseRadians(yawRadians: number, elevationRadians: number, pivot?: Point): void {
     const elevation = Math.min(80 * Math.PI / 180, Math.max(20 * Math.PI / 180, elevationRadians));
@@ -119,6 +166,13 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.pose = changeObliquePoseAtScreenPoint(this.pose, screen, yawRadians, elevation);
     this.poseRevision += 1;
     this.repaint();
+  }
+
+  private turnByKeyboard(yawSteps: number, elevationSteps: number): void {
+    this.setPoseRadians(
+      this.pose.yawRadians + yawSteps * Math.PI / 18,
+      this.pose.elevationRadians + elevationSteps * Math.PI / 36,
+    );
   }
 
   public override update(time: number): void {

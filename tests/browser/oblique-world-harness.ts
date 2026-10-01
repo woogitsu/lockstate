@@ -22,11 +22,13 @@ export interface ObliqueWorldHarness {
   registryStatus(): 'loaded' | 'missing';
   registryError(): string | undefined;
   furnitureSpriteFrame(id: string): string | undefined;
+  cameraPose(): { yawDegrees: number; elevationDegrees: number };
   setPose(yawDegrees: number, elevationDegrees: number): Promise<void>;
   pointAtTile(tileX: number, tileY: number): Point;
   selected(): { readonly tileX: number; readonly tileY: number } | undefined;
   paintCounts(): { readonly ground: number; readonly raised: number };
   medicalObliqueInspection(): readonly MedicalObliqueInspection[];
+  cameraPorts(): { tile: boolean; minimap: boolean; zoom: boolean; sink: boolean };
 }
 
 declare global {
@@ -102,6 +104,10 @@ window.lockstateObliqueWorldHarness = {
   registryStatus: () => registryState,
   registryError: () => registryFailure,
   furnitureSpriteFrame: (id) => scene.furnitureSpriteFrame(id),
+  cameraPose: () => ({
+    yawDegrees: scene.cameraPose.yawRadians * 180 / Math.PI,
+    elevationDegrees: scene.cameraPose.elevationRadians * 180 / Math.PI,
+  }),
   async setPose(yawDegrees, elevationDegrees) {
     scene.setPoseRadians(yawDegrees * Math.PI / 180, elevationDegrees * Math.PI / 180);
     await new Promise<void>((resolve) => { game.events.once(Phaser.Core.Events.POST_RENDER, () => resolve()); });
@@ -116,5 +122,6 @@ window.lockstateObliqueWorldHarness = {
     if (definition === undefined) throw new Error(`Missing medical object ${objectId}`);
     return { objectId, assetId: obliqueAssetIdForObject(objectId), footprint: definition.footprint };
   }),
+  cameraPorts: () => ({ tile: scene.navigateToTile(3, 3), minimap: scene.navigateToMinimapPoint(0.5, 0.5), zoom: (scene.stepCameraZoom('in'), true), sink: (scene.setMinimapSink(() => undefined), true) }),
 };
 
