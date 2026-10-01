@@ -19,6 +19,7 @@ import type { TileBounds } from '../tile-metrics';
  */
 
 interface ChunkLayers {
+  readonly squareStructure: Uint8Array | undefined;
   readonly terrain: Uint8Array | undefined;
   readonly topEdge: Uint8Array | undefined;
   readonly leftEdge: Uint8Array | undefined;
@@ -111,6 +112,7 @@ export class WorldRenderView {
       const key = layerKey(chunk.x, chunk.y);
       if (!chunks.has(key)) positions.push({ chunkX: chunk.x, chunkY: chunk.y });
       chunks.set(key, {
+        squareStructure: chunk.squareStructure === undefined ? undefined : decodeTerrainRle(chunk.squareStructure, tilesPerChunk),
         terrain: chunk.terrain === undefined ? undefined : decodeTerrainRle(chunk.terrain, tilesPerChunk),
         topEdge: chunk.topEdge === undefined ? undefined : decodeTerrainRle(chunk.topEdge, tilesPerChunk),
         leftEdge: chunk.leftEdge === undefined ? undefined : decodeTerrainRle(chunk.leftEdge, tilesPerChunk),
@@ -198,6 +200,10 @@ export class WorldRenderView {
    * and memoising for it would only serve to invalidate the memo `readTile`'s
    * own per-frame, row-major tile paint relies on.
    */
+  public getSquareStructure(tile: TilePosition): number {
+    return this.chunks.get(this.chunkKeyFor(tile.x, tile.y))?.squareStructure?.[this.indexInChunk(tile.x, tile.y)] ?? 0;
+  }
+
   public getTopEdge(tile: TilePosition): number {
     return this.chunks.get(this.chunkKeyFor(tile.x, tile.y))?.topEdge?.[this.indexInChunk(tile.x, tile.y)] ?? 0;
   }

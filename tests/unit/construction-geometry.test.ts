@@ -134,6 +134,21 @@ describe('a build order carries the tile edge it occupies', () => {
 });
 
 describe('completing an order writes world geometry', () => {
+  it('leaves no invisible legacy barrier after cancelling a square built on empty ground', () => {
+    const world = loadedWorld();
+    const construction = new ConstructionSystem(world);
+    const kernel = new Kernel();
+    kernel.registerSystem(construction);
+    construction.submitOrder(createBuildOrder('empty-square', 'wall-brick', tile(4, 6), undefined, undefined, 'square'));
+    runToCompletion(kernel);
+    expect(construction.getOrder('empty-square')?.state).toBe('completed');
+    expect(world.getSquareStructure(tile(4, 6))).toBe(1);
+    construction.cancelOrder('empty-square');
+    expect(world.getSquareStructure(tile(4, 6))).toBe(0);
+    expect(world.getTopEdge(tile(4, 6))).toBe(0);
+    expect(world.getLeftEdge(tile(4, 6))).toBe(0);
+  });
+
   it('builds and removes a whole wall square without changing legacy edge walls', () => {
     const world = loadedWorld();
     world.setTopEdge(tile(4, 6), WALL_EDGE_NUMERIC_ID);

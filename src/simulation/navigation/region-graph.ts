@@ -1,3 +1,4 @@
+import { getTopBarrier, getLeftBarrier } from '../world/barriers';
 import type { ChunkState, SparseWorld } from '../world/sparse-world';
 import {
   compareChunkPositions,
@@ -63,10 +64,10 @@ export interface ResolvedEdge {
 }
 
 export function resolveEdge(world: SparseWorld, a: TilePosition, b: TilePosition): ResolvedEdge {
-  if (b.x === a.x + 1 && b.y === a.y) return { wallValue: world.getLeftEdge(b), ownerTile: b, side: 'left' };
-  if (b.x === a.x - 1 && b.y === a.y) return { wallValue: world.getLeftEdge(a), ownerTile: a, side: 'left' };
-  if (b.y === a.y + 1 && b.x === a.x) return { wallValue: world.getTopEdge(b), ownerTile: b, side: 'top' };
-  if (b.y === a.y - 1 && b.x === a.x) return { wallValue: world.getTopEdge(a), ownerTile: a, side: 'top' };
+  if (b.x === a.x + 1 && b.y === a.y) return { wallValue: getLeftBarrier(world, b), ownerTile: b, side: 'left' };
+  if (b.x === a.x - 1 && b.y === a.y) return { wallValue: getLeftBarrier(world, a), ownerTile: a, side: 'left' };
+  if (b.y === a.y + 1 && b.x === a.x) return { wallValue: getTopBarrier(world, b), ownerTile: b, side: 'top' };
+  if (b.y === a.y - 1 && b.x === a.x) return { wallValue: getTopBarrier(world, a), ownerTile: a, side: 'top' };
   throw new RangeError('Tiles are not orthogonally adjacent.');
 }
 
@@ -115,6 +116,7 @@ export function buildNavigationGraph(
           x: tileCoordinate(chunk.position.x * size + lx),
           y: tileCoordinate(chunk.position.y * size + ly),
         };
+        if (world.getSquareStructure(tile) === 1) continue;
         tiles.push(tile);
         tileSet.add(tileKey(tile));
       }

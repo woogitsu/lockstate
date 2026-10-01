@@ -83,6 +83,7 @@ describe('room template session command', () => {
     expect(restored.runtime.roomTemplates.snapshot().pending).toEqual([]);
     expect(restored.runtime.construction.allOrders()).toEqual(runtime.construction.allOrders());
     expect(restored.runtime.placedObjects.getSnapshot()).toEqual(runtime.placedObjects.getSnapshot());
+    expect(restored.runtime.world.snapshot()).toEqual(runtime.world.snapshot());
   });
 
   it('builds, zones and furnishes a real Cell through scheduled construction', () => {
@@ -103,5 +104,8 @@ describe('room template session command', () => {
     expect(objectOrders.every((order) => order.state === 'completed')).toBe(true);
     expect(runtime.placedObjects.isTileOccupied(tile(6, 6))).toBe(true);
     expect(runtime.placedObjects.isTileOccupied(tile(7, 9))).toBe(true);
+    const preview = createRoomTemplateBuildPlan('cell-basic', { x: 5, y: 5 }, false, 0).plan;
+    for (const square of preview.wallSquares) expect(runtime.world.getSquareStructure(tile(square.x, square.y))).toBe(1);
+    for (const object of preview.objects) expect(runtime.world.getSquareStructure(tile(object.x, object.y))).toBe(0);
   }, 30000);
 });
