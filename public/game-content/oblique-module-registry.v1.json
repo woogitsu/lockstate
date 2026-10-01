@@ -204,6 +204,10 @@
                     {
                         "assetId":  "fixture.cell.waste_bin",
                         "manifest":  "/game-content/oblique-fixture-cell-waste-bin.v1.json"
+                    },
+                    {
+                        "assetId":  "furniture.office.desk.generic",
+                        "manifest":  "/game-content/oblique-furniture-office-desk-generic.v1.json"
                     }
                 ]
 }
