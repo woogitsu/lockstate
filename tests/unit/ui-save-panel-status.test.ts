@@ -268,6 +268,7 @@ describe('no module in src/ui/ renders a hard-coded sentence (issue #208)', () =
     'prisoner-sentence.ts',
     'room-tool.ts',
     'room-template-tool.ts',
+    'room-template-world-bridge.ts',
     'save-panel.ts',
     'save-panel-delete.ts',
     'save-panel-messages.ts',
