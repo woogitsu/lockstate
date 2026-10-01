@@ -1,0 +1,477 @@
+{
+  "schemaVersion": 1,
+  "assetId": "utility.washing-machine.variants",
+  "source": "assets/source/blender/utility.washing-machine.variants.blend",
+  "sourceSha256": "fb4eccefc3809342b57e4b15822e68ee1a1d0060bc8d75acda288d07284f7e0b",
+  "resolutionPx": [
+    128,
+    128
+  ],
+  "nominalPixelsPerTile": 64,
+  "pivotPx": [
+    64,
+    64
+  ],
+  "cameraTargetTiles": [
+    1.0,
+    0.5,
+    0.5
+  ],
+  "projection": "orthographic",
+  "yawDegrees": [
+    0,
+    30,
+    60,
+    90,
+    120,
+    150,
+    180,
+    210,
+    240,
+    270,
+    300,
+    330
+  ],
+  "elevationDegrees": [
+    20,
+    30,
+    40,
+    50,
+    60,
+    70
+  ],
+  "frames": [
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+00-elev20.png",
+      "sha256": "c69eb415e4a4353858e6bc285d86963724e90807b758e76d34408d0929e52983"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+00-elev30.png",
+      "sha256": "6dc95224ab459588bcafc7cd68e58a593e395e78dc16e9d1b3a7842576a8aa9f"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+00-elev40.png",
+      "sha256": "2c483f5bfd32724e0a7f67da1ee049d9f2eef561d889528f209280edc58849c4"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+00-elev50.png",
+      "sha256": "11417a4e079f3551f8829c7e9f5c0ca644ec1b2cc336d7405d72ca890cfd3ada"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+00-elev60.png",
+      "sha256": "7bd357b61b29638c43f5edfc0fd2e9ccde7b3351572032bc878ea2b4652d00bd"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+00-elev70.png",
+      "sha256": "cb0393e966b8aec4fb59ff6c1a4aa261f876ed468016f1d5bf3771013963a027"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+30-elev20.png",
+      "sha256": "fde1f7c593401a217319c38832d67593110b3f3e92a75829c14a8cd456de85ca"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+30-elev30.png",
+      "sha256": "14a7bda3c88c45a435df433cf54d623309951aad39befa612052e03b00378e6d"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+30-elev40.png",
+      "sha256": "f062bd3cfe06e4f978f6ec46544df36d328e6b1267caae1789a85439d5afb353"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+30-elev50.png",
+      "sha256": "c54f33baf4f6dc02186366621bb92624f187b2883843094595d80f00c93e95ad"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+30-elev60.png",
+      "sha256": "7376c4f06938142aa07cb823a051fd708f9e7093b005a34e9625f2e3a0f553a9"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+30-elev70.png",
+      "sha256": "8ff7df0e56b300926418020a650921c9b2cdacfb53769024fed694aadbe7eb0c"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+60-elev20.png",
+      "sha256": "52ee6c4b5fa16cd54f3505b29328d354ca8292640106d96fce99aa48a7a7ae8e"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+60-elev30.png",
+      "sha256": "58a735f0c878c9089064c7d9c3089fe7758d1010b5c9db5456c22c28a4b9e484"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+60-elev40.png",
+      "sha256": "06cd0cd9ec6ed25ca9068070baaebf27f40250962798176c5150de90a89a4f1b"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+60-elev50.png",
+      "sha256": "d6ae51d39f7d651c6780f812e8d7bbc6c3b7c7245b9ed491dd152bf78cfe25ca"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+60-elev60.png",
+      "sha256": "d2f5c88ee254f4e5f616698cf2530986364c8bb26befd0629b08998587d509de"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+60-elev70.png",
+      "sha256": "bf46de18641e1dd13fb2370d32ac2e68ceb4c8a1fa3e6ac1b434152be99ff922"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+90-elev20.png",
+      "sha256": "b6d18499caa811fce7e0ab32b86346cd927200f0b8be08c6fa43e641b2133923"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+90-elev30.png",
+      "sha256": "2b9079c39dcf97c8790abd3c87e85f5cbd8cf09caf985b3f41278f19c9811cac"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+90-elev40.png",
+      "sha256": "a7f01b1ef0fe887cb5a59e0081ddacd44bd08e81ff337bc9f210b2fbc2f55eb1"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+90-elev50.png",
+      "sha256": "64d3ccd829266915678659dd0bd9d83ef0189628801497487a1b356590d6896b"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+90-elev60.png",
+      "sha256": "ff479f8933b27f72f43e8c6b8baef24898b3bf68f9be6dea0114e98b34062f24"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+90-elev70.png",
+      "sha256": "bcec711996decbb991a6303c2eeef2d19e458830fa0b793377c166280ae0e02b"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+120-elev20.png",
+      "sha256": "3912502591e42e8e4314e103a42b1e2708ca34263d4dfbe49426ee9ac8760cca"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+120-elev30.png",
+      "sha256": "16ad687463e4d6816478fc3a66835d335456d42a92dc35d8755c02fd8b68d0dd"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+120-elev40.png",
+      "sha256": "3852b5eb4373a8abf920bb396a2c213dc9e96f1c420c8ddf7c54c399bbf05661"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+120-elev50.png",
+      "sha256": "deb5d5ce9889e64d7379cba0e6ec070a89a7759f9a51155a031b5a03d94ed956"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+120-elev60.png",
+      "sha256": "8fca8c062248830d80f18e98aef4513a6c60de5fe8a83754e9395ab65bcbd3f5"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+120-elev70.png",
+      "sha256": "5d4af8cf23044172742d4b3424ff00ee70393698b718b7e3b4f5e33cdce889c9"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+150-elev20.png",
+      "sha256": "6356ab27347cacc1b057d4d4c49b5390b995c50ad0af5ac4dd729cceba19c6a6"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+150-elev30.png",
+      "sha256": "004c66c18ef603ffcfa97ae943a6ffe0b461ccca62d6d76d7f8d6318ccc1fd11"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+150-elev40.png",
+      "sha256": "6e176a31e5baddac16e133b6d6acf7ef51c5991ec7340d4aa96b86fddbea4836"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+150-elev50.png",
+      "sha256": "62fdc182506b9c0e95cebd3b1e230471cc73ddd8c2fd57306e794df94ee0a92d"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+150-elev60.png",
+      "sha256": "5da9d52b3d16edb6ea1e4f2dbec4230da6e095c687a2ef11ffee2b6e04a6013e"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+150-elev70.png",
+      "sha256": "bf4542136124e2d415ff5d051f5db62b05d156d35014d02819781a5393830850"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+180-elev20.png",
+      "sha256": "2a88a29f1a86fa79908e2d0ef0b202478f50e173f1f22c1c2adf1ffb1853ca20"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+180-elev30.png",
+      "sha256": "d31ed3104c8e391ac3e774fb54b8e8e8629081760703db0732e97eff0ed05d62"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+180-elev40.png",
+      "sha256": "31ae19b09e22ac243693e9294897eb975d7b722504e06370e896896e027089c2"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+180-elev50.png",
+      "sha256": "50395822487c56d5c557a2b1475d5b994892045b1b5eb71e7f12d16dc9f39fac"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+180-elev60.png",
+      "sha256": "4f25d6d5afa068602968bfc75c1a37704f2d2c211cc40f207bb1780323e5c716"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+180-elev70.png",
+      "sha256": "405f8f5f00af170f0abe3267bb89323fa0740d509061640e11d66feb88418dfc"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+210-elev20.png",
+      "sha256": "47f1b1759adbc8a80094a2b8deb8a7c08ebfd2dd461074de14b1be995399a16c"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+210-elev30.png",
+      "sha256": "86be49c1021224a7decba96f07b391914f5c4233a02c4e39e088aa11fca1025b"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+210-elev40.png",
+      "sha256": "c4fe31369026849dab77ca863e767bc5b3a18daeaa1124fdd9fb34910b219cba"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+210-elev50.png",
+      "sha256": "82d8d1d0c61b8ecc8a059f47c78a580f1af365a4b7a2b44e5bae18ce5dcdff92"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+210-elev60.png",
+      "sha256": "30e97d65985ebc4f6f59ff01ec8c53deaa1e00b69f7b7039117e9e0af618c1d7"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+210-elev70.png",
+      "sha256": "8d45e4084fb9f99677bf3d28169b9f482d496308109421825fcd621c135f50dc"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+240-elev20.png",
+      "sha256": "14d31158cd7cc0cd93ddadaa98713efd3a8e92322e2f0fd54ed6af09913f373f"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+240-elev30.png",
+      "sha256": "1208dd559c6551075789271cb452f0466ffb1259feedd1ca1ba28c109c522b37"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+240-elev40.png",
+      "sha256": "2e7c6754947dabfdcd84eaf5fd6bbc5d59f19ce8f3f6493473cb8e5a44685943"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+240-elev50.png",
+      "sha256": "0fa9acbe521098fffa180fd4097948b40be210f1d76569967a1b8165b32e321a"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+240-elev60.png",
+      "sha256": "b4a0c18f41fa14737c7b8a53a1e3596987c79cafa0c1a0e43afebd5618529d5e"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+240-elev70.png",
+      "sha256": "7400a36d7b82811e0dc2599826297a566a3415eb4cff3d4f7f1aa5b3c816f7c6"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+270-elev20.png",
+      "sha256": "8a92f05b3a1258ae8ff790334fef4c3c907d6a3403c409645149e4605b19e05f"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+270-elev30.png",
+      "sha256": "40b183c59fea20ab468791d2ba8d18352ed1ee3ca2f7061e198790c0d7d82de4"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+270-elev40.png",
+      "sha256": "6e922d1aa485733d11a4e5fc7776ea2ded03ba5c02e2a4bfdbbde20e53e646bf"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+270-elev50.png",
+      "sha256": "ecbe24984b26e530677a55de96b8cbc36d5285fc2aae5833e176213423842277"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+270-elev60.png",
+      "sha256": "d19284b244b85dc75d0a1b56a211dc7fb43dfce93d4e0e39bac015b2ae6431d6"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+270-elev70.png",
+      "sha256": "54b56c652e4c235b45bcb6f1f368f0006f75529d82a3b69bbf7b6d064f542bc2"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+300-elev20.png",
+      "sha256": "b1221dfa9ef8ab0a53aa046241300754787d1ea039d23e62e1dcb3705af16bba"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+300-elev30.png",
+      "sha256": "477f59ccf9c4299ccad10a88f8667253b4d72e84f74854a5d03c624cbcc8d84e"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+300-elev40.png",
+      "sha256": "0e9b517b9799f069aabfe2c0f29b094d0220ff79c3787421dc532ac76e68c98c"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+300-elev50.png",
+      "sha256": "a5faef809d64087253d71cb198f6a1573daf6860dbcc32fe4eef50c5c42ef30a"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+300-elev60.png",
+      "sha256": "b8815f34898f40412a9b313b28f175691a051259236bcea6c99f402712ebb957"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+300-elev70.png",
+      "sha256": "afab9e87b47bf777296e241ec0812350519fd66ccd5a4926279dacb03cf07ffc"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+330-elev20.png",
+      "sha256": "ff708e3ed3db7f3ebdee83116bf21c62b7b6ccbb63054544a92cf0cbc5b01c0a"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+330-elev30.png",
+      "sha256": "1dac2a3f16827268e8e1d61ec929cf4bcf2f8ea0bfeaaf431ee5bd8c300bea25"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+330-elev40.png",
+      "sha256": "8afa5482d4e59836287719084e52010a5a25056a8ab9577bb78fd5110e6dea49"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+330-elev50.png",
+      "sha256": "75fb868933715e8c01777a6d603b74161f7abbb42dd8a9964898bbcd1b9e8cd6"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+330-elev60.png",
+      "sha256": "11ed397fee16732c972d07760a4494d5d62bb540abba35d8bc7c061310aa3b6e"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+330-elev70.png",
+      "sha256": "8135964fc2b6df23bf678cdeea4c209f08b79f6308ab3f454dd9f60503dd7932"
+    }
+  ]
+}
