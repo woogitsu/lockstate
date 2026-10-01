@@ -2042,6 +2042,7 @@ export class ConstructionSystem implements SystemRegistration {
   private revertConstruction(order: BuildOrder): void {
     const definition = getBuildableDefinition(order.definitionId);
     if (order.footprint === 'square') {
+      this.world.setSquareStructure(order.location, 0);
       if (definition.category === 'wall') {
         const edge = resolveBuildEdge(order);
         this.writeEdge(order.location, edge, this.remainingEdgeValue(order, edge));

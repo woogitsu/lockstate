@@ -34,3 +34,5 @@ describe('room-template HUD tool contract', () => {
     expect(place).toHaveBeenCalledWith({ templateId: 'cell-basic', origin: { x: 3, y: 4 } });
   });
 });
+
+

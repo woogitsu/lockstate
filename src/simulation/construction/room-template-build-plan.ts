@@ -40,7 +40,9 @@ export function createRoomTemplateBuildPlan(
     return createBuildOrder(`${prefix}-0-wall-${index.toString().padStart(3, '0')}`, 'wall-brick', location(edge.location), edge.edge, sequence, 'square');
   });
   const doors = plan.doorSquares.map((square, index) =>
-    createBuildOrder(`${prefix}-1-door-${index.toString().padStart(3, '0')}`, 'door-wooden', location(square), 'north', sequence));
+    // The template door is on the south boundary; north edges are stored on
+    // the tile immediately outside that boundary, just like bottom walls.
+    createBuildOrder(`${prefix}-1-door-${index.toString().padStart(3, '0')}`, 'door-wooden', location({ x: square.x, y: square.y + 1 }), 'north', sequence));
   const objects = plan.objects.map((object, index) =>
     createBuildOrder(`${prefix}-2-object-${index.toString().padStart(3, '0')}`, object.buildableId, location(object), undefined, sequence));
   return {

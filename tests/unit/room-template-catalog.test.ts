@@ -31,3 +31,5 @@ describe('the first Cell template (#1586)', () => {
     expect(new Set(right.wallSquares.map(({ x, y }) => `${x},${y}`)).size).toBe(17);
   });
 });
+
+
