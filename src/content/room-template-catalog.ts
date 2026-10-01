@@ -1,33 +1,41 @@
-﻿/** Player-authored plans use occupied squares; the simulation never infers them from a rendered wall face. */
+/** Player-authored plans use occupied squares; the simulation never infers them from a rendered wall face. */
 export interface TemplateSquare {
   readonly x: number;
   readonly y: number;
 }
 
+export interface TemplateDoorSquare extends TemplateSquare {
+  /** A north-facing doorway uses the north edge of the tile just inside the room. */
+  readonly orderTile?: TemplateSquare;
+}
+
 export interface RoomTemplatePlan {
-  readonly id: RoomTemplateId;
+  readonly id: AuthoredRoomTemplateId;
   readonly origin: TemplateSquare;
   readonly width: number;
   readonly height: number;
   readonly wallSquares: readonly TemplateSquare[];
-  readonly doorSquares: readonly TemplateSquare[];
-  readonly zone: { readonly roomId: 'room.cell' | 'room.shower-room'; readonly x: number; readonly y: number; readonly width: number; readonly height: number };
+  readonly doorSquares: readonly TemplateDoorSquare[];
+  readonly zone: { readonly roomId: 'room.cell' | 'room.shower-room' | 'room.canteen' | 'room.kitchen'; readonly x: number; readonly y: number; readonly width: number; readonly height: number };
+  /** Every separately designated room; `zone` retains the first for older readers. */
+  readonly zones: readonly RoomTemplatePlan['zone'][];
   readonly objects: readonly { readonly buildableId: RoomTemplateObjectId; readonly x: number; readonly y: number }[];
 }
 
-export const ROOM_TEMPLATE_IDS = ['cell-basic', 'cell-large', 'shower-room'] as const;
+export const ROOM_TEMPLATE_IDS = ['cell-basic', 'cell-large', 'shower-room', 'cell-row-four', 'canteen-basic', 'kitchen-basic'] as const;
 export type RoomTemplateId = (typeof ROOM_TEMPLATE_IDS)[number];
-type RoomTemplateObjectId = 'bed-wooden' | 'toilet-brick' | 'shower-head-brick';
+export type AuthoredRoomTemplateId = RoomTemplateId;
+type RoomTemplateObjectId = 'bed-wooden' | 'toilet-brick' | 'shower-head-brick' | 'dining-table-wooden' | 'bench-wooden' | 'stove-brick' | 'prep-counter-brick' | 'fridge-brick';
 
 interface TemplateDefinition {
   readonly width: number;
   readonly height: number;
   readonly roomId: RoomTemplatePlan['zone']['roomId'];
   readonly doorX: number;
-  readonly objects: readonly { readonly buildableId: RoomTemplateObjectId; readonly x: number; readonly y: number }[];
+  readonly objects: readonly { readonly buildableId: RoomTemplateObjectId; readonly x: number; readonly y: number; readonly width?: number }[];
 }
 
-const TEMPLATES: Readonly<Record<RoomTemplateId, TemplateDefinition>> = {
+const TEMPLATES: Readonly<Record<Exclude<AuthoredRoomTemplateId, 'cell-row-four'>, TemplateDefinition>> = {
   'cell-basic': {
     width: 4, height: 7, roomId: 'room.cell', doorX: 1,
     objects: [{ buildableId: 'bed-wooden', x: 1, y: 1 }, { buildableId: 'toilet-brick', x: 2, y: 4 }],
@@ -44,6 +52,25 @@ const TEMPLATES: Readonly<Record<RoomTemplateId, TemplateDefinition>> = {
     width: 5, height: 5, roomId: 'room.shower-room', doorX: 2,
     objects: [{ buildableId: 'shower-head-brick', x: 1, y: 1 }, { buildableId: 'shower-head-brick', x: 3, y: 1 }],
   },
+  'canteen-basic': {
+    width: 8, height: 8, roomId: 'room.canteen', doorX: 3,
+    objects: [
+      { buildableId: 'dining-table-wooden', x: 1, y: 1, width: 3 },
+      { buildableId: 'dining-table-wooden', x: 4, y: 1, width: 3 },
+      { buildableId: 'bench-wooden', x: 1, y: 3, width: 2 },
+      { buildableId: 'bench-wooden', x: 4, y: 3, width: 2 },
+      { buildableId: 'bench-wooden', x: 1, y: 5, width: 2 },
+      { buildableId: 'bench-wooden', x: 4, y: 5, width: 2 },
+    ],
+  },
+  'kitchen-basic': {
+    width: 6, height: 6, roomId: 'room.kitchen', doorX: 2,
+    objects: [
+      { buildableId: 'stove-brick', x: 1, y: 1, width: 2 },
+      { buildableId: 'prep-counter-brick', x: 3, y: 1, width: 2 },
+      { buildableId: 'fridge-brick', x: 1, y: 3 },
+    ],
+  },
 };
 
 /**
@@ -52,20 +79,21 @@ const TEMPLATES: Readonly<Record<RoomTemplateId, TemplateDefinition>> = {
  * the occupied footprint or moving furniture onto a wall square.
  */
 export function instantiateRoomTemplate(
-  id: RoomTemplateId,
+  id: AuthoredRoomTemplateId,
   origin: TemplateSquare,
   options: { readonly mirrorX?: boolean } = {},
 ): RoomTemplatePlan {
   if (!Number.isSafeInteger(origin.x) || !Number.isSafeInteger(origin.y)) {
     throw new RangeError('Room template origin must use safe integer tile coordinates.');
   }
+  if (id === 'cell-row-four') return instantiateCellRow(origin, options.mirrorX === true);
   const definition = TEMPLATES[id];
   if (definition === undefined) throw new RangeError(`Unknown room template: ${id}`);
   const { width, height } = definition;
   const worldX = (localX: number): number => origin.x + (options.mirrorX === true ? width - 1 - localX : localX);
   const square = (localX: number, localY: number): TemplateSquare => ({ x: worldX(localX), y: origin.y + localY });
   const wallSquares: TemplateSquare[] = [];
-  const doorSquares: TemplateSquare[] = [];
+  const doorSquares: TemplateDoorSquare[] = [];
 
   for (let y = 0; y < height; y += 1) {
     for (let x = 0; x < width; x += 1) {
@@ -82,7 +110,58 @@ export function instantiateRoomTemplate(
     wallSquares,
     doorSquares,
     zone: { roomId: definition.roomId, x: origin.x + 1, y: origin.y + 1, width: width - 2, height: height - 2 },
-    objects: definition.objects.map((object) => ({ buildableId: object.buildableId, ...square(object.x, object.y) })),
+    zones: [{ roomId: definition.roomId, x: origin.x + 1, y: origin.y + 1, width: width - 2, height: height - 2 }],
+    // Placed objects grow east from their anchor. Mirror the complete width,
+    // rather than only the anchor, so the far tile stays inside the room.
+    objects: definition.objects.map((object) => ({ buildableId: object.buildableId, ...square(object.x + (options.mirrorX === true ? (object.width ?? 1) - 1 : 0), object.y) })),
   };
 }
 
+/** Four basic Cells share party walls across each bank of a clear two-tile corridor. */
+function instantiateCellRow(origin: TemplateSquare, mirrorX: boolean): RoomTemplatePlan {
+  const width = 7;
+  const height = 16;
+  const worldX = (localX: number): number => origin.x + (mirrorX ? width - 1 - localX : localX);
+  const square = (localX: number, localY: number): TemplateSquare => ({ x: worldX(localX), y: origin.y + localY });
+  const wallSquares: TemplateSquare[] = [];
+  const doorSquares: TemplateDoorSquare[] = [];
+  const objects: { buildableId: RoomTemplateObjectId; x: number; y: number }[] = [];
+  const zones: RoomTemplatePlan['zone'][] = [];
+  const wallKeys = new Set<string>();
+
+  for (const cellY of [0, 9]) {
+    for (const cellX of [0, 3]) {
+      const northFacing = cellY === 9;
+      for (let localY = 0; localY < 7; localY += 1) {
+        for (let localX = 0; localX < 4; localX += 1) {
+          if (localX !== 0 && localX !== 3 && localY !== 0 && localY !== 6) continue;
+          const at = square(cellX + localX, cellY + localY);
+          if (localX === 1 && localY === (northFacing ? 0 : 6)) {
+            doorSquares.push(northFacing
+              ? { ...at, orderTile: square(cellX + localX, cellY + 1) }
+              : at);
+          } else {
+            const key = `${at.x}:${at.y}`;
+            if (!wallKeys.has(key)) {
+              wallKeys.add(key);
+              wallSquares.push(at);
+            }
+          }
+        }
+      }
+      zones.push({
+        roomId: 'room.cell', x: origin.x + (mirrorX ? 6 - (cellX + 2) : cellX + 1),
+        y: origin.y + cellY + 1, width: 2, height: 5,
+      });
+      // Beds occupy two north-south tiles; the northern bank must leave its
+      // last perimeter row clear just as the southern bank leaves its first.
+      const bed = square(cellX + 1, cellY + (northFacing ? 4 : 1));
+      const toilet = square(cellX + 2, cellY + (northFacing ? 2 : 4));
+      objects.push({ buildableId: 'bed-wooden', ...bed }, { buildableId: 'toilet-brick', ...toilet });
+    }
+  }
+  return {
+    id: 'cell-row-four', origin: { ...origin }, width, height,
+    wallSquares, doorSquares, zones, zone: zones[0]!, objects,
+  };
+}

@@ -118,17 +118,20 @@ describe('room template session command', () => {
     expect(restored.runtime.world.snapshot()).toEqual(runtime.world.snapshot());
   });
 
-  it.each(ROOM_TEMPLATE_IDS)('builds, zones, furnishes and reloads a real %s through scheduled construction', (templateId) => {
+  it.each(ROOM_TEMPLATE_IDS.flatMap((templateId) => [false, true].map((mirrorX) => ({ templateId, mirrorX }))))('builds, zones, furnishes and reloads $templateId mirrored=$mirrorX through scheduled construction', ({ templateId, mirrorX }) => {
     const runtime = createNewSimulationRuntime(73);
     runtime.kernel.submitCommand('template-0', 0, runtime.kernel.tick, packCommand({
-      type: 'PlaceRoomTemplate', templateId, origin: { x: 5, y: 5 },
+      type: 'PlaceRoomTemplate', templateId, origin: { x: 5, y: 5 }, mirrorX,
     }));
     for (let tick = 0; tick < 20000 && (runtime.roomTemplates.snapshot().pending.length > 0 || tick === 0); tick += 1) {
       runtime.kernel.step();
     }
     expect(runtime.roomTemplates.snapshot().pending).toEqual([]);
-    const preview = createRoomTemplateBuildPlan(templateId, { x: 5, y: 5 }, false, 0).plan;
-    expect(runtime.prisoners.roomInstances.getById(`${preview.zone.roomId}:6:6`)).toBeDefined();
+    const preview = createRoomTemplateBuildPlan(templateId, { x: 5, y: 5 }, mirrorX, 0).plan;
+    for (const zone of preview.zones) {
+      expect(runtime.prisoners.roomInstances.getById(`${zone.roomId}:${zone.x}:${zone.y}`)).toBeDefined();
+      expect(roomPerimeterEnclosure(runtime.world, zone).enclosure).toBe('sealed');
+    }
     const objectOrders = runtime.construction.allOrders().filter((order) => order.id.includes('-2-object-'));
     expect(objectOrders).toHaveLength(preview.objects.length);
     for (let tick = 0; tick < 5000 && objectOrders.some((order) => order.state !== 'completed'); tick += 1) {
@@ -154,6 +157,9 @@ describe('room template session command', () => {
     const restored = restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle);
     expect(restored.runtime.world.snapshot()).toEqual(runtime.world.snapshot());
     expect(restored.runtime.placedObjects.getSnapshot()).toEqual(runtime.placedObjects.getSnapshot());
-    expect(roomPerimeterEnclosure(restored.runtime.world, preview.zone).enclosure).toBe('sealed');
+    for (const zone of preview.zones) {
+      expect(restored.runtime.prisoners.roomInstances.getById(`${zone.roomId}:${zone.x}:${zone.y}`)).toBeDefined();
+      expect(roomPerimeterEnclosure(restored.runtime.world, zone).enclosure).toBe('sealed');
+    }
   }, 30000);
 });

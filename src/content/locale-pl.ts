@@ -1079,6 +1079,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.template-cell-basic': 'Cela podstawowa',
   'hud.build.template-cell-large': 'Cela duża',
   'hud.build.template-shower-room': 'Łaźnia',
+  'hud.build.template-cell-row-four': 'Blok czterech cel',
   'hud.build.template-wall': 'Ściana',
   'hud.build.template-door': 'Drzwi',
   'hud.build.template-furniture': 'Wyposażenie',
