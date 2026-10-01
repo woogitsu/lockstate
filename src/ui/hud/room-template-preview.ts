@@ -152,15 +152,21 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
       const current = ++revision;
       place.disabled = true;
       quoteReadout.textContent = '';
+      // A static catalogue quote also serves map placement. Invalid advanced
+      // coordinates may disable that submit, but cannot erase the map quote.
+      void tool.quote().then((quote) => {
+        if (current === revision) quoteReadout.textContent = formatRoomTemplateQuote(localizer, quote);
+      }).catch(() => {
+        // An unavailable quote remains empty, never a fabricated zero.
+      });
       const tile = origin();
       if (tile === undefined) {
         status.textContent = t(HUD_MESSAGE_KEY.buildTemplateInvalidPosition);
         return;
       }
       try {
-        const [{ plan, verdict }, quote] = await Promise.all([tool.inspectAt(tile), tool.quote()]);
+        const { plan, verdict } = await tool.inspectAt(tile);
         if (current !== revision) return;
-        quoteReadout.textContent = formatRoomTemplateQuote(localizer, quote);
         place.disabled = !verdict.ok;
         for (const square of diagram.children) square.classList.remove('hud-template__tile--blocked');
         if (!verdict.ok) {
