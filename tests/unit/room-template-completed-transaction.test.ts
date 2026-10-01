@@ -102,3 +102,42 @@ it('does not revive an undone Yard obligation when its Redo preflight fails', ()
   expect(runtime.prisoners.roomInstances.getById('room.yard:5:5')).toBeUndefined();
   expect(runtime.construction.allOrders()).toEqual([]);
 });
+
+it('preserves mixed wall, indoor plan and Yard history ordering through encoded Save/Load', () => {
+  let runtime = createNewSimulationRuntime(73);
+  let sequence = 0;
+  const send = (command: Parameters<typeof packCommand>[0]) => {
+    runtime.kernel.submitCommand(`mixed-${sequence}`, sequence++, runtime.kernel.tick, packCommand(command));
+    runtime.kernel.step();
+  };
+  send({ type: 'PlaceBuildOrder', orderId: 'standalone-wall', definitionId: 'wall-brick', x: 2, y: 2, edge: 'north', transactionId: 'wall-gesture' });
+  finish(runtime);
+  send({ type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 20, y: 5 } });
+  finish(runtime);
+  send({ type: 'PlaceRoomTemplate', templateId: 'yard-basic', origin: { x: 5, y: 20 } });
+  finish(runtime);
+  const completed = worldContents(runtime);
+  runtime = reload(runtime);
+  send({ type: 'Undo' });
+  expect(runtime.prisoners.roomInstances.getById('room.yard:5:20')).toBeUndefined();
+  const cellZone = instantiateRoomTemplate('cell-basic', { x: 20, y: 5 }).zones[0]!;
+  expect(runtime.prisoners.roomInstances.getById(`${cellZone.roomId}:${cellZone.x}:${cellZone.y}`)).toBeDefined();
+  expect(runtime.construction.allOrders().find(order => order.id === 'standalone-wall')?.state).toBe('completed');
+  runtime = reload(runtime);
+  send({ type: 'Undo' });
+  expect(runtime.placedObjects.getSnapshot()).toEqual([]);
+  expect(runtime.construction.allOrders().find(order => order.id === 'standalone-wall')?.state).toBe('completed');
+  runtime = reload(runtime);
+  send({ type: 'Undo' });
+  expect(runtime.construction.allOrders().find(order => order.id === 'standalone-wall')?.state).toBe('cancelled');
+  for (let index = 0; index < 3; index += 1) {
+    runtime = reload(runtime);
+    expect(editHistoryAvailability(runtime.construction).redo).toBe(true);
+    send({ type: 'Redo' });
+    for (let tick = 0; tick < 25000; tick += 1) {
+      runtime.kernel.step();
+      if (runtime.roomTemplates.snapshot().pending.length === 0 && runtime.construction.allOrders().every(order => order.state === 'completed' || order.state === 'cancelled')) break;
+    }
+  }
+  expect(worldContents(runtime)).toEqual(completed);
+});
