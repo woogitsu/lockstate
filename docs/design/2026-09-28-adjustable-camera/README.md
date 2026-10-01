@@ -257,3 +257,8 @@ CI repair PR1895 merged at bf976ac9fe after exact head560cc632f929 passed all ch
 
 Reopened live ownership declarations and object-removal class/method references after the full-plan stack shifted source coordinates. Quoted actual declarations beside the anchors without raising budgets. The archived enclosure fault still points past EOF; its diagnostic now records the actual 296-line file. Three documentation suites pass 19 tests after the previously observed quotation budget failure. Feature root remains draft pending the two save-field decision; HUD mouse integration is pushed in draft PR1906, and Yard transaction implementation continues separately.
 
+
+## Combined camera and mouse-build checkpoint
+
+Merged HUD mouse integration 2a4c65e079 and camera inventory follow-up 3237bc451e into the full catalogue root. Integration exposed two template labels outside HUD_MESSAGE_KEY, CRLF-sensitive composition source matching on Windows, and shifted live quote anchors. Registry references and line-ending normalization fix those failures without removing pinned wiring. Removing the production staff-coverage cadence call fails the contract (1 red); restoring it passes both composition and HUD registry suites (40 tests). Quotation plus those two suites pass 52 tests; TypeScript passes. Full runtime Blender validation and Yard reversible zoning remain independent active work; no release claim is made.
+
