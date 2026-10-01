@@ -668,6 +668,20 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
     reason:
       "**This entry read `type-only` until #432.** It still names `PrisonSlotMetadata` from `src/persistence/local/store` for the fold of local and cloud metadata into one row per prison, and it still never reads or writes a store. What it now also imports is one value: `readableGenerationIds` from `src/persistence/local/generation-policy`, which is what keeps `recovery` and `retainedGenerations` honest. A generation quarantined as unreadable (#432) stays in `generationIds`, so counting the raw array would report a prison as `recoverable` on the strength of a copy this build has just refused -- the promise `AGENTS.md`'s fourth exclusion reserves, made by arithmetic. The old reason's protection is intact and is the line to hold: a value import from `repository.ts` or `indexeddb-store.ts` would mean the projection had started opening the store, putting an IndexedDB dependency in a module whose whole point is that it is a pure function, and `src/ui/account/`'s reachability from `pnpm test` is why ADR 0043's states are testable at all. `generation-policy.ts` imports nothing whatever, so nothing of the kind can arrive through it today -- **and that is a fact about that file, not a property this gate checks.** This test compares the kind of a direct import; it does not follow what the imported module itself pulls in. So an import added to `generation-policy.ts` makes this reason false and leaves the suite green, and the person adding it is the only one who can catch it. Rewrite this entry then, or keep that module import-free.",
   },
+  {
+    file: 'src/ui/room-template-tool.ts',
+    tree: 'content',
+    kind: 'value',
+    reason:
+      'Value: `instantiateRoomTemplate` from `src/content/room-template-catalog`. The Build composition layer asks the catalogue for a complete footprint and furniture plan; duplicating those dimensions in the panel would let the preview and worker disagree. The catalogue is pure data and does not own simulation state.',
+  },
+  {
+    file: 'src/ui/simulation-room-template-port.ts',
+    tree: 'simulation',
+    kind: 'value',
+    reason:
+      'Value: `SimulationProjectionRequester` is the existing projection-channel adapter. This orchestration port sends the room-template preflight target to the worker and returns the plain verdict; it constructs no runtime and stores no simulation state.',
+  },
 ];
 
 const dependencies = findCrossTreeDependencies(gatedFiles, OWN_TREE);
@@ -694,6 +708,7 @@ describe('UI orchestration boundaries', () => {
       'src/ui/object-tool.ts',
       'src/ui/prisoner-sentence.ts',
       'src/ui/room-tool.ts',
+      'src/ui/room-template-tool.ts',
       'src/ui/save-panel-delete.ts',
       'src/ui/save-panel-messages.ts',
       'src/ui/save-panel.ts',
@@ -714,6 +729,7 @@ describe('UI orchestration boundaries', () => {
       'src/ui/simulation-projections.ts',
       'src/ui/simulation-regime.ts',
       'src/ui/simulation-room-needs.ts',
+      'src/ui/simulation-room-template-port.ts',
       'src/ui/simulation-security.ts',
       'src/ui/simulation-staff-coverage.ts',
       'src/ui/simulation-staff-roster.ts',

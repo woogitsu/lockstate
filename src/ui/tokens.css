@@ -1056,6 +1056,7 @@
   color-scheme: dark;
 
   --surface-sunken: var(--ink-900);
+  --scrim: rgb(0 0 0 / 55%);
   --surface-base: var(--ink-800);
   --surface-raised: var(--ink-700);
   --surface-overlay: var(--ink-600);

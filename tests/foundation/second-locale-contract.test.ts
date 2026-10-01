@@ -650,6 +650,8 @@ const ASSEMBLED_SENTENCES: Readonly<Record<string, string>> = {
     "aria-label for a queue row's Cancel button -- the same shape as the " +
     'delivery row above it, for the same reason: a localized word, a ' +
     "hard-coded ': ', and the row's own already-localized label read back.",
+  '`${t(HUD_MESSAGE_KEY.buildTemplateBlocked)} (${verdict.tile.x}, ${verdict.tile.y})`':
+    'Room-template preflight status combines a localized blocked sentence with authoritative tile coordinates returned by the worker; coordinates are numeric data and cannot be authored in a locale catalog.',
 };
 
 function collectTypeScriptFiles(directory: string): readonly string[] {
@@ -773,8 +775,8 @@ describe('no player-visible sentence is assembled from a localized fragment and 
       const locations = sites.filter((site) => site.text === expression);
       expect(locations.length, `${expression} was not found anywhere in the current scan`).toBeGreaterThanOrEqual(1);
       for (const location of locations) {
-        expect(location.where, `expected a ui/hud/build-panel.ts:NNNN citation, got ${location.where}`).toMatch(
-          /^ui\/hud\/build-panel\.ts:\d+$/,
+        expect(location.where, `expected a HUD assembly citation, got ${location.where}`).toMatch(
+          /^ui\/hud\/(?:build-panel|room-template-preview)\.ts:\d+$/,
         );
       }
     }
