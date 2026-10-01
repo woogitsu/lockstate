@@ -5,7 +5,7 @@ import type { ObjectPlacementService } from '../objects/object-placement-service
 import { objectFootprintTiles, tileKey } from '../objects/placed-object';
 import type { RoomZoningService } from '../rooms/zoning';
 import type { SparseWorld } from '../world/sparse-world';
-import type { TilePosition } from '../world/coordinates';
+import { tileCoordinate, type TilePosition } from '../world/coordinates';
 import type { ConstructionSystem } from './system';
 import { createRoomTemplateBuildPlan } from './room-template-build-plan';
 import { BUILDABLE_REGISTRY } from './definition';
