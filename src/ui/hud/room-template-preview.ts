@@ -101,7 +101,9 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
     };
     contents.textContent = [...counts].map(([objectId, count]) => `${t(objectNames[objectId]!) } × ${count}`).join(' · ');
     diagram.setAttribute('aria-label', `${t(NAME_KEYS[id])}, ${plan.width} × ${plan.height}`);
-    diagram.style.gridTemplateColumns = `repeat(${plan.width}, 1.5rem)`;
+    const tileSize = Math.min(24, 240 / plan.height, 320 / plan.width);
+    diagram.style.setProperty('--template-tile-size', `${tileSize}px`);
+    diagram.style.gridTemplateColumns = `repeat(${plan.width}, var(--template-tile-size))`;
     diagram.replaceChildren();
     const wall = new Set(plan.wallSquares.map(({ x, y }) => `${x},${y}`));
     const door = new Set(plan.doorSquares.map(({ x, y }) => `${x},${y}`));
@@ -189,7 +191,32 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
     }));
   }
   for (const id of ROOM_TEMPLATE_IDS) {
-    const button = element('button', { text: t(NAME_KEYS[id]), attributes: { type: 'button' } });
+    const plan = instantiateRoomTemplate(id, { x: 0, y: 0 });
+    const miniature = element('span', { className: 'hud-template__miniature', attributes: { 'aria-hidden': 'true' } });
+    const cellSize = Math.min(8, 56 / plan.height, 56 / plan.width);
+    miniature.style.setProperty('--template-tile-size', `${cellSize}px`);
+    miniature.style.gridTemplateColumns = `repeat(${plan.width}, var(--template-tile-size))`;
+    const walls = new Set(plan.wallSquares.map(p => `${p.x},${p.y}`));
+    const doors = new Set(plan.doorSquares.map(p => `${p.x},${p.y}`));
+    const fixtures = new Set<string>();
+    for (const object of plan.objects) {
+      const footprint = tool?.objectFootprint(object.buildableId) ?? { width: 1, height: 1 };
+      for (let dy = 0; dy < footprint.height; dy += 1) for (let dx = 0; dx < footprint.width; dx += 1) fixtures.add(`${object.x + dx},${object.y + dy}`);
+    }
+    for (let y = 0; y < plan.height; y += 1) for (let x = 0; x < plan.width; x += 1) {
+      const key = `${x},${y}`;
+      const kind = walls.has(key) ? 'wall' : doors.has(key) ? 'door' : fixtures.has(key) ? 'object' : 'floor';
+      miniature.append(element('span', { className: `hud-template__tile hud-template__tile--${kind}` }));
+    }
+    const button = element('button', {
+      className: 'hud-template__card',
+      attributes: { type: 'button', 'aria-label': t(NAME_KEYS[id]), 'data-template-id': id },
+      children: [miniature, element('span', { className: 'hud-template__card-details', children: [
+        element('strong', { text: t(NAME_KEYS[id]) }),
+        element('span', { text: `${plan.width} \u00d7 ${plan.height}` }),
+        element('span', { text: `${t(HUD_MESSAGE_KEY.buildTemplateFurniture)} \u00d7 ${plan.objects.length}` }),
+      ] })],
+    });
     button.addEventListener('click', () => select(id));
     buttons.set(id, button);
     choices.append(button);
