@@ -707,8 +707,8 @@ test.describe('the HUD layout shell', () => {
 
     // The four terms, each to a tenth of a pixel. A padding step, a type-ramp
     // step, a seventh tab or a taller corner moves one of them.
-    expect(budget.rowHeight, 'the middle row is not the 719.31px the budget was recorded against').toBeCloseTo(
-      719.31,
+    expect(budget.rowHeight, 'the middle row is not the 687.31px after the fixed 32px event-row reservation').toBeCloseTo(
+      687.31,
       1,
     );
     expect(budget.columnHeight, 'the six-tab column is not the 280.13px the budget was recorded against').toBeCloseTo(
@@ -725,7 +725,7 @@ test.describe('the HUD layout shell', () => {
     );
 
     // And the term the other four are here for.
-    expect(budget.clearance, 'the recorded clearance at 1280x800 has moved').toBeCloseTo(29.19, 1);
+    expect(budget.clearance, 'the recorded clearance at 1280x800 has moved').toBeCloseTo(-2.81, 1);
     expect(budget.cornerLeft, 'the corner has left the edge it keeps above the 781px threshold').toBe(0);
 
     expect(
@@ -734,7 +734,7 @@ test.describe('the HUD layout shell', () => {
     ).toBeLessThan(budget.tallestTab);
   });
 
-  test('spends that budget down to ten pixels at the 781px threshold the stylesheet names (#1292)', async ({
+  test('spends that budget down to the fixed event-row reservation at the 781px threshold the stylesheet names (#1292)', async ({
     page,
   }) => {
     await open(page, { width: 1280, height: 781 });
@@ -753,7 +753,7 @@ test.describe('the HUD layout shell', () => {
      * a reader does not have to take on faith.
      */
     expect(budget.stripHeight, 'the dense strip is not the 80.69px the 781px arithmetic assumes').toBeCloseTo(80.69, 1);
-    expect(budget.clearance, 'the clearance at the stylesheet’s own threshold has moved').toBeCloseTo(10.19, 1);
+    expect(budget.clearance, 'the clearance at the stylesheet’s own threshold has moved').toBeCloseTo(-21.81, 1);
 
     expect(
       budget.clearance,
@@ -766,11 +766,11 @@ test.describe('the HUD layout shell', () => {
     const budget = await middleRowBudget(page);
 
     // Below the query the two no longer clear each other vertically at all --
-    // measured at 9.19px here and at -2.81px on the 1024x768 tablet -- so the
+    // measured at -22.81px here after the fixed event-row reservation -- so the
     // corner steps right by the rail's width. "It does not fit" and "it is
     // handled" are two facts, and this is the second.
     expect(budget.cornerLeft, 'the corner did not step aside below the 781px threshold').toBeCloseTo(192, 1);
-    expect(budget.clearance, 'the clearance one pixel below the threshold has moved').toBeCloseTo(9.19, 1);
+    expect(budget.clearance, 'the clearance one pixel below the threshold includes the reserved event row').toBeCloseTo(-22.81, 1);
   });
 
 });

@@ -745,6 +745,7 @@
      `src/styles.css`, the Build panel in `src/ui/hud/hud.css` -- so a literal
      in each is two numbers that nothing keeps equal. */
   --hud-rail-panel-width: calc(264px * var(--ui-scale));
+  --hud-event-row-reservation: 0px;
   /* The layout shell's three lengths. See the `@property` block above for why
      they carry no `--ui-scale` and why their defaults are the pre-stage-3
      geometry. `--hud-inspector-height` is a ceiling on a phone sheet and its
@@ -1098,3 +1099,4 @@
   --badge-info-bg: var(--accent-soft);
   --badge-info-fg: var(--status-info);
 }
+
