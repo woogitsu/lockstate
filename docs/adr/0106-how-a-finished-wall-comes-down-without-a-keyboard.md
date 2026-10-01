@@ -156,8 +156,8 @@ each was re-found by its text on this tree rather than trusted from either.
 
 The comment on the issue (2026-09-04) recorded the other arm of the same
 standing run: disarm `Remove`, press `Z` once. `ConstructionSystem.cancelOrder`
-(`src/simulation/construction/system.ts:941-990`) is unconditional on state
-beyond `isCancellable`, and for a `'completed'` order it sets `hadGeometry =
+(`src/simulation/construction/system.ts:941-990`, `cancelOrder`) is unconditional on state
+beyond `isCancellable`, and for a `completed` order it sets `hadGeometry =
 true` (`:949`) and calls `this.revertConstruction(order)` (`:951`), which
 rewrites the edge the order wrote — falling to whatever *other* completed
 order still claims it, or to zero

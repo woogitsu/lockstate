@@ -248,6 +248,8 @@ const SUBMISSION_FAIL_REASONS: Readonly<Record<string, BuildOrderFailReason>> = 
 export interface ObjectPlacementSink {
   onOrderCompleted(objectId: string, anchor: TilePosition): boolean;
   onOrderReverted(objectId: string, anchor: TilePosition): boolean;
+  /** True when a standing object or an in-flight object order covers `tile`. */
+  isTileOccupied?(tile: TilePosition): boolean;
 }
 
 /**
@@ -585,6 +587,19 @@ export class ConstructionSystem implements SystemRegistration {
     if (this.duplicateClaim(order, definition) !== undefined) {
       this.setState(order, 'failed');
       order.failReason = 'duplicate-order';
+      this.orders.set(order.id, order);
+      return;
+    }
+
+    // A wall`s whole-square footprint cannot overlap standing furniture.
+    // Check before materials are allocated, including object orders in flight.
+    if (
+      order.edge === undefined &&
+      occupiesTileEdge(definition) &&
+      this.objectPlacement?.isTileOccupied?.(order.location)
+    ) {
+      this.setState(order, 'failed');
+      order.failReason = 'unbuildable';
       this.orders.set(order.id, order);
       return;
     }

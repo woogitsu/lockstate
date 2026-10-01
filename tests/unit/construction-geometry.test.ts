@@ -84,6 +84,23 @@ const envelopeInput = (construction: ConstructionSnapshot, world: SparseWorld = 
 });
 
 
+describe('wall/object footprint conflicts', () => {
+  it('refuses a wall before approval when furniture claims its square', () => {
+    const world = loadedWorld();
+    const sink = {
+      onOrderCompleted: () => true,
+      onOrderReverted: () => true,
+      isTileOccupied: () => true,
+    };
+    const construction = new ConstructionSystem(world, undefined, sink);
+    const order = createBuildOrder('wall-over-object', 'wall-brick', tile(11, 11));
+
+    construction.submitOrder(order);
+
+    expect(order.state).toBe('failed');
+    expect(order.failReason).toBe('unbuildable');
+  });
+});
 describe('a build order carries the tile edge it occupies', () => {
   it('names only the two edges the world actually stores', () => {
     // `SparseWorld` has `topEdge` and `leftEdge` and nothing else: the south
