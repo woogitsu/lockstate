@@ -89,6 +89,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private readonly failedAssetTextureKeys = new Set<string>();
   private assetTextureLoaderRunning = false;
   private assetImages: Phaser.GameObjects.Image[] = [];
+  private readonly solidImages = new Map<string, Phaser.GameObjects.Image>();
   private gesture: { pointerId: number; kind: 'build' | 'room' | 'object'; press: WorldPoint; current: WorldPoint } | undefined;
   /** Screen position stays fixed while keyboard/HUD controls change the pose. */
   private hoveredScreenPoint: Point | undefined;
@@ -523,7 +524,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.fillQuad(this.selectionGraphics, projectedTileQuad(this.selected.tileX, this.selected.tileY, this.pose), 0xe1bb57, 0.8);
   }
 
-  private paintRaised(projection: ObliqueWorldProjection): void {
+  private paintRaised(projection: ObliqueWorldProjection, preserveSolids = false): void {
     const raised = this.raisedGraphics;
     this.selectPoseTextures(projection);
     raised.clear();
@@ -533,8 +534,11 @@ export class ObliqueWorldScene extends Phaser.Scene {
         && this.catalogs.has(item.assetId)
         && this.textures.exists(this.assetTextureKeys.get(item.assetId) ?? ''))
       .map((item) => Number(item.id))));
-    for (const image of this.assetImages) image.destroy();
-    this.assetImages = [];
+    if (!preserveSolids) {
+      for (const image of this.assetImages) image.destroy();
+      this.assetImages = [];
+      this.solidImages.clear();
+    }
     this.raisedPaints += 1;
     for (const [index, item] of projection.raised.entries()) {
       if (item.kind === 'actor') {
@@ -558,7 +562,25 @@ export class ObliqueWorldScene extends Phaser.Scene {
       // The prism is a fallback for assets that are absent or still loading.
       // Keeping it under an authored frame makes furniture appear to float on
       // a solid blue block, especially at shallow elevations.
-      if (this.paintAsset(item, index, projection.raised.length)) continue;
+      const solidKey = `${item.kind}:${item.id}`;
+      const previous = preserveSolids ? this.solidImages.get(solidKey) : undefined;
+      const textureKey = item.assetId === undefined ? undefined : this.assetTextureKeys.get(item.assetId);
+      if (previous !== undefined && textureKey !== undefined && previous.texture.key === textureKey) {
+        // Actors can cross any solid in the sorted world order. Keep the
+        // authored image itself, but update its depth on every actor frame.
+        previous.setDepth(2 + 0.9 * index / projection.raised.length);
+        continue;
+      }
+      if (previous !== undefined) {
+        previous.destroy();
+        this.solidImages.delete(solidKey);
+        this.assetImages = this.assetImages.filter(image => image !== previous);
+      }
+      const image = this.paintAsset(item, index, projection.raised.length);
+      if (image !== undefined) {
+        this.solidImages.set(solidKey, image);
+        continue;
+      }
       for (let side = 0; side < 4; side += 1) {
         const next = (side + 1) % 4;
         this.fillQuad(raised, [item.footprint[side]!, item.footprint[next]!, item.top[next]!, item.top[side]!], item.sideFill, item.alpha);
@@ -616,12 +638,12 @@ export class ObliqueWorldScene extends Phaser.Scene {
   }
 
   /** Authored solids and pooled actors share depth and anchors; missing art uses graphics. */
-  private paintAsset(item: ObliqueSolid | ObliqueActorPoint, index: number, itemCount: number): boolean {
-    if (item.assetId === undefined) return false;
+  private paintAsset(item: ObliqueSolid | ObliqueActorPoint, index: number, itemCount: number): Phaser.GameObjects.Image | undefined {
+    if (item.assetId === undefined) return undefined;
     const catalog = this.catalogs.get(item.assetId);
-    if (catalog === undefined) return false;
+    if (catalog === undefined) return undefined;
     const textureKey = this.assetTextureKeys.get(item.assetId);
-    if (textureKey === undefined || !this.textures.exists(textureKey)) return false;
+    if (textureKey === undefined || !this.textures.exists(textureKey)) return undefined;
     const [targetX, targetY, targetZ] = catalog.cameraTargetTiles;
     const anchor = groundToScreen({
       x: (item.tileX + targetX) * TILE_SIZE_PX,
@@ -636,7 +658,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     image.setScale(TILE_SIZE_PX * this.pose.zoom / catalog.nominalPixelsPerTile);
     image.setAlpha(item.kind === 'actor' ? 1 : item.alpha);
     if (item.kind !== 'actor') this.assetImages.push(image);
-    return true;
+    return image;
   }
 
   private async loadCatalogTextures(): Promise<void> {
@@ -691,7 +713,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     sortObliqueRaised(raised);
     this.lastProjection = { ...this.lastProjection, raised };
     this.rememberActors(frame.actors);
-    this.paintRaised(this.lastProjection);
+    this.paintRaised(this.lastProjection, true);
   }
 
   private publishMinimap(): void {
