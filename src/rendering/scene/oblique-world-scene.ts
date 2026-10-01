@@ -69,7 +69,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
       elevationRadians: Math.PI / 4,
     };
     this.input.mouse?.disableContextMenu();
-    this.texturesReady = registerObliqueModuleTextures(this, this.obliqueCatalogs).then(() => { this.repaint(); });
+    this.texturesReady = registerObliqueModuleTextures(this, this.obliqueCatalogs).then(() => { this.lastPaintedPoseRevision = -1; this.repaint(); });
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       if (pointer.button === 2 && !pointer.wasTouch) {
         this.turnPointerId = pointer.id;
