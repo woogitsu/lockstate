@@ -445,4 +445,23 @@ test.describe('the Build panel says what a queued order is waiting for', () => {
       );
     }
   });
+
+  test('queued construction points a paused Full HD player to Play (#936)', async ({ page }) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await page.goto(APP_URL);
+    await page.waitForSelector('#game-root canvas');
+    await page.waitForSelector('.save-panel');
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await page.locator('.ui-tab[data-tab="build"]').click();
+    await queueSixOrders(page);
+
+    const note = page.locator('.hud-build__order-note');
+    await expect(note).toBeVisible();
+    await expect(note).toContainText('Play');
+    await expect(page.getByTitle('Play at normal speed')).toBeVisible();
+    const queued = await readNote(page, NOTE_TEXT, PAUSED_TEXT);
+    expect(queued.matches).toBe(1);
+    expect(queued.clipped).toBe(false);
+    expect(queued.bottom ?? Number.POSITIVE_INFINITY).toBeLessThanOrEqual(queued.fold + 0.5);
+  });
 });

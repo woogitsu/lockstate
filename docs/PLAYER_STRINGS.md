@@ -268,7 +268,7 @@ Source: `src/content/default-locale-en.ts`, in the order they are declared.
 | `hud.build.step-up` | Increase {field} | `src/content/default-locale-en.ts:2363` |
 | `hud.build.edge` | Edge | `src/content/default-locale-en.ts:2364` |
 | `hud.build.submit` | Place order | `src/content/default-locale-en.ts:2365` |
-| `hud.build.note` | An order is queued now and built while the clock runs. | `src/content/default-locale-en.ts:2366` |
+| `hud.build.note` | Queued orders can advance while the clock runs. When paused, use Play in the top bar. | `src/content/default-locale-en.ts:2366` |
 | `hud.build.arm` | Place on map | `src/content/default-locale-en.ts:2367` |
 | `hud.build.remove` | Remove | `src/content/default-locale-en.ts:2408` |
 | `hud.build.remove-active` | Stop removing | `src/content/default-locale-en.ts:2409` |
