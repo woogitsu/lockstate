@@ -8,6 +8,7 @@ test('Full HD cancelled room plan can be placed again while paused through save 
   await page.getByRole('button', { name: 'Build', exact: true }).click();
   await page.getByRole('button', { name: 'Room plans', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'Room plans' });
+  if (!await dialog.getByRole('spinbutton', { name: 'Plan origin X' }).isVisible()) await dialog.getByText('Enter coordinates', { exact: true }).click();
   await dialog.getByRole('spinbutton', { name: 'Plan origin X' }).fill('10');
   await dialog.getByRole('spinbutton', { name: 'Plan origin Y' }).fill('10');
   await expect(dialog.getByRole('status')).toContainText('clear');
@@ -24,6 +25,7 @@ test('Full HD cancelled room plan can be placed again while paused through save 
   // the stale reservation left by the cancelled shell.
   await page.getByRole('button', { name: 'Room plans', exact: true }).click();
   const retry = page.getByRole('dialog', { name: 'Room plans' });
+  if (!await retry.getByRole('spinbutton', { name: 'Plan origin X' }).isVisible()) await retry.getByText('Enter coordinates', { exact: true }).click();
   await retry.getByRole('spinbutton', { name: 'Plan origin X' }).fill('10');
   await retry.getByRole('spinbutton', { name: 'Plan origin Y' }).fill('10');
   await expect(retry.getByRole('status')).toContainText('clear');
@@ -36,6 +38,7 @@ test('Full HD cancelled room plan can be placed again while paused through save 
   await page.getByRole('button', { name: 'Build', exact: true }).click();
   await page.getByRole('button', { name: 'Room plans', exact: true }).click();
   const restored = page.getByRole('dialog', { name: 'Room plans' });
+  if (!await restored.getByRole('spinbutton', { name: 'Plan origin X' }).isVisible()) await restored.getByText('Enter coordinates', { exact: true }).click();
   await restored.getByRole('spinbutton', { name: 'Plan origin X' }).fill('10');
   await restored.getByRole('spinbutton', { name: 'Plan origin Y' }).fill('10');
   await expect(restored.getByRole('status')).toContainText('clear');

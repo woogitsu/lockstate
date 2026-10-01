@@ -1,0 +1,34 @@
+import { expect, test } from './network-changed-fixture';
+
+test('Full HD template shows worker materials catalogue value and preserves both placement routes', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/?renderer=oblique');
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await page.getByRole('button', { name: 'Build', exact: true }).click();
+  await page.getByRole('button', { name: 'Room plans', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Room plans' });
+  const quote = dialog.locator('.hud-template__quote');
+  await expect(quote).toContainText('Brick');
+  await expect(quote).toContainText('Wood Plank');
+  await expect(quote).toHaveText('Brick \u00d7 35 \u00b7 Wood Plank \u00d7 2 \u00b7 Materials catalogue value: 1,530');
+  const cellQuote = await quote.textContent();
+  await expect(dialog.getByRole('spinbutton', { name: 'Plan origin X' })).toBeHidden();
+  await expect(dialog.getByRole('button', { name: 'Place on map', exact: true })).toBeInViewport();
+  await dialog.getByText('Enter coordinates', { exact: true }).click();
+  await expect(dialog.getByRole('spinbutton', { name: 'Plan origin X' })).toBeVisible();
+  await dialog.getByRole('spinbutton', { name: 'Plan origin X' }).fill('10');
+  await dialog.getByRole('spinbutton', { name: 'Plan origin Y' }).fill('10');
+  await expect(dialog.getByRole('button', { name: 'Place room plan', exact: true })).toBeEnabled();
+  await expect(dialog.getByRole('button', { name: 'Place room plan', exact: true })).toBeInViewport();
+  await expect(quote).toHaveText(cellQuote!);
+  await dialog.getByText('Enter coordinates', { exact: true }).click();
+  await dialog.getByRole('button', { name: 'Yard', exact: true }).click();
+  await expect(quote).toHaveText('Materials catalogue value: 0');
+  await dialog.getByRole('button', { name: 'Basic cell', exact: true }).click();
+  await expect(quote).toHaveText(cellQuote!);
+  await page.screenshot({ path: testInfo.outputPath('template-quote-fullhd.png') });
+  await dialog.getByRole('button', { name: 'Place on map', exact: true }).click();
+  await page.mouse.move(880, 380);
+  await expect(page.locator('.room-template-world-ghost')).toContainText(cellQuote!);
+  await expect(page.locator('.room-template-world-ghost polygon')).toHaveCount(28);
+});

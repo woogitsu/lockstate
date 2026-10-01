@@ -5,6 +5,7 @@ test('template placement UI checks every square before enabling one submit', asy
   await page.goto('/tests/browser/room-template-tool-harness.html');
   await page.getByRole('button', { name: 'Room plans' }).click();
   const dialog = page.getByRole('dialog', { name: 'Room plans' });
+  await dialog.getByText('Enter coordinates', { exact: true }).click();
   const x = dialog.getByRole('spinbutton', { name: 'Plan origin X' });
   const y = dialog.getByRole('spinbutton', { name: 'Plan origin Y' });
   const place = dialog.getByRole('button', { name: 'Place room plan' });

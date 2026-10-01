@@ -13,6 +13,7 @@ test('Full HD mirrored Kitchen finishes without its stove entering the shell', a
   const dialog = page.getByRole('dialog', { name: 'Room plans' });
   await dialog.getByRole('button', { name: 'Kitchen', exact: true }).click();
   await dialog.locator('input[type="checkbox"]').check();
+  if (!await dialog.getByRole('spinbutton', { name: 'Plan origin X' }).isVisible()) await dialog.getByText('Enter coordinates', { exact: true }).click();
   await dialog.getByRole('spinbutton', { name: 'Plan origin X' }).fill('10');
   await dialog.getByRole('spinbutton', { name: 'Plan origin Y' }).fill('10');
   await expect(dialog.getByRole('status')).toContainText('clear');
@@ -42,6 +43,7 @@ test('Full HD mirrored Kitchen finishes without its stove entering the shell', a
   const restored = page.getByRole('dialog', { name: 'Room plans' });
   await restored.getByRole('button', { name: 'Kitchen', exact: true }).click();
   await restored.locator('input[type="checkbox"]').check();
+  if (!await restored.getByRole('spinbutton', { name: 'Plan origin X' }).isVisible()) await restored.getByText('Enter coordinates', { exact: true }).click();
   await restored.getByRole('spinbutton', { name: 'Plan origin X' }).fill('10');
   await restored.getByRole('spinbutton', { name: 'Plan origin Y' }).fill('10');
   await expect(restored.getByRole('status')).toContainText('blocked');
