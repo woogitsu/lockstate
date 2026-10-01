@@ -252,3 +252,20 @@ The #1657 full reversible transaction direction is implemented for nineteen indo
 Five suites pass136tests and TypeScript, including nineteen completed indoor-room build/save/load/Undo/save/load/Redo cycles. A production mutation grouping furniture separately fails the Basic Cell transaction case; restored tests pass. Cache geometry/content revisions correctly increase across Undo/Redo, so content comparison checks every saved plane while excluding only those revision counters. Shell-free Yard still requires a proper zoning transaction; no fake construction order is introduced to pretend it is finished.
 
 CI repair PR1895 merged at bf976ac9fe after exact head560cc632f929 passed all checks and mergeability was CLEAN. Serial main CI run36905140655 is in progress; no further main merge is authorized by a partially completed run.
+## Blender stove module (2026-10-01)
+
+A production-ready source asset is now authored for the kitchen lane:
+`assets/source/blender/furniture.kitchen.stove.variants.blend`. The
+reproducible `build_kitchen_stove.py` script renders 72 transparent 128 px
+frames (12 yaw poses × 6 elevations), and their hashes are recorded in
+`public/game-content/oblique-furniture.kitchen-stove.v1.json`. The catalog is
+registered as `furniture.kitchen.stove.variants` in the oblique module
+registry. The model is a two-tile commercial stove with four burners, twin oven
+faces, controls, splash guard and feet.
+
+This is authored Blender art and a verified runtime catalog, but it is not yet
+shown by the production `WorldScene`: the next integration step is to resolve
+an oblique object-sprite consumer for `object.stove`, then verify placement,
+cutaway/depth ordering and Save/Load in the real Full HD scene. The module is
+therefore a concrete art increment, not a claim that the complete angled mode
+has shipped.
