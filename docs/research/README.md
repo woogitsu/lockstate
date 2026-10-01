@@ -240,6 +240,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 | [2026-10-02 native modal keyboard](./2026-10-02-native-modal-keyboard/README.md) | Does an open room-plan dialog prevent keyboard camera movement and return focus afterward? | Actual production canvas red/green mutation, Tab containment, Escape focus return and resumed camera controls for issue1918. |
 | [2026-10-02 keyboard template rearm](./2026-10-02-keyboard-template-rearm/README.md) | Can every room plan be selected and rearmed using only the keyboard from a genuine map hover? | Actual Full HD twenty-plan keyboard, mirror, quote and Escape checks, prior hidden-ghost failure and mutation evidence for issue1923. |
 | [2026-10-02 template tooltip clearance](./2026-10-02-template-tooltip-clearance/README.md) | Can a large projected plan retain its visible floor while showing construction cost? | Full HD baseline covers 17 squares; geometric placement restores zero overlap in measured center and edge views. |
+| [2026-10-02 actor facing](./2026-10-02-oblique-actor-facing/README.md) | Which existing Blender pose should face world movement when the camera turns? | Eight SHA-checked guard views across four headings and two camera yaws establish the signed yaw rule and the stationary-heading limitation. |
 
 ### Findings from the first four records that changed a decision
 
