@@ -4376,6 +4376,10 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'input.action.camera.right': 'Pan camera right',
   'input.action.camera.zoom.in': 'Zoom in',
   'input.action.camera.zoom.out': 'Zoom out',
+  'input.action.camera.rotate.left': 'Rotate camera left',
+  'input.action.camera.rotate.right': 'Rotate camera right',
+  'input.action.camera.tilt.up': 'Raise camera angle',
+  'input.action.camera.tilt.down': 'Lower camera angle',
   'input.action.selection.primary': 'Select',
   'input.action.build.confirm': 'Confirm placement',
   // Bound in the world, construction and modal contexts, so it is a general
