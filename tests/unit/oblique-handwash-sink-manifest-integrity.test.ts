@@ -26,7 +26,7 @@ describe('cell hand-washing sink oblique art', () => {
       .toBe(`/game-content/${manifestName}`);
     const catalog = parseObliqueModuleCatalog(readJson(`game-content/${manifestName}`));
     expect(catalog.assetId).toBe('fixture.cell.sink.handwash');
-    expect(catalog.cameraTargetTiles).toEqual([0.5, 0.5, 0.45]);
+    expect(catalog.cameraTargetTiles).toEqual([0.5, 0.5, 0.4]);
     expect(catalog.yawDegrees).toHaveLength(12);
     expect(catalog.elevationDegrees).toHaveLength(6);
     expect(catalog.frames).toHaveLength(72);

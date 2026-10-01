@@ -15,7 +15,7 @@
   "cameraTargetTiles": [
     0.5,
     0.5,
-    0.45
+    0.4
   ],
   "projection": "orthographic",
   "yawDegrees": [
@@ -45,433 +45,433 @@
       "yawDegrees": 0,
       "elevationDegrees": 20,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+00-elev20.png",
-      "sha256": "cf889f5d2cfae4d5b0f3cedf15e3bcb2d902196b6269049d9fd7b2d02a2eff89"
+      "sha256": "cf58cd8cabcc8dd1abc58b19898754173464c2d8784a7a9069e98a40ef3f2f46"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 30,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+00-elev30.png",
-      "sha256": "be6fc1160096de528cf1c69221ce699850baeff001a94a530e78f75b1cb403ff"
+      "sha256": "ec3f34501b33554a791a21ef0646abaf95d9a5bd25420273646a600447a66953"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 40,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+00-elev40.png",
-      "sha256": "70bc07d23949a3e5d754e810d13ca6e1a7c6b9aa86cb1c6a29f1fffaf77f5ac4"
+      "sha256": "62883e13bb5634cf7b2b9430c30fba8025ed128a7563371e0ec60ae58ff52723"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 50,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+00-elev50.png",
-      "sha256": "1970755d560c2dd6e6c5680c6c4c8303129f0c07b40922a28c3162da40c71d35"
+      "sha256": "ae08eb039195337c03765089a7a058303843f7b693aed7342c6f8f4d517f608a"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 60,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+00-elev60.png",
-      "sha256": "ca015cdaded72b7808893f7339813adddebb00e657b0ffdac0ae457163df607c"
+      "sha256": "639a4c55fb4e489c7fa17b838927a9157871d82409c3053fd851b9b4e2e8b9bc"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 70,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+00-elev70.png",
-      "sha256": "6e704f3f9e0abe0c226faf6df8877aec3cbd8f929bbb9892c770a8f41324dd2c"
+      "sha256": "6840d3242198ee0104fa847e37cc0931469ac4fda629f1c897deb1d25c2a7483"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 20,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+30-elev20.png",
-      "sha256": "a024782f0bea6bf238036764374dce22bc3e574d70555e8429b8868238d30d8d"
+      "sha256": "635426e843302b135a5019806ec61bb3735573d84ea9a777f0dd61e27c4def9b"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 30,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+30-elev30.png",
-      "sha256": "ee3e9bb9fb7bb3018027a24c0fa86aff896c98ba41348e6db1784526faf20336"
+      "sha256": "ccde01b2e542dfb4d0fdae9084809ff1d1f2f741a8f5fb54988339e4fef6f308"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 40,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+30-elev40.png",
-      "sha256": "16b69603e2af1cd331312c27b158ddba034a95d51b79d8ae43d3ca5cc3390131"
+      "sha256": "cf7443bcfc3cd6e2c932895aa89e6f65b86ebf2ae6143a3512978647f111e191"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 50,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+30-elev50.png",
-      "sha256": "13b82c709390dc8e360944db08dee0b2c501d385e5e4d8358844b021b816978e"
+      "sha256": "dd123951b5912b75f2ae909ad575275d4265706b94d8b82919a04408854d0e36"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 60,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+30-elev60.png",
-      "sha256": "8ccfb35a4043f42ab3be7612ae9dbb82033384d9f1c951dd662e05c627cc2bf6"
+      "sha256": "9873ff2a78f10eaa229969eeda2de07e86111170b307aada3b3c3afaae991614"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 70,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+30-elev70.png",
-      "sha256": "5ab8d169bc5a1104e1a308766ed16bf96ff5f7627ef48bcad2f1468a1b2eab06"
+      "sha256": "ae03f640ce66387b3cc41ccd09bce067476edaecd18b93a1902a3d126b070077"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 20,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+60-elev20.png",
-      "sha256": "89cc1b82f4fa19cd1047cf6470ff790c13c4756baf0990f6d628dbfdd38ae0ad"
+      "sha256": "2db5de279f6ae63d19d7bb2c1814809eef23160f1a7f8f4561ffa9242284839a"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 30,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+60-elev30.png",
-      "sha256": "d0b4b4975d807dd84f766dd04105430d8061f40a978eaf472fc62b337a2d1e8a"
+      "sha256": "908b56d3841c30fd2fb11d61881ac1f7c9c1ca900efe8c9e7b351bea330c131b"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 40,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+60-elev40.png",
-      "sha256": "e2ae1d919444c214e4fe0a26c4f6a6cf0f2112d81960df8efa473d66181a039e"
+      "sha256": "cca58adc93d15ee249de8ebce8b5637105cf0aebaccb96d8962953646c85c65e"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 50,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+60-elev50.png",
-      "sha256": "85823050be9193431c44c239c67403ded9f1f0a0128646770cb3c75a4f15a35b"
+      "sha256": "313838e82689be189bc66a49dd59dd08c894aaef0129f40402f589812669f043"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 60,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+60-elev60.png",
-      "sha256": "9aac6f48b6b8ccf080016751effc03c527bee0d9d312f53ff954e3a90c6bf349"
+      "sha256": "703a8da489297e2f1f4ca28d6702513b05e1114c59d7ace80924716ce20b6e43"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 70,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+60-elev70.png",
-      "sha256": "fb0c9403d0d5ebbdf6b0067ecc85187ee308230ac2556d0d36ecadf8a6dc04fa"
+      "sha256": "d83d0b45fe4d8f9a3825797ddaf5008c0c0f72ac8aaa1048bd8427fdd18e96f7"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 20,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+90-elev20.png",
-      "sha256": "7d0cd84a7bbc591de81cc282c0d67135e4fec3f08a7d1d6a3d525b391002f4a5"
+      "sha256": "5cdd55c024bed151b4691338f2d0771b9a2b71c6d3cabce1b9ab820155a92960"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 30,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+90-elev30.png",
-      "sha256": "3245fbb1e5627b68f05251453790c26f9161639dc7ca3a029ba83755fe9f08e0"
+      "sha256": "81a706936c62c1e19680a9c8835b3513af28fcb7be8a6c54359415eaa365f066"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 40,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+90-elev40.png",
-      "sha256": "af0f899523d7ecdc5c2c244be8b9a28e415025921b072ae914d2a8f87651d9f4"
+      "sha256": "4ff707e5d553dbf7af985f68f9dd421ca875983fb7bf2d4f60cc2022de22d4dc"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 50,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+90-elev50.png",
-      "sha256": "e145201135ed68d87eea84150fa8f21b48491e3ae164949b06185ee28868c3a5"
+      "sha256": "8150297c02cd191cebd84dea94471212c0eec000dc3c9104b9e0c84708145dc2"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 60,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+90-elev60.png",
-      "sha256": "03f60a964f6b01d86b3138578d6b1ccfd07b33a1dfabf4ce7a14a493d6d1365d"
+      "sha256": "5522a105e9173d31b404363bcaadd63e3c71fb3178f02022c08bb6ee64f7c0c0"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 70,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+90-elev70.png",
-      "sha256": "64f5d3e8c66a3066d837a7b0bcf74736b45f73d6868c87a7736df2e66020028e"
+      "sha256": "52fe08f5254389c4d42d5ef71f0f6c3399868741fd593dccf05e1876b1722dfc"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 20,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+120-elev20.png",
-      "sha256": "e2e6c2677aa7fdbcb118645459b58b08b7c43a87284111efe4640ac1b0ab09b6"
+      "sha256": "37564d9eeb2f104c4da8077b21812b5c4050730ab491ba632103b80464bb1835"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 30,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+120-elev30.png",
-      "sha256": "5d1e60405cda049610c600bce26f493b8dacdc07b4dc74bc2c760ec593a6f89d"
+      "sha256": "3d711accf63f7a2fae243e1bed01d652576e7352f8074ceb13dd479a8424976e"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 40,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+120-elev40.png",
-      "sha256": "44fe0f11d354018184de816d98e314f2ba7655ba8f4023dd3b945b56f175f9dd"
+      "sha256": "98ee24dacd716f0e1fccc3d303b061172b2a6366cc512a069f9feb5fbd8f89d3"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 50,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+120-elev50.png",
-      "sha256": "a8c7fdb000aa722aa4b8d74f6769d2047af2ab8edda3bcc4be794940315547da"
+      "sha256": "2e27e66ac67f870bf5490f2f25861e32a250c5a4bdbfc190c87ae8340bea366b"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 60,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+120-elev60.png",
-      "sha256": "b204fb734391978439cd2c426f7c78366f16153834527c24af3d60d20fb783ab"
+      "sha256": "169881bb457988ffba89bc175bd335073fdf8730a00f7515bb2c3eb0fbef9331"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 70,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+120-elev70.png",
-      "sha256": "e19af886329a3276803f4606bedf146ed4a47e6508d8867d83d9c9c17719a331"
+      "sha256": "aa67020d9969e5a02450aa8fbfbd9cbdd983abd947d94228bc2463278910162b"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 20,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+150-elev20.png",
-      "sha256": "dfd739340a7bbb8c828aaf64b1490a2be16217b6a959c0486d2d83cf7180b067"
+      "sha256": "e392c95bb851b7b39dedbad1f80fdb678410f422fc18364432b4636dcab32c77"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 30,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+150-elev30.png",
-      "sha256": "4b9b29d3b3b60e7ccc9b131c954c14e285340cb64955c9b4efb78690d2d07661"
+      "sha256": "94a7668b882786a80d6eeafc473feaf59b09f3ff51e95780be7107fa3cf6096f"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 40,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+150-elev40.png",
-      "sha256": "5d9caddf9989b03fad47ac5b88b37238e7f61044b56a3f4d94a900d49b316f14"
+      "sha256": "17ecc40679612d50737de0ade3725e9b3e7b5a419c63a85300ab0f38d82b040e"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 50,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+150-elev50.png",
-      "sha256": "a57f594693b16f503edf83add93c78dcee30c4c2223627a7558ea122ed53bce7"
+      "sha256": "86daadb9fbe8870e2f20bd82b47a8b6027962785fa3fa665d7baba5b399c676b"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 60,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+150-elev60.png",
-      "sha256": "712ddd693fbf581f304dc098658e3a14d14d0d6a8377334ada0546a3b4876c46"
+      "sha256": "b792e3c4f418b012ca873e991839b19102b0eb9b0265a05cf391936e63dbd049"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 70,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+150-elev70.png",
-      "sha256": "f9a9220b4bde66ae7675eae457d48b2078d8367edf312e4ec0c0ef350555db2b"
+      "sha256": "892386e7cb2f6780bc3de9a156fe21ff3e34ee1a7f673079a767f3216c052e45"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 20,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+180-elev20.png",
-      "sha256": "69f38ee926bbc4974e6d1d359a1d0ccc847b2f4d54277a0d731d8d88cde6da75"
+      "sha256": "75dfea89aa2285e65be870fc446e7e75f7fb177e5d427d542bf989148ca05872"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 30,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+180-elev30.png",
-      "sha256": "f3adc4784efdf66bf235688b4cdc84a27fd9f2a3761b73be9d01583bf5f57652"
+      "sha256": "686f0ccd798955265f783559d6a9805fd333cc31ad7f2aab6221dddfd64f349c"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 40,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+180-elev40.png",
-      "sha256": "43e850a951a72f97143662736a96f95ca7cbc0bcbf828e80d6e1e24c02d5e7f5"
+      "sha256": "8ddd53457cc58a703446d3dc07f996d1cbbcc29b2c616b6b6c2aeb59db779748"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 50,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+180-elev50.png",
-      "sha256": "1a4d96c0efb0be432f40536b0e6c5a1c6824ce14eefbaf2b9807629dbbd0a484"
+      "sha256": "35237e6f1b79bb63740ebeb1d60e9ef97be813eb9ccfe439f07c24e5582312ad"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 60,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+180-elev60.png",
-      "sha256": "755b438a4258fb313cce610ae4fc5ccdc046e389f9f7e5540c1b3545d20b7636"
+      "sha256": "78c237f58c2e69b3276d741ad86ac19c2fec8a7ffa682b83e0ddf1387d7959db"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 70,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+180-elev70.png",
-      "sha256": "989a6ec85b93487872218654d41011831d0f636e9b8398fd17c71f19b500f594"
+      "sha256": "511b2651e05a34a574ccac0b60268ea10e4e3b255190d289c56da93a614d3895"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 20,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+210-elev20.png",
-      "sha256": "5bdede170cfd44cb6a919664e1b2ad884f2b4a97f4509aedd7b1da316d970909"
+      "sha256": "dc1c75c1c3f139892b90ee3faad48292832e5811dbc6c1377e3e12e68a0c986b"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 30,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+210-elev30.png",
-      "sha256": "eb5fa8ba2f5bae938469395c6be064bb2847376d4bb2f2016905655be6c8df1e"
+      "sha256": "efcaf6fc7482469d3259f9d168229b042d33cd9e2729c3ea3e4f59036c810f7c"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 40,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+210-elev40.png",
-      "sha256": "96ea0361b725996d4b4877cb956186c6c42b14a3f3ceda31bdf0f7860b208db2"
+      "sha256": "9d8861b40c465c957e5285bfb457f23d7eb25401457ad33f8bb5a4027ba9783c"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 50,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+210-elev50.png",
-      "sha256": "516d6a37afcf6cc6797ab4c874056e54b734d72d6770745a74a9bdfb0f71db59"
+      "sha256": "924a669335f834384c7244d68151a17500c75b6e8e263f664699c1520c6deec8"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 60,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+210-elev60.png",
-      "sha256": "33f87e681c337b028589bdff02b172cf617359d123cf566bd95135c003345d08"
+      "sha256": "9ffdc2dc232618cf31beafeb53de2fb730edf09c9aa77e2656519c28c2792bdf"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 70,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+210-elev70.png",
-      "sha256": "9949dbfb03d5e9d4a83a7030ba27968f2d6f4c1a58677b1807ff750a26af6eff"
+      "sha256": "366352ec3a57c6a9e132f13279da249a57605b4b8496d541b03ce7f49c928e72"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 20,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+240-elev20.png",
-      "sha256": "7283522a02c1567af793f586fd31c654daedf3adc0f9c8709a82dd3f4a02a216"
+      "sha256": "fbcc929b6f56c0b53f1a100f1bba20d8e986f7b89c36b703603514b31ab29a9e"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 30,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+240-elev30.png",
-      "sha256": "6500e7468811793255471b790fdbcdc7ca53d4a5f0616b49c973b80fa51e124f"
+      "sha256": "0cd848b7c55adbceeaa8922c6d9192f7b052fd1225f132406e26a36003cb203b"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 40,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+240-elev40.png",
-      "sha256": "3a96a43d6628acf9cf83f8fb52e2bfe93862431460294bd6dad79b926d7c0268"
+      "sha256": "fe6413cea78fd442fe82b9e60cda0e14a53b5d336fc60e0ebb2c1c1051b84e11"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 50,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+240-elev50.png",
-      "sha256": "91c9ae72d3002ad565f7cb115406fa7bce85b6da92cc95e59c81b09dcb60db0d"
+      "sha256": "738d82d72963de593e5e46aa69b4bba94dbb574c8f15a288714b42b8eee380ae"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 60,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+240-elev60.png",
-      "sha256": "c438d1dc1fe3c93c104f329104ceb49f2a58bc603b0e72a90e0c353a35a7d864"
+      "sha256": "ecee038d10d3cd3aa0042e59a39cc264ad51083d51df5d1fed6304d427d3c71f"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 70,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+240-elev70.png",
-      "sha256": "1885c598cc346239288c30a130a4205bfae632a430a6aff34e6dc004ba20963e"
+      "sha256": "108f6b29c0fb735055020ecf8bda97584ac438d07d3fce8bea1d00b019e6e2b6"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 20,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+270-elev20.png",
-      "sha256": "803583872f3376f05e4b751910c98b51626f6aea5796220f53c89886df595395"
+      "sha256": "bdda2767009720041326b24f89decfbbeb9f0211828ec9b3ac5f9b506487959a"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 30,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+270-elev30.png",
-      "sha256": "340c8b51e3b3429cde2e71c73d458c7bf13022c73393c72df69b11ddc71a2048"
+      "sha256": "c8a90d87f8462e34b8143507d41a4abdc69cdaf5563ce080d85545d250d1172c"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 40,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+270-elev40.png",
-      "sha256": "9a0e04c93bbc61e0d62d1cf686f8540e7eb362d08c415bf2bb65a7b66ff14197"
+      "sha256": "58e78940fd314de3c26a4e0dc6308c2a68bb15a2c8bfe8af4cd514e8ca386bc2"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 50,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+270-elev50.png",
-      "sha256": "0169c41bb2c8281bfe8933992587967981dd08a4b629aadd7d4c36b71abe0289"
+      "sha256": "1e1b4c808109903da98224f5a64ab549c387d649794b8cc332671ab76eac4d40"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 60,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+270-elev60.png",
-      "sha256": "45051982ae22c0bd5b9fd32bf3c0738b2cb65273924b88733e1fb215f4e75df0"
+      "sha256": "1ee4de2a60363bdec5744327d81998e11690709bd087cb00e2a3cc0dca8ef955"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 70,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+270-elev70.png",
-      "sha256": "38f9485774f49b549af1de93d6b1aabcfe355d25574678dd1857f539ebdbe136"
+      "sha256": "91af089cd8a17affafcb528b020c9b279fe805cc54a504c9fa85f43206e18125"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 20,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+300-elev20.png",
-      "sha256": "b2d9c188f406fac03bfe8e8cb36a1ef8d2fbe6074ff86ddb0ffed3d595a8771d"
+      "sha256": "c316f1aab39e045aa48b025da1f17379ed603a209184be8b60b2e1e26e225721"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 30,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+300-elev30.png",
-      "sha256": "f10288b94253d3b3482b57dae9490452afd2796b269950834af8dda8a8fda430"
+      "sha256": "74ac4c302e2b8651d2227be2f8aad4399230616caa6417fc2d9af51e018e7c8b"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 40,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+300-elev40.png",
-      "sha256": "0f5fb36c34308fa69392eb5b30edb63b597466e04c73902047c72ddd92a80986"
+      "sha256": "516dd3e74ede970653484e3b016cc337f99e08e34c6d15bdf7cb092417bf2236"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 50,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+300-elev50.png",
-      "sha256": "94c7e87b0ed8995fcb55782a4123a2fbdc73622798ee6545f1edfc0190eddaf7"
+      "sha256": "39f83f27375f83d42f1203b542f0521f700fb1b6cd2734866b62c5438680029d"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 60,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+300-elev60.png",
-      "sha256": "e2293b91798497965ada0413fb9146672db0994fbcda620551329110cc30bcfe"
+      "sha256": "fe5036a9d17b55ddce74389ebbccc7badc746616b8d4140bfb5a44b002239789"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 70,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+300-elev70.png",
-      "sha256": "36b8c0ccf43581a8733abf62c553000250301add3120952d275501a41e9659e5"
+      "sha256": "caaeb0cad3b6328b375c4c4bf24b431257038532e6b71051d6bf723e8492acdb"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 20,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+330-elev20.png",
-      "sha256": "31fdd0d0f2b8cff963de2312391b82a80ba8db8714b8104ce597eed7f44d6c80"
+      "sha256": "285046cb05e018bdd5f1567ac85d89a7cce2f66dd059ea2569b45b4271e6a7a3"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 30,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+330-elev30.png",
-      "sha256": "4ed3a53e3c04b1e655395910f810f048888fca978db99fce59c915bee16eeb35"
+      "sha256": "2d2ebd20cb0aea633173955e013c9e9bca5cdaffbb8823ed6b46e08f5966d4a5"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 40,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+330-elev40.png",
-      "sha256": "bfa764d03c40b96c56e6589f9554405ace398975d9cc449d6925bd81c96a5f70"
+      "sha256": "625dd5013cdb707b08ded9128feff547add21e3c7c9f8a12b7eb8261572422e6"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 50,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+330-elev50.png",
-      "sha256": "36ac295d1f3e64e7f7bdafa73a3cecacd32c85c00314ae350965e8f1237b9861"
+      "sha256": "70b78b5975323913215adfbd094916e9e391e0b1310f3b7c43b5e238e1cdf7bb"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 60,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+330-elev60.png",
-      "sha256": "47ab6af3040e64450df101ccbef72a0aa8b7271a4307bdd0b7a6d23b00ae4ab9"
+      "sha256": "f62cbe774da4f936d972fa0ae233e3dcfdf948bc6dbd293376a41f1b7ac248ca"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 70,
       "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+330-elev70.png",
-      "sha256": "535187f4d04a83ffc26b8999a9a3c41d16d19bc30aeb86c68b9d4b27fdbca608"
+      "sha256": "f331f8a661a95f35a63a1b4d55867e5a961efbf1d44339abd9bc7086c7618e5f"
     }
   ]
 }
