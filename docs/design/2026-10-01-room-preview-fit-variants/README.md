@@ -1,26 +1,36 @@
-# Full HD placement preview fit: owner review draft
+# Full HD large-plan preview: owner review
 
-This is a review draft. No new placement hotspot or automatic camera policy is approved for production here. The world grid and all room dimensions remain unchanged; camera fitting is presentation only.
+Review draft only. No production fit policy is selected. The comparison port exists only with `?renderer=oblique&room-preview-fit-draft=1`. Source checkpoint `17ed9518d8`; production artifact build, six cases passed in 35.2 seconds with one browser worker.
 
-The largest authored plan is cell-row-four, 7 by 16 squares (112), with four cells and a corridor. The real current screenshot demonstrates that default zoom can clip its far end below the Full HD map area. The small catalogue diagram still shows the entire plan, but it does not resolve visibility of the actual placement footprint.
+All images show the real running game at 1920 x 1080, the same 7 x 16 four-cell row (112 squares), unchanged 64-pixel world tiles and the authoritative quote: Brick x112, Wood Plank x8, materials catalogue value 5,000. Catalogue value is not a prediction of the debit after existing stock is consumed.
 
-## Variants to compare at 1920 by 1080
+The measured safe playfield is x570..1548, y103..1072. It conservatively excludes the top readouts, right inspector and bottom-left controls. The ordinary ghost text still overlays part of the geometry. `fits` means all floor-square bounds lie inside this safe rectangle, not that the tooltip is invisible.
 
-| Variant | Cursor meaning | Camera behaviour | Honest limitation |
+| Rule | Central cursor | Edge cursor | Behaviour |
 | --- | --- | --- | --- |
-| 1: origin square and bounded zoom | The cursor names the first plan square as today. | Only zoom out far enough to fit when allowed bounds permit. | Near an edge, the minimum camera zoom may still clip the footprint; report fits false rather than claiming success. |
-| 2: centred plan and zoom | The cursor names the centre of the whole plan. The submitted origin remains its real top-left world square. | Zoom out to fit around that hotspot. | This changes the placement hotspot. Close to a screen edge it can still require a safe-target constraint. |
-| 3: pan with locked anchor | The original world origin is frozen during fit until the next physical pointer movement. | Pan and zoom to show the entire plan inside a measured unobscured map rectangle. | The origin no longer follows the stationary cursor during the fit; moving the pointer resumes ordinary targeting. |
+| 1. Keep origin square under cursor; reduce zoom | fits, zoom 0.649 | clipped, zoom 0.200 | Familiar placement anchor; cannot guarantee full visibility near an edge. |
+| 2. Centre whole pattern under cursor; reduce zoom | fits, zoom 0.634 | clipped, zoom 0.200 | Changes the cursor hotspot to the pattern centre; still cannot fit near every edge. |
+| 3. Fit and pan; freeze the selected origin until physical pointer movement | fits, zoom 0.940 | fits, zoom 0.940 | Guarantees the floor footprint fits, but camera movement separates the pointer from the original anchor. |
 
-The camera agent is preparing a pure computeObliqueFit result with camera state, required zoom, actual projected bounds and a fits flag. The HUD agent prepares a separate explicitly enabled prototype adapter and actual game screenshots, retaining existing approved labels. No production default will select a new variant until the owner chooses after these proofs are ready.
+These are explicit one-shot review candidates, not complete automatic controllers. The draft freezes the candidate origin at the review cursor and clears that lock on its next movement. Future production behaviour, repeated movement and interaction with rotation require the owner's choice and subsequent implementation. No candidate bypasses worker validation. The edge placement is outside the new prison terrain, so its genuine blocked verdict remains visible; a fitted camera does not make an invalid plan buildable.
 
-## Proof requirements
+## Images
 
-- Actual Full HD game, real oblique projection and world grid.
-- Preserve the complete 112-square authored footprint and mirror orientation.
-- Measure all four projected bounds against the unobscured playfield rectangle, not merely SVG element count.
-- Include a central target and an edge target that exposes each policy's limitation.
-- Record camera zoom and exact submitted world origin; camera changes must not alter room dimensions, material quote or world square size.
-- Use one browser worker shared with art and camera agents.
+### 1. Origin under cursor
 
-Screenshots and measurements pending the public camera fit API. This draft is intentionally incomplete and must not be called an integrated feature.
+![Central cursor](cursor-origin-central.png)
+![Edge cursor: honestly clipped](cursor-origin-edge.png)
+
+### 2. Whole pattern centre under cursor
+
+![Central cursor](cursor-center-central.png)
+![Edge cursor: honestly clipped](cursor-center-edge.png)
+
+### 3. Fit, pan and locked origin
+
+![Central cursor](pan-locked-central.png)
+![Edge cursor](pan-locked-edge.png)
+
+## Evidence
+
+Each adjacent JSON preserves the immutable origin, original dimensions, candidate camera, required zoom, honest `fits` flag and 112 actual DOM polygon bounding boxes. Independent post-run comparison of every bounding box with the safe rectangle confirmed the four fitted cases and both clipped cases. Pure fit tests: 5/5. TypeScript: passed. Browser comparison: 6/6. This does not prove Save/Load or committed placement under an approved policy; those are deliberately still pending.
