@@ -14,6 +14,7 @@ import {
 import { projectedTileQuad, type TileQuad } from '../camera/oblique-geometry';
 import { projectObliqueActors, projectObliqueWorldFrame, sortObliqueRaised, type ObliqueActorPoint, type ObliqueSolid, type ObliqueWorldProjection } from '../camera/oblique-world-projection';
 import type { Point } from '../camera/coordinates';
+import type { ObliqueFitResult } from '../camera/oblique-fit';
 import type { MinimapView } from '../../shared/minimap-view';
 import { projectMinimap } from '../world/minimap-projection';
 import type { ObliqueModuleCatalog } from '../assets/oblique-module-catalog';
@@ -317,6 +318,18 @@ export class ObliqueWorldScene extends Phaser.Scene {
   }
 
   public get cameraPose(): ObliqueCameraState { return this.pose; }
+  /** Apply an explicitly chosen preview candidate; no mode is selected here. */
+  public applyCameraFit(fit: ObliqueFitResult): boolean {
+    if (!fit.fits || fit.camera.viewport.width !== this.cameras.main.width ||
+      fit.camera.viewport.height !== this.cameras.main.height) return false;
+    groundToScreen({ x: 0, y: 0 }, fit.camera);
+    this.pose = fit.camera;
+    this.poseRevision += 1;
+    this.repaint();
+    this.publishMinimap();
+    this.paintGesturePreview();
+    return true;
+  }
   public get selectedTile(): { readonly tileX: number; readonly tileY: number } | undefined { return this.selected; }
   public get paintCounts(): { readonly ground: number; readonly raised: number } {
     return { ground: this.groundPaints, raised: this.raisedPaints };
