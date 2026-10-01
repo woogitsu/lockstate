@@ -39,6 +39,61 @@ const pose: ObliqueCameraState = {
 };
 
 describe('oblique projection of an actual simulation snapshot', () => {
+  it('lowers only the near perimeter wall of a furnished cell as yaw reverses', () => {
+    const cell = new SparseWorld(8);
+    const origin = { x: chunkCoordinate(0), y: chunkCoordinate(0) };
+    cell.load(origin);
+    cell.setOwned(origin, true);
+    cell.setSquareStructure(tile(3, 2), 1);
+    cell.setSquareStructure(tile(3, 4), 1);
+    const furnished: RenderFrame = {
+      revision: 1,
+      world: WorldRenderView.fromSnapshot(cell.snapshot()),
+      structures: [
+        { id: 'bed', definitionId: 'bed-wooden', tileX: 2, tileY: 3, phase: 'built' },
+        { id: 'toilet', definitionId: 'object.toilet', tileX: 4, tileY: 3, phase: 'built' },
+      ],
+      actors: [],
+      rooms: [{ instanceId: 'cell:3:3', roomCatalogId: 'room.cell', anchorTileX: 3, anchorTileY: 3, width: 1, height: 1 }],
+      roomConditions: [],
+    };
+    const solid = (yawRadians: number, id: string) => {
+      const raised = projectObliqueWorldFrame(furnished, { ...pose, yawRadians }).raised;
+      const found = raised.find((item) => item.kind === 'structure' && item.id === id);
+      if (found?.kind !== 'structure') throw new Error(`Missing ${id}`);
+      return found;
+    };
+    const near = solid(0, 'square-wall:3:4');
+    const far = solid(0, 'square-wall:3:2');
+    expect(near.assetId).toBe('wall.interior.module.cutaway');
+    expect(far.assetId).toBe('wall.interior.module.full');
+    expect(Math.abs(near.top[0].y - near.footprint[0].y))
+      .toBeLessThan(Math.abs(far.top[0].y - far.footprint[0].y));
+    expect(solid(Math.PI, 'square-wall:3:4').assetId).toBe('wall.interior.module.full');
+    expect(solid(Math.PI, 'square-wall:3:2').assetId).toBe('wall.interior.module.cutaway');
+    expect(solid(0, 'bed')).toHaveProperty('kind', 'structure');
+    expect(solid(0, 'toilet')).toHaveProperty('kind', 'structure');
+  });
+  it('cuts a legacy near wall while keeping the adjacent door at full height', () => {
+    const cell = new SparseWorld(8);
+    const origin = { x: chunkCoordinate(0), y: chunkCoordinate(0) };
+    cell.load(origin);
+    cell.setOwned(origin, true);
+    cell.setTopEdge(tile(3, 4), 1);
+    cell.setTopEdge(tile(4, 4), 2);
+    const interior: RenderFrame = {
+      revision: 1,
+      world: WorldRenderView.fromSnapshot(cell.snapshot()),
+      structures: [], actors: [], roomConditions: [],
+      rooms: [{ instanceId: 'cell:3:3', roomCatalogId: 'room.cell', anchorTileX: 3, anchorTileY: 3, width: 2, height: 1 }],
+    };
+    const projected = projectObliqueWorldFrame(interior, pose);
+    const wall = projected.raised.find((item) => item.kind === 'north-edge' && item.id === 'north-edge:3:4');
+    const door = projected.raised.find((item) => item.kind === 'north-edge' && item.id === 'north-edge:4:4');
+    if (wall?.kind !== 'north-edge' || door?.kind !== 'north-edge') throw new Error('Missing wall or door');
+    expect(wall.assetId).toBe('wall.interior.module.cutaway');
+    expect(door.assetId).toBe('door.interior.open.full');
+  });
   it('reads loaded ground, distinct wall and door edges, a whole bed, and the actor without duplicating a finished wall', () => {
     const projected = projectObliqueWorldFrame(frame(), pose);
     expect(projected.loadedTilesVisited).toBe(64);

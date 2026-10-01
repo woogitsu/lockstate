@@ -24,3 +24,21 @@ test('real render feed cell keeps one build square under the cursor while the sc
     await page.screenshot({ path: testInfo.outputPath(`render-feed-yaw${yaw}-elev${elevation}-fullhd.png`) });
   }
 });
+
+test('near wall pixels lower around a furnished cell as yaw and elevation change', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/tests/browser/oblique-world-harness.html');
+  await page.evaluate(() => window.lockstateObliqueWorldHarness.ready());
+  for (const [yaw, elevation, nearY] of [[0, 45, 4], [180, 65, 2]] as const) {
+    await page.evaluate(([y, e]) => window.lockstateObliqueWorldHarness.setPose(y, e), [yaw, elevation] as const);
+    const clip = await page.evaluate((tileY) => window.lockstateObliqueWorldHarness.wallClip(3, tileY), nearY);
+    expect(clip.width).toBeGreaterThan(0);
+    expect(clip.height).toBeGreaterThan(0);
+    await page.evaluate(() => window.lockstateObliqueWorldHarness.setCellInterior(false));
+    const full = await page.screenshot({ clip });
+    await page.evaluate(() => window.lockstateObliqueWorldHarness.setCellInterior(true));
+    const cutaway = await page.screenshot({ clip });
+    expect(cutaway.equals(full), `near wall pixels did not change at yaw ${yaw}, elevation ${elevation}`).toBe(false);
+    await page.screenshot({ path: testInfo.outputPath(`furnished-cell-yaw${yaw}-elev${elevation}-cutaway-fullhd.png`) });
+  }
+});
