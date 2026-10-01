@@ -593,7 +593,11 @@ export class ConstructionSystem implements SystemRegistration {
 
     // A wall`s whole-square footprint cannot overlap standing furniture.
     // Check before materials are allocated, including object orders in flight.
-    if (\n      order.edge === undefined &&\n      occupiesTileEdge(definition) &&\n      this.objectPlacement?.isTileOccupied?.(order.location)\n    ) {
+    if (
+      order.edge === undefined &&
+      occupiesTileEdge(definition) &&
+      this.objectPlacement?.isTileOccupied?.(order.location)
+    ) {
       this.setState(order, 'failed');
       order.failReason = 'unbuildable';
       this.orders.set(order.id, order);
