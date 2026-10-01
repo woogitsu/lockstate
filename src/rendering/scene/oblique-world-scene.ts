@@ -5,14 +5,21 @@ import { VOID_COLOR, ZONING_TINT_ALPHA, UNOWNED_SHADE_ALPHA, UNOWNED_SHADE_COLOR
 import {
   changeObliquePoseAtScreenPoint,
   screenToGround,
+  visibleGroundBounds,
   type ObliqueCameraState,
 } from '../camera/oblique-projection';
 import { projectedTileQuad, type TileQuad } from '../camera/oblique-geometry';
 import { projectObliqueActors, projectObliqueWorldFrame, sortObliqueRaised, type ObliqueActorPoint, type ObliqueSolid, type ObliqueWorldProjection } from '../camera/oblique-world-projection';
 import type { Point } from '../camera/coordinates';
+import type { MinimapView } from '../../shared/minimap-view';
+import { projectMinimap } from '../world/minimap-projection';
+import type { ObliqueModuleCatalog } from '../assets/oblique-module-catalog';
+import { selectObliqueModuleFrame } from '../assets/oblique-module-catalog';
 
 export interface ObliqueWorldSceneOptions {
   readonly feed: RenderFeed;
+  /** Catalogs verified by the composition root before Phaser starts. */
+  readonly catalogs?: ReadonlyMap<string, ObliqueModuleCatalog>;
   readonly onTileSelected?: (tileX: number, tileY: number) => void;
 }
 
@@ -23,7 +30,8 @@ export interface ObliqueWorldSceneOptions {
  * scene before players can switch to it.
  */
 export class ObliqueWorldScene extends Phaser.Scene {
-  private readonly feed: RenderFeed;
+  private feed: RenderFeed;
+  private readonly catalogs: ReadonlyMap<string, ObliqueModuleCatalog>;
   private readonly onTileSelected: ((tileX: number, tileY: number) => void) | undefined;
   private groundGraphics!: Phaser.GameObjects.Graphics;
   private selectionGraphics!: Phaser.GameObjects.Graphics;
@@ -41,11 +49,38 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private actorPositions: { id: number; tileX: number; tileY: number }[] = [];
   private groundPaints = 0;
   private raisedPaints = 0;
+  private minimapSink: ((view: MinimapView | undefined) => void) | undefined;
+  private readonly readyPromise: Promise<void>;
+  private resolveReady!: () => void;
+  private readonly assetTextureKeys = new Map<string, string>();
+  private assetImages: Phaser.GameObjects.Image[] = [];
 
   public constructor(options: ObliqueWorldSceneOptions) {
     super({ key: 'oblique-world' });
     this.feed = options.feed;
+    this.catalogs = options.catalogs ?? new Map();
     this.onTileSelected = options.onTileSelected;
+    this.readyPromise = new Promise<void>((resolve) => { this.resolveReady = resolve; });
+  }
+
+  /** Resolves after Phaser has created the production angled scene. */
+  public ready(): Promise<void> { return this.readyPromise; }
+
+  /** The registry passed by the composition root, exposed for integration tests. */
+  public get obliqueCatalogs(): ReadonlyMap<string, ObliqueModuleCatalog> { return this.catalogs; }
+
+  /** Keep the same feed port as WorldScene for demo actors and session reloads. */
+  public setFeed(feed: RenderFeed): void {
+    this.feed = feed;
+    this.lastFrame = undefined;
+    this.lastProjection = undefined;
+    this.framedWorld = false;
+  }
+
+  /** Connect the HUD minimap after it mounts. */
+  public setMinimapSink(sink: (view: MinimapView | undefined) => void): void {
+    this.minimapSink = sink;
+    this.publishMinimap();
   }
 
   public create(): void {
@@ -93,12 +128,52 @@ export class ObliqueWorldScene extends Phaser.Scene {
     };
     this.input.on('pointerup', stopTurn);
     this.input.on('pointerupoutside', stopTurn);
+    void this.loadCatalogTextures().finally(() => this.resolveReady());
   }
 
   public get cameraPose(): ObliqueCameraState { return this.pose; }
   public get selectedTile(): { readonly tileX: number; readonly tileY: number } | undefined { return this.selected; }
   public get paintCounts(): { readonly ground: number; readonly raised: number } {
     return { ground: this.groundPaints, raised: this.raisedPaints };
+  }
+
+  /** Keyboard/HUD zoom port shared with the top-down scene. */
+  public stepCameraZoom(direction: 'in' | 'out'): void {
+    const factor = direction === 'in' ? 1.25 : 1 / 1.25;
+    const zoom = Math.min(3, Math.max(0.2, this.pose.zoom * factor));
+    if (zoom === this.pose.zoom) return;
+    this.pose = { ...this.pose, zoom };
+    this.poseRevision += 1;
+    this.repaint();
+  }
+
+  /** Move the angled ground target to a minimap fraction. */
+  public navigateToMinimapPoint(fx: number, fy: number): boolean {
+    const bounds = this.lastFrame?.world.loadedBounds;
+    if (bounds === undefined || !Number.isFinite(fx) || !Number.isFinite(fy)) return false;
+    const x = Math.min(1, Math.max(0, fx));
+    const y = Math.min(1, Math.max(0, fy));
+    this.pose = {
+      ...this.pose,
+      target: {
+        x: (bounds.minTileX + x * (bounds.maxTileX - bounds.minTileX + 1)) * TILE_SIZE_PX,
+        y: (bounds.minTileY + y * (bounds.maxTileY - bounds.minTileY + 1)) * TILE_SIZE_PX,
+      },
+    };
+    this.poseRevision += 1;
+    this.repaint();
+    this.publishMinimap();
+    return true;
+  }
+
+  /** Move the angled ground target to a tile centre. */
+  public navigateToTile(tileX: number, tileY: number): boolean {
+    if (!Number.isFinite(tileX) || !Number.isFinite(tileY) || this.lastFrame?.world.loadedBounds === undefined) return false;
+    this.pose = { ...this.pose, target: { x: (tileX + 0.5) * TILE_SIZE_PX, y: (tileY + 0.5) * TILE_SIZE_PX } };
+    this.poseRevision += 1;
+    this.repaint();
+    this.publishMinimap();
+    return true;
   }
 
   /** Shared entry point for mouse drag, remappable keyboard actions and HUD buttons. */
@@ -131,6 +206,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     }
     this.lastFrame = frame;
     this.repaint();
+    this.publishMinimap();
   }
 
   private fillQuad(graphics: Phaser.GameObjects.Graphics, quad: TileQuad, color: number, alpha = 1): void {
@@ -167,6 +243,8 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private paintRaised(projection: ObliqueWorldProjection): void {
     const raised = this.raisedGraphics;
     raised.clear();
+    for (const image of this.assetImages) image.destroy();
+    this.assetImages = [];
     this.raisedPaints += 1;
     for (const item of projection.raised) {
       if (item.kind === 'actor') {
@@ -181,7 +259,37 @@ export class ObliqueWorldScene extends Phaser.Scene {
         this.fillQuad(raised, [item.footprint[side]!, item.footprint[next]!, item.top[next]!, item.top[side]!], item.sideFill, item.alpha);
       }
       this.fillQuad(raised, item.top, item.topFill, item.alpha);
+      this.paintAsset(item);
     }
+  }
+
+  /** Load and paint one authored PNG for every mapped solid; graphics remain the fail-closed fallback. */
+  private paintAsset(item: ObliqueSolid): void {
+    if (item.assetId === undefined) return;
+    const textureKey = this.assetTextureKeys.get(item.assetId);
+    if (textureKey === undefined || !this.textures.exists(textureKey)) return;
+    const centre = item.top.reduce((sum, point) => ({ x: sum.x + point.x / 4, y: sum.y + point.y / 4 }), { x: 0, y: 0 });
+    const image = this.add.image(centre.x, centre.y, textureKey).setDepth(item.viewDepth + 0.01);
+    image.setOrigin(0.5, 0.75);
+    image.setAlpha(item.alpha);
+    this.assetImages.push(image);
+  }
+
+  private async loadCatalogTextures(): Promise<void> {
+    if (this.catalogs.size === 0) return;
+    const pending: { assetId: string; key: string; url: string }[] = [];
+    for (const [assetId, catalog] of this.catalogs) {
+      const key = `oblique:${assetId}`;
+      const frame = selectObliqueModuleFrame(catalog, this.pose);
+      pending.push({ assetId, key, url: frame.image });
+      this.load.image(key, frame.image);
+    }
+    await new Promise<void>((resolve) => {
+      this.load.once(Phaser.Loader.Events.COMPLETE, () => resolve());
+      this.load.start();
+    });
+    for (const item of pending) if (this.textures.exists(item.key)) this.assetTextureKeys.set(item.assetId, item.key);
+    this.repaint();
   }
 
   private actorsMoved(actors: readonly RenderActor[]): boolean {
@@ -219,5 +327,27 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.lastProjection = { ...this.lastProjection, raised };
     this.rememberActors(frame.actors);
     this.paintRaised(this.lastProjection);
+  }
+
+  private publishMinimap(): void {
+    if (this.minimapSink === undefined) return;
+    const frame = this.lastFrame;
+    if (frame === undefined) { this.minimapSink(undefined); return; }
+    const projected = projectMinimap(frame.world);
+    if (projected === undefined) { this.minimapSink(undefined); return; }
+    const bounds = frame.world.loadedBounds;
+    if (bounds === undefined) { this.minimapSink(undefined); return; }
+    const spanX = bounds.maxTileX - bounds.minTileX + 1;
+    const spanY = bounds.maxTileY - bounds.minTileY + 1;
+    const viewport = visibleGroundBounds(this.pose);
+    this.minimapSink({
+      ...projected,
+      viewport: {
+        x: (viewport.left / TILE_SIZE_PX - bounds.minTileX) / spanX,
+        y: (viewport.top / TILE_SIZE_PX - bounds.minTileY) / spanY,
+        width: (viewport.right - viewport.left) / TILE_SIZE_PX / spanX,
+        height: (viewport.bottom - viewport.top) / TILE_SIZE_PX / spanY,
+      },
+    });
   }
 }

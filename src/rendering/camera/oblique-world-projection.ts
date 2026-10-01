@@ -8,7 +8,9 @@ import {
   terrainAppearance,
   zoningTint,
 } from '../world/appearance';
-import { isDrawnAsWorldEdge } from '../world/structures';
+import { catalogueObjectId, isDrawnAsWorldEdge } from '../world/structures';
+import { obliqueCanonicalAssetIdForObject } from '../assets/oblique-object-mapping';
+import { DOOR_EDGE_NUMERIC_ID } from '../../simulation/construction/definition';
 import { createTileSample } from '../world/world-view';
 import { TILE_SIZE_PX, tileRangeContains, visibleTileRange } from '../tile-metrics';
 import { groundToScreen, visibleGroundBounds, type ObliqueCameraState } from './oblique-projection';
@@ -35,6 +37,8 @@ export interface ObliqueSolid {
   readonly sideFill: number;
   readonly alpha: number;
   readonly viewDepth: number;
+  /** Canonical rendered-art id, when this solid has an authored PNG. */
+  readonly assetId?: string;
 }
 
 export interface ObliqueActorPoint {
@@ -96,10 +100,12 @@ export function projectObliqueWorldFrame(frame: RenderFrame, camera: ObliqueCame
     const width = kind === 'north-edge' ? TILE_SIZE_PX : thickness;
     const depth = kind === 'north-edge' ? thickness : TILE_SIZE_PX;
     const geometry = projectedRectPrism(x, y, width, depth, appearance.heightTiles * TILE_SIZE_PX, camera);
+    const assetId = obliqueCanonicalAssetIdForObject(kind === 'north-edge' || kind === 'west-edge' ? (value === DOOR_EDGE_NUMERIC_ID ? 'door.interior' : 'wall.interior.module') : 'wall.interior.module', { edge: kind === 'west-edge' ? 'west' : 'north' });
     raised.push({
       kind, id: `${kind}:${tileX}:${tileY}`, tileX, tileY,
       ...geometry, topFill: appearance.topFill, sideFill: appearance.sideFill, alpha: 1,
       viewDepth: obliqueDepthForAnchor({ x: x + width / 2, y: y + depth / 2 }, camera.yawRadians),
+      ...(assetId === undefined ? {} : { assetId }),
     });
   };
 
@@ -136,11 +142,13 @@ export function projectObliqueWorldFrame(frame: RenderFrame, camera: ObliqueCame
     const width = appearance.footprintTiles.width * TILE_SIZE_PX;
     const depth = appearance.footprintTiles.height * TILE_SIZE_PX;
     const geometry = projectedRectPrism(x, y, width, depth, appearance.heightTiles * TILE_SIZE_PX, camera);
+    const assetId = obliqueCanonicalAssetIdForObject(catalogueObjectId(structure.definitionId) ?? structure.definitionId);
     raised.push({
       kind: 'structure', id: structure.id, tileX: structure.tileX, tileY: structure.tileY,
       ...geometry, topFill: appearance.topFill, sideFill: appearance.sideFill,
       alpha: structure.phase === 'planned' ? PLANNED_ALPHA : structure.phase === 'building' ? BUILDING_ALPHA : 1,
       viewDepth: obliqueDepthForAnchor({ x: x + width / 2, y: y + depth / 2 }, camera.yawRadians),
+      ...(assetId === undefined ? {} : { assetId }),
     });
   }
 

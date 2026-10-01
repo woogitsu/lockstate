@@ -34,6 +34,14 @@ import { DemoActorFeed, isDemoActorsRequested } from './rendering/feed/demo-acto
 import { EMPTY_RENDER_FRAME, type RenderFeed } from './rendering/feed/render-feed';
 import { SimulationSnapshotFeed } from './rendering/feed/simulation-snapshot-feed';
 import { WorldScene } from './rendering/scene/world-scene';
+import { ObliqueWorldScene } from './rendering/scene/oblique-world-scene';
+import {
+  prepareProductionRenderScene,
+  productionRenderMode,
+  renderProductionRenderFailure,
+  type PreparedProductionRenderScene,
+} from './rendering/scene/production-render-bootstrap';
+import { fetchObliqueModuleSet } from './rendering/assets/oblique-module-registry';
 import { VOID_COLOR } from './rendering/world/appearance';
 import { applyAccessibilitySettings, createDisplayScaleControl } from './ui/display-scale';
 import { createThemeControl, createThemeController, resolveSystemThemeQuery } from './ui/theme';
@@ -599,7 +607,7 @@ document.documentElement.lang = startupLocale.locale;
 // `resolveBrowserKeyValueStore()` never throws and never returns undefined: a
 // browser that refuses storage gets an in-memory stand-in, so settings work for
 // the rest of the page load and simply are not remembered.
-const worldScene = new WorldScene({
+const createTopDownWorldScene = (): WorldScene => new WorldScene({
   feed: renderFeed,
   loadAtlasLibrary: () => atlasLibrary,
   keyValueStore: resolveBrowserKeyValueStore(),
@@ -675,6 +683,27 @@ const worldScene = new WorldScene({
   },
 });
 
+/**
+ * Production renderer selection. The default path constructs no registry
+ * request and remains the established WorldScene boot. `?renderer=oblique`
+ * explicitly opts into the angled path; its catalogs are verified before the
+ * Phaser game exists, and the scene lifecycle is awaited immediately after
+ * Phaser starts it.
+ */
+let productionSceneSelection: PreparedProductionRenderScene<WorldScene, ObliqueWorldScene>;
+try {
+  productionSceneSelection = await prepareProductionRenderScene({
+    mode: productionRenderMode(window.location.search),
+    loadObliqueCatalogs: () => fetchObliqueModuleSet(),
+    createWorld: createTopDownWorldScene,
+    createOblique: (catalogs) => new ObliqueWorldScene({ feed: renderFeed, catalogs }),
+  });
+} catch (error) {
+  renderProductionRenderFailure(error);
+  throw error;
+}
+const worldScene = productionSceneSelection.scene;
+
 const gameConfig: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
   parent: 'game-root',
@@ -699,6 +728,9 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
 };
 
 new Phaser.Game(gameConfig);
+if (productionSceneSelection.mode === 'oblique' && worldScene instanceof ObliqueWorldScene) {
+  await worldScene.ready();
+}
 
 /**
  * `?actors=demo` puts scripted actors on screen.
@@ -2684,7 +2716,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
      * (issue #793). Unlike the build/room/object gestures above this is not
      * routed through `HudIntent` at all: moving the camera never reaches the
      * simulation (`AGENTS.md` boundary 1), so there is nothing for the intent
-     * gate or the refusal line to do with it, and `worldScene` is passed
+     * gate or the refusal line to do with it, and the active production scene is passed
      * unconditionally -- it exists from the top of this module regardless of
      * whether a worker started, exactly like every other camera control.
      */
@@ -2698,7 +2730,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
      * the key are one movement rather than two zooms that disagree.
      *
      * Passed unconditionally, exactly as `onMinimapNavigate` above is and for
-     * the reason it gives: `worldScene` exists from the top of this module
+     * the reason it gives: the active production scene exists from the top of this module
      * whether or not a worker started, and zooming a camera is not something
      * the simulation could refuse.
      */
@@ -3210,7 +3242,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
          * message the player pressed*, and the intent union is where this
          * repository keeps that.
          *
-         * `worldScene` unconditionally, for `onMinimapNavigate`'s stated
+         * the active production scene unconditionally, for `onMinimapNavigate`'s stated
          * reason: it exists from the top of this module whether or not a
          * worker ever started. The `false` a tile-less session returns is
          * read by nobody here and is deliberately not turned into a sentence

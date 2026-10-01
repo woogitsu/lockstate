@@ -197,6 +197,18 @@ const REQUIRED_WIRINGS: readonly RequiredWiring[] = [
       "Issue #959, and the other half of the same seam, pinned separately for the reason `editHistory`'s two halves are: they are two wirings in two calls and either can be deleted alone. `BuildTool.standDown` forwards the request and decides nothing -- `hud.ts`'s attachment stands **both** panels down unconditionally, because at most one of the two tools is ever armed and neither the tool nor the scene can know which -- so the composition root is the only place the request can be joined to the panels at all. `MountHudOptions.toolStandDown` is optional, so deleting this argument compiles and the HUD registers no sink; `BuildTool.standDown()` then drops the request and Escape goes back to being a key that cancels a drag and nothing else. `tests/browser/ui-shell.spec.ts` mounts the HUD with a source of its own and `tests/unit/ui-hud-tool-arming.test.ts` calls `mountInterface` with a double, so both stay green either way. Measured on this branch: with this spread deleted, `tsc` is clean and `pnpm test` is fully green.",
   },
   {
+    what: 'the production renderer is selected before Phaser starts',
+    source: 'prepareProductionRenderScene({',
+    reason:
+      'Issue #1845. The angled scene must be a composition-root choice rather than a harness-only scene. Keeping this call in the entry point ensures the renderer mode and its catalog load are joined to the page Phaser actually boots; deleting it would leave the new scene unreachable while every isolated projection test remained green.',
+  },
+  {
+    what: 'the opted-in angled scene waits for its Phaser readiness lifecycle',
+    source: 'await worldScene.ready()',
+    reason:
+      'Issue #1845. Oblique module catalogs are loaded before `new Phaser.Game`, but the scene still has an asynchronous texture lifecycle. Awaiting `ready()` in the production path prevents the composition root from reporting a usable angled renderer before its authored PNG layer has had a chance to load; a harness-only readiness test cannot protect this page wiring.',
+  },
+  {
     what: 'a preference another tab wrote reaches this one',
     source: 'subscribeToSettingsChanges(globalThis.window, {',
     reason:
