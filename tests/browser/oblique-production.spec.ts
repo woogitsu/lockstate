@@ -112,3 +112,17 @@ test('remappable keyboard pans, turns and tilts the angled world without moving 
   expect((await canvas.screenshot()).equals(focusedBaseline), 'camera moved while a text field had focus').toBe(true);
   await page.locator(`#${textBox}`).evaluate((field) => field.remove());
 });
+
+test('production HUD angle buttons change the real oblique canvas', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/?renderer=oblique');
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await expect(page.locator('.hud-clock__day')).toHaveText('1');
+  const canvas = page.locator('#game-root canvas');
+  const before = await canvas.screenshot();
+  await page.getByRole('button', { name: 'Rotate camera right' }).click();
+  const turned = await canvas.screenshot();
+  expect(turned.equals(before), 'HUD yaw control did not rotate the active world').toBe(false);
+  await page.getByRole('button', { name: 'Raise camera angle' }).click();
+  expect((await canvas.screenshot()).equals(turned), 'HUD elevation control did not tilt the active world').toBe(false);
+});

@@ -2744,6 +2744,18 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     onCameraZoom: (direction) => {
       worldScene.stepCameraZoom(direction);
     },
+    ...(worldScene instanceof ObliqueWorldScene ? {
+      onCameraPoseStep: (axis: 'yaw' | 'elevation', direction: -1 | 1): void => {
+        const pose = worldScene.cameraPose;
+        // A button press advances a legible fixed angle; the mouse and held
+        // remappable keys use the same setPoseRadians camera transform.
+        const step = axis === 'yaw' ? Math.PI / 12 : Math.PI / 18;
+        worldScene.setPoseRadians(
+          pose.yawRadians + (axis === 'yaw' ? direction * step : 0),
+          pose.elevationRadians + (axis === 'elevation' ? direction * step : 0),
+        );
+      },
+    } : {}),
     onIntent: (intent: HudIntent) => {
       switch (intent.kind) {
         /*
