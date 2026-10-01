@@ -32,3 +32,5 @@ The combined branch now selects the existing eight-direction world motion contra
 Before implementation, the focused projection case failed three missing relative yaws; restoration passes4/4. Deliberately replacing the real scene's relative-yaw selector with camera yaw alone makes the actual browser case fail: all three keys become90 degrees rather than-90,0,90. Restoring the selector passes1/1 in6.9seconds (13.9seconds suite), including a second stationary facing-only update from North to South. The screenshot below was visually inspected. Root focused projection/modal/research verification passes13/13 and TypeScript passes. This consumes published headings, not a new walking animation or an assertion that the current immutable snapshot publishes movement.
 
 ![Independent authored headings in the actual scene](guard-independent-world-headings.png)
+
+The complete authored-actor browser file also passes5/5 in48.5seconds after the independent-heading fix, covering staff pixels, canonical prisoner/guard occlusion, actor pooling and solid reuse/depth alongside this facing case.
