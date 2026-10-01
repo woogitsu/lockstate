@@ -4440,7 +4440,7 @@ async function bootPersistence(workers: SimulationWorkerChannel, hud: HudHandle)
     });
     panel = new SavePanel(controller, hud.asideSlot, localizer);
     const app = document.getElementById('app');
-    if (app !== null) panel.mountEmptyWorldPrompt(app, (active) => hud.setMinimapSessionActive(active));
+    if (app !== null) panel.mountEmptyWorldPrompt(app, (active) => hud.setSessionActive(active));
     manageSavesPanel = new ManageSavesPanel(controller, hud.manageSavesSlot, localizer, () => panel.refresh());
     panel.setOnInventoryChanged(() => { void manageSavesPanel?.refresh(); });
   } catch (error) {
@@ -4525,7 +4525,7 @@ const mountedHud =
         ...(roomTool === undefined ? {} : { rooms: roomTool }),
         ...(objectTool === undefined ? {} : { objects: objectTool }),
       });
-mountedHud?.setMinimapSessionActive(false);
+mountedHud?.setSessionActive(false);
 
 // The save panel is laid out by the HUD, so there is nowhere to put it until
 // the HUD is mounted. That is not a new dependency in disguise: with no

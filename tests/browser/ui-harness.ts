@@ -1374,6 +1374,8 @@ window.lockstateUiHarness = {
         });
       },
     });
+    // Match the app's session callback: the populated fixture has an active prison.
+    hud.setSessionActive(options?.empty !== true);
   },
 
   hudProbe(): HudProbe {
