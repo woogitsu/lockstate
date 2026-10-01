@@ -675,13 +675,6 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
     reason:
       'Value: `instantiateRoomTemplate` from `src/content/room-template-catalog`. The Build composition layer asks the catalogue for a complete footprint and furniture plan; duplicating those dimensions in the panel would let the preview and worker disagree. The catalogue is pure data and does not own simulation state.',
   },
-  {
-    file: 'src/ui/simulation-room-template-port.ts',
-    tree: 'simulation',
-    kind: 'value',
-    reason:
-      'Value: `SimulationProjectionRequester` is the existing projection-channel adapter. This orchestration port sends the room-template preflight target to the worker and returns the plain verdict; it constructs no runtime and stores no simulation state.',
-  },
 ];
 
 const dependencies = findCrossTreeDependencies(gatedFiles, OWN_TREE);
@@ -707,8 +700,8 @@ describe('UI orchestration boundaries', () => {
       'src/ui/language.ts',
       'src/ui/object-tool.ts',
       'src/ui/prisoner-sentence.ts',
-      'src/ui/room-tool.ts',
       'src/ui/room-template-tool.ts',
+      'src/ui/room-tool.ts',
       'src/ui/save-panel-delete.ts',
       'src/ui/save-panel-messages.ts',
       'src/ui/save-panel.ts',

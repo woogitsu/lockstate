@@ -650,6 +650,10 @@ const ASSEMBLED_SENTENCES: Readonly<Record<string, string>> = {
     "aria-label for a queue row's Cancel button -- the same shape as the " +
     'delivery row above it, for the same reason: a localized word, a ' +
     "hard-coded ': ', and the row's own already-localized label read back.",
+  '`${t(objectNames[objectId]!) } × ${count}`':
+    'Room-template preview combines a localized object name with a numeric count; the multiplication sign is a stable visual separator for a compact legend row.',
+  '`${t(NAME_KEYS[id])}, ${plan.width} × ${plan.height}`':
+    'Room-template preview combines a localized template name with numeric footprint dimensions; the comma and multiplication sign are stable visual separators for the catalogue row.',
   '`${t(HUD_MESSAGE_KEY.buildTemplateBlocked)} (${verdict.tile.x}, ${verdict.tile.y})`':
     'Room-template preflight status combines a localized blocked sentence with authoritative tile coordinates returned by the worker; coordinates are numeric data and cannot be authored in a locale catalog.',
 };
