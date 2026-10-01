@@ -141,7 +141,7 @@ describe('every declared input action either has a reader or is accounted for', 
     // in a way the file count cannot see, so the positive control names the
     // four ids that are genuinely consumed and where.
     expect(readerSources.length).toBeGreaterThan(50);
-    expect(ACTION_IDS.length).toBe(11);
+    expect(ACTION_IDS.length).toBe(15);
 
     const cameraPoll = readerSources.find((source) => source.where === join('src', 'rendering', 'scene', 'world-scene.ts'));
     expect(cameraPoll, 'the one production consumer of src/input/ is no longer where this gate looks for it').toBeDefined();
@@ -193,7 +193,7 @@ describe('every declared input action either has a reader or is accounted for', 
     // four and five before the event stream gained a consumer, and seven and
     // two before the undo pair was declared and wired in one change (#261).
     expect(unreadIds.length).toBe(2);
-    expect(ACTION_IDS.length - unreadIds.length).toBe(9);
+    expect(ACTION_IDS.length - unreadIds.length).toBe(13);
   });
 
   it('serves each action the way its declared behavior says it can be served', () => {

@@ -2379,6 +2379,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
    * the rate.
    */
   'hud.build.catalogue-row-price-segment': '{buildable} · {total} per segment',
+  'hud.build.catalogue-row-price-square': '{buildable} · {total} per square',
   'hud.build.placement': 'Where',
   'hud.build.tile-x': 'Tile X',
   'hud.build.tile-y': 'Tile Y',
@@ -2457,6 +2458,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.remove-submit': 'Remove object here',
   'hud.build.disarm': 'Stop placing',
   'hud.build.arm-hint': 'Click a tile edge to place a wall. Drag along it to lay a run. Two fingers, the middle button or the arrow keys still move the camera.',
+  'hud.build.arm-hint-square': 'Click a whole square to place a wall. Drag across squares to lay a run. Two fingers, the middle button or the arrow keys still move the camera.',
   /*
    * The same hint for a buildable that stands on a **tile** rather than on an
    * edge (issue #904).
@@ -2497,6 +2499,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.target-none': 'Point at the world',
   'hud.build.target-value': '{x}, {y} · {edge}',
   'hud.build.target-run': '{count} × {edge} from {x}, {y}',
+  'hud.build.target-squares': '{count} whole squares from {x}, {y} · catalogue value {cost}',
   'hud.build.target-tile': '{x}, {y}',
   'hud.build.coordinates': 'Enter coordinates',
   'hud.build.coordinates-hint': 'The keyboard route. Pointing at the map is quicker.',
@@ -4399,6 +4402,10 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'input.action.camera.right': 'Pan camera right',
   'input.action.camera.zoom.in': 'Zoom in',
   'input.action.camera.zoom.out': 'Zoom out',
+  'input.action.camera.rotate.left': 'Rotate camera left',
+  'input.action.camera.rotate.right': 'Rotate camera right',
+  'input.action.camera.tilt.up': 'Raise camera angle',
+  'input.action.camera.tilt.down': 'Lower camera angle',
   'input.action.selection.primary': 'Select',
   'input.action.build.confirm': 'Confirm placement',
   // Bound in the world, construction and modal contexts, so it is a general

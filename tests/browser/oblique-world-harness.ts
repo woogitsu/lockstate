@@ -59,7 +59,10 @@ const ready = new Promise<void>((resolve) => { resolveReady = resolve; });
 class HarnessScene extends ObliqueWorldScene {
   public override create(): void { super.create(); resolveReady(); }
 }
-const scene = new HarnessScene({ feed: { readFrame: () => frame } });
+const scene = new HarnessScene({
+  feed: { readFrame: () => frame },
+  keyValueStore: { getItem: () => null, setItem: () => {} },
+});
 const game = new Phaser.Game({
   type: Phaser.AUTO,
   parent: 'oblique-world-root',

@@ -182,7 +182,16 @@ export function resolveBrowserKeyValueStore(): KeyValueStore {
 }
 
 export function loadInputSettings(store: KeyValueStore): InputSettings {
-  return decodeInputSettings(readJson(store, INPUT_SETTINGS_STORAGE_KEY)) ?? DEFAULT_INPUT_SETTINGS;
+  const saved = decodeInputSettings(readJson(store, INPUT_SETTINGS_STORAGE_KEY));
+  if (saved === undefined) return DEFAULT_INPUT_SETTINGS;
+  // Older version-1 preferences predate angle controls. Add only defaults
+  // whose action and physical key are both free; preserve every user remap.
+  const additions = DEFAULT_KEYBOARD_BINDINGS.filter((candidate) =>
+    !saved.keyboardBindings.some((binding) => binding.action === candidate.action) &&
+    !saved.keyboardBindings.some((binding) => binding.code === candidate.code &&
+      binding.contexts.some((context) => candidate.contexts.includes(context))),
+  );
+  return additions.length === 0 ? saved : { ...saved, keyboardBindings: [...saved.keyboardBindings, ...additions] };
 }
 
 export function saveInputSettings(store: KeyValueStore, settings: InputSettings): void {

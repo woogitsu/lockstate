@@ -553,6 +553,7 @@ export const HUD_MESSAGE_KEY = {
   buildCatalogueRowPrice: 'hud.build.catalogue-row-price',
   /** The per-segment twin of `buildCatalogueRowPrice` above; see its comment. */
   buildCatalogueRowPriceSegment: 'hud.build.catalogue-row-price-segment',
+  buildCatalogueRowPriceSquare: 'hud.build.catalogue-row-price-square',
   buildPlacement: 'hud.build.placement',
   buildTileX: 'hud.build.tile-x',
   buildTileY: 'hud.build.tile-y',
@@ -588,6 +589,7 @@ export const HUD_MESSAGE_KEY = {
   buildArm: 'hud.build.arm',
   buildDisarm: 'hud.build.disarm',
   buildArmHint: 'hud.build.arm-hint',
+  buildArmHintSquare: 'hud.build.arm-hint-square',
   /**
    * The armed-tool hint for a row that stands on a tile rather than on an edge
    * (issue #904).
@@ -606,6 +608,7 @@ export const HUD_MESSAGE_KEY = {
   buildTargetNone: 'hud.build.target-none',
   buildTargetValue: 'hud.build.target-value',
   buildTargetRun: 'hud.build.target-run',
+  buildTargetSquares: 'hud.build.target-squares',
   /*
    * The readout for an aim that is on a *tile* rather than on a tile edge
    * (#550).
