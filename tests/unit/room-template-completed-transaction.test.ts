@@ -1,4 +1,5 @@
 import { expect, it } from 'vitest';
+import { editHistoryAvailability } from '../../src/simulation/construction/handler';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { ROOM_TEMPLATE_IDS, instantiateRoomTemplate } from '../../src/content/room-template-catalog';
 import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
@@ -45,6 +46,7 @@ it.each(ROOM_TEMPLATE_IDS)('undoes and redoes completed %s with all fixtures and
   finish(runtime);
   const completedWorld = worldContents(runtime);
   runtime = reload(runtime);
+  expect(editHistoryAvailability(runtime.construction).undo).toBe(true);
   expect(runtime.roomTemplates.snapshot().completed).toHaveLength(1);
   runtime.kernel.submitCommand('undo', 1, runtime.kernel.tick, packCommand({ type: 'Undo' }));
   runtime.kernel.step();
@@ -53,6 +55,7 @@ it.each(ROOM_TEMPLATE_IDS)('undoes and redoes completed %s with all fixtures and
   expect(runtime.construction.allOrders().every((order) => order.state === 'cancelled')).toBe(true);
   runtime = reload(runtime);
   expect(runtime.roomTemplates.snapshot().undone).toHaveLength(1);
+  expect(editHistoryAvailability(runtime.construction).redo).toBe(true);
   runtime.kernel.submitCommand('redo', 2, runtime.kernel.tick, packCommand({ type: 'Redo' }));
   finish(runtime);
   expect(runtime.placedObjects.getSnapshot()).toHaveLength(plan.objects.length);
