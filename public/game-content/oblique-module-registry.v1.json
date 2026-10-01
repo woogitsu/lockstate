@@ -180,6 +180,9 @@
                     {
                         "assetId":  "utility.utility-panel.variants",
                         "manifest":  "/game-content/oblique-utility.utility-panel.v1.json"
+                        "assetId":  "furniture.kitchen.stove.variants",
+                        "manifest":  "/game-content/oblique-furniture.kitchen-stove.v1.json"
                     }
                 ]
 }
+
