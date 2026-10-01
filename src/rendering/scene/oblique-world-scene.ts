@@ -84,7 +84,8 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private assetTextureLoaderRunning = false;
   private assetImages: Phaser.GameObjects.Image[] = [];
   private gesture: { pointerId: number; kind: 'build' | 'room' | 'object'; press: WorldPoint; current: WorldPoint } | undefined;
-  private hoveredWorldPoint: WorldPoint | undefined;
+  /** Screen position stays fixed while keyboard/HUD controls change the pose. */
+  private hoveredScreenPoint: Point | undefined;
 
   public constructor(options: ObliqueWorldSceneOptions) {
     super({ key: 'oblique-world' });
@@ -148,6 +149,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
         return;
       }
       if (pointer.button !== 0) return;
+      this.hoveredScreenPoint = { x: pointer.x, y: pointer.y };
       const world = this.worldPointOf(pointer);
       const kind = this.buildTool?.isArmed() === true ? 'build'
         : this.objectTool?.isArmed() === true && this.objectTool.footprint() !== undefined ? 'object'
@@ -164,12 +166,12 @@ export class ObliqueWorldScene extends Phaser.Scene {
       this.paintSelection();
     });
     this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
+      this.hoveredScreenPoint = { x: pointer.x, y: pointer.y };
       if (this.gesture?.pointerId === pointer.id) {
         this.gesture.current = this.worldPointOf(pointer);
         this.paintGesturePreview();
         return;
       }
-      this.hoveredWorldPoint = this.worldPointOf(pointer);
       this.paintGesturePreview();
       if (pointer.id !== this.turnPointerId || this.turnPointerAt === undefined) return;
       const dx = pointer.x - this.turnPointerAt.x;
@@ -195,7 +197,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.input.on('pointerupoutside', stopTurn);
     this.input.on('pointerout', (pointer: Phaser.Input.Pointer) => {
       if (this.gesture?.pointerId === pointer.id) this.cancelGesture();
-      this.hoveredWorldPoint = undefined;
+      this.hoveredScreenPoint = undefined;
       this.paintGesturePreview();
     });
     const keyDown = (event: KeyboardEvent): void => this.handleActionEvents(this.keyboard.keyDown(event));
@@ -235,11 +237,14 @@ export class ObliqueWorldScene extends Phaser.Scene {
     const graphics = this.gestureGraphics;
     graphics.clear();
     let gesture = this.gesture;
-    if (gesture === undefined && this.hoveredWorldPoint !== undefined) {
+    if (gesture === undefined && this.hoveredScreenPoint !== undefined) {
       const kind = this.buildTool?.isArmed() === true ? 'build'
         : this.objectTool?.isArmed() === true && this.objectTool.footprint() !== undefined ? 'object'
         : this.roomTool?.isArmed() === true ? 'room' : undefined;
-      if (kind !== undefined) gesture = { pointerId: -1, kind, press: this.hoveredWorldPoint, current: this.hoveredWorldPoint };
+      if (kind !== undefined) {
+        const world = screenToGround(this.hoveredScreenPoint, this.pose);
+        gesture = { pointerId: -1, kind, press: world, current: world };
+      }
     }
     if (gesture === undefined) { this.clearToolTargets(); return; }
     if (gesture.kind === 'build') {
