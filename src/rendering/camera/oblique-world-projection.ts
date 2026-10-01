@@ -117,6 +117,42 @@ export function projectObliqueWorldFrame(frame: RenderFrame, camera: ObliqueCame
     [tileX - 1, tileY], [tileX + 1, tileY], [tileX, tileY - 1], [tileX, tileY + 1],
     [tileX - 1, tileY - 1], [tileX + 1, tileY - 1], [tileX - 1, tileY + 1], [tileX + 1, tileY + 1],
   ]);
+  // A low wall can still cover a sink or machine immediately behind it.
+  // Hide only the near wall squares whose projected volume overlaps a built
+  // interior fixture. The wall remains in the world, navigation and save.
+  const interiorFixtures = frame.structures.flatMap((structure) => {
+    if (structure.phase !== 'built') return [];
+    const appearance = structureAppearance(structure.definitionId);
+    if (appearance.kind !== 'object' || !isInteriorTile(structure.tileX, structure.tileY)) return [];
+    const x = structure.tileX * TILE_SIZE_PX;
+    const y = structure.tileY * TILE_SIZE_PX;
+    const prism = projectedRectPrism(x, y, appearance.footprintTiles.width * TILE_SIZE_PX,
+      appearance.footprintTiles.height * TILE_SIZE_PX, appearance.heightTiles * TILE_SIZE_PX, camera);
+    const points = [...prism.footprint, ...prism.top];
+    return [{
+      tileX: structure.tileX, tileY: structure.tileY,
+      viewDepth: obliqueDepthForAnchor({ x: x + appearance.footprintTiles.width * TILE_SIZE_PX / 2,
+        y: y + appearance.footprintTiles.height * TILE_SIZE_PX / 2 }, camera.yawRadians),
+      minX: Math.min(...points.map(point => point.x)), maxX: Math.max(...points.map(point => point.x)),
+      minY: Math.min(...points.map(point => point.y)), maxY: Math.max(...points.map(point => point.y)),
+    }];
+  });
+  const obscuresFixture = (tileX: number, tileY: number): boolean => {
+    const x = tileX * TILE_SIZE_PX;
+    const y = tileY * TILE_SIZE_PX;
+    const prism = projectedRectPrism(x, y, TILE_SIZE_PX, TILE_SIZE_PX,
+      cutawayHeight(structureAppearance('wall-brick').heightTiles) * TILE_SIZE_PX, camera);
+    const points = [...prism.footprint, ...prism.top];
+    const minX = Math.min(...points.map(point => point.x));
+    const maxX = Math.max(...points.map(point => point.x));
+    const minY = Math.min(...points.map(point => point.y));
+    const maxY = Math.max(...points.map(point => point.y));
+    const wallDepth = obliqueDepthForAnchor({ x: x + TILE_SIZE_PX / 2, y: y + TILE_SIZE_PX / 2 }, camera.yawRadians);
+    return interiorFixtures.some(fixture => Math.abs(fixture.tileX - tileX) <= 3 && Math.abs(fixture.tileY - tileY) <= 3 &&
+      fixture.viewDepth < wallDepth - 0.001 &&
+      Math.min(maxX, fixture.maxX) - Math.max(minX, fixture.minX) > 2 &&
+      Math.min(maxY, fixture.maxY) - Math.max(minY, fixture.minY) > 2);
+  };
   const edgeNeedsCutaway = (kind: 'north-edge' | 'west-edge', tileX: number, tileY: number): boolean => {
     const sides: readonly (readonly [number, number])[] = kind === 'north-edge'
       ? [[tileX, tileY - 1], [tileX, tileY]]
@@ -150,6 +186,7 @@ export function projectObliqueWorldFrame(frame: RenderFrame, camera: ObliqueCame
   const structureSolid = (structure: RenderStructure): void => {
     const appearance = structureAppearance(structure.definitionId);
     const cutaway = structure.phase === 'built' && appearance.kind === 'wall' && squareNeedsCutaway(structure.tileX, structure.tileY);
+    if (cutaway && obscuresFixture(structure.tileX, structure.tileY)) return;
     const x = structure.tileX * TILE_SIZE_PX;
     const y = structure.tileY * TILE_SIZE_PX;
     const width = appearance.footprintTiles.width * TILE_SIZE_PX;
