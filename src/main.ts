@@ -4675,6 +4675,14 @@ if (roomTemplateTool !== undefined) {
     }) : undefined;
     installRoomTemplateWorldBridge(canvas, roomTemplateTool, {
       tileSize: TILE_SIZE_PX,
+      labelSafeBounds: () => {
+        const rect = canvas.getBoundingClientRect();
+        const bounds = (selector: string) => appRoot?.querySelector(selector)?.getBoundingClientRect();
+        const sx = canvas.width / rect.width, sy = canvas.height / rect.height;
+        return { left: (Math.max(bounds('.hud__tabs')?.right ?? rect.left, bounds('.hud__corner')?.right ?? rect.left) - rect.left) * sx + 8,
+          right: ((bounds('.hud__rail')?.left ?? rect.right) - rect.left) * sx - 8,
+          top: ((bounds('.hud-strip')?.bottom ?? rect.top) - rect.top) * sy + 8, bottom: canvas.height - 8 };
+      },
       objectFootprint: objectFootprintOf,
       ...(fitController === undefined ? {} : {
         preparePreview: (point, physicalMove) => fitController.prepare(point, physicalMove),

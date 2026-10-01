@@ -1,8 +1,10 @@
+import { positionRoomTemplateLabel } from './room-template-label-position';
 import type { RoomTemplatePlan, TemplateSquare, RoomTemplateCostQuote, RoomTemplatePreflight, RoomTemplateTool } from './room-template-tool';
 
 interface Point { readonly x: number; readonly y: number }
 export interface RoomTemplateWorldBridgeOptions {
   readonly tileSize: number;
+  readonly labelSafeBounds?: () => { left: number; top: number; right: number; bottom: number };
   readonly preparePreview?: (screen: Point, physicalMove: boolean) => void;
   readonly resetPreview?: () => void;
   readonly pick: (screen: Point) => TemplateSquare;
@@ -148,8 +150,14 @@ export function installRoomTemplateWorldBridge(canvas: HTMLCanvasElement, tool: 
         layer.dataset.ready = verdict === undefined ? 'checking' : verdict.ok ? 'clear' : 'blocked';
       }
       const anchor = options.project({ x: plan.origin.x * options.tileSize, y: plan.origin.y * options.tileSize });
-      label.style.left = Math.max(8, Math.min(width - 360, anchor.x)) + 'px';
-      label.style.top = Math.max(100, Math.min(height - 60, anchor.y - 48)) + 'px';
+      const footprint = [[0,0],[plan.width,0],[plan.width,plan.height],[0,plan.height]].map(([dx,dy]) => options.project({ x: (plan!.origin.x + dx!) * options.tileSize, y: (plan!.origin.y + dy!) * options.tileSize }));
+      const canvasBounds = canvas.getBoundingClientRect();
+      const scaleX = canvasBounds.width / width, scaleY = canvasBounds.height / height;
+      const labelBounds = label.getBoundingClientRect();
+      const safe = options.labelSafeBounds?.() ?? { left: 8, top: 100, right: width - 8, bottom: height - 8 };
+      const position = positionRoomTemplateLabel(safe, footprint, { width: labelBounds.width / scaleX, height: labelBounds.height / scaleY }, anchor);
+      label.style.left = position.x * scaleX + 'px';
+      label.style.top = position.y * scaleY + 'px';
     }
     requestAnimationFrame(paint);
   };
