@@ -235,7 +235,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 | [2026-10-01 stationary template cursor](./2026-10-01-stationary-template-cursor/README.md) | Does the wide mirrored room target stay under the pointer after camera movement? | Red/green112-square mouse placement and overlap refusal for issue1914. |
 | [2026-10-01 exact oblique floor art](./2026-10-01-oblique-floor-art/README.md) | Do authored floor materials align to exact square quads at intermediate angles? | Actual Full HD Yard pixels at three poses, shared-edge geometry and two deliberate mutations. |
 | [2026-10-01 square brick wall detail](./2026-10-01-square-brick-wall-detail.md) | Can authored masonry remain readable within the accepted square wall bounds? | Blender full and cutaway models, staggered joints and cap stones, 144 refreshed poses with source/frame hashes; scene acceptance remains separate. |
-| [2026-10-02 oblique role actors](./2026-10-02-oblique-role-actors/README.md) | Do existing cook, medic and staff Blender sources match the prisoner/guard angled actor scale and foot pivot? | Three real Blender role previews, source-detail audit and alpha-bound comparison; full pose catalog and runtime mapping follow. |
+| [2026-10-02 oblique role actors](./2026-10-02-oblique-role-actors/README.md) | Do existing cook, medic and staff Blender sources match the prisoner/guard angled actor scale and foot pivot? | Three real Blender role previews, 216 hashed poses, source-detail audit, alpha-bound comparison and catalog mutation proof; runtime consumer mapping follows. |
 
 ### Findings from the first four records that changed a decision
 

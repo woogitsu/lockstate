@@ -70,6 +70,18 @@
                         "manifest":  "/game-content/oblique-actor-guard.v1.json"
                     },
                     {
+                        "assetId":  "actor.cook.base",
+                        "manifest":  "/game-content/oblique-actor-cook.v1.json"
+                    },
+                    {
+                        "assetId":  "actor.medic.base",
+                        "manifest":  "/game-content/oblique-actor-medic.v1.json"
+                    },
+                    {
+                        "assetId":  "actor.staff.base",
+                        "manifest":  "/game-content/oblique-actor-staff.v1.json"
+                    },
+                    {
                         "assetId":  "wall.interior.corner.inner.north-west.full",
                         "manifest":  "/game-content/oblique-wall-corner-north-west-full.v1.json"
                     },
