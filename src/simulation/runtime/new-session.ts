@@ -848,6 +848,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     {
       onOrderCompleted: (objectId, anchor) => objectPlacement?.onOrderCompleted(objectId, anchor) ?? false,
       onOrderReverted: (objectId, anchor) => objectPlacement?.onOrderReverted(objectId, anchor) ?? false,
+      isTileOccupied: (tile) => objectPlacement?.isTileOccupied(tile) ?? false,
     },
     doorConstruction,
     justInTimeMaterials,

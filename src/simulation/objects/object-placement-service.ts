@@ -943,6 +943,11 @@ export class ObjectPlacementService {
    * "why did none of my last six beds appear". Deliberately not snapshotted: it
    * is a record of things that did not happen.
    */
+  /** Whether an existing object or an in-flight object order claims this tile. */
+  public isTileOccupied(tile: TilePosition): boolean {
+    return this.placedObjects.isTileOccupied(tile) || this.orderBuildingObjectAt(tile) !== undefined;
+  }
+
   public recentRefusals(): readonly PlaceObjectRefusal[] {
     return [...this.refusals];
   }
