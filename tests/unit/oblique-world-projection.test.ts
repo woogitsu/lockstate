@@ -91,4 +91,3 @@ describe('canonical oblique object assets', () => {
     expect(assetFor('unknown')).toBeUndefined();
   });
 });
-
