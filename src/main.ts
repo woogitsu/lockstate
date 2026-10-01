@@ -696,7 +696,13 @@ try {
     mode: productionRenderMode(window.location.search),
     loadObliqueCatalogs: () => fetchObliqueModuleSet(),
     createWorld: createTopDownWorldScene,
-    createOblique: (catalogs) => new ObliqueWorldScene({ feed: renderFeed, catalogs }),
+    createOblique: (catalogs) => new ObliqueWorldScene({
+      feed: renderFeed,
+      catalogs,
+      ...(buildTool === undefined ? {} : { buildTool }),
+      ...(roomTool === undefined ? {} : { roomTool }),
+      ...(objectTool === undefined ? {} : { objectTool }),
+    }),
   });
 } catch (error) {
   renderProductionRenderFailure(error);
