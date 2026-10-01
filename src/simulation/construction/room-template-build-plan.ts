@@ -30,9 +30,9 @@ export function createRoomTemplateBuildPlan(
     const right = left + plan.width - 1;
     const bottom = top + plan.height - 1;
     if (square.y === top) return { location: { x: square.x, y: square.y + 1 }, edge: 'north' };
-    if (square.y === bottom) return { location: { x: square.x, y: square.y + 1 }, edge: 'north' };
+    if (square.y === bottom) return { location: { x: square.x, y: square.y }, edge: 'north' };
     if (square.x === left) return { location: { x: square.x + 1, y: square.y }, edge: 'west' };
-    if (square.x === right) return { location: { x: square.x + 1, y: square.y }, edge: 'west' };
+    if (square.x === right) return { location: { x: square.x, y: square.y }, edge: 'west' };
     throw new RangeError(`Room template wall square ${square.x},${square.y} is not on the perimeter.`);
   };
   const walls = plan.wallSquares.map((square, index) => {
@@ -40,9 +40,7 @@ export function createRoomTemplateBuildPlan(
     return createBuildOrder(`${prefix}-0-wall-${index.toString().padStart(3, '0')}`, 'wall-brick', location(edge.location), edge.edge, sequence, 'square');
   });
   const doors = plan.doorSquares.map((square, index) =>
-    // The template door is on the south boundary; north edges are stored on
-    // the tile immediately outside that boundary, just like bottom walls.
-    createBuildOrder(`${prefix}-1-door-${index.toString().padStart(3, '0')}`, 'door-wooden', location({ x: square.x, y: square.y + 1 }), 'north', sequence));
+    createBuildOrder(`${prefix}-1-door-${index.toString().padStart(3, '0')}`, 'door-wooden', location(square), 'north', sequence));
   const objects = plan.objects.map((object, index) =>
     createBuildOrder(`${prefix}-2-object-${index.toString().padStart(3, '0')}`, object.buildableId, location(object), undefined, sequence));
   return {

@@ -11,7 +11,7 @@ describe('one deterministic room template build plan', () => {
       order.definitionId === 'wall-brick' && order.footprint === 'square',
     )).toBe(true);
     expect(built.orders[built.plan.wallSquares.length]).toMatchObject({
-      definitionId: 'door-wooden', edge: 'north', location: { x: 11, y: 27 },
+      definitionId: 'door-wooden', edge: 'north', location: { x: 11, y: 26 },
     });
     expect(built.orders.slice(-2).map((order) => order.definitionId)).toEqual(['bed-wooden', 'toilet-brick']);
     expect(new Set(built.orders.map((order) => order.id)).size).toBe(built.orders.length);
@@ -21,8 +21,9 @@ describe('one deterministic room template build plan', () => {
     const first = createRoomTemplateBuildPlan('cell-large', { x: 2, y: 3 }, true, 9);
     expect(createRoomTemplateBuildPlan('cell-large', { x: 2, y: 3 }, true, 9)).toEqual(first);
     expect(first.plan.doorSquares).toEqual([{ x: 5, y: 9 }]);
-    expect(first.orders[first.plan.wallSquares.length]?.location).toEqual({ x: 5, y: 10 });
+    expect(first.orders[first.plan.wallSquares.length]?.location).toEqual({ x: 5, y: 9 });
   });
 });
+
 
 
