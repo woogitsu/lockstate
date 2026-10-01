@@ -7,6 +7,16 @@ const root = new URL('../../public/game-content/', import.meta.url);
 const readJson = (name: string): unknown => JSON.parse(readFileSync(new URL(name, root), 'utf8').replace(/^\uFEFF/, '')) as unknown;
 
 describe('utility oblique manifest integration', () => {
+  it('selects a 180 degree frame from a 0 to 330 degree authored grid', () => {
+    const catalog = parseObliqueModuleCatalog(readJson('oblique-furniture.medical-bed.v1.json'));
+    const frame = selectObliqueModuleFrame(catalog, {
+      yawRadians: Math.PI,
+      elevationRadians: 20 * Math.PI / 180,
+    });
+    expect(frame.yawDegrees).toBe(180);
+    expect(frame.elevationDegrees).toBe(20);
+  });
+
   it.each([
     ['utility.security-console.variants', 'oblique-utility.security-console.v1.json'],
     ['utility.loading-dock-door.variants', 'oblique-utility.loading-dock-door.v1.json'],
