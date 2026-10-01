@@ -1,0 +1,486 @@
+{
+  "schemaVersion": 1,
+  "assetId": "actor.medic.base",
+  "source": "actor.medic.base.blend",
+  "sourceSha256": "e4e2c4335b6a9ddad08bb3fab6ef643cea53132a8b22db8f432702fe78e83864",
+  "resolutionPx": [
+    512,
+    512
+  ],
+  "nominalPixelsPerTile": 64,
+  "pivotPx": [
+    256,
+    256
+  ],
+  "cameraTargetTiles": [
+    0,
+    0,
+    0
+  ],
+  "projection": "orthographic",
+  "yawDegrees": [
+    -180,
+    -165,
+    -150,
+    -135,
+    -120,
+    -105,
+    -90,
+    -75,
+    -60,
+    -45,
+    -30,
+    -15,
+    0,
+    15,
+    30,
+    45,
+    60,
+    75,
+    90,
+    105,
+    120,
+    135,
+    150,
+    165
+  ],
+  "elevationDegrees": [
+    25,
+    45,
+    65
+  ],
+  "frames": [
+    {
+      "yawDegrees": -180,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-medic-yaw-180-elev25.01d8aeab3492.png",
+      "sha256": "01d8aeab3492c5fa1bc5fb0685203b81d2456565458c9eb0753d411a968968a8"
+    },
+    {
+      "yawDegrees": -180,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-medic-yaw-180-elev45.2e7d7467aaff.png",
+      "sha256": "2e7d7467aaffbe03a248f10f65e8faccbed49fa6d751113ee5d974f4fe87dc92"
+    },
+    {
+      "yawDegrees": -180,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-medic-yaw-180-elev65.113980ed2145.png",
+      "sha256": "113980ed21458f4d9b6cf3ef1ffcd90bffb84e96e70f67dcf5a087d5681a7394"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-medic-yaw-165-elev25.2077fcc8c6c0.png",
+      "sha256": "2077fcc8c6c0dc5567503eb6c7efcf4277cfd340bae1ecb177e2dcef6d105b03"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-medic-yaw-165-elev45.856299edd622.png",
+      "sha256": "856299edd622aafa7587bc56ade8e975b8400a33f96768baf276b94462d7cc11"
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-medic-yaw-165-elev65.3b9f579a057b.png",
+      "sha256": "3b9f579a057b697e9d13801494f8aa68ecc52706acc718e06cfdd2366807c276"
+    },
+    {
+      "yawDegrees": -150,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-medic-yaw-150-elev25.08f7422dbd2a.png",
+      "sha256": "08f7422dbd2acc17ce59acbbcd9652cbcc40e6841948e9ff41e52e4dfe8cb2bb"
+    },
+    {
+      "yawDegrees": -150,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-medic-yaw-150-elev45.58dad11d2199.png",
+      "sha256": "58dad11d2199e1187cdcc5d224b34dd88bd88c64f589ae06380803fecd4011d5"
+    },
+    {
+      "yawDegrees": -150,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-medic-yaw-150-elev65.ffd4739455f6.png",
+      "sha256": "ffd4739455f6d91b944353807f9e9608aafe19235bbd55732098f1d42da7f3be"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-medic-yaw-135-elev25.2a821f7fdb6d.png",
+      "sha256": "2a821f7fdb6dd3de3dc2ac434aef3ade743e3f29a377487e09994e12ac399d26"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-medic-yaw-135-elev45.3c68840d1fbf.png",
+      "sha256": "3c68840d1fbf6b57018b2367c84ef74f3c46e787739f521cfbcdb308171e9c9f"
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-medic-yaw-135-elev65.01d574dec134.png",
+      "sha256": "01d574dec1348277e75429e0224b04b30eeb651138955699043ab09498a306f3"
+    },
+    {
+      "yawDegrees": -120,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-medic-yaw-120-elev25.b159901fade5.png",
+      "sha256": "b159901fade51e2153970323833ecf2de33f7d7c0bacc429306efd2e2e48c4a8"
+    },
+    {
+      "yawDegrees": -120,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-medic-yaw-120-elev45.75b4c648ded4.png",
+      "sha256": "75b4c648ded45f30006e1d2e83511cfdcd7dc91f6d272b5746e37c694ea8e6cb"
+    },
+    {
+      "yawDegrees": -120,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-medic-yaw-120-elev65.3df6ffe73a67.png",
+      "sha256": "3df6ffe73a679959b74acd3eff40e6503eafec47854cb7af0674060997af3ca6"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-medic-yaw-105-elev25.edfed37bbbe8.png",
+      "sha256": "edfed37bbbe8a8351b039df09661c64b498d6dadf14776a34a335cf978daf176"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-medic-yaw-105-elev45.0a07ab66cd51.png",
+      "sha256": "0a07ab66cd51d4520319fafd5d3e4cf8356cbc05c1682f978cf5995083882827"
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-medic-yaw-105-elev65.285b3da8689c.png",
+      "sha256": "285b3da8689ca190da03df8583d55cbbdcbc9ef640e936171913a1cf0912e16f"
+    },
+    {
+      "yawDegrees": -90,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-medic-yaw-90-elev25.8b2ee8b1a5b6.png",
+      "sha256": "8b2ee8b1a5b679401d4bbdda74114654d3781f0fcaa89f73e6791bc306c00b31"
+    },
+    {
+      "yawDegrees": -90,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-medic-yaw-90-elev45.89de48c0e499.png",
+      "sha256": "89de48c0e499e88c95c08b15d7d3aec414287d98d4c323a9b3a4b88516936e72"
+    },
+    {
+      "yawDegrees": -90,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-medic-yaw-90-elev65.d7e7a06bf72d.png",
+      "sha256": "d7e7a06bf72d2f18d8ca281ef84bc1610ef2848301bcc577ebe9934c99a1da91"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-medic-yaw-75-elev25.4d960d75729d.png",
+      "sha256": "4d960d75729d5319ae413da31010a51606a1fb3ef47207139da35de4b1c36a2f"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-medic-yaw-75-elev45.bb1e2e933a0b.png",
+      "sha256": "bb1e2e933a0b52d06998dbdf40b36a797044fe555a368c86d52a8d33b364e033"
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-medic-yaw-75-elev65.43695f98ee07.png",
+      "sha256": "43695f98ee0721a30a49befae0e97c8e672e945bff7b04c637a2fac83b224c2b"
+    },
+    {
+      "yawDegrees": -60,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-medic-yaw-60-elev25.f05d0cb8f7cf.png",
+      "sha256": "f05d0cb8f7cf48f0a60f7905ef929c4b43f721d60f8a135356f634ed17d15ce1"
+    },
+    {
+      "yawDegrees": -60,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-medic-yaw-60-elev45.265dde7c0de9.png",
+      "sha256": "265dde7c0de9702638beb5497d8184f7259525a7f4e6c7df9a3926f848d8ef5e"
+    },
+    {
+      "yawDegrees": -60,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-medic-yaw-60-elev65.cb511b136e7d.png",
+      "sha256": "cb511b136e7d7124db747139e44b824f8fe5f032e40091114a7ec0da1f9c2a67"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-medic-yaw-45-elev25.c0fa53052187.png",
+      "sha256": "c0fa53052187d04a81a3426fd70156d19ac40158576463523b4ba31e0d69327a"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-medic-yaw-45-elev45.6ce984ba1534.png",
+      "sha256": "6ce984ba15346eec7637a6e31290a4af45e34c259c58d323e5b96d6834cfaa48"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-medic-yaw-45-elev65.4f1ec629910b.png",
+      "sha256": "4f1ec629910b1895dc731c451a23bba426d90c7eed8aa0bc25aadce920e57926"
+    },
+    {
+      "yawDegrees": -30,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-medic-yaw-30-elev25.93ebe6842e12.png",
+      "sha256": "93ebe6842e12fb002d6ed0f0166549a8a2c8127eddf86ed54ddfad2259294659"
+    },
+    {
+      "yawDegrees": -30,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-medic-yaw-30-elev45.bf01ec55ed64.png",
+      "sha256": "bf01ec55ed64d825662eddb4cd5b44281d56a82b5107ff09bbccb8fa070ec4c0"
+    },
+    {
+      "yawDegrees": -30,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-medic-yaw-30-elev65.26db7d47bfc2.png",
+      "sha256": "26db7d47bfc2a8f8fdd805acce62e575b74aec8c8b13e9ccd167d941b6724feb"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-medic-yaw-15-elev25.532a7bbf478b.png",
+      "sha256": "532a7bbf478b8bff8b1f5937c61c2a00ee9893d09fabed3a0f36f5e216959b09"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-medic-yaw-15-elev45.1fd197c23b53.png",
+      "sha256": "1fd197c23b53ee7fdb5a91ce80a48aae806446efe1755d9f2bee4064c13bac36"
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-medic-yaw-15-elev65.0a9c24f12944.png",
+      "sha256": "0a9c24f12944279093b4dc1deba963f92f9ca19f6467d13cd7401590fa81ae34"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-medic-yaw+00-elev25.0991d5cc8e66.png",
+      "sha256": "0991d5cc8e66c41749ccdb0ed8d660f28f643b91234a4058ecdcf9e507078612"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-medic-yaw+00-elev45.3924f391796d.png",
+      "sha256": "3924f391796d37dd7f6a96d280ac45de89c1fd8f7d496b67c69f7e4c724582af"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-medic-yaw+00-elev65.fb753174d33f.png",
+      "sha256": "fb753174d33fa7e5bf82a283d5dd040dfb3022880d424b1c449de1a7749f5e91"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-medic-yaw+15-elev25.652c6ddf2770.png",
+      "sha256": "652c6ddf2770a1d0a34fbfe5be279d801a460ca71c5ebaa7cfa6a145fd26e026"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-medic-yaw+15-elev45.0d666a0e5018.png",
+      "sha256": "0d666a0e5018ff5fb49b7f7e854b7356757a735bb979102260b47c1094e8fa3e"
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-medic-yaw+15-elev65.00a1d61c92b5.png",
+      "sha256": "00a1d61c92b5bc41007ae78a0108bbe7b5c40d0ac0aa57ee3f5033c6d702b6fc"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-medic-yaw+30-elev25.aa4b73e8d1cf.png",
+      "sha256": "aa4b73e8d1cfe0d29ce4121b7bfcc4d2f49947373cdc5ae153f0bb06bbbf321c"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-medic-yaw+30-elev45.31e7c591e54f.png",
+      "sha256": "31e7c591e54f3e36a6f6a7bc85495d051ca48062f86a6f6e0a5d63920fe60869"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-medic-yaw+30-elev65.1abbda224d97.png",
+      "sha256": "1abbda224d97ea9b4ccc79a90544fae67d4c5243f377b0a4e99879257e92108b"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-medic-yaw+45-elev25.abdad50b2f57.png",
+      "sha256": "abdad50b2f57b5a69c9b8bbbfb7bb9ad55eb5e6600361d38fc02898fe0d40c06"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-medic-yaw+45-elev45.2a208cb7e9d2.png",
+      "sha256": "2a208cb7e9d2c2edf46a07bbc6dd1eb6e1843f00c7debee60d7b0092ed5d7af0"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-medic-yaw+45-elev65.5558b3b28cae.png",
+      "sha256": "5558b3b28cae46c6e04add89d0f7adba7cbb5a0156ba5ce355a8cea3935e2196"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-medic-yaw+60-elev25.7aafa949c688.png",
+      "sha256": "7aafa949c6886010d579636b9b57825e9563f7d8543933e268931276230d13b3"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-medic-yaw+60-elev45.e2a3838e7484.png",
+      "sha256": "e2a3838e7484d41f9af7bcaad8fee65daffd1b4d142a4eda655decc625716426"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-medic-yaw+60-elev65.c83346263d8e.png",
+      "sha256": "c83346263d8e1a84aaf74ab613adef54087f40f4e2a86f39442918454fd59ce5"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-medic-yaw+75-elev25.daeb8ace5aeb.png",
+      "sha256": "daeb8ace5aeb02a5e9e977d74d7b924c8deb714b7c7f81de496c885639e7f370"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-medic-yaw+75-elev45.39287510b078.png",
+      "sha256": "39287510b0787ece8f477e3d293b56ab72039d0f95ff83913622638a90790c63"
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-medic-yaw+75-elev65.d72c594770c3.png",
+      "sha256": "d72c594770c3c2b961bb380d944736cbd1e8804ecd0c27f1bc0349dbf78a287f"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-medic-yaw+90-elev25.7342252567ef.png",
+      "sha256": "7342252567ef30546e8661ebac5b543772f5a8025e3b83116aa7157b160f5f38"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-medic-yaw+90-elev45.1f0de9fb4ee9.png",
+      "sha256": "1f0de9fb4ee9f5efa3bcac0c38de95906557879b8f79400599dc351299038953"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-medic-yaw+90-elev65.29e483b7d3da.png",
+      "sha256": "29e483b7d3daecdaf2c25ba2e8c6fd164123eb169e3a71d0d302571ed20e0345"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-medic-yaw+105-elev25.910c84def274.png",
+      "sha256": "910c84def2742eeb45dd85881dd4618e6298dbb61f3e690b6b0725b2fc8767f5"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-medic-yaw+105-elev45.4545ade94ee1.png",
+      "sha256": "4545ade94ee1704a0070ac357c6322e86c11fd33776d75ad9ccf0397f3e6d7ec"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-medic-yaw+105-elev65.c91325505249.png",
+      "sha256": "c913255052493424f0555a9a9b1bfa7436ca810e1a35510b65ba5fbdd7661231"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-medic-yaw+120-elev25.59c6dcc483e4.png",
+      "sha256": "59c6dcc483e4b8d62b470aad85a2b990f812b254d4c66df7a07b0483f46959a5"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-medic-yaw+120-elev45.8bf99a7b7add.png",
+      "sha256": "8bf99a7b7add4db60c97d11c4853de608df06dc74f9f4f7381022a1a8fac9f75"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-medic-yaw+120-elev65.79d36faa81f9.png",
+      "sha256": "79d36faa81f9b721b5566f396172476c28c9096cdd62337a77d2ca31fddafffa"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-medic-yaw+135-elev25.31a50c5dd726.png",
+      "sha256": "31a50c5dd7261992f2aae464a3459577d08e5f93343a1dfd510b6f34e7f364f1"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-medic-yaw+135-elev45.3fa25b4d84ec.png",
+      "sha256": "3fa25b4d84ec00a1cddc8b50665ded8d5a00c1ac15462fffbc0e52f3f4273c71"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-medic-yaw+135-elev65.58f9b85cf3f5.png",
+      "sha256": "58f9b85cf3f59a7c5e2bcfa752d8e6562636ef1f3967fd71d6b6c52e458e0043"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-medic-yaw+150-elev25.21b4c02a41db.png",
+      "sha256": "21b4c02a41dbaa9bc238c5faac8d024d9bbad66e21a20d4a678419be3bef58b9"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-medic-yaw+150-elev45.c95996bbad46.png",
+      "sha256": "c95996bbad46aa29c76466f8847895155414603a5a029373cc8de6c305691070"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-medic-yaw+150-elev65.587cec206604.png",
+      "sha256": "587cec206604b7e38ea5bdab99f6bcccf091921a1eb018c017d7cdbbced77f27"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 25,
+      "image": "/assets/environment/oblique/actor-medic-yaw+165-elev25.10e45f2723e4.png",
+      "sha256": "10e45f2723e4d26ede9c5770d24d8d8ba8b403736ce97cad1a1ae5531a314a52"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-medic-yaw+165-elev45.9dda3b14c516.png",
+      "sha256": "9dda3b14c516c634d50c6caa7c21e77ff9c9f083cf8179c379ffd5514bddb4fc"
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 65,
+      "image": "/assets/environment/oblique/actor-medic-yaw+165-elev65.c4ad6d1669bd.png",
+      "sha256": "c4ad6d1669bd75972db889d161f23382d0f1b543e959afdfde41b67ed654bcd6"
+    }
+  ]
+}
