@@ -140,10 +140,14 @@ def render(role: str, preview: bool) -> None:
     for yaw, elevation in poses:
         yaw_radians = math.radians(yaw)
         elevation_radians = math.radians(elevation)
-        camera.location = (8 * math.cos(elevation_radians) * math.cos(yaw_radians),
-                           8 * math.cos(elevation_radians) * math.sin(yaw_radians),
+        # The existing guard/prisoner actor catalog calls a view down the
+        # actor's local -Y front yaw 0. Square-wall export instead starts at
+        # +X; reusing that basis made these roles turn 90 degrees in game.
+        camera_azimuth = yaw_radians - math.pi / 2
+        camera.location = (8 * math.cos(elevation_radians) * math.cos(camera_azimuth),
+                           8 * math.cos(elevation_radians) * math.sin(camera_azimuth),
                            8 * math.sin(elevation_radians))
-        camera.rotation_euler = (math.pi / 2 - elevation_radians, 0, yaw_radians + math.pi / 2)
+        camera.rotation_euler = (math.pi / 2 - elevation_radians, 0, camera_azimuth + math.pi / 2)
         temporary = target / f"actor-{role}-yaw{yaw:+03d}-elev{elevation}.render.png"
         scene.render.filepath = str(temporary)
         bpy.ops.render.render(write_still=True)
