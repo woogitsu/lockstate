@@ -239,6 +239,9 @@ export class RoomTemplateCoordinator implements SystemRegistration {
   /** Yard owns an actual zoning obligation and writes no shell orders or materials. */
   private attachZoningTransaction(request: PendingRoomTemplate): void {
     this.construction.attachReversibleWorldTransaction(this.zoningTransactionId(request), {
+      canUndo: () => [...this.pending, ...this.completed].some(entry => entry.sequence === request.sequence),
+      canRedo: () => this.undone.some(entry => entry.sequence === request.sequence) &&
+        this.preflight(instantiateRoomTemplate(request.templateId, request.origin, { mirrorX: request.mirrorX })).ok,
       undo: () => {
         const pending = this.pending.some(entry => entry.sequence === request.sequence);
         const completed = this.completed.some(entry => entry.sequence === request.sequence);
