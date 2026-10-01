@@ -17,6 +17,14 @@ export function validateRoomTemplatePlacement(
   objectOccupies: (tile: TilePosition) => boolean = () => false,
   structureIsClaimed: (tile: TilePosition) => boolean = () => false,
 ): RoomTemplatePlacement {
+  // The exclusive bounds must stay safe: incrementing 2^53 never advances a
+  // JavaScript number and would otherwise trap this worker in the loop below.
+  if (!Number.isSafeInteger(plan.origin.x + plan.width) ||
+      !Number.isSafeInteger(plan.origin.y + plan.height)) {
+    return { ok: false, reason: 'unowned-land', tile: {
+      x: tileCoordinate(plan.origin.x), y: tileCoordinate(plan.origin.y),
+    } };
+  }
   for (let y = plan.origin.y; y < plan.origin.y + plan.height; y += 1) {
     for (let x = plan.origin.x; x < plan.origin.x + plan.width; x += 1) {
       const tile = { x: tileCoordinate(x), y: tileCoordinate(y) };

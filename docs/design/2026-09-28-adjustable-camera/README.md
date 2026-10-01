@@ -238,3 +238,17 @@ Existing room/object names are reused for canteen, kitchen and fixtures. The row
 The furnished catalogue now contains twenty plans covering all eighteen released room types. Fourteen additional plans cover holding/solitary cells, reception, laundry, yard, common room, classroom, infirmary, security/staff offices, storage, deliveries, garbage and utilities. Authored dimensions meet actual room requirements; object footprints and mirrored widths are checked against content definitions. Yard is an open 8-by-8 zone with no indoor shell. Existing localized room/object names are reused, with no new outward-facing promises.
 
 All forty normal/mirrored construction, furnishing and save-envelope/load cases pass. Six focused suites pass 192 tests, including independent complete-room coverage and saved enum union contracts. Mutating Yard into an indoor shell and overlapping classroom seats produces four failures; restoring production passes. TypeScript passes. Pending template IDs extend the existing versioned field, without a new field or migration. This evidence does not prove Full HD catalogue usability or mouse placement; those acceptance checks remain assigned to the HUD integration agent.
+
+## Pending-plan safety checkpoint
+
+Existing fixes for #1646 (full pending interior claim), later ordinary wall reservations, #1608 (cancel whole shell when one member is lost), #1669 (paused Cancel/Undo reconciliation), and #1664 (safe coordinate bounds) are now integrated into the corrected all-room catalogue. These are reused source commits, not duplicated issues. The integration adds the missing tileCoordinate import detected by the current TypeScript and runtime test.
+
+Mutation removing pending interior reservation and paused reconciliation causes three session failures. Restored production passes five suites (197 tests) and TypeScript. Full browser coverage and the complete reversible transaction requirement #1657 remain acceptance work; shell cancellation alone is not full completed-room Undo.
+
+## Completed indoor-room transaction checkpoint — owner format approval pending
+
+The #1657 full reversible transaction direction is implemented for nineteen indoor plans. Furniture shares the shell transaction; cancellation removes all members and zoning, late fixture refusal rolls back accepted work, and Redo restores the room obligation without duplicating fixtures. Actual save envelopes retain optional roomTemplates.undone and roomTemplates.completed metadata (version 1); old saves without these fields use empty lists. The format extension remains a draft pending the owner's exact-field approval. It must not merge before that decision.
+
+Five suites pass136tests and TypeScript, including nineteen completed indoor-room build/save/load/Undo/save/load/Redo cycles. A production mutation grouping furniture separately fails the Basic Cell transaction case; restored tests pass. Cache geometry/content revisions correctly increase across Undo/Redo, so content comparison checks every saved plane while excluding only those revision counters. Shell-free Yard still requires a proper zoning transaction; no fake construction order is introduced to pretend it is finished.
+
+CI repair PR1895 merged at bf976ac9fe after exact head560cc632f929 passed all checks and mergeability was CLEAN. Serial main CI run36905140655 is in progress; no further main merge is authorized by a partially completed run.

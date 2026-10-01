@@ -656,6 +656,7 @@ export function createSessionCommandHandler(
         // `cancel` splices the record out and answers only what it refunded,
         // and the item is what decides which orders were waiting on it.
         construction.withdrawOrdersAwaitingMaterial(cancelledItemId);
+        roomTemplates.reconcileCancelledShells();
       }
       const cancelKey = purchaseCancelSupersessionKey(simCommand.orderId);
       if (!outcome.ok) {
@@ -1022,6 +1023,7 @@ export function createSessionCommandHandler(
       // onto the order before this branch could read the distinction back.
       const stateAtCancellation = wallOrder.state;
       construction.cancelOrder(wallOrder.id);
+      roomTemplates.reconcileCancelledShells();
       refusals.supersede(wallKey);
       // The same event `CancelBuildOrder` and `RemoveObject`'s pending-order
       // arm already record, reused rather than a new sentence: the state this
@@ -1201,5 +1203,10 @@ export function createSessionCommandHandler(
     }
 
     constructionCommands(command, context);
+    if (simCommand?.type === 'CancelBuildOrder' || simCommand?.type === 'Undo') {
+      roomTemplates.reconcileCancelledShells();
+    } else if (simCommand?.type === 'Redo') {
+      roomTemplates.reconcileRedoneShells();
+    }
   };
 }

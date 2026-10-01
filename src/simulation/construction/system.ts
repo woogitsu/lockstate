@@ -389,6 +389,12 @@ export class ConstructionSystem implements SystemRegistration {
   private newerActionThanTheStackTop = false;
   private currentTransaction: string[] = [];
   private currentTransactionId: string | undefined;
+  private pendingRoomTemplateClaims?: (tile: TilePosition, sequence: number | undefined) => boolean;
+
+  /** The session supplies its live template reservations after both systems exist. */
+  public setPendingRoomTemplateClaims(reader: (tile: TilePosition, sequence: number | undefined) => boolean): void {
+    this.pendingRoomTemplateClaims = reader;
+  }
 
   public constructor(
     private readonly world: SparseWorld,
@@ -592,6 +598,19 @@ export class ConstructionSystem implements SystemRegistration {
     if (order.footprint === 'square' && this.world.getSquareStructure(order.location) !== 0) {
       this.setState(order, 'failed');
       order.failReason = 'duplicate-order';
+      this.orders.set(order.id, order);
+      return;
+    }
+
+    // A room plan owns its entire rectangle while its shell is in flight,
+    // including empty interior squares that have no world geometry yet. Its
+    // own shell/furniture orders retain the plan's sequence and may enter.
+    const across = order.footprint !== 'square' && occupiesTileEdge(definition)
+      ? tileAcrossEdge(order.location, resolveBuildEdge(order)) : undefined;
+    if (this.pendingRoomTemplateClaims?.(order.location, order.placementSequence) === true ||
+        (across !== undefined && this.pendingRoomTemplateClaims?.(across, order.placementSequence) === true)) {
+      this.setState(order, 'failed');
+      order.failReason = 'unbuildable';
       this.orders.set(order.id, order);
       return;
     }
@@ -920,6 +939,11 @@ export class ConstructionSystem implements SystemRegistration {
     // change exists to fix.
     this.newerActionThanTheStackTop = false;
     return true;
+  }
+
+  /** Whether one Undo transaction still offers every order of a room plan for Redo. */
+  public canRedoOrdersTogether(orderIds: readonly string[]): boolean {
+    return this.redoStack.some((transaction) => orderIds.every((id) => transaction.includes(id)));
   }
 
   /**

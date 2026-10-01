@@ -789,7 +789,7 @@ export function captureSessionSystems(runtime: SimulationRuntime): EncodedSessio
       },
       search: runtime.searchSystem.getInFlightSnapshot(),
     },
-    ...(roomTemplates.pending.length === 0 ? {} : { roomTemplates }),
+    ...(roomTemplates.pending.length === 0 && (roomTemplates.undone?.length ?? 0) === 0 && (roomTemplates.completed?.length ?? 0) === 0 ? {} : { roomTemplates }),
     incidents: {
       log: runtime.incidents.getSnapshot(),
       sectorRisk: runtime.sectorRisk.getSnapshot(),
