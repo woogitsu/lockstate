@@ -5,6 +5,10 @@ export const ACTION_IDS = [
   'camera.right',
   'camera.zoom.in',
   'camera.zoom.out',
+  'camera.rotate.left',
+  'camera.rotate.right',
+  'camera.tilt.up',
+  'camera.tilt.down',
   'selection.primary',
   'build.confirm',
   'build.cancel',
@@ -47,6 +51,18 @@ export const ACTION_REGISTRY: Readonly<Record<ActionId, ActionDefinition>> = {
   },
   'camera.zoom.out': {
     id: 'camera.zoom.out', behavior: 'discrete', contexts: ['world', 'construction'], descriptionKey: 'input.action.camera.zoom.out',
+  },
+  'camera.rotate.left': {
+    id: 'camera.rotate.left', behavior: 'continuous', contexts: ['world', 'construction'], descriptionKey: 'input.action.camera.rotate.left',
+  },
+  'camera.rotate.right': {
+    id: 'camera.rotate.right', behavior: 'continuous', contexts: ['world', 'construction'], descriptionKey: 'input.action.camera.rotate.right',
+  },
+  'camera.tilt.up': {
+    id: 'camera.tilt.up', behavior: 'continuous', contexts: ['world', 'construction'], descriptionKey: 'input.action.camera.tilt.up',
+  },
+  'camera.tilt.down': {
+    id: 'camera.tilt.down', behavior: 'continuous', contexts: ['world', 'construction'], descriptionKey: 'input.action.camera.tilt.down',
   },
   'selection.primary': {
     id: 'selection.primary', behavior: 'discrete', contexts: ['world'], descriptionKey: 'input.action.selection.primary',

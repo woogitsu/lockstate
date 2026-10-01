@@ -290,6 +290,11 @@ function escapeCell(text) {
   return text.replaceAll('\\', '\\\\').replaceAll('|', '\\|').replaceAll('\n', ' ');
 }
 
+/** Keep the shipped sentence as a checkable fragment beside its source anchor. */
+function markdownCode(text) {
+  return '`' + escapeCell(text).replaceAll('`', '\\`') + '`';
+}
+
 export function renderInventory({ entries }) {
   const lines = [];
   lines.push('# Every sentence this game can show a player');
@@ -323,7 +328,7 @@ export function renderInventory({ entries }) {
   lines.push('| Key | Ships today | At |');
   lines.push('| --- | --- | --- |');
   for (const entry of entries) {
-    lines.push(`| \`${escapeCell(entry.key)}\` | ${escapeCell(entry.value)} | \`${LOCALE_SOURCE_PATH}:${String(entry.line)}\` |`);
+    lines.push(`| ${markdownCode(entry.key)} | ${markdownCode(entry.value)} | ${markdownCode(`${LOCALE_SOURCE_PATH}:${String(entry.line)}`)} |`);
   }
   lines.push('');
   return lines.join('\n');

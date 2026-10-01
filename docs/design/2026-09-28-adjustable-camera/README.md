@@ -134,10 +134,17 @@ reprojected only when the frame revision, camera pose or viewport changes;
 the test checks that idle browser frames do not repaint them. Actor movement
 can repaint the raised layer without rebuilding the ground. A deliberate
 mutation that projected every *empty* north edge made the unit test fail with
-63 extra solids; restoration returned it to green. This is still a plain
-diagnostic renderer. It has no final art, wall cutaway, construction ghosts or
-player-visible switch in `main.ts`, and the browser fixture is a small scene
-rather than the frame-cost acceptance test for a large prison.
+63 extra solids; restoration returned it to green. The production composition
+root now has an explicit `?renderer=oblique` opt-in. It verifies the oblique
+module registry before constructing Phaser, passes the verified catalogs into
+`ObliqueWorldScene`, and exposes the same feed, minimap, selection and zoom
+ports as the top-down scene. A catalog failure paints an explicit startup error
+instead of silently falling back. The default URL keeps the registry-free
+`WorldScene` path. This branch also paints the first authored PNG frame for
+mapped walls, doors and objects over the geometric fallback. The opt-in scene
+now forwards build, room and object gestures through the established tool ports,
+projects their live tile footprints, and keeps the minimap, zoom and Save/Load
+paths active. The cutaway and full square construction gates remain separate.
 
 ## Active delivery lanes
 
@@ -205,3 +212,43 @@ hide interiors, no HUD or text, 16:9 1920 × 1080, no copied game art.” Add:
 - Wall/cutaway Blender kit: `codex/wall-cutaway-art-2026-09-28`.
 - On-screen camera pan: #1590. Rotation input contract: #1591. Both are separate
   from the renderer's still-missing angled projection.
+
+## 2026-10-01 integration checkpoint — not a release claim
+
+The production composition root is under review in [#1894](https://github.com/woogitsu/lockstate/pull/1894). Its current implementation connects angled-world Build/Rooms/Objects gestures, minimap and zoom; the keyboard bridge uses the existing remappable adapter for pan, rotation and tilt. Separate HUD angle buttons and pose-dependent model loading are being integrated. Full HD local browser checks are useful evidence, but this stack still needs full exact-head CI, serial main CI and production verification before it is called shipped.
+
+[#1898](https://github.com/woogitsu/lockstate/pull/1898) corrects the square template footprint from #1882. Wall orders now use the exact preview coordinates. Shared square barriers feed enclosure and navigation without writing irreversible legacy edges. Rendering reads occupied squares in both views, preserves construction identities and avoids duplicate paint. All three currently available templates have completed build/furnishing and actual save-envelope round-trip coverage. Queued object footprint protection reuses the existing #1605 implementation; that original issue remains open until its integrated result reaches main.
+
+Remaining acceptance work, in priority order:
+
+1. Complete screenshot and collision checks after construction and Save/Load in both renderers; retain full-square walls alongside legacy edges.
+2. Move ordinary freehand Build gestures from edge runs to occupied square runs. The template correction alone does not satisfy the owner's whole-square building requirement.
+3. Integrate and verify existing additional room plans from the #1644 stack before expanding the catalog to every room type. The owner's decision was the complete template system; three templates are an intermediate state.
+4. Re-render Blender frames whose non-transparent pixels touch a frame edge. Art QA found clipping in the desk, bin and sink pose catalogs; runtime frame selection fixes alone do not correct truncated source art.
+5. Join all reviewed increments, pass exact-head CI, then verify the actual deployed game. Keep art, gesture/input and integration QA in separate worktrees.
+
+## 2026-10-01 furnished catalog integration checkpoint
+
+The dependent branch codex/integrate-full-room-plans-20261001 ports the existing four-cell row, canteen and kitchen implementations (13f3bb9969, 1b013ea4ea, db890d72da) and mirrored object-width correction f53a61a12c onto the corrected square-wall stack. All six plans are selectable in the catalogue. Twelve scheduled build/furnish/save-envelope/load cases cover normal and mirrored copies, including all four separately designated cells. Five focused suites pass 40 tests; mutating the coordinator to designate only the first room produces two failures, restored production passes; TypeScript passes.
+
+Existing room/object names are reused for canteen, kitchen and fixtures. The row label reuses the previously authored Four-cell row / Blok czterech cel wording. This is not the complete eighteen-room catalog or a release: mouse-on-map template placement and worker-backed cost display still need integration, then remaining room types and exact-head release gates.
+
+## Complete room-type coverage checkpoint
+
+The furnished catalogue now contains twenty plans covering all eighteen released room types. Fourteen additional plans cover holding/solitary cells, reception, laundry, yard, common room, classroom, infirmary, security/staff offices, storage, deliveries, garbage and utilities. Authored dimensions meet actual room requirements; object footprints and mirrored widths are checked against content definitions. Yard is an open 8-by-8 zone with no indoor shell. Existing localized room/object names are reused, with no new outward-facing promises.
+
+All forty normal/mirrored construction, furnishing and save-envelope/load cases pass. Six focused suites pass 192 tests, including independent complete-room coverage and saved enum union contracts. Mutating Yard into an indoor shell and overlapping classroom seats produces four failures; restoring production passes. TypeScript passes. Pending template IDs extend the existing versioned field, without a new field or migration. This evidence does not prove Full HD catalogue usability or mouse placement; those acceptance checks remain assigned to the HUD integration agent.
+
+## Pending-plan safety checkpoint
+
+Existing fixes for #1646 (full pending interior claim), later ordinary wall reservations, #1608 (cancel whole shell when one member is lost), #1669 (paused Cancel/Undo reconciliation), and #1664 (safe coordinate bounds) are now integrated into the corrected all-room catalogue. These are reused source commits, not duplicated issues. The integration adds the missing tileCoordinate import detected by the current TypeScript and runtime test.
+
+Mutation removing pending interior reservation and paused reconciliation causes three session failures. Restored production passes five suites (197 tests) and TypeScript. Full browser coverage and the complete reversible transaction requirement #1657 remain acceptance work; shell cancellation alone is not full completed-room Undo.
+
+## Completed indoor-room transaction checkpoint — owner format approval pending
+
+The #1657 full reversible transaction direction is implemented for nineteen indoor plans. Furniture shares the shell transaction; cancellation removes all members and zoning, late fixture refusal rolls back accepted work, and Redo restores the room obligation without duplicating fixtures. Actual save envelopes retain optional roomTemplates.undone and roomTemplates.completed metadata (version 1); old saves without these fields use empty lists. The format extension remains a draft pending the owner's exact-field approval. It must not merge before that decision.
+
+Five suites pass136tests and TypeScript, including nineteen completed indoor-room build/save/load/Undo/save/load/Redo cycles. A production mutation grouping furniture separately fails the Basic Cell transaction case; restored tests pass. Cache geometry/content revisions correctly increase across Undo/Redo, so content comparison checks every saved plane while excluding only those revision counters. Shell-free Yard still requires a proper zoning transaction; no fake construction order is introduced to pretend it is finished.
+
+CI repair PR1895 merged at bf976ac9fe after exact head560cc632f929 passed all checks and mergeability was CLEAN. Serial main CI run36905140655 is in progress; no further main merge is authorized by a partially completed run.

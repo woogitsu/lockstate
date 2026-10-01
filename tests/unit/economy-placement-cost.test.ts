@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { procurableMaterial } from '../../src/content/procurement-catalog';
 import { BUILDABLE_REGISTRY } from '../../src/simulation/construction/definition';
-import { placementCostMinorUnits } from '../../src/simulation/economy';
+import { placementCostMinorUnits, placementRunCatalogueCostMinorUnits } from '../../src/simulation/economy';
 
 /**
  * **What one placement costs, decided where the charge is decided** (issue
@@ -23,6 +23,13 @@ import { placementCostMinorUnits } from '../../src/simulation/economy';
  * are answered correctly when it does.
  */
 describe('placementCostMinorUnits', () => {
+  it('prices a whole-square run from the same simulation catalogue price', () => {
+    const requirements = [{ itemId: 'item.brick', quantity: 2 }];
+    const unit = placementCostMinorUnits(requirements);
+    expect(unit).toBeDefined();
+    expect(placementRunCatalogueCostMinorUnits(requirements, 4)).toBe(unit! * 4);
+    expect(placementRunCatalogueCostMinorUnits(requirements, -1)).toBeUndefined();
+  });
   const brick = procurableMaterial('item.brick');
   const plank = procurableMaterial('item.wood-plank');
   if (brick === undefined || plank === undefined) {

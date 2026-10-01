@@ -17,6 +17,42 @@ import {
 const westSouth = { x: chunkCoordinate(-1), y: chunkCoordinate(-1) };
 const origin = { x: chunkCoordinate(0), y: chunkCoordinate(0) };
 
+describe('square construction geometry (#1585)', () => {
+  it('keeps a new wall square separate from historical edge walls across a save', () => {
+    const world = new SparseWorld(32);
+    const wall = { x: tileCoordinate(3), y: tileCoordinate(4) };
+    world.setTopEdge(wall, 1);
+    world.setSquareStructure(wall, 1);
+    expect(world.getTopEdge(wall)).toBe(1);
+    expect(world.getSquareStructure(wall)).toBe(1);
+    const saved = world.snapshot();
+    expect(saved.chunks[0]?.squareStructure).toBeDefined();
+
+    const restored = SparseWorld.fromSnapshot(saved);
+    expect(restored.getTopEdge(wall)).toBe(1);
+    expect(restored.getSquareStructure(wall)).toBe(1);
+    restored.setSquareStructure(wall, 0);
+    expect(restored.getSquareStructure(wall)).toBe(0);
+    expect(restored.getTopEdge(wall)).toBe(1);
+  });
+
+  it('loads older chunks without a square layer as empty, and refuses unknown structure values', () => {
+    const world = new SparseWorld(32);
+    const wall = { x: tileCoordinate(-1), y: tileCoordinate(0) };
+    world.setLeftEdge(wall, 1);
+    const oldSave = world.snapshot();
+    const restored = SparseWorld.fromSnapshot(oldSave);
+    expect(restored.getSquareStructure(wall)).toBe(0);
+    expect(restored.getLeftEdge(wall)).toBe(1);
+    expect(() => restored.setSquareStructure(wall, 3 as 1)).toThrow(RangeError);
+    const damaged = {
+      ...oldSave,
+      chunks: oldSave.chunks.map((chunk) => ({ ...chunk, squareStructure: [[3, 32 * 32]] })),
+    };
+    expect(() => SparseWorld.fromSnapshot(damaged)).toThrow(WorldSnapshotError);
+  });
+});
+
 describe('world coordinates', () => {
   it('uses floor division for boundary and negative tile positions', () => {
     expect(tileToChunk({ x: tileCoordinate(0), y: tileCoordinate(31) }, 32)).toEqual({

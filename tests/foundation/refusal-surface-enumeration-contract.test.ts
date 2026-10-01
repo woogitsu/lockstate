@@ -431,6 +431,8 @@ const TRIPLES: readonly Triple[] = [
  * a press with no refusal surface at all is a finding, not a gap in the table.
  */
 const NO_REFUSAL_SURFACE: Readonly<Record<string, string>> = {
+  PlaceRoomTemplate:
+    'Room-template placement is a composite gesture. Its worker preflight returns a tile-specific verdict and the Build panel renders that verdict directly; it does not map through the generic refusal vocabulary, so no refusal triple exists for this command.',
   DismissAlert:
     'The alerts row dismiss button. It is the one command intent that can reach neither producer: `refusalMessageKey` ' +
     'answers `undefined` for `dismiss-alert`, so a host refusal paints nothing, and no `RefusalReason` carries a ' +

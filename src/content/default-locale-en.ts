@@ -2298,6 +2298,33 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
 
   'hud.build.title': 'Build',
   'hud.build.catalogue': 'What to build',
+  'hud.build.templates': 'Room plans',
+  'hud.build.templates-short': 'Plans',
+  'hud.build.template-preview-only': 'Preview only. Choose a plan to inspect its footprint; placement is not available yet.',
+  'hud.build.template-position-hint': 'Choose an origin. The whole footprint is checked before you can place this plan.',
+  'hud.build.template-x': 'Plan origin X',
+  'hud.build.template-y': 'Plan origin Y',
+  'hud.build.template-mirror': 'Mirror horizontally',
+  'hud.build.template-on-map': 'Place on map',
+  'hud.build.template-map-hint': 'Click map to place; Esc cancels.',
+  'hud.build.template-catalogue-value': 'Materials catalogue value: {value}',
+  'hud.build.template-place': 'Place room plan',
+  'hud.build.template-invalid-position': 'Enter whole-number coordinates.',
+  'hud.build.template-ready': 'This footprint is clear.',
+  'hud.build.template-blocked': 'This footprint is blocked. Choose another position.',
+  'hud.build.template-unavailable': 'Placement check is unavailable. Try again.',
+  'hud.build.template-submitted': 'Room plan submitted.',
+  'hud.build.template-close': 'Close plans',
+  'hud.build.template-cell-basic': 'Basic cell',
+  'hud.build.template-cell-large': 'Large cell',
+  'hud.build.template-shower-room': 'Shower room',
+  'hud.build.template-cell-row-four': 'Four-cell row',
+  'hud.build.template-wall': 'Wall',
+  'hud.build.template-door': 'Door',
+  'hud.build.template-furniture': 'Furniture',
+  'hud.build.template-bed': 'Bed',
+  'hud.build.template-toilet': 'Toilet',
+  'hud.build.template-shower': 'Shower',
   'hud.build.catalogue-empty': 'Nothing is available to build',
   'hud.build.selected': 'Selected',
   /**
@@ -2356,6 +2383,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
    * the rate.
    */
   'hud.build.catalogue-row-price-segment': '{buildable} · {total} per segment',
+  'hud.build.catalogue-row-price-square': '{buildable} · {total} per square',
   'hud.build.placement': 'Where',
   'hud.build.tile-x': 'Tile X',
   'hud.build.tile-y': 'Tile Y',
@@ -2434,6 +2462,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.remove-submit': 'Remove object here',
   'hud.build.disarm': 'Stop placing',
   'hud.build.arm-hint': 'Click a tile edge to place a wall. Drag along it to lay a run. Two fingers, the middle button or the arrow keys still move the camera.',
+  'hud.build.arm-hint-square': 'Click a whole square to place a wall. Drag across squares to lay a run. Two fingers, the middle button or the arrow keys still move the camera.',
   /*
    * The same hint for a buildable that stands on a **tile** rather than on an
    * edge (issue #904).
@@ -2474,6 +2503,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.target-none': 'Point at the world',
   'hud.build.target-value': '{x}, {y} · {edge}',
   'hud.build.target-run': '{count} × {edge} from {x}, {y}',
+  'hud.build.target-squares': { one: '{count} whole square from {x}, {y} | catalogue value {cost}', other: '{count} whole squares from {x}, {y} | catalogue value {cost}' },
   'hud.build.target-tile': '{x}, {y}',
   'hud.build.coordinates': 'Enter coordinates',
   'hud.build.coordinates-hint': 'The keyboard route. Pointing at the map is quicker.',
@@ -4376,6 +4406,10 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'input.action.camera.right': 'Pan camera right',
   'input.action.camera.zoom.in': 'Zoom in',
   'input.action.camera.zoom.out': 'Zoom out',
+  'input.action.camera.rotate.left': 'Rotate camera left',
+  'input.action.camera.rotate.right': 'Rotate camera right',
+  'input.action.camera.tilt.up': 'Raise camera angle',
+  'input.action.camera.tilt.down': 'Lower camera angle',
   'input.action.selection.primary': 'Select',
   'input.action.build.confirm': 'Confirm placement',
   // Bound in the world, construction and modal contexts, so it is a general

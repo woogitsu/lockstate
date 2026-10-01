@@ -150,6 +150,12 @@ describe('the armed hint says what the armed gesture does (#904)', () => {
     expect(armedHintKey(undefined, false)).toBe(armedHintKey(row(false), false));
   });
 
+  it('describes whole squares for a structural wall', () => {
+    const hint = localizer.format(armedHintKey({ ...row(false), squareFootprint: true }, false));
+    expect(hint).toContain('whole square');
+    expect(hint).not.toContain('tile edge');
+  });
+
   it('gives the two arms different sentences, which is the whole of the fix', () => {
     expect(localizer.format(armedHintKey(row(true), false))).not.toBe(
       localizer.format(armedHintKey(row(false), false)),
@@ -193,6 +199,11 @@ describe('the catalogue row states its own price (#901)', () => {
     // edges costs several times the quoted number, so the sentence must say
     // "per segment" or it promises the smaller figure for the larger charge.
     expect(buildCatalogueRowLabel(t, row(false), '80')).toBe('Bed · 80 per segment');
+  });
+
+  it('names the square unit for a structural wall run', () => {
+    expect(buildCatalogueRowLabel(t, { ...row(false), squareFootprint: true }, '80'))
+      .toBe('Bed · 80 per square');
   });
 
   it('gives the two shapes different sentences, which is the whole of the fix', () => {

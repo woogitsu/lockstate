@@ -198,25 +198,22 @@ describe('docs/ARCHITECTURE.md: what the persistence layer actually does', () =>
     ).toEqual([path.join('src', 'input', 'keyboard.ts'), path.join('src', 'input', 'pointer.ts')].sort());
   });
 
-  it('keeps the SemanticActionEvent stream to its declared surface plus its one consumer', async () => {
-    // The other half of the same sentence, and the half that changed. Until
-    // #200 the stream had no consumer at all: `keyDown`/`keyUp` returned the
-    // events and the one production caller discarded them, so `docs/INPUT.md`
-    // line 5 described a mechanism nothing used. It has one now, and it is
-    // named here rather than left to a wildcard -- a *second* consumer
-    // appearing is exactly the change this file exists to make visible, since
-    // the polled and received routes are not interchangeable and which one an
-    // action may take is fixed by its `behavior`.
+  it('keeps the SemanticActionEvent stream to its declared surface plus the two production scene consumers', async () => {
+    // WorldScene and ObliqueWorldScene are alternative composition-root scenes.
+    // Both use the keyboard adapter for continuous polling and started-phase
+    // discrete events. INPUT.md names this second consumer explicitly; a third
+    // consumer still fails this exhaustive surface check.
     const naming = await sourceFilesMatching(/SemanticActionEvent/u);
     expect(
       [...naming].sort(),
-      'a module outside src/input/ now names SemanticActionEvent. docs/INPUT.md line 5 documents exactly one consumer (WorldScene.handleActionEvents); a second is a real change to the input contract, not a refactor',
+      'a module outside src/input/ now names SemanticActionEvent. docs/INPUT.md documents WorldScene and ObliqueWorldScene as the two production consumers; another consumer requires an explicit contract review',
     ).toEqual(
       [
         path.join('src', 'input', 'actions.ts'),
         path.join('src', 'input', 'keyboard.ts'),
         path.join('src', 'input', 'pointer.ts'),
         path.join('src', 'rendering', 'scene', 'world-scene.ts'),
+        path.join('src', 'rendering', 'scene', 'oblique-world-scene.ts'),
       ].sort(),
     );
   });

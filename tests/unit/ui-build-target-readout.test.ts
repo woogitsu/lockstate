@@ -164,6 +164,7 @@ const sentinels = buildMessageCatalog('en', {
   'hud.build.target-value': 'edge/{x}/{y}/{edge}',
   'hud.build.target-run': 'run/{count}/{x}/{y}/{edge}',
   'hud.build.target-tile': 'tile/{x}/{y}',
+  'hud.build.target-squares': 'squares/{count}/{x}/{y}/{cost}',
 });
 const sentinelLocalizer = new Localizer({ locale: 'en', catalogs: [sentinels] });
 const readoutOf = (target: BuildPanelTarget | undefined): string =>
@@ -173,6 +174,10 @@ const readoutOf = (target: BuildPanelTarget | undefined): string =>
   );
 
 describe('the Where readout names the tile the player is aiming at', () => {
+  it('names the exact whole-square count and catalogue value for a wall run', () => {
+    expect(readoutOf({ x: 4, y: 7, squareRun: true, segments: 3, catalogueCostMinorUnits: 240 }))
+      .toBe('squares/3/4/7/240');
+  });
   it('tracks the pointer while a wall is armed', () => {
     const tools = panelWithTools();
     armFromBuildPanel(tools, { armed: true, definitionId: 'wall-brick', removing: false });

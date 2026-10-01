@@ -116,6 +116,8 @@ export interface PlaceObjectRequest {
   /** Anchor tile: the footprint's top-left corner. */
   readonly x: number;
   readonly y: number;
+  /** Internal authored-plan grouping; ordinary placements retain their own order ID. */
+  readonly transactionId?: string;
 }
 
 /**
@@ -563,7 +565,7 @@ export class ObjectPlacementService {
      * be a field with no reader. A gesture that placed several objects at once
      * would need one, and decision 5 refuses that gesture.
      */
-    this.orders.registerTransactionOrder(request.orderId, request.orderId);
+    this.orders.registerTransactionOrder(request.orderId, request.transactionId ?? request.orderId);
 
     return { kind: 'ordered', orderId: request.orderId, objectId, anchorTile: anchor, roomInstanceId: room.instanceId };
   }

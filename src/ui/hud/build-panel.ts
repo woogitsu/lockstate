@@ -13,6 +13,8 @@ import { rovingTabStop } from '../primitives/roving-focus';
 import { bindRovingFocusKeydown } from '../primitives/roving-focus-keydown';
 import { HUD_MESSAGE_KEY } from './messages';
 import { assignPooledRows } from './pooled-row-binding';
+import { createRoomTemplatePreview } from './room-template-preview';
+import type { RoomTemplateTool } from '../room-template-tool';
 import { toggleRemovalMode } from './tool-arming';
 import {
   HUD_BUILD_EDGES,
@@ -82,6 +84,7 @@ export interface BuildPanelIntent {
   readonly x: number;
   readonly y: number;
   readonly edge: HudBuildEdge;
+  readonly squareFootprint?: boolean;
   /**
    * Whether the selected row places a discrete object rather than a wall
    * segment (ADR 0028 phase 1), which decides *which* command the press
@@ -151,11 +154,15 @@ export interface BuildPanelTarget {
   readonly edge?: HudBuildEdge;
   /** How many edges the pending gesture covers. `1` for a tap, absent for a tile aim. */
   readonly segments?: number;
+  readonly squareRun?: boolean;
+  readonly catalogueCostMinorUnits?: number;
+  readonly definitionId?: string;
 }
 
 export interface BuildPanelOptions {
   readonly localizer: HudLocalizer;
   readonly model: HudBuildViewModel;
+  readonly roomTemplateTool?: RoomTemplateTool;
   /** The numeric route: place exactly one order at the coordinates shown. */
   readonly onPlace: (intent: BuildPanelIntent) => void;
   /**
@@ -350,7 +357,7 @@ export function buildEdgeChoiceOptions(t: Translate): readonly ChoiceOption[] {
  * which is what makes that pair unable to disagree.
  */
 export function edgeChooserShown(buildable: HudBuildableViewModel | undefined, removing: boolean): boolean {
-  return !removing && buildable?.occupiesEdge === true;
+  return !removing && buildable?.occupiesEdge === true && buildable.squareFootprint !== true;
 }
 
 /**
@@ -381,6 +388,7 @@ export function edgeChooserShown(buildable: HudBuildableViewModel | undefined, r
  */
 export function armedHintKey(buildable: HudBuildableViewModel | undefined, removing: boolean): LocalizationKey {
   if (removing) return HUD_MESSAGE_KEY.buildRemoveHint;
+  if (buildable?.squareFootprint === true) return HUD_MESSAGE_KEY.buildArmHintSquare;
   return buildable?.placesObject === true ? HUD_MESSAGE_KEY.buildArmHintObject : HUD_MESSAGE_KEY.buildArmHint;
 }
 
@@ -425,7 +433,9 @@ export function buildCatalogueRowLabel(
   return t(
     buildable.placesObject
       ? HUD_MESSAGE_KEY.buildCatalogueRowPrice
-      : HUD_MESSAGE_KEY.buildCatalogueRowPriceSegment,
+      : buildable.squareFootprint === true
+        ? HUD_MESSAGE_KEY.buildCatalogueRowPriceSquare
+        : HUD_MESSAGE_KEY.buildCatalogueRowPriceSegment,
     { buildable: name, total },
   );
 }
@@ -633,8 +643,12 @@ export function buildCatalogueFocusRing(
  * side by side, while the readout shows one string and looks plausible
  * whatever edge produced it.
  */
-export function formatBuildTargetText(t: Translate, target: BuildPanelTarget | undefined): string {
+export function formatBuildTargetText(t: Translate, target: BuildPanelTarget | undefined, formatNumber: (value: number) => string = String): string {
   if (target === undefined) return t(HUD_MESSAGE_KEY.buildTargetNone);
+  if (target.squareRun === true) return t(HUD_MESSAGE_KEY.buildTargetSquares, {
+    x: target.x, y: target.y, count: target.segments ?? 1,
+    cost: target.catalogueCostMinorUnits === undefined ? '—' : formatNumber(target.catalogueCostMinorUnits),
+  });
   // An aim with no edge is an aim at a tile, which is what the object tool
   // reports for both of its modes (#550). It gets its own template rather than
   // the edge one with a blank `{edge}`: see `buildTargetTile`.
@@ -1083,6 +1097,11 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     paintCatalogue();
     revealSelectedRow();
   });
+  const templatePreview = createRoomTemplatePreview(localizer, options.roomTemplateTool);
+  const catalogueActions = element('div', {
+    className: 'hud-build__catalogue-actions',
+    children: categoryOptions.length === 0 ? [templatePreview.openButton] : [categoryFilter, templatePreview.openButton],
+  });
 
   /**
    * Scrolls the list, and only the list, until the selected row is inside it.
@@ -1321,7 +1340,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
      * control that can only be pressed to no effect. `hud.css` styles both
      * shapes of this header for that reason.
      */
-    ...(categoryOptions.length === 0 ? {} : { headerAction: categoryFilter }),
+    headerAction: catalogueActions,
   });
   // The one section the panel's height budget is allowed to take space from,
   // named so `hud.css` can say which one it is (issue #143). Every other block
@@ -3141,6 +3160,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       },
     },
   });
+  panel.element.append(templatePreview.dialog);
   panel.body.append(
     catalogue.element,
     element('div', {
@@ -3228,12 +3248,13 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       // decide it and cannot derive it, because what a buildable places is
       // simulation content the HUD may not read.
       placesObject: buildable.placesObject === true,
+      squareFootprint: buildable.squareFootprint === true,
       removing,
     };
   }
 
   function setTarget(target: BuildPanelTarget | undefined): void {
-    targetValue.textContent = formatBuildTargetText(t, target);
+    targetValue.textContent = formatBuildTargetText(t, target, (value) => localizer.formatNumber(value));
     if (target === undefined) {
       delete targetBlock.dataset['target'];
       return;

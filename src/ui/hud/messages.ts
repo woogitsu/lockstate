@@ -553,6 +553,7 @@ export const HUD_MESSAGE_KEY = {
   buildCatalogueRowPrice: 'hud.build.catalogue-row-price',
   /** The per-segment twin of `buildCatalogueRowPrice` above; see its comment. */
   buildCatalogueRowPriceSegment: 'hud.build.catalogue-row-price-segment',
+  buildCatalogueRowPriceSquare: 'hud.build.catalogue-row-price-square',
   buildPlacement: 'hud.build.placement',
   buildTileX: 'hud.build.tile-x',
   buildTileY: 'hud.build.tile-y',
@@ -561,10 +562,34 @@ export const HUD_MESSAGE_KEY = {
   buildEdge: 'hud.build.edge',
   buildSubmit: 'hud.build.submit',
   buildNote: 'hud.build.note',
+  buildTemplates: 'hud.build.templates',
+  buildTemplatesShort: 'hud.build.templates-short',
+  buildTemplatePreviewOnly: 'hud.build.template-preview-only',
+  buildTemplatePositionHint: 'hud.build.template-position-hint',
+  buildTemplateX: 'hud.build.template-x',
+  buildTemplateY: 'hud.build.template-y',
+  buildTemplateMirror: 'hud.build.template-mirror',
+  buildTemplatePlace: 'hud.build.template-place',
+  buildTemplateInvalidPosition: 'hud.build.template-invalid-position',
+  buildTemplateReady: 'hud.build.template-ready',
+  buildTemplateBlocked: 'hud.build.template-blocked',
+  buildTemplateUnavailable: 'hud.build.template-unavailable',
+  buildTemplateSubmitted: 'hud.build.template-submitted',
+  buildTemplateClose: 'hud.build.template-close',
+  buildTemplateCellBasic: 'hud.build.template-cell-basic',
+  buildTemplateCellLarge: 'hud.build.template-cell-large',
+  buildTemplateShowerRoom: 'hud.build.template-shower-room',
+  buildTemplateWall: 'hud.build.template-wall',
+  buildTemplateDoor: 'hud.build.template-door',
+  buildTemplateFurniture: 'hud.build.template-furniture',
+  buildTemplateBed: 'hud.build.template-bed',
+  buildTemplateToilet: 'hud.build.template-toilet',
+  buildTemplateShower: 'hud.build.template-shower',
 
   buildArm: 'hud.build.arm',
   buildDisarm: 'hud.build.disarm',
   buildArmHint: 'hud.build.arm-hint',
+  buildArmHintSquare: 'hud.build.arm-hint-square',
   /**
    * The armed-tool hint for a row that stands on a tile rather than on an edge
    * (issue #904).
@@ -583,6 +608,7 @@ export const HUD_MESSAGE_KEY = {
   buildTargetNone: 'hud.build.target-none',
   buildTargetValue: 'hud.build.target-value',
   buildTargetRun: 'hud.build.target-run',
+  buildTargetSquares: 'hud.build.target-squares',
   /*
    * The readout for an aim that is on a *tile* rather than on a tile edge
    * (#550).
