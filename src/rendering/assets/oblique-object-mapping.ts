@@ -4,6 +4,7 @@
 export const OBLIQUE_OBJECT_ASSET_IDS: Readonly<Record<string, string>> = Object.freeze({
   'object.medical-bed': 'furniture.medical-bed.variants',
   'object.medicine-cabinet': 'fixture.medicine-cabinet.variants',
+  'object.washing-machine': 'utility.washing-machine.variants',
 });
 
 export function obliqueAssetIdForObject(objectId: string): string | undefined {
