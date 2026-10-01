@@ -21,6 +21,7 @@ for (const half of [0, 1]) test(`keyboard selection, mirror, quote and rearming 
     await expect(card).toHaveAttribute('aria-pressed', 'true');
     const mirror = dialog.getByRole('checkbox', { name: 'Mirror horizontally' });
     await mirror.focus(); await page.keyboard.press('Space');
+    const mirrored = await mirror.isChecked();
     await expect(dialog.locator('.hud-template__quote')).not.toBeEmpty();
     const map = dialog.getByRole('button', { name: 'Place on map', exact: true });
     await map.focus(); await page.keyboard.press('Enter');
@@ -33,7 +34,7 @@ for (const half of [0, 1]) test(`keyboard selection, mirror, quote and rearming 
       return messages.filter(m => m.payload?.projectionId === 'world/room-template-preflight').at(-1)!.payload!.target!;
     });
     expect(target.templateId).toBe(id);
-    expect(Boolean(target.mirrorX)).toBe(await mirror.isChecked());
+    expect(Boolean(target.mirrorX)).toBe(mirrored);
     await page.keyboard.press('Escape');
     await expect(ghost).toBeHidden();
     expect((await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate')).toHaveLength(0);
