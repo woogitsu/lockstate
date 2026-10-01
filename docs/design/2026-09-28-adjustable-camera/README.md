@@ -351,3 +351,9 @@ Integrated the Blender detail pass b5dd5c83ad into the combined feature root: th
 ## Authored actor consumer source checkpoint
 
 The registry already carries Blender prisoner/guard catalogues, but the angled scene previously ignored actor art and drew every role with the same orange Graphics glyph. Projection now carries the role's existing catalogue and exact continuous feet anchor; pose texture selection and sorted image painting consume those frames, while unknown roles or missing textures retain the graphics fallback. Eight projection cases and TypeScript pass. A deliberate prisoner-to-guard mapping mutation fails the role/anchor case, and restoring it passes both focused cases. Actual actor pixels and wall occlusion with the authored frames still require browser verification; no animation or production-release claim is made.
+
+## Owner decision: full large-pattern preview, 2026-10-02
+
+After reviewing the six actual Full HD comparison frames, the owner selected option 3: show the whole pattern, pan the camera and preserve the selected construction origin until the next physical mouse movement. This authorizes the pan-locked production policy; it does not bypass terrain/overlap validation, approve the separately pending save-history fields or approve new player messages. The pure fit API is integrated and passes five focused tests; the HUD agent is implementing repeated-selection, rotation/mirror, cancellation and exact committed-origin behaviour. The one-shot comparison controller remains review evidence, not the finished implementation.
+
+The masonry runtime evidence is integrated: the art agent's actual-scene run passed21cases covering20plans and19fixturetypes at three camera poses, and inspected kitchen/laundry frames show the new joints and cap grid. That run predates the new actor consumer; authored actor pixels and Save/Load floor evidence remain separate acceptance tasks.
