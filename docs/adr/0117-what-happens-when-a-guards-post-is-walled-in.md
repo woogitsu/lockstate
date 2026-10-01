@@ -122,8 +122,8 @@ run, and each correction changes what an option is worth.
 ### 1a. It is four wall segments, not "a wall"
 
 A wall in this simulation is an **edge**, not a tile.
-`BUILD_EDGES = ['north', 'west']` (`src/simulation/construction/build-order.ts:32`)
-and `edgeStanding` (`src/simulation/navigation/traversal.ts:54`) answers
+`BUILD_EDGES = ['north', 'west']` (`src/simulation/construction/build-order.ts:32`, `BUILD_EDGES`)
+and `edgeStanding` (`src/simulation/navigation/traversal.ts:54`, `edgeStanding`) answers
 `'wall'` for a non-zero edge value with no registered door — so a wall stands
 *between* two tiles and nothing can stand *on* one. Sealing (16, 16) therefore
 takes the four edges that bound it: `north` of (16, 16), `west` of (16, 16),
@@ -359,7 +359,7 @@ tile.** The only projection that carries `postTile` is `hud/security`
 (`security-projection.ts:230`, registered at `types.ts:342` and
 `projection-catalog.ts:401`), and it has **zero readers** in `src/ui/` or
 `src/rendering/` — grepped, the one hit is a comment in
-`src/ui/simulation-staff-coverage.ts:35` explaining why that module reads
+`src/ui/simulation-staff-coverage.ts:96`, `staffCoverageFromProjection` explaining why that module reads
 `hud/staff` instead. ADR 0110 established the same absence independently. So
 this option refuses a press by appeal to a tile the interface has never drawn,
 never named and cannot name, and the refusal would have to either teach the

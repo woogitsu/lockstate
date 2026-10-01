@@ -71,7 +71,7 @@ and the reason is mechanical rather than a matter of design taste.
 
 The defect is a consequence of where an edge is stored.
 `roomPerimeterEnclosure` reads a rectangle's south boundary as the north edge of
-the row **below** it (`src/simulation/rooms/enclosure.ts:219-221`, `roomPerimeterEnclosure`) and its east
+the row **below** it (`src/simulation/rooms/enclosure.ts:204-206`, `roomPerimeterEnclosure`) and its east
 boundary as the west edge of the column to its **right**
 (`src/simulation/rooms/enclosure.ts:230-232`, `getLeftEdge`). Those two edges are stored on tiles
 outside the rectangle. If the rectangle is flush against the edge of owned land,
@@ -87,9 +87,9 @@ defect one level up and with a longer explanation.
 
 **What actually causes it is an asymmetry in one predicate, and the asymmetry is
 a plain defect.** `submitOrder` asks `canBuildAt(this.world, order.location, …)`
-(`src/simulation/construction/system.ts:619`, `submitOrder`), and `canBuildAt` tests ownership
+(`src/simulation/construction/system.ts:610`, `submitOrder`), and `canBuildAt` tests ownership
 of the order's own tile and nothing else
-(`src/simulation/world/buildability.ts:26`, `canBuildAt`).
+(`src/simulation/world/buildability.ts:16`, `canBuildAt`).
 
 (**Two corrections to the sentence above, marked rather than overwritten,
 2026-09-15.** *Where:* the `canBuildAt` call this document cited as `:266` is
@@ -204,7 +204,7 @@ Every anchor below was opened.
   (`src/simulation/runtime/new-session.ts:436-438`, `fillTerrain`). Chunk size 32, so the playable
   world is tiles `0..31` square.
 - **Nothing in `src/` can buy land.** `canPurchaseParcel`
-  (`src/simulation/world/sparse-world.ts:702`) and `getParcelPrice` (`:711`) have no
+  (`src/simulation/world/sparse-world.ts:646`) and `getParcelPrice` (`:711`) have no
   caller outside their own file, `registerParcel`'s only `src/` call site is
   `fromSnapshot` re-registering what a save carried
   (`src/simulation/world/tile-ownership.ts:17` says so and it is still true),
@@ -254,7 +254,7 @@ Six definitions, including `grass` (`src/simulation/world/terrain.ts:22`) and
 (`src/rendering/world/appearance.ts:66`, `:68`). **Nothing in `src/` writes
 terrain**: `grep -rn "setTerrain\|fillTerrain" --include=*.ts src/` returns only
 the definitions in `sparse-world.ts` themselves. `getTerrainNumericId` returns
-`0` for an absent plane (`src/simulation/world/sparse-world.ts:476`, `dirt`), and `0` is
+`0` for an absent plane (`src/simulation/world/sparse-world.ts:481`, `dirt`), and `0` is
 `dirt`. So the shipped world is dirt everywhere and the terrain layer is a
 feature with a reader and no producer.
 
@@ -316,7 +316,7 @@ its first producer.
 
 **One consequence to know before taking it.** The implicit default terrain of a
 plane that was never written is `0` = `dirt`
-(`src/simulation/world/sparse-world.ts:476`, `dirt`). If a later chunk is materialised —
+(`src/simulation/world/sparse-world.ts:481`, `dirt`). If a later chunk is materialised —
 which decision 6 can cause, see its consequences — it arrives dirt, and there is
 a visible seam against the grass. Two exits: fill each chunk as it materialises,
 or give `SparseWorld` a `defaultTerrainNumericId`, which is a snapshot field and
@@ -456,7 +456,7 @@ the owner wants it, it is a change to ADR 0045 decision 8 and theirs to make.
 > player actually met was `out-of-bounds` rather than `unowned-land`, because
 > with one owned chunk the two faces coincide with the edge of the materialised
 > world; and the `canBuildAt` line this document cites as
-> `src/simulation/construction/system.ts:266`, `admits` has moved into `admits`
+> `src/simulation/construction/system.ts:528`, `admits` has moved into `admits`
 > (`:353`), called from `submitOrder` (`:313`).
 >
 > **All three of those line numbers have since drifted, and the block above is
@@ -618,7 +618,7 @@ same tool.
 
 **The pacing risk, derived rather than guessed.** The clock steps every 50 ms at
 speed 1 (`src/simulation/clock/fixed-step-clock.ts:29`, `ConstructionSystem`), `ConstructionSystem`
-runs every ten ticks (`src/simulation/construction/system.ts:347`, `ConstructionSystem`), and one
+runs every ten ticks (`src/simulation/construction/system.ts:342`, `ConstructionSystem`), and one
 order is in progress at a time. So the crew completes **at most one order every
 500 ms at speed 1**, or one every 125 ms at speed 4. A 10×10 slab is 100 orders
 and therefore **at least 50 seconds of watching at speed 1**; a 20×20 slab is at
