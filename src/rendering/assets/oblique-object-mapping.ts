@@ -1,4 +1,4 @@
-﻿import type { ObliqueModuleCatalog } from './oblique-module-catalog';
+import type { ObliqueModuleCatalog } from './oblique-module-catalog';
 
 /** Stable object-id to oblique asset mapping. Unknown objects fail closed so the flat fallback remains authoritative. */
 export const OBLIQUE_OBJECT_ASSET_IDS: Readonly<Record<string, string>> = Object.freeze({
@@ -7,6 +7,11 @@ export const OBLIQUE_OBJECT_ASSET_IDS: Readonly<Record<string, string>> = Object
   'object.security-console': 'utility.security-console.variants',
   'object.loading-dock-door': 'utility.loading-dock-door.variants',
   'object.utility-panel': 'utility.utility-panel.variants',
+  'object.waste-bin': 'fixture.cell.waste_bin',
+  'object.desk': 'furniture.office.desk.generic',
+
+  'object.sink': 'fixture.cell.sink.handwash',
+
 });
 
 export function obliqueAssetIdForObject(objectId: string): string | undefined {
