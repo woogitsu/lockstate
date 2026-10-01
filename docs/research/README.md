@@ -341,3 +341,9 @@ and it stopped one step short of its own consequence.
   summariser, the incident alert projection and the whole tunnel registry with no
   caller in `src/` — the same class as issue #287's two uncalled capabilities,
   three layers deeper.
+
+## Full HD angled-room integration evidence, 2026-10-01
+
+- [Room-plan materials and catalogue value](2026-10-01-room-plan-quote/README.md): worker-derived quote in the dialog and map ghost, including Yard zero value.
+- [Map quote independent of advanced coordinates](2026-10-01-map-quote-coordinate-independence/README.md): red/green Full HD mouse-placement regression for #1912.
+- [Actor and wall depth](2026-10-01-oblique-actor-depth/README.md): actual scene before/after screenshots and pixel mutation regression for #1913.
