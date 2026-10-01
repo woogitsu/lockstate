@@ -1,3 +1,4 @@
+import { getTopBarrier, getLeftBarrier } from '../world/barriers';
 import { SparseWorld } from '../world/sparse-world';
 import { type ChunkPosition, type TilePosition, chunkCoordinate, tileCoordinate, tileToChunk, chunkKey } from '../world/coordinates';
 
@@ -128,22 +129,22 @@ export class TopologyManager {
           
           // Check right: (lx+1, ly). Separated by (lx+1, ly)'s leftEdge
           if (lx + 1 < size) {
-            const edge = this.world.getLeftEdge({ x: tileCoordinate(globalX + 1), y: tileCoordinate(globalY) });
+            const edge = getLeftBarrier(this.world, { x: tileCoordinate(globalX + 1), y: tileCoordinate(globalY) });
             if (edge === 0 && tileRegions[ly * size + (lx + 1)] === 0) stack.push({lx: lx + 1, ly});
           }
           // Check left: (lx-1, ly). Separated by (lx, ly)'s leftEdge
           if (lx - 1 >= 0) {
-            const edge = this.world.getLeftEdge({ x: tileCoordinate(globalX), y: tileCoordinate(globalY) });
+            const edge = getLeftBarrier(this.world, { x: tileCoordinate(globalX), y: tileCoordinate(globalY) });
             if (edge === 0 && tileRegions[ly * size + (lx - 1)] === 0) stack.push({lx: lx - 1, ly});
           }
           // Check down: (lx, ly+1). Separated by (lx, ly+1)'s topEdge
           if (ly + 1 < size) {
-            const edge = this.world.getTopEdge({ x: tileCoordinate(globalX), y: tileCoordinate(globalY + 1) });
+            const edge = getTopBarrier(this.world, { x: tileCoordinate(globalX), y: tileCoordinate(globalY + 1) });
             if (edge === 0 && tileRegions[(ly + 1) * size + lx] === 0) stack.push({lx, ly: ly + 1});
           }
           // Check up: (lx, ly-1). Separated by (lx, ly)'s topEdge
           if (ly - 1 >= 0) {
-            const edge = this.world.getTopEdge({ x: tileCoordinate(globalX), y: tileCoordinate(globalY) });
+            const edge = getTopBarrier(this.world, { x: tileCoordinate(globalX), y: tileCoordinate(globalY) });
             if (edge === 0 && tileRegions[(ly - 1) * size + lx] === 0) stack.push({lx, ly: ly - 1});
           }
         }
@@ -201,7 +202,7 @@ export class TopologyManager {
             // Check edge between them: The leftEdge of the right tile
             const globalX = (cx + 1) * size;
             const globalY = cy * size + ly;
-            const edge = this.world.getLeftEdge({ x: tileCoordinate(globalX), y: tileCoordinate(globalY) });
+            const edge = getLeftBarrier(this.world, { x: tileCoordinate(globalX), y: tileCoordinate(globalY) });
             if (edge === 0) {
               addEdge(`${key}:${regionA}`, `${rightKey}:${regionB}`);
             }
@@ -223,7 +224,7 @@ export class TopologyManager {
             // Check edge between them: The topEdge of the bottom tile
             const globalX = cx * size + lx;
             const globalY = (cy + 1) * size;
-            const edge = this.world.getTopEdge({ x: tileCoordinate(globalX), y: tileCoordinate(globalY) });
+            const edge = getTopBarrier(this.world, { x: tileCoordinate(globalX), y: tileCoordinate(globalY) });
             if (edge === 0) {
               addEdge(`${key}:${regionA}`, `${bottomKey}:${regionB}`);
             }

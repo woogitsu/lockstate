@@ -995,6 +995,7 @@
      here and above it in the night block. Two of the five are the delivery's
      (surface `#ffffff`, background `#f2f6f8`); the ladder needs five. */
   --surface-sunken: var(--paper-150);
+  --scrim: rgb(0 0 0 / 55%);
   --surface-base: var(--paper-050);
   --surface-raised: var(--paper-000);
   --surface-overlay: var(--paper-100);
@@ -1056,6 +1057,7 @@
   color-scheme: dark;
 
   --surface-sunken: var(--ink-900);
+  --scrim: rgb(0 0 0 / 55%);
   --surface-base: var(--ink-800);
   --surface-raised: var(--ink-700);
   --surface-overlay: var(--ink-600);

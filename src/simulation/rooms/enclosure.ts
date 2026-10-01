@@ -1,3 +1,4 @@
+import { getTopBarrier, getLeftBarrier } from '../world/barriers';
 import { tileCoordinate, type TilePosition } from '../world/coordinates';
 
 /**
@@ -165,6 +166,7 @@ export interface RoomEnclosureResult {
  * private side to fail to match, which is the whole reason this exists as one.
  */
 export interface RoomEdgeReader {
+  getSquareStructure?(tile: TilePosition): number;
   getTopEdge(tile: TilePosition): number;
   getLeftEdge(tile: TilePosition): number;
 }
@@ -211,24 +213,24 @@ export function roomPerimeterEnclosure(world: RoomEdgeReader, rectangle: TileRec
 
   for (let x = left; x <= right; x += 1) {
     // The rectangle's top boundary: this tile's own north edge.
-    if (world.getTopEdge(tile(x, top)) === 0) {
+    if (getTopBarrier(world, tile(x, top)) === 0) {
       return { enclosure: 'open', gap: { tile: tile(x, top), edge: 'north' } };
     }
   }
   for (let x = left; x <= right; x += 1) {
     // Its bottom boundary: the north edge of the row below it.
-    if (world.getTopEdge(tile(x, bottom + 1)) === 0) {
+    if (getTopBarrier(world, tile(x, bottom + 1)) === 0) {
       return { enclosure: 'open', gap: { tile: tile(x, bottom + 1), edge: 'north' } };
     }
   }
   for (let y = top; y <= bottom; y += 1) {
-    if (world.getLeftEdge(tile(left, y)) === 0) {
+    if (getLeftBarrier(world, tile(left, y)) === 0) {
       return { enclosure: 'open', gap: { tile: tile(left, y), edge: 'west' } };
     }
   }
   for (let y = top; y <= bottom; y += 1) {
     // Its east boundary: the west edge of the column to its right.
-    if (world.getLeftEdge(tile(right + 1, y)) === 0) {
+    if (getLeftBarrier(world, tile(right + 1, y)) === 0) {
       return { enclosure: 'open', gap: { tile: tile(right + 1, y), edge: 'west' } };
     }
   }

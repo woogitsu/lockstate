@@ -46,6 +46,7 @@ import { VOID_COLOR } from './rendering/world/appearance';
 import { applyAccessibilitySettings, createDisplayScaleControl } from './ui/display-scale';
 import { createThemeControl, createThemeController, resolveSystemThemeQuery } from './ui/theme';
 import { SavePanel } from './ui/save-panel';
+import { createSimulationRoomTemplatePreflight } from './ui/simulation-room-template-port';
 import { ManageSavesPanel } from './ui/account/manage-saves-panel';
 import {
   EMPTY_HUD_VIEW_MODEL,
@@ -392,6 +393,9 @@ const roomTool = commandSender === undefined ? undefined : new RoomTool();
  * of the two tools a row arms is decided in the `arm-build-tool` branch below.
  */
 const objectTool = commandSender === undefined ? undefined : new ObjectTool();
+const roomTemplatePreflight = simulation === undefined || commandSender === undefined
+  ? undefined
+  : createSimulationRoomTemplatePreflight(simulation);
 
 /**
  * The footprint of the object a buildable places, in tiles, or `undefined` for
@@ -2645,6 +2649,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
 
   hud = mountHud(app, {
     localizer,
+    ...(roomTemplatePreflight === undefined ? {} : { roomTemplatePreflight }),
     layout: loadLayoutSettings(layoutStore),
     // Persisted first and painted second, exactly as the interface scale is:
     // `saveLayoutSettings` swallows a refusal by design, so the write cannot
@@ -2758,6 +2763,14 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     } : {}),
     onIntent: (intent: HudIntent) => {
       switch (intent.kind) {
+        case 'place-room-template':
+          requireSimulation(commands).submit({
+            type: 'PlaceRoomTemplate',
+            templateId: intent.templateId,
+            origin: intent.origin,
+            ...(intent.mirrorX === undefined ? {} : { mirrorX: intent.mirrorX }),
+          });
+          return;
         /*
          * Chrome -- the HUD has already applied it locally -- with one half
          * outside the HUD: which tab is showing decides whether the room

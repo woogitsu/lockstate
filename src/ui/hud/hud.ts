@@ -1,6 +1,8 @@
 import { createCameraPoseControl, type CameraPoseStep } from './camera-pose-control';
 import type { LocalizationKey } from '../../content/localization';
 import type { MinimapView } from '../../shared/minimap-view';
+import type { RoomTemplateTool } from '../room-template-tool';
+import { RoomTemplateTool as RoomTemplateToolState, type RoomTemplatePlacementRequest, type RoomTemplatePreflight } from '../room-template-tool';
 import { DEFAULT_LAYOUT_SETTINGS, type LayoutSettings } from '../../input/layout-preference';
 import type { MessageParameters } from '../../services/localization/format';
 import { hostRefusalReason } from '../host-refusal';
@@ -376,6 +378,7 @@ export interface HudToolStandDownSource {
 
 export type HudIntent =
   | { readonly kind: 'select-tab'; readonly tab: HudTabId }
+  | ({ readonly kind: 'place-room-template' } & RoomTemplatePlacementRequest)
   | { readonly kind: 'set-clock'; readonly mode: HudClockMode; readonly speed: HudSpeed }
   | { readonly kind: 'toggle-panel'; readonly panel: HudPanelId; readonly collapsed: boolean }
   /**
@@ -866,6 +869,7 @@ export interface HudUnavailableNotice {
 
 export interface MountHudOptions {
   readonly localizer: HudLocalizer;
+  readonly roomTemplatePreflight?: (request: RoomTemplatePlacementRequest) => Promise<RoomTemplatePreflight>;
   /**
    * The player's stored layout: which regions are folded and how wide or tall
    * the two resizable ones are (#1159).
@@ -2292,8 +2296,15 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   // simulation, so it goes through the same gate as the transport controls
   // and a rejection is reported rather than dropped. Nothing changes locally
   // -- the wall appears when a snapshot says it was built.
+  const roomTemplateTool: RoomTemplateTool | undefined = options.roomTemplatePreflight === undefined || options.onIntent === undefined
+    ? undefined
+    : new RoomTemplateToolState({
+        preflight: options.roomTemplatePreflight,
+        place: async (request) => { await options.onIntent?.({ kind: 'place-room-template', ...request }); },
+      });
   const buildPanel: BuildPanel = createBuildPanel({
     localizer,
+    ...(roomTemplateTool === undefined ? {} : { roomTemplateTool }),
     model: options.build ?? { buildables: [], origin: { x: 0, y: 0 } },
     onPlace: (intent) => {
       /*
