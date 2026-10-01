@@ -205,3 +205,21 @@ hide interiors, no HUD or text, 16:9 1920 × 1080, no copied game art.” Add:
 - Wall/cutaway Blender kit: `codex/wall-cutaway-art-2026-09-28`.
 - On-screen camera pan: #1590. Rotation input contract: #1591. Both are separate
   from the renderer's still-missing angled projection.
+
+## Blender stove module (2026-10-01)
+
+A production-ready source asset is now authored for the kitchen lane:
+`assets/source/blender/furniture.kitchen.stove.variants.blend`. The
+reproducible `build_kitchen_stove.py` script renders 72 transparent 128 px
+frames (12 yaw poses × 6 elevations), and their hashes are recorded in
+`public/game-content/oblique-furniture.kitchen-stove.v1.json`. The catalog is
+registered as `furniture.kitchen.stove.variants` in the oblique module
+registry. The model is a two-tile commercial stove with four burners, twin oven
+faces, controls, splash guard and feet.
+
+This is authored Blender art and a verified runtime catalog, but it is not yet
+shown by the production `WorldScene`: the next integration step is to resolve
+an oblique object-sprite consumer for `object.stove`, then verify placement,
+cutaway/depth ordering and Save/Load in the real Full HD scene. The module is
+therefore a concrete art increment, not a claim that the complete angled mode
+has shipped.
