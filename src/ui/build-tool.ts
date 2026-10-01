@@ -4,6 +4,7 @@ import type {
   EditHistoryPort,
   ToolStandDownPort,
 } from '../rendering/build/edge-picking';
+import type { SquareBuildToolPort, SquareTarget } from '../rendering/build/square-picking';
 import type {
   BuildPanelTarget,
   HudBuildOrder,
@@ -87,6 +88,7 @@ import type {
 export class BuildTool
   implements
     BuildToolPort,
+    SquareBuildToolPort,
     EditHistoryPort,
     ToolStandDownPort,
     HudWorldBuildSource,
@@ -95,6 +97,7 @@ export class BuildTool
 {
   private armed = false;
   private definitionId: string | undefined;
+  private squareFootprint = false;
 
   /**
    * Where a finished gesture goes, and the reason this class no longer knows
@@ -174,8 +177,9 @@ export class BuildTool
    * would take over the pointer and then refuse every gesture -- which reads
    * as a broken world, not as a missing selection.
    */
-  public setArmed(armed: boolean, definitionId?: string): void {
+  public setArmed(armed: boolean, definitionId?: string, squareFootprint = this.squareFootprint): void {
     this.definitionId = definitionId ?? this.definitionId;
+    this.squareFootprint = squareFootprint;
     this.armed = armed && this.definitionId !== undefined;
     // A tool that is not armed is aimed at nothing, and says so (#550).
     //
@@ -202,6 +206,10 @@ export class BuildTool
 
   public isArmed(): boolean {
     return this.armed;
+  }
+
+  public usesSquareFootprint(): boolean {
+    return this.squareFootprint;
   }
 
   public get selectedDefinitionId(): string | undefined {
@@ -242,6 +250,25 @@ export class BuildTool
       edge: segment.edge,
     }));
     this.orders?.({ definitionId, edges });
+  }
+
+  /** A full-square wall run uses the same HUD gate and transaction as an edge run. */
+  public placeSquares(squares: readonly SquareTarget[]): void {
+    const definitionId = this.definitionId;
+    if (!this.armed || definitionId === undefined || squares.length === 0) return;
+    const seen = new Set<string>();
+    const unique = squares.filter(({ x, y }) => {
+      const key = `${x},${y}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+    this.orders?.({ definitionId, edges: [], squares: unique });
+  }
+
+  public targetSquares(squares: readonly SquareTarget[] | undefined): void {
+    const first = squares?.[0];
+    this.readout?.(first === undefined ? undefined : { x: first.x, y: first.y, segments: squares?.length ?? 0 });
   }
 
   /**

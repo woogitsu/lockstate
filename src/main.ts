@@ -2972,7 +2972,9 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
             return;
           }
           objects?.setArmed(false, { removing: false });
-          tool?.setArmed(intent.armed, intent.definitionId);
+          tool?.setArmed(intent.armed, intent.definitionId,
+            worldScene instanceof ObliqueWorldScene &&
+            BUILDABLE_REGISTRY.get(intent.definitionId ?? '')?.category === 'wall');
           return;
         }
 
@@ -3307,6 +3309,9 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
            * and is now one transaction.
            */
           const transactionId = `build-${crypto.randomUUID()}`;
+          if (intent.squares !== undefined && intent.edges.length > 0) {
+            throw new Error('A build gesture cannot name edges and occupied squares together.');
+          }
           for (const edge of intent.edges) {
             // A throw ends the run here rather than firing eleven more doomed
             // commands at a worker that has already said no -- and it is the
@@ -3321,6 +3326,17 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
               x: edge.x,
               y: edge.y,
               edge: edge.edge,
+              transactionId,
+            });
+          }
+          for (const square of intent.squares ?? []) {
+            sender.submit({
+              type: 'PlaceBuildOrder',
+              orderId: `order-${crypto.randomUUID()}`,
+              definitionId: intent.definitionId,
+              x: square.x,
+              y: square.y,
+              footprint: 'square',
               transactionId,
             });
           }

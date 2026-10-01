@@ -20,4 +20,11 @@ describe('whole-square wall gesture', () => {
     ]);
     expect(() => squareRun({ x: 2.5, y: 3 }, { x: 2, y: 1 })).toThrow(RangeError);
   });
+
+  it('caps a long drag at the same 64-square construction limit as edge runs', () => {
+    const squares = squareRun({ x: 3, y: 2 }, { x: 300, y: 2 });
+    expect(squares).toHaveLength(64);
+    expect(squares[0]).toEqual({ x: 3, y: 2 });
+    expect(squares.at(-1)).toEqual({ x: 66, y: 2 });
+  });
 });

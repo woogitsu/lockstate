@@ -124,6 +124,11 @@ export interface HudBuildEdgeTarget {
   readonly edge: HudBuildEdge;
 }
 
+export interface HudBuildSquareTarget {
+  readonly x: number;
+  readonly y: number;
+}
+
 /**
  * What one build gesture asked for: a buildable, and the edges it covered.
  *
@@ -134,7 +139,9 @@ export interface HudBuildEdgeTarget {
  */
 export interface HudBuildOrder {
   readonly definitionId: string;
+  /** Empty only when the gesture names occupied squares instead. */
   readonly edges: readonly HudBuildEdgeTarget[];
+  readonly squares?: readonly HudBuildSquareTarget[];
 }
 
 /**

@@ -44,6 +44,17 @@ test('an angled world gesture reaches the real build command and survives save/l
       .filter((message) => (message as { kind?: string }).kind === 'simulation/submit-command')
       .filter((message) => (message as { payload?: { command?: { data?: { type?: string } } } }).payload?.command?.data?.type === 'PlaceBuildOrder').length,
   )).toBeGreaterThan(0);
+  const placed = await page.evaluate(() =>
+    ((window as Window & { lockstateSentToWorker?: unknown[] }).lockstateSentToWorker ?? [])
+      .filter((message) => (message as { kind?: string }).kind === 'simulation/submit-command')
+      .map((message) => (message as { payload?: { command?: { data?: Record<string, unknown> } } }).payload?.command?.data)
+      .filter((data) => data?.['type'] === 'PlaceBuildOrder'),
+  );
+  expect(placed.length).toBeGreaterThan(1);
+  expect(placed.every((order) => order?.['footprint'] === 'square' && order['edge'] === undefined),
+    'the angled Build gesture sent edge walls instead of occupied squares').toBe(true);
+  expect(new Set(placed.map((order) => `${order?.['x']},${order?.['y']}`)).size).toBe(placed.length);
+  expect(new Set(placed.map((order) => order?.['transactionId'])).size).toBe(1);
   await page.getByRole('button', { name: 'Overview' }).click();
   await page.getByRole('button', { name: 'Save now' }).click();
   await expect(page.locator('.save-panel__status')).toContainText('Saved');
