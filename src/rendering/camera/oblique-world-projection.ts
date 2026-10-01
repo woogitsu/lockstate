@@ -115,6 +115,7 @@ export function projectObliqueWorldFrame(frame: RenderFrame, camera: ObliqueCame
   };
   const squareNeedsCutaway = (tileX: number, tileY: number): boolean => behind(tileX, tileY, [
     [tileX - 1, tileY], [tileX + 1, tileY], [tileX, tileY - 1], [tileX, tileY + 1],
+    [tileX - 1, tileY - 1], [tileX + 1, tileY - 1], [tileX - 1, tileY + 1], [tileX + 1, tileY + 1],
   ]);
   const edgeNeedsCutaway = (kind: 'north-edge' | 'west-edge', tileX: number, tileY: number): boolean => {
     const sides: readonly (readonly [number, number])[] = kind === 'north-edge'
