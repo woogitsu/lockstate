@@ -3,6 +3,9 @@ import { RoomTemplateTool } from '../../src/ui/room-template-tool';
 import { installRoomTemplateWorldBridge } from '../../src/ui/room-template-world-bridge';
 
 class ElementStub extends EventTarget {
+  public style: Record<string, string> = {};
+  public dataset: Record<string, string> = {};
+  public replaceChildren = vi.fn();
   public width = 1920;
   public height = 1080;
   public parentElement = { append: vi.fn() };
@@ -115,4 +118,39 @@ describe('room plan pointer gesture ownership', () => {
     expect(h.place).toHaveBeenCalledWith(expect.objectContaining({ templateId: 'yard-basic', origin: { x: 12, y: 8 } }));
     h.dispose();
   });
+});
+
+
+it('keeps a mirrored four-cell row under a stationary cursor when the camera picking transform changes', async () => {
+  const canvas = new ElementStub();
+  const events = new EventTarget();
+  vi.stubGlobal('window', events);
+  vi.stubGlobal('document', { createElement: () => new ElementStub(), createElementNS: () => new ElementStub() });
+  let frame!: () => void;
+  vi.stubGlobal('requestAnimationFrame', (callback: () => void) => { frame = callback; });
+  let cameraOffsetTiles = 0;
+  const preflight = vi.fn(async () => ({ ok: true as const }));
+  const place = vi.fn(async () => {});
+  const tool = new RoomTemplateTool({ preflight, place, objectFootprint: id => ({ width: 1, height: id === 'bed-wooden' ? 2 : 1 }) });
+  tool.select('cell-row-four', true);
+  tool.arm();
+  const dispose = installRoomTemplateWorldBridge(canvas as unknown as HTMLCanvasElement, tool, {
+    tileSize: 32,
+    pick: point => ({ x: Math.floor(point.x / 32) + cameraOffsetTiles, y: Math.floor(point.y / 32) }),
+    project: point => ({ x: point.x - cameraOffsetTiles * 32, y: point.y }),
+    objectFootprint: id => tool.objectFootprint(id), label: () => '',
+  });
+  pointer(canvas, 'pointermove');
+  await Promise.resolve(); await Promise.resolve();
+  frame();
+  expect(preflight).toHaveBeenLastCalledWith({ templateId: 'cell-row-four', origin: { x: 25, y: 12 }, mirrorX: true });
+  cameraOffsetTiles = 4;
+  frame();
+  await Promise.resolve(); await Promise.resolve();
+  expect(preflight).toHaveBeenLastCalledWith({ templateId: 'cell-row-four', origin: { x: 29, y: 12 }, mirrorX: true });
+  frame(); frame(); frame();
+  expect(preflight).toHaveBeenCalledTimes(2);
+  pointer(canvas, 'pointerdown'); pointer(canvas, 'pointerup');
+  await vi.waitFor(() => expect(place).toHaveBeenCalledWith({ templateId: 'cell-row-four', origin: { x: 29, y: 12 }, mirrorX: true }));
+  dispose();
 });

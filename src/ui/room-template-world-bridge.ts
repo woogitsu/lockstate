@@ -29,9 +29,11 @@ export function installRoomTemplateWorldBridge(canvas: HTMLCanvasElement, tool: 
   let downSelection: number | undefined;
   let painted = '';
   let disposed = false;
+  let lastScreen: Point | undefined;
 
   const move = (screen: Point): void => {
     if (!tool.isArmed()) return;
+    lastScreen = screen;
     const next = options.pick(screen);
     if (origin?.x === next.x && origin.y === next.y && selection === tool.revision) return;
     origin = next;
@@ -59,7 +61,10 @@ export function installRoomTemplateWorldBridge(canvas: HTMLCanvasElement, tool: 
     move(screenOf(event));
     return true;
   };
-  const pointerMove = (event: PointerEvent): void => { capture(event); };
+  const pointerMove = (event: PointerEvent): void => {
+    if (tool.isArmed()) lastScreen = screenOf(event);
+    capture(event);
+  };
   const resetPress = (): void => { downPointer = undefined; downSelection = undefined; };
   const pointerDown = (event: PointerEvent): void => {
     if (capture(event)) { downPointer = event.pointerId; downSelection = tool.revision; }
@@ -95,6 +100,10 @@ export function installRoomTemplateWorldBridge(canvas: HTMLCanvasElement, tool: 
 
   const paint = (): void => {
     if (disposed) return;
+    // Keyboard pan/turn/tilt changes picking without a pointer event. Refresh
+    // the cursor footprint before painting; move deduplicates unchanged tiles.
+    if (tool.isArmed() && lastScreen !== undefined) move(lastScreen);
+    else if (!tool.isArmed()) lastScreen = undefined;
     layer.hidden = !tool.isArmed() || plan === undefined;
     if (tool.isArmed() && origin !== undefined && selection !== tool.revision) {
       origin = undefined;
