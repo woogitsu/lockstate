@@ -272,3 +272,8 @@ Four production-path tests reproduced unintended template placement after pointe
 
 A delayed room-plan confirmation was discarded when moving the cursor triggered a newer hover query, leaving the tool armed after placement. The production-path test fails before the fix (armed true instead of false). Accepted placement now disarms the matching original selection irrespective of newer hover queries; stale refusals still cannot repaint newer previews, and a newly armed selection is protected from older confirmations. Eleven bridge/tool tests and TypeScript pass. This is a source integration checkpoint; browser acceptance remains separate.
 
+
+## Near-wall visibility integrated checkpoint
+
+Merged camera agent47eee44860 into the combined feature root. The pure world projection lowers camera-facing walls with room interiors behind them, switches the matching authored cutaway asset, preserves full door height and never changes the worker's occupied square, edge, collision or saved world. Agent proof includes yaw0/elevation45 and yaw180/elevation65 FullHD browser cases (2 green); identity-height mutation makes the pixel test red. Root integration passes six suites75tests including completed-room Save/Load/Undo/Redo and whole-room catalogue/protocol cases; TypeScript passes. This does not replace true Blender-runtime QA or owner approval of the pending save metadata.
+
