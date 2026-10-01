@@ -3,6 +3,7 @@ import { dirname, resolve } from 'node:path';
 import { execPath } from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from '@playwright/test';
+import { BROWSER_SERVER_STARTUP_TIMEOUT_MS } from './browser-startup-budget';
 
 const repositoryRoot = fileURLToPath(new URL('../../', import.meta.url));
 
@@ -128,6 +129,10 @@ export default defineConfig({
    * be collected by both configs or by neither.
    */
   testIgnore: /production-artifact\.spec\.ts$/,
+  // The webServer readiness URL is static HTML. Warm the assembled app's Vite
+  // module graph before Playwright starts any test's 60-second clock; a fresh
+  // worktree otherwise spends ~40 seconds optimizing on its first page.goto.
+  globalSetup: fileURLToPath(new URL('./prewarm-production-page.ts', import.meta.url)),
   fullyParallel: false,
   workers: 1,
   forbidOnly: process.env['CI'] !== undefined,
@@ -271,6 +276,6 @@ export default defineConfig({
      * server thought it was doing.
      */
     stdout: 'pipe',
-    timeout: 120_000,
+    timeout: BROWSER_SERVER_STARTUP_TIMEOUT_MS,
   },
 });
