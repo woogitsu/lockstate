@@ -64,11 +64,11 @@ canvas {
  * prison is created. The pseudo-element is scoped to the visible empty state,
  * so it disappears as soon as a session is created or loaded.
  */
-.empty-world-prompt:not([hidden])::before {
+#app:has(.empty-world-prompt:not([hidden]))::before {
   content: '';
   position: fixed;
   inset: 0;
-  z-index: -1;
+  z-index: calc(var(--hud-layer) - 2);
   pointer-events: none;
   background-color: var(--surface-base);
   /* The design-token gate forbids gradients and shadows. A tiny inline SVG
