@@ -208,6 +208,10 @@
                     {
                         "assetId":  "furniture.office.desk.generic",
                         "manifest":  "/game-content/oblique-furniture-office-desk-generic.v1.json"
+                    },
+                    {
+                        "assetId":  "fixture.cell.sink.handwash",
+                        "manifest":  "/game-content/oblique-fixture-cell-sink-handwash.v1.json"
                     }
                 ]
 }

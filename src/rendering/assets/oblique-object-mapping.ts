@@ -16,6 +16,7 @@ export const OBLIQUE_OBJECT_ASSET_IDS: Readonly<Record<string, string>> = Object
   'object.bookshelf': 'furniture.library.bookshelf.variants',
   'object.waste-bin': 'fixture.cell.waste_bin',
   'object.desk': 'furniture.office.desk.generic',
+  'object.sink': 'fixture.cell.sink.handwash',
 });
 
 export function obliqueAssetIdForObject(objectId: string): string | undefined {

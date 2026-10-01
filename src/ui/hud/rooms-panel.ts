@@ -691,7 +691,7 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
    * the player cannot see leaves a rule block that describes no visible room,
    * which is the confusion the selection was moved to remove.
    *
-   * **Once, on the first reveal that has a layout, and never again.**
+   * **Once on first reveal, and again only after an explicit layout refresh.**
    * `hud.ts`'s `paintState` calls `setVisible(true)` on *every* state change
    * while this tab is showing, so scrolling on each call would take the list
    * back from a player who had scrolled it. And the first call may land while
@@ -704,10 +704,15 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
    * way `block: 'nearest'` is: a row already inside the box moves nothing.
    */
   let selectionRevealed = false;
-  const revealInitialSelection = (): void => {
+  const revealInitialSelection = (force = false): void => {
     const row = selectedId === undefined ? undefined : rows.get(selectedId)?.element;
     const listBox = catalogueList.getBoundingClientRect();
     if (row === undefined || catalogueList.clientHeight === 0) return;
+    // Ordinary state paints must preserve a player's catalogue scroll. A
+    // layout refresh is different: changing interface scale can shrink the
+    // scrollport around the selected row, so the explicit caller asks us to
+    // restore visibility once the new geometry has been applied.
+    if (selectionRevealed && !force) return;
     selectionRevealed = true;
     const rowBox = row.getBoundingClientRect();
     if (rowBox.bottom > listBox.bottom) catalogueList.scrollTop += rowBox.bottom - listBox.bottom;
@@ -2127,7 +2132,7 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
     isArmed: () => armed,
     isRemoving: () => removing,
     refreshLayout(): void {
-      if (!panel.element.hidden) revealInitialSelection();
+      if (!panel.element.hidden) revealInitialSelection(true);
     },
     setArea(next: RoomsPanelArea | undefined): void {
       area = next;
