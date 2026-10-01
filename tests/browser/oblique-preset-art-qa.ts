@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { instantiateRoomTemplate, type RoomTemplateId } from '../../src/content/room-template-catalog';
 import { catalogueObjectId } from '../../src/rendering/world/structures';
 import { obliqueCanonicalAssetIdForObject } from '../../src/rendering/assets/oblique-object-mapping';
-import { parseObliqueModuleCatalog } from '../../src/rendering/assets/oblique-module-catalog';
+import { parseObliqueModuleCatalog, selectObliqueModuleFrame, type ObliqueModuleCatalog } from '../../src/rendering/assets/oblique-module-catalog';
 import { parseObliqueModuleRegistry } from '../../src/rendering/assets/oblique-module-registry';
 import { projectObliqueWorldFrame } from '../../src/rendering/camera/oblique-world-projection';
 import { ObliqueWorldScene } from '../../src/rendering/scene/oblique-world-scene';
@@ -27,6 +27,13 @@ for (let y = 0; y < 16; y += 1) for (let x = 0; x < 16; x += 1) {
 for (const square of plan.wallSquares) {
   world.setSquareStructure({ x: tileCoordinate(square.x), y: tileCoordinate(square.y) }, 1);
 }
+for (const zone of plan.zones) {
+  for (let y = zone.y; y < zone.y + zone.height; y += 1) {
+    for (let x = zone.x; x < zone.x + zone.width; x += 1) {
+      world.setZoning({ x: tileCoordinate(x), y: tileCoordinate(y) }, 1);
+    }
+  }
+}
 const structures = plan.objects.map((object, index) => ({
   id: `fixture-${index}`, definitionId: object.buildableId, tileX: object.x,
   tileY: object.y, phase: 'built' as const,
@@ -46,7 +53,7 @@ for (const structure of structures) {
 const registryResponse = await fetch('/game-content/oblique-module-registry.v1.json');
 if (!registryResponse.ok) throw new Error(`Registry unavailable: ${registryResponse.status}`);
 const registry = parseObliqueModuleRegistry(await registryResponse.json());
-const catalogs = new Map();
+const catalogs = new Map<string, ObliqueModuleCatalog>();
 for (const assetId of expectedAssets) {
   const entry = registry.entries.find((candidate) => candidate.assetId === assetId);
   if (entry === undefined) throw new Error(`Asset not registered: ${assetId}`);
@@ -73,6 +80,7 @@ interface Report {
   readonly projectedAssetIds: readonly string[];
   readonly missingAssetIds: readonly string[];
   readonly loadedTextureKeys: readonly string[];
+  readonly expectedTextureKeys: readonly string[];
   readonly imageCount: number;
   readonly fallbackCommands: number;
 }
@@ -106,6 +114,10 @@ window.lockstatePresetArtQA = {
       projectedAssetIds: [...new Set(assetIds)].sort(),
       missingAssetIds: solids.filter((item) => item.assetId === undefined || !catalogs.has(item.assetId)).map((item) => String(item.id)),
       loadedTextureKeys: [...privateScene.assetTextureKeys.values()].sort(),
+      expectedTextureKeys: [...new Set(assetIds)].sort().map((id) => {
+        const selected = selectObliqueModuleFrame(catalogs.get(id)!, scene.cameraPose);
+        return `oblique:${id}:${selected.yawDegrees}:${selected.elevationDegrees}`;
+      }),
       imageCount: privateScene.assetImages.length,
       fallbackCommands: (privateScene.raisedGraphics as unknown as { commandBuffer: unknown[] }).commandBuffer.length,
     };
