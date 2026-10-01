@@ -60,6 +60,7 @@ const primitiveFiles = collectTypeScriptFiles(PRIMITIVES_ROOT);
 const HUD_MODULE_NAMES = [
   'alert-row-label.ts',
   'build-panel.ts',
+  'camera-pose-control.ts',
   'dismiss-arming.ts',
   'event-band-dwell.ts',
   'hud-layout.ts',
@@ -309,6 +310,7 @@ describe('every HUD message key resolves in the bundled default locale', () => {
       'hud.overview.income-note',
       'hud.build.catalogue-row-price',
       'hud.build.catalogue-row-price-segment',
+      'hud.build.catalogue-row-price-square',
     ]);
 
     for (const key of HUD_MESSAGE_KEYS) {
