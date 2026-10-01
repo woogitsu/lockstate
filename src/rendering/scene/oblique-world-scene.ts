@@ -38,6 +38,11 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private selected: { tileX: number; tileY: number } | undefined;
   private turnPointerId: number | undefined;
   private turnPointerAt: Point | undefined;
+  /** Keep keyboard callbacks stable so a restarted scene can detach them. */
+  private readonly onKeyLeft = (): void => this.turnByKeyboard(-1, 0);
+  private readonly onKeyRight = (): void => this.turnByKeyboard(1, 0);
+  private readonly onKeyUp = (): void => this.turnByKeyboard(0, 1);
+  private readonly onKeyDown = (): void => this.turnByKeyboard(0, -1);
   private lastFrame: RenderFrame | undefined;
   private lastProjection: ObliqueWorldProjection | undefined;
   private lastPaintedRevision = -1;
@@ -107,10 +112,20 @@ export class ObliqueWorldScene extends Phaser.Scene {
     // Arrow keys provide the same small, reversible camera turns as the
     // right-button drag. Keep this on the scene input so HUD controls and
     // remapped bindings can call setPoseRadians through the same seam.
-    this.input.keyboard?.on('keydown-LEFT', () => this.turnByKeyboard(-1, 0));
-    this.input.keyboard?.on('keydown-RIGHT', () => this.turnByKeyboard(1, 0));
-    this.input.keyboard?.on('keydown-UP', () => this.turnByKeyboard(0, 1));
-    this.input.keyboard?.on('keydown-DOWN', () => this.turnByKeyboard(0, -1));
+    this.input.keyboard?.on('keydown-LEFT', this.onKeyLeft);
+    this.input.keyboard?.on('keydown-RIGHT', this.onKeyRight);
+    this.input.keyboard?.on('keydown-UP', this.onKeyUp);
+    this.input.keyboard?.on('keydown-DOWN', this.onKeyDown);
+    // A scene can be stopped and started when the renderer switches between
+    // the flat and oblique presentations. Detach our handlers at shutdown so
+    // each key press rotates once after a restart instead of accumulating
+    // callbacks from every previous scene instance.
+    this.events.once('shutdown', () => {
+      this.input.keyboard?.off('keydown-LEFT', this.onKeyLeft);
+      this.input.keyboard?.off('keydown-RIGHT', this.onKeyRight);
+      this.input.keyboard?.off('keydown-UP', this.onKeyUp);
+      this.input.keyboard?.off('keydown-DOWN', this.onKeyDown);
+    });
   }
 
   public get cameraPose(): ObliqueCameraState { return this.pose; }
