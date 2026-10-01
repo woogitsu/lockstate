@@ -15,6 +15,28 @@ import { groundToScreen, visibleGroundBounds, type ObliqueCameraState } from './
 import { obliqueDepthForAnchor, projectedRectPrism, projectedTileQuad, type TileQuad } from './oblique-geometry';
 import type { Point } from './coordinates';
 
+/**
+ * A structure is anchored at its top-left tile, but its footprint can cover
+ * several tiles (beds, tables and room-template furniture do).  Culling only
+ * the anchor drops a perfectly visible object whenever that anchor is just
+ * outside the inverse-projected viewport.  Keep the whole-square footprint in
+ * the visibility decision so the oblique view agrees with placement and the
+ * top-down renderer.
+ */
+function footprintIntersectsRange(
+  tileX: number,
+  tileY: number,
+  footprint: { readonly width: number; readonly height: number },
+  range: { readonly minTileX: number; readonly maxTileX: number; readonly minTileY: number; readonly maxTileY: number },
+): boolean {
+  return (
+    tileX <= range.maxTileX &&
+    tileX + footprint.width - 1 >= range.minTileX &&
+    tileY <= range.maxTileY &&
+    tileY + footprint.height - 1 >= range.minTileY
+  );
+}
+
 export interface ObliqueGroundTile {
   readonly tileX: number;
   readonly tileY: number;
@@ -127,10 +149,10 @@ export function projectObliqueWorldFrame(frame: RenderFrame, camera: ObliqueCame
   }
 
   for (const structure of frame.structures) {
-    if (!tileRangeContains(range, structure.tileX, structure.tileY)) continue;
+    const appearance = structureAppearance(structure.definitionId);
+    if (!footprintIntersectsRange(structure.tileX, structure.tileY, appearance.footprintTiles, range)) continue;
     world.readTile(structure.tileX, structure.tileY, sample);
     if (isDrawnAsWorldEdge(structure) && (sample.topEdge !== 0 || sample.leftEdge !== 0)) continue;
-    const appearance = structureAppearance(structure.definitionId);
     const x = structure.tileX * TILE_SIZE_PX;
     const y = structure.tileY * TILE_SIZE_PX;
     const width = appearance.footprintTiles.width * TILE_SIZE_PX;
