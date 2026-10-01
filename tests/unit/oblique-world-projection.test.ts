@@ -46,6 +46,7 @@ describe('oblique projection of an actual simulation snapshot', () => {
     cell.setOwned(origin, true);
     cell.setSquareStructure(tile(3, 2), 1);
     cell.setSquareStructure(tile(3, 4), 1);
+    cell.setSquareStructure(tile(4, 4), 1);
     const furnished: RenderFrame = {
       revision: 1,
       world: WorldRenderView.fromSnapshot(cell.snapshot()),
@@ -72,6 +73,8 @@ describe('oblique projection of an actual simulation snapshot', () => {
     expect(rise(far)).toBeCloseTo(0.75 * 64 * Math.cos(pose.elevationRadians) * pose.zoom, 5);
     expect(solid(Math.PI, 'square-wall:3:4').assetId).toBe('wall.square.brick.full');
     expect(solid(Math.PI, 'square-wall:3:2').assetId).toBe('wall.square.brick.low');
+    expect(solid(0, 'square-wall:4:4').assetId).toBe('wall.square.brick.low');
+    expect(solid(Math.PI, 'square-wall:4:4').assetId).toBe('wall.square.brick.full');
     expect(solid(0, 'bed')).toHaveProperty('kind', 'structure');
     expect(solid(0, 'toilet')).toHaveProperty('kind', 'structure');
   });
