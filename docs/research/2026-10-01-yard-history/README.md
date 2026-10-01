@@ -43,3 +43,29 @@ bootstrap. That local config override is not committed. No timeout was raised.
 Keep the stack draft while the requested save metadata and truthful generic
 building Undo/Redo message decisions remain pending. Do not merge this QA stack
 as a standalone product change.
+
+## Built-client verification (later checkpoint)
+
+The same Yard spec passed against the bundled client through the existing
+Cloudflare/workerd artifact preview pipeline: 1/1, 11.2 seconds test duration,
+14.3 seconds total, one worker, unchanged 60-second test deadline and zero
+retries. Full HD angled view uses actual controls and verifies rooms 1 -> 0 -> 1
+across completed Save/Load, Undo, Save/Load, Redo and Save/Load. No wall order is
+sent. A blur interrupts the held pointer; its release sends no placement and a
+fresh press places exactly once. The hover preview stays armed across blur,
+which is the production bridge contract; it is not required to disappear.
+
+This disproves a production startup deadlock in the recorded case. Cold dev
+module transfer consumed the earlier deadline: the Phaser prebundle response
+alone took 23.56 seconds; registry fetch began 58.56 seconds into the trace.
+No new product Issue or timeout adjustment was made for this environment delay.
+
+Reproduction used `playwright.artifact.config.ts` with a temporary derivative
+selecting only `yard-mouse-history.spec.ts` and retaining failure traces. The
+derivative changed neither server, browser, retries, timeout nor deployment.
+Build was run through the installed Vite binary with CLOUDFLARE_ENV=production,
+since the normal wrapper reproduced already-open Windows Issue #1542 (spaced
+checkout path split by shell). The resulting client bundle was served by the
+existing workerd preview. The local derivative is not a new required CI gate.
+
+![Actual Full HD Yard after Redo and Load](yard-redone-loaded-fullhd.png)
