@@ -1,3 +1,4 @@
+import { repositoryPathLabel } from '../helpers/repository-path-label';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -378,7 +379,7 @@ function scanCorpus(): { readonly files: number; readonly report: ClaimReport } 
   const contradictions: string[] = [];
 
   for (const path of paths) {
-    const label = relative(REPOSITORY_ROOT, path);
+    const label = repositoryPathLabel(relative(REPOSITORY_ROOT, path));
     if (EXEMPT(label)) continue;
     files += 1;
     const report = checkClaims(
