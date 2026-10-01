@@ -73,7 +73,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
   function select(id: RoomTemplateId): void {
     selectedId = id;
     tool?.select(id, mirrorX);
-    const plan = instantiateRoomTemplate(id, { x: 0, y: 0 });
+    const plan = instantiateRoomTemplate(id, { x: 0, y: 0 }, { mirrorX });
     for (const [rowId, button] of buttons) button.setAttribute('aria-pressed', rowId === id ? 'true' : 'false');
     dimensions.textContent = `${plan.width} × ${plan.height}`;
     const counts = new Map<string, number>();
@@ -105,7 +105,11 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
     diagram.replaceChildren();
     const wall = new Set(plan.wallSquares.map(({ x, y }) => `${x},${y}`));
     const door = new Set(plan.doorSquares.map(({ x, y }) => `${x},${y}`));
-    const objects = new Map(plan.objects.map(({ x, y, buildableId }) => [`${x},${y}`, buildableId]));
+    const objects = new Set<string>();
+    for (const object of plan.objects) {
+      const footprint = tool?.objectFootprint(object.buildableId) ?? { width: 1, height: 1 };
+      for (let dy = 0; dy < footprint.height; dy += 1) for (let dx = 0; dx < footprint.width; dx += 1) objects.add(`${object.x + dx},${object.y + dy}`);
+    }
     for (let y = 0; y < plan.height; y += 1) {
       for (let x = 0; x < plan.width; x += 1) {
         const key = `${x},${y}`;
@@ -121,6 +125,9 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
   // as a working build action while that backend is missing.
   let refreshPlacement = async (): Promise<void> => {};
   if (tool !== undefined) {
+    const onMap = element('button', { text: t('hud.build.template-on-map'), attributes: { type: 'button' } });
+    onMap.addEventListener('click', () => { tool.arm(); dialog.close(); });
+    dialog.append(onMap);
     const x = element('input', { attributes: { type: 'number', step: '1', value: '0', 'aria-label': t(HUD_MESSAGE_KEY.buildTemplateX) } });
     const y = element('input', { attributes: { type: 'number', step: '1', value: '0', 'aria-label': t(HUD_MESSAGE_KEY.buildTemplateY) } });
     const mirror = element('input', { attributes: { type: 'checkbox' } });
@@ -160,8 +167,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
     y.addEventListener('input', () => void refreshPlacement());
     mirror.addEventListener('change', () => {
       mirrorX = mirror.checked;
-      tool.select(selectedId, mirrorX);
-      void refreshPlacement();
+      select(selectedId);
     });
     place.addEventListener('click', async () => {
       const tile = origin();

@@ -7363,3 +7363,8 @@
   margin-bottom: var(--space-2);
 }
 .hud-camera-pose .ui-action-button { min-width: 0; white-space: normal; }
+
+.room-template-world-ghost { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+.room-template-world-ghost[hidden] { display: none; }
+.room-template-world-ghost svg { width: 100%; height: 100%; }
+.room-template-world-ghost__label { position: absolute; max-width: 340px; padding: 8px 12px; color: var(--text-body); background: var(--surface-raised); border: 1px solid var(--accent); border-radius: var(--radius-md); }

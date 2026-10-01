@@ -52,3 +52,15 @@ describe('room-template mouse arming', () => {
     expect(tool.isArmed()).toBe(false);
   });
 });
+
+it('drops a pending preflight when its chosen plan was replaced', async () => {
+  let resolve!: (value: { readonly ok: true }) => void;
+  const place = vi.fn(async () => {});
+  const tool = new RoomTemplateTool({ preflight: () => new Promise(done => { resolve = done; }), place });
+  tool.arm();
+  const pending = tool.placeAt({ x: 3, y: 4 });
+  tool.select('yard-basic');
+  resolve({ ok: true });
+  await pending;
+  expect(place).not.toHaveBeenCalled();
+});

@@ -876,6 +876,7 @@ export interface HudUnavailableNotice {
 
 export interface MountHudOptions {
   readonly localizer: HudLocalizer;
+  readonly roomTemplateTool?: RoomTemplateTool;
   readonly roomTemplatePreflight?: (request: RoomTemplatePlacementRequest) => Promise<RoomTemplatePreflight>;
   /**
    * The player's stored layout: which regions are folded and how wide or tall
@@ -2303,12 +2304,12 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   // simulation, so it goes through the same gate as the transport controls
   // and a rejection is reported rather than dropped. Nothing changes locally
   // -- the wall appears when a snapshot says it was built.
-  const roomTemplateTool: RoomTemplateTool | undefined = options.roomTemplatePreflight === undefined || options.onIntent === undefined
+  const roomTemplateTool: RoomTemplateTool | undefined = options.roomTemplateTool ?? (options.roomTemplatePreflight === undefined || options.onIntent === undefined
     ? undefined
     : new RoomTemplateToolState({
         preflight: options.roomTemplatePreflight,
         place: async (request) => { await options.onIntent?.({ kind: 'place-room-template', ...request }); },
-      });
+      }));
   const buildPanel: BuildPanel = createBuildPanel({
     localizer,
     ...(roomTemplateTool === undefined ? {} : { roomTemplateTool }),

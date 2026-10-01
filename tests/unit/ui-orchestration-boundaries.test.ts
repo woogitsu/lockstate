@@ -708,6 +708,7 @@ describe('UI orchestration boundaries', () => {
       'src/ui/object-tool.ts',
       'src/ui/prisoner-sentence.ts',
       'src/ui/room-template-tool.ts',
+      'src/ui/room-template-world-bridge.ts',
       'src/ui/room-tool.ts',
       'src/ui/save-panel-delete.ts',
       'src/ui/save-panel-messages.ts',

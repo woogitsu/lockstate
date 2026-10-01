@@ -1,0 +1,130 @@
+import type { RoomTemplatePlan, TemplateSquare, RoomTemplateCostQuote, RoomTemplatePreflight, RoomTemplateTool } from './room-template-tool';
+
+interface Point { readonly x: number; readonly y: number }
+export interface RoomTemplateWorldBridgeOptions {
+  readonly tileSize: number;
+  readonly pick: (screen: Point) => TemplateSquare;
+  readonly project: (world: Point) => Point;
+  readonly objectFootprint: (id: string) => { readonly width: number; readonly height: number } | undefined;
+  readonly label: (quote: RoomTemplateCostQuote | undefined, verdict: RoomTemplatePreflight | undefined) => string;
+}
+
+/** Presentation-only world ghost; preflight and placement remain worker-owned. */
+export function installRoomTemplateWorldBridge(canvas: HTMLCanvasElement, tool: RoomTemplateTool, options: RoomTemplateWorldBridgeOptions): () => void {
+  const layer = document.createElement('div');
+  layer.className = 'room-template-world-ghost';
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  const label = document.createElement('div');
+  label.className = 'room-template-world-ghost__label';
+  label.setAttribute('role', 'status');
+  layer.append(svg, label);
+  canvas.parentElement?.append(layer);
+  let plan: RoomTemplatePlan | undefined;
+  let verdict: RoomTemplatePreflight | undefined;
+  let quote: RoomTemplateCostQuote | undefined;
+  let origin: TemplateSquare | undefined;
+  let selection = -1;
+  let requestRevision = 0;
+  let downPointer: number | undefined;
+  let painted = '';
+  let disposed = false;
+
+  const move = (screen: Point): void => {
+    if (!tool.isArmed()) return;
+    const next = options.pick(screen);
+    if (origin?.x === next.x && origin.y === next.y && selection === tool.revision) return;
+    origin = next;
+    selection = tool.revision;
+    plan = tool.planAt(next);
+    verdict = undefined;
+    quote = undefined;
+    const current = ++requestRevision;
+    const selected = selection;
+    void Promise.all([tool.inspectAt(next), tool.quote()]).then(([inspection, estimate]) => {
+      if (disposed || current !== requestRevision || selected !== tool.revision || !tool.isArmed()) return;
+      verdict = inspection.verdict;
+      quote = estimate;
+      painted = '';
+    }).catch(() => { if (current === requestRevision) verdict = undefined; });
+  };
+  const screenOf = (event: PointerEvent): Point => {
+    const bounds = canvas.getBoundingClientRect();
+    return { x: (event.clientX - bounds.x) * canvas.width / bounds.width, y: (event.clientY - bounds.y) * canvas.height / bounds.height };
+  };
+  const capture = (event: PointerEvent): boolean => {
+    if (!tool.isArmed() || (event.buttons & 6) !== 0 || (event.type !== 'pointermove' && event.button !== 0)) return false;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    move(screenOf(event));
+    return true;
+  };
+  const pointerMove = (event: PointerEvent): void => { capture(event); };
+  const pointerDown = (event: PointerEvent): void => { if (capture(event)) downPointer = event.pointerId; };
+  const pointerUp = (event: PointerEvent): void => {
+    if (!capture(event) || downPointer !== event.pointerId || origin === undefined) return;
+    downPointer = undefined;
+    const selected = tool.revision;
+    const destination = { ...origin };
+    const current = ++requestRevision;
+    void tool.placeAt(destination).then(result => {
+      if (disposed || selected !== tool.revision || current !== requestRevision || !tool.isArmed()) return;
+      if (result.ok) { tool.standDown(); plan = undefined; }
+      else if (result.reason !== 'busy') { verdict = result; painted = ''; }
+    }).catch(() => { if (current === requestRevision) verdict = undefined; });
+  };
+  const cancel = (event: KeyboardEvent): void => {
+    if (event.key === 'Escape' && tool.isArmed()) { tool.standDown(); plan = undefined; requestRevision += 1; }
+  };
+  for (const [kind, handler] of [['pointermove', pointerMove], ['pointerdown', pointerDown], ['pointerup', pointerUp]] as const) canvas.addEventListener(kind, handler, true);
+  window.addEventListener('keydown', cancel, true);
+
+  const paint = (): void => {
+    if (disposed) return;
+    layer.hidden = !tool.isArmed() || plan === undefined;
+    if (tool.isArmed() && origin !== undefined && selection !== tool.revision) {
+      origin = undefined;
+      plan = undefined;
+    }
+    if (!layer.hidden && plan !== undefined) {
+      const width = canvas.width, height = canvas.height;
+      svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
+      const walls = new Set(plan.wallSquares.map(p => p.x + ':' + p.y));
+      const doors = new Set(plan.doorSquares.map(p => p.x + ':' + p.y));
+      const objects = new Set<string>();
+      for (const object of plan.objects) {
+        const footprint = options.objectFootprint(object.buildableId) ?? { width: 1, height: 1 };
+        for (let dy = 0; dy < footprint.height; dy += 1) for (let dx = 0; dx < footprint.width; dx += 1) objects.add((object.x + dx) + ':' + (object.y + dy));
+      }
+      const polygons: { points: string; fill: string }[] = [];
+      for (let dy = 0; dy < plan.height; dy += 1) for (let dx = 0; dx < plan.width; dx += 1) {
+        const x = plan.origin.x + dx, y = plan.origin.y + dy;
+        const key = x + ':' + y;
+        const points = [[x,y],[x+1,y],[x+1,y+1],[x,y+1]].map(([px,py]) => options.project({ x: px! * options.tileSize, y: py! * options.tileSize })).map(p => p.x + ',' + p.y).join(' ');
+        const blocked = verdict?.ok === false && verdict.tile.x === x && verdict.tile.y === y;
+        polygons.push({ points, fill: blocked ? '#e55353' : walls.has(key) ? '#36b8ba' : doors.has(key) ? '#e9bc52' : objects.has(key) ? '#a794e3' : '#529ddd' });
+      }
+      const text = options.label(quote, verdict);
+      const signature = JSON.stringify(polygons) + text;
+      if (painted !== signature) {
+        painted = signature;
+        svg.replaceChildren(...polygons.map(p => {
+          const polygon = document.createElementNS(svg.namespaceURI, 'polygon');
+          polygon.setAttribute('points', p.points); polygon.setAttribute('fill', p.fill); polygon.setAttribute('fill-opacity', '0.38'); polygon.setAttribute('stroke', p.fill); polygon.setAttribute('stroke-width', '2');
+          return polygon;
+        }));
+        label.textContent = text;
+        layer.dataset.ready = verdict === undefined ? 'checking' : verdict.ok ? 'clear' : 'blocked';
+      }
+      const anchor = options.project({ x: plan.origin.x * options.tileSize, y: plan.origin.y * options.tileSize });
+      label.style.left = Math.max(8, Math.min(width - 360, anchor.x)) + 'px';
+      label.style.top = Math.max(100, Math.min(height - 60, anchor.y - 48)) + 'px';
+    }
+    requestAnimationFrame(paint);
+  };
+  requestAnimationFrame(paint);
+  return () => {
+    disposed = true; layer.remove();
+    for (const [kind, handler] of [['pointermove', pointerMove], ['pointerdown', pointerDown], ['pointerup', pointerUp]] as const) canvas.removeEventListener(kind, handler, true);
+    window.removeEventListener('keydown', cancel, true);
+  };
+}
