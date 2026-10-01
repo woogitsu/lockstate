@@ -7,6 +7,16 @@ test('real render feed cell keeps one build square under the cursor while the sc
   await page.evaluate(() => window.lockstateObliqueWorldHarness.ready());
   expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.cameraPorts())).toEqual({ tile: true, minimap: true, zoom: true, sink: true });
   await expect(page.locator('canvas')).toBeVisible();
+  const beforeDrag = await page.evaluate(() => window.lockstateObliqueWorldHarness.cameraPose());
+  await page.mouse.move(960, 540);
+  await page.mouse.down({ button: 'right' });
+  await page.mouse.move(1040, 500);
+  await page.mouse.up({ button: 'right' });
+  const afterDrag = await page.evaluate(() => window.lockstateObliqueWorldHarness.cameraPose());
+  expect(afterDrag.yawDegrees).not.toBeCloseTo(beforeDrag.yawDegrees, 3);
+  expect(afterDrag.elevationDegrees).not.toBeCloseTo(beforeDrag.elevationDegrees, 3);
+  expect(afterDrag.elevationDegrees).toBeGreaterThanOrEqual(20);
+  expect(afterDrag.elevationDegrees).toBeLessThanOrEqual(80);
   expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.medicalObliqueInspection())).toEqual([
     { objectId: 'object.medical-bed', assetId: 'furniture.medical-bed.variants', footprint: { width: 1, height: 2 } },
     { objectId: 'object.medicine-cabinet', assetId: 'fixture.medicine-cabinet.variants', footprint: { width: 1, height: 1 } },

@@ -21,6 +21,7 @@ export interface ObliqueWorldHarness {
   ready(): Promise<void>;
   registryStatus(): 'loaded' | 'missing';
   furnitureSpriteFrame(id: string): string | undefined;
+  cameraPose(): { yawDegrees: number; elevationDegrees: number };
   setPose(yawDegrees: number, elevationDegrees: number): Promise<void>;
   pointAtTile(tileX: number, tileY: number): Point;
   selected(): { readonly tileX: number; readonly tileY: number } | undefined;
@@ -94,6 +95,10 @@ window.lockstateObliqueWorldHarness = {
   ready: async () => { await bootstrapReady; await ready; await scene.ready(); },
   registryStatus: () => registryState,
   furnitureSpriteFrame: (id) => scene.furnitureSpriteFrame(id),
+  cameraPose: () => ({
+    yawDegrees: scene.cameraPose.yawRadians * 180 / Math.PI,
+    elevationDegrees: scene.cameraPose.elevationRadians * 180 / Math.PI,
+  }),
   async setPose(yawDegrees, elevationDegrees) {
     scene.setPoseRadians(yawDegrees * Math.PI / 180, elevationDegrees * Math.PI / 180);
     await new Promise<void>((resolve) => { game.events.once(Phaser.Core.Events.POST_RENDER, () => resolve()); });
