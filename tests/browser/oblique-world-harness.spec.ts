@@ -10,6 +10,8 @@ test('real render feed cell keeps one build square under the cursor while the sc
     { objectId: 'object.medical-bed', assetId: 'furniture.medical-bed.variants', footprint: { width: 1, height: 2 } },
     { objectId: 'object.medicine-cabinet', assetId: 'fixture.medicine-cabinet.variants', footprint: { width: 1, height: 1 } },
   ]);
+  await expect.poll(() => page.evaluate(() => window.lockstateObliqueWorldHarness.registryStatus())).toBe('loaded');
+  await expect.poll(() => page.evaluate(() => window.lockstateObliqueWorldHarness.furnitureSpriteFrame('medical-bed-1'))).toMatch(/\.png$/);
   let previousGroundPaints = 0;
   for (const [yaw, elevation] of [[-45, 25], [0, 45], [45, 65]] as const) {
     await page.evaluate(([y, e]) => window.lockstateObliqueWorldHarness.setPose(y, e), [yaw, elevation] as const);
