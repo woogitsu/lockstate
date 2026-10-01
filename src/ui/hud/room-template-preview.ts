@@ -101,7 +101,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
     };
     contents.textContent = [...counts].map(([objectId, count]) => `${t(objectNames[objectId]!) } × ${count}`).join(' · ');
     diagram.setAttribute('aria-label', `${t(NAME_KEYS[id])}, ${plan.width} × ${plan.height}`);
-    const tileSize = Math.min(24, 240 / plan.height, 320 / plan.width);
+    const tileSize = Math.min(24, (220 - 2 * (plan.height - 1)) / plan.height, (320 - 2 * (plan.width - 1)) / plan.width);
     diagram.style.setProperty('--template-tile-size', `${tileSize}px`);
     diagram.style.gridTemplateColumns = `repeat(${plan.width}, var(--template-tile-size))`;
     diagram.replaceChildren();
