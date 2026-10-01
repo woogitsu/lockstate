@@ -1,4 +1,4 @@
-import Phaser from 'phaser';
+﻿import Phaser from 'phaser';
 import { chunkCoordinate, tileCoordinate } from '../../src/simulation/world/coordinates';
 import { SparseWorld } from '../../src/simulation/world/sparse-world';
 import { WorldRenderView } from '../../src/rendering/world/world-view';
@@ -9,17 +9,18 @@ import type { RenderFrame } from '../../src/rendering/feed/render-feed';
 import type { Point } from '../../src/rendering/camera/coordinates';
 import { defaultObjectRegistry } from '../../src/content/object-catalog';
 import { obliqueAssetIdForObject } from '../../src/rendering/assets/oblique-object-mapping';
+import { resolveObliqueCatalogs } from '../../src/rendering/scene/oblique-composition-adapter';
 
 export interface MedicalObliqueInspection {
   readonly objectId: 'object.medical-bed' | 'object.medicine-cabinet';
   readonly assetId: string | undefined;
   readonly footprint: { readonly width: number; readonly height: number };
 }
-import { fetchObliqueModuleSet } from '../../src/rendering/assets/oblique-module-registry';
 
 export interface ObliqueWorldHarness {
   ready(): Promise<void>;
   registryStatus(): 'loaded' | 'missing';
+  registryError(): string | undefined;
   furnitureSpriteFrame(id: string): string | undefined;
   setPose(yawDegrees: number, elevationDegrees: number): Promise<void>;
   pointAtTile(tileX: number, tileY: number): Point;
@@ -51,7 +52,7 @@ for (let y = 1; y <= 4; y += 1) {
 const frame: RenderFrame = {
   revision: 1,
   world: WorldRenderView.fromSnapshot(world.snapshot()),
-  structures: [{ id: 'medical-bed-1', definitionId: 'medical-bed-wooden', tileX: 2, tileY: 2, phase: 'built' }],
+  structures: [{ id: 'medical-bed-1', definitionId: 'medical-bed-wooden', objectId: 'object.medical-bed', tileX: 2, tileY: 2, phase: 'built' }],
   actors: [{ id: 7, assetId: 'actor.prisoner', tileX: 3, tileY: 3, deltaX: 0, deltaY: 0 }],
   rooms: [],
   roomConditions: [],
@@ -65,15 +66,18 @@ class HarnessScene extends ObliqueWorldScene {
 let scene!: HarnessScene;
 let game!: Phaser.Game;
 let registryState: 'loaded' | 'missing' = 'missing';
+let registryFailure: string | undefined;
+let sceneReadyFailure: string | undefined;
 let resolveBootstrap!: () => void;
 const bootstrapReady = new Promise<void>((resolve) => { resolveBootstrap = resolve; });
 void (async () => {
   let catalogs: ReadonlyMap<string, import('../../src/rendering/assets/oblique-module-catalog').ObliqueModuleCatalog> = new Map();
   try {
-    const timeout = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('oblique registry timeout')), 10_000));
-    catalogs = await Promise.race([fetchObliqueModuleSet(), timeout]);
-    registryState = 'loaded';
-  } catch { /* harness keeps geometry fallback when assets are unavailable */ }
+    const timeout = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('oblique registry timeout after 10000ms')), 10_000));
+    catalogs = (await Promise.race([resolveObliqueCatalogs(true), timeout])) ?? new Map();
+  } catch (error) {
+    registryFailure = error instanceof Error ? error.message : String(error);
+  }
   scene = new HarnessScene({ feed: { readFrame: () => frame }, obliqueCatalogs: catalogs });
   game = new Phaser.Game({
   type: Phaser.AUTO,
@@ -85,13 +89,18 @@ void (async () => {
   scale: { mode: Phaser.Scale.RESIZE, autoCenter: Phaser.Scale.CENTER_BOTH },
     render: { antialias: true, roundPixels: false, pixelArt: false },
   });
-  await scene.ready().catch(() => undefined);
+  await ready;
+  try {
+    await scene.ready();
+    registryState = 'loaded';
+  } catch (error) { sceneReadyFailure = error instanceof Error ? error.message : String(error); registryFailure ??= sceneReadyFailure; }
   resolveBootstrap();
 })();
 
 window.lockstateObliqueWorldHarness = {
-  ready: async () => { await bootstrapReady; await ready; await scene.ready(); },
+  ready: async () => { await bootstrapReady; await ready; if (registryFailure !== undefined) throw new Error(`Oblique harness bootstrap failed: ${registryFailure}`); await scene.ready(); },
   registryStatus: () => registryState,
+  registryError: () => registryFailure,
   furnitureSpriteFrame: (id) => scene.furnitureSpriteFrame(id),
   async setPose(yawDegrees, elevationDegrees) {
     scene.setPoseRadians(yawDegrees * Math.PI / 180, elevationDegrees * Math.PI / 180);
@@ -108,3 +117,4 @@ window.lockstateObliqueWorldHarness = {
     return { objectId, assetId: obliqueAssetIdForObject(objectId), footprint: definition.footprint };
   }),
 };
+
