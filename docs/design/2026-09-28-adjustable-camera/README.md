@@ -317,3 +317,9 @@ Removing the production bed mapping deliberately makes the coverage suite fail o
 
 The earlier Yard browser bootstrap limitation was superseded by the built-game test committed in423628c04e: real Full HD64-square ghost, interruption without placement, fresh mouse placement, and Save/Load between Undo and Redo passed in11.2seconds. No wall BuildOrder was created; room count went1 to0 to1. Save-field approval and truthful success wording remain pending owner decisions, so the combined feature PR remains draft.
 
+## Authored square walls and catalogue usability integrated
+
+Merged Blender checkpoint1d41b9a4ee: full and low brick square models now match the projection heights0.75 and0.34 tiles, with72 authored poses each. Root wall/catalogue/registry suites pass23tests, and the official Windows production build generates and verifies client and Worker output. Camera picking testded85d9dd1 is also integrated; its independent branch proved four yaw directions and two elevations through actual mouse placement, with a deliberately broken yaw projection detected before restoration.
+
+Integrated HUD cardsf092035b36/2049c77c0a/c0f4c0cb0a/b90bb56fbc. The twenty plans show dimensions, authored footprint miniatures and fixture counts before selection; the long four-cell diagram keeps its controls visible in Full HD. Actual built-game browser passed, and shrinking the bed's two-tile card footprint deliberately failed that case before restoration. The source screenshot is recorded in the indexed room-plan-cards research folder. Native inventory CLI issue1575 is corrected with Node's file URL conversion; regeneration reports588authored strings and the inventory gate passes. Final combined textured-cell camera controls and full room fixture rendering are actively being verified by separate agents; these source and build checkpoints do not establish a production release.
+

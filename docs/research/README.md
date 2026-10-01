@@ -227,6 +227,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 | [2026-10-01 integrated square walls](./2026-10-01-integrated-square-walls/README.md) | Do completed square walls survive Save/Load in both actual renderers? | Full HD integration evidence and pixel mutation; scheduled construction does not establish mouse placement or finished art. |
 | [2026-10-01 room plan world mouse](./2026-10-01-room-plan-world-mouse/README.md) | Can the player arm and place the twenty-plan catalogue through real mouse input? | Actual Full HD ghost, worker quote, overlap refusal and Save/Load evidence; furniture artwork remains independently verified. |
 | [2026-10-01 Yard history](./2026-10-01-yard-history/README.md) | Can shell-free Yard zoning be undone and redone after Save/Load? | Backend transaction and actual built-game Full HD browser evidence; no fabricated wall order or release claim. |
+| [2026-10-01 room plan cards](./2026-10-01-room-plan-cards/README.md) | Can twenty plans be compared before selection while the largest plan keeps its controls visible? | Actual Full HD cards, dimensions, authored footprint and mouse arming evidence; deliberate mutation acceptance remains pending. |
 
 ### Findings from the first four records that changed a decision
 
