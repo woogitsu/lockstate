@@ -200,6 +200,10 @@
                     {
                         "assetId":  "utility.washing-machine.variants",
                         "manifest":  "/game-content/oblique-utility.washing-machine.v1.json"
+                    },
+                    {
+                        "assetId":  "fixture.cell.waste_bin",
+                        "manifest":  "/game-content/oblique-fixture-cell-waste-bin.v1.json"
                     }
                 ]
 }

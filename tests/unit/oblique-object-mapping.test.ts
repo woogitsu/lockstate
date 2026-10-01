@@ -9,6 +9,7 @@ describe('medical oblique object mapping', () => {
   ['object.utility-panel','utility.utility-panel.variants'],
   ['object.bookshelf','furniture.library.bookshelf.variants'],
   ['object.prep-counter','furniture.kitchen.prep-counter.variants'],
+  ['object.waste-bin','fixture.cell.waste_bin'],
  ] as const)('maps %s to registered asset', (objectId, assetId) => expect(obliqueAssetIdForObject(objectId)).toBe(assetId));
  it('resolves mapped catalogs and fails closed for unknown ids', () => {
   const security = { assetId: 'utility.security-console.variants' } as any;
