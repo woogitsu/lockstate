@@ -168,6 +168,10 @@
                     {
                         "assetId":  "fixture.medicine-cabinet.variants",
                         "manifest":  "/game-content/oblique-fixture.medicine-cabinet.v1.json"
+                    },
+                    {
+                        "assetId":  "utility.washing-machine.variants",
+                        "manifest":  "/game-content/oblique-utility.washing-machine.v1.json"
                     }
                 ]
 }
