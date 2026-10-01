@@ -232,6 +232,8 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 | [2026-10-01 room plan quote](./2026-10-01-room-plan-quote/README.md) | Are materials and catalogue value visible before mouse placement? | Worker-derived dialog and ghost quote, including Yard zero value. |
 | [2026-10-01 coordinate independence](./2026-10-01-map-quote-coordinate-independence/README.md) | Does an invalid advanced coordinate erase the independent map quote? | Red/green Full HD regression and actual placement for issue1912. |
 | [2026-10-01 actor wall depth](./2026-10-01-oblique-actor-depth/README.md) | Do walls occlude actors behind them while foreground actors stay visible? | Actual scene before/after frames and pixel mutation regression for issue1913. |
+| [2026-10-01 stationary template cursor](./2026-10-01-stationary-template-cursor/README.md) | Does the wide mirrored room target stay under the pointer after camera movement? | Red/green112-square mouse placement and overlap refusal for issue1914. |
+| [2026-10-01 exact oblique floor art](./2026-10-01-oblique-floor-art/README.md) | Do authored floor materials align to exact square quads at intermediate angles? | Actual Full HD Yard pixels at three poses, shared-edge geometry and two deliberate mutations. |
 
 ### Findings from the first four records that changed a decision
 

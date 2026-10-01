@@ -81,6 +81,9 @@ const game = new Phaser.Game({
 });
 
 interface Report {
+  readonly floorTextures: readonly string[];
+  readonly floorMeshCount: number;
+  readonly floorTiles: readonly { sprite: string | undefined; quad: readonly { x: number; y: number }[] }[];
   readonly actors: readonly { id: number; foot: { x: number; y: number } }[];
   readonly preset: string;
   readonly zoningNumericIds: readonly number[];
@@ -119,8 +122,12 @@ window.lockstatePresetArtQA = {
       assetTextureKeys: Map<string, string>;
       assetImages: Phaser.GameObjects.Image[];
       raisedGraphics: Phaser.GameObjects.Graphics;
+      floorMeshes: Phaser.GameObjects.Mesh2D[];
     };
     return {
+      floorTextures: game.textures.getTextureKeys().filter((key) => key.startsWith('oblique-floor:')),
+      floorMeshCount: privateScene.floorMeshes.length,
+      floorTiles: projection.ground.filter((tile) => tile.zoningTint !== undefined).map((tile) => ({ sprite: tile.floorSprite, quad: tile.quad })),
       actors: projection.raised.filter((item) => item.kind === 'actor').map((item) => ({ id: item.id, foot: item.foot })),
       preset,
       zoningNumericIds: plan.zones.map((zone) => world.getZoning({ x: tileCoordinate(zone.x), y: tileCoordinate(zone.y) })),
