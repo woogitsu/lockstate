@@ -132,6 +132,18 @@ describe('clip frame selection over time', () => {
 });
 
 describe('foot pivot placement', () => {
+  it('keeps the world foot point under the pivot at zoom 0.5 and 4', () => {
+    const placement = placeFootPivotSprite(320, 448, CONTRACT_FRAME);
+    for (const zoom of [0.5, 4]) {
+      const screenLeft = placement.topLeftX * zoom;
+      const screenTop = placement.topLeftY * zoom;
+      const screenWidth = placement.displayWidth * zoom;
+      const screenHeight = placement.displayHeight * zoom;
+      expect(screenLeft + placement.originX * screenWidth).toBeCloseTo(placement.x * zoom, 10);
+      expect(screenTop + placement.originY * screenHeight).toBeCloseTo(placement.y * zoom, 10);
+    }
+  });
+
   it('puts the foot pivot exactly on the actor position', () => {
     const placement = placeFootPivotSprite(100, 200, CONTRACT_FRAME);
 
