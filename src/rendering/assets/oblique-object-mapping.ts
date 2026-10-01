@@ -5,6 +5,7 @@ export const OBLIQUE_OBJECT_ASSET_IDS: Readonly<Record<string, string>> = Object
   'object.medical-bed': 'furniture.medical-bed.variants',
   'object.medicine-cabinet': 'fixture.medicine-cabinet.variants',
   'object.storage-rack': 'furniture.storage.rack.wooden',
+  'object.chair': 'furniture.chair.wooden',
   'object.security-console': 'utility.security-console.variants',
   'object.loading-dock-door': 'utility.loading-dock-door.variants',
   'object.utility-panel': 'utility.utility-panel.variants',

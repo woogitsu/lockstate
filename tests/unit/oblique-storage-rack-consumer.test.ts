@@ -6,10 +6,13 @@ import { parseObliqueModuleRegistry } from '../../src/rendering/assets/oblique-m
 
 const readContent = (path: string): unknown => JSON.parse(readFileSync(new URL(`../../public/game-content/${path}`, import.meta.url), 'utf8').replace(/^\uFEFF/, '')) as unknown;
 
-it('connects the buildable storage rack to its Blender catalog', () => {
+it.each([
+  ['object.storage-rack', 'furniture.storage.rack.wooden', 'oblique-cell-storage-rack.v1.json'],
+  ['object.chair', 'furniture.chair.wooden', 'oblique-cell-chair.v1.json'],
+])('connects %s to its Blender catalog', (objectId, assetId, manifest) => {
   const registry = parseObliqueModuleRegistry(readContent('oblique-module-registry.v1.json'));
-  const entry = registry.entries.find((candidate) => candidate.assetId === 'furniture.storage.rack.wooden');
-  expect(entry?.manifest).toBe('/game-content/oblique-cell-storage-rack.v1.json');
-  const catalog = parseObliqueModuleCatalog(readContent('oblique-cell-storage-rack.v1.json'));
-  expect(obliqueCatalogForObject('object.storage-rack', new Map([[catalog.assetId, catalog]]))).toBe(catalog);
+  const entry = registry.entries.find((candidate) => candidate.assetId === assetId);
+  expect(entry?.manifest).toBe(`/game-content/${manifest}`);
+  const catalog = parseObliqueModuleCatalog(readContent(manifest));
+  expect(obliqueCatalogForObject(objectId, new Map([[catalog.assetId, catalog]]))).toBe(catalog);
 });

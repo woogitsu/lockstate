@@ -27,3 +27,14 @@ test('built storage rack consumes its Blender frame in the angled scene', async 
   await expect.poll(() => page.evaluate(() => window.lockstateObliqueArtRuntime.imageCount())).toBe(1);
   expect(await page.evaluate(() => window.lockstateObliqueArtRuntime.fallbackCommands())).toBe(0);
 });
+
+test('built chair consumes its Blender frame in the angled scene', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/tests/browser/oblique-art-runtime.html?asset=chair');
+  await page.evaluate(() => window.lockstateObliqueArtRuntime.ready());
+  await page.evaluate(() => window.lockstateObliqueArtRuntime.setPose(45, 45));
+  await expect.poll(() => page.evaluate(() => window.lockstateObliqueArtRuntime.key()))
+    .toBe('oblique:furniture.chair.wooden:45:45');
+  await expect.poll(() => page.evaluate(() => window.lockstateObliqueArtRuntime.imageCount())).toBe(1);
+  expect(await page.evaluate(() => window.lockstateObliqueArtRuntime.fallbackCommands())).toBe(0);
+});
