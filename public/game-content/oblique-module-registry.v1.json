@@ -180,6 +180,10 @@
                     {
                         "assetId":  "utility.utility-panel.variants",
                         "manifest":  "/game-content/oblique-utility.utility-panel.v1.json"
+                    },
+                    {
+                        "assetId":  "furniture.office.desk.generic",
+                        "manifest":  "/game-content/oblique-furniture-office-desk-generic.v1.json"
                     }
                 ]
 }
