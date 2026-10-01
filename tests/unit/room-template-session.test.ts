@@ -130,7 +130,7 @@ describe('room template session command', () => {
     const preview = createRoomTemplateBuildPlan(templateId, { x: 5, y: 5 }, mirrorX, 0).plan;
     for (const zone of preview.zones) {
       expect(runtime.prisoners.roomInstances.getById(`${zone.roomId}:${zone.x}:${zone.y}`)).toBeDefined();
-      expect(roomPerimeterEnclosure(runtime.world, zone).enclosure).toBe('sealed');
+      expect(roomPerimeterEnclosure(runtime.world, zone).enclosure).toBe(zone.roomId === 'room.yard' ? 'open' : 'sealed');
     }
     const objectOrders = runtime.construction.allOrders().filter((order) => order.id.includes('-2-object-'));
     expect(objectOrders).toHaveLength(preview.objects.length);
@@ -159,7 +159,7 @@ describe('room template session command', () => {
     expect(restored.runtime.placedObjects.getSnapshot()).toEqual(runtime.placedObjects.getSnapshot());
     for (const zone of preview.zones) {
       expect(restored.runtime.prisoners.roomInstances.getById(`${zone.roomId}:${zone.x}:${zone.y}`)).toBeDefined();
-      expect(roomPerimeterEnclosure(restored.runtime.world, zone).enclosure).toBe('sealed');
+      expect(roomPerimeterEnclosure(restored.runtime.world, zone).enclosure).toBe(zone.roomId === 'room.yard' ? 'open' : 'sealed');
     }
   }, 30000);
 });

@@ -389,7 +389,7 @@ const projectionTargetSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('id'), id: identifierSchema }).strict(),
   z.object({
     kind: z.literal('room-template'),
-    templateId: z.enum(['cell-basic', 'cell-large', 'shower-room', 'canteen-basic', 'kitchen-basic', 'cell-row-four']),
+    templateId: z.enum(['cell-basic', 'cell-large', 'shower-room', 'canteen-basic', 'kitchen-basic', 'cell-row-four', 'holding-cell-basic', 'solitary-cell-basic', 'reception-basic', 'laundry-basic', 'yard-basic', 'common-room-basic', 'classroom-basic', 'infirmary-basic', 'security-office-basic', 'staff-room-basic', 'storage-room-basic', 'delivery-bay-basic', 'garbage-room-basic', 'utility-room-basic']),
     origin: z.object({ x: z.number().int().safe(), y: z.number().int().safe() }).strict(),
     mirrorX: z.boolean().optional(),
   }).strict(),
