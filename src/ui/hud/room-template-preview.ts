@@ -220,7 +220,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
       children: [miniature, element('span', { className: 'hud-template__card-details', children: [
         element('strong', { text: t(NAME_KEYS[id]) }),
         element('span', { text: `${plan.width} \u00d7 ${plan.height}` }),
-        element('span', { text: `${t(HUD_MESSAGE_KEY.buildTemplateFurniture)} \u00d7 ${plan.objects.length}` }),
+        element('span', { text: `${t(HUD_MESSAGE_KEY.buildTemplateFurniture)} × ${plan.objects.length}` }),
       ] })],
     });
     button.addEventListener('click', () => select(id));
