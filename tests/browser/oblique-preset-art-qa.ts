@@ -16,6 +16,7 @@ import type { RenderFrame } from '../../src/rendering/feed/render-feed';
 const allowed = ROOM_TEMPLATE_IDS;
 const selected = new URLSearchParams(window.location.search).get('preset');
 const actorDepthProbe = new URLSearchParams(window.location.search).has('actorDepth');
+const actorArtProbe = new URLSearchParams(window.location.search).has('actorArt');
 if (!allowed.some((id) => id === selected)) throw new Error(`Unsupported art QA preset: ${selected}`);
 const preset = selected as RoomTemplateId;
 const plan = instantiateRoomTemplate(preset, { x: 4, y: 4 });
@@ -47,10 +48,15 @@ const frame: RenderFrame = {
   actors: actorDepthProbe ? [
     { id: 1, assetId: 'actor.prisoner', tileX: 3.5, tileY: 5.5, deltaX: 0, deltaY: 0 },
     { id: 2, assetId: 'actor.prisoner', tileX: 10, tileY: 8, deltaX: 0, deltaY: 0 },
+    ...(actorArtProbe ? [{ id: 3, assetId: 'actor.guard', tileX: 11, tileY: 10, deltaX: 0, deltaY: 0 }] : []),
   ] : [], rooms: [], roomConditions: [],
 };
 
 const expectedAssets = new Set<string>(['wall.square.brick.full', 'wall.square.brick.low']);
+if (actorArtProbe) {
+  expectedAssets.add('actor.prisoner.base');
+  expectedAssets.add('actor.guard.base');
+}
 for (const structure of structures) {
   const logicalId = catalogueObjectId(structure.definitionId);
   const assetId = obliqueCanonicalAssetIdForObject(logicalId ?? structure.definitionId);
@@ -81,6 +87,7 @@ const game = new Phaser.Game({
 });
 
 interface Report {
+  readonly actorImages: readonly string[];
   readonly floorTextures: readonly string[];
   readonly floorMeshCount: number;
   readonly floorTiles: readonly { sprite: string | undefined; quad: readonly { x: number; y: number }[] }[];
@@ -100,10 +107,15 @@ interface Report {
 }
 declare global {
   interface Window {
-    lockstatePresetArtQA: { ready(): Promise<void>; setPose(yaw: number, elevation: number): Promise<void>; report(): Report };
+    lockstatePresetArtQA: { ready(): Promise<void>; setPose(yaw: number, elevation: number): Promise<void>; report(): Report; setActorImagesVisible(visible: boolean): Promise<void> };
   }
 }
 window.lockstatePresetArtQA = {
+  async setActorImagesVisible(visible) {
+    const images = (scene as unknown as { assetImages: Phaser.GameObjects.Image[] }).assetImages;
+    for (const image of images) if (image.texture.key.startsWith('oblique:actor.')) image.setVisible(visible);
+    await new Promise<void>((resolve) => game.events.once(Phaser.Core.Events.POST_RENDER, () => resolve()));
+  },
   ready: () => scene.ready(),
   async setPose(yaw, elevation) {
     const privateScene = scene as unknown as { pose: { target: { x: number; y: number } } };
@@ -125,6 +137,7 @@ window.lockstatePresetArtQA = {
       floorMeshes: Phaser.GameObjects.Mesh2D[];
     };
     return {
+      actorImages: privateScene.assetImages.filter(image => image.texture.key.startsWith('oblique:actor.')).map(image => image.texture.key),
       floorTextures: game.textures.getTextureKeys().filter((key) => key.startsWith('oblique-floor:')),
       floorMeshCount: privateScene.floorMeshes.length,
       floorTiles: projection.ground.filter((tile) => tile.zoningTint !== undefined).map((tile) => ({ sprite: tile.floorSprite, quad: tile.quad })),
