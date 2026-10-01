@@ -25,6 +25,7 @@ import { footprintRectAt, pickTileAtWorld, tileRectFromDrag, type ObjectToolPort
 import { obliqueFloorBatches } from '../camera/oblique-ground-art';
 import { ENVIRONMENT_SPRITES } from '../assets/environment-sprites';
 import { RenderedArtCatalog } from '../assets/rendered-art-catalog';
+import { VisibleObjectPool } from './visible-object-pool';
 
 export interface ObliqueWorldSceneOptions {
   readonly feed: RenderFeed;
@@ -62,6 +63,10 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private gestureGraphics!: Phaser.GameObjects.Graphics;
   private raisedGraphics!: Phaser.GameObjects.Graphics;
   private readonly actorGraphics = new Map<number, Phaser.GameObjects.Graphics>();
+  private readonly actorImagePool = new VisibleObjectPool(
+    () => this.add.image(0, 0, '__DEFAULT').setScrollFactor(0),
+    (image) => image.setVisible(false),
+  );
   private pose!: ObliqueCameraState;
   private framedWorld = false;
   private selected: { tileX: number; tileY: number } | undefined;
@@ -208,6 +213,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     window.addEventListener('keyup', keyUp);
     window.addEventListener('blur', cancelOnBlur);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.actorImagePool.clear();
       window.removeEventListener('keydown', keyDown);
       window.removeEventListener('keyup', keyUp);
       window.removeEventListener('blur', cancelOnBlur);
@@ -522,6 +528,11 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.selectPoseTextures(projection);
     raised.clear();
     const visibleActors = new Set<number>();
+    this.actorImagePool.retain(new Set(projection.raised
+      .filter((item) => item.kind === 'actor' && item.assetId !== undefined
+        && this.catalogs.has(item.assetId)
+        && this.textures.exists(this.assetTextureKeys.get(item.assetId) ?? ''))
+      .map((item) => Number(item.id))));
     for (const image of this.assetImages) image.destroy();
     this.assetImages = [];
     this.raisedPaints += 1;
@@ -604,7 +615,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.load.start();
   }
 
-  /** Load and paint one authored PNG for every mapped solid; graphics remain the fail-closed fallback. */
+  /** Authored solids and pooled actors share depth and anchors; missing art uses graphics. */
   private paintAsset(item: ObliqueSolid | ObliqueActorPoint, index: number, itemCount: number): boolean {
     if (item.assetId === undefined) return false;
     const catalog = this.catalogs.get(item.assetId);
@@ -617,11 +628,14 @@ export class ObliqueWorldScene extends Phaser.Scene {
       y: (item.tileY + targetY) * TILE_SIZE_PX,
       z: targetZ * TILE_SIZE_PX,
     }, this.pose);
-    const image = this.add.image(anchor.x, anchor.y, textureKey).setDepth(2 + 0.9 * index / itemCount);
+    const image = item.kind === 'actor'
+      ? this.actorImagePool.acquire(item.id).setTexture(textureKey).setPosition(anchor.x, anchor.y).setVisible(true)
+      : this.add.image(anchor.x, anchor.y, textureKey);
+    image.setDepth(2 + 0.9 * index / itemCount);
     image.setOrigin(catalog.pivotPx[0] / catalog.resolutionPx[0], catalog.pivotPx[1] / catalog.resolutionPx[1]);
     image.setScale(TILE_SIZE_PX * this.pose.zoom / catalog.nominalPixelsPerTile);
     image.setAlpha(item.kind === 'actor' ? 1 : item.alpha);
-    this.assetImages.push(image);
+    if (item.kind !== 'actor') this.assetImages.push(image);
     return true;
   }
 

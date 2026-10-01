@@ -43,3 +43,29 @@ test('authored prisoner and guard pixels share wall depth at Full HD', async ({ 
   expect(changes[2], 'foreground prisoner must use visible authored pixels').toBeGreaterThan(10);
   expect(changes[3], 'guard must use visible authored pixels').toBeGreaterThan(100);
 });
+
+test('moving and replaced visible actors reuse actual Phaser images', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/tests/browser/oblique-preset-art-qa.html?preset=kitchen-basic&actorDepth=1&actorArt=1');
+  await expect.poll(() => page.evaluate(() => typeof window.lockstatePresetArtQA?.ready)).toBe('function');
+  await page.evaluate(() => window.lockstatePresetArtQA.ready());
+  await page.evaluate(() => window.lockstatePresetArtQA.setPose(45, 45));
+  await expect.poll(() => page.evaluate(() => window.lockstatePresetArtQA.report().actorSlots.length)).toBe(3);
+  const slots = await page.evaluate(() => window.lockstatePresetArtQA.report().actorSlots);
+  for (let step = 0; step < 5; step += 1) {
+    await page.evaluate(async step => window.lockstatePresetArtQA.setActors([
+      { id: 1, assetId: 'actor.prisoner', tileX: 3.5 + step / 10, tileY: 5.5, deltaX: 0, deltaY: 0 },
+      { id: 2, assetId: 'actor.prisoner', tileX: 10 + step / 10, tileY: 8, deltaX: 0, deltaY: 0 },
+      { id: 3, assetId: 'actor.guard', tileX: 11, tileY: 10 + step / 10, deltaX: 0, deltaY: 0 },
+    ]), step);
+    expect([...(await page.evaluate(() => window.lockstatePresetArtQA.report().actorSlots))].sort((a, b) => a.id - b.id))
+      .toEqual([...slots].sort((a, b) => a.id - b.id));
+  }
+  await page.evaluate(async () => window.lockstatePresetArtQA.setActors([
+    { id: 4, assetId: 'actor.guard', tileX: 11, tileY: 10, deltaX: 0, deltaY: 0 },
+  ]));
+  const replacement = await page.evaluate(() => window.lockstatePresetArtQA.report().actorSlots);
+  expect(replacement).toHaveLength(1);
+  expect(replacement[0]!.id).toBe(4);
+  expect(slots.map(slot => slot.token)).toContain(replacement[0]!.token);
+});

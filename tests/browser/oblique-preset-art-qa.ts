@@ -43,7 +43,7 @@ const structures = plan.objects.map((object, index) => ({
   id: `fixture-${index}`, definitionId: object.buildableId, tileX: object.x,
   tileY: object.y, phase: 'built' as const,
 }));
-const frame: RenderFrame = {
+let frame: RenderFrame = {
   revision: 1, world: WorldRenderView.fromSnapshot(world.snapshot()), structures,
   actors: actorDepthProbe ? [
     { id: 1, assetId: 'actor.prisoner', tileX: 3.5, tileY: 5.5, deltaX: 0, deltaY: 0 },
@@ -87,6 +87,7 @@ const game = new Phaser.Game({
 });
 
 interface Report {
+  readonly actorSlots: readonly { id: number; token: number }[];
   readonly actorImages: readonly string[];
   readonly floorTextures: readonly string[];
   readonly floorMeshCount: number;
@@ -107,13 +108,19 @@ interface Report {
 }
 declare global {
   interface Window {
-    lockstatePresetArtQA: { ready(): Promise<void>; setPose(yaw: number, elevation: number): Promise<void>; report(): Report; setActorImagesVisible(visible: boolean): Promise<void> };
+    lockstatePresetArtQA: { ready(): Promise<void>; setPose(yaw: number, elevation: number): Promise<void>; report(): Report; setActorImagesVisible(visible: boolean): Promise<void>; setActors(actors: RenderFrame['actors']): Promise<void> };
   }
 }
+const actorTokens = new WeakMap<Phaser.GameObjects.Image, number>();
+let nextActorToken = 0;
 window.lockstatePresetArtQA = {
+  async setActors(actors) {
+    frame = { ...frame, actors };
+    await new Promise<void>((resolve) => game.events.once(Phaser.Core.Events.POST_RENDER, () => resolve()));
+  },
   async setActorImagesVisible(visible) {
-    const images = (scene as unknown as { assetImages: Phaser.GameObjects.Image[] }).assetImages;
-    for (const image of images) if (image.texture.key.startsWith('oblique:actor.')) image.setVisible(visible);
+    const images = (scene as unknown as { actorImagePool: { active: Map<number, Phaser.GameObjects.Image> } }).actorImagePool.active;
+    for (const image of images.values()) image.setVisible(visible);
     await new Promise<void>((resolve) => game.events.once(Phaser.Core.Events.POST_RENDER, () => resolve()));
   },
   ready: () => scene.ready(),
@@ -133,11 +140,17 @@ window.lockstatePresetArtQA = {
     const privateScene = scene as unknown as {
       assetTextureKeys: Map<string, string>;
       assetImages: Phaser.GameObjects.Image[];
+      actorImagePool: { active: Map<number, Phaser.GameObjects.Image> };
       raisedGraphics: Phaser.GameObjects.Graphics;
       floorMeshes: Phaser.GameObjects.Mesh2D[];
     };
     return {
-      actorImages: privateScene.assetImages.filter(image => image.texture.key.startsWith('oblique:actor.')).map(image => image.texture.key),
+      actorSlots: [...privateScene.actorImagePool.active].map(([id, image]) => {
+        let token = actorTokens.get(image);
+        if (token === undefined) { token = ++nextActorToken; actorTokens.set(image, token); }
+        return { id, token };
+      }),
+      actorImages: [...privateScene.actorImagePool.active.values()].map(image => image.texture.key),
       floorTextures: game.textures.getTextureKeys().filter((key) => key.startsWith('oblique-floor:')),
       floorMeshCount: privateScene.floorMeshes.length,
       floorTiles: projection.ground.filter((tile) => tile.zoningTint !== undefined).map((tile) => ({ sprite: tile.floorSprite, quad: tile.quad })),
