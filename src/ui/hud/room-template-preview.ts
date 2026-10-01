@@ -102,8 +102,8 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
     contents.textContent = [...counts].map(([objectId, count]) => `${t(objectNames[objectId]!) } × ${count}`).join(' · ');
     diagram.setAttribute('aria-label', `${t(NAME_KEYS[id])}, ${plan.width} × ${plan.height}`);
     const tileSize = Math.min(24, (220 - 2 * (plan.height - 1)) / plan.height, (320 - 2 * (plan.width - 1)) / plan.width);
-    diagram.style.setProperty('--template-tile-size', `${tileSize}px`);
-    diagram.style.gridTemplateColumns = `repeat(${plan.width}, var(--template-tile-size))`;
+    diagram.style.gridAutoRows = `${tileSize}px`;
+    diagram.style.gridTemplateColumns = `repeat(${plan.width}, ${tileSize}px)`;
     diagram.replaceChildren();
     const wall = new Set(plan.wallSquares.map(({ x, y }) => `${x},${y}`));
     const door = new Set(plan.doorSquares.map(({ x, y }) => `${x},${y}`));
@@ -116,7 +116,10 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
       for (let x = 0; x < plan.width; x += 1) {
         const key = `${x},${y}`;
         const kind = wall.has(key) ? 'wall' : door.has(key) ? 'door' : objects.has(key) ? 'object' : 'floor';
-        diagram.append(element('span', { className: `hud-template__tile hud-template__tile--${kind}`, attributes: { 'aria-hidden': 'true' } }));
+        const tile = element('span', { className: `hud-template__tile hud-template__tile--${kind}`, attributes: { 'aria-hidden': 'true' } });
+        tile.style.width = `${tileSize}px`;
+        tile.style.height = `${tileSize}px`;
+        diagram.append(tile);
       }
     }
     void refreshPlacement();
@@ -194,8 +197,8 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
     const plan = instantiateRoomTemplate(id, { x: 0, y: 0 });
     const miniature = element('span', { className: 'hud-template__miniature', attributes: { 'aria-hidden': 'true' } });
     const cellSize = Math.min(8, 56 / plan.height, 56 / plan.width);
-    miniature.style.setProperty('--template-tile-size', `${cellSize}px`);
-    miniature.style.gridTemplateColumns = `repeat(${plan.width}, var(--template-tile-size))`;
+    miniature.style.gridAutoRows = `${cellSize}px`;
+    miniature.style.gridTemplateColumns = `repeat(${plan.width}, ${cellSize}px)`;
     const walls = new Set(plan.wallSquares.map(p => `${p.x},${p.y}`));
     const doors = new Set(plan.doorSquares.map(p => `${p.x},${p.y}`));
     const fixtures = new Set<string>();
@@ -206,7 +209,10 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
     for (let y = 0; y < plan.height; y += 1) for (let x = 0; x < plan.width; x += 1) {
       const key = `${x},${y}`;
       const kind = walls.has(key) ? 'wall' : doors.has(key) ? 'door' : fixtures.has(key) ? 'object' : 'floor';
-      miniature.append(element('span', { className: `hud-template__tile hud-template__tile--${kind}` }));
+      const tile = element('span', { className: `hud-template__tile hud-template__tile--${kind}` });
+      tile.style.width = `${cellSize}px`;
+      tile.style.height = `${cellSize}px`;
+      miniature.append(tile);
     }
     const button = element('button', {
       className: 'hud-template__card',
