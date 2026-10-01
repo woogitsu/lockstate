@@ -95,7 +95,7 @@ void (async () => {
 })();
 
 window.lockstateObliqueWorldHarness = {
-  ready: async () => { await bootstrapReady; await ready; if (registryFailure !== undefined) throw new Error(Oblique harness bootstrap failed: ); await scene.ready(); },
+  ready: async () => { await bootstrapReady; await ready; if (registryFailure !== undefined) throw new Error(`Oblique harness bootstrap failed: ${registryFailure}`); await scene.ready(); },
   registryStatus: () => registryState,
   registryError: () => registryFailure,
   furnitureSpriteFrame: (id) => scene.furnitureSpriteFrame(id),
