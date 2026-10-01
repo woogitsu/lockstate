@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { obliqueAssetIdForObject, obliqueCanonicalAssetIdForObject, obliqueCatalogForObject } from '../../src/rendering/assets/oblique-object-mapping';
 describe('medical oblique object mapping', () => {
  it.each([
+  ['object.toilet','fixture.cell.toilet_sink'],
+  ['object.sink','fixture.cell.toilet_sink'],
   ['object.medical-bed','furniture.medical-bed.variants'],
   ['object.medicine-cabinet','fixture.medicine-cabinet.variants'],
   ['object.security-console','utility.security-console.variants'],
