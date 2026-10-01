@@ -99,13 +99,17 @@ async function assertHits(page: Page, point: { readonly x: number; readonly y: n
 
 /** Which tile the camera puts under a fixed screen point, with the removal tool already armed. */
 async function tileUnder(page: Page, point: { readonly x: number; readonly y: number }): Promise<number> {
+  return (await tileUnderBothAxes(page, point)).x;
+}
+
+async function tileUnderBothAxes(page: Page, point: { readonly x: number; readonly y: number }): Promise<{ x: number; y: number }> {
   await assertHits(page, point, '#game-root canvas', 'the world');
   const commands = await press(page, point.x, point.y);
   const removal = commands.find((command) => command['type'] === 'RemoveWall');
   if (removal === undefined) {
     throw new Error(`no RemoveWall from a press at ${String(point.x)},${String(point.y)}: ${JSON.stringify(commands)}`);
   }
-  return removal['x'] as number;
+  return { x: removal['x'] as number, y: removal['y'] as number };
 }
 
 /**
@@ -148,6 +152,32 @@ async function startFreshPrison(page: Page): Promise<void> {
 }
 
 test.describe('the HUD names the zoom, and the control it names it with works (#1023)', () => {
+  test('Full HD direction buttons move the map and reverse without changing zoom', async ({ page }) => {
+    await startFreshPrison(page);
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await page.locator('.hud-build__remove').click();
+    const point = { x: 900, y: 400 };
+    const before = await tileUnder(page, point);
+    const right = page.getByRole('button', { name: localeText('input.action.camera.right'), exact: true });
+    const left = page.getByRole('button', { name: localeText('input.action.camera.left'), exact: true });
+    await expect(right).toBeVisible();
+    const controlBox = await page.locator('.hud-zoom').boundingBox();
+    const cornerBox = await page.locator('.hud__corner').boundingBox();
+    expect(controlBox).not.toBeNull();
+    expect(cornerBox).not.toBeNull();
+    expect(controlBox!.x + controlBox!.width).toBeLessThanOrEqual(cornerBox!.x + cornerBox!.width);
+    await page.screenshot({ path: 'test-results/camera-pan-fullhd.png' });
+    await right.click();
+    const shifted = await tileUnder(page, point);
+    expect(shifted).toBeGreaterThan(before);
+    await left.click();
+    expect(await tileUnder(page, point)).toBe(before);
+    const verticalBefore = (await tileUnderBothAxes(page, point)).y;
+    await page.getByRole('button', { name: localeText('input.action.camera.down'), exact: true }).click();
+    expect((await tileUnderBothAxes(page, point)).y).toBeGreaterThan(verticalBefore);
+    await page.getByRole('button', { name: localeText('input.action.camera.up'), exact: true }).click();
+    expect((await tileUnderBothAxes(page, point)).y).toBe(verticalBefore);
+  });
   test('pressing zoom in shows less of the world and pressing zoom out shows more, so the buttons reach the camera rather than sitting there', async ({ page }) => {
     await startFreshPrison(page);
 

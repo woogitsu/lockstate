@@ -2705,6 +2705,9 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     onCameraZoom: (direction) => {
       worldScene.stepCameraZoom(direction);
     },
+    onCameraPan: (direction) => {
+      worldScene.stepCameraPan(direction);
+    },
     onIntent: (intent: HudIntent) => {
       switch (intent.kind) {
         /*
