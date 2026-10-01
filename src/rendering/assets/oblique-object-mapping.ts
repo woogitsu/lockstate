@@ -7,6 +7,7 @@ export const OBLIQUE_OBJECT_ASSET_IDS: Readonly<Record<string, string>> = Object
   'object.security-console': 'utility.security-console.variants',
   'object.loading-dock-door': 'utility.loading-dock-door.variants',
   'object.utility-panel': 'utility.utility-panel.variants',
+  'object.waste-bin': 'fixture.cell.waste_bin',
 });
 
 export function obliqueAssetIdForObject(objectId: string): string | undefined {
