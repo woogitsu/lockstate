@@ -89,17 +89,53 @@ export function projectObliqueWorldFrame(frame: RenderFrame, camera: ObliqueCame
   const world = frame.world;
   const size = world.chunkSize;
   const sample = createTileSample();
+  const neighborSample = createTileSample();
   let loadedTilesVisited = 0;
+
+  // Near perimeter walls hide the room behind them in an angled view. Lower
+  // their painted height, leaving the occupied square/edge and worker world
+  // entirely untouched. A zoned floor behind the wall is direct evidence of
+  // an interior; yaw decides which side is behind, not a fixed south row.
+  const cutawayHeight = (heightTiles: number): number => Math.min(heightTiles, 0.34);
+  const isInteriorTile = (x: number, y: number): boolean => {
+    world.readTile(x, y, neighborSample);
+    if (!neighborSample.loaded || world.getSquareStructureAt(x, y) !== 0) return false;
+    if (neighborSample.zoning !== 0) return true;
+    return frame.rooms.some((room) => x >= room.anchorTileX && y >= room.anchorTileY &&
+      x < room.anchorTileX + room.width && y < room.anchorTileY + room.height);
+  };
+  const behind = (wallX: number, wallY: number, neighbors: readonly (readonly [number, number])[]): boolean => {
+    const wallDepth = obliqueDepthForAnchor({ x: (wallX + 0.5) * TILE_SIZE_PX, y: (wallY + 0.5) * TILE_SIZE_PX }, camera.yawRadians);
+    for (const [neighborX, neighborY] of neighbors) {
+      const neighborDepth = obliqueDepthForAnchor({ x: (neighborX + 0.5) * TILE_SIZE_PX, y: (neighborY + 0.5) * TILE_SIZE_PX }, camera.yawRadians);
+      if (neighborDepth >= wallDepth - 0.001) continue;
+      if (isInteriorTile(neighborX, neighborY)) return true;
+    }
+    return false;
+  };
+  const squareNeedsCutaway = (tileX: number, tileY: number): boolean => behind(tileX, tileY, [
+    [tileX - 1, tileY], [tileX + 1, tileY], [tileX, tileY - 1], [tileX, tileY + 1],
+  ]);
+  const edgeNeedsCutaway = (kind: 'north-edge' | 'west-edge', tileX: number, tileY: number): boolean => {
+    const sides: readonly (readonly [number, number])[] = kind === 'north-edge'
+      ? [[tileX, tileY - 1], [tileX, tileY]]
+      : [[tileX - 1, tileY], [tileX, tileY]];
+    // Compare side centres to the actual boundary rather than the tile centre.
+    const boundaryX = kind === 'west-edge' ? tileX : tileX + 0.5;
+    const boundaryY = kind === 'north-edge' ? tileY : tileY + 0.5;
+    return behind(boundaryX - 0.5, boundaryY - 0.5, sides);
+  };
 
   const edge = (kind: 'north-edge' | 'west-edge', tileX: number, tileY: number, value: number): void => {
     const appearance = edgeAppearance(value);
+    const cutaway = value !== DOOR_EDGE_NUMERIC_ID && edgeNeedsCutaway(kind, tileX, tileY);
     const x = tileX * TILE_SIZE_PX;
     const y = tileY * TILE_SIZE_PX;
     const thickness = EDGE_WALL_THICKNESS_TILES * TILE_SIZE_PX;
     const width = kind === 'north-edge' ? TILE_SIZE_PX : thickness;
     const depth = kind === 'north-edge' ? thickness : TILE_SIZE_PX;
-    const geometry = projectedRectPrism(x, y, width, depth, appearance.heightTiles * TILE_SIZE_PX, camera);
-    const assetId = obliqueCanonicalAssetIdForObject(kind === 'north-edge' || kind === 'west-edge' ? (value === DOOR_EDGE_NUMERIC_ID ? 'door.interior' : 'wall.interior.module') : 'wall.interior.module', { edge: kind === 'west-edge' ? 'west' : 'north' });
+    const geometry = projectedRectPrism(x, y, width, depth, (cutaway ? cutawayHeight(appearance.heightTiles) : appearance.heightTiles) * TILE_SIZE_PX, camera);
+    const assetId = obliqueCanonicalAssetIdForObject(value === DOOR_EDGE_NUMERIC_ID ? 'door.interior' : 'wall.interior.module', { edge: kind === 'west-edge' ? 'west' : 'north', cutaway });
     raised.push({
       kind, id: `${kind}:${tileX}:${tileY}`, tileX, tileY,
       ...geometry, topFill: appearance.topFill, sideFill: appearance.sideFill, alpha: 1,
@@ -112,12 +148,15 @@ export function projectObliqueWorldFrame(frame: RenderFrame, camera: ObliqueCame
     .map((entry) => [`${entry.tileX}:${entry.tileY}`, entry]));
   const structureSolid = (structure: RenderStructure): void => {
     const appearance = structureAppearance(structure.definitionId);
+    const cutaway = structure.phase === 'built' && appearance.kind === 'wall' && squareNeedsCutaway(structure.tileX, structure.tileY);
     const x = structure.tileX * TILE_SIZE_PX;
     const y = structure.tileY * TILE_SIZE_PX;
     const width = appearance.footprintTiles.width * TILE_SIZE_PX;
     const depth = appearance.footprintTiles.height * TILE_SIZE_PX;
-    const geometry = projectedRectPrism(x, y, width, depth, appearance.heightTiles * TILE_SIZE_PX, camera);
-    const assetId = obliqueCanonicalAssetIdForObject(catalogueObjectId(structure.definitionId) ?? structure.definitionId);
+    const geometry = projectedRectPrism(x, y, width, depth, (cutaway ? cutawayHeight(appearance.heightTiles) : appearance.heightTiles) * TILE_SIZE_PX, camera);
+    const assetId = appearance.kind === 'wall'
+      ? obliqueCanonicalAssetIdForObject('wall.interior.module', { cutaway })
+      : obliqueCanonicalAssetIdForObject(catalogueObjectId(structure.definitionId) ?? structure.definitionId);
     raised.push({
       kind: 'structure', id: structure.id, tileX: structure.tileX, tileY: structure.tileY,
       ...geometry, topFill: appearance.topFill, sideFill: appearance.sideFill,
