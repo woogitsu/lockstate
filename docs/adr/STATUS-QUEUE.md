@@ -21341,6 +21341,8 @@ block was reworded past both the `## Status` heading and the `- Status:`
 bullet forms would be counted as neither and would surface here as a changed
 total rather than as an error.
 
+**2026-10-01 pass at `c478bf81` (v0.0.818):** the current anchor pass re-read sections 3-6 against the twelve non-release first-parent landings named by the header above. Its live census and next-number restatement are recorded in the entry below; no staleness budget changes.
+
 ## 3. What the anchor pass of 2026-09-21 (third) opened with the gate GREEN at eight of ten and nothing red to unblock: eight merges against TWELVE release numbers — the retired unit firing while the live one sat two clear — 26 commits, 20 changed paths of which four are production code, not one live coordinate in §§4-6 moved, every finished CI run in the window red in a step this repository does not own, and twelve release numbers matched one-to-one to twelve merges of which four were earned before the anchor
 
 **EIGHT at `03e47695` (**v0.0.740**), twelve release numbers later.** The
