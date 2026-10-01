@@ -24,6 +24,8 @@ export interface RoomTemplateCoordinatorSnapshot {
   readonly pending: readonly PendingRoomTemplate[];
   /** Additive V7 field: older saves without undone gestures restore an empty list. */
   readonly undone?: readonly PendingRoomTemplate[];
+  /** Older saves without completed gesture metadata restore an empty list. */
+  readonly completed?: readonly PendingRoomTemplate[];
 }
 
 /** Finishes zoning only after every authored shell order has actually built. */
@@ -33,6 +35,7 @@ export class RoomTemplateCoordinator implements SystemRegistration {
   public readonly schedule = { intervalTicks: 10, phaseTicks: 0 };
   private pending: PendingRoomTemplate[] = [];
   private undone: PendingRoomTemplate[] = [];
+  private completed: PendingRoomTemplate[] = [];
 
   public constructor(
     private readonly world: SparseWorld,
@@ -144,20 +147,44 @@ export class RoomTemplateCoordinator implements SystemRegistration {
         zoned.push(zone);
       }
       if (refused) continue;
+      const placedObjectOrderIds: string[] = [];
       for (const order of built.orders.slice(built.shellOrderIds.length)) {
-        this.objectPlacement.place({
+        const existing = this.construction.getOrder(order.id);
+        if (existing !== undefined && existing.state !== 'cancelled' && existing.state !== 'failed') continue;
+        const outcome = this.objectPlacement.place({
           orderId: order.id,
           definitionId: order.definitionId,
           x: order.location.x,
           y: order.location.y,
+          transactionId: `room-template-${request.sequence}`,
         }, context.tick, request.sequence);
+        if (outcome.kind === 'refused') {
+          for (const previous of zoned.reverse()) this.roomZoning.unzone(previous, context.tick);
+          for (const id of placedObjectOrderIds) this.construction.cancelOrder(id);
+          for (const id of built.shellOrderIds) this.construction.cancelOrder(id);
+          refused = true;
+          break;
+        }
+        placedObjectOrderIds.push(outcome.orderId);
       }
+      if (!refused) this.completed.push({ ...request, origin: { ...request.origin } });
     }
     this.pending = remaining;
   }
 
   /** Command dispatch also runs while paused, so release invalidated plans then. */
   public reconcileCancelledShells(): void {
+    this.completed = this.completed.filter((request) => {
+      const built = createRoomTemplateBuildPlan(request.templateId, request.origin, request.mirrorX, request.sequence);
+      if (!built.orders.some((order) => this.construction.getOrder(order.id)?.state === 'cancelled')) return true;
+      for (const zone of built.plan.zones) this.roomZoning.unzone(zone, 0);
+      for (const order of built.orders) {
+        const existing = this.construction.getOrder(order.id);
+        if (existing !== undefined && existing.state !== 'cancelled' && existing.state !== 'failed') this.construction.cancelOrder(order.id);
+      }
+      if (this.construction.canRedoOrdersTogether(built.orders.map((order) => order.id))) this.undone.push(request);
+      return false;
+    });
     this.pending = this.pending.filter((request) => {
       const shellOrderIds = this.shellOrderIds(request);
       if (!shellOrderIds.some((id) => {
@@ -204,10 +231,11 @@ export class RoomTemplateCoordinator implements SystemRegistration {
   public snapshot(): RoomTemplateCoordinatorSnapshot {
     const undone = this.undone.filter((request) => this.construction.canRedoOrdersTogether(this.shellOrderIds(request)));
     const copy = (entry: PendingRoomTemplate) => ({ ...entry, origin: { ...entry.origin } });
-    return { version: 1, pending: this.pending.map(copy), ...(undone.length === 0 ? {} : { undone: undone.map(copy) }) };
+    return { version: 1, pending: this.pending.map(copy), ...(undone.length === 0 ? {} : { undone: undone.map(copy) }), ...(this.completed.length === 0 ? {} : { completed: this.completed.map(copy) }) };
   }
 
   public loadSnapshot(snapshot: RoomTemplateCoordinatorSnapshot | undefined): void {
+    this.completed = snapshot?.completed?.map((entry) => ({ ...entry, origin: { ...entry.origin } })) ?? [];
     this.pending = snapshot?.pending.map((entry) => ({ ...entry, origin: { ...entry.origin } })) ?? [];
     this.pending.sort((a, b) => a.sequence - b.sequence);
     this.undone = snapshot?.undone?.filter((request) =>
