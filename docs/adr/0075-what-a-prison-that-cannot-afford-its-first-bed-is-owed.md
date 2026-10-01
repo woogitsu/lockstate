@@ -177,7 +177,7 @@ author here, deliberately.
 
 Nothing refuses it: `refusals.last` is `undefined` after the command. The Build
 panel's material stepper opens its maximum on `MAX_PURCHASE_QUANTITY` — 100,000
-— and not on what the prison can afford (`src/main.ts:665`), so the quantity is
+— and not on what the prison can afford (`src/main.ts:979`), so the quantity is
 composable with the controls as shipped.
 
 ## Decision

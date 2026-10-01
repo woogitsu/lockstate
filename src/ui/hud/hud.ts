@@ -1,3 +1,4 @@
+import { createCameraPoseControl, type CameraPoseStep } from './camera-pose-control';
 import type { LocalizationKey } from '../../content/localization';
 import type { MinimapView } from '../../shared/minimap-view';
 import type { RoomTemplateTool } from '../room-template-tool';
@@ -1066,6 +1067,8 @@ export interface MountHudOptions {
    * every harness in `tests/browser/` that does not pass it.
    */
   readonly onCameraZoom?: (direction: 'in' | 'out') => void;
+  /** Renderer-only pose controls; omitted for the fixed top-down renderer. */
+  readonly onCameraPoseStep?: CameraPoseStep;
   /**
    * Receives every player action, and may be async.
    *
@@ -2286,7 +2289,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     children: [zoomLegend, zoomOut.element, zoomIn.element],
   });
 
-  corner = element('div', { className: 'hud__corner', children: [zoomControl, minimapPanel.element] });
+  corner = element('div', { className: 'hud__corner', children: [zoomControl, ...(options.onCameraPoseStep === undefined ? [] : [createCameraPoseControl(localizer, options.onCameraPoseStep)]), minimapPanel.element] });
 
   // ---- bottom-right build panel ------------------------------------
   // Placing an order is a *command*: it asks the host to change the
