@@ -101,7 +101,9 @@ function run(command, args, env = process.env) {
       cwd: repositoryRoot,
       env,
       stdio: 'inherit',
-      shell: process.platform === 'win32',
+      // Every caller supplies the Node executable directly. A shell would
+      // concatenate argv and split Windows checkout paths containing spaces.
+      shell: false,
     });
 
     child.once('error', reject);
