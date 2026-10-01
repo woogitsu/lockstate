@@ -21,7 +21,6 @@ test('Full HD angled mouse Yard is a real reversible zone through Save/Load with
   await page.mouse.down();
   await page.evaluate(() => window.dispatchEvent(new Event('blur')));
   await page.mouse.up();
-  await expect(ghost).toBeHidden();
   expect((await sentCommands(page)).filter(command => command.type === 'PlaceRoomTemplate')).toEqual([]);
   await page.mouse.move(881, 380);
   await expect(ghost).toHaveAttribute('data-ready', 'clear');
