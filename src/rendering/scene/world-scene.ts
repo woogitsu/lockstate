@@ -5,7 +5,7 @@ import {
   KeyboardInputAdapter,
   type SemanticActionEvent,
   TouchGestureTracker,
-  isTextEntryFocused,
+  activeKeyboardContexts,
   loadInputSettings,
 } from '../../input';
 import { AtlasFrameIndex } from '../assets/atlas-frame-index';
@@ -378,7 +378,7 @@ export class WorldScene extends Phaser.Scene {
       // worked and was unit-tested, and the one thing that would make it fire
       // never happened (issue #201). `isActive` re-reads this on every call, so
       // focus moving into a field mid-hold stops the camera too.
-      () => (isTextEntryFocused() ? ['text-entry'] : ['world']),
+      () => activeKeyboardContexts(globalThis.document),
     );
     this.loadAtlasLibrary = options.loadAtlasLibrary ?? (() => AtlasLibrary.load());
     this.loadSourceArtCatalog = options.loadSourceArtCatalog ?? (() => SourceArtCatalog.load());

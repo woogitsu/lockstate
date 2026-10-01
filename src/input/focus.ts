@@ -1,3 +1,4 @@
+import type { InputContextId } from './actions';
 /**
  * Whether a text-entry control currently owns the keyboard.
  *
@@ -42,4 +43,12 @@ export function isTextEntryFocused(doc: Pick<Document, 'activeElement'> | undefi
   if (tag === undefined) return false;
   const name = tag.toLowerCase();
   return name === 'input' || name === 'textarea';
+}
+
+export function activeKeyboardContexts(doc: (Pick<Document, 'activeElement'> & Partial<Pick<Document, 'querySelector'>>) | undefined): readonly InputContextId[] {
+  if (isTextEntryFocused(doc)) return ['text-entry'];
+  // Native modal buttons do not capture text, but the modal owns navigation.
+  // Non-modal show() dialogs and ordinary HUD buttons keep world controls.
+  if (doc?.querySelector?.('dialog:modal') != null) return ['modal'];
+  return ['world'];
 }

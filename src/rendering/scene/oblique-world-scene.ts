@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import type { KeyValueStore } from '../../shared/key-value-store';
-import { KeyboardInputAdapter, isTextEntryFocused, loadInputSettings, type SemanticActionEvent } from '../../input';
+import { KeyboardInputAdapter, activeKeyboardContexts, loadInputSettings, type SemanticActionEvent } from '../../input';
 import type { RenderActor, RenderFeed, RenderFrame } from '../feed/render-feed';
 import { TILE_SIZE_PX, worldToTile } from '../tile-metrics';
 import { VOID_COLOR, ZONING_TINT_ALPHA, UNOWNED_SHADE_ALPHA, UNOWNED_SHADE_COLOR } from '../world/appearance';
@@ -105,7 +105,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.objectTool = options.objectTool;
     this.keyboard = new KeyboardInputAdapter(
       loadInputSettings(options.keyValueStore).keyboardBindings,
-      () => (isTextEntryFocused() ? ['text-entry'] : ['world']),
+      () => activeKeyboardContexts(globalThis.document),
     );
     this.readyPromise = new Promise<void>((resolve) => { this.resolveReady = resolve; });
   }
