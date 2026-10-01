@@ -67,8 +67,9 @@ describe('oblique projection of an actual simulation snapshot', () => {
     const far = solid(0, 'square-wall:3:2');
     expect(near.assetId).toBe('wall.square.brick.low');
     expect(far.assetId).toBe('wall.square.brick.full');
-    expect(Math.abs(near.top[0].y - near.footprint[0].y))
-      .toBeLessThan(Math.abs(far.top[0].y - far.footprint[0].y));
+    const rise = (wall: typeof near) => Math.abs(wall.top[0].y - wall.footprint[0].y);
+    expect(rise(near)).toBeCloseTo(0.34 * 64 * Math.cos(pose.elevationRadians) * pose.zoom, 5);
+    expect(rise(far)).toBeCloseTo(0.75 * 64 * Math.cos(pose.elevationRadians) * pose.zoom, 5);
     expect(solid(Math.PI, 'square-wall:3:4').assetId).toBe('wall.square.brick.full');
     expect(solid(Math.PI, 'square-wall:3:2').assetId).toBe('wall.square.brick.low');
     expect(solid(0, 'bed')).toHaveProperty('kind', 'structure');
