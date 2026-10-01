@@ -247,13 +247,9 @@ export const HUD_MESSAGE_KEY = {
    * The `Earned today` chip's tooltip and screen-reader text while some of
    * today's grant is being withheld for unmet needs (issue #890).
    *
-   * **The same shape as `fundsBeforeDeliveriesStop` above, and for the same
-   * reason.** A badge would cost chip width on a row whose overflow is
-   * already measured (`tests/browser/ui-strip-badged-width.spec.ts`), and
-   * #890's own re-measurement names loudness -- a badge visible without
-   * hovering -- as the one judgement on this readout worth the owner's rather
-   * than an agent's. A description costs no width, sets no threshold, and
-   * paints no colour, so it is the half that can ship without one.
+   * The causal description remains available to speech and hover. The owner
+   * subsequently chose a visible badge for the same measured shortfall; the
+   * Full HD strip width is checked in `ui-strip-badged-width.spec.ts`.
    *
    * **It names a figure no other readout carries.** ADR 0064 withholds a
    * whole number of minor units per unmet need, and #890 measured the result
@@ -265,6 +261,7 @@ export const HUD_MESSAGE_KEY = {
    * it formats the chip's own value.
    */
   earnedWithheld: 'hud.status.earned-withheld',
+  earnedWithheldBadge: 'hud.status.earned-withheld-badge',
   occupancy: 'hud.status.occupancy',
   occupancyValue: 'hud.status.occupancy-value',
   incidentsClear: 'hud.status.incidents-clear',
