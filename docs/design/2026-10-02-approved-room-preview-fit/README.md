@@ -4,7 +4,7 @@ Owner decision received 2026-10-02: variant 3, full-footprint fit and camera pan
 
 The production controller requests a fit only when the floor footprint exceeds the actual HUD-safe rectangle. It never changes world tile size or worker validation. When a fit is applied, RAF polling and a same-position pointer release retain the exact origin. Physical pointer movement unlocks it; changed selections or mirrors refit the retained origin. Escape and standing down reset it. Top-down placement is unchanged. No new player text or persistent fields.
 
-Checkpoint verification: removing the locked-origin assignment causes two independent unit failures (x4 becomes34, revised origin x2 becomes12). Restoring it passes the controller/bridge/fit suites. Actual production placement, Escape and both screen-size cases now pass as documented below; the older overlap test rerun remains pending.
+Checkpoint verification: removing the locked-origin assignment causes two independent unit failures (x4 becomes34, revised origin x2 becomes12). Restoring it passes the controller/bridge/fit suites. Actual production placement, Escape and both screen-size cases now pass as documented below; the updated overlapping-placement browser proof also passes.
 
 ## Actual production controls
 
@@ -15,4 +15,6 @@ The view-change mutation (ignoring camera/HUD signature changes) independently f
 ![Full HD approved fit](approved-fit-1920.png)
 ![Wider screen approved fit](approved-fit-2560.png)
 
-The older stationary-row overlap browser test is being updated to the approved fit/pan contract. It retains the blocked overlapping placement check by targeting the actual rendered first-square centre, rather than assuming the old cursor remains the hotspot after camera panning. Its rerun is pending the shared browser lease.
+The older stationary-row overlap browser test was updated to the approved fit/pan contract and passed 1/1 in 11.7 seconds on the production artifact built from clean checkpoint a8e8c84333. It retains the blocked overlapping placement check by targeting the actual rendered first-square centre, rather than assuming the old cursor remains the hotspot after camera panning. The actual worker rejected the second click and the command count remained one.
+
+Additional gates: design tokens 76/76, rendering/input module boundaries 10/10, second-locale contract 18/18. Removing physical camera-gesture preparation produces one failed bridge assertion (no physical-movement report); restoring it passes 9/9. All mutations were reverted.
