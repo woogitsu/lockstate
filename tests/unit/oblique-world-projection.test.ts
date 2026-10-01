@@ -65,12 +65,12 @@ describe('oblique projection of an actual simulation snapshot', () => {
     };
     const near = solid(0, 'square-wall:3:4');
     const far = solid(0, 'square-wall:3:2');
-    expect(near.assetId).toBe('wall.interior.module.cutaway');
-    expect(far.assetId).toBe('wall.interior.module.full');
+    expect(near.assetId).toBe('wall.square.brick.low');
+    expect(far.assetId).toBe('wall.square.brick.full');
     expect(Math.abs(near.top[0].y - near.footprint[0].y))
       .toBeLessThan(Math.abs(far.top[0].y - far.footprint[0].y));
-    expect(solid(Math.PI, 'square-wall:3:4').assetId).toBe('wall.interior.module.full');
-    expect(solid(Math.PI, 'square-wall:3:2').assetId).toBe('wall.interior.module.cutaway');
+    expect(solid(Math.PI, 'square-wall:3:4').assetId).toBe('wall.square.brick.full');
+    expect(solid(Math.PI, 'square-wall:3:2').assetId).toBe('wall.square.brick.low');
     expect(solid(0, 'bed')).toHaveProperty('kind', 'structure');
     expect(solid(0, 'toilet')).toHaveProperty('kind', 'structure');
   });
