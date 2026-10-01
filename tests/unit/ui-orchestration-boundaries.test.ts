@@ -675,6 +675,13 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
     reason:
       'Value: `instantiateRoomTemplate` from `src/content/room-template-catalog`. The Build composition layer asks the catalogue for a complete footprint and furniture plan; duplicating those dimensions in the panel would let the preview and worker disagree. The catalogue is pure data and does not own simulation state.',
   },
+  {
+    file: 'src/ui/simulation-room-template-port.ts',
+    tree: 'simulation',
+    kind: 'type-only',
+    reason:
+      'Type-only: `SimulationMessageChannel` names the worker channel accepted by this composition port; the port does not construct the worker or read simulation state directly.',
+  },
 ];
 
 const dependencies = findCrossTreeDependencies(gatedFiles, OWN_TREE);
