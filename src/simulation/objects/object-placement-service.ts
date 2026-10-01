@@ -759,6 +759,11 @@ export class ObjectPlacementService {
     return [...this.removalRefusals];
   }
 
+  /** Whether a standing object or an in-flight object order covers `tile`. */
+  public isTileOccupied(tile: TilePosition): boolean {
+    return this.placedObjects.isTileOccupied(tile) || this.orderBuildingObjectAt(tile) !== undefined;
+  }
+
   /**
    * An object order still in flight whose footprint covers `tile`, or
    * `undefined`.

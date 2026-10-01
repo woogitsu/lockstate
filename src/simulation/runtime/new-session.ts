@@ -846,6 +846,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     world,
     new ContainerMaterialsProvider(constructionMaterials),
     {
+      isTileOccupied: (tile) => objectPlacement?.isTileOccupied(tile) ?? false,
       onOrderCompleted: (objectId, anchor) => objectPlacement?.onOrderCompleted(objectId, anchor) ?? false,
       onOrderReverted: (objectId, anchor) => objectPlacement?.onOrderReverted(objectId, anchor) ?? false,
     },
