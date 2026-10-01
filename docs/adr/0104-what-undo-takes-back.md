@@ -93,8 +93,8 @@ acceptance's: the label of a clickable option this session wrote, *"Opcja A
 ### 1. One key, one word, one route — VERIFIED at `296812c9`
 
 `KeyZ` is bound to `edit.undo` in the `world` and `construction` input
-contexts and nowhere else (`src/input/bindings.ts:64`; the action's own
-declaration repeats the pair at `src/input/actions.ts:78-79`). The whole of
+contexts and nowhere else (`src/input/bindings.ts:68`; the action's own
+declaration repeats the pair at `src/input/actions.ts:94-95`). The whole of
 what a player is told about it is one word:
 `'input.action.edit.undo': 'Undo'` (`src/content/default-locale-en.ts:2754`).
 
