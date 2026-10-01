@@ -1,0 +1,477 @@
+{
+  "schemaVersion": 1,
+  "assetId": "utility.security-console.variants",
+  "source": "assets/source/blender/utility.security-console.variants.blend",
+  "sourceSha256": "7b7c755e96cc460c6afa42d8a5e4a1f44480a21a6483cea122949290848db5d7",
+  "resolutionPx": [
+    128,
+    128
+  ],
+  "nominalPixelsPerTile": 64,
+  "pivotPx": [
+    64,
+    64
+  ],
+  "cameraTargetTiles": [
+    1.0,
+    0.5,
+    0.5
+  ],
+  "projection": "orthographic",
+  "yawDegrees": [
+    0,
+    30,
+    60,
+    90,
+    120,
+    150,
+    180,
+    210,
+    240,
+    270,
+    300,
+    330
+  ],
+  "elevationDegrees": [
+    20,
+    30,
+    40,
+    50,
+    60,
+    70
+  ],
+  "frames": [
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+00-elev20.png",
+      "sha256": "176e795a8c043c4702ad96c0a2988ec331efd67675cc20b760e4717b1fe797b1"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+00-elev30.png",
+      "sha256": "9de4c9911ecad32b68a7a000ab83ac2b6d7cbe89d3238ec17241d4e13d9493de"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+00-elev40.png",
+      "sha256": "de10a722c7a77a585ca0cb7134bcba3b61ca52d7f9a3a1fe3c1ec9d97c29643d"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+00-elev50.png",
+      "sha256": "a8738af1d0a1c74e34cf29fb11695fce31f4ec6a4c029745efd4001cbaaabeda"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+00-elev60.png",
+      "sha256": "111485b14cfbdd98b1b3f75a01db35c44c1afab05e43317fbdd8acbc4b026454"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+00-elev70.png",
+      "sha256": "0b6cfbe313f420a14c22a553b33a021b02c18fd41b93672caec6060cab054909"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+30-elev20.png",
+      "sha256": "8bf5003ad3292ea93606869c5f16ff0a4e97c7825422ceefb19ca8efb1984cc7"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+30-elev30.png",
+      "sha256": "092d50fad5543ed14f690e5d541b52eff9fee285aea48895c018b2fcc9ae2b7e"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+30-elev40.png",
+      "sha256": "19b7f5f8077c290141dd491806ca60826fd2241b1ffca5e5afb9adbf7b09743d"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+30-elev50.png",
+      "sha256": "e41f115b3b010453c4394f228ca1ee7320baacf749443ade8f5f746ac7bd666b"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+30-elev60.png",
+      "sha256": "fd2336200724fbc6bbfcc31e1a18b90df1a7a2dddb813ce4df58d3be1e58ba18"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+30-elev70.png",
+      "sha256": "55655a4c19e957e2af9161bc4f53f5bc1f5f0249375d9090b99b7342aafe7ee8"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+60-elev20.png",
+      "sha256": "40d546b660709f87cc53e19d950e6993cc6fbd660d4f5098be4af8ebfddefce7"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+60-elev30.png",
+      "sha256": "84dc7f02069e7ea27471368361de90a7065e7a2674b4769f8439ec842f61fe38"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+60-elev40.png",
+      "sha256": "c29984b1a2bc22f25fa5b83823e112061263ec232172a3d569cc1b8201ad3c97"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+60-elev50.png",
+      "sha256": "11bf048a83347f18b659b8e19fff93bc49a91c0371ab91be0913322f2b54ed37"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+60-elev60.png",
+      "sha256": "091e082a989a01a08dc1250ca84d39c32b3357cc5822b827de002f781dace474"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+60-elev70.png",
+      "sha256": "4e09d8f916244098b5830b88396f25a3c5095a8873c522c3b324b0f0f6648735"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+90-elev20.png",
+      "sha256": "6201b92e0e72c04c135d6956b02a0c1fe39f104f7e1308deab769143c0d75a61"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+90-elev30.png",
+      "sha256": "3b4aaeb6670496a8d7ab364f3c567562f05d61d153aa52b1726bb2263e38ec37"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+90-elev40.png",
+      "sha256": "c4ee032f6af1a02bf20acde459a68292ddc2f34388fa1ef87ccd4eec5da09482"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+90-elev50.png",
+      "sha256": "fa79b4b01c31fc8c345d0cc2830c30f66e2cbd4682f611a2c0730efbc8842ccd"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+90-elev60.png",
+      "sha256": "8f55d6f533b9f1f5574f8fe15349e26b27e15883efc41b5a7d4b57cf8c948644"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+90-elev70.png",
+      "sha256": "cfb98886323cddaed6acb52a5d3fa961b821d0a2d1a04c764f019592fa90a712"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+120-elev20.png",
+      "sha256": "1017dca8de389a4ea17d65f7a8055a6e28bb274760ed318cf9be1d4db4cfdf82"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+120-elev30.png",
+      "sha256": "a447c2fd5871f747d795a19753b32adfd1db9f7c4130ad6a562f6ea3c2e4c417"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+120-elev40.png",
+      "sha256": "2e7868e25e4acac6a6ab2188640fefa57d6fee46e634bc987e4f50d5831a81bc"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+120-elev50.png",
+      "sha256": "f4e421d084b1dd7c11e1418e58396c6299e418ccfacb06816d32c207c490d3d6"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+120-elev60.png",
+      "sha256": "1f2f4a0f8f02dd5e035d5cf1aaa1357f35964244b1c706303a82310edcf041fc"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+120-elev70.png",
+      "sha256": "d9942eea7f2c3d93d2cfedf7f7e2356b87dc2cdba31d5d5f32142b4bfaeab9cf"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+150-elev20.png",
+      "sha256": "15233c44253f0b0c9c9c501e29198b9b6a5ee1b03ee9bff9a78ba3e190483a5a"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+150-elev30.png",
+      "sha256": "8c0d29e6a2d1c4f6bf4b8c8c1a48c6013f2519ba9609fe18ccc75e1f64e8c7bb"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+150-elev40.png",
+      "sha256": "9a238de77ed839b6aac18f4b504c6f42f6051fd600d894effc6093ce4781ce13"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+150-elev50.png",
+      "sha256": "d9d8d7bb92ece06b7a9fd5207b5c8b20ac989b6bc847743e8bdf73732f562ebb"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+150-elev60.png",
+      "sha256": "11e63200b6363df692230940abaeec17e3759f2672973284b8b77e69fa37bd26"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+150-elev70.png",
+      "sha256": "407d59113a24cb10658f80693d2529e88bde31214f8ce7b8c9e404b62c7c8f0a"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+180-elev20.png",
+      "sha256": "6f6321e69cebe5c597472d1382e907b969245f667eaf039e872153b934bca95a"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+180-elev30.png",
+      "sha256": "ade5202ecc870ed8e1eb15104e065315a7ca9a5bb198e21e0febbb817452fa06"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+180-elev40.png",
+      "sha256": "ea52fbb1e86863ef371062ecdaae8f4c17135976936aba4fb3264d7d81cab98d"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+180-elev50.png",
+      "sha256": "6e38c716257ebcce241ee0a6f974f6981630622c33011172445bd3350bd0ca36"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+180-elev60.png",
+      "sha256": "f47d1a903855d3337222555d058155252f0aa2b8528a6c70e83d192f40fd1071"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+180-elev70.png",
+      "sha256": "1dc07cf6472b27300bdfb53a0a3c94b9f98ac9900e1cc0685fec45fb4c082bfb"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+210-elev20.png",
+      "sha256": "12822441d1c7311c74c3dfa1c81790b4b237a8da4f6f3cdebb679cfd627b923b"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+210-elev30.png",
+      "sha256": "0b4ac0ed3233772fea5d169a336cfb8e75ae8da870b389816a4c1e804ba71f03"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+210-elev40.png",
+      "sha256": "5f48883b6b0dc91854b3167188d9cd0b06ecb9a2f37c687ee0631f1faad7e17d"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+210-elev50.png",
+      "sha256": "fb39945ef6a5fbd5fced172485c97bb735bcfff173da3f0f85be45ecf58d939b"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+210-elev60.png",
+      "sha256": "a6103ec1568a21f1be1e67e65ff9db5f1420e82e1bd977c443344c9395c0fe48"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+210-elev70.png",
+      "sha256": "c7f2e2cef4bf963e8393d0c162277e6c576de7c2b2cc2260d1a91a695521791d"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+240-elev20.png",
+      "sha256": "f1013f8c9d71b421310a52482ae23d040bc13c74ebc0a8d695dfc2ff5af5aa1a"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+240-elev30.png",
+      "sha256": "5c2fd1bb82fe7be2f6ad2195059e59a516acdba53211656f4e8ff82ac6813593"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+240-elev40.png",
+      "sha256": "28df3e76b0422f04a8b71fa4b4eb8dc8d387649938c9eb8e359a19d09afbfc21"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+240-elev50.png",
+      "sha256": "bd7234a94e7b23c3ed49423f18ef75835b8f60577dac656d4c5f8f94e57a8976"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+240-elev60.png",
+      "sha256": "d00fb1fbfe9a2d9efecc74714b351d7fb06229669e1afe5c3480105cc9bb4508"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+240-elev70.png",
+      "sha256": "bd33b762d480293eea188e42d47521c93e0e07ce819d851991b22ddfd5453d1c"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+270-elev20.png",
+      "sha256": "0b008a6401857679c15e785a7a9e99f7d7b87646ab9e21d1f206651ec0d53409"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+270-elev30.png",
+      "sha256": "4e7191e12284afe91638d131e6969970fa6644c7b3b4a98dc659b57ebd04716a"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+270-elev40.png",
+      "sha256": "dfa684123305a32861933d6d2bee4ec8380f33ddc0e88c9d98c432dcb4a8ca7a"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+270-elev50.png",
+      "sha256": "a6f18bda3c2035e05b7d180dbd58d002c9bf4dd7859db04b62b835787679cff2"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+270-elev60.png",
+      "sha256": "5bfbce7c9f86b990b557e4eca57895df7da0d868bd50dea53e5350cb1ce63611"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+270-elev70.png",
+      "sha256": "1096878ac272c4765f725ba531904d554936f1d6a453c656d8695a75c685e731"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+300-elev20.png",
+      "sha256": "096e19992720011b60524def63cfeac19f59e91e4e2ac1cd5832376966884dd4"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+300-elev30.png",
+      "sha256": "4be3607de4b6ba48d85556f06fe48c4f1921e0b044401964fa6b5dda322b6cf4"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+300-elev40.png",
+      "sha256": "4f3abd6c1681f685b142fd21473b50f9ed4a125a1a195e19de926bf6731fde19"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+300-elev50.png",
+      "sha256": "333ab1aca56439a98c575c08eab79b5d8e4bee0b39679869c1a82bee156d8240"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+300-elev60.png",
+      "sha256": "eacebcc6a44b49078f08a0258efa543c372832c4b0258fa7228ec34f9618fc90"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+300-elev70.png",
+      "sha256": "a62d34c27532cdafe1231f78dcd7054a73c82b72f2113fe1dbcb08109cdf8a51"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+330-elev20.png",
+      "sha256": "12eb3c25957d2dbfc8adb8ede031335d1b73412935a9087ad4485a5960d06ae9"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+330-elev30.png",
+      "sha256": "8c206d257d361315699bfa1c6d7105e5a1a7c9f00280733d659928b404cb9ff1"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+330-elev40.png",
+      "sha256": "3ee4d27725fade9784a6ea6be524c534a070614bc121ccea5584684ad5d5e026"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+330-elev50.png",
+      "sha256": "2f05f8e52fb66b4dc772a6f4aef9d971e6fae07aa6807262ae97eed550bb4bf3"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+330-elev60.png",
+      "sha256": "f5dc011d49d71a7c7c8dccca25b9912cad345afd857e3b3a8dc7e01b8ffb7c40"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+330-elev70.png",
+      "sha256": "06b48b90526dc5469d44367b15771f63c3de3adc2347059c8a67971fadd8f3b4"
+    }
+  ]
+}
