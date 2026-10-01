@@ -39,6 +39,26 @@ const pose: ObliqueCameraState = {
 };
 
 describe('oblique projection of an actual simulation snapshot', () => {
+  it('keeps a multi-tile structure when its footprint reaches into the viewport', () => {
+    const world = new SparseWorld(8);
+    const origin = { x: chunkCoordinate(0), y: chunkCoordinate(0) };
+    world.load(origin);
+    world.setOwned(origin, true);
+    const frameWithTable: RenderFrame = {
+      revision: 1,
+      world: WorldRenderView.fromSnapshot(world.snapshot()),
+      // At this pose the left visible tile is -6. The table anchor is -8,
+      // but its 3-wide footprint reaches -6 and must still be painted.
+      structures: [{ id: 'edge-table', definitionId: 'object.dining-table', tileX: -8, tileY: 0, phase: 'built' }],
+      actors: [],
+      rooms: [],
+      roomConditions: [],
+    };
+
+    const projected = projectObliqueWorldFrame(frameWithTable, pose);
+    expect(projected.raised.some((item) => item.kind === 'structure' && item.id === 'edge-table')).toBe(true);
+  });
+
   it('reads loaded ground, distinct wall and door edges, a whole bed, and the actor without duplicating a finished wall', () => {
     const projected = projectObliqueWorldFrame(frame(), pose);
     expect(projected.loadedTilesVisited).toBe(64);
