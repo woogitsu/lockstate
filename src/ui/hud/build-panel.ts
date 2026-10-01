@@ -204,6 +204,8 @@ export interface BuildPanelOptions {
 
 export interface BuildPanel {
   readonly element: HTMLElement;
+  /** Purchase controls require a live prison, including after one is deleted. */
+  setSessionActive(active: boolean): void;
   /** Reveal and focus the current catalogue choice after guidance opens Build. */
   focusCatalogue(): void;
   /**
@@ -998,6 +1000,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   let removing = false;
   /** Whether the buy row is disclosed. Closed on arrival -- see `.hud-build__buy` in `hud.css`. */
   let buying = false;
+  let sessionActive = false;
   /** How many units the next purchase asks for, and which material it was last set for. */
   let quantity = 1;
   let quantityItemId: string | undefined;
@@ -1730,11 +1733,13 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   const buyToggle: ActionButton = createActionButton({
     label: t(HUD_MESSAGE_KEY.buildBuy),
     onActivate: () => {
+      if (!sessionActive) return;
       buying = !buying;
       paintBuy();
     },
   });
   buyToggle.element.classList.add('hud-build__buy-toggle');
+  buyToggle.setUnavailable(true);
 
   const quantityField: NumberField = createNumberField({
     label: t(HUD_MESSAGE_KEY.buildBuyQuantity),
@@ -1751,6 +1756,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   const buySubmit: ActionButton = createActionButton({
     label: t(HUD_MESSAGE_KEY.buildBuy),
     onActivate: () => {
+      if (!sessionActive) return;
       const material = selectedMaterial();
       // Unreachable while the row is only shown for a buildable that has one,
       // and returning rather than asserting keeps a purchase of `undefined`
@@ -2216,7 +2222,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
      */
     const isFreshUnfurnishedPrison = treasuryFreshUnfurnishedPrison;
     const verdict = pressAffordabilityVerdict(total, treasuryMinorUnits, isFreshUnfurnishedPrison);
-    buySubmit.setUnavailable(verdict.refused);
+    buySubmit.setUnavailable(!sessionActive || verdict.refused);
     /*
      * **And now it says what stops it** (the owner's sentence of 2026-09-03),
      * which is the half the comment above records as reserved. The paragraph
@@ -3249,6 +3255,11 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
 
   return {
     element: panel.element,
+    setSessionActive(active: boolean): void {
+      sessionActive = active;
+      buyToggle.setUnavailable(!active);
+      paintBuyTotal();
+    },
     focusCatalogue(): void {
       if (panelCollapsed) {
         panelCollapsed = false;
