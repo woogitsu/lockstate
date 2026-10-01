@@ -83,8 +83,8 @@ describe('canonical oblique object assets', () => {
       ],
     }, pose);
     const assetFor = (id: string): string | undefined => {
-      const item = projected.raised.find((candidate) => candidate.kind === 'structure' && candidate.id === id);
-      return item?.assetId;
+      const item = projected.raised.find((candidate) => candidate.kind === 'structure' && candidate.id === id && 'assetId' in candidate);
+      return item && 'assetId' in item ? item.assetId : undefined;
     };
     expect(assetFor('wall-module')).toBe('wall.interior.module.full');
     expect(assetFor('door-module')).toBe('door.interior.open.full');
