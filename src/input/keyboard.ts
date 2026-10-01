@@ -8,6 +8,9 @@ export interface KeyboardEventLike {
 
 export class KeyboardInputAdapter {
   private readonly pressedCodes = new Set<string>();
+  /** Bindings selected when each key went down. Context changes must not
+   * reinterpret a key that is already held. */
+  private readonly activeBindings = new Map<string, readonly KeyboardBinding[]>();
 
   public constructor(
     private readonly bindings: readonly KeyboardBinding[],
@@ -17,12 +20,16 @@ export class KeyboardInputAdapter {
   public keyDown(event: KeyboardEventLike): readonly SemanticActionEvent[] {
     if (event.repeat || this.pressedCodes.has(event.code)) return [];
     this.pressedCodes.add(event.code);
-    return this.eventsFor(event.code, 'started');
+    const bindings = this.bindingsFor(event.code);
+    this.activeBindings.set(event.code, bindings);
+    return bindings.map((binding) => ({ action: binding.action, phase: 'started', source: 'keyboard' as const }));
   }
 
   public keyUp(event: KeyboardEventLike): readonly SemanticActionEvent[] {
     if (!this.pressedCodes.delete(event.code)) return [];
-    return this.eventsFor(event.code, 'ended');
+    const bindings = this.activeBindings.get(event.code) ?? [];
+    this.activeBindings.delete(event.code);
+    return bindings.map((binding) => ({ action: binding.action, phase: 'ended', source: 'keyboard' as const }));
   }
 
   /**
@@ -46,16 +53,16 @@ export class KeyboardInputAdapter {
    */
   public releaseAll(): void {
     this.pressedCodes.clear();
+    this.activeBindings.clear();
   }
 
   public isActive(action: ActionId): boolean {
-    const contexts = this.activeContexts();
-    return this.bindings.some((binding) =>
-      binding.action === action && this.pressedCodes.has(binding.code) && intersects(binding.contexts, contexts),
+    return Array.from(this.activeBindings.values()).some((bindings) =>
+      bindings.some((binding) => binding.action === action),
     );
   }
 
-  private eventsFor(code: string, phase: SemanticActionEvent['phase']): readonly SemanticActionEvent[] {
+  private bindingsFor(code: string): readonly KeyboardBinding[] {
     const contexts = this.activeContexts();
     // There used to be a third step here:
     //
@@ -81,9 +88,7 @@ export class KeyboardInputAdapter {
     // would take that choice away from a future consumer that wants a key-up
     // -- a held modifier, a press-and-hold -- and buy nothing, since this
     // adapter emits at most one event per key per phase.
-    return this.bindings
-      .filter((binding) => binding.code === code && intersects(binding.contexts, contexts))
-      .map((binding) => ({ action: binding.action, phase, source: 'keyboard' as const }));
+    return this.bindings.filter((binding) => binding.code === code && intersects(binding.contexts, contexts));
   }
 }
 

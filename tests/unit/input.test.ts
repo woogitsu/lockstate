@@ -449,20 +449,33 @@ describe('a held key is released by a real keyup, by focus loss, and by nothing 
     expect(adapter.isActive('camera.up')).toBe(true);
   });
 
-  it('goes inactive when a text field takes focus mid-hold, without dropping the key', () => {
-    // `isActive` re-reads `activeContexts()` on every call, so the context
-    // change alone is enough -- and the key stays in `pressedCodes`, so
-    // releasing it after the field is blurred still behaves.
+  it('keeps the keydown action when a text field takes focus mid-hold', () => {
+    // Issue #1479: the context at keydown owns the semantic action until the
+    // matching keyup. A held camera key must not change meaning when focus
+    // moves to a text field, or when it later returns to the world.
     let typing = false;
     const adapter = new KeyboardInputAdapter(DEFAULT_KEYBOARD_BINDINGS, () => (typing ? ['text-entry'] : ['world']));
-    adapter.keyDown({ code: 'KeyW' });
+    expect(adapter.keyDown({ code: 'KeyW' })).toEqual([
+      { action: 'camera.up', phase: 'started', source: 'keyboard' },
+    ]);
     expect(adapter.isActive('camera.up')).toBe(true);
 
     typing = true;
-    expect(adapter.isActive('camera.up')).toBe(false);
-
-    typing = false;
     expect(adapter.isActive('camera.up')).toBe(true);
+    expect(adapter.keyUp({ code: 'KeyW' })).toEqual([
+      { action: 'camera.up', phase: 'ended', source: 'keyboard' },
+    ]);
+    expect(adapter.isActive('camera.up')).toBe(false);
+  });
+
+  it('does not invent an action when context becomes active after keydown', () => {
+    let world = false;
+    const adapter = new KeyboardInputAdapter(DEFAULT_KEYBOARD_BINDINGS, () => (world ? ['world'] : ['text-entry']));
+    expect(adapter.keyDown({ code: 'KeyW' })).toEqual([]);
+
+    world = true;
+    expect(adapter.isActive('camera.up')).toBe(false);
+    expect(adapter.keyUp({ code: 'KeyW' })).toEqual([]);
   });
 });
 
