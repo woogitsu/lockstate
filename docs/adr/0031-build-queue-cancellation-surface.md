@@ -516,7 +516,7 @@ box.
 
 ### What changed
 
-`BUILD_QUEUE_ROW_LIMIT` is now **64** (`src/ui/hud/build-panel.ts:742`, `BUILD_QUEUE_ROW_LIMIT = 64`) —
+`BUILD_QUEUE_ROW_LIMIT` is now **64** (`src/ui/hud/build-panel.ts:742`, `export const BUILD_QUEUE_ROW_LIMIT = 64;`) —
 **this read `:737` when it landed, which was wrong by three lines**: the
 declaration was opened at the end of the window and read 740 at that time.
 Later edits moved it to 742. A citation computed instead of opened is the
@@ -569,4 +569,5 @@ question next does not have to remeasure them.
 **Open question 4 is not reopened and not closed.** This change spends nothing
 further from the catalogue; it only stops a *second* constant (the row pool)
 from riding on the first (the box height) now that the two are pulled apart.
+
 
