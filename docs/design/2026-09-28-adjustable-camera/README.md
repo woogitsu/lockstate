@@ -309,3 +309,7 @@ Merged camera agent47eee44860 into the combined feature root. The pure world pro
 
 Integrated Yard source checkpoints53009f866b/c0c6011646/d3b2ad35ec. Yard records an actual reversible zoning gesture in shared history, without fabricating a wall BuildOrder or consuming materials. Its hooks are reattached from existing plan metadata after load; the status projection exposes Undo/Redo availability. Rejected Redo is guarded against resurrecting an empty-shell plan. Root transaction/Redo/complete-catalogue suites pass65tests and TypeScript. Player success wording remains owner-reserved and pending; this integration is draft, with browser Yard acceptance not yet established because the QA worker bootstrap did not complete.
 
+## Full room fixture art mapping checkpoint
+
+Integrated the authored art composition7dd7075d1f into the feature root. A new catalogue-derived check found fourteen missing fixture mappings before integration and five afterward: bed, toilet, shower head, dining table and bench. Those five now resolve to existing Blender pose catalogs. All nineteen fixture types in the twenty plans resolve through the production object mapping to registered catalogs with complete pose grids and Blender source declarations; mapping/projection/coverage suites pass46tests after the observed red cases. This checks routing and catalog metadata, not PNG completeness or final runtime appearance. Full-square wall geometry and actual textured Full HD play remain separate acceptance work.
+

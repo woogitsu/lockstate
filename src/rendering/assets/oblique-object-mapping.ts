@@ -2,6 +2,11 @@
 
 /** Stable object-id to oblique asset mapping. Unknown objects fail closed so the flat fallback remains authoritative. */
 export const OBLIQUE_OBJECT_ASSET_IDS: Readonly<Record<string, string>> = Object.freeze({
+  'object.bed': 'furniture.cell.bed.single.variants',
+  'object.toilet': 'fixture.cell.toilet_sink',
+  'object.shower-head': 'fixture.shower.head',
+  'object.dining-table': 'furniture.dining.table.wooden',
+  'object.bench': 'furniture.corridor.bench.variants',
   'object.medical-bed': 'furniture.medical-bed.variants',
   'object.medicine-cabinet': 'fixture.medicine-cabinet.variants',
   'object.storage-rack': 'furniture.storage.rack.wooden',
