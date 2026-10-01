@@ -1981,12 +1981,7 @@ export class ConstructionSystem implements SystemRegistration {
   private finalizeConstruction(order: BuildOrder): void {
     const definition = getBuildableDefinition(order.definitionId);
     if (order.footprint === 'square') {
-      // Square walls occupy the authored tile while their canonical edge remains
-      // available to enclosure and navigation reads.
       this.world.setSquareStructure(order.location, 1);
-      if (definition.category === 'wall') {
-        this.writeEdge(order.location, resolveBuildEdge(order), edgeNumericIdFor(definition));
-      }
       return;
     }
     const edgeValue = edgeNumericIdFor(definition);
@@ -2040,10 +2035,6 @@ export class ConstructionSystem implements SystemRegistration {
     const definition = getBuildableDefinition(order.definitionId);
     if (order.footprint === 'square') {
       this.world.setSquareStructure(order.location, 0);
-      if (definition.category === 'wall') {
-        const edge = resolveBuildEdge(order);
-        this.writeEdge(order.location, edge, this.remainingEdgeValue(order, edge));
-      }
       return;
     }
     const edgeValue = edgeNumericIdFor(definition);
@@ -2283,4 +2274,3 @@ export class ConstructionSystem implements SystemRegistration {
     return transaction.some((orderId) => this.orders.get(orderId)?.state === 'cancelled');
   }
 }
-
