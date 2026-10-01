@@ -35,6 +35,12 @@ for (const viewport of [{ width: 1920, height: 1080 }, { width: 2560, height: 14
     await create.focus();
     await page.keyboard.press('Enter');
     await expect(prompt).toBeHidden();
+    const surfaceAfterCreate = await page.locator('#app').evaluate((element) => {
+      const style = getComputedStyle(element, '::before');
+      return { content: style.content, backgroundImage: style.backgroundImage };
+    });
+    expect(surfaceAfterCreate.content).toBe('none');
+    expect(surfaceAfterCreate.backgroundImage).toBe('none');
     await expect(minimap).toBeEnabled();
     await expect(page.locator('.save-panel__item[data-active="true"]')).toBeVisible();
     for (const tab of ['build', 'manage', 'security']) {
