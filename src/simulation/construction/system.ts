@@ -2284,4 +2284,3 @@ export class ConstructionSystem implements SystemRegistration {
   }
 }
 
-
