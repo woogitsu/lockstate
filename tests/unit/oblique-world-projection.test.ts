@@ -82,8 +82,13 @@ describe('canonical oblique object assets', () => {
         { id: 'unknown', definitionId: 'unknown', objectId: 'object.unknown', tileX: 7, tileY: 3, phase: 'built' },
       ],
     }, pose);
-    expect(projected.raised.find((item) => item.id === 'wall-module')?.assetId).toBe('wall.interior.module.full');
-    expect(projected.raised.find((item) => item.id === 'door-module')?.assetId).toBe('door.interior.open.full');
-    expect(projected.raised.find((item) => item.id === 'unknown')?.assetId).toBeUndefined();
+    const assetFor = (id: string): string | undefined => {
+      const item = projected.raised.find((candidate) => candidate.kind === 'structure' && candidate.id === id);
+      return item?.assetId;
+    };
+    expect(assetFor('wall-module')).toBe('wall.interior.module.full');
+    expect(assetFor('door-module')).toBe('door.interior.open.full');
+    expect(assetFor('unknown')).toBeUndefined();
   });
 });
+
