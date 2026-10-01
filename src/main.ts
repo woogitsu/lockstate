@@ -4647,6 +4647,11 @@ if (roomTemplateTool !== undefined) {
       pick: pickTemplateSquare,
       size: () => roomTemplateTool.planAt({ x: 0, y: 0 }),
       revision: () => roomTemplateTool.revision,
+      viewRevision: () => {
+        const selectors = ['.hud__tabs', '.hud__corner', '.hud__rail', '.hud-strip'];
+        return JSON.stringify([worldScene instanceof ObliqueWorldScene ? worldScene.cameraPose : undefined, canvas.width, canvas.height,
+          ...selectors.map(selector => { const r = appRoot?.querySelector(selector)?.getBoundingClientRect(); return r === undefined ? null : [r.left, r.right, r.top, r.bottom]; })]);
+      },
       fit: (origin, size, cursorScreen) => {
         if (!(worldScene instanceof ObliqueWorldScene)) return false;
         const rect = canvas.getBoundingClientRect();
