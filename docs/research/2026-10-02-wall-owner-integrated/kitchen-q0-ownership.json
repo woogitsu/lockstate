@@ -1,0 +1,197 @@
+{
+  "quarterTurns": 0,
+  "actualBefore": [
+    "object.fridge@21,8:orientation=0",
+    "object.prep-counter@23,6:orientation=0",
+    "object.stove@21,6:orientation=0"
+  ],
+  "actualAfter": [
+    "object.fridge@21,8:orientation=0",
+    "object.prep-counter@23,6:orientation=0",
+    "object.stove@21,6:orientation=0"
+  ],
+  "ownershipBefore": [
+    {
+      "objectId": "object.fridge",
+      "sourceOrderId": "room-template-000000000002-2-object-002",
+      "anchorTile": {
+        "x": 21,
+        "y": 8
+      },
+      "orientation": 0,
+      "order": {
+        "id": "room-template-000000000002-2-object-002",
+        "definitionId": "fridge-brick",
+        "location": {
+          "x": 21,
+          "y": 8
+        },
+        "placementSequence": 2,
+        "state": "completed",
+        "progress": 30,
+        "materialsAllocated": [
+          {
+            "itemId": "item.brick",
+            "quantity": 1
+          }
+        ],
+        "assignedWorkerId": "mock-worker-1"
+      }
+    },
+    {
+      "objectId": "object.prep-counter",
+      "sourceOrderId": "room-template-000000000002-2-object-001",
+      "anchorTile": {
+        "x": 23,
+        "y": 6
+      },
+      "orientation": 0,
+      "order": {
+        "id": "room-template-000000000002-2-object-001",
+        "definitionId": "prep-counter-brick",
+        "location": {
+          "x": 23,
+          "y": 6
+        },
+        "placementSequence": 2,
+        "state": "completed",
+        "progress": 60,
+        "materialsAllocated": [
+          {
+            "itemId": "item.brick",
+            "quantity": 2
+          }
+        ],
+        "assignedWorkerId": "mock-worker-1"
+      }
+    },
+    {
+      "objectId": "object.stove",
+      "sourceOrderId": "room-template-000000000002-2-object-000",
+      "anchorTile": {
+        "x": 21,
+        "y": 6
+      },
+      "orientation": 0,
+      "order": {
+        "id": "room-template-000000000002-2-object-000",
+        "definitionId": "stove-brick",
+        "location": {
+          "x": 21,
+          "y": 6
+        },
+        "placementSequence": 2,
+        "state": "completed",
+        "progress": 60,
+        "materialsAllocated": [
+          {
+            "itemId": "item.brick",
+            "quantity": 2
+          }
+        ],
+        "assignedWorkerId": "mock-worker-1"
+      }
+    }
+  ],
+  "ownershipAfter": [
+    {
+      "objectId": "object.fridge",
+      "sourceOrderId": "room-template-000000000002-2-object-002",
+      "anchorTile": {
+        "x": 21,
+        "y": 8
+      },
+      "orientation": 0,
+      "order": {
+        "id": "room-template-000000000002-2-object-002",
+        "definitionId": "fridge-brick",
+        "location": {
+          "x": 21,
+          "y": 8
+        },
+        "placementSequence": 2,
+        "state": "completed",
+        "progress": 30,
+        "materialsAllocated": [
+          {
+            "itemId": "item.brick",
+            "quantity": 1
+          }
+        ],
+        "assignedWorkerId": "mock-worker-1"
+      }
+    },
+    {
+      "objectId": "object.prep-counter",
+      "sourceOrderId": "room-template-000000000002-2-object-001",
+      "anchorTile": {
+        "x": 23,
+        "y": 6
+      },
+      "orientation": 0,
+      "order": {
+        "id": "room-template-000000000002-2-object-001",
+        "definitionId": "prep-counter-brick",
+        "location": {
+          "x": 23,
+          "y": 6
+        },
+        "placementSequence": 2,
+        "state": "completed",
+        "progress": 60,
+        "materialsAllocated": [
+          {
+            "itemId": "item.brick",
+            "quantity": 2
+          }
+        ],
+        "assignedWorkerId": "mock-worker-1"
+      }
+    },
+    {
+      "objectId": "object.stove",
+      "sourceOrderId": "room-template-000000000002-2-object-000",
+      "anchorTile": {
+        "x": 21,
+        "y": 6
+      },
+      "orientation": 0,
+      "order": {
+        "id": "room-template-000000000002-2-object-000",
+        "definitionId": "stove-brick",
+        "location": {
+          "x": 21,
+          "y": 6
+        },
+        "placementSequence": 2,
+        "state": "completed",
+        "progress": 60,
+        "materialsAllocated": [
+          {
+            "itemId": "item.brick",
+            "quantity": 2
+          }
+        ],
+        "assignedWorkerId": "mock-worker-1"
+      }
+    }
+  ],
+  "beforePixels": [
+    149,
+    122
+  ],
+  "afterPixels": [
+    149,
+    122
+  ],
+  "commands": [
+    {
+      "type": "PlaceRoomTemplate",
+      "templateId": "kitchen-basic",
+      "origin": {
+        "x": 20,
+        "y": 5
+      }
+    }
+  ]
+}

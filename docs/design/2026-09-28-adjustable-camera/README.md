@@ -1210,3 +1210,23 @@ visible camera controls, full object-footprint readout, retained room-plan origi
 and the actual short-window Build floor. No timeout, retry, assertion tolerance,
 or hosted completion is inferred from these scoped results. Keep advancing real
 camera input and Blender models while the serial browser acceptance runs.
+
+### Combined native acceptance completed
+
+Root's actual built `worker-Ce4CF4WT.js` client now passes all nine combined Full
+HD cases in 4.2 minutes: capacity construction, normal and rotated Kitchen with
+the stove/fridge/prep counter, exact V8 ownership tuples through player Save/Load,
+and six full/low square-wall poses. Every wall allocates exactly two bricks in
+one command at (20,20), with zero classified masonry pixels outside its ground
+span or authored projected hull. Both loaded Kitchen screenshots were opened.
+[The new combined captures and complete output](../../research/2026-10-02-wall-owner-integrated/README.md)
+are retained independently of upstream proofs. This closes the queued local
+native check above; full exact-head CI and the serial release gates remain.
+
+An additional confirmed renderer defect is being repaired independently: a
+removed or rebuilt template object can still be drawn from its historical
+completed construction order, even when V8's physical registry correctly holds
+zero objects or one replacement. Six actual packed-session/save-load/render-feed
+cases reproduce it. The adapter must use supplied physical state authoritatively
+while preserving the explicit legacy order-only fallback. No new persistence or
+player-copy decision is required for that correction.
