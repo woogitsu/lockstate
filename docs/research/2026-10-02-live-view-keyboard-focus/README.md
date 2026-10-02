@@ -14,7 +14,7 @@ The control records whether it was focused before disabling. After replacement i
 
 `tests/browser/live-view-keyboard-focus.spec.ts` uses native Tab, Enter and ArrowDown/ArrowUp, never programmatic focus or selectOption:
 
-- World ? Angled ? World retains focus for the next keyboard action.
+- World -> Angled -> World retains focus for the next keyboard action.
 - Real registry 503 refusal returns to World and permits immediate keyboard retry.
 - A held registry response allows actual Tab navigation while busy; completion preserves the player's new focus.
 
