@@ -1096,3 +1096,31 @@ targets pass. Fridge and retained-hover specs join the complementary native
 artifact partition; integrated browser acceptance is next, with one exclusive
 browser worker and the original budgets. These new changes stay on this next
 branch, so neither PR1899 nor PR1972 is repeatedly replaced during CI.
+## Combined Kitchen and fitted-origin player acceptance — 2026-10-02
+
+Root's actual production client prepared at `471c42468f`, with worker
+`worker-BpBnawSv.js`, client `index-CiIOhJZe.js` and retained
+`index-BtHvjcB7.css`, passes ten native browser cases in 4.7 minutes.
+The subsequent `8b3096c888` changes routing/index/plan, not client source.
+Both dedicated fridge and stove complete in actual normal and rotated Kitchen
+and retain their anchors, orientation and distinct visible detail pixels through
+player Save/Load: six cases. The new fridge tuple preserves the newer stove
+source, so this combined run verifies both consumers in the same integration.
+
+Four Full HD 100%/200% cases arm the mirrored four-cell row by keyboard, retain
+all 112 displayed squares and the worker quote at origin 15,12, then perform a
+stationary native mouse press/release. All keep the same target and submit
+exactly one matching PlaceRoomTemplate command in 0/90-degree orientations.
+Real physical movement repicks the target, and Escape cancels without another
+placement. The independent original and producer-only negative runs each fail
+all four cases at changed pointerdown origins; they do not claim construction
+completed in the wrong location.
+[Retained-hover evidence](../../research/2026-10-02-retained-hover-preview-fit/README.md)
+records exact producer byte restoration and native source boundaries.
+
+This is scoped local built-Chromium acceptance with one worker and unchanged
+budgets, not full hosted CI or deployment. Root's browser handle is terminal;
+the next Blender prep-counter task receives the exclusive browser slot after
+its offline source/export checks. Prior PR1899 and PR1972 remain frozen while
+their exact-head browser gates run. Ownership Issue1975 is a separate owner
+proposal; no new saved ownership field, migration or refusal copy is implemented.
