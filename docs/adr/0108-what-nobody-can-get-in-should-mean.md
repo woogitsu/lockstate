@@ -313,11 +313,13 @@ the document that justifies not giving these values labels.
 
 **Two functions that are not affected, checked so the blast radius is not
 overstated.** `RoomZoningService.zone` refuses `not-enclosed` from
-`roomPerimeterEnclosure` (`src/simulation/rooms/zoning.ts:611`), and the
+`roomPerimeterEnclosure` (`src/simulation/rooms/zoning.ts:615`), and the
 pending-rectangle preview in `src/ui/room-tool.ts:158` calls the same
 function. Neither reads `roomPerimeterAccess`, so **nothing about what the game
 refuses to zone changes**, and the live "TOO SMALL"-style feedback under a drag
-is untouched.
+is untouched. The preceding `zoning.ts:611` indication remains historical;
+at coupled-refund checkpoint `91fd4e82b0`, the live fragment above still names
+the same `roomPerimeterEnclosure` check.
 
 ---
 
