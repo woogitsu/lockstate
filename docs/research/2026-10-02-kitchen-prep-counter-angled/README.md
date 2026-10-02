@@ -1,0 +1,27 @@
+# Retained Kitchen prep counter with physical details
+
+Source checkpoint based on published `41998ff60f013c099a2337dcd64172aa0ab12c34`. Canonical `object.prep-counter` / numeric10, food-preparation capability, authoritative2x1 area and asset `furniture.kitchen.prep-counter.variants` remain unchanged.
+
+## Existing source and consumer
+
+The current object catalog, mapping, Kitchen plan and earlier Kitchen square-fixture evidence were read before modeling. The prep counter already has a corrected shared64pixels-per-tile/72pose exporter and actual normal Kitchen construction/SaveLoad evidence. Fresh all-state title search for “prep counter” returns no dedicated Issue; the existing local Kitchen evidence identifies related1957/1869. This work adds geometry to the retained assembly, without claiming another alignment defect, duplicate densification or new buildable.
+
+Original source `furniture.kitchen.prep-counter.variants.blend`:113363bytes, SHA256 `a82cc835b2225a9a4ef6c113d2d887365e5f6b6d92933f0f0b234e5f28e47d00`. Its24meshes include carcass, worktop, splashback, existing basin, four drawer recesses/handles, four feet, three ingredient trays/contents and sanitation light. Six retained materials: brushed stainless, butcher block, ingredient pans, prep basin, recess shadow, sanitation light. Actual evaluated bounds[-1.0299999713897705,-.527999997138977,0]..[1.0299999713897705,.4699999988079071,1.6200001239776611]. Original yaw300/elevation40 source preview was rendered and opened.
+
+## Dedicated authored source
+
+Own `refine-kitchen-prep-counter-angled.py` opens the exact original, retains every original mesh/material, and bakes only the previously approved(.9,.9,1) fit. Maximum retained coordinate error9.536743161842054e-8; added details do not alter fitted original evaluated vertices. New source `furniture.kitchen.prep-counter.angled.blend` SHA256 `b20bffb79d6ffe66a6c741fc420bd163651faa4813ca4d77740eb3dd55914a8a`.
+
+The dedicated source has78meshes:24retained plus54physical additions. A lower exterior service shelf and raised front lip with four supporting brackets; sixteen drawer joinery strips and eight handle standoffs; two worktop end joints/two front end caps; twelve ingredient-tray rim strips; four basin seams; a continuous curved336vertex faucet tube, mounting plate and two valve blocks. All additions reuse original brushed stainless/recess shadow materials. Original orange contents, wood worktop, green light, basin and drawer faces retain their authored palette and geometry. The shelf uses the existing front clearance of the solid carcass, without replacing or claiming an open interior. The dedicated45/45 preview was rendered and opened: actual faucet, tray seams, drawer frames and shelf are visible.
+
+Centered evaluated bounds[-.9269999265670776,-.4814999997615814,0]..[.9269999265670776,.4229999780654907,1.6200001239776611]. Unit scales plus one(1,.5,0)anchor translation yield[.07300007343292236,.01850000210106373,0]..[1.9269999265670776,.9229999780654907,1.6200001239776611]. Height midpoint target[1,.5,.8100000619888306]. Own wrapper verifies actual loaded evaluated geometry at every approved quarter turn, including1x2 at clockwise90/270, and checks72actual camera vectors/forward directions against the independent world projection basis. Actual256px/span4camera gives64pixels-per-tile.
+
+## Actual source negative controls
+
+Five native production mutations each exit1: omit the added shelf(mesh-set guard); move it outside measured bounds; halve loadedYscale; change actual camera span; move actual camera from its declared vector. Exact wrapper bytes restored and native verification returns exit0 for all72cameras/four orientations. Both original/dedicated source bytes remain unchanged. `source-verification.json` records actual exits and byte comparisons. An initial private mutation harness stopped at its CRLF-sensitive replacement assertion before the camera trials; it restored the wrapper in `finally`. After normalizing only the private script's matching text, the complete five-control sequence ran successfully. No production guard was weakened.
+
+Pinned Blender5.2.1LTS upstream build ID9e2066aef7ef; executable SHA256 `284f4041f98e113f3dc10654a7193ffaaa9bfdfec8b87fa116620a48b5f6d4cb`. Both own entrypoints explicitly assert the version. Shared functions/default callbacks and stove/fridge tuple rows remain untouched.
+
+## Next checkpoint
+
+Production manifest/72poses remain their accepted earlier version at this source checkpoint. Full deterministic export/repeat, decoded borders/contact sheet, integrity mutation and offline genuine Kitchen q0/q1 consumer fixture follow. Actual native worker/SaveLoad/pixel calibration and consumer-only negative/restoration are queued for a later explicit browser lease. Root currently owns the browser; no prep-counter browser launched. No hosted acceptance claim.
