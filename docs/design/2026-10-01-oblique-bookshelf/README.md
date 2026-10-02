@@ -23,3 +23,7 @@ rebuild script. The manifest contains a SHA-256 for the source and each frame; t
 registry and runtime mapping use the same canonical asset id. `pnpm typecheck` and
 full tests are delegated to CI because this checkout has no installed dependencies
 and the workspace currently pins pnpm 11.22.0.
+
+## Footprint and scale correction — 2026-10-02
+The existing source remains unchanged. Evaluated mesh bounds were X[-.975,.975], Y[-.56,.41], Z[0,2.1], outside its authoritative2x1 minimum-corner footprint. The shared fixture export now translates X by1 and contracts Y by.85 around the footprint centre: X[.025,1.975], Y[.024,.8485]. It targets[1,.5,1.05] and exports72poses at256x256/4tile orthographic span, matching64pixels per tile. This replaces the older128px/2.95span framing whose nominal64pixels-per-tile metadata did not match the real camera.
+Two complete exports have identical manifest SHA2566722915a4f0e4f7f2ad733a012c99760e46e38a88f397875f0f560e8b8c0b350. The front40degree preview was opened. Integrity checks every frame byte and source hash, dimensions, footprint-centred target and scale. TargetX0 catalogue mutation is red; exact restoration plus shared catalogue/static gates25green/1skipped. Actual player construction, SaveLoad and pixel-consumer proof remain pending. Superseded original PNG files are retained until reference/history cleanup checks, so this checkpoint does not delete them or claim deployed availability.
