@@ -111,7 +111,7 @@ export function installRoomTemplateWorldBridge(canvas: HTMLCanvasElement, tool: 
     }).catch(() => { if (current === requestRevision) verdict = undefined; });
   };
   const cancel = (event: KeyboardEvent): void => {
-    if (event.key === 'Escape' && tool.isArmed()) { resetPress(); options.resetPreview?.(); tool.standDown(); plan = undefined; requestRevision += 1; }
+    if (event.key === 'Escape' && !event.defaultPrevented && tool.isArmed()) { resetPress(); options.resetPreview?.(); tool.standDown(); plan = undefined; requestRevision += 1; }
   };
   const interrupted = (event: PointerEvent): void => { if (event.pointerId === downPointer) resetPress(); };
   // A release outside the canvas must not become a later placement on re-entry.
@@ -122,7 +122,9 @@ export function installRoomTemplateWorldBridge(canvas: HTMLCanvasElement, tool: 
   window.addEventListener('pointerup', outsideRelease);
   window.addEventListener('pointermove', outsidePointerMove);
   window.addEventListener('blur', resetPress);
-  window.addEventListener('keydown', cancel, true);
+  // Let the focused UI consume Escape before the world sees it. A window
+  // capture listener runs before the Layout menu can stop propagation.
+  window.addEventListener('keydown', cancel);
 
   const paint = (): void => {
     if (disposed) return;
@@ -188,6 +190,6 @@ export function installRoomTemplateWorldBridge(canvas: HTMLCanvasElement, tool: 
     window.removeEventListener('pointerup', outsideRelease);
     window.removeEventListener('pointermove', outsidePointerMove);
     window.removeEventListener('blur', resetPress);
-    window.removeEventListener('keydown', cancel, true);
+    window.removeEventListener('keydown', cancel);
   };
 }
