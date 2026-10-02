@@ -429,3 +429,10 @@ Three independent scopes remain active: actual station player placement/collisio
 The real player station flow now passes1/1 at Full HD with a filled two-square ghost, third-square exclusion, quoted80 matching treasury25000 to24920, completed worker construction, occupied-second-square refusal and production Save/Load. Removing only its authored asset mapping fails with zero steel pixels; restoration passes. Root inspected the completed Full HD screenshot. See [player acceptance and screenshots](../../research/2026-10-02-exercise-station-player-build/README.md). This is integration-branch acceptance, not deployed station availability.
 
 The existing bench now selects a Blender weatherproof variant only when its entire completed footprint lies inside an authoritative Yard rectangle. Indoor, partial, absent and planned contexts retain their previous appearance. No buildable, price or save identity changed. Bench context/art, world projection and station command integration pass13/13; TypeScript passes. Actual bench player placement remains queued behind the camera pointer-cancellation browser proof.
+
+
+## Camera cancellation and platform verification checkpoint
+
+Issue1935 is fixed: a right-button turn cannot resume after window blur or pointer cancellation. The unchanged actual Full HD test failed when the production pointer reset was removed, then passed after restoration; final screenshot run passes1/1 in13.5seconds. The source and [durable proof](../../research/2026-10-02-oblique-camera-cancel/README.md) are integrated. No browser timeout was increased.
+
+Four existing evidence contracts falsely failed Windows CRLF/backslash input. Normalize read text line endings and diagnostic repository paths only; assertions and enumerated membership stay unchanged. Their baseline4failures becomes23/23green. A deliberate production clock guard inversion still fails the HUD cadence contract1/5; restoring returns23/23green. TypeScript passes. The separate shell secret gate still needs a working Bash environment on this host, and whole-suite green is not claimed.
