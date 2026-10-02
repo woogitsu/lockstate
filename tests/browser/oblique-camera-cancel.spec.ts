@@ -1,6 +1,6 @@
 import { expect, test } from './network-changed-fixture';
 
-async function paintedCanvas(page: import('@playwright/test').Page): Promise<Buffer> {
+async function paintedCanvas(page: import('./network-changed-fixture').Page): Promise<Buffer> {
   await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
   return page.locator('#game-root canvas').screenshot();
 }

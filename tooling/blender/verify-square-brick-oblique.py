@@ -1,12 +1,17 @@
 """Verify the authored full and cutaway wall Blender geometry contract."""
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 import bpy
 from mathutils import Vector
 
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import pipeline_common
+
+pipeline_common.require_blender_version()
 ROOT = Path(__file__).resolve().parents[2]
 
 

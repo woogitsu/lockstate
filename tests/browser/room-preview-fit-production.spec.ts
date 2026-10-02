@@ -1,7 +1,7 @@
 import { expect, test } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
 
-async function target(page: import('@playwright/test').Page): Promise<{ origin: { x: number; y: number }; mirrorX: boolean }> {
+async function target(page: import('./network-changed-fixture').Page): Promise<{ origin: { x: number; y: number }; mirrorX: boolean }> {
   return page.evaluate(() => {
     const messages = (window as unknown as { lockstateSentToWorker: Array<{ payload?: { projectionId?: string; target?: unknown } }> }).lockstateSentToWorker;
     return messages.filter(m => m.payload?.projectionId === 'world/room-template-preflight').at(-1)?.payload?.target as { origin: { x: number; y: number }; mirrorX: boolean };
