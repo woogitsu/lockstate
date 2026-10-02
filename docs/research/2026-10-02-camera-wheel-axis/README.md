@@ -52,8 +52,16 @@ will emit such an event.
 
 No browser was launched for this checkpoint because another agent holds the
 exclusive lease. Original-source native baseline, production guard mutations,
-exact restoration and native screenshots remain pending. No Issue was opened
-as a native defect. Fresh remote searches for wheel zoom and horizontal wheel
-found no matching cause; Issue #1955 concerns anchoring a nonzero angled zoom.
+exact restoration and native screenshots remain pending.
+
+## Subsequent Issue publication — 2026-10-02
+
+[Issue #1979](https://github.com/woogitsu/lockstate/issues/1979) records the six
+actual registered-callback failures with an explicit source-proof label and
+the separate pending native acceptance. Fresh all-state searches for horizontal
+wheel, deltaY zoom, trackpad zoom and wheel zoom found no matching cause.
+Closed Issue #1955 was read in full and concerns anchoring a nonzero angled
+zoom. The new Issue was fetched after creation; title and body matched the
+submitted UTF-8 payload exactly and state was open. No native result is claimed.
 
 Raw terminal logs are retained alongside this checkpoint.
