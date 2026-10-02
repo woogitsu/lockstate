@@ -69,6 +69,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
   );
   private pose!: ObliqueCameraState;
   private framedWorld = false;
+  private frameAfterRevision = -1;
   private selected: { tileX: number; tileY: number } | undefined;
   private turnPointerId: number | undefined;
   private turnPointerAt: Point | undefined;
@@ -123,6 +124,13 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.feed = feed;
     this.lastFrame = undefined;
     this.lastProjection = undefined;
+    this.framedWorld = false;
+    this.frameAfterRevision = -1;
+  }
+
+  /** Frame the next prison only after its first new world snapshot arrives. */
+  public reframeForNextSession(): void {
+    this.frameAfterRevision = this.lastFrame?.revision ?? 0;
     this.framedWorld = false;
   }
 
@@ -462,7 +470,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
         : this.gesture.kind === 'room' ? this.roomTool?.isArmed() : this.objectTool?.isArmed();
       if (armed !== true) this.cancelGesture();
     }
-    if (!this.framedWorld && frame.world.loadedBounds !== undefined) {
+    if (!this.framedWorld && frame.revision > this.frameAfterRevision && frame.world.loadedBounds !== undefined) {
       const bounds = frame.world.loadedBounds;
       this.pose = {
         ...this.pose,
