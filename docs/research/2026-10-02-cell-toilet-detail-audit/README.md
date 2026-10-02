@@ -156,3 +156,8 @@ controls above. App/tools TypeScript compilation exited0.
 Registry and original catalog diffs remain empty. Genuine new-model Cell
 construction/SaveLoad and consumer-only native negative controls remain queued;
 no browser started during the coordinator/HUD leases.
+
+A single fresh GitHub read of historical Issue1952 was rate-limited; its current
+remote status was not verified and is not claimed here. No repeated API polling
+or Issue mutation followed. The next real-player route is recorded separately
+in `native-player-acceptance.md` with calibration and consumer proof pending.
