@@ -46,6 +46,28 @@ async function fixtureAnchors(page: Page): Promise<string[]> {
   });
 }
 
+/** Distinct authored Blender palette pixels inside each installed fixture at the fixed Full HD view. */
+async function fixturePixels(page: Page, png: Buffer): Promise<Record<string, number>> {
+  return page.evaluate(async base64 => {
+    const bitmap = await createImageBitmap(new Blob([Uint8Array.from(atob(base64), c => c.charCodeAt(0))], { type: 'image/png' }));
+    const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
+    const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0);
+    const targets = {
+      stove: { rect: [780, 390, 140, 190], rgb: [183, 109, 52] },
+      prep: { rect: [900, 310, 170, 170], rgb: [150, 105, 67] },
+      fridge: { rect: [890, 435, 120, 255], rgb: [39, 67, 77] },
+    };
+    return Object.fromEntries(Object.entries(targets).map(([key, target]) => {
+      const pixels = context.getImageData(...target.rect as [number, number, number, number]).data;
+      let count = 0;
+      for (let index = 0; index < pixels.length; index += 4) {
+        if (pixels[index] === target.rgb[0] && pixels[index + 1] === target.rgb[1] && pixels[index + 2] === target.rgb[2]) count += 1;
+      }
+      return [key, count];
+    }));
+  }, png.toString('base64'));
+}
+
 let routeStorage: Awaited<ReturnType<ReturnType<Page['context']>['storageState']>> | undefined;
 const test = base.extend({
   storageState: async ({}, use) => { await use(routeStorage ?? { cookies: [], origins: [] }); },
@@ -130,7 +152,11 @@ test('player builds stove counter and fridge in Kitchen and keeps them after Sav
   if (bounds === null) throw new Error('minimap absent');
   await minimap.click({ position: { x: bounds.width * 22.5 / 32, y: bounds.height * 7.5 / 32 } });
   await page.mouse.move(1300, 700);
-  await page.screenshot({ path: info.outputPath('kitchen-worker-completed-fullhd.png') });
+  const completed = await page.screenshot({ path: info.outputPath('kitchen-worker-completed-fullhd.png') });
+  const completedPixels = await fixturePixels(page, completed);
+  expect(completedPixels.stove, 'authored stove burner pixels after real construction').toBeGreaterThan(100);
+  expect(completedPixels.prep, 'authored prep worktop pixels after real construction').toBeGreaterThan(500);
+  expect(completedPixels.fridge, 'authored fridge handle pixels after real construction').toBeGreaterThan(100);
   await page.getByRole('button', { name: 'Overview', exact: true }).click();
   await page.getByRole('button', { name: 'Save now', exact: true }).click();
   await expect(page.locator('.save-panel__status')).toContainText('Saved');
@@ -139,5 +165,9 @@ test('player builds stove counter and fridge in Kitchen and keeps them after Sav
   expect(await fixtureAnchors(page)).toEqual(expected);
   await minimap.click({ position: { x: bounds.width * 22.5 / 32, y: bounds.height * 7.5 / 32 } });
   await page.mouse.move(1300, 700);
-  await page.screenshot({ path: info.outputPath('kitchen-loaded-fullhd.png') });
+  const loaded = await page.screenshot({ path: info.outputPath('kitchen-loaded-fullhd.png') });
+  const loadedPixels = await fixturePixels(page, loaded);
+  expect(loadedPixels.stove, 'authored stove burner pixels after Save/Load').toBeGreaterThan(100);
+  expect(loadedPixels.prep, 'authored prep worktop pixels after Save/Load').toBeGreaterThan(500);
+  expect(loadedPixels.fridge, 'authored fridge handle pixels after Save/Load').toBeGreaterThan(100);
 });
