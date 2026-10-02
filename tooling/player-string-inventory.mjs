@@ -290,6 +290,11 @@ function escapeCell(text) {
   return text.replaceAll('\\', '\\\\').replaceAll('|', '\\|').replaceAll('\n', ' ');
 }
 
+/** Keep the shipped sentence as a checkable fragment beside its source anchor. */
+function markdownCode(text) {
+  return '`' + escapeCell(text).replaceAll('`', '\\`') + '`';
+}
+
 export function renderInventory({ entries }) {
   const lines = [];
   lines.push('# Every sentence this game can show a player');
@@ -323,9 +328,8 @@ export function renderInventory({ entries }) {
   lines.push('| Key | Ships today | At |');
   lines.push('| --- | --- | --- |');
   for (const entry of entries) {
-    // Quote the source key beside the coordinate. A bare dotted key is treated
-    // as a filename by the documentation quotation gate, not as checkable code.
-    lines.push(`| \`${escapeCell(entry.key)}\` | ${escapeCell(entry.value)} | \`${LOCALE_SOURCE_PATH}:${String(entry.line)}\`, \`'${escapeCell(entry.key)}'\` |`);
+    // Quote the literal source key beside the coordinate; dotted bare keys look like filenames.
+    lines.push(`| ${markdownCode(entry.key)} | ${markdownCode(entry.value)} | ${markdownCode(`${LOCALE_SOURCE_PATH}:${String(entry.line)}`)}, ${markdownCode("'" + entry.key + "'")} |`);
   }
   lines.push('');
   return lines.join('\n');

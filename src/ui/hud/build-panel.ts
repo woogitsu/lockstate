@@ -13,6 +13,8 @@ import { rovingTabStop } from '../primitives/roving-focus';
 import { bindRovingFocusKeydown } from '../primitives/roving-focus-keydown';
 import { HUD_MESSAGE_KEY } from './messages';
 import { assignPooledRows } from './pooled-row-binding';
+import { createRoomTemplatePreview } from './room-template-preview';
+import type { RoomTemplateTool } from '../room-template-tool';
 import { toggleRemovalMode } from './tool-arming';
 import {
   HUD_BUILD_EDGES,
@@ -156,6 +158,7 @@ export interface BuildPanelTarget {
 export interface BuildPanelOptions {
   readonly localizer: HudLocalizer;
   readonly model: HudBuildViewModel;
+  readonly roomTemplateTool?: RoomTemplateTool;
   /** The numeric route: place exactly one order at the coordinates shown. */
   readonly onPlace: (intent: BuildPanelIntent) => void;
   /**
@@ -1083,6 +1086,11 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     paintCatalogue();
     revealSelectedRow();
   });
+  const templatePreview = createRoomTemplatePreview(localizer, options.roomTemplateTool);
+  const catalogueActions = element('div', {
+    className: 'hud-build__catalogue-actions',
+    children: categoryOptions.length === 0 ? [templatePreview.openButton] : [categoryFilter, templatePreview.openButton],
+  });
 
   /**
    * Scrolls the list, and only the list, until the selected row is inside it.
@@ -1321,7 +1329,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
      * control that can only be pressed to no effect. `hud.css` styles both
      * shapes of this header for that reason.
      */
-    ...(categoryOptions.length === 0 ? {} : { headerAction: categoryFilter }),
+    headerAction: catalogueActions,
   });
   // The one section the panel's height budget is allowed to take space from,
   // named so `hud.css` can say which one it is (issue #143). Every other block
@@ -3141,6 +3149,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       },
     },
   });
+  panel.element.append(templatePreview.dialog);
   panel.body.append(
     catalogue.element,
     element('div', {

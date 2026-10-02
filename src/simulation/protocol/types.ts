@@ -344,6 +344,7 @@ export const PROJECTION_IDS = [
   'hud/incidents',
   'hud/incident-detail',
   'world/render-snapshot',
+  'world/room-template-preflight',
 ] as const;
 
 export type ProjectionId = (typeof PROJECTION_IDS)[number];
@@ -386,6 +387,12 @@ export const MAX_PROJECTION_PAGE_LIMIT = 500;
 const projectionTargetSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('entity'), entityId: sequenceSchema }).strict(),
   z.object({ kind: z.literal('id'), id: identifierSchema }).strict(),
+  z.object({
+    kind: z.literal('room-template'),
+    templateId: z.enum(['cell-basic', 'cell-large', 'shower-room']),
+    origin: z.object({ x: z.number().int().safe(), y: z.number().int().safe() }).strict(),
+    mirrorX: z.boolean().optional(),
+  }).strict(),
 ]);
 
 export type ProjectionTarget = DeepReadonly<z.infer<typeof projectionTargetSchema>>;

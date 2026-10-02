@@ -212,3 +212,17 @@ hide interiors, no HUD or text, 16:9 1920 × 1080, no copied game art.” Add:
 - Wall/cutaway Blender kit: `codex/wall-cutaway-art-2026-09-28`.
 - On-screen camera pan: #1590. Rotation input contract: #1591. Both are separate
   from the renderer's still-missing angled projection.
+
+## 2026-10-01 integration checkpoint — not a release claim
+
+The production composition root is under review in [#1894](https://github.com/woogitsu/lockstate/pull/1894). Its current implementation connects angled-world Build/Rooms/Objects gestures, minimap and zoom; the keyboard bridge uses the existing remappable adapter for pan, rotation and tilt. Separate HUD angle buttons and pose-dependent model loading are being integrated. Full HD local browser checks are useful evidence, but this stack still needs full exact-head CI, serial main CI and production verification before it is called shipped.
+
+[#1898](https://github.com/woogitsu/lockstate/pull/1898) corrects the square template footprint from #1882. Wall orders now use the exact preview coordinates. Shared square barriers feed enclosure and navigation without writing irreversible legacy edges. Rendering reads occupied squares in both views, preserves construction identities and avoids duplicate paint. All three currently available templates have completed build/furnishing and actual save-envelope round-trip coverage. Queued object footprint protection reuses the existing #1605 implementation; that original issue remains open until its integrated result reaches main.
+
+Remaining acceptance work, in priority order:
+
+1. Complete screenshot and collision checks after construction and Save/Load in both renderers; retain full-square walls alongside legacy edges.
+2. Move ordinary freehand Build gestures from edge runs to occupied square runs. The template correction alone does not satisfy the owner's whole-square building requirement.
+3. Integrate and verify existing additional room plans from the #1644 stack before expanding the catalog to every room type. The owner's decision was the complete template system; three templates are an intermediate state.
+4. Re-render Blender frames whose non-transparent pixels touch a frame edge. Art QA found clipping in the desk, bin and sink pose catalogs; runtime frame selection fixes alone do not correct truncated source art.
+5. Join all reviewed increments, pass exact-head CI, then verify the actual deployed game. Keep art, gesture/input and integration QA in separate worktrees.
