@@ -15,9 +15,12 @@ function until(runtime: Runtime, predicate: () => boolean) {
   for (let tick = 0; tick < 30_000 && !predicate(); tick++) runtime.kernel.step();
   expect(predicate()).toBe(true);
 }
-function reload(runtime: Runtime, legacy = false): Runtime {
+function reload(runtime: Runtime, legacy = false, restoredBookWithoutHistory = false): Runtime {
   const original = captureSessionSnapshot(runtime);
-  const bundle = legacy ? { ...original, simulation: { ...original.simulation!, roomTemplates: { version: 1 as const, pending: [] } } } : original;
+  const withMetadata = legacy ? { ...original, simulation: { ...original.simulation!, roomTemplates: { version: 1 as const, pending: [] } } } : original;
+  const { currentTransaction: _current, currentTransactionId: _transactionId, ...book } = original.construction;
+  // Explicit decoder/restore compatibility, not a claimed native history eviction.
+  const bundle = restoredBookWithoutHistory ? { ...withMetadata, construction: { ...book, undoStack: [], redoStack: [] } } : withMetadata;
   const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(createSaveEnvelope({
     gameVersion: 'test', prisonId: 'occupied-template-cancel', revision: 1, createdAt: 0, updatedAt: 1,
     kernel: bundle.kernel, world: bundle.world, construction: bundle.construction,
@@ -124,6 +127,37 @@ it('allows the same cancellation after the actual sentence releases the only res
   expect(runtime.prisoners.roomInstances.getById('room.cell:11:11')).toBeUndefined();
   expect(runtime.refusals.last?.reason).not.toBe('unzone.room-occupied');
   expect(reload(runtime).placedObjects.getSnapshot()).toEqual([]);
+});
+it('honors actual completed metadata in a valid restored order book without an Undo group', () => {
+  let runtime = cell();
+  send(runtime, { type: 'AdmitPrisoner', sentenceLengthTicks: 1_000_000, priorIncidents: 0, x: 16, y: 16 });
+  until(runtime, () => runtime.prisoners.roomInstances.totalOccupancy === 1);
+  runtime = reload(runtime, false, true);
+  expect(runtime.roomTemplates.snapshot().completed).toHaveLength(1);
+  expect(runtime.construction.hasSomethingToUndo).toBe(false);
+  const fixture = runtime.construction.allOrders().find(order => order.id.includes('-2-object-000'))!;
+  const { kernel: _beforeKernel, ...before } = captureSessionSnapshot(runtime);
+  send(runtime, { type: 'CancelBuildOrder', orderId: fixture.id, expectedRevision: runtime.construction.revisionOf(fixture.id) });
+  const { kernel: _afterKernel, ...after } = captureSessionSnapshot(runtime);
+  expect(after).toEqual(before);
+  expect(runtime.refusals.last).toMatchObject({ reason: 'unzone.room-occupied' });
+});
+it.each([false, true])('protects a genuinely undone, saved and redone Cell after admission, legacy=%s', legacy => {
+  let runtime = cell();
+  send(runtime, { type: 'Undo' });
+  expect(runtime.placedObjects.getSnapshot()).toEqual([]);
+  runtime = reload(runtime);
+  send(runtime, { type: 'Redo' });
+  until(runtime, () => runtime.roomTemplates.snapshot().pending.length === 0 && runtime.construction.allOrders().every(order => order.state === 'completed'));
+  send(runtime, { type: 'AdmitPrisoner', sentenceLengthTicks: 1_000_000, priorIncidents: 0, x: 16, y: 16 });
+  until(runtime, () => runtime.prisoners.roomInstances.totalOccupancy === 1);
+  runtime = reload(runtime, legacy);
+  const fixture = runtime.construction.allOrders().find(order => order.id.includes('-2-object-000'))!;
+  const { kernel: _beforeKernel, ...before } = captureSessionSnapshot(runtime);
+  send(runtime, { type: 'CancelBuildOrder', orderId: fixture.id, expectedRevision: runtime.construction.revisionOf(fixture.id) });
+  const { kernel: _afterKernel, ...after } = captureSessionSnapshot(runtime);
+  expect(after).toEqual(before);
+  expect(runtime.refusals.last).toMatchObject({ reason: 'unzone.room-occupied' });
 });
 it('retains the existing full-gesture cancellation of a completed unoccupied template fixture', () => {
   const runtime = reload(cell());
