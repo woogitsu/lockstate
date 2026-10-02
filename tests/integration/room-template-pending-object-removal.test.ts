@@ -16,12 +16,9 @@ function until(runtime: Runtime, predicate: () => boolean) {
   for (let tick = 0; tick < 30_000 && !predicate(); tick++) runtime.kernel.step();
   expect(predicate()).toBe(true);
 }
-function reload(runtime: Runtime, legacy = false, restoredBookWithoutHistory = false): Runtime {
+function reload(runtime: Runtime, legacy = false): Runtime {
   const original = captureSessionSnapshot(runtime);
-  const withMetadata = legacy ? { ...original, simulation: { ...original.simulation!, roomTemplates: { version: 1 as const, pending: [] } } } : original;
-  const { currentTransaction: _current, currentTransactionId: _transactionId, ...book } = original.construction;
-  // Explicit decoder/restore compatibility, not a claimed native history eviction.
-  const bundle = restoredBookWithoutHistory ? { ...withMetadata, construction: { ...book, undoStack: [], redoStack: [] } } : withMetadata;
+  const bundle = legacy ? { ...original, simulation: { ...original.simulation!, roomTemplates: { version: 1 as const, pending: [] } } } : original;
   const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(createSaveEnvelope({
     gameVersion: 'test', prisonId: 'occupied-template-cancel', revision: 1, createdAt: 0, updatedAt: 1,
     kernel: bundle.kernel, world: bundle.world, construction: bundle.construction,
@@ -45,13 +42,13 @@ function gameplay(runtime: Runtime) {
   const { kernel: _kernel, ...snapshot } = captureSessionSnapshot(runtime);
   return snapshot;
 }
-it.each(['RemoveObject', 'RemoveWall'] as const)('saved assigned template fixture %s releases its entire gesture while paused, then rebuilds', type => {
+it.each([['RemoveObject', false], ['RemoveWall', false], ['RemoveObject', true], ['RemoveWall', true]] as const)('saved assigned template fixture %s releases its entire gesture while paused, then rebuilds, legacy=%s', (type, legacy) => {
   let runtime = createNewSimulationRuntime(73);
   send(runtime, { type: 'PlaceRoomTemplate', templateId: 'cell-row-four', origin: { x: 5, y: 5 }, mirrorX: true, quarterTurns: 1 });
   until(runtime, () => runtime.construction.allOrders().some(order => order.id.includes('-2-object-') && order.state === 'in-progress'));
   expect(runtime.construction.allOrders().filter(order => order.state === 'completed')).toHaveLength(58);
   expect(runtime.construction.allOrders().filter(order => order.state === 'assigned')).toHaveLength(7);
-  runtime = reload(runtime);
+  runtime = reload(runtime, legacy);
   const selected = runtime.construction.allOrders().find(order => order.definitionId === 'bed-wooden' && order.state === 'assigned')!;
   expect(selected.objectOrientation).toBe(1);
   const tick = runtime.kernel.tick;
@@ -72,7 +69,7 @@ it.each(['RemoveObject', 'RemoveWall'] as const)('saved assigned template fixtur
   expect(runtime.placedObjects.getSnapshot()).toHaveLength(8);
   expect(runtime.prisoners.roomInstances.getSnapshot()).toHaveLength(4);
 });
-it.each([false, true])('saved occupied partial row refuses pending fixture removal before any changes, legacy=%s', legacy => {
+it.each([['RemoveObject', false], ['RemoveWall', false], ['RemoveObject', true], ['RemoveWall', true]] as const)('saved occupied partial row refuses %s pending fixture removal before any changes, legacy=%s', (type, legacy) => {
   let runtime = createNewSimulationRuntime(73);
   send(runtime, { type: 'PlaceRoomTemplate', templateId: 'cell-row-four', origin: { x: 10, y: 10 }, quarterTurns: 1 });
   until(runtime, () => runtime.construction.allOrders().some(order => order.id.includes('-2-object-') && order.state === 'completed'));
@@ -83,7 +80,9 @@ it.each([false, true])('saved occupied partial row refuses pending fixture remov
   expect(selected).toBeDefined();
   const revision = runtime.construction.revisionOf(selected.id);
   const before = gameplay(runtime);
-  remove(runtime, 'RemoveObject', { x: selected.location.x + 1, y: selected.location.y });
+  const tick = runtime.kernel.tick;
+  remove(runtime, type, { x: selected.location.x + 1, y: selected.location.y });
+  expect(runtime.kernel.tick).toBe(tick);
   expect(gameplay(runtime)).toEqual(before);
   expect(runtime.construction.revisionOf(selected.id)).toBe(revision);
   expect(runtime.refusals.last).toMatchObject({ reason: 'unzone.room-occupied' });
@@ -104,3 +103,42 @@ it.each(['RemoveObject', 'RemoveWall'] as const)('ordinary queued bed %s stays a
   expect(runtime.prisoners.roomInstances.getSnapshot()).toHaveLength(1);
 });
 
+
+it.each(['RemoveObject', 'RemoveWall'] as const)('completed template bed %s keeps standing-object best-effort removal', type => {
+  let runtime = createNewSimulationRuntime(73);
+  send(runtime, { type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 10, y: 10 }, mirrorX: true, quarterTurns: 1 });
+  finish(runtime);
+  runtime = reload(runtime);
+  const bed = runtime.placedObjects.getSnapshot().find(object => object.objectId === 'object.bed')!;
+  const beforeOrders = runtime.construction.snapshot();
+  remove(runtime, type, { x: bed.anchorTile.x + 1, y: bed.anchorTile.y });
+  expect(runtime.placedObjects.getSnapshot()).toHaveLength(1);
+  expect(runtime.prisoners.roomInstances.getSnapshot()).toHaveLength(1);
+  expect(runtime.construction.snapshot()).toEqual(beforeOrders);
+});
+it.each([['RemoveObject', false], ['RemoveWall', false], ['RemoveObject', true], ['RemoveWall', true]] as const)('saved partial row %s relocates to a genuine older spare before collective reversal, legacy=%s', (type, legacy) => {
+  let runtime = createNewSimulationRuntime(73);
+  send(runtime, { type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 20, y: 1 } });
+  finish(runtime);
+  const olderOrders = new Set(runtime.construction.allOrders().map(order => order.id));
+  send(runtime, { type: 'PlaceRoomTemplate', templateId: 'cell-row-four', origin: { x: 10, y: 10 }, quarterTurns: 1 });
+  until(runtime, () => runtime.construction.allOrders().some(order => !olderOrders.has(order.id) && order.id.includes('-2-object-') && order.state === 'completed'));
+  send(runtime, { type: 'AdmitPrisoner', sentenceLengthTicks: 1_000_000, priorIncidents: 0, x: 16, y: 16 });
+  until(runtime, () => runtime.prisoners.roomInstances.totalOccupancy === 1);
+  runtime = reload(runtime, legacy);
+  expect(runtime.prisoners.roomInstances.occupantsOf('room.cell:21:2')).toEqual([]);
+  const occupied = runtime.prisoners.roomInstances.getSnapshot().find(([roomId]) => runtime.prisoners.roomInstances.occupantsOf(roomId).length === 1)!;
+  const resident = runtime.prisoners.roomInstances.occupantsOf(occupied[0])[0]!;
+  const selected = runtime.construction.allOrders().find(order => order.definitionId === 'bed-wooden' && order.state === 'assigned')!;
+  const tick = runtime.kernel.tick;
+  remove(runtime, type, { x: selected.location.x + 1, y: selected.location.y });
+  expect(runtime.kernel.tick).toBe(tick);
+  expect(runtime.prisoners.roomInstances.getById(occupied[0])).toBeUndefined();
+  expect(runtime.prisoners.roomInstances.occupantsOf('room.cell:21:2')).toEqual([resident]);
+  expect(runtime.construction.allOrders().filter(order => order.state === 'cancelled')).toHaveLength(66);
+  expect(runtime.construction.allOrders().filter(order => order.state === 'completed')).toHaveLength(20);
+  expect(runtime.placedObjects.getSnapshot()).toHaveLength(2);
+  runtime = reload(runtime);
+  expect(runtime.prisoners.roomInstances.occupantsOf('room.cell:21:2')).toEqual([resident]);
+  expect(runtime.placedObjects.getSnapshot()).toHaveLength(2);
+});
