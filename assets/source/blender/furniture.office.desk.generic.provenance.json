@@ -1,0 +1,367 @@
+{
+  "source": "assets/source/blender/furniture.office.desk.generic.blend",
+  "sourceSha256": "87ecf22ec7f4d82e5c2c47bb18870b8ef060a84759cb55d38b131fc34e72e11b",
+  "sourceBytes": 103228,
+  "meshes": [
+    {
+      "name": "dark desktop edge",
+      "vertices": 56,
+      "materials": [
+        {
+          "name": "worktop edging",
+          "rgba": [
+            0.18000000715255737,
+            0.11999999731779099,
+            0.07999999821186066,
+            1.0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "document stack",
+      "vertices": 56,
+      "materials": [
+        {
+          "name": "paper",
+          "rgba": [
+            0.800000011920929,
+            0.7599999904632568,
+            0.6200000047683716,
+            1.0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "document top",
+      "vertices": 56,
+      "materials": [
+        {
+          "name": "teal drawer label",
+          "rgba": [
+            0.11999999731779099,
+            0.4699999988079071,
+            0.47999998927116394,
+            1.0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "drawer face 0.16",
+      "vertices": 56,
+      "materials": [
+        {
+          "name": "warm oak laminate",
+          "rgba": [
+            0.41999998688697815,
+            0.27000001072883606,
+            0.14000000059604645,
+            1.0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "drawer face 0.34",
+      "vertices": 56,
+      "materials": [
+        {
+          "name": "warm oak laminate",
+          "rgba": [
+            0.41999998688697815,
+            0.27000001072883606,
+            0.14000000059604645,
+            1.0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "drawer face 0.52",
+      "vertices": 56,
+      "materials": [
+        {
+          "name": "warm oak laminate",
+          "rgba": [
+            0.41999998688697815,
+            0.27000001072883606,
+            0.14000000059604645,
+            1.0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "drawer pull 0.16",
+      "vertices": 56,
+      "materials": [
+        {
+          "name": "teal drawer label",
+          "rgba": [
+            0.11999999731779099,
+            0.4699999988079071,
+            0.47999998927116394,
+            1.0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "drawer pull 0.34",
+      "vertices": 56,
+      "materials": [
+        {
+          "name": "teal drawer label",
+          "rgba": [
+            0.11999999731779099,
+            0.4699999988079071,
+            0.47999998927116394,
+            1.0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "drawer pull 0.52",
+      "vertices": 56,
+      "materials": [
+        {
+          "name": "teal drawer label",
+          "rgba": [
+            0.11999999731779099,
+            0.4699999988079071,
+            0.47999998927116394,
+            1.0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "front leg -0.78",
+      "vertices": 56,
+      "materials": [
+        {
+          "name": "powder coated steel",
+          "rgba": [
+            0.23000000417232513,
+            0.30000001192092896,
+            0.3199999928474426,
+            1.0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "front leg 0.78",
+      "vertices": 56,
+      "materials": [
+        {
+          "name": "powder coated steel",
+          "rgba": [
+            0.23000000417232513,
+            0.30000001192092896,
+            0.3199999928474426,
+            1.0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "keyboard",
+      "vertices": 56,
+      "materials": [
+        {
+          "name": "powder coated steel",
+          "rgba": [
+            0.23000000417232513,
+            0.30000001192092896,
+            0.3199999928474426,
+            1.0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "laminate desktop",
+      "vertices": 56,
+      "materials": [
+        {
+          "name": "warm oak laminate",
+          "rgba": [
+            0.41999998688697815,
+            0.27000001072883606,
+            0.14000000059604645,
+            1.0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "monitor base",
+      "vertices": 56,
+      "materials": [
+        {
+          "name": "powder coated steel",
+          "rgba": [
+            0.23000000417232513,
+            0.30000001192092896,
+            0.3199999928474426,
+            1.0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "monitor casing",
+      "vertices": 56,
+      "materials": [
+        {
+          "name": "powder coated steel",
+          "rgba": [
+            0.23000000417232513,
+            0.30000001192092896,
+            0.3199999928474426,
+            1.0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "monitor neck",
+      "vertices": 56,
+      "materials": [
+        {
+          "name": "powder coated steel",
+          "rgba": [
+            0.23000000417232513,
+            0.30000001192092896,
+            0.3199999928474426,
+            1.0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "monitor screen",
+      "vertices": 56,
+      "materials": [
+        {
+          "name": "monitor display",
+          "rgba": [
+            0.05000000074505806,
+            0.12999999523162842,
+            0.17000000178813934,
+            1.0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "rear stretcher",
+      "vertices": 56,
+      "materials": [
+        {
+          "name": "powder coated steel",
+          "rgba": [
+            0.23000000417232513,
+            0.30000001192092896,
+            0.3199999928474426,
+            1.0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "steel leg -0.78",
+      "vertices": 56,
+      "materials": [
+        {
+          "name": "powder coated steel",
+          "rgba": [
+            0.23000000417232513,
+            0.30000001192092896,
+            0.3199999928474426,
+            1.0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "steel leg 0.78",
+      "vertices": 56,
+      "materials": [
+        {
+          "name": "powder coated steel",
+          "rgba": [
+            0.23000000417232513,
+            0.30000001192092896,
+            0.3199999928474426,
+            1.0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "three-drawer pedestal",
+      "vertices": 56,
+      "materials": [
+        {
+          "name": "powder coated steel",
+          "rgba": [
+            0.23000000417232513,
+            0.30000001192092896,
+            0.3199999928474426,
+            1.0
+          ]
+        }
+      ]
+    }
+  ],
+  "evaluatedBounds": {
+    "min": [
+      -0.9100000262260437,
+      -0.41999998688697815,
+      0.0
+    ],
+    "max": [
+      0.9100000262260437,
+      0.42250001430511475,
+      1.2699999809265137
+    ]
+  },
+  "legacyCamera": {
+    "resolution": 128,
+    "orthoScale": 2.65,
+    "actualPixelsPerTile": 48.301886792452834,
+    "claimedPixelsPerTile": 64,
+    "declaredTarget": [
+      1,
+      0.5,
+      0.4
+    ],
+    "actualOrbitCenter": [
+      0,
+      0,
+      0.4
+    ]
+  },
+  "footprintTiles": [
+    2,
+    1
+  ],
+  "transform": {
+    "translation": [
+      1,
+      0.5,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "retainedMeshCount": 21
+}

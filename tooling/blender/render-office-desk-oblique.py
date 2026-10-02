@@ -1,65 +1,116 @@
-"""Render 72 deterministic oblique views of the office-desk module."""
+"""Render the existing authored 2x1 generic office desk through the shared square pipeline."""
 from __future__ import annotations
-import hashlib, json, math, os, struct, sys, zlib
+
+import hashlib
+import importlib.util
+import json
+import sys
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-import bpy
-import pipeline_common
-pipeline_common.require_blender_version()
-repo = Path(__file__).resolve().parents[2]
-args = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
-out = Path(args[args.index("--output") + 1]).resolve() if "--output" in args else repo / "public/assets/environment/oblique"
-out.mkdir(parents=True, exist_ok=True)
-ASSET_ID = "furniture.office.desk.generic"
-SOURCE = repo / "assets/source/blender/furniture.office.desk.generic.blend"
-YAWS = list(range(0, 360, 30)); ELEVATIONS = list(range(20, 80, 10))
-TARGET_Z = 0.4
 
-def chunk(kind, data):
-    return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data) & 0xffffffff)
+SCRIPT = Path(__file__).resolve()
+spec = importlib.util.spec_from_file_location('generic_office_desk_square_exporter', SCRIPT.with_name('render-kitchen-fixtures-oblique.py'))
+assert spec and spec.loader
+exporter = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(exporter)
+exporter.pipeline_common.require_blender_version()
+ASSET_ID = 'furniture.office.desk.generic'
+exporter.MODELS = ((ASSET_ID, 'furniture.office.desk.generic.blend',
+                    'oblique-furniture-office-desk-generic.v1.json', 2, 1, 1.0, 1.0, 0.6349999904632568),)
+exporter.PREVIEW = exporter.ROOT / 'assets/intermediate/generic-office-desk-preview'
 
-def normalize(path: Path):
-    blob = path.read_bytes(); offset = 8; header = None; compressed = b""; metadata = []
-    while offset < len(blob):
-        length = struct.unpack(">I", blob[offset:offset+4])[0]; kind = blob[offset+4:offset+8]; data = blob[offset+8:offset+8+length]; offset += 12 + length
-        if kind == b"IHDR": header = data
-        elif kind == b"IDAT": compressed += data
-        elif kind in (b"sRGB", b"gAMA", b"cHRM", b"iCCP"): metadata.append((kind, data))
-    if header is None: raise ValueError(f"missing IHDR in {path}")
-    width, height, depth, color_type, compression, filt, interlace = struct.unpack(">IIBBBBB", header)
-    if (depth,color_type,compression,filt,interlace) != (8,6,0,0,0): raise ValueError(f"unsupported PNG format in {path}")
-    raw=zlib.decompress(compressed); stride=width*4; rows=[]; pos=0; prev=bytearray(stride)
-    for _ in range(height):
-        ft=raw[pos]; pos+=1; row=bytearray(raw[pos:pos+stride]); pos+=stride
-        if ft==1:
-            for i in range(4,stride): row[i]=(row[i]+row[i-4])&255
-        elif ft==2:
-            for i in range(stride): row[i]=(row[i]+prev[i])&255
-        elif ft==3:
-            for i in range(stride): row[i]=(row[i]+((row[i-4] if i>=4 else 0)+prev[i]>>1))&255
-        elif ft==4:
-            for i in range(stride):
-                a=row[i-4] if i>=4 else 0; b=prev[i]; c=prev[i-4] if i>=4 else 0
-                p=a+b-c; pa=abs(p-a); pb=abs(p-b); pc=abs(p-c)
-                pr=a if pa<=pb and pa<=pc else (b if pb<=pc else c)
-                row[i]=(row[i]+pr)&255
-        elif ft!=0: raise ValueError(f"unsupported PNG filter {ft}")
-        rows.append(row); prev=row
-    if any(rows[0][3::4]) or any(rows[-1][3::4]) or any(row[3] or row[-1] for row in rows):
-        raise ValueError(f"oblique model touches the PNG border: {path}")
-    encoded=b"".join(b"\x00"+bytes(row) for row in rows)
-    path.write_bytes(b"\x89PNG\r\n\x1a\n"+chunk(b"IHDR",header)+b"".join(chunk(k,d) for k,d in metadata)+chunk(b"IDAT",zlib.compress(encoded,9))+chunk(b"IEND",b""))
 
-bpy.ops.wm.open_mainfile(filepath=str(SOURCE)); scene=bpy.context.scene
-scene.render.engine="BLENDER_WORKBENCH"; scene.render.resolution_x=128; scene.render.resolution_y=128; scene.render.resolution_percentage=100
-scene.render.film_transparent=True; scene.render.image_settings.file_format="PNG"; scene.render.image_settings.color_mode="RGBA"; scene.render.image_settings.color_depth="8"; scene.render.image_settings.compression=15; scene.render.dither_intensity=0.0
-scene.display.shading.light="STUDIO"; scene.display.shading.studio_light="paint.sl"; scene.display.shading.color_type="MATERIAL"; scene.display.shading.show_shadows=True
-cam_data=bpy.data.cameras.new("ObliqueCamera"); cam=bpy.data.objects.new("ObliqueCamera",cam_data); bpy.context.collection.objects.link(cam); scene.camera=cam; cam_data.type="ORTHO"; cam_data.ortho_scale=2.65
-frames=[]
-for yaw in YAWS:
-  for elev in ELEVATIONS:
-    er=math.radians(elev); yr=math.radians(yaw); cam.location=(4*math.cos(er)*math.cos(yr),4*math.cos(er)*math.sin(yr),4*math.sin(er)+TARGET_Z); cam.rotation_euler=(math.pi/2-er,0,yr+math.pi/2)
-    file=out/f"{ASSET_ID}-yaw{yaw:+03d}-elev{elev:02d}.png"; scene.render.filepath=str(file); bpy.ops.render.render(write_still=True); normalize(file)
-    frames.append({"yawDegrees":yaw,"elevationDegrees":elev,"image":"/assets/environment/oblique/"+file.name,"sha256":hashlib.sha256(file.read_bytes()).hexdigest()})
-manifest={"schemaVersion":1,"assetId":ASSET_ID,"source":"assets/source/blender/furniture.office.desk.generic.blend","sourceSha256":hashlib.sha256(SOURCE.read_bytes()).hexdigest(),"resolutionPx":[128,128],"nominalPixelsPerTile":64,"pivotPx":[64,64],"cameraTargetTiles":[1,0.5,TARGET_Z],"projection":"orthographic","yawDegrees":YAWS,"elevationDegrees":ELEVATIONS,"frames":frames}
-manifest_path=repo/"public/game-content/oblique-furniture-office-desk-generic.v1.json"; pipeline_common.write_text(manifest_path,json.dumps(manifest,indent=2)+"\n"); print("rendered",len(frames),"frames; manifest",manifest_path)
+def evaluated_points(scene):
+    exporter.bpy.context.view_layer.update()
+    graph = exporter.bpy.context.evaluated_depsgraph_get()
+    points = []
+    for obj in scene.objects:
+        if obj.type != 'MESH':
+            continue
+        evaluated = obj.evaluated_get(graph)
+        mesh = evaluated.to_mesh()
+        try:
+            points.extend(evaluated.matrix_world @ vertex.co for vertex in mesh.vertices)
+        finally:
+            evaluated.to_mesh_clear()
+    return points
+
+
+def prepare_source(scene, model):
+    provenance = json.loads((exporter.ROOT / 'assets/source/blender/furniture.office.desk.generic.provenance.json').read_text())
+    source = exporter.ROOT / provenance['source']
+    if hashlib.sha256(source.read_bytes()).hexdigest() != provenance['sourceSha256']:
+        raise ValueError('Retained desk source bytes differ from its audited provenance')
+    actual = sorted(obj.name for obj in scene.objects if obj.type == 'MESH')
+    if actual != sorted(mesh['name'] for mesh in provenance['meshes']):
+        raise ValueError('Retained desk authored mesh set changed')
+    points = evaluated_points(scene)
+    for axis in range(3):
+        if abs(min(p[axis] for p in points) - provenance['evaluatedBounds']['min'][axis]) > 1e-6 or abs(max(p[axis] for p in points) - provenance['evaluatedBounds']['max'][axis]) > 1e-6:
+            raise ValueError('Retained desk evaluated source bounds changed')
+
+
+configure_shared = exporter.configure
+
+
+def configure(model):
+    scene, camera, target = configure_shared(model, prepare_source)
+    points = evaluated_points(scene)
+    minimum = [min(point[axis] for point in points) for axis in range(3)]
+    maximum = [max(point[axis] for point in points) for axis in range(3)]
+    if not (0 <= minimum[0] <= maximum[0] <= 2 and
+            0 <= minimum[1] <= maximum[1] <= 1 and abs(minimum[2]) <= 1e-6):
+        raise ValueError(f'Evaluated generic office desk geometry escapes grounded 2x1: {minimum} to {maximum}')
+    if abs(target.x - 1) > 1e-6 or abs(target.y - 0.5) > 1e-6:
+        raise ValueError('Generic office desk target does not match its occupied anchor')
+    if abs(target.z - (minimum[2] + maximum[2]) / 2) > 1e-6:
+        raise ValueError('Generic office desk target does not match its evaluated source height')
+    if abs(camera.data.ortho_scale - exporter.RESOLUTION_PX / 64) > 1e-6:
+        raise ValueError('Generic office desk actual camera scale is not 64 pixels per tile')
+    # Object quarter turns use clockwise +X->+Y. Rotate actual evaluated points
+    # about the center, then translate to the rotated occupied min corner.
+    for turns in range(4):
+        width, height = (1, 2) if turns % 2 else (2, 1)
+        transformed = []
+        for point in points:
+            x, y = point.x - 1.0, point.y - 0.5
+            for _ in range(turns):
+                x, y = -y, x
+            transformed.append((x + width / 2, y + height / 2))
+        if not all(0 <= x <= width and 0 <= y <= height for x, y in transformed):
+            raise ValueError(f'Generic office desk evaluated geometry escapes quarter turn {turns}')
+    print(f'GENERIC_OFFICE_DESK_EVALUATED_BOUNDS {minimum} {maximum}; four occupied orientations verified', flush=True)
+    return scene, camera, target
+
+
+exporter.configure = configure
+point_camera_shared = exporter.point_camera
+
+
+def point_camera(camera, target, yaw, elevation):
+    point_camera_shared(camera, target, yaw, elevation)
+    # Independent world projection basis: yaw0 camera looks north from -Y;
+    # positive yaw moves its ground position toward +X. Read actual transforms.
+    azimuth, tilt = exporter.math.radians(yaw), exporter.math.radians(elevation)
+    offset = camera.location - target
+    expected = exporter.Vector((6 * exporter.math.cos(tilt) * exporter.math.sin(azimuth),
+                                -6 * exporter.math.cos(tilt) * exporter.math.cos(azimuth),
+                                6 * exporter.math.sin(tilt)))
+    if (offset - expected).length > 1e-5:
+        raise ValueError('Generic office desk actual camera target/yaw basis differs from declared square pose')
+    forward = camera.rotation_euler.to_quaternion() @ exporter.Vector((0, 0, -1))
+    if forward.dot((-offset).normalized()) < 1 - 1e-6:
+        raise ValueError('Generic office desk actual camera does not aim at its declared target')
+
+
+exporter.point_camera = point_camera
+
+if __name__ == '__main__':
+    if '--verify' in sys.argv:
+        for model in exporter.MODELS:
+            _, camera, target = configure(model)
+            for yaw in exporter.YAW:
+                for elevation in exporter.ELEVATION:
+                    point_camera(camera, target, yaw, elevation)
+        print('GENERIC_OFFICE_DESK_VERIFY72 cameras and four occupied orientations', flush=True)
+    else:
+        exporter.main()
