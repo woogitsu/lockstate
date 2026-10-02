@@ -7361,15 +7361,15 @@
   }
 }
 
-/* Labelled pose controls accompany zoom only in the adjustable renderer. */
+/* Existing localized labels accompany compact glyphs in the adjustable renderer. */
 .hud-camera-pose {
   pointer-events: auto;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: flex;
+  width: max-content;
   gap: var(--space-2);
   margin-bottom: var(--space-2);
 }
-.hud-camera-pose .ui-action-button { min-width: 0; white-space: normal; }
+.hud-camera-pose [data-camera-pose-axis='elevation'][data-camera-pose-direction='1'] .ui-icon { transform: rotate(180deg); }
 
 .room-template-world-ghost { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
 .room-template-world-ghost[hidden] { display: none; }
