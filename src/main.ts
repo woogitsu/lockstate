@@ -430,9 +430,8 @@ const roomTemplateTool = roomTemplatePreflight === undefined || simulation === u
  * neither (`AGENTS.md` boundary 1), so the two numbers travel to both as plain
  * integers.
  *
- * The **authored** footprint, not a rotated one: nothing in the application can
- * express a rotation yet (see `ObjectOrientation`), so the preview draws what a
- * placement will actually claim.
+ * Returns the authored footprint. The room-template geometry adapter applies
+ * its selected quarter turn once, before the HUD draws the occupied rectangle.
  */
 function objectFootprintOf(definitionId: string): { readonly width: number; readonly height: number } | undefined {
   const objectId = BUILDABLE_REGISTRY.get(definitionId)?.placesObjectId;
@@ -2840,6 +2839,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
             templateId: intent.templateId,
             origin: intent.origin,
             ...(intent.mirrorX === undefined ? {} : { mirrorX: intent.mirrorX }),
+            ...(intent.quarterTurns === undefined ? {} : { quarterTurns: intent.quarterTurns }),
           });
           return;
         /*

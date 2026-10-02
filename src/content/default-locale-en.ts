@@ -2305,7 +2305,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.template-position-hint': 'Choose an origin. The whole footprint is checked before you can place this plan.',
   'hud.build.template-x': 'Plan origin X',
   'hud.build.template-y': 'Plan origin Y',
-  'hud.build.template-mirror': 'Mirror horizontally',
+  'hud.build.template-mirror': 'Mirror horizontally before rotation',
   'hud.build.template-on-map': 'Place on map',
   'hud.build.template-map-hint': 'Click map to place; Esc cancels.',
   'hud.build.template-catalogue-value': 'Materials catalogue value: {value}',
@@ -4538,6 +4538,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   // now sets it here, on the same element, as soon as the localizer is built.
   // The wording is carried across unchanged; see `src/ui/app-shell-messages.ts`.
   'app.shell.label': 'Lockstate game application',
+  'hud.build.template-rotation': 'Room plan rotation (clockwise)',
 };
 
 /**

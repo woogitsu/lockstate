@@ -3,7 +3,15 @@ import { instantiateRoomTemplate, ROOM_TEMPLATE_IDS } from '../../src/content/ro
 import { defaultObjectRegistry } from '../../src/content/object-catalog';
 import { getBuildableDefinition } from '../../src/simulation/construction/definition';
 import { roomTemplateMiniatureFixtures } from '../../src/ui/hud/room-template-miniature';
+import { instantiateOrientedRoomTemplate } from '../../src/content/room-template-rotation';
 const footprint = (id: string) => defaultObjectRegistry.getById(getBuildableDefinition(id).placesObjectId!)!.footprint;
+
+it('turns the selected bed rectangle with the room rather than reusing its authored dimensions', () => {
+  const plan = instantiateOrientedRoomTemplate('cell-basic', { x: -8, y: 9 }, { quarterTurns: 1 }, footprint);
+  expect(roomTemplateMiniatureFixtures(plan, footprint)).toEqual([
+    { x: 4, y: 1, width: 2, height: 1 }, { x: 2, y: 2, width: 1, height: 1 },
+  ]);
+});
 
 it.each(ROOM_TEMPLATE_IDS)('%s preserves complete separate authored fixtures in its card', id => {
   const plan = instantiateRoomTemplate(id, { x: -10, y: 20 });

@@ -1,5 +1,6 @@
 import { positionRoomTemplateLabel } from './room-template-label-position';
-import type { RoomTemplatePlan, TemplateSquare, RoomTemplateCostQuote, RoomTemplatePreflight, RoomTemplateTool } from './room-template-tool';
+import type { TemplateSquare, RoomTemplateCostQuote, RoomTemplatePreflight, RoomTemplateTool } from './room-template-tool';
+import { roomTemplateMiniatureFixtures } from './hud/room-template-miniature';
 
 interface Point { readonly x: number; readonly y: number }
 export interface RoomTemplateWorldBridgeOptions {
@@ -23,7 +24,7 @@ export function installRoomTemplateWorldBridge(canvas: HTMLCanvasElement, tool: 
   label.setAttribute('role', 'status');
   layer.append(svg, label);
   canvas.parentElement?.append(layer);
-  let plan: RoomTemplatePlan | undefined;
+  let plan: ReturnType<RoomTemplateTool['planAt']> | undefined;
   let verdict: RoomTemplatePreflight | undefined;
   let quote: RoomTemplateCostQuote | undefined;
   let origin: TemplateSquare | undefined;
@@ -143,9 +144,8 @@ export function installRoomTemplateWorldBridge(canvas: HTMLCanvasElement, tool: 
       const walls = new Set(plan.wallSquares.map(p => p.x + ':' + p.y));
       const doors = new Set(plan.doorSquares.map(p => p.x + ':' + p.y));
       const objects = new Set<string>();
-      for (const object of plan.objects) {
-        const footprint = options.objectFootprint(object.buildableId) ?? { width: 1, height: 1 };
-        for (let dy = 0; dy < footprint.height; dy += 1) for (let dx = 0; dx < footprint.width; dx += 1) objects.add((object.x + dx) + ':' + (object.y + dy));
+      for (const object of roomTemplateMiniatureFixtures(plan, id => options.objectFootprint(id) ?? { width: 1, height: 1 })) {
+        for (let dy = 0; dy < object.height; dy += 1) for (let dx = 0; dx < object.width; dx += 1) objects.add((plan.origin.x + object.x + dx) + ':' + (plan.origin.y + object.y + dy));
       }
       const polygons: { points: string; fill: string }[] = [];
       for (let dy = 0; dy < plan.height; dy += 1) for (let dx = 0; dx < plan.width; dx += 1) {

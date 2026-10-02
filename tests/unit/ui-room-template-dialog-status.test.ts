@@ -7,6 +7,7 @@ import {Localizer,defaultMessageCatalogEn} from '../../src/services/localization
 // a browser, including its async worker-facing tool rather than copied logic.
 class ElementStub extends EventTarget {
   readonly children:ElementStub[]=[];
+  parentElement:ElementStub|undefined;
   readonly attributes=new Map<string,string>();
   readonly style:Record<string,string>={};
   readonly dataset:Record<string,string>={};
@@ -14,7 +15,13 @@ class ElementStub extends EventTarget {
   readonly classList={add:(name:string)=>{this.classes.add(name);},remove:(name:string)=>{this.classes.delete(name);},contains:(name:string)=>this.classes.has(name)};
   className=''; textContent=''; value=''; checked=false; disabled=false; tabIndex=0; id='';
   setAttribute(name:string,value:string):void {this.attributes.set(name,value);if(name==='value') this.value=value;}
-  append(...elements:ElementStub[]):void {this.children.push(...elements);}
+  append(...elements:ElementStub[]):void {for(const element of elements) element.parentElement=this;this.children.push(...elements);}
+  after(...elements:ElementStub[]):void {
+    if(this.parentElement===undefined) return;
+    for(const element of elements) element.parentElement=this.parentElement;
+    const siblings=this.parentElement.children;
+    siblings.splice(siblings.indexOf(this)+1,0,...elements);
+  }
   replaceChildren(...elements:ElementStub[]):void {this.children.splice(0,this.children.length,...elements);}
   focus():void {focused=this;}
   showModal():void {}

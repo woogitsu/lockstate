@@ -22,7 +22,7 @@ Nothing mechanical can. That argument belongs in a docblock beside that code —
 `hud.alert.event.construction.undo-refused-newer-action` is the worked example, arguing
 each of its three clauses at the code that decides it.
 
-## The 594 authored sentences
+## The 595 authored sentences
 
 Source: `src/content/default-locale-en.ts`, in the order they are declared.
 
@@ -264,7 +264,7 @@ Source: `src/content/default-locale-en.ts`, in the order they are declared.
 | `hud.build.template-position-hint` | `Choose an origin. The whole footprint is checked before you can place this plan.` | `src/content/default-locale-en.ts:2305`, `'hud.build.template-position-hint'` |
 | `hud.build.template-x` | `Plan origin X` | `src/content/default-locale-en.ts:2306`, `'hud.build.template-x'` |
 | `hud.build.template-y` | `Plan origin Y` | `src/content/default-locale-en.ts:2307`, `'hud.build.template-y'` |
-| `hud.build.template-mirror` | `Mirror horizontally` | `src/content/default-locale-en.ts:2308`, `'hud.build.template-mirror'` |
+| `hud.build.template-mirror` | `Mirror horizontally before rotation` | `src/content/default-locale-en.ts:2308`, `'hud.build.template-mirror'` |
 | `hud.build.template-on-map` | `Place on map` | `src/content/default-locale-en.ts:2309`, `'hud.build.template-on-map'` |
 | `hud.build.template-map-hint` | `Click map to place; Esc cancels.` | `src/content/default-locale-en.ts:2310`, `'hud.build.template-map-hint'` |
 | `hud.build.template-catalogue-value` | `Materials catalogue value: {value}` | `src/content/default-locale-en.ts:2311`, `'hud.build.template-catalogue-value'` |
@@ -622,4 +622,5 @@ Source: `src/content/default-locale-en.ts`, in the order they are declared.
 | `display.language.polish` | `Polski` | `src/content/default-locale-en.ts:4522`, `'display.language.polish'` |
 | `display.language.cycle` | `Change the interface language and reload the game` | `src/content/default-locale-en.ts:4530`, `'display.language.cycle'` |
 | `app.shell.label` | `Lockstate game application` | `src/content/default-locale-en.ts:4540`, `'app.shell.label'` |
+| `hud.build.template-rotation` | `Room plan rotation (clockwise)` | `src/content/default-locale-en.ts:4541`, `'hud.build.template-rotation'` |
 

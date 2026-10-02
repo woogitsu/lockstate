@@ -1069,7 +1069,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.template-position-hint': 'Wybierz początek. Przed postawieniem sprawdzimy cały obrys wzoru.',
   'hud.build.template-x': 'Początek wzoru X',
   'hud.build.template-y': 'Początek wzoru Y',
-  'hud.build.template-mirror': 'Odbij poziomo',
+  'hud.build.template-mirror': 'Odbij poziomo przed obrotem',
   'hud.build.template-on-map': 'Postaw na mapie',
   'hud.build.template-map-hint': 'Kliknij map\u0119, aby postawi\u0107; Esc anuluje.',
   'hud.build.template-catalogue-value': 'Katalogowa warto\u015b\u0107 materia\u0142\u00f3w: {value}',
@@ -1624,6 +1624,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   // save first -- so both halves of the sentence are true of the code.
   'display.language.cycle': 'Zmień język interfejsu i przeładuj grę',
   'app.shell.label': 'Aplikacja gry Lockstate',
+  'hud.build.template-rotation': 'Obrót planu pomieszczenia (w prawo)',
 };
 
 export const localePlCatalog: LocalizationCatalog = buildLocalizationCatalog(plMessages);
