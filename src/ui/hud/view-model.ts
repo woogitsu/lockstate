@@ -841,6 +841,8 @@ export interface HudBuildableViewModel {
    */
   readonly placesObject: boolean;
   /** Occupied tile dimensions supplied by the same content lookup as the world tool. */
+  /** Authored decorative catalogue image; absent means the existing build icon. */
+  readonly thumbnailUrl?: string;
   readonly objectFootprint?: { readonly width: number; readonly height: number };
   /**
    * Which group of the catalogue this row belongs to

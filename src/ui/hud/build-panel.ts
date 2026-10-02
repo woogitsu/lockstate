@@ -1230,6 +1230,18 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
         options.onArm(armed, selectedId, removing);
       },
     });
+
+    if (buildable.thumbnailUrl !== undefined) {
+      const fallback = row.element.firstElementChild as HTMLElement | SVGElement;
+      const thumbnail = element('img', {
+        className: 'hud-build__object-thumbnail',
+        attributes: { src: buildable.thumbnailUrl, alt: '', 'aria-hidden': 'true' },
+      });
+      thumbnail.hidden = true;
+      thumbnail.addEventListener('load', () => { thumbnail.hidden = false; fallback.setAttribute('hidden', ''); });
+      thumbnail.addEventListener('error', () => { thumbnail.hidden = true; fallback.removeAttribute('hidden'); });
+      row.element.prepend(thumbnail);
+    }
     row.element.dataset['buildable'] = buildable.definitionId;
     // `role="radio"` on a real `<button>`, exactly as `rooms-panel.ts` does it:
     // the role carries the single-select meaning, the button carries the
