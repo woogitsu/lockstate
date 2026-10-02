@@ -46,6 +46,21 @@ async function fixtureAnchors(page: Page): Promise<string[]> {
   });
 }
 
+async function panelPixels(page: Page, png: Buffer): Promise<number[]> {
+  return page.evaluate(async base64 => {
+    const bitmap = await createImageBitmap(new Blob([Uint8Array.from(atob(base64), c => c.charCodeAt(0))], { type: 'image/png' }));
+    const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
+    const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0);
+    return [[946, 452, 63, 26]].map(rect => {
+      const pixels = context.getImageData(...rect as [number, number, number, number]).data;
+      let count = 0;
+      for (let i = 0; i < pixels.length; i += 4) {
+        if (pixels[i] === 41 && pixels[i + 1] === 113 && pixels[i + 2] === 118) count++;
+      }
+      return count;
+    });
+  }, png.toString('base64'));
+}
 let routeStorage: Awaited<ReturnType<ReturnType<Page['context']>['storageState']>> | undefined;
 const test = base.extend({
   storageState: async ({}, use) => { await use(routeStorage ?? { cookies: [], origins: [] }); },
@@ -134,7 +149,9 @@ test('player builds the utility panel in Utility Room and keeps it after Save/Lo
   await page.getByRole('button', { name: 'Rotate camera right', exact: true }).click();
   await page.getByRole('button', { name: 'Rotate camera right', exact: true }).click();
   await page.getByRole('button', { name: 'Rotate camera right', exact: true }).click();
-  await page.screenshot({ path: info.outputPath('utility-worker-completed-fullhd.png') });
+  const completed = await page.screenshot({ path: info.outputPath('utility-worker-completed-fullhd.png') });
+  const beforePixels = await panelPixels(page, completed);
+  expect(beforePixels[0], 'authored utility panel after construction').toBeGreaterThan(100);
   await page.getByRole('button', { name: 'Overview', exact: true }).click();
   await page.getByRole('button', { name: 'Save now', exact: true }).click();
   await expect(page.locator('.save-panel__status')).toContainText('Saved');
@@ -143,6 +160,9 @@ test('player builds the utility panel in Utility Room and keeps it after Save/Lo
   expect(await fixtureAnchors(page)).toEqual(expected);
   await minimap.click({ position: { x: bounds.width * 22.5 / 32, y: bounds.height * 7.5 / 32 } });
   await page.mouse.move(1300, 700);
-  await page.screenshot({ path: info.outputPath('utility-loaded-fullhd.png') });
+  const loaded = await page.screenshot({ path: info.outputPath('utility-loaded-fullhd.png') });
+  const afterPixels = await panelPixels(page, loaded);
+  expect(afterPixels[0], 'authored utility panel after Load').toBeGreaterThan(100);
+  expect(afterPixels).toEqual(beforePixels);
 
 });
