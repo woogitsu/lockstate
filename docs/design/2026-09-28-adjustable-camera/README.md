@@ -664,3 +664,7 @@ Root's built production-client player flow passes2/2 (45.6/32.3seconds): Storage
 ## Utility panel player baseline — 2026-10-02
 Actual built-client flow passes2/2 (42.2/28.4seconds): Storage/Delivery completed, fresh IndexedDB page Load, Utility Room real worker completion with object.utility-panel anchor22,6 and exact utility-room-basic command, SaveLoad retaining the anchor. Root opened [the loaded FullHD scene](./utility-loaded-fullhd.png). Panel geometry is visible, but the door partially obscures its front at this selected camera angle; a clearer angle and palette/mutated-consumer test remain required for final art acceptance. No production deployment is claimed.
 
+
+## Security console visual acceptance completed — 2026-10-02
+Both built-client stages pass with authored display palette RGB31/94/99 in a fixed console-only region, more than100pixels before and after Load and equal counts. Baseline43.2/33.2s. Substituting only object.security-console's production mapping with the existing generic desk produces red exactly on console display pixels (0), while real setup and construction pass. Exact byte restoration and rebuilt client return2/2green (43.9/34.9s). This supersedes the security baseline's pending visual-consumer boundary for this FullHD scene. Utility panel consumer sensitivity remains pending; no production deployment is claimed.
+

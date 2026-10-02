@@ -46,6 +46,21 @@ async function fixtureAnchors(page: Page): Promise<string[]> {
   });
 }
 
+async function consolePixels(page: Page, png: Buffer): Promise<number[]> {
+  return page.evaluate(async base64 => {
+    const bitmap = await createImageBitmap(new Blob([Uint8Array.from(atob(base64), c => c.charCodeAt(0))], { type: 'image/png' }));
+    const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
+    const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0);
+    return [[865, 460, 50, 75]].map(rect => {
+      const pixels = context.getImageData(...rect as [number, number, number, number]).data;
+      let count = 0;
+      for (let i = 0; i < pixels.length; i += 4) {
+        if (pixels[i] === 31 && pixels[i + 1] === 94 && pixels[i + 2] === 99) count++;
+      }
+      return count;
+    });
+  }, png.toString('base64'));
+}
 let routeStorage: Awaited<ReturnType<ReturnType<Page['context']>['storageState']>> | undefined;
 const test = base.extend({
   storageState: async ({}, use) => { await use(routeStorage ?? { cookies: [], origins: [] }); },
@@ -130,7 +145,9 @@ test('player builds the security console in Security Office and keeps it after S
   if (bounds === null) throw new Error('minimap absent');
   await minimap.click({ position: { x: bounds.width * 22.5 / 32, y: bounds.height * 7.5 / 32 } });
   await page.mouse.move(1300, 700);
-  await page.screenshot({ path: info.outputPath('security-worker-completed-fullhd.png') });
+  const completed = await page.screenshot({ path: info.outputPath('security-worker-completed-fullhd.png') });
+  const beforePixels = await consolePixels(page, completed);
+  expect(beforePixels[0], 'authored console display after construction').toBeGreaterThan(100);
   await page.getByRole('button', { name: 'Overview', exact: true }).click();
   await page.getByRole('button', { name: 'Save now', exact: true }).click();
   await expect(page.locator('.save-panel__status')).toContainText('Saved');
@@ -139,6 +156,9 @@ test('player builds the security console in Security Office and keeps it after S
   expect(await fixtureAnchors(page)).toEqual(expected);
   await minimap.click({ position: { x: bounds.width * 22.5 / 32, y: bounds.height * 7.5 / 32 } });
   await page.mouse.move(1300, 700);
-  await page.screenshot({ path: info.outputPath('security-loaded-fullhd.png') });
+  const loaded = await page.screenshot({ path: info.outputPath('security-loaded-fullhd.png') });
+  const afterPixels = await consolePixels(page, loaded);
+  expect(afterPixels[0], 'authored console display after Load').toBeGreaterThan(100);
+  expect(afterPixels).toEqual(beforePixels);
 
 });
