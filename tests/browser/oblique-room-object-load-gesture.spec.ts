@@ -37,6 +37,12 @@ test('Load cancels an outgoing Rooms drag before release or later pointer moveme
   expect((await sentCommands(page)).filter(command => command['type'] === 'ZoneRoom')).toHaveLength(0);
   await expect(page.locator('.hud-rooms__area-value')).toHaveText(emptyArea);
   await expect(page.locator('.hud-rooms__confirm')).not.toBeVisible();
+
+  await page.mouse.move(900, 540);
+  await page.mouse.down({ button: 'left' });
+  await page.mouse.move(1060, 610, { steps: 6 });
+  await page.mouse.up({ button: 'left' });
+  await expect(page.locator('.hud-rooms__confirm')).toBeVisible();
 });
 
 test('Load cancels an outgoing object placement before release or later pointer movement', async ({ page }) => {
@@ -53,4 +59,9 @@ test('Load cancels an outgoing object placement before release or later pointer 
   await page.mouse.up({ button: 'left' });
   await page.mouse.move(1140, 650, { steps: 3 });
   expect((await sentCommands(page)).filter(command => command['type'] === 'PlaceObject')).toHaveLength(0);
+
+  await page.mouse.move(900, 540);
+  await page.mouse.down({ button: 'left' });
+  await page.mouse.up({ button: 'left' });
+  await expect.poll(async () => (await sentCommands(page)).filter(command => command['type'] === 'PlaceObject').length).toBe(1);
 });
