@@ -117,3 +117,15 @@ The attempted file replacement patch initially rejected two operations on the
 same path before editing it; separate replacement completed successfully. This
 tool preflight did not render pixels or run acceptance and is not counted as
 model evidence. No browser or new workflow/configuration was started.
+
+## Offline native fixture checkpoint
+
+After export checkpoint `ad2d373313bafb4c92c2e1e59355fbad9849ea8e`, the
+dedicated native fixture was prepared in
+`tests/browser/dedicated-office-desk-player-build.spec.ts`; its reviewed route
+and pending consumer control are recorded in `native-player-plan.md`.
+App/tools TypeScript exits0. This confirms compilation only. No browser,
+preview listener or new CI/private configuration was started. Historical
+palette counts are explicitly provisional for this new source. The actual
+q0/q1 calibrated baseline, missing-consumer red and exact restored green
+remain owed under a future exclusive browser lease.
