@@ -11,19 +11,19 @@ async function assertReadable(value:Locator):Promise<void> {
   expect(geometry.lines.length).toBeGreaterThan(1);
   for(const line of geometry.lines){expect(line.left).toBeGreaterThanOrEqual(geometry.rail.left);expect(line.right).toBeLessThanOrEqual(geometry.rail.right);expect(line.top).toBeGreaterThanOrEqual(geometry.bounds.top-1);expect(line.bottom).toBeLessThanOrEqual(geometry.bounds.bottom+1);}
 }
-test('Full HD actual square target and catalogue value stay readable without moving controls during a drag',async({page})=>{
-  await page.setViewportSize({width:1920,height:1080});await page.goto('/');
+for(const width of [960,1920,2560]) test(`${width} CSS-pixel actual square target and catalogue value stay readable without moving controls during a drag`,async({page})=>{
+  await page.setViewportSize({width,height:width===960?540:1080});await page.goto('/');
   await page.getByRole('button',{name:'New prison',exact:true}).click();
   const view=page.getByRole('combobox',{name:'View',exact:true});await view.selectOption('oblique');await expect(view).toBeEnabled();await expect(view).toHaveValue('oblique');
   await page.getByRole('button',{name:'Build',exact:true}).click();await page.locator('.hud-build__arm').click();
-  await page.mouse.move(960,540);const target=page.locator('.hud-build__target-value');
+  await page.mouse.move(width===960?370:650,250);const target=page.locator('.hud-build__target-value');
   await expect(target).toHaveText(/1 whole squares from -?\d+, -?\d+ \| catalogue value 80/);
   await assertReadable(target);
   const fallback=page.locator('.hud-build__arm-hint');const before=await fallback.boundingBox();
-  await page.mouse.down();await page.mouse.move(1180,640,{steps:5});
+  await page.mouse.down();await page.mouse.move(width-460,width===960?430:730,{steps:10});
   await expect(target).toHaveText(/\d+ whole squares from -?\d+, -?\d+ \| catalogue value \d+/);
   expect(await target.textContent()).not.toMatch(/^1 whole/);await assertReadable(target);
   const after=await fallback.boundingBox();expect(after!.y).toBe(before!.y);
-  await page.screenshot({path:'test-results/build-target-readable-fullhd.png'});
+  await page.screenshot({path:`test-results/build-target-readable-${width}.png`});
   await page.keyboard.press('Escape');await page.mouse.up();
 });

@@ -2806,20 +2806,17 @@
 /* Full-square counts and their catalogue value form a sentence, not a strip
    counter. Reserve its three-line slot before aiming so a drag cannot move
    the controls below it, and let the flex item shrink within the rail. */
-@media (min-width: 1920px) {
-  .hud-build__target {
-    align-items: flex-start;
-    min-height: calc(var(--space-5) * 3);
-  }
-  .hud-build__target-value {
-    flex: 1;
-    min-width: 0;
-    white-space: normal;
-    overflow-wrap: anywhere;
-    line-height: 1.4;
-  }
+.hud-build__target {
+  align-items: flex-start;
+  min-height: calc(var(--space-5) * 3);
 }
-
+.hud-build__target-value {
+  flex: 1;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.4;
+}
 
 .hud-build__coords + .ui-choice { margin-bottom: var(--space-2); }
 .hud-build .ui-section__body > .ui-action { width: 100%; }
