@@ -1369,6 +1369,7 @@ async function roomWorldGeometry(page: Page): Promise<RoomWorldGeometry> {
 async function dragRectangleOnWorld(
   page: Page,
   options: {
+    readonly minX?: number;
     readonly minY?: number;
     readonly wholeSquare?: boolean;
     /** Sides to try, in order. Defaults to `ROOM_DRAG_DELTAS_PX`; see `SMALL_ROOM_DRAG_DELTAS_PX`. */
@@ -1389,7 +1390,7 @@ async function dragRectangleOnWorld(
   // the first point that is not canvas, so a candidate under an island is
   // rejected on its first or second sample.
   const aim = await page.evaluate(
-    ({ width, height, deltas, minY, wholeSquare, step }) => {
+    ({ width, height, deltas, minX, minY, wholeSquare, step }) => {
       const free = (x: number, y: number): boolean =>
         document.elementFromPoint(x, y)?.tagName.toLowerCase() === 'canvas';
       // Inclusive on both axes, and the last offset is the exact far edge rather
@@ -1413,7 +1414,7 @@ async function dragRectangleOnWorld(
       };
       for (const delta of deltas) {
         for (let y = Math.max(8, minY); y + delta < height - 8; y += 16) {
-          for (let x = 8; x + delta < width - 8; x += 16) {
+          for (let x = Math.max(8, minX); x + delta < width - 8; x += 16) {
             if (bare(x, y, delta)) {
               return { x, y, delta };
             }
@@ -1426,6 +1427,7 @@ async function dragRectangleOnWorld(
       width: viewport.width,
       height: viewport.height,
       deltas: [...(options.deltas ?? ROOM_DRAG_DELTAS_PX)],
+      minX: options.minX ?? 8,
       minY: options.minY ?? 8,
       wholeSquare: options.wholeSquare ?? false,
       step: BARE_SQUARE_SAMPLE_STEP_PX,
@@ -1584,6 +1586,7 @@ async function drawRoomRectangle(
   what: string,
   options: {
     readonly roomCatalogId: string;
+    readonly minX?: number;
     readonly minY?: number;
     readonly clearOf?: readonly TileRectangle[];
     /** Sides to try, in order. Defaults to `ROOM_DRAG_DELTAS_PX`; see `SMALL_ROOM_DRAG_DELTAS_PX`. */
@@ -1600,6 +1603,7 @@ async function drawRoomRectangle(
     // island that grew in between from moving the second one -- see
     // `dragRectangleOnWorld`'s own note for the 3.8px this was measured at.
     wholeSquare: true,
+    ...(options.minX === undefined ? {} : { minX: options.minX }),
     ...(options.minY === undefined ? {} : { minY: options.minY }),
   });
   if (gesture === null) {
@@ -7333,8 +7337,16 @@ test.describe('the assembled application', () => {
     await page.locator('.ui-tab[data-tab="zones"]').click();
     await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
     await page.locator('.hud-rooms__arm').click();
+    // Keep both probe/replay gestures outside the minimap's WHOLE column.
+    // Zoning the first room adds an alert and grows that island upward; merely
+    // finding a bare square before the alert does not make its old aim stable.
+    // This measured horizontal boundary is held for all four gestures. Exact
+    // independent tile-span, enclosure, repeat-origin and worker guards remain.
+    const repeatedRoomMinX = await page.locator('.hud__corner').evaluate((node, step) =>
+      Math.ceil(node.getBoundingClientRect().right / step) * step, BARE_SQUARE_SAMPLE_STEP_PX);
     const firstProbe = await drawRoomRectangle(page, 'the probe drag for the first cell', {
       roomCatalogId: 'room.cell',
+      minX: repeatedRoomMinX,
       deltas: SMALL_ROOM_DRAG_DELTAS_PX,
     });
     const firstCell = firstProbe.rectangle;
@@ -7346,6 +7358,7 @@ test.describe('the assembled application', () => {
     const secondCell = (
       await drawRoomRectangle(page, 'the probe drag for the second cell', {
         roomCatalogId: 'room.cell',
+        minX: repeatedRoomMinX,
         minY: secondCellFloor,
         clearOf: [firstCell],
         deltas: SMALL_ROOM_DRAG_DELTAS_PX,
@@ -7381,6 +7394,7 @@ test.describe('the assembled application', () => {
       (
         await drawRoomRectangle(page, 'the drag for the first cell', {
           roomCatalogId: 'room.cell',
+          minX: repeatedRoomMinX,
           deltas: SMALL_ROOM_DRAG_DELTAS_PX,
         })
       ).rectangle,
@@ -7451,6 +7465,7 @@ test.describe('the assembled application', () => {
       (
         await drawRoomRectangle(page, 'the drag for the second cell', {
           roomCatalogId: 'room.cell',
+          minX: repeatedRoomMinX,
           minY: secondCellFloor,
           clearOf: [firstCell],
           deltas: SMALL_ROOM_DRAG_DELTAS_PX,

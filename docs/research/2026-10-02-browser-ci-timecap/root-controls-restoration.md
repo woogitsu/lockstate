@@ -87,3 +87,21 @@ on this local run. These are measured per-sample diagnostics, not a whole-CI
 speed prediction. [Restored output](root-actors-equivalence-restored.txt) and
 [exact same-capture counts](root-actors-equivalence-counts.json) are retained.
 The five longer real keyboard routes remain a separate pending native run.
+
+## Whole-square keyboard acceptance
+
+The five-route native run completed with four GREEN: keyboard admission35.4s,
+keyboard room removal36.8s, focus-return42.3s and high-risk Regime41.2s. These use
+the real worker, paid square-wall enclosure and unchanged keyboard-only guards.
+The two-room needs route is RED32.5s because its second scan changes x9 to x12
+after the first zoning acknowledgement grows the minimap/alerts island upward.
+Its independent exact rectangle guard correctly catches that consumer drift.
+[Complete initial run](root-keyboard-five-baseline.txt) and
+[actual failing page state](root-keyboard-needs-baseline-context.md) are retained.
+
+That single repeated-gesture consumer now measures the minimap column's right
+edge before both probes, rounds it to the existing16px scan lattice, and holds
+that lower x bound through all four drags. Other callers keep their original
+scan. Independent tile dimensions/minimums/disjointness, exact repeated origins,
+worker count/refusal, enclosure and readout-fold guards are unchanged. Native
+acceptance of this measured-column correction remains pending.

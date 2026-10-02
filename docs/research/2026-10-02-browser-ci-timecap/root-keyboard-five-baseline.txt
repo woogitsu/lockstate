@@ -1,0 +1,78 @@
+node : [2m[WebServer] [22m(node:45960) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:2 char:1435
++ ... ORT='5417'; node --experimental-transform-types --disable-warning=Exp ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m
+[2m[WebServer] [22m  VITE v8.2.2  ready in 330 ms
+[2m[WebServer] [22m
+[2m[WebServer] [22m  ➜  Local:   http://127.0.0.1:5417/
+LOCKSTATE_BROWSER_PREWARM_READY elapsedMs=1087
+
+Running 5 tests using 1 worker
+
+(node:57256) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:57256) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 tests\browser\app-shell.spec.ts:6605:3 › the assembled application › the Rooms panel says what a zoned room is missing, and says nothing when nothing is (#331) (32.5s)
+(node:49416) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:49416) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 2 tests\browser\app-shell.spec.ts:7098:3 › the assembled application › zones a room and admits a prisoner with the keyboard alone (#411) (35.4s)
+  ok 3 tests\browser\app-shell.spec.ts:7405:3 › the assembled application › takes a room back with the keyboard alone, through the same confirm control (#411) (36.8s)
+  ok 4 tests\browser\app-shell.spec.ts:7574:3 › the assembled application › every command hands the keyboard back to the control that issued it (42.3s)
+[#703 roster] [{"id":1,"tier":1},{"id":3,"tier":1},{"id":4,"tier":1},{"id":10,"tier":1}]
+[#703 population] [0,1,0,1,1,0,0,0,0,0,1,0]
+  ok 5 tests\browser\app-shell.spec.ts:11658:3 › the assembled application › paints the high-risk chip and orders the Regime roster by tier (#703) (41.2s)
+
+
+  1) tests\browser\app-shell.spec.ts:6605:3 › the assembled application › the Rooms panel says what a zoned room is missing, and says nothing when nothing is (#331) 
+
+    Error: the second drag no longer lands on the rectangle its walls were built around
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 1[39m
+
+    [2m  Object {[22m
+    [2m    "height": 3,[22m
+    [2m    "width": 3,[22m
+    [32m-   "x": 9,[39m
+    [31m+   "x": 12,[39m
+    [2m    "y": 15,[22m
+    [2m  }[22m
+
+      7458 |       ).rectangle,
+      7459 |       'the second drag no longer lands on the rectangle its walls were built around',
+    > 7460 |     ).toEqual(secondCell);
+           |       ^
+      7461 |     await page.locator('.hud-rooms__confirm').click();
+      7462 |     // What Designate said, before the count is asked about. A refused
+      7463 |     // designation paints `.hud__refusal` (`src/ui/hud/hud.ts`), so the sentence
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-first-ci-integration-20261002\tests\browser\app-shell.spec.ts:7460:7
+
+    Error Context: test-results\app-shell-the-assembled-ap-d36bf-othing-when-nothing-is-331-\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\app-shell-the-assembled-ap-d36bf-othing-when-nothing-is-331-\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\app-shell-the-assembled-ap-d36bf-othing-when-nothing-is-331-\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    tests\browser\app-shell.spec.ts:6605:3 › the assembled application › the Rooms panel says what a zoned room is missing, and says nothing when nothing is (#331) 
+  4 passed (3.3m)
+
+==============================================================================
+LOCKSTATE_BROWSER_SUITE_NO_RETRY suite=browser failures=1 withSignature=0
+1 of 1 failing test(s) carry no net::ERR_NETWORK_CHANGED evidence: "app-shell.spec.ts > the assembled application > the Rooms panel says what a zoned room is missing, and says nothing when nothing is (#331)". A retry is permitted only when every failure is this host-level abort.
+==============================================================================
+
