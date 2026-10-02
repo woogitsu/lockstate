@@ -12,3 +12,6 @@ Extended native sequence pans, sends touchCancel for two contacts, then starts/r
 ## Identified native capture-release cause
 
 The fresh contact previews one valid square at15,13, so delivery and terrain are not the blocker. Temporarily disabling only lostpointercapture cancellation makes the unchanged sequence green1/1 (8.5s). Native implicit capture is released before Phaser touchend; unconditional cleanup erased the pending construction. Production now ignores only touch capture loss with buttons0 (normal finger release), retaining pointercancel, blur, mouse loss and held-touch loss cleanup. This guarded correction passes the same pan/cancel/fresh-square sequence1/1 (8.4s), with exactly one actual Build command after cancellation. TypeScript passes. Mouse/held-touch capture-loss regression remains to be verified before acceptance beyond this native sequence.
+
+### Capture-loss regression coverage
+The production browser test now also dispatches capture loss while the mouse or a touch is still held (buttons=1). Both gestures cancel with zero PlaceBuildOrder commands. A subsequent native touch release submits exactly one square. Combined native two-finger pan, touch cancellation, held capture loss, and fresh placement: 1/1 passed (5.3 seconds; one worker, standard timeouts).
