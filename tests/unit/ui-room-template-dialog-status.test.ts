@@ -113,3 +113,25 @@ it.each(['ready','blocked'] as const)('withdraws previous %s and collision marks
   expect(status.attributes.get('aria-busy')).toBe('false');
   expect(submit.disabled).toBe(false);
 });
+
+it.each(['invalid','unavailable'] as const)('finishes busy state for a current %s check', async result => {
+  const elements:ElementStub[]=[];
+  vi.stubGlobal('document',{createElement:()=>{const element=new ElementStub();elements.push(element);return element;}});
+  vi.stubGlobal('HTMLElement',ElementStub);
+  let fail=false;
+  const preflight=vi.fn(async()=>{if(fail) throw new Error('current query failed');return {ok:true as const};});
+  const preview=createRoomTemplatePreview(new Localizer({locale:'en',catalogs:[defaultMessageCatalogEn]}),new RoomTemplateTool({preflight,place:async()=>{}}));
+  const status=elements.find(e=>e.className==='hud-template__status')!;
+  await vi.waitFor(()=>expect(status.textContent).toBe('This footprint is clear.'));
+  if(result==='invalid') {
+    const x=elements.find(e=>e.attributes.get('aria-label')==='Plan origin X')!;
+    x.value='';x.dispatchEvent(new Event('input'));
+    expect(status.textContent).toBe('Enter whole-number coordinates.');
+    expect(preflight).toHaveBeenCalledTimes(1);
+  } else {
+    fail=true;preview.openButton.dispatchEvent(new Event('click'));
+    await vi.waitFor(()=>expect(status.textContent).toBe('Placement check is unavailable. Try again.'));
+  }
+  expect(status.attributes.get('aria-busy')).toBe('false');
+  expect(elements.find(e=>e.textContent==='Place room plan')!.disabled).toBe(true);
+});
