@@ -93,6 +93,23 @@ export class RoomTemplateCoordinator implements SystemRegistration {
     });
   }
 
+  /** Keep the passage outside each authored doorway clear until its room exists (#1700). */
+  public claimsPendingDoorApproachTile(tile: TilePosition): boolean {
+    return this.pending.some((request) => {
+      const turns = request.quarterTurns ?? 0;
+      const plan = instantiateRoomTemplateForConstruction(request.templateId, request.origin, request.mirrorX, turns);
+      return plan.doorSquares.some((door) => {
+        // Authored south entrances face +y; the northern bank of a cell row
+        // carries orderTile on the room side and faces -y. Rotate that outward
+        // vector with the plan, including entrances onto its shared corridor.
+        const outward = door.orderTile === undefined ? 1 : -1;
+        const dx = turns === 1 ? -outward : turns === 3 ? outward : 0;
+        const dy = turns === 0 ? outward : turns === 2 ? -outward : 0;
+        return tile.x === door.x + dx && tile.y === door.y + dy;
+      });
+    });
+  }
+
   public place(request: PendingRoomTemplate): RoomTemplatePlacement {
     if (!roomTemplateOriginFitsSafeCoordinates(request.templateId, request.origin, request.quarterTurns ?? 0)) {
       return { ok: false, reason: 'unowned-land', tile: {
