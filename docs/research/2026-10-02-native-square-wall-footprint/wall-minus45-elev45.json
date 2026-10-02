@@ -1,0 +1,125 @@
+{
+  "pose": {
+    "yaw": -45,
+    "elevation": 45,
+    "turns": 0,
+    "raises": 0
+  },
+  "point": {
+    "x": 1469.1168824543142,
+    "y": 540
+  },
+  "mapClick": {
+    "clientX": 383,
+    "clientY": 911,
+    "rect": {
+      "x": 239,
+      "y": 854,
+      "width": 224,
+      "height": 88
+    },
+    "fx": 0.6428571428571429,
+    "fy": 0.6477272727272727
+  },
+  "target": {
+    "x": 20.571428571428573,
+    "y": 20.727272727272727
+  },
+  "measured": {
+    "yaw": -45,
+    "elevation": 45,
+    "ground": [
+      {
+        "x": 886.5343603962028,
+        "y": 533.7662337662339
+      },
+      {
+        "x": 943.1029028911266,
+        "y": 493.7662337662339
+      },
+      {
+        "x": 999.6714453860504,
+        "y": 533.7662337662339
+      },
+      {
+        "x": 943.1029028911266,
+        "y": 573.7662337662339
+      }
+    ],
+    "hull": [
+      {
+        "x": 886.5343603962028,
+        "y": 491.339826895041
+      },
+      {
+        "x": 943.1029028911266,
+        "y": 451.339826895041
+      },
+      {
+        "x": 999.6714453860504,
+        "y": 491.339826895041
+      },
+      {
+        "x": 999.6714453860504,
+        "y": 533.7662337662339
+      },
+      {
+        "x": 943.1029028911266,
+        "y": 573.7662337662339
+      },
+      {
+        "x": 886.5343603962028,
+        "y": 533.7662337662339
+      }
+    ],
+    "groundMinX": 886.5343603962028,
+    "groundMaxX": 999.6714453860504,
+    "masonryInside": 6372,
+    "masonryOutside": 10779,
+    "masonryOutsideGroundSpan": 7931,
+    "outsideBounds": {
+      "left": 805,
+      "top": 416,
+      "right": 937,
+      "bottom": 581
+    }
+  },
+  "wallTextures": [
+    "http://127.0.0.1:5402/game-content/oblique-square-brick-full-wall.v1.json",
+    "http://127.0.0.1:5402/game-content/oblique-square-brick-low-wall.v1.json",
+    "http://127.0.0.1:5402/assets/environment/oblique/square-brick-full-wall-yaw-045-elev45.4a3dfe38bc36.png",
+    "http://127.0.0.1:5402/assets/environment/oblique/square-brick-low-wall-yaw-045-elev45.4ae895c0ef44.png"
+  ],
+  "snapshot": [
+    {
+      "id": "order-ca54b5a2-44d8-4f38-ba67-51afa6331fff",
+      "definitionId": "wall-brick",
+      "location": {
+        "x": 20,
+        "y": 20
+      },
+      "footprint": "square",
+      "placementSequence": 2,
+      "state": "completed",
+      "progress": 50,
+      "materialsAllocated": [
+        {
+          "itemId": "item.brick",
+          "quantity": 2
+        }
+      ],
+      "assignedWorkerId": "mock-worker-1"
+    }
+  ],
+  "workerCommands": [
+    {
+      "type": "PlaceBuildOrder",
+      "orderId": "order-ca54b5a2-44d8-4f38-ba67-51afa6331fff",
+      "definitionId": "wall-brick",
+      "x": 20,
+      "y": 20,
+      "footprint": "square",
+      "transactionId": "build-407a835f-5c08-4bf4-8034-a1e76b13733e"
+    }
+  ]
+}
