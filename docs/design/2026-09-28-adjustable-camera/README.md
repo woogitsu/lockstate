@@ -635,3 +635,7 @@ Kitchen actual acceptance is integrated asf6432bf9a6/9cb5c385f8 and supersedes t
 Root integrated native two-finger navigation and touch release correction through cd3bdec31a. Native two-pointer camera pan submits zero construction orders; native cancellation and held mouse/touch capture loss also submit zero. A fresh native single-touch release submits exactly one square. Combined production artifact case passed in 5.3 seconds on the source branch, following the earlier actual normal-release failure and restoration. Application TypeScript passed after integration. This is branch integration evidence, not deployed availability. Solo work remains the owner's current direction; no agents are used.
 
 Integrated production client rebuilt successfully; the same complete native-input case passed 1/1 in 7.0 seconds on this branch (one worker, standard timeouts).
+
+## Shared catalog failure recovery — 2026-10-02
+Issue1960 records an actual unit-level concurrency defect: a second caller sharing an offline request bypassed its own verified fallback. Fix a82f43b852 applies recovery per caller while retaining one network request. Four registry cases pass, including independent fallback maps and retry after failure. Removing only failed-cache eviction makes the retry case red (one network attempt instead of two); exact production restoration returns4/4green. Application TypeScript passed with the fix. No actual browser outage or deployed availability is inferred from these unit cases.
+
