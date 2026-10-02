@@ -40,9 +40,24 @@ test('right-button camera turn owns the pointer when left Build is pressed after
   await page.mouse.move(1060, 560, { steps: 6 });
   await page.waitForTimeout(200);
   const after = await viewport.getAttribute('style');
-  await page.mouse.up({ button: 'right' });
   await page.mouse.up({ button: 'left' });
+  await page.mouse.move(1150, 590, { steps: 4 });
+  await page.waitForTimeout(200);
+  const continued = await viewport.getAttribute('style');
+  await page.mouse.up({ button: 'right' });
   await page.waitForTimeout(250);
   expect(await buildOrders(), 'left-button Build committed during a right-button camera turn').toBe(0);
   expect(after, 'the existing right-button turn stopped').not.toBe(before);
+  expect(continued, 'releasing left button stopped the still-held right-button turn').not.toBe(after);
+
+  // The opposite order must keep the left Build gesture intact until its own
+  // release; an unrelated right-button up may not commit it early.
+  await page.mouse.move(850, 460);
+  await page.mouse.down({ button: 'left' });
+  await page.mouse.move(1010, 460, { steps: 6 });
+  await page.mouse.down({ button: 'right' });
+  await page.mouse.up({ button: 'right' });
+  expect(await buildOrders(), 'releasing right button committed the held left-button Build drag').toBe(0);
+  await page.mouse.up({ button: 'left' });
+  await expect.poll(buildOrders).toBeGreaterThan(0);
 });
