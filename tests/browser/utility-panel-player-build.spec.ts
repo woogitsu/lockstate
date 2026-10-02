@@ -130,6 +130,10 @@ test('player builds the utility panel in Utility Room and keeps it after Save/Lo
   if (bounds === null) throw new Error('minimap absent');
   await minimap.click({ position: { x: bounds.width * 22.5 / 32, y: bounds.height * 7.5 / 32 } });
   await page.mouse.move(1300, 700);
+  await page.getByRole('button', { name: 'Rotate camera right', exact: true }).click();
+  await page.getByRole('button', { name: 'Rotate camera right', exact: true }).click();
+  await page.getByRole('button', { name: 'Rotate camera right', exact: true }).click();
+  await page.getByRole('button', { name: 'Rotate camera right', exact: true }).click();
   await page.screenshot({ path: info.outputPath('utility-worker-completed-fullhd.png') });
   await page.getByRole('button', { name: 'Overview', exact: true }).click();
   await page.getByRole('button', { name: 'Save now', exact: true }).click();

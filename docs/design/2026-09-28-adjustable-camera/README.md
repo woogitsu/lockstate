@@ -668,3 +668,6 @@ Actual built-client flow passes2/2 (42.2/28.4seconds): Storage/Delivery complete
 ## Security console visual acceptance completed — 2026-10-02
 Both built-client stages pass with authored display palette RGB31/94/99 in a fixed console-only region, more than100pixels before and after Load and equal counts. Baseline43.2/33.2s. Substituting only object.security-console's production mapping with the existing generic desk produces red exactly on console display pixels (0), while real setup and construction pass. Exact byte restoration and rebuilt client return2/2green (43.9/34.9s). This supersedes the security baseline's pending visual-consumer boundary for this FullHD scene. Utility panel consumer sensitivity remains pending; no production deployment is claimed.
 
+
+Utility Room readable-angle baseline passes2/2 (43.6/35.5seconds). Four real HUD Rotate camera right clicks turn the initial-45degree yaw to+15degrees before the construction capture. Load preserves the session camera pose, so the test no longer rotates again after Load. Root opened [the readable loaded view](./utility-readable-angle-fullhd.png): the front teal panel is exposed and the door is to its left. This corrects the test's viewing position, not source geometry or save policy. Palette assertions and production consumer mutation remain pending.
+
