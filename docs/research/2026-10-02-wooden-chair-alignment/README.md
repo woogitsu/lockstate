@@ -31,9 +31,9 @@ Two complete exports directly compared every actual PNG byte and manifest byte: 
 
 Appending one null byte to an actual referenced PNG makes its byte-integrity assertion red; restoring exact bytes returns 2/2 green. [Frame mutation/restoration](frame-mutation.json). All 72 frames pass full SHA256, PNG signature/dimensions and independent decompression checks of all four transparent borders. Four focused source/descriptor/mapping/room-template coverage suites pass 48/48; application and tools TypeScript both pass.
 
-## Opened exports and queued native acceptance
+## Opened exports (native acceptance completed below)
 
-![All 72 actual exported wooden chair poses](all 72-exported-poses.png)
+![All 72 actual exported wooden chair poses](all72-exported-poses.png)
 
 Contact sheet of every actual exported pose, opened; SHA256 `fef4a8c894fa2e403d9ce09fbb7499157a36095bd46452bf3717f2bcf89446f5`.
 
@@ -68,3 +68,7 @@ The accepted Storage Room `furniture.storage-room.timber-rack` context override 
 ## Actual native calibration checkpoint
 
 At artifact e3eff8678cb8f7b66b8835067d1071e89a8d5417, three actual bounded cases passed (capacity42.9s, normal37.8s, clockwise90 degrees37.4s). This calibration clone kept native controls, real workers, commands, snapshots and actual IndexedDB Save/Load; it removed only the provisional palette floors. Both loaded FullHDs were opened. [Measured calibration](player-calibration.json) records original candidate counts and newly isolated chair regions. The actual timber RGB(150,115,75) is present108/106 pixels in normal and54/49 in rotated, identical before/after Load. The normal rear chair is partly behind the door; its visible seat is measured. Crops exclude the desk and the next missing-consumer run must independently falsify both chair gates. The tracked fixture now asserts each count >40. This checkpoint establishes real construction/persistence and calibration; consumer mutation and exact restoration remain pending. No new tracked browser config or workflow is added.
+
+## Current acceptance checkpoint
+
+[Actual native player acceptance](player-acceptance.md) supersedes the historical queued/preparation state above. Both normal/clockwise90-degree Staff Room routes completed with real workers and actual Save/Load; both independent chair regions were falsified by removing only the default consumer, then restored. Final bounded3/3green44.0/39.9/38.8s;8expected negative palette failures;48focused/TypeScriptgreen. Both final loaded FullHDs opened and committed with raw JSON/hashes. Browser lease explicitly released. No hosted claim or workflow change.
