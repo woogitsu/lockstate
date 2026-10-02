@@ -1,0 +1,225 @@
+{
+  "date": "2026-10-03",
+  "frozenCommit": "84da80db3c7428717cce51a66a02e1b81e1f93d5",
+  "renderer": "built production oblique",
+  "guards": {
+    "workers": 1,
+    "caseTimeoutMs": 60000,
+    "progressTimeoutMs": 10000,
+    "retries": 0,
+    "paletteThresholdsExclusive": [
+      100,
+      8
+    ]
+  },
+  "cases": {
+    "baseline": {
+      "q0": {
+        "quarterTurns": 0,
+        "actualBefore": [
+          "object.toilet@22,9:orientation=0"
+        ],
+        "actualAfter": [
+          "object.toilet@22,9:orientation=0"
+        ],
+        "beforePixels": [
+          227,
+          122
+        ],
+        "afterPixels": [
+          227,
+          122
+        ],
+        "commands": [
+          {
+            "type": "PlaceRoomTemplate",
+            "templateId": "cell-basic",
+            "origin": {
+              "x": 20,
+              "y": 5
+            }
+          }
+        ]
+      },
+      "q1": {
+        "quarterTurns": 1,
+        "actualBefore": [
+          "object.toilet@22,7:orientation=1"
+        ],
+        "actualAfter": [
+          "object.toilet@22,7:orientation=1"
+        ],
+        "beforePixels": [
+          201,
+          121
+        ],
+        "afterPixels": [
+          201,
+          121
+        ],
+        "commands": [
+          {
+            "type": "PlaceRoomTemplate",
+            "templateId": "cell-basic",
+            "origin": {
+              "x": 20,
+              "y": 5
+            },
+            "quarterTurns": 1
+          }
+        ]
+      }
+    },
+    "mutation-q0": {
+      "q0": {
+        "quarterTurns": 0,
+        "actualBefore": [
+          "object.toilet@22,9:orientation=0"
+        ],
+        "actualAfter": [
+          "object.toilet@22,9:orientation=0"
+        ],
+        "beforePixels": [
+          0,
+          0
+        ],
+        "afterPixels": [
+          0,
+          0
+        ],
+        "commands": [
+          {
+            "type": "PlaceRoomTemplate",
+            "templateId": "cell-basic",
+            "origin": {
+              "x": 20,
+              "y": 5
+            }
+          }
+        ]
+      }
+    },
+    "mutation-q1": {
+      "q1": {
+        "quarterTurns": 1,
+        "actualBefore": [
+          "object.toilet@22,7:orientation=1"
+        ],
+        "actualAfter": [
+          "object.toilet@22,7:orientation=1"
+        ],
+        "beforePixels": [
+          0,
+          0
+        ],
+        "afterPixels": [
+          0,
+          0
+        ],
+        "commands": [
+          {
+            "type": "PlaceRoomTemplate",
+            "templateId": "cell-basic",
+            "origin": {
+              "x": 20,
+              "y": 5
+            },
+            "quarterTurns": 1
+          }
+        ]
+      }
+    },
+    "restored": {
+      "q0": {
+        "quarterTurns": 0,
+        "actualBefore": [
+          "object.toilet@22,9:orientation=0"
+        ],
+        "actualAfter": [
+          "object.toilet@22,9:orientation=0"
+        ],
+        "beforePixels": [
+          227,
+          122
+        ],
+        "afterPixels": [
+          227,
+          122
+        ],
+        "commands": [
+          {
+            "type": "PlaceRoomTemplate",
+            "templateId": "cell-basic",
+            "origin": {
+              "x": 20,
+              "y": 5
+            }
+          }
+        ]
+      },
+      "q1": {
+        "quarterTurns": 1,
+        "actualBefore": [
+          "object.toilet@22,7:orientation=1"
+        ],
+        "actualAfter": [
+          "object.toilet@22,7:orientation=1"
+        ],
+        "beforePixels": [
+          201,
+          121
+        ],
+        "afterPixels": [
+          201,
+          121
+        ],
+        "commands": [
+          {
+            "type": "PlaceRoomTemplate",
+            "templateId": "cell-basic",
+            "origin": {
+              "x": 20,
+              "y": 5
+            },
+            "quarterTurns": 1
+          }
+        ]
+      }
+    }
+  },
+  "byteReceipts": [
+    {
+      "phase": "baseline",
+      "worker": "worker-C2XG9hC-.js",
+      "bytes": 435857,
+      "sha256": "f1f57befd9728f6a0f4e801419cccd66f45150a2e3f8d843a7b0381859854552",
+      "byteEqualBaseline": true,
+      "mappingSha256": "a9eada806ff523bc9933da9b7a2e8a731c5a896286e33b0551119d8e389dd2d4",
+      "sourceManifestAnd72FramesByteEqualBaseline": true
+    },
+    {
+      "phase": "mutation",
+      "worker": "worker-C2XG9hC-.js",
+      "bytes": 435857,
+      "sha256": "f1f57befd9728f6a0f4e801419cccd66f45150a2e3f8d843a7b0381859854552",
+      "byteEqualBaseline": true,
+      "mappingSha256": "155181ea7eb2c32e764bafa2eeb0f29eab033d05d824c8d3a4591833efee50a7",
+      "sourceManifestAnd72FramesByteEqualBaseline": true
+    },
+    {
+      "phase": "restored",
+      "worker": "worker-C2XG9hC-.js",
+      "bytes": 435857,
+      "sha256": "f1f57befd9728f6a0f4e801419cccd66f45150a2e3f8d843a7b0381859854552",
+      "byteEqualBaseline": true,
+      "mappingSha256": "a9eada806ff523bc9933da9b7a2e8a731c5a896286e33b0551119d8e389dd2d4",
+      "sourceManifestAnd72FramesByteEqualBaseline": true
+    }
+  ],
+  "finalScreenshotSha256": {
+    "native-q0-worker-completed-fullhd.png": "d74990ecd58077b49c5662308412cbad0d5d20f2123ec23ccbcb8289b9f17df7",
+    "native-q0-loaded-fullhd.png": "230ce6de0599643c22d5278e57030b66ded250fa0a2a1e0e13b89f207a28384f",
+    "native-q1-worker-completed-fullhd.png": "92b9649c80949938e68c41029d498b470c48c09afc1f482a691d73eafad858c1",
+    "native-q1-loaded-fullhd.png": "eb9990d7f738a1fc93deb5895edbd367423b438af5111eb09dc838540e881a56"
+  }
+}

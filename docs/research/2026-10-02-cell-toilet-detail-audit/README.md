@@ -203,6 +203,15 @@ PNG byte mutation remains red, then byte-exact restoration green.
 
 Current focused check: six suites,34passed/1optional Blender subprocess skip;
 application/tools TypeScript compilation exits0. Actual Blender subprocess
-controls supply the native evidence independently. No browser was launched;
-fresh worker-built Cell pixels, calibration, SaveLoad and consumer-negative
-acceptance remain required for this corrected source.
+controls supply the native evidence independently. At that source checkpoint,
+fresh worker-built corrected Cell pixels and consumer controls remained pending.
+
+2026-10-03: fresh corrected-source native q0/q1 construction/SaveLoad passed3/3.
+Removing only the existing default toilet consumer produced four expected pixel
+errors for each actual orientation; exact byte restoration/rebuild passed3/3
+again. Native front/valve counts227/122 and201/121 survive Load; original
+>100/>8 thresholds remain. Both final loaded FullHDs were opened. Full worker
+and source/descriptor72frame bytes stayed identical through the control.
+See [native-player-acceptance.md](native-player-acceptance.md) and its compact
+receipt, raw provisional/final/negative results, calibration and final images.
+Integrated/hosted acceptance remains separate.

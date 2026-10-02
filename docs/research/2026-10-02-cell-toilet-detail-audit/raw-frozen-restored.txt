@@ -1,0 +1,34 @@
+node : [WebServer] (node:34880) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:8 char:1
++ node node_modules/@playwright/test/cli.js test --config assets/interm ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] ▲ [WARNING] Processing dist\lockstate_development\wrangler.js
+on configuration:
+[WebServer] 
+[WebServer]     - No environment found in configuration with name "production".
+[WebServer]       Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[WebServer]   
+[WebServer]       Consider adding an environment configuration section to the wrangler.json file:
+[WebServer]       ```
+[WebServer]       [env.production]
+[WebServer]       ```
+[WebServer]   
+[WebServer] 
+[WebServer] 
+
+Running 3 tests using 1 worker
+
+(node:21288) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:21288) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\dedicated-cell-toilet-player-build.spec.ts:168:1 › player creates storage and delivery capacity before Basic cell (43.5s)
+  ok 2 tests\browser\dedicated-cell-toilet-player-build.spec.ts:231:3 › player builds Basic cell at quarterTurns0 and retains toilet palettes and anchors after Save/Load (38.0s)
+  ok 3 tests\browser\dedicated-cell-toilet-player-build.spec.ts:231:3 › player builds Basic cell at quarterTurns1 and retains toilet palettes and anchors after Save/Load (36.4s)
+
+  3 passed (2.0m)
