@@ -9,7 +9,7 @@ import type { SparseWorld } from '../world/sparse-world';
 import { tileCoordinate, type TilePosition } from '../world/coordinates';
 import type { ConstructionSystem } from './system';
 import { createRoomTemplateBuildPlan, instantiateRoomTemplateForConstruction } from './room-template-build-plan';
-import { BUILDABLE_REGISTRY, WALL_EDGE_NUMERIC_ID } from './definition';
+import { BUILDABLE_REGISTRY, DOOR_EDGE_NUMERIC_ID, WALL_EDGE_NUMERIC_ID } from './definition';
 import { resolveBuildEdge, type BuildOrder } from './build-order';
 import { validateRoomTemplatePlacement, type RoomTemplatePlacement } from './room-template-placement';
 
@@ -166,6 +166,36 @@ export class RoomTemplateCoordinator implements SystemRegistration {
           order.location.x === Math.max(door.x, outside.x) && order.location.y === Math.max(door.y, outside.y);
       });
     });
+  }
+
+  /** A completed room keeps its doorway passable, including older saves (#1710). */
+  public claimsRoomDoorApproach(order: BuildOrder): boolean {
+    if (this.claimsPendingDoorApproach(order)) return true;
+    if (BUILDABLE_REGISTRY.get(order.definitionId)?.category !== 'wall') return false;
+    // From the approach, look through the perimeter door square into the zoned
+    // interior. Read standing geometry rather than completed gesture metadata:
+    // older saves omit that optional list, and removing a door releases it.
+    for (const [dx, dy] of [[0, -1], [0, 1], [-1, 0], [1, 0]] as const) {
+      const edge = dx === 0 ? 'north' : 'west';
+      if (order.footprint !== 'square' && resolveBuildEdge(order) !== edge) continue;
+      // An edge order stores the greater coordinate of its adjacent tiles.
+      // Only the edge separating approach and door is protected; an edge
+      // perpendicular to the entrance is still legal.
+      const x = order.location.x - (order.footprint === 'square' ? 0 : Math.max(dx, 0));
+      const y = order.location.y - (order.footprint === 'square' ? 0 : Math.max(dy, 0));
+      const interiorX = x + 2 * dx;
+      const interiorY = y + 2 * dy;
+      if (![x, y, interiorX, interiorY].every(Number.isSafeInteger)) continue;
+      const interior = { x: tileCoordinate(interiorX), y: tileCoordinate(interiorY) };
+      if (this.world.getZoning(interior) === 0) continue;
+      const storedDoor = {
+        x: tileCoordinate(Math.max(x + dx, interiorX)),
+        y: tileCoordinate(Math.max(y + dy, interiorY)),
+      };
+      const doorValue = edge === 'north' ? this.world.getTopEdge(storedDoor) : this.world.getLeftEdge(storedDoor);
+      if (doorValue === DOOR_EDGE_NUMERIC_ID) return true;
+    }
+    return false;
   }
 
   public place(request: PendingRoomTemplate): RoomTemplatePlacement {
