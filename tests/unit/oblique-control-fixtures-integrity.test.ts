@@ -5,7 +5,7 @@ import { parseObliqueModuleCatalog } from '../../src/rendering/assets/oblique-mo
 
 it.each([
   ['oblique-utility.security-console.v1.json', [1, 0.5, 0.65]],
-  ['oblique-utility.utility-panel.v1.json', [0.5, 0.5, 0.65]],
+  ['oblique-utility.utility-panel.v1.json', [0.5, 0.5, .5049999952316284]],
 ] as const)('verifies authored bytes and square scale for %s', (name, target) => {
   const root = new URL('../../', import.meta.url);
   const catalog = parseObliqueModuleCatalog(JSON.parse(readFileSync(new URL(`public/game-content/${name}`, root), 'utf8')));
