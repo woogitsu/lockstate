@@ -49,4 +49,3 @@
   ok 2 tests\browser\dedicated-kitchen-stove-player-build.spec.ts:229:3 › player builds Kitchen at quarterTurns0 and retains authored stove enamel and cast-iron detail palettes and anchors after Save/Load (40.1s)
   ok 3 tests\browser\dedicated-kitchen-stove-player-build.spec.ts:229:3 › player builds Kitchen at quarterTurns1 and retains authored stove enamel and cast-iron detail palettes and anchors after Save/Load (41.3s)
   3 passed (2.1m)
-
