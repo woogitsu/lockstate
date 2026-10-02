@@ -1052,6 +1052,7 @@ function buildCatalogue(): HudBuildViewModel {
     if (labelKey === undefined) continue;
     const material = purchasableMaterialFor(definition.materialsRequired);
     const placementCost = placementCostMinorUnits(definition.materialsRequired);
+    const objectFootprint = objectFootprintOf(definition.id);
     buildables.push({
       definitionId: definition.id,
       labelKey,
@@ -1077,6 +1078,7 @@ function buildCatalogue(): HudBuildViewModel {
       // `occupiesEdge` above it, because what a buildable places is simulation
       // content the interface may not read.
       placesObject: definition.placesObjectId !== undefined,
+      ...(objectFootprint === undefined ? {} : { objectFootprint }),
       // Spread rather than passed as `undefined`: `exactOptionalPropertyTypes`
       // is on, so a buildable made of nothing purchasable has to have no
       // property at all -- which is what makes the panel hide its buy control

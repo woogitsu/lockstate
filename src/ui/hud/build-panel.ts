@@ -643,7 +643,7 @@ export function buildCatalogueFocusRing(
  * side by side, while the readout shows one string and looks plausible
  * whatever edge produced it.
  */
-export function formatBuildTargetText(t: Translate, target: BuildPanelTarget | undefined, formatNumber: (value: number) => string = String): string {
+export function formatBuildTargetText(t: Translate, target: BuildPanelTarget | undefined, formatNumber: (value: number) => string = String, objectFootprint?: { readonly width: number; readonly height: number }): string {
   if (target === undefined) return t(HUD_MESSAGE_KEY.buildTargetNone);
   if (target.squareRun === true) return t(HUD_MESSAGE_KEY.buildTargetSquares, {
     x: target.x, y: target.y, count: target.segments ?? 1,
@@ -652,7 +652,12 @@ export function formatBuildTargetText(t: Translate, target: BuildPanelTarget | u
   // An aim with no edge is an aim at a tile, which is what the object tool
   // reports for both of its modes (#550). It gets its own template rather than
   // the edge one with a blank `{edge}`: see `buildTargetTile`.
-  if (target.edge === undefined) return t(HUD_MESSAGE_KEY.buildTargetTile, { x: target.x, y: target.y });
+  if (target.edge === undefined) {
+    if (objectFootprint !== undefined) return t(HUD_MESSAGE_KEY.roomsAreaValue, {
+      width: formatNumber(objectFootprint.width), height: formatNumber(objectFootprint.height), x: target.x, y: target.y,
+    });
+    return t(HUD_MESSAGE_KEY.buildTargetTile, { x: target.x, y: target.y });
+  }
   const edge = target.edge;
   return (target.segments ?? 1) > 1
     ? t(HUD_MESSAGE_KEY.buildTargetRun, {
@@ -1047,6 +1052,8 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   // ---- what to build ------------------------------------------------
   const catalogueList = element('div', { className: 'hud-build__list' });
   const selectedSummary = element('span', { className: 'hud-build__selected-summary' });
+  const selectedFootprint = element('span', { className: 'hud-build__selected-footprint' });
+  let currentTarget: BuildPanelTarget | undefined;
   const rows = new Map<string, ListRow>();
 
   /**
@@ -1146,6 +1153,10 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     focusRing = buildCatalogueFocusRing(model.buildables, activeCategoryId, selectedId);
     const selected = selectedBuildable();
     selectedSummary.textContent = selected === undefined ? '' : t(selected.labelKey);
+    selectedFootprint.hidden = selected?.objectFootprint === undefined;
+    selectedFootprint.textContent = selected?.objectFootprint === undefined ? '' : t(HUD_MESSAGE_KEY.buildObjectFootprint, {
+      width: localizer.formatNumber(selected.objectFootprint.width), height: localizer.formatNumber(selected.objectFootprint.height),
+    });
     const visible = new Set(focusRing.visibleIds);
     for (const [id, row] of rows) {
       row.setBadge(id === selectedId ? { tone: 'info', text: t(HUD_MESSAGE_KEY.buildSelected) } : undefined);
@@ -1348,6 +1359,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   // with the content catalogue, so it is the one that scrolls.
   catalogue.element.classList.add('hud-build__catalogue');
   catalogue.header.append(selectedSummary);
+  catalogue.body.prepend(selectedFootprint);
   catalogue.body.append(catalogueList);
 
   // ---- the map route (primary) --------------------------------------
@@ -1688,6 +1700,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     // three loses the pointer takes its coordinates with it, whatever the panel
     // believes about arming. See `BuildTool.setArmed`.
     if (!armed) setTarget(undefined);
+    else setTarget(currentTarget);
   }
 
   // ---- buying the materials (#89) -----------------------------------
@@ -3254,7 +3267,8 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   }
 
   function setTarget(target: BuildPanelTarget | undefined): void {
-    targetValue.textContent = formatBuildTargetText(t, target, (value) => localizer.formatNumber(value));
+    currentTarget = target;
+    targetValue.textContent = formatBuildTargetText(t, target, (value) => localizer.formatNumber(value), removing ? undefined : selectedBuildable()?.objectFootprint);
     if (target === undefined) {
       delete targetBlock.dataset['target'];
       return;
