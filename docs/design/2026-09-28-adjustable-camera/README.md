@@ -831,3 +831,29 @@ documentation checks in eleven files, both TypeScript targets and a production
 build after these integrations. Actual integrated browser and exact remote CI
 remain release gates. Three agents continue rack native acceptance, Category
 popup lost-release lifecycle and the next concrete construction Issue.
+## Full suite and generic rack integration — 2026-10-02
+
+The complete local suite at published0739759b0c passes7,002tests across596files,
+with two existing skips (167.68seconds), on the exact integrated source and
+existing Git Bash option. This supersedes the earlier complementary-run
+limitation for that checkpoint, not remote CI or changes subsequently added.
+
+The generic rack retains48 authored Blender meshes, its1x1 occupied square,
+all four orientations and72 shared-camera exports. Real individual PlaceObject
+proves the default orientation0 consumer. A genuinely rotated StorageRoom then
+native UnzoneRoom proves default orientation1 without injecting state or
+claiming unsupported individual rotation UI. Actual worker construction and
+Load preserve both anchors, orientation, room removal and independent pixels.
+Default-binding removal fails eight pixel checks; exact mapping/source/worker
+restoration passes3/3 with original limits. Root opened both loaded FullHDs;
+rear rotated timber is partially wall-occluded. [Rack acceptance](../../research/2026-10-02-generic-wooden-rack-alignment/player-acceptance.md)
+records the distinct native routes and initial unhydrated calibration honestly.
+The accepted spec joins the existing artifact partition. Root confirms210 art,
+adjacency and documentation cases in thirteen files after integration.
+
+Existing #1703 is separately corrected in preflight: an incoming perimeter
+cannot occupy a completed template's approach even when rectangles are disjoint.
+Current impact was false-clear followed by non-atomic defensive refusal, not
+permanent loss of a route. Forty actual-command mutation failures and nine legal
+controls establish the boundary; ownership helper, format and copy stay intact.
+Full exact-head remote CI and integrated built-client acceptance remain gates.
