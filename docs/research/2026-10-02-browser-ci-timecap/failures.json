@@ -20,13 +20,14 @@
   "mainComparison": {
     "run": 37032274976,
     "job": 110924601837,
-    "head": "6a90178dac330b43b8e2a8612d8dff160f2d380f05d",
+    "head": "48da4ac330b43b8e2a8612d8dff160f2d380f05d",
     "sourcePassed": 766,
     "sourceStep": [
       "2026-10-02T16:20:57Z",
       "2026-10-02T17:45:33Z"
     ],
-    "artifactPassed": 2
+    "artifactPassed": 2,
+    "headCorrection": "Corrected after coordinator review and direct REST run37032274976 head_sha verification; original transcription was invalid."
   },
   "failures": [
     {
@@ -127,7 +128,7 @@
       "folder": "app-shell-the-assembled-ap-40d88-er-never-takes-it-away-411-",
       "errors": [
         {
-          "message": "Error: expect(locator).toBeVisible() failed\n\nLocator: locator('.hud-build__category')\nExpected: visible\nError: strict mode violation: locator('.hud-build__category') resolved to 2 elements:\n    1) <select aria-label=\"View\" class=\"hud-build__category\">…</select> aka getByLabel('View')\n    2) <select aria-label=\"Category\" class=\"hud-build__category\">…</select> aka getByLabel('Category')\n\nCall log:\n  - Expect \"toBeVisible\" with timeout 10000ms\n  - waiting for locator('.hud-build__category')\n",
+          "message": "Error: expect(locator).toBeVisible() failed\n\nLocator: locator('.hud-build__category')\nExpected: visible\nError: strict mode violation: locator('.hud-build__category') resolved to 2 elements:\n    1) <select aria-label=\"View\" class=\"hud-build__category\">\u2026</select> aka getByLabel('View')\n    2) <select aria-label=\"Category\" class=\"hud-build__category\">\u2026</select> aka getByLabel('Category')\n\nCall log:\n  - Expect \"toBeVisible\" with timeout 10000ms\n  - waiting for locator('.hud-build__category')\n",
           "stack": [
             {
               "file": "tests/browser/app-shell.spec.ts",
@@ -193,7 +194,7 @@
       "folder": "app-shell-the-assembled-ap-5ff3e-osts-the-panel-nothing-390-",
       "errors": [
         {
-          "message": "Error: expect(locator).toBeVisible() failed\n\nLocator: locator('.hud-build__category')\nExpected: visible\nError: strict mode violation: locator('.hud-build__category') resolved to 2 elements:\n    1) <select aria-label=\"View\" class=\"hud-build__category\">…</select> aka getByLabel('View')\n    2) <select aria-label=\"Category\" class=\"hud-build__category\">…</select> aka getByLabel('Category')\n\nCall log:\n  - Expect \"toBeVisible\" with timeout 10000ms\n  - waiting for locator('.hud-build__category')\n",
+          "message": "Error: expect(locator).toBeVisible() failed\n\nLocator: locator('.hud-build__category')\nExpected: visible\nError: strict mode violation: locator('.hud-build__category') resolved to 2 elements:\n    1) <select aria-label=\"View\" class=\"hud-build__category\">\u2026</select> aka getByLabel('View')\n    2) <select aria-label=\"Category\" class=\"hud-build__category\">\u2026</select> aka getByLabel('Category')\n\nCall log:\n  - Expect \"toBeVisible\" with timeout 10000ms\n  - waiting for locator('.hud-build__category')\n",
           "stack": [
             {
               "file": "tests/browser/app-shell.spec.ts",
@@ -325,7 +326,7 @@
       "folder": "app-shell-the-assembled-ap-e4b72-from-the-real-registry-531-",
       "errors": [
         {
-          "message": "Error: expect(locator).toBeVisible() failed\n\nLocator:  locator('.hud-build .ui-choice')\nExpected: visible\nReceived: hidden\nTimeout:  10000ms\n\nCall log:\n  - Expect \"toBeVisible\" with timeout 10000ms\n  - waiting for locator('.hud-build .ui-choice')\n    13 × locator resolved to <div hidden=\"\" class=\"ui-choice\">…</div>\n       - unexpected value \"hidden\"\n",
+          "message": "Error: expect(locator).toBeVisible() failed\n\nLocator:  locator('.hud-build .ui-choice')\nExpected: visible\nReceived: hidden\nTimeout:  10000ms\n\nCall log:\n  - Expect \"toBeVisible\" with timeout 10000ms\n  - waiting for locator('.hud-build .ui-choice')\n    13 \u00d7 locator resolved to <div hidden=\"\" class=\"ui-choice\">\u2026</div>\n       - unexpected value \"hidden\"\n",
           "stack": [
             {
               "file": "tests/browser/app-shell.spec.ts",
@@ -404,7 +405,7 @@
           "stack": []
         },
         {
-          "message": "Error: locator.click: Test timeout of 60000ms exceeded.\nCall log:\n  - waiting for getByRole('button', { name: 'Pause', exact: true })\n    - locator resolved to <button type=\"button\" title=\"Pause\" aria-busy=\"false\" aria-pressed=\"false\" class=\"ui-icon-button ui-icon-button--quiet\">…</button>\n",
+          "message": "Error: locator.click: Test timeout of 60000ms exceeded.\nCall log:\n  - waiting for getByRole('button', { name: 'Pause', exact: true })\n    - locator resolved to <button type=\"button\" title=\"Pause\" aria-busy=\"false\" aria-pressed=\"false\" class=\"ui-icon-button ui-icon-button--quiet\">\u2026</button>\n",
           "stack": [
             {
               "file": "tests/browser/classroom-chair-player-build.spec.ts",
@@ -440,7 +441,7 @@
       "folder": "exercise-station-player-bu-026b9-serves-it-through-Save-Load",
       "errors": [
         {
-          "message": "Error: expect(locator).toHaveText(expected) failed\n\nLocator:  locator('.hud-build__target-value')\nExpected: \"7, 7\"\nReceived: \"2 × 1 tiles at 7, 7\"\nTimeout:  10000ms\n\nCall log:\n  - Expect \"toHaveText\" with timeout 10000ms\n  - waiting for locator('.hud-build__target-value')\n    12 × locator resolved to <span class=\"ui-value hud-build__target-value\">2 × 1 tiles at 7, 7</span>\n       - unexpected value \"2 × 1 tiles at 7, 7\"\n",
+          "message": "Error: expect(locator).toHaveText(expected) failed\n\nLocator:  locator('.hud-build__target-value')\nExpected: \"7, 7\"\nReceived: \"2 \u00d7 1 tiles at 7, 7\"\nTimeout:  10000ms\n\nCall log:\n  - Expect \"toHaveText\" with timeout 10000ms\n  - waiting for locator('.hud-build__target-value')\n    12 \u00d7 locator resolved to <span class=\"ui-value hud-build__target-value\">2 \u00d7 1 tiles at 7, 7</span>\n       - unexpected value \"2 \u00d7 1 tiles at 7, 7\"\n",
           "stack": [
             {
               "file": "tests/browser/exercise-station-player-build.spec.ts",
@@ -460,7 +461,7 @@
           "stack": []
         },
         {
-          "message": "Error: locator.evaluate: Test timeout of 60000ms exceeded.\nCall log:\n  - waiting for getByRole('button', { name: 'Play at normal speed', exact: true })\n    - locator resolved to visible <button type=\"button\" aria-busy=\"false\" aria-pressed=\"false\" title=\"Play at normal speed\" class=\"ui-icon-button ui-icon-button--quiet\">…</button>\n",
+          "message": "Error: locator.evaluate: Test timeout of 60000ms exceeded.\nCall log:\n  - waiting for getByRole('button', { name: 'Play at normal speed', exact: true })\n    - locator resolved to visible <button type=\"button\" aria-busy=\"false\" aria-pressed=\"false\" title=\"Play at normal speed\" class=\"ui-icon-button ui-icon-button--quiet\">\u2026</button>\n",
           "stack": [
             {
               "file": "tests/browser/first-square-clock-hint.spec.ts",
@@ -476,7 +477,7 @@
       "folder": "hud-camera-pose-controls-t-2504f-ot-offer-inert-pose-buttons",
       "errors": [
         {
-          "message": "Error: expect(locator).toHaveCount(expected) failed\n\nLocator:  locator('.hud-camera-pose')\nExpected: 0\nReceived: 1\nTimeout:  10000ms\n\nCall log:\n  - Expect \"toHaveCount\" with timeout 10000ms\n  - waiting for locator('.hud-camera-pose')\n    12 × locator resolved to 1 element\n       - unexpected value \"1\"\n",
+          "message": "Error: expect(locator).toHaveCount(expected) failed\n\nLocator:  locator('.hud-camera-pose')\nExpected: 0\nReceived: 1\nTimeout:  10000ms\n\nCall log:\n  - Expect \"toHaveCount\" with timeout 10000ms\n  - waiting for locator('.hud-camera-pose')\n    12 \u00d7 locator resolved to 1 element\n       - unexpected value \"1\"\n",
           "stack": [
             {
               "file": "tests/browser/hud-camera-pose-controls.spec.ts",
@@ -508,7 +509,7 @@
       "folder": "hud-layout-shell-the-HUD-l-6986e--the-stylesheet-names-1292-",
       "errors": [
         {
-          "message": "Error: the clearance at the stylesheet’s own threshold has moved\n\nexpect(received).toBeCloseTo(expected, precision)\n\nExpected: 10.19\nReceived: -33.8125\n\nExpected precision:    1\nExpected difference: < 0.05\nReceived difference:   44.0025",
+          "message": "Error: the clearance at the stylesheet\u2019s own threshold has moved\n\nexpect(received).toBeCloseTo(expected, precision)\n\nExpected: 10.19\nReceived: -33.8125\n\nExpected precision:    1\nExpected difference: < 0.05\nReceived difference:   44.0025",
           "stack": [
             {
               "file": "tests/browser/hud-layout-shell.spec.ts",
@@ -706,7 +707,7 @@
       "folder": "oblique-camera-new-prison--4a771--panning-beyond-the-old-map",
       "errors": [
         {
-          "message": "Error: expect(locator).toBeHidden() failed\n\nLocator:  locator('.hud-minimap__viewport')\nExpected: hidden\nReceived: visible\nTimeout:  10000ms\n\nCall log:\n  - Expect \"toBeHidden\" with timeout 10000ms\n  - waiting for locator('.hud-minimap__viewport')\n    12 × locator resolved to <span aria-hidden=\"true\" class=\"hud-minimap__viewport\"></span>\n       - unexpected value \"visible\"\n",
+          "message": "Error: expect(locator).toBeHidden() failed\n\nLocator:  locator('.hud-minimap__viewport')\nExpected: hidden\nReceived: visible\nTimeout:  10000ms\n\nCall log:\n  - Expect \"toBeHidden\" with timeout 10000ms\n  - waiting for locator('.hud-minimap__viewport')\n    12 \u00d7 locator resolved to <span aria-hidden=\"true\" class=\"hud-minimap__viewport\"></span>\n       - unexpected value \"visible\"\n",
           "stack": [
             {
               "file": "tests/browser/oblique-camera-new-prison-frame.spec.ts",
@@ -758,7 +759,7 @@
       "folder": "oblique-room-template-pick-a294a-through-four-yaw-directions",
       "errors": [
         {
-          "message": "Error: Ghost missed the floor pick at yaw 90°, elevation 65°\n\nexpect(received).toBe(expected) // Object.is equality\n\nExpected: true\nReceived: false",
+          "message": "Error: Ghost missed the floor pick at yaw 90\u00b0, elevation 65\u00b0\n\nexpect(received).toBe(expected) // Object.is equality\n\nExpected: true\nReceived: false",
           "stack": [
             {
               "file": "tests/browser/oblique-room-template-picking.spec.ts",

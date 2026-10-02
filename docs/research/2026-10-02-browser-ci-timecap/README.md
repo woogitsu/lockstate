@@ -42,7 +42,7 @@ The remaining groups are measured failures requiring their own diagnosis. In par
 
 The known successful [main run 37032274976](https://github.com/woogitsu/lockstate/actions/runs/37032274976),
 [browser job 110924601837](https://github.com/woogitsu/lockstate/actions/runs/37032274976/job/110924601837),
-was read once for comparison. Its exact head was `6a90178dac330b43b8e2a8612d8dff160f2d380f05d`. Its source browser step took **16:20:57-17:45:33Z (84m36s)** for **766 passed source cases**, followed by two built-artifact cases in 14.9s. The candidate declares 121 additional source cases. Main itself was already close to the job cap. A partially completed candidate prefix does not establish total suite runtime or test selection safety.
+was read once for comparison. Its exact head was `48da4ac330b43b8e2a8612d8dff160f2d380f05d`. Its source browser step took **16:20:57-17:45:33Z (84m36s)** for **766 passed source cases**, followed by two built-artifact cases in 14.9s. The candidate declares 121 additional source cases. Main itself was already close to the job cap. A partially completed candidate prefix does not establish total suite runtime or test selection safety.
 
 The candidate's reported completed-test durations sum approximately 85m25s (rounded log durations); elapsed browser time is87m05s. The 65 timed app-shell reports account for 1080.9s. On successful main, five existing app-shell keyboard flows take 144s, 162s, 210s, 126s and 168s respectively. A candidate common-room completion pass takes 150s. These are real elapsed test costs, not proof of a particular CPU bottleneck.
 
@@ -80,3 +80,5 @@ Production SHA256 restoration:
 The four desktop View hit-test traces match an independently verified missing prerequisite: exact3ee lacks `.hud__corner > select.hud-build__category` in the pointer-events opt-in. Existing commit `f3cdb06dad468148fadcf0409911ce322484032f` adds that selector and a native regression, and is not an ancestor of3ee. It was recommended to the coordinator as an existing backport; it is not applied in this isolated consumer branch.
 
 Final offline checks: application and tooling TypeScript builds passed, and the production build verified actual Cloudflare output. Four documentation suites initially passed27 checks and failed one commit-citation check because the just-pushed branch had no local origin tracking ref. Fetching that exact published branch resolved it; the affected eight-case citation suite then passed8/8. No citation exemption or guard was changed. Tooling TypeScript does not include browser tests.
+
+Main-head correction: the initial record transcribed an invalid SHA prefix. A direct REST read of immutable run37032274976 confirms head `48da4ac330b43b8e2a8612d8dff160f2d380f05d`. The record and inventory now carry that verified value; timing/count observations were unaffected.
