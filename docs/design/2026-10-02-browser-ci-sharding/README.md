@@ -1,6 +1,7 @@
 # Browser CI duration proposal — owner review draft
 
-Date: 2026-10-02. Subject: `eeec3e844f`, Laundry integration. No workflow,
+Started: 2026-10-02; final offline receipt: 2026-10-03 (Europe/Warsaw).
+Subject: `eeec3e844f`, Laundry integration. No workflow,
 repository setting, browser test, timeout or retry policy is changed by this
 proposal. Activation remains an owner decision under AGENTS.md reservation 3.
 
@@ -88,11 +89,40 @@ removed to accommodate the draft. Main branch protection returned API404, so
 this proposal does not claim that GitHub currently requires `browser`; any
 protection/settings decision is separate and was not performed.
 
-Both actual source set collections completed offline. The first publication
-preserves their raw reports. The executable union/no-duplicate, draft semantic,
-and fail-closed negative audit is being prepared; its result will be appended
-before this proposal is presented for approval. No hosted execution, native
-browser acceptance, activation, main delivery, or deployment is established.
+The offline audit is complete: **9/9 green**, then a draft partition-producer
+omission gives **1 red /8 green**, followed by byte-exact restoration and fresh
+real-wrapper collection giving **9/9 green**. The omitted `app-shell.spec.ts`
+removes 65 collected source cases (822 remain); the exact-union audit refuses.
+No production workflow was mutated. Prototype producer restoration SHA256:
+`ede140cf75ae90dc2d7628710a3901fc35180ccd66d11ea71893dab9e489c279`.
+The final checked reports preserve 887 source and 83 artifact cases, no duplicate
+IDs, no shared source/artifact files, whole-file ownership, and the physical
+201-spec inventory. The native-shard variant has the same union. Case metadata,
+serial configuration, provisioning, original output guards, and suite commands
+are compared directly. Each draft's actual aggregate shell accepts complete
+matching success and refuses 12 failed/cancelled/skipped/missing-result or
+mismatched/missing-subject combinations. No GitHub protection change is tested.
+
+[Final receipt](evidence/receipt.json), [baseline](evidence/audit-baseline.log),
+[producer omission](evidence/audit-source-omission-red.log), and
+[exact-restored audit](evidence/audit-restored.log) retain the obtained results.
+[Issue #1983](https://github.com/woogitsu/lockstate/issues/1983) records the verified
+capacity boundary separately from specific assertion failures and old host-pool
+issues. Fresh searches and read issue IDs are recorded in the receipt.
+
+Reproduce offline from this base with its installed dependencies:
+
+```sh
+pnpm build
+node docs/design/2026-10-02-browser-ci-sharding/generate-drafts.mjs
+node docs/design/2026-10-02-browser-ci-sharding/collect-proposal.mjs
+node --test docs/design/2026-10-02-browser-ci-sharding/audit-proposal.test.mjs
+```
+
+Collection uses `CI=true`, so `.only` guards remain active. JSON list reports
+mark unexecuted cases as skipped; this records collection, not skipped runtime
+tests. No hosted execution, native browser acceptance, workflow activation, main
+delivery, or deployment is established. No new CI run was started or cancelled.
 
 Weakest claim: historical cost weights will remain useful on the current suite.
 A complete hosted run with current per-file timings could reverse the preferred

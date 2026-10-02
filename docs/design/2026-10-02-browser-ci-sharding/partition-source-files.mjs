@@ -29,7 +29,10 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const bins = partition(report, evidence);
   bins.forEach((bin, i) => {
     writeFileSync(`${outputPrefix}-${i + 1}.txt`, bin.files.join('\n') + '\n');
-    writeFileSync(`${outputPrefix}-filters-${i + 1}.txt`, bin.files.map(file => file.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$').join('\n') + '\n');
+    writeFileSync(`${outputPrefix}-filters-${i + 1}.txt`, bin.files.map(fileFilter).join('\n') + '\n');
   });
   writeFileSync(`${outputPrefix}-weights.json`, JSON.stringify(bins, null, 2));
+}
+export function fileFilter(file) {
+  return '(^|[/\\\\])' + file.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$';
 }
