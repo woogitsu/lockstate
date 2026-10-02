@@ -106,6 +106,21 @@ export function changeObliquePoseAtScreenPoint(
   };
 }
 
+/** Keep the indicated ground point beneath a wheel cursor while zooming. */
+export function zoomObliqueAtScreenPoint(
+  camera: ObliqueCameraState,
+  screen: Point,
+  zoom: number,
+): ObliqueCameraState {
+  const before = screenToGround(screen, camera);
+  const candidate = { ...camera, zoom };
+  const after = screenToGround(screen, candidate);
+  return {
+    ...candidate,
+    target: { x: camera.target.x + before.x - after.x, y: camera.target.y + before.y - after.y },
+  };
+}
+
 /** Translate the camera so the grabbed ground point follows a middle drag. */
 export function panObliqueGroundAnchorToScreen(
   camera: ObliqueCameraState,

@@ -4,6 +4,7 @@ import {
   screenToGround,
   visibleGroundBounds,
   changeObliquePoseAtScreenPoint,
+  zoomObliqueAtScreenPoint,
   panObliqueGroundAnchorToScreen,
   obliqueFromTopDown,
   type ObliqueCameraState,
@@ -74,6 +75,34 @@ describe('oblique ground-plane projection', () => {
     expect(groundAfter.y).toBeCloseTo(groundBefore.y, 9);
     expect(turned.yawRadians).toBe(Math.PI / 3);
     expect(turned.elevationRadians).toBe(Math.PI / 4);
+  });
+
+  it('keeps the ground square beneath an off-centre wheel cursor across shallow and steep camera poses', () => {
+    const pointer = { x: 1410, y: 760 };
+    for (const yawDegrees of [37, 217]) {
+      for (const elevationDegrees of [25, 65]) {
+        const angled = {
+          ...camera,
+          yawRadians: yawDegrees * Math.PI / 180,
+          elevationRadians: elevationDegrees * Math.PI / 180,
+        };
+        const groundBefore = screenToGround(pointer, angled);
+        const zoomed = zoomObliqueAtScreenPoint(angled, pointer, angled.zoom * 1.25);
+        const groundAfter = screenToGround(pointer, zoomed);
+        expect(groundAfter.x).toBeCloseTo(groundBefore.x, 8);
+        expect(groundAfter.y).toBeCloseTo(groundBefore.y, 8);
+        expect(zoomed.zoom).toBe(angled.zoom * 1.25);
+        expect(zoomed.yawRadians).toBe(angled.yawRadians);
+        expect(zoomed.elevationRadians).toBe(angled.elevationRadians);
+      }
+    }
+  });
+
+  it('keeps the camera target when a keyboard or HUD zoom uses the viewport centre', () => {
+    const centre = { x: camera.viewport.width / 2, y: camera.viewport.height / 2 };
+    const zoomed = zoomObliqueAtScreenPoint(camera, centre, camera.zoom / 1.25);
+    expect(zoomed.target.x).toBeCloseTo(camera.target.x, 9);
+    expect(zoomed.target.y).toBeCloseTo(camera.target.y, 9);
   });
 
   it('keeps the grabbed ground point beneath a middle-drag cursor at low and high angles', () => {
