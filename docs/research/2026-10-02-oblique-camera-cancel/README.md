@@ -21,7 +21,7 @@ scene without moving the pointer.
 
 ## Isolated main landing verification
 
-The fix is independently applied to main release base4adfa31fdc (v0.0.833). Main stores hoveredWorldPoint rather than the later feature branch's hoveredScreenPoint; the cancellation adapter clears that existing field. No feature renderer, actor or template changes are included. TypeScript and the research/network fixture gates pass12/12.
+The fix is independently applied to main release base `4adfa31fdc` (v0.0.833). Main stores hoveredWorldPoint rather than the later feature branch's hoveredScreenPoint; the cancellation adapter clears that existing field. No feature renderer, actor or template changes are included. TypeScript and the research/network fixture gates pass12/12.
 
 Root built the production artifact and ran this exact Full HD case with one worker and the unchanged artifact config, overriding only testMatch to this spec. Baseline1/1green (7.7seconds suite). Removing only the turn-pointer reset from cancelPointerInput and rebuilding gives1/1red at `RMB turn must stop on window blur`. Restoring source and rebuilding returns1/1green (7.3seconds suite); the screenshot above is from that final main-based artifact.
 
