@@ -3,6 +3,9 @@ import json
 import sys
 from pathlib import Path
 import bpy
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import pipeline_common
+pipeline_common.require_blender_version()
 ROOT = Path(__file__).resolve().parents[2]
 args = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
 source = args[0] if args else 'utility.washing-machine.variants.blend'
