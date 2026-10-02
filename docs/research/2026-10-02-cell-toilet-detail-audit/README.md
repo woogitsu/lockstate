@@ -74,3 +74,44 @@ pixels. Native source/mesh/geometry controls and opened repeat exports must
 establish the physical additions. Genuine Cell worker-completed/loaded scenes
 and a consumer-only negative control must establish their actual consumption.
 No browser, hosted state or player completion is claimed for this checkpoint.
+
+## Approved source checkpoint
+
+The coordinator approved this exact physical refinement scope after the audit.
+The dedicated source now retains19original meshes/eight materials and adds
+25physical meshes: pipe coupling/compression collars, shutoff valve body/stem,
+480vertex polygonal torus wheel with four spokes and hub, two separate seat
+hinge barrels/pins/mounts with fixing bolts, and four cistern lid joint rails.
+No texture or palette was authored. Existing material nodes and Eevee
+key/fill/ambient settings remain intact.
+
+Source SHA256 `4ced3356c2f2d17d08e4ce3f9b58e4d63d8500be7927da66a982d7752e513d6d`.
+The builder records and compares the packed float32 vertex bytes and topology
+bytes of each original mesh before/after, unchanged. Each retained material's
+canonical node/default/socket/link record is compared byte-for-byte and hashed;
+this is a serialized data audit, not a claim that relocated Blender datablock
+binary storage is identical. The complete original catalog bytes remain exact.
+The accepted.8XY fit is baked into object transforms, leaving original raw
+geometry/modifiers untouched; the exporter supplies a unit min-corner shift.
+Maximum retained evaluated fit error `4.470348358154297e-8` tiles.
+
+The first builder precision preflight was red at2.270760013870168e-6 after
+subtracting a21tile catalog grid offset from already evaluated float32 points;
+raw vertex/topology records were equal. The correction removes that parent
+layout offset before evaluation, exactly as the existing exporter does. The
+comparison tolerance was kept; no authored shape was relaxed or changed.
+
+Actual loaded44mesh bounds are
+`[.17599999904632568,.08799998462200165,.005000002682209015]` to
+`[.916000247001648,.9621759653091431,1.102500081062317]`, still within all four
+occupied orientations. Measured camera target now[.5,.5,.553750041872263];
+actual512/8=64pixels per tile stays unchanged. This centered frame target is
+declared for runtime pivot composition; changing it does not alone prove an
+old alignment defect. Original source already fit correctly.
+
+Native dedicated-source verification exited0 for72actual camera transforms and
+four occupied orientations. The actual45/40preview was opened; the original
+porcelain/teal bowl/cistern and new metal valve connection are visible. This
+preview is authored-source evidence, not a player frame. Full repeat exports,
+producer negative controls and genuine native consumer acceptance are pending.
+The existing registry is checked without rewriting any row.

@@ -1,13 +1,13 @@
 """Render the authored toilet and sink fixture for the adjustable oblique camera.
 
-The collection is authored in environment.mvp.catalog.blend. This script is
+The retained collection and physical additions are in the dedicated angled source. This script is
 standalone so a render job can rebuild the 12-yaw by 6-angle grid without
-importing a wall or door authoring script. The registry is updated only after
-every frame has been written and hashed.
+importing a wall or door authoring script. The canonical registry is checked without rewriting it.
 """
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import json
 import math
 import struct
@@ -24,10 +24,16 @@ import pipeline_common  # noqa: E402
 
 ROOT = SCRIPT_DIR.parents[1]
 CATALOG = ROOT / "assets/source/blender/environment.mvp.catalog.blend"
+SOURCE = ROOT / "assets/source/blender/fixture.cell.toilet_sink.angled.blend"
+PROVENANCE = SOURCE.with_suffix(".provenance.json")
 OUTPUT = ROOT / "public/assets/environment/oblique"
+PREVIEW_ONLY = '--preview' in sys.argv
+if PREVIEW_ONLY:
+    OUTPUT = ROOT / 'assets/intermediate/cell-toilet-angled-preview'
 REGISTRY = ROOT / "public/game-content/oblique-module-registry.v1.json"
 MANIFEST = ROOT / "public/game-content/oblique-cell-toilet.v1.json"
 ASSET_ID = "fixture.cell.toilet_sink"
+TARGET = Vector((.5, .5, .553750041872263))
 YAW = tuple(-165 + index * 30 for index in range(12))
 ELEVATION = (20, 30, 40, 50, 60, 70)
 
@@ -51,36 +57,70 @@ def strip_png_metadata(path: Path) -> None:
 
 
 def append_collection() -> bpy.types.Collection:
-    with bpy.data.libraries.load(str(CATALOG), link=False) as (available, loaded):
-        if ASSET_ID not in available.collections:
-            raise RuntimeError(f"{CATALOG.name} lacks {ASSET_ID}")
-        loaded.collections = [ASSET_ID]
-    collection = loaded.collections[0]
+    provenance = json.loads(PROVENANCE.read_text())
+    if hashlib.sha256(SOURCE.read_bytes()).hexdigest() != provenance['sourceSha256']:
+        raise ValueError('Dedicated Cell toilet source bytes differ from provenance')
+    registry = json.loads(REGISTRY.read_text())
+    entry = next(row for row in registry['entries'] if row['assetId'] == ASSET_ID)
+    if entry['manifest'] != '/game-content/' + MANIFEST.name:
+        raise ValueError('Dedicated toilet exporter targets the wrong runtime descriptor')
+    expected_names = [row['name'] for row in provenance['meshes']]
+    with bpy.data.libraries.load(str(SOURCE), link=False) as (available, loaded):
+        if sorted(available.objects) != sorted(expected_names):
+            raise ValueError('Dedicated Cell toilet source object set changed')
+        loaded.objects = expected_names
+    collection = bpy.data.collections.new('Dedicated Cell toilet')
     bpy.context.scene.collection.children.link(collection)
-    origin = next((item for item in collection.all_objects
-                   if item.name == ASSET_ID + ".origin"), None)
-    if origin is None:
-        raise RuntimeError(f"{ASSET_ID} has no bottom-center origin")
-    # Production objects are anchored at their occupied square's minimum
-    # corner. The original catalog source is centred on its origin and would
-    # visibly spill into the western/northern neighbour if exported at (0,0).
-    # Preserve the authored meshes, ID and world footprint; only adapt the
-    # exported pose to the already-shipped 1x1 square contract (#1952).
-    origin.location = (0.5, 0.5, 0)
-    origin.scale = (0.80, 0.80, 1)
+    for obj in loaded.objects:
+        collection.objects.link(obj)
     bpy.context.view_layer.update()
-    depsgraph = bpy.context.evaluated_depsgraph_get()
-    mesh_points = [evaluated.matrix_world @ Vector(corner)
-                   for item in collection.all_objects if item.type == "MESH"
-                   for evaluated in [item.evaluated_get(depsgraph)]
-                   for corner in evaluated.bound_box]
-    if not mesh_points:
-        raise RuntimeError(f"{ASSET_ID} contains no meshes")
-    for axis in (0, 1):
-        low = min(point[axis] for point in mesh_points)
-        high = max(point[axis] for point in mesh_points)
-        if low < 0 or high > 1:
-            raise RuntimeError(f"{ASSET_ID} exceeds its 1x1 footprint on axis {axis}: {low}, {high}")
+    if sorted(obj.name for obj in collection.objects if obj.type == 'MESH') != sorted(expected_names):
+        raise ValueError('Dedicated Cell toilet loaded authored mesh set changed')
+    helper_spec = importlib.util.spec_from_file_location('toilet_retained_audit', SCRIPT_DIR / 'refine-cell-toilet-angled.py')
+    helper = importlib.util.module_from_spec(helper_spec)
+    helper_spec.loader.exec_module(helper)
+    graph = bpy.context.evaluated_depsgraph_get()
+    centered = []
+    for obj in sorted(collection.objects, key=lambda value: value.name):
+        value = obj.evaluated_get(graph); mesh = value.to_mesh()
+        try:
+            vertices = [value.matrix_world @ vertex.co for vertex in mesh.vertices]
+            row = {'name': obj.name, 'evaluatedVertices': len(vertices),
+                   'evaluatedPositionSha256': hashlib.sha256(b''.join(struct.pack('<3f', *point) for point in vertices)).hexdigest()}
+            if row != next(record for record in provenance['meshes'] if record['name'] == obj.name):
+                raise ValueError('Dedicated Cell toilet evaluated mesh geometry changed')
+            centered.extend(vertices)
+        finally:
+            value.to_mesh_clear()
+    retained = [bpy.data.objects[row['name']] for row in provenance['retainedMeshes']]
+    if [helper.raw_record(obj) for obj in retained] != provenance['retainedMeshes']:
+        raise ValueError('Original nineteen toilet vertex/topology/material assignments changed')
+    if [helper.material_record(bpy.data.materials[row['name']]) for row in provenance['retainedMaterialGraphs']] != provenance['retainedMaterialGraphs']:
+        raise ValueError('Original eight toilet material graph bytes changed')
+    # Dedicated source already bakes the accepted .8XY fit. Supply exactly one
+    # min-corner translation; do not fit/scale the original assembly again.
+    from mathutils import Matrix
+    for obj in collection.objects:
+        obj.matrix_world = Matrix.Translation((.5, .5, 0)) @ obj.matrix_world
+    bpy.context.view_layer.update()
+    points = [point for vertices in helper.evaluated(bpy.context.scene).values() for point in vertices]
+    if len(points) != len(centered):
+        raise ValueError('Dedicated loaded Cell toilet vertex set changed')
+    minimum = [min(point[axis] for point in points) for axis in range(3)]
+    maximum = [max(point[axis] for point in points) for axis in range(3)]
+    for axis in range(3):
+        anchor = .5 if axis < 2 else 0
+        if abs(minimum[axis] - provenance['minimum'][axis] - anchor) > 1e-6 or abs(maximum[axis] - provenance['maximum'][axis] - anchor) > 1e-6:
+            raise ValueError('Dedicated loaded Cell toilet geometry or min-corner transform changed')
+    for turns in range(4):
+        for point in points:
+            x, y = point.x - .5, point.y - .5
+            for _ in range(turns): x, y = -y, x
+            if not (0 <= x + .5 <= 1 and 0 <= y + .5 <= 1):
+                raise ValueError('Dedicated Cell toilet escapes an occupied quarter turn')
+    if abs(TARGET.z - (minimum[2] + maximum[2]) / 2) > 1e-6:
+        raise ValueError('Dedicated Cell toilet target differs from measured height')
+    print('CELL_TOILET_EVALUATED44', minimum, maximum, flush=True)
     return collection
 
 
@@ -135,19 +175,11 @@ def setup_scene() -> bpy.types.Scene:
 def render_frames(scene: bpy.types.Scene) -> list[dict[str, object]]:
     OUTPUT.mkdir(parents=True, exist_ok=True)
     frames: list[dict[str, object]] = []
-    target = Vector((0, 0, 0))
+    target = TARGET
     radius = 12.0
-    for yaw in YAW:
-        for elevation in ELEVATION:
-            yaw_radians = math.radians(yaw)
-            elevation_radians = math.radians(elevation)
-            camera = scene.camera
-            camera.location = (
-                radius * math.sin(yaw_radians),
-                -radius * math.cos(yaw_radians),
-                radius * math.tan(elevation_radians),
-            )
-            camera.rotation_euler = (target - camera.location).to_track_quat("-Z", "Y").to_euler()
+    for yaw in ((45,) if PREVIEW_ONLY else YAW):
+        for elevation in ((40,) if PREVIEW_ONLY else ELEVATION):
+            point_camera(scene, yaw, elevation)
             stem = f"cell-toilet-yaw{yaw:+03d}-elev{elevation:02d}"
             staging = OUTPUT / f"{stem}.staging.png"
             scene.render.filepath = str(staging)
@@ -165,23 +197,50 @@ def render_frames(scene: bpy.types.Scene) -> list[dict[str, object]]:
     return frames
 
 
+def point_camera(scene, yaw, elevation):
+    camera = scene.camera
+    azimuth = math.radians(yaw); tilt = math.radians(elevation)
+    camera.location = TARGET + Vector((12 * math.sin(azimuth), -12 * math.cos(azimuth), 12 * math.tan(tilt)))
+    camera.rotation_euler = (TARGET - camera.location).to_track_quat('-Z', 'Y').to_euler()
+    # Read the actual camera transforms. Scale and basis are established from
+    # world projection, not from a declared nominal descriptor value.
+    if abs(scene.render.resolution_x / camera.data.ortho_scale - 64) > 1e-6:
+        raise ValueError('Dedicated Cell toilet actual camera pitch differs from64ppt')
+    offset = camera.location - TARGET
+    expected = Vector((12 * math.sin(azimuth), -12 * math.cos(azimuth), 12 * math.tan(tilt)))
+    if (offset - expected).length > 1e-5:
+        raise ValueError('Dedicated Cell toilet camera ground basis differs from world projection')
+    forward = camera.rotation_euler.to_quaternion() @ Vector((0, 0, -1))
+    if forward.dot((-offset).normalized()) < 1 - 1e-6:
+        raise ValueError('Dedicated Cell toilet camera does not face its declared target')
+
+
 def main() -> None:
     pipeline_common.require_blender_version()
     scene = setup_scene()
     collection = append_collection()
+    if '--verify' in sys.argv:
+        for yaw in YAW:
+            for elevation in ELEVATION:
+                point_camera(scene, yaw, elevation)
+        print('CELL_TOILET_VERIFY72 actual cameras and four occupied orientations', flush=True)
+        return
     frames = render_frames(scene)
+    if PREVIEW_ONLY:
+        print('CELL_TOILET_PREVIEW', frames[0]['image'], flush=True)
+        return
     collection.hide_render = True
-    source_hash = hashlib.sha256(CATALOG.read_bytes()).hexdigest()
+    source_hash = hashlib.sha256(SOURCE.read_bytes()).hexdigest()
     manifest = {
         "schemaVersion": 1,
         "assetId": ASSET_ID,
-        "source": "environment.mvp.catalog.blend",
+        "source": SOURCE.relative_to(ROOT).as_posix(),
         "sourceSha256": source_hash,
         "sourceDependencies": [],
         "resolutionPx": [512, 512],
         "nominalPixelsPerTile": 64,
         "pivotPx": [256, 256],
-        "cameraTargetTiles": [0, 0, 0],
+        "cameraTargetTiles": list(TARGET),
         "projection": "orthographic",
         "yawDegrees": list(YAW),
         "elevationDegrees": list(ELEVATION),
@@ -189,10 +248,7 @@ def main() -> None:
     }
     pipeline_common.write_text(MANIFEST, json.dumps(manifest, indent=2) + "\n")
 
-    registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
-    entries = [entry for entry in registry["entries"] if entry["assetId"] != ASSET_ID]
-    entries.append({"assetId": ASSET_ID, "manifest": "/game-content/oblique-cell-toilet.v1.json"})
-    pipeline_common.write_text(REGISTRY, json.dumps({"schemaVersion": 1, "entries": entries}, indent=2) + "\n")
+
 
 
 if __name__ == "__main__":
