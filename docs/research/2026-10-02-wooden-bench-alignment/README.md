@@ -1,6 +1,6 @@
 # Retained wooden bench: shared square export — 2026-10-02
 
-## Current checkpoint
+## Source/export checkpoint (052da4e9bca8)
 
 This isolated source/export checkpoint starts at integrated `25b0cdb79d`. It reuses the existing authored wooden bench from the catalog, retaining its 40 meshes, materials and modifiers. Its original centered export is aligned through the existing shared square pipeline. Native bounds/camera/retained-mesh guards, two complete repeat exports, decoded frame borders and deliberate mutation/restoration are verified. Actual native worker-build, normal/90° placement and Save/Load acceptance remain queued for the next exclusive browser lease; no player or hosted completion is claimed yet.
 
@@ -44,7 +44,7 @@ The contact sheet contains only actual PNG exports resized to 128px each and was
 
 The full-size 256px frame was opened. SHA256: `f18d12b145eb2666af6b9eeaf742dcbdac3c078e38d43660636803aeadffc4d6`.
 
-## Repeat and queued native route
+## Repeat and prepared native route (77abd5c39b97)
 
 ```powershell
 & 'C:\Program Files\Blender Foundation\Blender 5.2\blender.exe' -b --python-exit-code 1 --python tooling/blender/extract-wooden-bench.py
@@ -58,12 +58,12 @@ The inspected host is Blender 5.2.1 LTS, upstream build identifier 9e2066aef7ef,
 The prepared and typechecked `tests/browser/wooden-bench-player-build.spec.ts` reuses worker-built Storage Room/Delivery Bay capacity, then places a Holding Cell at (20,5), which consumes the default wooden bench rather than a context override. Normal completed anchors should be (21,6)/(23,8), orientation0; clockwise90° should give (24,6)/(22,8), orientation1, with corresponding 2x1/1x2 rectangles. Its initial broad RGB(154,119,81) palette region is provisional, selected from an actual yaw60/elevation50 source frame. Separate actual screenshot palettes must be calibrated and proved by missing-consumer red/exact-restoration green plus real Save/Load. Case timeout60s and construction-progress guard10s are retained; the failure hook captures a read-only worker snapshot and FullHD image. The HUD agent currently owns the browser lease, so this checkpoint has not run a browser. No new tracked browser configuration or workflow is introduced.
 
 
-## Actual runtime calibration checkpoint
+## Actual runtime calibration checkpoint (d50bf157292c)
 
 After the prepared fixture checkpoint, an exclusive browser lease was granted. A temporary calibration copy outside `tests/` retained native controls, actual worker construction, exact sent commands, object anchors/orientations and actual IndexedDB Save/Load. It omitted the two provisional source-palette assertion loops. All three construction/persistence calibration cases passed (43.0/36.5/37.0s); this is not yet calibrated consumer acceptance.
 
 Both loaded FullHD images were opened. The actual shared pose yields timber RGB(150,115,75), independently measured in disjoint rectangles for each completed bench. Normal rectangles (720,415,150,145)/(945,410,150,115) yield 917/730 pixels; rotated rectangles (875,350,135,100)/(875,510,145,110) yield 401/583 pixels. Counts are identical before and after Load. The rotated rear bench is partly occluded by the tall wall, so this proves its visible timber portion rather than unobstructed geometry. [Calibration records](runtime-calibration.json) preserve commands, actual anchors, rectangles and both image hashes.
 
-The source-preview RGB(154,119,81) was provisional and differs from this actual pose: its broad runtime counts were 0 normal and 26 rotated. No exporter or source was changed for this palette difference. The tracked fixture now checks RGB(150,115,75) separately in each actual bench region with >300 pixels, and preserves the60s/10s construction guards. Calibrated missing-consumer red/exact-restoration green and full3-case terminal acceptance remain pending at this checkpoint.
+The source-preview RGB(154,119,81) was provisional and differs from this actual pose: its broad runtime counts were 0 normal and 26 rotated. No exporter or source was changed for this palette difference. The tracked fixture now checks RGB(150,115,75) separately in each actual bench region with >300 pixels, and preserves the 60s/10s construction guards. Calibrated missing-consumer red/exact-restoration green and full 3-case terminal acceptance remain pending at this checkpoint.
 
 Both bench scripts explicitly call the pinned version guard: the wrapper through `exporter.pipeline_common.require_blender_version()` and the extractor through `pipeline_common.require_blender_version()`. The existing deterministic entrypoint scanner recognizes both; no CI policy/configuration change is made here.
