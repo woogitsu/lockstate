@@ -1,6 +1,8 @@
 import { expect, test } from './network-changed-fixture';
 
 test('Full HD Build shows authored station and bench thumbnails with accessible keyboard selection',async({page},info)=>{
+  const cspErrors:string[]=[];
+  page.on('console',message=>{if(/Content Security Policy|Refused to/i.test(message.text()))cspErrors.push(message.text());});
   await page.setViewportSize({width:1920,height:1080});
   await page.goto('/?renderer=oblique');
   await page.getByRole('button',{name:'New prison',exact:true}).click();
@@ -54,4 +56,6 @@ test('Full HD Build shows authored station and bench thumbnails with accessible 
   await expect(station.locator('svg')).toBeVisible();
   await expect(station).toContainText('80');
   await expect(footprint).toHaveText('Occupied squares: 2 \u00d7 1');
+  expect(cspErrors).toEqual([]);
+  await page.screenshot({path:info.outputPath('station-image-fallback-fullhd.png')});
 });
