@@ -23,19 +23,20 @@ describe('existing toilet has a complete, square-aligned oblique model', () => {
     }]);
   });
 
-  it('loads the original Blender source and exact-scale, square-aligned 72-frame export', () => {
-    expect(catalog.source).toBe('environment.mvp.catalog.blend');
-    expect(catalog.sourceSha256).toBe(sha256(readFileSync(new URL('assets/source/blender/environment.mvp.catalog.blend', root))));
+  it('loads the dedicated retained Blender source and exact-scale, square-aligned 72-frame export', () => {
+    expect(catalog.source).toBe('assets/source/blender/fixture.cell.toilet_sink.angled.blend');
+    expect(catalog.sourceSha256).toBe(sha256(readFileSync(new URL(catalog.source, root))));
     expect(catalog.resolutionPx).toEqual([512, 512]);
     expect(catalog.nominalPixelsPerTile).toBe(64);
     expect(catalog.pivotPx).toEqual([256, 256]);
-    expect(catalog.cameraTargetTiles).toEqual([0, 0, 0]);
+    expect(catalog.cameraTargetTiles).toEqual([.5, .5, .5537500381469727]);
     const exporter = readFileSync(new URL('tooling/blender/render-oblique-cell-toilet.py', root), 'utf8');
     const scale = /camera_data\.ortho_scale = ([0-9.]+)/.exec(exporter);
     expect(scale).not.toBeNull();
     expect(catalog.resolutionPx[0] / Number(scale![1])).toBe(catalog.nominalPixelsPerTile);
-    expect(exporter).toContain('origin.location = (0.5, 0.5, 0)');
-    expect(exporter).toContain('origin.scale = (0.80, 0.80, 1)');
+    expect(exporter).toContain('Matrix.Translation((.5, .5, 0))');
+    const provenance = JSON.parse(readFileSync(new URL('assets/source/blender/fixture.cell.toilet_sink.angled.provenance.json', root), 'utf8')) as { acceptedFitBaked: number[] };
+    expect(provenance.acceptedFitBaked).toEqual([.8, .8, 1]);
     expect(catalog.yawDegrees).toHaveLength(12);
     expect(catalog.elevationDegrees).toEqual([20, 30, 40, 50, 60, 70]);
     expect(catalog.frames).toHaveLength(72);

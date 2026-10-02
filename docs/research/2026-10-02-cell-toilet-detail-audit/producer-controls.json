@@ -1,0 +1,49 @@
+{
+  "controls": [
+    {
+      "control": "omit-physical-valve-wheel",
+      "exitCode": 1,
+      "error": "ValueError: Dedicated Cell toilet loaded authored mesh set changed"
+    },
+    {
+      "control": "move-physical-hinge",
+      "exitCode": 1,
+      "error": "ValueError: Dedicated Cell toilet evaluated mesh geometry changed"
+    },
+    {
+      "control": "change-retained-material",
+      "exitCode": 1,
+      "error": "ValueError: Original eight toilet material graph bytes changed"
+    },
+    {
+      "control": "wrong-loaded-X-scale",
+      "exitCode": 1,
+      "error": "ValueError: Dedicated loaded Cell toilet geometry or min-corner transform changed"
+    },
+    {
+      "control": "wrong-camera-span",
+      "exitCode": 1,
+      "error": "ValueError: Dedicated Cell toilet actual camera pitch differs from64ppt"
+    },
+    {
+      "control": "wrong-camera-vector",
+      "exitCode": 1,
+      "error": "ValueError: Dedicated Cell toilet camera ground basis differs from world projection"
+    },
+    {
+      "control": "wrong-measured-target",
+      "exitCode": 1,
+      "error": "ValueError: Dedicated Cell toilet target differs from measured height"
+    },
+    {
+      "control": "wrong-runtime-descriptor",
+      "exitCode": 1,
+      "error": "ValueError: Dedicated toilet exporter targets the wrong runtime descriptor"
+    }
+  ],
+  "exactRestoredNativeVerifyExitCode": 0,
+  "sourceBytesUnchanged": true,
+  "wrapperSha256": "54e0d89e69d33a373b6c39b498467044f965f6c765629384f63bca314370936d",
+  "preparedSourceSha256": "4ced3356c2f2d17d08e4ce3f9b58e4d63d8500be7927da66a982d7752e513d6d",
+  "originalSourceSha256": "57db9afb7e48996cef9aaedda72b8e874e865eb56862ee4add8b177a9713887d"
+}
