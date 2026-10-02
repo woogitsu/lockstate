@@ -1,3 +1,4 @@
+import {boundedRendererView, type RendererCameraView} from '../camera/renderer-view-memory';
 import Phaser from 'phaser';
 import type { MinimapView } from '../../shared/minimap-view';
 import type { KeyValueStore } from '../../shared/key-value-store';
@@ -356,6 +357,16 @@ export class WorldScene extends Phaser.Scene {
   /** Connects the HUD after it mounts; neither side sends a simulation command. */
   public setMinimapSink(sink: (view: MinimapView | undefined) => void): void {
     this.minimapSink = sink;
+  }
+
+  public captureCameraView(): RendererCameraView {
+    const camera = this.cameras.main;
+    return {centre:camera.getWorldPoint(camera.x+camera.width/2,camera.y+camera.height/2),zoom:camera.zoom};
+  }
+
+  public restoreCameraView(view: RendererCameraView): void {
+    const bounded = boundedRendererView(view);
+    this.cameras.main.setZoom(bounded.zoom).centerOn(bounded.centre.x,bounded.centre.y);
   }
 
   public constructor(options: WorldSceneOptions) {
