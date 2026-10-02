@@ -51,6 +51,17 @@ unchanged drift assertion. The same assertion is skipped on an unhydrated LFS
 pointer in the main-based checkout. This was handed to the art owner; the
 expectation was not changed. Asset validators passing do not resolve that drift.
 
+**The canteen mismatch is now resolved in this dependency.** The art owner
+identified the already accepted root correction `ea387a2e94`: production still
+calibrated the old floor while the catalog registered the newer tile. That
+correction was extracted here, retaining the unchanged drift assertion and the
+original calibration evidence. Both tint suites passed, 23 tests. Replacing
+the production mean with the old values made the real-PNG case fail (one failed,
+17 passed). Exact byte restoration, SHA256
+`B5B3324C9317CAA172D30CC1C4B89835572BD094A01BD51FF193980C39B0B26E`,
+returned both suites to 23 passing tests. The full native Windows tally above
+records the earlier run; no later full-suite pass is claimed.
+
 No browser was launched during this refresh. The earlier cancelled #1898 browser
 run is not acceptance evidence. Terminal required checks on the final published
 head, including browser, and the coordinator's serial main CI must be green
