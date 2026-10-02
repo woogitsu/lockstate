@@ -31,7 +31,9 @@ test(`Full HD ${scale * 100}% View native popup relinquishes world-held ${code} 
   await expect(ghost.locator('polygon')).toHaveCount(112);
   await expect(ghost).toHaveAttribute('data-ready', 'clear');
   const view = page.getByRole('combobox', { name: 'View', exact: true });
-  const clip = { x: 132, y: 140, width: 240, height: 240 };
+  // The 200% rail/header covers the 100% clip. Sample exposed world pixels
+  // at the actual scale rather than accepting a stationary HUD rectangle.
+  const clip = scale === 1 ? { x: 132, y: 140, width: 240, height: 240 } : { x: 650, y: 240, width: 160, height: 160 };
   await worldButton.focus();
   const settled = await page.screenshot({ clip });
   await page.waitForTimeout(300);
