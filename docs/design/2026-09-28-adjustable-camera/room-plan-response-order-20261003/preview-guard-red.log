@@ -1,0 +1,312 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-room-plan-preview-response-audit-20261003
+
+ ❯ tests/unit/ui-room-plan-preview-response-order.test.ts (76 tests | 32 failed) 263ms
+   × world unchanged renderer / rotation / latest refused / old last keeps current geometry, quote and command 12ms
+   × world unchanged renderer / rotation / latest refused / old first keeps current geometry, quote and command 2ms
+   × world unchanged renderer / rotation / latest clear / old last keeps current geometry, quote and command 4ms
+   × world unchanged renderer / rotation / latest clear / old first keeps current geometry, quote and command 2ms
+   × world unchanged renderer / mirror / latest refused / old last keeps current geometry, quote and command 4ms
+   × world unchanged renderer / mirror / latest refused / old first keeps current geometry, quote and command 2ms
+   × world unchanged renderer / mirror / latest clear / old last keeps current geometry, quote and command 4ms
+   × world unchanged renderer / mirror / latest clear / old first keeps current geometry, quote and command 2ms
+   × world unchanged renderer / origin / latest refused / old last keeps current geometry, quote and command 6ms
+   × world unchanged renderer / origin / latest refused / old first keeps current geometry, quote and command 3ms
+   × world unchanged renderer / origin / latest clear / old last keeps current geometry, quote and command 3ms
+   × world unchanged renderer / origin / latest clear / old first keeps current geometry, quote and command 2ms
+   × world unchanged renderer / card / latest refused / old last keeps current geometry, quote and command 8ms
+   × world unchanged renderer / card / latest refused / old first keeps current geometry, quote and command 4ms
+   × world unchanged renderer / card / latest clear / old last keeps current geometry, quote and command 8ms
+   × world unchanged renderer / card / latest clear / old first keeps current geometry, quote and command 3ms
+   × oblique unchanged renderer / rotation / latest refused / old last keeps current geometry, quote and command 4ms
+   × oblique unchanged renderer / rotation / latest refused / old first keeps current geometry, quote and command 3ms
+   × oblique unchanged renderer / rotation / latest clear / old last keeps current geometry, quote and command 4ms
+   × oblique unchanged renderer / rotation / latest clear / old first keeps current geometry, quote and command 3ms
+   × oblique unchanged renderer / mirror / latest refused / old last keeps current geometry, quote and command 6ms
+   × oblique unchanged renderer / mirror / latest refused / old first keeps current geometry, quote and command 4ms
+   × oblique unchanged renderer / mirror / latest clear / old last keeps current geometry, quote and command 5ms
+   × oblique unchanged renderer / mirror / latest clear / old first keeps current geometry, quote and command 4ms
+   × oblique unchanged renderer / origin / latest refused / old last keeps current geometry, quote and command 3ms
+   × oblique unchanged renderer / origin / latest refused / old first keeps current geometry, quote and command 3ms
+   × oblique unchanged renderer / origin / latest clear / old last keeps current geometry, quote and command 4ms
+   × oblique unchanged renderer / origin / latest clear / old first keeps current geometry, quote and command 3ms
+   × oblique unchanged renderer / card / latest refused / old last keeps current geometry, quote and command 10ms
+   × oblique unchanged renderer / card / latest refused / old first keeps current geometry, quote and command 3ms
+   × oblique unchanged renderer / card / latest clear / old last keeps current geometry, quote and command 6ms
+   × oblique unchanged renderer / card / latest clear / old first keeps current geometry, quote and command 4ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 32 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-room-plan-preview-response-order.test.ts > world unchanged renderer / rotation / latest refused / old last keeps current geometry, quote and command
+ FAIL  tests/unit/ui-room-plan-preview-response-order.test.ts > world unchanged renderer / mirror / latest refused / old last keeps current geometry, quote and command
+ FAIL  tests/unit/ui-room-plan-preview-response-order.test.ts > oblique unchanged renderer / rotation / latest refused / old last keeps current geometry, quote and command
+ FAIL  tests/unit/ui-room-plan-preview-response-order.test.ts > oblique unchanged renderer / mirror / latest refused / old last keeps current geometry, quote and command
+AssertionError: expected [ [ [ 'points', …(1) ], …(4) ], …(27) ] to deeply equal [ [ [ 'points', …(1) ], …(4) ], …(27) ]
+
+- Expected
++ Received
+
+@@ -4,19 +4,19 @@
+        "points",
+        "768,384 832,384 832,448 768,448",
+      ],
+      [
+        "fill",
+-       "#e55353",
++       "#36b8ba",
+      ],
+      [
+        "fill-opacity",
+        "0.38",
+      ],
+      [
+        "stroke",
+-       "#e55353",
++       "#36b8ba",
+      ],
+      [
+        "stroke-width",
+        "2",
+      ],
+
+ ❯ tests/unit/ui-room-plan-preview-response-order.test.ts:179:28
+    177|         const latestGeometry = geometry();
+    178|         if (!oldFirst) await releaseOld();
+    179|         expect(geometry()).toEqual(latestGeometry);
+       |                            ^
+    180|         expect(layer.children[1]!.textContent).toBe(`222:${currentClea…
+    181|         if (replacement) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/32]⎯
+
+ FAIL  tests/unit/ui-room-plan-preview-response-order.test.ts > world unchanged renderer / rotation / latest refused / old first keeps current geometry, quote and command
+ FAIL  tests/unit/ui-room-plan-preview-response-order.test.ts > world unchanged renderer / mirror / latest refused / old first keeps current geometry, quote and command
+ FAIL  tests/unit/ui-room-plan-preview-response-order.test.ts > world unchanged renderer / origin / latest refused / old first keeps current geometry, quote and command
+ FAIL  tests/unit/ui-room-plan-preview-response-order.test.ts > world unchanged renderer / card / latest refused / old first keeps current geometry, quote and command
+ FAIL  tests/unit/ui-room-plan-preview-response-order.test.ts > oblique unchanged renderer / rotation / latest refused / old first keeps current geometry, quote and command
+ FAIL  tests/unit/ui-room-plan-preview-response-order.test.ts > oblique unchanged renderer / mirror / latest refused / old first keeps current geometry, quote and command
+ FAIL  tests/unit/ui-room-plan-preview-response-order.test.ts > oblique unchanged renderer / origin / latest refused / old first keeps current geometry, quote and command
+ FAIL  tests/unit/ui-room-plan-preview-response-order.test.ts > oblique unchanged renderer / card / latest refused / old first keeps current geometry, quote and command
+AssertionError: expected 'clear' to be 'checking' // Object.is equality
+
+Expected: "checking"
+Received: "clear"
+
+ ❯ tests/unit/ui-room-plan-preview-response-order.test.ts:171:73
+    169|           quotes[0]!.resolve({ orderCount: 28, materials: [], catalogu…
+    170|         };
+    171|         if (oldFirst) { await releaseOld(); expect(layer.dataset.ready…
+       |                                                                         ^
+    172|         queries[1]!.reply.resolve(currentClear ? { ok: true } : { ok: …
+    173|         quotes[1]!.resolve({ orderCount: plan.width * plan.height, mat…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/32]⎯
+
+ FAIL  tests/unit/ui-room-plan-preview-response-order.test.ts > world unchanged renderer / rotation / latest clear / old last keeps current geometry, quote and command
+ FAIL  tests/unit/ui-room-plan-preview-response-order.test.ts > world unchanged renderer / mirror / latest clear / old last keeps current geometry, quote and command
+ FAIL  tests/unit/ui-room-plan-preview-response-order.test.ts > oblique unchanged renderer / rotation / latest clear / old last keeps current geometry, quote and command
+ FAIL  tests/unit/ui-room-plan-preview-response-order.test.ts > oblique unchanged renderer / mirror / latest clear / old last keeps current geometry, quote and command
+AssertionError: expected [ [ [ 'points', …(1) ], …(4) ], …(27) ] to deeply equal [ [ [ 'points', …(1) ], …(4) ], …(27) ]
+
+- Expected
++ Received
+
+@@ -4,19 +4,19 @@
+        "points",
+        "768,384 832,384 832,448 768,448",
+      ],
+      [
+        "fill",
+-       "#36b8ba",
++       "#e55353",
+      ],
+      [
+        "fill-opacity",
+        "0.38",
+      ],
+      [
+        "stroke",
+-       "#36b8ba",
++       "#e55353",
+      ],
+      [
+        "stroke-width",
+        "2",
+      ],
+
+ ❯ tests/unit/ui-room-plan-preview-response-order.test.ts:179:28
+    177|         const latestGeometry = geometry();
+    178|         if (!oldFirst) await releaseOld();
+    179|         expect(geometry()).toEqual(latestGeometry);
+       |                            ^
+    180|         expect(layer.children[1]!.textContent).toBe(`222:${currentClea…
+    181|         if (replacement) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/32]⎯
+
+ FAIL  tests/unit/ui-room-plan-preview-response-order.test.ts > world unchanged renderer / rotation / latest clear / old first keeps current geometry, quote and command
+ FAIL  tests/unit/ui-room-plan-preview-response-order.test.ts > world unchanged renderer / mirror / latest clear / old first keeps current geometry, quote and command
+ FAIL  tests/unit/ui-room-plan-preview-response-order.test.ts > world unchanged renderer / origin / latest clear / old first keeps current geometry, quote and command
+ FAIL  tests/unit/ui-room-plan-preview-response-order.test.ts > world unchanged renderer / card / latest clear / old first keeps current geometry, quote and command
+ FAIL  tests/unit/ui-room-plan-preview-response-order.test.ts > oblique unchanged renderer / rotation / latest clear / old first keeps current geometry, quote and command
+ FAIL  tests/unit/ui-room-plan-preview-response-order.test.ts > oblique unchanged renderer / mirror / latest clear / old first keeps current geometry, quote and command
+ FAIL  tests/unit/ui-room-plan-preview-response-order.test.ts > oblique unchanged renderer / origin / latest clear / old first keeps current geometry, quote and command
+ FAIL  tests/unit/ui-room-plan-preview-response-order.test.ts > oblique unchanged renderer / card / latest clear / old first keeps current geometry, quote and command
+AssertionError: expected 'blocked' to be 'checking' // Object.is equality
+
+Expected: "checking"
+Received: "blocked"
+
+ ❯ tests/unit/ui-room-plan-preview-response-order.test.ts:171:73
+    169|           quotes[0]!.resolve({ orderCount: 28, materials: [], catalogu…
+    170|         };
+    171|         if (oldFirst) { await releaseOld(); expect(layer.dataset.ready…
+       |                                                                         ^
+    172|         queries[1]!.reply.resolve(currentClear ? { ok: true } : { ok: …
+    173|         quotes[1]!.resolve({ orderCount: plan.width * plan.height, mat…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/32]⎯
+
+ FAIL  tests/unit/ui-room-plan-preview-response-order.test.ts > world unchanged renderer / origin / latest refused / old last keeps current geometry, quote and command
+ FAIL  tests/unit/ui-room-plan-preview-response-order.test.ts > oblique unchanged renderer / origin / latest refused / old last keeps current geometry, quote and command
+AssertionError: expected [ [ [ 'points', …(1) ], …(4) ], …(27) ] to deeply equal [ [ [ 'points', …(1) ], …(4) ], …(27) ]
+
+- Expected
++ Received
+
+@@ -4,19 +4,19 @@
+        "points",
+        "832,384 896,384 896,448 832,448",
+      ],
+      [
+        "fill",
+-       "#e55353",
++       "#36b8ba",
+      ],
+      [
+        "fill-opacity",
+        "0.38",
+      ],
+      [
+        "stroke",
+-       "#e55353",
++       "#36b8ba",
+      ],
+      [
+        "stroke-width",
+        "2",
+      ],
+
+ ❯ tests/unit/ui-room-plan-preview-response-order.test.ts:179:28
+    177|         const latestGeometry = geometry();
+    178|         if (!oldFirst) await releaseOld();
+    179|         expect(geometry()).toEqual(latestGeometry);
+       |                            ^
+    180|         expect(layer.children[1]!.textContent).toBe(`222:${currentClea…
+    181|         if (replacement) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/32]⎯
+
+ FAIL  tests/unit/ui-room-plan-preview-response-order.test.ts > world unchanged renderer / origin / latest clear / old last keeps current geometry, quote and command
+ FAIL  tests/unit/ui-room-plan-preview-response-order.test.ts > oblique unchanged renderer / origin / latest clear / old last keeps current geometry, quote and command
+AssertionError: expected '111:blocked' to be '222:clear' // Object.is equality
+
+Expected: "222:clear"
+Received: "111:blocked"
+
+ ❯ tests/unit/ui-room-plan-preview-response-order.test.ts:180:48
+    178|         if (!oldFirst) await releaseOld();
+    179|         expect(geometry()).toEqual(latestGeometry);
+    180|         expect(layer.children[1]!.textContent).toBe(`222:${currentClea…
+       |                                                ^
+    181|         if (replacement) {
+    182|           expect(JSON.stringify({ label: oldLayer.children[1]!.textCon…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/32]⎯
+
+ FAIL  tests/unit/ui-room-plan-preview-response-order.test.ts > world unchanged renderer / card / latest refused / old last keeps current geometry, quote and command
+ FAIL  tests/unit/ui-room-plan-preview-response-order.test.ts > oblique unchanged renderer / card / latest refused / old last keeps current geometry, quote and command
+AssertionError: expected [ [ [ 'points', …(1) ], …(4) ], …(63) ] to deeply equal [ [ [ 'points', …(1) ], …(4) ], …(63) ]
+
+- Expected
++ Received
+
+@@ -4,19 +4,19 @@
+        "points",
+        "768,384 832,384 832,448 768,448",
+      ],
+      [
+        "fill",
+-       "#e55353",
++       "#529ddd",
+      ],
+      [
+        "fill-opacity",
+        "0.38",
+      ],
+      [
+        "stroke",
+-       "#e55353",
++       "#529ddd",
+      ],
+      [
+        "stroke-width",
+        "2",
+      ],
+
+ ❯ tests/unit/ui-room-plan-preview-response-order.test.ts:179:28
+    177|         const latestGeometry = geometry();
+    178|         if (!oldFirst) await releaseOld();
+    179|         expect(geometry()).toEqual(latestGeometry);
+       |                            ^
+    180|         expect(layer.children[1]!.textContent).toBe(`222:${currentClea…
+    181|         if (replacement) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/32]⎯
+
+ FAIL  tests/unit/ui-room-plan-preview-response-order.test.ts > world unchanged renderer / card / latest clear / old last keeps current geometry, quote and command
+ FAIL  tests/unit/ui-room-plan-preview-response-order.test.ts > oblique unchanged renderer / card / latest clear / old last keeps current geometry, quote and command
+AssertionError: expected [ [ [ 'points', …(1) ], …(4) ], …(63) ] to deeply equal [ [ [ 'points', …(1) ], …(4) ], …(63) ]
+
+- Expected
++ Received
+
+@@ -4,19 +4,19 @@
+        "points",
+        "768,384 832,384 832,448 768,448",
+      ],
+      [
+        "fill",
+-       "#529ddd",
++       "#e55353",
+      ],
+      [
+        "fill-opacity",
+        "0.38",
+      ],
+      [
+        "stroke",
+-       "#529ddd",
++       "#e55353",
+      ],
+      [
+        "stroke-width",
+        "2",
+      ],
+
+ ❯ tests/unit/ui-room-plan-preview-response-order.test.ts:179:28
+    177|         const latestGeometry = geometry();
+    178|         if (!oldFirst) await releaseOld();
+    179|         expect(geometry()).toEqual(latestGeometry);
+       |                            ^
+    180|         expect(layer.children[1]!.textContent).toBe(`222:${currentClea…
+    181|         if (replacement) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/32]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  32 failed | 44 passed (76)
+   Start at  01:53:29
+   Duration  494ms (transform 56ms, setup 0ms, import 110ms, tests 263ms, environment 0ms)
+

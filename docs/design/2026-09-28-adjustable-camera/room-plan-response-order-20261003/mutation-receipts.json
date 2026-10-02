@@ -1,0 +1,20 @@
+[
+  {
+    "mutation": "preview-guard",
+    "path": "src\\ui\\room-template-world-bridge.ts",
+    "uniqueMatches": 1,
+    "original": "if (disposed || current !== requestRevision || selected !== tool.revision || !tool.isArmed()) return;",
+    "replacement": "if (!tool.isArmed()) return;",
+    "restoredSha256": "814fa06ae54dd6476c2d73bd341a0e761608ecc7e5731dedeee5ea7035ad280b",
+    "byteExact": true
+  },
+  {
+    "mutation": "purchase-guard",
+    "path": "src\\ui\\room-template-tool.ts",
+    "uniqueMatches": 1,
+    "original": "if (revision !== this.selectionRevision) return { ok: false, reason: 'busy' };",
+    "replacement": "if (false) return { ok: false, reason: 'busy' };",
+    "restoredSha256": "47b3bee39a28ec0259e15ac4b2543763847b9d3b5a92ac3da3a3c36ad3b0299f",
+    "byteExact": true
+  }
+]

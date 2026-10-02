@@ -18,6 +18,65 @@ class ElementStub extends EventTarget {
   replaceChildren(...children: ElementStub[]) { this.children = children; }
   getBoundingClientRect() { return { x: 0, y: 0, width: this.width, height: this.height }; }
 }
+
+for (const initial of ['world', 'oblique'] as const) for (const edit of ['unchanged', 'rotation', 'mirror'] as const) for (const accepted of [false, true]) {
+  it(`${initial}: delayed purchase ${accepted ? 'accepted' : 'refused'} after replacement and ${edit} preserves the selected tool`, async () => {
+    vi.stubGlobal('window', new EventTarget());
+    const nodes: ElementStub[] = [];
+    const make = () => { const node = new ElementStub(); nodes.push(node); return node; };
+    vi.stubGlobal('document', { createElement: make, createElementNS: make });
+    let frames: Array<() => void> = [];
+    vi.stubGlobal('requestAnimationFrame', (callback: () => void) => { frames.push(callback); });
+    const frame = () => { const batch = frames; frames = []; for (const callback of batch) callback(); };
+    const canvas = new ElementStub();
+    const delayed = deferred<RoomTemplatePreflight>();
+    let queryCount = 0;
+    const submit = vi.fn();
+    const actualPlace = new Function('commandSender', `return async request => ${submissions[0]![1]};`)({ submit }) as (request: RoomTemplatePlacementRequest) => Promise<void>;
+    const tool = new RoomTemplateTool({
+      preflight: () => ++queryCount === 2 ? delayed.promise : Promise.resolve({ ok: true }),
+      quote: async () => ({ orderCount: 28, materials: [], catalogueCostMinorUnits: 222 }), place: actualPlace,
+    });
+    tool.arm();
+    let dispose = () => {};
+    const install = () => { dispose = installRoomTemplateWorldBridge(canvas as unknown as HTMLCanvasElement, tool, {
+      tileSize: 64, pick: p => ({ x: Math.floor(p.x / 64), y: Math.floor(p.y / 64) }), project: p => p,
+      objectFootprint: () => undefined, label: (quote, verdict) => `${quote?.catalogueCostMinorUnits ?? 'pending'}:${verdict === undefined ? 'checking' : verdict.ok ? 'clear' : 'blocked'}`,
+    }); };
+    install();
+    pointer(canvas, 'pointerdown', 800); pointer(canvas, 'pointerup', 800);
+    expect(queryCount).toBe(2); expect(submit).not.toHaveBeenCalled();
+    if (edit === 'rotation') tool.select('cell-basic', false, 1);
+    if (edit === 'mirror') tool.select('cell-basic', true);
+    const scene = initial === 'world' ? new SceneStub() : new ObliqueStub();
+    const ports = new Function('initialScene', 'withdrawPlanGhost', 'reinstallPlanGhost', 'ObliqueWorldScene', 'phaserGame', 'rendererHudChanged',
+      `let worldScene = initialScene; let logicalViewCentre; let productionSceneSelection; const rendererViewMemory = new Map(); return { deactivate: scene => ${deactivations[0]![1]}, changed: selection => ${changes[0]![1]} };`)(
+        scene, () => dispose(), install, ObliqueStub, { scene: { stop: vi.fn(), remove: vi.fn() } }, vi.fn()) as {
+          deactivate(scene: SceneStub): void; changed(selection: { mode: 'world' | 'oblique'; scene: SceneStub }): void;
+        };
+    const controller = new LiveRendererSelection({ mode: initial, scene }, {
+      ...ports, prepare: async mode => mode === 'world' ? new SceneStub() : new ObliqueStub(), activate: async () => {}, unavailable: vi.fn(),
+    });
+    try {
+      await controller.select(initial === 'world' ? 'oblique' : 'world');
+      pointer(canvas, 'pointermove', 800); await settle(); frame(); await settle(); frame();
+      const layer = nodes.filter(n => Reflect.get(n, 'className') === 'room-template-world-ghost').at(-1)!;
+      expect(layer.children[1]!.textContent).toBe('222:clear');
+      const geometry = JSON.stringify(layer.children[0]!.children.map(n => [...n.attributes]));
+      delayed.resolve(accepted ? { ok: true } : { ok: false, reason: 'structure-occupied', tile: { x: 12, y: 6 } });
+      await settle(); frame();
+      expect(submit).toHaveBeenCalledTimes(accepted && edit === 'unchanged' ? 1 : 0);
+      if (accepted && edit === 'unchanged') { expect(submit).toHaveBeenCalledWith({ type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 12, y: 6 } }); expect(tool.isArmed()).toBe(false); }
+      else {
+        expect(tool.isArmed()).toBe(true); expect(layer.children[1]!.textContent).toBe('222:clear');
+        expect(JSON.stringify(layer.children[0]!.children.map(n => [...n.attributes]))).toBe(geometry);
+        pointer(canvas, 'pointerdown', 800); pointer(canvas, 'pointerup', 800); await settle(); frame();
+        expect(submit).toHaveBeenCalledExactlyOnceWith({ type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 12, y: 6 }, ...(edit === 'rotation' ? { quarterTurns: 1 } : {}), ...(edit === 'mirror' ? { mirrorX: true } : {}) });
+        expect(tool.isArmed()).toBe(false);
+      }
+    } finally { dispose(); }
+  });
+}
 class SceneStub {
   sys = { isActive: () => true, settings: { key: 'WorldScene' } };
   captureCameraView() { return { centre: { x: 1024, y: 1024 }, zoom: 1 }; }
@@ -38,8 +97,8 @@ function pointer(canvas: ElementStub, kind: string, x: number) {
 afterEach(() => vi.unstubAllGlobals());
 
 for (const initial of ['world', 'oblique'] as const) for (const edit of ['rotation', 'mirror', 'origin', 'card'] as const) {
-  for (const currentClear of [false, true]) for (const oldFirst of [false, true]) {
-    it(`${initial} replacement / ${edit} / latest ${currentClear ? 'clear' : 'refused'} / old ${oldFirst ? 'first' : 'last'} keeps current geometry, quote and command`, async () => {
+  for (const currentClear of [false, true]) for (const oldFirst of [false, true]) for (const replacement of [false, true]) {
+    it(`${initial} ${replacement ? 'replacement' : 'unchanged renderer'} / ${edit} / latest ${currentClear ? 'clear' : 'refused'} / old ${oldFirst ? 'first' : 'last'} keeps current geometry, quote and command`, async () => {
       vi.stubGlobal('window', new EventTarget());
             // Capture by class after install instead of predicting document allocation order.
       const nodes: ElementStub[] = [];
@@ -86,17 +145,23 @@ for (const initial of ['world', 'oblique'] as const) for (const edit of ['rotati
         ...ports, prepare: async mode => mode === 'world' ? new SceneStub() : new ObliqueStub(), activate: async () => {}, unavailable: vi.fn(),
       });
       try {
-        await controller.select(initial === 'world' ? 'oblique' : 'world');
+        if (replacement) await controller.select(initial === 'world' ? 'oblique' : 'world');
         const x = edit === 'origin' ? 864 : 800;
         pointer(canvas, 'pointermove', x); frame();
         expect(queries).toHaveLength(2); expect(quotes).toHaveLength(2);
-        const layer = nodes.find(n => Reflect.get(n, 'className') === 'room-template-world-ghost' && n !== oldLayer)!;
+        const layer = replacement ? nodes.find(n => Reflect.get(n, 'className') === 'room-template-world-ghost' && n !== oldLayer)! : oldLayer;
         const current = queries[1]!.request;
         expect(current).toEqual({ templateId: edit === 'card' ? 'yard-basic' : 'cell-basic', origin: { x: edit === 'origin' ? 13 : 12, y: 6 }, ...(edit === 'rotation' ? { quarterTurns: 1 } : {}), ...(edit === 'mirror' ? { mirrorX: true } : {}) });
         const plan = tool.planAt(current.origin);
         const geometry = () => layer.children[0]!.children.map(polygon => [...polygon.attributes]);
         const chosenGeometry = geometry();
-        expect(chosenGeometry).toHaveLength(plan.width * plan.height);
+        const expectedWidth = edit === 'card' ? 8 : edit === 'rotation' ? 7 : 4;
+        const expectedHeight = edit === 'card' ? 8 : edit === 'rotation' ? 4 : 7;
+        expect(chosenGeometry).toHaveLength(expectedWidth * expectedHeight);
+        expect(layer.children[0]!.children.map(polygon => polygon.attributes.get('points'))).toEqual(Array.from({ length: expectedWidth * expectedHeight }, (_, index) => {
+          const tx = current.origin.x + index % expectedWidth, ty = current.origin.y + Math.floor(index / expectedWidth);
+          return [[tx,ty],[tx+1,ty],[tx+1,ty+1],[tx,ty+1]].map(([px,py]) => `${px! * 64},${py! * 64}`).join(' ');
+        }));
         expect(layer.dataset.ready).toBe('checking'); expect(layer.children[1]!.textContent).toBe('pending:checking');
         expect(submit).not.toHaveBeenCalled();
         const releaseOld = async () => {
@@ -113,8 +178,10 @@ for (const initial of ['world', 'oblique'] as const) for (const edit of ['rotati
         if (!oldFirst) await releaseOld();
         expect(geometry()).toEqual(latestGeometry);
         expect(layer.children[1]!.textContent).toBe(`222:${currentClear ? 'clear' : 'blocked'}`);
-        expect(JSON.stringify({ label: oldLayer.children[1]!.textContent, ready: oldLayer.dataset.ready, polygons: oldLayer.children[0]!.children.map(n => [...n.attributes]) })).toBe(oldSnapshot);
-        expect(oldLayer.remove).toHaveBeenCalledOnce();
+        if (replacement) {
+          expect(JSON.stringify({ label: oldLayer.children[1]!.textContent, ready: oldLayer.dataset.ready, polygons: oldLayer.children[0]!.children.map(n => [...n.attributes]) })).toBe(oldSnapshot);
+          expect(oldLayer.remove).toHaveBeenCalledOnce();
+        } else expect(oldLayer.remove).not.toHaveBeenCalled();
         holding = false;
         pointer(canvas, 'pointerdown', x); pointer(canvas, 'pointerup', x); await settle(); frame();
         if (currentClear) { expect(submit).toHaveBeenCalledExactlyOnceWith({ type: 'PlaceRoomTemplate', ...current }); expect(tool.isArmed()).toBe(false); }

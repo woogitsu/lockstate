@@ -1,0 +1,27 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-room-plan-preview-response-audit-20261003
+
+ ❯ tests/unit/ui-room-plan-preview-response-order.test.ts (76 tests | 4 failed) 245ms
+   × world: delayed purchase accepted after replacement and rotation preserves the selected tool 2ms
+   × world: delayed purchase accepted after replacement and mirror preserves the selected tool 1ms
+   × oblique: delayed purchase accepted after replacement and rotation preserves the selected tool 1ms
+   × oblique: delayed purchase accepted after replacement and mirror preserves the selected tool 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-room-plan-preview-response-order.test.ts > world: delayed purchase accepted after replacement and rotation preserves the selected tool
+ FAIL  tests/unit/ui-room-plan-preview-response-order.test.ts > world: delayed purchase accepted after replacement and mirror preserves the selected tool
+ FAIL  tests/unit/ui-room-plan-preview-response-order.test.ts > oblique: delayed purchase accepted after replacement and rotation preserves the selected tool
+ FAIL  tests/unit/ui-room-plan-preview-response-order.test.ts > oblique: delayed purchase accepted after replacement and mirror preserves the selected tool
+AssertionError: expected "vi.fn()" to be called +0 times, but got 1 times
+ ❯ tests/unit/ui-room-plan-preview-response-order.test.ts:68:22
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 72 passed (76)
+   Start at  01:53:31
+   Duration  473ms (transform 56ms, setup 0ms, import 110ms, tests 245ms, environment 0ms)
+
