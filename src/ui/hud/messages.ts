@@ -629,6 +629,7 @@ export const HUD_MESSAGE_KEY = {
    * the simulation's to know and the ghost's to draw.
    */
   buildTargetTile: 'hud.build.target-tile',
+  buildObjectFootprint: 'hud.build.object-footprint',
   buildCoordinates: 'hud.build.coordinates',
   buildCoordinatesHint: 'hud.build.coordinates-hint',
   /*

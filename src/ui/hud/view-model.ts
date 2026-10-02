@@ -840,6 +840,8 @@ export interface HudBuildableViewModel {
    * buildable in the registry is one today.
    */
   readonly placesObject: boolean;
+  /** Occupied tile dimensions supplied by the same content lookup as the world tool. */
+  readonly objectFootprint?: { readonly width: number; readonly height: number };
   /**
    * Which group of the catalogue this row belongs to
    * ([ADR 0035](../../../docs/adr/0035-buildable-catalogue-category-filter.md)).
