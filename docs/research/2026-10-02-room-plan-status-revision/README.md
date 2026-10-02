@@ -17,6 +17,24 @@ cases across dialog-status, tool, roving and UI orchestration suites. Removing
 both production revision guards makes the same 3 cases fail again; restoring
 the source returns all 25 cases to green. TypeScript passes.
 
-A Full HD angled production-artifact test with a delayed actual worker query is
-committed, but has not run at this checkpoint. The single browser lease is held
-by another agent. No browser result is claimed here.
+## Actual worker and production artifact proof
+
+The committed case ran in the real Full HD angled app. It delays only the next
+room-template preflight request at the actual Worker.postMessage boundary,
+selects Yard with Enter, waits for the replacement worker quote/clear verdict,
+then releases the original request. It waits for the correlated real worker
+reply and the resulting promise chain before inspecting the dialog again.
+
+Disabling both guards and rebuilding the production artifact gives one red case
+in 14.6 s: the selected Yard reports the obsolete blocked result. Restoring the
+source and rebuilding gives one green case in 4.3 s (7.1 s suite). The case
+checks selected-card focus, current catalogue value zero, clear availability,
+enabled numeric submit and no PlaceRoomTemplate command from the cancelled old
+selection. The screenshot was opened: selection and current quote are visible;
+the status is below the fold because the advanced coordinates are expanded,
+so its content is proved by the real DOM assertion rather than this image.
+
+The exclusive browser lease was returned to the parent after terminal exit0.
+The temporary suite configuration was removed after the completed run.
+
+![Actual selected Yard and current quote after the delayed worker reply](actual-worker-current-status.png)
