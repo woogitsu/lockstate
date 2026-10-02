@@ -58,10 +58,10 @@ async function deskPalettePixels(page: Page, png: Buffer, quarterTurns: 0 | 1): 
     // counts and thresholds require built-client calibration before acceptance.
     // The document's teal and desktop's oak must survive independently.
     const rects = quarterTurns === 0
-      ? [[800, 350, 240, 150], [800, 350, 240, 150]]
+      ? [[815, 450, 25, 35], [780, 420, 35, 32]]
       : [[940, 380, 130, 160], [940, 380, 130, 160]];
     const colours = quarterTurns === 0
-      ? [[143, 116, 87], [91, 148, 149]]
+      ? [[143, 116, 86], [91, 148, 149]]
       : [[143, 116, 86], [91, 148, 149]];
     return rects.map((rect, regionIndex) => {
       const colour = colours[regionIndex]!;
