@@ -87,3 +87,33 @@ persistence evidence. The scope is the confirmed four-cell row defect; it
 does not establish runtime route acceptance for the other nineteen templates
 or native browser presentation. No browser, workflow edit, CI polling or
 merge was performed.
+
+## Superseding integration correction: template ownership
+
+The combined integration suite exposed an overbroad inference in the original
+checkpoint above. Standing door geometry and room zoning also describe ordinary
+player-built rooms. Protecting all such approaches refused legitimate fixtures
+and walls in the shower fairness, staff coverage, mid-walk wall, and Yard/Common
+Room scenarios. The four unchanged suites reproduced ten failures and ten legal
+passes when the generic standing-door inference was deliberately restored.
+
+The integrated reader now additionally requires the completed authored template
+door construction order at the same stored coordinate and edge. Its stable
+room-template door identifier and buildable door capability establish ownership;
+standing geometry still establishes whether that entrance exists. Construction
+orders survive compatible saves that omit optional completed-gesture metadata.
+Ordinary hand-built rooms gain no new reservation, and removed doors release it.
+No persistence field, tariff, navigation rule, refusal copy, or test expectation
+was changed.
+
+After exact source restoration (SHA256
+`B1E17E6A48CEA8112D8CB6EAADE8F31F74CAE9C4FDB35049A4A20CCED6004357`),
+the four ordinary suites and both completed-template wall/furniture suites pass
+102 tests in six files. The full local suite then passes 6,886 tests with two
+existing skips, with three remaining failed files: two require the configured
+Git Bash executable on Windows, and one requires fetching an already published
+bench branch cited by its evidence. Setting the existing LOCKSTATE_BASH option
+and fetching that exact published branch, without editing tests or evidence,
+makes those remaining three files pass all 119 tests. These are complementary
+runs on the same restored production source, not a claim of a single all-green
+run or of green remote CI.

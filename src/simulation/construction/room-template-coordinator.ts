@@ -220,7 +220,17 @@ export class RoomTemplateCoordinator implements SystemRegistration {
       y: tileCoordinate(Math.max(y + dy, interiorY)),
     };
     const doorValue = dx === 0 ? this.world.getTopEdge(storedDoor) : this.world.getLeftEdge(storedDoor);
-    return doorValue === DOOR_EDGE_NUMERIC_ID;
+    if (doorValue !== DOOR_EDGE_NUMERIC_ID) return false;
+    // Standing doors and zoning alone also describe ordinary player-built
+    // rooms. Only the completed template door order owns this reservation.
+    // Construction orders survive legacy saves without the optional completed
+    // gesture ledger, so infer ownership from that authoritative producer.
+    const edge = dx === 0 ? 'north' : 'west';
+    return this.construction.allOrders().some((order) =>
+      order.state === 'completed' && /^room-template-\d+-1-door-\d+$/.test(order.id) &&
+      BUILDABLE_REGISTRY.get(order.definitionId)?.placesDoor !== undefined &&
+      order.location.x === storedDoor.x && order.location.y === storedDoor.y &&
+      resolveBuildEdge(order) === edge);
   }
 
   public place(request: PendingRoomTemplate): RoomTemplatePlacement {
