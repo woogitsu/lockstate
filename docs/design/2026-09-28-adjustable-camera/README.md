@@ -804,3 +804,30 @@ partition. Individual rotated object placement is not inferred from this
 native room-template orientation route; classroom overrides remain unchanged.
 Generic wooden rack source alignment is published separately and is now being
 checked through genuine individual placement and removal of rotated room zoning.
+## Legacy transactions, economics and native Category — 2026-10-02
+
+The reproduced older-save occupied Undo gap is now integrated. Recovery remains
+lazy at Undo and requires an exact authored real history/order book and live
+room-purpose zoning. Refused Undo adds no optional metadata; successful recovery
+uses the existing collective relocation and saved Redo path. Missing metadata
+still loads as empty, without a schema or migration change. [Legacy evidence](../../research/2026-10-02-legacy-occupied-template-history.md)
+records37 actual cases,35 recovery-wire mutation failures and two current-save
+controls; nineteen shelled room classes retain real readiness through saved
+Undo/Redo, while shell-free Yard keeps its existing path.
+
+The separate [financial transition audit](../../research/2026-10-02-room-template-economy-transitions.md)
+found no economic defect. Its36 new actual-command tests distinguish full quote
+from staged debit and refundable assigned stock from genuinely started spend.
+Quote omission and refund bypass mutations fail35 and eight cases respectively;
+prices and production economic code are unchanged.
+
+Issue1970's native Category filter now owns option-navigation keys without
+preventing its native selection/default action or unmatched remapped world keys.
+[Native Category evidence](../../research/2026-10-02-native-build-category-keyboard-ownership.md)
+retains the initial world pass/oblique failures, three producer mutation failures
+and exact rebuilt three-case restoration. Its spec joins the existing artifact
+partition. Root confirms232 combined transaction, finance, HUD, chair and
+documentation checks in eleven files, both TypeScript targets and a production
+build after these integrations. Actual integrated browser and exact remote CI
+remain release gates. Three agents continue rack native acceptance, Category
+popup lost-release lifecycle and the next concrete construction Issue.
