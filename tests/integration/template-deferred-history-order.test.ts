@@ -48,4 +48,68 @@ it.each([false, true].flatMap(load => [false, true].flatMap(buyBeforeCompletion 
       expect(runtime.roomTemplates.snapshot().completed).toEqual(before.simulation?.roomTemplates?.completed);
       expect(runtime.construction.allOrders().filter(order => order.id !== 'latest-independent-bed').every(order => order.state === 'completed')).toBe(true);
       expect(runtime.treasury.balanceMinorUnits).toBe(funds);
+      send(runtime, { type: 'Undo' });
+      expect(runtime.placedObjects.getSnapshot()).toEqual([]);
+      expect(runtime.roomTemplates.snapshot().undone).toHaveLength(1);
+      runtime = reload(runtime);
+      send(runtime, { type: 'Redo' });
+      finish(runtime);
+      expect(runtime.placedObjects.getSnapshot()).toHaveLength(2);
+      expect(runtime.construction.getOrder('latest-independent-bed')?.state).toBe('cancelled');
+      send(runtime, { type: 'Redo' });
+      finish(runtime);
+      expect(runtime.placedObjects.getSnapshot()).toHaveLength(3);
+      expect(runtime.construction.getOrder('latest-independent-bed')?.state).toBe('completed');
+      expect(runtime.roomTemplates.snapshot().completed).toHaveLength(1);
     });
+
+it.each([false, true])('deferred work preserves the live newer unrelated action refusal, rotated=%s', rotated => {
+  const runtime = createNewSimulationRuntime(73);
+  send(runtime, { type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 10, y: 10 }, quarterTurns: rotated ? 1 : 0, mirrorX: rotated });
+  send(runtime, { type: 'HireStaff', staffRoleId: 'staff-role.guard', x: 4, y: 4 });
+  expect(runtime.construction.undoWouldReachPastTheLatestAction).toBe(true);
+  finish(runtime);
+  expect(runtime.construction.undoWouldReachPastTheLatestAction).toBe(true);
+  const { kernel: _beforeKernel, ...before } = captureSessionSnapshot(runtime);
+  send(runtime, { type: 'Undo' });
+  const { kernel: _afterKernel, ...after } = captureSessionSnapshot(runtime);
+  const alerts = before.simulation!.alerts!;
+  expect(after).toEqual({
+    ...before,
+    simulation: {
+      ...before.simulation,
+      alerts: {
+        ...alerts, sequence: alerts.sequence + 1,
+        records: [...alerts.records, { sequence: alerts.sequence + 1, tick: runtime.kernel.tick, type: 'construction.undo-refused-newer-action' }],
+      },
+    },
+  });
+});
+
+it.each([false, true])('deferred completion preserves genuine independent Redo, load=%s', load => {
+  let runtime = createNewSimulationRuntime(73);
+  send(runtime, { type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 10, y: 10 } });
+  send(runtime, { type: 'PlaceBuildOrder', orderId: 'independent-to-redo', definitionId: 'bed-wooden', x: 11, y: 8 });
+  send(runtime, { type: 'Undo' });
+  const redo = runtime.construction.snapshot().redoStack;
+  expect(redo).toEqual([['independent-to-redo']]);
+  finish(runtime);
+  expect(runtime.construction.snapshot().redoStack).toEqual(redo);
+  expect(runtime.placedObjects.getSnapshot()).toHaveLength(2);
+  if (load) runtime = reload(runtime);
+  send(runtime, { type: 'Redo' });
+  finish(runtime);
+  expect(runtime.construction.getOrder('independent-to-redo')?.state).toBe('completed');
+  expect(runtime.placedObjects.getSnapshot().some(object => object.sourceOrderId === 'independent-to-redo')).toBe(true);
+});
+
+it('unmatched deferred history creates no newer gesture and preserves the existing Redo', () => {
+  const runtime = createNewSimulationRuntime(73);
+  send(runtime, { type: 'PlaceBuildOrder', orderId: 'existing-redo', definitionId: 'bed-wooden', x: 5, y: 5 });
+  send(runtime, { type: 'Undo' });
+  const history = runtime.construction.snapshot();
+  expect(runtime.construction.hasSomethingToUndo).toBe(false);
+  runtime.construction.registerTransactionOrder('unrecorded-deferred-fixture', 'old-plan', ['unrecorded-shell']);
+  expect(runtime.construction.snapshot()).toEqual(history);
+  expect(runtime.construction.hasSomethingToUndo).toBe(false);
+});

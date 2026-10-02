@@ -118,6 +118,8 @@ export interface PlaceObjectRequest {
   readonly y: number;
   /** Internal authored-plan grouping; ordinary placements retain their own order ID. */
   readonly transactionId?: string;
+  /** Internal deferred-plan history membership; absent on player commands and saves. */
+  readonly historyContinuationOrderIds?: readonly string[];
   /** Authored template facing; ordinary object commands retain absent=0. */
   readonly objectOrientation?: ObjectOrientation;
 }
@@ -319,7 +321,7 @@ export interface ObjectOrderSink {
   getOrder(id: string): BuildOrder | undefined;
   allOrders(): readonly BuildOrder[];
   submitOrder(order: BuildOrder): void;
-  registerTransactionOrder(orderId: string, transactionId?: string): void;
+  registerTransactionOrder(orderId: string, transactionId?: string, historyContinuationOrderIds?: readonly string[]): void;
   /**
    * Cancels an order and gives back what ruling 20 says that order is owed --
    * **money** while the crew has not started it, and nothing once it has
@@ -573,7 +575,11 @@ export class ObjectPlacementService {
      * be a field with no reader. A gesture that placed several objects at once
      * would need one, and decision 5 refuses that gesture.
      */
-    this.orders.registerTransactionOrder(request.orderId, request.transactionId ?? request.orderId);
+    if (request.historyContinuationOrderIds === undefined) {
+      this.orders.registerTransactionOrder(request.orderId, request.transactionId ?? request.orderId);
+    } else {
+      this.orders.registerTransactionOrder(request.orderId, request.transactionId ?? request.orderId, request.historyContinuationOrderIds);
+    }
 
     return { kind: 'ordered', orderId: request.orderId, objectId, anchorTile: anchor, roomInstanceId: room.instanceId };
   }

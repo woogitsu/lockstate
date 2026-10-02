@@ -828,7 +828,18 @@ export class ConstructionSystem implements SystemRegistration {
     this.newerActionThanTheStackTop = false;
   }
 
-  public registerTransactionOrder(orderId: string, transactionId?: string): void {
+  public registerTransactionOrder(orderId: string, transactionId?: string, historyContinuationOrderIds?: readonly string[]): void {
+    // Deferred authored work extends the original paid gesture. It is not a
+    // newer player action: retain the current selection, Redo and refusal flag.
+    // No matching history means there is no gesture here to extend.
+    if (historyContinuationOrderIds !== undefined) {
+      if (historyContinuationOrderIds.length > 0) {
+        const transaction = [this.currentTransaction, ...this.undoStack].find(ids =>
+          historyContinuationOrderIds.every(id => ids.includes(id)));
+        if (transaction !== undefined && !transaction.includes(orderId)) transaction.push(orderId);
+      }
+      return;
+    }
     if (transactionId !== this.currentTransactionId) {
       if (this.currentTransaction.length > 0) {
         this.undoStack.push([...this.currentTransaction]);

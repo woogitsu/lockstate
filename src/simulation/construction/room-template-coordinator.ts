@@ -305,6 +305,7 @@ export class RoomTemplateCoordinator implements SystemRegistration {
           x: order.location.x,
           y: order.location.y,
           transactionId: `room-template-${request.sequence}`,
+          historyContinuationOrderIds: built.shellOrderIds,
           ...(order.objectOrientation === undefined ? {} : { objectOrientation: order.objectOrientation }),
         }, context.tick, request.sequence);
         if (outcome.kind === 'refused') {
