@@ -1,6 +1,6 @@
 # Root Bin and navigation acceptance — 2026-10-03
 
-Built subject: `e9e7890042a741fe4689e7a6edae62559dbed07b`, branch
+Accepted source checkpoint: `e9e7890042a741fe4689e7a6edae62559dbed07b`, branch
 `codex/integrate-bin-drawer-20261003`, [draft PR1987](https://github.com/woogitsu/lockstate/pull/1987).
 This is fresh root integration acceptance, separate from the individual model
 and registered drawer producer mutation receipts already retained upstream.
@@ -20,6 +20,8 @@ unexpected or flaky cases, 127.55 seconds.
 
 The served worker is `worker-DIP7pP3A.js`, SHA256
 `5247173b87c7d7935c4c2b312676b4e35bf2c3a35b8568c83ff9a678c78c21d2`.
+The opened client reports build label `d766477`; the later source checkpoint
+changes tests/documentation only, with no src/public/tooling difference.
 Client `index-DHueGlEa.js`, CSS `index-BtHvjcB7.css`. The actual worker and
 renderer run; no simulation state is replaced.
 
