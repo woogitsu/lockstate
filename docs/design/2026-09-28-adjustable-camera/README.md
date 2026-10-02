@@ -896,3 +896,18 @@ increment, it merged as48da4ac330b43b8e2a8612d8dff160f2d380f05d. Its resulting
 main CI must finish before another merge. Root incorporates the actual merged
 ancestry and automatic0.0.838 release; PR1899 now targetsmain and remains draft
 until its own exact-head release gates finish. No hosted art claim follows.
+
+## Native Category printable selection integration — 2026-10-02
+
+Issue1970's actual native letter-selection extension is integrated. Native
+change, rather than guessed localized prefixes, relinquishes the already held
+camera input through the existing Category keyboard ownership port. Native
+selection/filtering and unmatched remapped world control remain operational.
+[Typeahead evidence](../../research/2026-10-02-native-category-typeahead-camera.md)
+records3 baseline failures,3 actual-change-disconnection failures and exact
+restored8-case Category acceptance with existing limits. The initial three
+5-second documentation timeouts and serial unchanged-gate restoration remain
+recorded, not hidden by increasing budgets. Root confirms109 HUD/documentation
+and complementary browser-routing cases in8files and both TypeScript targets.
+The spec joins the existing artifact partition. Same-option letters, buffered
+localized selection and immediate zoom/Undo are outside this observed scope.
