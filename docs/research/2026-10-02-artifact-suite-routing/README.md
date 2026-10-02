@@ -19,3 +19,7 @@ pnpm test:artifact rotated-security-console-player-build.spec.ts
 ```
 
 The regular `pnpm test:artifact` includes it in the artifact gate. Weakest claim: static ownership proves routing, not browser completion; the actual gate must still finish on the exact release head.
+
+## Infirmary integration — 2026-10-02
+
+The accepted `infirmary-player-build.spec.ts` now joins the same artifact matcher and complementary dev exclusion. Its [actual worker, pixel and Save/Load evidence](../2026-10-02-infirmary-export-alignment/player-acceptance.md) was verified separately. Removing only its dev exclusion produces the expected duplicate-collection failure; byte-exact restoration returns the partition checks green. The combined citation, partition, retry and selection checks pass25/25 and tools TypeScript passes. No new tracked config or assertion/timeout relaxation is introduced.

@@ -39,6 +39,6 @@ Medical integrity tests passed2/2 and tools TypeScript passed. Original bed/cabi
 - loaded PNG SHA256: `eddb1f61b3df6ebda3c8de9df21674c8512d46296c9fcfb8352f36fdd2876613`
 - mutation loaded PNG SHA256: `012df62ede466023d00988186cb9409b138d32162c8b2bcd50b3aa70a05a7f9c`
 
-The scoped test is `tests/browser/infirmary-player-build.spec.ts`. The manual run used an untracked `.local-infirmary.config.ts` extending the existing artifact config and selecting only this spec. No extra tracked artifact configuration is added. The integrated canonical artifact matcher and dev ignore still need this accepted spec added by the coordinator.
+The scoped test is `tests/browser/infirmary-player-build.spec.ts`. The manual run used an untracked `.local-infirmary.config.ts` extending the existing artifact config and selecting only this spec. No extra tracked artifact configuration is added. Integration now includes this accepted spec in the existing artifact matcher and complementary dev ignore. The canonical command is `pnpm test:artifact infirmary-player-build.spec.ts` after the production build.
 
 Current checkpoint: baseline, mutation, exact restore, worker state, Save/Load and opened player images verified locally; browser lease released. No hosted completion claim.

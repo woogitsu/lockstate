@@ -72,4 +72,4 @@ The new medical integrity gate initially failed both old manifests. After export
 node node_modules/vitest/vitest.mjs run tests/unit/oblique-medical-fixture-integrity.test.ts
 ```
 
-Renders were produced with Blender 5.2.1 LTS, build `9e2066aef7ef`. Repeat-byte evidence is from this pinned host toolchain.
+Renders were produced with Blender 5.2.1 LTS, upstream Blender build identifier 9e2066aef7ef (not a Lockstate commit). The host executable SHA256 is `284f4041f98e113f3dc10654a7193ffaaa9bfdfec8b87fa116620a48b5f6d4cb`. Repeat-byte evidence is from this pinned host toolchain.
