@@ -1,6 +1,22 @@
 # Queued actual indoor-bin player route
 
-2026-10-02. **Pending native execution**, not accepted coverage.
+2026-10-03 calibration checkpoint. **Final baseline/consumer control pending**.
+
+The initial q0 route completed the real worker construction and Save/Load,
+but its source-derived provisional crop/RGB returned four zero-count errors;
+q1 was skipped by the serial group. After opening both genuine q0 frames,
+the two disjoint body crops are [853,481,49,75] and [909,430,58,75].
+The partly door-occluded second body has 92 pixels of its most common colour,
+so the guard counts three observed exact body shades (40/84/89,39/83/87,
+40/84/88), giving 865/154 before and after Load without changing >100.
+
+A second native run passed capacity and q0; q1 also completed real construction
+and Save/Load, but its provisional RGB/crops produced four zero-count errors.
+Both q1 frames were opened. Disjoint exposed bodies at [903,435,61,83] and
+[956,476,66,82] contain RGB63/117/122 334/371 times before and after Load.
+Exact anchors were q0 21,6+22,6 orientation0 and q1 22,6+22,7 orientation1.
+Raw provisional failures and frame hashes are retained beside this note.
+These measurements freeze the native oracle; they are not yet final acceptance.
 
 Prepared `tests/browser/default-waste-bin-player-build.spec.ts` reuses the
 accepted three-case Laundry capacity route. One worker,60second case limit,

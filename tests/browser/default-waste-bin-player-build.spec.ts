@@ -53,19 +53,19 @@ async function binPalettePixels(page: Page, png: Buffer, quarterTurns: 0 | 1): P
     const bitmap = await createImageBitmap(new Blob([Uint8Array.from(atob(base64), c => c.charCodeAt(0))], { type: 'image/png' }));
     const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
     const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0);
-    // These disjoint regions and authored source colours are provisional.
-    // No native pixel calibration is claimed until genuine completed scenes
-    // are opened. Camera/reachability/worker guards remain unchanged.
+    // Disjoint body regions calibrated from opened native completed/loaded
+    // q0/q1 frames. Three exact smooth-shaded q0 body colours cover the bin
+    // partly behind the genuine door; the original >100 threshold remains.
     const rects = quarterTurns === 0
-      ? [[845, 370, 100, 140], [945, 390, 100, 140]]
-      : [[950, 360, 90, 120], [850, 430, 90, 120]];
-    const colour = quarterTurns === 0 ? [63, 117, 122] : [40, 84, 89];
+      ? [[853, 481, 49, 75], [909, 430, 58, 75]]
+      : [[903, 435, 61, 83], [956, 476, 66, 82]];
+    const colours = quarterTurns === 0 ? [[40, 84, 89], [39, 83, 87], [40, 84, 88]] : [[63, 117, 122]];
     return rects.map(rect => {
       const pixels = context.getImageData(...rect as [number, number, number, number]).data;
       let count = 0;
       for (let i = 0; i < pixels.length; i += 4) {
         const r = pixels[i]!, g = pixels[i + 1]!, b = pixels[i + 2]!;
-        const matches = r === colour[0] && g === colour[1] && b === colour[2];
+        const matches = colours.some(colour => r === colour[0] && g === colour[1] && b === colour[2]);
         if (matches) count++;
       }
       return count;
