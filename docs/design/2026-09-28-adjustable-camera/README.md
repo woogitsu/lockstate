@@ -1157,3 +1157,23 @@ PR1972 remains a separate stacked candidate. This following delivery is ready
 for a draft PR; hosted delivery still requires repaired complete exact-head CI,
 clean mergeability and serial green main CI. Blender prep-counter acceptance is
 published separately and is not silently added to a frozen release candidate.
+## Dedicated prep-counter integrated player checkpoint — 2026-10-02
+
+The next separate Blender delivery preserves the newer stove and fridge tuples
+and adds the retained 24-mesh prep counter with 54 physical details. Root's
+actual combined Kitchen client at `84ec30455a` passes three native Full HD cases
+in 2.0 minutes: real capacity construction, q0 Kitchen and q1 Kitchen, with all
+three authoritative fixture anchors and exact visible prep detail pixels through
+Save/Load. Both TypeScript targets and the named production build pass.
+[Combined prep record](../../research/2026-10-02-kitchen-prep-counter-angled/README.md)
+retains the actual new loaded screenshots and worker evidence separately from the
+upstream calibration and negative runs. PR1977 stays frozen; this following model
+is on its own published branch rather than repeatedly replacing that CI head.
+
+Owner directly approves the exact #1975 package on 2026-10-02:
+"Tak — identyfikator zlecenia, V8 i bezpieczna odmowa (zalecane)".
+That ownership migration and atomic refusal is now an independent implementation
+scope; this Kitchen client still uses the preceding save format. The three agents
+continue washing-machine authoring, whole-square wall scale/anchor correction,
+and approved ownership persistence. Scoped native acceptance does not mean that
+any of these unpublished-to-production deliveries is already on lockstate.io.

@@ -63,3 +63,27 @@ Both final loaded FullHDs were opened and inspected. Physically authored faucet,
 All owned browser processes are terminal, port5197 has zero listeners and the exclusive lease was explicitly released to the coordinator/HUD. Four initial provisional calibration pixel failures remain distinct from the eight production consumer-negative failures. The ignored manual browser config is removed after the terminal run; no new workflow or CI budget is introduced. Integration must preserve the coordinator's newer fridge tuple and fridge target assertion: this branch changes only prep rows. This evidence verifies the isolated production client; no hosted acceptance claim.
 
 Final restored focused seven-suite gate passes58cases/one optional live-Blender skip; app/tools TypeScript exits0. Own native Blender72camera/four-orientation verification and both full deterministic exports were already executed explicitly above.
+
+## Integrated three-fixture Kitchen acceptance — 2026-10-02
+
+Root merged the prep-counter chain into an isolated branch from published
+`00ad3ed1936f0eacb3ed40d88cc01d8d3ae6c0b2`, preserving both newer dedicated stove
+and fridge rows. The actual prepared client at `84ec30455a` passes all three
+native Full HD cases in 2.0 minutes (43.4 / 37.7 / 37.8 s), one worker and
+original budgets. The real Kitchen completes through the worker, all three
+fixture anchors and orientations remain exact, and normal plus rotated prep
+worktop/tray-detail pixels are unchanged after player Save/Load. Root opened the
+actual loaded image containing all three dedicated Kitchen models; new wall
+scale/anchor correction is a separate delivery and is not present in this image.
+The four root-integrated q0/q1 image/JSON files beside the upstream evidence
+retain the combined result without replacing the original mutation receipts.
+
+Both TypeScript targets and the named production build pass, emitting worker
+`worker-SNrD0muE.js` (435.85 kB), client `index-BEyNlxu2.js` and unchanged
+`index-BtHvjcB7.css`. Eight focused art/index/quotation/source/citation files
+initially returned 34 passes and one citation failure from a stale origin ref;
+freshly fetching the published preceding integration restores the unchanged
+citation gate (eight passes). No test guard was changed. Routing commit
+`4e60082dadb0a8ca4c407fb8dfda60e44b32cbc3` changes only the complementary
+artifact/dev selection and index, not the prepared client. Complete hosted CI,
+preceding dependency merges and deployment remain required separately.
