@@ -1,4 +1,4 @@
-// Queued real Kitchen workers and Save/Load; fridge source-colour candidates await actual native calibration.
+// Queued real Kitchen workers and Save/Load; fridge panel and louvre regions calibrated from actual native pixels.
 import { writeFile } from 'node:fs/promises';
 import { expect, test as base, type Page } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
@@ -53,21 +53,25 @@ async function fridgePalettePixels(page: Page, png: Buffer, quarterTurns: 0 | 1)
     const bitmap = await createImageBitmap(new Blob([Uint8Array.from(atob(base64), c => c.charCodeAt(0))], { type: 'image/png' }));
     const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
     const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0);
-    // Provisional candidates from retained authored materials/current source poses.
-    // These broad rectangles are NOT calibrated native acceptance. Open actual
-    // completed/loaded FullHDs and choose disjoint visible detail regions first.
+    // Calibrated from opened actual worker-built/loaded FullHD images.
+    // Disjoint freezer-panel and authored side-louvre regions. The q1 door
+    // hides the lower front grille; its exposed side louvres remain visible.
+    // q0 counts520/527, q1 1178/148 before and after actual Save/Load.
     const rects = quarterTurns === 0
-      ? [[825, 435, 115, 210], [825, 435, 115, 210]]
-      : [[765, 320, 100, 215], [765, 320, 100, 215]];
-    const colours = quarterTurns === 0
-      ? [[39, 67, 77], [22, 28, 29]]
-      : [[44, 77, 87], [33, 52, 58]];
+      ? [[890, 495, 25, 35], [843, 606, 33, 27]]
+      : [[780, 375, 35, 42], [843, 474, 17, 23]];
+    const colour = quarterTurns === 0 ? [39, 67, 77] : [44, 77, 87];
     return rects.map((rect, regionIndex) => {
-      const colour = colours[regionIndex]!;
       const pixels = context.getImageData(...rect as [number, number, number, number]).data;
       let count = 0;
       for (let i = 0; i < pixels.length; i += 4) {
-        if (pixels[i] === colour[0] && pixels[i + 1] === colour[1] && pixels[i + 2] === colour[2]) count++;
+        const r = pixels[i]!, g = pixels[i + 1]!, b = pixels[i + 2]!;
+        // Thin louvres are shaded/antialiased: use the native steel colour
+        // envelope, excluding the neutral enamel and brighter room substrate.
+        const matches = regionIndex === 0
+          ? r === colour[0] && g === colour[1] && b === colour[2]
+          : r >= 65 && r <= 120 && g - r >= 3 && g - r <= 15 && b - g >= 0 && b - g <= 8;
+        if (matches) count++;
       }
       return count;
     });
@@ -177,8 +181,8 @@ test(`player builds Kitchen at quarterTurns${quarterTurns} and retains authored 
   await writeFile(info.outputPath('worker-and-completed-save-evidence.json'), JSON.stringify({
     quarterTurns, actualBefore, beforePixels, commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
   }, null, 2));
-  beforePixels.forEach((count, index) => expect.soft(count, `fridge ${index === 0 ? "freezer panel" : "detail candidate"} after construction`)
-    .toBeGreaterThan(index === 0 ? 50 : 1));
+  beforePixels.forEach((count, index) => expect.soft(count, `fridge ${index === 0 ? "freezer panel" : "side louvres"} after construction`)
+    .toBeGreaterThan(quarterTurns === 0 ? 350 : index === 0 ? 800 : 100));
   await page.getByRole('button', { name: 'Overview', exact: true }).click();
   await page.getByRole('button', { name: 'Save now', exact: true }).click();
   await expect(page.locator('.save-panel__status')).toContainText('Saved');
@@ -190,8 +194,8 @@ test(`player builds Kitchen at quarterTurns${quarterTurns} and retains authored 
   await page.mouse.move(1300, 700);
   const loaded = await page.screenshot({ path: info.outputPath('dedicated-kitchen-fridge-loaded-fullhd.png') });
   const afterPixels = await fridgePalettePixels(page, loaded, quarterTurns);
-  afterPixels.forEach((count, index) => expect.soft(count, `fridge ${index === 0 ? "freezer panel" : "detail candidate"} after Load`)
-    .toBeGreaterThan(index === 0 ? 50 : 1));
+  afterPixels.forEach((count, index) => expect.soft(count, `fridge ${index === 0 ? "freezer panel" : "side louvres"} after Load`)
+    .toBeGreaterThan(quarterTurns === 0 ? 350 : index === 0 ? 800 : 100));
   expect(afterPixels).toEqual(beforePixels);
   const evidencePath = info.outputPath('dedicated-kitchen-fridge-worker-and-save-evidence.json');
   await writeFile(evidencePath, JSON.stringify({

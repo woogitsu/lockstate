@@ -1,0 +1,90 @@
+{
+  "initialNativeExits": {
+    "q0": 1,
+    "q1": 1
+  },
+  "initialCaseSeconds": {
+    "q0": [
+      43.6,
+      41.7
+    ],
+    "q1": [
+      43.9,
+      40.3
+    ]
+  },
+  "initialProvisionalFailure": "four dark-detail candidate pixel failures total; normal group serial q1 skipped, independently executed q1 also failed only dark candidate; all genuine construction/three fixture anchors/SaveLoad passed",
+  "initialNativePixelCounts": {
+    "q0": [
+      626,
+      0
+    ],
+    "q1": [
+      1227,
+      0
+    ]
+  },
+  "finalRegions": {
+    "q0": {
+      "rects": [
+        [
+          890,
+          495,
+          25,
+          35
+        ],
+        [
+          843,
+          606,
+          33,
+          27
+        ]
+      ],
+      "panelRgb": [
+        39,
+        67,
+        77
+      ],
+      "nativeBeforeAndAfter": [
+        520,
+        527
+      ],
+      "thresholds": [
+        350,
+        350
+      ]
+    },
+    "q1": {
+      "rects": [
+        [
+          780,
+          375,
+          35,
+          42
+        ],
+        [
+          843,
+          474,
+          17,
+          23
+        ]
+      ],
+      "panelRgb": [
+        44,
+        77,
+        87
+      ],
+      "nativeBeforeAndAfter": [
+        1178,
+        148
+      ],
+      "thresholds": [
+        800,
+        100
+      ]
+    }
+  },
+  "louvreSteelPredicate": "65<=r<=120,3<=g-r<=15,0<=b-g<=8; actual shaded/antialiased steel in isolated physical side vents; neutral enamel/brighter substrate excluded",
+  "inspected": "both initial actual loaded FullHDs opened; q1 doorway hides lower front grille, exposed side vents sampled",
+  "finalNativeAcceptance": "pending calibrated baseline and consumer-only negative/exact restoration"
+}
