@@ -2304,7 +2304,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   const poseControl = options.onCameraPoseStep === undefined ? undefined : createCameraPoseControl(localizer, options.onCameraPoseStep);
   if (poseControl !== undefined && options.rendererSelection?.mode === 'world') poseControl.hidden = true;
   const rendererControl = options.rendererSelection === undefined ? undefined : createRendererSelectionControl({
-    region: t('hud.camera.view'), world: t('hud.camera.view.world'), oblique: t('hud.camera.view.oblique'), failure: t('hud.camera.view.failed'),
+    region: t(HUD_MESSAGE_KEY.cameraView), world: t(HUD_MESSAGE_KEY.cameraViewWorld), oblique: t(HUD_MESSAGE_KEY.cameraViewOblique), failure: t(HUD_MESSAGE_KEY.cameraViewFailed),
   }, options.rendererSelection.mode, options.rendererSelection.select, error => console.warn('Renderer selection failed', error));
   corner = element('div', { className: 'hud__corner', children: [...(rendererControl === undefined ? [] : [rendererControl.element]), zoomControl, ...(poseControl === undefined ? [] : [poseControl]), minimapPanel.element] });
 
