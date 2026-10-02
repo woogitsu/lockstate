@@ -184,12 +184,25 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.input.on('pointerupoutside', stopTurn);
     this.input.on('pointerout', (pointer: Phaser.Input.Pointer) => {
       if (this.gesture?.pointerId === pointer.id) this.cancelGesture();
+      if (pointer.id === this.turnPointerId) {
+        this.turnPointerId = undefined;
+        this.turnPointerAt = undefined;
+      }
       this.hoveredWorldPoint = undefined;
       this.paintGesturePreview();
     });
     const keyDown = (event: KeyboardEvent): void => this.handleActionEvents(this.keyboard.keyDown(event));
     const keyUp = (event: KeyboardEvent): void => { this.keyboard.keyUp(event); };
-    const cancelOnBlur = (): void => { this.keyboard.releaseAll(); this.cancelGesture(); };
+    const cancelPointerInput = (): void => {
+      this.turnPointerId = undefined;
+      this.turnPointerAt = undefined;
+      this.hoveredWorldPoint = undefined;
+      this.cancelGesture();
+    };
+    const cancelOnBlur = (): void => { this.keyboard.releaseAll(); cancelPointerInput(); };
+    const canvas = this.game.canvas;
+    canvas.addEventListener('pointercancel', cancelPointerInput);
+    canvas.addEventListener('lostpointercapture', cancelPointerInput);
     window.addEventListener('keydown', keyDown);
     window.addEventListener('keyup', keyUp);
     window.addEventListener('blur', cancelOnBlur);
@@ -197,6 +210,8 @@ export class ObliqueWorldScene extends Phaser.Scene {
       window.removeEventListener('keydown', keyDown);
       window.removeEventListener('keyup', keyUp);
       window.removeEventListener('blur', cancelOnBlur);
+      canvas.removeEventListener('pointercancel', cancelPointerInput);
+      canvas.removeEventListener('lostpointercapture', cancelPointerInput);
     });
     void this.loadCatalogTextures().finally(() => this.resolveReady());
   }
