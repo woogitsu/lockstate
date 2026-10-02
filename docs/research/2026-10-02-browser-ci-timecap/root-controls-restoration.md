@@ -24,8 +24,8 @@ Fresh native restored four-case run: category12.4s, exercise29.6s, camera steps
 padding and displayed the hidden camera group:2 intended RED (13px overflow,
 visible inert pose controls),1 legal pose-step control GREEN24.7s. The full CSS
 bytes were restored exactly, checked against the retained pre-mutation buffer.
-[Negative output](root-build-floor-camera-negative.log) and
-[exact-restored output](root-build-floor-camera-restored.log) are retained.
+[Negative output](root-build-floor-camera-negative.txt) and
+[exact-restored output](root-build-floor-camera-restored.txt) are retained.
 
 Keyboard enclosure consumers now order unique exterior face squares, never
 legacyNorth/Westedges: north(x,y-1),south(x,y+h),west(x-1,y),east(x+w,y), sorted by
