@@ -1,6 +1,6 @@
 import { createRequire } from 'node:module';
 import { writeFile } from 'node:fs/promises';
-import { expect, test, type Page } from './network-changed-fixture';
+import { expect, test as base, type Page } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
 import { completedWallLogisticsSave } from './fixtures/completed-wall-logistics';
 
@@ -39,6 +39,13 @@ interface ProbeWindow extends Window {
   readTemplateBedRendering: () => RenderEvidence;
   readTemplateBedWorker: () => Promise<{ payload: { snapshot: { data: WorkerEvidence } } }>;
 }
+
+let savedStorage: Awaited<ReturnType<ReturnType<Page['context']>['storageState']>> | undefined;
+let savedStage: { worker: WorkerEvidence; render: RenderEvidence; png: Buffer; oldId: string; newId: string } | undefined;
+const test = base.extend({
+  storageState: async ({}, use) => { await use(savedStorage ?? { cookies: [], origins: [] }); },
+});
+test.describe.configure({ mode: 'serial' });
 
 async function observe(page: Page): Promise<void> {
   await page.route('**/src/main.ts', async route => {
@@ -100,6 +107,15 @@ async function coordinates(page: Page): Promise<void> {
   await page.getByRole('spinbutton', { name: 'Tile Y', exact: true }).fill('21');
 }
 
+async function frameBed(page: Page): Promise<void> {
+  await page.getByRole('button', { name: 'Build', exact: true }).click();
+  const minimap = page.locator('.hud-minimap__surface');
+  if (!await minimap.isVisible()) await page.getByRole('region', { name: 'Minimap', exact: true }).getByRole('button', { name: 'Expand', exact: true }).click();
+  const bounds = await minimap.boundingBox(); if (bounds === null) throw new Error('Minimap missing');
+  await minimap.click({ position: { x: bounds.width * 24.5 / 32, y: bounds.height * 21.5 / 32 } });
+  await page.mouse.move(1300, 700);
+}
+
 function expectedFootprint(pose: RenderEvidence['pose'], width: number, height: number) {
   const c = Math.cos(pose.yawRadians), s = Math.sin(pose.yawRadians);
   return [[24, 21], [24 + width, 21], [24 + width, 21 + height], [24, 21 + height]].map(([x, y]) => {
@@ -110,12 +126,14 @@ function expectedFootprint(pose: RenderEvidence['pose'], width: number, height: 
 }
 
 async function requireBed(page: Page, sourceOrderId: string, orientation: 0 | 1): Promise<RenderEvidence> {
-  const key = `oblique:furniture.cell.cot.single:${orientation === 1 ? 45 : -45}:45`;
+  // The retained cot catalogue uses 30-degree yaw and 10-degree elevation
+  // frames. Local +/-45 at elevation45 select these exact existing PNGs.
+  const key = `oblique:furniture.cell.cot.single:${orientation === 1 ? 30 : 300}:40`;
   await expect.poll(async () => (await rendering(page)).images.map(image => image.key)).toEqual([key]);
   const actual = await rendering(page);
   expect(actual.imageCount).toBe(1);
   expect(actual.images).toEqual([expect.objectContaining({ id: `structure:${sourceOrderId}`, key, visible: true })]);
-  expect(actual.structures).toEqual([expect.objectContaining({ id: sourceOrderId, tileX: 22, tileY: 21, phase: 'built' })]);
+  expect(actual.structures).toEqual([expect.objectContaining({ id: sourceOrderId, tileX: 24, tileY: 21, phase: 'built' })]);
   expect(actual.structures[0]!.orientation ?? 0).toBe(orientation);
   expect(actual.projected).toHaveLength(1);
   expect(actual.projected[0]!.id).toBe(sourceOrderId);
@@ -154,7 +172,7 @@ function changedPixels(a: Buffer, b: Buffer, pose: RenderEvidence['pose']): numb
   return changed;
 }
 
-test('actual rotated template Bed disappears on direct removal and draws only its independent normal replacement after Load at Full HD', async ({ page }, info) => {
+test('player directly removes a completed rotated template Bed and saves only its independently rebuilt normal image at Full HD', async ({ page }, info) => {
   await installTee(page); await observe(page);
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/?renderer=oblique');
@@ -191,11 +209,7 @@ test('actual rotated template Bed disappears on direct removal and draws only it
   expect(physicalBeds(beforeWorker)).toEqual([expect.objectContaining({ anchorTile: { x: 24, y: 21 }, orientation: 1 })]);
   const oldId = physicalBeds(beforeWorker)[0]!.sourceOrderId!;
   expect(oldId).toEqual(expect.any(String));
-  const minimap = page.locator('.hud-minimap__surface');
-  if (!await minimap.isVisible()) await page.getByRole('region', { name: 'Minimap', exact: true }).getByRole('button', { name: 'Expand', exact: true }).click();
-  const bounds = await minimap.boundingBox(); if (bounds === null) throw new Error('Minimap missing');
-  await minimap.click({ position: { x: bounds.width * 24.5 / 32, y: bounds.height * 21.5 / 32 } });
-  await page.mouse.move(1300, 700);
+  await frameBed(page);
   const original = await requireBed(page, oldId, 1);
   const canvas = page.locator('#game-root canvas');
   const originalPng = await canvas.screenshot({ path: info.outputPath('actual-rotated-bed.png') });
@@ -238,17 +252,6 @@ test('actual rotated template Bed disappears on direct removal and draws only it
   await page.getByRole('button', { name: 'Overview', exact: true }).click();
   await page.getByRole('button', { name: 'Save now', exact: true }).click();
   await expect(page.locator('.save-panel__status')).toContainText('Saved');
-  await page.locator('.save-panel__item').first().getByRole('button', { name: 'Load', exact: true }).click();
-  await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
-  const loadedWorker = await worker(page);
-  expect(physicalBeds(loadedWorker)).toEqual(replacement);
-  expect(loadedWorker.construction.orders.find(order => order.id === oldId)?.state).toBe('completed');
-  expect(loadedWorker.construction.orders.find(order => order.id === newId)?.state).toBe('completed');
-  const loaded = await requireBed(page, newId, 0);
-  const loadedPng = await canvas.screenshot({ path: info.outputPath('actual-independent-normal-bed-loaded.png') });
-  expect(loaded.pose).toEqual(rebuilt.pose);
-  const loadPixels = changedPixels(rebuiltPng, loadedPng, loaded.pose);
-  expect(loadPixels, 'paused cot pixels within its physical volume must remain identical after actual Load').toBe(0);
   const commands = await sentCommands(page);
   expect(commands.filter(command => command.type === 'RemoveObject')).toEqual([{ type: 'RemoveObject', x: 24, y: 21 }]);
   expect(commands.filter(command => command.type === 'RemoveWall')).toEqual([]);
@@ -256,6 +259,35 @@ test('actual rotated template Bed disappears on direct removal and draws only it
     expect.objectContaining({ definitionId: 'bed-wooden', x: 24, y: 21, orderId: newId }),
   ]);
   await writeFile(info.outputPath('actual-worker-render-identity.json'), JSON.stringify({ coverage: 'dev/source; no state/feed replacement',
-    beforeWorker, removedWorker, rebuiltWorker, loadedWorker, original, removed, rebuilt, loaded,
-    removalPixels, rebuildPixels, loadPixels, commands }, null, 2));
+    beforeWorker, removedWorker, rebuiltWorker, original, removed, rebuilt, removalPixels, rebuildPixels, commands }, null, 2));
+  savedStage = { worker: rebuiltWorker, render: rebuilt, png: rebuiltPng, oldId, newId };
+  savedStorage = await page.context().storageState({ indexedDB: true });
+});
+
+test('player reopens the actual rebuilt Bed save and retains one exact owner image, footprint and canvas pixels at Full HD', async ({ page }, info) => {
+  expect(savedStorage, 'this lifecycle consumes the first player stage actual IndexedDB save').toBeDefined();
+  expect(savedStage, 'actual worker/render/PNG capture must survive the serial lifecycle boundary').toBeDefined();
+  const saved = savedStage!;
+  await installTee(page); await observe(page);
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/?renderer=oblique');
+  await page.locator('.save-panel__item').first().getByRole('button', { name: 'Load', exact: true }).click();
+  await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
+  await page.getByRole('button', { name: 'Pause', exact: true }).click();
+  const loadedWorker = await worker(page);
+  expect(physicalBeds(loadedWorker)).toEqual(physicalBeds(saved.worker));
+  expect(loadedWorker.construction.orders.find(order => order.id === saved.oldId)?.state).toBe('completed');
+  expect(loadedWorker.construction.orders.find(order => order.id === saved.newId)?.state).toBe('completed');
+  // Load recreates renderer memory. Reframe through the same genuine player
+  // controls before comparing pixels; camera memory is not a saved game field.
+  await frameBed(page);
+  const loaded = await requireBed(page, saved.newId, 0);
+  expect(loaded.pose).toEqual(saved.render.pose);
+  const loadedPng = await page.locator('#game-root canvas').screenshot({ path: info.outputPath('actual-independent-normal-bed-loaded.png') });
+  const loadPixels = changedPixels(saved.png, loadedPng, loaded.pose);
+  expect(loadPixels, 'paused cot pixels within its physical volume must remain identical after actual Load').toBe(0);
+  const commands = await sentCommands(page);
+  expect(commands, 'real Load, clock pause and minimap framing must submit no new gameplay command').toEqual([]);
+  await writeFile(info.outputPath('actual-loaded-worker-render-identity.json'), JSON.stringify({ coverage: 'dev/source; real prior IndexedDB state and PNG',
+    beforeSaveWorker: saved.worker, loadedWorker, beforeSaveRender: saved.render, loaded, loadPixels, commands }, null, 2));
 });
