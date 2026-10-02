@@ -1347,3 +1347,27 @@ and full incoming-object footprint admission (#1654). Their combined native
 acceptance is a new check, not a relabel of individual agent runs. Art owns the
 single browser for Desk; HUD audits actual camera consumers, gameplay repairs
 asynchronous construction-history ordering. Full release gates remain pending.
+
+### Cell, Utility and camera source integration — 2026-10-03
+
+`codex/integrate-cell-utility-20261003` includes both actual Blender sources and
+all144 Cell/Utility frames, each model's individual native mutation and Load
+receipts, the corrected World plan projector/minimap, and incoming full-object
+footprint reservation. Root focused integration passes108 tests across8 files;
+both TypeScript projects and the production client build pass (5.47s).
+
+The following source also fixes #1990: deferred fixtures extend the exact
+original paid gesture without replacing the newer player transaction selected
+by Undo or erasing Redo/refusal state. Its producer and reader mutations and
+13 restored cases are published, with443 neighbouring tests and unchanged
+persisted/wire fields. Root is verifying that source together with the camera
+and models. Both room fixtures now require exact V8 source owners pointing to
+completed matching orders before and after genuine Save/Load. Canonical artifact
+routing includes these six player cases and the two World zoomed whole-plan
+cases exactly once; combined native acceptance is pending the sole browser.
+
+Art is completing physical Desk native consumer negatives and restoration;
+HUD checks renderer-switch acceptance ownership; gameplay probes an existing
+completed-wall furniture collision report. Continue those concrete tasks while
+CI runs. The owner-only CI split and new-action persistence proposals remain
+pending; no protected workflow or save-format decision is inferred from time.

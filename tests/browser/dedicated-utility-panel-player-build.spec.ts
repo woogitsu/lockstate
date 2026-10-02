@@ -1,4 +1,4 @@
-// Pending genuine UtilityRoom worker construction and Save/Load; source-derived palette needs native calibration.
+// Integrated V8 owner acceptance; retain the original opened native palette/detail controls.
 import { writeFile } from 'node:fs/promises';
 import { expect, test as base, type Page } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
@@ -45,6 +45,24 @@ async function fixtureAnchors(page: Page): Promise<string[]> {
     return reply.payload.snapshot.data.simulation.objects?.placedObjects
       .filter(o => ['object.utility-panel'].includes(o.objectId))
       .map(o => `${o.objectId}@${o.anchorTile.x},${o.anchorTile.y}:orientation=${o.orientation}`).sort() ?? [];
+  });
+}
+
+async function fixtureOwnership(page: Page) {
+  return page.evaluate(async () => {
+    const reply = await (window as ProbeWindow).askWorker!('simulation/request-snapshot', { reason: 'consistency-check' }) as {
+      payload: { snapshot: { data: {
+        construction: { orders: { id: string; state: string; location: { x: number; y: number }; objectOrientation?: number }[] };
+        simulation: { objects?: { placedObjects: { objectId: string; anchorTile: { x: number; y: number }; orientation: number; sourceOrderId?: string }[] } };
+      } } };
+    };
+    const data = reply.payload.snapshot.data;
+    return (data.simulation.objects?.placedObjects ?? [])
+      .filter(object => object.objectId === 'object.utility-panel')
+      .map(object => ({ objectId: object.objectId, sourceOrderId: object.sourceOrderId,
+        anchorTile: object.anchorTile, orientation: object.orientation,
+        order: data.construction.orders.find(order => order.id === object.sourceOrderId),
+      })).sort((a, b) => a.anchorTile.x - b.anchorTile.x || a.anchorTile.y - b.anchorTile.y);
   });
 }
 
@@ -158,6 +176,15 @@ test(`player builds Utility Room at quarterTurns${quarterTurns} and retains util
     : ['object.utility-panel@22,7:orientation=1'];
   const actualBefore = await fixtureAnchors(page);
   expect(actualBefore).toEqual(expected);
+  const ownershipBefore = await fixtureOwnership(page);
+  expect(ownershipBefore).toHaveLength(1);
+  for (const object of ownershipBefore) {
+    expect(object.sourceOrderId).toEqual(expect.any(String));
+    expect(object.sourceOrderId!.length).toBeGreaterThan(0);
+    expect(object.order?.state).toBe('completed');
+    expect(object.order?.location).toEqual(object.anchorTile);
+    expect(object.order?.objectOrientation ?? 0).toBe(object.orientation);
+  }
   await writeFile(info.outputPath('completed-worker-snapshot.json'), JSON.stringify(await page.evaluate(async () =>
     (window as ProbeWindow).askWorker!('simulation/request-snapshot', { reason: 'consistency-check' })), null, 2));
   await expect.poll(async () => (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate')).toEqual([
@@ -190,6 +217,8 @@ test(`player builds Utility Room at quarterTurns${quarterTurns} and retains util
   await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
   const actualAfter = await fixtureAnchors(page);
   expect(actualAfter).toEqual(expected);
+  const ownershipAfter = await fixtureOwnership(page);
+  expect(ownershipAfter).toEqual(ownershipBefore);
   await writeFile(info.outputPath('loaded-worker-snapshot.json'), JSON.stringify(await page.evaluate(async () =>
     (window as ProbeWindow).askWorker!('simulation/request-snapshot', { reason: 'consistency-check' })), null, 2));
   await minimap.click({ position: { x: bounds.width * 22 / 32, y: bounds.height * 7 / 32 } });
@@ -201,7 +230,7 @@ test(`player builds Utility Room at quarterTurns${quarterTurns} and retains util
   expect(afterPixels).toEqual(beforePixels);
   const evidencePath = info.outputPath('dedicated-utility-panel-worker-and-save-evidence.json');
   await writeFile(evidencePath, JSON.stringify({
-    quarterTurns, actualBefore, actualAfter, beforePixels, afterPixels,
+    quarterTurns, actualBefore, actualAfter, ownershipBefore, ownershipAfter, beforePixels, afterPixels,
     commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
   }, null, 2));
   await info.attach('dedicated-utility-panel-worker-and-save-evidence', { path: evidencePath, contentType: 'application/json' });
