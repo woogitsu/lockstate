@@ -285,7 +285,7 @@ feature with a reader and no producer.
   rectangle's own perimeter, with the south and east sides read off neighbouring
   tiles.
 - Objects already require a room: `PlaceObject` refuses `outside-room`
-  (`src/simulation/objects/object-placement-service.ts:540`).
+  (`src/simulation/objects/object-placement-service.ts:544`, `this.refuse('outside-room'`).
 
 ### Rendering
 
@@ -859,6 +859,6 @@ not to write a third flood fill.
 defect is caused by one asymmetric predicate and fixed by widening it. I did not
 enumerate every caller that could reproduce the asymmetry elsewhere:
 `ObjectPlacementService` and `RoomZoningService` also call `canBuildAt`
-(`src/simulation/objects/object-placement-service.ts:526`,
+(`src/simulation/objects/object-placement-service.ts:530`,
 `src/simulation/rooms/zoning.ts:555`), and neither is an edge order, so neither
 should change — but "should not" is an argument and not a check.

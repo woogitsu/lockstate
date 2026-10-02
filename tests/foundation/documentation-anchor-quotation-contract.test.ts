@@ -842,7 +842,6 @@ const UNVERIFIED_BUDGET: Readonly<Record<string, number>> = {
   // all inventory anchors verify, so its former 182-anchor budget is removed.
   'docs/TESTING.md': 3,
   'docs/VISUAL_IDENTITY.md': 5,
-  'docs/WORLD.md': 2,
 };
 
 describe('rooted src/ and tests/ anchors in the documentation carry a checkable quoted fragment', () => {
