@@ -108,17 +108,14 @@ export class RoomTemplateCoordinator implements SystemRegistration {
         tile.y >= pending.origin.y && tile.y < pending.origin.y + pending.height),
     );
     if (!verdict.ok) return verdict;
-    // #1692: rectangles can be disjoint while the new perimeter occupies a
-    // reserved entrance approach. Refuse the whole plan before shell orders
-    // reach ordinary construction's defensive pending-wall check.
-    const incomingWalls = new Set(plan.wallSquares.map(square => `${square.x}:${square.y}`));
-    for (const pending of pendingPlans) {
-      for (const { outside } of doorwayApproaches(pending)) {
-        if (incomingWalls.has(`${outside.x}:${outside.y}`)) {
-          return { ok: false, reason: 'structure-occupied', tile: {
-            x: tileCoordinate(outside.x), y: tileCoordinate(outside.y),
-          } };
-        }
+    // #1692/#1703: disjoint rectangles can still share an entrance approach.
+    // Use the same pending/completed template ownership as ordinary wall and
+    // furniture placement, including legacy saves without completed metadata.
+    // Refuse the whole plan before any defensive wall refusal adds orders.
+    for (const square of plan.wallSquares) {
+      const tile = { x: tileCoordinate(square.x), y: tileCoordinate(square.y) };
+      if (this.claimsRoomDoorApproachTile(tile)) {
+        return { ok: false, reason: 'structure-occupied', tile };
       }
     }
     // #1672: an object can be outside the rectangle and still seal its only
