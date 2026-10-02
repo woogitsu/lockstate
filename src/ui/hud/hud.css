@@ -1760,7 +1760,7 @@
 .hud-template__legend { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-3); margin-top: var(--space-3); }
 .hud-template__legend > span { display: inline-flex; align-items: center; gap: var(--space-1); }
 .hud-template__legend .hud-template__tile { box-sizing: border-box; width: 0.9rem; }
-.hud-template__legend .hud-template__fixture { aspect-ratio: 2; }
+.hud-template__legend .hud-template__fixture { aspect-ratio: 2; background: var(--text-body); }
 .hud-template__contents { text-align: center; }
 .hud-template__placement { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); margin-top: var(--space-4); }
 .hud-template__placement input[type='number'] { width: 100%; min-height: var(--tap-target); box-sizing: border-box; }

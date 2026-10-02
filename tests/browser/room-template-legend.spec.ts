@@ -16,6 +16,9 @@ test('Full HD selected-plan legend uses fixture rectangles and doorway bars', as
   const shape=await furniture.evaluate(el=>({width:el.getBoundingClientRect().width,height:el.getBoundingClientRect().height,radius:parseFloat(getComputedStyle(el).borderRadius)}));
   expect(shape.width).toBeGreaterThan(shape.height*1.8);
   expect(shape.radius).toBeLessThan(shape.height/2);
+  const furnitureColor=await furniture.evaluate(el=>getComputedStyle(el).backgroundColor);
+  const diagramColor=await dialog.locator('.hud-template__diagram .hud-template__fixture').first().evaluate(el=>getComputedStyle(el).backgroundColor);
+  expect(furnitureColor).toBe(diagramColor);
   const doorway=await legend.locator('.hud-template__tile--door').evaluate(el=>({height:el.getBoundingClientRect().height,bar:parseFloat(getComputedStyle(el,'::after').height)}));
   expect(doorway.bar).toBeGreaterThan(0);
   expect(doorway.bar).toBeLessThan(doorway.height);
