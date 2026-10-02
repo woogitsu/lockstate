@@ -99,6 +99,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 | Record | Question it answered | Decision it fed |
 | --- | --- | --- |
 | [2026-10-02 oblique Load Room and Object](./2026-10-02-oblique-load-room-object/README.md) | Can held Room and Object gestures commit into a newly loaded prison, and can fresh gestures still work? | [#1949](https://github.com/woogitsu/lockstate/issues/1949); 2/2 green, cancellation mutation 2/2 red, restored green |
+| [2026-10-02 angled ground band audit](./2026-10-02-angled-ground-band/README.md) | Is the black band in the 2560 capture an intentional world edge? | Source and saved-image inspection distinguish it from the void color; actual page/canvas runtime diagnosis pending, no repair or Issue claimed. |
 | [2026-10-02 oblique mixed mouse buttons](./2026-10-02-oblique-mixed-buttons/README.md) | Can a second mouse button start or commit Build while the same pointer owns a camera turn? | [#1954](https://github.com/woogitsu/lockstate/issues/1954); production browser red, fix green, guard mutation red |
 | [2026-10-02 Build target readability](./2026-10-02-build-target-readability/README.md) | Does the complete whole-square target/cost remain visible without moving controls? | Issue1953: actual angled input at Full HD, larger and effective 200% CSS size; nowrap mutation red, restored three cases green. |
 | [2026-08-25 room zoning gesture](./2026-08-25-room-zoning-gesture.md) | What gesture designates a room, and where does the control live? | ADR 0022 |
