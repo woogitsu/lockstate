@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed for owner review, 2026-10-02. No ADR number is reserved. No persistent field, command schema, gameplay rule or player message is implemented by this draft. Tracks existing [#1586](https://github.com/woogitsu/lockstate/issues/1586), which already requires rotation/mirroring in the player flow.
+Owner approved the optional quarterTurns/objectOrientation fields0..3 with absent0 compatibility and separately approved orientation-independent rectangular minima through clickable decisions on2026-10-02. Implementation and full runtime acceptance remain pending. No ADR number is reserved. No persistent field, command schema, gameplay rule or player message is implemented by this draft. Tracks existing [#1586](https://github.com/woogitsu/lockstate/issues/1586), which already requires rotation/mirroring in the player flow.
 
 ## Concrete decision requested
 
@@ -63,7 +63,7 @@ Room zoning currently compares width against minWidth and height against minHeig
 
 Recommended separate owner decision: a rectangular minimum can be satisfied in either orientation, while minTiles and all other requirements remain unchanged. Implement that only after explicit approval, with tests for exact threshold pairs and below-area rooms. Alternatively rotated plans can remain refused by the existing rule, but the owner should see that limitation before approving delivery.
 
-New player controls and any new refusal sentence likewise need their own approved wording if existing approved labels do not express template rotation truthfully. Camera Rotate labels must not be reused for rotating a room plan.
+Truthful static control wording follows the partial release in AGENTS.md and must be recorded in the player-string inventory. A new behavioural refusal or inaccurate claim still requires the applicable owner reservation. Camera Rotate labels must not be reused for rotating a room plan.
 
 ## Executable sequence and gates
 
