@@ -17,7 +17,7 @@ test('Full HD camera icon group keeps four labelled keyboard actions above the m
   const canvas=page.locator('#game-root canvas');
   await buttons.first().focus();
   for(let index=0;index<names.length;index+=1) {
-    const button=group.getByRole('button',{name:names[index],exact:true});
+    const button=group.getByRole('button',{name:names[index]!,exact:true});
     await expect(button).toBeFocused();
     await expect(button.locator('svg[aria-hidden="true"]')).toHaveCount(1);
     const reachable=await button.evaluate(el=>{const b=el.getBoundingClientRect();return b.width>=44&&b.height>=44&&el.contains(document.elementFromPoint(b.x+b.width/2,b.y+b.height/2));});
