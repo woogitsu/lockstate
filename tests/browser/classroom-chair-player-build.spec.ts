@@ -1,4 +1,4 @@
-﻿import { expect, test, type Page } from './network-changed-fixture';
+import { expect, test, type Page } from './network-changed-fixture';
 
 interface ProbeWindow extends Window {
   askWorker?: (kind: string, payload: unknown) => Promise<unknown>;
@@ -126,5 +126,3 @@ test('player builds a Classroom with four existing chairs and keeps them through
     expect(count, 'all four authored chairs must remain visible after Save/Load').toBeGreaterThan(350);
   }
 });
-
-
