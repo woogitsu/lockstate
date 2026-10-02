@@ -1,0 +1,1830 @@
+﻿[
+    {
+        "load":  false,
+        "buyBeforeCompletion":  false,
+        "rotated":  false,
+        "originalFullCaptureSHA256":  "595543D26B2F2EB7B7753A0F06BE07CD2BA785045183B737A4806576793DC24D",
+        "beforeHistory":  {
+                              "undoStack":  [
+                                                [
+                                                    "room-template-000000000000-0-wall-000",
+                                                    "room-template-000000000000-0-wall-001",
+                                                    "room-template-000000000000-0-wall-002",
+                                                    "room-template-000000000000-0-wall-003",
+                                                    "room-template-000000000000-0-wall-004",
+                                                    "room-template-000000000000-0-wall-005",
+                                                    "room-template-000000000000-0-wall-006",
+                                                    "room-template-000000000000-0-wall-007",
+                                                    "room-template-000000000000-0-wall-008",
+                                                    "room-template-000000000000-0-wall-009",
+                                                    "room-template-000000000000-0-wall-010",
+                                                    "room-template-000000000000-0-wall-011",
+                                                    "room-template-000000000000-0-wall-012",
+                                                    "room-template-000000000000-0-wall-013",
+                                                    "room-template-000000000000-0-wall-014",
+                                                    "room-template-000000000000-0-wall-015",
+                                                    "room-template-000000000000-0-wall-016",
+                                                    "room-template-000000000000-1-door-000",
+                                                    "room-template-000000000000-2-object-000",
+                                                    "room-template-000000000000-2-object-001"
+                                                ]
+                                            ],
+                              "currentTransaction":  [
+                                                         "latest-independent-bed"
+                                                     ],
+                              "currentTransactionId":  null
+                          },
+        "afterHistory":  {
+                             "undoStack":  [
+                                               [
+                                                   "room-template-000000000000-0-wall-000",
+                                                   "room-template-000000000000-0-wall-001",
+                                                   "room-template-000000000000-0-wall-002",
+                                                   "room-template-000000000000-0-wall-003",
+                                                   "room-template-000000000000-0-wall-004",
+                                                   "room-template-000000000000-0-wall-005",
+                                                   "room-template-000000000000-0-wall-006",
+                                                   "room-template-000000000000-0-wall-007",
+                                                   "room-template-000000000000-0-wall-008",
+                                                   "room-template-000000000000-0-wall-009",
+                                                   "room-template-000000000000-0-wall-010",
+                                                   "room-template-000000000000-0-wall-011",
+                                                   "room-template-000000000000-0-wall-012",
+                                                   "room-template-000000000000-0-wall-013",
+                                                   "room-template-000000000000-0-wall-014",
+                                                   "room-template-000000000000-0-wall-015",
+                                                   "room-template-000000000000-0-wall-016",
+                                                   "room-template-000000000000-1-door-000",
+                                                   "room-template-000000000000-2-object-000",
+                                                   "room-template-000000000000-2-object-001"
+                                               ]
+                                           ],
+                             "redoStack":  [
+                                               [
+                                                   "latest-independent-bed"
+                                               ]
+                                           ]
+                         },
+        "beforeTreasury":  {
+                               "balanceMinorUnits":  23405
+                           },
+        "afterTreasury":  {
+                              "balanceMinorUnits":  23405
+                          },
+        "afterOrders":  [
+                            {
+                                "id":  "room-template-000000000000-0-wall-000",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-001",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-002",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-003",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-004",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-005",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-006",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-007",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-008",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-009",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-010",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-011",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-012",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-013",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-014",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-015",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-016",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-1-door-000",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-2-object-000",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-2-object-001",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "latest-independent-bed",
+                                "state":  "cancelled",
+                                "placementSequence":  1
+                            }
+                        ],
+        "afterObjects":  {
+                             "placedObjects":  [
+                                                   {
+                                                       "placedObjectId":  "object:11:11",
+                                                       "objectId":  "object.bed",
+                                                       "anchorTile":  {
+                                                                          "x":  11,
+                                                                          "y":  11
+                                                                      },
+                                                       "orientation":  0,
+                                                       "sourceOrderId":  "room-template-000000000000-2-object-000"
+                                                   },
+                                                   {
+                                                       "placedObjectId":  "object:12:14",
+                                                       "objectId":  "object.toilet",
+                                                       "anchorTile":  {
+                                                                          "x":  12,
+                                                                          "y":  14
+                                                                      },
+                                                       "orientation":  0,
+                                                       "sourceOrderId":  "room-template-000000000000-2-object-001"
+                                                   }
+                                               ]
+                         },
+        "beforeRoomTemplates":  {
+                                    "version":  1,
+                                    "pending":  [
+
+                                                ],
+                                    "completed":  [
+                                                      {
+                                                          "templateId":  "cell-basic",
+                                                          "origin":  {
+                                                                         "x":  10,
+                                                                         "y":  10
+                                                                     },
+                                                          "mirrorX":  false,
+                                                          "quarterTurns":  0,
+                                                          "sequence":  0
+                                                      }
+                                                  ]
+                                },
+        "afterRoomTemplates":  {
+                                   "version":  1,
+                                   "pending":  [
+
+                                               ],
+                                   "completed":  [
+                                                     {
+                                                         "templateId":  "cell-basic",
+                                                         "origin":  {
+                                                                        "x":  10,
+                                                                        "y":  10
+                                                                    },
+                                                         "mirrorX":  false,
+                                                         "quarterTurns":  0,
+                                                         "sequence":  0
+                                                     }
+                                                 ]
+                               }
+    },
+    {
+        "load":  false,
+        "buyBeforeCompletion":  false,
+        "rotated":  true,
+        "originalFullCaptureSHA256":  "23F40B82CB3F941AFDD610DFDB2091DE87460B95B9EDDBBF9AFCFB80C6C576BA",
+        "beforeHistory":  {
+                              "undoStack":  [
+                                                [
+                                                    "room-template-000000000000-0-wall-000",
+                                                    "room-template-000000000000-0-wall-001",
+                                                    "room-template-000000000000-0-wall-002",
+                                                    "room-template-000000000000-0-wall-003",
+                                                    "room-template-000000000000-0-wall-004",
+                                                    "room-template-000000000000-0-wall-005",
+                                                    "room-template-000000000000-0-wall-006",
+                                                    "room-template-000000000000-0-wall-007",
+                                                    "room-template-000000000000-0-wall-008",
+                                                    "room-template-000000000000-0-wall-009",
+                                                    "room-template-000000000000-0-wall-010",
+                                                    "room-template-000000000000-0-wall-011",
+                                                    "room-template-000000000000-0-wall-012",
+                                                    "room-template-000000000000-0-wall-013",
+                                                    "room-template-000000000000-0-wall-014",
+                                                    "room-template-000000000000-0-wall-015",
+                                                    "room-template-000000000000-0-wall-016",
+                                                    "room-template-000000000000-1-door-000",
+                                                    "room-template-000000000000-2-object-000",
+                                                    "room-template-000000000000-2-object-001"
+                                                ]
+                                            ],
+                              "currentTransaction":  [
+                                                         "latest-independent-bed"
+                                                     ],
+                              "currentTransactionId":  null
+                          },
+        "afterHistory":  {
+                             "undoStack":  [
+                                               [
+                                                   "room-template-000000000000-0-wall-000",
+                                                   "room-template-000000000000-0-wall-001",
+                                                   "room-template-000000000000-0-wall-002",
+                                                   "room-template-000000000000-0-wall-003",
+                                                   "room-template-000000000000-0-wall-004",
+                                                   "room-template-000000000000-0-wall-005",
+                                                   "room-template-000000000000-0-wall-006",
+                                                   "room-template-000000000000-0-wall-007",
+                                                   "room-template-000000000000-0-wall-008",
+                                                   "room-template-000000000000-0-wall-009",
+                                                   "room-template-000000000000-0-wall-010",
+                                                   "room-template-000000000000-0-wall-011",
+                                                   "room-template-000000000000-0-wall-012",
+                                                   "room-template-000000000000-0-wall-013",
+                                                   "room-template-000000000000-0-wall-014",
+                                                   "room-template-000000000000-0-wall-015",
+                                                   "room-template-000000000000-0-wall-016",
+                                                   "room-template-000000000000-1-door-000",
+                                                   "room-template-000000000000-2-object-000",
+                                                   "room-template-000000000000-2-object-001"
+                                               ]
+                                           ],
+                             "redoStack":  [
+                                               [
+                                                   "latest-independent-bed"
+                                               ]
+                                           ]
+                         },
+        "beforeTreasury":  {
+                               "balanceMinorUnits":  23405
+                           },
+        "afterTreasury":  {
+                              "balanceMinorUnits":  23405
+                          },
+        "afterOrders":  [
+                            {
+                                "id":  "room-template-000000000000-0-wall-000",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-001",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-002",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-003",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-004",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-005",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-006",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-007",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-008",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-009",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-010",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-011",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-012",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-013",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-014",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-015",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-016",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-1-door-000",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-2-object-000",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-2-object-001",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "latest-independent-bed",
+                                "state":  "cancelled",
+                                "placementSequence":  1
+                            }
+                        ],
+        "afterObjects":  {
+                             "placedObjects":  [
+                                                   {
+                                                       "placedObjectId":  "object:12:11",
+                                                       "objectId":  "object.toilet",
+                                                       "anchorTile":  {
+                                                                          "x":  12,
+                                                                          "y":  11
+                                                                      },
+                                                       "orientation":  1,
+                                                       "sourceOrderId":  "room-template-000000000000-2-object-001"
+                                                   },
+                                                   {
+                                                       "placedObjectId":  "object:14:12",
+                                                       "objectId":  "object.bed",
+                                                       "anchorTile":  {
+                                                                          "x":  14,
+                                                                          "y":  12
+                                                                      },
+                                                       "orientation":  1,
+                                                       "sourceOrderId":  "room-template-000000000000-2-object-000"
+                                                   }
+                                               ]
+                         },
+        "beforeRoomTemplates":  {
+                                    "version":  1,
+                                    "pending":  [
+
+                                                ],
+                                    "completed":  [
+                                                      {
+                                                          "templateId":  "cell-basic",
+                                                          "origin":  {
+                                                                         "x":  10,
+                                                                         "y":  10
+                                                                     },
+                                                          "mirrorX":  true,
+                                                          "quarterTurns":  1,
+                                                          "sequence":  0
+                                                      }
+                                                  ]
+                                },
+        "afterRoomTemplates":  {
+                                   "version":  1,
+                                   "pending":  [
+
+                                               ],
+                                   "completed":  [
+                                                     {
+                                                         "templateId":  "cell-basic",
+                                                         "origin":  {
+                                                                        "x":  10,
+                                                                        "y":  10
+                                                                    },
+                                                         "mirrorX":  true,
+                                                         "quarterTurns":  1,
+                                                         "sequence":  0
+                                                     }
+                                                 ]
+                               }
+    },
+    {
+        "load":  false,
+        "buyBeforeCompletion":  true,
+        "rotated":  false,
+        "originalFullCaptureSHA256":  "61FD34BAC4048D5FEFF2E598185D96EE8140B5F75AC5C0C5207FDC0FB5421C85",
+        "beforeHistory":  {
+                              "undoStack":  [
+                                                [
+                                                    "room-template-000000000000-0-wall-000",
+                                                    "room-template-000000000000-0-wall-001",
+                                                    "room-template-000000000000-0-wall-002",
+                                                    "room-template-000000000000-0-wall-003",
+                                                    "room-template-000000000000-0-wall-004",
+                                                    "room-template-000000000000-0-wall-005",
+                                                    "room-template-000000000000-0-wall-006",
+                                                    "room-template-000000000000-0-wall-007",
+                                                    "room-template-000000000000-0-wall-008",
+                                                    "room-template-000000000000-0-wall-009",
+                                                    "room-template-000000000000-0-wall-010",
+                                                    "room-template-000000000000-0-wall-011",
+                                                    "room-template-000000000000-0-wall-012",
+                                                    "room-template-000000000000-0-wall-013",
+                                                    "room-template-000000000000-0-wall-014",
+                                                    "room-template-000000000000-0-wall-015",
+                                                    "room-template-000000000000-0-wall-016",
+                                                    "room-template-000000000000-1-door-000"
+                                                ],
+                                                [
+                                                    "latest-independent-bed"
+                                                ]
+                                            ],
+                              "currentTransaction":  [
+                                                         "room-template-000000000000-2-object-000",
+                                                         "room-template-000000000000-2-object-001"
+                                                     ],
+                              "currentTransactionId":  "room-template-0"
+                          },
+        "afterHistory":  {
+                             "undoStack":  [
+                                               [
+                                                   "room-template-000000000000-0-wall-000",
+                                                   "room-template-000000000000-0-wall-001",
+                                                   "room-template-000000000000-0-wall-002",
+                                                   "room-template-000000000000-0-wall-003",
+                                                   "room-template-000000000000-0-wall-004",
+                                                   "room-template-000000000000-0-wall-005",
+                                                   "room-template-000000000000-0-wall-006",
+                                                   "room-template-000000000000-0-wall-007",
+                                                   "room-template-000000000000-0-wall-008",
+                                                   "room-template-000000000000-0-wall-009",
+                                                   "room-template-000000000000-0-wall-010",
+                                                   "room-template-000000000000-0-wall-011",
+                                                   "room-template-000000000000-0-wall-012",
+                                                   "room-template-000000000000-0-wall-013",
+                                                   "room-template-000000000000-0-wall-014",
+                                                   "room-template-000000000000-0-wall-015",
+                                                   "room-template-000000000000-0-wall-016",
+                                                   "room-template-000000000000-1-door-000"
+                                               ],
+                                               [
+                                                   "latest-independent-bed"
+                                               ]
+                                           ],
+                             "redoStack":  [
+                                               [
+                                                   "room-template-000000000000-2-object-000",
+                                                   "room-template-000000000000-2-object-001"
+                                               ]
+                                           ]
+                         },
+        "beforeTreasury":  {
+                               "balanceMinorUnits":  23405
+                           },
+        "afterTreasury":  {
+                              "balanceMinorUnits":  23405
+                          },
+        "afterOrders":  [
+                            {
+                                "id":  "room-template-000000000000-0-wall-000",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-001",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-002",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-003",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-004",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-005",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-006",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-007",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-008",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-009",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-010",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-011",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-012",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-013",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-014",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-015",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-016",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-1-door-000",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-2-object-000",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-2-object-001",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "latest-independent-bed",
+                                "state":  "completed",
+                                "placementSequence":  1
+                            }
+                        ],
+        "afterObjects":  {
+                             "placedObjects":  [
+                                                   {
+                                                       "placedObjectId":  "object:11:8",
+                                                       "objectId":  "object.bed",
+                                                       "anchorTile":  {
+                                                                          "x":  11,
+                                                                          "y":  8
+                                                                      },
+                                                       "orientation":  0,
+                                                       "sourceOrderId":  "latest-independent-bed"
+                                                   }
+                                               ]
+                         },
+        "beforeRoomTemplates":  {
+                                    "version":  1,
+                                    "pending":  [
+
+                                                ],
+                                    "completed":  [
+                                                      {
+                                                          "templateId":  "cell-basic",
+                                                          "origin":  {
+                                                                         "x":  10,
+                                                                         "y":  10
+                                                                     },
+                                                          "mirrorX":  false,
+                                                          "quarterTurns":  0,
+                                                          "sequence":  0
+                                                      }
+                                                  ]
+                                },
+        "afterRoomTemplates":  null
+    },
+    {
+        "load":  false,
+        "buyBeforeCompletion":  true,
+        "rotated":  true,
+        "originalFullCaptureSHA256":  "0FE8479A7BEF881FC292389875189256DF563502F4ECE0E8253C34D81844EBBE",
+        "beforeHistory":  {
+                              "undoStack":  [
+                                                [
+                                                    "room-template-000000000000-0-wall-000",
+                                                    "room-template-000000000000-0-wall-001",
+                                                    "room-template-000000000000-0-wall-002",
+                                                    "room-template-000000000000-0-wall-003",
+                                                    "room-template-000000000000-0-wall-004",
+                                                    "room-template-000000000000-0-wall-005",
+                                                    "room-template-000000000000-0-wall-006",
+                                                    "room-template-000000000000-0-wall-007",
+                                                    "room-template-000000000000-0-wall-008",
+                                                    "room-template-000000000000-0-wall-009",
+                                                    "room-template-000000000000-0-wall-010",
+                                                    "room-template-000000000000-0-wall-011",
+                                                    "room-template-000000000000-0-wall-012",
+                                                    "room-template-000000000000-0-wall-013",
+                                                    "room-template-000000000000-0-wall-014",
+                                                    "room-template-000000000000-0-wall-015",
+                                                    "room-template-000000000000-0-wall-016",
+                                                    "room-template-000000000000-1-door-000"
+                                                ],
+                                                [
+                                                    "latest-independent-bed"
+                                                ]
+                                            ],
+                              "currentTransaction":  [
+                                                         "room-template-000000000000-2-object-000",
+                                                         "room-template-000000000000-2-object-001"
+                                                     ],
+                              "currentTransactionId":  "room-template-0"
+                          },
+        "afterHistory":  {
+                             "undoStack":  [
+                                               [
+                                                   "room-template-000000000000-0-wall-000",
+                                                   "room-template-000000000000-0-wall-001",
+                                                   "room-template-000000000000-0-wall-002",
+                                                   "room-template-000000000000-0-wall-003",
+                                                   "room-template-000000000000-0-wall-004",
+                                                   "room-template-000000000000-0-wall-005",
+                                                   "room-template-000000000000-0-wall-006",
+                                                   "room-template-000000000000-0-wall-007",
+                                                   "room-template-000000000000-0-wall-008",
+                                                   "room-template-000000000000-0-wall-009",
+                                                   "room-template-000000000000-0-wall-010",
+                                                   "room-template-000000000000-0-wall-011",
+                                                   "room-template-000000000000-0-wall-012",
+                                                   "room-template-000000000000-0-wall-013",
+                                                   "room-template-000000000000-0-wall-014",
+                                                   "room-template-000000000000-0-wall-015",
+                                                   "room-template-000000000000-0-wall-016",
+                                                   "room-template-000000000000-1-door-000"
+                                               ],
+                                               [
+                                                   "latest-independent-bed"
+                                               ]
+                                           ],
+                             "redoStack":  [
+                                               [
+                                                   "room-template-000000000000-2-object-000",
+                                                   "room-template-000000000000-2-object-001"
+                                               ]
+                                           ]
+                         },
+        "beforeTreasury":  {
+                               "balanceMinorUnits":  23405
+                           },
+        "afterTreasury":  {
+                              "balanceMinorUnits":  23405
+                          },
+        "afterOrders":  [
+                            {
+                                "id":  "room-template-000000000000-0-wall-000",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-001",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-002",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-003",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-004",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-005",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-006",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-007",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-008",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-009",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-010",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-011",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-012",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-013",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-014",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-015",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-016",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-1-door-000",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-2-object-000",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-2-object-001",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "latest-independent-bed",
+                                "state":  "completed",
+                                "placementSequence":  1
+                            }
+                        ],
+        "afterObjects":  {
+                             "placedObjects":  [
+                                                   {
+                                                       "placedObjectId":  "object:11:8",
+                                                       "objectId":  "object.bed",
+                                                       "anchorTile":  {
+                                                                          "x":  11,
+                                                                          "y":  8
+                                                                      },
+                                                       "orientation":  0,
+                                                       "sourceOrderId":  "latest-independent-bed"
+                                                   }
+                                               ]
+                         },
+        "beforeRoomTemplates":  {
+                                    "version":  1,
+                                    "pending":  [
+
+                                                ],
+                                    "completed":  [
+                                                      {
+                                                          "templateId":  "cell-basic",
+                                                          "origin":  {
+                                                                         "x":  10,
+                                                                         "y":  10
+                                                                     },
+                                                          "mirrorX":  true,
+                                                          "quarterTurns":  1,
+                                                          "sequence":  0
+                                                      }
+                                                  ]
+                                },
+        "afterRoomTemplates":  null
+    },
+    {
+        "load":  true,
+        "buyBeforeCompletion":  false,
+        "rotated":  false,
+        "originalFullCaptureSHA256":  "A0A7AA18DAD4EFDB08748F7BADB204F0C08DE73BA15DDEDC72785DB216D434A2",
+        "beforeHistory":  {
+                              "undoStack":  [
+                                                [
+                                                    "room-template-000000000000-0-wall-000",
+                                                    "room-template-000000000000-0-wall-001",
+                                                    "room-template-000000000000-0-wall-002",
+                                                    "room-template-000000000000-0-wall-003",
+                                                    "room-template-000000000000-0-wall-004",
+                                                    "room-template-000000000000-0-wall-005",
+                                                    "room-template-000000000000-0-wall-006",
+                                                    "room-template-000000000000-0-wall-007",
+                                                    "room-template-000000000000-0-wall-008",
+                                                    "room-template-000000000000-0-wall-009",
+                                                    "room-template-000000000000-0-wall-010",
+                                                    "room-template-000000000000-0-wall-011",
+                                                    "room-template-000000000000-0-wall-012",
+                                                    "room-template-000000000000-0-wall-013",
+                                                    "room-template-000000000000-0-wall-014",
+                                                    "room-template-000000000000-0-wall-015",
+                                                    "room-template-000000000000-0-wall-016",
+                                                    "room-template-000000000000-1-door-000",
+                                                    "room-template-000000000000-2-object-000",
+                                                    "room-template-000000000000-2-object-001"
+                                                ]
+                                            ],
+                              "currentTransaction":  [
+                                                         "latest-independent-bed"
+                                                     ],
+                              "currentTransactionId":  null
+                          },
+        "afterHistory":  {
+                             "undoStack":  [
+                                               [
+                                                   "room-template-000000000000-0-wall-000",
+                                                   "room-template-000000000000-0-wall-001",
+                                                   "room-template-000000000000-0-wall-002",
+                                                   "room-template-000000000000-0-wall-003",
+                                                   "room-template-000000000000-0-wall-004",
+                                                   "room-template-000000000000-0-wall-005",
+                                                   "room-template-000000000000-0-wall-006",
+                                                   "room-template-000000000000-0-wall-007",
+                                                   "room-template-000000000000-0-wall-008",
+                                                   "room-template-000000000000-0-wall-009",
+                                                   "room-template-000000000000-0-wall-010",
+                                                   "room-template-000000000000-0-wall-011",
+                                                   "room-template-000000000000-0-wall-012",
+                                                   "room-template-000000000000-0-wall-013",
+                                                   "room-template-000000000000-0-wall-014",
+                                                   "room-template-000000000000-0-wall-015",
+                                                   "room-template-000000000000-0-wall-016",
+                                                   "room-template-000000000000-1-door-000",
+                                                   "room-template-000000000000-2-object-000",
+                                                   "room-template-000000000000-2-object-001"
+                                               ]
+                                           ],
+                             "redoStack":  [
+                                               [
+                                                   "latest-independent-bed"
+                                               ]
+                                           ]
+                         },
+        "beforeTreasury":  {
+                               "balanceMinorUnits":  23405
+                           },
+        "afterTreasury":  {
+                              "balanceMinorUnits":  23405
+                          },
+        "afterOrders":  [
+                            {
+                                "id":  "room-template-000000000000-0-wall-000",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-001",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-002",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-003",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-004",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-005",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-006",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-007",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-008",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-009",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-010",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-011",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-012",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-013",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-014",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-015",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-016",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-1-door-000",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-2-object-000",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-2-object-001",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "latest-independent-bed",
+                                "state":  "cancelled",
+                                "placementSequence":  1
+                            }
+                        ],
+        "afterObjects":  {
+                             "placedObjects":  [
+                                                   {
+                                                       "placedObjectId":  "object:11:11",
+                                                       "objectId":  "object.bed",
+                                                       "anchorTile":  {
+                                                                          "x":  11,
+                                                                          "y":  11
+                                                                      },
+                                                       "orientation":  0,
+                                                       "sourceOrderId":  "room-template-000000000000-2-object-000"
+                                                   },
+                                                   {
+                                                       "placedObjectId":  "object:12:14",
+                                                       "objectId":  "object.toilet",
+                                                       "anchorTile":  {
+                                                                          "x":  12,
+                                                                          "y":  14
+                                                                      },
+                                                       "orientation":  0,
+                                                       "sourceOrderId":  "room-template-000000000000-2-object-001"
+                                                   }
+                                               ]
+                         },
+        "beforeRoomTemplates":  {
+                                    "version":  1,
+                                    "pending":  [
+
+                                                ],
+                                    "completed":  [
+                                                      {
+                                                          "templateId":  "cell-basic",
+                                                          "origin":  {
+                                                                         "x":  10,
+                                                                         "y":  10
+                                                                     },
+                                                          "mirrorX":  false,
+                                                          "quarterTurns":  0,
+                                                          "sequence":  0
+                                                      }
+                                                  ]
+                                },
+        "afterRoomTemplates":  {
+                                   "version":  1,
+                                   "pending":  [
+
+                                               ],
+                                   "completed":  [
+                                                     {
+                                                         "templateId":  "cell-basic",
+                                                         "origin":  {
+                                                                        "x":  10,
+                                                                        "y":  10
+                                                                    },
+                                                         "mirrorX":  false,
+                                                         "quarterTurns":  0,
+                                                         "sequence":  0
+                                                     }
+                                                 ]
+                               }
+    },
+    {
+        "load":  true,
+        "buyBeforeCompletion":  false,
+        "rotated":  true,
+        "originalFullCaptureSHA256":  "65451EFB542F39D6B6A87CAEA0F01CB69290D14DE49FB3C81E805828216534D6",
+        "beforeHistory":  {
+                              "undoStack":  [
+                                                [
+                                                    "room-template-000000000000-0-wall-000",
+                                                    "room-template-000000000000-0-wall-001",
+                                                    "room-template-000000000000-0-wall-002",
+                                                    "room-template-000000000000-0-wall-003",
+                                                    "room-template-000000000000-0-wall-004",
+                                                    "room-template-000000000000-0-wall-005",
+                                                    "room-template-000000000000-0-wall-006",
+                                                    "room-template-000000000000-0-wall-007",
+                                                    "room-template-000000000000-0-wall-008",
+                                                    "room-template-000000000000-0-wall-009",
+                                                    "room-template-000000000000-0-wall-010",
+                                                    "room-template-000000000000-0-wall-011",
+                                                    "room-template-000000000000-0-wall-012",
+                                                    "room-template-000000000000-0-wall-013",
+                                                    "room-template-000000000000-0-wall-014",
+                                                    "room-template-000000000000-0-wall-015",
+                                                    "room-template-000000000000-0-wall-016",
+                                                    "room-template-000000000000-1-door-000",
+                                                    "room-template-000000000000-2-object-000",
+                                                    "room-template-000000000000-2-object-001"
+                                                ]
+                                            ],
+                              "currentTransaction":  [
+                                                         "latest-independent-bed"
+                                                     ],
+                              "currentTransactionId":  null
+                          },
+        "afterHistory":  {
+                             "undoStack":  [
+                                               [
+                                                   "room-template-000000000000-0-wall-000",
+                                                   "room-template-000000000000-0-wall-001",
+                                                   "room-template-000000000000-0-wall-002",
+                                                   "room-template-000000000000-0-wall-003",
+                                                   "room-template-000000000000-0-wall-004",
+                                                   "room-template-000000000000-0-wall-005",
+                                                   "room-template-000000000000-0-wall-006",
+                                                   "room-template-000000000000-0-wall-007",
+                                                   "room-template-000000000000-0-wall-008",
+                                                   "room-template-000000000000-0-wall-009",
+                                                   "room-template-000000000000-0-wall-010",
+                                                   "room-template-000000000000-0-wall-011",
+                                                   "room-template-000000000000-0-wall-012",
+                                                   "room-template-000000000000-0-wall-013",
+                                                   "room-template-000000000000-0-wall-014",
+                                                   "room-template-000000000000-0-wall-015",
+                                                   "room-template-000000000000-0-wall-016",
+                                                   "room-template-000000000000-1-door-000",
+                                                   "room-template-000000000000-2-object-000",
+                                                   "room-template-000000000000-2-object-001"
+                                               ]
+                                           ],
+                             "redoStack":  [
+                                               [
+                                                   "latest-independent-bed"
+                                               ]
+                                           ]
+                         },
+        "beforeTreasury":  {
+                               "balanceMinorUnits":  23405
+                           },
+        "afterTreasury":  {
+                              "balanceMinorUnits":  23405
+                          },
+        "afterOrders":  [
+                            {
+                                "id":  "room-template-000000000000-0-wall-000",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-001",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-002",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-003",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-004",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-005",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-006",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-007",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-008",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-009",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-010",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-011",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-012",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-013",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-014",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-015",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-016",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-1-door-000",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-2-object-000",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-2-object-001",
+                                "state":  "completed",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "latest-independent-bed",
+                                "state":  "cancelled",
+                                "placementSequence":  1
+                            }
+                        ],
+        "afterObjects":  {
+                             "placedObjects":  [
+                                                   {
+                                                       "placedObjectId":  "object:12:11",
+                                                       "objectId":  "object.toilet",
+                                                       "anchorTile":  {
+                                                                          "x":  12,
+                                                                          "y":  11
+                                                                      },
+                                                       "orientation":  1,
+                                                       "sourceOrderId":  "room-template-000000000000-2-object-001"
+                                                   },
+                                                   {
+                                                       "placedObjectId":  "object:14:12",
+                                                       "objectId":  "object.bed",
+                                                       "anchorTile":  {
+                                                                          "x":  14,
+                                                                          "y":  12
+                                                                      },
+                                                       "orientation":  1,
+                                                       "sourceOrderId":  "room-template-000000000000-2-object-000"
+                                                   }
+                                               ]
+                         },
+        "beforeRoomTemplates":  {
+                                    "version":  1,
+                                    "pending":  [
+
+                                                ],
+                                    "completed":  [
+                                                      {
+                                                          "templateId":  "cell-basic",
+                                                          "origin":  {
+                                                                         "x":  10,
+                                                                         "y":  10
+                                                                     },
+                                                          "mirrorX":  true,
+                                                          "quarterTurns":  1,
+                                                          "sequence":  0
+                                                      }
+                                                  ]
+                                },
+        "afterRoomTemplates":  {
+                                   "version":  1,
+                                   "pending":  [
+
+                                               ],
+                                   "completed":  [
+                                                     {
+                                                         "templateId":  "cell-basic",
+                                                         "origin":  {
+                                                                        "x":  10,
+                                                                        "y":  10
+                                                                    },
+                                                         "mirrorX":  true,
+                                                         "quarterTurns":  1,
+                                                         "sequence":  0
+                                                     }
+                                                 ]
+                               }
+    },
+    {
+        "load":  true,
+        "buyBeforeCompletion":  true,
+        "rotated":  false,
+        "originalFullCaptureSHA256":  "231F4467CF834DD784C3349AC3969FB946E4F0519422F9DC9E1AC3FB3453DDFE",
+        "beforeHistory":  {
+                              "undoStack":  [
+                                                [
+                                                    "room-template-000000000000-0-wall-000",
+                                                    "room-template-000000000000-0-wall-001",
+                                                    "room-template-000000000000-0-wall-002",
+                                                    "room-template-000000000000-0-wall-003",
+                                                    "room-template-000000000000-0-wall-004",
+                                                    "room-template-000000000000-0-wall-005",
+                                                    "room-template-000000000000-0-wall-006",
+                                                    "room-template-000000000000-0-wall-007",
+                                                    "room-template-000000000000-0-wall-008",
+                                                    "room-template-000000000000-0-wall-009",
+                                                    "room-template-000000000000-0-wall-010",
+                                                    "room-template-000000000000-0-wall-011",
+                                                    "room-template-000000000000-0-wall-012",
+                                                    "room-template-000000000000-0-wall-013",
+                                                    "room-template-000000000000-0-wall-014",
+                                                    "room-template-000000000000-0-wall-015",
+                                                    "room-template-000000000000-0-wall-016",
+                                                    "room-template-000000000000-1-door-000"
+                                                ],
+                                                [
+                                                    "latest-independent-bed"
+                                                ]
+                                            ],
+                              "currentTransaction":  [
+                                                         "room-template-000000000000-2-object-000",
+                                                         "room-template-000000000000-2-object-001"
+                                                     ],
+                              "currentTransactionId":  "room-template-0"
+                          },
+        "afterHistory":  {
+                             "undoStack":  [
+                                               [
+                                                   "room-template-000000000000-0-wall-000",
+                                                   "room-template-000000000000-0-wall-001",
+                                                   "room-template-000000000000-0-wall-002",
+                                                   "room-template-000000000000-0-wall-003",
+                                                   "room-template-000000000000-0-wall-004",
+                                                   "room-template-000000000000-0-wall-005",
+                                                   "room-template-000000000000-0-wall-006",
+                                                   "room-template-000000000000-0-wall-007",
+                                                   "room-template-000000000000-0-wall-008",
+                                                   "room-template-000000000000-0-wall-009",
+                                                   "room-template-000000000000-0-wall-010",
+                                                   "room-template-000000000000-0-wall-011",
+                                                   "room-template-000000000000-0-wall-012",
+                                                   "room-template-000000000000-0-wall-013",
+                                                   "room-template-000000000000-0-wall-014",
+                                                   "room-template-000000000000-0-wall-015",
+                                                   "room-template-000000000000-0-wall-016",
+                                                   "room-template-000000000000-1-door-000"
+                                               ],
+                                               [
+                                                   "latest-independent-bed"
+                                               ]
+                                           ],
+                             "redoStack":  [
+                                               [
+                                                   "room-template-000000000000-2-object-000",
+                                                   "room-template-000000000000-2-object-001"
+                                               ]
+                                           ]
+                         },
+        "beforeTreasury":  {
+                               "balanceMinorUnits":  23405
+                           },
+        "afterTreasury":  {
+                              "balanceMinorUnits":  23405
+                          },
+        "afterOrders":  [
+                            {
+                                "id":  "room-template-000000000000-0-wall-000",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-001",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-002",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-003",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-004",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-005",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-006",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-007",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-008",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-009",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-010",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-011",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-012",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-013",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-014",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-015",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-016",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-1-door-000",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-2-object-000",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-2-object-001",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "latest-independent-bed",
+                                "state":  "completed",
+                                "placementSequence":  1
+                            }
+                        ],
+        "afterObjects":  {
+                             "placedObjects":  [
+                                                   {
+                                                       "placedObjectId":  "object:11:8",
+                                                       "objectId":  "object.bed",
+                                                       "anchorTile":  {
+                                                                          "x":  11,
+                                                                          "y":  8
+                                                                      },
+                                                       "orientation":  0,
+                                                       "sourceOrderId":  "latest-independent-bed"
+                                                   }
+                                               ]
+                         },
+        "beforeRoomTemplates":  {
+                                    "version":  1,
+                                    "pending":  [
+
+                                                ],
+                                    "completed":  [
+                                                      {
+                                                          "templateId":  "cell-basic",
+                                                          "origin":  {
+                                                                         "x":  10,
+                                                                         "y":  10
+                                                                     },
+                                                          "mirrorX":  false,
+                                                          "quarterTurns":  0,
+                                                          "sequence":  0
+                                                      }
+                                                  ]
+                                },
+        "afterRoomTemplates":  null
+    },
+    {
+        "load":  true,
+        "buyBeforeCompletion":  true,
+        "rotated":  true,
+        "originalFullCaptureSHA256":  "8B80E55D3F938F544B1CE5D1200B57DA46706843E15A24B30AA0D0327E216615",
+        "beforeHistory":  {
+                              "undoStack":  [
+                                                [
+                                                    "room-template-000000000000-0-wall-000",
+                                                    "room-template-000000000000-0-wall-001",
+                                                    "room-template-000000000000-0-wall-002",
+                                                    "room-template-000000000000-0-wall-003",
+                                                    "room-template-000000000000-0-wall-004",
+                                                    "room-template-000000000000-0-wall-005",
+                                                    "room-template-000000000000-0-wall-006",
+                                                    "room-template-000000000000-0-wall-007",
+                                                    "room-template-000000000000-0-wall-008",
+                                                    "room-template-000000000000-0-wall-009",
+                                                    "room-template-000000000000-0-wall-010",
+                                                    "room-template-000000000000-0-wall-011",
+                                                    "room-template-000000000000-0-wall-012",
+                                                    "room-template-000000000000-0-wall-013",
+                                                    "room-template-000000000000-0-wall-014",
+                                                    "room-template-000000000000-0-wall-015",
+                                                    "room-template-000000000000-0-wall-016",
+                                                    "room-template-000000000000-1-door-000"
+                                                ],
+                                                [
+                                                    "latest-independent-bed"
+                                                ]
+                                            ],
+                              "currentTransaction":  [
+                                                         "room-template-000000000000-2-object-000",
+                                                         "room-template-000000000000-2-object-001"
+                                                     ],
+                              "currentTransactionId":  "room-template-0"
+                          },
+        "afterHistory":  {
+                             "undoStack":  [
+                                               [
+                                                   "room-template-000000000000-0-wall-000",
+                                                   "room-template-000000000000-0-wall-001",
+                                                   "room-template-000000000000-0-wall-002",
+                                                   "room-template-000000000000-0-wall-003",
+                                                   "room-template-000000000000-0-wall-004",
+                                                   "room-template-000000000000-0-wall-005",
+                                                   "room-template-000000000000-0-wall-006",
+                                                   "room-template-000000000000-0-wall-007",
+                                                   "room-template-000000000000-0-wall-008",
+                                                   "room-template-000000000000-0-wall-009",
+                                                   "room-template-000000000000-0-wall-010",
+                                                   "room-template-000000000000-0-wall-011",
+                                                   "room-template-000000000000-0-wall-012",
+                                                   "room-template-000000000000-0-wall-013",
+                                                   "room-template-000000000000-0-wall-014",
+                                                   "room-template-000000000000-0-wall-015",
+                                                   "room-template-000000000000-0-wall-016",
+                                                   "room-template-000000000000-1-door-000"
+                                               ],
+                                               [
+                                                   "latest-independent-bed"
+                                               ]
+                                           ],
+                             "redoStack":  [
+                                               [
+                                                   "room-template-000000000000-2-object-000",
+                                                   "room-template-000000000000-2-object-001"
+                                               ]
+                                           ]
+                         },
+        "beforeTreasury":  {
+                               "balanceMinorUnits":  23405
+                           },
+        "afterTreasury":  {
+                              "balanceMinorUnits":  23405
+                          },
+        "afterOrders":  [
+                            {
+                                "id":  "room-template-000000000000-0-wall-000",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-001",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-002",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-003",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-004",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-005",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-006",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-007",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-008",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-009",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-010",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-011",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-012",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-013",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-014",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-015",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-0-wall-016",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-1-door-000",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-2-object-000",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "room-template-000000000000-2-object-001",
+                                "state":  "cancelled",
+                                "placementSequence":  0
+                            },
+                            {
+                                "id":  "latest-independent-bed",
+                                "state":  "completed",
+                                "placementSequence":  1
+                            }
+                        ],
+        "afterObjects":  {
+                             "placedObjects":  [
+                                                   {
+                                                       "placedObjectId":  "object:11:8",
+                                                       "objectId":  "object.bed",
+                                                       "anchorTile":  {
+                                                                          "x":  11,
+                                                                          "y":  8
+                                                                      },
+                                                       "orientation":  0,
+                                                       "sourceOrderId":  "latest-independent-bed"
+                                                   }
+                                               ]
+                         },
+        "beforeRoomTemplates":  {
+                                    "version":  1,
+                                    "pending":  [
+
+                                                ],
+                                    "completed":  [
+                                                      {
+                                                          "templateId":  "cell-basic",
+                                                          "origin":  {
+                                                                         "x":  10,
+                                                                         "y":  10
+                                                                     },
+                                                          "mirrorX":  true,
+                                                          "quarterTurns":  1,
+                                                          "sequence":  0
+                                                      }
+                                                  ]
+                                },
+        "afterRoomTemplates":  null
+    }
+]
