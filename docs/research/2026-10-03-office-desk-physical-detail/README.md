@@ -79,3 +79,41 @@ descriptor/export entry point. Full72pose repeat, additional native geometry
 and camera negatives and strict PNG integrity are next. Genuine worker-built
 Reception q0/q1, actual physical-detail calibration, SaveLoad, consumer-only
 negative and exact restored acceptance remain queued behind the parent lease.
+
+## Canonical repeat export and actual negative controls
+
+After source/preparation commit `e2c7ff138fa6ffa38324e94a2372a46449cba52c`, two
+complete72pose exports yielded73/73 direct byte-identical files. Descriptor
+SHA256 `e6cddb25540a2dde9326bf4b15cae1767690100c4a4eb05312fdee430aa49164`.
+Every actual256×256RGBA PNG decodes with transparent borders, minimum59px.
+The72pose cropped sheet and full30/40 and300/40 PNGs were opened. Cropping is
+alpha bounds plus8px and explicitly source inspection, not native scale proof.
+Separate keys and raised drawer handles are represented by actual geometry;
+different camera poses legitimately hide them behind the monitor or pedestal.
+
+The existing desk exporter entry point now delegates to the dedicated audited
+wrapper, preserving the pinned Blender guard and `--verify`/`--preview` routes.
+Running that existing entry point with `--verify` actually loads the new source
+and exits0 for72camera transforms/allfour occupied orientations. The existing
+desk descriptor alone references the new source/72frames. Shared exporters,
+registry/default mapping, every other model and Staff Room override remain
+unchanged. The earlier generic source/export and native receipts remain in Git
+history; their player acceptance is not transferred to this new source.
+
+Nine additional actual Blender negatives exit1: physical keycap omission,
+drawer standoff displacement, retained worktop bevel, retained monitor
+material, loadedXscale, target height, canonical descriptor, camera span and
+camera vector. The two independent reversed-keycap winding negatives were
+already recorded. Exact source/wrapper restoration returns actual native
+verify0, with original/dedicated source bytes unchanged by negatives.
+
+An actual referenced PNG byte mutation makes the strict new integrity test
+exit1; exact bytes restore to exit0. Six focused suites pass,53tests pass with
+one optional Blender subprocess skipped; app/tools TypeScript exits0. Actual
+native subprocess receipts above establish source behavior independently.
+No test guard, geometry limit, palette or gameplay rule was weakened.
+
+The attempted file replacement patch initially rejected two operations on the
+same path before editing it; separate replacement completed successfully. This
+tool preflight did not render pixels or run acceptance and is not counted as
+model evidence. No browser or new workflow/configuration was started.

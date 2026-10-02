@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "assetId": "furniture.office.desk.generic",
-  "source": "assets/source/blender/furniture.office.desk.generic.blend",
-  "sourceSha256": "87ecf22ec7f4d82e5c2c47bb18870b8ef060a84759cb55d38b131fc34e72e11b",
+  "source": "assets/source/blender/furniture.office.desk.generic.angled-detail.blend",
+  "sourceSha256": "486b83b5079698faeb1cd58e989d1a1dfe524996813474b04550dd4c82a2fd46",
   "resolutionPx": [
     256,
     256
@@ -44,434 +44,434 @@
     {
       "yawDegrees": 0,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+00-elev20.da4c223f70ae.png",
-      "sha256": "da4c223f70aeefe5c51bae0f6274414ce8b575ec412433e2554355e30865b2b7"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+00-elev20.8114f2826c80.png",
+      "sha256": "8114f2826c800234d560794dd0ca77fc5d14f04f7c094527637e6db1e3c03f77"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+00-elev30.b31757dc2d88.png",
-      "sha256": "b31757dc2d88aa304163ef55f2b9d6bdefacbd46d07a9882924b57abcbf2ef0a"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+00-elev30.c208d3e64606.png",
+      "sha256": "c208d3e64606fdad83db882457ff38961778ab2979d5fd88becaf6244b9cdbac"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+00-elev40.6a7256870a83.png",
-      "sha256": "6a7256870a83e254a0a1ca71de56987595ae1806eb126851103041f5bbdf4cea"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+00-elev40.855baa61c6a3.png",
+      "sha256": "855baa61c6a3a9a6d859f85c5d1baed846c3bdc1f5d2af6f7b557fbf4803c913"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+00-elev50.93444c27adfd.png",
-      "sha256": "93444c27adfde61c36365cc6015ebaa6a3529795fa0f6d740d6e024ac4121f66"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+00-elev50.249b7e03d684.png",
+      "sha256": "249b7e03d684161c0133abd0664d9b3254db217c35cdef8dfce3939de5c5a90d"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+00-elev60.9afe74209fab.png",
-      "sha256": "9afe74209fabb6377d1bd79a4565944efae8fdefca34e725539fe1ccec933bce"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+00-elev60.f8ae80fe2834.png",
+      "sha256": "f8ae80fe2834f24c190f2c64a86db83a34b3a84e825a8a217588db76bca7b824"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+00-elev70.8a4bdb3d4a6f.png",
-      "sha256": "8a4bdb3d4a6f7da555a6eeb3830577f62e8213a89dea62b77dd8af1662a8f786"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+00-elev70.bc8a09389601.png",
+      "sha256": "bc8a0938960182d6891a40d4f427c5e20894506721b55a1800a922a9eebf85ea"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+30-elev20.b4238aa87894.png",
-      "sha256": "b4238aa87894840b9e685c6334c06cd17f3406bad6e21e5d87c409398404ae48"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+30-elev20.f84dd7559351.png",
+      "sha256": "f84dd755935129e75e3fdc358eea55cb15b7ae4bda223298d5cf9f231d5a0bd5"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+30-elev30.317b2e5e3f8b.png",
-      "sha256": "317b2e5e3f8b151d347d46041f95fb29536ec402ce0597f583741ba58ce7e0a9"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+30-elev30.7e13b74a2ae6.png",
+      "sha256": "7e13b74a2ae6b8274231755eb4806f230e677535dc037363a60984081b7a19f9"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+30-elev40.867e175077c1.png",
-      "sha256": "867e175077c1696dc5dcdbe9c464451f34ffc5f7580c38d3eac815cb4c6986de"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+30-elev40.d897abb62c60.png",
+      "sha256": "d897abb62c6016564105b476c4c69db2b6d159da8e409f32ee84e7c238098960"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+30-elev50.d5b0f31b9d46.png",
-      "sha256": "d5b0f31b9d46a0bb128a472e35f367c95b12b454e9fb461bc27d47f148df8a35"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+30-elev50.fb7405ecbae5.png",
+      "sha256": "fb7405ecbae5c600984ec5b08027cb355c570dff87515bb297a73838b8b42427"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+30-elev60.b8a78e76269a.png",
-      "sha256": "b8a78e76269a3a480a965eedf62c2c93e5d692310af02cacda11be68d298a0c2"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+30-elev60.b6b599db6486.png",
+      "sha256": "b6b599db6486f3161cddc53bc49d0665a5564249e93fc31772127cc2e15bda94"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+30-elev70.94b0220b2507.png",
-      "sha256": "94b0220b2507748a0496472fbb1bb64252a28f368c48e7f394d7c39eed9b6ca3"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+30-elev70.7b4c036e749d.png",
+      "sha256": "7b4c036e749d51c88c817eed5002ccb78c13f1826b6aeb932136bc2af3b5daee"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+60-elev20.8541961afadf.png",
-      "sha256": "8541961afadfb6291776ecf548bdd7988dd0645b5dcc1e85a35484ac21bde710"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+60-elev20.beaf52aa1331.png",
+      "sha256": "beaf52aa133122aca70631714a539de0082b32ddde5b87508b9aac83785fbf43"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+60-elev30.4887e6999956.png",
-      "sha256": "4887e6999956a382419b39b9f6882453296aafc308466d3d311b78e989a64c1d"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+60-elev30.9305aef2dee3.png",
+      "sha256": "9305aef2dee3259fd6160800ab7273d1f3ff30e019d6000e12b887f7545f29f1"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+60-elev40.87ed990f6990.png",
-      "sha256": "87ed990f699005c60457fd84bc0e29a201c265862225ac6c8deffa9806335a32"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+60-elev40.c3368a96d41a.png",
+      "sha256": "c3368a96d41acf35b14fbecf116d4273339ab012d262af48a5a5c332706f9443"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+60-elev50.accbb2953f06.png",
-      "sha256": "accbb2953f0688366129c1cca312c7724244e5a1f72fdb3cd1c48568204fe5bc"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+60-elev50.23c241a5be50.png",
+      "sha256": "23c241a5be50e95d4b6b14a5a2417277a667d7a9563e17560430275b80f5e57a"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+60-elev60.b0f57737f9cb.png",
-      "sha256": "b0f57737f9cb37ec9dc8ac92275d68f4ab22209ad0df06cdde46a42c767973f7"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+60-elev60.c75afaa9335b.png",
+      "sha256": "c75afaa9335b1af095790e0dbe0952e0891e9f398c738c0c0cc628d119b2d6e2"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+60-elev70.6fe7aab8c4d5.png",
-      "sha256": "6fe7aab8c4d52b2b25504e52808efa25eaee72dd6e20d6de28a0c6b2c20143b9"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+60-elev70.b5b6a804c756.png",
+      "sha256": "b5b6a804c756e3909fe411a3ea9d03e7e549c7eb0d65916a00c8fc2e17dc8717"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+90-elev20.69f81f5aff1c.png",
-      "sha256": "69f81f5aff1c5ce7cc3585abdae43152ad8f54fe12ecbec2df52b225cfeb8564"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+90-elev20.b5ae04afcb99.png",
+      "sha256": "b5ae04afcb992489347944d270a18613f8adaf81e8b4f5319b4114c52ecf73f8"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+90-elev30.743e3f57b4d4.png",
-      "sha256": "743e3f57b4d46a5cf4a2bf77854ad9e5cafc322762b43803b812051958fe5467"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+90-elev30.9eeb59b131fa.png",
+      "sha256": "9eeb59b131fa59ee1f169df8b980a816deb1acb3cdaa3424154e9908e6ea5816"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+90-elev40.b6bc07af4ae5.png",
-      "sha256": "b6bc07af4ae5af84ec3a32ea864236721d5cd3bdfe077a998cc90c04afe162fd"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+90-elev40.357e48784e77.png",
+      "sha256": "357e48784e77dcd7fa89997b640c68c72998a9d27b840bbd945cc556292bbf68"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+90-elev50.ad931aadd030.png",
-      "sha256": "ad931aadd030cf4b9c9da2ef36b73b23b86887d0aa90e789996054643cb082ee"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+90-elev50.54f99026e336.png",
+      "sha256": "54f99026e336e5206ec9aa70d36b46d0622a7dbf81ef16d8df897c4f19283ba3"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+90-elev60.b320a8aee0f9.png",
-      "sha256": "b320a8aee0f9c555041909ec2a481901d42333cad8842e0ece2a4afec220f590"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+90-elev60.bd64d7cf07b1.png",
+      "sha256": "bd64d7cf07b18b55447e3d013a0ccbd7e7de28c948b6414322dd75e36393ed76"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+90-elev70.349d285673dd.png",
-      "sha256": "349d285673dd9870393d5ad3446c6055f2fc7a7fab65f813f7b438400955d876"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+90-elev70.a4a9c42fdbb9.png",
+      "sha256": "a4a9c42fdbb97132e06a8648e8de2da731cf774d3012e74c440ca87f986fa692"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+120-elev20.c94181efb6d2.png",
-      "sha256": "c94181efb6d22d458d3b0668e5806ff4e47da01147597f2fbaad9991567d142f"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+120-elev20.c0caf4f3ecd7.png",
+      "sha256": "c0caf4f3ecd74e1d94bed9e2817b038e2bbf3f3d3bb5fccec17da6d213b98b02"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+120-elev30.ea1a357514ad.png",
-      "sha256": "ea1a357514ad1d5899994aaefb5dcecb2c0771aa7fa37d9350045ee8a4ef7c00"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+120-elev30.03195595157e.png",
+      "sha256": "03195595157e900e5c57238eaf7199ae0098032b558056360c9287a8f6ca19ac"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+120-elev40.6c05d98ff4eb.png",
-      "sha256": "6c05d98ff4eb3bf88c6fad61b186385a837a8cc1e6095eb42ab6f46ff40bd11a"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+120-elev40.d811d1d3d2af.png",
+      "sha256": "d811d1d3d2af4cffed28b46b418549090e0ea02eeedf715c7d4aa509c69ed488"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+120-elev50.66ace5ecf098.png",
-      "sha256": "66ace5ecf098b313dd0b50cfde7d75cdf662184ebf92352e46335edce944b122"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+120-elev50.9d5c2e654661.png",
+      "sha256": "9d5c2e654661cdfb298842fa53890757d52ba0aa4513ca24c759404fad61205e"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+120-elev60.966c00714ddd.png",
-      "sha256": "966c00714ddd38118ff6f761b088e2385cdbc75b03559d8670e6647b02ced794"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+120-elev60.db06e7a53dfa.png",
+      "sha256": "db06e7a53dfa58f1dece51cec4ecc152019512ca02f17d3eb349ef21931944de"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+120-elev70.074153a9fadd.png",
-      "sha256": "074153a9faddaa2206ac4a4a69f53b120eb4a8e220f0f7077886510867791b25"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+120-elev70.340a614d551f.png",
+      "sha256": "340a614d551f4fbf51b5a29b03589bf5937e668fee1e33c09743a55f05cc7cf7"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+150-elev20.3ecd597be46e.png",
-      "sha256": "3ecd597be46ed00113e4b1483bf546f1b6506a02ff554439b31b1e44b19aab3d"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+150-elev20.4a9d55868b2c.png",
+      "sha256": "4a9d55868b2cd6a805296702e87bb05849903008ebb43b99c14d107bc29c5fb2"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+150-elev30.4f908f704df2.png",
-      "sha256": "4f908f704df256281eaa8b9529a68b0629868c94c4aa0d00c621cff4c779ca3b"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+150-elev30.d2acc94da20a.png",
+      "sha256": "d2acc94da20ae382bf9765a2b89085a4374d0906ce99417c719d5a8c87ae4ebd"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+150-elev40.77fb250395a4.png",
-      "sha256": "77fb250395a43c608e7ae81b3689927911336dfb9b0dcf62341b5bdfbc6209f3"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+150-elev40.44cc91f253eb.png",
+      "sha256": "44cc91f253eb4b2f1bd84eeecb6b5ffd0d950775babea81b507bd340e866e239"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+150-elev50.badb0d025187.png",
-      "sha256": "badb0d025187f529201348054fc0022c52c1e20247a958d83c5c6b1f49a39700"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+150-elev50.10f2984e9784.png",
+      "sha256": "10f2984e97843a3b05e9df29a6807860d5cd7d11efeffd870c816383be756d92"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+150-elev60.5bcdd9869afb.png",
-      "sha256": "5bcdd9869afb3767be6067a904622cf2950a5c9a3c6d1ddcd282c04036cb755d"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+150-elev60.e17e3399a7cc.png",
+      "sha256": "e17e3399a7ccacf9ddc21adf163e50c03905fed08325cbdc432c408942792dc4"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+150-elev70.885da85e6cb0.png",
-      "sha256": "885da85e6cb088f9ef68cdbcaf524b0a9f4acef3be0fa45180ebe54cfd34acfe"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+150-elev70.d74278891520.png",
+      "sha256": "d7427889152033d15aeaf692ea59645354d61be421aff7341702ce5b9b6014f5"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+180-elev20.682dba8d739d.png",
-      "sha256": "682dba8d739d1836161e8e23eae100eabf5c78bcb1e10d0118867aea03a99b8e"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+180-elev20.2bc7e40c2ef5.png",
+      "sha256": "2bc7e40c2ef5836700ee4db3d89917870fe27b2daedf9d21d740191ab8ac428c"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+180-elev30.7f66293b8a69.png",
-      "sha256": "7f66293b8a6924856df0bec866116b82f069b3a629eb1e84bfc20a085d8a8aa9"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+180-elev30.76796b5db1bf.png",
+      "sha256": "76796b5db1bfcc752c7f2c08651d94e32802a84173e6a6b5cf6c3af04ac05796"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+180-elev40.8f9ab8d76f01.png",
-      "sha256": "8f9ab8d76f0130fa8a7e863b2d356950bb84b6c639409a5913847be68f6e6287"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+180-elev40.24afe104d134.png",
+      "sha256": "24afe104d134848fdbdb2371402d0a2075167cd8211c6dd386b7327c1e5c2343"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+180-elev50.82304d2004d9.png",
-      "sha256": "82304d2004d94dc0e383689a159f72bce08ad2a21f4041315b6ef78ba0d0a680"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+180-elev50.4974c267743a.png",
+      "sha256": "4974c267743a71a0fc119af4e9d7620de736c8fa11991061d0fa3a49e6bfbb8c"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+180-elev60.5fddc196b013.png",
-      "sha256": "5fddc196b013d2e95663bc444e2d4e0633ab32882801427d2035f45003d06f46"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+180-elev60.7ab0ae41bdaf.png",
+      "sha256": "7ab0ae41bdaf4db8081599ad0c708df7c4ce3d71a115fbb0c3b5ca09109b84ef"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+180-elev70.4ca2dc6e6d10.png",
-      "sha256": "4ca2dc6e6d104a4ceab8d23681b143ad6e5018a529812db0632ba6e64eed5f02"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+180-elev70.6457b37301b2.png",
+      "sha256": "6457b37301b289c6a5d009e3150a9022c06af136ef90de330687bbfb58459104"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+210-elev20.cfe1e097939f.png",
-      "sha256": "cfe1e097939f8d3964b6ca78f00d440b1d0656e1d3209f75f4b175408595b192"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+210-elev20.61c116450bf4.png",
+      "sha256": "61c116450bf474ce16e113e13821c057435714a96c0b58a4dce9907671f19c74"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+210-elev30.657bfd1f4fe2.png",
-      "sha256": "657bfd1f4fe258b1d91b14add9748e885c21b9d1ac868f0e75020e891e8fb282"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+210-elev30.898de0c1dc81.png",
+      "sha256": "898de0c1dc8166dd3d37bb327b1b0df2d1f3da5a2757da51773ae040577d733e"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+210-elev40.a3379948f529.png",
-      "sha256": "a3379948f5298466955f43225f7beedc2134010fe1b0a30ee60cd09d974c8a9f"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+210-elev40.8eee1733c8fc.png",
+      "sha256": "8eee1733c8fc010fe0712b8baa40ebdf8d3595f463471fe3921432e8671dc9ed"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+210-elev50.d15b018f1dc0.png",
-      "sha256": "d15b018f1dc0e8d460c4804501fa08f520b3332698fd4d051508446dd7f6ae52"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+210-elev50.5eb4c6a0b79a.png",
+      "sha256": "5eb4c6a0b79a006d247e7c995c53dfd0ad1574d00c93cdbf837adc890bcab847"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+210-elev60.9539220097a4.png",
-      "sha256": "9539220097a4bb253c2cbafc676f6fb0fa0d9a0a2adf54042ca38a15982aa047"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+210-elev60.3609f405c846.png",
+      "sha256": "3609f405c846fc8e3d75ef51e189402610de5617d39e6f90f3f7667de2a783cc"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+210-elev70.e0c4a5c79c43.png",
-      "sha256": "e0c4a5c79c437e9345f5567353972a9c5c9aa56a73dbae8a7ff3c744528fcb92"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+210-elev70.7a7851fd4e52.png",
+      "sha256": "7a7851fd4e52fb0a295e8346636eef2e3463c8f4d8763c83742150d36c96bdb9"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+240-elev20.93f86daa5fa1.png",
-      "sha256": "93f86daa5fa14ab514f9629bb14d3636ad5aa2cec9ba76ab4c56dd40437b9827"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+240-elev20.d9974053a695.png",
+      "sha256": "d9974053a695fe422068d005e6527b396db75a4441e22505877b5cb08d91e14d"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+240-elev30.a21f80ec3d74.png",
-      "sha256": "a21f80ec3d74982a81a3dc7d15e29f6bae454759590fef518a470758cc69c89a"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+240-elev30.f02065cb30ab.png",
+      "sha256": "f02065cb30abd0f5a38c93dc68ad0bb40ac69391abe0f5c4108d5bcd067b5aac"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+240-elev40.8cd950dd47f2.png",
-      "sha256": "8cd950dd47f27f4a807b678cec6d74843b07aa3dc05303116221da6f43468d32"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+240-elev40.f2672d54949d.png",
+      "sha256": "f2672d54949dda07d760fed4e56ae8249d703ca5d4a36159c10f8afb66d15108"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+240-elev50.95bc3f84e057.png",
-      "sha256": "95bc3f84e057217c0230eb967e3fffcf57529db87e434250b291c809a16e6db8"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+240-elev50.a61e7ba4a1a9.png",
+      "sha256": "a61e7ba4a1a9e98df29986e87df4d5242b8d362fb5ff604044a27b40069fb307"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+240-elev60.a4acd04ba444.png",
-      "sha256": "a4acd04ba4443801765c17bbfa82a8634119282833c4a15a73c6768aba2a1daf"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+240-elev60.ff1944868242.png",
+      "sha256": "ff194486824242732842152e9af7b9edd4f36f3b0156ba0ef2cd997224fc4884"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+240-elev70.9e2eeafdc443.png",
-      "sha256": "9e2eeafdc4432f538d6f63e379502edff176b9d1a6c84806d59e56d7d6712cdd"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+240-elev70.e07fc11ddae9.png",
+      "sha256": "e07fc11ddae9cbe108e2b0ee45d6c9ab0e8bd70f112398967ca3d73558eaec39"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+270-elev20.dc2633eec750.png",
-      "sha256": "dc2633eec750b1317bd48497420e6c94b45774fcaa2ee60c622ba8cf36675ab6"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+270-elev20.7109e5683d31.png",
+      "sha256": "7109e5683d31f7f3af5956065ccb0d9c738e143205cc3ddceb6d74b79d385411"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+270-elev30.db674b0a8138.png",
-      "sha256": "db674b0a813899d293a21cbf0335e9bf127870e1f5467b24c3ba516d65c75677"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+270-elev30.ec5ad3d8713d.png",
+      "sha256": "ec5ad3d8713db54105743d4428ff2059b304a8901c261b70d71bdc854ecb4e62"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+270-elev40.2211f732cdd2.png",
-      "sha256": "2211f732cdd29a584a9ea364b2b17f36bf0ce1a399b302e06cdf3f2715e94434"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+270-elev40.9f51f170d303.png",
+      "sha256": "9f51f170d3039897b034289ecdc0081344f72fff1adcaecf5975466ec305c9fc"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+270-elev50.88aba9a814a7.png",
-      "sha256": "88aba9a814a74ae93f4751f5591758605465bd69bb410e1bd7d2e56987038441"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+270-elev50.08d507bcd80e.png",
+      "sha256": "08d507bcd80e516f604fea9ac24758d92360667e0447948e520899cbc64dacb9"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+270-elev60.a8e18d61fc6e.png",
-      "sha256": "a8e18d61fc6ea8f6981565059f9cdaa680df69d14dc4b7d492b1b79e20f0ceb5"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+270-elev60.f588cd6475ad.png",
+      "sha256": "f588cd6475ada7245090528baca713f99cdb268b1417fdb51c35d77b6c5eac9f"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+270-elev70.aefe0174245e.png",
-      "sha256": "aefe0174245ece55607fa5335834e31fd4013dc2fdc38f9df27aa6b764474977"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+270-elev70.64f5fc2fdd38.png",
+      "sha256": "64f5fc2fdd38177f1c5d7d9d06419fbdb32c0cf143481489d223be22532c6c3b"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+300-elev20.92e4bbc7a769.png",
-      "sha256": "92e4bbc7a769fc103bedafbd1b43abaca708c2911011ccff618e394224c24b0a"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+300-elev20.da3deb66e835.png",
+      "sha256": "da3deb66e8352b98dc66b693b1084dad99043828782ef2d6e17392bfa9aaab69"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+300-elev30.3c61ba953013.png",
-      "sha256": "3c61ba9530133fffcf4750b1ffb6665968725b603aba9f21d0524427d23f3794"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+300-elev30.1242665b8df9.png",
+      "sha256": "1242665b8df992fc6dd924212c76dcd24a76e9adc2f9a9588360f0a5573f5843"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+300-elev40.ffcc0d7a7aac.png",
-      "sha256": "ffcc0d7a7aac2909355753a9c823e0ff4b65b8f0ece05ec78a51b753e197bb37"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+300-elev40.4b149587d26e.png",
+      "sha256": "4b149587d26e459fdd9c90c17ff890c189081e0be9803f19be7f46b3a5cdab0f"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+300-elev50.e8425b20fef9.png",
-      "sha256": "e8425b20fef9735b12f04ceda48cc7f73a1169a5b5e59c536237f6579cf38d14"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+300-elev50.d0725f1d54c2.png",
+      "sha256": "d0725f1d54c2a0e329e3b8b2b845fd1c5add496c357ef8bea37ae1b2e58b349e"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+300-elev60.d5cbab1e8ef8.png",
-      "sha256": "d5cbab1e8ef87a3121aa9e34717260bc5d1f2a47426d3f247e8b4dd77525da41"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+300-elev60.5d0c69582cd2.png",
+      "sha256": "5d0c69582cd28ab060fb712546edcaf683413471febdeb93dd00b1e6de496d35"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+300-elev70.e8197b9eb104.png",
-      "sha256": "e8197b9eb1044c5188331ccf85ec692e9324016aa63ee82850f8f6bd1a9f4710"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+300-elev70.6dda9a43b3f5.png",
+      "sha256": "6dda9a43b3f52949d4da18e72ad3d3094e709b197bc657d074e12d86679ae04b"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+330-elev20.ecbdd9b5afb1.png",
-      "sha256": "ecbdd9b5afb1d9268ba2103c4e22e361995e00de42f871111e81dedb10385f0f"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+330-elev20.814f31224734.png",
+      "sha256": "814f31224734c2b102b52d31341bbb76f628997ed4b4519982089fcccf9ec24d"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+330-elev30.5491e9a1427a.png",
-      "sha256": "5491e9a1427ac2047952661c0948e1d61a53beb3456e8c1ee226e411f3444292"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+330-elev30.0c7028f29af2.png",
+      "sha256": "0c7028f29af28c7353f1e489983ffbb15dee2661157cbdd6c99b728d2605075c"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+330-elev40.ae8df30ec48f.png",
-      "sha256": "ae8df30ec48f236e023df441015681c77d6238b6db3730b5b2482f466fbe24eb"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+330-elev40.655aa5c1f32c.png",
+      "sha256": "655aa5c1f32ccdf14f2a46ef5069936b34ce79fa50215cdf3af6a5de0a6b8163"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+330-elev50.7b5cc241b44f.png",
-      "sha256": "7b5cc241b44ff270c881c437806417fd74af53169effb0e3a7db9133ed36ecc0"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+330-elev50.06b2b41f2b95.png",
+      "sha256": "06b2b41f2b951023e1aa91d5a185f13a8fbaae89dff54c3c7685d759f494ff65"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+330-elev60.04d10d21531f.png",
-      "sha256": "04d10d21531f785b28e0b6cc54547bc1d5f79fa6b2119746e26ec9db5c6cb58a"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+330-elev60.f401565e0802.png",
+      "sha256": "f401565e0802c09423831ac103448ad96ae14052dd360bf1c97360ca1dd48711"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+330-elev70.25ec4b32058b.png",
-      "sha256": "25ec4b32058bc5101e09742a9f3be5d4dbfb1af939bdcbc1b432603f3b5ee431"
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+330-elev70.3a0c9c377f0b.png",
+      "sha256": "3a0c9c377f0b5424294e8f5e5ebcca552318ea40d193fee78d1f92135825d9b8"
     }
   ]
 }
