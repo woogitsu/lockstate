@@ -1,4 +1,4 @@
-// Queued real Kitchen workers and Save/Load; source-derived palette candidates await actual native calibration.
+// Queued real Kitchen workers and Save/Load; native enamel/grate palette regions calibrated from actual loaded pixels.
 import { writeFile } from 'node:fs/promises';
 import { expect, test as base, type Page } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
@@ -53,13 +53,16 @@ async function stovePalettePixels(page: Page, png: Buffer, quarterTurns: 0 | 1):
     const bitmap = await createImageBitmap(new Blob([Uint8Array.from(atob(base64), c => c.charCodeAt(0))], { type: 'image/png' }));
     const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
     const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0);
-    // Provisional candidates from actual authored material/source poses only.
-    // These rectangles/thresholds have NOT been calibrated against native player pixels.
-    // Final acceptance requires opened worker-built/loaded FullHD images and consumer mutation.
+    // Calibrated from opened actual worker-built/loaded FullHD player images.
+    // Two disjoint regions on the stove: enamel body and new cast-iron grate.
+    // Actual before/after counts q0 832/35, q1 77/82. The q1 right wall
+    // hides the right oven/side vents; only visibly exposed regions count.
     const rects = quarterTurns === 0
-      ? [[780, 350, 140, 210], [780, 350, 140, 210]]
-      : [[895, 270, 130, 210], [895, 270, 130, 210]];
-    const colours = [[183, 109, 52], [44, 50, 52]];
+      ? [[735, 490, 50, 35], [790, 390, 45, 30]]
+      : [[885, 375, 70, 40], [905, 320, 50, 35]];
+    const colours = quarterTurns === 0
+      ? [[125, 124, 121], [44, 50, 52]]
+      : [[148, 147, 145], [44, 50, 52]];
     return rects.map((rect, regionIndex) => {
       const colour = colours[regionIndex]!;
       const pixels = context.getImageData(...rect as [number, number, number, number]).data;
@@ -138,7 +141,7 @@ test('player creates storage and delivery capacity before Kitchen', async ({ pag
 });
 
 for (const quarterTurns of [0, 1] as const) {
-test(`player builds Kitchen at quarterTurns${quarterTurns} and retains authored stove burner and cast-iron detail palettes and anchors after Save/Load`, async ({ page }, info) => {
+test(`player builds Kitchen at quarterTurns${quarterTurns} and retains authored stove enamel and cast-iron detail palettes and anchors after Save/Load`, async ({ page }, info) => {
   expect(routeStorage, 'this case consumes the first stage actual IndexedDB save').toBeDefined();
   await installWorkerProbe(page);
   await installTee(page);
@@ -175,8 +178,8 @@ test(`player builds Kitchen at quarterTurns${quarterTurns} and retains authored 
   await writeFile(info.outputPath('worker-and-completed-save-evidence.json'), JSON.stringify({
     quarterTurns, actualBefore, beforePixels, commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
   }, null, 2));
-  beforePixels.forEach((count, index) => expect.soft(count, `stove ${index === 0 ? "burner core" : "cast-iron support"} after construction`)
-    .toBeGreaterThan(index === 0 ? 5 : 25));
+  beforePixels.forEach((count, index) => expect.soft(count, `stove ${index === 0 ? "enamel body" : "cast-iron support"} after construction`)
+    .toBeGreaterThan(quarterTurns === 0 ? index === 0 ? 500 : 25 : 50));
   await page.getByRole('button', { name: 'Overview', exact: true }).click();
   await page.getByRole('button', { name: 'Save now', exact: true }).click();
   await expect(page.locator('.save-panel__status')).toContainText('Saved');
@@ -188,8 +191,8 @@ test(`player builds Kitchen at quarterTurns${quarterTurns} and retains authored 
   await page.mouse.move(1300, 700);
   const loaded = await page.screenshot({ path: info.outputPath('dedicated-kitchen-stove-loaded-fullhd.png') });
   const afterPixels = await stovePalettePixels(page, loaded, quarterTurns);
-  afterPixels.forEach((count, index) => expect.soft(count, `stove ${index === 0 ? "burner core" : "cast-iron support"} after Load`)
-    .toBeGreaterThan(index === 0 ? 5 : 25));
+  afterPixels.forEach((count, index) => expect.soft(count, `stove ${index === 0 ? "enamel body" : "cast-iron support"} after Load`)
+    .toBeGreaterThan(quarterTurns === 0 ? index === 0 ? 500 : 25 : 50));
   expect(afterPixels).toEqual(beforePixels);
   const evidencePath = info.outputPath('dedicated-kitchen-stove-worker-and-save-evidence.json');
   await writeFile(evidencePath, JSON.stringify({
