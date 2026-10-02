@@ -73,3 +73,16 @@ node node_modules/vitest/vitest.mjs run tests/unit/oblique-medical-fixture-integ
 ```
 
 Renders were produced with Blender 5.2.1 LTS, build `9e2066aef7ef`. Repeat-byte evidence is from this pinned host toolchain.
+
+## Prepared player gate - execution pending
+
+Export checkpoint `40349455d2` is pushed. The two-stage `infirmary-player-build.spec.ts` and dedicated `playwright.infirmary.artifact.config.ts` are prepared; collection lists exactly two cases. They have not executed yet because another agent holds the exclusive browser lease.
+
+The draft uses independent source palette colours from the default yaw300/elevation40 frames: bed headboard RGB [79,102,108] in screen rectangle [750,400,170,260], cabinet inset RGB [64,76,76] in [880,340,150,190]. These screen regions remain provisional until the actual built-client screenshot is inspected. The worker result is checked before the pixel gate, and its actual rows and both pixel counts are saved even if the pixel gate fails. Renderer-binding mutations will be run after baseline acceptance, with byte-exact mapping restoration and an artifact rebuild.
+
+```powershell
+$env:LOCKSTATE_ARTIFACT_TEST_PORT = '5197'
+node node_modules/@playwright/test/cli.js test --config tests/browser/playwright.infirmary.artifact.config.ts
+```
+
+The capacity state will come from the first stage's native IndexedDB save, and the fixture state from actual worker completion. Runtime acceptance and publication remain pending.
