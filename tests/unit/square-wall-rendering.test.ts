@@ -18,6 +18,21 @@ function frame(world: SparseWorld, structures: readonly RenderStructure[] = []):
 }
 
 describe('saved square geometry is painted in both renderers', () => {
+  it('keeps authored fixture art beside a restored square wall without construction history', () => {
+    const world = new SparseWorld(8);
+    world.setSquareStructure(at, 1);
+    const restored = SparseWorld.fromSnapshot(JSON.parse(JSON.stringify(world.snapshot())));
+    const rendered = frame(restored, [{
+      id: 'medical-bed', definitionId: 'medical-bed-wooden', tileX: 4, tileY: 3, phase: 'built',
+    }]);
+    const solids = projectObliqueWorldFrame(rendered, pose).raised.filter((item) => item.kind !== 'actor');
+    expect(solids.map((solid) => solid.id).sort()).toEqual(['medical-bed', 'square-wall:3:3']);
+    expect(solids.find((solid) => solid.id === 'medical-bed')?.assetId).toBe('furniture.medical-bed.variants');
+    const wall = solids.find((solid) => solid.id === 'square-wall:3:3')!;
+    expect(wall.footprint[1].x - wall.footprint[0].x).toBeCloseTo(64);
+    expect(wall.footprint[2].y - wall.footprint[1].y).toBeCloseTo(64 * Math.SQRT1_2);
+  });
+
   it('draws a full square after restoring the world without any construction-history fallback', () => {
     const world = new SparseWorld(8);
     world.setSquareStructure(at, 1);
