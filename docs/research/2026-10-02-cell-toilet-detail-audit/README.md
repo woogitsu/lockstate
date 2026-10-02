@@ -115,3 +115,44 @@ porcelain/teal bowl/cistern and new metal valve connection are visible. This
 preview is authored-source evidence, not a player frame. Full repeat exports,
 producer negative controls and genuine native consumer acceptance are pending.
 The existing registry is checked without rewriting any row.
+
+## Completed canonical export and real producer controls
+
+After adding the post-load mesh-set check, the first full-export preflight was
+red: Blender's library API mutates its assigned list from string names into
+Object references, so the independent expected-name list had to be copied at
+assignment. This was corrected and all later exports/controls use the corrected
+wrapper. No partial preflight is counted as a successful72pose export.
+
+Two complete dedicated-source exports produced73/73 direct byte-identical
+files (canonical descriptor plus72referencedPNGs). Manifest SHA256
+`e935208968f880695e483df1622311c9dfd2d89c8faa33624dd683bae2a7e1c3`.
+All72actual512×512RGBA frames decode with transparent borders, minimum207px.
+The cropped72pose sheet and full actual±45/40PNGs were opened. The sheet crops
+alpha bounds plus8px and labels its altered framing; it is source inspection,
+not native pixel-scale evidence. Valve wheels and pipe couplings are visible
+on the supply side; opposite poses legitimately hide them behind the bowl.
+
+The emitted camera target is `[.5,.5,.5537500381469727]`, the actual float32
+BlenderVector representation of measured midpoint.553750041872263. The initial
+focused pass had two failures from comparing that float32 value to the exact
+double midpoint. Expectations now pin the real emitted value; camera geometry
+tolerances and pixels-per-tile assertions were preserved.
+
+Eight actual Blender producer controls each exited1: omit physical valve wheel,
+move physical hinge, change retained material values, wrong loadedXscale,
+camera span, camera vector, measured target, runtime descriptor. Exact wrapper
+and original/dedicated source restoration verified byte equality; native
+72camera/allfourorientation verification exited0. `producer-controls.json`
+records each actual error and the restored byte hashes.
+
+An actual referenced PNG byte mutation made the dedicated integrity test
+exit1; byte-exact restoration returned exit0. The unit guard decodes every
+RGBA frame including actual PNG filters and checks its transparent borders.
+Final focused run:6suites passed,53tests passed/1optional Blender subprocess
+skip. Native subprocess evidence is supplied independently by the actual
+controls above. App/tools TypeScript compilation exited0.
+
+Registry and original catalog diffs remain empty. Genuine new-model Cell
+construction/SaveLoad and consumer-only native negative controls remain queued;
+no browser started during the coordinator/HUD leases.

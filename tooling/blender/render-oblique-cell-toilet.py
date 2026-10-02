@@ -68,7 +68,9 @@ def append_collection() -> bpy.types.Collection:
     with bpy.data.libraries.load(str(SOURCE), link=False) as (available, loaded):
         if sorted(available.objects) != sorted(expected_names):
             raise ValueError('Dedicated Cell toilet source object set changed')
-        loaded.objects = expected_names
+        # Blender replaces this list's string items with Object references on
+        # exit; keep the independent provenance names for post-load checks.
+        loaded.objects = list(expected_names)
     collection = bpy.data.collections.new('Dedicated Cell toilet')
     bpy.context.scene.collection.children.link(collection)
     for obj in loaded.objects:
@@ -175,8 +177,6 @@ def setup_scene() -> bpy.types.Scene:
 def render_frames(scene: bpy.types.Scene) -> list[dict[str, object]]:
     OUTPUT.mkdir(parents=True, exist_ok=True)
     frames: list[dict[str, object]] = []
-    target = TARGET
-    radius = 12.0
     for yaw in ((45,) if PREVIEW_ONLY else YAW):
         for elevation in ((40,) if PREVIEW_ONLY else ELEVATION):
             point_camera(scene, yaw, elevation)
