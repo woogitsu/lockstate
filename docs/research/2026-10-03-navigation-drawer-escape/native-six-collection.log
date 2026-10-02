@@ -1,0 +1,8 @@
+Listing tests:
+  navigation-drawer-escape-native.spec.ts:8:5 › world navigation drawer Escape retains armed wall until ordinary world Escape
+  navigation-drawer-escape-native.spec.ts:8:5 › world navigation drawer Escape retains armed object until ordinary world Escape
+  navigation-drawer-escape-native.spec.ts:8:5 › world navigation drawer Escape retains armed room-area until ordinary world Escape
+  navigation-drawer-escape-native.spec.ts:8:5 › oblique navigation drawer Escape retains armed wall until ordinary world Escape
+  navigation-drawer-escape-native.spec.ts:8:5 › oblique navigation drawer Escape retains armed object until ordinary world Escape
+  navigation-drawer-escape-native.spec.ts:8:5 › oblique navigation drawer Escape retains armed room-area until ordinary world Escape
+Total: 6 tests in 1 file
