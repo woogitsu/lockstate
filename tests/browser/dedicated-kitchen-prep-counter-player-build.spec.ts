@@ -48,6 +48,25 @@ async function fixtureAnchors(page: Page): Promise<string[]> {
   });
 }
 
+async function fixtureOwnership(page: Page) {
+  return page.evaluate(async () => {
+    const reply = await (window as ProbeWindow).askWorker!('simulation/request-snapshot', { reason: 'consistency-check' }) as {
+      payload: { snapshot: { data: {
+        construction: { orders: { id: string; state: string; location: { x: number; y: number }; objectOrientation?: number }[] };
+        simulation: { objects?: { placedObjects: { objectId: string; anchorTile: { x: number; y: number }; orientation: number; sourceOrderId?: string }[] } };
+      } } };
+    };
+    const data = reply.payload.snapshot.data;
+    return (data.simulation.objects?.placedObjects ?? [])
+      .filter(object => ['object.stove', 'object.prep-counter', 'object.fridge'].includes(object.objectId))
+      .map(object => ({
+        objectId: object.objectId, sourceOrderId: object.sourceOrderId,
+        anchorTile: object.anchorTile, orientation: object.orientation,
+        order: data.construction.orders.find(order => order.id === object.sourceOrderId),
+      })).sort((a, b) => a.objectId.localeCompare(b.objectId));
+  });
+}
+
 async function prepPalettePixels(page: Page, png: Buffer, quarterTurns: 0 | 1): Promise<number[]> {
   return page.evaluate(async ({ base64, quarterTurns }) => {
     const bitmap = await createImageBitmap(new Blob([Uint8Array.from(atob(base64), c => c.charCodeAt(0))], { type: 'image/png' }));
@@ -163,6 +182,16 @@ test(`player builds Kitchen at quarterTurns${quarterTurns} and retains authored 
     : ['object.fridge@22,6:orientation=1', 'object.prep-counter@24,8:orientation=1', 'object.stove@24,6:orientation=1'];
   const actualBefore = await fixtureAnchors(page);
   expect(actualBefore).toEqual(expected);
+  const ownershipBefore = await fixtureOwnership(page);
+  expect(ownershipBefore).toHaveLength(3);
+  expect(new Set(ownershipBefore.map(object => object.sourceOrderId)).size).toBe(3);
+  for (const object of ownershipBefore) {
+    expect(object.sourceOrderId).toEqual(expect.any(String));
+    expect(object.sourceOrderId!.length).toBeGreaterThan(0);
+    expect(object.order?.state).toBe('completed');
+    expect(object.order?.location).toEqual(object.anchorTile);
+    expect(object.order?.objectOrientation ?? 0).toBe(object.orientation);
+  }
   await expect.poll(async () => (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate')).toEqual([
     { type: 'PlaceRoomTemplate', templateId: 'kitchen-basic', origin: { x: 20, y: 5 }, ...(quarterTurns === 0 ? {} : { quarterTurns }) },
   ]);
@@ -190,6 +219,8 @@ test(`player builds Kitchen at quarterTurns${quarterTurns} and retains authored 
   await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
   const actualAfter = await fixtureAnchors(page);
   expect(actualAfter).toEqual(expected);
+  const ownershipAfter = await fixtureOwnership(page);
+  expect(ownershipAfter).toEqual(ownershipBefore);
   await minimap.click({ position: { x: bounds.width * 23 / 32, y: bounds.height * 8 / 32 } });
   await page.mouse.move(1300, 700);
   const loaded = await page.screenshot({ path: info.outputPath('dedicated-kitchen-prep-counter-loaded-fullhd.png') });
@@ -199,7 +230,7 @@ test(`player builds Kitchen at quarterTurns${quarterTurns} and retains authored 
   expect(afterPixels).toEqual(beforePixels);
   const evidencePath = info.outputPath('dedicated-kitchen-prep-counter-worker-and-save-evidence.json');
   await writeFile(evidencePath, JSON.stringify({
-    quarterTurns, actualBefore, actualAfter, beforePixels, afterPixels,
+    quarterTurns, actualBefore, actualAfter, ownershipBefore, ownershipAfter, beforePixels, afterPixels,
     commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
   }, null, 2));
   await info.attach('dedicated-kitchen-prep-counter-worker-and-save-evidence', { path: evidencePath, contentType: 'application/json' });
