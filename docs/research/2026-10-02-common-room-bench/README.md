@@ -1,6 +1,6 @@
 # Common Room bench skin for the existing object
 
-`common-room-basic` places two copies of the existing 2×1 `object.bench`. Until this branch, those benches used the corridor bench art. This is a visual variant for the same object: two separate upholstered places on a petrol-steel frame with warm timber arms. It does not introduce a new buildable, price, function or save identity. The source is `assets/source/blender/furniture.common-room.upholstered-bench.blend`, authored by `tooling/blender/create-common-room-bench.py` in Blender 5.2.1.
+`common-room-basic` places two copies of the existing 2×1 `object.bench`. Until this branch, those benches used the corridor bench art. The [authored old/new render comparison](corridor-versus-common-room.png) shows the corridor slat bench beside this new variant: two separate upholstered places on a petrol-steel frame with warm timber arms. It does not introduce a new buildable, price, function or save identity. The source is `assets/source/blender/furniture.common-room.upholstered-bench.blend`, authored by `tooling/blender/create-common-room-bench.py` in Blender 5.2.1.
 
 The evaluated mesh bounds, including modifiers, are X **[0.12,1.88]**, Y **[0.10,0.88]**, Z **[0,0.9906]**. This keeps every visible vertex inside the occupied 2×1 squares with a minimum-corner origin. The [contact sheet](poses.png) samples four headings at three elevations. Separate seat pads and the center seam stay distinct while the 45° preview keeps the authored outline inside transparent borders.
 
