@@ -11,3 +11,8 @@ The new renderer translates the existing geometry by `(1,0.5)` in Blender and re
 Two full renderer passes produced the same manifest SHA-256 `9cb94d947cc99c72a58a99a9231760f162e0ff40a78a812587836f76cf879733`. The Staff Room-only render selector requires the entire 2 x 1 footprint to fit inside the published room rectangle. Unit tests cover the real projection for built versus planned desks, absent/other rooms, source hash, 72 frame hashes and the camera scale equation. Temporarily replacing the Staff Room selector with the generic desk produced red 1/4, then restoring it returned 4/4 green. Changing the first manifest frame hash to zeroes produced red 1/3, then restoring it returned 3/3 green.
 
 Actual player Build, worker completion, Save/Load and Full HD pixel proof remain to be run after the current serialized browser lease. This source and manifest proof alone does not claim that the production view is visually accepted.
+
+
+## Obsolete frame cleanup
+
+Root removed the72 replaced reception-employee-desk-yaw PNGs after confirming zero references in current game-content JSON or tracked text. The original manifest/frames remain in published ancestor c53a2d6518; a scoped LFS fetch was checked before removal. Every removal path was validated inside public/assets/environment/oblique. The72 new employee-variants poses remain, and31 art/mapping/index cases pass after cleanup. This does not replace the pending actual Staff Room worker/SaveLoad acceptance.
