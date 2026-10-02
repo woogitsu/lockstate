@@ -103,21 +103,13 @@ test('native orientation edits keep an armed origin, complete fixtures and lates
   const chosen = (await latestWorldTarget(page)).origin;
   await expect(label).toContainText(rowQuote);
 
-  // All following controls use keyboard focus. The map pointer stays at its
-  // original physical position, including while a real obstacle is queued.
+  // At this genuine picked origin the 7-wide row is owned, while its 16-wide
+  // quarter turn crosses the fresh prison's x32 land boundary. No synthetic
+  // refusal or injected building command is needed. All remaining controls
+  // use keyboard focus, preserving the physical map pointer position.
+  expect(chosen.x).toBeGreaterThan(16);
+  expect(chosen.x).toBeLessThanOrEqual(25);
   await open.focus(); await open.press('Enter');
-  const basic = dialog.getByRole('button', { name: 'Basic cell', exact: true });
-  await basic.focus(); await basic.press('Enter');
-  const advanced = dialog.getByText('Enter coordinates', { exact: true });
-  await advanced.focus(); await advanced.press('Enter');
-  await dialog.getByRole('spinbutton', { name: 'Plan origin X' }).fill(String(chosen.x + 12));
-  await dialog.getByRole('spinbutton', { name: 'Plan origin Y' }).fill(String(chosen.y + 1));
-  const place = dialog.getByRole('button', { name: 'Place room plan', exact: true });
-  await expect(place).toBeEnabled();
-  await place.focus(); await place.press('Enter');
-  await expect(dialog.getByRole('status')).toContainText('submitted');
-  const row = dialog.getByRole('button', { name: 'Four-cell row', exact: true });
-  await row.focus(); await row.press('Enter');
   await expect(ghost).toHaveAttribute('data-ready', 'clear');
   await rotation.focus(); await rotation.press('ArrowDown');
   await expect(rotation).toHaveValue('1');
@@ -182,8 +174,6 @@ test('native orientation edits keep an armed origin, complete fixtures and lates
     const top = document.querySelector('.hud-strip')!.getBoundingClientRect().bottom + 7;
     return polygons.every(p => { const r = p.getBoundingClientRect(); return r.left >= left && r.right <= right && r.top >= top && r.bottom <= innerHeight - 7; });
   })).toBe(true);
-  expect((await sentCommands(page)).filter(command => command.type === 'PlaceRoomTemplate')).toMatchObject([
-    { templateId: 'cell-basic', origin: { x: chosen.x + 12, y: chosen.y + 1 } },
-  ]);
+  expect((await sentCommands(page)).filter(command => command.type === 'PlaceRoomTemplate')).toHaveLength(0);
   await page.screenshot({ path: testInfo.outputPath('live-native-orientation-after-refusal.png') });
 });
