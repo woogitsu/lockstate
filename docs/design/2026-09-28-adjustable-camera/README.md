@@ -533,3 +533,11 @@ The failed CI1941 attempt1 artifact contains a genuine keyboard room-removal tim
 The camera new-session correction is integrated as269ab5d2b7 after resolving the callback conflict by retaining both outgoing-plan standDown and revision-gated centering of the incoming world. Strict TypeScript and research-index5/5 pass; root opened the actual new-prison Full HD capture. The selected-plan legend now shares the actual rectangular furniture and door-gap shapes; root90 focused status/design/index cases pass. Its actual browser mutation proof is still being completed by HUD.
 
 PR1945 was DIRTY after pointer cancellation landed. Root merged current main into its own branch, preserving the existing pointercancel/lostpointercapture cleanup as well as the new held-arrow radio-focus release, and pushed830fa5742c. TypeScript passes. Its new exact-head CI is required before merge; previous-head proof and runs are not silently treated as current-head full CI.
+
+## Storage Room and legend runtime completion — 2026-10-02
+
+The authored Storage Room rack has actual Full HD player acceptance integrated as8b6c3ed4a4: two racks complete through the worker and remain at the same anchors after Save/Load. Separate authored-frame pixel counts1581/1486 are unchanged after loading. Old generic mapping mutation fails at0 pixels against>800; exact restoration passes1/1 in35.9s under the original60s/10s budgets. Root inspected the actual loaded room screenshot and pushed model,72poses, consumer and proof.
+
+The room-plan legend is accepted asbbcfbc1e3b: actual shape baseline passes, old circle mutation fails, restoration passes; actual computed-color baseline passes, removing semantic fixture ink fails RGB230/237/241 versus24/52/66, restoration passes. Root opened the final Full HD screenshot and verified dark rectangular Furniture ink and the doorway gap inside the unchanged modal.
+
+Next independent work surfaces: an authored Cell bed in its authoritative1x2 footprint (not1x1), Load-time held-pointer gesture cancellation, and an discoverable HUD renderer selector preserving the current worker, feed and unsaved game. Current angled view remains URL opt-in; do not claim a live renderer selector exists before its real-game integration and acceptance. The selector audit found global input listeners require old-scene shutdown rather than sleeping it.
