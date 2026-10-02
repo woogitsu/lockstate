@@ -1,5 +1,7 @@
 import {afterEach,expect,it,vi} from 'vitest';
-import {createRendererSelectionControl} from '../../src/ui/hud/renderer-selection-control';
+import {createRendererSelectionControl,type HudRendererMode} from '../../src/ui/hud/renderer-selection-control';
+import {DEFAULT_KEYBOARD_BINDINGS,KeyboardInputAdapter} from '../../src/input';
+import {LiveRendererSelection} from '../../src/rendering/scene/live-renderer-selection';
 class ElementStub extends EventTarget {
   readonly children:ElementStub[]=[];readonly attributes=new Map<string,string>();
   className='';textContent='';value='';validationMessage='';reported=0;
@@ -22,7 +24,7 @@ afterEach(()=>vi.unstubAllGlobals());
 function setup() {
   vi.stubGlobal('document',new DocumentStub());
   let finish!:()=>void;
-  const change=vi.fn(()=>new Promise<void>(resolve=>{finish=resolve;}));
+  const change=vi.fn((_mode:HudRendererMode)=>new Promise<void>(resolve=>{finish=resolve;}));
   const error=vi.fn();
   const control=createRendererSelectionControl({region:'View',world:'Top-down',oblique:'Angled',failure:'Could not change view. Choose a view to try again.'},'world',change,error);
   return {control,select:control.element as unknown as ElementStub,change,error,finish:()=>finish()};
@@ -71,4 +73,56 @@ it('keeps failure validity without opening a focus-stealing popup after navigati
   const other=new ElementStub();other.focus();refuse(new Error('503'));
   await vi.waitFor(()=>expect(s.select.disabled).toBe(false));
   expect(s.select.validity.valid).toBe(false);expect(s.select.reported).toBe(0);expect(s.error).toHaveBeenCalledOnce();expect(document.activeElement).toBe(other);
+});
+
+// EventTarget has no DOM tree in this Node suite. This minimal propagation
+// bridge executes the real select listener before the existing scene's real
+// adapter, respecting stopPropagation while leaving native defaults separate.
+function keyFromSelect(select:ElementStub,keyboard:KeyboardInputAdapter):Event {
+  const event=new Event('keydown',{bubbles:true,cancelable:true});
+  Object.defineProperties(event,{key:{value:'ArrowDown'},code:{value:'ArrowDown'}});
+  let stopped=false;
+  const originalStop=event.stopPropagation.bind(event);
+  event.stopPropagation=()=>{stopped=true;originalStop();};
+  select.dispatchEvent(event);
+  if(!stopped) keyboard.keyDown({code:'ArrowDown'});
+  return event;
+}
+
+it.each(['default','remapped'] as const)('keeps native View arrows out of the preparing scene and preserves fresh %s world input',async mapping=>{
+  const bindings=DEFAULT_KEYBOARD_BINDINGS.map(binding=>mapping==='remapped'&&binding.action==='camera.up'&&binding.code==='KeyW'
+    ? {...binding,code:'KeyJ'} : binding);
+  const scene=(mode:string)=>({mode,keyboard:new KeyboardInputAdapter(bindings,()=>['world'])});
+  const initial=scene('world');
+  let release!:()=>void;
+  const gate=new Promise<void>(resolve=>{release=resolve;});
+  const prepare=vi.fn(async(mode:string)=>{await gate;return scene(mode);});
+  const deactivate=vi.fn();
+  const controller=new LiveRendererSelection({mode:'world',scene:initial},{prepare,activate:async()=>{},deactivate,changed:()=>{},unavailable:()=>{}});
+  const s=setup();
+  s.change.mockImplementation(mode=>controller.select(mode));
+  s.select.focus();
+  const event=keyFromSelect(s.select,initial.keyboard);
+  // Native option navigation still has its default action. Its actual
+  // browser ordering is checked separately by the artifact regression.
+  expect(event.defaultPrevented).toBe(false);
+  s.select.value='oblique';s.select.dispatchEvent(new Event('change'));
+  try {
+    await vi.waitFor(()=>expect(prepare).toHaveBeenCalledWith('oblique'));
+    expect(controller.current!.scene).toBe(initial);
+    expect(deactivate).not.toHaveBeenCalled();
+    expect(s.select.disabled).toBe(true);
+    expect(initial.keyboard.isActive('camera.down')).toBe(false);
+  } finally {
+    initial.keyboard.keyUp({code:'ArrowDown'});
+    release();
+    await s.change.mock.results[0]!.value;
+    await vi.waitFor(()=>expect(s.select.disabled).toBe(false));
+  }
+  expect(controller.current!.mode).toBe('oblique');
+  const current=controller.current!.scene.keyboard;
+  expect(current.keyDown({code:mapping==='remapped'?'KeyJ':'KeyW'})).toMatchObject([{action:'camera.up',phase:'started'}]);
+  expect(current.isActive('camera.up')).toBe(true);
+  current.keyUp({code:mapping==='remapped'?'KeyJ':'KeyW'});
+  expect(current.isActive('camera.up')).toBe(false);
 });
