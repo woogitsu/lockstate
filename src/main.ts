@@ -1,3 +1,4 @@
+import type { RendererCameraView } from './rendering/camera/renderer-view-memory';
 import { LiveRendererSelection } from './rendering/scene/live-renderer-selection';
 import { computeObliqueFit } from './rendering/camera/oblique-fit';
 import { RoomTemplatePreviewFitController } from './ui/room-template-preview-fit';
@@ -732,9 +733,10 @@ try {
 let worldScene = productionSceneSelection.scene;
 let rendererHudChanged: () => void = () => undefined;
 let reinstallPlanGhost: () => void = () => undefined;
+let withdrawPlanGhost: () => void = () => undefined;
+let rendererChanging = false;
 let logicalViewCentre: { x: number; y: number } | undefined;
-let rememberedObliquePose: { yawRadians: number; elevationRadians: number; zoom: number } | undefined;
-let rememberedWorldZoom: number | undefined;
+const rendererViewMemory = new Map<'world' | 'oblique', RendererCameraView>();
 
 const gameConfig: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -768,17 +770,12 @@ const liveRendererSelection = new LiveRendererSelection<WorldScene | ObliqueWorl
   prepare: mode => mode === 'world' ? Promise.resolve(createTopDownWorldScene()) : loadLiveObliqueCatalogs().then(createLiveObliqueScene),
   deactivate: scene => {
     // Preserve only renderer memory; the worker/feed and unsaved session stay alive.
-    if (scene.sys.isActive()) {
-      if (scene instanceof ObliqueWorldScene) {
-        const pose = scene.cameraPose;
-        logicalViewCentre = pose.target;
-        rememberedObliquePose = {yawRadians: pose.yawRadians, elevationRadians: pose.elevationRadians, zoom: pose.zoom};
-        scene.releaseSessionInput();
-      } else {
-        const camera = scene.cameras.main;
-        logicalViewCentre = camera.getWorldPoint(camera.width / 2, camera.height / 2);
-        rememberedWorldZoom = camera.zoom;
-      }
+    if (scene === worldScene && scene.sys.isActive()) {
+      const view = scene.captureCameraView();
+      logicalViewCentre = view.centre;
+      rendererViewMemory.set(scene instanceof ObliqueWorldScene ? 'oblique' : 'world',view);
+      withdrawPlanGhost();
+      if (scene instanceof ObliqueWorldScene) scene.releaseSessionInput();
     }
     phaserGame.scene.stop(scene.sys.settings.key);
     phaserGame.scene.remove(scene.sys.settings.key);
@@ -788,13 +785,11 @@ const liveRendererSelection = new LiveRendererSelection<WorldScene | ObliqueWorl
     const created = new Promise<void>(resolve => scene.events.once(Phaser.Scenes.Events.CREATE, resolve));
     phaserGame.scene.start(scene.sys.settings.key);
     await created;
-    if (scene instanceof ObliqueWorldScene) {
-      await scene.ready();
-      if (rememberedObliquePose !== undefined) scene.setPoseRadians(rememberedObliquePose.yawRadians, rememberedObliquePose.elevationRadians);
-      if (logicalViewCentre !== undefined) scene.navigateToTile(logicalViewCentre.x / TILE_SIZE_PX - 0.5, logicalViewCentre.y / TILE_SIZE_PX - 0.5);
-    } else {
-      if (rememberedWorldZoom !== undefined) scene.cameras.main.setZoom(rememberedWorldZoom);
-      if (logicalViewCentre !== undefined) scene.cameras.main.centerOn(logicalViewCentre.x, logicalViewCentre.y);
+    if (scene instanceof ObliqueWorldScene) await scene.ready();
+    if (logicalViewCentre !== undefined) {
+      const mode = scene instanceof ObliqueWorldScene ? 'oblique' : 'world';
+      const remembered = rendererViewMemory.get(mode) ?? scene.captureCameraView();
+      scene.restoreCameraView({...remembered,centre:logicalViewCentre});
     }
   },
   changed: selection => {
@@ -2802,7 +2797,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
      * unconditionally -- it exists from the top of this module regardless of
      * whether a worker started, exactly like every other camera control.
      */
-    onMinimapNavigate: (point) => worldScene.navigateToMinimapPoint(point.fx, point.fy),
+    onMinimapNavigate: (point) => rendererChanging ? false : worldScene.navigateToMinimapPoint(point.fx, point.fy),
     /*
      * And the HUD's zoom pair, joined to the same camera on the same terms
      * (issue #1023). `ZOOM_BOUNDS` has allowed a fifteen-fold range since the
@@ -2817,12 +2812,16 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
      * the simulation could refuse.
      */
     onCameraZoom: (direction) => {
+      if (rendererChanging) return;
       worldScene.stepCameraZoom(direction);
     },
-    rendererSelection: { mode: productionSceneSelection.mode, select: mode => liveRendererSelection.select(mode) },
+    rendererSelection: { mode: productionSceneSelection.mode, select: async mode => {
+      rendererChanging = true;
+      try { await liveRendererSelection.select(mode); } finally { rendererChanging = false; }
+    } },
     ...{
       onCameraPoseStep: (axis: 'yaw' | 'elevation', direction: -1 | 1): void => {
-        if (!(worldScene instanceof ObliqueWorldScene)) return;
+        if (rendererChanging || !(worldScene instanceof ObliqueWorldScene)) return;
         const pose = worldScene.cameraPose;
         // A button press advances a legible fixed angle; the mouse and held
         // remappable keys use the same setPoseRadians camera transform.
@@ -4707,6 +4706,7 @@ const mountedHud =
 mountedHud?.setMinimapSessionActive(false);
 if (roomTemplateTool !== undefined) {
   let disposePlanGhost: (() => void) | undefined;
+  withdrawPlanGhost = () => { disposePlanGhost?.(); disposePlanGhost = undefined; };
   const installPlanGhost = (): void => {
     disposePlanGhost?.();
     disposePlanGhost = undefined;
