@@ -4408,6 +4408,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'input.action.camera.right': 'Pan camera right',
   'input.action.camera.zoom.in': 'Zoom in',
   'input.action.camera.zoom.out': 'Zoom out',
+  'hud.camera.view.failed': 'Could not change view. Choose a view to try again.',
   'hud.camera.view': 'View',
   'hud.camera.view.world': 'Top-down',
   'hud.camera.view.oblique': 'Angled view',
