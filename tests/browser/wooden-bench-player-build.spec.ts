@@ -52,12 +52,14 @@ async function timberPixels(page: Page, png: Buffer, quarterTurns: 0 | 1): Promi
     const bitmap = await createImageBitmap(new Blob([Uint8Array.from(atob(base64), c => c.charCodeAt(0))], { type: 'image/png' }));
     const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
     const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0);
-    // Provisional source palette region; actual screenshot calibration is pending.
-    // Timber assembly source colour is independent of simulation object completion.
+    // Calibrated from opened native worker-built Holding Cell FullHD frames.
+    // Each disjoint region contains one bench; the rotated rear bench is partly
+    // occluded by its wall. Removing only the default bench consumer must zero
+    // both regions while completed objects and Save/Load anchors remain intact.
     const rects = quarterTurns === 0
-      ? [[450, 250, 950, 500]]
-      : [[450, 250, 950, 500]];
-    const colour = [154, 119, 81];
+      ? [[720, 415, 150, 145], [945, 410, 150, 115]]
+      : [[875, 350, 135, 100], [875, 510, 145, 110]];
+    const colour = [150, 115, 75];
     return rects.map(rect => {
       const pixels = context.getImageData(...rect as [number, number, number, number]).data;
       let count = 0;
@@ -172,7 +174,7 @@ test(`player builds Holding Cell at quarterTurns${quarterTurns} and retains auth
     quarterTurns, actualBefore, beforePixels, commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
   }, null, 2));
   beforePixels.forEach((count, index) => expect.soft(count, `fixture${index + 1} authored timber assembly after construction`)
-    .toBeGreaterThan(100));
+    .toBeGreaterThan(300));
   await page.getByRole('button', { name: 'Overview', exact: true }).click();
   await page.getByRole('button', { name: 'Save now', exact: true }).click();
   await expect(page.locator('.save-panel__status')).toContainText('Saved');
@@ -185,7 +187,7 @@ test(`player builds Holding Cell at quarterTurns${quarterTurns} and retains auth
   const loaded = await page.screenshot({ path: info.outputPath('wooden-bench-loaded-fullhd.png') });
   const afterPixels = await timberPixels(page, loaded, quarterTurns);
   afterPixels.forEach((count, index) => expect.soft(count, `fixture${index + 1} authored timber assembly after Load`)
-    .toBeGreaterThan(100));
+    .toBeGreaterThan(300));
   expect(afterPixels).toEqual(beforePixels);
   const evidencePath = info.outputPath('wooden-bench-worker-and-pixel-evidence.json');
   await writeFile(evidencePath, JSON.stringify({
