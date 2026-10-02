@@ -46,6 +46,22 @@ async function toiletAnchors(page: Page): Promise<string[]> {
   });
 }
 
+/** Isolate the authored glazed tank in the completed cell at the fixed Full HD camera position. */
+async function toiletGlazePixels(page: Page, png: Buffer): Promise<number> {
+  return page.evaluate(async base64 => {
+    const bitmap = await createImageBitmap(new Blob([Uint8Array.from(atob(base64), c => c.charCodeAt(0))], { type: 'image/png' }));
+    const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
+    const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0);
+    const pixels = context.getImageData(1110, 520, 50, 60).data;
+    let count = 0;
+    for (let index = 0; index < pixels.length; index += 4) {
+      // This authored glaze colour is absent from the generic fallback tile.
+      if (pixels[index] === 49 && pixels[index + 1] === 127 && pixels[index + 2] === 135) count += 1;
+    }
+    return count;
+  }, png.toString('base64'));
+}
+
 let routeStorage: Awaited<ReturnType<ReturnType<Page['context']>['storageState']>> | undefined;
 const test = base.extend({
   storageState: async ({}, use) => { await use(routeStorage ?? { cookies: [], origins: [] }); },
@@ -135,7 +151,8 @@ test('player builds the existing 1 x 1 toilet in a Basic cell and keeps it after
   // Centre the completed Cell, rather than recording a neighbouring delivery room.
   await minimap.click({ position: { x: bounds.width * 21.5 / 32, y: bounds.height * 6.5 / 32 } });
   await page.mouse.move(1300, 700);
-  await page.screenshot({ path: info.outputPath('toilet-dense-worker-completed-fullhd.png') });
+  const painted = await page.screenshot({ path: info.outputPath('toilet-dense-worker-completed-fullhd.png') });
+  expect(await toiletGlazePixels(page, painted), 'worker-completed toilet must use the authored dense-pose model').toBeGreaterThan(100);
   await page.getByRole('button', { name: 'Overview', exact: true }).click();
   await page.getByRole('button', { name: 'Save now', exact: true }).click();
   await expect(page.locator('.save-panel__status')).toContainText('Saved');
@@ -144,5 +161,6 @@ test('player builds the existing 1 x 1 toilet in a Basic cell and keeps it after
   expect(await toiletAnchors(page)).toEqual(['22,9']);
   await minimap.click({ position: { x: bounds.width * 21.5 / 32, y: bounds.height * 6.5 / 32 } });
   await page.mouse.move(1300, 700);
-  await page.screenshot({ path: info.outputPath('toilet-dense-loaded-fullhd.png') });
+  const restored = await page.screenshot({ path: info.outputPath('toilet-dense-loaded-fullhd.png') });
+  expect(await toiletGlazePixels(page, restored), 'authored toilet glaze must survive Save/Load').toBeGreaterThan(100);
 });

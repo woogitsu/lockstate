@@ -16,4 +16,12 @@ The revised standalone Blender 5.2 exporter puts the collection origin at `(0.5,
 - [Twelve-view contact sheet](./poses.png) is assembled from SHA-checked frames; views are enlarged for inspection, not claimed as pixel-scale comparison.
 - Focused object mapping/art tests pass 24/24 with TypeScript green. Changing the first manifest frame SHA to zeroes made the art test fail 1/2 on that exact frame; restoring the original bytes returned it to 2/2.
 
-The old 72 draft frames introduced by the imported commit were removed from this derived branch only after confirming the published PR #1887 still holds them and no JSON manifest references any of their filenames. Actual player Basic cell Build, worker completion, Save/Load and PNG-pixel mutation proof are the next acceptance gate.
+The old 72 draft frames introduced by the imported commit were removed from this derived branch only after confirming the published PR #1887 still holds them and no JSON manifest references any of their filenames.
+
+## Actual player proof at 1920 x 1080
+
+The [real player browser spec](../../../tests/browser/toilet-dense-player-build.spec.ts) used the oblique production scene. The player placed Storage Room and Delivery Bay, waited for their real worker queues, saved to IndexedDB, loaded that save in a fresh browser context, placed Basic cell, waited for its worker queue, and found the existing `object.toilet` at authoritative anchor `(22,9)`. It saved and loaded again. The first room setup and the toilet stage passed 2/2 within the normal test and assertion budgets, without injected construction commands.
+
+- [Worker-completed Full HD screenshot](./worker-completed-fullhd.png) and [reloaded Full HD screenshot](./loaded-fullhd.png) both show the toilet in the finished cell.
+- In the fixed 50 x 60 pixel screen region around this toilet, the authored teal glaze RGB `(49,127,135)` appears in **141 pixels** before Save and **141 pixels** after Load.
+- Temporarily mapping `object.toilet` to a missing authored asset changed that exact production pixel oracle to **zero** and failed the toilet stage (1/2 total tests passed). The map was restored byte-for-byte, and the same browser spec passed 2/2 again. The mutation confirms that the image proof exercises the production asset consumer rather than merely a generic fallback.
