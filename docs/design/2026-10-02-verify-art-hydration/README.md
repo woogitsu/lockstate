@@ -1,5 +1,9 @@
 # Proposed verify input hydration
 
+## Current decision — approved2026-10-02
+
+The owner selected "Tak — dodaj ten krok i oba globy (zalecane)" through the clickable question in this conversation. This approves the prepared verify-job step with `assets/source/blender/*.blend,public/assets/environment/oblique/*.png`, including subsequent models in these directories. The exact patch has been applied; existing CI configuration, retry and partition guards pass58/58. Fresh Ubuntu exact-head CI remains required. The proposal below records what was submitted before approval; its waiting-state language is historical.
+
 ## Concrete observed blocker
 
 Terminal PR1899 CI36997641989 reports21 authored-source SHA256 mismatches. The art audit independently matched every reported pair to the real committed LFS object ID and the SHA256 of its pointer text. The verify checkout does not hydrate LFS, while these new checks open actual Blender bytes. Strict frame hashes and decoded PNG borders also need real angled frames. This is an input-provisioning mismatch, not evidence of21 damaged models.

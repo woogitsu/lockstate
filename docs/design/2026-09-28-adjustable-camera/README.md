@@ -697,3 +697,9 @@ The actual built-client Classroom flow now proves bookshelf anchor21,6 through w
 
 The approved rotation draft now states the implemented checkpoint and links actual runtime and rendered player evidence, keeping its earlier sink audit as historical. Three agents continue on independent surfaces: release/gameplay integration, FullHD ghost-label visibility and medical Blender source/export alignment. The separately based Layout Escape fix is pushed as PR1963; exact-head CI and serial main remain delivery gates. Local browser execution is serialized to limit CPU use.
 
+## Verify input decision and medical integration — 2026-10-02
+
+The owner explicitly approved the proposed verify-job hydration step for Blender sources and angled PNGs, including later models under the same two globs. [The exact proposal and approval](../2026-10-02-verify-art-hydration/README.md) preserve its scope. The source-byte/hash and PNG decoding assertions remain unchanged; fresh Ubuntu CI must confirm the full gate. Static CI/retry/partition checks pass58/58 after applying the patch.
+
+Medical export40349455d2 is integrated as84bff0e11c: original Blender sources stay byte-identical, the cabinet export retains its9 authored meshes and omits11 foreign bed meshes, and both fixtures use the shared64pixels-per-tile camera with evaluated footprint bounds. Both repeated72-pose exports are byte-identical and scoped integrity checks pass. Actual worker-built Infirmary/SaveLoad pixel acceptance is in progress with the art agent. HUD quote text obstruction was disproved for tested FullHD100/200% scenes; regression and deliberate obstruction sensitivity are integrated as9d45d0588c without changing ghost production. Wheel PR1958 merged asf198f6d949 after exact-head green/CLEAN and prior serialmain green; new serialmainCI37000775751 was confirmed live before any subsequent merge.
+
