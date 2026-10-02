@@ -2797,7 +2797,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
      * unconditionally -- it exists from the top of this module regardless of
      * whether a worker started, exactly like every other camera control.
      */
-    onMinimapNavigate: (point) => rendererChanging ? false : worldScene.navigateToMinimapPoint(point.fx, point.fy),
+    onMinimapNavigate: (point) => rendererChanging || liveRendererSelection.current === undefined ? false : worldScene.navigateToMinimapPoint(point.fx, point.fy),
     /*
      * And the HUD's zoom pair, joined to the same camera on the same terms
      * (issue #1023). `ZOOM_BOUNDS` has allowed a fifteen-fold range since the
@@ -2812,7 +2812,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
      * the simulation could refuse.
      */
     onCameraZoom: (direction) => {
-      if (rendererChanging) return;
+      if (rendererChanging || liveRendererSelection.current === undefined) return;
       worldScene.stepCameraZoom(direction);
     },
     rendererSelection: { mode: productionSceneSelection.mode, select: async mode => {
@@ -2821,7 +2821,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     } },
     ...{
       onCameraPoseStep: (axis: 'yaw' | 'elevation', direction: -1 | 1): void => {
-        if (rendererChanging || !(worldScene instanceof ObliqueWorldScene)) return;
+        if (rendererChanging || liveRendererSelection.current === undefined || !(worldScene instanceof ObliqueWorldScene)) return;
         const pose = worldScene.cameraPose;
         // A button press advances a legible fixed angle; the mouse and held
         // remappable keys use the same setPoseRadians camera transform.
@@ -3357,7 +3357,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
          * message for it would be a sentence with no state behind it.
          */
         case 'show-alert-place':
-          worldScene.navigateToTile(intent.tile.x, intent.tile.y);
+          if (!rendererChanging && liveRendererSelection.current !== undefined) worldScene.navigateToTile(intent.tile.x, intent.tile.y);
           return;
 
         case 'place-build-order': {
