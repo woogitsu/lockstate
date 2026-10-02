@@ -98,6 +98,11 @@ Final focused run:7suites passed,58tests passed/1optional Blender subprocess
 skip. The actual native subprocess is separately established by the controls
 above. Application/tools TypeScript compilation exited0.
 
-Real GarbageRoom construction/SaveLoad, provisional native palette calibration
-and consumer-only removal remain pending. No browser was started here while
-the parent held the exclusive lease.
+2026-10-03 actual production player checkpoint: real GarbageRoom q0/q1
+construction and Save/Load passed3/3; each default-consumer removal route
+gave four expected palette errors with correct real anchors. Byte-exact restore
+and rebuild passed3/3 again. Both loaded FullHD PNGs were opened. Full worker
+and all source/export bytes stayed identical across the consumer control.
+See [native-player-acceptance.md](native-player-acceptance.md) and its compact
+receipt, calibration tables, raw initial/final/negative results and images.
+Hosted/integrated acceptance remains the parent delivery's responsibility.

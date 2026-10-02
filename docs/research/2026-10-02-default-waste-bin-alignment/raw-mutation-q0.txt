@@ -1,19 +1,44 @@
+node : [WebServer] (node:20764) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:10 char:1
++ node node_modules/@playwright/test/cli.js test --config assets/interm ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] ▲ [WARNING] Processing dist\lockstate_development\wrangler.js
+on configuration:
+[WebServer] 
+[WebServer]     - No environment found in configuration with name "production".
+[WebServer]       Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[WebServer]   
+[WebServer]       Consider adding an environment configuration section to the wrangler.json file:
+[WebServer]       ```
+[WebServer]       [env.production]
+[WebServer]       ```
+[WebServer]   
+[WebServer] 
+[WebServer] 
 
-Running 3 tests using 1 worker
+Running 2 tests using 1 worker
 
-  ok 1 tests\browser\default-waste-bin-player-build.spec.ts:168:1 › player creates storage and delivery capacity before Garbage Room (43.9s)
-  x  2 tests\browser\default-waste-bin-player-build.spec.ts:231:3 › player builds Garbage Room at quarterTurns0 and retains waste bin palettes and anchors after Save/Load (31.2s)
-  -  3 tests\browser\default-waste-bin-player-build.spec.ts:231:3 › player builds Garbage Room at quarterTurns1 and retains waste bin palettes and anchors after Save/Load
+(node:23576) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:23576) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\default-waste-bin-player-build.spec.ts:168:1 › player creates storage and delivery capacity before Garbage Room (43.6s)
+  x  2 tests\browser\default-waste-bin-player-build.spec.ts:231:3 › player builds Garbage Room at quarterTurns0 and retains waste bin palettes and anchors after Save/Load (31.8s)
 
 
   1) tests\browser\default-waste-bin-player-build.spec.ts:231:3 › player builds Garbage Room at quarterTurns0 and retains waste bin palettes and anchors after Save/Load 
 
     Error: waste bin 1 authored palette after construction
 
-    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+    expect(received).toBeGreaterThan(expected)
 
-    Expected: > [32m100[39m
-    Received:   [31m0[39m
+    Expected: > 100
+    Received:   0
 
       180 |   }, null, 2));
       181 |   beforePixels.forEach((count, index) => expect.soft(count, `waste bin ${index + 1} authored palette after construction`)
@@ -27,10 +52,10 @@ Running 3 tests using 1 worker
 
     Error: waste bin 2 authored palette after construction
 
-    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+    expect(received).toBeGreaterThan(expected)
 
-    Expected: > [32m100[39m
-    Received:   [31m0[39m
+    Expected: > 100
+    Received:   0
 
       180 |   }, null, 2));
       181 |   beforePixels.forEach((count, index) => expect.soft(count, `waste bin ${index + 1} authored palette after construction`)
@@ -44,10 +69,10 @@ Running 3 tests using 1 worker
 
     Error: waste bin 1 authored palette after Load
 
-    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+    expect(received).toBeGreaterThan(expected)
 
-    Expected: > [32m100[39m
-    Received:   [31m0[39m
+    Expected: > 100
+    Received:   0
 
       195 |   const afterPixels = await binPalettePixels(page, loaded, quarterTurns);
       196 |   afterPixels.forEach((count, index) => expect.soft(count, `waste bin ${index + 1} authored palette after Load`)
@@ -61,10 +86,10 @@ Running 3 tests using 1 worker
 
     Error: waste bin 2 authored palette after Load
 
-    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+    expect(received).toBeGreaterThan(expected)
 
-    Expected: > [32m100[39m
-    Received:   [31m0[39m
+    Expected: > 100
+    Received:   0
 
       195 |   const afterPixels = await binPalettePixels(page, loaded, quarterTurns);
       196 |   afterPixels.forEach((count, index) => expect.soft(count, `waste bin ${index + 1} authored palette after Load`)
@@ -77,12 +102,11 @@ Running 3 tests using 1 worker
         at C:\Users\matma\Documents\Rozwój gier\lockstate-default-waste-bin-angled-20261002\tests\browser\default-waste-bin-player-build.spec.ts:196:15
 
     attachment #1: default-waste-bin-worker-and-save-evidence (application/json) ───────────────────
-    ..\..\Rozw%C3%B3j%20gier\lockstate-default-waste-bin-angled-20261002\assets\intermediate\default-waste-bin-audit\native-results\default-waste-bin-player-b-85474-and-anchors-after-Save-Load\attachments\default-waste-bin-worker-and-save-evidence-136e3030dfa5518c2f0f645dbc28f2b5116c1ecd.json
+    assets\intermediate\default-waste-bin-audit\native-results\default-waste-bin-player-b-85474-and-anchors-after-Save-Load\attachments\default-waste-bin-worker-and-save-evidence-db09d0b617e1050958567ee5de15aa17f24eb2d2.json
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    Error Context: ..\..\Rozw%C3%B3j%20gier\lockstate-default-waste-bin-angled-20261002\assets\intermediate\default-waste-bin-audit\native-results\default-waste-bin-player-b-85474-and-anchors-after-Save-Load\error-context.md
+    Error Context: assets\intermediate\default-waste-bin-audit\native-results\default-waste-bin-player-b-85474-and-anchors-after-Save-Load\error-context.md
 
   1 failed
     tests\browser\default-waste-bin-player-build.spec.ts:231:3 › player builds Garbage Room at quarterTurns0 and retains waste bin palettes and anchors after Save/Load 
-  1 did not run
   1 passed (1.3m)
