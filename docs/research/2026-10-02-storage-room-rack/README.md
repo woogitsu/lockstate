@@ -11,6 +11,7 @@ Issue #1869 listed seven buildable objects without complete oblique assets. On t
 - Exporter: `tooling/blender/render-storage-room-rack-oblique.py`. Resolution 256 x 256, ortho span 4 tiles, exact nominal 64 px/tile, target `[0.5, 0.5, 0.70]`, pivot `[128, 128]`.
 - Manifest: `public/game-content/oblique-furniture.storage-room-rack.v1.json`, 12 yaw x 6 elevation = 72 SHA-checked transparent PNG poses. Two full rerenders produced the same manifest SHA-256 `e349630ecb0366167310e8a37460ab81583cde34cda2c5987272f48fa2eaf2cc`.
 - [Twelve-view pose sheet](./poses.png) is assembled only from frames whose bytes match the manifest and whose alpha bounds stay inside the image border.
+- [Old and new at the same 64 px/tile scale](./old-versus-new.png) shows the generic open frame beside the stocked three-shelf variant. The old 512 px source was cropped centrally to 256 px for this comparison; neither sprite was rescaled.
 
 ## Runtime scope and current checks
 
