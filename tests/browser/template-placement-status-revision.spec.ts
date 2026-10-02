@@ -1,7 +1,7 @@
 import {expect,test} from './network-changed-fixture';
 import {installTee,sentCommands} from './playtest-harness';
 
-test('an obsolete numeric placement reply cannot overwrite the newly selected plan status or focus',async({page})=>{
+test('an obsolete numeric placement reply cannot overwrite the newly selected plan status or focus',async({page},testInfo)=>{
   await installTee(page);
   await page.addInitScript(()=>{
     const OriginalWorker=Worker;
@@ -57,4 +57,5 @@ test('an obsolete numeric placement reply cannot overwrite the newly selected pl
   await expect(yard).toBeFocused();
   await expect(place).toBeEnabled();
   expect((await sentCommands(page)).filter(c=>c.type==='PlaceRoomTemplate')).toHaveLength(0);
+  await page.screenshot({path:testInfo.outputPath('new-plan-retains-current-status.png')});
 });
