@@ -1,0 +1,85 @@
+{
+  "initialNativeExit": 0,
+  "initialCaseSeconds": [
+    43.6,
+    41.2,
+    40.6
+  ],
+  "initialScope": "all gameplay/SaveLoad and provisional broad source-colour probes passed; final isolated-region consumer acceptance still pending",
+  "regions": {
+    "q0": {
+      "rects": [
+        [
+          735,
+          490,
+          50,
+          35
+        ],
+        [
+          790,
+          390,
+          45,
+          30
+        ]
+      ],
+      "colours": [
+        [
+          125,
+          124,
+          121
+        ],
+        [
+          44,
+          50,
+          52
+        ]
+      ],
+      "nativeBeforeAndAfter": [
+        832,
+        35
+      ],
+      "thresholds": [
+        500,
+        25
+      ]
+    },
+    "q1": {
+      "rects": [
+        [
+          885,
+          375,
+          70,
+          40
+        ],
+        [
+          905,
+          320,
+          50,
+          35
+        ]
+      ],
+      "colours": [
+        [
+          148,
+          147,
+          145
+        ],
+        [
+          44,
+          50,
+          52
+        ]
+      ],
+      "nativeBeforeAndAfter": [
+        77,
+        82
+      ],
+      "thresholds": [
+        50,
+        50
+      ]
+    }
+  },
+  "inspected": "both actual loaded FullHD PNGs opened; q1 wall occludes right oven/vents so assertions use only exposed enamel and grate",
+  "consumerMutation": "pending"
+}
