@@ -134,10 +134,17 @@ reprojected only when the frame revision, camera pose or viewport changes;
 the test checks that idle browser frames do not repaint them. Actor movement
 can repaint the raised layer without rebuilding the ground. A deliberate
 mutation that projected every *empty* north edge made the unit test fail with
-63 extra solids; restoration returned it to green. This is still a plain
-diagnostic renderer. It has no final art, wall cutaway, construction ghosts or
-player-visible switch in `main.ts`, and the browser fixture is a small scene
-rather than the frame-cost acceptance test for a large prison.
+63 extra solids; restoration returned it to green. The production composition
+root now has an explicit `?renderer=oblique` opt-in. It verifies the oblique
+module registry before constructing Phaser, passes the verified catalogs into
+`ObliqueWorldScene`, and exposes the same feed, minimap, selection and zoom
+ports as the top-down scene. A catalog failure paints an explicit startup error
+instead of silently falling back. The default URL keeps the registry-free
+`WorldScene` path. This branch also paints the first authored PNG frame for
+mapped walls, doors and objects over the geometric fallback. The opt-in scene
+now forwards build, room and object gestures through the established tool ports,
+projects their live tile footprints, and keeps the minimap, zoom and Save/Load
+paths active. The cutaway and full square construction gates remain separate.
 
 ## Active delivery lanes
 

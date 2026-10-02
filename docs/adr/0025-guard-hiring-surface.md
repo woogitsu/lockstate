@@ -240,7 +240,7 @@ message key, and a stable content id may never reach the player. The staff-role
 catalogue is unusually well placed for that, exactly as the room catalogue was
 for ADR 0022 — all eight roles carry a real `nameKey` and all eight
 `staff-role.*.name` keys ship in the default catalogue, so the producer needs
-no id→key mapping table of the kind `BUILDABLE_LABEL_KEY` (`src/main.ts:778`;
+no id→key mapping table of the kind `BUILDABLE_LABEL_KEY` (`src/main.ts:817`;
 the anchor read `:766`, and `:269` before that) exists to supply.
 
 ### A refusal already has somewhere to go, and this is the first surface built after it
