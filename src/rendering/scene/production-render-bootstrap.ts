@@ -49,3 +49,12 @@ export function renderProductionRenderFailure(error: unknown): void {
   notice.textContent = `Angled renderer unavailable: ${message}`;
   root.append(notice);
 }
+
+/** Lazy verified catalogue reuse makes renderer rollback independent of the network. */
+export function cacheVerifiedObliqueCatalogs<TCatalog>(load: () => Promise<TCatalog>): () => Promise<TCatalog> {
+  let cached: Promise<TCatalog> | undefined;
+  return () => {
+    cached ??= load().catch(error => { cached = undefined; throw error; });
+    return cached;
+  };
+}
