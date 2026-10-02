@@ -38,6 +38,8 @@ when a newer hover query supersedes it, on this same bridge producer. #1681
 protects a new angled revision against old replies, and #1967 covers View
 option navigation during preparation. This is an extension to existing #1908,
 not a newly invented duplicate Issue.
+[Verified source extension](https://github.com/woogitsu/lockstate/issues/1908#issuecomment-5963107928)
+was persisted and fetched with exact authored-body equality.
 
 Parent grants only room-template-world-bridge.ts accepted-result processing:
 only matching same-revision armed shared-tool may stand down after old bridge
@@ -71,3 +73,51 @@ renderer directions and changed-tool/refusal controls, remains queued behind
 Art/root. This proof does not claim actual native option events, worker receipt,
 browser pixels, hosted CI or deployed completion.
 
+
+## Actual composition-root timing and extended producer proof
+
+The actual main placement port calls commandSender.submit and resolves without
+waiting for a worker command ACK. Therefore withholding only that ACK would
+not reproduce the production race. Native reproduction must replace the
+renderer while placeAt is awaiting its genuine worker preflight response.
+
+The extended source test now additionally executes the exact unique main
+async placement submission callback, unchanged, with a recorded submit
+destination. Both renderer directions also hold the accepted preflight rather
+than the placement port: release produces precisely the real callback's
+PlaceRoomTemplate submission, then matching stand-down. New/rearmed revisions
+before preflight completion submit no old command. Normal accepted preflight
+still submits and stands down.
+
+Final extended file **14/14 GREEN**,609ms. Same unique production disposed guard
+mutation: **4 RED /10 legal controls GREEN**,576ms. Finally restores the same
+exact bridge SHA256 above; **14/14 GREEN**,550ms. Related bridge/tool/renderer
+suites **36/36 GREEN**,4 files,721ms,maxWorkers2. App/tools TypeScript passes.
+The earlier8-case receipts remain retained as the separately obtained original
+baseline and placement-port controls; they are not replaced with invented
+native or expanded original counts.
+
+- [Actual main submit callback controls](renderer-receipt-actual-submit-fixed-green.log).
+- [Expanded actual producer negative](renderer-receipt-actual-submit-disposed-red.log).
+- [Expanded exact restoration](renderer-receipt-actual-submit-restored-green.log).
+- [Expanded neighboring suites](renderer-receipt-actual-submit-related-green.log).
+- [App/tools TypeScript](renderer-receipt-actual-submit-typecheck.log).
+
+## Queued native fixture
+
+`tests/browser/room-template-renderer-preflight-receipt.spec.ts` prepares4 actual
+FullHD100% cases: each renderer direction, unchanged cell and rearmed Yard.
+It records a real worker preflight reply, temporarily withholds that exact
+reply from normal app listeners, changes View with native Home/End, then
+replays the unchanged real reply once. It generates no verdict or command.
+
+Unchanged cases require one exact cell command, correlated real queued receipt,
+and no new armed preview after real mouse re-entry. Rearmed controls require
+clear complete64-square Yard preview, no old command, and ordinary map Escape
+still canceling that tool. The actual pointer/preview origin, complete28-cell
+squares and quote are checked before withholding. Refused completion remains
+covered by the source controls; no native refused-preflight outcome is claimed.
+
+The4-case native file compiles with app/tools TypeScript but has NOT run.
+Native baseline/fixed/disposed-only negative/exact-restored proof remains
+queued behind Art/root. No new configuration, timeout, retry, worker or copy.
