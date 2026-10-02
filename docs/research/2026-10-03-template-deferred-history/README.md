@@ -55,3 +55,9 @@ Exact neighbour test paths:
 - tests/integration/object-placement-loop.test.ts
 
 Separate first-task #1654 chain ends at de44ac5ad7f764374e30cde140a2f564a599da40; this branch started at its earlier source/test checkpoint2dc395b5cc27b605c79f1bbf5e7f5657b7e14b60 so that diagnostic8case baseline stayed independent. Its historical doc corrections and Blender identifier correction must be retained when the branches integrate; inherited failure is not attributed to new deferred history code. No browser/CI/hosted acceptance claimed.
+
+## Final documentation closure
+
+Initial source doc run60GREEN/2RED26.52s: shifted ADR index sort fragment plus inherited Blender naked-identifier citation from the earlier2dc baseline. The prior #1654 de44 historical-preserving amendments and root e9 Blender label were applied to only their four approved files, then the new live System/placement fragments were reopened and amended for the actual continuation source. Previous dated coordinates remain historical; no quotation/source guard or budget changed. [Final62GREEN/8files](./docs-terminal.txt),13.92s total.
+
+All three committed producer files have zero worktree diff following exact source restoration. Final source and doc leases released. Integration/CI and browser/hosted results remain separate.

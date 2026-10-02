@@ -261,16 +261,23 @@ feature with a reader and no producer.
 ### Walls, doors and the build queue
 
 - A wall is an edge value. `finalizeConstruction`
-  (`src/simulation/construction/system.ts:1971`, `finalizeConstruction`) writes it through `writeEdge`
+  (`src/simulation/construction/system.ts:1982`, `finalizeConstruction`) writes it through `writeEdge`
   (`:2031`, called at `:1934`), which calls `setTopEdge`/`setLeftEdge` and
   therefore bumps `geometryRevision`.
 - `BuildableCategory` is `'wall' | 'object' | 'utility'`
   (`src/simulation/construction/definition.ts:6`). `wall-brick` is the only
   `'wall'`; a door is an `'object'` row carrying `placesDoor`.
 - Cancelling a `completed` order reverses its geometry
-  (`src/simulation/construction/system.ts:1181`, `revertConstruction`, defined at
-  `:2191`), rewriting the edge from any other completed order that still claims
+  (`src/simulation/construction/system.ts:1192`, `revertConstruction`, defined at
+  `:2202`), rewriting the edge from any other completed order that still claims
   it rather than clearing it.
+- **Deferred-history source amendment at checkpoint a8435e3b90.** The previous
+  `system.ts:1971`, `:1181` and `:2191` indications remain historical
+  before the eleven-line exact gesture-continuation reader. The live completion
+  and reversal fragments still quote `finalizeConstruction`, `revertConstruction`
+  and `private revertConstruction`. The preceding `object-placement-service.ts:535`
+  and `:549` indications remain historical before its internal request field;
+  the live fragments still quote `PLACEMENT_REQUIREMENT` and `this.refuse('outside-room'`.
 - **Pending-template footprint amendment at checkpoint ff609c7b9f.** The previous
   `system.ts:1965`, `:1175` and `:2185` indications
   remain historical before the incoming-object reservation check. The live
@@ -288,7 +295,7 @@ feature with a reader and no producer.
   and `:1966` coordinates are historical indications, retained here rather than
   erased. The current cancellation call is `revertConstruction` above; its
   implementation is `private revertConstruction` at
-  `src/simulation/construction/system.ts:2191`. The earlier numbered span had
+  `src/simulation/construction/system.ts:2202`. The earlier numbered span had
   already drifted into a comment, so the amended anchor names the actual call.
   **Occupied-template source amendment at checkpoint 322cb5e5a4:** the previous
   `system.ts:1120` and `:2092` coordinates remain historical indications before
@@ -317,7 +324,7 @@ feature with a reader and no producer.
   rectangle's own perimeter, with the south and east sides read off neighbouring
   tiles.
 - Objects already require a room: `PlaceObject` refuses `outside-room`
-  (`src/simulation/objects/object-placement-service.ts:549`, `this.refuse('outside-room'`; previously `:544` before the pending entrance claim reader).
+  (`src/simulation/objects/object-placement-service.ts:551`, `this.refuse('outside-room'`; previously `:544` before the pending entrance claim reader).
 
 ### Rendering
 
@@ -891,6 +898,6 @@ not to write a third flood fill.
 defect is caused by one asymmetric predicate and fixed by widening it. I did not
 enumerate every caller that could reproduce the asymmetry elsewhere:
 `ObjectPlacementService` and `RoomZoningService` also call `canBuildAt`
-(`src/simulation/objects/object-placement-service.ts:535`,
+(`src/simulation/objects/object-placement-service.ts:537`,
 `src/simulation/rooms/zoning.ts:559`), and neither is an edge order, so neither
 should change — but "should not" is an argument and not a check.

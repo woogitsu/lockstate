@@ -117,7 +117,7 @@ pricing, selection and UI; it is not the ownership test.
 It has three production callers, each supplying its own requirement set:
 `ConstructionSystem.submitOrder` (`src/simulation/construction/system.ts:715`,
 inside `admits`, with `SUBMISSION_REQUIREMENT`), `ObjectPlacementService`
-(`src/simulation/objects/object-placement-service.ts:535`,
+(`src/simulation/objects/object-placement-service.ts:537`,
 `PLACEMENT_REQUIREMENT`) and room zoning (`src/simulation/rooms/zoning.ts:559`,
 `ZONING_REQUIREMENT`). **This document said "its one production caller" from
 `f1d5c30` until this correction**; the second arrived at `041a379` (#269) and
@@ -152,6 +152,11 @@ The live call still quotes `SUBMISSION_REQUIREMENT`; terrain stays deferred.
 `system.ts:709` and `:705` indications remain historical before the six-line
 incoming-object reservation check. The live call quotes `SUBMISSION_REQUIREMENT`;
 the helper is still `private admits` and the edge rule is unchanged.
+
+**Deferred-history source amendment at checkpoint a8435e3b90.** The preceding
+`object-placement-service.ts:535` indication remains historical before the
+internal continuation membership field. The live placement call still quotes
+`PLACEMENT_REQUIREMENT`; this history correction changes no admission policy.
 
 ### An edge order is judged by both tiles the edge separates
 
