@@ -1,0 +1,60 @@
+{
+  "date": "2026-10-02",
+  "branch": "codex/template-bootstrap-progress-audit-20261002",
+  "base": "c4cbefe6d87bbe73f3618a4ab7423d58ee99a2eb",
+  "comparedFirstCiRepair": "9251b18c60939f897c3d43594cccd930f7cd66fb",
+  "scope": "Independent diagnostic test and this receipt; no production edits, browser or source mutations.",
+  "archivedBrowserEvidence": {
+    "run": 37039088544, "job": 110949744645, "artifact": 11245699264,
+    "prHead": "3eeeddc2d276714fee6a7c8420270b78d2e49b3c",
+    "failure": "Original 60000ms whole-test timeout while finishQueuedConstruction continued observing completed orders.",
+    "traces": [
+      {
+        "folder": "kitchen-fixtures-player-bu-bef33-ery-capacity-before-Kitchen",
+        "beforeHooksToFirstQueueReadMs": 51430.994, "queueReadSpanMs": 7822.497,
+        "unfinished": [36, 35, 33, 33, 32, 31, 30, 29, 28, 27, 26, 25]
+      },
+      {
+        "folder": "laundry-fixtures-player-bu-bb886-ery-capacity-before-Laundry",
+        "beforeHooksToFirstQueueReadMs": 51477.686, "queueReadSpanMs": 7811.951,
+        "unfinished": [36, 35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25]
+      },
+      {
+        "folder": "loading-dock-door-player-b-f250e-orage-and-delivery-capacity",
+        "beforeHooksToFirstQueueReadMs": 51368.423, "queueReadSpanMs": 7757.836,
+        "unfinished": [36, 35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25]
+      }
+    ],
+    "extraction": "test.trace first Before Hooks start; 0-trace.trace data-queued getAttribute before/after pairs. No inferred worker state or unread snapshot is claimed."
+  },
+  "existingCoverage": "template-delivery-bootstrap.test.ts already covers direct packed kernel Storage5,5/Delivery12,5 and later Cell20,5 with completed encoded Save/Load; room-template-delivery-readiness.test.ts covers pending Delivery Bay and completed worker projections. The new diagnostic instead measures actual worker paused submission, x4 timer pacing and partial encoded Load.",
+  "actualWorkerDiagnostic": {
+    "file": "tests/integration/template-bootstrap-worker-progress-diagnostic.test.ts",
+    "seed": 73,
+    "messages": [
+      "simulation/initialize(new,73)",
+      "paused simulation/submit-command packed PlaceRoomTemplate(storage-room-basic,5,5,sequence0,tick0)",
+      "paused simulation/submit-command packed PlaceRoomTemplate(delivery-bay-basic,12,5,sequence1,tick0)",
+      "simulation/set-clock(running,speed4)",
+      "simulation/request-snapshot(consistency-check) after each 1000ms of fake timer time"
+    ],
+    "partialLoad": "After first completed orders at tick240, pause, create actual save envelope, JSON encode/decode, replace worker with simulation/initialize(snapshot), assert exact saved construction/template/tick equality, resume x4.",
+    "onBothSourceHeads": {
+      "cases": ["uninterrupted", "partial encoded Save/Load"],
+      "protocolErrors": 0,
+      "initialTick": 0, "initialPendingTemplates": 2, "initialUnfinishedOrders": 36,
+      "atThreeVirtualSeconds": { "tick": 240, "unfinished": 34, "completed": 2 },
+      "atTenVirtualSeconds": { "tick": 799, "unfinished": 25, "completed": 11 },
+      "atTwentyNineVirtualSeconds": { "tick": 2319, "unfinished": 1, "completed": 38 },
+      "completion": { "virtualWallMs": 32000, "tick": 2559, "unfinished": 0, "completed": 39, "pendingTemplates": 0 },
+      "placedObjects": ["object.loading-dock-door", "object.storage-rack", "object.storage-rack"],
+      "uninterruptedVsLoaded": "Exact equal final construction and placed object snapshots within each source head."
+    },
+    "firstSourceExecution": { "testsPassed": 1, "testDurationMs": 413 },
+    "integratedSourceExecution": { "testsPassed": 1, "testDurationMs": 308 },
+    "appTypeScript": "green",
+    "measurementOutput": "LOCKSTATE_BOOTSTRAP_DIAGNOSTIC=1 prints each observed snapshot tick/order count. No test asserts a new timing policy."
+  },
+  "conclusion": "The exact plan coordinates and worker transport do not reproduce a permanent construction stall, including partial encoded Load. Archived native traces spend about51.4seconds before first queue read, then remain progressing until the whole-test budget is exhausted. No gameplay source fix or new Issue is justified by this evidence.",
+  "limits": "Fake timer wall time is deterministic worker pacing, not measured real browser elapsed time or CPU performance. This is a diagnostic, not a production-mutation-verified new regression gate. No owner tariff/schema/copy decision, source mutation, browser run, timeout/retry/assertion/config change or CI polling occurred. Native setup profiling remains a separate potential next scope."
+}
