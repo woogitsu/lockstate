@@ -5396,7 +5396,7 @@ test.describe('the assembled application', () => {
     await page.getByRole('button', { name: 'Build' }).click();
     await expect(page.locator('.hud-build')).toBeVisible();
 
-    const filter = page.locator('.hud-build__category');
+    const filter = page.getByRole('combobox', { name: localeText('hud.build.category'), exact: true });
     await expect(filter).toBeVisible();
     // The option a player reads, not the id behind it: ADR 0011 puts the key on
     // one side of that boundary and the text on the other, and driving the
@@ -5411,6 +5411,7 @@ test.describe('the assembled application', () => {
      */
     const catalogue = async (): Promise<{
       readonly laidOutRows: number;
+      readonly laidOutIds: readonly string[];
       readonly listBox: number;
       readonly listContent: number;
       readonly scrollToLast: number;
@@ -5428,7 +5429,7 @@ test.describe('the assembled application', () => {
         const panel = document.querySelector('.hud-build');
         const list = document.querySelector('.hud-build__list');
         const headerRow = document.querySelector('.hud-build__catalogue > .ui-section__header-row');
-        const control = document.querySelector<HTMLSelectElement>('.hud-build__category');
+        const control = document.querySelector<HTMLSelectElement>('.hud-build__catalogue .hud-build__category');
         if (panel === null || list === null || headerRow === null || control === null) return null;
 
         const rows = [...list.querySelectorAll<HTMLElement>('.ui-row')].filter(
@@ -5449,6 +5450,7 @@ test.describe('the assembled application', () => {
 
         return {
           laidOutRows: rows.length,
+          laidOutIds: rows.map(row => row.dataset['buildable'] ?? ''),
           listBox: Math.round(list.clientHeight * 10) / 10,
           listContent: Math.round(list.scrollHeight * 10) / 10,
           scrollToLast: Math.round((list.scrollHeight - list.clientHeight) * 10) / 10,
@@ -5577,18 +5579,19 @@ test.describe('the assembled application', () => {
         expect(filtered, `the Build panel has no catalogue once filtered at ${width}x${height}`).not.toBeNull();
         if (filtered === null) continue;
 
-        /*
-         * The largest group is six rows, and the selected row is kept on screen
-         * whatever group it is in, so a filtered list is seven rows at worst.
-         * Six is written out in
-         * `tests/foundation/buildable-category-contract.test.ts` as a table of
-         * every buildable and its group, so a content row that made a group
-         * larger than this fails there, naming the row, rather than here.
-         */
+        // The pinned content contract names seven furniture rows. The selected
+        // wall remains reachable, so this list must contain those exact eight
+        // choices. This updates content cardinality without changing any box,
+        // scroll, fold or overflow budget below.
+        const expectedFilteredIds = [
+          'bed-wooden', 'bench-wooden', 'bookshelf-wooden', 'chair-wooden',
+          'desk-wooden', 'dining-table-wooden', 'exercise-station', 'wall-brick',
+        ];
         expect(
-          filtered.laidOutRows,
-          `the largest filtered group is more than six rows plus the selection at ${width}x${height}, ${state}`,
-        ).toBeLessThanOrEqual(7);
+          filtered.laidOutIds.slice().sort(),
+          `the filtered choices differ from seven furniture rows plus the selected wall at ${width}x${height}, ${state}`,
+        ).toEqual(expectedFilteredIds.slice().sort());
+        expect(filtered.laidOutRows).toBe(expectedFilteredIds.length);
         expect(
           filtered.laidOutRows,
           `filtering to "${largestGroup}" left the whole catalogue on screen at ${width}x${height}, ${state}`,
@@ -5817,7 +5820,7 @@ test.describe('the assembled application', () => {
     // it (ADR 0035), so the filter is the hop between the two.
     await page.keyboard.press('Tab');
     expect(
-      await page.evaluate(() => document.activeElement?.classList.contains('hud-build__category') === true),
+      await page.getByRole('combobox', { name: localeText('hud.build.category'), exact: true }).evaluate(control => document.activeElement === control),
       'the control after the catalogue header is not the category filter',
     ).toBe(true);
     await page.keyboard.press('Tab');
@@ -5870,7 +5873,7 @@ test.describe('the assembled application', () => {
     expect(chosen.tabStops, 'the tab stop did not follow the new selection').toEqual([rows[last]]);
 
     // ---- and the filter, which is what this panel has and Rooms does not --
-    const filter = page.locator('.hud-build__category');
+    const filter = page.getByRole('combobox', { name: localeText('hud.build.category'), exact: true });
     await expect(filter).toBeVisible();
     // A group the chosen row is not in, so the two halves below are both real:
     // the selection is kept on screen by `visibleBuildableIds` whatever the

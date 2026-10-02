@@ -1,0 +1,205 @@
+{
+  "productionBase": "3eeeddc2d276714fee6a7c8420270b78d2e49b3c",
+  "diagnosticCommit": "057e41c7d5a70cd1d36499d6d49717ae2d890ab5",
+  "port": 5347,
+  "runner": "Node24.19 repository run-suite.ts browser wrapper; one worker, original budgets, no retry signature",
+  "packageManagerCheck": "11.22.0; pnpm invocation refused dependency auto-install on node_modules junction before browser launch, direct identical Node wrapper used",
+  "originalConsumerBaseline": {
+    "failed": 5,
+    "errors": [
+      {
+        "folder": "app-shell-the-assembled-ap-40d88-er-never-takes-it-away-411-",
+        "errors": [
+          {
+            "type": "error",
+            "message": "Error: expect(locator).toBeVisible() failed\n\nLocator: locator('.hud-build__category')\nExpected: visible\nError: strict mode violation: locator('.hud-build__category') resolved to 2 elements:\n    1) <select aria-label=\"View\" class=\"hud-build__category\">\u2026</select> aka getByLabel('View')\n    2) <select aria-label=\"Category\" class=\"hud-build__category\">\u2026</select> aka getByLabel('Category')\n\nCall log:\n  - Expect \"toBeVisible\" with timeout 10000ms\n  - waiting for locator('.hud-build__category')\n",
+            "stack": [
+              {
+                "file": "tests/browser/app-shell.spec.ts",
+                "line": 5874,
+                "column": 26
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "folder": "app-shell-the-assembled-ap-5ff3e-osts-the-panel-nothing-390-",
+        "errors": [
+          {
+            "type": "error",
+            "message": "Error: expect(locator).toBeVisible() failed\n\nLocator: locator('.hud-build__category')\nExpected: visible\nError: strict mode violation: locator('.hud-build__category') resolved to 2 elements:\n    1) <select aria-label=\"View\" class=\"hud-build__category\">\u2026</select> aka getByLabel('View')\n    2) <select aria-label=\"Category\" class=\"hud-build__category\">\u2026</select> aka getByLabel('Category')\n\nCall log:\n  - Expect \"toBeVisible\" with timeout 10000ms\n  - waiting for locator('.hud-build__category')\n",
+            "stack": [
+              {
+                "file": "tests/browser/app-shell.spec.ts",
+                "line": 5400,
+                "column": 26
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "folder": "oblique-art-runtime-author-28ac4-he-angled-camera-at-Full-HD",
+        "errors": [
+          {
+            "type": "error",
+            "message": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: \"oblique:furniture.medical-bed.variants:180:20\"\nReceived: undefined\n\nCall Log:\n- Timeout 10000ms exceeded while waiting on the predicate",
+            "stack": [
+              {
+                "file": "tests/browser/oblique-art-runtime.spec.ts",
+                "line": 10,
+                "column": 3
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "folder": "oblique-art-runtime-built--38cfa-r-frame-in-the-angled-scene",
+        "errors": [
+          {
+            "type": "error",
+            "message": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: \"oblique:furniture.storage.rack.wooden:60:50\"\nReceived: undefined\n\nCall Log:\n- Timeout 10000ms exceeded while waiting on the predicate",
+            "stack": [
+              {
+                "file": "tests/browser/oblique-art-runtime.spec.ts",
+                "line": 25,
+                "column": 3
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "folder": "oblique-art-runtime-built--4a11a-r-frame-in-the-angled-scene",
+        "errors": [
+          {
+            "type": "error",
+            "message": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: \"oblique:furniture.chair.wooden:60:50\"\nReceived: undefined\n\nCall Log:\n- Timeout 10000ms exceeded while waiting on the predicate",
+            "stack": [
+              {
+                "file": "tests/browser/oblique-art-runtime.spec.ts",
+                "line": 36,
+                "column": 3
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "selectorAndImageReaderCorrection": {
+    "passed": 4,
+    "failed": 1,
+    "seconds": 22.1,
+    "remaining": "stale furniture bound <=7 versus actual seven furniture plus selected wall8"
+  },
+  "pinnedContentContract": "tests/foundation/buildable-category-contract.test.ts explicitly seven furniture IDs, registry22;5tests passed",
+  "exactContentConsumerCorrection": {
+    "passed": 4,
+    "failed": 1,
+    "seconds": 22.8,
+    "remaining": "900x600 unfiltered/noqueue panelOverflow5 versus required0"
+  },
+  "producerMutation": {
+    "failed": 5,
+    "mutations": {
+      "src/ui/hud/build-panel.ts": "Category change writes BUILD_CATEGORY_ALL instead of chosen category",
+      "src/rendering/scene/oblique-world-scene.ts": "paintAsset non-actor texture lookup disconnected"
+    },
+    "errors": [
+      {
+        "folder": "app-shell-the-assembled-ap-40d88-er-never-takes-it-away-411-",
+        "errors": [
+          {
+            "type": "error",
+            "message": "Error: the filter hid nothing, so it proves nothing here\n\nexpect(received).toBeLessThan(expected)\n\nExpected: < 22\nReceived:   22",
+            "stack": [
+              {
+                "file": "tests/browser/app-shell.spec.ts",
+                "line": 5883,
+                "column": 90
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "folder": "app-shell-the-assembled-ap-5ff3e-osts-the-panel-nothing-390-",
+        "errors": [
+          {
+            "type": "error",
+            "message": "Error: the filtered choices differ from seven furniture rows plus the selected wall at 1280x720, with nothing queued\n\nexpect(received).toEqual(expected) // deep equality\n\n- Expected  -  0\n+ Received  + 14\n\n@@ -3,8 +3,22 @@\n    \"bench-wooden\",\n    \"bookshelf-wooden\",\n    \"chair-wooden\",\n    \"desk-wooden\",\n    \"dining-table-wooden\",\n+   \"door-wooden\",\n    \"exercise-station\",\n+   \"fridge-brick\",\n+   \"loading-dock-door-wooden\",\n+   \"medical-bed-wooden\",\n+   \"medicine-cabinet-wooden\",\n+   \"prep-counter-brick\",\n+   \"security-console-brick\",\n+   \"shower-head-brick\",\n+   \"storage-rack-wooden\",\n+   \"stove-brick\",\n+   \"toilet-brick\",\n+   \"utility-panel-brick\",\n    \"wall-brick\",\n+   \"washing-machine-brick\",\n+   \"waste-bin-brick\",\n  ]",
+            "stack": [
+              {
+                "file": "tests/browser/app-shell.spec.ts",
+                "line": 5593,
+                "column": 11
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "folder": "oblique-art-runtime-author-28ac4-he-angled-camera-at-Full-HD",
+        "errors": [
+          {
+            "type": "error",
+            "message": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: 1\nReceived: 0\n\nCall Log:\n- Timeout 10000ms exceeded while waiting on the predicate",
+            "stack": [
+              {
+                "file": "tests/browser/oblique-art-runtime.spec.ts",
+                "line": 8,
+                "column": 3
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "folder": "oblique-art-runtime-built--38cfa-r-frame-in-the-angled-scene",
+        "errors": [
+          {
+            "type": "error",
+            "message": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: \"oblique:furniture.storage.rack.wooden:60:50\"\nReceived: undefined\n\nCall Log:\n- Timeout 10000ms exceeded while waiting on the predicate",
+            "stack": [
+              {
+                "file": "tests/browser/oblique-art-runtime.spec.ts",
+                "line": 25,
+                "column": 3
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "folder": "oblique-art-runtime-built--4a11a-r-frame-in-the-angled-scene",
+        "errors": [
+          {
+            "type": "error",
+            "message": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: \"oblique:furniture.chair.wooden:60:50\"\nReceived: undefined\n\nCall Log:\n- Timeout 10000ms exceeded while waiting on the predicate",
+            "stack": [
+              {
+                "file": "tests/browser/oblique-art-runtime.spec.ts",
+                "line": 36,
+                "column": 3
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "restored": {
+    "passed": 4,
+    "failed": 1,
+    "seconds": 22.1,
+    "remaining": "same actual900x600 panelOverflow5; original zero overflow assertion retained",
+    "originalProductionSha256": {
+      "src/ui/hud/build-panel.ts": "5777eb5bd769be47953ef424ca09e7ad6c07c76424f84c6ff43e5b9289397fec",
+      "src/rendering/scene/oblique-world-scene.ts": "93c22b2d5822aaa4e82c2f476496f2121968199648bc6591f03427f58aa27acb"
+    },
+    "temporaryDiagnostic": "read-only attachment captured unfiltered900x600 geometry; hook removed after capture; no permanent production edits"
+  }
+}
