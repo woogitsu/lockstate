@@ -13,3 +13,7 @@ The existing `object.chair` has a wooden generic visual. This increment authors 
 ## Checks at this checkpoint
 
 The catalog integrity unit test passed. Mutating a frame SHA produced a failing byte-integrity assertion; restoring the manifest passed. Mutating the exporter span to 3.7 produced the expected scale mismatch (`256 / 3.7` versus 64); restoring 4 passed. Runtime context selection and actual player Build, worker completion, and Save/Load remain to be verified before calling the variant integrated.
+
+## Runtime checkpoint, not acceptance yet
+
+A first Full HD source-browser experiment placed all four Classroom chairs through the real plan and worker, then retained four placed-object anchors after Save/Load. The screenshot showed four teal chairs. Mutating only the Classroom visual selector back to `furniture.chair.wooden` made the per-chair color assertion fail with zero qualifying pixels; the production mapping was restored. That experiment overrode the established 60-second case and 10-second assertion budgets, so it does **not** count as final browser acceptance. The checked-in browser case uses the normal budgets and advances the simulation at the normal fastest UI speed; its baseline, mutation, and restored run must be repeated under those budgets.
