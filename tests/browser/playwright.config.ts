@@ -132,7 +132,7 @@ export default defineConfig({
    * the pair honest from here: it fails when any spec in this directory would
    * be collected by both configs or by neither.
    */
-  testIgnore: /(?:production-artifact|rotated-security-console-player-build|infirmary-player-build|room-template-live-orientation|room-plan-dialog-escape|canteen-dining-table-player-build|room-plan-native-picker|shower-head-player-build|live-view-held-native-arrow|wooden-bench-player-build|live-view-native-popup-held-key|hud-separator-held-arrow|wooden-chair-player-build|build-category-native-camera|generic-wooden-rack-player-build)\.spec\.ts$/,
+  testIgnore: /(?:production-artifact|rotated-security-console-player-build|infirmary-player-build|room-template-live-orientation|room-plan-dialog-escape|canteen-dining-table-player-build|room-plan-native-picker|shower-head-player-build|live-view-held-native-arrow|wooden-bench-player-build|live-view-native-popup-held-key|hud-separator-held-arrow|wooden-chair-player-build|build-category-native-camera|generic-wooden-rack-player-build|build-category-native-popup-held-key)\.spec\.ts$/,
   // The webServer readiness URL is static HTML. Warm the assembled app's Vite
   // module graph before Playwright starts any test's 60-second clock; a fresh
   // worktree otherwise spends ~40 seconds optimizing on its first page.goto.

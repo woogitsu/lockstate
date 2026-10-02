@@ -857,3 +857,23 @@ Current impact was false-clear followed by non-atomic defensive refusal, not
 permanent loss of a route. Forty actual-command mutation failures and nine legal
 controls establish the boundary; ownership helper, format and copy stay intact.
 Full exact-head remote CI and integrated built-client acceptance remain gates.
+## Integrated native controls and art checkpoint — 2026-10-02
+
+At source1b566abe78, the canonical production-artifact wrapper passes all13
+selected browser cases in one worker (5.2minutes): authored wooden chair and
+rack worker construction/Load, recognized HUD separator arrows, native Category
+option navigation and the Category popup world-held-key release lifecycle.
+The same real built client is used across the group; this is scoped integrated
+acceptance, not the entire browser suite or exact remote release clearance.
+
+The Category focus port clears existing world-held camera keys before a native
+popup can swallow their release. It preserves the armed footprint, quote and
+native filter operation. [Popup evidence](../../research/2026-10-02-native-category-popup-held-key.md)
+retains both production mutation failures and exact restored native acceptance.
+The spec is added to the complementary artifact/dev partitions without changing
+limits or retries. Native printable typeahead remains a separate diagnostic.
+
+Three independent agents continue actual native typeahead diagnosis, retained
+Blender desk acceptance, and the next reproducible build transaction issue.
+Full-square furniture collision #1705 is published and awaits root integration.
+Exact remote CI, mergeability and serial main CI remain required before merge.
