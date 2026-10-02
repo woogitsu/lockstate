@@ -105,3 +105,11 @@ that lower x bound through all four drags. Other callers keep their original
 scan. Independent tile dimensions/minimums/disjointness, exact repeated origins,
 worker count/refusal, enclosure and readout-fold guards are unchanged. Native
 acceptance of this measured-column correction remains pending.
+
+The corrected two-room route subsequently passes in35.1s, with unchanged
+test.slow/expectation budgets and no retries. [Complete restored output](root-keyboard-needs-stable-column-restored.txt).
+Both exact discovered rectangles repeat after construction and the first
+acknowledgement; both real worker designations succeed and all original needs
+visibility, catalogue and viewport/fold assertions pass. Together with the four
+unchanged routes above this completes local acceptance of the five keyboard
+routes. It is not an assertion that all887 source cases or hosted CI pass.
