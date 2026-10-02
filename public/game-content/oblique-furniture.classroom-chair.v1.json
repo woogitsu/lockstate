@@ -1,0 +1,477 @@
+{
+  "schemaVersion": 1,
+  "assetId": "furniture.classroom.school-chair",
+  "source": "assets/source/blender/furniture.classroom.school-chair.blend",
+  "sourceSha256": "d28bc849cc54701a8efa26504905dcfb8887847b540a6e1253e216c2b6bd16d1",
+  "resolutionPx": [
+    256,
+    256
+  ],
+  "nominalPixelsPerTile": 64,
+  "pivotPx": [
+    128,
+    128
+  ],
+  "cameraTargetTiles": [
+    0.5,
+    0.5,
+    0.58
+  ],
+  "projection": "orthographic",
+  "yawDegrees": [
+    0,
+    30,
+    60,
+    90,
+    120,
+    150,
+    180,
+    210,
+    240,
+    270,
+    300,
+    330
+  ],
+  "elevationDegrees": [
+    20,
+    30,
+    40,
+    50,
+    60,
+    70
+  ],
+  "frames": [
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+00-elev20.eb48ce60e478.png",
+      "sha256": "eb48ce60e47838faf99e1dd4feb10a63c5384b7f185ec8dd0f65929772b1b835"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+00-elev30.46290a819da4.png",
+      "sha256": "46290a819da46cae2d5b521ffe111484cbb398e84143c145082313cef234ff3c"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+00-elev40.66687c002c33.png",
+      "sha256": "66687c002c33b9d9389607f529d4b8c112983f2e435be96e663ea279120d8812"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+00-elev50.25ae65aaf2e8.png",
+      "sha256": "25ae65aaf2e83ae1819010389a57df8f9d24099acdb7b58988cf23c972732dd3"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+00-elev60.8e6636de4848.png",
+      "sha256": "8e6636de4848237391db978b4edb3b2def0e08b543cb617a379310d3302e40cc"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+00-elev70.387ca66d17a9.png",
+      "sha256": "387ca66d17a96ce40c68d8ad38e062818492b24a47a8eb0cc75256fde92b9522"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+30-elev20.2c9dc62a5cfc.png",
+      "sha256": "2c9dc62a5cfc64c50eb128d5936887acc519905169477c56d2d963a30653206f"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+30-elev30.c753dfa3d502.png",
+      "sha256": "c753dfa3d50265d3aae4478155e20023f4653b47068555c5a29ef7f1eb861e17"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+30-elev40.930b2c2c1d08.png",
+      "sha256": "930b2c2c1d08e57f9c3e2a0b8201b469565a7ec43f58c1f2d250f8439b7806df"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+30-elev50.f8b73f067870.png",
+      "sha256": "f8b73f067870b06c98106a387b75f43b486f607cfb727bccfa416cbadb364895"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+30-elev60.bc51d96de288.png",
+      "sha256": "bc51d96de288abe98622c02c9866d7e7e510ca38e6507356a8aad1969fc75980"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+30-elev70.62d530cd4a1e.png",
+      "sha256": "62d530cd4a1e664dd74280bd81156f722badd88a27cbe360ebe40d9d2745efa1"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+60-elev20.94420ebb9ae6.png",
+      "sha256": "94420ebb9ae618dcf664f14cf6ce1639f2488f1d02fbdc06a25064167d7aa302"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+60-elev30.397f26b3ed88.png",
+      "sha256": "397f26b3ed8801c6f89c78c0f3ae9f0a099ff2fa97f71a5f16d4f9082c9ac05b"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+60-elev40.b6bec6efd169.png",
+      "sha256": "b6bec6efd16958f66c093828866c3829dc3f7e3f2d7bab6fd0a4a678e243287b"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+60-elev50.920c4203cde9.png",
+      "sha256": "920c4203cde9b8c065966522f51601bf69d4a7c10f6eec129c8852689a239acd"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+60-elev60.d50cb4d2464e.png",
+      "sha256": "d50cb4d2464e43a1c3ed2b9f6f010ebb7d94f67be632e0715ef54dbc5d6f9d54"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+60-elev70.23ec196eb99a.png",
+      "sha256": "23ec196eb99a64d65b53257cc0e7ff208d392946454de6f6d29b1d9da057d0a2"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+90-elev20.f5babfbbde78.png",
+      "sha256": "f5babfbbde785f69f040817c7e9e6f5f364f03f47ea84200fe612e0aca234750"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+90-elev30.796bc9e9d7df.png",
+      "sha256": "796bc9e9d7dfe734f8fab9b7940a637fdcfdbce0fc246ea4c7d2ba949a9c5b75"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+90-elev40.1c3b1ea31042.png",
+      "sha256": "1c3b1ea31042507fea0e30e0ab617d6129a8fcfe3d1c59c9a7efded8fa04b27b"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+90-elev50.69a5d25aa491.png",
+      "sha256": "69a5d25aa4918a5a6a2b5a59bf4f92f23a97754cf4aad5369f9e61952d0cee89"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+90-elev60.ddd0b23611d1.png",
+      "sha256": "ddd0b23611d1892ac913e319e9e8d5fd33a1916fe2b1b5580cbe69cb7f74d6dd"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+90-elev70.0a887ab75a4e.png",
+      "sha256": "0a887ab75a4e1fee4dacad31183c518bff0228be30e2981f5602410603c4e73e"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+120-elev20.de6eacfd1e23.png",
+      "sha256": "de6eacfd1e23451b0d31b360be981e6cbb13f05a009d8a4ced57d105b672ed09"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+120-elev30.6b3c5591e3fe.png",
+      "sha256": "6b3c5591e3fec3b7ac3a284c1de2a7d7330109e550ade4c3a9d034fd68ee9acb"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+120-elev40.b027e5027da0.png",
+      "sha256": "b027e5027da07d60f9a7268893aebf8b48677688408fb25e675778293c1e2fee"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+120-elev50.602e0b75d341.png",
+      "sha256": "602e0b75d341c2f0ab1b1773c3f755408e544ca5d7c5f56db0eec734a88f5373"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+120-elev60.6849358f9e91.png",
+      "sha256": "6849358f9e91e0f2c2983d0b1796fde6f835e463e8ecc2fe2a7aa74bee7fbf42"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+120-elev70.bb7678b9ee5c.png",
+      "sha256": "bb7678b9ee5c38c232115d937dc1167100df0b2320b240b6f887aa29708f0dbd"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+150-elev20.2615110ac341.png",
+      "sha256": "2615110ac341e91f2b3436e0f800fc7a3f37138571ff54b58b9fc9f336f8a74d"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+150-elev30.1beeb54bb3ca.png",
+      "sha256": "1beeb54bb3cad3eb29f0c16505f0368ac35b4bd0107877b8064760f2ecc6e8a3"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+150-elev40.ac748413d60d.png",
+      "sha256": "ac748413d60dd7812ae58955dba5511a3c54532d17e52e434fcec0b3423939ac"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+150-elev50.ba859b60271a.png",
+      "sha256": "ba859b60271a769de3d7f7fd6e43ad51f79db9a63b7337470bba56350b4571b1"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+150-elev60.748f69696448.png",
+      "sha256": "748f69696448c6eef7272fd2e2988dc312ef447611966870b8fc80a2f66053ac"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+150-elev70.3aa551c441aa.png",
+      "sha256": "3aa551c441aaf4c28c18b774190e2f52708ad2643f303586a3cc9a37727bc067"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+180-elev20.820c228767f8.png",
+      "sha256": "820c228767f8e78fb4d42b16a5d37f16cfcb1e6afb570b7f021f5950d3e66212"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+180-elev30.91229fd4dd64.png",
+      "sha256": "91229fd4dd64cac6414f8b95365f32c23fcb82e338c252745890872f33a79765"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+180-elev40.f29a4805de62.png",
+      "sha256": "f29a4805de62a665f6fae750e387789effa071928c8fc3f8819e5666e701a425"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+180-elev50.040af9c7cfff.png",
+      "sha256": "040af9c7cfff75fc25b08fbdee872316ab775efbacb2c269f27544d9f9fd10f9"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+180-elev60.6709da726093.png",
+      "sha256": "6709da7260934d74f27782d73e0dd18c7bfb9566a0ca636f546a60538705d8a4"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+180-elev70.6a48644c6c5f.png",
+      "sha256": "6a48644c6c5fc84ca8af4abf6a3bd34bb4c339319b8f49900927aa8df8b85f03"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+210-elev20.5405220f73a8.png",
+      "sha256": "5405220f73a83f0855f92bfa1c63020c09078c2244a62df4a66873c27d823b5d"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+210-elev30.bb1f1fd6afb1.png",
+      "sha256": "bb1f1fd6afb11d3b08af53448475e81b390541023876477118514cabf139da6e"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+210-elev40.7ece0798b29a.png",
+      "sha256": "7ece0798b29a4fd3befdf7a207f14689ee5545a7b28a228cfd632afb9a86ded0"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+210-elev50.890e2dbcb1fc.png",
+      "sha256": "890e2dbcb1fce3fd4903f1d5fd5207f04136fbb034b28af8a16763f8334f79c4"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+210-elev60.d32f51a63b72.png",
+      "sha256": "d32f51a63b72626dc93b2e9be9409ae2af053bfce8432af3d419e58a8bc4044a"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+210-elev70.793b1caa81f1.png",
+      "sha256": "793b1caa81f1fd9f47bca3b8888ae4c3c9de693df4a2744d22653233d65c5958"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+240-elev20.56db3c7c96bb.png",
+      "sha256": "56db3c7c96bbabe7b3c3f85188fd212f6a50be8f9d3cafb9cfb5854569006909"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+240-elev30.05d8d05b160a.png",
+      "sha256": "05d8d05b160a83f5c623ac3a7a14076b0bb18dcbaf7da189c86951f8f6de2d04"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+240-elev40.ac1fa1a8357c.png",
+      "sha256": "ac1fa1a8357ca3520737481e83e7dea897015f62a776f426e384079a8578f13d"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+240-elev50.49e7bf60ce36.png",
+      "sha256": "49e7bf60ce36b44f4e23c138feb68d56f6dd2fd6b02f86d909860ee3503e772b"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+240-elev60.e44d47a5df88.png",
+      "sha256": "e44d47a5df881331c8b6c64d744e7941ead3436a6c752a46c1674aa94208a802"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+240-elev70.7c455bf733d6.png",
+      "sha256": "7c455bf733d623804c4b0d47f7012aa5618364f407ba6511d1f734e7a351eeec"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+270-elev20.1bdf765e4ec7.png",
+      "sha256": "1bdf765e4ec7c81ec40385780a7ceaa52cce1cc476c4dfdad4d1f13cd4b4cec8"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+270-elev30.72486a86edd1.png",
+      "sha256": "72486a86edd16d93e05e7c381f6654bb9152e43e5ebae51c58ee241707f165c0"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+270-elev40.45298400e449.png",
+      "sha256": "45298400e4497b598fccec86e20bd15b43b49cd7a4f2e5db903014e62f6dbbd3"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+270-elev50.8e9b20098144.png",
+      "sha256": "8e9b2009814472c870007ecb94028207392a8849163bfcb389334fa5d337765b"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+270-elev60.1aa240a1b9a6.png",
+      "sha256": "1aa240a1b9a6d92f08b0e47674aeb1da2ec45ce019a43995e5e86fd53852767f"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+270-elev70.714433807a4d.png",
+      "sha256": "714433807a4d0d667c487fdfeaa1fdb18a20a6ae6a96e277959f4c5a67af2e86"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+300-elev20.375abc5e8f64.png",
+      "sha256": "375abc5e8f64fe9ab17c7745d099e626ff1baa8776c2d802c5c17207f391c9d3"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+300-elev30.442c686a19d3.png",
+      "sha256": "442c686a19d3f9cbf4e08e7a2242bb6678d92f1826daa5e41d2ee736cab977d9"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+300-elev40.4edfe021a867.png",
+      "sha256": "4edfe021a8670ce6b704fb523764016aa35393689f1ac04a27cd8e8d1c9109f8"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+300-elev50.3fd4f18b7784.png",
+      "sha256": "3fd4f18b7784b6216cac24e374c11fdf7ac3d39e1aaa6f2bb4828083eb849353"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+300-elev60.51e3905e6cf6.png",
+      "sha256": "51e3905e6cf60f5bb0b2d919e09ab0206b327b20fcad6dd5fec6d9b24fed7f4a"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+300-elev70.e8047a708a71.png",
+      "sha256": "e8047a708a71393cb3ebaa50c1d97f374c3e7be760e30234d0c18471e2070558"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+330-elev20.8ce3b4eef0fe.png",
+      "sha256": "8ce3b4eef0fe532f11b659a58ec23b289fa3ddcaf4e7f1049552f09ef28635d8"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+330-elev30.52e1e7cc0bec.png",
+      "sha256": "52e1e7cc0bec24c232545115e8e8ee7f4ca0dbd6b5d38fe0952ac4ae9709a2aa"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+330-elev40.52980a5910f2.png",
+      "sha256": "52980a5910f246cb1b11cf347b951b4f4ae49f48c955f7f7050f540577a53b28"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+330-elev50.3d12690e357d.png",
+      "sha256": "3d12690e357d278e370073ae73e89b6622c588e15523d83edad3c88b2390557d"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+330-elev60.c8d0e3376359.png",
+      "sha256": "c8d0e3376359013ab33a0a4cc8ca24c4f27fe7175747f301374b352f8ba4d25f"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+330-elev70.5f673fbdd0bf.png",
+      "sha256": "5f673fbdd0bfe63025d66e434aef0233f5b848729d77a0f280258741a7bab8b8"
+    }
+  ]
+}
