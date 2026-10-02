@@ -118,6 +118,8 @@ export interface PlaceObjectRequest {
   readonly y: number;
   /** Internal authored-plan grouping; ordinary placements retain their own order ID. */
   readonly transactionId?: string;
+  /** Authored template facing; ordinary object commands retain absent=0. */
+  readonly objectOrientation?: ObjectOrientation;
 }
 
 /**
@@ -519,7 +521,7 @@ export class ObjectPlacementService {
     }
 
     const anchor: TilePosition = { x: tileCoordinate(request.x), y: tileCoordinate(request.y) };
-    const footprint = objectFootprintTiles(objectDefinition, anchor, DEFAULT_PLACEMENT_ORIENTATION);
+    const footprint = objectFootprintTiles(objectDefinition, anchor, request.objectOrientation ?? DEFAULT_PLACEMENT_ORIENTATION);
     const claimed = this.tilesClaimedByOrdersInFlight();
 
     for (const tile of footprint) {
@@ -546,7 +548,8 @@ export class ObjectPlacementService {
     // the build queue (ADR 0082, #722) -- a bed placed after three hundred
     // walls waits for the three hundred, which is decision 1 read literally
     // over *every* build order rather than over walls alone.
-    this.orders.submitOrder(createBuildOrder(request.orderId, definition.id, anchor, undefined, placementSequence));
+    this.orders.submitOrder(createBuildOrder(request.orderId, definition.id, anchor, undefined, placementSequence,
+      undefined, request.objectOrientation));
     /*
      * One press, one undo step -- and the transaction id has to be *given* for
      * that to be true.
@@ -797,8 +800,8 @@ export class ObjectPlacementService {
    * room resolves nothing, which is the same statement `place` refuses to let a
    * player make.
    */
-  public onOrderCompleted(objectId: string, anchor: TilePosition): boolean {
-    if (!this.placedObjects.place(placedObjectAt(objectId, anchor, DEFAULT_PLACEMENT_ORIENTATION))) return false;
+  public onOrderCompleted(objectId: string, anchor: TilePosition, orientation: ObjectOrientation = DEFAULT_PLACEMENT_ORIENTATION): boolean {
+    if (!this.placedObjects.place(placedObjectAt(objectId, anchor, orientation))) return false;
     this.resolver.resolveContaining(anchor);
     return true;
   }
@@ -931,7 +934,7 @@ export class ObjectPlacementService {
       if (objectId === undefined) continue;
       const objectDefinition = this.placedObjects.definitionOf(objectId);
       if (objectDefinition === undefined) continue;
-      yield { order, objectId, tiles: objectFootprintTiles(objectDefinition, order.location, DEFAULT_PLACEMENT_ORIENTATION) };
+      yield { order, objectId, tiles: objectFootprintTiles(objectDefinition, order.location, order.objectOrientation ?? DEFAULT_PLACEMENT_ORIENTATION) };
     }
   }
 

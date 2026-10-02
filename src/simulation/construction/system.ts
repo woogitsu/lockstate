@@ -246,7 +246,7 @@ const SUBMISSION_FAIL_REASONS: Readonly<Record<string, BuildOrderFailReason>> = 
  * `ObjectPlacementService` documents the one interleaving that produces it.
  */
 export interface ObjectPlacementSink {
-  onOrderCompleted(objectId: string, anchor: TilePosition): boolean;
+  onOrderCompleted(objectId: string, anchor: TilePosition, orientation?: 0 | 1 | 2 | 3): boolean;
   onOrderReverted(objectId: string, anchor: TilePosition): boolean;
 }
 
@@ -745,6 +745,7 @@ export class ConstructionSystem implements SystemRegistration {
       if (existing.state === 'completed' && isObjectBuildable) continue;
       if (existing.definitionId !== order.definitionId) continue;
       if (existing.footprint !== order.footprint) continue;
+      if (isObjectBuildable && (existing.objectOrientation ?? 0) !== (order.objectOrientation ?? 0)) continue;
       if (existing.location.x !== order.location.x || existing.location.y !== order.location.y) continue;
       if (resolveBuildEdge(existing) !== edge) continue;
       return existing;
@@ -2043,7 +2044,7 @@ export class ConstructionSystem implements SystemRegistration {
       // and the room it stands in has its capacity re-derived on the same call
       // (ADR 0028 decision 2, moment one of three).
       if (definition.placesObjectId !== undefined) {
-        this.objectPlacement?.onOrderCompleted(definition.placesObjectId, order.location);
+        this.objectPlacement?.onOrderCompleted(definition.placesObjectId, order.location, order.objectOrientation ?? 0);
       }
       this.markGeometryChanged(order.location);
       return;

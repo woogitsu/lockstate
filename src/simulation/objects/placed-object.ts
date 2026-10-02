@@ -35,19 +35,13 @@ export interface PlacedObject {
 /**
  * Quarter turns clockwise from the footprint as content authored it.
  *
- * **Nothing in `src/` produces anything but `0` today, and that is stated
- * rather than hidden.** The gesture that places an object is one press on one
- * tile (ADR 0028 decision 5) and the rotate half of that decision -- "a key
- * press while armed, remappable per `docs/INPUT.md`" -- needs an entry in
- * `ACTION_IDS`, a default binding, a description key and a branch in
- * `WorldScene.handleActionEvents`, none of which phase 1 ships. So the field
- * exists because it is the persisted shape decision 1 fixes, and because
- * `orientedFootprint` below reads it; the *producer* is owed.
+ * Room templates produce this through their saved quarter-turn request and
+ * each fixture's BuildOrder.objectOrientation. Construction completion carries
+ * the value into this registry; reservations and rendering read the same
+ * orientation. Standalone object placement still defaults to zero.
  *
- * It is carried in the save at full range (`0..3`) so that adding the rotate
- * control later is a change to the producer and the scene alone, with no
- * save-format move -- which is the whole reason to declare it now rather than
- * when something can write it.
+ * The existing placed-object saved domain already covers all four values;
+ * unfinished build orders use an optional orientation with absent meaning zero.
  */
 export type ObjectOrientation = 0 | 1 | 2 | 3;
 
