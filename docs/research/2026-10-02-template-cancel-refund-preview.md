@@ -119,3 +119,25 @@ agent confirmed those are already corrected in its newer published integration.
 They are inherited limitations of this isolated base, not preview regressions,
 and were not edited by this task. Final release/CI and browser acceptance remain
 with the root integration.
+
+## Root integration on the next delivery branch — 2026-10-02
+
+Root repeated the seven original cases on the published integrated candidate
+`3eeeddc2d276714fee6a7c8420270b78d2e49b3c`, with the accepted occupied
+cancellation dependencies already present. Six failed and the ordinary control
+passed in 5.52 s: displayed 80 versus actual 1425 for the pending shell,
+displayed 0/40 versus actual 355 for partial rows, and displayed 65 versus
+actual 0/315 for occupied refusal/spare relocation. This independently confirms
+the numeric defect on the integrated source rather than its stale ancestor.
+
+After integrating the diagnostic, sequential immutable preview and corrected
+live anchors, root passes 224 tests across 13 selected integration, accounting,
+zoning, ordinary-refund and documentation files in 53.33 s. Both TypeScript
+targets pass. After hydrating the checkout's actual LFS asset content, its
+production build passes and emits a fingerprinted simulation worker. The
+newer root also resolves both inherited desk documentation failures named
+above; its citation and research-index checks are included in this green scope.
+
+This is a separate next-delivery branch. The existing PR1899 candidate stays
+unchanged so its remote run can finish. No exact-head CI, native browser or
+hosted deployment is claimed for this refund integration yet.

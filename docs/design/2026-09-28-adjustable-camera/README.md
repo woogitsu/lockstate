@@ -955,3 +955,22 @@ renders, including subsequent models in the approved directories. The next
 Kitchen stove, numeric coupled-refund preview and further native controls stay
 on independent branches while this integrated release candidate runs exact-head
 CI. Serial main CI and mergeability remain required before another merge.
+
+## Next delivery: collective Cancel refund preview — 2026-10-02
+
+The next branch integrates the actual coupled refund into the existing queue
+readout. It follows the selected-order-first cancellation sequence and recorded
+delivery payments, and checks collective resident relocation over private
+claims. Reading a quote does not mutate orders, money, history or residency.
+[Refund evidence](../../research/2026-10-02-template-cancel-refund-preview.md)
+retains the six root baseline failures, three distinct production mutations,
+ten restored command/projection cases and root's 224 combined checks. Both
+TypeScript targets and the hydrated production build pass. Prices, player
+copy and save format are unchanged.
+
+The current release candidate remains published as
+`3eeeddc2d276714fee6a7c8420270b78d2e49b3c` in PR1899 while this next delivery
+develops independently. Three agents continue new Kitchen stove native
+acceptance, existing View control mouse targeting, and the separately observed
+manual RemoveWall entrance into completed-template cancellation. Prototype or
+scoped local proof does not replace exact-head CI and actual release gates.
