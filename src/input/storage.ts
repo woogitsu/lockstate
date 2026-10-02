@@ -4,7 +4,7 @@ import {
   DEFAULT_ACCESSIBILITY_SETTINGS,
   decodeAccessibilitySettings,
 } from './accessibility';
-import { DEFAULT_KEYBOARD_BINDINGS } from './bindings';
+import { DEFAULT_KEYBOARD_BINDINGS, type KeyboardBinding } from './bindings';
 import {
   type LanguageSettings,
   DEFAULT_LANGUAGE_SETTINGS,
@@ -184,14 +184,32 @@ export function resolveBrowserKeyValueStore(): KeyValueStore {
 export function loadInputSettings(store: KeyValueStore): InputSettings {
   const saved = decodeInputSettings(readJson(store, INPUT_SETTINGS_STORAGE_KEY));
   if (saved === undefined) return DEFAULT_INPUT_SETTINGS;
-  // Older version-1 preferences predate angle controls. Add only defaults
-  // whose action and physical key are both free; preserve every user remap.
-  const additions = DEFAULT_KEYBOARD_BINDINGS.filter((candidate) =>
-    !saved.keyboardBindings.some((binding) => binding.action === candidate.action) &&
-    !saved.keyboardBindings.some((binding) => binding.code === candidate.code &&
-      binding.contexts.some((context) => candidate.contexts.includes(context))),
-  );
-  return additions.length === 0 ? saved : { ...saved, keyboardBindings: [...saved.keyboardBindings, ...additions] };
+  // Older version-1 preferences predate angle controls. A custom remap may
+  // occupy a new default key (for example camera.up moved from W to Q). In
+  // that case Q must remain the player's choice, but its vacated W position
+  // can carry the newly introduced rotate-left action. Never invent an
+  // unrelated, undiscoverable key when no original default position is free.
+  const bindings = [...saved.keyboardBindings];
+  const overlaps = (left: KeyboardBinding, right: KeyboardBinding): boolean =>
+    left.code === right.code && left.contexts.some((context) => right.contexts.includes(context));
+  for (const candidate of DEFAULT_KEYBOARD_BINDINGS) {
+    if (bindings.some((binding) => binding.action === candidate.action)) continue;
+    const findVacatedCode = (code: string, visited: ReadonlySet<string>): string | undefined => {
+      if (visited.has(code)) return undefined;
+      const occupant = bindings.find((binding) => overlaps(binding, { ...candidate, code }));
+      if (occupant === undefined) return code;
+      const nextVisited = new Set([...visited, code]);
+      for (const previous of DEFAULT_KEYBOARD_BINDINGS) {
+        if (previous.action !== occupant.action || previous.code === occupant.code) continue;
+        const free = findVacatedCode(previous.code, nextVisited);
+        if (free !== undefined) return free;
+      }
+      return undefined;
+    };
+    const code = findVacatedCode(candidate.code, new Set());
+    if (code !== undefined) bindings.push({ ...candidate, code });
+  }
+  return bindings.length === saved.keyboardBindings.length ? saved : { ...saved, keyboardBindings: bindings };
 }
 
 export function saveInputSettings(store: KeyValueStore, settings: InputSettings): void {
