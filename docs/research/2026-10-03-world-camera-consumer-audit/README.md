@@ -28,7 +28,9 @@ against which the original pick and culling are compared.
 - Left-drag emits precisely four chosen squares, with no early placement and
   no edge-wall placement call; release calls the actual placement port once.
 
-Baseline **24/24 GREEN**,1.62s,maxWorkers2.
+Initial combined baseline **24/24 GREEN**,1.62s,maxWorkers2.
+The final file splits culling and picking into independent groups for legal
+controls during each mutation: **48/48 GREEN**,1.08s,maxWorkers2.
 [Original receipt](original-world-callbacks-green.log).
 
 ## Limits and remaining proof
@@ -40,6 +42,23 @@ World's accepted full-canvas viewport has offset0 and origin0.5; unsupported
 custom viewport offsets/rotation are not turned into a defect.
 
 No production change or new Issue is warranted by this baseline. Existing
-angled144/32 matrices were not rerun or duplicated. Reversible picking-x and
-raw-scroll culling producer negatives, each unique replacement and exact byte
-restoration, are proposed but pending the named temporary source lease.
+angled144/32 matrices were not rerun or duplicated. Approved temporary producer controls were run sequentially at one unique
+source location each, with exact byte restoration in finally after every run:
+
+| Producer control | Actual RED | Legal GREEN controls | Exact-restored result |
+| --- | --- | --- | --- |
+| worldPointOf adds64 to picked x | 24 picking cases | 24 culling cases | 48/48 GREEN,1.04s |
+| visibleTiles uses raw scroll as visible ground origin | 20 non-unit zoom culling cases | 4 zoom1 culling +24 picking cases | 48/48 GREEN,1.05s |
+
+The original source is already correct. No permanent producer change remains.
+Restored whole world-scene.ts SHA256 matches its original baseline:
+`5c4e27ee263cb2e88d4258a4d7729e2cecb399e07e4a41af13727fcfdba6ab06`.
+App/tools TypeScript passes. All processes terminal; no browser/server launched.
+
+- [Final independent-group baseline](world-consumer-original-48-green.log).
+- [Picking producer negative](world-consumer-pick-x-producer-red.log).
+- [Picking exact restore](world-consumer-pick-x-restored-green.log).
+- [Culling producer negative](world-consumer-cull-scroll-producer-red.log).
+- [Culling exact restore](world-consumer-cull-scroll-restored-green.log).
+- [App/tools TypeScript](world-consumer-typecheck.log).
+

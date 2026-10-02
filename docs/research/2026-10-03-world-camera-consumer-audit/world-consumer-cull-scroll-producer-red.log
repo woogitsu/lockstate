@@ -1,0 +1,574 @@
+$ vitest run "tests/unit/world-camera-culling-square-callbacks.test.ts" "--maxWorkers=2"
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-world-camera-consumer-audit-20261003
+
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts (48 tests | 20 failed) 31ms
+   × World actual culling agrees with real Camera corners after zoom=0.2 viewport={ width: 1920, height: 1080 } pan=-1 7ms
+   × World actual culling agrees with real Camera corners after zoom=0.2 viewport={ width: 1920, height: 1080 } pan=1 1ms
+   × World actual culling agrees with real Camera corners after zoom=0.2 viewport={ width: 960, height: 540 } pan=-1 1ms
+   × World actual culling agrees with real Camera corners after zoom=0.2 viewport={ width: 960, height: 540 } pan=1 1ms
+   × World actual culling agrees with real Camera corners after zoom=0.5 viewport={ width: 1920, height: 1080 } pan=-1 1ms
+   × World actual culling agrees with real Camera corners after zoom=0.5 viewport={ width: 1920, height: 1080 } pan=1 1ms
+   × World actual culling agrees with real Camera corners after zoom=0.5 viewport={ width: 960, height: 540 } pan=-1 0ms
+   × World actual culling agrees with real Camera corners after zoom=0.5 viewport={ width: 960, height: 540 } pan=1 1ms
+   × World actual culling agrees with real Camera corners after zoom=1.25 viewport={ width: 1920, height: 1080 } pan=-1 0ms
+   × World actual culling agrees with real Camera corners after zoom=1.25 viewport={ width: 1920, height: 1080 } pan=1 0ms
+   × World actual culling agrees with real Camera corners after zoom=1.25 viewport={ width: 960, height: 540 } pan=-1 0ms
+   × World actual culling agrees with real Camera corners after zoom=1.25 viewport={ width: 960, height: 540 } pan=1 1ms
+   × World actual culling agrees with real Camera corners after zoom=2 viewport={ width: 1920, height: 1080 } pan=-1 0ms
+   × World actual culling agrees with real Camera corners after zoom=2 viewport={ width: 1920, height: 1080 } pan=1 0ms
+   × World actual culling agrees with real Camera corners after zoom=2 viewport={ width: 960, height: 540 } pan=-1 1ms
+   × World actual culling agrees with real Camera corners after zoom=2 viewport={ width: 960, height: 540 } pan=1 0ms
+   × World actual culling agrees with real Camera corners after zoom=3 viewport={ width: 1920, height: 1080 } pan=-1 0ms
+   × World actual culling agrees with real Camera corners after zoom=3 viewport={ width: 1920, height: 1080 } pan=1 0ms
+   × World actual culling agrees with real Camera corners after zoom=3 viewport={ width: 960, height: 540 } pan=-1 0ms
+   × World actual culling agrees with real Camera corners after zoom=3 viewport={ width: 960, height: 540 } pan=1 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 20 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World actual culling agrees with real Camera corners after zoom=0.2 viewport={ width: 1920, height: 1080 } pan=-1
+AssertionError: expected { minTileX: 11, maxTileX: 163, …(2) } to deeply equal { minTileX: -49, maxTileX: 103, …(2) }
+
+- Expected
++ Received
+
+  {
+-   "maxTileX": 103,
+-   "maxTileY": 47,
+-   "minTileX": -49,
+-   "minTileY": -40,
++   "maxTileX": 163,
++   "maxTileY": 80,
++   "minTileX": 11,
++   "minTileY": -6,
+  }
+
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:73:53
+     71|   const tileUpdate = vi.fn(); Reflect.set(actual, 'tiles', { update: t…
+     72|   actual.update(100, 0);
+     73|   expect(tileUpdate.mock.calls[0]![1] as TileRange).toEqual(expectedRa…
+       |                                                     ^
+     74| });
+     75|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/20]⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World actual culling agrees with real Camera corners after zoom=0.2 viewport={ width: 1920, height: 1080 } pan=1
+AssertionError: expected { minTileX: -11, maxTileX: 141, …(2) } to deeply equal { minTileX: -71, maxTileX: 81, …(2) }
+
+- Expected
++ Received
+
+  {
+-   "maxTileX": 81,
+-   "maxTileY": 62,
+-   "minTileX": -71,
+-   "minTileY": -25,
++   "maxTileX": 141,
++   "maxTileY": 96,
++   "minTileX": -11,
++   "minTileY": 9,
+  }
+
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:73:53
+     71|   const tileUpdate = vi.fn(); Reflect.set(actual, 'tiles', { update: t…
+     72|   actual.update(100, 0);
+     73|   expect(tileUpdate.mock.calls[0]![1] as TileRange).toEqual(expectedRa…
+       |                                                     ^
+     74| });
+     75|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/20]⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World actual culling agrees with real Camera corners after zoom=0.2 viewport={ width: 960, height: 540 } pan=-1
+AssertionError: expected { minTileX: 11, maxTileX: 88, …(2) } to deeply equal { minTileX: -19, maxTileX: 58, …(2) }
+
+- Expected
++ Received
+
+  {
+-   "maxTileX": 58,
+-   "maxTileY": 21,
+-   "minTileX": -19,
+-   "minTileY": -23,
++   "maxTileX": 88,
++   "maxTileY": 38,
++   "minTileX": 11,
++   "minTileY": -6,
+  }
+
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:73:53
+     71|   const tileUpdate = vi.fn(); Reflect.set(actual, 'tiles', { update: t…
+     72|   actual.update(100, 0);
+     73|   expect(tileUpdate.mock.calls[0]![1] as TileRange).toEqual(expectedRa…
+       |                                                     ^
+     74| });
+     75|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/20]⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World actual culling agrees with real Camera corners after zoom=0.2 viewport={ width: 960, height: 540 } pan=1
+AssertionError: expected { minTileX: -11, maxTileX: 66, …(2) } to deeply equal { minTileX: -41, maxTileX: 36, …(2) }
+
+- Expected
++ Received
+
+  {
+-   "maxTileX": 36,
+-   "maxTileY": 36,
+-   "minTileX": -41,
+-   "minTileY": -8,
++   "maxTileX": 66,
++   "maxTileY": 53,
++   "minTileX": -11,
++   "minTileY": 9,
+  }
+
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:73:53
+     71|   const tileUpdate = vi.fn(); Reflect.set(actual, 'tiles', { update: t…
+     72|   actual.update(100, 0);
+     73|   expect(tileUpdate.mock.calls[0]![1] as TileRange).toEqual(expectedRa…
+       |                                                     ^
+     74| });
+     75|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/20]⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World actual culling agrees with real Camera corners after zoom=0.5 viewport={ width: 1920, height: 1080 } pan=-1
+AssertionError: expected { minTileX: 5, maxTileX: 67, …(2) } to deeply equal { minTileX: -10, maxTileX: 52, …(2) }
+
+- Expected
++ Received
+
+  {
+-   "maxTileX": 52,
+-   "maxTileY": 26,
+-   "minTileX": -10,
+-   "minTileY": -10,
++   "maxTileX": 67,
++   "maxTileY": 34,
++   "minTileX": 5,
++   "minTileY": -1,
+  }
+
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:73:53
+     71|   const tileUpdate = vi.fn(); Reflect.set(actual, 'tiles', { update: t…
+     72|   actual.update(100, 0);
+     73|   expect(tileUpdate.mock.calls[0]![1] as TileRange).toEqual(expectedRa…
+       |                                                     ^
+     74| });
+     75|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/20]⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World actual culling agrees with real Camera corners after zoom=0.5 viewport={ width: 1920, height: 1080 } pan=1
+AssertionError: expected { minTileX: -4, maxTileX: 58, …(2) } to deeply equal { minTileX: -19, maxTileX: 43, …(2) }
+
+- Expected
++ Received
+
+  {
+-   "maxTileX": 43,
+-   "maxTileY": 32,
+-   "minTileX": -19,
+-   "minTileY": -4,
++   "maxTileX": 58,
++   "maxTileY": 40,
++   "minTileX": -4,
++   "minTileY": 5,
+  }
+
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:73:53
+     71|   const tileUpdate = vi.fn(); Reflect.set(actual, 'tiles', { update: t…
+     72|   actual.update(100, 0);
+     73|   expect(tileUpdate.mock.calls[0]![1] as TileRange).toEqual(expectedRa…
+       |                                                     ^
+     74| });
+     75|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/20]⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World actual culling agrees with real Camera corners after zoom=0.5 viewport={ width: 960, height: 540 } pan=-1
+AssertionError: expected { minTileX: 5, maxTileX: 37, …(2) } to deeply equal { minTileX: -3, maxTileX: 29, …(2) }
+
+- Expected
++ Received
+
+  {
+-   "maxTileX": 29,
+-   "maxTileY": 13,
+-   "minTileX": -3,
+-   "minTileY": -6,
++   "maxTileX": 37,
++   "maxTileY": 17,
++   "minTileX": 5,
++   "minTileY": -1,
+  }
+
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:73:53
+     71|   const tileUpdate = vi.fn(); Reflect.set(actual, 'tiles', { update: t…
+     72|   actual.update(100, 0);
+     73|   expect(tileUpdate.mock.calls[0]![1] as TileRange).toEqual(expectedRa…
+       |                                                     ^
+     74| });
+     75|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/20]⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World actual culling agrees with real Camera corners after zoom=0.5 viewport={ width: 960, height: 540 } pan=1
+AssertionError: expected { minTileX: -4, maxTileX: 28, …(2) } to deeply equal { minTileX: -12, maxTileX: 20, …(2) }
+
+- Expected
++ Received
+
+  {
+-   "maxTileX": 20,
+-   "maxTileY": 19,
+-   "minTileX": -12,
+-   "minTileY": 0,
++   "maxTileX": 28,
++   "maxTileY": 24,
++   "minTileX": -4,
++   "minTileY": 5,
+  }
+
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:73:53
+     71|   const tileUpdate = vi.fn(); Reflect.set(actual, 'tiles', { update: t…
+     72|   actual.update(100, 0);
+     73|   expect(tileUpdate.mock.calls[0]![1] as TileRange).toEqual(expectedRa…
+       |                                                     ^
+     74| });
+     75|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/20]⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World actual culling agrees with real Camera corners after zoom=1.25 viewport={ width: 1920, height: 1080 } pan=-1
+AssertionError: expected { minTileX: 2, maxTileX: 28, …(2) } to deeply equal { minTileX: 5, maxTileX: 31, …(2) }
+
+- Expected
++ Received
+
+  {
+-   "maxTileX": 31,
+-   "maxTileY": 18,
+-   "minTileX": 5,
+-   "minTileY": 2,
++   "maxTileX": 28,
++   "maxTileY": 16,
++   "minTileX": 2,
++   "minTileY": 0,
+  }
+
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:73:53
+     71|   const tileUpdate = vi.fn(); Reflect.set(actual, 'tiles', { update: t…
+     72|   actual.update(100, 0);
+     73|   expect(tileUpdate.mock.calls[0]![1] as TileRange).toEqual(expectedRa…
+       |                                                     ^
+     74| });
+     75|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/20]⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World actual culling agrees with real Camera corners after zoom=1.25 viewport={ width: 1920, height: 1080 } pan=1
+AssertionError: expected { minTileX: -2, maxTileX: 24, …(2) } to deeply equal { minTileX: 1, maxTileX: 27, …(2) }
+
+- Expected
++ Received
+
+  {
+-   "maxTileX": 27,
+-   "maxTileY": 20,
+-   "minTileX": 1,
+-   "minTileY": 5,
++   "maxTileX": 24,
++   "maxTileY": 18,
++   "minTileX": -2,
++   "minTileY": 3,
+  }
+
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:73:53
+     71|   const tileUpdate = vi.fn(); Reflect.set(actual, 'tiles', { update: t…
+     72|   actual.update(100, 0);
+     73|   expect(tileUpdate.mock.calls[0]![1] as TileRange).toEqual(expectedRa…
+       |                                                     ^
+     74| });
+     75|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/20]⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World actual culling agrees with real Camera corners after zoom=1.25 viewport={ width: 960, height: 540 } pan=-1
+AssertionError: expected { minTileX: 2, maxTileX: 16, …(2) } to deeply equal { minTileX: 3, maxTileX: 17, …(2) }
+
+- Expected
++ Received
+
+  {
+-   "maxTileX": 17,
+-   "maxTileY": 10,
+-   "minTileX": 3,
+-   "minTileY": 1,
++   "maxTileX": 16,
++   "maxTileY": 9,
++   "minTileX": 2,
++   "minTileY": 0,
+  }
+
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:73:53
+     71|   const tileUpdate = vi.fn(); Reflect.set(actual, 'tiles', { update: t…
+     72|   actual.update(100, 0);
+     73|   expect(tileUpdate.mock.calls[0]![1] as TileRange).toEqual(expectedRa…
+       |                                                     ^
+     74| });
+     75|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/20]⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World actual culling agrees with real Camera corners after zoom=1.25 viewport={ width: 960, height: 540 } pan=1
+AssertionError: expected { minTileX: -2, maxTileX: 12, …(2) } to deeply equal { minTileX: +0, maxTileX: 14, …(2) }
+
+- Expected
++ Received
+
+  {
+-   "maxTileX": 14,
++   "maxTileX": 12,
+    "maxTileY": 12,
+-   "minTileX": 0,
+-   "minTileY": 4,
++   "minTileX": -2,
++   "minTileY": 3,
+  }
+
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:73:53
+     71|   const tileUpdate = vi.fn(); Reflect.set(actual, 'tiles', { update: t…
+     72|   actual.update(100, 0);
+     73|   expect(tileUpdate.mock.calls[0]![1] as TileRange).toEqual(expectedRa…
+       |                                                     ^
+     74| });
+     75|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/20]⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World actual culling agrees with real Camera corners after zoom=2 viewport={ width: 1920, height: 1080 } pan=-1
+AssertionError: expected { minTileX: 1, maxTileX: 18, …(2) } to deeply equal { minTileX: 9, maxTileX: 26, …(2) }
+
+- Expected
++ Received
+
+  {
+-   "maxTileX": 26,
+-   "maxTileY": 16,
+-   "minTileX": 9,
+-   "minTileY": 5,
++   "maxTileX": 18,
++   "maxTileY": 11,
++   "minTileX": 1,
++   "minTileY": 1,
+  }
+
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:73:53
+     71|   const tileUpdate = vi.fn(); Reflect.set(actual, 'tiles', { update: t…
+     72|   actual.update(100, 0);
+     73|   expect(tileUpdate.mock.calls[0]![1] as TileRange).toEqual(expectedRa…
+       |                                                     ^
+     74| });
+     75|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/20]⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World actual culling agrees with real Camera corners after zoom=2 viewport={ width: 1920, height: 1080 } pan=1
+AssertionError: expected { minTileX: -1, maxTileX: 16, …(2) } to deeply equal { minTileX: 6, maxTileX: 23, …(2) }
+
+- Expected
++ Received
+
+  {
+-   "maxTileX": 23,
+-   "maxTileY": 17,
+-   "minTileX": 6,
+-   "minTileY": 7,
++   "maxTileX": 16,
++   "maxTileY": 13,
++   "minTileX": -1,
++   "minTileY": 2,
+  }
+
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:73:53
+     71|   const tileUpdate = vi.fn(); Reflect.set(actual, 'tiles', { update: t…
+     72|   actual.update(100, 0);
+     73|   expect(tileUpdate.mock.calls[0]![1] as TileRange).toEqual(expectedRa…
+       |                                                     ^
+     74| });
+     75|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/20]⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World actual culling agrees with real Camera corners after zoom=2 viewport={ width: 960, height: 540 } pan=-1
+AssertionError: expected { minTileX: 1, maxTileX: 11, …(2) } to deeply equal { minTileX: 5, maxTileX: 14, …(2) }
+
+- Expected
++ Received
+
+  {
+-   "maxTileX": 14,
+-   "maxTileY": 9,
+-   "minTileX": 5,
+-   "minTileY": 3,
++   "maxTileX": 11,
++   "maxTileY": 7,
++   "minTileX": 1,
++   "minTileY": 1,
+  }
+
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:73:53
+     71|   const tileUpdate = vi.fn(); Reflect.set(actual, 'tiles', { update: t…
+     72|   actual.update(100, 0);
+     73|   expect(tileUpdate.mock.calls[0]![1] as TileRange).toEqual(expectedRa…
+       |                                                     ^
+     74| });
+     75|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/20]⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World actual culling agrees with real Camera corners after zoom=2 viewport={ width: 960, height: 540 } pan=1
+AssertionError: expected { minTileX: -1, maxTileX: 8, …(2) } to deeply equal { minTileX: 3, maxTileX: 12, …(2) }
+
+- Expected
++ Received
+
+  {
+-   "maxTileX": 12,
+-   "maxTileY": 11,
+-   "minTileX": 3,
+-   "minTileY": 4,
++   "maxTileX": 8,
++   "maxTileY": 9,
++   "minTileX": -1,
++   "minTileY": 2,
+  }
+
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:73:53
+     71|   const tileUpdate = vi.fn(); Reflect.set(actual, 'tiles', { update: t…
+     72|   actual.update(100, 0);
+     73|   expect(tileUpdate.mock.calls[0]![1] as TileRange).toEqual(expectedRa…
+       |                                                     ^
+     74| });
+     75|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/20]⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World actual culling agrees with real Camera corners after zoom=3 viewport={ width: 1920, height: 1080 } pan=-1
+AssertionError: expected { minTileX: 1, maxTileX: 13, …(2) } to deeply equal { minTileX: 11, maxTileX: 23, …(2) }
+
+- Expected
++ Received
+
+  {
+-   "maxTileX": 23,
+-   "maxTileY": 14,
+-   "minTileX": 11,
+-   "minTileY": 7,
++   "maxTileX": 13,
++   "maxTileY": 9,
++   "minTileX": 1,
++   "minTileY": 1,
+  }
+
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:73:53
+     71|   const tileUpdate = vi.fn(); Reflect.set(actual, 'tiles', { update: t…
+     72|   actual.update(100, 0);
+     73|   expect(tileUpdate.mock.calls[0]![1] as TileRange).toEqual(expectedRa…
+       |                                                     ^
+     74| });
+     75|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/20]⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World actual culling agrees with real Camera corners after zoom=3 viewport={ width: 1920, height: 1080 } pan=1
+AssertionError: expected { minTileX: -1, maxTileX: 11, …(2) } to deeply equal { minTileX: 9, maxTileX: 21, …(2) }
+
+- Expected
++ Received
+
+  {
+-   "maxTileX": 21,
+-   "maxTileY": 15,
+-   "minTileX": 9,
+-   "minTileY": 8,
++   "maxTileX": 11,
++   "maxTileY": 10,
++   "minTileX": -1,
++   "minTileY": 2,
+  }
+
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:73:53
+     71|   const tileUpdate = vi.fn(); Reflect.set(actual, 'tiles', { update: t…
+     72|   actual.update(100, 0);
+     73|   expect(tileUpdate.mock.calls[0]![1] as TileRange).toEqual(expectedRa…
+       |                                                     ^
+     74| });
+     75|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/20]⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World actual culling agrees with real Camera corners after zoom=3 viewport={ width: 960, height: 540 } pan=-1
+AssertionError: expected { minTileX: 1, maxTileX: 8, …(2) } to deeply equal { minTileX: 6, maxTileX: 13, …(2) }
+
+- Expected
++ Received
+
+  {
+-   "maxTileX": 13,
+-   "maxTileY": 9,
+-   "minTileX": 6,
+-   "minTileY": 4,
++   "maxTileX": 8,
++   "maxTileY": 6,
++   "minTileX": 1,
++   "minTileY": 1,
+  }
+
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:73:53
+     71|   const tileUpdate = vi.fn(); Reflect.set(actual, 'tiles', { update: t…
+     72|   actual.update(100, 0);
+     73|   expect(tileUpdate.mock.calls[0]![1] as TileRange).toEqual(expectedRa…
+       |                                                     ^
+     74| });
+     75|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/20]⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World actual culling agrees with real Camera corners after zoom=3 viewport={ width: 960, height: 540 } pan=1
+AssertionError: expected { minTileX: -1, maxTileX: 6, …(2) } to deeply equal { minTileX: 4, maxTileX: 11, …(2) }
+
+- Expected
++ Received
+
+  {
+-   "maxTileX": 11,
+-   "maxTileY": 10,
+-   "minTileX": 4,
+-   "minTileY": 5,
++   "maxTileX": 6,
++   "maxTileY": 7,
++   "minTileX": -1,
++   "minTileY": 2,
+  }
+
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:73:53
+     71|   const tileUpdate = vi.fn(); Reflect.set(actual, 'tiles', { update: t…
+     72|   actual.update(100, 0);
+     73|   expect(tileUpdate.mock.calls[0]![1] as TileRange).toEqual(expectedRa…
+       |                                                     ^
+     74| });
+     75|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/20]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  20 failed | 28 passed (48)
+   Start at  01:21:56
+   Duration  1.08s (transform 321ms, setup 0ms, import 915ms, tests 31ms, environment 0ms)
+
+[ELIFECYCLE] Test failed. See above for more details.

@@ -1,0 +1,305 @@
+$ vitest run "tests/unit/world-camera-culling-square-callbacks.test.ts" "--maxWorkers=2"
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-world-camera-consumer-audit-20261003
+
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts (48 tests | 24 failed) 16ms
+   × World registered square picking agrees with real Camera after zoom=0.2 viewport={ width: 1920, height: 1080 } pan=-1 2ms
+   × World registered square picking agrees with real Camera after zoom=0.2 viewport={ width: 1920, height: 1080 } pan=1 0ms
+   × World registered square picking agrees with real Camera after zoom=0.2 viewport={ width: 960, height: 540 } pan=-1 0ms
+   × World registered square picking agrees with real Camera after zoom=0.2 viewport={ width: 960, height: 540 } pan=1 0ms
+   × World registered square picking agrees with real Camera after zoom=0.5 viewport={ width: 1920, height: 1080 } pan=-1 0ms
+   × World registered square picking agrees with real Camera after zoom=0.5 viewport={ width: 1920, height: 1080 } pan=1 0ms
+   × World registered square picking agrees with real Camera after zoom=0.5 viewport={ width: 960, height: 540 } pan=-1 0ms
+   × World registered square picking agrees with real Camera after zoom=0.5 viewport={ width: 960, height: 540 } pan=1 0ms
+   × World registered square picking agrees with real Camera after zoom=1 viewport={ width: 1920, height: 1080 } pan=-1 0ms
+   × World registered square picking agrees with real Camera after zoom=1 viewport={ width: 1920, height: 1080 } pan=1 0ms
+   × World registered square picking agrees with real Camera after zoom=1 viewport={ width: 960, height: 540 } pan=-1 0ms
+   × World registered square picking agrees with real Camera after zoom=1 viewport={ width: 960, height: 540 } pan=1 0ms
+   × World registered square picking agrees with real Camera after zoom=1.25 viewport={ width: 1920, height: 1080 } pan=-1 0ms
+   × World registered square picking agrees with real Camera after zoom=1.25 viewport={ width: 1920, height: 1080 } pan=1 0ms
+   × World registered square picking agrees with real Camera after zoom=1.25 viewport={ width: 960, height: 540 } pan=-1 0ms
+   × World registered square picking agrees with real Camera after zoom=1.25 viewport={ width: 960, height: 540 } pan=1 0ms
+   × World registered square picking agrees with real Camera after zoom=2 viewport={ width: 1920, height: 1080 } pan=-1 0ms
+   × World registered square picking agrees with real Camera after zoom=2 viewport={ width: 1920, height: 1080 } pan=1 0ms
+   × World registered square picking agrees with real Camera after zoom=2 viewport={ width: 960, height: 540 } pan=-1 0ms
+   × World registered square picking agrees with real Camera after zoom=2 viewport={ width: 960, height: 540 } pan=1 0ms
+   × World registered square picking agrees with real Camera after zoom=3 viewport={ width: 1920, height: 1080 } pan=-1 0ms
+   × World registered square picking agrees with real Camera after zoom=3 viewport={ width: 1920, height: 1080 } pan=1 0ms
+   × World registered square picking agrees with real Camera after zoom=3 viewport={ width: 960, height: 540 } pan=-1 0ms
+   × World registered square picking agrees with real Camera after zoom=3 viewport={ width: 960, height: 540 } pan=1 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 24 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World registered square picking agrees with real Camera after zoom=0.2 viewport={ width: 1920, height: 1080 } pan=-1
+AssertionError: expected -2945 to be close to -3008.9998941272515, received difference is 63.99989412725154, but expected 0.0005
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:83:22
+     81|     const picked = Reflect.get(actual, 'worldPointOf').call(actual, po…
+     82|     const expected = camera.getWorldPoint(point.x, point.y);
+     83|     expect(picked.x).toBeCloseTo(expected.x, 3); expect(picked.y).toBe…
+       |                      ^
+     84|   }
+     85|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/24]⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World registered square picking agrees with real Camera after zoom=0.2 viewport={ width: 1920, height: 1080 } pan=1
+AssertionError: expected -4397 to be close to -4460.999994561076, received difference is 63.999994561076164, but expected 0.0005
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:83:22
+     81|     const picked = Reflect.get(actual, 'worldPointOf').call(actual, po…
+     82|     const expected = camera.getWorldPoint(point.x, point.y);
+     83|     expect(picked.x).toBeCloseTo(expected.x, 3); expect(picked.y).toBe…
+       |                      ^
+     84|   }
+     85|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/24]⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World registered square picking agrees with real Camera after zoom=0.2 viewport={ width: 960, height: 540 } pan=-1
+AssertionError: expected -1025 to be close to -1088.9999990314245, received difference is 63.99999903142452, but expected 0.0005
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:83:22
+     81|     const picked = Reflect.get(actual, 'worldPointOf').call(actual, po…
+     82|     const expected = camera.getWorldPoint(point.x, point.y);
+     83|     expect(picked.x).toBeCloseTo(expected.x, 3); expect(picked.y).toBe…
+       |                      ^
+     84|   }
+     85|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/24]⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World registered square picking agrees with real Camera after zoom=0.2 viewport={ width: 960, height: 540 } pan=1
+AssertionError: expected -2477 to be close to -2541.000023171305, received difference is 64.0000231713052, but expected 0.0005
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:83:22
+     81|     const picked = Reflect.get(actual, 'worldPointOf').call(actual, po…
+     82|     const expected = camera.getWorldPoint(point.x, point.y);
+     83|     expect(picked.x).toBeCloseTo(expected.x, 3); expect(picked.y).toBe…
+       |                      ^
+     84|   }
+     85|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/24]⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World registered square picking agrees with real Camera after zoom=0.5 viewport={ width: 1920, height: 1080 } pan=-1
+AssertionError: expected -503.5999999999999 to be close to -567.5999755859375, received difference is 63.99997558593759, but expected 0.0005
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:83:22
+     81|     const picked = Reflect.get(actual, 'worldPointOf').call(actual, po…
+     82|     const expected = camera.getWorldPoint(point.x, point.y);
+     83|     expect(picked.x).toBeCloseTo(expected.x, 3); expect(picked.y).toBe…
+       |                      ^
+     84|   }
+     85|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/24]⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World registered square picking agrees with real Camera after zoom=0.5 viewport={ width: 1920, height: 1080 } pan=1
+AssertionError: expected -1084.4 to be close to -1148.4000244140625, received difference is 64.00002441406241, but expected 0.0005
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:83:22
+     81|     const picked = Reflect.get(actual, 'worldPointOf').call(actual, po…
+     82|     const expected = camera.getWorldPoint(point.x, point.y);
+     83|     expect(picked.x).toBeCloseTo(expected.x, 3); expect(picked.y).toBe…
+       |                      ^
+     84|   }
+     85|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/24]⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World registered square picking agrees with real Camera after zoom=0.5 viewport={ width: 960, height: 540 } pan=-1
+AssertionError: expected -23.600000000000023 to be close to -87.5999984741211, received difference is 63.99999847412107, but expected 0.0005
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:83:22
+     81|     const picked = Reflect.get(actual, 'worldPointOf').call(actual, po…
+     82|     const expected = camera.getWorldPoint(point.x, point.y);
+     83|     expect(picked.x).toBeCloseTo(expected.x, 3); expect(picked.y).toBe…
+       |                      ^
+     84|   }
+     85|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/24]⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World registered square picking agrees with real Camera after zoom=0.5 viewport={ width: 960, height: 540 } pan=1
+AssertionError: expected -604.4000000000001 to be close to -668.4000244140625, received difference is 64.00002441406241, but expected 0.0005
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:83:22
+     81|     const picked = Reflect.get(actual, 'worldPointOf').call(actual, po…
+     82|     const expected = camera.getWorldPoint(point.x, point.y);
+     83|     expect(picked.x).toBeCloseTo(expected.x, 3); expect(picked.y).toBe…
+       |                      ^
+     84|   }
+     85|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/24]⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World registered square picking agrees with real Camera after zoom=1 viewport={ width: 1920, height: 1080 } pan=-1
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World registered square picking agrees with real Camera after zoom=1 viewport={ width: 960, height: 540 } pan=-1
+AssertionError: expected 310.20000000000005 to be close to 246.1999969482422, received difference is 64.00000305175786, but expected 0.0005
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:83:22
+     81|     const picked = Reflect.get(actual, 'worldPointOf').call(actual, po…
+     82|     const expected = camera.getWorldPoint(point.x, point.y);
+     83|     expect(picked.x).toBeCloseTo(expected.x, 3); expect(picked.y).toBe…
+       |                      ^
+     84|   }
+     85|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/24]⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World registered square picking agrees with real Camera after zoom=1 viewport={ width: 1920, height: 1080 } pan=1
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World registered square picking agrees with real Camera after zoom=1 viewport={ width: 960, height: 540 } pan=1
+AssertionError: expected 19.799999999999955 to be close to -44.20000076293945, received difference is 64.00000076293941, but expected 0.0005
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:83:22
+     81|     const picked = Reflect.get(actual, 'worldPointOf').call(actual, po…
+     82|     const expected = camera.getWorldPoint(point.x, point.y);
+     83|     expect(picked.x).toBeCloseTo(expected.x, 3); expect(picked.y).toBe…
+       |                      ^
+     84|   }
+     85|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/24]⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World registered square picking agrees with real Camera after zoom=1.25 viewport={ width: 1920, height: 1080 } pan=-1
+AssertionError: expected 472.96000000000004 to be close to 408.96000976562505, received difference is 63.99999023437499, but expected 0.0005
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:83:22
+     81|     const picked = Reflect.get(actual, 'worldPointOf').call(actual, po…
+     82|     const expected = camera.getWorldPoint(point.x, point.y);
+     83|     expect(picked.x).toBeCloseTo(expected.x, 3); expect(picked.y).toBe…
+       |                      ^
+     84|   }
+     85|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/24]⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World registered square picking agrees with real Camera after zoom=1.25 viewport={ width: 1920, height: 1080 } pan=1
+AssertionError: expected 240.63999999999987 to be close to 176.64000244140627, received difference is 63.999997558593606, but expected 0.0005
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:83:22
+     81|     const picked = Reflect.get(actual, 'worldPointOf').call(actual, po…
+     82|     const expected = camera.getWorldPoint(point.x, point.y);
+     83|     expect(picked.x).toBeCloseTo(expected.x, 3); expect(picked.y).toBe…
+       |                      ^
+     84|   }
+     85|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/24]⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World registered square picking agrees with real Camera after zoom=1.25 viewport={ width: 960, height: 540 } pan=-1
+AssertionError: expected 376.96 to be close to 312.96000976562505, received difference is 63.999990234374934, but expected 0.0005
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:83:22
+     81|     const picked = Reflect.get(actual, 'worldPointOf').call(actual, po…
+     82|     const expected = camera.getWorldPoint(point.x, point.y);
+     83|     expect(picked.x).toBeCloseTo(expected.x, 3); expect(picked.y).toBe…
+       |                      ^
+     84|   }
+     85|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/24]⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World registered square picking agrees with real Camera after zoom=1.25 viewport={ width: 960, height: 540 } pan=1
+AssertionError: expected 144.64 to be close to 80.64000244140625, received difference is 63.99999755859373, but expected 0.0005
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:83:22
+     81|     const picked = Reflect.get(actual, 'worldPointOf').call(actual, po…
+     82|     const expected = camera.getWorldPoint(point.x, point.y);
+     83|     expect(picked.x).toBeCloseTo(expected.x, 3); expect(picked.y).toBe…
+       |                      ^
+     84|   }
+     85|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/24]⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World registered square picking agrees with real Camera after zoom=2 viewport={ width: 1920, height: 1080 } pan=-1
+AssertionError: expected 717.0999999999999 to be close to 653.0999755859375, received difference is 64.00002441406241, but expected 0.0005
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:83:22
+     81|     const picked = Reflect.get(actual, 'worldPointOf').call(actual, po…
+     82|     const expected = camera.getWorldPoint(point.x, point.y);
+     83|     expect(picked.x).toBeCloseTo(expected.x, 3); expect(picked.y).toBe…
+       |                      ^
+     84|   }
+     85|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/24]⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World registered square picking agrees with real Camera after zoom=2 viewport={ width: 1920, height: 1080 } pan=1
+AssertionError: expected 571.9 to be close to 507.8999938964844, received difference is 64.0000061035156, but expected 0.0005
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:83:22
+     81|     const picked = Reflect.get(actual, 'worldPointOf').call(actual, po…
+     82|     const expected = camera.getWorldPoint(point.x, point.y);
+     83|     expect(picked.x).toBeCloseTo(expected.x, 3); expect(picked.y).toBe…
+       |                      ^
+     84|   }
+     85|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/24]⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World registered square picking agrees with real Camera after zoom=2 viewport={ width: 960, height: 540 } pan=-1
+AssertionError: expected 477.1 to be close to 413.1000061035156, received difference is 63.9999938964844, but expected 0.0005
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:83:22
+     81|     const picked = Reflect.get(actual, 'worldPointOf').call(actual, po…
+     82|     const expected = camera.getWorldPoint(point.x, point.y);
+     83|     expect(picked.x).toBeCloseTo(expected.x, 3); expect(picked.y).toBe…
+       |                      ^
+     84|   }
+     85|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/24]⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World registered square picking agrees with real Camera after zoom=2 viewport={ width: 960, height: 540 } pan=1
+AssertionError: expected 331.9 to be close to 267.8999938964844, received difference is 64.0000061035156, but expected 0.0005
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:83:22
+     81|     const picked = Reflect.get(actual, 'worldPointOf').call(actual, po…
+     82|     const expected = camera.getWorldPoint(point.x, point.y);
+     83|     expect(picked.x).toBeCloseTo(expected.x, 3); expect(picked.y).toBe…
+       |                      ^
+     84|   }
+     85|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/24]⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World registered square picking agrees with real Camera after zoom=3 viewport={ width: 1920, height: 1080 } pan=-1
+AssertionError: expected 852.7333333333333 to be close to 788.7333170572916, received difference is 64.00001627604172, but expected 0.0005
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:83:22
+     81|     const picked = Reflect.get(actual, 'worldPointOf').call(actual, po…
+     82|     const expected = camera.getWorldPoint(point.x, point.y);
+     83|     expect(picked.x).toBeCloseTo(expected.x, 3); expect(picked.y).toBe…
+       |                      ^
+     84|   }
+     85|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/24]⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World registered square picking agrees with real Camera after zoom=3 viewport={ width: 1920, height: 1080 } pan=1
+AssertionError: expected 755.9333333333334 to be close to 691.933349609375, received difference is 63.999983723958394, but expected 0.0005
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:83:22
+     81|     const picked = Reflect.get(actual, 'worldPointOf').call(actual, po…
+     82|     const expected = camera.getWorldPoint(point.x, point.y);
+     83|     expect(picked.x).toBeCloseTo(expected.x, 3); expect(picked.y).toBe…
+       |                      ^
+     84|   }
+     85|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/24]⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World registered square picking agrees with real Camera after zoom=3 viewport={ width: 960, height: 540 } pan=-1
+AssertionError: expected 532.7333333333333 to be close to 468.73331705729163, received difference is 64.00001627604172, but expected 0.0005
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:83:22
+     81|     const picked = Reflect.get(actual, 'worldPointOf').call(actual, po…
+     82|     const expected = camera.getWorldPoint(point.x, point.y);
+     83|     expect(picked.x).toBeCloseTo(expected.x, 3); expect(picked.y).toBe…
+       |                      ^
+     84|   }
+     85|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/24]⎯
+
+ FAIL  tests/unit/world-camera-culling-square-callbacks.test.ts > World registered square picking agrees with real Camera after zoom=3 viewport={ width: 960, height: 540 } pan=1
+AssertionError: expected 435.9333333333334 to be close to 371.93334960937494, received difference is 63.99998372395845, but expected 0.0005
+ ❯ tests/unit/world-camera-culling-square-callbacks.test.ts:83:22
+     81|     const picked = Reflect.get(actual, 'worldPointOf').call(actual, po…
+     82|     const expected = camera.getWorldPoint(point.x, point.y);
+     83|     expect(picked.x).toBeCloseTo(expected.x, 3); expect(picked.y).toBe…
+       |                      ^
+     84|   }
+     85|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/24]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  24 failed | 24 passed (48)
+   Start at  01:21:52
+   Duration  1.06s (transform 325ms, setup 0ms, import 916ms, tests 16ms, environment 0ms)
+
+[ELIFECYCLE] Test failed. See above for more details.

@@ -1,0 +1,10 @@
+$ vitest run "tests/unit/world-camera-culling-square-callbacks.test.ts" "--maxWorkers=2"
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-world-camera-consumer-audit-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  48 passed (48)
+   Start at  01:21:54
+   Duration  1.04s (transform 311ms, setup 0ms, import 903ms, tests 18ms, environment 0ms)
+
