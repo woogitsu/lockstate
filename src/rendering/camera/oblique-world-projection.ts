@@ -12,7 +12,7 @@ import {
   zoningTint,
 } from '../world/appearance';
 import { catalogueObjectId, isDrawnAsWorldEdge, squareWallStructure, type RenderStructure } from '../world/structures';
-import { obliqueCanonicalAssetIdForObject } from '../assets/oblique-object-mapping';
+import { obliqueAssetIdForPlacedObject, obliqueCanonicalAssetIdForObject } from '../assets/oblique-object-mapping';
 import { DOOR_EDGE_NUMERIC_ID } from '../../simulation/construction/definition';
 import { createTileSample } from '../world/world-view';
 import { TILE_SIZE_PX, tileRangeContains, visibleTileRange } from '../tile-metrics';
@@ -210,9 +210,12 @@ export function projectObliqueWorldFrame(frame: RenderFrame, camera: ObliqueCame
     const width = appearance.footprintTiles.width * TILE_SIZE_PX;
     const depth = appearance.footprintTiles.height * TILE_SIZE_PX;
     const geometry = projectedRectPrism(x, y, width, depth, (cutaway ? cutawayHeight(appearance.heightTiles) : appearance.heightTiles) * TILE_SIZE_PX, camera);
+    const objectId = catalogueObjectId(structure.definitionId);
     const assetId = structure.phase === 'built' && appearance.kind === 'wall'
       ? cutaway ? 'wall.square.brick.low' : 'wall.square.brick.full'
-      : obliqueCanonicalAssetIdForObject(catalogueObjectId(structure.definitionId) ?? structure.definitionId);
+      : structure.phase === 'built' && objectId !== undefined
+        ? obliqueAssetIdForPlacedObject(objectId, structure.tileX, structure.tileY, appearance.footprintTiles, frame.rooms)
+        : obliqueCanonicalAssetIdForObject(objectId ?? structure.definitionId);
     raised.push({
       kind: 'structure', id: structure.id, tileX: structure.tileX, tileY: structure.tileY,
       ...geometry, topFill: appearance.topFill, sideFill: appearance.sideFill,
