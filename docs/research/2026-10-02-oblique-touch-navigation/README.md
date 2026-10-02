@@ -8,3 +8,7 @@ Built-client baseline red; correction1/1green (7.8s). Removing only input.addPoi
 ## Pending cancellation continuation
 
 Extended native sequence pans, sends touchCancel for two contacts, then starts/releases one fresh contact. The pan succeeds and no accidental orders occur, but the fresh contact emits0 orders instead of1. Actual run red15.0s. A speculative mouse-button guard change did not repair it and was reverted exactly. This is unresolved: distinguish native test delivery/lifecycle from scene state before accepting a production fix. Original pan acceptance remains valid; this broader continuation is not accepted.
+
+## Identified native capture-release cause
+
+The fresh contact previews one valid square at15,13, so delivery and terrain are not the blocker. Temporarily disabling only lostpointercapture cancellation makes the unchanged sequence green1/1 (8.5s). Native implicit capture is released before Phaser touchend; unconditional cleanup erased the pending construction. Production now ignores only touch capture loss with buttons0 (normal finger release), retaining pointercancel, blur, mouse loss and held-touch loss cleanup. This guarded correction passes the same pan/cancel/fresh-square sequence1/1 (8.4s), with exactly one actual Build command after cancellation. TypeScript passes. Mouse/held-touch capture-loss regression remains to be verified before acceptance beyond this native sequence.
