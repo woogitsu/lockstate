@@ -1296,3 +1296,25 @@ agent checks shell reversal ownership and a third audits camera/HUD input.
 The completed, mutation-checked CI split proposal is offered to the owner;
 production workflow is unchanged while the decision is pending. Continue game
 development and preserve each coherent chunk on GitHub during that wait.
+
+### Bin and navigation integration checkpoint — 2026-10-03
+
+Following branch `codex/integrate-bin-drawer-20261003` now combines the aligned
+retained Blender bin and the navigation drawer closing-Escape correction.
+Root opened the actual rotated loaded FullHD bin capture; upstream normal and
+rotated Build/SaveLoad acceptance is3/3, both real missing-consumer negatives
+give zero palette pixels, and byte-exact restored3/3 passes. Source integration
+passes58 tests in7 files, both TypeScript projects and production build.
+The existing Yard bin override remains checked. [Model and native evidence](../../research/2026-10-02-default-waste-bin-alignment/README.md)
+and [registered drawer producer evidence](../../research/2026-10-03-navigation-drawer-escape/README.md)
+are included. Root adds exact different V8 owners and completed owning-order
+checks to both bin orientations; those new native assertions and six physical
+drawer cases are queued until Art releases the single browser. They are routed
+once through the built-artifact suite, with the source suite excluding them.
+
+The Laundry/camera predecessor is published as draft
+[PR1984](https://github.com/woogitsu/lockstate/pull/1984), including regenerated
+596-sentence inventory and the approved49-member refusal vocabulary gates.
+The root catalogue typo producer negative fails both gates, exact restoration
+passes16/16. Full exact-head CI, merge gates and production delivery remain
+separate from these local integration results.
