@@ -1,0 +1,69 @@
+{
+  "mappingExactOriginalBytes": true,
+  "mappingSha256": "a9eada806ff523bc9933da9b7a2e8a731c5a896286e33b0551119d8e389dd2d4",
+  "mutationBuildExit": 0,
+  "restoredBuildExit": 0,
+  "workerBytesEqual": true,
+  "workerBytes": 427658,
+  "workerSha256": "cfbb8ce76a61288be2998256b117dfa6d9bf1e833470cbd1ba6c4ccc183e17b3",
+  "sources": [
+    {
+      "name": "environment.mvp.catalog.blend",
+      "bytes": 25561293,
+      "sha256": "57db9afb7e48996cef9aaedda72b8e874e865eb56862ee4add8b177a9713887d",
+      "exactOriginalBytesUnchanged": true
+    },
+    {
+      "name": "furniture.storage.rack.wooden.blend",
+      "bytes": 5738127,
+      "sha256": "3806d996ce473e166aaa00bef379655aac2c41ef4d45f7f32b48a893ff4b4eed",
+      "exactOriginalBytesUnchanged": true
+    }
+  ],
+  "artifactHead": "c6ef246b6c35ad292c7b0877c9fe177677b0288c",
+  "mutation": "remove only default 'object.storage-rack': 'furniture.storage.rack.wooden' mapping; accepted StorageRoom context override unchanged",
+  "routes": [
+    {
+      "quarterTurns": 0,
+      "caseExit": 1,
+      "capacityCasePassed": true,
+      "roomCaseFailed": true,
+      "expectedIndependentPixelFailures": 4,
+      "countsBefore": [
+        0,
+        0
+      ],
+      "countsAfter": [
+        0,
+        0
+      ],
+      "anchorsPreserved": true,
+      "loadedPngSha256": "e89897653edded006ef546ee40877fe3df0b8457fef03180040d023d2689d638",
+      "durationsSeconds": [
+        45.1,
+        53.2
+      ]
+    },
+    {
+      "quarterTurns": 1,
+      "caseExit": 1,
+      "capacityCasePassed": true,
+      "roomCaseFailed": true,
+      "expectedIndependentPixelFailures": 4,
+      "countsBefore": [
+        0,
+        0
+      ],
+      "countsAfter": [
+        0,
+        0
+      ],
+      "anchorsPreserved": true,
+      "loadedPngSha256": "e21e1b9d3a5f0b2a6db68cbf83ce3886be8b46d93bb9d9910448488f2c4ba7db",
+      "durationsSeconds": [
+        42.2,
+        38.7
+      ]
+    }
+  ]
+}

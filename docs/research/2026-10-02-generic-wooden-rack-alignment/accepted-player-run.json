@@ -1,0 +1,123 @@
+{
+  "artifactHead": "c6ef246b6c35ad292c7b0877c9fe177677b0288c",
+  "nativeRestoredCases": 3,
+  "exitCode": 0,
+  "durationsSeconds": [
+    42.9,
+    49.9,
+    38.9
+  ],
+  "caseBudgetSeconds": 60,
+  "constructionProgressGuardSeconds": 10,
+  "focusedSuites": 6,
+  "focusedCases": 55,
+  "appToolsTypecheckExit": 0,
+  "records": [
+    {
+      "quarterTurns": 0,
+      "evidence": {
+        "quarterTurns": 0,
+        "actualBefore": [
+          "object.storage-rack@23,6:orientation=0",
+          "object.storage-rack@24,7:orientation=0"
+        ],
+        "actualAfter": [
+          "object.storage-rack@23,6:orientation=0",
+          "object.storage-rack@24,7:orientation=0"
+        ],
+        "beforePixels": [
+          275,
+          339
+        ],
+        "afterPixels": [
+          275,
+          339
+        ],
+        "commands": [
+          {
+            "type": "PlaceRoomTemplate",
+            "templateId": "staff-room-basic",
+            "origin": {
+              "x": 20,
+              "y": 5
+            }
+          },
+          {
+            "type": "PlaceObject",
+            "orderId": "object-baf93843-ce59-4bab-b5da-351c83518f47",
+            "definitionId": "storage-rack-wooden",
+            "x": 23,
+            "y": 6
+          },
+          {
+            "type": "PlaceObject",
+            "orderId": "object-680e8567-c7b1-4279-a93f-40c92abbfc04",
+            "definitionId": "storage-rack-wooden",
+            "x": 24,
+            "y": 7
+          }
+        ]
+      },
+      "images": {
+        "worker-completed": {
+          "path": "docs\\research\\2026-10-02-generic-wooden-rack-alignment\\accepted-q0-worker-completed-fullhd.png",
+          "sha256": "c22a34880216543e13db1a88f33fd48c9f5d2533b1b9f76284372ba099da40ec"
+        },
+        "loaded": {
+          "path": "docs\\research\\2026-10-02-generic-wooden-rack-alignment\\accepted-q0-loaded-fullhd.png",
+          "sha256": "fa4d94da61026441bb72cf9c39a00f4fa69b44804324f5b583a24d2809e929bb"
+        }
+      }
+    },
+    {
+      "quarterTurns": 1,
+      "evidence": {
+        "quarterTurns": 1,
+        "actualBefore": [
+          "object.storage-rack@23,6:orientation=1",
+          "object.storage-rack@23,8:orientation=1"
+        ],
+        "actualAfter": [
+          "object.storage-rack@23,6:orientation=1",
+          "object.storage-rack@23,8:orientation=1"
+        ],
+        "beforePixels": [
+          362,
+          93
+        ],
+        "afterPixels": [
+          362,
+          93
+        ],
+        "commands": [
+          {
+            "type": "PlaceRoomTemplate",
+            "templateId": "storage-room-basic",
+            "origin": {
+              "x": 20,
+              "y": 5
+            },
+            "quarterTurns": 1
+          },
+          {
+            "type": "UnzoneRoom",
+            "x": 20,
+            "y": 5,
+            "width": 5,
+            "height": 5
+          }
+        ]
+      },
+      "images": {
+        "worker-completed": {
+          "path": "docs\\research\\2026-10-02-generic-wooden-rack-alignment\\accepted-q1-worker-completed-fullhd.png",
+          "sha256": "11e2828125accbfd9b5a5385cefb330ae0cd9944499cf44760fbb72cce6213d3"
+        },
+        "loaded": {
+          "path": "docs\\research\\2026-10-02-generic-wooden-rack-alignment\\accepted-q1-loaded-fullhd.png",
+          "sha256": "9d0942aace26f1a11f692a95288e2aa29414d9e23f038f24377ad8e3c42437a7"
+        }
+      }
+    }
+  ]
+}
