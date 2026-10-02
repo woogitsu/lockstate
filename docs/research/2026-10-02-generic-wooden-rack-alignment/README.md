@@ -30,7 +30,7 @@ An appended null byte to an actual referenced PNG turns full byte-integrity red;
 
 ## Opened actual exports
 
-![All 72 actual generic rack poses](all 72-exported-poses.png)
+![All 72 actual generic rack poses](all72-exported-poses.png)
 
 Opened contact sheet, SHA256 `c1e7c443db013deff762f4e167d708051a3e35d699c6fae1aebc0e857bc17289`.
 
@@ -41,3 +41,13 @@ Opened full-size actual PNG, SHA256 `202442426b0b2ce783a842dde469dfc26b646001c77
 The inspected host is Blender 5.2.1 LTS, upstream build identifier 9e2066aef7ef, executable SHA256 `284f4041f98e113f3dc10654a7193ffaaa9bfdfec8b87fa116620a48b5f6d4cb`. Repeat determinism is measured on this host with this retained source; cross-host byte-identical source regeneration is not claimed.
 
 Weakest claim: source/footprint/shared-camera evidence is verified, but the default generic consumer's actual player appearance is not yet established. A later native route must build the real Storage Rack outside a published Storage Room context, preserve the accepted Storage Room variant, open actual completed/loaded FullHDs and prove an isolated palette red after default-consumer removal, then exact restoration green. This source checkpoint does not claim that queued native acceptance.
+
+## Native route preparation checkpoint
+
+The source checkpoint is0c1cfa7c5cfbc49bf046c0dae515646bf00fdaa7. `tests/browser/generic-wooden-rack-player-build.spec.ts` prepares three actual bounded cases: worker-built Storage Room/Delivery Bay capacity with actual IndexedDB save; native individual Storage Rack placements at(23,6)/(24,7) inside worker-built Staff Room; and a genuine clockwise90-degree Storage Room at(20,5), followed by native UnzoneRoom over its5-by-5rectangle.
+
+The individual public PlaceObject schema and HUD producer carry definitionId/x/y only, with no object orientation choice. Therefore the individual route is truthfully orientation0. The rotated template is the existing orientation1producer; removing only its designation should preserve rack anchors(23,6)/(23,8) and orientation1 while removing the accepted Storage Room context from rendering. The zoning service unregisters room instances and clears zoning, without deleting placed objects. Actual native execution must verify this transition; if occupied-room refusal or object loss occurs, the rotated request stops and that limitation is reported. No unsupported UI rotation, object/save injection, new buildable or palette rule is added. Accepted Storage Room overrides remain unchanged.
+
+Native60s case and10s construction-count guards, exact PlaceObject/template/UnzoneRoom commands, read-only object snapshots and actual Save/Load remain in place. Candidate per-rack crops and>20pixel floors are provisional until actual FullHD images. The actual retained tabletop material diffuseRGBA(.45,.27,.12,1) supplies timber provenance; candidate source-frame RGB(117,88,55) occurs506times, but is not native calibration. Both actual loaded images must be opened and independently calibrated. Removing only the default generic rack mapping must falsify both gates per route with construction/anchors/save unchanged; exact mapping/source restoration and final full green remain required.
+
+Application TypeScript passes for this prepared fixture. No browser run occurred: HUD owns the exclusive lease. No tracked config/workflow is added; accepted artifact gate routing remains parent-owned.
