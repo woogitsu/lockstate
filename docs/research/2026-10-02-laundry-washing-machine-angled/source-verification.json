@@ -1,0 +1,38 @@
+{
+  "negativeControls": [
+    {
+      "name": "omit-added-vent",
+      "exitCode": 1
+    },
+    {
+      "name": "move-added-vent",
+      "exitCode": 1
+    },
+    {
+      "name": "wrong-y-scale",
+      "exitCode": 1
+    },
+    {
+      "name": "wrong-camera-scale",
+      "exitCode": 1
+    },
+    {
+      "name": "wrong-camera-vector",
+      "exitCode": 1
+    }
+  ],
+  "exactWrapperBytesRestored": true,
+  "sourceBytesUnchanged": true,
+  "restoredNativeExitCode": 0,
+  "wrapperSha256": "9583370226e2849e09c58c48667d516c037a11a4a7d2d7114df61cd400ab3556",
+  "sources": [
+    {
+      "path": "assets/source/blender/utility.washing-machine.variants.blend",
+      "sha256": "fb4eccefc3809342b57e4b15822e68ee1a1d0060bc8d75acda288d07284f7e0b"
+    },
+    {
+      "path": "assets/source/blender/utility.washing-machine.angled.blend",
+      "sha256": "f2940130e2ec10ad814800bb15418441b48238881c3d038d69168d597f89e8ae"
+    }
+  ]
+}

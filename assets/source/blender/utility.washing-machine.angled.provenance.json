@@ -1,0 +1,1320 @@
+{
+  "originalSource": "assets/source/blender/utility.washing-machine.variants.blend",
+  "originalSourceSha256": "fb4eccefc3809342b57e4b15822e68ee1a1d0060bc8d75acda288d07284f7e0b",
+  "source": "assets/source/blender/utility.washing-machine.angled.blend",
+  "sourceSha256": "f2940130e2ec10ad814800bb15418441b48238881c3d038d69168d597f89e8ae",
+  "footprintTiles": [
+    2,
+    1
+  ],
+  "originalMeshCount": 14,
+  "retainedAssemblyFit": [
+    1,
+    0.8,
+    1
+  ],
+  "retainedMaximumCoordinateError": 8.344650265224018e-08,
+  "originalMeshNames": [
+    "control-knob",
+    "control-knob.001",
+    "control-knob.002",
+    "control-strip",
+    "display",
+    "door-glass",
+    "door-handle",
+    "door-ring",
+    "foot",
+    "foot.001",
+    "foot.002",
+    "foot.003",
+    "status-light",
+    "washing-machine-body"
+  ],
+  "addedMeshNames": [
+    "angled-washer.control bezel 0",
+    "angled-washer.control bezel 1",
+    "angled-washer.control bezel 2",
+    "angled-washer.control pointer 0",
+    "angled-washer.control pointer 1",
+    "angled-washer.control pointer 2",
+    "angled-washer.detergent drawer edge 1.312",
+    "angled-washer.detergent drawer edge 1.468",
+    "angled-washer.detergent drawer grip",
+    "angled-washer.detergent drawer recess",
+    "angled-washer.detergent drawer side -1",
+    "angled-washer.detergent drawer side 1",
+    "angled-washer.display bezel horizontal 1.314",
+    "angled-washer.display bezel horizontal 1.466",
+    "angled-washer.display bezel vertical -1",
+    "angled-washer.display bezel vertical 1",
+    "angled-washer.door fastener 0",
+    "angled-washer.door fastener 1",
+    "angled-washer.door fastener 2",
+    "angled-washer.door fastener 3",
+    "angled-washer.door fastener 4",
+    "angled-washer.door fastener 5",
+    "angled-washer.door fastener 6",
+    "angled-washer.door fastener 7",
+    "angled-washer.door glass gasket",
+    "angled-washer.door hinge barrel",
+    "angled-washer.door hinge plate",
+    "angled-washer.door machined rim",
+    "angled-washer.service frame horizontal 0.079",
+    "angled-washer.service frame horizontal 0.241",
+    "angled-washer.service frame vertical -1",
+    "angled-washer.service frame vertical 1",
+    "angled-washer.service grip",
+    "angled-washer.service recess",
+    "angled-washer.side vent louvre -1 0",
+    "angled-washer.side vent louvre -1 1",
+    "angled-washer.side vent louvre -1 2",
+    "angled-washer.side vent louvre -1 3",
+    "angled-washer.side vent louvre -1 4",
+    "angled-washer.side vent louvre -1 5",
+    "angled-washer.side vent louvre -1 6",
+    "angled-washer.side vent louvre 1 0",
+    "angled-washer.side vent louvre 1 1",
+    "angled-washer.side vent louvre 1 2",
+    "angled-washer.side vent louvre 1 3",
+    "angled-washer.side vent louvre 1 4",
+    "angled-washer.side vent louvre 1 5",
+    "angled-washer.side vent louvre 1 6",
+    "angled-washer.side vent recess -1 0",
+    "angled-washer.side vent recess -1 1",
+    "angled-washer.side vent recess -1 2",
+    "angled-washer.side vent recess -1 3",
+    "angled-washer.side vent recess -1 4",
+    "angled-washer.side vent recess -1 5",
+    "angled-washer.side vent recess -1 6",
+    "angled-washer.side vent recess 1 0",
+    "angled-washer.side vent recess 1 1",
+    "angled-washer.side vent recess 1 2",
+    "angled-washer.side vent recess 1 3",
+    "angled-washer.side vent recess 1 4",
+    "angled-washer.side vent recess 1 5",
+    "angled-washer.side vent recess 1 6",
+    "angled-washer.top hatch end seam -1",
+    "angled-washer.top hatch end seam 1",
+    "angled-washer.top hatch long seam -1",
+    "angled-washer.top hatch long seam 1"
+  ],
+  "sourceEvaluatedBounds": {
+    "min": [
+      -0.8610000014305115,
+      -0.47200000286102295,
+      0.0
+    ],
+    "max": [
+      0.8610000014305115,
+      0.335999995470047,
+      1.565000057220459
+    ]
+  },
+  "cameraTargetTiles": [
+    1,
+    0.5,
+    0.7825000286102295
+  ],
+  "meshes": [
+    {
+      "name": "angled-washer.control bezel 0",
+      "evaluatedVertices": 768,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.control bezel 1",
+      "evaluatedVertices": 768,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.control bezel 2",
+      "evaluatedVertices": 768,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.control pointer 0",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.control pointer 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.control pointer 2",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.detergent drawer edge 1.312",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.detergent drawer edge 1.468",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.detergent drawer grip",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.detergent drawer recess",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.04500000178813934,
+            0.05999999865889549,
+            0.06499999761581421,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.detergent drawer side -1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.detergent drawer side 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.display bezel horizontal 1.314",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.04500000178813934,
+            0.05999999865889549,
+            0.06499999761581421,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.display bezel horizontal 1.466",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.04500000178813934,
+            0.05999999865889549,
+            0.06499999761581421,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.display bezel vertical -1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.04500000178813934,
+            0.05999999865889549,
+            0.06499999761581421,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.display bezel vertical 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.04500000178813934,
+            0.05999999865889549,
+            0.06499999761581421,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.door fastener 0",
+      "evaluatedVertices": 24,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.door fastener 1",
+      "evaluatedVertices": 24,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.door fastener 2",
+      "evaluatedVertices": 24,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.door fastener 3",
+      "evaluatedVertices": 24,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.door fastener 4",
+      "evaluatedVertices": 24,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.door fastener 5",
+      "evaluatedVertices": 24,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.door fastener 6",
+      "evaluatedVertices": 24,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.door fastener 7",
+      "evaluatedVertices": 24,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.door glass gasket",
+      "evaluatedVertices": 768,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.04500000178813934,
+            0.05999999865889549,
+            0.06499999761581421,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.door hinge barrel",
+      "evaluatedVertices": 32,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.door hinge plate",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.door machined rim",
+      "evaluatedVertices": 768,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.service frame horizontal 0.079",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.service frame horizontal 0.241",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.service frame vertical -1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.service frame vertical 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.service grip",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.service recess",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.04500000178813934,
+            0.05999999865889549,
+            0.06499999761581421,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.side vent louvre -1 0",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.side vent louvre -1 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.side vent louvre -1 2",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.side vent louvre -1 3",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.side vent louvre -1 4",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.side vent louvre -1 5",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.side vent louvre -1 6",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.side vent louvre 1 0",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.side vent louvre 1 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.side vent louvre 1 2",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.side vent louvre 1 3",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.side vent louvre 1 4",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.side vent louvre 1 5",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.side vent louvre 1 6",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.side vent recess -1 0",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.04500000178813934,
+            0.05999999865889549,
+            0.06499999761581421,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.side vent recess -1 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.04500000178813934,
+            0.05999999865889549,
+            0.06499999761581421,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.side vent recess -1 2",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.04500000178813934,
+            0.05999999865889549,
+            0.06499999761581421,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.side vent recess -1 3",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.04500000178813934,
+            0.05999999865889549,
+            0.06499999761581421,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.side vent recess -1 4",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.04500000178813934,
+            0.05999999865889549,
+            0.06499999761581421,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.side vent recess -1 5",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.04500000178813934,
+            0.05999999865889549,
+            0.06499999761581421,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.side vent recess -1 6",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.04500000178813934,
+            0.05999999865889549,
+            0.06499999761581421,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.side vent recess 1 0",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.04500000178813934,
+            0.05999999865889549,
+            0.06499999761581421,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.side vent recess 1 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.04500000178813934,
+            0.05999999865889549,
+            0.06499999761581421,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.side vent recess 1 2",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.04500000178813934,
+            0.05999999865889549,
+            0.06499999761581421,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.side vent recess 1 3",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.04500000178813934,
+            0.05999999865889549,
+            0.06499999761581421,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.side vent recess 1 4",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.04500000178813934,
+            0.05999999865889549,
+            0.06499999761581421,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.side vent recess 1 5",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.04500000178813934,
+            0.05999999865889549,
+            0.06499999761581421,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.side vent recess 1 6",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.04500000178813934,
+            0.05999999865889549,
+            0.06499999761581421,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.top hatch end seam -1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.04500000178813934,
+            0.05999999865889549,
+            0.06499999761581421,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.top hatch end seam 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.04500000178813934,
+            0.05999999865889549,
+            0.06499999761581421,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.top hatch long seam -1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.04500000178813934,
+            0.05999999865889549,
+            0.06499999761581421,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-washer.top hatch long seam 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.04500000178813934,
+            0.05999999865889549,
+            0.06499999761581421,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "control-knob",
+      "evaluatedVertices": 64,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.04500000178813934,
+            0.05999999865889549,
+            0.06499999761581421,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "control-knob.001",
+      "evaluatedVertices": 64,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.04500000178813934,
+            0.05999999865889549,
+            0.06499999761581421,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "control-knob.002",
+      "evaluatedVertices": 64,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.04500000178813934,
+            0.05999999865889549,
+            0.06499999761581421,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "control-strip",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "display",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "blue glass",
+          [
+            0.05999999865889549,
+            0.1599999964237213,
+            0.20000000298023224,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "door-glass",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "blue glass",
+          [
+            0.05999999865889549,
+            0.1599999964237213,
+            0.20000000298023224,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "door-handle",
+      "evaluatedVertices": 48,
+      "materials": [
+        [
+          "steel",
+          [
+            0.3799999952316284,
+            0.4300000071525574,
+            0.44999998807907104,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "door-ring",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.04500000178813934,
+            0.05999999865889549,
+            0.06499999761581421,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "foot",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.04500000178813934,
+            0.05999999865889549,
+            0.06499999761581421,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "foot.001",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.04500000178813934,
+            0.05999999865889549,
+            0.06499999761581421,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "foot.002",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.04500000178813934,
+            0.05999999865889549,
+            0.06499999761581421,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "foot.003",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.04500000178813934,
+            0.05999999865889549,
+            0.06499999761581421,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "status-light",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "status green",
+          [
+            0.1599999964237213,
+            0.7200000286102295,
+            0.3100000023841858,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "washing-machine-body",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "enamel",
+          [
+            0.7200000286102295,
+            0.7699999809265137,
+            0.7799999713897705,
+            1.0
+          ]
+        ]
+      ]
+    }
+  ]
+}
