@@ -1,0 +1,275 @@
+$ vitest run "tests/unit/ui-room-plan-world-camera-projector.test.ts" "--maxWorkers=2"
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-preview-minimap-audit-20261003
+
+ ❯ tests/unit/ui-room-plan-world-camera-projector.test.ts (24 tests | 20 failed) 13ms
+   × World room-plan projector matches real Camera at zoom=0.2, CSS ratio=1, offset={ x: +0, y: +0 } 5ms
+   × World room-plan projector matches real Camera at zoom=0.2, CSS ratio=1, offset={ x: 140, y: 90 } 1ms
+   × World room-plan projector matches real Camera at zoom=0.2, CSS ratio=2, offset={ x: +0, y: +0 } 1ms
+   × World room-plan projector matches real Camera at zoom=0.2, CSS ratio=2, offset={ x: 140, y: 90 } 0ms
+   × World room-plan projector matches real Camera at zoom=0.5, CSS ratio=1, offset={ x: +0, y: +0 } 0ms
+   × World room-plan projector matches real Camera at zoom=0.5, CSS ratio=1, offset={ x: 140, y: 90 } 0ms
+   × World room-plan projector matches real Camera at zoom=0.5, CSS ratio=2, offset={ x: +0, y: +0 } 0ms
+   × World room-plan projector matches real Camera at zoom=0.5, CSS ratio=2, offset={ x: 140, y: 90 } 0ms
+   × World room-plan projector matches real Camera at zoom=1.25, CSS ratio=1, offset={ x: +0, y: +0 } 0ms
+   × World room-plan projector matches real Camera at zoom=1.25, CSS ratio=1, offset={ x: 140, y: 90 } 0ms
+   × World room-plan projector matches real Camera at zoom=1.25, CSS ratio=2, offset={ x: +0, y: +0 } 0ms
+   × World room-plan projector matches real Camera at zoom=1.25, CSS ratio=2, offset={ x: 140, y: 90 } 0ms
+   × World room-plan projector matches real Camera at zoom=2, CSS ratio=1, offset={ x: +0, y: +0 } 0ms
+   × World room-plan projector matches real Camera at zoom=2, CSS ratio=1, offset={ x: 140, y: 90 } 0ms
+   × World room-plan projector matches real Camera at zoom=2, CSS ratio=2, offset={ x: +0, y: +0 } 0ms
+   × World room-plan projector matches real Camera at zoom=2, CSS ratio=2, offset={ x: 140, y: 90 } 0ms
+   × World room-plan projector matches real Camera at zoom=3, CSS ratio=1, offset={ x: +0, y: +0 } 0ms
+   × World room-plan projector matches real Camera at zoom=3, CSS ratio=1, offset={ x: 140, y: 90 } 0ms
+   × World room-plan projector matches real Camera at zoom=3, CSS ratio=2, offset={ x: +0, y: +0 } 0ms
+   × World room-plan projector matches real Camera at zoom=3, CSS ratio=2, offset={ x: 140, y: 90 } 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 20 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-room-plan-world-camera-projector.test.ts > World room-plan projector matches real Camera at zoom=0.2, CSS ratio=1, offset={ x: +0, y: +0 }
+AssertionError: expected 184.8 to be close to 952.8000030517578, received difference is 768.0000030517579, but expected 0.000005
+ ❯ tests/unit/ui-room-plan-world-camera-projector.test.ts:56:40
+     54|     const shown = actual.project(corner);
+     55|     const expected = camera.matrixCombined.transformPoint(corner.x, co…
+     56|     expect(shown.x / canvasToCssScale).toBeCloseTo(expected.x / canvas…
+       |                                        ^
+     57|     expect(shown.y / canvasToCssScale).toBeCloseTo(expected.y / canvas…
+     58|     const hit = camera.getWorldPoint(shown.x, shown.y);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/20]⎯
+
+ FAIL  tests/unit/ui-room-plan-world-camera-projector.test.ts > World room-plan projector matches real Camera at zoom=0.2, CSS ratio=1, offset={ x: 140, y: 90 }
+AssertionError: expected 324.8 to be close to 1092.8000030517578, received difference is 768.0000030517579, but expected 0.000005
+ ❯ tests/unit/ui-room-plan-world-camera-projector.test.ts:56:40
+     54|     const shown = actual.project(corner);
+     55|     const expected = camera.matrixCombined.transformPoint(corner.x, co…
+     56|     expect(shown.x / canvasToCssScale).toBeCloseTo(expected.x / canvas…
+       |                                        ^
+     57|     expect(shown.y / canvasToCssScale).toBeCloseTo(expected.y / canvas…
+     58|     const hit = camera.getWorldPoint(shown.x, shown.y);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/20]⎯
+
+ FAIL  tests/unit/ui-room-plan-world-camera-projector.test.ts > World room-plan projector matches real Camera at zoom=0.2, CSS ratio=2, offset={ x: +0, y: +0 }
+AssertionError: expected 92.4 to be close to 476.4000015258789, received difference is 384.00000152587893, but expected 0.000005
+ ❯ tests/unit/ui-room-plan-world-camera-projector.test.ts:56:40
+     54|     const shown = actual.project(corner);
+     55|     const expected = camera.matrixCombined.transformPoint(corner.x, co…
+     56|     expect(shown.x / canvasToCssScale).toBeCloseTo(expected.x / canvas…
+       |                                        ^
+     57|     expect(shown.y / canvasToCssScale).toBeCloseTo(expected.y / canvas…
+     58|     const hit = camera.getWorldPoint(shown.x, shown.y);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/20]⎯
+
+ FAIL  tests/unit/ui-room-plan-world-camera-projector.test.ts > World room-plan projector matches real Camera at zoom=0.2, CSS ratio=2, offset={ x: 140, y: 90 }
+AssertionError: expected 162.4 to be close to 546.4000015258789, received difference is 384.00000152587893, but expected 0.000005
+ ❯ tests/unit/ui-room-plan-world-camera-projector.test.ts:56:40
+     54|     const shown = actual.project(corner);
+     55|     const expected = camera.matrixCombined.transformPoint(corner.x, co…
+     56|     expect(shown.x / canvasToCssScale).toBeCloseTo(expected.x / canvas…
+       |                                        ^
+     57|     expect(shown.y / canvasToCssScale).toBeCloseTo(expected.y / canvas…
+     58|     const hit = camera.getWorldPoint(shown.x, shown.y);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/20]⎯
+
+ FAIL  tests/unit/ui-room-plan-world-camera-projector.test.ts > World room-plan projector matches real Camera at zoom=0.5, CSS ratio=1, offset={ x: +0, y: +0 }
+AssertionError: expected 462 to be close to 942, received difference is 480, but expected 0.000005
+ ❯ tests/unit/ui-room-plan-world-camera-projector.test.ts:56:40
+     54|     const shown = actual.project(corner);
+     55|     const expected = camera.matrixCombined.transformPoint(corner.x, co…
+     56|     expect(shown.x / canvasToCssScale).toBeCloseTo(expected.x / canvas…
+       |                                        ^
+     57|     expect(shown.y / canvasToCssScale).toBeCloseTo(expected.y / canvas…
+     58|     const hit = camera.getWorldPoint(shown.x, shown.y);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/20]⎯
+
+ FAIL  tests/unit/ui-room-plan-world-camera-projector.test.ts > World room-plan projector matches real Camera at zoom=0.5, CSS ratio=1, offset={ x: 140, y: 90 }
+AssertionError: expected 602 to be close to 1082, received difference is 480, but expected 0.000005
+ ❯ tests/unit/ui-room-plan-world-camera-projector.test.ts:56:40
+     54|     const shown = actual.project(corner);
+     55|     const expected = camera.matrixCombined.transformPoint(corner.x, co…
+     56|     expect(shown.x / canvasToCssScale).toBeCloseTo(expected.x / canvas…
+       |                                        ^
+     57|     expect(shown.y / canvasToCssScale).toBeCloseTo(expected.y / canvas…
+     58|     const hit = camera.getWorldPoint(shown.x, shown.y);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/20]⎯
+
+ FAIL  tests/unit/ui-room-plan-world-camera-projector.test.ts > World room-plan projector matches real Camera at zoom=0.5, CSS ratio=2, offset={ x: +0, y: +0 }
+AssertionError: expected 231 to be close to 471, received difference is 240, but expected 0.000005
+ ❯ tests/unit/ui-room-plan-world-camera-projector.test.ts:56:40
+     54|     const shown = actual.project(corner);
+     55|     const expected = camera.matrixCombined.transformPoint(corner.x, co…
+     56|     expect(shown.x / canvasToCssScale).toBeCloseTo(expected.x / canvas…
+       |                                        ^
+     57|     expect(shown.y / canvasToCssScale).toBeCloseTo(expected.y / canvas…
+     58|     const hit = camera.getWorldPoint(shown.x, shown.y);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/20]⎯
+
+ FAIL  tests/unit/ui-room-plan-world-camera-projector.test.ts > World room-plan projector matches real Camera at zoom=0.5, CSS ratio=2, offset={ x: 140, y: 90 }
+AssertionError: expected 301 to be close to 541, received difference is 240, but expected 0.000005
+ ❯ tests/unit/ui-room-plan-world-camera-projector.test.ts:56:40
+     54|     const shown = actual.project(corner);
+     55|     const expected = camera.matrixCombined.transformPoint(corner.x, co…
+     56|     expect(shown.x / canvasToCssScale).toBeCloseTo(expected.x / canvas…
+       |                                        ^
+     57|     expect(shown.y / canvasToCssScale).toBeCloseTo(expected.y / canvas…
+     58|     const hit = camera.getWorldPoint(shown.x, shown.y);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/20]⎯
+
+ FAIL  tests/unit/ui-room-plan-world-camera-projector.test.ts > World room-plan projector matches real Camera at zoom=1.25, CSS ratio=1, offset={ x: +0, y: +0 }
+AssertionError: expected 1155 to be close to 915, received difference is 240, but expected 0.000005
+ ❯ tests/unit/ui-room-plan-world-camera-projector.test.ts:56:40
+     54|     const shown = actual.project(corner);
+     55|     const expected = camera.matrixCombined.transformPoint(corner.x, co…
+     56|     expect(shown.x / canvasToCssScale).toBeCloseTo(expected.x / canvas…
+       |                                        ^
+     57|     expect(shown.y / canvasToCssScale).toBeCloseTo(expected.y / canvas…
+     58|     const hit = camera.getWorldPoint(shown.x, shown.y);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/20]⎯
+
+ FAIL  tests/unit/ui-room-plan-world-camera-projector.test.ts > World room-plan projector matches real Camera at zoom=1.25, CSS ratio=1, offset={ x: 140, y: 90 }
+AssertionError: expected 1295 to be close to 1055, received difference is 240, but expected 0.000005
+ ❯ tests/unit/ui-room-plan-world-camera-projector.test.ts:56:40
+     54|     const shown = actual.project(corner);
+     55|     const expected = camera.matrixCombined.transformPoint(corner.x, co…
+     56|     expect(shown.x / canvasToCssScale).toBeCloseTo(expected.x / canvas…
+       |                                        ^
+     57|     expect(shown.y / canvasToCssScale).toBeCloseTo(expected.y / canvas…
+     58|     const hit = camera.getWorldPoint(shown.x, shown.y);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/20]⎯
+
+ FAIL  tests/unit/ui-room-plan-world-camera-projector.test.ts > World room-plan projector matches real Camera at zoom=1.25, CSS ratio=2, offset={ x: +0, y: +0 }
+AssertionError: expected 577.5 to be close to 457.5, received difference is 120, but expected 0.000005
+ ❯ tests/unit/ui-room-plan-world-camera-projector.test.ts:56:40
+     54|     const shown = actual.project(corner);
+     55|     const expected = camera.matrixCombined.transformPoint(corner.x, co…
+     56|     expect(shown.x / canvasToCssScale).toBeCloseTo(expected.x / canvas…
+       |                                        ^
+     57|     expect(shown.y / canvasToCssScale).toBeCloseTo(expected.y / canvas…
+     58|     const hit = camera.getWorldPoint(shown.x, shown.y);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/20]⎯
+
+ FAIL  tests/unit/ui-room-plan-world-camera-projector.test.ts > World room-plan projector matches real Camera at zoom=1.25, CSS ratio=2, offset={ x: 140, y: 90 }
+AssertionError: expected 647.5 to be close to 527.5, received difference is 120, but expected 0.000005
+ ❯ tests/unit/ui-room-plan-world-camera-projector.test.ts:56:40
+     54|     const shown = actual.project(corner);
+     55|     const expected = camera.matrixCombined.transformPoint(corner.x, co…
+     56|     expect(shown.x / canvasToCssScale).toBeCloseTo(expected.x / canvas…
+       |                                        ^
+     57|     expect(shown.y / canvasToCssScale).toBeCloseTo(expected.y / canvas…
+     58|     const hit = camera.getWorldPoint(shown.x, shown.y);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/20]⎯
+
+ FAIL  tests/unit/ui-room-plan-world-camera-projector.test.ts > World room-plan projector matches real Camera at zoom=2, CSS ratio=1, offset={ x: +0, y: +0 }
+AssertionError: expected 1848 to be close to 888, received difference is 960, but expected 0.000005
+ ❯ tests/unit/ui-room-plan-world-camera-projector.test.ts:56:40
+     54|     const shown = actual.project(corner);
+     55|     const expected = camera.matrixCombined.transformPoint(corner.x, co…
+     56|     expect(shown.x / canvasToCssScale).toBeCloseTo(expected.x / canvas…
+       |                                        ^
+     57|     expect(shown.y / canvasToCssScale).toBeCloseTo(expected.y / canvas…
+     58|     const hit = camera.getWorldPoint(shown.x, shown.y);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/20]⎯
+
+ FAIL  tests/unit/ui-room-plan-world-camera-projector.test.ts > World room-plan projector matches real Camera at zoom=2, CSS ratio=1, offset={ x: 140, y: 90 }
+AssertionError: expected 1988 to be close to 1028, received difference is 960, but expected 0.000005
+ ❯ tests/unit/ui-room-plan-world-camera-projector.test.ts:56:40
+     54|     const shown = actual.project(corner);
+     55|     const expected = camera.matrixCombined.transformPoint(corner.x, co…
+     56|     expect(shown.x / canvasToCssScale).toBeCloseTo(expected.x / canvas…
+       |                                        ^
+     57|     expect(shown.y / canvasToCssScale).toBeCloseTo(expected.y / canvas…
+     58|     const hit = camera.getWorldPoint(shown.x, shown.y);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/20]⎯
+
+ FAIL  tests/unit/ui-room-plan-world-camera-projector.test.ts > World room-plan projector matches real Camera at zoom=2, CSS ratio=2, offset={ x: +0, y: +0 }
+AssertionError: expected 924 to be close to 444, received difference is 480, but expected 0.000005
+ ❯ tests/unit/ui-room-plan-world-camera-projector.test.ts:56:40
+     54|     const shown = actual.project(corner);
+     55|     const expected = camera.matrixCombined.transformPoint(corner.x, co…
+     56|     expect(shown.x / canvasToCssScale).toBeCloseTo(expected.x / canvas…
+       |                                        ^
+     57|     expect(shown.y / canvasToCssScale).toBeCloseTo(expected.y / canvas…
+     58|     const hit = camera.getWorldPoint(shown.x, shown.y);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/20]⎯
+
+ FAIL  tests/unit/ui-room-plan-world-camera-projector.test.ts > World room-plan projector matches real Camera at zoom=2, CSS ratio=2, offset={ x: 140, y: 90 }
+AssertionError: expected 994 to be close to 514, received difference is 480, but expected 0.000005
+ ❯ tests/unit/ui-room-plan-world-camera-projector.test.ts:56:40
+     54|     const shown = actual.project(corner);
+     55|     const expected = camera.matrixCombined.transformPoint(corner.x, co…
+     56|     expect(shown.x / canvasToCssScale).toBeCloseTo(expected.x / canvas…
+       |                                        ^
+     57|     expect(shown.y / canvasToCssScale).toBeCloseTo(expected.y / canvas…
+     58|     const hit = camera.getWorldPoint(shown.x, shown.y);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/20]⎯
+
+ FAIL  tests/unit/ui-room-plan-world-camera-projector.test.ts > World room-plan projector matches real Camera at zoom=3, CSS ratio=1, offset={ x: +0, y: +0 }
+AssertionError: expected 2772 to be close to 852, received difference is 1920, but expected 0.000005
+ ❯ tests/unit/ui-room-plan-world-camera-projector.test.ts:56:40
+     54|     const shown = actual.project(corner);
+     55|     const expected = camera.matrixCombined.transformPoint(corner.x, co…
+     56|     expect(shown.x / canvasToCssScale).toBeCloseTo(expected.x / canvas…
+       |                                        ^
+     57|     expect(shown.y / canvasToCssScale).toBeCloseTo(expected.y / canvas…
+     58|     const hit = camera.getWorldPoint(shown.x, shown.y);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/20]⎯
+
+ FAIL  tests/unit/ui-room-plan-world-camera-projector.test.ts > World room-plan projector matches real Camera at zoom=3, CSS ratio=1, offset={ x: 140, y: 90 }
+AssertionError: expected 2912 to be close to 992, received difference is 1920, but expected 0.000005
+ ❯ tests/unit/ui-room-plan-world-camera-projector.test.ts:56:40
+     54|     const shown = actual.project(corner);
+     55|     const expected = camera.matrixCombined.transformPoint(corner.x, co…
+     56|     expect(shown.x / canvasToCssScale).toBeCloseTo(expected.x / canvas…
+       |                                        ^
+     57|     expect(shown.y / canvasToCssScale).toBeCloseTo(expected.y / canvas…
+     58|     const hit = camera.getWorldPoint(shown.x, shown.y);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/20]⎯
+
+ FAIL  tests/unit/ui-room-plan-world-camera-projector.test.ts > World room-plan projector matches real Camera at zoom=3, CSS ratio=2, offset={ x: +0, y: +0 }
+AssertionError: expected 1386 to be close to 426, received difference is 960, but expected 0.000005
+ ❯ tests/unit/ui-room-plan-world-camera-projector.test.ts:56:40
+     54|     const shown = actual.project(corner);
+     55|     const expected = camera.matrixCombined.transformPoint(corner.x, co…
+     56|     expect(shown.x / canvasToCssScale).toBeCloseTo(expected.x / canvas…
+       |                                        ^
+     57|     expect(shown.y / canvasToCssScale).toBeCloseTo(expected.y / canvas…
+     58|     const hit = camera.getWorldPoint(shown.x, shown.y);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/20]⎯
+
+ FAIL  tests/unit/ui-room-plan-world-camera-projector.test.ts > World room-plan projector matches real Camera at zoom=3, CSS ratio=2, offset={ x: 140, y: 90 }
+AssertionError: expected 1456 to be close to 496, received difference is 960, but expected 0.000005
+ ❯ tests/unit/ui-room-plan-world-camera-projector.test.ts:56:40
+     54|     const shown = actual.project(corner);
+     55|     const expected = camera.matrixCombined.transformPoint(corner.x, co…
+     56|     expect(shown.x / canvasToCssScale).toBeCloseTo(expected.x / canvas…
+       |                                        ^
+     57|     expect(shown.y / canvasToCssScale).toBeCloseTo(expected.y / canvas…
+     58|     const hit = camera.getWorldPoint(shown.x, shown.y);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/20]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  20 failed | 4 passed (24)
+   Start at  00:56:58
+   Duration  252ms (transform 14ms, setup 0ms, import 86ms, tests 13ms, environment 0ms)
+
+[ELIFECYCLE] Test failed. See above for more details.

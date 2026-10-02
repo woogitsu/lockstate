@@ -4771,7 +4771,9 @@ if (roomTemplateTool !== undefined) {
       project: point => {
         if (worldScene instanceof ObliqueWorldScene) return groundToScreen(point, worldScene.cameraPose);
         const camera = worldScene.cameras.main;
-        return { x: (point.x - camera.scrollX) * camera.zoom + camera.x, y: (point.y - camera.scrollY) * camera.zoom + camera.y };
+        // getWorldPoint in the picker inverts this rendered-frame matrix.
+        // Share its origin, zoom, scroll and viewport offset for the ghost.
+        return camera.matrixCombined.transformPoint(point.x, point.y);
       },
       label: (quote, verdict) => [
         localizer.format('hud.build.template-map-hint'),
