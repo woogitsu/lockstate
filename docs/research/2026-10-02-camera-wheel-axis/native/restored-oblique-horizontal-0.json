@@ -1,0 +1,18 @@
+{
+  "dx": -120,
+  "dy": 0,
+  "unchangedPixels": true,
+  "viewportBefore": "left: 2.38975%; top: 2.38975%; width: 95.2205%; height: 95.2205%;",
+  "viewportAfter": "left: 2.38975%; top: 2.38975%; width: 95.2205%; height: 95.2205%;",
+  "quoteBefore": "1 whole squares from 16, 17 | catalogue value 80",
+  "quoteAfter": "1 whole squares from 16, 17 | catalogue value 80",
+  "commandsBefore": [],
+  "commandsAfter": [],
+  "events": [
+    {
+      "dx": -120,
+      "dy": 0,
+      "canvas": true
+    }
+  ]
+}

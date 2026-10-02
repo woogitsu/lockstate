@@ -1,0 +1,92 @@
+[
+  {
+    "stage": "world-mutation",
+    "mode": "oblique",
+    "dx": -120,
+    "samePixels": true,
+    "sameViewport": true,
+    "quote": "1 whole squares from 16, 17 | catalogue value 80",
+    "commands": 0
+  },
+  {
+    "stage": "world-mutation",
+    "mode": "oblique",
+    "dx": 120,
+    "samePixels": true,
+    "sameViewport": true,
+    "quote": "1 whole squares from 16, 17 | catalogue value 80",
+    "commands": 0
+  },
+  {
+    "stage": "world-mutation",
+    "mode": "world",
+    "dx": -120,
+    "samePixels": false,
+    "sameViewport": false,
+    "quote": "1 whole squares from 18, 16 | catalogue value 80",
+    "commands": 0
+  },
+  {
+    "stage": "oblique-mutation",
+    "mode": "oblique",
+    "dx": -120,
+    "samePixels": false,
+    "sameViewport": false,
+    "quote": "1 whole squares from 16, 17 | catalogue value 80",
+    "commands": 0
+  },
+  {
+    "stage": "oblique-mutation",
+    "mode": "world",
+    "dx": -120,
+    "samePixels": true,
+    "sameViewport": true,
+    "quote": "1 whole squares from 18, 16 | catalogue value 80",
+    "commands": 0
+  },
+  {
+    "stage": "oblique-mutation",
+    "mode": "world",
+    "dx": 120,
+    "samePixels": true,
+    "sameViewport": true,
+    "quote": "1 whole squares from 18, 16 | catalogue value 80",
+    "commands": 0
+  },
+  {
+    "stage": "restored",
+    "mode": "oblique",
+    "dx": -120,
+    "samePixels": true,
+    "sameViewport": true,
+    "quote": "1 whole squares from 16, 17 | catalogue value 80",
+    "commands": 0
+  },
+  {
+    "stage": "restored",
+    "mode": "oblique",
+    "dx": 120,
+    "samePixels": true,
+    "sameViewport": true,
+    "quote": "1 whole squares from 16, 17 | catalogue value 80",
+    "commands": 0
+  },
+  {
+    "stage": "restored",
+    "mode": "world",
+    "dx": -120,
+    "samePixels": true,
+    "sameViewport": true,
+    "quote": "1 whole squares from 18, 16 | catalogue value 80",
+    "commands": 0
+  },
+  {
+    "stage": "restored",
+    "mode": "world",
+    "dx": 120,
+    "samePixels": true,
+    "sameViewport": true,
+    "quote": "1 whole squares from 18, 16 | catalogue value 80",
+    "commands": 0
+  }
+]

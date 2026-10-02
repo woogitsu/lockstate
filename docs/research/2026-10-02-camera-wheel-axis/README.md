@@ -1,5 +1,9 @@
 # Horizontal wheel camera diagnostic — offline checkpoint
 
+Subsequent [actual native acceptance](native-acceptance.md) records the completed
+built-client baseline, separate guard negatives and exact restoration. The
+offline and pending statements below describe the original checkpoint.
+
 ## Observed production callback defect
 
 At base `dc1253beb7`, both scene wheel handlers treated a zero vertical delta
