@@ -13,7 +13,7 @@ exporter.PREVIEW = exporter.ROOT / 'assets/intermediate/control-fixtures-preview
 exporter.MODELS = (
     ('utility.security-console.variants', 'utility.security-console.variants.blend',
      'oblique-utility.security-console.v1.json', 2, 1, 1.0, 0.9, 0.65),
-    ('utility.utility-panel.variants', 'utility.utility-panel.variants.blend',
-     'oblique-utility.utility-panel.v1.json', 1, 1, 0.8, 0.9, 0.65),
+    ('utility.utility-panel.variants', 'utility.utility-panel.angled.blend',
+     'oblique-utility.utility-panel.v1.json', 1, 1, 1.0, 1.0, .5049999952316284),
 )
 exporter.main()

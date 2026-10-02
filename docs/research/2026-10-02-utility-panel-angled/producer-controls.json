@@ -1,0 +1,54 @@
+{
+  "controls": [
+    {
+      "control": "omit-physical-control-knob",
+      "exitCode": 1,
+      "error": "ValueError: Utility panel retained/authored mesh set changed"
+    },
+    {
+      "control": "move-physical-cable-gland",
+      "exitCode": 1,
+      "error": "ValueError: Utility panel actual evaluated authored geometry changed"
+    },
+    {
+      "control": "change-retained-bevel",
+      "exitCode": 1,
+      "error": "ValueError: Utility panel actual evaluated authored geometry changed"
+    },
+    {
+      "control": "change-retained-material",
+      "exitCode": 1,
+      "error": "ValueError: Utility retained four material graphs changed"
+    },
+    {
+      "control": "wrong-loaded-X-scale",
+      "exitCode": 1,
+      "error": "ValueError: Utility loaded transform is not unit-scale anchor translation"
+    },
+    {
+      "control": "wrong-measured-target",
+      "exitCode": 1,
+      "error": "ValueError: Utility declared target differs from measured source height"
+    },
+    {
+      "control": "wrong-canonical-descriptor",
+      "exitCode": 1,
+      "error": "ValueError: Utility exporter targets the wrong canonical descriptor"
+    },
+    {
+      "control": "wrong-camera-span",
+      "exitCode": 1,
+      "error": "ValueError: Utility actual camera pitch differs from64pixels per tile"
+    },
+    {
+      "control": "wrong-camera-vector",
+      "exitCode": 1,
+      "error": "ValueError: Utility actual camera ground basis differs from world projection"
+    }
+  ],
+  "exactRestoredNativeVerifyExitCode": 0,
+  "sourceBytesUnchanged": true,
+  "wrapperSha256": "4834ae7faac980d259a34da34743d913523425a208bedc1c6348bd8722219411",
+  "sourceSha256": "1bc780cc2e6ab7b25e932652e6e3f1c9e4ce07a63256b340af02bf310e3cf137",
+  "originalSourceSha256": "05281b06512f7dabab247b183568b249aa8df04e912c7ea89a209e918f9775ea"
+}

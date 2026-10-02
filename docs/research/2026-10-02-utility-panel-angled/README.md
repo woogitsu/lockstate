@@ -81,3 +81,39 @@ Blender5.2.1LTS upstream build ID `9e2066aef7ef`, executable SHA256
 Full72pose repeat, scoped consumer descriptor integration, strict published
 PNG/integrity controls and genuine UtilityRoom q0/q1 worker Build/SaveLoad
 remain next stages. Browser is still leased elsewhere.
+
+## Completed repeat export and canonical consumer preparation
+
+After first source/preparation commit `f9cf7a2c2b8a431362fa3155b025bb5d420dbe8d`,
+two full72pose exports produced73/73 direct byte-identical files. Canonical
+descriptor SHA256
+`262ca56f9c01a96c0f5fb0c5b508c647987d71e690856d571172da4d26d38d37`.
+All72 actual256×256RGBA PNGs decode with transparent borders, minimum84px.
+The cropped sheet and full30/40 and300/40 frames were opened. The sheet's
+alpha-box-plus8pixel cropping is labeled as source inspection, not native scale
+or player evidence. Source dimensions/face audit stay as recorded above.
+
+The existing utility-panel MODELS tuple alone now names the dedicated source,
+unitXY scales and measured height target. The security-console tuple, shared
+functions/default callback, registry and default object mapping remain exact.
+No other fixture is rendered by the dedicated wrapper. Original source and
+assembly material bytes remain preserved at the same scoped audit level.
+
+Nine additional actual Blender controls each exit1: omit a physical round
+knob, move a rear cable gland, change the retained body bevel, change the
+retained monitor material, loadedXscale, measured target, canonical descriptor,
+camera span and camera vector. Together with the two actual winding controls,
+these supply eleven real native producer/loader negatives. Wrapper/source
+restoration is byte-exact and native72camera/allfourorientation verification
+exits0. Receipts name each actual error and restored byte hash.
+
+Actual referenced PNG bytes were mutated: the strict integrity test exits1,
+then exits0 after exact byte restoration. The focused six-suite final check has
+37passed/1optional Blender subprocess skip; app/tools TypeScript exits0. The
+independent actual Blender controls above establish native source behavior.
+The new unit test verifies all72hashes, PNG signatures, decodedRGBA borders,
+retained raw vertex/material/modifier records and explicitly changed topology.
+
+Genuine UtilityRoom normal/90° worker Build/SaveLoad, actual camera pixel
+calibration, consumer-only removal and exact restored final native green remain
+queued. No browser was started while root/delivery owned the lease.
