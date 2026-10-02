@@ -4,18 +4,18 @@
   "source": "assets/source/blender/furniture.medical-bed.variants.blend",
   "sourceSha256": "1737b03a3ee1342e813e7096e0aef189f05d714d5a69437a8fe490c026d232be",
   "resolutionPx": [
-    128,
-    128
+    256,
+    256
   ],
   "nominalPixelsPerTile": 64,
   "pivotPx": [
-    64,
-    64
+    128,
+    128
   ],
   "cameraTargetTiles": [
     0.5,
     1.0,
-    0.5
+    0.675
   ],
   "projection": "orthographic",
   "yawDegrees": [
@@ -44,434 +44,434 @@
     {
       "yawDegrees": 0,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+00-elev20.png",
-      "sha256": "8570442810b7db485a1cf8702139d2413b28a818ed4bbad9563c6a0b18f4049a"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+00-elev20.d8a8ad7d5286.png",
+      "sha256": "d8a8ad7d5286206e11a040ae8f7e79f71ae87923d7de2bf540955f5430a6d3cd"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+00-elev30.png",
-      "sha256": "3efc399c40dd4f3c043fe09d40f674a6df17d12fce379b848f29016be871a46d"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+00-elev30.50e5b70beec2.png",
+      "sha256": "50e5b70beec250af7054cb790094f1a769c4ec09705693ddca3753bddcaba19f"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+00-elev40.png",
-      "sha256": "70b70ab59d285a5c74df455a9708c55e0615f238844513662ecd4e5652af8012"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+00-elev40.c4781124c7bb.png",
+      "sha256": "c4781124c7bb67288ad5df57a19c3093ba13c6426af987deb62e48066cea0712"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+00-elev50.png",
-      "sha256": "36178b32430286601ee1f6aae0f68059b54ac2c3295b68a7970bfebdb57936bc"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+00-elev50.2e4b22529bee.png",
+      "sha256": "2e4b22529bee8a90351fa35f1961c9460774de50bc7e6e9e283912c94829c34e"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+00-elev60.png",
-      "sha256": "5947ae4a99d6a91359b710cc4c6772797416c7deab2279f000ad594c63e89390"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+00-elev60.7486171132b3.png",
+      "sha256": "7486171132b341870032816d1d0f6bb0853466ea216d5705a435c935e6d61098"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+00-elev70.png",
-      "sha256": "63de461dd03a5b80e502cbd34c8a89fbba1194c8d193a03cb9d32dbb2e6c7450"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+00-elev70.6e661f4e3ece.png",
+      "sha256": "6e661f4e3ece2f67ddc724ce525136ae6bd4db07a215dfd7732ecc5f5d305ede"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+30-elev20.png",
-      "sha256": "46561073e0bbaf7fd5c2ab397b5de0c87d87b9884b84237bae54995d9f6ee663"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+30-elev20.f4bd98330ac8.png",
+      "sha256": "f4bd98330ac8ce4874a7a05b99646b800a42e2dac419b3f182b06156ac3d1727"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+30-elev30.png",
-      "sha256": "5ce94426bef710f20cff52205238699fbfebfebf602b984f6596f937da05a3d2"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+30-elev30.b0cef68214a4.png",
+      "sha256": "b0cef68214a46437610d46333191352afc48b007de5bcde662402d57ac25cd09"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+30-elev40.png",
-      "sha256": "fe66256d4cd0b12ac7b769bc12452d4775bb8b748afb8ff8e578e1776d08f7bd"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+30-elev40.df10df540d7c.png",
+      "sha256": "df10df540d7cfc5dfeacc9dda02645da20fbb48459b542e6567b38c1feec0bcc"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+30-elev50.png",
-      "sha256": "daf68ee1898ed8ffbf296e57c542bbc913bb3062e688c1c1cea068ec9f19bac6"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+30-elev50.6712fefcf4b2.png",
+      "sha256": "6712fefcf4b2be949ce6557dba2300591283867b535fe52f27d4aa8711ef47fa"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+30-elev60.png",
-      "sha256": "78251e6b0158a5f4f6abe5d11bddae1f0a0b539c5b3e82a5bb81ae371e0735cd"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+30-elev60.8cfd7219d7e9.png",
+      "sha256": "8cfd7219d7e986b48a4a72d80c2161dd9870b47ac9c62b1d3d3c377293e6c368"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+30-elev70.png",
-      "sha256": "6046b827b6b9d9a6c25e609b4e5a2154e6779872111872870f85e59667388d5b"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+30-elev70.3557728214a5.png",
+      "sha256": "3557728214a56e71be43e4bd9a9f4a9ada2c241c627bafeb5dfcaced3e7c4d03"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+60-elev20.png",
-      "sha256": "9a65f8f78bf8473b9e3961e56afa57c7ffe436cc9c034b6af1e32863e63c6b25"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+60-elev20.9fa1d30444b6.png",
+      "sha256": "9fa1d30444b6d529e0ca7fdd6d37c847da432f144fb2d7329dc5a2ff7ab47fed"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+60-elev30.png",
-      "sha256": "d70d2537df2841d525aa775d0908fd46dc8b731a70c75743a34e2a4b1270a5de"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+60-elev30.7055d3853f68.png",
+      "sha256": "7055d3853f68fbf695c2747904965ccd7004dfb2e3cd5a6bf52532652e97e47e"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+60-elev40.png",
-      "sha256": "2e54bfa301dcf9942e1cbe52b5f563989f0eb175969e3aabb8af68b504545ae7"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+60-elev40.5dc7fbe7ff53.png",
+      "sha256": "5dc7fbe7ff532fb5fdabf5d257d178557c873957a4cfb133755e6f47fe127e51"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+60-elev50.png",
-      "sha256": "19e1ea3272b050cf489568abfb8b0db660f46885d0d9c0465e556a3f517ecc38"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+60-elev50.e75911ae993b.png",
+      "sha256": "e75911ae993b7907510427abb407759096f2f04b5bd36798482bb9dabbd65f2b"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+60-elev60.png",
-      "sha256": "a6839a329be5a56400246b242925f8ff76c20071c313c244fb76bda63178edc2"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+60-elev60.0bedb3cc5327.png",
+      "sha256": "0bedb3cc5327f3e501a0cb7c95acafd8b77b3dc80efc25141dc8bba13a15425f"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+60-elev70.png",
-      "sha256": "5d8c8b32bb2561357f21d486dae2b84ef46b5c9d4f7f2dcab265c9e1ae0be0d8"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+60-elev70.79d3880ca423.png",
+      "sha256": "79d3880ca4237ad237b7858332ffbcef6c0d532df482ce0c01d51d4952a432b5"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+90-elev20.png",
-      "sha256": "2f0a75e2dfcb8f380995c442ae6913a75269ffa6201b069c932427a0898e5ad7"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+90-elev20.b933db5bae87.png",
+      "sha256": "b933db5bae8769ce45ce74237c23fc5b9764b63e20eb59bacf307c399f4e357a"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+90-elev30.png",
-      "sha256": "6531749ecd7cf401f14fb38eb2f3aa6d3d364d382add604f699b0a2630304e02"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+90-elev30.7f95f60e9866.png",
+      "sha256": "7f95f60e98666f0815b68bffe52032f7951b60c28ce8c6c3f0c7101ce2e88595"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+90-elev40.png",
-      "sha256": "eec97b873748c080c6ae52b5e832eb92436517670a1e3020eb9013f93f13912b"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+90-elev40.663315aca371.png",
+      "sha256": "663315aca37188a8f9316afb11b161bc90301743e6fd7553e2d285ddeecb148a"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+90-elev50.png",
-      "sha256": "b7418649ac22d6d59f5b0fd4c3f107ad6b65f3bc84ff67d08cc505e6f07bf7df"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+90-elev50.0aff9e1cfb73.png",
+      "sha256": "0aff9e1cfb738e40bb98ea305069ca6179feed94581fa9b7082f2ac31522394d"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+90-elev60.png",
-      "sha256": "7a3d850fa0b53c72900343ec3b3a396a8e410fe1fb429fbaa4397681fe786810"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+90-elev60.63286fb4d0db.png",
+      "sha256": "63286fb4d0db587c2e743632e4863901a08c7f34e5f22e09c58e29b8aa918ceb"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+90-elev70.png",
-      "sha256": "9f1ad675c351863b6814ead21ad79b0409d8aee4244282f0d51a1e6e576e50e0"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+90-elev70.98257e72d5fc.png",
+      "sha256": "98257e72d5fc0d3f77bb4b7ace9a46d937d13368cafd092ad234f593ede1d99d"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+120-elev20.png",
-      "sha256": "8af491dd58b94d775bf08fae0596865789970fff2321abb7af0c7d9029450262"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+120-elev20.e3875621b481.png",
+      "sha256": "e3875621b481b2c2d326a285cfae192dc2988214bcc7d7f2e993251b93fb0571"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+120-elev30.png",
-      "sha256": "adf892546e8b220e20b81708833aa2ec88ce974864fa27afb2bfe33e4de3108e"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+120-elev30.d969c37d00d3.png",
+      "sha256": "d969c37d00d367b364f23745ffd689cce174eefafc7cc89cd35271d0be681d7a"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+120-elev40.png",
-      "sha256": "768adc8a4414e82d1ca631dd2a2aab4d7fca92e4742a33d14d30a942e5f15dd3"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+120-elev40.b1d4d0e5f058.png",
+      "sha256": "b1d4d0e5f0585871d959999affc377fea085725625524d6b6567ac38d95ee9ea"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+120-elev50.png",
-      "sha256": "e810f3ad20b971f13d1b323ee0f100cca66a82bb6352bb917cb59127e07f35d9"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+120-elev50.27bd237428e1.png",
+      "sha256": "27bd237428e15a1d02285fdb906812ab42f5c4886d185b05d0216e5d64d341df"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+120-elev60.png",
-      "sha256": "262214aacab9a6ea2d3096d89f7757b8b9a64adc10765cca77e9d0afe1960725"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+120-elev60.2ffdc4b08713.png",
+      "sha256": "2ffdc4b087139bc2d47aff42867b03665912867e341be6e190bb00fbd57833b3"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+120-elev70.png",
-      "sha256": "0a915ba7849b5d528f67277191df7a740b0f700d7583a644a0b1f81fa949e2ce"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+120-elev70.7a72b213b2d1.png",
+      "sha256": "7a72b213b2d18d5f3f0e58c044910dbbfd935cabf0c1f80893c687eb119fd201"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+150-elev20.png",
-      "sha256": "91d2fd06a7c6e538ef1b271b9da1b2fafe720ffab8352e2f5beb333a2f7b95e0"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+150-elev20.81b12bfac857.png",
+      "sha256": "81b12bfac857b0613551eba95b4ac1cd2d4a9aabb52c2ba89c0f16943a4597c9"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+150-elev30.png",
-      "sha256": "3128933b6e97f12fa5474d00e0d67210a1d731a60e0979c25b26d7fe791484cf"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+150-elev30.5882e971906c.png",
+      "sha256": "5882e971906cc7f3a7b82bfdc71b05c42740de8885905256904156d1408749e4"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+150-elev40.png",
-      "sha256": "3ea17c7f3f2a30e3b7847aa8acc7fc6f7109c51b353f601527cfaefd695eee25"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+150-elev40.b706314edd9e.png",
+      "sha256": "b706314edd9e8831d96dd27382bf125be02663a22200e4604cb9ba5a3c87bb20"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+150-elev50.png",
-      "sha256": "3615fbf3c3bf09e5eefda67c8b1c9498aa504a7a1142f935463c58ff01d23ed5"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+150-elev50.2333abbc2b64.png",
+      "sha256": "2333abbc2b647fef079a9ee78e785a3945aa4c3722b8a207a4faa4d535cfb428"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+150-elev60.png",
-      "sha256": "a2daf90875f543a3f9c91d3bcb3c25f0c38965529a645d8309a91d2341d7f21b"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+150-elev60.a3db8c6f0d4a.png",
+      "sha256": "a3db8c6f0d4a67e07df9e48a2dce60457933e32a879f47cf39c229d1c4681c07"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+150-elev70.png",
-      "sha256": "d8206dfe5ae138d06b35f966390be4fce1e3069a7afed99077a313ce04aafee9"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+150-elev70.938a5fb50711.png",
+      "sha256": "938a5fb5071177702fd81961aba15345646bfe546220cb5d99dc5f8edbf31e77"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+180-elev20.png",
-      "sha256": "4d81ba45c75e0bc277fcf50829de59969c5210bf09d436e06a8007c2a6a4eeaa"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+180-elev20.f9cbe72da5df.png",
+      "sha256": "f9cbe72da5df8098aec85d89bafe9ca005014ba973d461e010911c294380886d"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+180-elev30.png",
-      "sha256": "2b33b30ac9a415c966b31b432d306e7572406efe26b1bccebe2d186a42637299"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+180-elev30.6a1e976c1942.png",
+      "sha256": "6a1e976c19422dab1f9739ed967b0cab361769ad706553956e277c85a9366c59"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+180-elev40.png",
-      "sha256": "14b6b98acee5ef7e3d1a1b4c1d521d382346f791902ab29940e653a29edf1721"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+180-elev40.5dcdaa4c6fb4.png",
+      "sha256": "5dcdaa4c6fb4524294bd9861fd34f7828cb8fa8494b1cb6d626a01ed62d692e6"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+180-elev50.png",
-      "sha256": "974c3d86a799121a41801aed2cc70343f489d789ed7b354230939f38389bf624"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+180-elev50.41448718aea1.png",
+      "sha256": "41448718aea1c0be3bb6071f30062e853815d072c9231723fbc2b4d50a324b4a"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+180-elev60.png",
-      "sha256": "2b311c58484d5b04862000112e24c972858154c16e12b987af29c6ecd5dce05d"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+180-elev60.d3f13361fbbd.png",
+      "sha256": "d3f13361fbbd88a4120ac570c03bc9049f031a2aac2aa81bca43afbe23167f99"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+180-elev70.png",
-      "sha256": "fcaacffee1e439bc0ac81f1b1c87355aef6ecd478232ad5cd029715e9f0ffdc7"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+180-elev70.9bb0d39dca2e.png",
+      "sha256": "9bb0d39dca2e34456d8ef25b2d47fb73a90aca6e1e74aadad525ec40cfdbf9f8"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+210-elev20.png",
-      "sha256": "6f2bb9f5eb1a67e41d4f3a758838b3d8af7725b56c92f284d47119ca7a861419"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+210-elev20.99ca61ba4cc9.png",
+      "sha256": "99ca61ba4cc979bd1bec848b052880144688bdb81a97df842a06913ce92a6744"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+210-elev30.png",
-      "sha256": "ce56c79317920bb2f315bd87063f57fd7758cf7d2dd0ae269b5029547e1b2028"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+210-elev30.edf88beb052e.png",
+      "sha256": "edf88beb052ee8175c741c57c91634c1e03a38cf8cd0cb3338735e35878e96e1"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+210-elev40.png",
-      "sha256": "63e76180489216a7afc01b03654f2bae475a803b5e8028ba477bedcae75fd506"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+210-elev40.cdd9e27eaefc.png",
+      "sha256": "cdd9e27eaefc7ef1c8d120b392a7d18916007b1da075b596796e3da9a17ceb23"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+210-elev50.png",
-      "sha256": "f8cc278c6efeccf356887377d6a2ab71fc4121db5679ef838c9587c696aad065"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+210-elev50.31b4c88cb2c0.png",
+      "sha256": "31b4c88cb2c054ecd68a8c11f82593a5da53b03b6d0080c455d8e9c64a4d4bd6"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+210-elev60.png",
-      "sha256": "d2d8f88095a435c9644122c313bde13e3b2a7fea9f21e40f8928c922b9da8f89"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+210-elev60.6d3533351912.png",
+      "sha256": "6d353335191287b9ca29cdcb042a18272d90294d94d8cac18ab9fa5b3c422364"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+210-elev70.png",
-      "sha256": "794318381c35ad8fb5ee79d7573eb37c140e37b7b3302cd6bf7f3feb328db3b4"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+210-elev70.9f0841c7220b.png",
+      "sha256": "9f0841c7220be1804fac12265b42bdf81756041217081fa2e493ed63416d3b0f"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+240-elev20.png",
-      "sha256": "0d2f6ccd3cd243324fbeb5fcfec68f4885a5603a71e5f9e3d289e43238c214f5"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+240-elev20.2df5b7601e9d.png",
+      "sha256": "2df5b7601e9dee926357b5ac09910a4f6870d290b8469d391b500b427ec49574"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+240-elev30.png",
-      "sha256": "2417c72a73621ab495ffb04b0ce1be42ce61ad0b2f92e1f78dba64dd18dc9414"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+240-elev30.5b9aded40d89.png",
+      "sha256": "5b9aded40d8994a3cd62b8625049806562e3384ef16523cd3bf65e0d814207e6"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+240-elev40.png",
-      "sha256": "2f1d125db5e529b01b0cffd0abb5d0e2e2cdff18db6219857a43a445a3f32897"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+240-elev40.c189670881e3.png",
+      "sha256": "c189670881e333d16dec603c2ad1bd7ed5e9e99065ce78c842b9c5199812b89f"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+240-elev50.png",
-      "sha256": "f9c2c79608816de50940538e139fe15194f9cbe0908b4eb53b0914d903c2bd4f"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+240-elev50.b41bc27ee020.png",
+      "sha256": "b41bc27ee020385d65a40f4c76e190b2ae774599fc05dd17157c424df58e4e11"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+240-elev60.png",
-      "sha256": "d9b3aabb68050afc606abbe902013a2a22c366dceb6fc7284bf23f892dac8010"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+240-elev60.392b2ba46cb1.png",
+      "sha256": "392b2ba46cb1fe5c249f5781e7dfb3c4037886de7dd0cbd3629702339e7d6096"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+240-elev70.png",
-      "sha256": "8dfe57cac67e668c5d38457341484e51209e3bb17d970198aaad771a9d8523a1"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+240-elev70.8d37d824c723.png",
+      "sha256": "8d37d824c723afe14d029e921cccc6e909855015f01e5abadb53fc96bac4e7f2"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+270-elev20.png",
-      "sha256": "61ce40b1e197325ed98594e18cdf5b13af1271cb322e6a5d5ab3531614a5a8a9"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+270-elev20.8a0512a84f4a.png",
+      "sha256": "8a0512a84f4afd4a79265ac6efb149396a6f206fac61586578c6074cefb78fd0"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+270-elev30.png",
-      "sha256": "f2ac7eee92eb10876e21b3f697b8977c9862d7686a69ed06e41d0ca686cac160"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+270-elev30.7406ddfff4a6.png",
+      "sha256": "7406ddfff4a66bf380da7670e81d15d2a8ad237c7f2f30c8159ed752bada0bf7"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+270-elev40.png",
-      "sha256": "7391b4133b7add9836b16d64283cc2956d43ac03b11c8e1e555734f363946ac7"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+270-elev40.744d1c6541c3.png",
+      "sha256": "744d1c6541c3e693ae370820c9f64c37e0052015fcf80cbba23ec8993bdc00f2"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+270-elev50.png",
-      "sha256": "ce5d3df010da9462066e57b6f1e90f02efd11c045b2e26f337b2debd7f25fa24"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+270-elev50.083ebe08abe1.png",
+      "sha256": "083ebe08abe1b5f7268df5089b3d8006f3834316ba9c9a929d9ce2d16c9137b2"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+270-elev60.png",
-      "sha256": "0e5ac43173783ded64d203e282d08f597579ed994b4097954dee64387e8b7548"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+270-elev60.380dbca90c87.png",
+      "sha256": "380dbca90c87cdac65fc6afab857d9c93bffa6b063431db7ae590d1fb222a2ae"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+270-elev70.png",
-      "sha256": "de4e2af1528d0220ae14391d2a00fc7147cc8e8e96265bb9eb19f739918dba47"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+270-elev70.addfc520e2f8.png",
+      "sha256": "addfc520e2f81b425ba250b461e0555eadb008a7716ed2696c891bbde96e9e48"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+300-elev20.png",
-      "sha256": "d9064d15bd1a6b82fb140339c74657c61453eaa740ea2d1e707229730d84d3a7"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+300-elev20.b5f4c3f09ba6.png",
+      "sha256": "b5f4c3f09ba6deafe1c75fdd20653da2e0b8463902d84c374dd117e9735cc8f4"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+300-elev30.png",
-      "sha256": "9c8bbf3754476866744816499a7519a8e361cdc6bb80c9b5b02dad400160845e"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+300-elev30.d4d879166085.png",
+      "sha256": "d4d87916608531fa7126ced400169c2b6a50c0de3e2a9ceb59896ebc8deed336"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+300-elev40.png",
-      "sha256": "d6c63b7eadb66f07963cb56b28dea17d930cd54e683ad8b112ae598754dc1fa3"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+300-elev40.12e4f713a578.png",
+      "sha256": "12e4f713a578ad6c89e71b5ce85a8377ba488a477ebc7cf7b790edc3737d8520"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+300-elev50.png",
-      "sha256": "42daf7350c720c7331b4b64f9f3648e30e23988c4c801e859074f570902b0cf5"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+300-elev50.86dc6305176b.png",
+      "sha256": "86dc6305176b90dfcef8860d013fd55025ca1d45cb739de3ec8dce17b77e561b"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+300-elev60.png",
-      "sha256": "fd603f6feec3009c255eed13188e5cc2ee091bf95b049aa5b4cd8f23f237f2dc"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+300-elev60.cdf318db3c96.png",
+      "sha256": "cdf318db3c96e29fabf6cdbcf3d3cd7db36b540d3767c7d65e3cc2003e7a926a"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+300-elev70.png",
-      "sha256": "46e347ab4db47f718c5a123dd370a8ec2b1318a3653ddb3276c1ef24cfaef2fa"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+300-elev70.c1537cff79e8.png",
+      "sha256": "c1537cff79e878f579228cce9dd82a69cbe34466e23e80f73b98642fc8b70c55"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+330-elev20.png",
-      "sha256": "fe85d8a0831e8e10559248fa35492c017756a78bbce73b4707fcdfbfbdc33250"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+330-elev20.d5e6bfbf0ef9.png",
+      "sha256": "d5e6bfbf0ef901b1be5e4382bd26daed7331f8d76b817c033fec5b7e2f315ab8"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+330-elev30.png",
-      "sha256": "c86d1eb0faeab7bf36dd0925ddcf4c852b345c85f576e21f6a6681e6f2d6740b"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+330-elev30.e1955dbbd6c8.png",
+      "sha256": "e1955dbbd6c848cfaa2afe5205d67bcf9d8a0c0ac0dfc0a934bccaa5f1a129c2"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+330-elev40.png",
-      "sha256": "1e9644ae98b04f826d5efaa7401b6cabd4889eff99923246687ff7b6a44e344f"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+330-elev40.ffd09da3c820.png",
+      "sha256": "ffd09da3c8204fc097f4eec90df4b349a807c81f783c5d41ff39ec3f9e6a9be6"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+330-elev50.png",
-      "sha256": "417e318b388671c520398a8ca744dfceb91b75d7af677a6cc0526e188625c8c0"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+330-elev50.17cb3e511c82.png",
+      "sha256": "17cb3e511c82e9ca8c6f5d58af9795521ab1c504eb974b31a088928aba847804"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+330-elev60.png",
-      "sha256": "3fd0bdef16886891c536963f3ffc38686790a1950ee3061f4cdc4cced1672909"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+330-elev60.f2b2241ddfe6.png",
+      "sha256": "f2b2241ddfe6a00f652e7db1c9dfac7e6093c51f543db304eb97b85ef6667772"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+330-elev70.png",
-      "sha256": "44eb9d56dc8a11c51fa5033e4d86080cedb844d72631acc1ac671d5a1a648b29"
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+330-elev70.593f4002fd0c.png",
+      "sha256": "593f4002fd0c61fc6f86bdf89da50af77074f9d12bc18866719f199715ae78b5"
     }
   ]
 }

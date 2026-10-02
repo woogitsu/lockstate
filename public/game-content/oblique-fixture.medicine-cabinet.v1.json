@@ -4,18 +4,18 @@
   "source": "assets/source/blender/fixture.medicine-cabinet.variants.blend",
   "sourceSha256": "17670457233caef94855cdaf64b2cf1bd3c8623318941cbd3ce2e5c50224ac75",
   "resolutionPx": [
-    128,
-    128
+    256,
+    256
   ],
   "nominalPixelsPerTile": 64,
   "pivotPx": [
-    64,
-    64
+    128,
+    128
   ],
   "cameraTargetTiles": [
     0.5,
     0.5,
-    0.5
+    0.59
   ],
   "projection": "orthographic",
   "yawDegrees": [
@@ -44,434 +44,434 @@
     {
       "yawDegrees": 0,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+00-elev20.png",
-      "sha256": "2e70861bba4e370bedde98b3534335a399ccc014a86935e171ffb8ab16b11ae9"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+00-elev20.d653b1de0de9.png",
+      "sha256": "d653b1de0de90db665f54026bce9c626a312be19dca5b24497e7d21c4bdca47a"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+00-elev30.png",
-      "sha256": "1cde326e65cebcc4f489b79555a5776df05196e75bc63a94d22838f53bba29bf"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+00-elev30.1f821efb2384.png",
+      "sha256": "1f821efb23841986cafd3ff894472ece9c76db1cd64591311d715c91cd68e504"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+00-elev40.png",
-      "sha256": "40a73013c999fb0b5e699940fb29b78d42ccf605e4cdc63fce30621f1c17648d"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+00-elev40.fd8abc454f8e.png",
+      "sha256": "fd8abc454f8e1591550cc145f2b6132d7125c78cbb58415054d9a10f2e71cd04"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+00-elev50.png",
-      "sha256": "6518ff5f99d9a53c707dbfe2397c0d77de7122f20db551ab48febe6a48f656ff"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+00-elev50.3437ab63469a.png",
+      "sha256": "3437ab63469aa86c728981a5ea19f5a696bf2b77e8acefc67ad02ab31daf60ed"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+00-elev60.png",
-      "sha256": "6e33360e12afe400b3acfacd114720b76e7cb4139ae8c8e2dba076d0f50095df"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+00-elev60.9f15e45d1630.png",
+      "sha256": "9f15e45d1630aa4f0682d0e03a40e7030007952b54dad7fcab6bc49cc433d8ea"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+00-elev70.png",
-      "sha256": "60af2863dc0429d8e0b0f4c038338f0e11420c16e3bf726ed1bc5bf71ae34b58"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+00-elev70.4e83d344eb6e.png",
+      "sha256": "4e83d344eb6e42f7c7496e1c70788b93d89d6e215970a4a0e0d4ebd5d2f601d0"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+30-elev20.png",
-      "sha256": "455b111cd3372cbe36baf64f1cbc4e7a6666e639c24ca011765a37335222d005"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+30-elev20.79bb8225c8be.png",
+      "sha256": "79bb8225c8becce81856b872105382513f1737614f4f21290951c1b2a9bf154b"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+30-elev30.png",
-      "sha256": "d5db93efa1335eca39308ee4114b94f8825be60cc7d19abbc10b626ad3cdbef9"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+30-elev30.7d1726cf0dce.png",
+      "sha256": "7d1726cf0dce63e96fa7a4751fe8f7499d85a38f2e3075b588f574705bd49ae7"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+30-elev40.png",
-      "sha256": "29780f59488fdcb3ed90240a8044b287b831d6ad4326da643eda7efcc909b49e"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+30-elev40.3dcfb806e789.png",
+      "sha256": "3dcfb806e789509ff9b0c586e2542111e87bc298359595d850fed0eeea2cdc90"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+30-elev50.png",
-      "sha256": "1485a8dc719fef951f11e66008dae5eef89015d0bc7b9bd4e4ec6dffb2f60b76"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+30-elev50.28d8d56c1af6.png",
+      "sha256": "28d8d56c1af684254e5724b0207b339d61b7ff1a663611ac5d12fef1946acd1a"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+30-elev60.png",
-      "sha256": "4b8b24abfeaa1e7adc07086a711a5779e332cbaf428a7e24d45e94b6bb46a79b"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+30-elev60.7dfe5df165e6.png",
+      "sha256": "7dfe5df165e675bb31a7dcab1c2b587797594ccb481526d5ea5fa5a04cad9a69"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+30-elev70.png",
-      "sha256": "ceb61eff282c9308e1098ef3788091b36e74fc38d78838205dbe012ea18f1205"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+30-elev70.62e087f4342c.png",
+      "sha256": "62e087f4342c7297fa9a7dfb9cc8d232b97f3f0b3f920adf1e3f9238f957e928"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+60-elev20.png",
-      "sha256": "cecf07d3d1c4a3f16dadc6a107769769901ab40ea7c279c67d1edf75254b4885"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+60-elev20.842be7b0b793.png",
+      "sha256": "842be7b0b79393d0ca4e235e4435c4d9484c998d09a9c6324d6556a18d311ae9"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+60-elev30.png",
-      "sha256": "fe8ce64fd7aa6a5f3624bac1e65d40a51ede2b5c0ef9557b671e9a899f436f80"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+60-elev30.bef99dade3da.png",
+      "sha256": "bef99dade3da2d4f774a28191b68a8dd3ed6bc08558e61875c0a6ab898372eb5"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+60-elev40.png",
-      "sha256": "03027b20b4bc7435a65e447f0c8b6f24bb9026315c768a6f57a363c614b4e4bb"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+60-elev40.1cbbd56ee15d.png",
+      "sha256": "1cbbd56ee15debb0b2d9e3b48011abab361d1654f494f63c7cd0400f63225e2d"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+60-elev50.png",
-      "sha256": "f7982ddbb6c8a2ea3bd6ad39f3a81b21b5f88728a593d74ededaff646d8a66c0"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+60-elev50.432a99a8fb17.png",
+      "sha256": "432a99a8fb17473b6ca2982a767efde9ca83624f14b6c694c67c8a3216c7021b"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+60-elev60.png",
-      "sha256": "dc385c239a5ddef253e5160636a70ec45677cf3a89d8753cd0551b452d8b528d"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+60-elev60.0a5b6a0d5c1f.png",
+      "sha256": "0a5b6a0d5c1f8427dac486d84b4c370b738f92dd1e686e5a07d5fca1caf4a680"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+60-elev70.png",
-      "sha256": "10795b06b792c0344c1e6f41d0f598e57f65a8ecd78368edb57ec655b10e02bb"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+60-elev70.3168c15da187.png",
+      "sha256": "3168c15da18759b778822e0d1f6a71e2301955ab289fed5d85693cb348d75106"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+90-elev20.png",
-      "sha256": "6364e7e6f05a371ee26d0f008dcaaaa9897de9a36a10bf52c73b7e12c08ea6cc"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+90-elev20.19434cdc4e86.png",
+      "sha256": "19434cdc4e866a689d06c6a6f7dd62aadd0ac8f34038aa32cc0837c62e9ef82a"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+90-elev30.png",
-      "sha256": "b3f2a4d31713dc922001594dbbd63c072fcdaab36a6e82cced6892efdcb6f4f1"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+90-elev30.29cc892038c1.png",
+      "sha256": "29cc892038c1e6218674d72c3dbd6fc5edfab8f60b9efb4cc1d8175257a99559"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+90-elev40.png",
-      "sha256": "442e93ec2a31d7e448cba6cd538e2b0a5bbf40cf475f3a7f6485d2c398794dc5"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+90-elev40.bb9431941960.png",
+      "sha256": "bb9431941960c72d1ece7b843662bd1a14529dead8ec38b1cdcccda237603e01"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+90-elev50.png",
-      "sha256": "d165897a3b142fcbb419b7d1f7329a2f5890b9188af870b674bfdfb5136eadd6"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+90-elev50.2b149f096a87.png",
+      "sha256": "2b149f096a87ec6fe5db3c8944a41ded352b0d3aa42b8fc7c94e626b323361b7"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+90-elev60.png",
-      "sha256": "aa2473eb16521381678f81d5eeb3c9bfeeae9337127f24983447503b3b0a0c1d"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+90-elev60.a5968b139a7f.png",
+      "sha256": "a5968b139a7fef1a553b0d92241be67d301025f5e506c137df1d0ed86e7b7095"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+90-elev70.png",
-      "sha256": "a4699555ae0c3f02e121da2fbd95dbe455b5f12f20ebba5c18072e55ace8fe99"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+90-elev70.f60b41d2d5ba.png",
+      "sha256": "f60b41d2d5ba3e4581d0c99971c11cf97377cc5b66e7a0f26126dca1e7bdb0fb"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+120-elev20.png",
-      "sha256": "c063157b04d95eb38f01b0c25835a1a6e38b0050125c146b4650960470d0b703"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+120-elev20.7ac8df581d4a.png",
+      "sha256": "7ac8df581d4a6c2ed721a39b034e14f301298f57cd33a68689476ceb0ee3e7bf"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+120-elev30.png",
-      "sha256": "e8818a3f02043377556275281ce47c2baead14231cfe8e912d1da9bfe487b0aa"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+120-elev30.52f258d6051d.png",
+      "sha256": "52f258d6051d3f533aee75635b8921ac42f5cfa8610e176196da76830953d20a"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+120-elev40.png",
-      "sha256": "2dd5434911edd4ee5d5fdf5d6ac30cea4923c55cc8ae09e97a0897ed6565f1ec"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+120-elev40.33a721f37bda.png",
+      "sha256": "33a721f37bda75addd751ddbb48e6ca36bbc9ab95374afdcd8ec6dfe240e9bf2"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+120-elev50.png",
-      "sha256": "a5d6fb78b55213614a509dae84f960f64f773a1c6d6140215fd8ae3f19618507"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+120-elev50.dd9488b1197e.png",
+      "sha256": "dd9488b1197eb2bdc63b88b665150251c87946a7ca8b00efc1e070c58b6b0a9d"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+120-elev60.png",
-      "sha256": "d04c57fb5839c6ac7fd9c7233eeda10bca164f6687704ca4b280d61798b6c1eb"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+120-elev60.c43778ad76d6.png",
+      "sha256": "c43778ad76d6772999ac1e4787e693068ce677e8238fd8caa2d7eb5154bbfbbe"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+120-elev70.png",
-      "sha256": "f7f29aab2b1ad3347ed9f6ff641a845c57cdba44aa4fd2d637910e9042d5a0b7"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+120-elev70.8c40f61dc72c.png",
+      "sha256": "8c40f61dc72c28f79dd593738493bd27a89b62514adf91449a06df38786420d2"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+150-elev20.png",
-      "sha256": "51d28028d9b7ea8e6a95839e653d12a5a064c8cbe263ac30e4be655847327645"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+150-elev20.5e9b954c4120.png",
+      "sha256": "5e9b954c4120f6d51508d962c5e9ad81d58638d438c26a2b7cec8b9269681a44"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+150-elev30.png",
-      "sha256": "5aa828ef1ed1f78d546f2c1ae3c01c657695161a422639879681c3609edc1137"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+150-elev30.7488ad494a16.png",
+      "sha256": "7488ad494a16e24fdc9a157a75d1816e8d984dc0ed0b3d452cb26c5e41029b89"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+150-elev40.png",
-      "sha256": "64c5db7977c3cf291b2811df06602042d44ba7f60c2e2178879586c916227b7a"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+150-elev40.918a81aafd7a.png",
+      "sha256": "918a81aafd7a3f6b5b55b81dd9316b63744fe642370a08bb6a8ff5ffa461829f"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+150-elev50.png",
-      "sha256": "f07445735a5564e0e74eb9ba18f8485d334689c3b345df94218da07ee560074c"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+150-elev50.97a528418b74.png",
+      "sha256": "97a528418b74acf7132783327743b3517649d470d056989fa626339cc248cf8f"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+150-elev60.png",
-      "sha256": "7a8f7cb138f50330d27910cbcb5252befdb251e9c47d94d51a2ee7ff9dda0b90"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+150-elev60.5768c14585c6.png",
+      "sha256": "5768c14585c65e89924b47f51ded14a978459b3e3b3025f4bc9ba0dfb9d6c3dd"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+150-elev70.png",
-      "sha256": "af4825dc04318b6291f9798081cfc07310f9a16a2a9d69c583ec8d3e2ea36ef3"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+150-elev70.b304e1cf1b9a.png",
+      "sha256": "b304e1cf1b9a59d80ac1451c6b699187d9c2b3ab84d684c4e152b26df56257d2"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+180-elev20.png",
-      "sha256": "5bba22afa22e340fac4a10eec7c29dda4a17deddbf691b53cce76f3169ada298"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+180-elev20.0afed92fcd77.png",
+      "sha256": "0afed92fcd77a8fe7bfde7cbddf7781cf8111aebe3da131a548fd7e8e8aab4e6"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+180-elev30.png",
-      "sha256": "51341a8a75bcd0a2547f090239b2abb30d802f8a5126368129f8c1bec9ef16b0"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+180-elev30.72fff613d591.png",
+      "sha256": "72fff613d59169e181b6a0716cc847fb00dddc03a27e61a076b086843f6214a9"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+180-elev40.png",
-      "sha256": "4825a1e60da0c421dc67a49572733bc6bfa739f6345267177f896abf3063af68"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+180-elev40.66f94f79ce77.png",
+      "sha256": "66f94f79ce77f427d0153e37ad5c67745db6a95459a56874fa65f38c3a10dc0a"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+180-elev50.png",
-      "sha256": "81efd538a987b5bf05df3ab255cd96a7e9d8e53c505e6e9422f4922a5193373d"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+180-elev50.f45f94e0d8b5.png",
+      "sha256": "f45f94e0d8b55e8c0710843fecb2dbf2a98d4f80b76e28a2d1e09b07c23ac96e"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+180-elev60.png",
-      "sha256": "f578b5a0f3ba7fd79e7ac0edff00ab1137ec4e710c26112637a21795b535aee3"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+180-elev60.416a749c0f8d.png",
+      "sha256": "416a749c0f8d74283cd44efd6ef69c2294dd44127a52e70ac6225183b0103cf4"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+180-elev70.png",
-      "sha256": "08b1deb056eb6324a160d426f47a5f58fb0b8d837c30432fe0c29a5af478fa5a"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+180-elev70.81621e094a17.png",
+      "sha256": "81621e094a1715d3ca3a83d2c7d1015daf94e92c9754edaa9963a340b83e7900"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+210-elev20.png",
-      "sha256": "d093bbbd41952ee7e6c72c81f6760adef24f265f5a309ed1a9e330067e9cb491"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+210-elev20.8c614be26524.png",
+      "sha256": "8c614be2652483a6706bcd6e102378429f05e160febe767a7edaab2b984dfb64"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+210-elev30.png",
-      "sha256": "eba0d60e73fd54c4471e93f93fdbea901bee5cc63d728e1275a674dbc27e7e03"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+210-elev30.479aee6bd8e3.png",
+      "sha256": "479aee6bd8e327f205fd4ef4bda700d5fb9f4becbf06e1b7ae4adc353c7190a6"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+210-elev40.png",
-      "sha256": "e738befa8abed54277c71ffbe4e2876357147048352ace598e349053afca9f41"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+210-elev40.2494dfef1672.png",
+      "sha256": "2494dfef1672b1381a2d00e1775f9584fc8d8e5389883932df070ead5ceb652c"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+210-elev50.png",
-      "sha256": "8e2a6b18a208660094ac516241c08ae380268c9b8c291d67f592d973cf6373ed"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+210-elev50.1d11c8fabaec.png",
+      "sha256": "1d11c8fabaece99bce247378ed809b9e0918588821ae4ebd80c50c5a8f48d938"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+210-elev60.png",
-      "sha256": "477d8ce466dfc8855ad03c572e045bf8260949586b9095ee1e09baf9dd659f0f"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+210-elev60.894413ea6d57.png",
+      "sha256": "894413ea6d576e2e2d777039fe68c4b3dbdcebeef3745b854e3fb4222a99c2c4"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+210-elev70.png",
-      "sha256": "68999efa6a4a7543befd1395f2e2a738b3984b2579cd459d42ae9e5cc1dd8cda"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+210-elev70.b720f7f9a321.png",
+      "sha256": "b720f7f9a321ab0664c953112d21e15785dcf0985f6e2f05326fc76733b56eaa"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+240-elev20.png",
-      "sha256": "38597ff66f8b1c7e7ece7f130353e72006007af4084e0dccb92769d714275c0d"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+240-elev20.349a73494f9c.png",
+      "sha256": "349a73494f9c8d4df0a9dbd6986bb648abdc03c83da5ecf28888e9fc2f41e2e0"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+240-elev30.png",
-      "sha256": "af646ba1f92ea63b49685c7e8d80ed8cf29da3bc61a88baefeac6560cca3bf39"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+240-elev30.6be3163bd72b.png",
+      "sha256": "6be3163bd72bc0613650b92dd46b9192142066a8c9dcd24bb25055b4011e8072"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+240-elev40.png",
-      "sha256": "f083ce8adc7dbc0eef7d774893ec3c7712df79e7f46134f09c2577d85f2e005d"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+240-elev40.08324762b937.png",
+      "sha256": "08324762b937e0419e96056a3b7fc9312cc91a4e0d28997a7d5320196cee311e"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+240-elev50.png",
-      "sha256": "292a2a4f55159bd3598736133fbc1707b6b5a7611afa6d369caca219992a5b1e"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+240-elev50.5a0582bc25f9.png",
+      "sha256": "5a0582bc25f99874556bdbd144d89e425cc24b95e61bf16489b60ba3a3cbc43c"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+240-elev60.png",
-      "sha256": "510532570dd7eb32154ad408a11b6a2ab955ca1557d297f5fe527f974fa01ea1"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+240-elev60.8cb19c1afa22.png",
+      "sha256": "8cb19c1afa22e0e3a9b611bc2e002f91b424a96b87bb8ea2b79fcb232e5a612d"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+240-elev70.png",
-      "sha256": "36bf4fb144eb8a2ec032eb0075ebd5f1c833db52fdc7eb4d51c5923c27adaa33"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+240-elev70.42dc223020ac.png",
+      "sha256": "42dc223020ac4859a88a20ebfb1d72d2fb6a5ddc56b9173e6234ce33c53e021e"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+270-elev20.png",
-      "sha256": "0e9b71f863425698b098af0496d31238cdfbaec66cfe49cd15368ea965713bad"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+270-elev20.55c533818fb4.png",
+      "sha256": "55c533818fb4f00e460dc5d958c39a66ce27e450130c5b081c5bf7fc8ecd173c"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+270-elev30.png",
-      "sha256": "21bc7b762c2172eb7c729ce2d8896a5a1c42b818bd5a1ffd091f52de137e7370"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+270-elev30.46023e619bdf.png",
+      "sha256": "46023e619bdfe4e6df20001e894e2ad31c960d035b5a07909e4bf0fb35f699e7"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+270-elev40.png",
-      "sha256": "03391edca4cc50633e664141a3510fbbc68a1b697799b776bbf0bc4f19761645"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+270-elev40.85d4e44200c5.png",
+      "sha256": "85d4e44200c5e6bbc2935c8d389f94ce4ed6d71d42e8b743e0082a95ede2709c"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+270-elev50.png",
-      "sha256": "51e49d3cf713fdb2f0e9953308204a7f87815489efbf20b60bb52713ced0923c"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+270-elev50.233ef9989090.png",
+      "sha256": "233ef998909062b7a8608a176aa9f68d6dedf0cf8adf1204aad34d14ab2a021b"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+270-elev60.png",
-      "sha256": "1460266d2d6a08f81ad1fde5ee4fe0acabdc49fe93ec7b0dedac678983421227"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+270-elev60.842f70926990.png",
+      "sha256": "842f709269908903f4cc829511adf274c08342c08a77e8c976486632fcf81485"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+270-elev70.png",
-      "sha256": "5268322ba8ebb311fe6f06c3b0f5598858e72be78219f69921dee267c13fb18d"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+270-elev70.c896711c3bf2.png",
+      "sha256": "c896711c3bf256b618f7ce11d573cdbe4fa4b2376df462c3de3934ec071ba33c"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+300-elev20.png",
-      "sha256": "c49201b8cfd2dfcc71415d5b41582f06adf9e257922c4d9fa29da77ae5b89813"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+300-elev20.c0fe96c8a8bc.png",
+      "sha256": "c0fe96c8a8bca6b615558fdb5e62115505d7504c7d2608238ef67ba46cf89fb9"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+300-elev30.png",
-      "sha256": "3cd93cc224811343d0d556baecf1ddd1c0be1c1590d57431cdca0236699a2e77"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+300-elev30.5adc3c7ec83d.png",
+      "sha256": "5adc3c7ec83d616b228f0ec534bd72ae4352053cd8b30404213819c99b66e3ef"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+300-elev40.png",
-      "sha256": "5bf19537fe86477688ed357a23014621059bea0959398232c584c761d325c771"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+300-elev40.8dc6ac35c333.png",
+      "sha256": "8dc6ac35c33389100a6bd49be4157c35b825ab4a8f03174f0d92af123a52261e"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+300-elev50.png",
-      "sha256": "68130ed3757db41c8e37632cc1b780c3c5876afdc79e5974fc2b2374374c5e68"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+300-elev50.9c0ce0102acc.png",
+      "sha256": "9c0ce0102acc8f547329c66fa347785c9a3b4eac0e57d01093d4fdad4e899d2b"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+300-elev60.png",
-      "sha256": "d108f3484b3b874634b9326e1bee5cef25438ed5bf866c260a1bc808d87012e7"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+300-elev60.c445f708eda5.png",
+      "sha256": "c445f708eda5ed1948d66da8e3726d4248429b2879a3d65c1a417fa067bd456e"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+300-elev70.png",
-      "sha256": "0835eade2d69941117808779dac311f48ba4375bd6ebf98594bfbfb311c2dfba"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+300-elev70.49448d0b032c.png",
+      "sha256": "49448d0b032c24a03b8ef2676d124cc6090427dc62af663c2a50b28cb6b85aa5"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+330-elev20.png",
-      "sha256": "f4ffe16ccf825c9689db6ef5a7c23570ff949b849586a54c0b179962dc449405"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+330-elev20.ac644175177a.png",
+      "sha256": "ac644175177a2d54b65c0a17fc6380d7ab1d3cc1e49f71fcb1a8fa371849953a"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+330-elev30.png",
-      "sha256": "911bf66cb89bac9262891598e69eb604f8dfa59d063aed39c116b4b8f160df34"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+330-elev30.d813012723bb.png",
+      "sha256": "d813012723bbb20ecc60660a282d8b41a4bad199015bc805d04211c21734b3f4"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+330-elev40.png",
-      "sha256": "ff1018959ee8417df8cf6882dcf06990a42574439cd9596de277d4b5475782cb"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+330-elev40.3b4ad8d4b207.png",
+      "sha256": "3b4ad8d4b207e2cd93c07a55dc2168bc99fe9c94fd6951a38fffb3ecf02b0f61"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+330-elev50.png",
-      "sha256": "c87591c32e4730630b208eb38da90162ef45b6748a546615c25b0989713ce73c"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+330-elev50.3486dea90d16.png",
+      "sha256": "3486dea90d16cb7759329debd9fdcb0b6f1a8023c5dfa216f7060e2cb7f8fe05"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+330-elev60.png",
-      "sha256": "8719f8422fe027efaf0b397fede33c3ac6a1f246e68227dec6c7bb450014b8e2"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+330-elev60.40ee2cd63c90.png",
+      "sha256": "40ee2cd63c90588d701138d001f8d7e905ebb89e919b91197db84a21b6da962a"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+330-elev70.png",
-      "sha256": "bb7ca13e4115a4dccb419a5490b93d1fb6645e871ae01ce476b346e6b4a28a50"
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+330-elev70.40f0674ebddf.png",
+      "sha256": "40f0674ebddf3152726d302686c212dbcfa63da0cafa0495a3a9cd65a96db01c"
     }
   ]
 }

@@ -111,13 +111,15 @@ def normalize_and_check_border(path: Path) -> None:
     )
 
 
-def configure(model: tuple) -> tuple[bpy.types.Scene, bpy.types.Object, Vector]:
+def configure(model: tuple, prepare_source=None) -> tuple[bpy.types.Scene, bpy.types.Object, Vector]:
     asset_id, source_name, _, width, height, scale_x, scale_y, target_z = model
     source = ROOT / "assets/source/blender" / source_name
     if not source.is_file():
         raise FileNotFoundError(f"Existing authored .blend is absent: {source}")
     bpy.ops.wm.open_mainfile(filepath=str(source))
     scene = bpy.context.scene
+    if prepare_source is not None:
+        prepare_source(scene, model)
     # The saved source is centred around (0,0); production world placement
     # uses the minimum corner of the authoritative 2x1 or 1x1 footprint.
     # Apply ONE world transform to positions and meshes, then verify every
