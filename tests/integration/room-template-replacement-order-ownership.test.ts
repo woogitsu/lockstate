@@ -67,3 +67,21 @@ it.each(([0, 1] as const).flatMap(quarterTurns => [false, true].flatMap(legacy =
     runtime = reload(runtime);
     expect(runtime.placedObjects.objectAt(original.location)).toEqual(replacement);
   });
+it.each(([0, 1] as const).flatMap(quarterTurns => [false, true].map(legacy => ({ quarterTurns, legacy }))))
+  ('Undo of the genuine newer bed still removes it, turn=$quarterTurns legacy=$legacy', ({ quarterTurns, legacy }) => {
+    let runtime = createNewSimulationRuntime(73);
+    send(runtime, { type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 10, y: 10 }, quarterTurns });
+    finish(runtime);
+    const original = runtime.construction.allOrders().find(order => order.definitionId === 'bed-wooden')!;
+    send(runtime, { type: 'RemoveObject', x: original.location.x, y: original.location.y });
+    send(runtime, { type: 'PlaceObject', orderId: 'newest-bed', definitionId: 'bed-wooden', x: original.location.x, y: original.location.y });
+    finish(runtime);
+    runtime = reload(runtime, legacy);
+    expect(runtime.placedObjects.objectAt(original.location)?.objectId).toBe('object.bed');
+    send(runtime, { type: 'Undo' });
+    expect(runtime.construction.getOrder('newest-bed')?.state).toBe('cancelled');
+    expect(runtime.construction.getOrder(original.id)?.state).toBe('completed');
+    expect(runtime.placedObjects.objectAt(original.location)).toBeUndefined();
+    expect(runtime.placedObjects.getSnapshot()).toHaveLength(1);
+    expect(runtime.prisoners.roomInstances.getSnapshot()).toHaveLength(1);
+  });
