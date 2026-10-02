@@ -41,7 +41,7 @@ import { InsolvencyRungSystem, JustInTimeMaterialsService, LoanBook, PayrollSyst
 import { SimulationEventLog } from '../events';
 import { createIntakeHousedNotice } from '../events/intake-housed-notice';
 import { createResidentRelocationNotice } from '../events/resident-relocation-notice';
-import { RefusalLog, materialsFundingSupersessionKey } from '../refusals';
+import { RefusalLog, UNZONE_REFUSAL_REASONS, materialsFundingSupersessionKey } from '../refusals';
 import { StaffDismissalService, StaffHiringService } from '../staff';
 import { createSessionCommandHandler } from './session-commands';
 import { ACTOR_IDENTITY_RNG_STREAM, ActorIdentityRegistry } from '../identity';
@@ -1628,6 +1628,16 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   construction.setPendingRoomTemplateClaims((tile, sequence) => roomTemplates.claimsPendingFootprint(tile, sequence));
   construction.setPendingRoomTemplateDoorApproachClaims((order) => roomTemplates.claimsRoomDoorApproach(order));
   objectPlacement.setPendingRoomDoorApproachClaim((tile) => roomTemplates.claimsRoomDoorApproachTile(tile));
+  construction.setUndoPreparation((orderIds) => {
+    const key = 'room-template-undo';
+    const refusal = roomTemplates.prepareUndo(orderIds, kernel.tick);
+    if (refusal !== undefined) {
+      refusals.record(UNZONE_REFUSAL_REASONS[refusal.reason], kernel.tick, key);
+      return false;
+    }
+    refusals.supersede(key);
+    return true;
+  });
   kernel.registerSystem(roomTemplates);
   kernel.registerSystem(procurement);
   kernel.registerSystem(stateIncome);

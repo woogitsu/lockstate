@@ -4,7 +4,7 @@ import type { SystemRegistration, SimulationContext } from '../kernel/system';
 import type { PlacedObjectRegistry } from '../objects/placed-object-registry';
 import type { ObjectPlacementService } from '../objects/object-placement-service';
 import { objectFootprintTiles, tileKey } from '../objects/placed-object';
-import type { RoomZoningService } from '../rooms/zoning';
+import type { RoomZoningService, UnzoneRoomRefusal } from '../rooms/zoning';
 import type { SparseWorld } from '../world/sparse-world';
 import { tileCoordinate, type TilePosition } from '../world/coordinates';
 import type { ConstructionSystem } from './system';
@@ -307,6 +307,20 @@ export class RoomTemplateCoordinator implements SystemRegistration {
       if (!refused) this.completed.push({ ...request, origin: { ...request.origin } });
     }
     this.pending = remaining;
+  }
+
+  /** Clear or refuse the completed gesture's zones before its shell is touched. */
+  public prepareUndo(orderIds: readonly string[], tick: number): UnzoneRoomRefusal | undefined {
+    const transaction = new Set(orderIds);
+    const request = this.completed.find((entry) => this.shellOrderIds(entry).some((id) => transaction.has(id)));
+    if (request === undefined) return undefined;
+    const plan = instantiateRoomTemplateForConstruction(request.templateId, request.origin, request.mirrorX, request.quarterTurns ?? 0);
+    // One all-or-nothing unzone happens while the original beds and all other
+    // rooms still stand. A row's residents cannot move into another row member
+    // which this same Undo will also remove. Pending plans and shell-free Yard
+    // transactions retain their existing paths.
+    const outcome = this.roomZoning.unzoneTogether(plan.zones, tick);
+    return outcome.kind === 'refused' && outcome.reason !== 'nothing-to-remove' ? outcome : undefined;
   }
 
   /** Command dispatch also runs while paused, so release invalidated plans then. */

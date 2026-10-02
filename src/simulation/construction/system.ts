@@ -363,6 +363,7 @@ export class ConstructionSystem implements SystemRegistration {
   // A transaction is just a list of order IDs.
   /** Runtime ports for real non-order transactions; their ids share history ordering. */
   private readonly reversibleWorldTransactions = new Map<string, { readonly undo: () => boolean; readonly redo: () => boolean; readonly canUndo: () => boolean; readonly canRedo: () => boolean }>();
+  private undoPreparation?: (orderIds: readonly string[]) => boolean;
   private undoStack: string[][] = [];
   private redoStack: string[][] = [];
   /**
@@ -828,6 +829,11 @@ export class ConstructionSystem implements SystemRegistration {
     return this.currentTransaction.length > 0 || this.undoStack.length > 0;
   }
 
+  /** Prepare coupled world obligations before changing any order or history. */
+  public setUndoPreparation(prepare: (orderIds: readonly string[]) => boolean): void {
+    this.undoPreparation = prepare;
+  }
+
   /**
    * Reverses the most recent transaction, and answers **whether it reversed
    * anything and whether what it reversed was past the point of no return**
@@ -886,6 +892,8 @@ export class ConstructionSystem implements SystemRegistration {
    * the other side.
    */
   public undo(): ConstructionUndoOutcome {
+    const newest = this.currentTransaction.length > 0 ? this.currentTransaction : this.undoStack.at(-1);
+    if (newest !== undefined && this.undoPreparation?.(newest) === false) return { reversed: false };
     if (this.currentTransaction.length > 0) {
       this.undoStack.push([...this.currentTransaction]);
       this.currentTransaction = [];
