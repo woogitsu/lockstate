@@ -27,3 +27,11 @@ Pinned Blender5.2.1LTS upstream build ID9e2066aef7ef; executable SHA256 `284f404
 ## Remaining work at this source checkpoint
 
 Production manifest and72poses are not replaced yet. Two complete exports with direct byte comparison, all-frame decoded borders/contact sheet, focused registry/integrity assertions and PNG negative control follow. The coordinator granted only the existing fridge MODELS tuple for production regeneration; other shared rows/functions/default callbacks stay outside scope. Genuine Kitchen normal/90 worker/SaveLoad isolated pixel calibration, fridge-consumer removal and exact-restored native green remain pending a separate browser lease. HUD owns browser now; no fridge browser launched. No hosted acceptance claim.
+
+## Production export checkpoint
+
+The existing production descriptor now references the dedicated source and72 content-addressed frames. The only shared catalogue change is the granted fridge MODELS tuple: dedicated source, unitXY, measured midpoint1.1999999284744263. Shared functions/defaultcallbacks and stove/prep rows are unchanged. The existing Kitchen triple integrity assertion changes only its fridge expected target.
+
+Two complete exports give73/73 byte-identical files (manifest and72PNGs), descriptor SHA256 `6b3da7c72dd1ac07375791f16b4c12912373af08e01c179563966f61ea1d0417`. All actual decoded frames have transparent borders, minimum43pixels. Full72 contact sheet and runtime-selected source yaw300/elevation40 and yaw30/elevation40 were opened and inspected. Added vents, hinges, gaskets and front grille remain inside each camera frame; rear views retain the original plain body.
+
+A real exported PNG byte mutation makes the focused integrity assertion red(exit1); byte-exact PNG restoration returns green(exit0). The prior five native geometry/camera negative controls and exact native restoration remain recorded separately. Seven focused suites pass58cases with one optional live-Blender skip, while own native Blender entrypoints were explicitly executed. App/tools TypeScript passes. Original source SHA44bf77f8... and dedicatedd85097c3... stay unchanged. Actual native worker/palette/SaveLoad/consumer mutation remains pending a separate browser grant; source previews are not native player acceptance. No workflow, core, HUD or palette/save edits.
