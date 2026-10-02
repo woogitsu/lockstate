@@ -21,6 +21,6 @@ describe('kitchen prep counter oblique manifest integrity', () => {
     const frame = selectObliqueModuleFrame(catalog, { yawRadians: Math.PI / 6, elevationRadians: Math.PI / 4 });
     expect(frame.yawDegrees).toBe(30);
     expect(frame.elevationDegrees).toBe(40);
-    expect(frame.image).toMatch(/^\/assets\/environment\/oblique\/furniture\.kitchen\.prep-counter\.variants-yaw\+30-elev40\.png$/);
+    expect(frame.image).toMatch(/^\/assets\/environment\/oblique\/furniture\.kitchen\.prep-counter\.variants-yaw\+30-elev40\.[0-9a-f]{12}\.png$/);
   });
 });

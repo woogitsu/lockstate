@@ -4,18 +4,18 @@
   "source": "assets/source/blender/furniture.kitchen.prep-counter.variants.blend",
   "sourceSha256": "a82cc835b2225a9a4ef6c113d2d887365e5f6b6d92933f0f0b234e5f28e47d00",
   "resolutionPx": [
-    128,
-    128
+    256,
+    256
   ],
   "nominalPixelsPerTile": 64,
   "pivotPx": [
-    64,
-    64
+    128,
+    128
   ],
   "cameraTargetTiles": [
     1.0,
     0.5,
-    0.5
+    0.7
   ],
   "projection": "orthographic",
   "yawDegrees": [
@@ -44,434 +44,434 @@
     {
       "yawDegrees": 0,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+00-elev20.png",
-      "sha256": "2e9972f43e5f903ba08ce8f3bbe37e1c3b6ce99621914e9f8f63b115fe25f3d9"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+00-elev20.b3018b94bdad.png",
+      "sha256": "b3018b94bdadaea16657c6f5f943742d92d5eb96bf7deccdf397286e245fb970"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+00-elev30.png",
-      "sha256": "63c6efff3d9b519aa33418fc4e7b9be33db2304baf923c3202a3025f1f92b705"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+00-elev30.bf8cd5658296.png",
+      "sha256": "bf8cd565829661d0f7ef3f3c533477664bc4fc7c5556fa8bff27ef1c4ac4dbc9"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+00-elev40.png",
-      "sha256": "a6df17964d876e4f4951d4e9904a0127ffa309f9cc876e06d2ac38550f20e518"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+00-elev40.5b5179878bc3.png",
+      "sha256": "5b5179878bc370b03175cd77d6d402332c831a7832e8099e17629ba675cbb5c4"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+00-elev50.png",
-      "sha256": "bc7ecd95aa69f579919b7bdfdb70d291c03d9f206c672edd0ac51ac065684d14"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+00-elev50.28361ccee848.png",
+      "sha256": "28361ccee848232fe22ff5efc57115ed6930ec3165f84d6e551c33d820c7936a"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+00-elev60.png",
-      "sha256": "fe06881a2390eebf04d9792dd0fc22b174003c531f724e6000b5b3c3cae18b22"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+00-elev60.b2e8b5825a37.png",
+      "sha256": "b2e8b5825a37f14baa60772043b6053815352c25d5de65abf0873f98de57fa8f"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+00-elev70.png",
-      "sha256": "0fde5cf2e8df39d870854edfb478cadd618a4525974a230125e4d47adccbf0c0"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+00-elev70.4edbd5e786d1.png",
+      "sha256": "4edbd5e786d112e398e2cf50ef9dc844db723b972bded41ad4691886617ec088"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+30-elev20.png",
-      "sha256": "b094d8ca8d5b1e6ff9921ffdf0909703e247fbddea51bd8563580601940c9efa"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+30-elev20.e5df43adc807.png",
+      "sha256": "e5df43adc8073875dd248d2a20fff1d9bf8815075cd5c034a45ff37642428a35"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+30-elev30.png",
-      "sha256": "7391cdb42e502a2c1cad7bebfb65a17eb77103f139f1d7bb97d67c7c8fed739d"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+30-elev30.f0a55155ecd7.png",
+      "sha256": "f0a55155ecd7fdf58a5f638d1d63a9475cc8954dead4d17f0a2237ecd5c085a3"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+30-elev40.png",
-      "sha256": "3ee327a3366d625c9bf86226561cd9433050e80fe931c8fc0d4d8935c87c29c5"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+30-elev40.f9506d31aa43.png",
+      "sha256": "f9506d31aa431e0a2ba7927ac41e75d0cebb0e0a6bd12bb2af9212b62d1eedb5"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+30-elev50.png",
-      "sha256": "524ca10c085dc2d440af52a2a0539280b0eb96126f950dc1008b7075c9d0db95"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+30-elev50.2d31941e40a7.png",
+      "sha256": "2d31941e40a743e1a7be5b6313057c69facaddc74c48b2587f7621cccff18a13"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+30-elev60.png",
-      "sha256": "9404c4955510c5b88800a1523b0f0253e5e9ff6b1455ac2fc5ee2e96c1450ff0"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+30-elev60.a18edbd3cea9.png",
+      "sha256": "a18edbd3cea97457b75d10621d9e2771830b3a609732fd4a328eb1159668545d"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+30-elev70.png",
-      "sha256": "94373169a8000997097f205e94509e821456cf4c1671400b9c8f4cbf408bbc5e"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+30-elev70.552f00462409.png",
+      "sha256": "552f00462409143e114fda95f334dc4d4dc4395f6f96cdcdfca62414f7495db1"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+60-elev20.png",
-      "sha256": "de06105c3554acc4208c55d11e3dea79bd8aac5ce313df835814c509ae9729fa"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+60-elev20.1dc3d1113aee.png",
+      "sha256": "1dc3d1113aee8b9fdf1a7fd183db796e0a68d3a4785f7fe673e742fa657a5455"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+60-elev30.png",
-      "sha256": "effc1b58582ccd09b2cfa993706b153d4742ed7567041687e8a66cd4a6b21d7b"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+60-elev30.587734c34beb.png",
+      "sha256": "587734c34beb5de27e0da0e730f2e73333085fa1258b712a321ea0f4ab33e377"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+60-elev40.png",
-      "sha256": "11385c404a3dffaec7b4fcf1d8d889627a6bbdad9ddb9558c7607f764bdbf1cd"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+60-elev40.900ef47b243c.png",
+      "sha256": "900ef47b243c71eb6199201f6a0565c8174a65308100b17c6d4706bdd0815dc3"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+60-elev50.png",
-      "sha256": "a83261e3361568d45c60dd026ad1db72d2770c7f59fe3eade76e42199aa70016"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+60-elev50.85e3745bd8aa.png",
+      "sha256": "85e3745bd8aabc47a98241e3610e3dac726e94e27f428fc3ba3b541d12b14cb9"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+60-elev60.png",
-      "sha256": "c08a2515d85365a236dcdce650eeae828003f5c1cdf8407d3a242893b02deb5a"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+60-elev60.96cad992d85b.png",
+      "sha256": "96cad992d85b40ae73e972c61825e9b741f056dd47e19a970bf539575bbcb4f8"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+60-elev70.png",
-      "sha256": "c1a2ff9418c831368de6d1a2be0c23cdafc0870e75565a99f98acd61dc9e6cb3"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+60-elev70.174dfead847f.png",
+      "sha256": "174dfead847fd1c55488abd01820e19160a0d0027d9d953db57ec2f193516b17"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+90-elev20.png",
-      "sha256": "e637cab7873d5682214fb7086ca4803d3bcb48bd641b73b22eb2b7c9447df43c"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+90-elev20.95a1b2ab6c34.png",
+      "sha256": "95a1b2ab6c345c486c57ca2a24d56c32ac2fca7080af5464380aa5998c75494a"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+90-elev30.png",
-      "sha256": "34f9aa6b31ee9500e08e09eb5f263489e5c29dd6ec0c34826d93913fccac63a7"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+90-elev30.175cb71662c6.png",
+      "sha256": "175cb71662c66e1afd8d6f1c5a51e67ed8a5c5fddcedad360b3ccaf363fed6b2"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+90-elev40.png",
-      "sha256": "e444e2c603dc6c1f49cc6f884a373189aa505b5d1b2bf3b4124ce8ac67db4641"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+90-elev40.ad08f0278b91.png",
+      "sha256": "ad08f0278b91d2ceea1cd978d7308606714ff81052a4e14e3ce863bf73c3df97"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+90-elev50.png",
-      "sha256": "d2b29face8cb0d9a894bd3dc88291718d43885e78515252e74abdc53544cc75d"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+90-elev50.3c755ee20cb4.png",
+      "sha256": "3c755ee20cb4fc8c0ff951cd8ad504b9adede075b909f3b3a75623dea70a037c"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+90-elev60.png",
-      "sha256": "b89913ed570391763bf1cecdaf78caecea84e1f053270eca65db6ff91b7a4a2b"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+90-elev60.3184945bdf5d.png",
+      "sha256": "3184945bdf5d6eaa736dcd972889a9181074b49634bf6cd33910c86f98a6eb43"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+90-elev70.png",
-      "sha256": "c819c6d77ca4a75b7082adaa4ca4cd12910821f1bd03d1aebc9c0ee9ad65932e"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+90-elev70.70148486f974.png",
+      "sha256": "70148486f974d84127f510873a05b0f59c1a6589118821291327d635ad71e3b0"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+120-elev20.png",
-      "sha256": "406d771e69dd051359c373f2c33a25060574b36c820d5ad0a4bbd15babf9c634"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+120-elev20.efd9bb88d31d.png",
+      "sha256": "efd9bb88d31d1b1c2bd0a30988b5e69a2c7e3d73221ef95c9c38c1f05c118bc0"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+120-elev30.png",
-      "sha256": "9ec22be28fa78ad603d420405c5b92b6d4bb61ab44a809d52149f86b0a8da827"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+120-elev30.252634a51cec.png",
+      "sha256": "252634a51cec1ad373f2b8f5f85a882aa4b59d1e9f50b91706321d6526f57a89"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+120-elev40.png",
-      "sha256": "b283f68d03356a7af459ea512fce26e97555766e70434c514cbbc8ee17ef13a6"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+120-elev40.e5991766c74f.png",
+      "sha256": "e5991766c74f9e35a9f633ee1b3f776e20ea90a4f217b3c4d2a52d89b04a087e"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+120-elev50.png",
-      "sha256": "99f5773423f262d400a0028c01d197809e9f9f30d41d70e8f7b0b635d30d04f8"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+120-elev50.f89db65773ae.png",
+      "sha256": "f89db65773aea39d45fdfec5d3e8ab84f37877fe183e35a0bf82f0c9958cb705"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+120-elev60.png",
-      "sha256": "4ec40b5979723437f62dcece596010989339aa49f0f00849eb2b9d51a5279368"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+120-elev60.51b3a31f0db1.png",
+      "sha256": "51b3a31f0db1045a79627c070ca13df5174c6c412fa608ae4279c1b5854e30f0"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+120-elev70.png",
-      "sha256": "6a40af94a758d2af7b4f4feb7b3c2c8aef5a134861dca205871a5a3294c1ac82"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+120-elev70.c90f2d0733aa.png",
+      "sha256": "c90f2d0733aaab10410d9e34eae1ec3000bad170e78e5fad582d12b4cc69c4ef"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+150-elev20.png",
-      "sha256": "7a8fbdca36bd6ac74c317f84c69ad642c295994a0cf24b5c85c511866256b0fe"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+150-elev20.b8292a2b9033.png",
+      "sha256": "b8292a2b90335aad67e9988c49f4aca9e4ba9e23bcdb9f4f0673c38531fd771d"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+150-elev30.png",
-      "sha256": "83279acb91acd16e91b3d960d6a0a2d2fd11a3585b4756605b7840f9eb4cfd37"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+150-elev30.7fafc4ef6e65.png",
+      "sha256": "7fafc4ef6e6547cc2a31bacd464eb042566e60973137eadb1d3481fad4849445"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+150-elev40.png",
-      "sha256": "8eaf11bb73ffdc2f8c6ad4881b5e96a06cb77a112ce3ad43d02d9b4ca1d480b8"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+150-elev40.7a02966f7708.png",
+      "sha256": "7a02966f77080948de4681acd3aabe829c80c322dffcf7ebfedcd4467a02554e"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+150-elev50.png",
-      "sha256": "1f7b0f066cee7db5b2e2f555848b1721d057d4ba51a4c3e078ff55d7dc8ba024"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+150-elev50.846ed1882c00.png",
+      "sha256": "846ed1882c008f3b2422fc394d857551e5ebd710f7eee11cebe28bc72d1bd28f"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+150-elev60.png",
-      "sha256": "146b3275e25ee4a21b55ce9a5b01c1d6a2da65b9a1891ea3e0475fd127afd53f"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+150-elev60.00cf99bbb43f.png",
+      "sha256": "00cf99bbb43fc0b455d17ed09d25ecfef7f8ad192cc4b5282cec164c8bebe604"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+150-elev70.png",
-      "sha256": "3ddb148c2ddb9c24d06851866abbc057c4beda4486fca539f9006f55cb3ee2df"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+150-elev70.e833799e0817.png",
+      "sha256": "e833799e0817b120b15bce7eadb21b07757feec9f6780b940bea94e8f8997f0f"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+180-elev20.png",
-      "sha256": "98d6b812adb51421720ae6dd026e347dd8f287f075b489bdc90c91ddc3476f55"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+180-elev20.c2f640edea9e.png",
+      "sha256": "c2f640edea9e3da72a9b4093182162962d821d89aa823f32fab52a54f0ae2e81"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+180-elev30.png",
-      "sha256": "0fb4e6d5a0084ba9e931879d04027febc669482b120023471c6b3be16fd5de4a"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+180-elev30.e2012da67af2.png",
+      "sha256": "e2012da67af2af1e0da89f61b43d9a001e7e74eb011a372a0c7da6140e9c1134"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+180-elev40.png",
-      "sha256": "7b04e829e17da9ae02529d50e11f34619c41ad7813b930acfa1de4637caeacea"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+180-elev40.32d5b6befb51.png",
+      "sha256": "32d5b6befb5154f57d2b65f67d5db61e79e69ca4d2408175c79692ae364eb40e"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+180-elev50.png",
-      "sha256": "34bb2c066f830dc08104bb604f8532b023ef8b6e21f1e84ef07e7f4a141bce2a"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+180-elev50.7070e5414917.png",
+      "sha256": "7070e541491727d97b3322d9cce6cb455a4b3c0e264e08beef751ebdebf28ab9"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+180-elev60.png",
-      "sha256": "263041933f8f664f953ddf848957b611baae2ed07439a19eaee67ca54340f736"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+180-elev60.6e3abe394f95.png",
+      "sha256": "6e3abe394f9565ca45fbec3093121894bfa44bf307a1acb9be8dbe0ca392e44e"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+180-elev70.png",
-      "sha256": "92f90875fd4f82d5f289c4666245a10fed6ac645f70523fe3bfabf2f44eb06d8"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+180-elev70.d2b15817806b.png",
+      "sha256": "d2b15817806b6517a8cd6d6fc24ce6911937e1a8f7ee9c5c5bb59f0f82160cb2"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+210-elev20.png",
-      "sha256": "80c269e4024ed25981984473f82a5e1549f5b63c8e4a96858f29445f7a2dc321"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+210-elev20.90acd6e1c670.png",
+      "sha256": "90acd6e1c670627ffda1f7e1ffc396993f83c85bcbe74051f3bf3eceb3ca7fdd"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+210-elev30.png",
-      "sha256": "2437a56aea739c34a337c7963b2328e6efbf5a8a30bf24fcfea021d0acff423c"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+210-elev30.0878d849a706.png",
+      "sha256": "0878d849a706a4b8c2fbb206fb91b8733320e0fb28185e7041c39afa7a01c9af"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+210-elev40.png",
-      "sha256": "215c1901f0489bbc9f5051d8f2a72921446ce56f222f3a51ea93bb1785592f3c"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+210-elev40.0ae54824c7dc.png",
+      "sha256": "0ae54824c7dcef5f90c0da070deffbd9256fb657712d19d57f8f450e3b3e7a91"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+210-elev50.png",
-      "sha256": "91d4b3c2bd83715a184ddbfa7e673e5a8b1347930fd540c05995e21d4be5ad7c"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+210-elev50.221f829fbd28.png",
+      "sha256": "221f829fbd280a341afb3aff52a0dd43b8f3cc5c2125c9b40ce54df08190a34d"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+210-elev60.png",
-      "sha256": "bcd2fd8cd719b461d014811da348eeb66f94051ee61bfa63a216bca5d532bc31"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+210-elev60.9e8d27520192.png",
+      "sha256": "9e8d2752019244033cea1a89ed2f54c4a85d395102fd5c393146f31e6801557f"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+210-elev70.png",
-      "sha256": "81261cd85a41f528dc956dc3155cbcd969d5a9ba9621bf1f10a9f0418d6a7617"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+210-elev70.6709c3957e27.png",
+      "sha256": "6709c3957e274db4c3142241e8909b9857e400557f79dc1c7590379b09d26dab"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+240-elev20.png",
-      "sha256": "4399783494113b885b354dd383ffe82f2609274198a335028a39142f5bec1efe"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+240-elev20.4602c75718ad.png",
+      "sha256": "4602c75718ad79b0b7a3506a5d9a297ff6256ece463faf239b39a1f8efc71ef1"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+240-elev30.png",
-      "sha256": "799e8f102de9bf0f5928ca7050ec70e025ca32df984c5191fd3f13c3ceda8d1b"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+240-elev30.f2f37d37ecd9.png",
+      "sha256": "f2f37d37ecd90684ad173a0aa14ca7649242cd151fc6a1f81c8d2937f038584b"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+240-elev40.png",
-      "sha256": "ec9beb5f57619bb340e8de1978bf3f84d786d0732bf3895f09744cfc29eab097"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+240-elev40.5dafdcbf0406.png",
+      "sha256": "5dafdcbf04066f752de84b384c645be12335b7501524d759f7bcbb82c62565aa"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+240-elev50.png",
-      "sha256": "f698a9a39eaff69f1f12a518553768d5c3419b6a2b2fbc13f6a1104b96372b9c"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+240-elev50.f23304116101.png",
+      "sha256": "f23304116101dbd89bcfdd8e4aff2b56d8390af40c731b55aaf2de1ec9dfd6ec"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+240-elev60.png",
-      "sha256": "212ff4c466e473f2d4132b304a8ca906cf817ade1a55a36d791e75f8561ba443"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+240-elev60.11331b510d6f.png",
+      "sha256": "11331b510d6fb412de087bf0cdd7e5d5d77cb268da9bb73f5f3e1cc017f06bb1"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+240-elev70.png",
-      "sha256": "2e8b70ed442d91ff2886bdb91e465729e5d6b8dad273609f52c2beafde9e4f59"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+240-elev70.5d0627f9db05.png",
+      "sha256": "5d0627f9db05d26b344e8ee083a5a2ccd42d94a688b851b16c0cc72dc4540eee"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+270-elev20.png",
-      "sha256": "c2bf363bdc7c2466648513aa76a4bf3f34de3296c99c90e9a81fe3332d223b28"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+270-elev20.60a11472843b.png",
+      "sha256": "60a11472843b6be2cb57e6b6990b3639317d310b461a8befae76e0268e30a561"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+270-elev30.png",
-      "sha256": "d2f2d948ac92d66b02eb0cbd4a7e1ba5594618646204782d440d07cb463c2856"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+270-elev30.ff0fac024431.png",
+      "sha256": "ff0fac024431ba59e67cfcbf2643234ab8b08e93ab9f3c81e36434bbc4de0b7d"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+270-elev40.png",
-      "sha256": "a0c84c2aa984dd61468b84735435564febe2750ab962ee86b18559470caa43f3"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+270-elev40.28c1f00a5f66.png",
+      "sha256": "28c1f00a5f660df96961c346ae39144fb5bae0471651bf5b41c89635f4341327"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+270-elev50.png",
-      "sha256": "8495417f31b3f2b7525ce3c8e4c6c4d1cf9231284a8a6e72dd7894ffc579989d"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+270-elev50.6a1d3ffdc137.png",
+      "sha256": "6a1d3ffdc1370eeb242381034646e484c11675d5919234fda5994cc8ff6c6fb4"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+270-elev60.png",
-      "sha256": "083ef169fa591d371bb03247cd0ffb8e130290dff2730590c1e8cf56c6f4c775"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+270-elev60.58b8d4b90f82.png",
+      "sha256": "58b8d4b90f8287502e4cbedecafdc5424d30141b1c28abc8636c5eb87bbd8cc0"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+270-elev70.png",
-      "sha256": "6a5520be3bfecabac4e10c9b9aa0c34f43dbf72ec59edf3e39b478dac572520e"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+270-elev70.c3be6c88d60a.png",
+      "sha256": "c3be6c88d60a9663e2514c9517c33f58dd7b36539a9919f836c16e39d48499b6"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+300-elev20.png",
-      "sha256": "715cee6df87dd141160e41ce0ffcfd79c1f9376c81e662064bc5331565dc0195"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+300-elev20.4429efe7b018.png",
+      "sha256": "4429efe7b018bb57bdcdb0be57f0e4189d8cd7f4c54c335435a3c64e846bdac1"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+300-elev30.png",
-      "sha256": "82509bfb10e505d8ea26cffc9ad15a3e719f194d5ebf4495e91f90f781a882e4"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+300-elev30.0214431a35a7.png",
+      "sha256": "0214431a35a74a31e73a82cb8e817361f8a7a359f9ad162dadb1f440c9070e82"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+300-elev40.png",
-      "sha256": "e56ce98f4252b6980931b4563eee56468983b0ae6dc817659e6ecca81151474c"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+300-elev40.8c7f0e15de98.png",
+      "sha256": "8c7f0e15de9853475b7a7da525a6f5fa3727e3a7a5fe8d8c22fe4812a880eeb1"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+300-elev50.png",
-      "sha256": "aa5dc6bd2f17f38025e4b532ab8612ec6e9642f7d7fa00c0990b00acb0dd28d0"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+300-elev50.2798343d5e74.png",
+      "sha256": "2798343d5e7496d7d252d82b78b0c0d79d93a36014dc176a496903ede726eab4"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+300-elev60.png",
-      "sha256": "c62583cc24235e5cd0a8fe787345f6dea87e95c43cc06dc3b2e32a4b458f529d"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+300-elev60.29417f3defef.png",
+      "sha256": "29417f3defef823ccf3b21659914b8fd14dc44793edc4be181c3d2bec58f2898"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+300-elev70.png",
-      "sha256": "ffec97c4fef74154524c7d361364fc3e86874a21de48588648d25125ca6d32ae"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+300-elev70.df0bbab7f6bc.png",
+      "sha256": "df0bbab7f6bc859ed21b93cb43ed00537af85eafa544b555583d2d95a342f72c"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+330-elev20.png",
-      "sha256": "616cbbbbaeac8befe4a5e49aa4a412ce258c4e54f92f370f9c4c3d6ed1d58e9e"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+330-elev20.d4c03d9c757a.png",
+      "sha256": "d4c03d9c757aa07c7ac2a1dd9ac8514be9baa144319b59e04a5ae75fc233ea41"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+330-elev30.png",
-      "sha256": "c959c8fcdf88903b6e3d205aa58ff4150d186fe7c9d5db2eb7ce0c7339bccb9d"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+330-elev30.31caf391a026.png",
+      "sha256": "31caf391a0265bf4cd753f5e19134acde2b0836deda84cf92e4de9ae0d5b112a"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+330-elev40.png",
-      "sha256": "0e07a2ec4a2d4f6d18e92df3ed24a0e7707cd2f6896b3e62d14b9a159dbe6cc2"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+330-elev40.6b0f1fb4219d.png",
+      "sha256": "6b0f1fb4219de1e4b49e450c16153e117fb57de708ecd86fecd45dd8fd9bb8c5"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+330-elev50.png",
-      "sha256": "9c494679218a0d79f168f3aae29ec89620bea2a10308d3b1274ab811e1a8f906"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+330-elev50.6b4af1c778b3.png",
+      "sha256": "6b4af1c778b3e3571b808b83debc440ba011c70a8e5bdab1d216271b3a606240"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+330-elev60.png",
-      "sha256": "8fed781aa92f0400a63285301c586cd77a4dc9aafff467f0c729e6b2a9718022"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+330-elev60.2f89d4cae383.png",
+      "sha256": "2f89d4cae383780a14811e3edfdc80a0a5f3c07aa4e42fb0a73a8b1479b5fb48"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+330-elev70.png",
-      "sha256": "07ad1c75b2975053b0d68a0f89b90a69dd43b1db521eccc6fa643cc5ae93d20a"
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+330-elev70.f9860881b391.png",
+      "sha256": "f9860881b391643aa7a0c246c7f80083451cf97fed62f5331ea5a9520fc07f5e"
     }
   ]
 }
