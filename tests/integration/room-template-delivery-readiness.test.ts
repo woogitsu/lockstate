@@ -1,4 +1,4 @@
-﻿import { expect, it } from 'vitest';
+import { expect, it } from 'vitest';
 import { createSaveEnvelope, decodeSaveEnvelope } from '../../src/persistence/save-schema';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import type { RoomDetailViewModel, RoomListViewModel } from '../../src/simulation/presentation/room-projection';
