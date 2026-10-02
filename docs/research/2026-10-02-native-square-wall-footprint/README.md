@@ -1,5 +1,9 @@
 # Native whole-square Brick wall diagnostic — 2026-10-02
 
+The recorded original baseline below is retained. The later scoped export fix,
+two producer negatives and final native6/6 acceptance are recorded in
+[native acceptance](native-acceptance.md).
+
 ## Recorded original diagnostic; native correction acceptance remains pending
 
 At the unchanged `8b3096c888` baseline, the authored Brick wall is wider than the horizontal projection of the

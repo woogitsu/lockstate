@@ -1,0 +1,40 @@
+pnpm : $ node --experimental-transform-types --disable-warning=ExperimentalWarning tests/browser/run-suite.ts --suite a
+rtifact "--config" "tests/browser/.local-integrated-layout.config.ts" "--workers=1" "--output=C:\\Users\\matma\\Documen
+ts\\Rozwój gier\\hud-angle-panel-review-runtime\\wall-native-final-restored"
+At line:2 char:298
++ ... \bash.exe'; pnpm test:artifact --config tests/browser/.local-integrat ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ node --experi...final-restored":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(node:42660) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 6 tests using 1 worker
+
+(node:16100) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:16100) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\oblique-square-wall-native-footprint.spec.ts:185:64 › native completed full Brick wall occupies its chosen whole square at -45/45 (19.9s)
+  ok 2 tests\browser\oblique-square-wall-native-footprint.spec.ts:185:64 › native completed full Brick wall occupies its chosen whole square at 45/65 (25.2s)
+  ok 3 tests\browser\oblique-square-wall-native-footprint.spec.ts:185:64 › native completed full Brick wall occupies its chosen whole square at 45/80 (23.4s)
+  ok 4 tests\browser\oblique-square-wall-native-footprint.spec.ts:185:64 › native completed cutaway Brick wall occupies its chosen whole square at -45/45 (20.2s)
+  ok 5 tests\browser\oblique-square-wall-native-footprint.spec.ts:185:64 › native completed cutaway Brick wall occupies its chosen whole square at 45/65 (25.8s)
+  ok 6 tests\browser\oblique-square-wall-native-footprint.spec.ts:185:64 › native completed cutaway Brick wall occupies its chosen whole square at 45/80 (23.9s)
+
+  6 passed (2.4m)

@@ -1,5 +1,9 @@
 # Export correction checkpoint — native acceptance pending
 
+This pending checkpoint is retained as history. The later
+[native acceptance](native-acceptance.md) records both six-case producer
+negatives and the final exact-restored six-case group.
+
 The scoped export correction is published in `5b9f7f4129`. It translates the
 centred full and low source meshes by (.5,.5,0) in the export scene, translates
 the camera target equally, and uses orthographic scale 8 at 512 pixels. The
