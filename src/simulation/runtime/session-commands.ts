@@ -1022,6 +1022,15 @@ export function createSessionCommandHandler(
       // Read before cancelling, for `RemoveObjectOrderCancelled
       // .stateAtCancellation`'s own reason: `cancelOrder` writes `'cancelled'`
       // onto the order before this branch could read the distinction back.
+      // A template wall/door press cancels its coupled gesture, like queue
+      // Cancel. Prepare collective unzoning before touching any geometry.
+      const refusal = roomTemplates.prepareCancellation(wallOrder.id, context.tick);
+      if (refusal !== undefined) {
+        refusals.record(UNZONE_REFUSAL_REASONS[refusal.reason], context.tick, wallKey, {
+          x: simCommand.x, y: simCommand.y,
+        });
+        return;
+      }
       const stateAtCancellation = wallOrder.state;
       construction.cancelOrder(wallOrder.id);
       roomTemplates.reconcileCancelledShells();

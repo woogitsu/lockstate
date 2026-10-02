@@ -46,8 +46,8 @@ function cell(mirrorX = false, quarterTurns: 0 | 1 = 0): Runtime {
   expect(runtime.placedObjects.getSnapshot()).toHaveLength(2);
   return runtime;
 }
-function removeDoor(runtime: Runtime) {
-  const door = runtime.construction.allOrders().find(order => order.id.includes('-1-door-000'))!;
+function removeDoor(runtime: Runtime, newest = false) {
+  const door = runtime.construction.allOrders().filter(order => order.id.includes('-1-door-000')).at(newest ? -1 : 0)!;
   expect(door).toMatchObject({ state: 'completed' });
   const beforeRevision = runtime.construction.revisionOf(door.id);
   expect(beforeRevision).toBeDefined();
@@ -82,7 +82,7 @@ it.each([false, true])('unoccupied rotated door removal reverses its actual gest
   expect(runtime.prisoners.roomInstances.getSnapshot()).toHaveLength(0);
   expect(runtime.construction.allOrders().every(order => order.state === 'cancelled')).toBe(true);
   expect(runtime.treasury.balanceMinorUnits).toBe(balance);
-  const request = { templateId: 'cell-basic', origin: { x: 3, y: 10 }, mirrorX: true, quarterTurns: 1 as const };
+  const request = { templateId: 'cell-basic' as const, origin: { x: 3, y: 10 }, mirrorX: true, quarterTurns: 1 as const };
   const beforeProjection = gameplay(runtime);
   expect(PROJECTION_CATALOG['world/room-template-preflight'].project(runtime, runtime.kernel.tick, {
     target: { kind: 'room-template', ...request },
@@ -120,5 +120,45 @@ it('manual completed bed removal retains the accepted single-object best-effort 
   expect(runtime.placedObjects.getSnapshot()).toHaveLength(1);
   expect(runtime.prisoners.roomInstances.totalOccupancy).toBe(1);
   expect(runtime.construction.allOrders().every(order => order.state === 'completed')).toBe(true);
+});
+
+
+it.each([false, true])('manual door removal relocates into a genuine older spare before coupled reversal, legacy=%s', legacy => {
+  let runtime = createNewSimulationRuntime(73);
+  send(runtime, { type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 20, y: 5 } });
+  finish(runtime);
+  send(runtime, { type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 10, y: 10 }, mirrorX: true, quarterTurns: 1 });
+  finish(runtime);
+  send(runtime, { type: 'AdmitPrisoner', sentenceLengthTicks: 1_000_000, priorIncidents: 0, x: 16, y: 16 });
+  until(runtime, () => runtime.prisoners.roomInstances.totalOccupancy === 1);
+  runtime = reload(runtime, legacy);
+  expect(runtime.prisoners.roomInstances.occupancyOf('room.cell:11:11')).toBe(1);
+  const funds = runtime.treasury.balanceMinorUnits;
+  removeDoor(runtime, true);
+  expect(runtime.prisoners.roomInstances.getById('room.cell:11:11')).toBeUndefined();
+  expect(runtime.prisoners.roomInstances.occupancyOf('room.cell:21:6')).toBe(1);
+  expect(runtime.placedObjects.getSnapshot()).toHaveLength(2);
+  expect(runtime.construction.allOrders().filter(order => order.state === 'cancelled')).toHaveLength(20);
+  expect(runtime.construction.allOrders().filter(order => order.state === 'completed')).toHaveLength(20);
+  expect(runtime.treasury.balanceMinorUnits).toBe(funds);
+  runtime = reload(runtime);
+  expect(runtime.prisoners.roomInstances.occupancyOf('room.cell:21:6')).toBe(1);
+});
+it.each([false, true])('actual Undo/SaveLoad/Redo/complete preserves the manual occupied cancellation boundary, legacy=%s', legacy => {
+  let runtime = cell(true, 1);
+  send(runtime, { type: 'Undo' });
+  expect(runtime.placedObjects.getSnapshot()).toHaveLength(0);
+  runtime = reload(runtime);
+  send(runtime, { type: 'Redo' });
+  finish(runtime);
+  expect(runtime.placedObjects.getSnapshot()).toHaveLength(2);
+  send(runtime, { type: 'AdmitPrisoner', sentenceLengthTicks: 1_000_000, priorIncidents: 0, x: 16, y: 16 });
+  until(runtime, () => runtime.prisoners.roomInstances.totalOccupancy === 1);
+  runtime = reload(runtime, legacy);
+  const before = gameplay(runtime);
+  const { doorId, beforeRevision } = removeDoor(runtime);
+  expect(gameplay(runtime)).toEqual(before);
+  expect(runtime.construction.revisionOf(doorId)).toBe(beforeRevision);
+  expect(runtime.refusals.last).toMatchObject({ reason: 'unzone.room-occupied' });
 });
 
