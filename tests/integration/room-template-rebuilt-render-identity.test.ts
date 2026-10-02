@@ -1,4 +1,5 @@
 import { expect, it } from 'vitest';
+import { computeSaveChecksum } from '../../src/persistence/checksum';
 import { createSaveEnvelope, decodeSaveEnvelope } from '../../src/persistence/save-schema';
 import { packCommand, type SimulationCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
@@ -20,12 +21,21 @@ function finish(runtime: Runtime) {
   expect(runtime.construction.allOrders().every(order => order.state === 'completed' || order.state === 'cancelled')).toBe(true);
   expect(runtime.roomTemplates.snapshot().pending).toEqual([]);
 }
-function load(runtime: Runtime) {
+function load(runtime: Runtime, legacy = false) {
   const bundle = captureSessionSnapshot(runtime);
   const envelope = createSaveEnvelope({ gameVersion: 'test', prisonId: 'render-identity', revision: 1,
     createdAt: 0, updatedAt: 1, ...bundle });
   expect(envelope.saveSchemaVersion).toBe(8);
-  const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope)) as unknown);
+  const encoded = JSON.parse(JSON.stringify(envelope)) as {
+    saveSchemaVersion: number; checksum: string;
+    payload: { simulation: { objects: { placedObjects: { sourceOrderId?: string }[] } } };
+  };
+  if (legacy) {
+    encoded.saveSchemaVersion = 7;
+    for (const object of encoded.payload.simulation.objects.placedObjects) delete object.sourceOrderId;
+    encoded.checksum = computeSaveChecksum(encoded.payload);
+  }
+  const decoded = decodeSaveEnvelope(encoded);
   expect(decoded.ok).toBe(true);
   if (!decoded.ok) throw new Error('V8 render identity save must decode');
   return restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle).runtime;
@@ -104,3 +114,76 @@ it('preserves order-only legacy geometry when no physical object snapshot was su
   expect(structuresFromConstruction(snapshot.construction).filter(shape => shape.definitionId === 'bed-wooden'))
     .toEqual([expect.objectContaining({ orientation: 1, phase: 'built' })]);
 });
+
+it('treats a supplied empty registry as authoritative for completed furniture', () => {
+  const snapshot = captureSessionSnapshot(completedCell(1, false));
+  // Presence is authoritative even when the supplied registry has no rows.
+  expect(structuresFromConstruction(snapshot.construction, []).filter(shape =>
+    shape.definitionId === 'bed-wooden' || shape.definitionId === 'toilet-brick')).toEqual([]);
+});
+
+it('preserves actual walls, doors and a pending fixture ghost with an authoritative registry', () => {
+  const runtime = completedCell(1, false);
+  const bed = runtime.placedObjects.getSnapshot().find(object => object.objectId === 'object.bed')!;
+  send(runtime, { type: 'RemoveObject', x: bed.anchorTile.x, y: bed.anchorTile.y });
+  send(runtime, { type: 'PlaceObject', orderId: 'pending-control', definitionId: 'bed-wooden', x: bed.anchorTile.x, y: bed.anchorTile.y });
+  expect(beds(runtime).filter(shape => shape.phase === 'planned')).toEqual([
+    expect.objectContaining({ id: 'pending-control', tileX: bed.anchorTile.x, tileY: bed.anchorTile.y, phase: 'planned' }),
+  ]);
+  const snapshot = captureSessionSnapshot(runtime);
+  const ordinaryGeometry = structuresFromConstruction(snapshot.construction).filter(shape =>
+    shape.definitionId.startsWith('wall-') || shape.definitionId.startsWith('door-'));
+  expect(ordinaryGeometry.length).toBeGreaterThan(0);
+  // A physical-object registry does not suppress walls or doors.
+  expect(structuresFromConstruction(snapshot.construction, []).filter(shape =>
+    shape.definitionId.startsWith('wall-') || shape.definitionId.startsWith('door-')))
+    .toEqual(ordinaryGeometry);
+});
+
+it.each([0, 1] as const)('draws an ambiguous ownerless V7 replacement only once, original turn=%s', quarterTurns => {
+  let runtime = completedCell(quarterTurns, quarterTurns === 1);
+  const old = runtime.construction.allOrders().find(order => order.definitionId === 'bed-wooden')!;
+  send(runtime, { type: 'RemoveObject', x: old.location.x, y: old.location.y });
+  send(runtime, { type: 'PlaceObject', orderId: 'legacy-replacement-bed', definitionId: 'bed-wooden', x: old.location.x, y: old.location.y });
+  finish(runtime);
+  runtime = load(runtime, true);
+  const physical = runtime.placedObjects.getSnapshot().filter(object => object.objectId === 'object.bed');
+  expect(physical).toHaveLength(1);
+  expect(physical[0]?.sourceOrderId).toBeUndefined();
+  expect(runtime.construction.getOrder(old.id)?.state).toBe('completed');
+  expect(runtime.construction.getOrder('legacy-replacement-bed')?.state).toBe('completed');
+  const before = captureSessionSnapshot(runtime);
+  const shapes = beds(runtime);
+  expect(shapes).toEqual([expect.objectContaining({ id: physical[0]!.placedObjectId,
+    definitionId: 'object.bed', phase: 'built', tileX: old.location.x, tileY: old.location.y })]);
+  expect(structureAppearance(shapes[0]!.definitionId, shapes[0]!.orientation).footprintTiles).toEqual({ width: 1, height: 2 });
+  // Drawing legacy state cannot assign ownership or alter saved gameplay.
+  expect(captureSessionSnapshot(runtime)).toEqual(before);
+});
+
+it('retains a single ownerless legacy completed fixture display identity and physical facing', () => {
+  const runtime = load(completedCell(1, true), true);
+  const old = runtime.construction.allOrders().find(order => order.definitionId === 'bed-wooden')!;
+  const physical = runtime.placedObjects.getSnapshot().find(object => object.objectId === 'object.bed')!;
+  expect(physical.sourceOrderId).toBeUndefined();
+  expect(beds(runtime)).toEqual([expect.objectContaining({ id: old.id, orientation: 1, phase: 'built' })]);
+});
+
+it.each(['missing-order', 'wrong-type', 'wrong-anchor'] as const)
+  ('does not attach a physical Bed to an unrelated recorded owner: %s', invalid => {
+    const runtime = completedCell(1, true);
+    const snapshot = captureSessionSnapshot(runtime);
+    const physical = runtime.placedObjects.getSnapshot().find(object => object.objectId === 'object.bed')!;
+    const owner = runtime.construction.allOrders().find(order => order.id === physical.sourceOrderId)!;
+    const sourceOrderId = invalid === 'missing-order' ? 'no-such-order' : invalid === 'wrong-type'
+      ? runtime.construction.allOrders().find(order => order.definitionId === 'toilet-brick')!.id : owner.id;
+    const construction = invalid === 'wrong-anchor' ? { ...snapshot.construction, orders: snapshot.construction.orders.map(order =>
+      order.id === owner.id ? { ...order, location: { ...order.location, x: (order.location.x + 1) as typeof order.location.x } } : order) }
+      : snapshot.construction;
+    const before = structuredClone({ construction, physical });
+    const shapes = structuresFromConstruction(construction, [{ ...physical, sourceOrderId }]);
+    expect(shapes.filter(shape => shape.definitionId === 'object.bed' || shape.definitionId === 'bed-wooden'))
+      .toEqual([expect.objectContaining({ id: physical.placedObjectId, definitionId: physical.objectId,
+        tileX: physical.anchorTile.x, tileY: physical.anchorTile.y, orientation: 1, phase: 'built' })]);
+    expect({ construction, physical }).toEqual(before);
+  });

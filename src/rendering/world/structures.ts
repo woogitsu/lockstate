@@ -97,17 +97,27 @@ export function catalogueObjectId(definitionId: string): string | undefined {
  * the same tile is drawn last, and a projection that depended on `Map`
  * insertion order would draw differently after a save/restore round trip.
  */
-export function structuresFromConstruction(snapshot: ConstructionSnapshot, placedObjects: readonly PlacedObject[] = []): readonly RenderStructure[] {
+export function structuresFromConstruction(snapshot: ConstructionSnapshot, placedObjects?: readonly PlacedObject[]): readonly RenderStructure[] {
   const structures: RenderStructure[] = [];
-  const placedByAnchor = new Map(placedObjects.map(object => [`${object.objectId}:${object.anchorTile.x}:${object.anchorTile.y}`, object]));
+  const ordersById = new Map(snapshot.orders.map(order => [order.id, order]));
+  type Order = ConstructionSnapshot['orders'][number];
+  const physicalKey = (objectId: string, x: number, y: number): string => `${objectId}:${x}:${y}`;
+  const legacyDisplayOrders = new Map<string, Order | null>();
+  for (const order of snapshot.orders) {
+    const objectId = catalogueObjectId(order.definitionId);
+    if (order.state !== 'completed' || objectId === undefined) continue;
+    const key = physicalKey(objectId, order.location.x, order.location.y);
+    legacyDisplayOrders.set(key, legacyDisplayOrders.has(key) ? null : order);
+  }
 
   for (const order of snapshot.orders) {
     const phase = phaseOf(order.state);
     if (phase === undefined) continue;
-    const key = `${catalogueObjectId(order.definitionId)}:${order.location.x}:${order.location.y}`;
-    const placed = phase === 'built' ? placedByAnchor.get(key) : undefined;
-    if (placed !== undefined) placedByAnchor.delete(key);
-    const orientation = placed?.orientation ?? order.objectOrientation ?? 0;
+    // A supplied registry, including an empty one, is the authority for
+    // completed furniture. Removed/rebuilt objects leave completed history.
+    // Saves without this section retain their order-only geometry fallback.
+    if (phase === 'built' && placedObjects !== undefined && catalogueObjectId(order.definitionId) !== undefined) continue;
+    const orientation = order.objectOrientation ?? 0;
     structures.push({
       id: order.id,
       definitionId: order.definitionId,
@@ -119,13 +129,25 @@ export function structuresFromConstruction(snapshot: ConstructionSnapshot, place
     });
   }
 
-  // Completed placed objects remain authoritative even when their old build
-  // history is absent. Reuse the same solid representation and avoid duplicates.
-  for (const object of placedByAnchor.values()) structures.push({
-    id: object.placedObjectId, definitionId: object.objectId,
-    tileX: object.anchorTile.x, tileY: object.anchorTile.y, phase: 'built',
-    ...(object.orientation === 0 ? {} : { orientation: object.orientation }),
-  });
+  for (const object of placedObjects ?? []) {
+    const matches = (order: Order): boolean =>
+      order.state === 'completed' && catalogueObjectId(order.definitionId) === object.objectId &&
+      order.location.x === object.anchorTile.x && order.location.y === object.anchorTile.y;
+    const recorded = object.sourceOrderId === undefined ? undefined : ordersById.get(object.sourceOrderId);
+    let displayOrder = recorded !== undefined && matches(recorded) ? recorded : undefined;
+    if (object.sourceOrderId === undefined) {
+      // Preserve the established display identity of a single legacy match.
+      // Multiple historical matches supply no identity: draw the physical row
+      // once under its own ID. This never assigns simulation ownership.
+      displayOrder = legacyDisplayOrders.get(physicalKey(object.objectId, object.anchorTile.x, object.anchorTile.y)) ?? undefined;
+    }
+    structures.push({
+      id: displayOrder?.id ?? object.placedObjectId,
+      definitionId: displayOrder?.definitionId ?? object.objectId,
+      tileX: object.anchorTile.x, tileY: object.anchorTile.y, phase: 'built',
+      ...(object.orientation === 0 ? {} : { orientation: object.orientation }),
+    });
+  }
 
   structures.sort(
     (left, right) =>
