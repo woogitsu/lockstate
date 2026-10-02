@@ -186,6 +186,8 @@ const buildOrderSchema = z
      */
     edge: z.enum(['north', 'west']).optional(),
     footprint: z.literal('square').optional(),
+    // Owner-approved additive state: older queued objects retain orientation 0.
+    objectOrientation: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]).optional(),
     /**
      * Where the order sits in the sequence of gestures the player made
      * ([ADR 0082](../../docs/adr/0082-what-order-build-orders-are-carried-out-in.md),
