@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { parseObliqueModuleCatalog } from '../../src/rendering/assets/oblique-module-catalog';
+import { parseObliqueModuleRegistry } from '../../src/rendering/assets/oblique-module-registry';
 
 const root = new URL('../../', import.meta.url);
 const sha256 = (bytes: Buffer): string => createHash('sha256').update(bytes).digest('hex');
@@ -32,5 +33,15 @@ describe('authored Common Room bench variant catalog', () => {
     for (const frame of catalog.frames) {
       expect(sha256(readFileSync(new URL(`public${frame.image}`, root))), frame.image).toBe(frame.sha256);
     }
+  });
+
+  it('loads the authored catalog through the actual runtime registry', () => {
+    const registry = parseObliqueModuleRegistry(JSON.parse(readFileSync(
+      new URL('public/game-content/oblique-module-registry.v1.json', root), 'utf8',
+    )) as unknown);
+    expect(registry.entries.find(entry => entry.assetId === catalog.assetId)).toEqual({
+      assetId: 'furniture.common-room.upholstered-bench',
+      manifest: '/game-content/oblique-furniture.common-room-bench.v1.json',
+    });
   });
 });
