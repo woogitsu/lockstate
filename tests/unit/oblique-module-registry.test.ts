@@ -16,3 +16,13 @@ it('applies each concurrent caller fallback when the shared request fails', asyn
   ]);
   expect(fetch).toHaveBeenCalledTimes(1);
 });
+it('retries after a shared failure and does not mutate the fallback map', async () => {
+  const fetchMock = vi.fn().mockRejectedValue(new Error('offline'));
+  vi.stubGlobal('fetch', fetchMock);
+  const fallback = new Map([['fallback', {} as any]]);
+  const recovered = await fetchObliqueModuleSet('/retry-offline', { fallback });
+  recovered.clear();
+  expect(fallback.size).toBe(1);
+  await expect(fetchObliqueModuleSet('/retry-offline')).rejects.toThrow('offline');
+  expect(fetchMock).toHaveBeenCalledTimes(2);
+});
