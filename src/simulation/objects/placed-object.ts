@@ -6,7 +6,8 @@ import { tileCoordinate, type TilePosition } from '../world/coordinates';
  * [ADR 0028](../../../docs/adr/0028-object-placement-and-derived-room-capacity.md)
  * decision 1.
  *
- * Four fields and nothing else. In particular **no capacity and no
+ * Four physical fields, plus optional exact construction provenance approved
+ * for save V8 in issue #1975. In particular **no capacity and no
  * capability**: those are looked up in `src/content/object-catalog.ts` from
  * `objectId`, exactly as `RoomZoningService.zone` looks a room definition up
  * by `roomCatalogId` instead of copying its fields onto the instance. A
@@ -30,6 +31,8 @@ export interface PlacedObject {
   readonly objectId: string;
   readonly anchorTile: TilePosition;
   readonly orientation: ObjectOrientation;
+  /** Exact successful construction producer; absence is unrecorded legacy ownership. */
+  readonly sourceOrderId?: string;
 }
 
 /**

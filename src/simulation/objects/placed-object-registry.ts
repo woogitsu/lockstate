@@ -243,6 +243,8 @@ export function placedObjectAt(
   objectId: string,
   anchorTile: TilePosition,
   orientation: ObjectOrientation,
+  sourceOrderId?: string,
 ): PlacedObject {
-  return { placedObjectId: placedObjectIdFor(anchorTile), objectId, anchorTile, orientation };
+  return { placedObjectId: placedObjectIdFor(anchorTile), objectId, anchorTile, orientation,
+    ...(sourceOrderId === undefined ? {} : { sourceOrderId }) };
 }
