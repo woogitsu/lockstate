@@ -9,7 +9,8 @@ import type { SparseWorld } from '../world/sparse-world';
 import { tileCoordinate, type TilePosition } from '../world/coordinates';
 import type { ConstructionSystem } from './system';
 import { createRoomTemplateBuildPlan, instantiateRoomTemplateForConstruction } from './room-template-build-plan';
-import { BUILDABLE_REGISTRY } from './definition';
+import { BUILDABLE_REGISTRY, WALL_EDGE_NUMERIC_ID } from './definition';
+import { resolveBuildEdge } from './build-order';
 import { validateRoomTemplatePlacement, type RoomTemplatePlacement } from './room-template-placement';
 
 export interface PendingRoomTemplate {
@@ -65,24 +66,29 @@ export class RoomTemplateCoordinator implements SystemRegistration {
       order.state !== 'cancelled' && order.state !== 'failed' && order.state !== 'completed');
     const objectClaims = new Set<string>();
     const structureClaims = new Set<string>();
+    const wallEdgeClaims = new Set<string>();
     // Shell orders claim only perimeter tiles. Until zoning completes, the
     // interior is still empty world, but it belongs to the same atomic plan.
     const pendingPlans = this.pending.map((request) =>
       instantiateRoomTemplateForConstruction(request.templateId, request.origin, request.mirrorX, request.quarterTurns ?? 0));
     for (const order of active) {
-      const objectId = BUILDABLE_REGISTRY.get(order.definitionId)?.placesObjectId;
+      const definition = BUILDABLE_REGISTRY.get(order.definitionId);
+      const objectId = definition?.placesObjectId;
       if (objectId === undefined) {
         structureClaims.add(tileKey(order.location));
+        if (definition?.category === 'wall' && order.footprint !== 'square') {
+          wallEdgeClaims.add(`${tileKey(order.location)}:${resolveBuildEdge(order)}`);
+        }
         continue;
       }
-      const definition = this.placedObjects.definitionOf(objectId);
-      if (definition === undefined) {
+      const objectDefinition = this.placedObjects.definitionOf(objectId);
+      if (objectDefinition === undefined) {
         objectClaims.add(tileKey(order.location));
         continue;
       }
       // ObjectPlacementService reserves every square of an in-flight object's
       // footprint, not just its anchor. The template preflight must agree.
-      for (const tile of objectFootprintTiles(definition, order.location, order.objectOrientation ?? 0)) {
+      for (const tile of objectFootprintTiles(objectDefinition, order.location, order.objectOrientation ?? 0)) {
         objectClaims.add(tileKey(tile));
       }
     }
@@ -105,6 +111,15 @@ export class RoomTemplateCoordinator implements SystemRegistration {
       const approach = { x: tileCoordinate(outside.x), y: tileCoordinate(outside.y) };
       if (this.placedObjects.isTileOccupied(approach) || objectClaims.has(tileKey(approach))) {
         return { ok: false, reason: 'object-occupied', tile: doorTile };
+      }
+      // #1661: south/east boundary edges are stored on the outside tile,
+      // beyond the rectangle scanned above. Check the separating edge itself;
+      // an adjacent exterior edge or a passable door does not seal this route.
+      const edge = outside.x === door.x ? 'north' : 'west';
+      const edgeTile = { x: tileCoordinate(Math.max(door.x, outside.x)), y: tileCoordinate(Math.max(door.y, outside.y)) };
+      const standing = edge === 'north' ? this.world.getTopEdge(edgeTile) : this.world.getLeftEdge(edgeTile);
+      if (standing === WALL_EDGE_NUMERIC_ID || wallEdgeClaims.has(`${tileKey(edgeTile)}:${edge}`)) {
+        return { ok: false, reason: 'structure-occupied', tile: doorTile };
       }
     }
     return verdict;
