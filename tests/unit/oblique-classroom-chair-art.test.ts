@@ -11,6 +11,16 @@ describe('authored classroom chair variant catalog', () => {
     new URL('public/game-content/oblique-furniture.classroom-chair.v1.json', root), 'utf8',
   )) as unknown);
 
+  it('is reachable through the production module registry', () => {
+    const registry = JSON.parse(readFileSync(new URL('public/game-content/oblique-module-registry.v1.json', root), 'utf8')) as {
+      entries: { assetId: string; manifest: string }[];
+    };
+    expect(registry.entries.filter(entry => entry.assetId === catalog.assetId)).toEqual([{
+      assetId: catalog.assetId,
+      manifest: '/game-content/oblique-furniture.classroom-chair.v1.json',
+    }]);
+  });
+
   it('preserves the one-square authored source and all 72 supported camera poses', () => {
     expect(catalog.assetId).toBe('furniture.classroom.school-chair');
     expect(catalog.source).toBe('assets/source/blender/furniture.classroom.school-chair.blend');
