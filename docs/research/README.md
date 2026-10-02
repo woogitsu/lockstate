@@ -244,6 +244,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 | [2026-10-02 Yard exercise station art draft](./2026-10-02-yard-exercise-station/README.md) | Can a new outdoor two-square fixture be authored in the angled visual style without duplicating an existing model? | Blender source, 72 border-checked hashed poses and 12 visual comparisons; gameplay integration remains separate. |
 | [2026-10-02 outdoor steel bench art draft](./2026-10-02-yard-steel-bench/README.md) | Can existing bench gameplay get a weatherproof Yard visual variant without a new object identity? | Blender source, 72 hashed angled poses, exact 2×1 bounds and scale contract; contextual runtime selector remains separate. |
 | [2026-10-02 outdoor steel waste-bin art draft](./2026-10-02-yard-steel-waste-bin/README.md) | Can existing waste-bin gameplay get a rain-sheltered Yard visual variant on the same 1×1 footprint? | Blender source, 72 hashed angled poses, exact mesh bounds and camera scale; contextual runtime proof follows. |
+| [2026-10-02 Build catalogue thumbnails](./2026-10-02-build-object-thumbnails/README.md) | Can objects be recognized by authored Blender imagery? | Verified catalogue-to-presentation URL seam, explicit fallback and pending Full HD proof. |
 | [2026-10-02 exercise station player build](./2026-10-02-exercise-station-player-build/README.md) | Does the real player flow build and preserve the authored station? | Full HD 2x1 ghost, worker construction, collision refusal, Blender pixels, Save/Load and mapping mutation. |
 | [2026-10-02 camera pointer cancellation](./2026-10-02-oblique-camera-cancel/README.md) | Does a cancelled right-button turn remain stopped? | Actual Full HD blur/pointercancel canvas comparison, production reset mutation and restored green. |
 | [2026-10-02 object occupied dimensions](./2026-10-02-build-object-occupied-dimensions/README.md) | Does Build state the selected object footprint? | Catalogue content footprint and localized selected/hover dimensions, preserved cost and meaningful branch mutation; browser acceptance pending. |
@@ -367,4 +368,3 @@ and it stopped one step short of its own consequence.
   three layers deeper.
 
 
-- [Authored Build catalogue thumbnails](2026-10-02-build-object-thumbnails/README.md) - presentation URL seam and pending Full HD proof.
