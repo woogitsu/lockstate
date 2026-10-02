@@ -46,6 +46,21 @@ async function fixtureAnchors(page: Page): Promise<string[]> {
   });
 }
 
+async function washingMachinePixels(page: Page, png: Buffer): Promise<number[]> {
+  return page.evaluate(async base64 => {
+    const bitmap = await createImageBitmap(new Blob([Uint8Array.from(atob(base64), c => c.charCodeAt(0))], { type: 'image/png' }));
+    const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
+    const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0);
+    return [[820, 400, 90, 140], [975, 340, 65, 110]].map(rect => {
+      const pixels = context.getImageData(...rect as [number, number, number, number]).data;
+      let count = 0;
+      for (let i = 0; i < pixels.length; i += 4) {
+        if (pixels[i] === 32 && pixels[i + 1] === 59 && pixels[i + 2] === 66) count++;
+      }
+      return count;
+    });
+  }, png.toString('base64'));
+}
 let routeStorage: Awaited<ReturnType<ReturnType<Page['context']>['storageState']>> | undefined;
 const test = base.extend({
   storageState: async ({}, use) => { await use(routeStorage ?? { cookies: [], origins: [] }); },
@@ -130,7 +145,9 @@ test('player builds two washing machines in Laundry and keeps them after Save/Lo
   if (bounds === null) throw new Error('minimap absent');
   await minimap.click({ position: { x: bounds.width * 22.5 / 32, y: bounds.height * 7.5 / 32 } });
   await page.mouse.move(1300, 700);
-  await page.screenshot({ path: info.outputPath('laundry-worker-completed-fullhd.png') });
+  const completed = await page.screenshot({ path: info.outputPath('laundry-worker-completed-fullhd.png') });
+  const beforePixels = await washingMachinePixels(page, completed);
+  for (const count of beforePixels) expect(count, 'authored washing-machine door pixels after construction').toBeGreaterThan(100);
   await page.getByRole('button', { name: 'Overview', exact: true }).click();
   await page.getByRole('button', { name: 'Save now', exact: true }).click();
   await expect(page.locator('.save-panel__status')).toContainText('Saved');
@@ -139,5 +156,8 @@ test('player builds two washing machines in Laundry and keeps them after Save/Lo
   expect(await fixtureAnchors(page)).toEqual(expected);
   await minimap.click({ position: { x: bounds.width * 22.5 / 32, y: bounds.height * 7.5 / 32 } });
   await page.mouse.move(1300, 700);
-  await page.screenshot({ path: info.outputPath('laundry-loaded-fullhd.png') });
+  const loaded = await page.screenshot({ path: info.outputPath('laundry-loaded-fullhd.png') });
+  const loadedPixels = await washingMachinePixels(page, loaded);
+  for (const count of loadedPixels) expect(count, 'authored washing-machine door pixels after Load').toBeGreaterThan(100);
+  expect(loadedPixels).toEqual(beforePixels);
 });
