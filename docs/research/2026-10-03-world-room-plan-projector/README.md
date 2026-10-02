@@ -52,7 +52,9 @@ Fresh all-state room/ghost/zoom and top-down/origin searches were read. Full
 bodies of #1603 (prior canvas overlay), #1906 (bridge integration), and #1914
 (angled preview refresh) were read. Their evidence covers other producers;
 none states this World's missing camera-origin term as an existing finding.
-No Issue is created by this diagnostic checkpoint yet.
+Fresh source-only [Issue #1988](https://github.com/woogitsu/lockstate/issues/1988)
+records this adapter, related closed #115, and explicitly pending native proof.
+Its persisted body was fetched and checked against the exact authored text.
 
 ## Scoped correction and producer negative
 
@@ -85,3 +87,26 @@ Receipts:
 Native FullHD 100%/200% acceptance is queued after Art/root browser work.
 Real callback and camera evidence establishes the source defect; it does not
 claim native pointer placement, actual UI scale, screenshots or hosted CI.
+
+## Queued native fixture
+
+`tests/browser/room-template-world-camera-origin.spec.ts` prepares two actual
+World cases at 1920x1080 and UI scale 1/2. They use native Equal zoom to 1.25,
+mouse hover, real worker preflight clear and quote, all 28 basic-cell polygons,
+all four outer corners and first-square pointer containment, then a stationary
+click with the exact accepted worker origin and no extra Build/Remove command.
+
+The independent HUD readout currently emits raw camera scroll and zoom in its
+minimap viewport styles. The fixture reads that exact source contract, checks
+that none of those fractions are clipped, and applies explicit centre-origin
+geometry to the real SVG screen coordinates. It does not treat the drawn
+minimap rectangle's centre as the camera centre, or reuse the main forward
+callback as its reference. The fresh fixture's 32x32 loaded extent is asserted
+from the actual minimap canvas. Actual Phaser matrix agreement is independently
+covered by the 24 source cases above.
+
+The two-case file has passed app/tools TypeScript compilation only. It has NOT
+run in a browser, has no claimed native result, and keeps the existing browser
+configuration, network fixture, one worker and original assertion/time budgets.
+A separate read-only finding about the minimap viewport producer's visible
+bounds remains outside this main adapter correction.
