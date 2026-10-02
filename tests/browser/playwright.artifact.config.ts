@@ -117,7 +117,7 @@ export default defineConfig({
   // Explicit built-client specs. The dev-server config excludes the same set;
   // harness specs remain on their source server. Rotation acceptance joins this
   // existing gate rather than introducing a duplicate preview configuration.
-  testMatch: /(?:production-artifact|rotated-security-console-player-build|infirmary-player-build|room-template-live-orientation)\.spec\.ts$/,
+  testMatch: /(?:production-artifact|rotated-security-console-player-build|infirmary-player-build|room-template-live-orientation|room-plan-dialog-escape)\.spec\.ts$/,
   fullyParallel: false,
   workers: 1,
   forbidOnly: process.env['CI'] !== undefined,
