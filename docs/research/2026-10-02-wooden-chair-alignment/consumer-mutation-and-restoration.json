@@ -1,0 +1,55 @@
+{
+  "mappingExactOriginalBytes": true,
+  "mappingSha256": "a9eada806ff523bc9933da9b7a2e8a731c5a896286e33b0551119d8e389dd2d4",
+  "mutationBuildExit": 0,
+  "restoredBuildExit": 0,
+  "workerBytesEqual": true,
+  "workerBytes": 426813,
+  "workerSha256": "484f4cf4563a026c2b214850d8e6a1ca88bc9a923d21a2846383d2458919b86f",
+  "artifactHead": "f8124c8c5a983ddd48f379dfc263368aedb40775",
+  "mutation": "remove only 'object.chair': 'furniture.chair.wooden' default mapping; Classroom context override unchanged",
+  "routes": [
+    {
+      "quarterTurns": 0,
+      "caseExit": 1,
+      "capacityCasePassed": true,
+      "roomCaseFailed": true,
+      "expectedIndependentPixelFailures": 4,
+      "countsBefore": [
+        0,
+        0
+      ],
+      "countsAfter": [
+        0,
+        0
+      ],
+      "anchorsPreserved": true,
+      "loadedPngSha256": "1bd13679510a8e51d4984bc7f24226f8195ee6ff2ceb7aed43302ce02f8abfac",
+      "durationsSeconds": [
+        43.2,
+        38.5
+      ]
+    },
+    {
+      "quarterTurns": 1,
+      "caseExit": 1,
+      "capacityCasePassed": true,
+      "roomCaseFailed": true,
+      "expectedIndependentPixelFailures": 4,
+      "countsBefore": [
+        0,
+        0
+      ],
+      "countsAfter": [
+        0,
+        0
+      ],
+      "anchorsPreserved": true,
+      "loadedPngSha256": "645ca04ed132cd56f4e6c4f44d8608aee866da2b961fd0b748325d82983d16a5",
+      "durationsSeconds": [
+        42.6,
+        38.9
+      ]
+    }
+  ]
+}
