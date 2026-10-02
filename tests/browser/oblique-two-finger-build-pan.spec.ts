@@ -44,6 +44,17 @@ test('two real fingers pan the angled camera while Build stays armed', async ({ 
   await touch('touchStart', [{ id: 0, x: 900, y: 540 }, { id: 1, x: 1050, y: 540 }]);
   await touch('touchCancel', []);
   expect((await sentCommands(page)).filter(command => command['type'] === 'PlaceBuildOrder')).toHaveLength(0);
+  await page.mouse.move(900, 540);
+  await page.mouse.down();
+  await expect(page.locator('.hud-build__target-value')).toContainText('whole squares');
+  await page.locator('#game-root canvas').dispatchEvent('lostpointercapture', { pointerType: 'mouse', buttons: 1 });
+  await page.mouse.up();
+  expect((await sentCommands(page)).filter(command => command['type'] === 'PlaceBuildOrder')).toHaveLength(0);
+  await touch('touchStart', [{ id: 0, x: 900, y: 540 }]);
+  await expect(page.locator('.hud-build__target-value')).toContainText('whole squares');
+  await page.locator('#game-root canvas').dispatchEvent('lostpointercapture', { pointerType: 'touch', buttons: 1 });
+  await touch('touchEnd', []);
+  expect((await sentCommands(page)).filter(command => command['type'] === 'PlaceBuildOrder')).toHaveLength(0);
   await touch('touchStart', [{ id: 0, x: 900, y: 540 }]);
   await expect(page.locator('.hud-build__target-value')).toContainText('whole squares');
   const freshTarget = await page.locator('.hud-build__target-value').innerText();
