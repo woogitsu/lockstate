@@ -164,6 +164,8 @@ export interface BuildPanelOptions {
   readonly localizer: HudLocalizer;
   readonly model: HudBuildViewModel;
   readonly roomTemplateTool?: RoomTemplateTool;
+  /** Transfer held keyboard ownership before a native popup can swallow release. */
+  readonly onCategoryFocus?: () => void;
   /** The numeric route: place exactly one order at the coordinates shown. */
   readonly onPlace: (intent: BuildPanelIntent) => void;
   /**
@@ -1100,6 +1102,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     ),
   });
   categoryFilter.value = activeCategoryId;
+  categoryFilter.addEventListener('focus', () => options.onCategoryFocus?.());
   categoryFilter.addEventListener('keydown', (event) => {
     // Keep native option navigation in the filter without suppressing its
     // default selection change or unrelated world keyboard bindings.
