@@ -67,6 +67,7 @@ export class RoomTemplateCoordinator implements SystemRegistration {
     const objectClaims = new Set<string>();
     const structureClaims = new Set<string>();
     const wallEdgeClaims = new Set<string>();
+    const wallSquareClaims = new Set<string>();
     // Shell orders claim only perimeter tiles. Until zoning completes, the
     // interior is still empty world, but it belongs to the same atomic plan.
     const pendingPlans = this.pending.map((request) =>
@@ -78,6 +79,9 @@ export class RoomTemplateCoordinator implements SystemRegistration {
         structureClaims.add(tileKey(order.location));
         if (definition?.category === 'wall' && order.footprint !== 'square') {
           wallEdgeClaims.add(`${tileKey(order.location)}:${resolveBuildEdge(order)}`);
+        }
+        if (definition?.category === 'wall' && order.footprint === 'square') {
+          wallSquareClaims.add(tileKey(order.location));
         }
         continue;
       }
@@ -111,6 +115,11 @@ export class RoomTemplateCoordinator implements SystemRegistration {
       const approach = { x: tileCoordinate(outside.x), y: tileCoordinate(outside.y) };
       if (this.placedObjects.isTileOccupied(approach) || objectClaims.has(tileKey(approach))) {
         return { ok: false, reason: 'object-occupied', tile: doorTile };
+      }
+      // A whole wall square occupies the approach itself in every direction,
+      // even when its anchor is outside the plan's rectangular footprint.
+      if (this.world.getSquareStructure(approach) !== 0 || wallSquareClaims.has(tileKey(approach))) {
+        return { ok: false, reason: 'structure-occupied', tile: doorTile };
       }
       // #1661: south/east boundary edges are stored on the outside tile,
       // beyond the rectangle scanned above. Check the separating edge itself;
