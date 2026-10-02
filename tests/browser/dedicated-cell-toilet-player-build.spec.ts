@@ -175,6 +175,10 @@ test(`player builds Basic cell at quarterTurns${quarterTurns} and retains toilet
   if (bounds === null) throw new Error('minimap absent');
   await minimap.click({ position: { x: bounds.width * 21.5 / 32, y: bounds.height * 6.5 / 32 } });
   await page.mouse.move(1300, 700);
+  // Genuine native pose controls expose the front service hardware instead
+  // of measuring the door that occludes the toilet in the initial -45 view.
+  const turn = quarterTurns === 0 ? 'Rotate camera right' : 'Rotate camera left';
+  for (let step = 0; step < 4; step++) await page.getByRole('button', { name: turn, exact: true }).click();
   const completed = await page.screenshot({ path: info.outputPath('dedicated-cell-toilet-worker-completed-fullhd.png') });
   const beforePixels = await toiletPalettePixels(page, completed, quarterTurns);
   await writeFile(info.outputPath('worker-and-completed-save-evidence.json'), JSON.stringify({
