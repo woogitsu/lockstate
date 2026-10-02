@@ -43,4 +43,31 @@ Parent grants only room-template-world-bridge.ts accepted-result processing:
 only matching same-revision armed shared-tool may stand down after old bridge
 disposal. Changed/rearmed tools remain protected; disposed refusal/DOM updates
 remain forbidden. No placement/coordinator/session/policy/copy/schema change.
-Fix, actual production negative/exact restore and native acceptance are pending.
+## Correction and exact producer proof
+
+The matching selected revision/armed guard now precedes accepted completion
+without a disposed presentation check. Accepted completion stands that shared
+tool down; local presentation is cleared only if the bridge is live. Refusal
+processing still explicitly requires a live bridge and current request.
+No other production file changes.
+
+Corrected **8/8 GREEN**,622ms. A production-only mutation restores disposed to
+the unique accepted-result early return: **2 RED /6 legal controls GREEN**,
+636ms. Finally restores exact corrected bytes; **8/8 GREEN**,629ms. Existing
+bridge/tool/renderer-selection controls plus this regression **30/30 GREEN**,
+4 files,787ms,maxWorkers2. App/tools TypeScript passes.
+
+Restored whole bridge SHA256:
+`814fa06ae54dd6476c2d73bd341a0e761608ecc7e5731dedeee5ea7035ad280b`.
+
+- [Corrected source cases](renderer-receipt-fixed-green.log).
+- [Actual disposed-producer negative](renderer-receipt-disposed-producer-red.log).
+- [Exact byte-restored cases](renderer-receipt-byte-restored-green.log).
+- [Neighboring controls](renderer-receipt-related-restored-green.log).
+- [App/tools TypeScript](renderer-receipt-fixed-typecheck.log).
+
+Native actual View change while genuine worker confirmation is held, both
+renderer directions and changed-tool/refusal controls, remains queued behind
+Art/root. This proof does not claim actual native option events, worker receipt,
+browser pixels, hosted CI or deployed completion.
+

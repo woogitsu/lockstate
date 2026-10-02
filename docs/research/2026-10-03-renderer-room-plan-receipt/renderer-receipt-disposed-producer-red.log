@@ -1,0 +1,37 @@
+$ vitest run "tests/unit/ui-room-plan-renderer-placement-receipt.test.ts" "--maxWorkers=2"
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-room-plan-renderer-receipt-audit-20261003
+
+ ❯ tests/unit/ui-room-plan-renderer-placement-receipt.test.ts (8 tests | 2 failed) 378ms
+   × world: accepted unchanged room-plan placement stands down after actual renderer replacement 68ms
+   × oblique: accepted unchanged room-plan placement stands down after actual renderer replacement 63ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-room-plan-renderer-placement-receipt.test.ts > world: accepted unchanged room-plan placement stands down after actual renderer replacement
+ FAIL  tests/unit/ui-room-plan-renderer-placement-receipt.test.ts > oblique: accepted unchanged room-plan placement stands down after actual renderer replacement
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/unit/ui-room-plan-renderer-placement-receipt.test.ts:85:32
+     83|       expect(Reflect.get(h.tool, 'busy')).toBe(false);
+     84|       expect(h.place).toHaveBeenCalledOnce();
+     85|       expect(h.tool.isArmed()).toBe(false);
+       |                                ^
+     86|     } finally { h.dispose(); }
+     87|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 6 passed (8)
+   Start at  01:30:17
+   Duration  636ms (transform 61ms, setup 0ms, import 123ms, tests 378ms, environment 0ms)
+
+[ELIFECYCLE] Test failed. See above for more details.
