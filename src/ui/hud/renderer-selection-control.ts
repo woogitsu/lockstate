@@ -21,6 +21,11 @@ export function createRendererSelectionControl(
     children: [element('option',{text:labels.world,attributes:{value:'world'}}),element('option',{text:labels.oblique,attributes:{value:'oblique'}})],
   });
   select.value=initial;
+  select.addEventListener('keydown',event=>{
+    // Native option navigation belongs to the selector. Preserve its default
+    // change while keeping the same key out of the still-live world scene.
+    if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Home','End','PageUp','PageDown'].includes(event.key)) event.stopPropagation();
+  });
   select.addEventListener('change',()=>{
     if(select.disabled) return;
     const requested=select.value;
