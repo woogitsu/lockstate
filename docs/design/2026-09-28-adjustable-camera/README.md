@@ -413,3 +413,12 @@ Main CI run36936677731 completed successfully. PR1894 browser still runs; it has
 The authored station now has a real object catalogue entry, width2/height1, a localized Build name, a buildable recipe and the registered oblique renderer mapping. It uses the existing anchored-fixture brick procurement route; material quantity2 and work60 follow the existing width-derived object rule. Catalogue material value is80minor units at the unchanged brick unit price40. No new material, price, simulation action, save field or mandatory Yard requirement was added. The recreation capability uses the existing object-capability system; no exercise animation or new Yard bonus is claimed.
 
 A real kernel command test purchases materials, zones an outdoor8x8Yard, places and completes the station, proves both squares occupied and the adjacent square free, refuses an overlapping order, then encodes/decodes/restores the save and compares the placed-object state. Changing the production buildable to finish as a bench makes this test fail; restoring passes. Combined kernel/content/cost/room-art tests pass39/39 and TypeScript passes. Actual player Build placement and authored-model pixels in the browser remain the next acceptance step; this is pushed branch work, not production release.
+
+
+## Production composition merge and station contracts, 2026-10-02
+
+PR1894 was merged as b4ed27c55bb52646cd7ff655cbc5275e0e2279b7 after exact head029deb18a1a38a7a1dda44065962b1ff8d712130 had all checks successful, MERGEABLE/CLEAN, and prior serial main CI36936677731 succeeded. The new serial main CI36948369126 is running; deployment has not been confirmed. The production composition exposes the angled renderer through `?renderer=oblique`; default overhead behaviour remains unchanged.
+
+The new exercise station's explicit catalogue counts, furniture membership, consumed-content inventory and generated player-string inventory are reconciled: six targeted suites pass81/81 and TypeScript passes. Its angled Blender model is registered; overhead rendering explicitly retains the colour fallback because no overhead sprite exists. The stale Remove locale source citation is re-aimed to its declaration without raising the quotation budget. Full local-suite green is not claimed.
+
+Three independent scopes remain active: actual station player placement/collision/SaveLoad proof, outdoor bench context integration, and pointer cancellation/remapping. Browser work is serialized to one worker to avoid concurrent headless CPU pressure.
