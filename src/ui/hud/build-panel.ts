@@ -1100,6 +1100,11 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     ),
   });
   categoryFilter.value = activeCategoryId;
+  categoryFilter.addEventListener('keydown', (event) => {
+    // Keep native option navigation in the filter without suppressing its
+    // default selection change or unrelated world keyboard bindings.
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End', 'PageUp', 'PageDown'].includes(event.key)) event.stopPropagation();
+  });
   categoryFilter.addEventListener('change', () => {
     activeCategoryId = categoryFilter.value;
     paintCatalogue();
