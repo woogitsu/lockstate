@@ -7416,6 +7416,13 @@
 
 .hud-template__quote { color: var(--text-body); font-weight: 600; }
 .hud-template__coordinates { margin-top: var(--space-3); }
+.hud-template__orientation { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-top: var(--space-3); }
+.hud-template__orientation label { display: flex; align-items: center; gap: var(--space-2); }
+.hud-template__rotation { min-height: var(--tap-target); min-width: 6rem; color: var(--text-body); background: var(--surface-sunken); border: var(--hairline) solid var(--border); border-radius: var(--radius-sm); padding: var(--space-2); font: inherit; }
+.hud-template__rotation:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* Keep the orientation row and map action inside the Full HD catalogue by
+   trimming paragraph spacing; the plan and fixture sizes remain unchanged. */
+.hud-template > p { margin-block: var(--space-2); }
 .hud-template__coordinates summary { cursor: pointer; min-height: var(--tap-target); display: list-item; }
 .hud-template__placement label:has(input[type='number']) { display: grid; gap: var(--space-1); }
 

@@ -12,7 +12,10 @@ test('template placement UI checks every square before enabling one submit', asy
   await x.fill('5');
   await y.fill('7');
   await expect(dialog.getByRole('status')).toContainText('blocked');
-  await expect(dialog.locator('.hud-template__diagram .hud-template__tile--blocked')).toHaveCount(1);
+  await expect(dialog.locator('.hud-template__diagram .hud-template__tile.hud-template__tile--blocked')).toHaveCount(1);
+  // The same blocked square marks its complete fixture overlay so furniture
+  // cannot conceal the worker verdict. Both markers refer to one map tile.
+  await expect(dialog.locator('.hud-template__diagram .hud-template__fixture.hud-template__tile--blocked')).toHaveCount(1);
   await expect(place).toBeDisabled();
   await x.fill('10');
   await expect(dialog.getByRole('status')).toContainText('clear');

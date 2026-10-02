@@ -7,6 +7,7 @@ import type { RoomTemplateTool } from '../room-template-tool';
 import { HUD_MESSAGE_KEY } from './messages';
 import { formatRoomTemplateQuote } from './room-template-quote';
 import { roomTemplateMiniatureFixtures } from './room-template-miniature';
+import type { QuarterTurns } from '../../content/room-template-rotation';
 
 const NAME_KEYS: Record<RoomTemplateId, LocalizationKey> = {
   'cell-basic': HUD_MESSAGE_KEY.buildTemplateCellBasic,
@@ -75,11 +76,12 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
   const buttons = new Map<RoomTemplateId, HTMLButtonElement>();
   let selectedId: RoomTemplateId = ROOM_TEMPLATE_IDS[0];
   let mirrorX = false;
+  let quarterTurns: QuarterTurns = 0;
   let diagramFixtures: Array<{ element: HTMLElement; x: number; y: number; width: number; height: number }> = [];
   function select(id: RoomTemplateId): void {
     selectedId = id;
-    tool?.select(id, mirrorX);
-    const plan = instantiateRoomTemplate(id, { x: 0, y: 0 }, { mirrorX });
+    tool?.select(id, mirrorX, quarterTurns);
+    const plan = tool?.planAt({ x: 0, y: 0 }) ?? instantiateRoomTemplate(id, { x: 0, y: 0 }, { mirrorX });
     for (const [rowId, button] of buttons) {
       button.setAttribute('aria-pressed', rowId === id ? 'true' : 'false');
       button.tabIndex = rowId === id ? 0 : -1;
@@ -118,9 +120,8 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
     const wall = new Set(plan.wallSquares.map(({ x, y }) => `${x},${y}`));
     const door = new Set(plan.doorSquares.map(({ x, y }) => `${x},${y}`));
     const objects = new Set<string>();
-    for (const object of plan.objects) {
-      const footprint = tool?.objectFootprint(object.buildableId) ?? { width: 1, height: 1 };
-      for (let dy = 0; dy < footprint.height; dy += 1) for (let dx = 0; dx < footprint.width; dx += 1) objects.add(`${object.x + dx},${object.y + dy}`);
+    for (const fixture of roomTemplateMiniatureFixtures(plan, id => tool?.objectFootprint(id) ?? { width: 1, height: 1 })) {
+      for (let dy = 0; dy < fixture.height; dy += 1) for (let dx = 0; dx < fixture.width; dx += 1) objects.add(`${fixture.x + dx},${fixture.y + dy}`);
     }
     for (let y = 0; y < plan.height; y += 1) {
       for (let x = 0; x < plan.width; x += 1) {
@@ -149,6 +150,24 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
   // as a working build action while that backend is missing.
   let refreshPlacement = async (): Promise<void> => {};
   if (tool !== undefined) {
+    const rotation = element('select', {
+      className: 'hud-template__rotation',
+      attributes: { 'aria-label': t('hud.build.template-rotation') },
+      children: ([0, 1, 2, 3] as const).map(turn => element('option', {
+        text: `${turn * 90}°`, attributes: { value: String(turn) },
+      })),
+    });
+    rotation.addEventListener('change', () => {
+      quarterTurns = Number(rotation.value) as QuarterTurns;
+      select(selectedId);
+    });
+    // Native select provides pointer and keyboard operation in the form input
+    // context, without taking the player's remapped camera rotation keys.
+    const orientationControls = element('div', { className: 'hud-template__orientation' });
+    orientationControls.append(element('label', { children: [
+      element('span', { text: t('hud.build.template-rotation') }), rotation,
+    ] }));
+    choices.after(orientationControls);
     const onMap = element('button', { text: t(HUD_MESSAGE_KEY.buildTemplateOnMap), attributes: { type: 'button' } });
     onMap.addEventListener('click', () => { tool.arm(); dialog.close(); });
     dialog.append(onMap);
@@ -232,7 +251,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
       // command yet, so an immediate read can still say "clear" and allow a
       // second press. Editing the origin or choice asks for a fresh verdict.
     });
-    dialog.append(element('label', { children: [mirror, element('span', { text: t(HUD_MESSAGE_KEY.buildTemplateMirror) })] }));
+    orientationControls.append(element('label', { children: [mirror, element('span', { text: t(HUD_MESSAGE_KEY.buildTemplateMirror) })] }));
     dialog.append(element('details', {
       className: 'hud-template__coordinates',
       children: [
