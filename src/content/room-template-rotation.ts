@@ -1,15 +1,15 @@
-import type { RoomTemplatePlan, TemplateSquare } from './room-template-catalog';
+import { instantiateRoomTemplate, roomTemplateOriginFitsSafeCoordinates, type AuthoredRoomTemplateId, type RoomTemplatePlan, type TemplateSquare } from './room-template-catalog';
 
-type QuarterTurns = 0 | 1 | 2 | 3;
+export type QuarterTurns = 0 | 1 | 2 | 3;
 type ObjectPlan = RoomTemplatePlan['objects'][number];
 interface Size { readonly width: number; readonly height: number }
 export interface RotatedRoomTemplateGeometry extends Omit<RoomTemplatePlan, 'objects'> {
-  /** Geometry-only orientation; this is not a save or placement protocol field. */
+  /** Clockwise orientation after mirroring; the request persists this value. */
   readonly quarterTurns: QuarterTurns;
   readonly objects: readonly (ObjectPlan & Size & { readonly quarterTurns: QuarterTurns })[];
 }
 
-/** Dormant, pure clockwise rotation around the unchanged top-left world origin. */
+/** Pure clockwise rotation around the unchanged top-left world origin. */
 export function rotateRoomTemplateGeometry(
   plan: RoomTemplatePlan | RotatedRoomTemplateGeometry,
   turns: number,
@@ -53,5 +53,34 @@ export function rotateRoomTemplateGeometry(
         ? {width:object.width,height:object.height} : footprintOf(object.buildableId))}),
       quarterTurns:(((('quarterTurns' in object ? object.quarterTurns : 0)+normalized)%4)) as QuarterTurns,
     })),
+  };
+}
+
+/** Shared UI/worker geometry; only the final rotated extent must fit safe coordinates. */
+export function instantiateOrientedRoomTemplate(
+  id: AuthoredRoomTemplateId,
+  origin: TemplateSquare,
+  options: { readonly mirrorX?: boolean; readonly quarterTurns?: QuarterTurns },
+  footprintOf: (id: ObjectPlan['buildableId']) => Size,
+): RotatedRoomTemplateGeometry {
+  const quarterTurns = options.quarterTurns ?? 0;
+  if (!roomTemplateOriginFitsSafeCoordinates(id, origin, quarterTurns)) {
+    throw new RangeError('Rotated room template footprint exceeds safe tile coordinates.');
+  }
+  const local = rotateRoomTemplateGeometry(
+    instantiateRoomTemplate(id, { x: 0, y: 0 }, { mirrorX: options.mirrorX === true }),
+    quarterTurns, footprintOf,
+  );
+  const translate = <T extends TemplateSquare>(square: T): T => ({
+    ...square, x: square.x + origin.x, y: square.y + origin.y,
+  });
+  const zones = local.zones.map(translate);
+  return {
+    ...local, origin: { ...origin },
+    wallSquares: local.wallSquares.map(translate),
+    doorSquares: local.doorSquares.map((door) => ({ ...translate(door),
+      ...(door.orderTile === undefined ? {} : { orderTile: translate(door.orderTile) }),
+    })),
+    objects: local.objects.map(translate), zone: zones[0]!, zones,
   };
 }
