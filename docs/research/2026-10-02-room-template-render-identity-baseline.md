@@ -103,7 +103,7 @@ production snapshot feed and adapter; **native pixel acceptance remains
 unperformed** because another agent holds the exclusive browser lease. No
 browser was launched and no schema, history, copy or simulation source changed.
 
-## Native regression prepared; execution pending
+## Historical native preparation checkpoint (aab9739; execution then pending)
 
 `tests/browser/room-template-rebuilt-render-identity.spec.ts` prepares genuine
 Full HD dev/source acceptance. It imports the existing completed-logistics save
@@ -136,3 +136,69 @@ negative/restoration remain pending the explicit exclusive browser lease.
 The existing 16-case offline adapter mutation proof above remains verified;
 it does not substitute for the pending native result. No browser, retries,
 timeout/config changes or production observer hook has been introduced.
+
+## Native acceptance completed on 2026-10-02
+
+Corrected consumer checkpoint: `ae27a45d0e5437c677867ddad191e7c39c7ceb85`.
+The preceding pending statements describe the historical preparation checkpoint,
+not the final result. The [immutable native receipt](./2026-10-02-room-template-render-identity-native/native-evidence.json)
+retains actual worker snapshots, command receipts, render identity, projection,
+image keys/counts, source hashes, stage timings and PNG hashes.
+
+Three early native failures were **fixture errors**, not production defects:
+
+1. A nonexistent authored `45:45` key was expected instead of the actual cot
+   catalogue's `30:40` selection (47.7 s).
+2. One stale `tileX:22` assertion survived the earlier anchor correction; the
+   actual Bed anchor is `(24,21)` (38.5 s).
+3. A false camera-centre persistence assumption after Load failed at 59.85 s;
+   Load correctly resets the centre. A genuine player minimap reframe is required.
+   Recorded stages were rotated capture 38.54 s, removed capture 43.81 s,
+   rebuilt capture 53.31 s, confirmed Save 55.20 s, confirmed Load 57.53 s,
+   and loaded capture 59.85 s. No camera production change was made.
+
+The entire fixture was then audited against actual packed/V8/projection tuples.
+The corrected test uses two distinct serial player lifecycles: build/remove/
+independently rebuild/Save, then a new page reopening the **same actual saved
+IndexedDB state**, Load/Pause/minimap reframe. It retains the first lifecycle's
+real PNG and physical/order ownership captures. Neither state nor feed is
+injected or replaced. The original 60 s test and 10 s assertion budgets, one
+worker and no retries remain unchanged.
+
+| Actual run | Result | Lifecycle timings |
+| --- | --- | --- |
+| Corrected native consumer | 2 passed | 57.0 s / 9.3 s |
+| Disconnect completed-history suppression in the real adapter | 1 failed; dependent saved lifecycle did not run | 39.5 s |
+| Restore exact adapter bytes | 2 passed | 57.4 s / 9.3 s |
+
+The negative exposed **two actual drawn images while the physical registry
+still held one Bed**, expected image count 1. Its dependent lifecycle is not
+claimed as a pass or failure. Restored source SHA-256 is exactly the recorded
+`233d1486be34a5d5aaf74f181e727f522b3a32aaecc4565bd37f2fd04d8cf1c5`.
+
+The final restored run retained actual image counts **1 ? 0 ? 1 ? 1**.
+Actual commands were `PlaceRoomTemplate` at `(20,20)`, quarter turn 1;
+`RemoveObject` at `(24,21)`; then independent `PlaceObject` Bed at `(24,21)`.
+The reopened lifecycle submitted no new gameplay commands. Both historical and
+replacement orders remained completed, with one exact replacement physical
+owner preserved through V8 Save/Load. The original rotated Bed is 2x1; the
+normal replacement is 1x2. Consumed texture keys were respectively
+`oblique:furniture.cell.cot.single:30:40` and
+`oblique:furniture.cell.cot.single:300:40`, independently checked against the
+actual authored catalogue and real camera pose.
+
+Real Full HD canvas captures recorded **9,203 changed pixels on removal**,
+**10,779 on rebuild**, and **0 after paused/reframed Load**, using the same
+captured area and RGB threshold. Exact captures are retained:
+
+- [Actual rotated Bed](./2026-10-02-room-template-render-identity-native/actual-rotated-bed.png)
+- [Bed absent after direct removal](./2026-10-02-room-template-render-identity-native/actual-bed-removed.png)
+- [Independent normal rebuild](./2026-10-02-room-template-render-identity-native/actual-independent-normal-bed.png)
+- [Same rebuild after genuine Load](./2026-10-02-room-template-render-identity-native/actual-independent-normal-bed-loaded.png)
+- [Actual negative with duplicated images](./2026-10-02-room-template-render-identity-native/failed-actual-player-fullhd.png)
+
+This proves **dev/source native acceptance**, including actual canvas pixels and
+live scene consumers; it is not a built-artifact claim. Test-only observation
+remains read-only and no production observer was introduced. The terminal
+runner released port 5317; no listener or process referencing this worktree
+remained. The exclusive browser lease was explicitly released to the parent.
