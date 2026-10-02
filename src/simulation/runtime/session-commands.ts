@@ -1252,6 +1252,17 @@ export function createSessionCommandHandler(
         refusals.supersede(key);
       }
     }
+    if (simCommand?.type === 'Redo') {
+      const verdict = roomTemplates.preflightRedo();
+      if (!verdict.ok) {
+        refusals.record(
+          verdict.reason === 'unowned-land' ? 'build.unowned-land' : 'build.unbuildable',
+          context.tick, 'room-template-redo', verdict.tile,
+        );
+        return;
+      }
+      refusals.supersede('room-template-redo');
+    }
     constructionCommands(command, context);
     if (simCommand?.type === 'CancelBuildOrder' || simCommand?.type === 'Undo') {
       roomTemplates.reconcileCancelledShells();
