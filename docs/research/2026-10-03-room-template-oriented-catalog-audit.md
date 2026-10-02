@@ -56,13 +56,23 @@ run because there was no proposed fix; this positive probe is not presented as
 proof that it would catch a missing production guard. The temporary diagnostic
 consumer was removed rather than added as redundant permanent matrix coverage.
 
-## Next concrete investigation
+## Mixed material cancellation follow-up
 
-Inspect a genuinely mixed player transition: one transformed full plan reaches
-its furnishing stage, another ordinary material-consuming gesture is ordered,
-then the selected template fixture is cancelled using its current revision
-after encoded Load. Compare displayed coupled refund with the actual ordered
-traversal, both template and ordinary allocations, and immutable unrelated
-physical ownership. First compare existing row-refund and procurement tests;
-only a real mismatch warrants a new regression, source lease or Issue. This
-preserves the existing pricing, history and save contracts.
+The next suggested transition was actually probed after reading the existing
+row-refund tests. At the mirrored 270-degree Canteen's first table
+`in-progress` state, genuine commands zoned an independent Yard at `(22,22)`
+and ordered a wooden bench at `(23,23)`. After encoded Save/Load, the actual
+queue row for `room-template-000000000000-2-object-000`, revision 0, displayed
+a coupled refund of **715**. Its projection left the session unchanged.
+The actual current-revision `CancelBuildOrder` refunded exactly **715** and
+left the independent bench order byte-for-byte equal to its previous state.
+That real order subsequently completed and was the sole remaining physical
+object, with `sourceOrderId:unrelated-bench` at `(23,23)`.
+
+The [actual mixed cancellation captures](./2026-10-03-room-template-oriented-catalog-audit/actual-mixed-cancellation.json)
+retain the selected row, independent order, complete before/cancellation/finished
+states and amount. Probe result: **1 passed**, 138 ms test execution / 2.77 s
+total. This falsifies a proposed mixed-material refund defect on this exact
+checkpoint; no production fix, mutation-proved regression, duplicate Issue or
+new tariff/history rule is claimed. The temporary probe was removed. Further
+work needs a different actual failing boundary, not more copies of this matrix.
