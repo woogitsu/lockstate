@@ -51,3 +51,22 @@ The native process is terminal and port5416 has no listener. Browser ownership
 was explicitly handed to Art for separate Bin/Cell/Utility acceptance. Full
 exact-subject hosted CI, serial main acceptance, merge and production release
 remain outstanding; these seven cases do not stand in for the full suite.
+
+## Approved vocabulary integration gates, 2026-10-03
+
+The #1975 owner-approved ownership refusal adds the 49th protocol reason and
+matching EN/PL alert keys. The inherited count gate still expected48, and the
+committed player-string inventory predated the new sentence. The original
+focused run failed2 tests with14 controls passing. The inventory is generated
+with `pnpm content:player-strings` (596 authored sentences), not hand-edited.
+The dated rollout measurements remain intact; its new current-vocabulary note
+and all three explicit count guards now record49. Exact suffix-set comparisons
+and every other enumeration assertion remain unchanged.
+
+Actual production negative: misspell only the new English catalogue key
+`object-ownership-unknown` as `object-ownership-unknwon`. Both current inventory
+and exact reason-key enumeration fail: [full terminal receipt](approved-vocabulary-negative.txt),
+2 RED/14 controls GREEN in1.38s. The entire source file is restored byte-for-byte,
+SHA256 `861675e1f9ee03c50e2fb5047d6d9fa7aae1d916f078108b8a20e32373ce069f`.
+The identical focused run then passes16/16 in1.33s. This is a catalogue/gate
+integration repair; no player words or refusal semantics change.
