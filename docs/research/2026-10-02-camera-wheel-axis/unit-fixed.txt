@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-camera-wheel-axis-audit-20261002
+
+
+ Test Files  1 passed (1)
+      Tests  14 passed (14)
+   Start at  22:38:40
+   Duration  1.12s (transform 348ms, setup 0ms, import 989ms, tests 5ms, environment 0ms)
+

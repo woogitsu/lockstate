@@ -1,0 +1,90 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-camera-wheel-axis-audit-20261002
+
+ ❯ tests/unit/oblique-camera-wheel-axis.test.ts (14 tests | 6 failed) 10ms
+   × keeps the whole world view unchanged for wheel deltaX=-120, deltaY=0 5ms
+   × keeps the whole world view unchanged for wheel deltaX=120, deltaY=0 1ms
+   × keeps the whole world view unchanged for wheel deltaX=0, deltaY=0 0ms
+   × keeps the whole oblique view unchanged for wheel deltaX=-120, deltaY=0 1ms
+   × keeps the whole oblique view unchanged for wheel deltaX=120, deltaY=0 0ms
+   × keeps the whole oblique view unchanged for wheel deltaX=0, deltaY=0 0ms
+pnpm : 
+At line:2 char:174
++ ... +$env:PATH; pnpm exec vitest run tests/unit/oblique-camera-wheel-axis ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-camera-wheel-axis.test.ts > keeps the whole world view unchanged for wheel deltaX=-120, delta
+Y=0
+ FAIL  tests/unit/oblique-camera-wheel-axis.test.ts > keeps the whole world view unchanged for wheel deltaX=120, deltaY
+=0
+ FAIL  tests/unit/oblique-camera-wheel-axis.test.ts > keeps the whole world view unchanged for wheel deltaX=0, deltaY=0
+AssertionError: expected { centre: { …(2) }, zoom: 1.375 } to deeply equal { centre: { x: 960, y: 540 }, …(1) }
+
+- Expected
++ Received
+
+  {
+    "centre": {
+-     "x": 960,
+-     "y": 540,
++     "x": 948.3636363636364,
++     "y": 532.7272727272727,
+    },
+-   "zoom": 1.25,
++   "zoom": 1.375,
+  }
+
+ ❯ tests/unit/oblique-camera-wheel-axis.test.ts:60:40
+     58|     const before = actual.captureCameraView();
+     59|     plumbing.handlers.get('wheel')!({ x: 800, y: 440 }, [], deltaX, de…
+     60|     expect(actual.captureCameraView()).toEqual(before);
+       |                                        ^
+     61|   },
+     62| );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  tests/unit/oblique-camera-wheel-axis.test.ts > keeps the whole oblique view unchanged for wheel deltaX=-120, del
+taY=0
+ FAIL  tests/unit/oblique-camera-wheel-axis.test.ts > keeps the whole oblique view unchanged for wheel deltaX=120, delt
+aY=0
+ FAIL  tests/unit/oblique-camera-wheel-axis.test.ts > keeps the whole oblique view unchanged for wheel deltaX=0, deltaY
+=0
+AssertionError: expected { Object (centre, zoom, ...) } to deeply equal { centre: { x: +0, y: +0 }, …(3) }
+
+- Expected
++ Received
+
+  {
+    "centre": {
+-     "x": 0,
+-     "y": 0,
++     "x": -2.1019335983756235,
++     "y": -34.10193359837558,
+    },
+    "elevationRadians": 0.7853981633974483,
+    "yawRadians": -0.7853981633974483,
+-   "zoom": 1.25,
++   "zoom": 1.5625,
+  }
+
+ ❯ tests/unit/oblique-camera-wheel-axis.test.ts:60:40
+     58|     const before = actual.captureCameraView();
+     59|     plumbing.handlers.get('wheel')!({ x: 800, y: 440 }, [], deltaX, de…
+     60|     expect(actual.captureCameraView()).toEqual(before);
+       |                                        ^
+     61|   },
+     62| );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 8 passed (14)
+   Start at  22:38:17
+   Duration  1.22s (transform 425ms, setup 0ms, import 1.09s, tests 10ms, environment 0ms)
+
