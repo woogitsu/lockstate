@@ -99,6 +99,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 
 | Record | Question it answered | Decision it fed |
 | --- | --- | --- |
+| [2026-10-02 room-template economy transitions](./2026-10-02-room-template-economy-transitions.md) | Does the displayed full quote agree with actual staged charges and saved refunds? | No new economic defect; 36 actual financial lifecycle cases, quote-omission and assigned-refund production mutations red, exact restoration and 78 scoped tests green. |
 | [2026-10-02 held Build camera preview](./2026-10-02-held-build-camera-preview/README.md) | Does a held Build preview match its worker footprint after keyboard zoom? | Existing #1914; actual red, fix green, production mutation red and restoration green. |
 | [2026-10-02 angled touch navigation](./2026-10-02-oblique-touch-navigation/README.md) | Can two native fingers move the angled camera while Build remains armed? | Issue1959; actual red, corrected green, pointer-provision mutation red and restoration green; lifecycle acceptance pending. |
 | [2026-10-02 live view keyboard focus](./2026-10-02-live-view-keyboard-focus/README.md) | Can keyboard users continue changing a view after asynchronous selection? | Verified #1956 native focus loss; intent-preserving recovery, 3-case actual worker proof and production mutation red -> restore green. |
