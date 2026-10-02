@@ -21,3 +21,10 @@ it('shows one two-square bed, rather than two individual pieces of furniture', (
   const fixtures = roomTemplateMiniatureFixtures(instantiateRoomTemplate('cell-basic', { x: 0, y: 0 }), footprint);
   expect(fixtures).toEqual([{ x: 1, y: 1, width: 1, height: 2 }, { x: 2, y: 4, width: 1, height: 1 }]);
 });
+
+it('keeps a mirrored complete bed on its canonical opposite side', () => {
+  const plan = instantiateRoomTemplate('cell-basic', { x: -8, y: 9 }, { mirrorX: true });
+  expect(roomTemplateMiniatureFixtures(plan, footprint)).toEqual([
+    { x: 2, y: 1, width: 1, height: 2 }, { x: 1, y: 4, width: 1, height: 1 },
+  ]);
+});
