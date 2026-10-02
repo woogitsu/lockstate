@@ -7,6 +7,7 @@ import { VOID_COLOR, ZONING_TINT_ALPHA, UNOWNED_SHADE_ALPHA, UNOWNED_SHADE_COLOR
 import {
   changeObliquePoseAtScreenPoint,
   screenToGround,
+  zoomObliqueAtScreenPoint,
   visibleGroundBounds,
   type ObliqueCameraState,
 } from '../camera/oblique-projection';
@@ -127,8 +128,8 @@ export class ObliqueWorldScene extends Phaser.Scene {
       elevationRadians: Math.PI / 4,
     };
     this.input.mouse?.disableContextMenu();
-    this.input.on('wheel', (_pointer: Phaser.Input.Pointer, _objects: Phaser.GameObjects.GameObject[], _deltaX: number, deltaY: number) => {
-      this.stepCameraZoom(deltaY > 0 ? 'out' : 'in');
+    this.input.on('wheel', (pointer: Phaser.Input.Pointer, _objects: Phaser.GameObjects.GameObject[], _deltaX: number, deltaY: number) => {
+      this.stepCameraZoom(deltaY > 0 ? 'out' : 'in', { x: pointer.x, y: pointer.y });
     });
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       if (pointer.button === 2 && !pointer.wasTouch) {
@@ -308,11 +309,12 @@ export class ObliqueWorldScene extends Phaser.Scene {
   }
 
   /** Keyboard/HUD zoom port shared with the top-down scene. */
-  public stepCameraZoom(direction: 'in' | 'out'): void {
+  public stepCameraZoom(direction: 'in' | 'out', pivot?: Point): void {
     const factor = direction === 'in' ? 1.25 : 1 / 1.25;
     const zoom = Math.min(3, Math.max(0.2, this.pose.zoom * factor));
     if (zoom === this.pose.zoom) return;
-    this.pose = { ...this.pose, zoom };
+    this.pose = zoomObliqueAtScreenPoint(this.pose,
+      pivot ?? { x: this.pose.viewport.width / 2, y: this.pose.viewport.height / 2 }, zoom);
     this.poseRevision += 1;
     this.repaint();
     this.paintGesturePreview();

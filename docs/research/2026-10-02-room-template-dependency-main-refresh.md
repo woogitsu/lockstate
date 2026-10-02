@@ -9,6 +9,11 @@ PR #1898 was retargeted to main. This makes the full-square correction and the
 original Cell/shower template implementation reviewable as one dependency.
 PR #1899 remains the later full-library/orientation/art integration.
 
+After the coordinator landed #1958, the dependency was refreshed again against
+main `f198f6d949`, retaining the cursor-anchored wheel fix. This second merge
+had no conflicts. Both TypeScript targets and eight relevant files, 52 tests,
+passed, including the wheel projection and square-wall rendering checks.
+
 The merge preserves saved square-wall rendering together with main's authored
 fixture asset mapping. It preserves both sets of research rows and regenerates
 the locale inventory with literal source-key quotations. Shifted documentation
