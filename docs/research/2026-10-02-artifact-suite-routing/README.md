@@ -23,3 +23,18 @@ The regular `pnpm test:artifact` includes it in the artifact gate. Weakest claim
 ## Infirmary integration — 2026-10-02
 
 The accepted `infirmary-player-build.spec.ts` now joins the same artifact matcher and complementary dev exclusion. Its [actual worker, pixel and Save/Load evidence](../2026-10-02-infirmary-export-alignment/player-acceptance.md) was verified separately. Removing only its dev exclusion produces the expected duplicate-collection failure; byte-exact restoration returns the partition checks green. The combined citation, partition, retry and selection checks pass25/25 and tools TypeScript passes. No new tracked config or assertion/timeout relaxation is introduced.
+
+## Previously accepted built-client cases — 2026-10-02
+
+The retained Bookshelf, Utility panel and FullHD Layout Escape specs are now
+explicitly selected by the existing artifact gate and excluded by its matching
+dev partition. Their real built-client acceptance is recorded in the durable
+camera plan, Bookshelf design record and Layout Escape research; this routing
+change does not claim a new browser execution of those cases.
+
+Temporarily omitting only their dev exclusions makes the unchanged partition
+gate fail and name all three duplicate consumers. Complementary restoration
+passes10 partition/selection tests. No new tracked configuration or changed
+assertion, retry, timeout or workflow is needed. The three obsolete local-only
+selector configs were inspected, had no tracked references or other active
+process consumers, and were deleted by exact paths after canonical routing.
