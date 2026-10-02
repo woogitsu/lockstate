@@ -39,10 +39,15 @@ for (const renderer of ['world', 'oblique'] as const) {
         return { tag: target?.tagName, view: target?.matches('.hud__corner > select.hud-build__category') === true };
       }, point);
       const before = await sentCommands(page);
+      const clip = { x: 700, y: 350, width: 180, height: 180 };
+      const originalMap = await page.screenshot({ clip });
       await page.mouse.click(point.x, point.y);
       await page.screenshot({ path: testInfo.outputPath('native-mouse-opened-view.png') });
-      // The real mouse must acquire the selector before native option keys.
-      // These keys are ordinary browser input, not a DOM change injection.
+      // View acquisition is a real mouse press. Native option choice uses
+      // real keyboard input: Playwright does not support clicking individual
+      // native popup rows (the same routing limitation was measured on the
+      // working Category). No focus(), selectOption() or DOM injection masks
+      // this acquisition boundary; all four popup screenshots were inspected.
       await page.keyboard.press(renderer === 'world' ? 'End' : 'Home');
       await page.keyboard.press('Enter');
       const wanted = renderer === 'world' ? 'oblique' : 'world';
@@ -55,6 +60,7 @@ for (const renderer of ['world', 'oblique'] as const) {
       expect.soft(hit, 'the visible existing View control is an actual mouse target').toEqual({ tag: 'SELECT', view: true });
       expect.soft(commands.filter(command => ['RemoveWall', 'RemoveObject', 'PlaceBuildOrder', 'PlaceObject', 'PlaceRoomTemplate', 'ZoneRoom'].includes(String(command['type']))), 'choosing View must not submit a command to the armed map').toHaveLength(0);
       await expect.soft(view).toBeFocused();
+      expect.soft((await page.screenshot({ clip })).equals(originalMap), 'the selected renderer actually changes the exposed world pixels').toBe(false);
       expect.soft(events).toEqual(expect.arrayContaining([
         expect.objectContaining({ type: 'pointerdown', tag: 'SELECT', view: true }),
         expect.objectContaining({ type: 'change', tag: 'SELECT', view: true, value: wanted }),

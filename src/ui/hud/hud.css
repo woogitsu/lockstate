@@ -114,6 +114,7 @@
  * -- the two mirror-image checks, because an opt-in that overshot would be a
  * worse defect than #1054's.
  */
+.hud__corner > select.hud-build__category,
 .hud__corner .ui-panel__toggle,
 .hud__corner .hud-zoom__out,
 .hud__corner .hud-zoom__in,
