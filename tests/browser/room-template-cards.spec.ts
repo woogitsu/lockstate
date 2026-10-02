@@ -1,4 +1,5 @@
 ﻿import { expect, test } from './network-changed-fixture';
+import { ROOM_TEMPLATE_IDS, instantiateRoomTemplate } from '../../src/content/room-template-catalog';
 test('Full HD catalogue compares all room footprints before selection and keeps row controls in view', async ({ page }) => {
   await page.setViewportSize({ width:1920,height:1080 });
   await page.goto('/?renderer=oblique');
@@ -9,6 +10,10 @@ test('Full HD catalogue compares all room footprints before selection and keeps 
   await expect(dialog).toBeVisible();
   const cards = dialog.locator('.hud-template__card');
   await expect(cards).toHaveCount(20);
+  for (const id of ROOM_TEMPLATE_IDS) {
+    const card = dialog.locator(`[data-template-id="${id}"]`);
+    await expect(card.locator('.hud-template__fixture')).toHaveCount(instantiateRoomTemplate(id, { x: 0, y: 0 }).objects.length);
+  }
   const basic = dialog.getByRole('button',{name:'Basic cell',exact:true});
   await expect(basic).toContainText('4 \u00d7 7');
   await expect(basic).toContainText('Furniture \u00d7 2');
