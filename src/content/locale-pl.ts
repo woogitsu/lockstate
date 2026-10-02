@@ -125,6 +125,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'object.prep-counter.name': 'Blat roboczy',
   'object.fridge.name': 'Lodówka',
   'object.dining-table.name': 'Stół jadalny',
+  'object.exercise-station.name': 'Stanowisko ćwiczeń',
   'object.bench.name': 'Ławka',
   'object.bookshelf.name': 'Regał na książki',
   'object.medicine-cabinet.name': 'Szafka na leki',

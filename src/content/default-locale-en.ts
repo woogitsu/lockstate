@@ -54,6 +54,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'object.prep-counter.name': 'Prep Counter',
   'object.fridge.name': 'Fridge',
   'object.dining-table.name': 'Dining Table',
+  'object.exercise-station.name': 'Exercise station',
   'object.bench.name': 'Bench',
   'object.bookshelf.name': 'Bookshelf',
   'object.medicine-cabinet.name': 'Medicine Cabinet',
