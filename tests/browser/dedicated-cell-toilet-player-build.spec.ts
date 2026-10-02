@@ -53,13 +53,13 @@ async function toiletPalettePixels(page: Page, png: Buffer, quarterTurns: 0 | 1)
     const bitmap = await createImageBitmap(new Blob([Uint8Array.from(atob(base64), c => c.charCodeAt(0))], { type: 'image/png' }));
     const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
     const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0);
-    // Provisional regions: existing q0 teal oracle and a separate physical
-    // valve/pipe crop. q1 source colours/regions require native calibration.
-    // These are not accepted screenshot measurements until actual scenes open.
+    // Opened native completed/loaded frames calibrate separate front-panel
+    // and physical valve-wheel regions. The narrower blue-steel predicate
+    // excludes neutral/brown walls while preserving the original >8 guard.
     const rects = quarterTurns === 0
-      ? [[1110, 520, 50, 60], [1150, 554, 24, 32]]
-      : [[1000, 420, 100, 100], [1052, 475, 24, 32]];
-    const colour = [49, 127, 135];
+      ? [[936, 678, 53, 29], [983, 707, 16, 17]]
+      : [[993, 440, 44, 26], [1040, 458, 17, 18]];
+    const colour = quarterTurns === 0 ? [49, 128, 135] : [48, 127, 135];
     return rects.map((rect, regionIndex) => {
       const pixels = context.getImageData(...rect as [number, number, number, number]).data;
       let count = 0;
@@ -67,7 +67,7 @@ async function toiletPalettePixels(page: Page, png: Buffer, quarterTurns: 0 | 1)
         const r = pixels[i]!, g = pixels[i + 1]!, b = pixels[i + 2]!;
         const matches = regionIndex === 0
           ? r === colour[0] && g === colour[1] && b === colour[2]
-          : r >= 90 && r <= 180 && Math.abs(r - g) <= 12 && Math.abs(g - b) <= 12;
+          : r >= 90 && r <= 180 && g > r && g - r <= 12 && b >= g && b - g <= 12;
         if (matches) count++;
       }
       return count;
@@ -175,6 +175,10 @@ test(`player builds Basic cell at quarterTurns${quarterTurns} and retains toilet
   if (bounds === null) throw new Error('minimap absent');
   await minimap.click({ position: { x: bounds.width * 21.5 / 32, y: bounds.height * 6.5 / 32 } });
   await page.mouse.move(1300, 700);
+  // Genuine native pose controls expose the front service hardware instead
+  // of measuring the door that occludes the toilet in the initial -45 view.
+  const turn = quarterTurns === 0 ? 'Rotate camera right' : 'Rotate camera left';
+  for (let step = 0; step < 4; step++) await page.getByRole('button', { name: turn, exact: true }).click();
   const completed = await page.screenshot({ path: info.outputPath('dedicated-cell-toilet-worker-completed-fullhd.png') });
   const beforePixels = await toiletPalettePixels(page, completed, quarterTurns);
   await writeFile(info.outputPath('worker-and-completed-save-evidence.json'), JSON.stringify({

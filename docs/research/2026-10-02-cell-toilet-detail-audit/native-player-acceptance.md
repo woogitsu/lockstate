@@ -1,6 +1,23 @@
 # Dedicated Cell toilet: queued genuine player proof
 
-2026-10-02. **Prepared, not yet executed or accepted.**
+2026-10-03 native calibration checkpoint; **final baseline/consumer restore pending**.
+
+Initial genuine q0 built/loaded22,9 orientation0 but its provisional body crop
+returned0/0; q1 was skipped. Both FullHD frames were opened: the door obscured
+the body and the broad metal region incorrectly measured wall/door233/233.
+Separate real camera-control runs expose service hardware: q0 four Rotate
+camera right clicks; q1 four Rotate camera left clicks. Both constructed and
+loaded exact anchors(22,9 q0;22,7 q1). Uncalibrated q0 crops returned0/1,
+and q1 returned3/768; raw failures are preserved, not reported as acceptance.
+
+Both actual completed/loaded front views were opened. Disjoint q0 front/valve
+crops[936,678,53,29] and[983,707,16,17] contain RGB49/128/135 227 times and
+blue-steel122 times. q1 crops[993,440,44,26] and[1040,458,17,18] contain
+RGB48/127/135 201 times and blue-steel121 times. Load preserves those counts.
+The original >100/>8 thresholds remain. Blue-steel now requires90<=r<=180,
+0<g-r<=12 and0<=b-g<=12; this narrows the original neutral-metal predicate
+to exclude the actually observed brown/neutral wall, rather than lowering the
+hardware threshold. The native oracle is frozen before consumer controls.
 
 Current source for this queued proof is the outward-normal corrected SHA256
 `335544282e27ff01608f7f10987c054012d38ec3905340c24c142b7b794b1b2a`, descriptor
