@@ -35,3 +35,7 @@ Two complete exports give73/73direct byte-equal files. Descriptor SHA256 `ca26fe
 Appending bytes to an actual exported PNG makes the dedicated integrity test red(exit1); exact PNG restoration returns green(exit0), recorded in `png-control.json`. Seven focused suites pass58cases/one optional live-Blender skip. Own native Blender verification was separately executed for all72cameras/four orientations, with five actual negative controls recorded above. App/tools TypeScript passes. Original/dedicated source hashes remain unchanged.
 
 Actual player construction/SaveLoad/isolated palette calibration and consumer-only negative/restoration remain pending an explicit browser lease. No native prep acceptance or hosted completion is claimed at this export checkpoint.
+
+### Queued genuine native fixture
+
+`dedicated-kitchen-prep-counter-player-build.spec.ts` reuses the accepted two-stage native Kitchen route. Real StorageRoom/DeliveryBay construction and an actual IndexedDB save precede fresh-page Kitchen placement at20,5 in normal/90orientation. All three fixture snapshots must agree after Save/Load; prep counter anchors23,6/orientation0 and24,8/orientation1. Existing60s/10sbudgets, one worker and genuine completion path remain unchanged. Authored source-frame wood150/105/67 and steel142/149/152 candidates are provisional; broad rectangles are prepared for actual native calibration, without claiming a model-specific pixel boundary yet. No new tracked browser config or workflow.
