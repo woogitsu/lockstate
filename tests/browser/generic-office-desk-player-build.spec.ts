@@ -1,4 +1,4 @@
-// Real worker-built Reception, calibrated independent desk pixels and Save/Load.
+// Queued real worker-built Reception route; native pixel calibration is pending.
 import { writeFile } from 'node:fs/promises';
 import { expect, test as base, type Page } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
@@ -48,7 +48,7 @@ async function fixtureAnchors(page: Page): Promise<string[]> {
   });
 }
 
-async function timberPixels(page: Page, png: Buffer, quarterTurns: 0 | 1): Promise<number[]> {
+async function deskPalettePixels(page: Page, png: Buffer, quarterTurns: 0 | 1): Promise<number[]> {
   return page.evaluate(async ({ base64, quarterTurns }) => {
     const bitmap = await createImageBitmap(new Blob([Uint8Array.from(atob(base64), c => c.charCodeAt(0))], { type: 'image/png' }));
     const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
@@ -174,7 +174,7 @@ test(`player builds Reception at quarterTurns${quarterTurns} and retains authore
   await minimap.click({ position: { x: bounds.width * 23 / 32, y: bounds.height * 8 / 32 } });
   await page.mouse.move(1300, 700);
   const completed = await page.screenshot({ path: info.outputPath('generic-office-desk-worker-completed-fullhd.png') });
-  const beforePixels = await timberPixels(page, completed, quarterTurns);
+  const beforePixels = await deskPalettePixels(page, completed, quarterTurns);
   await writeFile(info.outputPath('worker-and-completed-save-evidence.json'), JSON.stringify({
     quarterTurns, actualBefore, beforePixels, commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
   }, null, 2));
@@ -190,7 +190,7 @@ test(`player builds Reception at quarterTurns${quarterTurns} and retains authore
   await minimap.click({ position: { x: bounds.width * 23 / 32, y: bounds.height * 8 / 32 } });
   await page.mouse.move(1300, 700);
   const loaded = await page.screenshot({ path: info.outputPath('generic-office-desk-loaded-fullhd.png') });
-  const afterPixels = await timberPixels(page, loaded, quarterTurns);
+  const afterPixels = await deskPalettePixels(page, loaded, quarterTurns);
   afterPixels.forEach((count, index) => expect.soft(count, `desk ${index === 0 ? "oak desktop" : "teal document"} after Load`)
     .toBeGreaterThan(index === 0 ? 40 : 2));
   expect(afterPixels).toEqual(beforePixels);
