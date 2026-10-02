@@ -1,148 +1,136 @@
-import sys
+"""Export the existing selected medical fixtures at their authoritative tile scale."""
+import importlib.util
 from pathlib import Path
-import hashlib
-import json
-import math
-import os
-import struct
-import zlib
+import sys
 
-sys.path.insert(0, os.path.dirname(__file__))
-import bpy
+HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE))
 import pipeline_common
 
 pipeline_common.require_blender_version()
-
-REPO_ROOT = Path(__file__).resolve().parents[2]
-OUTPUT_ROOT = Path(sys.argv[sys.argv.index("--") + 1]).resolve() if "--" in sys.argv else (REPO_ROOT / "public/assets/environment/oblique")
-OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
-
-ASSETS = [
-    ("furniture.medical-bed.variants", "furniture.medical-bed.variants.blend", (1, 2)),
-    ("fixture.medicine-cabinet.variants", "fixture.medicine-cabinet.variants.blend", (1, 1)),
-]
-YAWS = list(range(0, 360, 30))
-ELEVATIONS = list(range(20, 80, 10))
-
-
-def png_chunk(kind, data):
-    return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data) & 0xFFFFFFFF)
-
-
-def normalize(path: Path) -> None:
-    blob = path.read_bytes()
-    offset = 8
-    header = None
-    compressed = b""
-    metadata = []
-    while offset < len(blob):
-        length = struct.unpack(">I", blob[offset:offset + 4])[0]
-        kind = blob[offset + 4:offset + 8]
-        data = blob[offset + 8:offset + 8 + length]
-        offset += 12 + length
-        if kind == b"IHDR":
-            header = data
-        elif kind == b"IDAT":
-            compressed += data
-        elif kind in (b"sRGB", b"gAMA", b"cHRM", b"iCCP"):
-            metadata.append((kind, data))
-    if header is None:
-        raise ValueError(f"missing IHDR in {path}")
-    width, height, depth, color_type, compression, filter_method, interlace = struct.unpack(">IIBBBBB", header)
-    if (depth, color_type, compression, filter_method, interlace) != (8, 6, 0, 0, 0):
-        raise ValueError(f"unsupported PNG format in {path}")
-    raw = zlib.decompress(compressed)
-    stride = width * 4
-    rows = []
-    position = 0
-    previous = bytearray(stride)
-    for _ in range(height):
-        filter_type = raw[position]
-        position += 1
-        row = bytearray(raw[position:position + stride])
-        position += stride
-        if filter_type == 1:
-            for index in range(4, stride):
-                row[index] = (row[index] + row[index - 4]) & 255
-        elif filter_type == 2:
-            for index in range(stride):
-                row[index] = (row[index] + previous[index]) & 255
-        elif filter_type == 3:
-            for index in range(stride):
-                left = row[index - 4] if index >= 4 else 0
-                row[index] = (row[index] + ((left + previous[index]) >> 1)) & 255
-        elif filter_type != 0:
-            raise ValueError(f"unsupported PNG filter {filter_type}")
-        rows.append(row)
-        previous = row
-    encoded = b"".join(b"\x00" + bytes(row) for row in rows)
-    result = b"\x89PNG\r\n\x1a\n" + png_chunk(b"IHDR", header)
-    result += b"".join(png_chunk(kind, data) for kind, data in metadata)
-    result += png_chunk(b"IDAT", zlib.compress(encoded, 9))
-    result += png_chunk(b"IEND", b"")
-    path.write_bytes(result)
+spec = importlib.util.spec_from_file_location('square_fixture_export', HERE / 'render-kitchen-fixtures-oblique.py')
+exporter = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(exporter)
+exporter.PREVIEW = exporter.ROOT / 'assets/intermediate/infirmary-fixtures-preview'
+exporter.MODELS = (
+    ('furniture.medical-bed.variants', 'furniture.medical-bed.variants.blend',
+     'oblique-furniture.medical-bed.v1.json', 1, 2, 1.0, 1.0, 0.675),
+    ('fixture.medicine-cabinet.variants', 'fixture.medicine-cabinet.variants.blend',
+     'oblique-fixture.medicine-cabinet.v1.json', 1, 1, 1.0, 1.0, 0.59),
+)
+SOURCE_SHA256 = {
+    'furniture.medical-bed.variants': '1737b03a3ee1342e813e7096e0aef189f05d714d5a69437a8fe490c026d232be',
+    'fixture.medicine-cabinet.variants': '17670457233caef94855cdaf64b2cf1bd3c8623318941cbd3ce2e5c50224ac75',
+}
+SOURCE_MESH_NAMES = {
+    'furniture.medical-bed.variants': frozenset((
+        'bed_base', 'mattress', 'rail', 'rail.001', 'leg', 'leg.001', 'leg.002',
+        'leg.003', 'headboard', 'pillow', 'control',
+    )),
+    'fixture.medicine-cabinet.variants': frozenset((
+        'cabinet_body', 'inner', 'shelf', 'shelf.001', 'shelf.002',
+        'door', 'door.001', 'handle', 'handle.001',
+    )),
+}
 
 
-def render(asset_id: str, source_file: str, footprint) -> list[dict]:
-    source_path = REPO_ROOT / "assets/source/blender" / source_file
-    bpy.ops.wm.open_mainfile(filepath=str(source_path))
-    scene = bpy.context.scene
-    scene.render.engine = "BLENDER_WORKBENCH"
-    scene.render.resolution_x = 128
-    scene.render.resolution_y = 128
-    scene.render.resolution_percentage = 100
-    scene.render.film_transparent = True
-    scene.render.image_settings.file_format = "PNG"
-    scene.display.shading.light = "STUDIO"
-    scene.display.shading.studio_light = "paint.sl"
-    scene.display.shading.color_type = "MATERIAL"
-    scene.display.shading.show_shadows = True
-    camera_data = bpy.data.cameras.new("ObliqueCamera")
-    camera = bpy.data.objects.new("ObliqueCamera", camera_data)
-    bpy.context.collection.objects.link(camera)
-    scene.camera = camera
-    camera_data.type = "ORTHO"
-    camera_data.ortho_scale = max(footprint) * 1.35
-    frames = []
-    for yaw in YAWS:
-        for elevation in ELEVATIONS:
-            yaw_radians = math.radians(yaw)
-            elevation_radians = math.radians(elevation)
-            camera.location = (
-                4 * math.cos(elevation_radians) * math.cos(yaw_radians),
-                4 * math.cos(elevation_radians) * math.sin(yaw_radians),
-                4 * math.sin(elevation_radians),
-            )
-            camera.rotation_euler = (math.pi / 2 - elevation_radians, 0, yaw_radians + math.pi / 2)
-            output = OUTPUT_ROOT / f"{asset_id}-yaw{yaw:+03d}-elev{elevation:02d}.png"
-            scene.render.filepath = str(output)
-            bpy.ops.render.render(write_still=True)
-            normalize(output)
-            frames.append({
-                "yawDegrees": yaw,
-                "elevationDegrees": elevation,
-                "image": "/assets/environment/oblique/" + output.name,
-                "sha256": hashlib.sha256(output.read_bytes()).hexdigest(),
-            })
-    return frames
+def evaluated_points(scene):
+    dependency_graph = exporter.bpy.context.evaluated_depsgraph_get()
+    points = []
+    for obj in scene.objects:
+        if obj.type != 'MESH':
+            continue
+        evaluated = obj.evaluated_get(dependency_graph)
+        mesh = evaluated.to_mesh()
+        try:
+            points.extend(evaluated.matrix_world @ vertex.co for vertex in mesh.vertices)
+        finally:
+            evaluated.to_mesh_clear()
+    if not points:
+        raise ValueError('The selected medical fixture has no evaluated geometry')
+    return points
 
 
-for asset_id, source_file, footprint in ASSETS:
-    frames = render(asset_id, source_file, footprint)
-    source_path = REPO_ROOT / "assets/source/blender" / source_file
-    manifest = {
-        "schemaVersion": 1,
-        "assetId": asset_id,
-        "source": "assets/source/blender/" + source_file,
-        "sourceSha256": hashlib.sha256(source_path.read_bytes()).hexdigest(),
-        "resolutionPx": [128, 128],
-        "nominalPixelsPerTile": 64,
-        "pivotPx": [64, 64],
-        "cameraTargetTiles": [footprint[0] / 2, footprint[1] / 2, 0.5],
-        "projection": "orthographic",
-        "yawDegrees": YAWS,
-        "elevationDegrees": ELEVATIONS,
-        "frames": frames,
-    }
-    manifest_path = REPO_ROOT / "public/game-content" / f"oblique-{asset_id.replace('.variants', '')}.v1.json"
-    pipeline_common.write_text(manifest_path, json.dumps(manifest, indent=2) + "\n")
+def prepare_source(scene, model):
+    source = exporter.ROOT / 'assets/source/blender' / model[1]
+    if exporter.hashlib.sha256(source.read_bytes()).hexdigest() != SOURCE_SHA256[model[0]]:
+        raise ValueError(f'{model[0]} original source bytes changed; re-audit the selected authored mesh set')
+    # The cabinet source retains the earlier bed, unselected, in the saved
+    # scene. The saved selected mesh set records which asset was authored.
+    # Verify that set before filtering, so a changed selection cannot silently
+    # add foreign geometry or drop an authored part. This is in-memory only;
+    # neither original .blend is rewritten.
+    source_mesh_count = sum(obj.type == 'MESH' for obj in scene.objects)
+    selected = frozenset(obj.name for obj in scene.objects if obj.type == 'MESH' and obj.select_get())
+    expected = SOURCE_MESH_NAMES[model[0]]
+    if selected != expected:
+        raise ValueError(f'{model[0]} selected source meshes changed: {sorted(selected)}')
+    for obj in list(scene.objects):
+        if obj.type == 'MESH' and obj.name not in selected:
+            exporter.bpy.data.objects.remove(obj, do_unlink=True)
+    points = evaluated_points(scene)
+    lift = -min(point.z for point in points)
+    transform = exporter.Matrix.Translation(exporter.Vector((0, 0, lift)))
+    for obj in scene.objects:
+        if obj.type == 'MESH':
+            obj.matrix_world = transform @ obj.matrix_world
+    exporter.bpy.context.view_layer.update()
+    print(f'MEDICAL_SOURCE {model[0]} meshes_before={source_mesh_count} meshes_after={len(selected)} ground_translation={lift}', flush=True)
+
+
+configure_fixture = exporter.configure
+
+
+def configure(model):
+    scene, camera, target = configure_fixture(model, prepare_source)
+    if abs(camera.data.ortho_scale - exporter.RESOLUTION_PX / 64) > 1e-6:
+        raise ValueError(f'{model[0]} actual orthographic camera scale is not 64 pixels per tile')
+    points = evaluated_points(scene)
+    minimum = [min(point[axis] for point in points) for axis in range(3)]
+    maximum = [max(point[axis] for point in points) for axis in range(3)]
+    width, height = model[3:5]
+    if not (0 <= minimum[0] <= maximum[0] <= width and
+            0 <= minimum[1] <= maximum[1] <= height and abs(minimum[2]) <= 1e-6):
+        raise ValueError(f'{model[0]} evaluated geometry escapes grounded {width} x {height}: {minimum} to {maximum}')
+    if abs(target.z - (minimum[2] + maximum[2]) / 2) > 1e-6:
+        raise ValueError(f'{model[0]} camera target does not match evaluated geometry height')
+    print(f'MEDICAL_EVALUATED_BOUNDS {model[0]} {minimum} {maximum}', flush=True)
+    return scene, camera, target
+
+
+exporter.configure = configure
+point_camera_source = exporter.point_camera
+
+
+def point_camera(camera, target, yaw, elevation):
+    point_camera_source(camera, target, yaw, elevation)
+    azimuth = exporter.math.radians(yaw)
+    tilt = exporter.math.radians(elevation)
+    expected_offset = exporter.Vector((
+        6 * exporter.math.cos(tilt) * exporter.math.sin(azimuth),
+        -6 * exporter.math.cos(tilt) * exporter.math.cos(azimuth),
+        6 * exporter.math.sin(tilt),
+    ))
+    if (camera.location - target - expected_offset).length > 1e-5:
+        raise ValueError(f'Medical camera {yaw}/{elevation} does not use the declared target and yaw basis')
+    forward = camera.rotation_euler.to_quaternion() @ exporter.Vector((0, 0, -1))
+    if forward.dot((target - camera.location).normalized()) < 1 - 1e-6:
+        raise ValueError(f'Medical camera {yaw}/{elevation} does not aim at its manifest target')
+
+
+exporter.point_camera = point_camera
+
+if __name__ == '__main__':
+    if '--verify' in sys.argv:
+        for model in exporter.MODELS:
+            _, camera, target = configure(model)
+            for yaw in exporter.YAW:
+                for elevation in exporter.ELEVATION:
+                    point_camera(camera, target, yaw, elevation)
+            print(f'MEDICAL_CAMERA_VERIFY {model[0]} 72 poses at 64 pixels per tile', flush=True)
+    else:
+        # Retain the old exporter's optional output-directory argument.
+        arguments = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
+        if arguments and not arguments[0].startswith('--'):
+            exporter.OUTPUT = Path(arguments[0]).resolve()
+        exporter.main()
