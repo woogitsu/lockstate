@@ -4534,6 +4534,10 @@ async function bootPersistence(workers: SimulationWorkerChannel, hud: HudHandle)
        * line and costs no save generation.
        */
       onWorkerAvailability: (available) => {
+        // A new worker is a new prison session, including Load of the same
+        // slot. A plan armed against the outgoing worker must not retain its
+        // fitted camera origin or submit into the replacement session.
+        if (available) roomTemplateTool?.standDown();
         hud.setUnavailable(available ? undefined : SIMULATION_UNAVAILABLE_NOTICE);
         // The existing report route, read a second time. `WorkerPerSessionHost`
         // already tells this file every time it fails to obtain a worker, so
