@@ -129,3 +129,29 @@ preview listener or new CI/private configuration was started. Historical
 palette counts are explicitly provisional for this new source. The actual
 q0/q1 calibrated baseline, missing-consumer red and exact restored green
 remain owed under a future exclusive browser lease.
+
+## First actual dedicated-source player observation
+
+The coordinator granted the exclusive browser lease after the integrated
+Bin/drawer group ended. Production build exits0 on frozen source
+`49bb6a22c2660ef4cecf11d4dc74d3995f01beac`. The first actual three-case run
+passes3/3:43.0s genuine capacity,37.7s q0 Reception and38.6s q1 Reception.
+No provisional palette failure occurred. Unchanged controls measure281/111
+for q0 oak/document and497/455 for q1 oak/monitor, equal before/after Load;
+thresholds200/70/200 and original crops/colours remain unchanged.
+`native-pixel-calibration.json` and `raw-native-provisional.txt` preserve this
+receipt. Allfour actual completed/loaded FullHD images were opened, along with
+clearly labeled enlarged inspection crops of those actual pixels. Separate
+keycaps are visible; the drawer face is behind the pedestal in both default
+views, so no native visibility of its raised pulls is claimed yet.
+
+Both actual snapshots contain the desk's real `sourceOrderId`, the matching
+completed `desk-wooden` order at the corresponding anchor and orientation,
+and complete snapshot data equal after Load. This older isolated baseline
+serializes worldversion1 without physical owner planes. These construction
+provenance observations do not establish integrated V8 plane ownership.
+The fixture now asserts those observed producer relations and complete data
+equality and records a separate native opposite-side camera screenshot after
+the unchanged palette assertions. App/tools TypeScript exits0. That updated
+fixture still owes a fresh frozen baseline, actual consumer negative and
+exact restored final green before new-source acceptance can be claimed.
