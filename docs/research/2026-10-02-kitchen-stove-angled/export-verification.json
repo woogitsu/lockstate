@@ -1,0 +1,54 @@
+{
+  "repeatFiles": 73,
+  "allBytesEqual": true,
+  "manifestSha256": "adeabb2e5abb1e59603564a163d6c2949449ebb844281e04a81be1a72b893c0a",
+  "originalSourceSha256": "cbf3ed97f84e126ddb309ea55559810ac156d430371dcb9c074e7b7e1c3523d9",
+  "dedicatedSourceSha256": "540c8b22be73848bb1520fae9ffeabfce7711bb0c629161e529b6d6ae33ca5fc",
+  "wrapperExactRestoredSha256": "cf5bf77aa3e07e0d1328dadb996a248b696519efe78d65ed93bbd629f616d6a7",
+  "nativeMutations": [
+    {
+      "mutation": "omit-added-collar",
+      "actualExitCode": 1,
+      "failure": [
+        "ValueError: Dedicated stove authored mesh set changed"
+      ]
+    },
+    {
+      "mutation": "added-vent-outside-footprint",
+      "actualExitCode": 1,
+      "failure": [
+        "ValueError: Dedicated stove evaluated source bounds changed"
+      ]
+    },
+    {
+      "mutation": "incorrect-unit-fit",
+      "actualExitCode": 1,
+      "failure": [
+        "ValueError: Dedicated stove actual loaded transform is not unit-scale anchor translation"
+      ]
+    },
+    {
+      "mutation": "wrong-camera-span",
+      "actualExitCode": 1,
+      "failure": [
+        "ValueError: Dedicated Kitchen stove actual camera scale is not 64 pixels per tile"
+      ]
+    },
+    {
+      "mutation": "wrong-camera-position",
+      "actualExitCode": 1,
+      "failure": [
+        "ValueError: Dedicated Kitchen stove actual camera target/yaw basis differs from declared square pose"
+      ]
+    }
+  ],
+  "nativeExactRestoredExitCode": 0,
+  "wrapperExactRestoredBytesEqual": true,
+  "smallestTransparentBorderPixels": 33,
+  "contactSheetSha256": "e2981304e08ff2eb8ffba2ebb2d52413c084d0ad6c70f26164215b5214770516",
+  "pngMutation": {
+    "actualNegativeExitCode": 1,
+    "exactRestoredExitCode": 0,
+    "exactPngBytesRestored": true
+  }
+}

@@ -60,6 +60,11 @@ def configure(model):
     points = evaluated_points(scene)
     minimum = [min(point[axis] for point in points) for axis in range(3)]
     maximum = [max(point[axis] for point in points) for axis in range(3)]
+    provenance = json.loads((exporter.ROOT / 'assets/source/blender/furniture.kitchen.stove.angled.provenance.json').read_text())
+    for axis in range(3):
+        offset = (1, .5, 0)[axis]
+        if abs(minimum[axis] - provenance['sourceEvaluatedBounds']['min'][axis] - offset) > 1e-6 or abs(maximum[axis] - provenance['sourceEvaluatedBounds']['max'][axis] - offset) > 1e-6:
+            raise ValueError('Dedicated stove actual loaded transform is not unit-scale anchor translation')
     if not (0 <= minimum[0] <= maximum[0] <= 2 and
             0 <= minimum[1] <= maximum[1] <= 1 and abs(minimum[2]) <= 1e-6):
         raise ValueError(f'Evaluated dedicated Kitchen stove geometry escapes grounded 2x1: {minimum} to {maximum}')

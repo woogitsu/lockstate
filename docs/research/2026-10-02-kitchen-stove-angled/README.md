@@ -20,6 +20,16 @@ The stove-only wrapper imports the unchanged shared square exporter and uses uni
 
 Pinned Blender 5.2.1 LTS upstream build ID 9e2066aef7ef, executable SHA256 `284f4041f98e113f3dc10654a7193ffaaa9bfdfec8b87fa116620a48b5f6d4cb`. Both own entrypoints explicitly assert the pinned version.
 
-## Pending production routing and native acceptance
+## Completed production export and negative controls
 
-This first coherent source checkpoint does not yet replace the production 72 pose manifest. Full 72 pose repeat-byte verification, actual added-mesh/bounds/camera mutations and PNG integrity checks are next. Real Kitchen workers, normal/90 degree isolated palette regions, actual SaveLoad, default stove consumer-only mutation and exact restoration remain pending an exclusive browser grant. HUD/root own the current browser queue; no stove browser was launched. Existing prep counter/fridge/source/registry/mapping and shared exporter functions remain untouched. No new gameplay identity, alias, footprint or schema is introduced; no hosted acceptance claim.
+The existing production descriptor now references the dedicated source and its 72 content-addressed poses. The only shared exporter catalogue change is the stove MODELS tuple (dedicated source, unit XY scales, actual midpoint target); shared functions/default callbacks and prep-counter/fridge rows stay byte-identical. The existing square-fixture stove target assertion follows the measured midpoint.
+
+Two full exports produce all 73 identical files (72 PNGs plus descriptor), descriptor SHA256 `adeabb2e5abb1e59603564a163d6c2949449ebb844281e04a81be1a72b893c0a`. Every decoded actual frame has a transparent border; minimum clearance 33 px. The complete contact sheet and the actual runtime-selected source poses yaw300/elevation40 and yaw30/elevation40 were opened and inspected. Their PNG hashes are respectively `1c60dccb6ab8` and `e654758736c0` filename prefixes; no clipping was observed.
+
+Five native production mutations each exit 1: remove an authored collar; move an added vent outside measured bounds; shrink the loaded Y fit; change actual orthographic span; move the actual camera off its declared vector. Exact wrapper bytes are restored and native verification exits 0 for all four footprint turns and 72 camera poses. A real exported PNG byte mutation makes the integrity assertion red; exact PNG byte restoration makes it green. Full recorded return codes, exact byte comparisons and hashes are in `export-verification.json`. These controls check loaded/evaluated geometry and camera state, beyond descriptor metadata.
+
+Seven focused suites pass 58 cases with one pre-existing optional live-Blender skip; both own entrypoints also ran through pinned native Blender, independently of that skip. App/tools TypeScript checks pass.
+
+## Native acceptance pending
+
+Real Kitchen workers, normal/90 degree isolated palette regions, actual SaveLoad, default stove consumer-only mutation and exact restoration remain pending an exclusive browser grant. No stove browser has launched. Existing prep counter/fridge source, registry, mapping and gameplay rules remain unchanged. No hosted acceptance claim.
