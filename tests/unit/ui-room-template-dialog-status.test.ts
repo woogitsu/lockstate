@@ -84,3 +84,32 @@ it('groups the selected full bed and keeps worker collision visible over its ove
   expect(fixtures()[0]!.style['gridRow']).toBe('2 / span 2');
   expect(fixtures()[0]!.classList.contains('hud-template__tile--blocked')).toBe(true);
 });
+
+it.each(['ready','blocked'] as const)('withdraws previous %s and collision marks while a reopened check is pending', async previous => {
+  const elements:ElementStub[]=[];
+  vi.stubGlobal('document',{createElement:()=>{const element=new ElementStub();elements.push(element);return element;}});
+  vi.stubGlobal('HTMLElement',ElementStub);
+  let pending=false,finish!:()=>void;
+  const tool=new RoomTemplateTool({
+    objectFootprint:id=>id==='bed-wooden'?{width:1,height:2}:{width:1,height:1},
+    preflight:async()=>{
+      if(pending) {await new Promise<void>(resolve=>{finish=resolve;});return {ok:true as const};}
+      return previous==='ready'?{ok:true as const}:{ok:false as const,reason:'object-occupied' as const,tile:{x:1,y:2}};
+    },place:async()=>{},
+  });
+  const preview=createRoomTemplatePreview(new Localizer({locale:'en',catalogs:[defaultMessageCatalogEn]}),tool);
+  const status=elements.find(e=>e.className==='hud-template__status')!;
+  const submit=elements.find(e=>e.textContent==='Place room plan')!;
+  const diagram=elements.find(e=>e.className==='hud-template__diagram')!;
+  await vi.waitFor(()=>expect(status.textContent).toContain(previous==='ready'?'This footprint is clear.':'This footprint is blocked.'));
+  if(previous==='blocked') expect(diagram.children.filter(e=>e.classList.contains('hud-template__tile--blocked'))).toHaveLength(2);
+  pending=true;preview.openButton.dispatchEvent(new Event('click'));
+  expect(submit.disabled).toBe(true);
+  expect(status.textContent).toBe('');
+  expect(status.attributes.get('aria-busy')).toBe('true');
+  expect(diagram.children.some(e=>e.classList.contains('hud-template__tile--blocked'))).toBe(false);
+  finish();
+  await vi.waitFor(()=>expect(status.textContent).toBe('This footprint is clear.'));
+  expect(status.attributes.get('aria-busy')).toBe('false');
+  expect(submit.disabled).toBe(false);
+});
