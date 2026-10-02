@@ -32,10 +32,10 @@ test('Load cancels an outgoing Rooms drag before release or later pointer moveme
   expect((await sentCommands(page)).filter(command => command['type'] === 'ZoneRoom')).toHaveLength(0);
 
   await keyboardLoadWhileHoldingPointer(page);
+  await expect(page.locator('.hud-rooms__area-value')).toHaveText(emptyArea);
   await page.mouse.up({ button: 'left' });
   await page.mouse.move(1140, 650, { steps: 3 });
   expect((await sentCommands(page)).filter(command => command['type'] === 'ZoneRoom')).toHaveLength(0);
-  await expect(page.locator('.hud-rooms__area-value')).toHaveText(emptyArea);
   await expect(page.locator('.hud-rooms__confirm')).not.toBeVisible();
 });
 
