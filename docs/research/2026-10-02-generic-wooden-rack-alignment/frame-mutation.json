@@ -1,0 +1,9 @@
+{
+  "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+00-elev20.72a34a9a7f49.png",
+  "actualPngByteMutation": "appended null byte",
+  "redExitCode": 1,
+  "restoredExitCode": 0,
+  "restoredFrameSha256": "72a34a9a7f49c419fa278a7a57d0f8e2835bfcb679aab5dcdf896615a93b7449",
+  "actualFrameByteRestoration": true,
+  "restoredUnitCasesPassed": 2
+}
