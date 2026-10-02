@@ -33,3 +33,9 @@ Seven focused suites pass 58 cases with one pre-existing optional live-Blender s
 ## Native acceptance pending
 
 Real Kitchen workers, normal/90 degree isolated palette regions, actual SaveLoad, default stove consumer-only mutation and exact restoration remain pending an exclusive browser grant. No stove browser has launched. Existing prep counter/fridge source, registry, mapping and gameplay rules remain unchanged. No hosted acceptance claim.
+
+### Queued native route
+
+`dedicated-kitchen-stove-player-build.spec.ts` reuses the accepted real two-stage route: native Storage Room at5,5 and Delivery Bay at12,5, actual worker completion, IndexedDB save consumed by the normal/90 Kitchen stage at20,5. Snapshot anchors/orientations include all three real Kitchen fixtures: normal stove21,6/prep23,6/fridge21,8, rotated stove24,6/prep24,8/fridge22,6 (orientation1). Every queue step keeps the existing10-second progress guard and60-second case budget. This preparation does not inject world objects or completion and changes no buildable/save rules.
+
+Burner183/109/52 and cast-iron44/50/52 are source-derived provisional candidates, with explicitly provisional rectangles/thresholds. They remain unaccepted until actual loaded player pixels, isolated region calibration, stove-only mapping-removal negative runs and exact restoration. The existing Kitchen triple spec remains unchanged. No browser or workflow config is added.
