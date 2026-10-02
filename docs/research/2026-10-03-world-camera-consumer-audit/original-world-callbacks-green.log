@@ -1,0 +1,16 @@
+pnpm : $ vitest run "tests/unit/world-camera-culling-square-callbacks.test.ts" "--maxWorkers=2"
+At line:2 char:178
++ ...  $env:Path; pnpm --config.verify-deps-before-run=false test tests/uni ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...--maxWorkers=2":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-world-camera-consumer-audit-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  24 passed (24)
+   Start at  01:20:04
+   Duration  1.62s (transform 739ms, setup 0ms, import 1.47s, tests 16ms, environment 0ms)
+
