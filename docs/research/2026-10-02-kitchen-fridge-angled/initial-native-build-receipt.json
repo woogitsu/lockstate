@@ -1,0 +1,8 @@
+{
+  "sourceCommit": "6785f009c52fbabfff59a5d65f9ecb19563435cf",
+  "productionBuildExit": 0,
+  "workerFile": "worker-Cja7sjGw.js",
+  "workerBytes": 431592,
+  "workerSha256": "dae74fc45832219ab030ffe87a4f0a5417db3c32ff32814625fddc4a613dc575",
+  "nativeBrowserAcceptance": "initial provisional test starting"
+}
