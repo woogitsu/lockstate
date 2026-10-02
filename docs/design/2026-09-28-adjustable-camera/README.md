@@ -513,3 +513,15 @@ Issue1947's production fix is integrated: worker replacement or failed claim dis
 Main-based PR1945 now has its own actual production artifact evidence, rather than borrowing integration proof: baseline2/2green11.8s, scene-release mutation1/2red12.1s, exact source restoration and artifact rebuild2/2green12.1s. One worker and original60s/10s budgets are preserved. Root inspected the refreshed screenshot, pushed dfda579bb1 and marked the PR ready for review, still subject to exact-head CI and serial main gates. Browser lease passed to the corrected Classroom acceptance; HUD pending-query proof is next.
 
 A read-only audit found clean local commits a070e935c650d288a0c4aac3545ee3f868c08da6 on the earlier template-entry branch absent from all remote refs. Root preserved that exact commit at wip/template-entry-audit-preserved-20261002 and verified the remote SHA, without advancing the old PR branch or altering its source. Its stale PR1751 CI failure concerns ADR0042 quoted anchors; it is not a green release gate for this integration.
+
+## Owner reconfirmation and bounded runtime acceptance — 2026-10-02
+
+The owner selected **3 — show the whole pattern, pan the camera and preserve the construction location** in the clickable preview-fit decision. Keep the existing integrated policy: retain the chosen world origin until the next physical mouse movement; illegal ground remains illegal. This confirms preview behavior only, not the pending persistence/history or quarter-turn decisions.
+
+The authored Classroom chair now has accepted real-player proof under the original 60-second test and 10-second assertion budgets: baseline 1/1 green (46.7s), old-chair production mapping mutation red, restored artifact 1/1 green (44.3s). All four completed chairs survive actual Save/Load with independently measured pixels. Source, 72 poses, context consumer and proof are integrated and pushed; see [Classroom chair](../../research/2026-10-02-classroom-chair/README.md).
+
+Issue1946 pending-plan reopen proof is now integrated: actual worker baseline green, stale-verdict mutation red and restored artifact green (8.5s). Root inspected the final blocked-pending screenshot: old collision markings and verdict are absent, current query is busy and numeric submission disabled. TypeScript passes after integration. See [pending reopen](../../research/2026-10-02-room-plan-pending-reopen/README.md).
+
+Serial main CI36959628731 is still running. PR1941's previous browser job ended cancelled after 90 minutes; its artifact includes a real keyboard-only room-removal timeout, so it is not classified as a purely environmental failure. One exact-job rerun is underway, without increased budgets or workers. PR1945 is ready but remains subject to exact-head full CI and the serial main gate.
+
+Three independent work surfaces continue: authored Storage Room rack, new-prison camera framing after an off-map pan, and matching room-plan legend shapes. New-session framing was reproduced in the actual browser; its production fix and mutation/restore acceptance are being recorded before integration. These integration results do not establish production deployment.
