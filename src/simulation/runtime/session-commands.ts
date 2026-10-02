@@ -34,7 +34,7 @@ import {
   zoneSupersessionKey,
   type RefusalLog,
 } from '../refusals';
-import type { ConstructionSystem } from '../construction/system';
+import { isCancellable, type ConstructionSystem } from '../construction/system';
 import type { RoomTemplateCoordinator } from '../construction/room-template-coordinator';
 import type { ObjectPlacementService } from '../objects';
 import type { PrisonerOperationsRuntime } from '../prisoners/prisoner-operations-runtime';
@@ -1203,6 +1203,21 @@ export function createSessionCommandHandler(
       return;
     }
 
+    if (simCommand?.type === 'CancelBuildOrder') {
+      const order = construction.getOrder(simCommand.orderId);
+      // Unknown, terminal and stale presses retain the construction handler's
+      // existing result. In particular, stale cancellation cannot relocate.
+      if (order !== undefined && isCancellable(order.state) &&
+          construction.revisionOf(order.id) === simCommand.expectedRevision) {
+        const key = `room-template-cancel:${order.id}`;
+        const refusal = roomTemplates.prepareCancellation(order.id, context.tick);
+        if (refusal !== undefined) {
+          refusals.record(UNZONE_REFUSAL_REASONS[refusal.reason], context.tick, key);
+          return;
+        }
+        refusals.supersede(key);
+      }
+    }
     constructionCommands(command, context);
     if (simCommand?.type === 'CancelBuildOrder' || simCommand?.type === 'Undo') {
       roomTemplates.reconcileCancelledShells();
