@@ -42,6 +42,23 @@ function harness(preparePreview?: (screen: { x: number; y: number }, physical: b
 afterEach(() => vi.unstubAllGlobals());
 
 describe('room plan pointer gesture ownership', () => {
+  it('preserves the armed plan after another UI owner consumes Escape, then accepts an unconsumed Escape', () => {
+    const h = harness();
+    const consumed = new Event('keydown', { cancelable: true });
+    Object.assign(consumed, { key: 'Escape' });
+    consumed.preventDefault();
+    h.window.dispatchEvent(consumed);
+    expect(h.tool.isArmed()).toBe(true);
+    const world = new Event('keydown', { cancelable: true });
+    Object.assign(world, { key: 'Escape' });
+    h.window.dispatchEvent(world);
+    expect(h.tool.isArmed()).toBe(false);
+    h.dispose();
+    h.tool.arm();
+    h.window.dispatchEvent(world);
+    expect(h.tool.isArmed()).toBe(true);
+  });
+
   it('reports physical movement during camera-button gestures without placing', () => {
     const prepare = vi.fn();
     const h = harness(prepare);
