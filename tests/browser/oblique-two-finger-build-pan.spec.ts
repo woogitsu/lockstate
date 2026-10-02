@@ -45,6 +45,9 @@ test('two real fingers pan the angled camera while Build stays armed', async ({ 
   await touch('touchCancel', []);
   expect((await sentCommands(page)).filter(command => command['type'] === 'PlaceBuildOrder')).toHaveLength(0);
   await touch('touchStart', [{ id: 0, x: 900, y: 540 }]);
+  await expect(page.locator('.hud-build__target-value')).toContainText('whole squares');
+  const freshTarget = await page.locator('.hud-build__target-value').innerText();
+  expect(freshTarget).toMatch(/^1 whole squares from [0-9]+, [0-9]+/);
   await touch('touchEnd', []);
   await expect.poll(async () => (await sentCommands(page)).filter(command => command['type'] === 'PlaceBuildOrder').length)
     .toBe(1);

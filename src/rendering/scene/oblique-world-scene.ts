@@ -346,6 +346,12 @@ export class ObliqueWorldScene extends Phaser.Scene {
       this.cancelGesture();
     };
     const cancelOnBlur = (): void => { this.keyboard.releaseAll(); cancelPointerInput(); };
+    const cancelOnCaptureLoss = (event: PointerEvent): void => {
+      // Native touch release loses implicit capture before Phaser receives
+      // touchend. That normal release must still commit the chosen square.
+      if (event.pointerType === 'touch' && event.buttons === 0) return;
+      cancelPointerInput();
+    };
     const canvas = this.game.canvas;
     const preventMiddleAutoScroll = (event: MouseEvent): void => {
       if (event.button === 1) event.preventDefault();
@@ -358,14 +364,14 @@ export class ObliqueWorldScene extends Phaser.Scene {
       window.removeEventListener('focusin', disarmRovingArrows);
       window.removeEventListener('blur', cancelOnBlur);
       canvas.removeEventListener('pointercancel', cancelPointerInput);
-      canvas.removeEventListener('lostpointercapture', cancelPointerInput);
+      canvas.removeEventListener('lostpointercapture', cancelOnCaptureLoss);
       canvas.removeEventListener('mousedown', preventMiddleAutoScroll);
       canvas.removeEventListener('auxclick', preventMiddleAutoScroll);
     });
     canvas.addEventListener('mousedown', preventMiddleAutoScroll);
     canvas.addEventListener('auxclick', preventMiddleAutoScroll);
     canvas.addEventListener('pointercancel', cancelPointerInput);
-    canvas.addEventListener('lostpointercapture', cancelPointerInput);
+    canvas.addEventListener('lostpointercapture', cancelOnCaptureLoss);
     window.addEventListener('keydown', keyDown);
     window.addEventListener('keyup', keyUp);
     window.addEventListener('focusin', disarmRovingArrows);
