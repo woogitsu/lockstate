@@ -37,7 +37,7 @@ test('two real fingers pan the angled camera while Build stays armed', async ({ 
   await touch('touchEnd', []);
   expect(await page.evaluate(() => new Set((window as Window & { lockstateTouchPointers?: number[] }).lockstateTouchPointers).size),
     'the browser did not deliver two native touch pointers').toBe(2);
-  await expect(minimapViewport, 'the two-finger pan did not move the angled camera').not.toHaveAttribute('style', before ?? '');
-  expect((await sentCommands(page)).filter(command => command['type'] === 'PlaceBuildOrder'),
+  expect.soft((await sentCommands(page)).filter(command => command['type'] === 'PlaceBuildOrder'),
     'two-finger navigation submitted a Build order').toHaveLength(0);
+  await expect(minimapViewport, 'the two-finger pan did not move the angled camera').not.toHaveAttribute('style', before ?? '');
 });
