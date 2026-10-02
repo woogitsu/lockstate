@@ -52,6 +52,11 @@ export class KeyboardInputAdapter {
     this.pressedCodes.clear();
   }
 
+  /** Disarm held physical keys when another control takes ownership of them. */
+  public releaseCodes(codes: readonly string[]): void {
+    for (const code of codes) this.pressedCodes.delete(code);
+  }
+
   public isActive(action: ActionId): boolean {
     const contexts = this.activeContexts();
     return this.bindings.some((binding) =>
