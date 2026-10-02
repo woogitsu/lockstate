@@ -1,5 +1,9 @@
 # Kitchen fixtures inside their occupied squares
 
+## Superseded frame cleanup
+
+Root removed exactly216 previous Kitchen PNGs after checking all current game-content JSON and tracked text for references: none remained. Published integration head26765f05cd contains ancestor110458a0a5 with the original manifests/frames; the remote head and ancestor relationship were verified, followed by a scoped LFS fetch of those historical files. Every removal path was resolved inside public/assets/environment/oblique and only explicit files were removed. All216 replacement poses remain. Ten Kitchen/hash/research-index cases pass after cleanup. This cleanup does not establish the separately pending actual player proof.
+
 The existing Kitchen plan places `object.stove` and `object.prep-counter` at 2 x 1 each, and `object.fridge` at 1 x 1. All three already have authored Blender sources and oblique catalog IDs. Their source geometry, however, was centred around `(0,0)` while the production renderer anchors the images at the **minimum tile corner**. This is tracked as [#1957](https://github.com/woogitsu/lockstate/issues/1957), related to the broader art acceptance [#1869](https://github.com/woogitsu/lockstate/issues/1869).
 
 | Existing source | Original evaluated X / Y bounds | Corrected export X / Y bounds |
