@@ -44,3 +44,61 @@ Fresh GitHub reads on 2026-10-02:
 - #1975 describes exact physical object ownership over old gesture reversal; this defect occurs before reversal even while that physical ownership is correct.
 
 The source-level render discrepancy is distinct. No new format, palette, copy, tariff or removal policy is proposed.
+
+## Implemented correction and exact verification
+
+Confirmed issue: [#1980](https://github.com/woogitsu/lockstate/issues/1980).
+The original baseline is published at `907fdc95f94101fb09ed1d0087d1170a0f7fd030`;
+its measurements and baseline-only limitations above describe that checkpoint.
+The correction is published at `db50d61ce09d79eb479d3ea9dec9aa2eae0c1add`.
+
+The sole production edit is `src/rendering/world/structures.ts`. A supplied
+physical registry now supplies completed furniture geometry exactly once per
+physical row. A completed order supplies display identity only when its exact
+recorded source ID also matches completed state, object type and anchor. An
+absent registry retains order-only fallback. Pending furniture, walls and doors
+keep their existing path.
+
+Ownerless legacy rows remain drawable. One matching completed order preserves
+the established display ID; ambiguous matches retain the physical row's own
+ID. This is a read-only display choice: the adapter assigns no simulation
+ownership. Known but invalid provenance does not fall back to an unrelated
+historical order. Order indexes keep the adapter linear in orders plus physical
+rows, including ambiguous legacy history.
+
+The expanded regression has **16 cases**:
+
+- The original six actual packed-command removal/replacement reproductions.
+- Genuine completed rotated furniture and a pending fixture ghost.
+- Undefined registry fallback versus an explicitly empty physical registry.
+- Walls, doors and pending furniture retained independently of completed object
+  visibility.
+- Two genuine encoded V7 replacement loads with ambiguous ownerless history,
+  including rotated-to-normal replacement; one legacy single-match control.
+- Three adapter controls for missing, wrong-type and wrong-anchor recorded
+  owners. They retain the physical row's identity, anchor and facing.
+- Rendering of ambiguous legacy state leaves the full captured session snapshot
+  unchanged. The four genuine replacement cases retain the independent new
+  order ID across normal/rotated placement and encoded V8 Load.
+
+Two deliberate negatives changed the **real production adapter**, separately:
+
+| Production disconnection | Negative result | Exact restored result |
+| --- | --- | --- |
+| Admit completed object orders despite a supplied physical registry | 14 failed, 2 passed; 857 ms tests, 3.37 s total | 16 passed; 894 ms tests, 3.43 s total |
+| Resolve the first historical matching order instead of the recorded exact source ID | 6 failed, 10 passed; 880 ms tests, 3.42 s total | 16 passed; 872 ms tests, 3.42 s total |
+
+Each restoration wrote the original bytes back and independently checked
+SHA-256 equality:
+`233d1486be34a5d5aaf74f181e727f522b3a32aaecc4565bd37f2fd04d8cf1c5`.
+The registry negative retains the undefined-registry fallback and ordinary
+wall/door/pending-fixture controls. The owner negative retains legacy controls
+while exposing wrong identity on genuine independent replacements.
+
+The final restored run combined this regression with
+`object-art-orientation.test.ts`, `rendering-world-view.test.ts` and
+`rendering-feed.test.ts`: **115 passed, 4 files**, 861 ms tests, 2.86 s total.
+Application and tools TypeScript checks and the production build passed. The tests exercise the
+production snapshot feed and adapter; **native pixel acceptance remains
+unperformed** because another agent holds the exclusive browser lease. No
+browser was launched and no schema, history, copy or simulation source changed.
