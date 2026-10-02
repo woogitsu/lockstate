@@ -1,0 +1,98 @@
+{
+  "canvas": {
+    "width": 2560,
+    "height": 1080,
+    "left": 0,
+    "top": 0,
+    "right": 2560,
+    "bottom": 1080
+  },
+  "viewport": {
+    "width": 2560,
+    "height": 1080
+  },
+  "gl": {
+    "maxTextureSize": 8192,
+    "maxRenderbufferSize": 8192
+  },
+  "elements": [
+    {
+      "tag": "HTML",
+      "class": "",
+      "background": "rgb(242, 246, 248)",
+      "before": {
+        "content": "none",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      "after": {
+        "content": "none",
+        "background": "rgba(0, 0, 0, 0)"
+      }
+    },
+    {
+      "tag": "BODY",
+      "class": "",
+      "background": "rgb(242, 246, 248)",
+      "before": {
+        "content": "none",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      "after": {
+        "content": "none",
+        "background": "rgba(0, 0, 0, 0)"
+      }
+    },
+    {
+      "tag": "MAIN",
+      "class": "",
+      "background": "rgba(0, 0, 0, 0)",
+      "before": {
+        "content": "none",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      "after": {
+        "content": "none",
+        "background": "rgba(0, 0, 0, 0)"
+      }
+    },
+    {
+      "tag": "DIV",
+      "class": "",
+      "background": "rgba(0, 0, 0, 0)",
+      "before": {
+        "content": "none",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      "after": {
+        "content": "none",
+        "background": "rgba(0, 0, 0, 0)"
+      }
+    },
+    {
+      "tag": "CANVAS",
+      "class": "",
+      "background": "rgba(0, 0, 0, 0)",
+      "before": {
+        "content": "none",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      "after": {
+        "content": "none",
+        "background": "rgba(0, 0, 0, 0)"
+      }
+    },
+    {
+      "tag": "DIV",
+      "class": "hud",
+      "background": "rgba(0, 0, 0, 0)",
+      "before": {
+        "content": "none",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      "after": {
+        "content": "none",
+        "background": "rgba(0, 0, 0, 0)"
+      }
+    }
+  ]
+}
