@@ -1,66 +1,141 @@
-"""Render 72 deterministic oblique views of the waste-bin module."""
+"""Render the retained authored 1x1 indoor waste bin through the shared square pipeline."""
 from __future__ import annotations
-import hashlib, json, math, os, struct, sys, zlib
+
+import hashlib
+import importlib.util
+import json
+import sys
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-import bpy
+
+SCRIPT = Path(__file__).resolve()
+spec = importlib.util.spec_from_file_location('default_bin_square_exporter', SCRIPT.with_name('render-kitchen-fixtures-oblique.py'))
+assert spec and spec.loader
+exporter = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(exporter)
+sys.path.insert(0, str(SCRIPT.parent))
 import pipeline_common
 pipeline_common.require_blender_version()
-repo = Path(__file__).resolve().parents[2]
-args = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
-out = Path(args[args.index("--output") + 1]).resolve() if "--output" in args else repo / "public/assets/environment/oblique"
-out.mkdir(parents=True, exist_ok=True)
-ASSET_ID = "fixture.cell.waste_bin"
-FILE_STEM = "fixture.cell.waste-bin"
-SOURCE = repo / "assets/source/blender/fixture.cell.waste_bin.blend"
-YAWS = list(range(0, 360, 30)); ELEVATIONS = list(range(20, 80, 10))
-TARGET_Z = 0.4
+ASSET_ID = 'fixture.cell.waste_bin'
+exporter.MODELS = ((ASSET_ID, 'fixture.cell.waste_bin.angled.blend',
+                    'oblique-fixture-cell-waste-bin.v1.json', 1, 1, 1.0, 1.0, 0.46700000762939453),)
+exporter.PREVIEW = exporter.ROOT / 'assets/intermediate/default-waste-bin-preview'
+centered_points = []
 
-def chunk(kind, data):
-    return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data) & 0xffffffff)
 
-def normalize(path: Path):
-    blob = path.read_bytes(); offset = 8; header = None; compressed = b""; metadata = []
-    while offset < len(blob):
-        length = struct.unpack(">I", blob[offset:offset+4])[0]; kind = blob[offset+4:offset+8]; data = blob[offset+8:offset+8+length]; offset += 12 + length
-        if kind == b"IHDR": header = data
-        elif kind == b"IDAT": compressed += data
-        elif kind in (b"sRGB", b"gAMA", b"cHRM", b"iCCP"): metadata.append((kind, data))
-    if header is None: raise ValueError(f"missing IHDR in {path}")
-    width, height, depth, color_type, compression, filt, interlace = struct.unpack(">IIBBBBB", header)
-    if (depth,color_type,compression,filt,interlace) != (8,6,0,0,0): raise ValueError(f"unsupported PNG format in {path}")
-    raw=zlib.decompress(compressed); stride=width*4; rows=[]; pos=0; prev=bytearray(stride)
-    for _ in range(height):
-        ft=raw[pos]; pos+=1; row=bytearray(raw[pos:pos+stride]); pos+=stride
-        if ft==1:
-            for i in range(4,stride): row[i]=(row[i]+row[i-4])&255
-        elif ft==2:
-            for i in range(stride): row[i]=(row[i]+prev[i])&255
-        elif ft==3:
-            for i in range(stride): row[i]=(row[i]+((row[i-4] if i>=4 else 0)+prev[i]>>1))&255
-        elif ft==4:
-            for i in range(stride):
-                a=row[i-4] if i>=4 else 0; b=prev[i]; c=prev[i-4] if i>=4 else 0
-                p=a+b-c; pa=abs(p-a); pb=abs(p-b); pc=abs(p-c)
-                pr=a if pa<=pb and pa<=pc else (b if pb<=pc else c)
-                row[i]=(row[i]+pr)&255
-        elif ft!=0: raise ValueError(f"unsupported PNG filter {ft}")
-        rows.append(row); prev=row
-    if any(rows[0][3::4]) or any(rows[-1][3::4]) or any(row[3] or row[-1] for row in rows):
-        raise ValueError(f"oblique model touches the PNG border: {path}")
-    encoded=b"".join(b"\x00"+bytes(row) for row in rows)
-    path.write_bytes(b"\x89PNG\r\n\x1a\n"+chunk(b"IHDR",header)+b"".join(chunk(k,d) for k,d in metadata)+chunk(b"IDAT",zlib.compress(encoded,9))+chunk(b"IEND",b""))
+def evaluated_points(scene):
+    exporter.bpy.context.view_layer.update()
+    graph = exporter.bpy.context.evaluated_depsgraph_get()
+    points = []
+    for obj in scene.objects:
+        if obj.type != 'MESH':
+            continue
+        evaluated = obj.evaluated_get(graph)
+        mesh = evaluated.to_mesh()
+        try:
+            points.extend(evaluated.matrix_world @ vertex.co for vertex in mesh.vertices)
+        finally:
+            evaluated.to_mesh_clear()
+    return points
 
-bpy.ops.wm.open_mainfile(filepath=str(SOURCE)); scene=bpy.context.scene
-scene.render.engine="BLENDER_WORKBENCH"; scene.render.resolution_x=128; scene.render.resolution_y=128; scene.render.resolution_percentage=100
-scene.render.film_transparent=True; scene.render.image_settings.file_format="PNG"; scene.render.image_settings.color_mode="RGBA"; scene.render.image_settings.color_depth="8"; scene.render.image_settings.compression=15; scene.render.dither_intensity=0.0
-scene.display.shading.light="STUDIO"; scene.display.shading.studio_light="paint.sl"; scene.display.shading.color_type="MATERIAL"; scene.display.shading.show_shadows=True
-cam_data=bpy.data.cameras.new("ObliqueCamera"); cam=bpy.data.objects.new("ObliqueCamera",cam_data); bpy.context.collection.objects.link(cam); scene.camera=cam; cam_data.type="ORTHO"; cam_data.ortho_scale=1.55
-frames=[]
-for yaw in YAWS:
-  for elev in ELEVATIONS:
-    er=math.radians(elev); yr=math.radians(yaw); cam.location=(4*math.cos(er)*math.cos(yr),4*math.cos(er)*math.sin(yr),4*math.sin(er)+TARGET_Z); cam.rotation_euler=(math.pi/2-er,0,yr+math.pi/2)
-    file=out/f"{FILE_STEM}-yaw{yaw:+03d}-elev{elev:02d}.png"; scene.render.filepath=str(file); bpy.ops.render.render(write_still=True); normalize(file)
-    frames.append({"yawDegrees":yaw,"elevationDegrees":elev,"image":"/assets/environment/oblique/"+file.name,"sha256":hashlib.sha256(file.read_bytes()).hexdigest()})
-manifest={"schemaVersion":1,"assetId":ASSET_ID,"source":"assets/source/blender/fixture.cell.waste_bin.blend","sourceSha256":hashlib.sha256(SOURCE.read_bytes()).hexdigest(),"resolutionPx":[128,128],"nominalPixelsPerTile":64,"pivotPx":[64,64],"cameraTargetTiles":[0.5,0.5,TARGET_Z],"projection":"orthographic","yawDegrees":YAWS,"elevationDegrees":ELEVATIONS,"frames":frames}
-manifest_path=repo/"public/game-content/oblique-fixture-cell-waste-bin.v1.json"; pipeline_common.write_text(manifest_path,json.dumps(manifest,indent=2)+"\n"); print("rendered",len(frames),"frames; manifest",manifest_path)
+
+def prepare_source(scene, model):
+    global centered_points
+    provenance = json.loads((exporter.ROOT / 'assets/source/blender/fixture.cell.waste_bin.angled.provenance.json').read_text())
+    source = exporter.ROOT / provenance['source']
+    if hashlib.sha256(source.read_bytes()).hexdigest() != provenance['sourceSha256']:
+        raise ValueError('Retained indoor bin source bytes differ from its audited provenance')
+    registry = json.loads((exporter.ROOT / 'public/game-content/oblique-module-registry.v1.json').read_text())
+    entry = next(value for value in registry['entries'] if value['assetId'] == ASSET_ID)
+    if model[0] != ASSET_ID or '/game-content/' + model[2] != entry['manifest']:
+        raise ValueError('Indoor bin exporter does not target the canonical runtime descriptor')
+    # Audit evaluated geometry as well as source bytes; omission and transformed
+    # meshes in this loaded source must be caught before rendering.
+    import struct
+    graph = exporter.bpy.context.evaluated_depsgraph_get()
+    records = []
+    for obj in sorted((value for value in scene.objects if value.type == 'MESH'), key=lambda value: value.name):
+        value = obj.evaluated_get(graph)
+        mesh = value.to_mesh()
+        try:
+            points = [value.matrix_world @ vertex.co for vertex in mesh.vertices]
+            records.append({'name': obj.name, 'evaluatedVertices': len(points),
+                'evaluatedPositionSha256': hashlib.sha256(b''.join(struct.pack('<3f', *point) for point in points)).hexdigest(),
+                'modifiers': [modifier.type for modifier in obj.modifiers],
+                'materials': [material.name for material in obj.data.materials]})
+        finally:
+            value.to_mesh_clear()
+    if records != provenance['meshes']:
+        raise ValueError('Indoor bin evaluated retained geometry changed')
+    actual = sorted(obj.name for obj in scene.objects if obj.type == 'MESH')
+    if actual != sorted(mesh['name'] for mesh in provenance['meshes']):
+        raise ValueError('Retained indoor bin authored mesh set changed')
+    centered_points = evaluated_points(scene)
+
+
+configure_shared = exporter.configure
+
+
+def configure(model):
+    scene, camera, target = configure_shared(model, prepare_source)
+    points = evaluated_points(scene)
+    expected = [point + exporter.Vector((.5, .5, 0)) for point in centered_points]
+    if len(points) != len(expected) or any((point - original).length > 1e-6
+                                         for point, original in zip(points, expected)):
+        raise ValueError('Indoor bin loaded transform must preserve unit geometry and min-corner anchor')
+    minimum = [min(point[axis] for point in points) for axis in range(3)]
+    maximum = [max(point[axis] for point in points) for axis in range(3)]
+    if not (0 <= minimum[0] <= maximum[0] <= 1 and
+            0 <= minimum[1] <= maximum[1] <= 1 and abs(minimum[2]) <= 1e-6):
+        raise ValueError(f'Evaluated indoor waste bin geometry escapes grounded 1x1: {minimum} to {maximum}')
+    if (target - exporter.Vector((.5, .5, (minimum[2] + maximum[2]) / 2))).length > 1e-6:
+        raise ValueError('Indoor waste bin target does not match its evaluated source height')
+    if abs(camera.data.ortho_scale - exporter.RESOLUTION_PX / 64) > 1e-6:
+        raise ValueError('Indoor waste bin actual camera scale is not 64 pixels per tile')
+    # Object quarter turns use clockwise +X->+Y. Rotate actual evaluated points
+    # about the center, then translate to the rotated occupied min corner.
+    for turns in range(4):
+        width, height = (1, 1)
+        transformed = []
+        for point in points:
+            x, y = point.x - 0.5, point.y - 0.5
+            for _ in range(turns):
+                x, y = -y, x
+            transformed.append((x + width / 2, y + height / 2))
+        if not all(0 <= x <= width and 0 <= y <= height for x, y in transformed):
+            raise ValueError(f'Indoor waste bin evaluated geometry escapes quarter turn {turns}')
+    print(f'DEFAULT_BIN_EVALUATED_BOUNDS {minimum} {maximum}; four occupied orientations verified', flush=True)
+    return scene, camera, target
+
+
+exporter.configure = configure
+point_camera_shared = exporter.point_camera
+
+
+def point_camera(camera, target, yaw, elevation):
+    point_camera_shared(camera, target, yaw, elevation)
+    # Independent world projection basis: yaw0 camera looks north from -Y;
+    # positive yaw moves its ground position toward +X. Read actual transforms.
+    azimuth, tilt = exporter.math.radians(yaw), exporter.math.radians(elevation)
+    offset = camera.location - target
+    expected = exporter.Vector((6 * exporter.math.cos(tilt) * exporter.math.sin(azimuth),
+                                -6 * exporter.math.cos(tilt) * exporter.math.cos(azimuth),
+                                6 * exporter.math.sin(tilt)))
+    if (offset - expected).length > 1e-5:
+        raise ValueError('Indoor waste bin actual camera target/yaw basis differs from declared square pose')
+    forward = camera.rotation_euler.to_quaternion() @ exporter.Vector((0, 0, -1))
+    if forward.dot((-offset).normalized()) < 1 - 1e-6:
+        raise ValueError('Indoor waste bin actual camera does not aim at its declared target')
+
+
+exporter.point_camera = point_camera
+
+if __name__ == '__main__':
+    if '--verify' in sys.argv:
+        for model in exporter.MODELS:
+            _, camera, target = configure(model)
+            for yaw in exporter.YAW:
+                for elevation in exporter.ELEVATION:
+                    point_camera(camera, target, yaw, elevation)
+        print('DEFAULT_BIN_VERIFY72 cameras and four occupied orientations', flush=True)
+    else:
+        exporter.main()
