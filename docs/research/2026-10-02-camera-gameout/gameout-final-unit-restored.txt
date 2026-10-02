@@ -1,0 +1,16 @@
+pnpm : $ vitest run "tests/unit/oblique-camera-gameout.test.ts"
+At line:2 char:1064
++ ... ce.ts')))}; pnpm test tests/unit/oblique-camera-gameout.test.ts *> '. ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...ameout.test.ts":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-camera-gameout-audit-20261002
+
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  23:17:45
+   Duration  812ms (transform 244ms, setup 0ms, import 684ms, tests 4ms, environment 0ms)
+

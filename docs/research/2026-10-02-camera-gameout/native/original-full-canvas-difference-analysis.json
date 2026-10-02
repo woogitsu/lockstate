@@ -1,0 +1,80 @@
+[
+  {
+    "stage": "gameout-native-original-targeted",
+    "button": "right",
+    "fullImageDiffBounds": [
+      128,
+      95,
+      1909,
+      1080
+    ],
+    "uncoveredMapClip": [
+      400,
+      300,
+      1400,
+      700
+    ],
+    "mapDiffBoundsRelativeToClip": [
+      0,
+      0,
+      1000,
+      400
+    ]
+  },
+  {
+    "stage": "gameout-native-original-targeted",
+    "button": "middle",
+    "fullImageDiffBounds": [
+      128,
+      95,
+      1909,
+      1080
+    ],
+    "uncoveredMapClip": [
+      400,
+      300,
+      1400,
+      700
+    ],
+    "mapDiffBoundsRelativeToClip": [
+      0,
+      0,
+      1000,
+      400
+    ]
+  },
+  {
+    "stage": "gameout-native-fixed",
+    "button": "right",
+    "fullImageDiffBounds": [
+      1569,
+      107,
+      1909,
+      762
+    ],
+    "uncoveredMapClip": [
+      400,
+      300,
+      1400,
+      700
+    ],
+    "mapDiffBoundsRelativeToClip": null
+  },
+  {
+    "stage": "gameout-native-fixed",
+    "button": "middle",
+    "fullImageDiffBounds": [
+      1569,
+      107,
+      1909,
+      762
+    ],
+    "uncoveredMapClip": [
+      400,
+      300,
+      1400,
+      700
+    ],
+    "mapDiffBoundsRelativeToClip": null
+  }
+]

@@ -1,0 +1,199 @@
+{
+  "from": {
+    "x": 800,
+    "y": 500
+  },
+  "to": {
+    "x": 940,
+    "y": 500
+  },
+  "expected": [
+    {
+      "x": 15,
+      "y": 14
+    },
+    {
+      "x": 16,
+      "y": 14
+    }
+  ],
+  "target": "2 whole squares from 15, 14 | catalogue value 160",
+  "actualWorkerCommands": [
+    {
+      "type": "PlaceBuildOrder",
+      "orderId": "order-587fcb79-f55f-43af-8aab-096a6a0083b7",
+      "definitionId": "wall-brick",
+      "x": 15,
+      "y": 14,
+      "footprint": "square",
+      "transactionId": "build-02a8c75a-e8f3-4d65-ac0e-c3fce28b940d"
+    },
+    {
+      "type": "PlaceBuildOrder",
+      "orderId": "order-638f08ad-7636-47c7-a602-84b287123ffc",
+      "definitionId": "wall-brick",
+      "x": 16,
+      "y": 14,
+      "footprint": "square",
+      "transactionId": "build-02a8c75a-e8f3-4d65-ac0e-c3fce28b940d"
+    }
+  ],
+  "events": [
+    {
+      "type": "pointerdown",
+      "target": "BUTTON",
+      "hit": "BUTTON",
+      "buttons": 1
+    },
+    {
+      "type": "mousedown",
+      "target": "BUTTON",
+      "hit": "BUTTON",
+      "buttons": 1
+    },
+    {
+      "type": "pointerup",
+      "target": "BUTTON",
+      "hit": "BUTTON",
+      "buttons": 0
+    },
+    {
+      "type": "mouseup",
+      "target": "BUTTON",
+      "hit": "BUTTON",
+      "buttons": 0
+    },
+    {
+      "type": "pointerout",
+      "target": "BUTTON",
+      "hit": "svg",
+      "buttons": 0
+    },
+    {
+      "type": "pointerdown",
+      "target": "svg",
+      "hit": "svg",
+      "buttons": 1
+    },
+    {
+      "type": "mousedown",
+      "target": "svg",
+      "hit": "svg",
+      "buttons": 1
+    },
+    {
+      "type": "pointerup",
+      "target": "svg",
+      "hit": "svg",
+      "buttons": 0
+    },
+    {
+      "type": "mouseup",
+      "target": "svg",
+      "hit": "svg",
+      "buttons": 0
+    },
+    {
+      "type": "pointerout",
+      "target": "svg",
+      "hit": "SPAN",
+      "buttons": 0
+    },
+    {
+      "type": "pointerdown",
+      "target": "SPAN",
+      "hit": "SPAN",
+      "buttons": 1
+    },
+    {
+      "type": "mousedown",
+      "target": "SPAN",
+      "hit": "SPAN",
+      "buttons": 1
+    },
+    {
+      "type": "pointerup",
+      "target": "SPAN",
+      "hit": "SPAN",
+      "buttons": 0
+    },
+    {
+      "type": "mouseup",
+      "target": "SPAN",
+      "hit": "SPAN",
+      "buttons": 0
+    },
+    {
+      "type": "pointerout",
+      "target": "SPAN",
+      "hit": "SPAN",
+      "buttons": 0
+    },
+    {
+      "type": "pointerdown",
+      "target": "SPAN",
+      "hit": "SPAN",
+      "buttons": 1
+    },
+    {
+      "type": "mousedown",
+      "target": "SPAN",
+      "hit": "SPAN",
+      "buttons": 1
+    },
+    {
+      "type": "pointerup",
+      "target": "SPAN",
+      "hit": "SPAN",
+      "buttons": 0
+    },
+    {
+      "type": "mouseup",
+      "target": "SPAN",
+      "hit": "SPAN",
+      "buttons": 0
+    },
+    {
+      "type": "pointerout",
+      "target": "SPAN",
+      "hit": "CANVAS",
+      "buttons": 0
+    },
+    {
+      "type": "pointerdown",
+      "target": "CANVAS",
+      "hit": "CANVAS",
+      "buttons": 1
+    },
+    {
+      "type": "mousedown",
+      "target": "CANVAS",
+      "hit": "CANVAS",
+      "buttons": 1
+    },
+    {
+      "type": "gotpointercapture",
+      "target": "CANVAS",
+      "hit": "CANVAS",
+      "buttons": 1
+    },
+    {
+      "type": "pointerup",
+      "target": "CANVAS",
+      "hit": "CANVAS",
+      "buttons": 0
+    },
+    {
+      "type": "mouseup",
+      "target": "CANVAS",
+      "hit": "CANVAS",
+      "buttons": 0
+    },
+    {
+      "type": "lostpointercapture",
+      "target": "CANVAS",
+      "hit": "CANVAS",
+      "buttons": 0
+    }
+  ]
+}
