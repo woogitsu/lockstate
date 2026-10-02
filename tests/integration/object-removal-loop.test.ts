@@ -1043,7 +1043,7 @@ describe('a removal is deterministic and survives a save', () => {
     // deletes a row from a section that already exists, which is why phase 3
     // moves no save version.
     expect(bundle.simulation?.objects?.placedObjects).toEqual([
-      { placedObjectId: 'object:5:6', objectId: 'object.toilet', anchorTile: { x: 5, y: 6 }, orientation: 0 },
+      { placedObjectId: 'object:5:6', objectId: 'object.toilet', anchorTile: { x: 5, y: 6 }, orientation: 0, sourceOrderId: 'toilet-1' },
     ]);
 
     const envelope = createSaveEnvelope({

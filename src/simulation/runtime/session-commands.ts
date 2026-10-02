@@ -16,6 +16,7 @@ import {
   REMOVE_WALL_REFUSAL_REASONS,
   SELL_REFUSAL_REASONS,
   UNZONE_REFUSAL_REASONS,
+  ROOM_TEMPLATE_REVERSAL_REFUSAL_REASONS,
   ZONE_REFUSAL_REASONS,
   admitSupersessionKey,
   dismissStaffSupersessionKey,
@@ -885,7 +886,7 @@ export function createSessionCommandHandler(
       if (pendingObjectOrderId !== undefined) {
         const refusal = roomTemplates.prepareCancellation(pendingObjectOrderId, context.tick);
         if (refusal !== undefined) {
-          refusals.record(UNZONE_REFUSAL_REASONS[refusal.reason], context.tick, removeObjectSupersessionKey(simCommand.x, simCommand.y), {
+          refusals.record(ROOM_TEMPLATE_REVERSAL_REFUSAL_REASONS[refusal.reason], context.tick, removeObjectSupersessionKey(simCommand.x, simCommand.y), {
             x: simCommand.x, y: simCommand.y,
           });
           return;
@@ -997,7 +998,7 @@ export function createSessionCommandHandler(
       if (pendingObjectOrderId !== undefined) {
         const refusal = roomTemplates.prepareCancellation(pendingObjectOrderId, context.tick);
         if (refusal !== undefined) {
-          refusals.record(UNZONE_REFUSAL_REASONS[refusal.reason], context.tick, removeObjectSupersessionKey(simCommand.x, simCommand.y), {
+          refusals.record(ROOM_TEMPLATE_REVERSAL_REFUSAL_REASONS[refusal.reason], context.tick, removeObjectSupersessionKey(simCommand.x, simCommand.y), {
             x: simCommand.x, y: simCommand.y,
           });
           return;
@@ -1050,7 +1051,7 @@ export function createSessionCommandHandler(
       // Cancel. Prepare collective unzoning before touching any geometry.
       const refusal = roomTemplates.prepareCancellation(wallOrder.id, context.tick);
       if (refusal !== undefined) {
-        refusals.record(UNZONE_REFUSAL_REASONS[refusal.reason], context.tick, wallKey, {
+        refusals.record(ROOM_TEMPLATE_REVERSAL_REFUSAL_REASONS[refusal.reason], context.tick, wallKey, {
           x: simCommand.x, y: simCommand.y,
         });
         return;
@@ -1245,7 +1246,7 @@ export function createSessionCommandHandler(
         const key = `room-template-cancel:${order.id}`;
         const refusal = roomTemplates.prepareCancellation(order.id, context.tick);
         if (refusal !== undefined) {
-          refusals.record(UNZONE_REFUSAL_REASONS[refusal.reason], context.tick, key);
+          refusals.record(ROOM_TEMPLATE_REVERSAL_REFUSAL_REASONS[refusal.reason], context.tick, key);
           return;
         }
         refusals.supersede(key);

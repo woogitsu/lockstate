@@ -12,6 +12,7 @@ import type {
   SaveEnvelopeV5,
   SaveEnvelopeV6,
   SaveEnvelopeV7,
+  SaveEnvelopeV8,
   SavePayloadV1,
   SavePayloadV3,
   SavePayloadV4,
@@ -602,4 +603,12 @@ export function migrateSaveEnvelopeV6ToV7(input: SaveEnvelopeV6): SaveEnvelopeV7
     checksum: computeSaveChecksum(migratedPayload as unknown as JsonValue),
     payload: migratedPayload,
   } as SaveEnvelopeV7;
+}
+
+
+/** V7 -> V8 preserves every field and never fabricates placement ownership. */
+export function migrateSaveEnvelopeV7ToV8(input: SaveEnvelopeV7): SaveEnvelopeV8 {
+  const payload = structuredClone(input.payload);
+  return { ...input, saveSchemaVersion: 8, payload,
+    checksum: computeSaveChecksum(payload as unknown as JsonValue) };
 }

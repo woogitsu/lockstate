@@ -248,8 +248,8 @@ const SUBMISSION_FAIL_REASONS: Readonly<Record<string, BuildOrderFailReason>> = 
  * `ObjectPlacementService` documents the one interleaving that produces it.
  */
 export interface ObjectPlacementSink {
-  onOrderCompleted(objectId: string, anchor: TilePosition, orientation?: 0 | 1 | 2 | 3): boolean;
-  onOrderReverted(objectId: string, anchor: TilePosition): boolean;
+  onOrderCompleted(objectId: string, anchor: TilePosition, orientation?: 0 | 1 | 2 | 3, sourceOrderId?: string): boolean;
+  onOrderReverted(objectId: string, anchor: TilePosition, sourceOrderId?: string): boolean;
 }
 
 /**
@@ -2143,7 +2143,7 @@ export class ConstructionSystem implements SystemRegistration {
       // and the room it stands in has its capacity re-derived on the same call
       // (ADR 0028 decision 2, moment one of three).
       if (definition.placesObjectId !== undefined) {
-        this.objectPlacement?.onOrderCompleted(definition.placesObjectId, order.location, order.objectOrientation ?? 0);
+        this.objectPlacement?.onOrderCompleted(definition.placesObjectId, order.location, order.objectOrientation ?? 0, order.id);
       }
       this.markGeometryChanged(order.location);
       return;
@@ -2196,7 +2196,7 @@ export class ConstructionSystem implements SystemRegistration {
       // bed permanent while a misplaced wall is not. Moment two of the
       // resolver's three.
       if (definition.placesObjectId !== undefined) {
-        this.objectPlacement?.onOrderReverted(definition.placesObjectId, order.location);
+        this.objectPlacement?.onOrderReverted(definition.placesObjectId, order.location, order.id);
       }
       this.markGeometryChanged(order.location);
       return;

@@ -1475,6 +1475,7 @@ export const REFUSAL_REASONS = [
   'cancel-build-order.stale-cancellation',
   'cancel-purchase.not-pending',
   'construction.materials-unfunded',
+  'construction.object-ownership-unknown',
   'dismiss.unknown-staff',
   'edit-regime-block.unknown-block',
   'edit-regime-block.unknown-group',

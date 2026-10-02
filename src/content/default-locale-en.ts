@@ -1004,6 +1004,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
    */
   'hud.alert.refusal.build.duplicate-order': 'The build order failed — that order already exists.',
   'hud.alert.refusal.build.out-of-bounds': 'The build order failed — that tile is outside the map.',
+  'hud.alert.refusal.construction.object-ownership-unknown': 'This saved object has no clear construction owner. Remove it directly before undoing or cancelling this room plan.',
   'hud.alert.refusal.build.unbuildable': 'The build order failed — nothing can be built on that tile.',
   'hud.alert.refusal.build.unbuildable-terrain': 'The build order failed — the ground there cannot be built on.',
   /*

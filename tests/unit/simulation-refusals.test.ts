@@ -18,6 +18,7 @@ import {
   REMOVE_WALL_REFUSAL_REASONS,
   SELL_REFUSAL_REASONS,
   RefusalLog,
+  ROOM_TEMPLATE_REVERSAL_REFUSAL_REASONS,
   UNZONE_REFUSAL_REASONS,
   ZONE_REFUSAL_REASONS,
   admitSupersessionKey,
@@ -149,6 +150,7 @@ describe('the wire vocabulary is exactly what the sixteen domains can produce', 
       ...Object.values(SELL_REFUSAL_REASONS),
       ...Object.values(ZONE_REFUSAL_REASONS),
       ...Object.values(UNZONE_REFUSAL_REASONS),
+      ROOM_TEMPLATE_REVERSAL_REFUSAL_REASONS['object-ownership-unknown'],
     ];
     for (const reason of produced) {
       expect(REFUSAL_REASONS, `${reason} is produced but not declared on the wire`).toContain(reason);
@@ -159,6 +161,10 @@ describe('the wire vocabulary is exactly what the sixteen domains can produce', 
     // for one layer over. `Record` exhaustiveness gives the other direction
     // at compile time; this gives this one.
     expect([...produced].sort()).toEqual([...REFUSAL_REASONS].sort());
+  });
+
+  it('pins the approved room-template ownership refusal', () => {
+    expect(ROOM_TEMPLATE_REVERSAL_REFUSAL_REASONS['object-ownership-unknown']).toBe('construction.object-ownership-unknown');
   });
 
   it('pairs every domain reason with the wire id it is meant to have, not merely with some wire id', () => {
@@ -330,6 +336,7 @@ describe('the wire vocabulary is exactly what the sixteen domains can produce', 
       ...Object.values(REMOVE_WALL_REFUSAL_REASONS),
       ...Object.values(SELL_REFUSAL_REASONS),
       ...Object.values(UNZONE_REFUSAL_REASONS),
+      ROOM_TEMPLATE_REVERSAL_REFUSAL_REASONS['object-ownership-unknown'],
       ...Object.values(ZONE_REFUSAL_REASONS),
     ];
     expect(paired).toHaveLength(REFUSAL_REASONS.length);

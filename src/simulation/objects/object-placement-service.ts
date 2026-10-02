@@ -812,8 +812,8 @@ export class ObjectPlacementService {
    * room resolves nothing, which is the same statement `place` refuses to let a
    * player make.
    */
-  public onOrderCompleted(objectId: string, anchor: TilePosition, orientation: ObjectOrientation = DEFAULT_PLACEMENT_ORIENTATION): boolean {
-    if (!this.placedObjects.place(placedObjectAt(objectId, anchor, orientation))) return false;
+  public onOrderCompleted(objectId: string, anchor: TilePosition, orientation: ObjectOrientation = DEFAULT_PLACEMENT_ORIENTATION, sourceOrderId?: string): boolean {
+    if (!this.placedObjects.place(placedObjectAt(objectId, anchor, orientation, sourceOrderId))) return false;
     this.resolver.resolveContaining(anchor);
     return true;
   }
@@ -853,7 +853,7 @@ export class ObjectPlacementService {
    * id carried on the order, because the id *is* a function of that tile
    * (`placedObjectIdFor`). Nothing has to be stored to find it again.
    */
-  public onOrderReverted(objectId: string, anchor: TilePosition): boolean {
+  public onOrderReverted(objectId: string, anchor: TilePosition, sourceOrderId?: string): boolean {
     const object = this.placedObjects.objectAt(anchor);
     // Guarded on the object id as well as the tile, so an order reverted after
     // its tile was taken by a *different* object cannot delete that one. Both
@@ -861,6 +861,10 @@ export class ObjectPlacementService {
     if (object === undefined || object.objectId !== objectId || object.anchorTile.x !== anchor.x || object.anchorTile.y !== anchor.y) {
       return false;
     }
+    // Known exact provenance protects an independently rebuilt same-type object.
+    // Coupled template preparation refuses absent/invalid legacy provenance before
+    // any mutation. Ordinary legacy single-order reversal retains its old rule.
+    if (object.sourceOrderId !== undefined && object.sourceOrderId !== sourceOrderId) return false;
     this.placedObjects.remove(object.placedObjectId);
     this.relocateResidentsLeftWithoutAPlace(this.resolver.resolveContaining(anchor));
     return true;

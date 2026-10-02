@@ -1177,3 +1177,56 @@ scope; this Kitchen client still uses the preceding save format. The three agent
 continue washing-machine authoring, whole-square wall scale/anchor correction,
 and approved ownership persistence. Scoped native acceptance does not mean that
 any of these unpublished-to-production deliveries is already on lockstate.io.
+## Approved ownership and square-wall integration checkpoint — 2026-10-02
+
+The owner-approved #1975 implementation is integrated after PR1978 on the
+separate `codex/integrate-wall-owner-20261002` branch. V8 records optional exact
+`sourceOrderId`; the V7 migration preserves data without inventing ownership,
+and frozen V1–V7 validators keep their historical shapes. Ambiguous reversal of
+a coupled old room plan refuses atomically before unzoning or geometry changes.
+The exact approved EN/PL refusal is wired; ordinary ownerless legacy single-order
+reversal remains explicitly outside this protection. Root inspected the wiring
+and independently ran 80 ownership/migration/object/wall tests, all green, and
+both TypeScript targets plus the named production build passed. The combined
+worker is `worker-Ce4CF4WT.js`. This is local integration, not hosted acceptance.
+
+Both square Brick catalogs now use the actual 64-pixel tile scale and centred
+anchors, with original Blender source bytes preserved. Upstream native proof
+covers six full/low wall poses, two independent six-case producer negatives and
+exact-restored acceptance. Root retains the actual before/after PNG/JSON records;
+combined-worker native acceptance is queued, including genuine Kitchen object
+ownership before and after player Save/Load. The existing artifact/source test
+partition now sends this wall fixture through the built client.
+
+The separate dedicated washing machine passed actual capacity construction,
+normal/rotated Laundry, exact visible glass pixels, and Save/Load. Removing only
+its render mapping failed both orientation consumers while worker state stayed
+unchanged; exact restoration passed all three cases. Its published model remains
+a separate following delivery, not an unnoticed change to PR1977 or PR1978.
+
+The first frozen candidate still has a failing browser gate. Concrete repairs
+are developed separately: native View acquisition, full-square keyboard enclosure,
+visible camera controls, full object-footprint readout, retained room-plan origin,
+and the actual short-window Build floor. No timeout, retry, assertion tolerance,
+or hosted completion is inferred from these scoped results. Keep advancing real
+camera input and Blender models while the serial browser acceptance runs.
+
+### Combined native acceptance completed
+
+Root's actual built `worker-Ce4CF4WT.js` client now passes all nine combined Full
+HD cases in 4.2 minutes: capacity construction, normal and rotated Kitchen with
+the stove/fridge/prep counter, exact V8 ownership tuples through player Save/Load,
+and six full/low square-wall poses. Every wall allocates exactly two bricks in
+one command at (20,20), with zero classified masonry pixels outside its ground
+span or authored projected hull. Both loaded Kitchen screenshots were opened.
+[The new combined captures and complete output](../../research/2026-10-02-wall-owner-integrated/README.md)
+are retained independently of upstream proofs. This closes the queued local
+native check above; full exact-head CI and the serial release gates remain.
+
+An additional confirmed renderer defect is being repaired independently: a
+removed or rebuilt template object can still be drawn from its historical
+completed construction order, even when V8's physical registry correctly holds
+zero objects or one replacement. Six actual packed-session/save-load/render-feed
+cases reproduce it. The adapter must use supplied physical state authoritatively
+while preserving the explicit legacy order-only fallback. No new persistence or
+player-copy decision is required for that correction.

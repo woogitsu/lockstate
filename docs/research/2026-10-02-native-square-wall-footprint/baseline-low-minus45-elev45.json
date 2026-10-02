@@ -1,0 +1,153 @@
+{
+  "cutaway": true,
+  "pose": {
+    "yaw": -45,
+    "elevation": 45,
+    "turns": 0,
+    "raises": 0
+  },
+  "point": {
+    "x": 1469.1168824543142,
+    "y": 540
+  },
+  "mapClick": {
+    "clientX": 383,
+    "clientY": 850,
+    "rect": {
+      "x": 239,
+      "y": 793,
+      "width": 224,
+      "height": 88
+    },
+    "fx": 0.6428571428571429,
+    "fy": 0.6477272727272727
+  },
+  "target": {
+    "x": 20.571428571428573,
+    "y": 20.727272727272727
+  },
+  "measured": {
+    "yaw": -45,
+    "elevation": 45,
+    "ground": [
+      {
+        "x": 886.5343603962028,
+        "y": 533.7662337662339
+      },
+      {
+        "x": 943.1029028911266,
+        "y": 493.7662337662339
+      },
+      {
+        "x": 999.6714453860504,
+        "y": 533.7662337662339
+      },
+      {
+        "x": 943.1029028911266,
+        "y": 573.7662337662339
+      }
+    ],
+    "hull": [
+      {
+        "x": 886.5343603962028,
+        "y": 491.339826895041
+      },
+      {
+        "x": 943.1029028911266,
+        "y": 451.339826895041
+      },
+      {
+        "x": 999.6714453860504,
+        "y": 491.339826895041
+      },
+      {
+        "x": 999.6714453860504,
+        "y": 533.7662337662339
+      },
+      {
+        "x": 943.1029028911266,
+        "y": 573.7662337662339
+      },
+      {
+        "x": 886.5343603962028,
+        "y": 533.7662337662339
+      }
+    ],
+    "authoredHull": [
+      {
+        "x": 886.5343603962028,
+        "y": 514.5329293179598
+      },
+      {
+        "x": 943.1029028911266,
+        "y": 474.53292931795977
+      },
+      {
+        "x": 999.6714453860504,
+        "y": 514.5329293179598
+      },
+      {
+        "x": 999.6714453860504,
+        "y": 533.7662337662339
+      },
+      {
+        "x": 943.1029028911266,
+        "y": 573.7662337662339
+      },
+      {
+        "x": 886.5343603962028,
+        "y": 533.7662337662339
+      }
+    ],
+    "groundMinX": 886.5343603962028,
+    "groundMaxX": 999.6714453860504,
+    "masonryInside": 5660,
+    "masonryOutside": 0,
+    "masonryOutsideGroundSpan": 0,
+    "masonryOutsideAuthoredHull": 0,
+    "outsideBounds": {
+      "left": null,
+      "top": null,
+      "right": null,
+      "bottom": null
+    }
+  },
+  "wallTextures": [
+    "http://127.0.0.1:5402/game-content/oblique-square-brick-full-wall.v1.json",
+    "http://127.0.0.1:5402/game-content/oblique-square-brick-low-wall.v1.json",
+    "http://127.0.0.1:5402/assets/environment/oblique/square-brick-full-wall-yaw-045-elev45.b17091c17260.png",
+    "http://127.0.0.1:5402/assets/environment/oblique/square-brick-low-wall-yaw-045-elev45.1f712df62e5e.png"
+  ],
+  "snapshot": [
+    {
+      "id": "order-db018bfb-838b-48f1-8e6d-0aa29acf6559",
+      "definitionId": "wall-brick",
+      "location": {
+        "x": 20,
+        "y": 20
+      },
+      "footprint": "square",
+      "placementSequence": 3,
+      "state": "completed",
+      "progress": 50,
+      "materialsAllocated": [
+        {
+          "itemId": "item.brick",
+          "quantity": 2
+        }
+      ],
+      "assignedWorkerId": "mock-worker-1"
+    }
+  ],
+  "workerCommands": [
+    {
+      "type": "PlaceBuildOrder",
+      "orderId": "order-db018bfb-838b-48f1-8e6d-0aa29acf6559",
+      "definitionId": "wall-brick",
+      "x": 20,
+      "y": 20,
+      "footprint": "square",
+      "transactionId": "build-ed07c1fa-a9ed-4a95-8e7b-55a545b85858"
+    }
+  ]
+}
