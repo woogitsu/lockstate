@@ -1,0 +1,88 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-pending-square-wall-incoming-object-audit-20261003
+
+ ❯ tests/integration/pending-square-wall-incoming-object.test.ts (8 tests | 4 failed) 470ms
+   × paid pending square vs later Bed: type='PlaceObject' load=false conflict=true 56ms
+   × paid pending square vs later Bed: type='PlaceObject' load=true conflict=true 66ms
+   × paid pending square vs later Bed: type='PlaceBuildOrder' load=false conflict=true 47ms
+   × paid pending square vs later Bed: type='PlaceBuildOrder' load=true conflict=true 55ms
+node : 
+At line:7 char:1
++ node node_modules/vitest/vitest.mjs run --maxWorkers=2 tests/integrat ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/pending-square-wall-incoming-object.test.ts > paid pending square vs later Bed: type='PlaceObj
+ect' load=false conflict=true
+ FAIL  tests/integration/pending-square-wall-incoming-object.test.ts > paid pending square vs later Bed: type='PlaceObj
+ect' load=true conflict=true
+AssertionError: expected { id: 'later-bed', …(7) } to be undefined
+
+- Expected:
+undefined
+
++ Received:
+{
+  "assignedWorkerId": "mock-worker-1",
+  "definitionId": "bed-wooden",
+  "id": "later-bed",
+  "location": {
+    "x": 12,
+    "y": 12,
+  },
+  "materialsAllocated": [
+    {
+      "itemId": "item.wood-plank",
+      "quantity": 1,
+    },
+  ],
+  "placementSequence": 2,
+  "progress": 30,
+  "state": "completed",
+}
+
+ ❯ tests/integration/pending-square-wall-incoming-object.test.ts:60:86
+     58|     }
+     59|     if (conflict) {
+     60|       if (type === 'PlaceObject') expect(runtime.construction.getOrder…
+       |                                                                                      ^
+     61|       else expect(runtime.construction.getOrder('later-bed')).toMatchO…
+     62|       const { kernel: _beforeKernel, ...beforeGameplay } = before;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tests/integration/pending-square-wall-incoming-object.test.ts > paid pending square vs later Bed: type='PlaceBui
+ldOrder' load=false conflict=true
+ FAIL  tests/integration/pending-square-wall-incoming-object.test.ts > paid pending square vs later Bed: type='PlaceBui
+ldOrder' load=true conflict=true
+AssertionError: expected { id: 'later-bed', …(7) } to match object { state: 'failed', …(1) }
+(9 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "failReason": "unbuildable",
+-   "state": "failed",
++   "state": "completed",
+  }
+
+ ❯ tests/integration/pending-square-wall-incoming-object.test.ts:61:63
+     59|     if (conflict) {
+     60|       if (type === 'PlaceObject') expect(runtime.construction.getOrder…
+     61|       else expect(runtime.construction.getOrder('later-bed')).toMatchO…
+       |                                                               ^
+     62|       const { kernel: _beforeKernel, ...beforeGameplay } = before;
+     63|       const { kernel: _afterKernel, ...afterGameplay } = after;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 4 passed (8)
+   Start at  01:56:21
+   Duration  2.77s (transform 797ms, setup 0ms, import 2.18s, tests 470ms, environment 0ms)
+
