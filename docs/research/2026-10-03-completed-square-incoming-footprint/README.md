@@ -21,3 +21,22 @@ Only the two existing footprint loops change: System's full object admission che
 [Fixed20GREEN](./fixed.txt),1.00s tests/3.39s total. Real System square-condition disconnection [4RED/16GREEN](./system-negative.txt),1.01s/3.20s. Real service square-condition disconnection [4RED/16GREEN](./placement-negative.txt),1.02s/3.30s: the still-protected System retains a failed diagnostic order while the unguarded service improperly reports/registers it as a placement, so the PlaceObject no-order/history assertions detect the actual consumer mismatch. Both files restored in finally from captured bytes, hashes [System](./system-restore.json) and [placement](./placement-restore.json). [Exact restored20GREEN](./restored.txt),1.01s/3.24s total. Detached mutation branches excluded work from branch-based WIP sweeping.
 
 Refusal compares the complete gameplay snapshot except kernel dispatch progress and the established one failed PBO diagnostic row; funds/material state/old orders/history/zones/world/physical objects are equal. All original order revisions are equal. The refused state is really encoded/loaded and retains both room fixtures and the far square wall; legal interior and actual legacy-edge controls finish their independently owned Bed. No browser/CI claim. Neighbouring completion/history/type/build/documentation gates pending at this checkpoint.
+
+## Terminal neighbouring source gates
+
+[455GREEN across12files](./neighbours.txt),24.89s total/two workers. Exact paths:
+
+- tests/integration/completed-square-incoming-object-footprint.test.ts
+- tests/integration/pending-template-incoming-object-footprint.test.ts
+- tests/integration/template-deferred-history-order.test.ts
+- tests/unit/room-template-command-reservation.test.ts
+- tests/unit/room-template-session.test.ts
+- tests/unit/room-template-redo.test.ts
+- tests/integration/room-template-rotated-history.test.ts
+- tests/integration/room-template-replacement-order-ownership.test.ts
+- tests/integration/build-order-object-collision-boundary.test.ts
+- tests/integration/generic-object-footprint-admission.test.ts
+- tests/integration/square-wall-object-footprint.test.ts
+- tests/integration/object-placement-loop.test.ts
+
+Both application/toolsTypeScript pass. Production client build passes in6.30s with its existing chunk/plugin warnings. These gates verify legal authored furnishing/history and previous collision/admission/provenance controls; they are not a browser or CI result. Both committed production files have zero worktree diff after restoration. Source leases released. Narrow doc source-anchor closure is separate.
