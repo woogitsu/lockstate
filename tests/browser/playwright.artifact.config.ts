@@ -114,10 +114,10 @@ const explicitExecutablePath = process.env['LOCKSTATE_CHROMIUM_PATH'];
 
 export default defineConfig({
   testDir: fileURLToPath(new URL('.', import.meta.url)),
-  // One spec, named exactly. The dev-server config matches `*.spec.ts`
-  // repository-wide, so without this the artefact suite would try to run every
-  // harness spec against a server that serves no harness pages.
-  testMatch: /production-artifact\.spec\.ts$/,
+  // Explicit built-client specs. The dev-server config excludes the same set;
+  // harness specs remain on their source server. Rotation acceptance joins this
+  // existing gate rather than introducing a duplicate preview configuration.
+  testMatch: /(?:production-artifact|rotated-security-console-player-build)\.spec\.ts$/,
   fullyParallel: false,
   workers: 1,
   forbidOnly: process.env['CI'] !== undefined,
