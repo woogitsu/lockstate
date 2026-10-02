@@ -78,5 +78,15 @@ test('player loads that real save in a fresh browser and builds the first Cell a
   await expect.poll(async () => (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate')).toEqual([
     { type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 20, y: 5 } },
   ]);
+  await page.getByRole('button', { name: 'Pause', exact: true }).click();
+  const minimapRegion = page.getByRole('region', { name: 'Minimap', exact: true });
+  if (!await page.locator('.hud-minimap__surface').isVisible()) {
+    await minimapRegion.getByRole('button', { name: 'Expand', exact: true }).click();
+  }
+  const minimap = page.locator('.hud-minimap__surface');
+  const bounds = await minimap.boundingBox();
+  if (bounds === null) throw new Error('minimap absent');
+  // Centre the completed Cell, rather than recording a neighbouring delivery room.
+  await minimap.click({ position: { x: bounds.width * 21.5 / 32, y: bounds.height * 6.5 / 32 } });
   await page.screenshot({ path: info.outputPath('first-cell-after-furnished-route-fullhd.png') });
 });
