@@ -1,4 +1,4 @@
-// Genuine Laundry worker construction and Save/Load. Initial palette/crops are provisional until opened native pixels.
+// Genuine Laundry worker construction and Save/Load; independently isolated native glass regions.
 import { writeFile } from 'node:fs/promises';
 import { expect, test as base, type Page } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
@@ -53,12 +53,13 @@ async function washerPalettePixels(page: Page, png: Buffer, quarterTurns: 0 | 1)
     const bitmap = await createImageBitmap(new Blob([Uint8Array.from(atob(base64), c => c.charCodeAt(0))], { type: 'image/png' }));
     const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
     const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0);
-    // Provisional source palette and prior genuine Laundry crop candidates.
-    // Native calibration and consumer-only negative remain acceptance gates.
+    // Opened native Full HD q0 glass counts827/833; q1 counts1484/1480.
+    // Rotated facing changes actual authored glass illumination. Foreground
+    // walls hide the right sides; these disjoint crops sample exposed glass.
     const rects = quarterTurns === 0
       ? [[820, 400, 90, 140], [975, 340, 65, 110]]
-      : [[900, 370, 140, 160], [1030, 410, 140, 160]];
-    const colour = quarterTurns === 0 ? [32, 59, 66] : [119, 122, 123];
+      : [[990, 384, 48, 54], [1100, 465, 52, 61]];
+    const colour = quarterTurns === 0 ? [32, 59, 66] : [36, 67, 76];
     return rects.map(rect => {
       const pixels = context.getImageData(...rect as [number, number, number, number]).data;
       let count = 0;
@@ -157,6 +158,8 @@ test(`player builds Laundry at quarterTurns${quarterTurns} and retains washing m
     : ['object.washing-machine@24,6:orientation=1', 'object.washing-machine@24,8:orientation=1'];
   const actualBefore = await fixtureAnchors(page);
   expect(actualBefore).toEqual(expected);
+  await writeFile(info.outputPath('completed-worker-snapshot.json'), JSON.stringify(await page.evaluate(async () =>
+    (window as ProbeWindow).askWorker!('simulation/request-snapshot', { reason: 'consistency-check' })), null, 2));
   await expect.poll(async () => (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate')).toEqual([
     { type: 'PlaceRoomTemplate', templateId: 'laundry-basic', origin: { x: 20, y: 5 }, ...(quarterTurns === 0 ? {} : { quarterTurns }) },
   ]);
@@ -176,7 +179,7 @@ test(`player builds Laundry at quarterTurns${quarterTurns} and retains washing m
     quarterTurns, actualBefore, beforePixels, commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
   }, null, 2));
   beforePixels.forEach((count, index) => expect.soft(count, `washing machine ${index + 1} authored palette after construction`)
-    .toBeGreaterThan(50));
+    .toBeGreaterThan(100));
   await page.getByRole('button', { name: 'Overview', exact: true }).click();
   await page.getByRole('button', { name: 'Save now', exact: true }).click();
   await expect(page.locator('.save-panel__status')).toContainText('Saved');
@@ -184,12 +187,14 @@ test(`player builds Laundry at quarterTurns${quarterTurns} and retains washing m
   await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
   const actualAfter = await fixtureAnchors(page);
   expect(actualAfter).toEqual(expected);
+  await writeFile(info.outputPath('loaded-worker-snapshot.json'), JSON.stringify(await page.evaluate(async () =>
+    (window as ProbeWindow).askWorker!('simulation/request-snapshot', { reason: 'consistency-check' })), null, 2));
   await minimap.click({ position: { x: bounds.width * 22.5 / 32, y: bounds.height * 7.5 / 32 } });
   await page.mouse.move(1300, 700);
   const loaded = await page.screenshot({ path: info.outputPath('dedicated-laundry-washing-machine-loaded-fullhd.png') });
   const afterPixels = await washerPalettePixels(page, loaded, quarterTurns);
   afterPixels.forEach((count, index) => expect.soft(count, `washing machine ${index + 1} authored palette after Load`)
-    .toBeGreaterThan(50));
+    .toBeGreaterThan(100));
   expect(afterPixels).toEqual(beforePixels);
   const evidencePath = info.outputPath('dedicated-laundry-washing-machine-worker-and-save-evidence.json');
   await writeFile(evidencePath, JSON.stringify({
