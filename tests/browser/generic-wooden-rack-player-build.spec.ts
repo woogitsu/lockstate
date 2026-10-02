@@ -1,4 +1,4 @@
-// Prepared native generic rack routes; palette/regions await actual calibration.
+// Genuine native generic rack routes, calibrated independent pixels and Save/Load.
 import { writeFile } from 'node:fs/promises';
 import { expect, test as base, type Page } from './network-changed-fixture';
 import { buy, installTee, sentCommands } from './playtest-harness';
@@ -53,14 +53,15 @@ async function rackPixels(page: Page, png: Buffer, quarterTurns: 0 | 1): Promise
     const bitmap = await createImageBitmap(new Blob([Uint8Array.from(atob(base64), c => c.charCodeAt(0))], { type: 'image/png' }));
     const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
     const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0);
-    // Actual retained tabletop wood diffuseRGBA(.45,.27,.12,1).
-    // Candidate source yaw30/elev40 RGB(117,88,55) occurs506times.
-    // These two estimated rack crops and floor are provisional until native
-    // calibration; removing only the default mapping must falsify each gate.
+    // Actual native FullHD calibration at b61518d4e1, after full public LFS
+    // hydration. The retained timber diffuseRGBA(.45,.27,.12,1) gives different
+    // lit faces at native orientation0/1: RGB93,69,42 versus117,88,55.
+    // Isolated non-overlapping regions: normal275/339, rotated362/93.
+    // Rotated rear rack is partly behind the wall; only visible timber counts.
     const rects = quarterTurns === 0
-      ? [[820, 310, 125, 170], [940, 310, 125, 170]]
-      : [[820, 310, 125, 170], [930, 420, 125, 170]];
-    const colour = [117, 88, 55];
+      ? [[820, 330, 110, 160], [935, 330, 110, 160]]
+      : [[820, 300, 110, 190], [935, 400, 90, 100]];
+    const colour = quarterTurns === 0 ? [93, 69, 42] : [117, 88, 55];
     return rects.map(rect => {
       const pixels = context.getImageData(...rect as [number, number, number, number]).data;
       let count = 0;
@@ -166,7 +167,7 @@ test('player creates storage and delivery capacity before generic rack', async (
 });
 
 for (const quarterTurns of [0, 1] as const) {
-test(`player reaches default generic racks at quarterTurns${quarterTurns} and retains native anchors after Save/Load`, async ({ page }, info) => {
+test(`player reaches default generic racks at quarterTurns${quarterTurns} and retains both authored rack palettes and native anchors after Save/Load`, async ({ page }, info) => {
   expect(routeStorage, 'this case consumes the first stage actual IndexedDB save').toBeDefined();
   await installWorkerProbe(page);
   await installTee(page);
@@ -230,7 +231,7 @@ test(`player reaches default generic racks at quarterTurns${quarterTurns} and re
     quarterTurns, actualBefore, beforePixels, commands: (await sentCommands(page)).filter(c => ['PlaceRoomTemplate', 'PlaceObject', 'UnzoneRoom'].includes(String(c.type))),
   }, null, 2));
   beforePixels.forEach((count, index) => expect.soft(count, `rack${index + 1} authored timber after construction`)
-    .toBeGreaterThan(20));
+    .toBeGreaterThan(quarterTurns === 0 ? 200 : 70));
   await page.getByRole('button', { name: 'Overview', exact: true }).click();
   await page.getByRole('button', { name: 'Save now', exact: true }).click();
   await expect(page.locator('.save-panel__status')).toContainText('Saved');
@@ -244,7 +245,7 @@ test(`player reaches default generic racks at quarterTurns${quarterTurns} and re
   const loaded = await page.screenshot({ path: info.outputPath('generic-wooden-rack-loaded-fullhd.png') });
   const afterPixels = await rackPixels(page, loaded, quarterTurns);
   afterPixels.forEach((count, index) => expect.soft(count, `rack${index + 1} authored timber after Load`)
-    .toBeGreaterThan(20));
+    .toBeGreaterThan(quarterTurns === 0 ? 200 : 70));
   expect(afterPixels).toEqual(beforePixels);
   const evidencePath = info.outputPath('generic-wooden-rack-worker-and-save-evidence.json');
   await writeFile(evidencePath, JSON.stringify({
