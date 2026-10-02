@@ -15,6 +15,7 @@ test('Full HD Build shows authored station and bench thumbnails with accessible 
   const benchImage=bench.locator('img.hud-build__object-thumbnail');
   await expect(benchImage).toBeVisible();
   expect(await benchImage.evaluate(image=>(image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
+  expect(await benchImage.evaluate(image=>(image as HTMLImageElement).naturalWidth)).toBeLessThan(512);
   await page.screenshot({path:info.outputPath('bench-thumbnail-fullhd.png')});
   const footprint=page.locator('.hud-build__selected-footprint');
   await expect(footprint).toHaveText('Occupied squares: 2 \u00d7 1');
@@ -34,6 +35,10 @@ test('Full HD Build shows authored station and bench thumbnails with accessible 
   await expect(stationImage).toBeVisible();
   expect(await stationImage.evaluate(image=>(image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
   expect(await stationImage.getAttribute('data-authored-src')).not.toBe(await benchImage.getAttribute('data-authored-src'));
+  expect(await stationImage.evaluate(image=>(image as HTMLImageElement).naturalWidth)).toBeLessThan(256);
+  const stationBox=await station.boundingBox();
+  const wallBox=await list.locator('[data-buildable="wall-brick"]').boundingBox();
+  expect(stationBox!.height).toBeLessThanOrEqual(wallBox!.height+1);
   await expect(stationImage).toHaveAttribute('alt','');
   await expect(station).toHaveAccessibleName(/Exercise station.*80/);
   await expect(station.locator('svg')).toBeHidden();
