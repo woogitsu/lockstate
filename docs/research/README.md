@@ -1,4 +1,4 @@
-﻿# Research records
+# Research records
 
 
 Dated evidence gathered to answer a specific open decision, kept because the

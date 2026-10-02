@@ -1,4 +1,4 @@
-﻿# Delivery Bay readiness after pending and completed saves
+# Delivery Bay readiness after pending and completed saves
 
 ## Question and scope
 
