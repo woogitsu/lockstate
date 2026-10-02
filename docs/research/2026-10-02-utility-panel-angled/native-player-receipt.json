@@ -1,0 +1,212 @@
+{
+  "date": "2026-10-03",
+  "frozenCommit": "da31f44c79091908f70666ac371a182fdff79f07",
+  "renderer": "built production oblique",
+  "guards": {
+    "workers": 1,
+    "caseTimeoutMs": 60000,
+    "progressTimeoutMs": 10000,
+    "retries": 0,
+    "paletteThresholdsExclusive": [
+      100
+    ]
+  },
+  "cases": {
+    "baseline": {
+      "q0": {
+        "quarterTurns": 0,
+        "actualBefore": [
+          "object.utility-panel@22,6:orientation=0"
+        ],
+        "actualAfter": [
+          "object.utility-panel@22,6:orientation=0"
+        ],
+        "beforePixels": [
+          945
+        ],
+        "afterPixels": [
+          945
+        ],
+        "commands": [
+          {
+            "type": "PlaceRoomTemplate",
+            "templateId": "utility-room-basic",
+            "origin": {
+              "x": 20,
+              "y": 5
+            }
+          }
+        ]
+      },
+      "q1": {
+        "quarterTurns": 1,
+        "actualBefore": [
+          "object.utility-panel@22,7:orientation=1"
+        ],
+        "actualAfter": [
+          "object.utility-panel@22,7:orientation=1"
+        ],
+        "beforePixels": [
+          945
+        ],
+        "afterPixels": [
+          945
+        ],
+        "commands": [
+          {
+            "type": "PlaceRoomTemplate",
+            "templateId": "utility-room-basic",
+            "origin": {
+              "x": 20,
+              "y": 5
+            },
+            "quarterTurns": 1
+          }
+        ]
+      }
+    },
+    "mutation-q0": {
+      "q0": {
+        "quarterTurns": 0,
+        "actualBefore": [
+          "object.utility-panel@22,6:orientation=0"
+        ],
+        "actualAfter": [
+          "object.utility-panel@22,6:orientation=0"
+        ],
+        "beforePixels": [
+          0
+        ],
+        "afterPixels": [
+          0
+        ],
+        "commands": [
+          {
+            "type": "PlaceRoomTemplate",
+            "templateId": "utility-room-basic",
+            "origin": {
+              "x": 20,
+              "y": 5
+            }
+          }
+        ]
+      }
+    },
+    "mutation-q1": {
+      "q1": {
+        "quarterTurns": 1,
+        "actualBefore": [
+          "object.utility-panel@22,7:orientation=1"
+        ],
+        "actualAfter": [
+          "object.utility-panel@22,7:orientation=1"
+        ],
+        "beforePixels": [
+          0
+        ],
+        "afterPixels": [
+          0
+        ],
+        "commands": [
+          {
+            "type": "PlaceRoomTemplate",
+            "templateId": "utility-room-basic",
+            "origin": {
+              "x": 20,
+              "y": 5
+            },
+            "quarterTurns": 1
+          }
+        ]
+      }
+    },
+    "restored": {
+      "q0": {
+        "quarterTurns": 0,
+        "actualBefore": [
+          "object.utility-panel@22,6:orientation=0"
+        ],
+        "actualAfter": [
+          "object.utility-panel@22,6:orientation=0"
+        ],
+        "beforePixels": [
+          945
+        ],
+        "afterPixels": [
+          945
+        ],
+        "commands": [
+          {
+            "type": "PlaceRoomTemplate",
+            "templateId": "utility-room-basic",
+            "origin": {
+              "x": 20,
+              "y": 5
+            }
+          }
+        ]
+      },
+      "q1": {
+        "quarterTurns": 1,
+        "actualBefore": [
+          "object.utility-panel@22,7:orientation=1"
+        ],
+        "actualAfter": [
+          "object.utility-panel@22,7:orientation=1"
+        ],
+        "beforePixels": [
+          945
+        ],
+        "afterPixels": [
+          945
+        ],
+        "commands": [
+          {
+            "type": "PlaceRoomTemplate",
+            "templateId": "utility-room-basic",
+            "origin": {
+              "x": 20,
+              "y": 5
+            },
+            "quarterTurns": 1
+          }
+        ]
+      }
+    }
+  },
+  "byteReceipts": [
+    {
+      "phase": "baseline",
+      "worker": "worker-D-IJ-Qxa.js",
+      "bytes": 431592,
+      "sha256": "a0898ffa83b1dd6a89f5c618d18d97b90996970165ac6b602b2f8a58d717f0f1",
+      "byteEqualBaseline": true,
+      "mappingSha256": "a9eada806ff523bc9933da9b7a2e8a731c5a896286e33b0551119d8e389dd2d4",
+      "sourceManifestAnd72FramesByteEqualBaseline": true
+    },
+    {
+      "phase": "mutation",
+      "worker": "worker-D-IJ-Qxa.js",
+      "bytes": 431592,
+      "sha256": "a0898ffa83b1dd6a89f5c618d18d97b90996970165ac6b602b2f8a58d717f0f1",
+      "byteEqualBaseline": true,
+      "mappingSha256": "70b93908ea636a31fd73872d76c0a7894875c9245d1f30a3697741b89a152ce0",
+      "sourceManifestAnd72FramesByteEqualBaseline": true
+    },
+    {
+      "phase": "restored",
+      "worker": "worker-D-IJ-Qxa.js",
+      "bytes": 431592,
+      "sha256": "a0898ffa83b1dd6a89f5c618d18d97b90996970165ac6b602b2f8a58d717f0f1",
+      "byteEqualBaseline": true,
+      "mappingSha256": "a9eada806ff523bc9933da9b7a2e8a731c5a896286e33b0551119d8e389dd2d4",
+      "sourceManifestAnd72FramesByteEqualBaseline": true
+    }
+  ],
+  "finalScreenshotSha256": {
+    "native-q0-worker-completed-fullhd.png": "26237b95cf174c8dde7bc798bcc1fb3c0f8179e7426caf1062580f500f529bbd",
+    "native-q0-loaded-fullhd.png": "bf8759082f25e24624ad30d465e4571207a70df8c75f6bf6f6616a3bd035cb1e",
+    "native-q1-worker-completed-fullhd.png": "fdc5575a6b11b842ee22695f1c1885c7ca3bfde2cdf3d7f544df3bc3c7467437",
+    "native-q1-loaded-fullhd.png": "2194ecc95b1cc4cb6a321ee5b386b2f4e0bf941a2f2956ce387950e78d0772b2"
+  }
+}
