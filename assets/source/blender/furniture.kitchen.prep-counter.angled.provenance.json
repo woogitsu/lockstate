@@ -1,0 +1,1288 @@
+{
+  "originalSource": "assets/source/blender/furniture.kitchen.prep-counter.variants.blend",
+  "originalSourceSha256": "a82cc835b2225a9a4ef6c113d2d887365e5f6b6d92933f0f0b234e5f28e47d00",
+  "source": "assets/source/blender/furniture.kitchen.prep-counter.angled.blend",
+  "sourceSha256": "b20bffb79d6ffe66a6c741fc420bd163651faa4813ca4d77740eb3dd55914a8a",
+  "footprintTiles": [
+    2,
+    1
+  ],
+  "originalMeshCount": 24,
+  "retainedAssemblyFit": [
+    0.9,
+    0.9,
+    1
+  ],
+  "retainedMaximumCoordinateError": 9.536743161842054e-08,
+  "originalMeshNames": [
+    "basin",
+    "basin-inner",
+    "counter-body",
+    "drawer",
+    "drawer-handle",
+    "drawer-handle.001",
+    "drawer-handle.002",
+    "drawer-handle.003",
+    "drawer.001",
+    "drawer.002",
+    "drawer.003",
+    "foot",
+    "foot.001",
+    "foot.002",
+    "foot.003",
+    "ingredient",
+    "ingredient-pan",
+    "ingredient-pan.001",
+    "ingredient-pan.002",
+    "ingredient.001",
+    "ingredient.002",
+    "rear-splash",
+    "status-light",
+    "worktop"
+  ],
+  "addedMeshNames": [
+    "angled-prep.basin rim end -0.27",
+    "angled-prep.basin rim end 0.216",
+    "angled-prep.basin rim long -1",
+    "angled-prep.basin rim long 1",
+    "angled-prep.curved faucet",
+    "angled-prep.drawer edge horizontal 0 0.422",
+    "angled-prep.drawer edge horizontal 0 0.678",
+    "angled-prep.drawer edge horizontal 1 0.422",
+    "angled-prep.drawer edge horizontal 1 0.678",
+    "angled-prep.drawer edge horizontal 2 0.422",
+    "angled-prep.drawer edge horizontal 2 0.678",
+    "angled-prep.drawer edge horizontal 3 0.422",
+    "angled-prep.drawer edge horizontal 3 0.678",
+    "angled-prep.drawer edge vertical 0 -1",
+    "angled-prep.drawer edge vertical 0 1",
+    "angled-prep.drawer edge vertical 1 -1",
+    "angled-prep.drawer edge vertical 1 1",
+    "angled-prep.drawer edge vertical 2 -1",
+    "angled-prep.drawer edge vertical 2 1",
+    "angled-prep.drawer edge vertical 3 -1",
+    "angled-prep.drawer edge vertical 3 1",
+    "angled-prep.faucet mounting plate",
+    "angled-prep.faucet valve -1",
+    "angled-prep.faucet valve 1",
+    "angled-prep.handle standoff 0 -1",
+    "angled-prep.handle standoff 0 1",
+    "angled-prep.handle standoff 1 -1",
+    "angled-prep.handle standoff 1 1",
+    "angled-prep.handle standoff 2 -1",
+    "angled-prep.handle standoff 2 1",
+    "angled-prep.handle standoff 3 -1",
+    "angled-prep.handle standoff 3 1",
+    "angled-prep.pan rim end 0 -0.202",
+    "angled-prep.pan rim end 0 0.166",
+    "angled-prep.pan rim end 1 -0.202",
+    "angled-prep.pan rim end 1 0.166",
+    "angled-prep.pan rim end 2 -0.202",
+    "angled-prep.pan rim end 2 0.166",
+    "angled-prep.pan rim long 0 -1",
+    "angled-prep.pan rim long 0 1",
+    "angled-prep.pan rim long 1 -1",
+    "angled-prep.pan rim long 1 1",
+    "angled-prep.pan rim long 2 -1",
+    "angled-prep.pan rim long 2 1",
+    "angled-prep.service shelf",
+    "angled-prep.shelf bracket horizontal -1",
+    "angled-prep.shelf bracket horizontal 1",
+    "angled-prep.shelf bracket vertical -1",
+    "angled-prep.shelf bracket vertical 1",
+    "angled-prep.shelf raised front lip",
+    "angled-prep.worktop end joint -1",
+    "angled-prep.worktop end joint 1",
+    "angled-prep.worktop front end cap -0.88",
+    "angled-prep.worktop front end cap 0.88"
+  ],
+  "sourceEvaluatedBounds": {
+    "min": [
+      -0.9269999265670776,
+      -0.4814999997615814,
+      0.0
+    ],
+    "max": [
+      0.9269999265670776,
+      0.4229999780654907,
+      1.6200001239776611
+    ]
+  },
+  "cameraTargetTiles": [
+    1,
+    0.5,
+    0.8100000619888306
+  ],
+  "meshes": [
+    {
+      "name": "angled-prep.basin rim end -0.27",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.basin rim end 0.216",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.basin rim long -1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.basin rim long 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.curved faucet",
+      "evaluatedVertices": 336,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.drawer edge horizontal 0 0.422",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.drawer edge horizontal 0 0.678",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.drawer edge horizontal 1 0.422",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.drawer edge horizontal 1 0.678",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.drawer edge horizontal 2 0.422",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.drawer edge horizontal 2 0.678",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.drawer edge horizontal 3 0.422",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.drawer edge horizontal 3 0.678",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.drawer edge vertical 0 -1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.drawer edge vertical 0 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.drawer edge vertical 1 -1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.drawer edge vertical 1 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.drawer edge vertical 2 -1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.drawer edge vertical 2 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.drawer edge vertical 3 -1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.drawer edge vertical 3 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.faucet mounting plate",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.faucet valve -1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.faucet valve 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.handle standoff 0 -1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.handle standoff 0 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.handle standoff 1 -1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.handle standoff 1 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.handle standoff 2 -1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.handle standoff 2 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.handle standoff 3 -1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.handle standoff 3 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.pan rim end 0 -0.202",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.pan rim end 0 0.166",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.pan rim end 1 -0.202",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.pan rim end 1 0.166",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.pan rim end 2 -0.202",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.pan rim end 2 0.166",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.pan rim long 0 -1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.pan rim long 0 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.pan rim long 1 -1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.pan rim long 1 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.pan rim long 2 -1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.pan rim long 2 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.service shelf",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.shelf bracket horizontal -1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.shelf bracket horizontal 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.shelf bracket vertical -1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.shelf bracket vertical 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.shelf raised front lip",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.worktop end joint -1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "recess shadow",
+          [
+            0.03500000014901161,
+            0.04500000178813934,
+            0.05000000074505806,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.worktop end joint 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "recess shadow",
+          [
+            0.03500000014901161,
+            0.04500000178813934,
+            0.05000000074505806,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.worktop front end cap -0.88",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-prep.worktop front end cap 0.88",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "basin",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "prep basin",
+          [
+            0.8199999928474426,
+            0.8600000143051147,
+            0.8399999737739563,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "basin-inner",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "recess shadow",
+          [
+            0.03500000014901161,
+            0.04500000178813934,
+            0.05000000074505806,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "counter-body",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "drawer",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "recess shadow",
+          [
+            0.03500000014901161,
+            0.04500000178813934,
+            0.05000000074505806,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "drawer-handle",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "drawer-handle.001",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "drawer-handle.002",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "drawer-handle.003",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "drawer.001",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "recess shadow",
+          [
+            0.03500000014901161,
+            0.04500000178813934,
+            0.05000000074505806,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "drawer.002",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "recess shadow",
+          [
+            0.03500000014901161,
+            0.04500000178813934,
+            0.05000000074505806,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "drawer.003",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "recess shadow",
+          [
+            0.03500000014901161,
+            0.04500000178813934,
+            0.05000000074505806,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "foot",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "recess shadow",
+          [
+            0.03500000014901161,
+            0.04500000178813934,
+            0.05000000074505806,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "foot.001",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "recess shadow",
+          [
+            0.03500000014901161,
+            0.04500000178813934,
+            0.05000000074505806,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "foot.002",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "recess shadow",
+          [
+            0.03500000014901161,
+            0.04500000178813934,
+            0.05000000074505806,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "foot.003",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "recess shadow",
+          [
+            0.03500000014901161,
+            0.04500000178813934,
+            0.05000000074505806,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "ingredient",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "butcher block",
+          [
+            0.47999998927116394,
+            0.2199999988079071,
+            0.09000000357627869,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "ingredient-pan",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "ingredient pans",
+          [
+            0.6700000166893005,
+            0.3100000023841858,
+            0.07999999821186066,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "ingredient-pan.001",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "ingredient pans",
+          [
+            0.6700000166893005,
+            0.3100000023841858,
+            0.07999999821186066,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "ingredient-pan.002",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "ingredient pans",
+          [
+            0.6700000166893005,
+            0.3100000023841858,
+            0.07999999821186066,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "ingredient.001",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "butcher block",
+          [
+            0.47999998927116394,
+            0.2199999988079071,
+            0.09000000357627869,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "ingredient.002",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "butcher block",
+          [
+            0.47999998927116394,
+            0.2199999988079071,
+            0.09000000357627869,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "rear-splash",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "brushed stainless",
+          [
+            0.41999998688697815,
+            0.49000000953674316,
+            0.5199999809265137,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "status-light",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "sanitation light",
+          [
+            0.18000000715255737,
+            0.75,
+            0.3199999928474426,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "worktop",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "butcher block",
+          [
+            0.47999998927116394,
+            0.2199999988079071,
+            0.09000000357627869,
+            1.0
+          ]
+        ]
+      ]
+    }
+  ]
+}
