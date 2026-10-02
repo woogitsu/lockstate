@@ -1,7 +1,46 @@
 import { describe, expect, it, vi } from 'vitest';
 import { RoomTemplatePreviewFitController } from '../../src/ui/room-template-preview-fit';
+import { computeObliqueFit } from '../../src/rendering/camera/oblique-fit';
+import { screenToGround, type ObliqueCameraState } from '../../src/rendering/camera/oblique-projection';
 
 describe('approved full-plan fit/pan lock', () => {
+  it.each([{ width: 7, height: 16 }, { width: 16, height: 7 }])(
+    'retains keyboard-armed hover through the first stationary click after fitting $width by $height', size => {
+      let camera: ObliqueCameraState = {
+        target: { x: 1024, y: 1024 }, viewport: { width: 1920, height: 1080 },
+        zoom: 1.25, yawRadians: -Math.PI / 4, elevationRadians: Math.PI / 4,
+      };
+      const screen = { x: 880, y: 380 };
+      const fit = vi.fn((origin: { x: number; y: number }) => {
+        const result = computeObliqueFit({ camera,
+          groundBounds: { left: origin.x * 64, top: origin.y * 64,
+            right: (origin.x + size.width) * 64, bottom: (origin.y + size.height) * 64 },
+          safeScreenBounds: { left: 550, top: 94, right: 1556, bottom: 1072 },
+          cursorScreen: screen, mode: 'pan-locked',
+        });
+        expect(result.fits).toBe(true);
+        camera = result.camera;
+        return true;
+      });
+      const controller = new RoomTemplatePreviewFitController({
+        pick: point => {
+          const ground = screenToGround(point, camera);
+          return { x: Math.floor(ground.x / 64), y: Math.floor(ground.y / 64) };
+        }, size: () => size, revision: () => 1,
+        viewRevision: () => JSON.stringify(camera), fit,
+      });
+      // Before keyboard arming, the bridge has retained this map hover, but its
+      // unarmed frame has reset the controller. The first armed frame is a poll.
+      expect(controller.pick(screen)).toEqual({ x: 17, y: 13 });
+      controller.prepare(screen, false);
+      expect(controller.pick(screen)).toEqual({ x: 17, y: 13 });
+      const fittedCamera = camera;
+      controller.prepare(screen, true); // pointerdown, with no physical movement
+      controller.prepare(screen, true); // pointerup, with no physical movement
+      expect(controller.pick(screen)).toEqual({ x: 17, y: 13 });
+      expect(camera).toEqual(fittedCamera);
+      expect(fit).toHaveBeenCalledOnce();
+    });
   it('refits a stationary locked origin after camera pose or viewport changes without looping', () => {
     let view = 0, offset = 0;
     const fit = vi.fn((_origin: { x: number; y: number }) => { offset += 10; view += 1; return true; });
