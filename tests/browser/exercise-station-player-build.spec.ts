@@ -96,6 +96,15 @@ test('actual angled Build completes a two-square exercise station and preserves 
   await page.mouse.move(940,540);
   await expect(page.locator('.hud-build__target-value')).toHaveText('7, 7');
   await expect(page.locator('[data-buildable="exercise-station"]')).toContainText('80');
+  const ghostImage=await page.locator('#game-root canvas').screenshot();
+  const ghostSamples=await page.evaluate(async base64=>{
+    const bitmap=await createImageBitmap(new Blob([Uint8Array.from(atob(base64),c=>c.charCodeAt(0))],{type:'image/png'}));
+    const c=document.createElement('canvas');c.width=bitmap.width;c.height=bitmap.height; const ctx=c.getContext('2d')!;ctx.drawImage(bitmap,0,0);
+    return [[940,540],[996,500],[1053,460]].map(([x,y])=> {const d=ctx.getImageData(x!-3,y!-3,6,6).data;let delta=0;for(let i=0;i<d.length;i+=4)delta+=d[i+1]!-d[i]!;return delta/36;});
+  },ghostImage.toString('base64'));
+  expect(ghostSamples[0], 'first occupied square is filled').toBeGreaterThan(10);
+  expect(ghostSamples[1], 'second occupied square is filled').toBeGreaterThan(10);
+  expect(ghostSamples[2], 'a third square is outside the station footprint').toBeLessThan(0);
   await page.screenshot({path:info.outputPath('station-filled-ghost.png')});
   const canvas=page.locator('#game-root canvas');
   await page.mouse.move(1300,700);
@@ -105,6 +114,7 @@ test('actual angled Build completes a two-square exercise station and preserves 
   await page.getByRole('button', {name:'Fast forward',exact:true}).click();
   await expect.poll(async()=> (await snapshot(page)).simulation.objects?.placedObjects.filter(o=>o.objectId==='object.exercise-station').length,{timeout:15000}).toBe(1);
   await page.getByRole('button', {name:'Pause',exact:true}).click();
+  await expect(page.locator('[data-metric="funds"] .ui-stat__value')).toHaveText('24,920');
   const data=await snapshot(page);
   expect(data.construction.orders.filter(o=>o.definitionId==='exercise-station').map(o=>o.state)).toEqual(['completed']);
   expect(data.simulation.objects!.placedObjects.find(o=>o.objectId==='object.exercise-station')!.anchorTile).toEqual({x:7,y:7});
@@ -116,7 +126,7 @@ test('actual angled Build completes a two-square exercise station and preserves 
       const c=document.createElement('canvas'); c.width=bitmap.width; c.height=bitmap.height;
       const ctx=c.getContext('2d')!; ctx.drawImage(bitmap,0,0);
       const d=ctx.getImageData(850,330,200,250).data; let count=0;
-      for(let i=0;i<d.length;i+=4) {const r=d[i]!,g=d[i+1]!,b=d[i+2]!; if(r>=30&&r<=110&&g-r>8&&b-r>8) count++;}
+      for(let i=0;i<d.length;i+=4) {const r=d[i]!,g=d[i+1]!,b=d[i+2]!; if(r>=30&&r<=110&&g-r>8&&b-r>8&&Math.abs(g-b)<12) count++;}
       return count;
     }, image.toString('base64'));
   };
@@ -146,3 +156,4 @@ test('actual angled Build completes a two-square exercise station and preserves 
   expect((await canvas.screenshot()).equals(before)).toBe(false);
   await page.screenshot({path:info.outputPath('station-loaded.png')});
 });
+
