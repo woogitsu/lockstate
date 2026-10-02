@@ -1,6 +1,7 @@
 import { ROOM_TEMPLATE_IDS, instantiateRoomTemplate, type RoomTemplateId } from '../../content/room-template-catalog';
 import type { LocalizationKey } from '../../content/localization';
 import { element, nextUiId } from '../primitives/dom';
+import { bindRovingFocusKeydown } from '../primitives/roving-focus-keydown';
 import type { HudLocalizer } from './view-model';
 import type { RoomTemplateTool } from '../room-template-tool';
 import { HUD_MESSAGE_KEY } from './messages';
@@ -77,7 +78,10 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
     selectedId = id;
     tool?.select(id, mirrorX);
     const plan = instantiateRoomTemplate(id, { x: 0, y: 0 }, { mirrorX });
-    for (const [rowId, button] of buttons) button.setAttribute('aria-pressed', rowId === id ? 'true' : 'false');
+    for (const [rowId, button] of buttons) {
+      button.setAttribute('aria-pressed', rowId === id ? 'true' : 'false');
+      button.tabIndex = rowId === id ? 0 : -1;
+    }
     dimensions.textContent = `${plan.width} × ${plan.height}`;
     const counts = new Map<string, number>();
     for (const object of plan.objects) counts.set(object.buildableId, (counts.get(object.buildableId) ?? 0) + 1);
@@ -250,6 +254,12 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
     buttons.set(id, button);
     choices.append(button);
   }
+  // Match the existing Build/Rooms catalogue contract: arrows move focus,
+  // while Enter/Space explicitly selects and updates the worker quote.
+  bindRovingFocusKeydown(choices, {
+    datasetAttribute: 'templateId', order: () => ROOM_TEMPLATE_IDS,
+    rows: new Map([...buttons].map(([id, button]) => [id, { element: button }])),
+  });
   select(ROOM_TEMPLATE_IDS[0]);
   openButton.addEventListener('click', () => { dialog.showModal(); void refreshPlacement(); });
   closeButton.addEventListener('click', () => dialog.close());
