@@ -1,4 +1,4 @@
-// Queued real worker-built Reception route; native pixel calibration is pending.
+// Queued real worker-built Reception route; native calibrated desktop/detail pixels and Save/Load.
 import { writeFile } from 'node:fs/promises';
 import { expect, test as base, type Page } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
@@ -53,16 +53,17 @@ async function deskPalettePixels(page: Page, png: Buffer, quarterTurns: 0 | 1): 
     const bitmap = await createImageBitmap(new Blob([Uint8Array.from(atob(base64), c => c.charCodeAt(0))], { type: 'image/png' }));
     const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
     const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0);
-    // Preparation only: RGB candidates come from the actual retained source's
-    // yaw30/elevation40 and yaw300/elevation40 frames. Native crop coordinates,
-    // counts and thresholds require built-client calibration before acceptance.
-    // The document's teal and desktop's oak must survive independently.
+    // Calibrated from actual loaded FullHD images, not source previews.
+    // Default view yaw-45/elev45 selects source yaw300/elev40 for q0 and
+    // source yaw30/elev40 for q1. Keep disjoint regions: desktop + document
+    // for q0; desktop + steel monitor for q1 (the right wall hides its document).
+    // Actual before/after counts: q0 339/111, q1 353/455.
     const rects = quarterTurns === 0
-      ? [[800, 350, 240, 150], [800, 350, 240, 150]]
-      : [[940, 380, 130, 160], [940, 380, 130, 160]];
+      ? [[815, 450, 25, 35], [780, 420, 35, 32]]
+      : [[945, 382, 25, 23], [905, 348, 45, 27]];
     const colours = quarterTurns === 0
-      ? [[143, 116, 87], [91, 148, 149]]
-      : [[143, 116, 86], [91, 148, 149]];
+      ? [[143, 116, 86], [91, 148, 149]]
+      : [[143, 116, 87], [75, 86, 89]];
     return rects.map((rect, regionIndex) => {
       const colour = colours[regionIndex]!;
       const pixels = context.getImageData(...rect as [number, number, number, number]).data;
@@ -141,7 +142,7 @@ test('player creates storage and delivery capacity before Reception', async ({ p
 });
 
 for (const quarterTurns of [0, 1] as const) {
-test(`player builds Reception at quarterTurns${quarterTurns} and retains authored desktop and document palettes and anchors after Save/Load`, async ({ page }, info) => {
+test(`player builds Reception at quarterTurns${quarterTurns} and retains authored desktop and detail palettes and anchors after Save/Load`, async ({ page }, info) => {
   expect(routeStorage, 'this case consumes the first stage actual IndexedDB save').toBeDefined();
   await installWorkerProbe(page);
   await installTee(page);
@@ -178,8 +179,8 @@ test(`player builds Reception at quarterTurns${quarterTurns} and retains authore
   await writeFile(info.outputPath('worker-and-completed-save-evidence.json'), JSON.stringify({
     quarterTurns, actualBefore, beforePixels, commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
   }, null, 2));
-  beforePixels.forEach((count, index) => expect.soft(count, `desk ${index === 0 ? "oak desktop" : "teal document"} after construction`)
-    .toBeGreaterThan(index === 0 ? 40 : 2));
+  beforePixels.forEach((count, index) => expect.soft(count, `desk ${index === 0 ? "oak desktop" : quarterTurns === 0 ? "teal document" : "steel monitor"} after construction`)
+    .toBeGreaterThan(index === 0 || quarterTurns === 1 ? 200 : 70));
   await page.getByRole('button', { name: 'Overview', exact: true }).click();
   await page.getByRole('button', { name: 'Save now', exact: true }).click();
   await expect(page.locator('.save-panel__status')).toContainText('Saved');
@@ -191,8 +192,8 @@ test(`player builds Reception at quarterTurns${quarterTurns} and retains authore
   await page.mouse.move(1300, 700);
   const loaded = await page.screenshot({ path: info.outputPath('generic-office-desk-loaded-fullhd.png') });
   const afterPixels = await deskPalettePixels(page, loaded, quarterTurns);
-  afterPixels.forEach((count, index) => expect.soft(count, `desk ${index === 0 ? "oak desktop" : "teal document"} after Load`)
-    .toBeGreaterThan(index === 0 ? 40 : 2));
+  afterPixels.forEach((count, index) => expect.soft(count, `desk ${index === 0 ? "oak desktop" : quarterTurns === 0 ? "teal document" : "steel monitor"} after Load`)
+    .toBeGreaterThan(index === 0 || quarterTurns === 1 ? 200 : 70));
   expect(afterPixels).toEqual(beforePixels);
   const evidencePath = info.outputPath('generic-office-desk-worker-and-save-evidence.json');
   await writeFile(evidencePath, JSON.stringify({
