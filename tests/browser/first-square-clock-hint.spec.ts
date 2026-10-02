@@ -17,7 +17,7 @@ test('Full HD first paused square order explains clock dependency and keyboard P
   });
   for(const line of geometry.lines){expect(line.top).toBeGreaterThanOrEqual(geometry.rail.top);expect(line.bottom).toBeLessThanOrEqual(geometry.rail.bottom);expect(line.left).toBeGreaterThanOrEqual(geometry.rail.left);expect(line.right).toBeLessThanOrEqual(geometry.rail.right);}
   await page.screenshot({path:'test-results/first-square-clock-hint.png'});
-  await page.keyboard.press('Escape');const play=page.getByRole('button',{name:'Play',exact:true});
+  await page.keyboard.press('Escape');const play=page.getByRole('button',{name:'Play at normal speed',exact:true});
   for(let index=0;index<100;index++) {if(await play.evaluate(element=>element===document.activeElement))break;await page.keyboard.press('Tab');}
   await expect(play).toBeFocused();await page.keyboard.press('Enter');await expect(rows).toHaveCount(0);
 });
