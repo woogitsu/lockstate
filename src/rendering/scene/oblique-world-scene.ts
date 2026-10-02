@@ -30,6 +30,7 @@ import { obliqueFloorBatches } from '../camera/oblique-ground-art';
 import { ENVIRONMENT_SPRITES } from '../assets/environment-sprites';
 import { RenderedArtCatalog } from '../assets/rendered-art-catalog';
 import { VisibleObjectPool } from './visible-object-pool';
+import { orientedObjectArtTarget } from '../world/object-art-orientation';
 
 export interface ObliqueWorldSceneOptions {
   readonly feed: RenderFeed;
@@ -732,7 +733,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
       // a solid blue block, especially at shallow elevations.
       const solidKey = `${item.kind}:${item.id}`;
       const previous = preserveSolids ? this.solidImages.get(solidKey) : undefined;
-      const textureKey = item.assetId === undefined ? undefined : this.assetTextureKeys.get(item.assetId);
+      const textureKey = item.assetId === undefined ? undefined : this.assetTextureKeys.get(solidKey);
       if (previous !== undefined && textureKey !== undefined && previous.texture.key === textureKey) {
         // Actors can cross any solid in the sorted world order. Keep the
         // authored image itself, but update its depth on every actor frame.
@@ -765,19 +766,20 @@ export class ObliqueWorldScene extends Phaser.Scene {
   /** Keep each visible object on the catalog frame nearest the current camera pose. */
   private selectPoseTextures(projection: ObliqueWorldProjection): void {
     this.actorTextureKeys.clear();
+    this.assetTextureKeys.clear();
     for (const item of projection.raised) {
       if (item.assetId === undefined) continue;
       const catalog = this.catalogs.get(item.assetId);
       if (catalog === undefined) continue;
-      const frame = selectObliqueModuleFrame(catalog, item.kind === 'actor'
-        ? { ...this.pose, yawRadians: item.assetYawRadians } : this.pose);
+      const frame = selectObliqueModuleFrame(catalog, {
+        ...this.pose, yawRadians: item.assetYawRadians ?? this.pose.yawRadians,
+      });
       const key = `oblique:${item.assetId}:${frame.yawDegrees}:${frame.elevationDegrees}`;
       if (this.textures.exists(key)) {
         if (item.kind === 'actor') this.actorTextureKeys.set(item.id, key);
-        else this.assetTextureKeys.set(item.assetId, key);
+        else this.assetTextureKeys.set(`${item.kind}:${item.id}`, key);
       } else {
         // A previous pose must never be painted onto the new geometry.
-        if (item.kind !== 'actor') this.assetTextureKeys.delete(item.assetId);
         if (!this.loadingAssetTextureKeys.has(key) && !this.failedAssetTextureKeys.has(key)) {
           this.queuedAssetTextures.set(key, frame.image);
         }
@@ -813,9 +815,11 @@ export class ObliqueWorldScene extends Phaser.Scene {
     if (item.assetId === undefined) return undefined;
     const catalog = this.catalogs.get(item.assetId);
     if (catalog === undefined) return undefined;
-    const textureKey = item.kind === 'actor' ? this.actorTextureKeys.get(item.id) : this.assetTextureKeys.get(item.assetId);
+    const textureKey = item.kind === 'actor' ? this.actorTextureKeys.get(item.id) : this.assetTextureKeys.get(`${item.kind}:${item.id}`);
     if (textureKey === undefined || !this.textures.exists(textureKey)) return undefined;
-    const [targetX, targetY, targetZ] = catalog.cameraTargetTiles;
+    const [targetX, targetY, targetZ] = item.kind !== 'actor' && item.orientation !== undefined && item.authoredFootprintTiles !== undefined
+      ? orientedObjectArtTarget(catalog.cameraTargetTiles, item.authoredFootprintTiles, item.orientation)
+      : catalog.cameraTargetTiles;
     const anchor = groundToScreen({
       x: (item.tileX + targetX) * TILE_SIZE_PX,
       y: (item.tileY + targetY) * TILE_SIZE_PX,
@@ -845,7 +849,6 @@ export class ObliqueWorldScene extends Phaser.Scene {
       this.load.once(Phaser.Loader.Events.COMPLETE, () => resolve());
       this.load.start();
     });
-    for (const item of pending) if (this.textures.exists(item.key)) this.assetTextureKeys.set(item.assetId, item.key);
     this.lastPaintedPoseRevision = -1;
     this.repaint();
   }

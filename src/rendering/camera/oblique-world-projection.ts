@@ -22,6 +22,8 @@ import type { Point } from './coordinates';
 import { terrainFloorSpriteByNumericId, zonedFloorSprite } from '../world/environment-art';
 import type { EnvironmentSpriteId } from '../assets/environment-sprites';
 import { zoningTintAlphaOverArt } from '../world/appearance';
+import type { ObjectFootprint, ObjectOrientation } from '../../simulation/objects/placed-object';
+import { objectArtYaw } from '../world/object-art-orientation';
 
 export interface ObliqueGroundTile {
   readonly tileX: number;
@@ -47,6 +49,9 @@ export interface ObliqueSolid {
   readonly viewDepth: number;
   /** Canonical rendered-art id, when this solid has an authored PNG. */
   readonly assetId?: string;
+  readonly assetYawRadians?: number;
+  readonly orientation?: ObjectOrientation;
+  readonly authoredFootprintTiles?: ObjectFootprint;
 }
 
 const ACTOR_HEADING: Record<AtlasDirection, number> = { south: 0, southEast: Math.PI / 4, east: Math.PI / 2, northEast: 3 * Math.PI / 4, north: Math.PI, northWest: -3 * Math.PI / 4, west: -Math.PI / 2, southWest: -Math.PI / 4 };
@@ -140,7 +145,7 @@ export function projectObliqueWorldFrame(frame: RenderFrame, camera: ObliqueCame
   // interior fixture. The wall remains in the world, navigation and save.
   const interiorFixtures = frame.structures.flatMap((structure) => {
     if (structure.phase !== 'built') return [];
-    const appearance = structureAppearance(structure.definitionId);
+    const appearance = structureAppearance(structure.definitionId, structure.orientation);
     if (appearance.kind !== 'object' || !isInteriorTile(structure.tileX, structure.tileY)) return [];
     const x = structure.tileX * TILE_SIZE_PX;
     const y = structure.tileY * TILE_SIZE_PX;
@@ -202,7 +207,7 @@ export function projectObliqueWorldFrame(frame: RenderFrame, camera: ObliqueCame
   const squareOrders = new Map(frame.structures.filter((entry) => entry.phase === 'built' && entry.footprint === 'square')
     .map((entry) => [`${entry.tileX}:${entry.tileY}`, entry]));
   const structureSolid = (structure: RenderStructure): void => {
-    const appearance = structureAppearance(structure.definitionId);
+    const appearance = structureAppearance(structure.definitionId, structure.orientation);
     const cutaway = structure.phase === 'built' && appearance.kind === 'wall' && squareNeedsCutaway(structure.tileX, structure.tileY);
     if (cutaway && obscuresFixture(structure.tileX, structure.tileY)) return;
     const x = structure.tileX * TILE_SIZE_PX;
@@ -222,6 +227,11 @@ export function projectObliqueWorldFrame(frame: RenderFrame, camera: ObliqueCame
       alpha: structure.phase === 'planned' ? PLANNED_ALPHA : structure.phase === 'building' ? BUILDING_ALPHA : 1,
       viewDepth: obliqueDepthForAnchor({ x: x + width / 2, y: y + depth / 2 }, camera.yawRadians),
       ...(assetId === undefined ? {} : { assetId }),
+      ...(structure.orientation === undefined || structure.orientation === 0 ? {} : {
+        orientation: structure.orientation,
+        assetYawRadians: objectArtYaw(camera.yawRadians, structure.orientation),
+        authoredFootprintTiles: structureAppearance(structure.definitionId).footprintTiles,
+      }),
     });
   };
 
