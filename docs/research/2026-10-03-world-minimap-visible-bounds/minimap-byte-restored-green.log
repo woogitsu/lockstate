@@ -1,0 +1,10 @@
+$ vitest run "tests/unit/world-scene-minimap-real-camera.test.ts" "--maxWorkers=2"
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-world-minimap-camera-bounds-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  24 passed (24)
+   Start at  01:12:08
+   Duration  1.13s (transform 321ms, setup 0ms, import 947ms, tests 18ms, environment 0ms)
+

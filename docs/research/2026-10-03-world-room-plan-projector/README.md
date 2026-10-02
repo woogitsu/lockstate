@@ -96,14 +96,15 @@ mouse hover, real worker preflight clear and quote, all 28 basic-cell polygons,
 all four outer corners and first-square pointer containment, then a stationary
 click with the exact accepted worker origin and no extra Build/Remove command.
 
-The independent HUD readout currently emits raw camera scroll and zoom in its
-minimap viewport styles. The fixture reads that exact source contract, checks
-that none of those fractions are clipped, and applies explicit centre-origin
-geometry to the real SVG screen coordinates. It does not treat the drawn
-minimap rectangle's centre as the camera centre, or reuse the main forward
-callback as its reference. The fresh fixture's 32x32 loaded extent is asserted
-from the actual minimap canvas. Actual Phaser matrix agreement is independently
-covered by the 24 source cases above.
+The paired fixture now reads actual visible ground bounds from the corrected
+World minimap producer, whose four corners have their own independent real
+Camera regression in [the minimap audit](../2026-10-03-world-minimap-visible-bounds/README.md).
+Its rectangle-derived visible ground edges are compared to actual SVG screen
+corners and the physical pointer. It does not reuse the main forward callback
+as its reference. This supersedes the earlier254774 raw-scroll fixture when
+the minimap correction is integrated. Both producers retain separate negative
+controls, so the next native run must apply the corresponding source omissions
+separately.
 
 The two-case file has passed app/tools TypeScript compilation only. It has NOT
 run in a browser, has no claimed native result, and keeps the existing browser

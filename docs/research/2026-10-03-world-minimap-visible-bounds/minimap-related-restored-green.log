@@ -1,0 +1,10 @@
+$ vitest run "tests/unit/world-scene-minimap-real-camera.test.ts" "tests/unit/rendering-minimap-projection.test.ts" "tests/unit/oblique-camera-wheel-axis.test.ts" "--maxWorkers=2"
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-world-minimap-camera-bounds-20261003
+
+
+ Test Files  3 passed (3)
+      Tests  40 passed (40)
+   Start at  01:12:10
+   Duration  1.03s (transform 589ms, setup 0ms, import 1.56s, tests 25ms, environment 0ms)
+

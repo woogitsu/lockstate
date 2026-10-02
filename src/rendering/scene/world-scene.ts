@@ -811,13 +811,14 @@ export class WorldScene extends Phaser.Scene {
     const minimapBounds = frame.world.loadedBounds;
     if (this.minimapProjection !== undefined && minimapBounds !== undefined) {
       const camera = this.cameraState();
+      const visibleBounds = visibleWorldBounds(camera);
       const spanX = (minimapBounds.maxTileX - minimapBounds.minTileX + 1) * TILE_SIZE_PX;
       const spanY = (minimapBounds.maxTileY - minimapBounds.minTileY + 1) * TILE_SIZE_PX;
       this.minimapSink?.({
         ...this.minimapProjection,
         viewport: {
-          x: (camera.scroll.x - minimapBounds.minTileX * TILE_SIZE_PX) / spanX,
-          y: (camera.scroll.y - minimapBounds.minTileY * TILE_SIZE_PX) / spanY,
+          x: (visibleBounds.left - minimapBounds.minTileX * TILE_SIZE_PX) / spanX,
+          y: (visibleBounds.top - minimapBounds.minTileY * TILE_SIZE_PX) / spanY,
           width: camera.viewport.width / camera.zoom / spanX,
           height: camera.viewport.height / camera.zoom / spanY,
         },
