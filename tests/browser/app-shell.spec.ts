@@ -1506,7 +1506,8 @@ function tileSpanOfGesture(delta: number): number {
  * really are disjoint, in tiles, which is the space the refusal is in.
  */
 function belowGesture(gesture: WorldDragGesture): number {
-  return gesture.y + gesture.delta + TILE_SIZE_PX;
+  // A full wall needs a spare tile row between interiors, unlike a legacy edge.
+  return gesture.y + gesture.delta + 2 * TILE_SIZE_PX;
 }
 
 /**
@@ -2050,11 +2051,10 @@ interface TileRectangle {
   readonly height: number;
 }
 
-/** One `wall-brick` order: the tile it is anchored to, and which of that tile's two edges it fills. */
+/** One whole-square `wall-brick` order, outside the room's interior. */
 interface WallSegment {
   readonly x: number;
   readonly y: number;
-  readonly edge: 'north' | 'west';
 }
 
 /**
@@ -2107,26 +2107,29 @@ function perimeterSegments(rectangles: readonly TileRectangle[]): readonly WallS
   const seen = new Set<string>();
   const segments: WallSegment[] = [];
   const add = (segment: WallSegment): void => {
-    const key = `${segment.x},${segment.y},${segment.edge}`;
+    const key = `${segment.x},${segment.y}`;
     if (seen.has(key)) return;
     seen.add(key);
     segments.push(segment);
   };
-  for (const edge of ['north', 'west'] as const) {
-    for (const rectangle of rectangles) {
-      if (edge === 'north') {
-        for (let x = rectangle.x; x < rectangle.x + rectangle.width; x += 1) {
-          add({ x, y: rectangle.y, edge });
-          add({ x, y: rectangle.y + rectangle.height, edge });
-        }
-      } else {
-        for (const x of [rectangle.x, rectangle.x + rectangle.width]) {
-          for (let y = rectangle.y; y < rectangle.y + rectangle.height; y += 1) add({ x, y, edge });
-        }
-      }
+  // The historical edge arithmetic above describes the old tool. Whole-square
+  // walls occupy the exterior face tiles; corners do not close a cardinal edge.
+  for (const rectangle of rectangles) {
+    for (let x = rectangle.x; x < rectangle.x + rectangle.width; x += 1) {
+      add({ x, y: rectangle.y - 1 });
+      add({ x, y: rectangle.y + rectangle.height });
+    }
+    for (let y = rectangle.y; y < rectangle.y + rectangle.height; y += 1) {
+      add({ x: rectangle.x - 1, y });
+      add({ x: rectangle.x + rectangle.width, y });
     }
   }
-  return segments;
+  for (const segment of segments) for (const rectangle of rectangles) {
+    expect(segment.x >= rectangle.x && segment.x < rectangle.x + rectangle.width &&
+      segment.y >= rectangle.y && segment.y < rectangle.y + rectangle.height,
+    'a full wall square must not consume either room interior').toBe(false);
+  }
+  return segments.sort((a, b) => a.x - b.x || a.y - b.y);
 }
 
 /**
@@ -2451,7 +2454,6 @@ async function orderWallRectangles(
     strides.set(name, await walkFocus(page, key, name, target));
   };
 
-  let chosenEdge: WallSegment['edge'] | undefined;
   let chosenColumn: number | undefined;
   let entered = false;
   for (const segment of segments) {
@@ -2482,22 +2484,10 @@ async function orderWallRectangles(
     }
     await page.keyboard.press('Control+a');
     await page.keyboard.type(String(segment.y));
-    if (chosenEdge !== segment.edge) {
-      await tabTo(page, `the ${segment.edge} edge option`, {
-        selector: `.hud-build__coordinates [data-choice="${segment.edge}"]`,
-      });
-      await page.keyboard.press('Enter');
-      chosenEdge = segment.edge;
-      // From the chooser rather than from the field: a different distance, so
-      // a different hop.
-      await tabTo(page, 'the Place order control', { selector: '.hud-build__coordinates .ui-action' });
-    } else {
-      // This hop is also what commits the Tile Y field, which reports on
-      // `change`, and `change` fires when focus leaves the input.
-      await hopTo('the Place order control, from the Tile Y field', 'Tab', {
-        selector: '.hud-build__coordinates .ui-action',
-      });
-    }
+    // Leaving Tile Y commits its change. A whole-square wall has no edge choice.
+    await hopTo('the Place order control, from the Tile Y field', 'Tab', {
+      selector: '.hud-build__coordinates .ui-action',
+    });
     await page.keyboard.press('Enter');
   }
 
