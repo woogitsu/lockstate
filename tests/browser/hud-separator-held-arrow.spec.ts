@@ -37,6 +37,15 @@ for (const renderer of ['world', 'oblique']) {
       await page.keyboard.up('ArrowLeft');
     }
     await expect(separator).toBeFocused();
+    // Cross-axis arrows are deliberately unhandled by this vertical
+    // separator. Preserve their existing world owner instead of introducing
+    // a blanket keyboard guard on every focused HUD element.
+    const beforeUnhandled = await page.screenshot({ clip });
+    await page.keyboard.down('ArrowDown');
+    await page.waitForTimeout(300);
+    await page.keyboard.up('ArrowDown');
+    await expect(separator).toHaveAttribute('aria-valuenow', String(minimum + SEPARATOR_STEP));
+    expect((await page.screenshot({ clip })).equals(beforeUnhandled), 'an unhandled cross-axis arrow still reaches world camera control').toBe(false);
     await page.getByRole('button', { name: 'Build', exact: true }).focus();
     const released = await page.screenshot({ clip });
     await page.waitForTimeout(300);
