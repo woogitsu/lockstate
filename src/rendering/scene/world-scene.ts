@@ -639,6 +639,7 @@ export class WorldScene extends Phaser.Scene {
     this.input.on(
       'wheel',
       (pointer: Phaser.Input.Pointer, _objects: Phaser.GameObjects.GameObject[], _deltaX: number, deltaY: number) => {
+        if (deltaY === 0) return;
         const camera = this.cameras.main;
         const next = zoomAtScreenPoint(
           this.cameraState(),
