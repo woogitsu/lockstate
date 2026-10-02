@@ -1,0 +1,428 @@
+{
+  "source": "assets/source/blender/fixture.medicine-cabinet.variants.blend",
+  "sourceSha256": "17670457233caef94855cdaf64b2cf1bd3c8623318941cbd3ce2e5c50224ac75",
+  "allSceneMeshCount": 20,
+  "retainedSelectedMeshCount": 9,
+  "foreignMeshes": [
+    "bed_base",
+    "control",
+    "headboard",
+    "leg",
+    "leg.001",
+    "leg.002",
+    "leg.003",
+    "mattress",
+    "pillow",
+    "rail",
+    "rail.001"
+  ],
+  "retainedMeshes": [
+    {
+      "name": "cabinet_body",
+      "location": [
+        0.0,
+        0.0,
+        0.6200000047683716
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "bounds": {
+        "min": [
+          -0.4099999964237213,
+          -0.36000001430511475,
+          0.030000030994415283
+        ],
+        "max": [
+          0.4099999964237213,
+          0.36000001430511475,
+          1.2100000381469727
+        ]
+      },
+      "materials": [
+        "cabinet warm white"
+      ],
+      "rawVertices": 8,
+      "rawFaces": 6,
+      "evaluatedFaces": 54,
+      "minimumNormalDistance": 0.36000001430511475,
+      "inwardOrDegenerateFaces": 0,
+      "rawVertexBytesSha256": "ebbb489e960bbb2aeb0b8832a87b3784836328384aa884c036e9696c941bffe5",
+      "evaluatedPositionSha256": "f660194ead0986163b38884a256cc2897975f7b8da01d10fb42385b599885550"
+    },
+    {
+      "name": "door",
+      "location": [
+        -0.20000000298023224,
+        0.3799999952316284,
+        0.6200000047683716
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "bounds": {
+        "min": [
+          -0.38499999046325684,
+          0.35999998450279236,
+          0.11000001430511475
+        ],
+        "max": [
+          -0.015000000596046448,
+          0.4000000059604645,
+          1.1299999952316284
+        ]
+      },
+      "materials": [
+        "cabinet warm white"
+      ],
+      "rawVertices": 8,
+      "rawFaces": 6,
+      "evaluatedFaces": 54,
+      "minimumNormalDistance": 0.019999951124191284,
+      "inwardOrDegenerateFaces": 0,
+      "rawVertexBytesSha256": "64177b836a34159bc9ffdeb7f74167721d05dafc88416ecad6177eaa8a7252ed",
+      "evaluatedPositionSha256": "d99e0b7c2865cbee2e2febc2def0feef06c9221745f949e5f70663a2da4d757a"
+    },
+    {
+      "name": "door.001",
+      "location": [
+        0.20000000298023224,
+        0.3799999952316284,
+        0.6200000047683716
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "bounds": {
+        "min": [
+          0.015000000596046448,
+          0.35999998450279236,
+          0.11000001430511475
+        ],
+        "max": [
+          0.38499999046325684,
+          0.4000000059604645,
+          1.1299999952316284
+        ]
+      },
+      "materials": [
+        "cabinet warm white"
+      ],
+      "rawVertices": 8,
+      "rawFaces": 6,
+      "evaluatedFaces": 54,
+      "minimumNormalDistance": 0.019999951124191284,
+      "inwardOrDegenerateFaces": 0,
+      "rawVertexBytesSha256": "64177b836a34159bc9ffdeb7f74167721d05dafc88416ecad6177eaa8a7252ed",
+      "evaluatedPositionSha256": "b1f1746185e2e3f192e225c198d762743eac9e2f22c90e1e73c7707c1f388d71"
+    },
+    {
+      "name": "handle",
+      "location": [
+        -0.10999999940395355,
+        0.41499999165534973,
+        0.6200000047683716
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "bounds": {
+        "min": [
+          -0.1274999976158142,
+          0.3974999785423279,
+          0.5199999809265137
+        ],
+        "max": [
+          -0.0925000011920929,
+          0.4325000047683716,
+          0.7200000286102295
+        ]
+      },
+      "materials": [
+        "brass handle"
+      ],
+      "rawVertices": 8,
+      "rawFaces": 6,
+      "evaluatedFaces": 54,
+      "minimumNormalDistance": 0.01749996840953827,
+      "inwardOrDegenerateFaces": 0,
+      "rawVertexBytesSha256": "9f82ead92013c8d3fba89003830b6bb83c2ca852e6c896e705622f55552a8bc3",
+      "evaluatedPositionSha256": "9a619fd88b5bd35478540f74d79d28f7e414ce780688fa16c3172108dd9cf4a9"
+    },
+    {
+      "name": "handle.001",
+      "location": [
+        0.10999999940395355,
+        0.41499999165534973,
+        0.6200000047683716
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "bounds": {
+        "min": [
+          0.0925000011920929,
+          0.3974999785423279,
+          0.5199999809265137
+        ],
+        "max": [
+          0.1274999976158142,
+          0.4325000047683716,
+          0.7200000286102295
+        ]
+      },
+      "materials": [
+        "brass handle"
+      ],
+      "rawVertices": 8,
+      "rawFaces": 6,
+      "evaluatedFaces": 54,
+      "minimumNormalDistance": 0.01749996840953827,
+      "inwardOrDegenerateFaces": 0,
+      "rawVertexBytesSha256": "9f82ead92013c8d3fba89003830b6bb83c2ca852e6c896e705622f55552a8bc3",
+      "evaluatedPositionSha256": "c66603cac50ae2c985e1855e802d514837ff40a3416c1e9b5c8ea9e01a06a6ec"
+    },
+    {
+      "name": "inner",
+      "location": [
+        0.0,
+        -0.3700000047683716,
+        0.6200000047683716
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "bounds": {
+        "min": [
+          -0.3400000035762787,
+          -0.38499999046325684,
+          0.11000001430511475
+        ],
+        "max": [
+          0.3400000035762787,
+          -0.35500001907348633,
+          1.1299999952316284
+        ]
+      },
+      "materials": [
+        "cabinet inset"
+      ],
+      "rawVertices": 8,
+      "rawFaces": 6,
+      "evaluatedFaces": 54,
+      "minimumNormalDistance": 0.014999955892562866,
+      "inwardOrDegenerateFaces": 0,
+      "rawVertexBytesSha256": "4b825cb2a81a39abd484b3aebe0664bd5c25d713c16815121910efa3b0abcd36",
+      "evaluatedPositionSha256": "5cb00dbb6ab64f6d2d9bcc7a0e43b049e493306d1316593d0e74ff9a6c54e205"
+    },
+    {
+      "name": "shelf",
+      "location": [
+        0.0,
+        -0.019999999552965164,
+        0.2800000011920929
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "bounds": {
+        "min": [
+          -0.3400000035762787,
+          -0.33000001311302185,
+          0.25999999046325684
+        ],
+        "max": [
+          0.3400000035762787,
+          0.28999999165534973,
+          0.30000001192092896
+        ]
+      },
+      "materials": [
+        "cabinet warm white"
+      ],
+      "rawVertices": 8,
+      "rawFaces": 6,
+      "evaluatedFaces": 54,
+      "minimumNormalDistance": 0.019999980926513672,
+      "inwardOrDegenerateFaces": 0,
+      "rawVertexBytesSha256": "60b0ca465d1f12a515e7c74fcb290e903cb0ffe3ee194789068de92ff11e860b",
+      "evaluatedPositionSha256": "34902a6e3fca7468834613c795cab77eac1a06f478ae49f286a140342fa80671"
+    },
+    {
+      "name": "shelf.001",
+      "location": [
+        0.0,
+        -0.019999999552965164,
+        0.6200000047683716
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "bounds": {
+        "min": [
+          -0.3400000035762787,
+          -0.33000001311302185,
+          0.6000000238418579
+        ],
+        "max": [
+          0.3400000035762787,
+          0.28999999165534973,
+          0.6399999856948853
+        ]
+      },
+      "materials": [
+        "cabinet warm white"
+      ],
+      "rawVertices": 8,
+      "rawFaces": 6,
+      "evaluatedFaces": 54,
+      "minimumNormalDistance": 0.01999986171722412,
+      "inwardOrDegenerateFaces": 0,
+      "rawVertexBytesSha256": "60b0ca465d1f12a515e7c74fcb290e903cb0ffe3ee194789068de92ff11e860b",
+      "evaluatedPositionSha256": "a2a156b3eeea871cf3a9d2caabac8de01687db61bfe98aaf1f181bcfe1d799d9"
+    },
+    {
+      "name": "shelf.002",
+      "location": [
+        0.0,
+        -0.019999999552965164,
+        0.9599999785423279
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "bounds": {
+        "min": [
+          -0.3400000035762787,
+          -0.33000001311302185,
+          0.9399999976158142
+        ],
+        "max": [
+          0.3400000035762787,
+          0.28999999165534973,
+          0.9799999594688416
+        ]
+      },
+      "materials": [
+        "cabinet warm white"
+      ],
+      "rawVertices": 8,
+      "rawFaces": 6,
+      "evaluatedFaces": 54,
+      "minimumNormalDistance": 0.019999921321868896,
+      "inwardOrDegenerateFaces": 0,
+      "rawVertexBytesSha256": "60b0ca465d1f12a515e7c74fcb290e903cb0ffe3ee194789068de92ff11e860b",
+      "evaluatedPositionSha256": "3bdf5aa1a1972e61f541689f72dfd2e5bb3a60e0bef6ba8ee938ebf1800c76a8"
+    }
+  ],
+  "materials": [
+    {
+      "name": "brass handle",
+      "diffuse": [
+        0.7200000286102295,
+        0.47999998927116394,
+        0.20000000298023224,
+        1.0
+      ],
+      "nodes": [
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "baseColor": [
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            1.0
+          ]
+        },
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "baseColor": null
+        }
+      ]
+    },
+    {
+      "name": "cabinet inset",
+      "diffuse": [
+        0.18000000715255737,
+        0.25,
+        0.25,
+        1.0
+      ],
+      "nodes": [
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "baseColor": [
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            1.0
+          ]
+        },
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "baseColor": null
+        }
+      ]
+    },
+    {
+      "name": "cabinet warm white",
+      "diffuse": [
+        0.699999988079071,
+        0.7200000286102295,
+        0.6600000262260437,
+        1.0
+      ],
+      "nodes": [
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "baseColor": [
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            1.0
+          ]
+        },
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "baseColor": null
+        }
+      ]
+    }
+  ],
+  "selectedEvaluatedBounds": {
+    "min": [
+      -0.4099999964237213,
+      -0.38499999046325684,
+      0.030000030994415283
+    ],
+    "max": [
+      0.4099999964237213,
+      0.4325000047683716,
+      1.2100000381469727
+    ]
+  }
+}
