@@ -10,7 +10,8 @@ class ElementStub extends EventTarget {
   readonly attributes=new Map<string,string>();
   readonly style:Record<string,string>={};
   readonly dataset:Record<string,string>={};
-  readonly classList={add:()=>{},remove:()=>{}};
+  readonly classes=new Set<string>();
+  readonly classList={add:(name:string)=>{this.classes.add(name);},remove:(name:string)=>{this.classes.delete(name);},contains:(name:string)=>this.classes.has(name)};
   className=''; textContent=''; value=''; checked=false; disabled=false; tabIndex=0; id='';
   setAttribute(name:string,value:string):void {this.attributes.set(name,value);if(name==='value') this.value=value;}
   append(...elements:ElementStub[]):void {this.children.push(...elements);}
@@ -54,4 +55,32 @@ it.each(['preflight','accepted','rejected'] as const)('ignores obsolete %s compl
   expect(focused).toBe(yard);
   expect(yard.attributes.get('aria-pressed')).toBe('true');
   expect(place).toHaveBeenCalledTimes(phase==='preflight'?0:1);
+});
+
+it('groups the selected full bed and keeps worker collision visible over its overlay in both orientations', async () => {
+  const elements:ElementStub[]=[];
+  vi.stubGlobal('document',{createElement:()=>{const element=new ElementStub();elements.push(element);return element;}});
+  vi.stubGlobal('HTMLElement',ElementStub);
+  const tool=new RoomTemplateTool({
+    objectFootprint:id=>id==='bed-wooden'?{width:1,height:2}:{width:1,height:1},
+    preflight:async request=>({ok:false as const,reason:'object-occupied' as const,tile:{x:request.mirrorX?2:1,y:2}}),
+    place:async()=>{},
+  });
+  createRoomTemplatePreview(new Localizer({locale:'en',catalogs:[defaultMessageCatalogEn]}),tool);
+  const diagram=elements.find(e=>e.className==='hud-template__diagram')!;
+  const status=elements.find(e=>e.className==='hud-template__status')!;
+  await vi.waitFor(()=>expect(status.textContent).toContain('2)'));
+  const fixtures=()=>diagram.children.filter(e=>e.className==='hud-template__fixture');
+  expect(diagram.children.filter(e=>e.className.startsWith('hud-template__tile '))).toHaveLength(28);
+  expect(fixtures()).toHaveLength(2);
+  expect(fixtures()[0]!.style['gridRow']).toBe('2 / span 2');
+  expect(diagram.children[9]!.classList.contains('hud-template__tile--blocked')).toBe(true);
+  expect(fixtures()[0]!.classList.contains('hud-template__tile--blocked')).toBe(true);
+  expect(fixtures()[0]!.attributes.get('aria-hidden')).toBe('true');
+  const mirror=elements.find(e=>e.attributes.get('type')==='checkbox')!;
+  mirror.checked=true;mirror.dispatchEvent(new Event('change'));
+  await vi.waitFor(()=>expect(status.textContent).toContain('(2, 2)'));
+  expect(fixtures()[0]!.style['gridColumn']).toBe('3 / span 1');
+  expect(fixtures()[0]!.style['gridRow']).toBe('2 / span 2');
+  expect(fixtures()[0]!.classList.contains('hud-template__tile--blocked')).toBe(true);
 });
