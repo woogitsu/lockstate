@@ -25,12 +25,12 @@ async function installProbe(page:Page):Promise<void> {
       }
     }
     (window as unknown as {Worker:typeof Worker}).Worker=Probed as unknown as typeof Worker;
-    (window as ProbeWindow).rendererProbe=probe;
+    (window as unknown as ProbeWindow).rendererProbe=probe;
   });
 }
 async function state(page:Page) {
   return page.evaluate(async()=>{
-    const p=(window as ProbeWindow).rendererProbe;
+    const p=(window as unknown as ProbeWindow).rendererProbe;
     const snapshot=await p.snapshot() as {payload:{snapshot:{data:unknown}}};
     return {workers:p.workers,terminations:p.terminations,data:snapshot.payload.snapshot.data,commands:p.sent.filter(m=>(m as {kind?:string}).kind==='simulation/command')};
   });
