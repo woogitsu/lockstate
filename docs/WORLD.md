@@ -118,13 +118,15 @@ It has three production callers, each supplying its own requirement set:
 `ConstructionSystem.submitOrder` (`src/simulation/construction/system.ts:675`,
 inside `admits`, with `SUBMISSION_REQUIREMENT`), `ObjectPlacementService`
 (`src/simulation/objects/object-placement-service.ts:535`,
-`PLACEMENT_REQUIREMENT`) and room zoning (`src/simulation/rooms/zoning.ts:555`,
+`PLACEMENT_REQUIREMENT`) and room zoning (`src/simulation/rooms/zoning.ts:559`,
 `ZONING_REQUIREMENT`). **This document said "its one production caller" from
 `f1d5c30` until this correction**; the second arrived at `041a379` (#269) and
 the third at `6cededc` (#320), so the sentence had been wrong for about a
 hundred releases. The terrain clause below is scoped to `SUBMISSION_REQUIREMENT`
 and does not describe the other two — `zoning.ts:417` records that `canBuildAt`
-defaults terrain checks **on**.
+defaults terrain checks **on**. The preceding `zoning.ts:555` indication remains
+historical; at coupled-refund checkpoint `91fd4e82b0`, the live fragment above
+still names `ZONING_REQUIREMENT`.
 
 `ConstructionSystem.submitOrder` refuses a
 build order whose tile the player does not own — the order is `failed` with
