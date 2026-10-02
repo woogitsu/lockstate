@@ -39,3 +39,7 @@ A real exported PNG byte mutation makes the focused integrity assertion red(exit
 ### Queued genuine native fixture
 
 `dedicated-kitchen-fridge-player-build.spec.ts` reuses accepted actual Kitchen capacity/worker/SaveLoad construction stages with all3authoritative fixture anchors and orientations. Native normal fridge21,8 orientation0; clockwise90 fridge22,6 orientation1. Existing60-second case and10-second progress budgets are unchanged; no objects/orders/completion are injected. Source-derived blue panel/dark detail candidates and broad rectangles are explicitly provisional. Native isolated region calibration and consumer-only negative/restoration are not claimed. The spec is prepared offline and no browser or workflow config is added.
+
+### Offline production preparation
+
+Full public asset hydration and the actual production client build exit0 at source `e8e7a7e732b93e3008fc3042c097ef1dfe2f8d0d`. Emitted simulation worker431592bytes SHA256 `6eeb38da74342d932bf13f0bced71e6a81997ccd20de1adede25dbde81cfad7e`; exact receipt in `queued-build-receipt.json`. This is preparation only: no fridge browser has launched and no native palette is accepted. An ignored manual config is ready in own scratch, preserving the existing artifact server and60s/10sbudgets; it is not a new workflow/config checkpoint. Source/head must be frozen again at the later native calibration checkpoint before mutation/restoration worker byte comparisons.
