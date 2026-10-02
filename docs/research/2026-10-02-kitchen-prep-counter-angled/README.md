@@ -25,3 +25,13 @@ Pinned Blender5.2.1LTS upstream build ID9e2066aef7ef; executable SHA256 `284f404
 ## Next checkpoint
 
 Production manifest/72poses remain their accepted earlier version at this source checkpoint. Full deterministic export/repeat, decoded borders/contact sheet, integrity mutation and offline genuine Kitchen q0/q1 consumer fixture follow. Actual native worker/SaveLoad/pixel calibration and consumer-only negative/restoration are queued for a later explicit browser lease. Root currently owns the browser; no prep-counter browser launched. No hosted acceptance claim.
+
+## Production export checkpoint
+
+The existing descriptor now consumes the dedicated source and72content-addressed frames. Only the granted prep-counter MODELS tuple changes: dedicated source, unitXY and measuredheighttarget. Stove/fridge rows, shared functions/default callbacks and object IDs remain unchanged. The Kitchen triple integrity assertion changes only its prep target.
+
+Two complete exports give73/73direct byte-equal files. Descriptor SHA256 `ca26fee09941fbbfca981b6c19d385590d9367789cc1aa141a7f7d78aa847f5d`; all72decoded frames have transparent borders, minimum47pixels. Full contact sheet SHA256 `68589ca6386e997ff9e2b484ee7c96355b786c875a5d29c74b5dbe963b960427` was opened and inspected, as were actual runtime-selected source yaw300/elevation40 and yaw30/elevation40 frames. Faucet, tray rims, drawer joinery and shelf are visible on exposed sides; rear views retain the original solid body/splashback. Source previews establish authored geometry/export framing only.
+
+Appending bytes to an actual exported PNG makes the dedicated integrity test red(exit1); exact PNG restoration returns green(exit0), recorded in `png-control.json`. Seven focused suites pass58cases/one optional live-Blender skip. Own native Blender verification was separately executed for all72cameras/four orientations, with five actual negative controls recorded above. App/tools TypeScript passes. Original/dedicated source hashes remain unchanged.
+
+Actual player construction/SaveLoad/isolated palette calibration and consumer-only negative/restoration remain pending an explicit browser lease. No native prep acceptance or hosted completion is claimed at this export checkpoint.

@@ -8,7 +8,7 @@ const root = new URL('../../', import.meta.url);
 const sha256 = (bytes: Buffer): string => createHash('sha256').update(bytes).digest('hex');
 const fixtures = [
   ['object.stove', 'furniture.kitchen.stove.variants', 'oblique-furniture.kitchen-stove.v1.json', [1, 0.5, 1.1230000257492065]],
-  ['object.prep-counter', 'furniture.kitchen.prep-counter.variants', 'oblique-furniture.kitchen-prep-counter.v1.json', [1, 0.5, 0.7]],
+  ['object.prep-counter', 'furniture.kitchen.prep-counter.variants', 'oblique-furniture.kitchen-prep-counter.v1.json', [1, 0.5, 0.8100000619888306]],
   ['object.fridge', 'furniture.kitchen.fridge.variants', 'oblique-furniture.kitchen-fridge.v1.json', [0.5, 0.5, 1.1999999284744263]],
 ] as const;
 

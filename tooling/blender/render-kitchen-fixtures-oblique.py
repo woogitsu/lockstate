@@ -30,7 +30,7 @@ PREVIEW_ONLY = "--preview" in sys.argv
 MODELS = (
     # id, source basename, manifest basename, width, height, x scale, y scale, camera target height
     ("furniture.kitchen.stove.variants", "furniture.kitchen.stove.angled.blend", "oblique-furniture.kitchen-stove.v1.json", 2, 1, 1.0, 1.0, 1.1230000257492065),
-    ("furniture.kitchen.prep-counter.variants", "furniture.kitchen.prep-counter.variants.blend", "oblique-furniture.kitchen-prep-counter.v1.json", 2, 1, 0.90, 0.90, 0.70),
+    ("furniture.kitchen.prep-counter.variants", "furniture.kitchen.prep-counter.angled.blend", "oblique-furniture.kitchen-prep-counter.v1.json", 2, 1, 1.0, 1.0, 0.8100000619888306),
     ("furniture.kitchen.fridge.variants", "furniture.kitchen.fridge.angled.blend", "oblique-furniture.kitchen-fridge.v1.json", 1, 1, 1.0, 1.0, 1.1999999284744263),
 )
 
