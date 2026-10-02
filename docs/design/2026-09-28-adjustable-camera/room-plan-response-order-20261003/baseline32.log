@@ -1,0 +1,16 @@
+pnpm : $ vitest run "tests/unit/ui-room-plan-preview-response-order.test.ts" "--maxWorkers=2"
+At line:2 char:1132
++ ... +$env:PATH; pnpm --config.verify-deps-before-run=false test tests/uni ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...--maxWorkers=2":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-room-plan-preview-response-audit-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  32 passed (32)
+   Start at  01:50:06
+   Duration  349ms (transform 48ms, setup 0ms, import 104ms, tests 105ms, environment 0ms)
+
