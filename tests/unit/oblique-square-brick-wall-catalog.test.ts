@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
+import { inflateSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
 import { parseObliqueModuleCatalog } from '../../src/rendering/assets/oblique-module-catalog';
 import { parseObliqueModuleRegistry } from '../../src/rendering/assets/oblique-module-registry';
@@ -24,11 +25,36 @@ describe('square brick wall art for normal and cutaway camera poses', () => {
     expect(sha256(readFileSync(new URL(catalog.source, sourceRoot)))).toBe(catalog.sourceSha256);
     expect(catalog.resolutionPx).toEqual([512, 512]);
     expect(catalog.pivotPx).toEqual([256, 256]);
+    expect(catalog.nominalPixelsPerTile).toBe(64);
+    expect(catalog.cameraTargetTiles).toEqual([0.5, 0.5, 0]);
     expect(catalog.yawDegrees).toEqual(Array.from({ length: 24 }, (_, i) => -180 + i * 15));
     expect(catalog.elevationDegrees).toEqual([25, 45, 65]);
     expect(catalog.frames).toHaveLength(72);
     for (const frame of catalog.frames) {
-      expect(sha256(readFileSync(new URL(frame.image.slice(1), publicRoot))), frame.image).toBe(frame.sha256);
+      const png = readFileSync(new URL(frame.image.slice(1), publicRoot));
+      expect(sha256(png), frame.image).toBe(frame.sha256);
+      expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual([512, 512]);
+      expect(hasTransparentBorder(png), frame.image).toBe(true);
     }
   });
 });
+
+function hasTransparentBorder(png: Buffer): boolean {
+  const width = png.readUInt32BE(16), height = png.readUInt32BE(20);
+  const compressed: Buffer[] = [];
+  for (let offset = 8; offset < png.length;) {
+    const length = png.readUInt32BE(offset);
+    if (png.toString('ascii', offset + 4, offset + 8) === 'IDAT') compressed.push(png.subarray(offset + 8, offset + 8 + length));
+    offset += length + 12;
+  }
+  const pixels = inflateSync(Buffer.concat(compressed));
+  const stride = width * 4 + 1;
+  if (pixels.length !== stride * height) return false;
+  for (let y = 0; y < height; y++) {
+    if (pixels[y * stride] !== 0) return false;
+    for (let x = 0; x < width; x++) {
+      if ((x === 0 || y === 0 || x === width - 1 || y === height - 1) && pixels[y * stride + 1 + x * 4 + 3] !== 0) return false;
+    }
+  }
+  return true;
+}

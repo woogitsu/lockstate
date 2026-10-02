@@ -1,13 +1,13 @@
 # Native whole-square Brick wall diagnostic — 2026-10-02
 
-## Confirmed observation; correction remains pending
+## Recorded original diagnostic; native correction acceptance remains pending
 
-The current authored Brick wall is wider than the horizontal projection of the
+At the unchanged `8b3096c888` baseline, the authored Brick wall is wider than the horizontal projection of the
 one occupied square selected by ordinary Build. At yaw −45° it is also anchored
 at the square's minimum corner instead of the centre of the centred wall mesh.
 This is a remaining part of [Issue #1585](https://github.com/woogitsu/lockstate/issues/1585),
 whose acceptance requires the committed wall to match the highlighted square.
-No gameplay, save, image, exporter, manifest or production source was changed.
+No gameplay, save, image, exporter, manifest or production source was changed during this diagnostic.
 This diagnostic is not a completed fix or an accepted mutation-tested gate.
 
 The independent native case is
