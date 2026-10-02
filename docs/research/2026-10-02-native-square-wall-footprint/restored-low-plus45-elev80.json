@@ -1,0 +1,175 @@
+{
+  "cutaway": true,
+  "pose": {
+    "yaw": 45,
+    "elevation": 80,
+    "turns": 6,
+    "raises": 4
+  },
+  "point": {
+    "x": 1469.1168824543142,
+    "y": 540
+  },
+  "mapClick": {
+    "clientX": 383,
+    "clientY": 850,
+    "rect": {
+      "x": 239,
+      "y": 793,
+      "width": 224,
+      "height": 88
+    },
+    "fx": 0.6428571428571429,
+    "fy": 0.6477272727272727
+  },
+  "target": {
+    "x": 20.571428571428573,
+    "y": 20.727272727272727
+  },
+  "measured": {
+    "yaw": 45,
+    "elevation": 80,
+    "ground": [
+      {
+        "x": 968.8158767524556,
+        "y": 467.6504685381798
+      },
+      {
+        "x": 1025.3844192473794,
+        "y": 523.3596077637814
+      },
+      {
+        "x": 968.8158767524556,
+        "y": 579.0687469893828
+      },
+      {
+        "x": 912.2473342575317,
+        "y": 523.3596077637814
+      }
+    ],
+    "hull": [
+      {
+        "x": 912.2473342575317,
+        "y": 512.9407171037655
+      },
+      {
+        "x": 968.8158767524556,
+        "y": 457.231577878164
+      },
+      {
+        "x": 1025.3844192473794,
+        "y": 512.9407171037655
+      },
+      {
+        "x": 1025.3844192473794,
+        "y": 523.3596077637814
+      },
+      {
+        "x": 968.8158767524556,
+        "y": 579.0687469893828
+      },
+      {
+        "x": 912.2473342575317,
+        "y": 523.3596077637814
+      }
+    ],
+    "authoredHull": [
+      {
+        "x": 912.2473342575317,
+        "y": 511.86439104443434
+      },
+      {
+        "x": 968.8158767524556,
+        "y": 460.59588047997124
+      },
+      {
+        "x": 1025.3844192473794,
+        "y": 511.86439104443434
+      },
+      {
+        "x": 1025.3844192473794,
+        "y": 523.3596077637814
+      },
+      {
+        "x": 968.8158767524556,
+        "y": 574.6281183282445
+      },
+      {
+        "x": 912.2473342575317,
+        "y": 523.3596077637814
+      }
+    ],
+    "groundMinX": 912.2473342575317,
+    "groundMaxX": 1025.3844192473794,
+    "masonryInside": 5803,
+    "masonryOutside": 0,
+    "masonryOutsideGroundSpan": 0,
+    "masonryOutsideAuthoredHull": 0,
+    "outsideBounds": {
+      "left": null,
+      "top": null,
+      "right": null,
+      "bottom": null
+    }
+  },
+  "wallTextures": [
+    "http://127.0.0.1:5402/game-content/oblique-square-brick-full-wall.v1.json",
+    "http://127.0.0.1:5402/game-content/oblique-square-brick-low-wall.v1.json",
+    "http://127.0.0.1:5402/assets/environment/oblique/square-brick-full-wall-yaw-045-elev45.b17091c17260.png",
+    "http://127.0.0.1:5402/assets/environment/oblique/square-brick-low-wall-yaw-045-elev45.1f712df62e5e.png",
+    "http://127.0.0.1:5402/assets/environment/oblique/square-brick-full-wall-yaw-030-elev45.19250d460ee9.png",
+    "http://127.0.0.1:5402/assets/environment/oblique/square-brick-low-wall-yaw-030-elev45.6e34ad2b3b07.png",
+    "http://127.0.0.1:5402/assets/environment/oblique/square-brick-full-wall-yaw-015-elev45.34529e35c696.png",
+    "http://127.0.0.1:5402/assets/environment/oblique/square-brick-low-wall-yaw-015-elev45.6400567e6bef.png",
+    "http://127.0.0.1:5402/assets/environment/oblique/square-brick-low-wall-yaw+000-elev45.a8b8fbee8cd5.png",
+    "http://127.0.0.1:5402/assets/environment/oblique/square-brick-low-wall-yaw%2B000-elev45.a8b8fbee8cd5.png",
+    "http://127.0.0.1:5402/assets/environment/oblique/square-brick-full-wall-yaw+015-elev45.219f5f189783.png",
+    "http://127.0.0.1:5402/assets/environment/oblique/square-brick-low-wall-yaw+015-elev45.31d2677710f5.png",
+    "http://127.0.0.1:5402/assets/environment/oblique/square-brick-low-wall-yaw%2B015-elev45.31d2677710f5.png",
+    "http://127.0.0.1:5402/assets/environment/oblique/square-brick-full-wall-yaw%2B015-elev45.219f5f189783.png",
+    "http://127.0.0.1:5402/assets/environment/oblique/square-brick-full-wall-yaw+030-elev45.f0061be8c624.png",
+    "http://127.0.0.1:5402/assets/environment/oblique/square-brick-low-wall-yaw+030-elev45.eb756ff209de.png",
+    "http://127.0.0.1:5402/assets/environment/oblique/square-brick-low-wall-yaw%2B030-elev45.eb756ff209de.png",
+    "http://127.0.0.1:5402/assets/environment/oblique/square-brick-full-wall-yaw%2B030-elev45.f0061be8c624.png",
+    "http://127.0.0.1:5402/assets/environment/oblique/square-brick-full-wall-yaw+045-elev45.e0bf5374ce4d.png",
+    "http://127.0.0.1:5402/assets/environment/oblique/square-brick-low-wall-yaw+045-elev45.48603357483d.png",
+    "http://127.0.0.1:5402/assets/environment/oblique/square-brick-low-wall-yaw%2B045-elev45.48603357483d.png",
+    "http://127.0.0.1:5402/assets/environment/oblique/square-brick-full-wall-yaw%2B045-elev45.e0bf5374ce4d.png",
+    "http://127.0.0.1:5402/assets/environment/oblique/square-brick-full-wall-yaw+045-elev65.c744de5e9df8.png",
+    "http://127.0.0.1:5402/assets/environment/oblique/square-brick-low-wall-yaw+045-elev65.a3bd4eabe0d5.png",
+    "http://127.0.0.1:5402/assets/environment/oblique/square-brick-low-wall-yaw%2B045-elev65.a3bd4eabe0d5.png",
+    "http://127.0.0.1:5402/assets/environment/oblique/square-brick-full-wall-yaw%2B045-elev65.c744de5e9df8.png"
+  ],
+  "snapshot": [
+    {
+      "id": "order-66888973-fcbc-4c5a-a921-cd8e8a7beacf",
+      "definitionId": "wall-brick",
+      "location": {
+        "x": 20,
+        "y": 20
+      },
+      "footprint": "square",
+      "placementSequence": 3,
+      "state": "completed",
+      "progress": 50,
+      "materialsAllocated": [
+        {
+          "itemId": "item.brick",
+          "quantity": 2
+        }
+      ],
+      "assignedWorkerId": "mock-worker-1"
+    }
+  ],
+  "workerCommands": [
+    {
+      "type": "PlaceBuildOrder",
+      "orderId": "order-66888973-fcbc-4c5a-a921-cd8e8a7beacf",
+      "definitionId": "wall-brick",
+      "x": 20,
+      "y": 20,
+      "footprint": "square",
+      "transactionId": "build-94a1b79d-4499-49c4-8ee3-ad706b628a7e"
+    }
+  ]
+}

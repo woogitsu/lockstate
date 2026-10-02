@@ -22,6 +22,9 @@ describe('square brick wall art for normal and cutaway camera poses', () => {
     expect(catalog.assetId).toBe(id);
     expect(catalog.source).toBe(`${id}.blend`);
     expect(catalog.sourceSha256).toMatch(/^[0-9a-f]{64}$/);
+    expect(catalog.sourceSha256).toBe(kind === 'full'
+      ? 'c73fcc00471682135b53049e0b74f1d71588909b245bfeac0cac6cd93d696ae1'
+      : '583c49382bf24191ee0d0e10518c0678716eb036c9638558036d5a06b0fbd1f1');
     expect(sha256(readFileSync(new URL(catalog.source, sourceRoot)))).toBe(catalog.sourceSha256);
     expect(catalog.resolutionPx).toEqual([512, 512]);
     expect(catalog.pivotPx).toEqual([256, 256]);
