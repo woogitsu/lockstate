@@ -1329,3 +1329,21 @@ The resulting worker is `worker-DIP7pP3A.js`, SHA256
 [Actual baseline, guarded reversal, legal retry and both producer negatives](../../research/2026-10-03-template-redo-zoning/README.md)
 are retained. Bin/drawer native acceptance must use this rebuilt combined
 subject; earlier upstream native captures are not relabelled as this client.
+
+### Bin/drawer integration accepted locally — 2026-10-03
+
+The rebuilt subject now passes all nine queued native artifact cases in2.1minutes:
+real capacity construction, both Garbage Room orientations with different exact
+V8 owners through Save/Load, and six trusted drawer Escape cases. [Fresh root
+captures and terminal evidence](../../research/2026-10-03-bin-drawer-integrated/README.md)
+are published. Palette counts remain equal across Load. CI found one historical
+baseline source stored with an active module extension; root reproduced that
+failure and preserved identical bytes in a text archive. The original coverage
+contract then passes4/4, with no assertions or tsconfig exclusions changed.
+
+Following Cell/Utility integration combines both accepted Blender model sources,
+the actual camera-matrix plan projector (#1988), visible-ground minimap (#1989)
+and full incoming-object footprint admission (#1654). Their combined native
+acceptance is a new check, not a relabel of individual agent runs. Art owns the
+single browser for Desk; HUD audits actual camera consumers, gameplay repairs
+asynchronous construction-history ordering. Full release gates remain pending.
