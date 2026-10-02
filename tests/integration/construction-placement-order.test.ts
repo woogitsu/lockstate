@@ -146,8 +146,9 @@ function saveAndLoad(
   // bump, and it is the surrounding assertions rather than this literal that
   // establish it.
   expect(envelope.saveSchemaVersion).toBe(SAVE_SCHEMA_VERSION);
-  // V7 relocates travel fields (#1459), likewise independent of this ordinal.
-  expect(SAVE_SCHEMA_VERSION).toBe(7);
+  // V7 relocates travel fields (#1459); V8 records object ownership (#1975),
+  // likewise independent of this ordinal.
+  expect(SAVE_SCHEMA_VERSION).toBe(8);
 
   // Exactly what a stored save is by the time it is read back: a plain value
   // of unknown provenance, fully re-validated and checksum-verified.

@@ -412,7 +412,7 @@ describe('the historical chain still walks a save older than the field', () => {
 });
 
 describe('the version this all rests on', () => {
-  it('is 7, and neither subsequent bump was payroll\'s', () => {
+  it('is 8, and no subsequent bump was payroll\'s', () => {
     // Pinned rather than deleted, for the reason
     // `economy-state-income-persistence.test.ts` gives about the same number:
     // what this guards is that a bump has a reason, not that the number never
@@ -421,7 +421,7 @@ describe('the version this all rests on', () => {
     // for 6 is ADR 0113's `simulation.regimeSchedules`, which is required
     // precisely because its absence is *not* unambiguous once a schedule can be
     // edited. Version 7 relocates travel fields (#1459), still unrelated to
-    // payroll's optional section.
-    expect(SAVE_SCHEMA_VERSION).toBe(7);
+    // payroll's optional section. V8 records exact object construction ownership (#1975).
+    expect(SAVE_SCHEMA_VERSION).toBe(8);
   });
 });

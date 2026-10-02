@@ -273,7 +273,7 @@ describe('save-schema V4 -> V5 migration', () => {
       expect(result).toMatchObject({ ok: true, migrated: true });
       if (!result.ok) return;
       expect(result.value.saveSchemaVersion).toBe(SAVE_SCHEMA_VERSION);
-      expect(SAVE_SCHEMA_VERSION).toBe(7);
+      expect(SAVE_SCHEMA_VERSION).toBe(8);
     }
   });
 
@@ -286,12 +286,12 @@ describe('save-schema V4 -> V5 migration', () => {
     expect(result).toMatchObject({ ok: false, error: { code: 'checksum-mismatch' } });
   });
 
-  it('decodes a V5 save written by this build with its objects section intact', () => {
-    // The forward direction, for completeness: a save this build writes carries
-    // the section and the rectangle, and needs no migration at all.
+  it('captures the current save with its objects section and exact successful owner intact', () => {
+    // This was the V5 current-writer control. The current V8 capture now
+    // carries the exact successful construction owner as well as the rectangle.
     const bundle = captureSessionSnapshot(sessionWithABed());
     expect(bundle.simulation?.objects?.placedObjects).toEqual([
-      { placedObjectId: 'object:4:6', objectId: 'object.bed', anchorTile: { x: 4, y: 6 }, orientation: 0 },
+      { placedObjectId: 'object:4:6', objectId: 'object.bed', anchorTile: { x: 4, y: 6 }, orientation: 0, sourceOrderId: 'bed-1' },
     ]);
     expect(bundle.simulation?.prisoners.roomInstanceDefinitions).toEqual([
       { instanceId: CELL_INSTANCE_ID, roomCatalogId: 'room.cell', anchorTile: { x: 4, y: 6 }, width: 2, height: 3 },
