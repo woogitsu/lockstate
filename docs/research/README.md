@@ -1,5 +1,6 @@
 # Research records
 
+
 Dated evidence gathered to answer a specific open decision, kept because the
 decision cites it.
 
@@ -98,6 +99,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 
 | Record | Question it answered | Decision it fed |
 | --- | --- | --- |
+| [2026-10-02 wheel anchor on main](./2026-10-02-wheel-anchor-main/README.md) | Does native wheel zoom retain the ground point on current main? | Issue1955; actual built-client acceptance, production mutation red and restoration green. |
 | [2026-08-25 room zoning gesture](./2026-08-25-room-zoning-gesture.md) | What gesture designates a room, and where does the control live? | ADR 0022 |
 | [2026-08-25 room occupancy](./2026-08-25-room-occupancy.md) | Where does a room's occupancy capacity come from? | ADR 0023 |
 | [2026-08-25 economy rate](./2026-08-25-economy-rate.md) | What does the state pay per prisoner-day, on what cadence, from what balance? | [#29](https://github.com/matmaxalez/lockstate/issues/29), within ADR 0017 |
