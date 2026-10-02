@@ -17,3 +17,11 @@ The first exploratory probe incorrectly supplied objectOrientation1 to PlaceBuil
 ## Boundary and weakest claim
 
 This is offline actual kernel/session and encodedV8 coverage. Browser and hosted acceptance are not established. Four template poses represent all clockwise orientations and both mirror values; the unchanged geometry/reservation contracts already cover the complete catalogue. A callback-presence or own-sequence regression in a different construction entry would require separate evidence. Production correction and genuine mutation proof are pending at this diagnostic checkpoint.
+
+## Verified narrow correction and production negative
+
+ConstructionSystem's existing full object admission loop additionally asks its existing pending-template rectangle reader for each incoming square, with the original placementSequence. Bounds/ownership admission still runs first on that square. No new callbacks, schema, copy, tariffs or coordinator/session edits.
+
+Actual [fixed run](./fixed.txt):36GREEN,1.73s tests/4.19s total. Detached production mutation removed exactly that six-line callback check: [negative](./mutation.txt)16RED/20GREEN,1.01s tests/3.31s total, reproducing the original approved-versus-failed violation. A finally block restored the captured source bytes; [hash receipt](./mutation-restore.json) verifies equality. [Exact restored run](./restored.txt):36GREEN,2.02s tests/4.54s total. The live and V8Load refusal assertions compare complete gameplay snapshots excluding only kernel dispatch progress and the established single failed diagnostic row; original order revisions, treasury, geometry, material state and history are preserved.
+
+Neighbouring admission/duplicate/collision/catalogue gates remain pending at this source checkpoint. Browser not run.
