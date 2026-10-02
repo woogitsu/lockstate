@@ -135,3 +135,11 @@ Eight documentation/index contracts passed **62 tests**,22.49s. No live-anchor
 or quotation-budget edits were required by that run. No browser, hosted
 release, remote CI or full-suite claim is made here; root integration gates
 remain separate.
+
+Final documented checkpoint checks: **62/62 passed**,14.98s. After adding the
+new published source citation, one citation run initially saw only the existing
+main-only local origin fetch refspec. The source was already remote-verified;
+fetching only this owned branch into its origin tracking ref made the cited
+commit visible to the unchanged gate. Its isolated8 tests passed, then the
+complete eight-file62-test run above passed. No citation allowlist or budget
+was modified.
