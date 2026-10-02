@@ -22,6 +22,7 @@ test('two real fingers pan the angled camera while Build stays armed', async ({ 
   await expect(page.locator('.hud-build__arm')).toHaveText('Stop placing');
 
   const minimapViewport = page.locator('.hud-minimap__viewport');
+  await page.getByRole('region', { name: 'Minimap', exact: true }).getByRole('button', { name: 'Expand', exact: true }).click();
   await expect(minimapViewport).toBeVisible();
   const before = await minimapViewport.getAttribute('style');
   const client = await page.context().newCDPSession(page);
