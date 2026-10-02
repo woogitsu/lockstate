@@ -42,13 +42,13 @@ function gameplay(runtime: Runtime) {
   const { kernel: _kernel, ...snapshot } = captureSessionSnapshot(runtime);
   return snapshot;
 }
-it.each([false, true].flatMap(legacy => ['bed-wooden', 'toilet-brick'].map(definitionId => ({ legacy, definitionId }))))
-  ('old rotated template cancellation preserves the later independent $definitionId purchase, legacy=$legacy', ({ legacy, definitionId }) => {
+it.each(([0, 1] as const).flatMap(quarterTurns => [false, true].flatMap(legacy => ['bed-wooden', 'toilet-brick'].map(definitionId => ({ quarterTurns, legacy, definitionId })))))
+  ('old rotated template cancellation preserves the later independent $definitionId purchase, legacy=$legacy turn=$quarterTurns', ({ quarterTurns, legacy, definitionId }) => {
     let runtime = createNewSimulationRuntime(73);
-    send(runtime, { type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 10, y: 10 }, quarterTurns: 1 });
+    send(runtime, { type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 10, y: 10 }, quarterTurns });
     finish(runtime);
     const original = runtime.construction.allOrders().find(order => order.definitionId === 'bed-wooden')!;
-    expect(original.objectOrientation).toBe(1);
+    expect(original.objectOrientation ?? 0).toBe(quarterTurns);
     send(runtime, { type: 'RemoveObject', x: original.location.x, y: original.location.y });
     expect(runtime.construction.getOrder(original.id)?.state).toBe('completed');
     send(runtime, { type: 'PlaceObject', orderId: 'independent-replacement', definitionId, x: original.location.x, y: original.location.y });
