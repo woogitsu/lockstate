@@ -1270,3 +1270,29 @@ producer negatives retained. Its corrected native pixels and the dedicated waste
 bin remain queued. The next existing utility panel has a confirmed inward-face
 source audit and a scoped topology/detail correction; no imaginary buildable is
 introduced. Full release gates still precede every merge and hosted delivery.
+
+### Following integration acceptance — 2026-10-03
+
+The Laundry/camera client now passes a fresh root combined seven-case native
+artifact run in2.6minutes: both horizontal-wheel views, actual capacity build,
+normal/rotated Laundry with exact V8 object owners through Save/Load, and both
+middle/right camera exit/reentry cases. [Actual captures and worker/input receipts](../../research/2026-10-03-laundry-camera-integrated/README.md)
+are published. This closes that queued local check, not the full hosted release.
+
+The separate first-CI repair also completes native acceptance for the four
+actual View mouse cases, four Build/pose cases, five authored actor cases,
+four-yaw retained-origin room picking and all five whole-square keyboard routes.
+The actual actor-visibility producer mutation gives zero pixels and RED; exact
+restoration passes all five with old/new decoders agreeing on the same captures.
+One keyboard consumer had rescanned into a different cell after an alert grew
+the minimap; its corrected measured-column aim retains exact origins and passes.
+[Root repair receipts](../../research/2026-10-02-browser-ci-timecap/root-controls-restoration.md)
+are on `codex/integrate-first-ci-repair-20261002`; they have not been silently
+applied to the frozen candidate head or represented as full-suite success.
+
+Art now owns the single native browser for Bin, corrected Cell toilet and the
+new physical Utility panel. Blender desk details proceed separately. Another
+agent checks shell reversal ownership and a third audits camera/HUD input.
+The completed, mutation-checked CI split proposal is offered to the owner;
+production workflow is unchanged while the decision is pending. Continue game
+development and preserve each coherent chunk on GitHub during that wait.

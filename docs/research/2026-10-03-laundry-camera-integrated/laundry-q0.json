@@ -1,0 +1,141 @@
+{
+  "quarterTurns": 0,
+  "actualBefore": [
+    "object.washing-machine@21,6:orientation=0",
+    "object.washing-machine@23,6:orientation=0"
+  ],
+  "actualAfter": [
+    "object.washing-machine@21,6:orientation=0",
+    "object.washing-machine@23,6:orientation=0"
+  ],
+  "ownershipBefore": [
+    {
+      "objectId": "object.washing-machine",
+      "sourceOrderId": "room-template-000000000002-2-object-000",
+      "anchorTile": {
+        "x": 21,
+        "y": 6
+      },
+      "orientation": 0,
+      "order": {
+        "id": "room-template-000000000002-2-object-000",
+        "definitionId": "washing-machine-brick",
+        "location": {
+          "x": 21,
+          "y": 6
+        },
+        "placementSequence": 2,
+        "state": "completed",
+        "progress": 60,
+        "materialsAllocated": [
+          {
+            "itemId": "item.brick",
+            "quantity": 2
+          }
+        ],
+        "assignedWorkerId": "mock-worker-1"
+      }
+    },
+    {
+      "objectId": "object.washing-machine",
+      "sourceOrderId": "room-template-000000000002-2-object-001",
+      "anchorTile": {
+        "x": 23,
+        "y": 6
+      },
+      "orientation": 0,
+      "order": {
+        "id": "room-template-000000000002-2-object-001",
+        "definitionId": "washing-machine-brick",
+        "location": {
+          "x": 23,
+          "y": 6
+        },
+        "placementSequence": 2,
+        "state": "completed",
+        "progress": 60,
+        "materialsAllocated": [
+          {
+            "itemId": "item.brick",
+            "quantity": 2
+          }
+        ],
+        "assignedWorkerId": "mock-worker-1"
+      }
+    }
+  ],
+  "ownershipAfter": [
+    {
+      "objectId": "object.washing-machine",
+      "sourceOrderId": "room-template-000000000002-2-object-000",
+      "anchorTile": {
+        "x": 21,
+        "y": 6
+      },
+      "orientation": 0,
+      "order": {
+        "id": "room-template-000000000002-2-object-000",
+        "definitionId": "washing-machine-brick",
+        "location": {
+          "x": 21,
+          "y": 6
+        },
+        "placementSequence": 2,
+        "state": "completed",
+        "progress": 60,
+        "materialsAllocated": [
+          {
+            "itemId": "item.brick",
+            "quantity": 2
+          }
+        ],
+        "assignedWorkerId": "mock-worker-1"
+      }
+    },
+    {
+      "objectId": "object.washing-machine",
+      "sourceOrderId": "room-template-000000000002-2-object-001",
+      "anchorTile": {
+        "x": 23,
+        "y": 6
+      },
+      "orientation": 0,
+      "order": {
+        "id": "room-template-000000000002-2-object-001",
+        "definitionId": "washing-machine-brick",
+        "location": {
+          "x": 23,
+          "y": 6
+        },
+        "placementSequence": 2,
+        "state": "completed",
+        "progress": 60,
+        "materialsAllocated": [
+          {
+            "itemId": "item.brick",
+            "quantity": 2
+          }
+        ],
+        "assignedWorkerId": "mock-worker-1"
+      }
+    }
+  ],
+  "beforePixels": [
+    827,
+    833
+  ],
+  "afterPixels": [
+    827,
+    833
+  ],
+  "commands": [
+    {
+      "type": "PlaceRoomTemplate",
+      "templateId": "laundry-basic",
+      "origin": {
+        "x": 20,
+        "y": 5
+      }
+    }
+  ]
+}
