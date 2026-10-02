@@ -639,3 +639,7 @@ Integrated production client rebuilt successfully; the same complete native-inpu
 ## Shared catalog failure recovery — 2026-10-02
 Issue1960 records an actual unit-level concurrency defect: a second caller sharing an offline request bypassed its own verified fallback. Fix a82f43b852 applies recovery per caller while retaining one network request. Four registry cases pass, including independent fallback maps and retry after failure. Removing only failed-cache eviction makes the retry case red (one network attempt instead of two); exact production restoration returns4/4green. Application TypeScript passed with the fix. No actual browser outage or deployed availability is inferred from these unit cases.
 
+
+## Solo Blender Laundry alignment — 2026-10-02
+Root evaluated the existing washing-machine Blender geometry: X[-.85,.85], Y[-.59,.42], outside its minimum-corner2x1 footprint. A scoped wrapper reuses the verified Kitchen exporter and preserves the source, object ID, price and saved state. Corrected evaluated bounds X[.15,1.85], Y[.028,.836], Z[0,1.56]. All72 poses now use256px/4tiles=64 pixels per tile, checked transparent borders and deterministic PNG normalization. Root opened the actual45/45 preview. Actual Laundry worker construction/SaveLoad proof and repeated full-render hash comparison remain pending; this is source/render integration only.
+
