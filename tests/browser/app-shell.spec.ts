@@ -4101,6 +4101,35 @@ test.describe('the assembled application', () => {
     await page.locator('.hud-layout__button').click();
     await expect(page.locator('.hud-layout__body')).toBeHidden();
 
+    // Plans live in a native modal, so visit it explicitly just as the Layout
+    // disclosure above. The backdrop intentionally blocks the rest of the HUD;
+    // require every modal control to be measured and reachable, then close it
+    // before the ordinary shell measurements. Nothing is added to exemptions.
+    await page.locator('.ui-tab[data-tab="build"]').click();
+    await page.locator('.hud-build__template-open').click();
+    const roomPlans = page.locator('.hud-template');
+    await expect(roomPlans).toBeVisible();
+    const planChoices = roomPlans.locator('.hud-template__choices button');
+    expect(await planChoices.count(), 'the plans catalogue has no choices').toBeGreaterThan(0);
+    for (const choice of await planChoices.all()) {
+      await choice.click();
+      const plans = await controlReachability(page);
+      record(plans);
+      const modalIndexes = plans.controls.flatMap((name, index) => name.includes('hud-template >') ? [index] : []);
+      expect(modalIndexes.length, 'the plans modal has no inventoried controls').toBeGreaterThan(0);
+      expect(
+        modalIndexes.filter((index) => !plans.measured.includes(index)),
+        `plans controls not laid out at ${width}x${height}`,
+      ).toEqual([]);
+      expect(
+        plans.unreachable.filter((entry) => entry.control.includes('hud-template >')),
+        `plans controls covered while open at ${width}x${height}`,
+      ).toEqual([]);
+    }
+    await roomPlans.locator('.hud-template__close').click();
+    await expect(roomPlans).toBeHidden();
+    await expect(page.locator('.hud-build__template-open')).toBeFocused();
+
     /*
      * Saving is not a Build-tab activity, and the Build tab is where the
      * player spends their time. Named separately so a regression says so.
@@ -5792,6 +5821,8 @@ test.describe('the assembled application', () => {
       'the control after the catalogue header is not the category filter',
     ).toBe(true);
     await page.keyboard.press('Tab');
+    await expect(page.locator('.hud-build__template-open'), 'plans is its own reachable action before the catalogue').toBeFocused();
+    await page.keyboard.press('Tab');
     expect((await rowState()).focused, 'one Tab did not land on the catalogue').toBe(arrival.tabStops[0]);
     await page.keyboard.press('Tab');
     expect(
@@ -5860,6 +5891,9 @@ test.describe('the assembled application', () => {
     // Still reachable, which is the claim the two assertions above are for.
     await page.locator('.hud-build__catalogue > .ui-section__header-row .ui-section__header').focus();
     await page.keyboard.press('Tab');
+    await expect(filter, 'filter remains the first stop after the catalogue header').toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(page.locator('.hud-build__template-open'), 'filtering must not remove the plans action from keyboard navigation').toBeFocused();
     await page.keyboard.press('Tab');
     const entered = await rowState();
     expect(entered.focused, 'Tab no longer reaches the filtered catalogue').toBe(filtered.tabStops[0]);
