@@ -254,6 +254,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 | [2026-10-02 template tooltip clearance](./2026-10-02-template-tooltip-clearance/README.md) | Can a large projected plan retain its visible floor while showing construction cost? | Full HD baseline covers 17 squares; geometric placement restores zero overlap in measured center and edge views. |
 | [2026-10-02 actor facing](./2026-10-02-oblique-actor-facing/README.md) | Which existing Blender pose should face world movement when the camera turns? | Eight SHA-checked guard views across four headings and two camera yaws establish the signed yaw rule and the stationary-heading limitation. |
 | [2026-10-02 room-template quarter turns](./2026-10-02-room-template-quarter-turns/README.md) | Can all authored room plans rotate reversibly with exact occupied object extents and canonical door edges? | Pure geometry and worker-footprint adapter mutation evidence; durable state and gameplay UI remain separately pending. |
+| [2026-10-02 Common Room bench art](./2026-10-02-common-room-bench/README.md) | Can the existing bench have distinct indoor recreation-room art without changing gameplay identity? | Blender source, evaluated 2×1 bounds, deterministic 72-pose catalog and source/scale/hash mutation evidence; runtime acceptance follows. |
 
 ### Findings from the first four records that changed a decision
 
