@@ -319,6 +319,14 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
   select(ROOM_TEMPLATE_IDS[0]);
   openButton.addEventListener('click', () => { dialog.showModal(); void refreshPlacement(); });
   closeButton.addEventListener('click', () => dialog.close());
+  dialog.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape' || !dialog.open) return;
+    // Native dialog cancellation occurs after keydown bubbles to window.
+    // Close here so this key cannot also cancel the armed world preview.
+    event.preventDefault();
+    event.stopPropagation();
+    dialog.close();
+  });
   dialog.addEventListener('close', () => openButton.focus());
   return { openButton, dialog };
 }
