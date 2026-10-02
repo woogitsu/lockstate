@@ -4,7 +4,7 @@ import type { RenderRoom } from '../feed/render-feed';
 
 /** Stable object-id to oblique asset mapping. Unknown objects fail closed so the flat fallback remains authoritative. */
 export const OBLIQUE_OBJECT_ASSET_IDS: Readonly<Record<string, string>> = Object.freeze({
-  'object.bed': 'furniture.cell.bed.single.variants',
+  'object.bed': 'furniture.cell.cot.single',
   'object.toilet': 'fixture.cell.toilet_sink',
   'object.shower-head': 'fixture.shower.head',
   'object.dining-table': 'furniture.dining.table.wooden',
