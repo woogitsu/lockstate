@@ -5,6 +5,9 @@ import sys
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
+import pipeline_common
+
+pipeline_common.require_blender_version()
 spec = importlib.util.spec_from_file_location('square_fixture_export', HERE / 'render-kitchen-fixtures-oblique.py')
 exporter = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(exporter)
