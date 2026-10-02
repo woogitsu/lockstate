@@ -20,7 +20,7 @@ async function keyboardLoadWhileHoldingPointer(page: Page): Promise<void> {
 
 test('Load cancels an outgoing Rooms drag before release or later pointer movement', async ({ page }) => {
   await savedPausedPrison(page);
-  await page.getByRole('button', { name: 'Rooms', exact: true }).click();
+  await page.locator('.ui-tab[data-tab="rooms"]').click();
   await page.locator('.hud-rooms__arm').click();
   await expect(page.locator('.hud-rooms__arm')).toHaveAttribute('aria-pressed', 'true');
   const emptyArea = await page.locator('.hud-rooms__area-value').innerText();
