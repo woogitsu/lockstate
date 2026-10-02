@@ -357,6 +357,14 @@ export class ObliqueWorldScene extends Phaser.Scene {
       cancelPointerInput();
     };
     const canvas = this.game.canvas;
+    const captureBuildPointer = (event: PointerEvent): void => {
+      // Keep a canvas-origin construction drag updating beneath HUD islands,
+      // as in the top-down scene. A press starting on a HUD control stays there.
+      if (event.pointerType === 'mouse' && event.button === 0 &&
+        (this.buildTool?.isArmed() === true || this.objectTool?.isArmed() === true || this.roomTool?.isArmed() === true)) {
+        canvas.setPointerCapture(event.pointerId);
+      }
+    };
     const preventMiddleAutoScroll = (event: MouseEvent): void => {
       if (event.button === 1) event.preventDefault();
     };
@@ -368,6 +376,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
       window.removeEventListener('focusin', disarmRovingArrows);
       window.removeEventListener('blur', cancelOnBlur);
       canvas.removeEventListener('pointercancel', cancelPointerInput);
+      canvas.removeEventListener('pointerdown', captureBuildPointer);
       canvas.removeEventListener('lostpointercapture', cancelOnCaptureLoss);
       canvas.removeEventListener('mousedown', preventMiddleAutoScroll);
       canvas.removeEventListener('auxclick', preventMiddleAutoScroll);
@@ -375,6 +384,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     canvas.addEventListener('mousedown', preventMiddleAutoScroll);
     canvas.addEventListener('auxclick', preventMiddleAutoScroll);
     canvas.addEventListener('pointercancel', cancelPointerInput);
+    canvas.addEventListener('pointerdown', captureBuildPointer);
     canvas.addEventListener('lostpointercapture', cancelOnCaptureLoss);
     window.addEventListener('keydown', keyDown);
     window.addEventListener('keyup', keyUp);
