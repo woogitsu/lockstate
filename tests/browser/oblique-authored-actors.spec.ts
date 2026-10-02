@@ -1,5 +1,87 @@
 import { expect, test } from './network-changed-fixture';
+import { createRequire } from 'node:module';
+import type { Page, TestInfo } from '@playwright/test';
 import type {} from './oblique-preset-art-qa';
+
+// Playwright already ships this PNG decoder and exports this package subpath.
+// Resolve from the declared @playwright/test dependency, including pnpm's
+// isolated dependency layout; no additional package is needed.
+const requirePlaywright = createRequire(createRequire(import.meta.url).resolve('@playwright/test'));
+const { PNG } = requirePlaywright('playwright-core/lib/utilsBundle') as {
+  PNG: { sync: { read(buffer: Buffer): { width: number; height: number; data: Buffer } } };
+};
+
+interface PixelRegion {
+  readonly left: number;
+  readonly right: number;
+  readonly top: number;
+  readonly bottom: number;
+}
+
+function countCapturedChanges(shown: Buffer, hidden: Buffer, regions: readonly PixelRegion[]): number[] {
+  const a = PNG.sync.read(shown), b = PNG.sync.read(hidden);
+  if (a.width !== b.width || a.height !== b.height) throw new Error('Actor screenshot dimensions changed');
+  // Chromium's canvas screenshots here are opaque. Require that boundary so
+  // browser canvas alpha compositing cannot change RGB values in diagnostics.
+  for (const image of [a, b]) {
+    for (let at = 3; at < image.data.length; at += 4) {
+      if (image.data[at] !== 255) throw new Error('Actor screenshot must contain opaque captured pixels');
+    }
+  }
+  return regions.map(region => {
+    if (![region.left, region.right, region.top, region.bottom].every(Number.isInteger) ||
+        region.left < 0 || region.right > a.width || region.top < 0 || region.bottom > a.height ||
+        region.right <= region.left || region.bottom <= region.top) throw new Error('Actor pixel region is outside the captured canvas');
+    let changed = 0;
+    for (let y = region.top; y < region.bottom; y += 1) {
+      for (let x = region.left; x < region.right; x += 1) {
+        const at = (y * a.width + x) * 4;
+        if ([0, 1, 2].some(channel => Math.abs(a.data[at + channel]! - b.data[at + channel]!) > 8)) changed += 1;
+      }
+    }
+    return changed;
+  });
+}
+
+async function capturedChanges(page: Page, testInfo: TestInfo, shown: Buffer, hidden: Buffer,
+  regions: readonly PixelRegion[]): Promise<number[]> {
+  const start = performance.now();
+  const counts = countCapturedChanges(shown, hidden, regions);
+  const nodeDecodeAndSampleMs = performance.now() - start;
+  // Explicit diagnostic mode compares both decoders on the SAME real captures.
+  // Normal acceptance does not send megabytes of PNGs back to the game thread.
+  let browserCounts: number[] | undefined;
+  let browserDecodeAndSampleMs: number | undefined;
+  if (process.env['LOCKSTATE_ACTOR_PNG_EQUIVALENCE'] === '1') {
+    const browserStart = performance.now();
+    browserCounts = await page.evaluate(async ({ shown, hidden, regions }) => {
+      async function pixels(base64: string) {
+        const bitmap = await createImageBitmap(await (await fetch('data:image/png;base64,' + base64)).blob());
+        const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
+        const ctx = canvas.getContext('2d')!; ctx.drawImage(bitmap, 0, 0); bitmap.close();
+        return { width: canvas.width, data: ctx.getImageData(0, 0, canvas.width, canvas.height).data };
+      }
+      const a = await pixels(shown), b = await pixels(hidden);
+      return regions.map(region => {
+        let changed = 0;
+        for (let y = region.top; y < region.bottom; y += 1) {
+          for (let x = region.left; x < region.right; x += 1) {
+            const at = (y * a.width + x) * 4;
+            if ([0, 1, 2].some(channel => Math.abs(a.data[at + channel]! - b.data[at + channel]!) > 8)) changed += 1;
+          }
+        }
+        return changed;
+      });
+    }, { shown: shown.toString('base64'), hidden: hidden.toString('base64'), regions });
+    browserDecodeAndSampleMs = performance.now() - browserStart;
+    expect(counts, 'Node and original browser RGB sampling must agree on the same captured PNGs').toEqual(browserCounts);
+  }
+  await testInfo.attach('captured-actor-pixel-counts', {
+    body: Buffer.from(JSON.stringify({ regions, counts, nodeDecodeAndSampleMs, browserCounts, browserDecodeAndSampleMs })),
+    contentType: 'application/json',
+  });
+  return counts;
+}
 
 test('canonical cook medic and staff frames produce visible Blender pixels', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
@@ -16,25 +98,11 @@ test('canonical cook medic and staff frames produce visible Blender pixels', asy
   await page.screenshot({ path: testInfo.outputPath('blender-role-actors-fullhd.png') });
   await page.evaluate(() => window.lockstatePresetArtQA.setActorImagesVisible(false));
   const hidden = await page.locator('canvas').screenshot();
-  const changes = await page.evaluate(async ({ shown, hidden }) => {
-    async function pixels(base64: string) {
-      const bitmap = await createImageBitmap(await (await fetch('data:image/png;base64,' + base64)).blob());
-      const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
-      const ctx = canvas.getContext('2d')!; ctx.drawImage(bitmap, 0, 0); bitmap.close();
-      return { width: canvas.width, data: ctx.getImageData(0, 0, canvas.width, canvas.height).data };
-    }
-    const a = await pixels(shown); const b = await pixels(hidden);
-    return window.lockstatePresetArtQA.report().actors.map(actor => {
-      let changed = 0;
-      for (let y = Math.floor(actor.foot.y) - 100; y < Math.floor(actor.foot.y) + 10; y += 1) {
-        for (let x = Math.floor(actor.foot.x) - 30; x < Math.floor(actor.foot.x) + 30; x += 1) {
-          const at = (y * a.width + x) * 4;
-          if ([0, 1, 2].some(channel => Math.abs(a.data[at + channel]! - b.data[at + channel]!) > 8)) changed += 1;
-        }
-      }
-      return changed;
-    });
-  }, { shown: shown.toString('base64'), hidden: hidden.toString('base64') });
+  const actors = await page.evaluate(() => window.lockstatePresetArtQA.report().actors);
+  const changes = await capturedChanges(page, testInfo, shown, hidden, actors.map(actor => ({
+    left: Math.floor(actor.foot.x) - 30, right: Math.floor(actor.foot.x) + 30,
+    top: Math.floor(actor.foot.y) - 100, bottom: Math.floor(actor.foot.y) + 10,
+  })));
   for (const changed of changes) expect(changed).toBeGreaterThan(100);
 });
 
@@ -49,33 +117,14 @@ test('authored prisoner and guard pixels share wall depth at Full HD', async ({ 
   await page.screenshot({ path: testInfo.outputPath('blender-actors-wall-depth-fullhd.png') });
   await page.evaluate(() => window.lockstatePresetArtQA.setActorImagesVisible(false));
   const hidden = await page.locator('canvas').screenshot();
-  const changes = await page.evaluate(async ({ shown, hidden }) => {
-    async function pixels(base64: string) {
-      const bitmap = await createImageBitmap(await (await fetch('data:image/png;base64,' + base64)).blob());
-      const canvas = document.createElement('canvas');
-      canvas.width = bitmap.width; canvas.height = bitmap.height;
-      const ctx = canvas.getContext('2d')!;
-      ctx.drawImage(bitmap, 0, 0);
-      const result = { width: canvas.width, data: ctx.getImageData(0, 0, canvas.width, canvas.height).data };
-      bitmap.close();
-      return result;
-    }
-    const a = await pixels(shown); const b = await pixels(hidden);
-    const result: Record<number, number> = {};
-    for (const actor of window.lockstatePresetArtQA.report().actors) {
-      let changed = 0;
-      // Feet/lower legs must be hidden behind the wall; the head may extend above it.
-      const broad = actor.id === 3;
-      for (let y = Math.floor(actor.foot.y) - (broad ? 100 : 10); y < Math.floor(actor.foot.y) - 3; y += 1) {
-        for (let x = Math.floor(actor.foot.x) - (broad ? 25 : 4); x < Math.floor(actor.foot.x) + (broad ? 25 : 4); x += 1) {
-          const at = (y * a.width + x) * 4;
-          if ([0, 1, 2].some(channel => Math.abs(a.data[at + channel]! - b.data[at + channel]!) > 8)) changed += 1;
-        }
-      }
-      result[actor.id] = changed;
-    }
-    return result;
-  }, { shown: shown.toString('base64'), hidden: hidden.toString('base64') });
+  const actors = await page.evaluate(() => window.lockstatePresetArtQA.report().actors);
+  // Feet/lower legs must be hidden behind the wall; the head may extend above it.
+  const counts = await capturedChanges(page, testInfo, shown, hidden, actors.map(actor => {
+    const broad = actor.id === 3;
+    return { left: Math.floor(actor.foot.x) - (broad ? 25 : 4), right: Math.floor(actor.foot.x) + (broad ? 25 : 4),
+      top: Math.floor(actor.foot.y) - (broad ? 100 : 10), bottom: Math.floor(actor.foot.y) - 3 };
+  }));
+  const changes = Object.fromEntries(actors.map((actor, index) => [actor.id, counts[index]]));
   expect(changes[1], 'rear actor lower body must remain covered by the wall').toBe(0);
   expect(changes[2], 'foreground prisoner must use visible authored pixels').toBeGreaterThan(10);
   expect(changes[3], 'guard must use visible authored pixels').toBeGreaterThan(100);
@@ -107,7 +156,7 @@ test('moving and replaced visible actors reuse actual Phaser images', async ({ p
   expect(slots.map(slot => slot.token)).toContain(replacement[0]!.token);
 });
 
-test('moving actors keep authored solid images while their depth order changes', async ({ page }) => {
+test('moving actors keep authored solid images while their depth order changes', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/tests/browser/oblique-preset-art-qa.html?preset=kitchen-basic&actorDepth=1&actorArt=1');
   await expect.poll(() => page.evaluate(() => typeof window.lockstatePresetArtQA?.ready)).toBe('function');
@@ -133,24 +182,11 @@ test('moving actors keep authored solid images while their depth order changes',
   const shown = await page.locator('canvas').screenshot();
   await page.evaluate(() => window.lockstatePresetArtQA.setActorImagesVisible(false));
   const hidden = await page.locator('canvas').screenshot();
-  const visibleLowerBodyPixels = await page.evaluate(async ({ shown, hidden }) => {
-    const pixels = async (base64: string) => {
-      const bitmap = await createImageBitmap(await (await fetch('data:image/png;base64,' + base64)).blob());
-      const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
-      const ctx = canvas.getContext('2d')!; ctx.drawImage(bitmap, 0, 0);
-      return { width: canvas.width, data: ctx.getImageData(0, 0, canvas.width, canvas.height).data };
-    };
-    const a = await pixels(shown), b = await pixels(hidden);
-    const actor = window.lockstatePresetArtQA.report().actors.find(item => item.id === 1)!;
-    let changed = 0;
-    for (let y = Math.floor(actor.foot.y) - 10; y < Math.floor(actor.foot.y) - 3; y += 1) {
-      for (let x = Math.floor(actor.foot.x) - 4; x < Math.floor(actor.foot.x) + 4; x += 1) {
-        const at = (y * a.width + x) * 4;
-        if ([0, 1, 2].some(channel => Math.abs(a.data[at + channel]! - b.data[at + channel]!) > 8)) changed += 1;
-      }
-    }
-    return changed;
-  }, { shown: shown.toString('base64'), hidden: hidden.toString('base64') });
+  const actor = await page.evaluate(() => window.lockstatePresetArtQA.report().actors.find(item => item.id === 1)!);
+  const [visibleLowerBodyPixels] = await capturedChanges(page, testInfo, shown, hidden, [{
+    left: Math.floor(actor.foot.x) - 4, right: Math.floor(actor.foot.x) + 4,
+    top: Math.floor(actor.foot.y) - 10, bottom: Math.floor(actor.foot.y) - 3,
+  }]);
   expect(visibleLowerBodyPixels, 'the wall still hides an actor behind it after movement').toBe(0);
   for (const slot of final.solidSlots) expect(slot.depth, `depth of ${slot.id}`).toBeCloseTo(slot.expectedDepth, 8);
 });
