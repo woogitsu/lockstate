@@ -1,6 +1,7 @@
 import { procurableMaterial } from '../../content/procurement-catalog';
 import {
   EMPTY_MATERIALS_PROCUREMENT_REPORT,
+  type CancellationRefundPreviewStep,
   type ConstructionProcurementSink,
   type MaterialsProcurementReport,
   type QueuedOrderDemand,
@@ -1034,6 +1035,38 @@ export class JustInTimeMaterialsService implements ConstructionProcurementSink {
    * `refundAllocatedMaterials` leaves such a line for `materialsProvider` to
    * release rather than pricing it here.
    */
+  public previewCancellationSequenceRefundMinorUnits(steps: readonly CancellationRefundPreviewStep[]): number {
+    const remaining = [...this.procurement.pendingDeliveries];
+    const available = new Map<string, number>();
+    const stockOf = (itemId: string): number => available.get(itemId) ?? this.stock.availableOf(itemId);
+    let total = 0;
+    for (const step of steps) {
+      for (const allocation of step.allocations) {
+        if (allocation.quantity <= 0) continue;
+        if (procurableMaterial(allocation.itemId) === undefined)
+          available.set(allocation.itemId, stockOf(allocation.itemId) + allocation.quantity);
+        else total += this.procurement.previewRefundMaterials(allocation.itemId, allocation.quantity);
+      }
+      for (const { itemId, demandedQuantity, limit } of step.surplus) {
+        let supply = stockOf(itemId);
+        for (const delivery of remaining) if (delivery.itemId === itemId) supply += delivery.quantity;
+        for (;;) {
+          const candidate = largestSurplusDelivery(remaining, itemId, supply - demandedQuantity);
+          if (candidate === undefined) break;
+          remaining.splice(remaining.indexOf(candidate), 1);
+          supply -= candidate.quantity;
+          total += candidate.paidMinorUnits;
+        }
+        if (!Number.isSafeInteger(limit) || limit <= 0 || procurableMaterial(itemId) === undefined) continue;
+        const quantity = Math.min(supply - demandedQuantity, limit, stockOf(itemId));
+        if (quantity <= 0) continue;
+        available.set(itemId, stockOf(itemId) - quantity);
+        total += this.procurement.previewRefundMaterials(itemId, quantity);
+      }
+    }
+    return total;
+  }
+
   public previewAllocatedRefundMinorUnits(allocations: readonly MaterialRequirement[]): number {
     let total = 0;
     for (const allocation of allocations) {

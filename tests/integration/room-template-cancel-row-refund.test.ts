@@ -16,8 +16,9 @@ function until(runtime: Runtime, predicate: () => boolean) {
   for (let tick = 0; tick < 30_000 && !predicate(); tick++) runtime.kernel.step();
   expect(predicate()).toBe(true);
 }
-function reload(runtime: Runtime): Runtime {
-  const bundle = captureSessionSnapshot(runtime);
+function reload(runtime: Runtime, legacy = false): Runtime {
+  const original = captureSessionSnapshot(runtime);
+  const bundle = legacy ? { ...original, simulation: { ...original.simulation!, roomTemplates: { version: 1 as const, pending: [] } } } : original;
   const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(createSaveEnvelope({
     gameVersion: 'test', prisonId: 'template-cancel-row-refund', revision: 1, createdAt: 0, updatedAt: 1,
     kernel: bundle.kernel, world: bundle.world, construction: bundle.construction,
@@ -71,7 +72,7 @@ it('ordinary shared wall gestures retain single-order cancellation and its displ
   compareRowWithActualCommand(runtime, 'assigned');
   expect(runtime.construction.getOrder('ordinary-b')?.state).toBe('assigned');
 });
-it.each([false, true])('quotes the actual occupied partial-row cancellation result with older spare=%s', spare => {
+it.each([false, true].flatMap(spare => [false, true].map(legacy => ({ spare, legacy }))))('quotes occupied partial-row cancellation with older spare=$spare legacy=$legacy', ({ spare, legacy }) => {
   let runtime = createNewSimulationRuntime(73);
   if (spare) {
     send(runtime, { type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 20, y: 5 } });
@@ -82,10 +83,12 @@ it.each([false, true])('quotes the actual occupied partial-row cancellation resu
   until(runtime, () => runtime.construction.allOrders().some(order => order.id.includes(`${rowSequence}-2-object-`) && order.state === 'completed'));
   send(runtime, { type: 'AdmitPrisoner', sentenceLengthTicks: 1_000_000, priorIncidents: 0, x: 16, y: 16 });
   until(runtime, () => runtime.prisoners.roomInstances.totalOccupancy === 1);
-  runtime = reload(runtime);
+  runtime = reload(runtime, legacy);
   expect(runtime.prisoners.roomInstances.occupancyOf('room.cell:11:11')).toBe(1);
+  const beforeProjection = captureSessionSnapshot(runtime);
   const row = rows(runtime).find(candidate => candidate.state === 'assigned')!;
   expect(row).toBeDefined();
+  expect(captureSessionSnapshot(runtime)).toEqual(beforeProjection);
   const beforeFunds = runtime.treasury.balanceMinorUnits;
   const { kernel: _beforeKernel, ...before } = captureSessionSnapshot(runtime);
   send(runtime, { type: 'CancelBuildOrder', orderId: row.orderId, expectedRevision: row.revision });
@@ -100,4 +103,34 @@ it.each([false, true])('quotes the actual occupied partial-row cancellation resu
     expect(runtime.prisoners.roomInstances.getById('room.cell:11:11')).toBeUndefined();
   }
   expect(actualRefund).toBe(row.cancelRefundMinorUnits);
+});
+
+it('replays intermediate surplus against recorded batches instead of pricing only the final group demand', () => {
+  let runtime = createNewSimulationRuntime(73);
+  send(runtime, { type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 10, y: 10 } });
+  send(runtime, { type: 'PlaceBuildOrder', orderId: 'remaining-wall', definitionId: 'wall-brick', x: 2, y: 2, footprint: 'square' });
+  runtime.kernel.step();
+  const pending = runtime.procurement.snapshot().pending;
+  const brick = 'item.brick';
+  const brickDeliveries = pending.filter(delivery => delivery.itemId === brick);
+  const quantity = brickDeliveries.reduce((sum, delivery) => sum + delivery.quantity, 0);
+  expect(quantity).toBeGreaterThan(4);
+  // Legal historical delivery records with indivisible batches. The small
+  // batch fits the first cancelled wall; the large one only fits if the
+  // preview incorrectly jumps straight to final demand. No catalogue changes.
+  runtime.procurement.restore({ pending: [
+    ...pending.filter(delivery => delivery.itemId !== brick),
+    { orderId: 'jit:historical-small', itemId: brick, quantity: 2, arrivesAtTick: brickDeliveries[0]!.arrivesAtTick, paidMinorUnits: 13 },
+    { orderId: 'jit:historical-large', itemId: brick, quantity: quantity - 2, arrivesAtTick: brickDeliveries[0]!.arrivesAtTick, paidMinorUnits: 777 },
+  ] });
+  runtime = reload(runtime);
+  const immutable = captureSessionSnapshot(runtime);
+  const row = rows(runtime).find(candidate => candidate.orderId.startsWith('room-template-') && candidate.state === 'materials-pending')!;
+  expect(captureSessionSnapshot(runtime)).toEqual(immutable);
+  const funds = runtime.treasury.balanceMinorUnits;
+  send(runtime, { type: 'CancelBuildOrder', orderId: row.orderId, expectedRevision: row.revision });
+  expect(runtime.treasury.balanceMinorUnits - funds).toBe(row.cancelRefundMinorUnits);
+  expect(runtime.procurement.pendingDeliveries).toContainEqual(expect.objectContaining({ orderId: 'jit:historical-large', paidMinorUnits: 777 }));
+  expect(runtime.procurement.pendingDeliveries.some(delivery => delivery.orderId === 'jit:historical-small')).toBe(false);
+  expect(runtime.construction.getOrder('remaining-wall')?.state).toBe('materials-pending');
 });
