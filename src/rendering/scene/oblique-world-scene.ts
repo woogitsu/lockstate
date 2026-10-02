@@ -301,6 +301,14 @@ export class ObliqueWorldScene extends Phaser.Scene {
     const preventMiddleAutoScroll = (event: MouseEvent): void => {
       if (event.button === 1) event.preventDefault();
     };
+    canvas.addEventListener('mousedown', preventMiddleAutoScroll);
+    canvas.addEventListener('auxclick', preventMiddleAutoScroll);
+    canvas.addEventListener('pointercancel', cancelPointerInput);
+    canvas.addEventListener('lostpointercapture', cancelPointerInput);
+    window.addEventListener('keydown', keyDown);
+    window.addEventListener('keyup', keyUp);
+    window.addEventListener('focusin', disarmRovingArrows);
+    window.addEventListener('blur', cancelOnBlur);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.actorImagePool.clear();
       this.actorTextureKeys.clear();
@@ -313,14 +321,6 @@ export class ObliqueWorldScene extends Phaser.Scene {
       canvas.removeEventListener('mousedown', preventMiddleAutoScroll);
       canvas.removeEventListener('auxclick', preventMiddleAutoScroll);
     });
-    canvas.addEventListener('mousedown', preventMiddleAutoScroll);
-    canvas.addEventListener('auxclick', preventMiddleAutoScroll);
-    canvas.addEventListener('pointercancel', cancelPointerInput);
-    canvas.addEventListener('lostpointercapture', cancelPointerInput);
-    window.addEventListener('keydown', keyDown);
-    window.addEventListener('keyup', keyUp);
-    window.addEventListener('focusin', disarmRovingArrows);
-    window.addEventListener('blur', cancelOnBlur);
     void this.loadCatalogTextures().then(() => this.loadFloorTextures()).finally(() => this.resolveReady());
   }
 
