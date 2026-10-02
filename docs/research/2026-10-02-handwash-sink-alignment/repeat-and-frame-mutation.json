@@ -1,0 +1,8 @@
+{
+  "repeatManifestByteIdentical": true,
+  "repeatActualPngs": 72,
+  "manifestSha256": "b27aeb53e2a7dc051b5d8bc66b0a251e07f50a9324bf861d23973cf81145092b",
+  "pngMutationExitCode": 1,
+  "restoredExitCode": 0,
+  "restoredFrameSha256": "dc1cf0b702602d2ec235b26e8251123c6ede1bae5df730b216cfed28e3d43b41"
+}
