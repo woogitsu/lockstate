@@ -268,19 +268,24 @@ feature with a reader and no producer.
   (`src/simulation/construction/definition.ts:6`). `wall-brick` is the only
   `'wall'`; a door is an `'object'` row carrying `placesDoor`.
 - Cancelling a `completed` order reverses its geometry
-  (`src/simulation/construction/system.ts:1128`, `revertConstruction`, defined at
-  `:2100`), rewriting the edge from any other completed order that still claims
+  (`src/simulation/construction/system.ts:1141`, `revertConstruction`, defined at
+  `:2113`), rewriting the edge from any other completed order that still claims
   it rather than clearing it.
 - **2026-10-02 source amendment.** The earlier `system.ts:1044` through `:1046`
   and `:1966` coordinates are historical indications, retained here rather than
   erased. The current cancellation call is `revertConstruction` above; its
   implementation is `private revertConstruction` at
-  `src/simulation/construction/system.ts:2100`. The earlier numbered span had
+  `src/simulation/construction/system.ts:2113`. The earlier numbered span had
   already drifted into a comment, so the amended anchor names the actual call.
   **Occupied-template source amendment at checkpoint 322cb5e5a4:** the previous
   `system.ts:1120` and `:2092` coordinates remain historical indications before
   the before-Undo preparation port; the current fragments above name the same
   cancellation call and geometry reversal.
+  **Whole-square furniture source amendment at checkpoint 2e2d058870:** the
+  preceding `system.ts:1128` and `:2100` coordinates remain historical before
+  the square-only object-footprint reader. The live fragments above still name
+  `revertConstruction` and `private revertConstruction`; this changes no
+  cancellation or geometry-reversal rule.
 - **The crew is one.** `ConstructionSystem.update` runs on
   `intervalTicks: 10` (`:347`), advances a single in-progress order by `+10` per
   scheduled update, and `crewBusy` lets exactly one order be in progress at a
