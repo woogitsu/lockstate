@@ -1230,3 +1230,43 @@ zero objects or one replacement. Six actual packed-session/save-load/render-feed
 cases reproduce it. The adapter must use supplied physical state authoritatively
 while preserving the explicit legacy order-only fallback. No new persistence or
 player-copy decision is required for that correction.
+
+### Following Laundry and camera delivery
+
+The nine-case wall/ownership checkpoint is published as draft PR1981 at
+`dd45d8919be0843205896636429c5af83d3d59d0`, stacked after PR1978. Keep that head
+frozen. Following work is isolated on `codex/integrate-laundry-renderer-20261002`.
+It now integrates the dedicated Laundry washer, #1980's authoritative physical
+render registry, #1979's horizontal wheel guards in both views, and #1982's
+minimal four-field mouse-camera termination on actual canvas exit. Removed
+completed-order history no longer draws nonexistent or duplicated furniture;
+an explicitly absent physical registry retains the documented legacy fallback.
+No new format, palette, player-copy or camera-persistence decision is introduced.
+
+Root's independent scopes pass 63 ownership/model cases, 75 integration cases,
+115 rendering cases and 31 camera/suite-partition cases (overlap is not counted
+as a unique total). Both TypeScript targets and the production build pass at
+`13a6c582e6`: `worker-Bjll0lxr.js` (436.94 kB), SHA-256
+`4af958b3cdd115f8b60771c9308f9ca105aab7d2aa25176eea316d5f3f344347`,
+client `index-CC0PWSiU.js`, CSS `index-BtHvjcB7.css`. Washer Save/Load acceptance
+now additionally requires two distinct exact V8 source-order owners. Canonical
+suite routing sends washer/wheel/gameout fixtures through the built client;
+the separate read-only renderer-observer regression remains a source-server test.
+Combined following-client native coverage is still queued, so the upstream
+accepted washer and camera runs are not presented as tests of this new build.
+
+The published [wheel native record](../../research/2026-10-02-camera-wheel-axis/native-acceptance.md)
+preserves actual horizontal negatives in each renderer and exact restoration;
+[camera canvas-exit proof](../../research/2026-10-02-camera-gameout/README.md)
+preserves two real input negatives and eight restored cases, including Build
+capture and retained preview controls. The removed/rebuilt object's actual native
+scenario is being calibrated without replacing the worker or renderer state.
+
+Blender work continues on the retained Cell toilet: 25 actual fittings, hinges
+and cistern details have been added to its original 19 meshes/eight materials.
+An independent normal audit caught an inward valve torus; the corrected outward
+source and all 72 reproducible frames are separately published, with winding
+producer negatives retained. Its corrected native pixels and the dedicated waste
+bin remain queued. The next existing utility panel has a confirmed inward-face
+source audit and a scoped topology/detail correction; no imaginary buildable is
+introduced. Full release gates still precede every merge and hosted delivery.
