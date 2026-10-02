@@ -53,7 +53,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
   const legend = element('div', {
     className: 'hud-template__legend',
     children: ([[ 'wall', HUD_MESSAGE_KEY.buildTemplateWall], ['door', HUD_MESSAGE_KEY.buildTemplateDoor], ['object', HUD_MESSAGE_KEY.buildTemplateFurniture]] as const).map(([kind, key]) =>
-      element('span', { children: [element('span', { className: `hud-template__tile hud-template__tile--${kind}`, attributes: { 'aria-hidden': 'true' } }), element('span', { text: t(key) })] }),
+      element('span', { children: [element('span', { className: kind === 'object' ? 'hud-template__tile hud-template__fixture' : `hud-template__tile hud-template__tile--${kind}`, attributes: { 'aria-hidden': 'true' } }), element('span', { text: t(key) })] }),
     ),
   });
   const dialog = element('dialog', {

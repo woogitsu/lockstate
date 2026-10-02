@@ -135,3 +135,18 @@ it.each(['invalid','unavailable'] as const)('finishes busy state for a current %
   expect(status.attributes.get('aria-busy')).toBe('false');
   expect(elements.find(e=>e.textContent==='Place room plan')!.disabled).toBe(true);
 });
+
+
+it('matches legend furniture to full fixture rectangles and keeps labels decorative', () => {
+  const elements:ElementStub[]=[];
+  vi.stubGlobal('document',{createElement:()=>{const element=new ElementStub();elements.push(element);return element;}});
+  vi.stubGlobal('HTMLElement',ElementStub);
+  createRoomTemplatePreview(new Localizer({locale:'en',catalogs:[defaultMessageCatalogEn]}));
+  const legend=elements.find(e=>e.className==='hud-template__legend')!;
+  expect(legend.children.map(row=>row.children[1]!.textContent)).toEqual(['Wall','Door','Furniture']);
+  const furniture=legend.children[2]!.children[0]!;
+  expect(furniture.className.split(' ')).toContain('hud-template__fixture');
+  expect(furniture.className.split(' ')).not.toContain('hud-template__tile--object');
+  for(const row of legend.children) expect(row.children[0]!.attributes.get('aria-hidden')).toBe('true');
+});
+
