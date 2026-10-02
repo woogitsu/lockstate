@@ -685,3 +685,6 @@ Integrated Layout Escape fix preserves armed Build in standard and angled FullHD
 
 Root integrated validation at4df4429595: actual rebuilt production Layout Escape cases2/2green (world2.6s, angled5.3s;10.9s total). Delivery readiness + complete catalogue43/43green; tools TypeScript passes. Three agents now implement approved authoritative rotation/save/history, tool controls/preview and rendered object orientation on disjoint surfaces. None of those pending rotation changes is claimed complete or deployed.
 
+
+Integrated rotation checkpointb51831047a joins authoritative orientation/save/history, UIcontrols/full occupied previews and corrected Blender facing. Root's combined run confirms179 actual history matrix/domain cases plus UI and renderer cases green; the generated inventory had CRLF-only checkout mismatch, regenerated through its existing tool and6/6green. Both TypeScript projects pass. Actual rotated model browser acceptance is in flight with the art agent; Template Escape capture and collision atomicity receive separate agents. PR1945 merged asd2293aa8d856 after exact-head green/CLEAN; serialmainCI36994796706 was confirmed live. #1962 records Layout Escape; PR1899 now reflects the three approvals and remains dependent/draft.
+
