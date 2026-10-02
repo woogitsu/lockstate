@@ -61,3 +61,23 @@ test('right-button camera turn owns the pointer when left Build is pressed after
   await page.mouse.up({ button: 'left' });
   await expect.poll(buildOrders).toBeGreaterThan(0);
 });
+
+test('releasing right while left remains held ends the camera turn immediately', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/?renderer=oblique');
+  await page.getByRole('button', { name: 'New prison', exact: true }).click();
+  await expect(page.locator('.hud-clock__day')).toHaveText('1');
+  await page.getByRole('button', { name: 'Pause', exact: true }).click();
+  const viewport = page.locator('.hud-minimap__viewport');
+  await expect(viewport).toBeVisible();
+  await page.mouse.move(900, 500);
+  await page.mouse.down({ button: 'right' });
+  await page.mouse.down({ button: 'left' });
+  await page.mouse.move(1000, 540, { steps: 4 });
+  await page.mouse.up({ button: 'right' });
+  const released = await viewport.getAttribute('style');
+  await page.mouse.move(1130, 590, { steps: 4 });
+  await page.waitForTimeout(250);
+  expect(await viewport.getAttribute('style'), 'the released right button kept turning the camera').toBe(released);
+  await page.mouse.up({ button: 'left' });
+});
