@@ -86,6 +86,9 @@ async function removeRackRoomDesignation(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'Zones', exact: true }).click();
   const rooms = page.locator('.hud-rooms');
   await rooms.getByRole('button', { name: 'Remove rooms', exact: true }).click();
+  if (await rooms.getAttribute('data-collapsed') === 'true') {
+    await rooms.locator('> .ui-panel__header > .ui-panel__toggle').click();
+  }
   const coordinates = rooms.locator('.hud-rooms__coordinates');
   if (!await coordinates.locator('> .ui-section__body').isVisible()) {
     await coordinates.locator('> .ui-section__header').click();
@@ -233,6 +236,7 @@ test(`player reaches default generic racks at quarterTurns${quarterTurns} and re
   await expect(page.locator('.save-panel__status')).toContainText('Saved');
   await page.locator('.save-panel__item').first().getByRole('button', { name: 'Load', exact: true }).click();
   await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
+  await expect(page.locator('[data-metric="rooms"] .ui-stat__value')).toHaveText(quarterTurns === 0 ? '3' : '2');
   const actualAfter = await fixtureAnchors(page);
   expect(actualAfter).toEqual(expected);
   await minimap.click({ position: { x: bounds.width * 23 / 32, y: bounds.height * 8 / 32 } });
