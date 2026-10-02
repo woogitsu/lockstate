@@ -28,6 +28,8 @@ test('Save/Load and a new prison release a fitted room-plan origin from the prio
   await page.getByRole('button', { name: 'Save now', exact: true }).focus();
   await page.keyboard.press('Enter');
   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+  await expect(ghost).toHaveAttribute('data-ready', 'clear');
+  await expect(ghost.locator('polygon')).toHaveCount(112);
   await page.locator('.save-panel__item').first().getByRole('button', { name: 'Load', exact: true }).focus();
   await page.keyboard.press('Enter');
   await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
