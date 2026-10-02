@@ -75,6 +75,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
   const buttons = new Map<RoomTemplateId, HTMLButtonElement>();
   let selectedId: RoomTemplateId = ROOM_TEMPLATE_IDS[0];
   let mirrorX = false;
+  let diagramFixtures: Array<{ element: HTMLElement; x: number; y: number; width: number; height: number }> = [];
   function select(id: RoomTemplateId): void {
     selectedId = id;
     tool?.select(id, mirrorX);
@@ -113,6 +114,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
     diagram.style.gridAutoRows = `${tileSize}px`;
     diagram.style.gridTemplateColumns = `repeat(${plan.width}, ${tileSize}px)`;
     diagram.replaceChildren();
+    diagramFixtures = [];
     const wall = new Set(plan.wallSquares.map(({ x, y }) => `${x},${y}`));
     const door = new Set(plan.doorSquares.map(({ x, y }) => `${x},${y}`));
     const objects = new Set<string>();
@@ -127,8 +129,17 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
         const tile = element('span', { className: `hud-template__tile hud-template__tile--${kind}`, attributes: { 'aria-hidden': 'true' } });
         tile.style.width = `${tileSize}px`;
         tile.style.height = `${tileSize}px`;
+        tile.style.gridColumn = String(x + 1);
+        tile.style.gridRow = String(y + 1);
         diagram.append(tile);
       }
+    }
+    for (const fixture of roomTemplateMiniatureFixtures(plan, id => tool?.objectFootprint(id) ?? { width: 1, height: 1 })) {
+      const marker = element('span', { className: 'hud-template__fixture', attributes: { 'aria-hidden': 'true' } });
+      marker.style.gridColumn = `${fixture.x + 1} / span ${fixture.width}`;
+      marker.style.gridRow = `${fixture.y + 1} / span ${fixture.height}`;
+      diagramFixtures.push({ ...fixture, element: marker });
+      diagram.append(marker);
     }
     void refreshPlacement();
   }
@@ -178,6 +189,12 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
           const localX = verdict.tile.x - plan.origin.x;
           const localY = verdict.tile.y - plan.origin.y;
           diagram.children[localY * plan.width + localX]?.classList.add('hud-template__tile--blocked');
+          // A fixture overlay must not conceal the worker's blocked square.
+          for (const fixture of diagramFixtures) {
+            if (localX >= fixture.x && localX < fixture.x + fixture.width && localY >= fixture.y && localY < fixture.y + fixture.height) {
+              fixture.element.classList.add('hud-template__tile--blocked');
+            }
+          }
         }
         status.textContent = verdict.ok ? t(HUD_MESSAGE_KEY.buildTemplateReady) : `${t(HUD_MESSAGE_KEY.buildTemplateBlocked)} (${verdict.tile.x}, ${verdict.tile.y})`;
       } catch {

@@ -1723,11 +1723,15 @@
 .hud-template__miniature .hud-template__tile--object { background: var(--surface-raised); border-radius: 0; }
 /* Door bars leave floor-colored clearance on both sides, so distinguishing
    an entrance from a solid wall does not rely on teal-versus-muted hue. */
+.hud-template__diagram .hud-template__tile--object { background: var(--surface-sunken); border-radius: 0; }
+.hud-template__diagram .hud-template__tile--door,
 .hud-template__miniature .hud-template__tile--door {
   background: var(--surface-raised);
   display: flex;
   align-items: center;
 }
+.hud-template__diagram .hud-template__tile--door { background: var(--surface-sunken); }
+.hud-template__diagram .hud-template__tile--door::after,
 .hud-template__miniature .hud-template__tile--door::after {
   content: "";
   width: 100%;

@@ -50,6 +50,21 @@ test('Full HD catalogue compares all room footprints before selection and keeps 
   await expect(yard.locator('.hud-template__tile--wall')).toHaveCount(0);
   await expect(yard.locator('.hud-template__tile')).toHaveCount(64);
   await dialog.getByRole('button',{name:'Four-cell row',exact:true}).click();
+  const selectedDiagram = dialog.locator('.hud-template__diagram');
+  await expect(selectedDiagram.locator('.hud-template__tile')).toHaveCount(112);
+  await expect(selectedDiagram.locator('.hud-template__fixture')).toHaveCount(8);
+  const selectedBed = await selectedDiagram.locator('.hud-template__fixture').first().boundingBox();
+  expect(selectedBed!.height).toBeGreaterThan(selectedBed!.width * 1.8);
+  const selectedDoor = await selectedDiagram.locator('.hud-template__tile--door').first().evaluate(el => ({
+    tile: el.getBoundingClientRect().height, bar: parseFloat(getComputedStyle(el, '::after').height),
+  }));
+  expect(selectedDoor.bar).toBeGreaterThan(0);
+  expect(selectedDoor.bar).toBeLessThan(selectedDoor.tile);
+  await dialog.getByRole('checkbox', { name: 'Mirror horizontally' }).check();
+  await expect(selectedDiagram.locator('.hud-template__fixture')).toHaveCount(8);
+  const mirroredBed = await selectedDiagram.locator('.hud-template__fixture').first().boundingBox();
+  expect(mirroredBed!.height).toBeGreaterThan(mirroredBed!.width * 1.8);
+
   const bounds = await dialog.boundingBox();
   expect(bounds!.y).toBeGreaterThanOrEqual(40);
   expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(1040);
