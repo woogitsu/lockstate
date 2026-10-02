@@ -1,5 +1,7 @@
 ﻿import type { ObliqueModuleCatalog } from './oblique-module-catalog';
 
+import type { RenderRoom } from '../feed/render-feed';
+
 /** Stable object-id to oblique asset mapping. Unknown objects fail closed so the flat fallback remains authoritative. */
 export const OBLIQUE_OBJECT_ASSET_IDS: Readonly<Record<string, string>> = Object.freeze({
   'object.bed': 'furniture.cell.bed.single.variants',
@@ -26,6 +28,23 @@ export const OBLIQUE_OBJECT_ASSET_IDS: Readonly<Record<string, string>> = Object
 
 export function obliqueAssetIdForObject(objectId: string): string | undefined {
   return OBLIQUE_OBJECT_ASSET_IDS[objectId];
+}
+
+/** Presentation-only Yard skin for a completed bench wholly inside a published Yard rectangle. */
+export function obliqueAssetIdForPlacedObject(
+  objectId: string,
+  tileX: number,
+  tileY: number,
+  footprint: { readonly width: number; readonly height: number },
+  rooms: readonly RenderRoom[],
+): string | undefined {
+  if (objectId === 'object.bench' && rooms.some(room => room.roomCatalogId === 'room.yard' &&
+    tileX >= room.anchorTileX && tileY >= room.anchorTileY &&
+    tileX + footprint.width <= room.anchorTileX + room.width &&
+    tileY + footprint.height <= room.anchorTileY + room.height)) {
+    return 'furniture.yard.steel-bench';
+  }
+  return obliqueAssetIdForObject(objectId);
 }
 
 export function obliqueCatalogForObject(

@@ -216,6 +216,10 @@
                     {
                         "assetId":  "fixture.cell.sink.handwash",
                         "manifest":  "/game-content/oblique-fixture-cell-sink-handwash.v1.json"
+                    },
+                    {
+                        "assetId":  "furniture.yard.steel-bench",
+                        "manifest":  "/game-content/oblique-furniture.yard-steel-bench.v1.json"
                     }
                 ]
 }
