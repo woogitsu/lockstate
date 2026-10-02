@@ -7,7 +7,9 @@ import { parseObliqueModuleCatalog } from '../../src/rendering/assets/oblique-mo
 import type { RenderFrame } from '../../src/rendering/feed/render-feed';
 
 const asset = new URLSearchParams(window.location.search).get('asset');
-const fixture = asset === 'storage-rack'
+const fixture = asset === 'yard-bench'
+  ? { manifest: 'oblique-furniture.yard-steel-bench.v1.json', definitionId: 'bench-wooden' }
+  : asset === 'storage-rack'
   ? { manifest: 'oblique-cell-storage-rack.v1.json', definitionId: 'object.storage-rack' }
   : asset === 'chair'
     ? { manifest: 'oblique-cell-chair.v1.json', definitionId: 'object.chair' }
@@ -26,7 +28,7 @@ const frame: RenderFrame = {
   revision: 1,
   world: WorldRenderView.fromSnapshot(world.snapshot()),
   structures: [{ id: 'art-qa', definitionId: fixture.definitionId, tileX: 7, tileY: 7, phase: 'built' }],
-  actors: [], rooms: [], roomConditions: [],
+  actors: [], rooms: asset === 'yard-bench' ? [{ instanceId: 'room.yard:6:6', roomCatalogId: 'room.yard', anchorTileX: 6, anchorTileY: 6, width: 4, height: 4 }] : [], roomConditions: [],
 };
 const scene = new ObliqueWorldScene({
   feed: { readFrame: () => frame },
