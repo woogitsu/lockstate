@@ -65,7 +65,7 @@ async function wallEvidence(page: Page, png: Buffer, yaw: number, elevation: num
     // vertical anchor errors at+45°, where a diagonal shift has zero X effect.
     const centre=project(20.5,20.5,0);
     const authoredElevation=Math.min(elevation,65)*Math.PI/180;
-    const authoredPoints = [-.5,.5].flatMap(x=>[-.5,.5].flatMap(y=>[0,cutaway?.34:.75].map(z=>({
+    const authoredPoints = [-.5,.5].flatMap(x=>[-.5,.5].flatMap(y=>[0,cutaway ? 0.34 : 0.75].map(z=>({
       x:centre.x+(Math.cos(r)*x-Math.sin(r)*y)*80,
       y:centre.y+((Math.sin(r)*x+Math.cos(r)*y)*Math.sin(authoredElevation)-z*Math.cos(authoredElevation))*80,
     }))));
@@ -156,7 +156,8 @@ for (const cutaway of [false, true]) for (const pose of poses) test(`native comp
     };
     return reply.payload.snapshot.data.construction.orders.filter(order=>order.location.x===20 && order.location.y===20);
   });
-  expect(snapshot).toEqual([expect.objectContaining({definitionId:'wall-brick',location:{x:20,y:20},state:'completed',footprint:'square'})]);
+  expect(snapshot).toEqual([expect.objectContaining({definitionId:'wall-brick',location:{x:20,y:20},state:'completed',footprint:'square',
+    materialsAllocated:[{itemId:'item.brick',quantity:2}]})]);
   await page.getByRole('button',{name:'Overview',exact:true}).click();
   const minimap = page.locator('.hud-minimap__surface');
   const map = await minimap.boundingBox();
@@ -175,7 +176,9 @@ for (const cutaway of [false, true]) for (const pose of poses) test(`native comp
   await writeFile(info.outputPath('native-wall-canvas.png'),png);
   await page.screenshot({path:info.outputPath('native-completed-wall.png')});
   await writeFile(info.outputPath('native-ground-footprint.json'),JSON.stringify({cutaway,pose,point,mapClick,target,measured,wallTextures,snapshot,workerCommands:await sentCommands(page)},null,2));
-  expect((await sentCommands(page)).filter(c=>c.type==='PlaceBuildOrder')).toHaveLength(1);
+  expect(await sentCommands(page),'camera framing must not submit unintended world commands').toEqual([
+    expect.objectContaining({type:'PlaceBuildOrder',definitionId:'wall-brick',x:20,y:20,footprint:'square'}),
+  ]);
   expect(measured.masonryInside,'actual wall material must be visible in the occupied volume').toBeGreaterThan(200);
   expect(measured.masonryOutsideGroundSpan,'visible masonry must fit the horizontal span of its occupied1×1 square; height and shadows cannot justify sideways spill').toBeLessThanOrEqual(20);
   expect(measured.masonryOutsideAuthoredHull,'nearest authored frame must pivot at the occupied square ground centre, preserving accepted elevation quantization').toBeLessThanOrEqual(20);
