@@ -45,6 +45,9 @@ const ROOM_VISUAL_VARIANTS: readonly {
   { roomCatalogId: 'room.classroom', objectAssets: Object.freeze({
     'object.chair': 'furniture.classroom.school-chair',
   }) },
+  { roomCatalogId: 'room.storage-room', objectAssets: Object.freeze({
+    'object.storage-rack': 'furniture.storage-room.timber-rack',
+  }) },
 ]);
 
 /** Presentation-only skin for a completed object wholly inside a published room rectangle. */

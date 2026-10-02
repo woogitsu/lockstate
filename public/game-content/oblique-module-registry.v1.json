@@ -4,6 +4,7 @@
                     {"assetId": "furniture.yard.exercise-station", "manifest": "/game-content/oblique-furniture.yard-exercise-station.v1.json"},
                     {"assetId": "furniture.common-room.upholstered-bench", "manifest": "/game-content/oblique-furniture.common-room-bench.v1.json"},
                     {"assetId": "furniture.classroom.school-chair", "manifest": "/game-content/oblique-furniture.classroom-chair.v1.json"},
+                    {"assetId": "furniture.storage-room.timber-rack", "manifest": "/game-content/oblique-furniture.storage-room-rack.v1.json"},
                     {
                         "assetId":  "wall.interior.module.full",
                         "manifest":  "/game-content/oblique-modules.v1.json"
