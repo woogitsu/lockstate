@@ -755,3 +755,36 @@ DependencyCI37001303268 is terminal with760 browser cases passing and six failin
 
 Issue1968's distinct world-origin lost release is now integrated: focusing native View clears only current scene keyboard input, preserving the armed112-square plan, quote, origin, pointer state and camera pose. Actual native popups at FullHD100% withKeyE and200% with remappedKeyJ suppress the physical release; source-focus mutation fails both cases and exact restored build passes7/7 with the earlier arrow/focus/retry controls. [Native evidence](../../research/2026-10-02-native-view-popup-held-key.md) records different failing assertions honestly. Root confirms38 related controller/UI/routing/documentation checks and both TypeScript targets; the new spec joins the existing artifact partition.
 
+## Integration safeguards and native controls — 2026-10-02
+
+The completed-entrance rule is narrowed to an actual completed authored template
+door order plus standing geometry/zoning. Ordinary hand-built rooms gain no new
+reservation. The full local suite passes6,886 cases with two existing skips;
+its remaining three environment/ref-cache files pass119 cases after selecting
+existing Git Bash and fetching the already published bench evidence branch.
+These complementary runs do not claim a single complete green run or remote CI.
+[Superseding entrance evidence](../../research/2026-10-02-completed-row-doorway-access.md)
+retains the ten-failure generic-inference mutation and102 restored scoped cases.
+
+Occupied-template Undo now prepares the existing collective unzone/relocation
+before changing shell, fixtures or history. No-vacancy refusal is atomic, and a
+row cannot relocate its resident into a different member removed by the same
+Undo. Root confirms235 related gameplay/documentation cases after integration.
+[Occupied Undo evidence](../../research/2026-10-02-occupied-template-undo-atomicity.md)
+records18 preparation mutation failures and two relocation-exclusion failures.
+A compatible save lacking optional completed metadata remains a separately
+reproduced follow-up; it is not claimed fixed by this current-metadata patch.
+
+The dependency's six native-browser failures are corrected without exemptions:
+the sweep opens every real plan control and the keyboard path includes the
+actual plans Tab action before and after filtering. [Six-case evidence](../../research/2026-10-02-room-plan-control-sweep.md)
+records production mutations and restored green. Its fresh remote browser run
+is still in progress; no merge or hosted claim follows from that partial state.
+
+Issue1969 keeps recognized HUD separator keys with their native owner while
+preserving unhandled cross-axis world arrows. Root confirms42 unit cases after
+integration; actual FullHD world and oblique baseline/mutation/restoration
+are recorded in [separator evidence](../../research/2026-10-02-hud-separator-keyboard-ownership.md).
+The spec joins the existing artifact partition. Three independent agents
+continue native category input ownership, legacy occupied template history,
+and authored wooden rack acceptance; root integrates accepted chair graphics.
