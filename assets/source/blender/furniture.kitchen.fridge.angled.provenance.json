@@ -1,0 +1,1208 @@
+{
+  "originalSource": "assets/source/blender/furniture.kitchen.fridge.variants.blend",
+  "originalSourceSha256": "44bf77f85241539e9ada8bd584c850738f467f3fea244877f3eb47a2d0a6df76",
+  "source": "assets/source/blender/furniture.kitchen.fridge.angled.blend",
+  "sourceSha256": "d85097c30f524948f3e3c9c82d0a15b11eea956a680227569c37d6e52a6a52bc",
+  "footprintTiles": [
+    1,
+    1
+  ],
+  "originalMeshCount": 9,
+  "retainedAssemblyFit": [
+    0.85,
+    0.85,
+    1
+  ],
+  "retainedMaximumCoordinateError": 4.470348358154297e-08,
+  "originalMeshNames": [
+    "foot",
+    "foot.001",
+    "freezer-door",
+    "freezer-handle",
+    "fridge-body",
+    "fridge-door",
+    "fridge-handle",
+    "fridge-top",
+    "status-light"
+  ],
+  "addedMeshNames": [
+    "angled-fridge.freezer gasket horizontal 1.54",
+    "angled-fridge.freezer gasket horizontal 2.26",
+    "angled-fridge.freezer gasket vertical -1",
+    "angled-fridge.freezer gasket vertical 1",
+    "angled-fridge.fridge gasket horizontal 0.27",
+    "angled-fridge.fridge gasket horizontal 1.575",
+    "angled-fridge.fridge gasket vertical -1",
+    "angled-fridge.fridge gasket vertical 1",
+    "angled-fridge.front grille blade 0",
+    "angled-fridge.front grille blade 1",
+    "angled-fridge.front grille blade 2",
+    "angled-fridge.front grille blade 3",
+    "angled-fridge.front grille blade 4",
+    "angled-fridge.front grille blade 5",
+    "angled-fridge.front grille recess",
+    "angled-fridge.handle standoff 0",
+    "angled-fridge.handle standoff 1",
+    "angled-fridge.handle standoff 2",
+    "angled-fridge.handle standoff 3",
+    "angled-fridge.hinge barrel 0",
+    "angled-fridge.hinge barrel 1",
+    "angled-fridge.hinge barrel 2",
+    "angled-fridge.hinge barrel 3",
+    "angled-fridge.hinge plate 0",
+    "angled-fridge.hinge plate 1",
+    "angled-fridge.hinge plate 2",
+    "angled-fridge.hinge plate 3",
+    "angled-fridge.protective plinth lip",
+    "angled-fridge.side vent louvre -1 0",
+    "angled-fridge.side vent louvre -1 1",
+    "angled-fridge.side vent louvre -1 2",
+    "angled-fridge.side vent louvre -1 3",
+    "angled-fridge.side vent louvre -1 4",
+    "angled-fridge.side vent louvre -1 5",
+    "angled-fridge.side vent louvre -1 6",
+    "angled-fridge.side vent louvre -1 7",
+    "angled-fridge.side vent louvre 1 0",
+    "angled-fridge.side vent louvre 1 1",
+    "angled-fridge.side vent louvre 1 2",
+    "angled-fridge.side vent louvre 1 3",
+    "angled-fridge.side vent louvre 1 4",
+    "angled-fridge.side vent louvre 1 5",
+    "angled-fridge.side vent louvre 1 6",
+    "angled-fridge.side vent louvre 1 7",
+    "angled-fridge.side vent recess -1 0",
+    "angled-fridge.side vent recess -1 1",
+    "angled-fridge.side vent recess -1 2",
+    "angled-fridge.side vent recess -1 3",
+    "angled-fridge.side vent recess -1 4",
+    "angled-fridge.side vent recess -1 5",
+    "angled-fridge.side vent recess -1 6",
+    "angled-fridge.side vent recess -1 7",
+    "angled-fridge.side vent recess 1 0",
+    "angled-fridge.side vent recess 1 1",
+    "angled-fridge.side vent recess 1 2",
+    "angled-fridge.side vent recess 1 3",
+    "angled-fridge.side vent recess 1 4",
+    "angled-fridge.side vent recess 1 5",
+    "angled-fridge.side vent recess 1 6",
+    "angled-fridge.side vent recess 1 7",
+    "angled-fridge.status bezel horizontal 2.141",
+    "angled-fridge.status bezel horizontal 2.219",
+    "angled-fridge.status bezel vertical -1",
+    "angled-fridge.status bezel vertical 1"
+  ],
+  "sourceEvaluatedBounds": {
+    "min": [
+      -0.42500001192092896,
+      -0.4845000207424164,
+      0.0
+    ],
+    "max": [
+      0.42500001192092896,
+      0.3995000123977661,
+      2.3999998569488525
+    ]
+  },
+  "cameraTargetTiles": [
+    0.5,
+    0.5,
+    1.1999999284744263
+  ],
+  "meshes": [
+    {
+      "name": "angled-fridge.freezer gasket horizontal 1.54",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.03999999910593033,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.freezer gasket horizontal 2.26",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.03999999910593033,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.freezer gasket vertical -1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.03999999910593033,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.freezer gasket vertical 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.03999999910593033,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.fridge gasket horizontal 0.27",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.03999999910593033,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.fridge gasket horizontal 1.575",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.03999999910593033,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.fridge gasket vertical -1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.03999999910593033,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.fridge gasket vertical 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.03999999910593033,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.front grille blade 0",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.36000001430511475,
+            0.44999998807907104,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.front grille blade 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.36000001430511475,
+            0.44999998807907104,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.front grille blade 2",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.36000001430511475,
+            0.44999998807907104,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.front grille blade 3",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.36000001430511475,
+            0.44999998807907104,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.front grille blade 4",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.36000001430511475,
+            0.44999998807907104,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.front grille blade 5",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.36000001430511475,
+            0.44999998807907104,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.front grille recess",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.03999999910593033,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.handle standoff 0",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.36000001430511475,
+            0.44999998807907104,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.handle standoff 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.36000001430511475,
+            0.44999998807907104,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.handle standoff 2",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.36000001430511475,
+            0.44999998807907104,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.handle standoff 3",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.36000001430511475,
+            0.44999998807907104,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.hinge barrel 0",
+      "evaluatedVertices": 32,
+      "materials": [
+        [
+          "steel",
+          [
+            0.36000001430511475,
+            0.44999998807907104,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.hinge barrel 1",
+      "evaluatedVertices": 32,
+      "materials": [
+        [
+          "steel",
+          [
+            0.36000001430511475,
+            0.44999998807907104,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.hinge barrel 2",
+      "evaluatedVertices": 32,
+      "materials": [
+        [
+          "steel",
+          [
+            0.36000001430511475,
+            0.44999998807907104,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.hinge barrel 3",
+      "evaluatedVertices": 32,
+      "materials": [
+        [
+          "steel",
+          [
+            0.36000001430511475,
+            0.44999998807907104,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.hinge plate 0",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.36000001430511475,
+            0.44999998807907104,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.hinge plate 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.36000001430511475,
+            0.44999998807907104,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.hinge plate 2",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.36000001430511475,
+            0.44999998807907104,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.hinge plate 3",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.36000001430511475,
+            0.44999998807907104,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.protective plinth lip",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.36000001430511475,
+            0.44999998807907104,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.side vent louvre -1 0",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.36000001430511475,
+            0.44999998807907104,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.side vent louvre -1 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.36000001430511475,
+            0.44999998807907104,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.side vent louvre -1 2",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.36000001430511475,
+            0.44999998807907104,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.side vent louvre -1 3",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.36000001430511475,
+            0.44999998807907104,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.side vent louvre -1 4",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.36000001430511475,
+            0.44999998807907104,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.side vent louvre -1 5",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.36000001430511475,
+            0.44999998807907104,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.side vent louvre -1 6",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.36000001430511475,
+            0.44999998807907104,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.side vent louvre -1 7",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.36000001430511475,
+            0.44999998807907104,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.side vent louvre 1 0",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.36000001430511475,
+            0.44999998807907104,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.side vent louvre 1 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.36000001430511475,
+            0.44999998807907104,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.side vent louvre 1 2",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.36000001430511475,
+            0.44999998807907104,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.side vent louvre 1 3",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.36000001430511475,
+            0.44999998807907104,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.side vent louvre 1 4",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.36000001430511475,
+            0.44999998807907104,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.side vent louvre 1 5",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.36000001430511475,
+            0.44999998807907104,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.side vent louvre 1 6",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.36000001430511475,
+            0.44999998807907104,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.side vent louvre 1 7",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "steel",
+          [
+            0.36000001430511475,
+            0.44999998807907104,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.side vent recess -1 0",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.03999999910593033,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.side vent recess -1 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.03999999910593033,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.side vent recess -1 2",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.03999999910593033,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.side vent recess -1 3",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.03999999910593033,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.side vent recess -1 4",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.03999999910593033,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.side vent recess -1 5",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.03999999910593033,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.side vent recess -1 6",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.03999999910593033,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.side vent recess -1 7",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.03999999910593033,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.side vent recess 1 0",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.03999999910593033,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.side vent recess 1 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.03999999910593033,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.side vent recess 1 2",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.03999999910593033,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.side vent recess 1 3",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.03999999910593033,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.side vent recess 1 4",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.03999999910593033,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.side vent recess 1 5",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.03999999910593033,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.side vent recess 1 6",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.03999999910593033,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.side vent recess 1 7",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.03999999910593033,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.status bezel horizontal 2.141",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.03999999910593033,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.status bezel horizontal 2.219",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.03999999910593033,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.status bezel vertical -1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.03999999910593033,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-fridge.status bezel vertical 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.03999999910593033,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "foot",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.03999999910593033,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "foot.001",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "rubber",
+          [
+            0.03999999910593033,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "freezer-door",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "freezer glass",
+          [
+            0.07999999821186066,
+            0.20000000298023224,
+            0.25999999046325684,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "freezer-handle",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "handle",
+          [
+            0.6600000262260437,
+            0.5,
+            0.20000000298023224,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "fridge-body",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "enamel",
+          [
+            0.8199999928474426,
+            0.8299999833106995,
+            0.7900000214576721,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "fridge-door",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "steel",
+          [
+            0.36000001430511475,
+            0.44999998807907104,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "fridge-handle",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "handle",
+          [
+            0.6600000262260437,
+            0.5,
+            0.20000000298023224,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "fridge-top",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "steel",
+          [
+            0.36000001430511475,
+            0.44999998807907104,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "status-light",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "status green",
+          [
+            0.15000000596046448,
+            0.7200000286102295,
+            0.30000001192092896,
+            1.0
+          ]
+        ]
+      ]
+    }
+  ]
+}
