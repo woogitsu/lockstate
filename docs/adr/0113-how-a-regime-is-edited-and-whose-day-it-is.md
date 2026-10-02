@@ -226,7 +226,10 @@ only what schedule is looked up under each existing id.
 
 ### The shape
 
-`SAVE_SCHEMA_VERSION` is 5 (`src/persistence/save-schema.ts:37`). This is a
+`SAVE_SCHEMA_VERSION` was 5 in this draft (`src/persistence/save-schema.ts`, historical line 37).
+The live ownership checkpoint `ebe2c41f81` has `src/persistence/save-schema.ts:41`,
+`export const SAVE_SCHEMA_VERSION = 8 as const;`; V8 records owner-approved object provenance
+(issue #1975), while this decision introduced the required V6 schedule. This is a
 new **required** section — not an optional field folded into an existing one
 under ADR 0038 §1's "no version bump needed" rule, because absence here is
 genuinely ambiguous: an old save has no recorded schedule at all, and there is

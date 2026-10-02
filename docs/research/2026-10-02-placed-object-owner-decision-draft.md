@@ -58,7 +58,7 @@ Keep schema/version, legacy behaviour and player copy unchanged and defer this o
 
 ## Required implementation evidence after approval
 
-The12 packed cases must pass, including genuine newer Undo. Add recorded owner Save/Load and actual Redo/no-op/rebuild counterexamples; original-owner completion/reversal controls; unknown legacy refusal with complete immutable snapshots/revisions; provable legacy recovery only where supported; repeated/current/older version decode and frozen-validator contracts. Mutate the genuine owner check and refusal preparation independently, then byte-restore. Do not introduce the field, migration or copy before approval of this combined decision.
+The 12 packed cases must pass, including genuine newer Undo. Add recorded owner Save/Load and actual Redo/no-op/rebuild counterexamples; original-owner completion/reversal controls; unknown legacy refusal with complete immutable snapshots/revisions; provable legacy recovery only where supported; repeated/current/older version decode and frozen-validator contracts. Mutate the genuine owner check and refusal preparation independently, then byte-restore. Do not introduce the field, migration or copy before approval of this combined decision.
 
 
 ## Owner decision, 2026-10-02
@@ -73,18 +73,34 @@ refusal for coupled template Cancel/Undo/manual entries, and the exact proposed
 English/Polish message. Implementation is now authorized. It does not broaden
 ordinary legacy single-order cancellation or change direct standing RemoveObject.
 
-Rechecked on published root00ad3ed193: the twelve real packed cases reproduce
-four same-type replacement failures and eight passing controls in4.40s. The
+Rechecked on published root 00ad3ed193: the twelve real packed cases reproduce
+four same-type replacement failures and eight passing controls in 4.40s. The
 implementation uses that independent baseline and retains all ordinary controls.
 
 
 ## First implementation checkpoint (2026-10-02)
 
 Base: `00ad3ed1936f0eacb3ed40d88cc01d8d3ae6c0b2`, isolated branch `codex/placed-object-source-order-ownership-20261002`.
-The original 12 real packed-command cases reproduced four failures and eight legal controls on this base. The implementation adds optional exact `payload.simulation.objects.placedObjects[].sourceOrderId` only to V8; V1?V7 validators remain frozen. V7?V8 clones the entire raw payload and adds no guessed object owners.
+The original 12 real packed-command cases reproduced four failures and eight legal controls on this base. The implementation adds optional exact `payload.simulation.objects.placedObjects[].sourceOrderId` only to V8; V1-V7 validators remain frozen. V7 to V8 clones the entire raw payload and adds no guessed object owners.
 
-Successful physical completion records the real order ID. A refused/no-op physical completion keeps the standing object's earlier owner. Reversal removes a current object only when its recorded owner matches the reversed order. Coupled template preparation inspects every completed fixture before changing zoning, treasury, orders or history; an absent or invalid matching-type owner link refuses with the approved message. A different valid owner survives the historical gesture. Direct standing demolition remains available. Ordinary single-order legacy Undo deliberately retains its existing behavior; this boundary is covered by a legal 8?8 Yard control.
+Successful physical completion records the real order ID. A refused/no-op physical completion keeps the standing object's earlier owner. Reversal removes a current object only when its recorded owner matches the reversed order. Coupled template preparation inspects every completed fixture before changing zoning, treasury, orders or history; an absent or invalid matching-type owner link refuses with the approved message. A different valid owner survives the historical gesture. Direct standing demolition remains available. Ordinary single-order legacy Undo deliberately retains its existing behavior; this boundary is covered by a legal 8x8 Yard control.
 
-First terminal proof: 32 actual session cases and 25 migration/data cases passed; the combined six-file run passed 205 tests in 3.06s. The migration cases include both original V1 fixtures at each intermediate V1?V7 version, the populated V4 Yard through V7, rejected V8 fields in frozen V5/V6/V7 with accepted ownerless controls, a real completed/pending/undone template snapshot, and invalid current owner field shapes. Exact invalid owner links (missing order, noncompleted order, wrong type, anchor or orientation) refuse atomically. The loaded Redo no-op case is explicitly a schema-valid restored history counterexample, not claimed as a new live command sequence.
+First terminal proof: 32 actual session cases and 25 migration/data cases passed; the combined six-file run passed 205 tests in 3.06s. The migration cases include both original V1 fixtures at each intermediate V1-V7 version, the populated V4 Yard through V7, rejected V8 fields in frozen V5/V6/V7 with accepted ownerless controls, a real completed/pending/undone template snapshot, and invalid current owner field shapes. Exact invalid owner links (missing order, noncompleted order, wrong type, anchor or orientation) refuse atomically. The loaded Redo no-op case is explicitly a schema-valid restored history counterexample, not claimed as a new live command sequence.
 
 Production negative controls: disconnecting the exact reversion owner guard failed 5/32 cases (27 controls passed); disconnecting the coupled unknown-owner guard failed 17/32 cases (15 controls passed). Both files were restored byte for byte, then all 205 tests passed. Application TypeScript compilation passed before these negative controls. Broader neighbouring gates are reported separately when terminal; this checkpoint does not claim them.
+
+
+## Terminal offline gates and consumer synchronization
+
+Published production checkpoint: `ebe2c41f81`; exact current-writer consumer synchronization: `2fa28ab698`.
+Owner decision was also recorded on [issue #1975](https://github.com/woogitsu/lockstate/issues/1975#issuecomment-5960513458).
+
+- Neighbouring construction/object/template/migration/persistence/refusal gates: **44 files, 1,276 tests passed**, 34.04s.
+- Eight additional real integration files exposed **16 stale current-format assertions / 63 legal controls**: current V7 pins after the approved V8 bump, or exact live placed-object tuples missing the new successful order ID. Updated expectations retain their exact IDs and every domain assertion. The later 14-file run passed **169 tests**, with its sole failure the missing local origin ref for the already-pushed production citation; exact branch fetch resolved that citation gate. Historical V6 to V7 assertions still pin 7; no frozen validator expectation was relaxed.
+- Application and tools TypeScript compilation passed; production build passed (6.34s client build).
+- Source completion-provenance disconnection: **10 failing / 22 controls**. V8 raw-clone disconnection: **1 failing / 24 controls**. Both source files restored byte for byte. The final six-file restored run passed **205 tests**, 3.17s.
+- The two shifted ADR live coordinates were corrected narrowly under coordinator leases, retaining their historical line 37 coordinates and original version meanings. After fetching the exact published branch, all four source-anchor/quotation/research-index/commit-citation files passed **28 tests**, 16.55s, without any pinned budget or guard change.
+
+These are offline kernel, persistence, content and documentation proofs. No browser or merge was run by this agent for this package.
+
+Final documentation run including the new factual V8 persistence paragraph: the same four contract files passed all 28 tests in 46.10s after synchronizing the published consumer ref. No production mutation remains in the working tree.
