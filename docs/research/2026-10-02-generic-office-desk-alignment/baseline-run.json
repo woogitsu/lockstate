@@ -1,0 +1,68 @@
+{
+  "head": "781d9dbf8f7e7e4eb1e0f479236d36ba21b24975",
+  "actualTestExitCode": 0,
+  "casesPassed": 3,
+  "seconds": [
+    43.9,
+    38.9,
+    39.9
+  ],
+  "actualNativeRecords": [
+    {
+      "quarterTurns": 1,
+      "actualBefore": [
+        "object.desk@24,6:orientation=1"
+      ],
+      "actualAfter": [
+        "object.desk@24,6:orientation=1"
+      ],
+      "beforePixels": [
+        353,
+        455
+      ],
+      "afterPixels": [
+        353,
+        455
+      ],
+      "commands": [
+        {
+          "type": "PlaceRoomTemplate",
+          "templateId": "reception-basic",
+          "origin": {
+            "x": 20,
+            "y": 5
+          },
+          "quarterTurns": 1
+        }
+      ]
+    },
+    {
+      "quarterTurns": 0,
+      "actualBefore": [
+        "object.desk@21,6:orientation=0"
+      ],
+      "actualAfter": [
+        "object.desk@21,6:orientation=0"
+      ],
+      "beforePixels": [
+        339,
+        111
+      ],
+      "afterPixels": [
+        339,
+        111
+      ],
+      "commands": [
+        {
+          "type": "PlaceRoomTemplate",
+          "templateId": "reception-basic",
+          "origin": {
+            "x": 20,
+            "y": 5
+          }
+        }
+      ]
+    }
+  ],
+  "consumerMutationAndRestoration": "in progress"
+}
