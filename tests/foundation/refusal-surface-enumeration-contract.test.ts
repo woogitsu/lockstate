@@ -49,7 +49,7 @@ import { routesForIntent, type ScannedSource } from '../helpers/control-reachabi
  */
 
 const ROOT = resolve(__dirname, '../..');
-const read = (path: string): string => readFileSync(join(ROOT, path), 'utf8');
+const read = (path: string): string => readFileSync(join(ROOT, path), 'utf8').replace(/\r\n/g, '\n');
 
 type Producer = 'host' | 'simulation';
 
