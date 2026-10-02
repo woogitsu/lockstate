@@ -1,6 +1,7 @@
 # Research records
 
 
+
 Dated evidence gathered to answer a specific open decision, kept because the
 decision cites it.
 
@@ -99,6 +100,8 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 
 | Record | Question it answered | Decision it fed |
 | --- | --- | --- |
+| [2026-10-03 combined Bin and drawer](./2026-10-03-bin-drawer-integrated/README.md) | Do exact V8 bin owners and drawer Escape survive in the same production client? | Nine canonical artifact cases pass; both room orientations retain owners and pixels through Load, and six trusted drawer key cases retain the tool without map commands. Historical-source archival fixes the unchanged coverage gate; full CI remains separate. |
+| [2026-10-03 template Redo over later zoning](./2026-10-03-template-redo-zoning/README.md) | Does a completed saved template Redo respect genuinely accepted later Yard zoning? | Actual worker preflight refuses, but Redo buys the old plan again and leaves two completed fixtures after zoning fails: two red/two legal controls. Existing admission gate fixed:12 real transitions, production negatives and exact restoration,147 neighbouring tests green; no format change. |
 | [2026-10-02 dedicated Laundry washer](./2026-10-02-laundry-washing-machine-angled/README.md) | Does the retained washer with real service detail fit the canonical angled poses and survive genuine Laundry construction and Load? | Fourteen retained and sixty-six new meshes; 72 canonical frames, producer controls and three native player cases pass. Removing the actual default render mapping fails both orientations, restored acceptance passes; following V8 integration is separate. |
 | [2026-10-02 combined walls and ownership](./2026-10-02-wall-owner-integrated/README.md) | Do the calibrated square walls and V8 Kitchen ownership work in the combined built client? | Nine actual Full HD cases pass; three object owners survive normal/rotated player Save/Load, and all six wall poses have zero outside-span/hull masonry pixels. Full release gates remain separate. |
 | [2026-10-02 generic wooden rack alignment](./2026-10-02-generic-wooden-rack-alignment/README.md) | Does the retained generic rack fit shared square poses and render through real default consumers? | Forty-eight original meshes,72 shared exports, actual individual construction and rotated-template unzoning, Load and independent pixels. Eight default-binding mutation failures and exact three-case restoration; unsupported individual rotation UI is explicitly excluded. |
@@ -349,6 +352,8 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 | [2026-10-02 angled pointer transform audit](./2026-10-02-oblique-pointer-transform-audit/README.md) | Do actual pointer callbacks retain ground coordinates after fit and viewport replacement? | No scoped source defect: 144 real-scene matrix/kernel cases GREEN, input producer shift makes 144 RED, byte-exact restoration 144 GREEN; native scale/resize acceptance remains separate. |
 | [2026-10-02 removed or rebuilt template render identity](./2026-10-02-room-template-render-identity-baseline.md) | Does the snapshot feed draw removed furniture or duplicate an independently rebuilt object despite correct physical ownership? | Issue1980; genuine packed baseline6 red/2 controls, authoritative physical registry and exact source-order display identity, two real adapter negatives14/6 red, byte-exact restored16 cases and115 neighboring tests green. EncodedV7/V8, immutable legacy controls and undefined fallback verified; Full HD dev/source native2 green, real adapter negative1 red (dependent lifecycle not run), exact restored2 green with actual owner/image/footprint/pixel receipts. Three fixture errors retained honestly; not built-artifact proof. |
 | [2026-10-03 integrated Laundry and camera native acceptance](./2026-10-03-laundry-camera-integrated/README.md) | Does the combined built client retain washer ownership/pixels through Save/Load and both camera input corrections? | Fresh root7/7 native artifact cases GREEN; actual worker owners, loaded PNGs and strict map/input receipts retained. Full hosted CI and production release remain outstanding. |
+| [2026-10-03 navigation drawer Escape](./2026-10-03-navigation-drawer-escape/README.md) | Does the existing drawer closing key also reach armed world Build? Registered-handler producer removal red, exact restore49/49 green; six native cases queued. | Existing #1962 event ownership extension; no new layout or input rule. |
+| [2026-10-02 aligned default waste bin](./2026-10-02-default-waste-bin-alignment/README.md) | Does the retained Blender indoor bin fit its physical square and survive normal/rotated construction and Load? | 72 reproducible poses; upstream built FullHD3/3, separate q0/q1 missing-consumer negatives and exact restored3/3; combined V8 owner and drawer native acceptance remains queued. |
 
 ### Findings from the first four records that changed a decision
 

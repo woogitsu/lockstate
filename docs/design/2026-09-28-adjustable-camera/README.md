@@ -1296,3 +1296,54 @@ agent checks shell reversal ownership and a third audits camera/HUD input.
 The completed, mutation-checked CI split proposal is offered to the owner;
 production workflow is unchanged while the decision is pending. Continue game
 development and preserve each coherent chunk on GitHub during that wait.
+
+### Bin and navigation integration checkpoint — 2026-10-03
+
+Following branch `codex/integrate-bin-drawer-20261003` now combines the aligned
+retained Blender bin and the navigation drawer closing-Escape correction.
+Root opened the actual rotated loaded FullHD bin capture; upstream normal and
+rotated Build/SaveLoad acceptance is3/3, both real missing-consumer negatives
+give zero palette pixels, and byte-exact restored3/3 passes. Source integration
+passes58 tests in7 files, both TypeScript projects and production build.
+The existing Yard bin override remains checked. [Model and native evidence](../../research/2026-10-02-default-waste-bin-alignment/README.md)
+and [registered drawer producer evidence](../../research/2026-10-03-navigation-drawer-escape/README.md)
+are included. Root adds exact different V8 owners and completed owning-order
+checks to both bin orientations; those new native assertions and six physical
+drawer cases are queued until Art releases the single browser. They are routed
+once through the built-artifact suite, with the source suite excluding them.
+
+The Laundry/camera predecessor is published as draft
+[PR1984](https://github.com/woogitsu/lockstate/pull/1984), including regenerated
+596-sentence inventory and the approved49-member refusal vocabulary gates.
+The root catalogue typo producer negative fails both gates, exact restoration
+passes16/16. Full exact-head CI, merge gates and production delivery remain
+separate from these local integration results.
+
+The same following integration also includes the actual #1986 atomic template
+Redo admission correction: newer accepted zoning cannot make Redo reapprove
+paid orders, spend twice or strand old furniture. Root integrated the published
+producer-checked source and passed163 tests across10 gameplay/renderer files
+in14.00s, plus both TypeScript projects and production build (client6.99s).
+The resulting worker is `worker-DIP7pP3A.js`, SHA256
+`5247173b87c7d7935c4c2b312676b4e35bf2c3a35b8568c83ff9a678c78c21d2`.
+[Actual baseline, guarded reversal, legal retry and both producer negatives](../../research/2026-10-03-template-redo-zoning/README.md)
+are retained. Bin/drawer native acceptance must use this rebuilt combined
+subject; earlier upstream native captures are not relabelled as this client.
+
+### Bin/drawer integration accepted locally — 2026-10-03
+
+The rebuilt subject now passes all nine queued native artifact cases in2.1minutes:
+real capacity construction, both Garbage Room orientations with different exact
+V8 owners through Save/Load, and six trusted drawer Escape cases. [Fresh root
+captures and terminal evidence](../../research/2026-10-03-bin-drawer-integrated/README.md)
+are published. Palette counts remain equal across Load. CI found one historical
+baseline source stored with an active module extension; root reproduced that
+failure and preserved identical bytes in a text archive. The original coverage
+contract then passes4/4, with no assertions or tsconfig exclusions changed.
+
+Following Cell/Utility integration combines both accepted Blender model sources,
+the actual camera-matrix plan projector (#1988), visible-ground minimap (#1989)
+and full incoming-object footprint admission (#1654). Their combined native
+acceptance is a new check, not a relabel of individual agent runs. Art owns the
+single browser for Desk; HUD audits actual camera consumers, gameplay repairs
+asynchronous construction-history ordering. Full release gates remain pending.

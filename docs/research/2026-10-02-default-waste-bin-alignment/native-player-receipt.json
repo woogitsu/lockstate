@@ -1,0 +1,234 @@
+{
+  "date": "2026-10-03",
+  "frozenCommit": "d794245a25f3022115aa85cbfd39f32274c69c48",
+  "renderer": "built production oblique",
+  "guards": {
+    "workers": 1,
+    "caseTimeoutMs": 60000,
+    "progressTimeoutMs": 10000,
+    "retries": 0,
+    "paletteThresholdExclusive": 100
+  },
+  "cases": {
+    "baseline": {
+      "q0": {
+        "quarterTurns": 0,
+        "actualBefore": [
+          "object.waste-bin@21,6:orientation=0",
+          "object.waste-bin@22,6:orientation=0"
+        ],
+        "actualAfter": [
+          "object.waste-bin@21,6:orientation=0",
+          "object.waste-bin@22,6:orientation=0"
+        ],
+        "beforePixels": [
+          865,
+          154
+        ],
+        "afterPixels": [
+          865,
+          154
+        ],
+        "commands": [
+          {
+            "type": "PlaceRoomTemplate",
+            "templateId": "garbage-room-basic",
+            "origin": {
+              "x": 20,
+              "y": 5
+            }
+          }
+        ]
+      },
+      "q1": {
+        "quarterTurns": 1,
+        "actualBefore": [
+          "object.waste-bin@22,6:orientation=1",
+          "object.waste-bin@22,7:orientation=1"
+        ],
+        "actualAfter": [
+          "object.waste-bin@22,6:orientation=1",
+          "object.waste-bin@22,7:orientation=1"
+        ],
+        "beforePixels": [
+          334,
+          371
+        ],
+        "afterPixels": [
+          334,
+          371
+        ],
+        "commands": [
+          {
+            "type": "PlaceRoomTemplate",
+            "templateId": "garbage-room-basic",
+            "origin": {
+              "x": 20,
+              "y": 5
+            },
+            "quarterTurns": 1
+          }
+        ]
+      }
+    },
+    "mutation-q0": {
+      "q0": {
+        "quarterTurns": 0,
+        "actualBefore": [
+          "object.waste-bin@21,6:orientation=0",
+          "object.waste-bin@22,6:orientation=0"
+        ],
+        "actualAfter": [
+          "object.waste-bin@21,6:orientation=0",
+          "object.waste-bin@22,6:orientation=0"
+        ],
+        "beforePixels": [
+          0,
+          0
+        ],
+        "afterPixels": [
+          0,
+          0
+        ],
+        "commands": [
+          {
+            "type": "PlaceRoomTemplate",
+            "templateId": "garbage-room-basic",
+            "origin": {
+              "x": 20,
+              "y": 5
+            }
+          }
+        ]
+      }
+    },
+    "mutation-q1": {
+      "q1": {
+        "quarterTurns": 1,
+        "actualBefore": [
+          "object.waste-bin@22,6:orientation=1",
+          "object.waste-bin@22,7:orientation=1"
+        ],
+        "actualAfter": [
+          "object.waste-bin@22,6:orientation=1",
+          "object.waste-bin@22,7:orientation=1"
+        ],
+        "beforePixels": [
+          0,
+          0
+        ],
+        "afterPixels": [
+          0,
+          0
+        ],
+        "commands": [
+          {
+            "type": "PlaceRoomTemplate",
+            "templateId": "garbage-room-basic",
+            "origin": {
+              "x": 20,
+              "y": 5
+            },
+            "quarterTurns": 1
+          }
+        ]
+      }
+    },
+    "restored": {
+      "q0": {
+        "quarterTurns": 0,
+        "actualBefore": [
+          "object.waste-bin@21,6:orientation=0",
+          "object.waste-bin@22,6:orientation=0"
+        ],
+        "actualAfter": [
+          "object.waste-bin@21,6:orientation=0",
+          "object.waste-bin@22,6:orientation=0"
+        ],
+        "beforePixels": [
+          865,
+          154
+        ],
+        "afterPixels": [
+          865,
+          154
+        ],
+        "commands": [
+          {
+            "type": "PlaceRoomTemplate",
+            "templateId": "garbage-room-basic",
+            "origin": {
+              "x": 20,
+              "y": 5
+            }
+          }
+        ]
+      },
+      "q1": {
+        "quarterTurns": 1,
+        "actualBefore": [
+          "object.waste-bin@22,6:orientation=1",
+          "object.waste-bin@22,7:orientation=1"
+        ],
+        "actualAfter": [
+          "object.waste-bin@22,6:orientation=1",
+          "object.waste-bin@22,7:orientation=1"
+        ],
+        "beforePixels": [
+          334,
+          371
+        ],
+        "afterPixels": [
+          334,
+          371
+        ],
+        "commands": [
+          {
+            "type": "PlaceRoomTemplate",
+            "templateId": "garbage-room-basic",
+            "origin": {
+              "x": 20,
+              "y": 5
+            },
+            "quarterTurns": 1
+          }
+        ]
+      }
+    }
+  },
+  "byteReceipts": [
+    {
+      "phase": "baseline",
+      "worker": "worker-CZTURefm.js",
+      "bytes": 435857,
+      "sha256": "95189e6c470a65d722d777147a3e2ae49ff033dd2a409933f56f870bcdf5b37c",
+      "byteEqualBaseline": true,
+      "mappingSha256": "a9eada806ff523bc9933da9b7a2e8a731c5a896286e33b0551119d8e389dd2d4",
+      "sourceManifestAnd72FramesByteEqualBaseline": true
+    },
+    {
+      "phase": "mutation",
+      "worker": "worker-CZTURefm.js",
+      "bytes": 435857,
+      "sha256": "95189e6c470a65d722d777147a3e2ae49ff033dd2a409933f56f870bcdf5b37c",
+      "byteEqualBaseline": true,
+      "mappingSha256": "84bb0cdb9b915592928537c3c05d8813e105f4d5a83ecedbfa4f011ed1ec52ca",
+      "sourceManifestAnd72FramesByteEqualBaseline": true
+    },
+    {
+      "phase": "restored",
+      "worker": "worker-CZTURefm.js",
+      "bytes": 435857,
+      "sha256": "95189e6c470a65d722d777147a3e2ae49ff033dd2a409933f56f870bcdf5b37c",
+      "byteEqualBaseline": true,
+      "mappingSha256": "a9eada806ff523bc9933da9b7a2e8a731c5a896286e33b0551119d8e389dd2d4",
+      "sourceManifestAnd72FramesByteEqualBaseline": true
+    }
+  ],
+  "finalScreenshotSha256": {
+    "native-q0-worker-completed-fullhd.png": "8c0b0ee4815e4e9bec21607d36131bc13629d160e36eee1e8bcdeedfb83efb10",
+    "native-q0-loaded-fullhd.png": "b4e9b8fb8bc1e8844e2a2488e4d5a44a525b3ed1a4bc11e237d287763918085e",
+    "native-q1-worker-completed-fullhd.png": "de3c0edb0c506fc8bfc92ea92522ab0f1644b371cef9c725f2f66c3a05e69760",
+    "native-q1-loaded-fullhd.png": "3c80c056b6d10627f9cffd11df296fbb0207cf24e79ba310e517cdd80b17b429"
+  }
+}

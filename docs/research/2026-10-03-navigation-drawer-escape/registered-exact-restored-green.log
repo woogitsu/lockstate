@@ -1,0 +1,17 @@
+pnpm : $ vitest run "tests/unit/ui-navigation-drawer-escape.test.ts" "tests/unit/hud-layout.test.ts" "tests/unit/input-
+modal-context.test.ts" "--maxWorkers=2"
+At line:5 char:1
++ pnpm --config.verify-deps-before-run=false test tests/unit/ui-navigat ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...--maxWorkers=2":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-build-input-lifecycle-audit-20261003
+
+
+ Test Files  3 passed (3)
+      Tests  49 passed (49)
+   Start at  00:23:20
+   Duration  3.91s (transform 2.01s, setup 0ms, import 4.15s, tests 19ms, environment 0ms)
+

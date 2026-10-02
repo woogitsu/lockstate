@@ -434,6 +434,22 @@ export class RoomTemplateCoordinator implements SystemRegistration {
     });
   }
 
+  /** Admit the exact top Redo gesture before history, orders or procurement change. */
+  public preflightRedo(): RoomTemplatePlacement {
+    const transaction = this.construction.snapshot().redoStack.at(-1);
+    if (transaction === undefined) return { ok: true };
+    const ids = new Set(transaction);
+    for (const request of this.undone) {
+      if (!this.historyEntryIds(request).every(id => ids.has(id))) continue;
+      const plan = instantiateRoomTemplateForConstruction(
+        request.templateId, request.origin, request.mirrorX, request.quarterTurns ?? 0,
+      );
+      const verdict = this.preflight(plan);
+      if (!verdict.ok) return verdict;
+    }
+    return { ok: true };
+  }
+
   /** Reconnect Redo's reapproved shell transaction to its saved room/furniture obligation. */
   public reconcileRedoneShells(): void {
     this.undone = this.undone.filter((request) => {

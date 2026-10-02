@@ -1,0 +1,113 @@
+node : [2m[WebServer] [22m(node:64360) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:4 char:1
++ node node_modules/@playwright/test/cli.js test --config assets/interm ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 3 tests using 1 worker
+
+(node:21996) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:21996) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\default-waste-bin-player-build.spec.ts:169:1 › player creates storage and delivery capacity before Garbage Room (43.0s)
+  ok 2 tests\browser\default-waste-bin-player-build.spec.ts:232:3 › player builds Garbage Room at quarterTurns0 and retains waste bin palettes and anchors after Save/Load (29.4s)
+  x  3 tests\browser\default-waste-bin-player-build.spec.ts:232:3 › player builds Garbage Room at quarterTurns1 and retains waste bin palettes and anchors after Save/Load (30.0s)
+
+
+  1) tests\browser\default-waste-bin-player-build.spec.ts:232:3 › player builds Garbage Room at quarterTurns1 and retains waste bin palettes and anchors after Save/Load 
+
+    Error: waste bin 1 authored palette after construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m100[39m
+    Received:   [31m0[39m
+
+      181 |   }, null, 2));
+      182 |   beforePixels.forEach((count, index) => expect.soft(count, `waste bin ${index + 1} authored palette after construction`)
+    > 183 |     .toBeGreaterThan(100));
+          |      ^
+      184 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+      185 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+      186 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-default-waste-bin-angled-20261002\tests\browser\default-waste-bin-player-build.spec.ts:183:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-default-waste-bin-angled-20261002\tests\browser\default-waste-bin-player-build.spec.ts:182:16
+
+    Error: waste bin 2 authored palette after construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m100[39m
+    Received:   [31m0[39m
+
+      181 |   }, null, 2));
+      182 |   beforePixels.forEach((count, index) => expect.soft(count, `waste bin ${index + 1} authored palette after construction`)
+    > 183 |     .toBeGreaterThan(100));
+          |      ^
+      184 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+      185 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+      186 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-default-waste-bin-angled-20261002\tests\browser\default-waste-bin-player-build.spec.ts:183:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-default-waste-bin-angled-20261002\tests\browser\default-waste-bin-player-build.spec.ts:182:16
+
+    Error: waste bin 1 authored palette after Load
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m100[39m
+    Received:   [31m0[39m
+
+      196 |   const afterPixels = await binPalettePixels(page, loaded, quarterTurns);
+      197 |   afterPixels.forEach((count, index) => expect.soft(count, `waste bin ${index + 1} authored palette after Load`)
+    > 198 |     .toBeGreaterThan(100));
+          |      ^
+      199 |   expect(afterPixels).toEqual(beforePixels);
+      200 |   const evidencePath = info.outputPath('default-waste-bin-worker-and-save-evidence.json');
+      201 |   await writeFile(evidencePath, JSON.stringify({
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-default-waste-bin-angled-20261002\tests\browser\default-waste-bin-player-build.spec.ts:198:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-default-waste-bin-angled-20261002\tests\browser\default-waste-bin-player-build.spec.ts:197:15
+
+    Error: waste bin 2 authored palette after Load
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m100[39m
+    Received:   [31m0[39m
+
+      196 |   const afterPixels = await binPalettePixels(page, loaded, quarterTurns);
+      197 |   afterPixels.forEach((count, index) => expect.soft(count, `waste bin ${index + 1} authored palette after Load`)
+    > 198 |     .toBeGreaterThan(100));
+          |      ^
+      199 |   expect(afterPixels).toEqual(beforePixels);
+      200 |   const evidencePath = info.outputPath('default-waste-bin-worker-and-save-evidence.json');
+      201 |   await writeFile(evidencePath, JSON.stringify({
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-default-waste-bin-angled-20261002\tests\browser\default-waste-bin-player-build.spec.ts:198:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-default-waste-bin-angled-20261002\tests\browser\default-waste-bin-player-build.spec.ts:197:15
+
+    attachment #1: default-waste-bin-worker-and-save-evidence (application/json) ───────────────────
+    assets\intermediate\default-waste-bin-audit\native-results\default-waste-bin-player-b-fb943-and-anchors-after-Save-Load\attachments\default-waste-bin-worker-and-save-evidence-b116cfaeb8b14be92ce5cb6751e8160028340e82.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: assets\intermediate\default-waste-bin-audit\native-results\default-waste-bin-player-b-fb943-and-anchors-after-Save-Load\error-context.md
+
+  1 failed
+    tests\browser\default-waste-bin-player-build.spec.ts:232:3 › player builds Garbage Room at quarterTurns1 and retains waste bin palettes and anchors after Save/Load 
+  2 passed (1.8m)
