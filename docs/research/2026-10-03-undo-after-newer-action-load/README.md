@@ -1,16 +1,17 @@
-﻿# Encoded Load forgets the newer accepted action that barred Undo
+# Encoded Load forgets the newer accepted action that barred Undo
 
 Measured 2026-10-03 at published integrated source
 `4b5e06b4d279260318d34a7dd604bd46c6e9435f`. This is actual packed kernel,
 current V8 encode/decode and runtime restore; not browser acceptance.
 No production, schema, copy or policy change is implemented.
+Fresh nonduplicate defect: [#1985](https://github.com/woogitsu/lockstate/issues/1985).
 
 ## Reproduction and legal controls
 
 The [packed reproducer](./packed-reproducer.test.ts) is retained **outside the
 ordinary test suite** because one accepted-contract case fails on this source.
 To reproduce from this checkpoint, copy it to
-`tests/integration/.local-hire-load-undo.test.ts`, then run that file with
+the existing `tests/integration/` directory as `.local-hire-load-undo.test.ts`, then run that file with
 Vitest. Its relative production imports assume that destination. Capture files
 are written under `.local-shell-ownership/`.
 
@@ -69,16 +70,16 @@ and complete related Issue bodies, were read on2026-10-03:
 
 These are immutable checkpoint coordinates, not current remote-main claims:
 
-- `src/simulation/construction/system.ts:13-38`: ConstructionSnapshot carries
+- `src/simulation/construction/system.ts:13-41`: ConstructionSnapshot carries
   orders, two stacks and optional current-gesture fields, with no latest-action
   eligibility marker.
 - `system.ts:394`: transient `newerActionThanTheStackTop` starts false.
 - `system.ts:858-871`: unrelated-action writer and refusal reader.
-- `system.ts:2276-2300`: snapshot returns the existing history fields, omitting
-  this flag. `system.ts:2332-2367` restores those fields, not the flag.
+- `system.ts:2276-2304`: snapshot returns the existing history fields, omitting
+  this flag. `system.ts:2332-2361` restores those fields, not the flag.
 - `src/persistence/save-schema.ts:244`: strict construction payload schema;
   its V1–V8 users share that shape. `savePayloadV8Schema` extends V7 only in
-  simulation fields (`:1873-1878` at this checkpoint).
+  simulation fields (`:1876` at this checkpoint).
 
 Adding a saved marker is therefore a persistence shape change. The successful
 no-hire controls refute setting every restored nonempty history to stale:
@@ -116,3 +117,16 @@ latest-build controls, genuine newer Redo, all V1–V8 data preservation, direct
 worker snapshot restore, availability publication and disconnect-marker
 production mutation red→byte-exact restoration. No such fix/mutation result
 is claimed in this diagnosis.
+
+## Delivery checks for this diagnosis
+
+Eight documentation/index contracts: **62 passed**, 26.35s. The first run
+caught one documentation reference to the temporary reproducer destination
+that is deliberately absent from the ordinary suite. It was corrected to name
+the existing destination directory and generated filename separately; no guard
+or budget was changed. Source coordinates above were opened with numbered
+lines and corrected to the complete snapshot/restore ranges.
+
+The earlier shell regression's145 focused gameplay tests, both TypeScript
+projects and production build also passed on this same unchanged source.
+These are local gates, not remote CI or browser claims.
