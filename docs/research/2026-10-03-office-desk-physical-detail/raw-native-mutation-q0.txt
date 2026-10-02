@@ -1,0 +1,113 @@
+node.exe : [2m[WebServer] [22m(node:51756) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being
+set.
+At line:6 char:482
++ ... ORT='5201'; & 'C:\Users\matma\.cache\codex-runtimes\codex-primary-run ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 2 tests using 1 worker
+
+(node:35112) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:35112) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\dedicated-office-desk-player-build.spec.ts:197:1 › player creates actual storage and delivery capacity before detailed Reception (43.4s)
+  x  2 tests\browser\dedicated-office-desk-player-build.spec.ts:260:3 › player builds Reception at quarterTurns0 and retains dedicated authored desktop and detail palettes and anchors after Save/Load (46.1s)
+
+
+  1) tests\browser\dedicated-office-desk-player-build.spec.ts:260:3 › player builds Reception at quarterTurns0 and retains dedicated authored desktop and detail palettes and anchors after Save/Load
+
+    Error: desk oak desktop after construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m200[39m
+    Received:   [31m0[39m
+
+      217 |   }, null, 2));
+      218 |   beforePixels.forEach((count, index) => expect.soft(count, `desk ${index === 0 ? "oak desktop" : quarterTurns === 0 ? "teal document" : "steel monitor"} after construction`)
+    > 219 |     .toBeGreaterThan(index === 0 || quarterTurns === 1 ? 200 : 70));
+          |      ^
+      220 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+      221 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+      222 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-office-desk-physical-detail-20261003\tests\browser\dedicated-office-desk-player-build.spec.ts:219:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-office-desk-physical-detail-20261003\tests\browser\dedicated-office-desk-player-build.spec.ts:218:16
+
+    Error: desk teal document after construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m70[39m
+    Received:   [31m0[39m
+
+      217 |   }, null, 2));
+      218 |   beforePixels.forEach((count, index) => expect.soft(count, `desk ${index === 0 ? "oak desktop" : quarterTurns === 0 ? "teal document" : "steel monitor"} after construction`)
+    > 219 |     .toBeGreaterThan(index === 0 || quarterTurns === 1 ? 200 : 70));
+          |      ^
+      220 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+      221 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+      222 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-office-desk-physical-detail-20261003\tests\browser\dedicated-office-desk-player-build.spec.ts:219:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-office-desk-physical-detail-20261003\tests\browser\dedicated-office-desk-player-build.spec.ts:218:16
+
+    Error: desk oak desktop after Load
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m200[39m
+    Received:   [31m0[39m
+
+      233 |   const afterPixels = await deskPalettePixels(page, loaded, quarterTurns);
+      234 |   afterPixels.forEach((count, index) => expect.soft(count, `desk ${index === 0 ? "oak desktop" : quarterTurns === 0 ? "teal document" : "steel monitor"} after Load`)
+    > 235 |     .toBeGreaterThan(index === 0 || quarterTurns === 1 ? 200 : 70));
+          |      ^
+      236 |   expect(afterPixels).toEqual(beforePixels);
+      237 |   const evidencePath = info.outputPath('dedicated-office-desk-worker-and-save-evidence.json');
+      238 |   await writeFile(evidencePath, JSON.stringify({
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-office-desk-physical-detail-20261003\tests\browser\dedicated-office-desk-player-build.spec.ts:235:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-office-desk-physical-detail-20261003\tests\browser\dedicated-office-desk-player-build.spec.ts:234:15
+
+    Error: desk teal document after Load
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m70[39m
+    Received:   [31m0[39m
+
+      233 |   const afterPixels = await deskPalettePixels(page, loaded, quarterTurns);
+      234 |   afterPixels.forEach((count, index) => expect.soft(count, `desk ${index === 0 ? "oak desktop" : quarterTurns === 0 ? "teal document" : "steel monitor"} after Load`)
+    > 235 |     .toBeGreaterThan(index === 0 || quarterTurns === 1 ? 200 : 70));
+          |      ^
+      236 |   expect(afterPixels).toEqual(beforePixels);
+      237 |   const evidencePath = info.outputPath('dedicated-office-desk-worker-and-save-evidence.json');
+      238 |   await writeFile(evidencePath, JSON.stringify({
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-office-desk-physical-detail-20261003\tests\browser\dedicated-office-desk-player-build.spec.ts:235:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-office-desk-physical-detail-20261003\tests\browser\dedicated-office-desk-player-build.spec.ts:234:15
+
+    attachment #1: dedicated-office-desk-worker-and-save-evidence (application/json) ───────────────
+    assets\intermediate\office-desk-detail-audit\native-mutation-q0\dedicated-office-desk-play-6e56a-and-anchors-after-Save-Load\attachments\dedicated-office-desk-worker-and-save-evidence-c01446955211620e708152040fe6ba3b230e107b.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: assets\intermediate\office-desk-detail-audit\native-mutation-q0\dedicated-office-desk-play-6e56a-and-anchors-after-Save-Load\error-context.md
+
+  1 failed
+    tests\browser\dedicated-office-desk-player-build.spec.ts:260:3 › player builds Reception at quarterTurns0 and retains dedicated authored desktop and detail palettes and anchors after Save/Load
+  1 passed (1.5m)

@@ -1,5 +1,12 @@
 # Retained Reception workstation: physical input and service hardware
 
+Current follow-up2026-10-03: dedicated-source genuine Reception q0/q1
+construction, Save/Load and consumer-only negative/exact restoration are
+complete in this isolated branch. See `native-player-acceptance.md` and
+`native-player-receipt.json`, including six opened final FullHD images.
+Earlier pending checkpoints below retain their original scope and timing.
+Integrated V8 plane ownership and hosted acceptance are not claimed here.
+
 Continuing2026-10-02 art session. Own isolated worktree from published
 `eeec3e844fc8ecca5668cfc0b4eb2d11d4c41307`. The coordinator authorized an
 offline next existing model after checking active authored branches. No browser
