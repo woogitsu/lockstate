@@ -34,16 +34,16 @@ function finish(runtime: Runtime) {
   until(runtime, () => runtime.roomTemplates.snapshot().pending.length === 0 &&
     runtime.construction.allOrders().every(order => order.state === 'completed' || order.state === 'cancelled' || order.state === 'failed'));
 }
-it.each((['unloaded', 'loaded unowned'] as const).flatMap(stage => (['PlaceObject', 'PlaceBuildOrder'] as const).map(type => ({ stage, type }))))
- ('saved $stage far square must refuse an incoming generic object: $type', ({ stage, type }) => {
+it.each((['unloaded', 'loaded unowned'] as const).flatMap(stage => (['desk-wooden', 'bed-wooden'] as const).flatMap(definitionId => (['PlaceObject', 'PlaceBuildOrder'] as const).map(type => ({ stage, definitionId, type })))))
+ ('saved $stage far square must refuse an incoming $definitionId: $type', ({ stage, definitionId, type }) => {
   let runtime = createNewSimulationRuntime(73);
   send(runtime, { type: 'ZoneRoom', roomId: 'room.yard', x: 24, y: 24, width: 8, height: 8 });
   expect(runtime.prisoners.roomInstances.allByRoomCatalogId('room.yard')).toHaveLength(1);
-  const farChunk = { x: chunkCoordinate(1), y: chunkCoordinate(0) };
+  const farChunk = definitionId === 'desk-wooden' ? { x: chunkCoordinate(1), y: chunkCoordinate(0) } : { x: chunkCoordinate(0), y: chunkCoordinate(1) };
   if (stage === 'loaded unowned') runtime.world.load(farChunk);
   runtime = reload(runtime);
   const anchor = { x: tileCoordinate(31), y: tileCoordinate(31) };
-  const far = { x: tileCoordinate(32), y: tileCoordinate(31) };
+  const far = definitionId === 'desk-wooden' ? { x: tileCoordinate(32), y: tileCoordinate(31) } : { x: tileCoordinate(31), y: tileCoordinate(32) };
   expect(runtime.world.isTileOwned(anchor)).toBe(true);
   expect(runtime.world.isTileOwned(far)).toBe(false);
   expect(runtime.world.getChunk(farChunk) === undefined).toBe(stage === 'unloaded');
@@ -51,8 +51,9 @@ it.each((['unloaded', 'loaded unowned'] as const).flatMap(stage => (['PlaceObjec
   const balance = runtime.treasury.balanceMinorUnits;
   const world = runtime.world.snapshot();
   const history = runtime.construction.snapshot();
-  send(runtime, { type, orderId: 'frontier-desk', definitionId: 'desk-wooden', x: 31, y: 31 });
+  send(runtime, { type, orderId: 'frontier-desk', definitionId, x: 31, y: 31 });
   expect(runtime.construction.getOrder('frontier-desk')?.state).not.toBe('approved');
+  if (type === 'PlaceBuildOrder') expect(runtime.construction.getOrder('frontier-desk')?.failReason).toBe(stage === 'unloaded' ? 'out-of-bounds' : 'unowned-land');
   expect(runtime.treasury.balanceMinorUnits).toBe(balance);
   expect(runtime.world.snapshot()).toEqual(world);
   expect(runtime.construction.snapshot().undoStack).toEqual(history.undoStack);
@@ -69,3 +70,17 @@ it.each((['rock', 'water'] as const).flatMap(terrain => (['PlaceObject', 'PlaceB
   finish(runtime);
   expect(runtime.placedObjects.isTileOccupied({ x: tileCoordinate(6), y: tileCoordinate(5) })).toBe(true);
  });
+
+it.each(['desk-wooden', 'bed-wooden'] as const)('a saved owned far chunk admits and completes the whole %s footprint', definitionId => {
+ let runtime = createNewSimulationRuntime(73);
+ send(runtime, { type: 'ZoneRoom', roomId: 'room.yard', x: 24, y: 24, width: 8, height: 8 });
+ const farChunk = definitionId === 'desk-wooden' ? { x: chunkCoordinate(1), y: chunkCoordinate(0) } : { x: chunkCoordinate(0), y: chunkCoordinate(1) };
+ runtime.world.load(farChunk);
+ runtime.world.setOwned(farChunk, true);
+ runtime = reload(runtime);
+ send(runtime, { type: 'PlaceBuildOrder', orderId: 'owned-frontier-object', definitionId, x: 31, y: 31 });
+ expect(runtime.construction.getOrder('owned-frontier-object')?.state).toBe('approved');
+ finish(runtime);
+ const far = definitionId === 'desk-wooden' ? { x: tileCoordinate(32), y: tileCoordinate(31) } : { x: tileCoordinate(31), y: tileCoordinate(32) };
+ expect(runtime.placedObjects.isTileOccupied(far)).toBe(true);
+});

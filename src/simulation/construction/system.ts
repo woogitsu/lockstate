@@ -672,6 +672,24 @@ export class ConstructionSystem implements SystemRegistration {
       }
     }
 
+    // Object geometry occupies every footprint square, not only its anchor.
+    // Use the same bounds/ownership requirement as admission above: terrain
+    // remains deliberately deferred, and edge geometry keeps its either-side rule.
+    if (definition.placesObjectId !== undefined) {
+      const object = defaultObjectRegistry.getById(definition.placesObjectId);
+      if (object !== undefined) {
+        for (const tile of objectFootprintTiles(object, order.location, order.objectOrientation ?? 0)) {
+          const footprintRefusal = this.admits(tile);
+          if (footprintRefusal !== undefined) {
+            this.setState(order, 'failed');
+            order.failReason = footprintRefusal;
+            this.orders.set(order.id, order);
+            return;
+          }
+        }
+      }
+    }
+
     this.setState(order, 'approved');
     this.orders.set(order.id, order);
   }
