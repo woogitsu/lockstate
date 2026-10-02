@@ -1,0 +1,284 @@
+{
+  "frozenAcceptedSource": "3fc97ac2797ada48ddbd65dbd95fc11da1a348f5",
+  "actualReadOnlySnapshots": [
+    {
+      "quarterTurns": 0,
+      "phase": "completed",
+      "source": "accepted-q0-completed-worker-snapshot.json",
+      "snapshotKind": "simulation/snapshot",
+      "tick": 4178,
+      "completedOrders": 61,
+      "washingOrders": [
+        {
+          "id": "room-template-000000000002-2-object-000",
+          "definitionId": "washing-machine-brick",
+          "location": {
+            "x": 21,
+            "y": 6
+          },
+          "placementSequence": 2,
+          "state": "completed",
+          "progress": 60,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000002-2-object-001",
+          "definitionId": "washing-machine-brick",
+          "location": {
+            "x": 23,
+            "y": 6
+          },
+          "placementSequence": 2,
+          "state": "completed",
+          "progress": 60,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        }
+      ],
+      "washingObjects": [
+        {
+          "placedObjectId": "object:21:6",
+          "objectId": "object.washing-machine",
+          "anchorTile": {
+            "x": 21,
+            "y": 6
+          },
+          "orientation": 0
+        },
+        {
+          "placedObjectId": "object:23:6",
+          "objectId": "object.washing-machine",
+          "anchorTile": {
+            "x": 23,
+            "y": 6
+          },
+          "orientation": 0
+        }
+      ]
+    },
+    {
+      "quarterTurns": 0,
+      "phase": "loaded",
+      "source": "accepted-q0-loaded-worker-snapshot.json",
+      "snapshotKind": "simulation/snapshot",
+      "tick": 4230,
+      "completedOrders": 61,
+      "washingOrders": [
+        {
+          "id": "room-template-000000000002-2-object-000",
+          "definitionId": "washing-machine-brick",
+          "location": {
+            "x": 21,
+            "y": 6
+          },
+          "placementSequence": 2,
+          "state": "completed",
+          "progress": 60,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000002-2-object-001",
+          "definitionId": "washing-machine-brick",
+          "location": {
+            "x": 23,
+            "y": 6
+          },
+          "placementSequence": 2,
+          "state": "completed",
+          "progress": 60,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        }
+      ],
+      "washingObjects": [
+        {
+          "placedObjectId": "object:21:6",
+          "objectId": "object.washing-machine",
+          "anchorTile": {
+            "x": 21,
+            "y": 6
+          },
+          "orientation": 0
+        },
+        {
+          "placedObjectId": "object:23:6",
+          "objectId": "object.washing-machine",
+          "anchorTile": {
+            "x": 23,
+            "y": 6
+          },
+          "orientation": 0
+        }
+      ]
+    },
+    {
+      "quarterTurns": 1,
+      "phase": "completed",
+      "source": "accepted-q1-completed-worker-snapshot.json",
+      "snapshotKind": "simulation/snapshot",
+      "tick": 4224,
+      "completedOrders": 61,
+      "washingOrders": [
+        {
+          "id": "room-template-000000000002-2-object-000",
+          "definitionId": "washing-machine-brick",
+          "location": {
+            "x": 24,
+            "y": 6
+          },
+          "objectOrientation": 1,
+          "placementSequence": 2,
+          "state": "completed",
+          "progress": 60,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000002-2-object-001",
+          "definitionId": "washing-machine-brick",
+          "location": {
+            "x": 24,
+            "y": 8
+          },
+          "objectOrientation": 1,
+          "placementSequence": 2,
+          "state": "completed",
+          "progress": 60,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        }
+      ],
+      "washingObjects": [
+        {
+          "placedObjectId": "object:24:6",
+          "objectId": "object.washing-machine",
+          "anchorTile": {
+            "x": 24,
+            "y": 6
+          },
+          "orientation": 1
+        },
+        {
+          "placedObjectId": "object:24:8",
+          "objectId": "object.washing-machine",
+          "anchorTile": {
+            "x": 24,
+            "y": 8
+          },
+          "orientation": 1
+        }
+      ]
+    },
+    {
+      "quarterTurns": 1,
+      "phase": "loaded",
+      "source": "accepted-q1-loaded-worker-snapshot.json",
+      "snapshotKind": "simulation/snapshot",
+      "tick": 4281,
+      "completedOrders": 61,
+      "washingOrders": [
+        {
+          "id": "room-template-000000000002-2-object-000",
+          "definitionId": "washing-machine-brick",
+          "location": {
+            "x": 24,
+            "y": 6
+          },
+          "objectOrientation": 1,
+          "placementSequence": 2,
+          "state": "completed",
+          "progress": 60,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000002-2-object-001",
+          "definitionId": "washing-machine-brick",
+          "location": {
+            "x": 24,
+            "y": 8
+          },
+          "objectOrientation": 1,
+          "placementSequence": 2,
+          "state": "completed",
+          "progress": 60,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        }
+      ],
+      "washingObjects": [
+        {
+          "placedObjectId": "object:24:6",
+          "objectId": "object.washing-machine",
+          "anchorTile": {
+            "x": 24,
+            "y": 6
+          },
+          "orientation": 1
+        },
+        {
+          "placedObjectId": "object:24:8",
+          "objectId": "object.washing-machine",
+          "anchorTile": {
+            "x": 24,
+            "y": 8
+          },
+          "orientation": 1
+        }
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "source": "assets/source/blender/utility.washing-machine.variants.blend",
+      "sha256": "fb4eccefc3809342b57e4b15822e68ee1a1d0060bc8d75acda288d07284f7e0b"
+    },
+    {
+      "source": "assets/source/blender/utility.washing-machine.angled.blend",
+      "sha256": "f2940130e2ec10ad814800bb15418441b48238881c3d038d69168d597f89e8ae"
+    }
+  ],
+  "mappingGitDiffEmpty": true
+}

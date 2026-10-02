@@ -1,0 +1,637 @@
+{
+  "publishedInventoryHead": "4f0ad8a7865504172fdfc416cce0440743b2fb78",
+  "washingPendingHead": "e2d1f3274026311d907f7961bf9ffbfb9ae50bc6",
+  "defaultObjectModels": [
+    {
+      "objectId": "object.bed",
+      "buildableId": "bed-wooden",
+      "footprintTiles": [
+        1,
+        2
+      ],
+      "assetId": "furniture.cell.cot.single",
+      "descriptor": "public/game-content/oblique-furniture.cell-cot.v1.json",
+      "source": "assets/source/blender/furniture.cell.cot.single.blend",
+      "sourceSha256": "9c4b72d8631c2d14c638df4d03a73b14d5a738aac55b642c7836ce2c398f76c7",
+      "frames": 72,
+      "nominalPixelsPerTile": 64,
+      "cameraTargetTiles": [
+        0.5,
+        1.0,
+        0.35
+      ],
+      "dedicatedAngledFilename": false,
+      "nativeEvidence": {
+        "status": "recorded native Cell q0, worker+SaveLoad+consumer negative",
+        "record": "docs/research/2026-10-02-cell-cot/README.md",
+        "rerunInThisAudit": false
+      },
+      "sourceFile": "assets/source/blender/furniture.cell.cot.single.blend"
+    },
+    {
+      "objectId": "object.medical-bed",
+      "buildableId": "medical-bed-wooden",
+      "footprintTiles": [
+        1,
+        2
+      ],
+      "assetId": "furniture.medical-bed.variants",
+      "descriptor": "public/game-content/oblique-furniture.medical-bed.v1.json",
+      "source": "assets/source/blender/furniture.medical-bed.variants.blend",
+      "sourceSha256": "1737b03a3ee1342e813e7096e0aef189f05d714d5a69437a8fe490c026d232be",
+      "frames": 72,
+      "nominalPixelsPerTile": 64,
+      "cameraTargetTiles": [
+        0.5,
+        1.0,
+        0.675
+      ],
+      "dedicatedAngledFilename": false,
+      "nativeEvidence": {
+        "status": "recorded native Infirmary q0, paired independent palettes+negative",
+        "record": "docs/research/2026-10-02-infirmary-export-alignment/player-acceptance.md",
+        "rerunInThisAudit": false
+      },
+      "sourceFile": "assets/source/blender/furniture.medical-bed.variants.blend"
+    },
+    {
+      "objectId": "object.toilet",
+      "buildableId": "toilet-brick",
+      "footprintTiles": [
+        1,
+        1
+      ],
+      "assetId": "fixture.cell.toilet_sink",
+      "descriptor": "public/game-content/oblique-cell-toilet.v1.json",
+      "source": "environment.mvp.catalog.blend",
+      "sourceSha256": "57db9afb7e48996cef9aaedda72b8e874e865eb56862ee4add8b177a9713887d",
+      "frames": 72,
+      "nominalPixelsPerTile": 64,
+      "cameraTargetTiles": [
+        0,
+        0,
+        0
+      ],
+      "dedicatedAngledFilename": false,
+      "nativeEvidence": {
+        "status": "recorded native Cell q0, worker+SaveLoad+consumer negative",
+        "record": "docs/research/2026-10-02-toilet-dense-alignment/README.md",
+        "rerunInThisAudit": false
+      },
+      "sourceFile": "assets/source/blender/environment.mvp.catalog.blend"
+    },
+    {
+      "objectId": "object.sink",
+      "buildableId": null,
+      "footprintTiles": [
+        1,
+        1
+      ],
+      "assetId": "fixture.cell.sink.handwash",
+      "descriptor": "public/game-content/oblique-fixture-cell-sink-handwash.v1.json",
+      "source": "assets/source/blender/fixture.cell.sink.handwash.blend",
+      "sourceSha256": "ffcf0973794e39e59b5ee65e259d7149daf616bd0518a1c78a1c5f5a9b502158",
+      "frames": 72,
+      "nominalPixelsPerTile": 64,
+      "cameraTargetTiles": [
+        0.5,
+        0.5,
+        0.505
+      ],
+      "dedicatedAngledFilename": false,
+      "nativeEvidence": {
+        "status": "defined but no buildable; deliberate content boundary",
+        "record": "docs/research/2026-10-02-handwash-sink-alignment/README.md",
+        "rerunInThisAudit": false
+      },
+      "sourceFile": "assets/source/blender/fixture.cell.sink.handwash.blend"
+    },
+    {
+      "objectId": "object.shower-head",
+      "buildableId": "shower-head-brick",
+      "footprintTiles": [
+        1,
+        1
+      ],
+      "assetId": "fixture.shower.head",
+      "descriptor": "public/game-content/oblique-shower-head.v1.json",
+      "source": "assets/source/blender/fixture.shower.head.blend",
+      "sourceSha256": "ac0cbe6a3673dd8db19c76375ddeb3d6f23d0cab6aa2e56b298ad8a8e70806fe",
+      "frames": 72,
+      "nominalPixelsPerTile": 64,
+      "cameraTargetTiles": [
+        0.5,
+        0.5,
+        0.925
+      ],
+      "dedicatedAngledFilename": false,
+      "nativeEvidence": {
+        "status": "recorded native Shower q0/q1+SaveLoad+consumer negative",
+        "record": "docs/research/2026-10-02-shower-head-alignment/player-acceptance.md",
+        "rerunInThisAudit": false
+      },
+      "sourceFile": "assets/source/blender/fixture.shower.head.blend"
+    },
+    {
+      "objectId": "object.washing-machine",
+      "buildableId": "washing-machine-brick",
+      "footprintTiles": [
+        2,
+        1
+      ],
+      "assetId": "utility.washing-machine.variants",
+      "descriptor": "public/game-content/oblique-utility.washing-machine.v1.json",
+      "source": "assets/source/blender/utility.washing-machine.variants.blend",
+      "sourceSha256": "fb4eccefc3809342b57e4b15822e68ee1a1d0060bc8d75acda288d07284f7e0b",
+      "frames": 72,
+      "nominalPixelsPerTile": 64,
+      "cameraTargetTiles": [
+        1.0,
+        0.5,
+        0.8
+      ],
+      "dedicatedAngledFilename": false,
+      "nativeEvidence": {
+        "status": "dedicated model pending exclusive browser lease; older Laundry spec is not new-model acceptance",
+        "record": "tests/browser/dedicated-laundry-washing-machine-player-build.spec.ts",
+        "rerunInThisAudit": false
+      },
+      "sourceFile": "assets/source/blender/utility.washing-machine.variants.blend"
+    },
+    {
+      "objectId": "object.desk",
+      "buildableId": "desk-wooden",
+      "footprintTiles": [
+        2,
+        1
+      ],
+      "assetId": "furniture.office.desk.generic",
+      "descriptor": "public/game-content/oblique-furniture-office-desk-generic.v1.json",
+      "source": "assets/source/blender/furniture.office.desk.generic.blend",
+      "sourceSha256": "87ecf22ec7f4d82e5c2c47bb18870b8ef060a84759cb55d38b131fc34e72e11b",
+      "frames": 72,
+      "nominalPixelsPerTile": 64,
+      "cameraTargetTiles": [
+        1.0,
+        0.5,
+        0.6349999904632568
+      ],
+      "dedicatedAngledFilename": false,
+      "nativeEvidence": {
+        "status": "recorded native Reception q0/q1+SaveLoad+consumer negative",
+        "record": "docs/research/2026-10-02-generic-office-desk-alignment/player-acceptance.md",
+        "rerunInThisAudit": false
+      },
+      "sourceFile": "assets/source/blender/furniture.office.desk.generic.blend"
+    },
+    {
+      "objectId": "object.chair",
+      "buildableId": "chair-wooden",
+      "footprintTiles": [
+        1,
+        1
+      ],
+      "assetId": "furniture.chair.wooden",
+      "descriptor": "public/game-content/oblique-cell-chair.v1.json",
+      "source": "assets/source/blender/furniture.chair.wooden.blend",
+      "sourceSha256": "dab33079c7a42b2967950bab72048953270520383adbf3873a65aeb8e1b6687d",
+      "frames": 72,
+      "nominalPixelsPerTile": 64,
+      "cameraTargetTiles": [
+        0.5,
+        0.5,
+        0.6600000262260437
+      ],
+      "dedicatedAngledFilename": false,
+      "nativeEvidence": {
+        "status": "recorded native individual q0 and genuine rotated Reception q1",
+        "record": "docs/research/2026-10-02-wooden-chair-alignment/player-acceptance.md",
+        "rerunInThisAudit": false
+      },
+      "sourceFile": "assets/source/blender/furniture.chair.wooden.blend"
+    },
+    {
+      "objectId": "object.stove",
+      "buildableId": "stove-brick",
+      "footprintTiles": [
+        2,
+        1
+      ],
+      "assetId": "furniture.kitchen.stove.variants",
+      "descriptor": "public/game-content/oblique-furniture.kitchen-stove.v1.json",
+      "source": "assets/source/blender/furniture.kitchen.stove.angled.blend",
+      "sourceSha256": "540c8b22be73848bb1520fae9ffeabfce7711bb0c629161e529b6d6ae33ca5fc",
+      "frames": 72,
+      "nominalPixelsPerTile": 64,
+      "cameraTargetTiles": [
+        1.0,
+        0.5,
+        1.1230000257492065
+      ],
+      "dedicatedAngledFilename": true,
+      "nativeEvidence": {
+        "status": "recorded dedicated-model Kitchen q0/q1+SaveLoad+consumer negative",
+        "record": "docs/research/2026-10-02-kitchen-stove-angled/README.md",
+        "rerunInThisAudit": false
+      },
+      "sourceFile": "assets/source/blender/furniture.kitchen.stove.angled.blend"
+    },
+    {
+      "objectId": "object.prep-counter",
+      "buildableId": "prep-counter-brick",
+      "footprintTiles": [
+        2,
+        1
+      ],
+      "assetId": "furniture.kitchen.prep-counter.variants",
+      "descriptor": "public/game-content/oblique-furniture.kitchen-prep-counter.v1.json",
+      "source": "assets/source/blender/furniture.kitchen.prep-counter.angled.blend",
+      "sourceSha256": "b20bffb79d6ffe66a6c741fc420bd163651faa4813ca4d77740eb3dd55914a8a",
+      "frames": 72,
+      "nominalPixelsPerTile": 64,
+      "cameraTargetTiles": [
+        1.0,
+        0.5,
+        0.8100000619888306
+      ],
+      "dedicatedAngledFilename": true,
+      "nativeEvidence": {
+        "status": "recorded dedicated-model Kitchen q0/q1+SaveLoad+consumer negative",
+        "record": "docs/research/2026-10-02-kitchen-prep-counter-angled/README.md",
+        "rerunInThisAudit": false
+      },
+      "sourceFile": "assets/source/blender/furniture.kitchen.prep-counter.angled.blend"
+    },
+    {
+      "objectId": "object.fridge",
+      "buildableId": "fridge-brick",
+      "footprintTiles": [
+        1,
+        1
+      ],
+      "assetId": "furniture.kitchen.fridge.variants",
+      "descriptor": "public/game-content/oblique-furniture.kitchen-fridge.v1.json",
+      "source": "assets/source/blender/furniture.kitchen.fridge.angled.blend",
+      "sourceSha256": "d85097c30f524948f3e3c9c82d0a15b11eea956a680227569c37d6e52a6a52bc",
+      "frames": 72,
+      "nominalPixelsPerTile": 64,
+      "cameraTargetTiles": [
+        0.5,
+        0.5,
+        1.1999999284744263
+      ],
+      "dedicatedAngledFilename": true,
+      "nativeEvidence": {
+        "status": "recorded dedicated-model Kitchen q0/q1+SaveLoad+consumer negative",
+        "record": "docs/research/2026-10-02-kitchen-fridge-angled/README.md",
+        "rerunInThisAudit": false
+      },
+      "sourceFile": "assets/source/blender/furniture.kitchen.fridge.angled.blend"
+    },
+    {
+      "objectId": "object.dining-table",
+      "buildableId": "dining-table-wooden",
+      "footprintTiles": [
+        3,
+        2
+      ],
+      "assetId": "furniture.dining.table.wooden",
+      "descriptor": "public/game-content/oblique-furniture.canteen-dining-table.v1.json",
+      "source": "assets/source/blender/furniture.canteen.dining-table.blend",
+      "sourceSha256": "c1a1e8b0cfd2e47fe420ebbaa3eeb72c426d896d0a42b5a708c9bcbb83230fd1",
+      "frames": 72,
+      "nominalPixelsPerTile": 64,
+      "cameraTargetTiles": [
+        1.5,
+        1.0,
+        0.4725
+      ],
+      "dedicatedAngledFilename": false,
+      "nativeEvidence": {
+        "status": "recorded native Canteen q0/q1+SaveLoad+consumer negative",
+        "record": "docs/research/2026-10-02-canteen-dining-table-alignment/player-acceptance.md",
+        "rerunInThisAudit": false
+      },
+      "sourceFile": "assets/source/blender/furniture.canteen.dining-table.blend"
+    },
+    {
+      "objectId": "object.bench",
+      "buildableId": "bench-wooden",
+      "footprintTiles": [
+        2,
+        1
+      ],
+      "assetId": "furniture.corridor.bench.variants",
+      "descriptor": "public/game-content/oblique-canteen-bench.v1.json",
+      "source": "assets/source/blender/furniture.corridor.bench.blend",
+      "sourceSha256": "3c07ae8916f36090803b05e09addb26458a704a674431ba786ccddee5e78b867",
+      "frames": 72,
+      "nominalPixelsPerTile": 64,
+      "cameraTargetTiles": [
+        1.0,
+        0.5,
+        0.44325
+      ],
+      "dedicatedAngledFilename": false,
+      "nativeEvidence": {
+        "status": "recorded native Holding Cell q0/q1+SaveLoad+consumer negative",
+        "record": "docs/research/2026-10-02-wooden-bench-alignment/player-acceptance.md",
+        "rerunInThisAudit": false
+      },
+      "sourceFile": "assets/source/blender/furniture.corridor.bench.blend"
+    },
+    {
+      "objectId": "object.bookshelf",
+      "buildableId": "bookshelf-wooden",
+      "footprintTiles": [
+        2,
+        1
+      ],
+      "assetId": "furniture.library.bookshelf.variants",
+      "descriptor": "public/game-content/oblique-furniture.library-bookshelf.v1.json",
+      "source": "assets/source/blender/furniture.library.bookshelf.variants.blend",
+      "sourceSha256": "64a18ea80a6b3f97d3b3b389f82c3f52b282cd6c29e343d4f971eab9c0b42c02",
+      "frames": 72,
+      "nominalPixelsPerTile": 64,
+      "cameraTargetTiles": [
+        1.0,
+        0.5,
+        1.05
+      ],
+      "dedicatedAngledFilename": false,
+      "nativeEvidence": {
+        "status": "native spec present; no scoped committed acceptance receipt located in this research inventory",
+        "record": "tests/browser/bookshelf-player-build.spec.ts",
+        "rerunInThisAudit": false
+      },
+      "sourceFile": "assets/source/blender/furniture.library.bookshelf.variants.blend"
+    },
+    {
+      "objectId": "object.medicine-cabinet",
+      "buildableId": "medicine-cabinet-wooden",
+      "footprintTiles": [
+        1,
+        1
+      ],
+      "assetId": "fixture.medicine-cabinet.variants",
+      "descriptor": "public/game-content/oblique-fixture.medicine-cabinet.v1.json",
+      "source": "assets/source/blender/fixture.medicine-cabinet.variants.blend",
+      "sourceSha256": "17670457233caef94855cdaf64b2cf1bd3c8623318941cbd3ce2e5c50224ac75",
+      "frames": 72,
+      "nominalPixelsPerTile": 64,
+      "cameraTargetTiles": [
+        0.5,
+        0.5,
+        0.59
+      ],
+      "dedicatedAngledFilename": false,
+      "nativeEvidence": {
+        "status": "recorded native Infirmary q0, standalone selected source meshes",
+        "record": "docs/research/2026-10-02-infirmary-export-alignment/player-acceptance.md",
+        "rerunInThisAudit": false
+      },
+      "sourceFile": "assets/source/blender/fixture.medicine-cabinet.variants.blend"
+    },
+    {
+      "objectId": "object.security-console",
+      "buildableId": "security-console-brick",
+      "footprintTiles": [
+        2,
+        1
+      ],
+      "assetId": "utility.security-console.variants",
+      "descriptor": "public/game-content/oblique-utility.security-console.v1.json",
+      "source": "assets/source/blender/utility.security-console.variants.blend",
+      "sourceSha256": "7b7c755e96cc460c6afa42d8a5e4a1f44480a21a6483cea122949290848db5d7",
+      "frames": 72,
+      "nominalPixelsPerTile": 64,
+      "cameraTargetTiles": [
+        1.0,
+        0.5,
+        0.65
+      ],
+      "dedicatedAngledFilename": false,
+      "nativeEvidence": {
+        "status": "recorded native SecurityOffice q1+SaveLoad; actual yaw-sign negative",
+        "record": "docs/research/2026-10-02-rotated-console-rendering/README.md",
+        "rerunInThisAudit": false
+      },
+      "sourceFile": "assets/source/blender/utility.security-console.variants.blend"
+    },
+    {
+      "objectId": "object.storage-rack",
+      "buildableId": "storage-rack-wooden",
+      "footprintTiles": [
+        1,
+        1
+      ],
+      "assetId": "furniture.storage.rack.wooden",
+      "descriptor": "public/game-content/oblique-cell-storage-rack.v1.json",
+      "source": "assets/source/blender/furniture.storage.rack.wooden.blend",
+      "sourceSha256": "3806d996ce473e166aaa00bef379655aac2c41ef4d45f7f32b48a893ff4b4eed",
+      "frames": 72,
+      "nominalPixelsPerTile": 64,
+      "cameraTargetTiles": [
+        0.5,
+        0.5,
+        0.7039999961853027
+      ],
+      "dedicatedAngledFilename": false,
+      "nativeEvidence": {
+        "status": "recorded native individual q0; genuine rotated StorageRoom then Unzone q1",
+        "record": "docs/research/2026-10-02-generic-wooden-rack-alignment/player-acceptance.md",
+        "rerunInThisAudit": false
+      },
+      "sourceFile": "assets/source/blender/furniture.storage.rack.wooden.blend"
+    },
+    {
+      "objectId": "object.loading-dock-door",
+      "buildableId": "loading-dock-door-wooden",
+      "footprintTiles": [
+        3,
+        1
+      ],
+      "assetId": "utility.loading-dock-door.variants",
+      "descriptor": "public/game-content/oblique-utility.loading-dock-door.v1.json",
+      "source": "assets/source/blender/utility.loading-dock-door.variants.blend",
+      "sourceSha256": "9a8b5cd29ed5809ec1c3f2c6f36f3d97d3a9a7f69551c0743e096591c26908c4",
+      "frames": 72,
+      "nominalPixelsPerTile": 64,
+      "cameraTargetTiles": [
+        1.5,
+        0.5,
+        0.89
+      ],
+      "dedicatedAngledFilename": false,
+      "nativeEvidence": {
+        "status": "native spec present; no scoped committed acceptance receipt located in this research inventory",
+        "record": "tests/browser/loading-dock-door-player-build.spec.ts",
+        "rerunInThisAudit": false
+      },
+      "sourceFile": "assets/source/blender/utility.loading-dock-door.variants.blend"
+    },
+    {
+      "objectId": "object.waste-bin",
+      "buildableId": "waste-bin-brick",
+      "footprintTiles": [
+        1,
+        1
+      ],
+      "assetId": "fixture.cell.waste_bin",
+      "descriptor": "public/game-content/oblique-fixture-cell-waste-bin.v1.json",
+      "source": "assets/source/blender/fixture.cell.waste_bin.blend",
+      "sourceSha256": "acac99dd51895f561f0b25b1e7453c0290141ed6c7953f123575b2cb8bb95963",
+      "frames": 72,
+      "nominalPixelsPerTile": 64,
+      "cameraTargetTiles": [
+        0.5,
+        0.5,
+        0.4
+      ],
+      "dedicatedAngledFilename": false,
+      "nativeEvidence": {
+        "status": "accepted Yard override is different source; no scoped default-bin native receipt located in this research inventory",
+        "record": "docs/research/2026-10-02-yard-steel-waste-bin/README.md",
+        "rerunInThisAudit": false
+      },
+      "sourceFile": "assets/source/blender/fixture.cell.waste_bin.blend"
+    },
+    {
+      "objectId": "object.utility-panel",
+      "buildableId": "utility-panel-brick",
+      "footprintTiles": [
+        1,
+        1
+      ],
+      "assetId": "utility.utility-panel.variants",
+      "descriptor": "public/game-content/oblique-utility.utility-panel.v1.json",
+      "source": "assets/source/blender/utility.utility-panel.variants.blend",
+      "sourceSha256": "05281b06512f7dabab247b183568b249aa8df04e912c7ea89a209e918f9775ea",
+      "frames": 72,
+      "nominalPixelsPerTile": 64,
+      "cameraTargetTiles": [
+        0.5,
+        0.5,
+        0.65
+      ],
+      "dedicatedAngledFilename": false,
+      "nativeEvidence": {
+        "status": "native spec present; no scoped committed acceptance receipt located in this research inventory",
+        "record": "tests/browser/utility-panel-player-build.spec.ts",
+        "rerunInThisAudit": false
+      },
+      "sourceFile": "assets/source/blender/utility.utility-panel.variants.blend"
+    },
+    {
+      "objectId": "object.exercise-station",
+      "buildableId": "exercise-station",
+      "footprintTiles": [
+        2,
+        1
+      ],
+      "assetId": "furniture.yard.exercise-station",
+      "descriptor": "public/game-content/oblique-furniture.yard-exercise-station.v1.json",
+      "source": "assets/source/blender/furniture.yard.exercise-station.blend",
+      "sourceSha256": "b1b8c2b648f3e34bff4b03755e57ece30b37b557ffcbb1bb805de4c3de3e36b7",
+      "frames": 72,
+      "nominalPixelsPerTile": 64,
+      "cameraTargetTiles": [
+        1.0,
+        0.5,
+        0.82
+      ],
+      "dedicatedAngledFilename": false,
+      "nativeEvidence": {
+        "status": "recorded native individual Yard placement q0+SaveLoad+consumer negative",
+        "record": "docs/research/2026-10-02-exercise-station-player-build/README.md",
+        "rerunInThisAudit": false
+      },
+      "sourceFile": "assets/source/blender/furniture.yard.exercise-station.blend"
+    }
+  ],
+  "constructibleObjectCount": 20,
+  "definedObjectCount": 21,
+  "noNativeRunsInThisInventoryAudit": true,
+  "contextualModels": [
+    {
+      "roomCatalogId": "room.yard",
+      "objectId": "object.bench",
+      "assetId": "furniture.yard.steel-bench",
+      "descriptor": "public/game-content/oblique-furniture.yard-steel-bench.v1.json",
+      "source": "assets/source/blender/furniture.yard.steel-bench.blend",
+      "frames": 72,
+      "acceptedContextOverridePreserved": true
+    },
+    {
+      "roomCatalogId": "room.yard",
+      "objectId": "object.waste-bin",
+      "assetId": "fixture.yard.steel-waste-bin",
+      "descriptor": "public/game-content/oblique-fixture.yard-steel-waste-bin.v1.json",
+      "source": "assets/source/blender/fixture.yard.steel-waste-bin.blend",
+      "frames": 72,
+      "acceptedContextOverridePreserved": true
+    },
+    {
+      "roomCatalogId": "room.common-room",
+      "objectId": "object.bench",
+      "assetId": "furniture.common-room.upholstered-bench",
+      "descriptor": "public/game-content/oblique-furniture.common-room-bench.v1.json",
+      "source": "assets/source/blender/furniture.common-room.upholstered-bench.blend",
+      "frames": 72,
+      "acceptedContextOverridePreserved": true
+    },
+    {
+      "roomCatalogId": "room.classroom",
+      "objectId": "object.chair",
+      "assetId": "furniture.classroom.school-chair",
+      "descriptor": "public/game-content/oblique-furniture.classroom-chair.v1.json",
+      "source": "assets/source/blender/furniture.classroom.school-chair.blend",
+      "frames": 72,
+      "acceptedContextOverridePreserved": true
+    },
+    {
+      "roomCatalogId": "room.storage-room",
+      "objectId": "object.storage-rack",
+      "assetId": "furniture.storage-room.timber-rack",
+      "descriptor": "public/game-content/oblique-furniture.storage-room-rack.v1.json",
+      "source": "assets/source/blender/furniture.storage-room.timber-rack.blend",
+      "frames": 72,
+      "acceptedContextOverridePreserved": true
+    },
+    {
+      "roomCatalogId": "room.staff-room",
+      "objectId": "object.desk",
+      "assetId": "furniture.office.desk.employee.variants",
+      "descriptor": "public/game-content/oblique-reception-employee-desk.v1.json",
+      "source": "assets/source/blender/furniture.office.desk.employee.blend",
+      "frames": 72,
+      "acceptedContextOverridePreserved": true
+    }
+  ],
+  "pendingDedicatedWashingModel": {
+    "source": "assets/source/blender/utility.washing-machine.angled.blend",
+    "sourceSha256": "f2940130e2ec10ad814800bb15418441b48238881c3d038d69168d597f89e8ae",
+    "descriptor": "public/game-content/oblique-utility.washing-machine.v1.json",
+    "frames": 72,
+    "cameraTargetTiles": [
+      1.0,
+      0.5,
+      0.7825000286102295
+    ],
+    "nativeAccepted": false,
+    "nativePaletteCalibrated": false
+  },
+  "nativeEvidenceBoundary": "Recorded evidence was read from the exact published head; no historical browser tests were rerun or older images newly inspected. No claim that absent scoped research receipt means a test was never executed.",
+  "dedicatedWashingNativeFollowup": {
+    "sourceCommit": "3fc97ac2797ada48ddbd65dbd95fc11da1a348f5",
+    "actualTerminalCases": 3,
+    "bothQuarterTurns": [
+      0,
+      1
+    ],
+    "defaultConsumerNegativePixelFailuresPerOrientation": 4,
+    "exactRestored": true,
+    "record": "docs/research/2026-10-02-laundry-washing-machine-angled/native-final-verification.json",
+    "historicalInventoryUnchanged": true
+  }
+}

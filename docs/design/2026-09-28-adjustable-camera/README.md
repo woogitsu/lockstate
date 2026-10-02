@@ -1230,3 +1230,69 @@ zero objects or one replacement. Six actual packed-session/save-load/render-feed
 cases reproduce it. The adapter must use supplied physical state authoritatively
 while preserving the explicit legacy order-only fallback. No new persistence or
 player-copy decision is required for that correction.
+
+### Following Laundry and camera delivery
+
+The nine-case wall/ownership checkpoint is published as draft PR1981 at
+`dd45d8919be0843205896636429c5af83d3d59d0`, stacked after PR1978. Keep that head
+frozen. Following work is isolated on `codex/integrate-laundry-renderer-20261002`.
+It now integrates the dedicated Laundry washer, #1980's authoritative physical
+render registry, #1979's horizontal wheel guards in both views, and #1982's
+minimal four-field mouse-camera termination on actual canvas exit. Removed
+completed-order history no longer draws nonexistent or duplicated furniture;
+an explicitly absent physical registry retains the documented legacy fallback.
+No new format, palette, player-copy or camera-persistence decision is introduced.
+
+Root's independent scopes pass 63 ownership/model cases, 75 integration cases,
+115 rendering cases and 31 camera/suite-partition cases (overlap is not counted
+as a unique total). Both TypeScript targets and the production build pass at
+`13a6c582e6`: `worker-Bjll0lxr.js` (436.94 kB), SHA-256
+`4af958b3cdd115f8b60771c9308f9ca105aab7d2aa25176eea316d5f3f344347`,
+client `index-CC0PWSiU.js`, CSS `index-BtHvjcB7.css`. Washer Save/Load acceptance
+now additionally requires two distinct exact V8 source-order owners. Canonical
+suite routing sends washer/wheel/gameout fixtures through the built client;
+the separate read-only renderer-observer regression remains a source-server test.
+Combined following-client native coverage is still queued, so the upstream
+accepted washer and camera runs are not presented as tests of this new build.
+
+The published [wheel native record](../../research/2026-10-02-camera-wheel-axis/native-acceptance.md)
+preserves actual horizontal negatives in each renderer and exact restoration;
+[camera canvas-exit proof](../../research/2026-10-02-camera-gameout/README.md)
+preserves two real input negatives and eight restored cases, including Build
+capture and retained preview controls. The removed/rebuilt object's actual native
+scenario is being calibrated without replacing the worker or renderer state.
+
+Blender work continues on the retained Cell toilet: 25 actual fittings, hinges
+and cistern details have been added to its original 19 meshes/eight materials.
+An independent normal audit caught an inward valve torus; the corrected outward
+source and all 72 reproducible frames are separately published, with winding
+producer negatives retained. Its corrected native pixels and the dedicated waste
+bin remain queued. The next existing utility panel has a confirmed inward-face
+source audit and a scoped topology/detail correction; no imaginary buildable is
+introduced. Full release gates still precede every merge and hosted delivery.
+
+### Following integration acceptance — 2026-10-03
+
+The Laundry/camera client now passes a fresh root combined seven-case native
+artifact run in2.6minutes: both horizontal-wheel views, actual capacity build,
+normal/rotated Laundry with exact V8 object owners through Save/Load, and both
+middle/right camera exit/reentry cases. [Actual captures and worker/input receipts](../../research/2026-10-03-laundry-camera-integrated/README.md)
+are published. This closes that queued local check, not the full hosted release.
+
+The separate first-CI repair also completes native acceptance for the four
+actual View mouse cases, four Build/pose cases, five authored actor cases,
+four-yaw retained-origin room picking and all five whole-square keyboard routes.
+The actual actor-visibility producer mutation gives zero pixels and RED; exact
+restoration passes all five with old/new decoders agreeing on the same captures.
+One keyboard consumer had rescanned into a different cell after an alert grew
+the minimap; its corrected measured-column aim retains exact origins and passes.
+[Root repair receipts](https://github.com/woogitsu/lockstate/blob/873093cae8/docs/research/2026-10-02-browser-ci-timecap/root-controls-restoration.md)
+are on `codex/integrate-first-ci-repair-20261002`; they have not been silently
+applied to the frozen candidate head or represented as full-suite success.
+
+Art now owns the single native browser for Bin, corrected Cell toilet and the
+new physical Utility panel. Blender desk details proceed separately. Another
+agent checks shell reversal ownership and a third audits camera/HUD input.
+The completed, mutation-checked CI split proposal is offered to the owner;
+production workflow is unchanged while the decision is pending. Continue game
+development and preserve each coherent chunk on GitHub during that wait.

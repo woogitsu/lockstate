@@ -886,6 +886,20 @@ can answer is answered by
 `tests/foundation/refusal-surface-enumeration-contract.test.ts` rather than by
 this table.
 
+#### Vocabulary update 2026-10-03: owner-approved saved-object ownership refusal
+
+The current vocabulary has **49** protocol reasons and **49** matching alert
+keys in each bundled locale. The additional member is
+`construction.object-ownership-unknown`, approved by the owner for
+[#1975](https://github.com/woogitsu/lockstate/issues/1975): an ambiguous saved
+object makes the coupled room plan reversal refuse atomically. The earlier
+48-member measurements above describe their dated commits and remain intact.
+The enumeration gate retains its nonempty count guards and exact suffix-set
+comparisons for both locales. This update changes the reason vocabulary; it
+does not claim that the historical browser surface table proves this new path.
+`docs/PLAYER_STRINGS.md` is regenerated from the shipped English catalogue,
+including the approved sentence and its current source coordinate.
+
 #### The counting rule, first, because the number is meaningless without it
 
 - A **press** is a control, or a world gesture, that dispatches one command

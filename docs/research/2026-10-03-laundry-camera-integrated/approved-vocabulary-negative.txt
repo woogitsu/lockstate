@@ -1,0 +1,98 @@
+pnpm : $ vitest run "tests/foundation/player-string-inventory-contract.test.ts" "tests/foundation/refusal-surface-enume
+ration-contract.test.ts" "--maxWorkers=2"
+At line:2 char:825
++ ... w($false)); pnpm --config.verify-deps-before-run=false test tests/fou ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...--maxWorkers=2":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-laundry-renderer-integration-20261002
+
+ ❯ tests/foundation/player-string-inventory-contract.test.ts (6 tests | 1 failed) 219ms
+     × is current: the committed file is what the generator produces from the locale source today 205ms
+ ❯ tests/foundation/refusal-surface-enumeration-contract.test.ts (10 tests | 1 failed) 439ms
+     × reads the three vocabularies out of the code, and they are the sizes the plan records 7ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/foundation/player-string-inventory-contract.test.ts > docs/PLAYER_STRINGS.md: the record reservation 4 owe
+s the owner > is current: the committed file is what the generator produces from the locale source today
+AssertionError: docs/PLAYER_STRINGS.md disagrees with src/content/default-locale-en.ts. Run `pnpm content:player-string
+s` and commit the result -- do not edit docs/PLAYER_STRINGS.md by hand, and do not edit this test to make it pass, beca
+use a stale record is the entire defect this file exists to prevent: expected '# Every sentence this game can show a…' 
+to be '# Every sentence this game can show a…' // Object.is equality
+
+- Expected
++ Received
+
+@@ -167,11 +167,11 @@
+  | `hud.alert.dismiss` | `Clear this alert` | `src/content/default-locale-en.ts:969`, `'hud.alert.dismiss'` |
+  | `hud.alert.refusal.admit.no-accommodation` | `Nobody was admitted — there is no room to put a prisoner in yet.` | `
+src/content/default-locale-en.ts:993`, `'hud.alert.refusal.admit.no-accommodation'` |
+  | `hud.alert.refusal.admit.population-full` | `Nobody was admitted — this prison is holding as many people as it can.
+` | `src/content/default-locale-en.ts:994`, `'hud.alert.refusal.admit.population-full'` |
+  | `hud.alert.refusal.build.duplicate-order` | `The build order failed — that order already exists.` | `src/content/de
+fault-locale-en.ts:1005`, `'hud.alert.refusal.build.duplicate-order'` |
+  | `hud.alert.refusal.build.out-of-bounds` | `The build order failed — that tile is outside the map.` | `src/content/d
+efault-locale-en.ts:1006`, `'hud.alert.refusal.build.out-of-bounds'` |
+- | `hud.alert.refusal.construction.object-ownership-unknwon` | `This saved object has no clear construction owner. Rem
+ove it directly before undoing or cancelling this room plan.` | `src/content/default-locale-en.ts:1007`, `'hud.alert.re
+fusal.construction.object-ownership-unknwon'` |
++ | `hud.alert.refusal.construction.object-ownership-unknown` | `This saved object has no clear construction owner. Rem
+ove it directly before undoing or cancelling this room plan.` | `src/content/default-locale-en.ts:1007`, `'hud.alert.re
+fusal.construction.object-ownership-unknown'` |
+  | `hud.alert.refusal.build.unbuildable` | `The build order failed — nothing can be built on that tile.` | `src/conten
+t/default-locale-en.ts:1008`, `'hud.alert.refusal.build.unbuildable'` |
+  | `hud.alert.refusal.build.unbuildable-terrain` | `The build order failed — the ground there cannot be built on.` | `
+src/content/default-locale-en.ts:1009`, `'hud.alert.refusal.build.unbuildable-terrain'` |
+  | `hud.alert.refusal.build.unknown-buildable` | `The build order failed — that is not something this prison knows how
+ to build.` | `src/content/default-locale-en.ts:1025`, `'hud.alert.refusal.build.unknown-buildable'` |
+  | `hud.alert.refusal.build.unowned-land` | `The build order failed — you do not own that land.` | `src/content/defaul
+t-locale-en.ts:1026`, `'hud.alert.refusal.build.unowned-land'` |
+  | `hud.alert.refusal.build.water-blocked` | `The build order failed — there is water on that tile.` | `src/content/de
+fault-locale-en.ts:1027`, `'hud.alert.refusal.build.water-blocked'` |
+
+ ❯ tests/foundation/player-string-inventory-contract.test.ts:87:7
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/foundation/refusal-surface-enumeration-contract.test.ts > the refusal surfaces issue #1160 criterion 4 is 
+counted in > reads the three vocabularies out of the code, and they are the sizes the plan records
+AssertionError: expected [ …(49) ] to deeply equal [ …(49) ]
+
+- Expected
++ Received
+
+@@ -9,11 +9,11 @@
+    "hud.alert.refusal.build.unowned-land",
+    "hud.alert.refusal.build.water-blocked",
+    "hud.alert.refusal.cancel-build-order.stale-cancellation",
+    "hud.alert.refusal.cancel-purchase.not-pending",
+    "hud.alert.refusal.construction.materials-unfunded",
+-   "hud.alert.refusal.construction.object-ownership-unknown",
++   "hud.alert.refusal.construction.object-ownership-unknwon",
+    "hud.alert.refusal.dismiss.unknown-staff",
+    "hud.alert.refusal.edit-regime-block.unknown-block",
+    "hud.alert.refusal.edit-regime-block.unknown-group",
+    "hud.alert.refusal.hire.insufficient-funds",
+    "hud.alert.refusal.hire.no-duty-for-role",
+
+ ❯ tests/foundation/refusal-surface-enumeration-contract.test.ts:515:23
+    513|
+    514|     // Set-identical member for member, not merely equinumerous.
+    515|     expect(alertKeys).toEqual(reasonSuffixes.map((reason) => `hud.aler…
+       |                       ^
+    516|     expect(alertKeysPl).toEqual(alertKeys);
+    517|     expect(hostKeysPl).toEqual(hostKeys);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  2 failed | 14 passed (16)
+   Start at  00:28:02
+   Duration  1.38s (transform 345ms, setup 0ms, import 1.04s, tests 658ms, environment 0ms)
+
+[ELIFECYCLE] Test failed. See above for more details.

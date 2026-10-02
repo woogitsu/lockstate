@@ -1,0 +1,93 @@
+pnpm : $ node --experimental-transform-types --disable-warning=ExperimentalWarning tests/browser/run-suite.ts --suite a
+rtifact "--config" "tests/browser/.local-integrated-layout.config.ts" "--workers=1" "--output" "C:\\Users\\matma\\Docum
+ents\\Rozwój gier\\hud-angle-panel-review-runtime\\gameout-native-original"
+At line:2 char:1197
++ ... EXITCODE }; pnpm test:artifact --config tests/browser/.local-integrat ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ node --experi...ative-original":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(node:5408) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 2 tests using 1 worker
+
+(node:64356) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:64356) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 tests\browser\oblique-camera-gameout-native.spec.ts:5:3 › native middle camera drag ends at HUD exit and cannot resume on reentry (3.2s)
+(node:39732) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:39732) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 tests\browser\oblique-camera-gameout-native.spec.ts:5:3 › native right camera drag ends at HUD exit and cannot resume on reentry (2.8s)
+
+
+  1) tests\browser\oblique-camera-gameout-native.spec.ts:5:3 › native middle camera drag ends at HUD exit and cannot resume on reentry 
+
+    Error: locator.boundingBox: Error: strict mode violation: locator('.hud-build__category') resolved to 2 elements:
+        1) <select aria-label="View" class="hud-build__category">…</select> aka getByLabel('View')
+        2) <select aria-label="Category" class="hud-build__category">…</select> aka getByLabel('Category')
+
+    Call log:
+    [2m  - waiting for locator('.hud-build__category')[22m
+
+
+      27 |     const minimap = page.locator('.hud-minimap__viewport');
+      28 |     const selector = page.locator('.hud-build__category');
+    > 29 |     const box = await selector.boundingBox();
+         |                                ^
+      30 |     expect(box).not.toBeNull();
+      31 |     const hud = { x: box!.x + box!.width / 2, y: box!.y + box!.height / 2 };
+      32 |     const start = { x: box!.x - 380, y: hud.y };
+        at C:\Users\matma\Documents\Rozwój gier\hud-camera-gameout-audit-20261002\tests\browser\oblique-camera-gameout-native.spec.ts:29:32
+
+    Error Context: ..\hud-angle-panel-review-runtime\gameout-native-original\oblique-camera-gameout-nat-a8e5e-nd-cannot-resume-on-reentry\error-context.md
+
+  2) tests\browser\oblique-camera-gameout-native.spec.ts:5:3 › native right camera drag ends at HUD exit and cannot resume on reentry 
+
+    Error: locator.boundingBox: Error: strict mode violation: locator('.hud-build__category') resolved to 2 elements:
+        1) <select aria-label="View" class="hud-build__category">…</select> aka getByLabel('View')
+        2) <select aria-label="Category" class="hud-build__category">…</select> aka getByLabel('Category')
+
+    Call log:
+    [2m  - waiting for locator('.hud-build__category')[22m
+
+
+      27 |     const minimap = page.locator('.hud-minimap__viewport');
+      28 |     const selector = page.locator('.hud-build__category');
+    > 29 |     const box = await selector.boundingBox();
+         |                                ^
+      30 |     expect(box).not.toBeNull();
+      31 |     const hud = { x: box!.x + box!.width / 2, y: box!.y + box!.height / 2 };
+      32 |     const start = { x: box!.x - 380, y: hud.y };
+        at C:\Users\matma\Documents\Rozwój gier\hud-camera-gameout-audit-20261002\tests\browser\oblique-camera-gameout-native.spec.ts:29:32
+
+    Error Context: ..\hud-angle-panel-review-runtime\gameout-native-original\oblique-camera-gameout-nat-545d7-nd-cannot-resume-on-reentry\error-context.md
+
+  2 failed
+    tests\browser\oblique-camera-gameout-native.spec.ts:5:3 › native middle camera drag ends at HUD exit and cannot resume on reentry 
+    tests\browser\oblique-camera-gameout-native.spec.ts:5:3 › native right camera drag ends at HUD exit and cannot resume on reentry 
+
+==============================================================================
+LOCKSTATE_BROWSER_SUITE_NO_RETRY suite=artifact reason=no-last-run-file
+Playwright left no readable test-results/.last-run.json, so the run failed before it
+could record which tests failed. That is not net::ERR_NETWORK_CHANGED; not retrying.
+==============================================================================
+
+[ELIFECYCLE] Command failed with exit code 1.

@@ -1,0 +1,16 @@
+pnpm : $ vitest run "tests/unit/oblique-pointer-picking-transform.test.ts"
+At line:2 char:174
++ ... +$env:PATH; pnpm test tests/unit/oblique-pointer-picking-transform.te ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...nsform.test.ts":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-oblique-ground-transform-audit-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  144 passed (144)
+   Start at  23:32:52
+   Duration  2.86s (transform 865ms, setup 0ms, import 2.32s, tests 431ms, environment 0ms)
+

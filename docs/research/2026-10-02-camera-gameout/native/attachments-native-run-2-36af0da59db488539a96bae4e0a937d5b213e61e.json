@@ -1,0 +1,306 @@
+{
+  "from": {
+    "x": 1013,
+    "y": 539
+  },
+  "to": {
+    "x": 1706.15625,
+    "y": 539
+  },
+  "expected": [
+    {
+      "x": 16,
+      "y": 16
+    },
+    {
+      "x": 17,
+      "y": 16
+    },
+    {
+      "x": 18,
+      "y": 16
+    },
+    {
+      "x": 19,
+      "y": 16
+    },
+    {
+      "x": 20,
+      "y": 16
+    },
+    {
+      "x": 21,
+      "y": 16
+    },
+    {
+      "x": 22,
+      "y": 16
+    }
+  ],
+  "target": "7 whole squares from 16, 16 | catalogue value 560",
+  "actualWorkerCommands": [
+    {
+      "type": "PlaceBuildOrder",
+      "orderId": "order-21e56836-328b-48e7-bd57-861cf94f844f",
+      "definitionId": "wall-brick",
+      "x": 16,
+      "y": 16,
+      "footprint": "square",
+      "transactionId": "build-606e3ab4-c894-4477-aef1-13c919cd162b"
+    },
+    {
+      "type": "PlaceBuildOrder",
+      "orderId": "order-e786fdde-a0fd-40d9-8327-bc948994c97a",
+      "definitionId": "wall-brick",
+      "x": 17,
+      "y": 16,
+      "footprint": "square",
+      "transactionId": "build-606e3ab4-c894-4477-aef1-13c919cd162b"
+    },
+    {
+      "type": "PlaceBuildOrder",
+      "orderId": "order-ce6b4fff-a60a-4e6a-8d22-b8b1d371ef2b",
+      "definitionId": "wall-brick",
+      "x": 18,
+      "y": 16,
+      "footprint": "square",
+      "transactionId": "build-606e3ab4-c894-4477-aef1-13c919cd162b"
+    },
+    {
+      "type": "PlaceBuildOrder",
+      "orderId": "order-adfd3e4c-674e-4a4d-a277-57f90f952c61",
+      "definitionId": "wall-brick",
+      "x": 19,
+      "y": 16,
+      "footprint": "square",
+      "transactionId": "build-606e3ab4-c894-4477-aef1-13c919cd162b"
+    },
+    {
+      "type": "PlaceBuildOrder",
+      "orderId": "order-7d48b79a-34d4-4c14-9e6e-78db90bcb6df",
+      "definitionId": "wall-brick",
+      "x": 20,
+      "y": 16,
+      "footprint": "square",
+      "transactionId": "build-606e3ab4-c894-4477-aef1-13c919cd162b"
+    },
+    {
+      "type": "PlaceBuildOrder",
+      "orderId": "order-c706c9e1-2765-4292-bc10-67e72d916be4",
+      "definitionId": "wall-brick",
+      "x": 21,
+      "y": 16,
+      "footprint": "square",
+      "transactionId": "build-606e3ab4-c894-4477-aef1-13c919cd162b"
+    },
+    {
+      "type": "PlaceBuildOrder",
+      "orderId": "order-c8200c75-ef1a-4247-aac0-b75437df1081",
+      "definitionId": "wall-brick",
+      "x": 22,
+      "y": 16,
+      "footprint": "square",
+      "transactionId": "build-606e3ab4-c894-4477-aef1-13c919cd162b"
+    }
+  ],
+  "events": [
+    {
+      "type": "pointerdown",
+      "target": "BUTTON",
+      "hit": "BUTTON",
+      "buttons": 1
+    },
+    {
+      "type": "mousedown",
+      "target": "BUTTON",
+      "hit": "BUTTON",
+      "buttons": 1
+    },
+    {
+      "type": "pointerup",
+      "target": "BUTTON",
+      "hit": "BUTTON",
+      "buttons": 0
+    },
+    {
+      "type": "mouseup",
+      "target": "BUTTON",
+      "hit": "BUTTON",
+      "buttons": 0
+    },
+    {
+      "type": "pointerout",
+      "target": "BUTTON",
+      "hit": "svg",
+      "buttons": 0
+    },
+    {
+      "type": "pointerdown",
+      "target": "svg",
+      "hit": "svg",
+      "buttons": 1
+    },
+    {
+      "type": "mousedown",
+      "target": "svg",
+      "hit": "svg",
+      "buttons": 1
+    },
+    {
+      "type": "pointerup",
+      "target": "svg",
+      "hit": "svg",
+      "buttons": 0
+    },
+    {
+      "type": "mouseup",
+      "target": "svg",
+      "hit": "svg",
+      "buttons": 0
+    },
+    {
+      "type": "pointerout",
+      "target": "svg",
+      "hit": "SPAN",
+      "buttons": 0
+    },
+    {
+      "type": "pointerdown",
+      "target": "SPAN",
+      "hit": "SPAN",
+      "buttons": 1
+    },
+    {
+      "type": "mousedown",
+      "target": "SPAN",
+      "hit": "SPAN",
+      "buttons": 1
+    },
+    {
+      "type": "pointerup",
+      "target": "SPAN",
+      "hit": "SPAN",
+      "buttons": 0
+    },
+    {
+      "type": "mouseup",
+      "target": "SPAN",
+      "hit": "SPAN",
+      "buttons": 0
+    },
+    {
+      "type": "pointerout",
+      "target": "SPAN",
+      "hit": "SPAN",
+      "buttons": 0
+    },
+    {
+      "type": "pointerdown",
+      "target": "SPAN",
+      "hit": "SPAN",
+      "buttons": 1
+    },
+    {
+      "type": "mousedown",
+      "target": "SPAN",
+      "hit": "SPAN",
+      "buttons": 1
+    },
+    {
+      "type": "pointerup",
+      "target": "SPAN",
+      "hit": "SPAN",
+      "buttons": 0
+    },
+    {
+      "type": "mouseup",
+      "target": "SPAN",
+      "hit": "SPAN",
+      "buttons": 0
+    },
+    {
+      "type": "pointerout",
+      "target": "SPAN",
+      "hit": "CANVAS",
+      "buttons": 0
+    },
+    {
+      "type": "pointerdown",
+      "target": "CANVAS",
+      "hit": "CANVAS",
+      "buttons": 1
+    },
+    {
+      "type": "mousedown",
+      "target": "CANVAS",
+      "hit": "CANVAS",
+      "buttons": 1
+    },
+    {
+      "type": "gotpointercapture",
+      "target": "CANVAS",
+      "hit": "CANVAS",
+      "buttons": 1
+    },
+    {
+      "type": "pointerup",
+      "target": "CANVAS",
+      "hit": "CANVAS",
+      "buttons": 0
+    },
+    {
+      "type": "mouseup",
+      "target": "CANVAS",
+      "hit": "CANVAS",
+      "buttons": 0
+    },
+    {
+      "type": "lostpointercapture",
+      "target": "CANVAS",
+      "hit": "CANVAS",
+      "buttons": 0
+    },
+    {
+      "type": "pointerdown",
+      "target": "CANVAS",
+      "hit": "CANVAS",
+      "buttons": 1
+    },
+    {
+      "type": "mousedown",
+      "target": "CANVAS",
+      "hit": "CANVAS",
+      "buttons": 1
+    },
+    {
+      "type": "gotpointercapture",
+      "target": "CANVAS",
+      "hit": "CANVAS",
+      "buttons": 1
+    },
+    {
+      "type": "pointerup",
+      "target": "CANVAS",
+      "hit": "SELECT",
+      "buttons": 0
+    },
+    {
+      "type": "mouseup",
+      "target": "CANVAS",
+      "hit": "SELECT",
+      "buttons": 0
+    },
+    {
+      "type": "lostpointercapture",
+      "target": "CANVAS",
+      "hit": "SELECT",
+      "buttons": 0
+    },
+    {
+      "type": "pointerout",
+      "target": "CANVAS",
+      "hit": "SELECT",
+      "buttons": 0
+    }
+  ]
+}
