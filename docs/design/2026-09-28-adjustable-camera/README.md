@@ -1033,3 +1033,25 @@ integration is PR1972, stacked onto PR1899; passing these scoped local cases is
 not approval to merge before all exact-head checks and clean mergeability.
 Three independent agents continue real fridge modeling and native acceptance,
 paused-template pending-object removal, and angled camera/footprint review.
+## Paused saved-template fixture removal integration — 2026-10-02
+
+On the current integrated client, the independent pending-fixture diagnostic
+reproduces four failures with two ordinary controls passing in 4.18 s. A command
+aimed at a rotated assigned bed's far square cancels only that fixture; occupied
+current and legacy saved rows change allocations and funds instead of refusing.
+The narrow fix prepares the existing collective cancellation before either
+object-entry command, then reconciles cancelled shells immediately while paused.
+The previous manual-door preparation remains present; standing object priority
+and ordinary single-object removal remain unchanged.
+[Pending fixture evidence](../../research/2026-10-02-template-pending-fixture-removal.md)
+keeps both production mutations (eight failures each) and exact restoration.
+
+Root's combined pending-fixture, manual-door, refund and four documentation/
+routing gates pass all 64 cases across seven files in 14.89 s. Both TypeScript
+targets pass. The initial follow-up documentation pass failed because this
+checkout had not fetched its own newly published commits; after fetching the
+exact remote branch, the unchanged citation contract passes in the combined run.
+Native Kitchen/View/drag acceptance above predates this worker-only removal fix,
+so those earlier client bytes are not presented as acceptance of the later fix.
+PR1972 remains the next delivery after the frozen PR1899 candidate; the fridge
+is still an independent model and native acceptance task.
