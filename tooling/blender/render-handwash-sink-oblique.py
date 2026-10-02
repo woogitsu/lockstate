@@ -8,6 +8,10 @@ import sys
 from pathlib import Path
 
 SCRIPT = Path(__file__).resolve()
+sys.path.insert(0, str(SCRIPT.parent))
+import pipeline_common
+
+pipeline_common.require_blender_version()
 spec = importlib.util.spec_from_file_location('handwash_square_exporter', SCRIPT.with_name('render-kitchen-fixtures-oblique.py'))
 assert spec and spec.loader
 exporter = importlib.util.module_from_spec(spec)
