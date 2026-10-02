@@ -55,16 +55,18 @@ function barrierFor(testCase: typeof cases[number]) {
     tile(5 + base.width - 1 - x, 5 + base.height - 1 - y), tile(5 + y, 5 + base.width - 1 - x)][testCase.quarterTurns]!;
   const edge = testCase.quarterTurns % 2 === 0 ? 'north' as const : 'west' as const;
   const anchor = tile(door.x + (testCase.quarterTurns === 3 ? 1 : 0), door.y + (testCase.quarterTurns === 0 ? 1 : 0));
-  return { door, edge, anchor, outside: testCase.templateId !== 'yard-basic' && testCase.templateId !== 'cell-row-four' };
+  const approach = [tile(door.x, door.y + 1), tile(door.x - 1, door.y), tile(door.x, door.y - 1), tile(door.x + 1, door.y)][testCase.quarterTurns]!;
+  return { door, edge, anchor, approach, outside: testCase.templateId !== 'yard-basic' && testCase.templateId !== 'cell-row-four' };
 }
 
 it.each(cases)('$templateId mirror=$mirrorX turn=$quarterTurns atomically rejects a restored legacy entrance barrier after Undo/Redo', testCase => {
   const target = { kind: 'room-template' as const, ...testCase, origin: { x: 5, y: 5 } };
-  const { door, edge, anchor, outside } = barrierFor(testCase);
-  for (const completed of [false, true]) {
+  const { door, edge, anchor, approach, outside } = barrierFor(testCase);
+  for (const { square, completed } of [false, true].flatMap(square => [false, true].map(completed => ({ square, completed })))) {
     let runtime = createNewSimulationRuntime(73);
-    send(runtime, { type: 'PlaceBuildOrder', orderId: 'barrier', definitionId: 'wall-brick', ...anchor, edge });
-    expect(runtime.construction.getOrder('barrier')?.footprint).toBeUndefined();
+    send(runtime, { type: 'PlaceBuildOrder', orderId: 'barrier', definitionId: 'wall-brick',
+      ...(square ? { ...approach, footprint: 'square' as const } : { ...anchor, edge }) });
+    expect(runtime.construction.getOrder('barrier')?.footprint).toBe(square ? 'square' : undefined);
     if (completed) finishWall(runtime);
     runtime = reload(runtime);
     send(runtime, { type: 'Undo' });
@@ -103,6 +105,23 @@ it.each([false, true].flatMap(mirrorX => ([0, 3] as const).map(quarterTurns => (
     expect(PROJECTION_CATALOG['world/room-template-preflight'].project(runtime, runtime.kernel.tick, { target }).view).toEqual({ ok: true });
     send(runtime, { type: 'PlaceRoomTemplate', ...fullCase, origin: target.origin });
     expect(runtime.roomTemplates.snapshot().pending).toHaveLength(1);
+  });
+
+it.each([false, true].flatMap(mirrorX => ([0, 1, 2, 3] as const).map(quarterTurns => ({ mirrorX, quarterTurns }))))
+  ('keeps an adjacent outside wall square legal, mirror=$mirrorX turn=$quarterTurns', testCase => {
+    for (const completed of [false, true]) {
+      let runtime = createNewSimulationRuntime(73);
+      const fullCase = { templateId: 'cell-basic' as const, ...testCase };
+      const { approach, edge } = barrierFor(fullCase);
+      const adjacent = tile(approach.x + (edge === 'north' ? 1 : 0), approach.y + (edge === 'west' ? 1 : 0));
+      send(runtime, { type: 'PlaceBuildOrder', orderId: 'barrier', definitionId: 'wall-brick', ...adjacent, footprint: 'square' });
+      if (completed) finishWall(runtime);
+      runtime = reload(runtime);
+      const target = { kind: 'room-template' as const, ...fullCase, origin: { x: 5, y: 5 } };
+      expect(PROJECTION_CATALOG['world/room-template-preflight'].project(runtime, runtime.kernel.tick, { target }).view).toEqual({ ok: true });
+      send(runtime, { type: 'PlaceRoomTemplate', ...fullCase, origin: target.origin });
+      expect(runtime.roomTemplates.snapshot().pending).toHaveLength(1);
+    }
   });
 
 it.each([false, true].flatMap(mirrorX => ([0, 3] as const).map(quarterTurns => ({ mirrorX, quarterTurns }))))
