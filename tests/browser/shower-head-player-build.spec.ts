@@ -52,12 +52,12 @@ async function nozzlePixels(page: Page, png: Buffer, quarterTurns: 0 | 1): Promi
     const bitmap = await createImageBitmap(new Blob([Uint8Array.from(atob(base64), c => c.charCodeAt(0))], { type: 'image/png' }));
     const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
     const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0);
-    // Provisional source palette regions; actual screenshot calibration is pending.
+    // Separate regions calibrated from actual completed and loaded FullHD images.
     // Nozzle assembly source colour is independent of simulation object completion.
     const rects = quarterTurns === 0
-      ? [[500, 250, 850, 450]]
-      : [[500, 250, 850, 450]];
-    const colour = [70, 91, 101];
+      ? [[780, 450, 115, 90], [900, 360, 115, 90]]
+      : [[900, 360, 110, 100], [1000, 450, 110, 110]];
+    const colour = [95, 119, 131];
     return rects.map(rect => {
       const pixels = context.getImageData(...rect as [number, number, number, number]).data;
       let count = 0;
@@ -171,7 +171,10 @@ test(`player builds Shower Room at quarterTurns${quarterTurns} and retains autho
   await writeFile(info.outputPath('worker-and-completed-pixel-evidence.json'), JSON.stringify({
     quarterTurns, actualBefore, beforePixels, commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
   }, null, 2));
-  beforePixels.forEach((count, index) => expect.soft(count, `fixture${index + 1} authored nozzle assembly after construction`).toBeGreaterThan(20));
+  // The tall wall occludes part of the second rotated fixture: its measured
+  // authored fragment has28 pixels; every other measured region has86 or93.
+  beforePixels.forEach((count, index) => expect.soft(count, `fixture${index + 1} authored nozzle assembly after construction`)
+    .toBeGreaterThan(quarterTurns === 1 && index === 1 ? 20 : 50));
   await page.getByRole('button', { name: 'Overview', exact: true }).click();
   await page.getByRole('button', { name: 'Save now', exact: true }).click();
   await expect(page.locator('.save-panel__status')).toContainText('Saved');
@@ -183,7 +186,8 @@ test(`player builds Shower Room at quarterTurns${quarterTurns} and retains autho
   await page.mouse.move(1300, 700);
   const loaded = await page.screenshot({ path: info.outputPath('shower-loaded-fullhd.png') });
   const afterPixels = await nozzlePixels(page, loaded, quarterTurns);
-  afterPixels.forEach((count, index) => expect.soft(count, `fixture${index + 1} authored nozzle assembly after Load`).toBeGreaterThan(20));
+  afterPixels.forEach((count, index) => expect.soft(count, `fixture${index + 1} authored nozzle assembly after Load`)
+    .toBeGreaterThan(quarterTurns === 1 && index === 1 ? 20 : 50));
   expect(afterPixels).toEqual(beforePixels);
   const evidencePath = info.outputPath('shower-worker-and-pixel-evidence.json');
   await writeFile(evidencePath, JSON.stringify({
