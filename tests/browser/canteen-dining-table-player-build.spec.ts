@@ -47,16 +47,18 @@ async function fixtureAnchors(page: Page): Promise<string[]> {
   });
 }
 
-async function platePixels(page: Page, png: Buffer): Promise<number[]> {
-  return page.evaluate(async base64 => {
+async function platePixels(page: Page, png: Buffer, quarterTurns: 0 | 1): Promise<number[]> {
+  return page.evaluate(async ({ base64, quarterTurns }) => {
     const bitmap = await createImageBitmap(new Blob([Uint8Array.from(atob(base64), c => c.charCodeAt(0))], { type: 'image/png' }));
     const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
     const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0);
-    // Isolated FullHD regions opened and calibrated against the actual built client.
+    // Measure the authored plate palette; the evidence note records actual region calibration.
     // Plate-rim source colour is independent of simulation object completion.
-    return [
-      { rect: [500, 230, 700, 420], colour: [177, 177, 173] },
-    ].map(({ rect, colour }) => {
+    const rects = quarterTurns === 0
+      ? [[680, 410, 170, 150], [860, 295, 190, 125]]
+      : [[850, 320, 210, 95], [1040, 420, 190, 125]];
+    const colour = [177, 177, 173];
+    return rects.map(rect => {
       const pixels = context.getImageData(...rect as [number, number, number, number]).data;
       let count = 0;
       for (let i = 0; i < pixels.length; i += 4) {
@@ -64,13 +66,22 @@ async function platePixels(page: Page, png: Buffer): Promise<number[]> {
       }
       return count;
     });
-  }, png.toString('base64'));
+  }, { base64: png.toString('base64'), quarterTurns });
 }
 let routeStorage: Awaited<ReturnType<ReturnType<Page['context']>['storageState']>> | undefined;
 const test = base.extend({
   storageState: async ({}, use) => { await use(routeStorage ?? { cookies: [], origins: [] }); },
 });
 test.describe.configure({ mode: 'serial' });
+
+test.afterEach(async ({ page }, info) => {
+  if (info.status === info.expectedStatus) return;
+  const snapshot = await page.evaluate(async () => (window as ProbeWindow).askWorker
+    ? (window as ProbeWindow).askWorker!('simulation/request-snapshot', { reason: 'consistency-check' })
+    : null);
+  if (snapshot !== null) await writeFile(info.outputPath('failed-construction-worker-snapshot.json'), JSON.stringify(snapshot, null, 2));
+  await page.screenshot({ path: info.outputPath('failed-construction-fullhd.png') });
+});
 
 async function placePlan(page: Page, name: string, x: number, quarterTurns: 0 | 1 = 0): Promise<void> {
   await page.getByRole('button', { name: 'Build', exact: true }).click();
@@ -156,11 +167,11 @@ test(`player builds Canteen at quarterTurns${quarterTurns} and retains authored 
   await minimap.click({ position: { x: bounds.width * 24 / 32, y: bounds.height * 9 / 32 } });
   await page.mouse.move(1300, 700);
   const completed = await page.screenshot({ path: info.outputPath('dining-worker-completed-fullhd.png') });
-  const beforePixels = await platePixels(page, completed);
+  const beforePixels = await platePixels(page, completed, quarterTurns);
   await writeFile(info.outputPath('worker-and-completed-pixel-evidence.json'), JSON.stringify({
     quarterTurns, actualBefore, beforePixels, commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
   }, null, 2));
-  expect.soft(beforePixels[0], 'authored dining plate rims after construction').toBeGreaterThan(200);
+  beforePixels.forEach((count, index) => expect.soft(count, `table${index + 1} authored plate rims after construction`).toBeGreaterThan(200));
   await page.getByRole('button', { name: 'Overview', exact: true }).click();
   await page.getByRole('button', { name: 'Save now', exact: true }).click();
   await expect(page.locator('.save-panel__status')).toContainText('Saved');
@@ -171,8 +182,8 @@ test(`player builds Canteen at quarterTurns${quarterTurns} and retains authored 
   await minimap.click({ position: { x: bounds.width * 24 / 32, y: bounds.height * 9 / 32 } });
   await page.mouse.move(1300, 700);
   const loaded = await page.screenshot({ path: info.outputPath('dining-loaded-fullhd.png') });
-  const afterPixels = await platePixels(page, loaded);
-  expect.soft(afterPixels[0], 'authored dining plate rims after Load').toBeGreaterThan(200);
+  const afterPixels = await platePixels(page, loaded, quarterTurns);
+  afterPixels.forEach((count, index) => expect.soft(count, `table${index + 1} authored plate rims after Load`).toBeGreaterThan(200));
   expect(afterPixels).toEqual(beforePixels);
   const evidencePath = info.outputPath('dining-worker-and-pixel-evidence.json');
   await writeFile(evidencePath, JSON.stringify({
