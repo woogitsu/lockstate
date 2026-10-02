@@ -50,6 +50,14 @@ The full-size 256px frame was opened. SHA256: `b432075feef3daf1cb687f9fbac4cf3ea
 node node_modules/vitest/vitest.mjs run tests/unit/oblique-shower-head-integrity.test.ts
 ```
 
-The inspected host is Blender 5.2.1 LTS, upstream build identifier9e2066aef7ef; executable SHA256 `284f4041f98e113f3dc10654a7193ffaaa9bfdfec8b87fa116620a48b5f6d4cb`. Render determinism was measured on this host with the committed extracted source; cross-host byte-identical `.blend` regeneration is not claimed.
+The inspected host is Blender 5.2.1 LTS, upstream build identifier 9e2066aef7ef; executable SHA256 `284f4041f98e113f3dc10654a7193ffaaa9bfdfec8b87fa116620a48b5f6d4cb`. Render determinism was measured on this host with the committed extracted source; cross-host byte-identical `.blend` regeneration is not claimed.
 
 Unlike the sink, this fixture already has a real `shower-head-brick` buildable and `shower-room` plan. The prepared `tests/browser/shower-head-player-build.spec.ts` reuses actual completed Storage Room/Delivery Bay capacity, then constructs a Shower Room at (20,5) through the player. Its two completed shower objects are expected at (21,6)/(23,6), orientation0; clockwise90° plan rotation yields (23,6)/(23,8), orientation1. The initial broad RGB(70,91,101) region is provisional and must be calibrated into separate per-fixture regions using actual screenshots. Actual snapshot fields, independent palettes and missing-consumer red/exactrestoregreen are required before acceptance is claimed. No core, HUD, input or workflow changes are included; local manual configuration remains untracked.
+
+### Actual routes and calibration checkpoint
+
+The first actual capacity bootstrap passed43.5s; normal Shower Room completed both worker objects and preserved their anchors through real Save/Load in35.0s. The provisional RGB from the30° source preview yielded0 in the runtime-selected pose, so its two initial palette assertions were red. This was a calibration error, not a production model fix. The opened [normal FullHD](normal-calibration-loaded-fullhd.png) visibly contains both authored assemblies; [raw provisional evidence](normal-provisional-palette.json) retains the original0 counts honestly.
+
+The exact rotated native route then passed2/2 (bootstrap44.7s, fixture35.3s), with anchors(23,6)/(23,8), orientation1 before and after Load. The opened [rotated FullHD](rotated-calibration-loaded-fullhd.png) shows the second fixture partially occluded by the tall wall; [raw broad evidence](rotated-broad-palette.json) has114 authored RGB(95,119,131) pixels at both stages.
+
+Offline independent counting of the actual completed/loaded image pairs gives separate normal regions(780,450,115,90)/(900,360,115,90): [93,93] at both stages. Rotated regions(900,360,110,100)/(1000,450,110,110): [86,28], also equal before/after Load. The calibrated fixture requires each normal region and the first rotated region>50; the partially occluded second rotated region>20. Construction timeout60s and progress guard10s remain unchanged. Missing-consumer mutation and final complete restored-suite acceptance remain pending at this calibration checkpoint.
