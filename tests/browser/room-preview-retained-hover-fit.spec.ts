@@ -42,7 +42,9 @@ for (const scale of [1, 2]) for (const quarterTurns of [0, 1]) {
     const dialog = page.getByRole('dialog', { name: 'Room plans' });
     const ghost = page.locator('.room-template-world-ghost');
     const floor = ghost.locator('polygon');
-    const cursor = { x: 880, y: 380 };
+    // Keep both 7×16 and 16×7 orientations within the new session's owned
+    // 32×32 parcel before fitting. The worker, not this framing, proves clear.
+    const cursor = { x: 740, y: 420 };
 
     await page.mouse.move(cursor.x, cursor.y);
     await frames(page); // an unarmed frame resets fitting, retaining map hover
@@ -86,10 +88,10 @@ for (const scale of [1, 2]) for (const quarterTurns of [0, 1]) {
     // fitted camera. Read the genuine worker target before pointer release.
     await page.mouse.down();
     await frames(page);
-    await expect(ghost).toHaveAttribute('data-ready', 'clear');
     const afterDown = await target(page);
     console.log('RETAINED_HOVER_FIT', JSON.stringify({ scale, quarterTurns, chosen, afterDown }));
     expect(afterDown, 'first stationary pointerdown must retain the displayed world origin').toEqual(chosen);
+    await expect(ghost).toHaveAttribute('data-ready', 'clear');
     expect(await floor.evaluateAll(polygons => polygons.map(polygon => polygon.getAttribute('points')))).toEqual(points);
     expect(await ghost.getByRole('status').textContent()).toBe(quote);
     expect((await sentCommands(page)).filter(command => command.type === 'PlaceRoomTemplate')).toHaveLength(0);
