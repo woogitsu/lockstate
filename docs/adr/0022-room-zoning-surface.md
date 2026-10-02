@@ -168,7 +168,7 @@ room"* lands on a type that is about nothing else. **Re-derived whole on
 2026-09-19, because #1292 inserted a sixth tab and a `select-incident` intent
 into this file: `HudIntent` is `src/ui/hud/hud.ts:372-792` and declares
 **twenty-four** members, and `export type HudRoomGesture` is at
-`src/ui/hud/hud.ts:181`.** The twenty-two above was right for its span and its
+`src/ui/hud/hud.ts:185` (this anchor previously read `:181`).** The twenty-two above was right for its span and its
 date and is kept: two members have arrived since, `select-prisoner` on `main`
 with ADR 0115's roster split and `select-incident` with the Security section,
 and *"still three of them room-related"* is unaffected by either. **That
@@ -339,7 +339,9 @@ zone should be undoable at all is left open in §*What this does not settle*.
 **An accepted zone is visible with no renderer work at all.** The zoning plane
 is already projected, decoded and painted per tile with a per-category tint:
 `src/simulation/presentation/world-projection.ts:16,44` carries `zoning` in the
-chunk projection → `src/rendering/world/world-view.ts:117` decodes the RLE and
+chunk projection → `src/rendering/world/world-view.ts:119`,
+`decodeTerrainRle(chunk.zoning, tilesPerChunk)`, decodes the RLE and
+the anchor previously read `:117` before the square-structure plane arrived;
 `:180` reads it per tile → `src/rendering/phaser/tile-layer.ts:358-366` fills the
 tile with `zoningTint` (`src/rendering/world/appearance.ts:114`) at
 `ZONING_TINT_ALPHA` (`:99`). This is true of all three alternatives and is not

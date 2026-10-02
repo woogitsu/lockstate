@@ -299,6 +299,52 @@ describe('semantic input', () => {
     expect(loadAccessibilitySettings(store)).toEqual(accessibility);
   });
 
+  it('adds new angle defaults to an older preference without replacing a custom key', () => {
+    const store = new MemoryStore();
+    const oldBindings = DEFAULT_KEYBOARD_BINDINGS
+      .filter((binding) => !binding.action.startsWith('camera.rotate.') && !binding.action.startsWith('camera.tilt.'))
+      .map((binding) => binding.code === 'KeyW' ? { ...binding, code: 'KeyQ' } : binding);
+    store.setItem('lockstate.settings.input', JSON.stringify({ version: 1, keyboardBindings: oldBindings }));
+    const loaded = loadInputSettings(store).keyboardBindings;
+    expect(loaded.find((binding) => binding.action === 'camera.up' && binding.code === 'KeyQ')).toBeDefined();
+    expect(loaded.find((binding) => binding.action === 'camera.rotate.left')?.code).toBe('KeyW');
+    expect(loaded.find((binding) => binding.action === 'camera.rotate.right')?.code).toBe('KeyE');
+    expect(loaded.find((binding) => binding.action === 'camera.tilt.up')?.code).toBe('KeyR');
+    expect(loaded.find((binding) => binding.action === 'camera.tilt.down')?.code).toBe('KeyF');
+  });
+
+  it('uses vacated physical positions for two blocked camera turns without overwriting remaps', () => {
+    const store = new MemoryStore();
+    const oldBindings = DEFAULT_KEYBOARD_BINDINGS
+      .filter((binding) => !binding.action.startsWith('camera.rotate.') && !binding.action.startsWith('camera.tilt.'))
+      .map((binding) => binding.code === 'KeyW' ? { ...binding, code: 'KeyQ' }
+        : binding.code === 'KeyS' ? { ...binding, code: 'KeyE' } : binding);
+    store.setItem('lockstate.settings.input', JSON.stringify({ version: 1, keyboardBindings: oldBindings }));
+    const loaded = loadInputSettings(store).keyboardBindings;
+    expect(findBindingConflicts(loaded)).toEqual([]);
+    expect(loaded.find((binding) => binding.action === 'camera.up' && binding.code === 'KeyQ')).toBeDefined();
+    expect(loaded.find((binding) => binding.action === 'camera.down' && binding.code === 'KeyE')).toBeDefined();
+    expect(loaded.find((binding) => binding.action === 'camera.rotate.left')?.code).toBe('KeyW');
+    expect(loaded.find((binding) => binding.action === 'camera.rotate.right')?.code).toBe('KeyS');
+    const keyboard = new KeyboardInputAdapter(loaded, () => ['world']);
+    expect(keyboard.keyDown({ code: 'KeyW' })[0]?.action).toBe('camera.rotate.left');
+    expect(keyboard.keyDown({ code: 'KeyS' })[0]?.action).toBe('camera.rotate.right');
+  });
+
+  it('follows vacated physical positions through multiple remaps', () => {
+    const store = new MemoryStore();
+    const oldBindings = DEFAULT_KEYBOARD_BINDINGS
+      .filter((binding) => !binding.action.startsWith('camera.rotate.') && !binding.action.startsWith('camera.tilt.'))
+      .map((binding) => binding.code === 'KeyW' ? { ...binding, code: 'KeyQ' }
+        : binding.code === 'KeyS' ? { ...binding, code: 'KeyW' } : binding);
+    store.setItem('lockstate.settings.input', JSON.stringify({ version: 1, keyboardBindings: oldBindings }));
+    const loaded = loadInputSettings(store).keyboardBindings;
+    expect(findBindingConflicts(loaded)).toEqual([]);
+    expect(loaded.find((binding) => binding.action === 'camera.rotate.left')?.code).toBe('KeyS');
+    expect(loaded.find((binding) => binding.action === 'camera.up' && binding.code === 'KeyQ')).toBeDefined();
+    expect(loaded.find((binding) => binding.action === 'camera.down' && binding.code === 'KeyW')).toBeDefined();
+  });
+
   it('only persists a remap once it is conflict-free', () => {
     const store = new MemoryStore();
     saveInputSettings(store, DEFAULT_INPUT_SETTINGS);
@@ -436,6 +482,19 @@ describe('a held key is released by a real keyup, by focus loss, and by nothing 
     // Both, not just the last one: a player alt-tabbing mid-diagonal held two.
     expect(adapter.isActive('camera.up')).toBe(false);
     expect(adapter.isActive('camera.right')).toBe(false);
+  });
+
+  it('disarms only held arrows when a roving radio takes their navigation keys', () => {
+    const adapter = new KeyboardInputAdapter(DEFAULT_KEYBOARD_BINDINGS, () => ['world']);
+    adapter.keyDown({ code: 'ArrowDown' });
+    adapter.keyDown({ code: 'KeyE' });
+    expect(adapter.isActive('camera.down')).toBe(true);
+    expect(adapter.isActive('camera.rotate.right')).toBe(true);
+    adapter.releaseCodes(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']);
+    expect(adapter.isActive('camera.down')).toBe(false);
+    expect(adapter.isActive('camera.rotate.right')).toBe(true);
+    adapter.keyUp({ code: 'ArrowDown' });
+    expect(adapter.keyDown({ code: 'ArrowDown' })).toMatchObject([{ action: 'camera.down', phase: 'started' }]);
   });
 
   it('accepts the same key again after a synthetic release, so the keyboard is not left dead', () => {
