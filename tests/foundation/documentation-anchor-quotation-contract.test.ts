@@ -838,6 +838,8 @@ const UNVERIFIED_BUDGET: Readonly<Record<string, number>> = {
   'docs/INPUT.md': 1,
   'docs/LOCALIZATION.md': 2,
   'docs/OPERATIONS.md': 4,
+  // The generator now quotes every locale key beside its source coordinate;
+  // all inventory anchors verify, so its former 182-anchor budget is removed.
   'docs/TESTING.md': 3,
   'docs/VISUAL_IDENTITY.md': 5,
   'docs/WORLD.md': 2,

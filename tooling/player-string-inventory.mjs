@@ -328,7 +328,7 @@ export function renderInventory({ entries }) {
   lines.push('| Key | Ships today | At |');
   lines.push('| --- | --- | --- |');
   for (const entry of entries) {
-    lines.push(`| ${markdownCode(entry.key)} | ${markdownCode(entry.value)} | ${markdownCode(`${LOCALE_SOURCE_PATH}:${String(entry.line)}`)} |`);
+    lines.push(`| ${markdownCode(entry.key)} | ${markdownCode(entry.value)} | ${markdownCode(`${LOCALE_SOURCE_PATH}:${String(entry.line)}`)}, ${markdownCode(`'${entry.key}'`)} |`);
   }
   lines.push('');
   return lines.join('\n');
