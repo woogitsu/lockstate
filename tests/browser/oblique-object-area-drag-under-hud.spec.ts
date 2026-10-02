@@ -116,7 +116,8 @@ for (const scale of [1, 2]) {
     const a = await tileOf(page, from), b = await tileOf(page, end);
     const area = { x: Math.min(a.x, b.x), y: Math.min(a.y, b.y), width: Math.abs(b.x - a.x) + 1, height: Math.abs(b.y - a.y) + 1 };
     expect(area.width >= 8 && area.height >= 8 && area.x >= 0 && area.y >= 0 && area.x + area.width <= 32 && area.y + area.height <= 32).toBe(true);
-    expect(await page.evaluate(p => document.elementFromPoint(p.x, p.y)?.closest('button')?.getAttribute('aria-label'), end)).toBe('Rotate camera left');
+    expect(await turn.evaluate((button, p) => button.contains(document.elementFromPoint(p.x, p.y)), end),
+      'the physical endpoint must actually hit the native camera control').toBe(true);
     await drag(page, from, end);
     const held = await page.locator('.hud-rooms__area-value').innerText();
     await page.screenshot({ path: info.outputPath('held-yard-area.png') });
