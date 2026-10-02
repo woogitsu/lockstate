@@ -18,8 +18,13 @@ export class RoomTemplatePreviewFitController {
   public constructor(private readonly port: RoomTemplatePreviewFitPort) {}
 
   public prepare(screen: Point, physical: boolean): void {
-    const moved = physical && (this.physical?.x !== screen.x || this.physical.y !== screen.y);
-    if (moved) { this.locked = undefined; this.physical = { ...screen }; }
+    const moved = physical && this.physical !== undefined &&
+      (this.physical.x !== screen.x || this.physical.y !== screen.y);
+    if (moved) this.locked = undefined;
+    // A keyboard-armed preview starts from retained map hover. Record that
+    // screen anchor before fitting pans the camera: a stationary first click
+    // acknowledges the preview rather than choosing a new world origin.
+    if (physical || this.physical === undefined) this.physical = { ...screen };
     const revised = this.selection !== this.port.revision();
     const view = this.port.viewRevision?.();
     const viewChanged = view !== this.view;
