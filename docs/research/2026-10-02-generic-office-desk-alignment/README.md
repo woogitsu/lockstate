@@ -31,3 +31,10 @@ Blender 5.2.1 LTS upstream build ID `9e2066aef7ef`; pinned executable SHA256 `28
 ## Pending native player acceptance
 
 The source/export checkpoint is complete. Real built-client Reception placement through workers, normal/90 degree palette calibration and actual SaveLoad remain pending an exclusive browser lease. The source image and static/synthetic assertions are not native player acceptance. The individual placement UI has no orientation field; the rotated Reception plan is the genuine approved rotation route. Neither buildable identity nor costs, save rules, palette, UI or simulation sources changed.
+
+
+### Queued fixture preparation
+
+`tests/browser/generic-office-desk-player-build.spec.ts` reuses the actual two-stage chair fixture: native Storage Room and Delivery Bay capacity, an actual IndexedDB save, then normal/90 degree Reception at (20,5). Read-only worker snapshots must report the completed desk at (21,6), orientation0 or (24,6), orientation1 before and after actual SaveLoad. The queued consumer negative control removes only the default generic desk mapping and preserves the StaffRoom override; the worker must remain byte-identical.
+
+The palette candidates are measured from actual exported frames: oak RGB (143,116,87) in yaw30/elevation40, RGB (143,116,86) in yaw300/elevation40; teal document RGB (91,148,149). The fixture's source-derived colours, candidate screen crops and provisional thresholds are **not yet calibrated or accepted native pixels**. No browser was launched for this checkpoint and the accepted artifact matcher is unchanged. Final evidence requires independent desktop/document native regions, consumer-red and exact-restored-green runs, and opened completed/loaded FullHD images.
