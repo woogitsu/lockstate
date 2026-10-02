@@ -1,3 +1,4 @@
+import { createRendererSelectionControl, type HudRendererMode } from './renderer-selection-control';
 import { createCameraPoseControl, type CameraPoseStep } from './camera-pose-control';
 import type { LocalizationKey } from '../../content/localization';
 import type { MinimapView } from '../../shared/minimap-view';
@@ -1077,6 +1078,8 @@ export interface MountHudOptions {
   readonly onCameraZoom?: (direction: 'in' | 'out') => void;
   /** Renderer-only pose controls; omitted for the fixed top-down renderer. */
   readonly onCameraPoseStep?: CameraPoseStep;
+  /** Live renderer port; preserves the current simulation session. */
+  readonly rendererSelection?: { readonly mode: HudRendererMode; readonly select: (mode: HudRendererMode) => Promise<void> };
   /**
    * Receives every player action, and may be async.
    *
@@ -1155,6 +1158,7 @@ export interface HudHandle {
   updateMinimap(view: MinimapView | undefined): void;
   /** Makes the empty-session minimap a truthful, inert instruction. */
   setMinimapSessionActive(active: boolean): void;
+  setRendererMode(mode: HudRendererMode): void;
   /**
    * Live feedback from the world pointer into the Build panel's readout.
    *
@@ -2297,7 +2301,12 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     children: [zoomLegend, zoomOut.element, zoomIn.element],
   });
 
-  corner = element('div', { className: 'hud__corner', children: [zoomControl, ...(options.onCameraPoseStep === undefined ? [] : [createCameraPoseControl(localizer, options.onCameraPoseStep)]), minimapPanel.element] });
+  const poseControl = options.onCameraPoseStep === undefined ? undefined : createCameraPoseControl(localizer, options.onCameraPoseStep);
+  if (poseControl !== undefined && options.rendererSelection?.mode === 'world') poseControl.hidden = true;
+  const rendererControl = options.rendererSelection === undefined ? undefined : createRendererSelectionControl({
+    region: t('hud.camera.view'), world: t('hud.camera.view.world'), oblique: t('hud.camera.view.oblique'), failure: t('hud.camera.view.failed'),
+  }, options.rendererSelection.mode, options.rendererSelection.select, error => console.warn('Renderer selection failed', error));
+  corner = element('div', { className: 'hud__corner', children: [...(rendererControl === undefined ? [] : [rendererControl.element]), zoomControl, ...(poseControl === undefined ? [] : [poseControl]), minimapPanel.element] });
 
   // ---- bottom-right build panel ------------------------------------
   // Placing an order is a *command*: it asks the host to change the
@@ -3480,6 +3489,10 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     update,
     updateMinimap,
     setMinimapSessionActive,
+    setRendererMode: mode => {
+      rendererControl?.update(mode);
+      if (poseControl !== undefined) poseControl.hidden = mode !== 'oblique';
+    },
     setBuildTarget: (target) => buildPanel.setTarget(target),
     setUnavailable,
     clearPrisonerSelection: () => rosterPanel.clearPrisonerSelection(),

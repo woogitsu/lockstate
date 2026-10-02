@@ -1,3 +1,4 @@
+import {captureObliqueView, restoreObliqueView, type RendererCameraView} from '../camera/renderer-view-memory';
 import Phaser from 'phaser';
 import type { KeyValueStore } from '../../shared/key-value-store';
 import { KeyboardInputAdapter, activeKeyboardContexts, loadInputSettings, type SemanticActionEvent } from '../../input';
@@ -120,6 +121,19 @@ export class ObliqueWorldScene extends Phaser.Scene {
   public ready(): Promise<void> { return this.readyPromise; }
 
   /** The registry passed by the composition root, exposed for integration tests. */
+  public captureCameraView(): RendererCameraView { return captureObliqueView(this.pose); }
+
+  public restoreCameraView(view: RendererCameraView): void {
+    this.pose = restoreObliqueView(this.pose, view);
+    // A renderer replacement continues the existing view, including an empty world.
+    this.framedWorld = true;
+    this.frameAfterRevision = -1;
+    this.poseRevision += 1;
+    this.repaint();
+    this.publishMinimap();
+    this.paintGesturePreview();
+  }
+
   public get obliqueCatalogs(): ReadonlyMap<string, ObliqueModuleCatalog> { return this.catalogs; }
 
   /** Keep the same feed port as WorldScene for demo actors and session reloads. */

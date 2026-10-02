@@ -1,7 +1,7 @@
 import { element } from '../primitives/dom';
 
 export type HudRendererMode = 'world' | 'oblique';
-export interface RendererSelectionLabels { readonly region: string; readonly world: string; readonly oblique: string }
+export interface RendererSelectionLabels { readonly region: string; readonly world: string; readonly oblique: string; readonly failure: string }
 export interface RendererSelectionControl {
   readonly element: HTMLElement;
   update(mode: HudRendererMode): void;
@@ -25,10 +25,12 @@ export function createRendererSelectionControl(
     if(select.disabled) return;
     const requested=select.value;
     if(requested!=='world'&&requested!=='oblique') {select.value=current;return;}
+    select.setCustomValidity('');
     select.disabled=true;
     select.setAttribute('aria-busy','true');
-    void onSelect(requested).then(()=>{current=requested;select.value=current;},error=>{select.value=current;onError(error);}).finally(()=>{
+    void onSelect(requested).then(()=>{current=requested;select.value=current;},error=>{select.value=current;select.setCustomValidity(labels.failure);onError(error);}).finally(()=>{
       select.disabled=false;select.setAttribute('aria-busy','false');
+      if (!select.validity.valid) select.reportValidity();
     });
   });
   return {element:select,update:(mode)=>{current=mode;select.value=mode;}};

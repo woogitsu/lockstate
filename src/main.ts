@@ -1,3 +1,5 @@
+import type { RendererCameraView } from './rendering/camera/renderer-view-memory';
+import { LiveRendererSelection } from './rendering/scene/live-renderer-selection';
 import { computeObliqueFit } from './rendering/camera/oblique-fit';
 import { RoomTemplatePreviewFitController } from './ui/room-template-preview-fit';
 import { formatRoomTemplateQuote } from './ui/hud/room-template-quote';
@@ -39,6 +41,7 @@ import { SimulationSnapshotFeed } from './rendering/feed/simulation-snapshot-fee
 import { WorldScene } from './rendering/scene/world-scene';
 import { ObliqueWorldScene } from './rendering/scene/oblique-world-scene';
 import {
+  cacheVerifiedObliqueCatalogs,
   prepareProductionRenderScene,
   productionRenderMode,
   renderProductionRenderFailure,
@@ -629,8 +632,9 @@ document.documentElement.lang = startupLocale.locale;
 // `resolveBrowserKeyValueStore()` never throws and never returns undefined: a
 // browser that refuses storage gets an in-memory stand-in, so settings work for
 // the rest of the page load and simply are not remembered.
+let activeRenderFeed: RenderFeed = renderFeed;
 const createTopDownWorldScene = (): WorldScene => new WorldScene({
-  feed: renderFeed,
+  feed: activeRenderFeed,
   loadAtlasLibrary: () => atlasLibrary,
   keyValueStore: resolveBrowserKeyValueStore(),
   // The same object under both ports: the tool is where a gesture leaves the
@@ -713,29 +717,26 @@ const createTopDownWorldScene = (): WorldScene => new WorldScene({
  * Phaser starts it.
  */
 let hudThumbnailCatalogs: ReadonlyMap<string, ObliqueModuleCatalog> = new Map();
-let productionSceneSelection: PreparedProductionRenderScene<WorldScene, ObliqueWorldScene>;
-try {
-  productionSceneSelection = await prepareProductionRenderScene({
-    mode: productionRenderMode(window.location.search),
-    loadObliqueCatalogs: () => fetchObliqueModuleSet(),
-    createWorld: createTopDownWorldScene,
-    createOblique: (catalogs) => {
-      hudThumbnailCatalogs = catalogs;
-      return new ObliqueWorldScene({
-      feed: renderFeed,
-      keyValueStore: resolveBrowserKeyValueStore(),
-      catalogs,
-      ...(buildTool === undefined ? {} : { buildTool, editHistory: buildTool, toolStandDown: buildTool }),
-      ...(roomTool === undefined ? {} : { roomTool }),
-      ...(objectTool === undefined ? {} : { objectTool }),
-    });
-    },
+const loadLiveObliqueCatalogs = cacheVerifiedObliqueCatalogs(() => fetchObliqueModuleSet());
+const createLiveObliqueScene = (catalogs: ReadonlyMap<string, ObliqueModuleCatalog>): ObliqueWorldScene => {
+  hudThumbnailCatalogs = catalogs;
+  return new ObliqueWorldScene({ feed: activeRenderFeed, keyValueStore: resolveBrowserKeyValueStore(), catalogs,
+    ...(buildTool === undefined ? {} : { buildTool, editHistory: buildTool, toolStandDown: buildTool }),
+    ...(roomTool === undefined ? {} : { roomTool }), ...(objectTool === undefined ? {} : { objectTool }),
   });
-} catch (error) {
-  renderProductionRenderFailure(error);
-  throw error;
-}
-const worldScene = productionSceneSelection.scene;
+};
+let productionSceneSelection: PreparedProductionRenderScene<WorldScene | ObliqueWorldScene, WorldScene | ObliqueWorldScene>;
+try {
+  productionSceneSelection = await prepareProductionRenderScene({ mode: productionRenderMode(window.location.search),
+    loadObliqueCatalogs: loadLiveObliqueCatalogs, createWorld: createTopDownWorldScene, createOblique: createLiveObliqueScene });
+} catch (error) { renderProductionRenderFailure(error); throw error; }
+let worldScene = productionSceneSelection.scene;
+let rendererHudChanged: () => void = () => undefined;
+let reinstallPlanGhost: () => void = () => undefined;
+let withdrawPlanGhost: () => void = () => undefined;
+let rendererChanging = false;
+let logicalViewCentre: { x: number; y: number } | undefined;
+const rendererViewMemory = new Map<'world' | 'oblique', RendererCameraView>();
 
 const gameConfig: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -760,10 +761,45 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
   },
 };
 
-new Phaser.Game(gameConfig);
+const phaserGame = new Phaser.Game(gameConfig);
 if (productionSceneSelection.mode === 'oblique' && worldScene instanceof ObliqueWorldScene) {
   await worldScene.ready();
 }
+
+const liveRendererSelection = new LiveRendererSelection<WorldScene | ObliqueWorldScene>(productionSceneSelection, {
+  prepare: mode => mode === 'world' ? Promise.resolve(createTopDownWorldScene()) : loadLiveObliqueCatalogs().then(createLiveObliqueScene),
+  deactivate: scene => {
+    // Preserve only renderer memory; the worker/feed and unsaved session stay alive.
+    if (scene === worldScene && scene.sys.isActive()) {
+      const view = scene.captureCameraView();
+      logicalViewCentre = view.centre;
+      rendererViewMemory.set(scene instanceof ObliqueWorldScene ? 'oblique' : 'world',view);
+      withdrawPlanGhost();
+      if (scene instanceof ObliqueWorldScene) scene.releaseSessionInput();
+    }
+    phaserGame.scene.stop(scene.sys.settings.key);
+    phaserGame.scene.remove(scene.sys.settings.key);
+  },
+  activate: async scene => {
+    phaserGame.scene.add(scene.sys.settings.key, scene, false);
+    const created = new Promise<void>(resolve => scene.events.once(Phaser.Scenes.Events.CREATE, resolve));
+    phaserGame.scene.start(scene.sys.settings.key);
+    await created;
+    if (scene instanceof ObliqueWorldScene) await scene.ready();
+    if (logicalViewCentre !== undefined) {
+      const mode = scene instanceof ObliqueWorldScene ? 'oblique' : 'world';
+      const remembered = rendererViewMemory.get(mode) ?? scene.captureCameraView();
+      scene.restoreCameraView({...remembered,centre:logicalViewCentre});
+    }
+  },
+  changed: selection => {
+    productionSceneSelection = selection;
+    worldScene = selection.scene;
+    rendererHudChanged();
+    reinstallPlanGhost();
+  },
+  unavailable: error => { console.warn('Live renderer unavailable; choose a view to retry', error); },
+});
 
 /**
  * `?actors=demo` puts scripted actors on screen.
@@ -781,7 +817,8 @@ if (productionSceneSelection.mode === 'oblique' && worldScene instanceof Oblique
 if (isDemoActorsRequested(window.location.search)) {
   void atlasLibrary
     .then((library) => {
-      worldScene.setFeed(new DemoActorFeed(renderFeed, { assetIds: library.assetIds() }));
+      activeRenderFeed = new DemoActorFeed(renderFeed, { assetIds: library.assetIds() });
+      worldScene.setFeed(activeRenderFeed);
     })
     .catch((error: unknown) => {
       console.warn('Actor demonstration unavailable: the atlas batch did not load.', error);
@@ -2760,7 +2797,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
      * unconditionally -- it exists from the top of this module regardless of
      * whether a worker started, exactly like every other camera control.
      */
-    onMinimapNavigate: (point) => worldScene.navigateToMinimapPoint(point.fx, point.fy),
+    onMinimapNavigate: (point) => rendererChanging ? false : worldScene.navigateToMinimapPoint(point.fx, point.fy),
     /*
      * And the HUD's zoom pair, joined to the same camera on the same terms
      * (issue #1023). `ZOOM_BOUNDS` has allowed a fifteen-fold range since the
@@ -2775,10 +2812,16 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
      * the simulation could refuse.
      */
     onCameraZoom: (direction) => {
+      if (rendererChanging) return;
       worldScene.stepCameraZoom(direction);
     },
-    ...(worldScene instanceof ObliqueWorldScene ? {
+    rendererSelection: { mode: productionSceneSelection.mode, select: async mode => {
+      rendererChanging = true;
+      try { await liveRendererSelection.select(mode); } finally { rendererChanging = false; }
+    } },
+    ...{
       onCameraPoseStep: (axis: 'yaw' | 'elevation', direction: -1 | 1): void => {
+        if (rendererChanging || !(worldScene instanceof ObliqueWorldScene)) return;
         const pose = worldScene.cameraPose;
         // A button press advances a legible fixed angle; the mouse and held
         // remappable keys use the same setPoseRadians camera transform.
@@ -2788,7 +2831,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           pose.elevationRadians + (axis === 'elevation' ? direction * step : 0),
         );
       },
-    } : {}),
+    },
     onIntent: (intent: HudIntent) => {
       switch (intent.kind) {
         case 'place-room-template':
@@ -3959,7 +4002,11 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     onError: (failure) => console.warn('HUD action failed', failure),
   });
   // The renderer owns the projection and camera; the HUD only paints it.
-  worldScene.setMinimapSink((view) => hud?.updateMinimap(view));
+  rendererHudChanged = () => {
+    hud?.setRendererMode(productionSceneSelection.mode);
+    worldScene.setMinimapSink(view => hud?.updateMinimap(view));
+  };
+  rendererHudChanged();
 
   /*
    * The build identity, in the corner, from first paint.
@@ -4658,7 +4705,11 @@ const mountedHud =
       });
 mountedHud?.setMinimapSessionActive(false);
 if (roomTemplateTool !== undefined) {
+  let disposePlanGhost: (() => void) | undefined;
+  withdrawPlanGhost = () => { disposePlanGhost?.(); disposePlanGhost = undefined; };
   const installPlanGhost = (): void => {
+    disposePlanGhost?.();
+    disposePlanGhost = undefined;
     const canvas = appRoot?.querySelector('canvas');
     if (canvas === null || canvas === undefined) return;
     const pickTemplateSquare = (point: { x: number; y: number }): { x: number; y: number } => {
@@ -4686,16 +4737,17 @@ if (roomTemplateTool !== undefined) {
         const safeScreenBounds = { left: (left - rect.left) * sx + 8, right: (right - rect.left) * sx - 8, top: (top - rect.top) * sy + 8, bottom: canvas.height - 8 };
         if (safeScreenBounds.right <= safeScreenBounds.left || safeScreenBounds.bottom <= safeScreenBounds.top) return false;
         const groundBounds = { left: origin.x * TILE_SIZE_PX, top: origin.y * TILE_SIZE_PX, right: (origin.x + size.width) * TILE_SIZE_PX, bottom: (origin.y + size.height) * TILE_SIZE_PX };
+        const pose = worldScene.cameraPose;
         const projected = [
           { x: groundBounds.left, y: groundBounds.top }, { x: groundBounds.right, y: groundBounds.top },
           { x: groundBounds.right, y: groundBounds.bottom }, { x: groundBounds.left, y: groundBounds.bottom },
-        ].map(point => groundToScreen(point, worldScene.cameraPose));
+        ].map(point => groundToScreen(point, pose));
         if (projected.every(point => point.x >= safeScreenBounds.left && point.x <= safeScreenBounds.right && point.y >= safeScreenBounds.top && point.y <= safeScreenBounds.bottom)) return false;
         const fit = computeObliqueFit({ camera: worldScene.cameraPose, groundBounds, safeScreenBounds, cursorScreen, mode: 'pan-locked' });
         return worldScene.applyCameraFit(fit);
       },
     }) : undefined;
-    installRoomTemplateWorldBridge(canvas, roomTemplateTool, {
+    disposePlanGhost = installRoomTemplateWorldBridge(canvas, roomTemplateTool, {
       tileSize: TILE_SIZE_PX,
       labelSafeBounds: () => {
         const rect = canvas.getBoundingClientRect();
@@ -4723,6 +4775,7 @@ if (roomTemplateTool !== undefined) {
       ].join(' | '),
     });
   };
+  reinstallPlanGhost = installPlanGhost;
   if (appRoot?.querySelector('canvas') !== null) installPlanGhost();
   else if (appRoot !== null) {
     const observer = new MutationObserver(() => {
