@@ -1717,7 +1717,7 @@
 .hud-template__card { display: grid; grid-template-columns: 4rem minmax(0, 1fr); align-items: center; gap: var(--space-2); text-align: left; }
 .hud-template__card-details { display: grid; gap: 2px; min-width: 0; }
 .hud-template__card-details strong { overflow-wrap: anywhere; }
-.hud-template__miniature { display: grid; justify-self: center; gap: 0; width: max-content; }
+.hud-template__miniature { display: grid; justify-self: center; gap: 0; width: max-content; pointer-events: none; }
 .hud-template__miniature .hud-template__tile { border: 0; }
 .hud-template__miniature .hud-template__tile--floor,
 .hud-template__miniature .hud-template__tile--object { background: var(--surface-raised); border-radius: 0; }
