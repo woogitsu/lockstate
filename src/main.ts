@@ -4542,7 +4542,10 @@ async function bootPersistence(workers: SimulationWorkerChannel, hud: HudHandle)
         // This page keeps one renderer and one feed across prisons. Wait for
         // the replacement worker's first snapshot before centering its map;
         // the feed may still expose the outgoing world's last frame meanwhile.
-        if (available && worldScene instanceof ObliqueWorldScene) worldScene.reframeForNextSession();
+        if (worldScene instanceof ObliqueWorldScene) {
+          worldScene.releaseSessionInput();
+          if (available) worldScene.reframeForNextSession();
+        }
         hud.setUnavailable(available ? undefined : SIMULATION_UNAVAILABLE_NOTICE);
         // The existing report route, read a second time. `WorkerPerSessionHost`
         // already tells this file every time it fails to obtain a worker, so

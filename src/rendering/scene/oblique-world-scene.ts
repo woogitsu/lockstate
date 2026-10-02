@@ -134,6 +134,15 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.framedWorld = false;
   }
 
+  /** A replacement worker must never inherit a held input from its predecessor. */
+  public releaseSessionInput(): void {
+    this.keyboard.releaseAll();
+    this.turnPointerId = undefined;
+    this.turnPointerAt = undefined;
+    this.hoveredScreenPoint = undefined;
+    this.cancelGesture();
+  }
+
   /** Connect the HUD minimap after it mounts. */
   public setMinimapSink(sink: (view: MinimapView | undefined) => void): void {
     this.minimapSink = sink;

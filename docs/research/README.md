@@ -266,6 +266,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 | [2026-10-02 Classroom chair art](./2026-10-02-classroom-chair/README.md) | Can the existing chair have a distinct Classroom visual within its unchanged square footprint? | Blender source, 72 hashed poses, contextual registry and real Full HD four-chair Build, worker, Save/Load and pixel mutation proof under normal browser budgets. |
 | [2026-10-02 oblique session camera](./2026-10-02-oblique-session-camera/README.md) | Does New prison bring an oblique camera panned off-map back to the new map? | Actual Full HD browser failure, revision-gated session framing, production callback mutation red and restored green. |
 | [2026-10-02 Storage Room rack art](./2026-10-02-storage-room-rack/README.md) | Can the existing rack get a distinct Storage Room visual without changing its gameplay identity? | Blender source, 72 deterministic poses, contextual consumer and source/scale tests; real player browser proof pending. |
+| [2026-10-02 oblique Load gesture](./2026-10-02-oblique-load-gesture/README.md) | Can a held right-button camera turn in the outgoing prison rotate the loaded prison? | Actual Full HD browser failure, input-session release, production callback mutation red and restored green. |
 
 ### Findings from the first four records that changed a decision
 
