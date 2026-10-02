@@ -788,3 +788,19 @@ are recorded in [separator evidence](../../research/2026-10-02-hud-separator-key
 The spec joins the existing artifact partition. Three independent agents
 continue native category input ownership, legacy occupied template history,
 and authored wooden rack acceptance; root integrates accepted chair graphics.
+## Wooden chair native acceptance — 2026-10-02
+
+The retained16-mesh default wooden chair is integrated with its occupied1x1
+square, all four rotations and72 repeat-identical64pixels-per-tile exports.
+Actual Staff Room normal/90-degree construction and IndexedDBLoad pass3/3.
+Independent fixture timber counts are108/106 and54/49, unchanged afterLoad.
+Removing only the default consumer gives eight expected zero-pixel failures;
+exact restored mapping and directly equal worker bytes restore all three cases.
+Root opened both actual loaded1920x1080 images and confirmed the two chairs
+at the worker-proven positions; they are not synthetic placement screenshots.
+[Native proof and bounds](../../research/2026-10-02-wooden-chair-alignment/player-acceptance.md)
+retain all source and mutation evidence. Its spec joins the existing artifact
+partition. Individual rotated object placement is not inferred from this
+native room-template orientation route; classroom overrides remain unchanged.
+Generic wooden rack source alignment is published separately and is now being
+checked through genuine individual placement and removal of rotated room zoning.

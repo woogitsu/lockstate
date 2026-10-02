@@ -99,6 +99,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 
 | Record | Question it answered | Decision it fed |
 | --- | --- | --- |
+| [2026-10-02 wooden chair alignment](./2026-10-02-wooden-chair-alignment/README.md) | Does the retained wooden chair fit the shared square camera and survive native rotated building and Load? | Sixteen original meshes, all72 shared poses, native Staff Room fixtures and separate actual palette checks. Eight consumer-mutation pixel failures, exact restoration and three native cases green; integrated/hosted release gates remain separate. |
 | [2026-10-02 occupied template Undo](./2026-10-02-occupied-template-undo-atomicity.md) | Can a completed saved Cell be undone while occupied without destroying its shell and required fixtures? | Existing #1657; actual command failure, existing relocation/refusal rule, 18-test and 2-row production mutations red, exact restoration and 175 scoped tests green. |
 | [2026-10-02 held Build camera preview](./2026-10-02-held-build-camera-preview/README.md) | Does a held Build preview match its worker footprint after keyboard zoom? | Existing #1914; actual red, fix green, production mutation red and restoration green. |
 | [2026-10-02 angled touch navigation](./2026-10-02-oblique-touch-navigation/README.md) | Can two native fingers move the angled camera while Build remains armed? | Issue1959; actual red, corrected green, pointer-provision mutation red and restoration green; lifecycle acceptance pending. |
@@ -429,5 +430,6 @@ and it stopped one step short of its own consequence.
   summariser, the incident alert projection and the whole tunnel registry with no
   caller in `src/` — the same class as issue #287's two uncalled capabilities,
   three layers deeper.
+
 
 
