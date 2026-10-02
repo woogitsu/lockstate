@@ -26,7 +26,7 @@ test('two real fingers pan the angled camera while Build stays armed', async ({ 
   await expect(minimapViewport).toBeVisible();
   const before = await minimapViewport.getAttribute('style');
   const client = await page.context().newCDPSession(page);
-  const touch = async (type: 'touchStart' | 'touchMove' | 'touchEnd', points: readonly { id: number; x: number; y: number }[]) =>
+  const touch = async (type: 'touchStart' | 'touchMove' | 'touchEnd' | 'touchCancel', points: readonly { id: number; x: number; y: number }[]) =>
     client.send('Input.dispatchTouchEvent', { type, touchPoints: points.map(point => ({ ...point })) });
   await touch('touchStart', [{ id: 0, x: 900, y: 540 }, { id: 1, x: 1050, y: 540 }]);
   for (let step = 1; step <= 6; step += 1) {
@@ -41,4 +41,11 @@ test('two real fingers pan the angled camera while Build stays armed', async ({ 
   expect.soft((await sentCommands(page)).filter(command => command['type'] === 'PlaceBuildOrder'),
     'two-finger navigation submitted a Build order').toHaveLength(0);
   await expect(minimapViewport, 'the two-finger pan did not move the angled camera').not.toHaveAttribute('style', before ?? '');
+  await touch('touchStart', [{ id: 0, x: 900, y: 540 }, { id: 1, x: 1050, y: 540 }]);
+  await touch('touchCancel', []);
+  expect((await sentCommands(page)).filter(command => command['type'] === 'PlaceBuildOrder')).toHaveLength(0);
+  await touch('touchStart', [{ id: 0, x: 900, y: 540 }]);
+  await touch('touchEnd', []);
+  await expect.poll(async () => (await sentCommands(page)).filter(command => command['type'] === 'PlaceBuildOrder').length)
+    .toBe(1);
 });
