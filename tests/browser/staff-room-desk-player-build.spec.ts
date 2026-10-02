@@ -46,6 +46,23 @@ async function deskAnchors(page: Page): Promise<string[]> {
   });
 }
 
+/** Read the unique grey desktop from the completed employee model, not a generic fallback. */
+async function employeeDesktopPixels(page: Page, png: Buffer): Promise<number> {
+  return page.evaluate(async base64 => {
+    const bitmap = await createImageBitmap(new Blob([Uint8Array.from(atob(base64), c => c.charCodeAt(0))], { type: 'image/png' }));
+    const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
+    const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0);
+    // Fixed Full HD camera after centring the Staff Room: only the desk top
+    // occupies this rectangular sample, not the nearby chairs or room floor.
+    const pixels = context.getImageData(920, 420, 130, 125).data;
+    let count = 0;
+    for (let index = 0; index < pixels.length; index += 4) {
+      if (pixels[index] === 148 && pixels[index + 1] === 145 && pixels[index + 2] === 139) count += 1;
+    }
+    return count;
+  }, png.toString('base64'));
+}
+
 let routeStorage: Awaited<ReturnType<ReturnType<Page['context']>['storageState']>> | undefined;
 const test = base.extend({
   storageState: async ({}, use) => { await use(routeStorage ?? { cookies: [], origins: [] }); },
@@ -135,7 +152,8 @@ test('player builds the existing 2 x 1 desk in Staff Room and keeps it after Sav
   // Centre the completed Staff Room, rather than recording a neighbouring delivery room.
   await minimap.click({ position: { x: bounds.width * 21.5 / 32, y: bounds.height * 6.5 / 32 } });
   await page.mouse.move(1300, 700);
-  await page.screenshot({ path: info.outputPath('staff-room-desk-worker-completed-fullhd.png') });
+  const painted = await page.screenshot({ path: info.outputPath('staff-room-desk-worker-completed-fullhd.png') });
+  expect(await employeeDesktopPixels(page, painted), 'completed Staff Room desk must show authored grey desktop').toBeGreaterThan(1000);
   await page.getByRole('button', { name: 'Overview', exact: true }).click();
   await page.getByRole('button', { name: 'Save now', exact: true }).click();
   await expect(page.locator('.save-panel__status')).toContainText('Saved');
@@ -144,5 +162,6 @@ test('player builds the existing 2 x 1 desk in Staff Room and keeps it after Sav
   expect(await deskAnchors(page)).toEqual(['21,6']);
   await minimap.click({ position: { x: bounds.width * 21.5 / 32, y: bounds.height * 6.5 / 32 } });
   await page.mouse.move(1300, 700);
-  await page.screenshot({ path: info.outputPath('staff-room-desk-loaded-fullhd.png') });
+  const restored = await page.screenshot({ path: info.outputPath('staff-room-desk-loaded-fullhd.png') });
+  expect(await employeeDesktopPixels(page, restored), 'authored employee desk must survive Save/Load').toBeGreaterThan(1000);
 });

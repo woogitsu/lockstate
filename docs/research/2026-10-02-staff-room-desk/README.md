@@ -10,9 +10,15 @@ The new renderer translates the existing geometry by `(1,0.5)` in Blender and re
 
 Two full renderer passes produced the same manifest SHA-256 `9cb94d947cc99c72a58a99a9231760f162e0ff40a78a812587836f76cf879733`. The Staff Room-only render selector requires the entire 2 x 1 footprint to fit inside the published room rectangle. Unit tests cover the real projection for built versus planned desks, absent/other rooms, source hash, 72 frame hashes and the camera scale equation. Temporarily replacing the Staff Room selector with the generic desk produced red 1/4, then restoring it returned 4/4 green. Changing the first manifest frame hash to zeroes produced red 1/3, then restoring it returned 3/3 green.
 
-Actual player Build, worker completion, Save/Load and Full HD pixel proof remain to be run after the current serialized browser lease. This source and manifest proof alone does not claim that the production view is visually accepted.
 
 
 ## Obsolete frame cleanup
 
-Root removed the72 replaced reception-employee-desk-yaw PNGs after confirming zero references in current game-content JSON or tracked text. The original manifest/frames remain in published ancestor c53a2d6518; a scoped LFS fetch was checked before removal. Every removal path was validated inside public/assets/environment/oblique. The72 new employee-variants poses remain, and31 art/mapping/index cases pass after cleanup. This does not replace the pending actual Staff Room worker/SaveLoad acceptance.
+Root removed the72 replaced reception-employee-desk-yaw PNGs after confirming zero references in current game-content JSON or tracked text. The original manifest/frames remain in published ancestor c53a2d6518; a scoped LFS fetch was checked before removal. Every removal path was validated inside public/assets/environment/oblique. The72 new employee-variants poses remain, and31 art/mapping/index cases pass after cleanup. Actual worker/SaveLoad acceptance is recorded separately below.
+## Actual player proof at 1920 x 1080
+
+The [production browser spec](../../../tests/browser/staff-room-desk-player-build.spec.ts) places Storage Room and Delivery Bay, waits for both worker queues and saves in IndexedDB. A fresh browser context loads that real save, places Staff Room, waits for its worker queue, observes `object.desk` at anchor `(21,6)`, then saves and loads once more. The two stages passed 2/2 with the standard 60-second test and 10-second assertion budgets, without injected construction commands.
+
+- [Worker-completed Full HD screenshot](./worker-completed-fullhd.png) and [reloaded Full HD screenshot](./loaded-fullhd.png) show the employee desk, chairs, room floor, walls and door in the actual oblique scene.
+- The fixed desktop region contains **1,547** authored grey RGB `(148,145,139)` pixels before Save and **1,547** after Load. Its rectangle isolates the desk from nearby chairs and room floor.
+- Changing only the production Staff Room asset selector to the generic desk reduced the oracle to **zero** pixels and failed the desk stage (1/2 tests passed). Restoring the map byte-for-byte returned the same real-player spec to 2/2 green. The mutation confirms that the screenshot proof exercises the employee desk consumer.
