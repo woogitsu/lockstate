@@ -25,7 +25,7 @@ for (const button of ['middle', 'right'] as const) {
     await page.getByRole('button', { name: 'Build', exact: true }).click();
     const canvas = page.locator('#game-root canvas');
     const minimap = page.locator('.hud-minimap__viewport');
-    const selector = page.locator('.hud-build__category');
+    const selector = page.getByRole('combobox', { name: 'Category', exact: true });
     const box = await selector.boundingBox();
     expect(box).not.toBeNull();
     const hud = { x: box!.x + box!.width / 2, y: box!.y + box!.height / 2 };
@@ -37,9 +37,15 @@ for (const button of ['middle', 'right'] as const) {
     }
     expect(await page.evaluate(p => document.elementFromPoint(p.x, p.y)?.tagName, hud)).toBe('SELECT');
     const commands = await sentCommands(page);
+    // The canvas spans the viewport: its screenshot also composites the HUD.
+    // Compare uncovered map pixels so SELECT hover painting cannot impersonate motion.
+    const mapClip = { x: 400, y: 300, width: 1000, height: 400 };
+    for (const point of [{ x: 400, y: 300 }, { x: 1399, y: 699 }]) {
+      expect(await page.evaluate(p => document.elementFromPoint(p.x, p.y)?.tagName, point)).toBe('CANVAS');
+    }
     const painted = async (): Promise<Buffer> => {
       await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
-      return canvas.screenshot();
+      return page.screenshot({ clip: mapClip });
     };
     await page.mouse.move(start.x, start.y);
     await expect.poll(async () => (await painted()).equals(await painted())).toBe(true);
@@ -52,13 +58,17 @@ for (const button of ['middle', 'right'] as const) {
       await expect.poll(() => page.evaluate(() => Reflect.get(window, 'cameraExitSamples')
         .some((sample: { type: string; target: string; related: string | null }) => sample.type === 'mouseout' && sample.target === 'CANVAS' && sample.related !== 'CANVAS'))).toBe(true);
       const stopped = await painted();
+      await canvas.screenshot({ path: testInfo.outputPath(`${button}-stopped-fullhd.png`) });
       const viewport = await minimap.getAttribute('style');
       await page.mouse.move(returned.x, returned.y, { steps: 1 });
       const reentered = await painted();
+      await canvas.screenshot({ path: testInfo.outputPath(`${button}-reentered-fullhd.png`) });
+      const viewportAfter = await minimap.getAttribute('style');
       const samples = await page.evaluate(() => Reflect.get(window, 'cameraExitSamples'));
       await writeFile(testInfo.outputPath(`${button}-stopped.png`), stopped);
       await writeFile(testInfo.outputPath(`${button}-reentered.png`), reentered);
-      await writeFile(testInfo.outputPath(`${button}-events.json`), JSON.stringify({ start, moved, hud, returned, samples, commands }, null, 2));
+      await writeFile(testInfo.outputPath(`${button}-events.json`), JSON.stringify({ start, moved, hud, returned, mapClip, samples, commands, viewport, viewportAfter,
+        mapUnchanged: reentered.equals(stopped), commandsAfter: await sentCommands(page) }, null, 2));
       expect(samples.at(-1).buttons).toBe(button === 'middle' ? 4 : 2);
       expect(reentered.equals(stopped), 'camera resumed a cancelled canvas-origin drag when it reentered from HUD').toBe(true);
       await expect(minimap).toHaveAttribute('style', viewport ?? '');
