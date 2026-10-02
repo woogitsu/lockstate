@@ -12,7 +12,7 @@ The previous exporter used 128 pixels and actual orthographic span 2.65: **48.30
 
 ## Retained authored source and actual Blender preparation
 
-The original `assets/source/blender/furniture.office.desk.generic.blend` remains byte-identical:103228 bytes, SHA256 `87ecf22ec7f4d82e5c2c47bb18870b8ef060a84759cb55d38b131fc34e72e11b`. Its21 evaluated meshes and actual material RGBA values are recorded in the adjacent source provenance JSON. No source resave, mesh replacement, scale change or material change was performed.
+The original `assets/source/blender/furniture.office.desk.generic.blend` remains byte-identical:103228 bytes, SHA256 `87ecf22ec7f4d82e5c2c47bb18870b8ef060a84759cb55d38b131fc34e72e11b`. Its21 evaluated meshes and actual material RGBA values are recorded in the adjacent source provenance JSON. No source resave, mesh replacement, scale change or material change was performed. An additional native comparison evaluated all 1176 vertices across all 21 meshes before and after the actual shared preparation callback. The only change was world translation (1,.5,0), maximum coordinate error 1.1920928955078125e-7; all material names/RGBA and modifier names/types matched exactly. `retained-geometry.json` records this independent check and confirms source bytes remained identical.
 
 Native evaluated original bounds are[-.9100000262260437,-.41999998688697815,0]..[.9100000262260437,.42250001430511475,1.2699999809265137]. The desk-only wrapper reuses the unchanged shared kitchen exporter with unit scale and one min-corner translation (1,.5,0). Actual loaded bounds become[.0899999737739563,.08000001311302185,0]..[1.9100000858306885,.92249995470047,1.2699999809265137]. Every evaluated vertex stays within 2x1 at turns 0/2 and 1x2 at turns 1/3.
 
