@@ -16,6 +16,8 @@ fresh world arrow works after the list releases focus.
 
 The results below were obtained on the full room-plan integration branch before this independent main backport. The backport keeps only the arrow-focus release and preserves main's existing pointer lifecycle. Its input/index tests pass46/46 and TypeScript passes; separate production-browser acceptance on this exact main-based branch is pending. Do not treat the copied screenshot as proof of this backport's runtime.
 
+Independent backport falsification also removes only the adapter's physical-code deletion: the targeted release subset fails1/5, because camera.down remains active after releaseCodes; restoring the exact source bytes returns all41 input cases to green. This proves the adapter case on main, not the scene's actual focus transition. PR1945 remains draft until that production-browser acceptance and its exact-head CI finish.
+
 - Actual game at 1920×1080, `/?renderer=oblique`, new prison, paused. The
   browser case in `tests/browser/oblique-hud-roving-camera.spec.ts` captures
   an uncovered central map rectangle. A full canvas-element screenshot also
