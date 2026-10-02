@@ -351,6 +351,11 @@ export class ObliqueWorldScene extends Phaser.Scene {
     const graphics = this.gestureGraphics;
     graphics.clear();
     let gesture = this.gesture;
+    // A held drag keeps its pressed world square, but its endpoint follows the
+    // stationary screen cursor whenever the camera projection changes.
+    if (gesture !== undefined && this.hoveredScreenPoint !== undefined) {
+      gesture.current = screenToGround(this.hoveredScreenPoint, this.pose);
+    }
     if (gesture === undefined && this.hoveredScreenPoint !== undefined) {
       const kind = this.buildTool?.isArmed() === true ? 'build'
         : this.objectTool?.isArmed() === true && this.objectTool.footprint() !== undefined ? 'object'
@@ -516,6 +521,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
   }
 
   public override update(time: number, delta: number): void {
+    let previewNeedsRepaint = false;
     const horizontal = Number(this.keyboard.isActive('camera.right')) - Number(this.keyboard.isActive('camera.left'));
     const vertical = Number(this.keyboard.isActive('camera.down')) - Number(this.keyboard.isActive('camera.up'));
     if (horizontal !== 0 || vertical !== 0) {
@@ -523,6 +529,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
         y: this.pose.viewport.height / 2 + vertical * 0.6 * delta };
       this.pose = { ...this.pose, target: screenToGround(screen, this.pose) };
       this.poseRevision += 1;
+      previewNeedsRepaint = true;
     }
     const turn = Number(this.keyboard.isActive('camera.rotate.right')) - Number(this.keyboard.isActive('camera.rotate.left'));
     const tilt = Number(this.keyboard.isActive('camera.tilt.up')) - Number(this.keyboard.isActive('camera.tilt.down'));
@@ -534,6 +541,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     if (viewport.width !== this.pose.viewport.width || viewport.height !== this.pose.viewport.height) {
       this.pose = { ...this.pose, viewport };
       this.poseRevision += 1;
+      previewNeedsRepaint = true;
     }
     const frame = this.feed.readFrame(time / 1000);
     if (this.gesture !== undefined) {
@@ -552,7 +560,9 @@ export class ObliqueWorldScene extends Phaser.Scene {
       };
       this.framedWorld = true;
       this.poseRevision += 1;
+      previewNeedsRepaint = true;
     }
+    if (previewNeedsRepaint) this.paintGesturePreview();
     this.lastFrame = frame;
     this.roomTool?.setWorld?.(frame.world);
     this.repaint();
