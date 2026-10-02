@@ -1,6 +1,17 @@
 # Dedicated utility panel: prepared genuine player route
 
-2026-10-02. **Prepared; not executed, calibrated or accepted.**
+2026-10-03 native observation checkpoint; **full frozen baseline/consumer restore pending**.
+
+Both first genuine q0/q1 capacity+UtilityRoom Build/SaveLoad routes passed2/2.
+Actual anchors22,6 orientation0 and22,7 orientation1 survived Load; no state
+was injected. Both completed/loaded FullHDs were opened, showing the retained
+cabinet/front display and physical lower knobs/bezel/hatch. Native four right
+camera clicks(q0) or four left clicks(q1) observe the front after actual
+template rotation. Historical bodyRGB41/113/118 is correct: original crops
+[940,420,110,100] and[900,420,110,100] each contain945 pixels before and after
+Load. The original RGB,crops and >100 threshold remain; no provisional pixel
+failure occurred. Their raw first green results and frame hashes are preserved.
+The source-derived palette candidate file remains separate export evidence.
 
 Source SHA256 `1bc780cc2e6ab7b25e932652e6e3f1c9e4ce07a63256b340af02bf310e3cf137`;
 canonical descriptor SHA256
