@@ -18,7 +18,7 @@ Native evaluated original bounds are[-.9100000262260437,-.41999998688697815,0]..
 
 Actual camera 256 pixels/span 4 gives 64 pixels per tile, centered pivot 128,128 and actual target[1,.5,.6349999904632568]. The native guard reads actual camera offsets and forward direction independently for all 72 poses. Source callbacks validate original hash, all 21 mesh names and evaluated bounds before translation; default shared callbacks and other exporters remain unchanged.
 
-Blender 5.2.1 LTS upstream build ID `9e2066aef7ef`; pinned executable SHA256 `284f4041f98e113f3dc10654a7193ffaaa9bfdfec8b87fa116620a48b5f6d4cb`.
+Blender 5.2.1 LTS upstream build identifier `build_hash=9e2066aef7ef`; pinned executable SHA256 `284f4041f98e113f3dc10654a7193ffaaa9bfdfec8b87fa116620a48b5f6d4cb`.
 
 ## Verification actually run
 

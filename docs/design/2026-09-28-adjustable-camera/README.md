@@ -911,3 +911,47 @@ recorded, not hidden by increasing budgets. Root confirms109 HUD/documentation
 and complementary browser-routing cases in8files and both TypeScript targets.
 The spec joins the existing artifact partition. Same-option letters, buffered
 localized selection and immediate zoom/Undo are outside this observed scope.
+
+## Reception desk, occupied cancellation and HUD drag integration — 2026-10-02
+
+The retained authored Reception desk now uses the measured shared-camera scale,
+target and all four occupied orientations. Actual worker construction and
+Save/Load acceptance covers the normal and rotated Reception; removing its
+default consumer mapping fails eight independent pixel checks. Exact restored
+acceptance passes three native cases. Root opened both loaded Full HD images;
+the rotated document is wall-occluded, so its visibility is not claimed.
+[Desk evidence](../../research/2026-10-02-generic-office-desk-alignment/player-acceptance.md)
+keeps the original source, retained evaluated vertices and calibration history.
+
+Explicit cancellation of an occupied completed template now prepares the whole
+coupled cancellation before changing construction orders or refunds. Compatible
+completed metadata without Undo history is covered as well as genuine legacy
+history, whole-row exclusion, spare-cell relocation and refusal without partial
+mutation. Production disconnection fails 23 cases with four legal controls;
+disconnecting the direct metadata path fails its separate control.
+[Cancellation evidence](../../research/2026-10-02-occupied-template-cancellation.md)
+records 27 restored cases without a save-format, tariff or copy change.
+
+Canvas-origin mouse building now retains its pointer when a held wall drag
+crosses native HUD controls. The observed defect was a frozen footprint and
+quote, not truncated authoritative construction. Native 100% and 200% cases
+fail before the change and under capture-only mutation, then pass on exact
+restoration alongside existing cancellation controls: four cases in 32.3 s.
+[HUD drag evidence](../../research/2026-10-02-oblique-build-drag-hud-preview.md)
+records the narrower observed wall scope; object and room-area acceptance is
+being established separately. Its spec joins the existing complementary
+artifact/dev partition without changing limits or retries.
+
+Root's combined 15-file verification returned 248 passes and two citation
+failures in 624.61 s. One failure was the external Blender build identifier
+being read as a repository commit; it is now explicitly named `build_hash`.
+The other was an already published peer commit missing from this checkout's
+remote-reference cache. After fetching that published branch, the unchanged
+eight-case citation contract passes in 12.30 s. These are complementary scoped
+results, not a new complete-suite or remote release claim.
+
+The approved verify hydration step covers authored Blender sources and oblique
+renders, including subsequent models in the approved directories. The next
+Kitchen stove, numeric coupled-refund preview and further native controls stay
+on independent branches while this integrated release candidate runs exact-head
+CI. Serial main CI and mergeability remain required before another merge.
