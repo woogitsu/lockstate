@@ -40,6 +40,7 @@ import { SimulationSnapshotFeed } from './rendering/feed/simulation-snapshot-fee
 import { WorldScene } from './rendering/scene/world-scene';
 import { ObliqueWorldScene } from './rendering/scene/oblique-world-scene';
 import {
+  cacheVerifiedObliqueCatalogs,
   prepareProductionRenderScene,
   productionRenderMode,
   renderProductionRenderFailure,
@@ -715,11 +716,7 @@ const createTopDownWorldScene = (): WorldScene => new WorldScene({
  * Phaser starts it.
  */
 let hudThumbnailCatalogs: ReadonlyMap<string, ObliqueModuleCatalog> = new Map();
-let obliqueCatalogPromise: Promise<ReadonlyMap<string, ObliqueModuleCatalog>> | undefined;
-const loadLiveObliqueCatalogs = (): Promise<ReadonlyMap<string, ObliqueModuleCatalog>> => {
-  obliqueCatalogPromise ??= fetchObliqueModuleSet().catch(error => { obliqueCatalogPromise = undefined; throw error; });
-  return obliqueCatalogPromise;
-};
+const loadLiveObliqueCatalogs = cacheVerifiedObliqueCatalogs(() => fetchObliqueModuleSet());
 const createLiveObliqueScene = (catalogs: ReadonlyMap<string, ObliqueModuleCatalog>): ObliqueWorldScene => {
   hudThumbnailCatalogs = catalogs;
   return new ObliqueWorldScene({ feed: activeRenderFeed, keyValueStore: resolveBrowserKeyValueStore(), catalogs,
