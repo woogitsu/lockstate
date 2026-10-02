@@ -30,6 +30,19 @@ export interface RoomTemplateCoordinatorSnapshot {
   readonly completed?: readonly PendingRoomTemplate[];
 }
 
+function doorwayApproaches(plan: RoomTemplatePlan & { readonly quarterTurns?: QuarterTurns }) {
+  const turns = plan.quarterTurns ?? 0;
+  return plan.doorSquares.map((door) => {
+    // Authored south entrances face +y; the northern bank of a cell row
+    // carries orderTile on the room side and faces -y. Rotate that outward
+    // vector with the plan, including entrances onto its shared corridor.
+    const outward = door.orderTile === undefined ? 1 : -1;
+    const dx = turns === 1 ? -outward : turns === 3 ? outward : 0;
+    const dy = turns === 0 ? outward : turns === 2 ? -outward : 0;
+    return { door, outside: { x: door.x + dx, y: door.y + dy } };
+  });
+}
+
 /** Finishes zoning only after every authored shell order has actually built. */
 export class RoomTemplateCoordinator implements SystemRegistration {
   public readonly id = 'room-templates';
@@ -73,7 +86,7 @@ export class RoomTemplateCoordinator implements SystemRegistration {
         objectClaims.add(tileKey(tile));
       }
     }
-    return validateRoomTemplatePlacement(
+    const verdict = validateRoomTemplatePlacement(
       this.world,
       plan,
       (tile) => this.placedObjects.isTileOccupied(tile) || objectClaims.has(tileKey(tile)),
@@ -81,6 +94,20 @@ export class RoomTemplateCoordinator implements SystemRegistration {
         tile.x >= pending.origin.x && tile.x < pending.origin.x + pending.width &&
         tile.y >= pending.origin.y && tile.y < pending.origin.y + pending.height),
     );
+    if (!verdict.ok) return verdict;
+    // #1672: an object can be outside the rectangle and still seal its only
+    // entrance. Use the same geometry as the pending reverse-order claim.
+    for (const { door, outside } of doorwayApproaches(plan)) {
+      const doorTile = { x: tileCoordinate(door.x), y: tileCoordinate(door.y) };
+      if (!Number.isSafeInteger(outside.x) || !Number.isSafeInteger(outside.y)) {
+        return { ok: false, reason: 'unowned-land', tile: doorTile };
+      }
+      const approach = { x: tileCoordinate(outside.x), y: tileCoordinate(outside.y) };
+      if (this.placedObjects.isTileOccupied(approach) || objectClaims.has(tileKey(approach))) {
+        return { ok: false, reason: 'object-occupied', tile: doorTile };
+      }
+    }
+    return verdict;
   }
 
   /** The pending gesture reserves every square, even before its shell is visible. */
@@ -98,15 +125,7 @@ export class RoomTemplateCoordinator implements SystemRegistration {
     return this.pending.some((request) => {
       const turns = request.quarterTurns ?? 0;
       const plan = instantiateRoomTemplateForConstruction(request.templateId, request.origin, request.mirrorX, turns);
-      return plan.doorSquares.some((door) => {
-        // Authored south entrances face +y; the northern bank of a cell row
-        // carries orderTile on the room side and faces -y. Rotate that outward
-        // vector with the plan, including entrances onto its shared corridor.
-        const outward = door.orderTile === undefined ? 1 : -1;
-        const dx = turns === 1 ? -outward : turns === 3 ? outward : 0;
-        const dy = turns === 0 ? outward : turns === 2 ? -outward : 0;
-        return tile.x === door.x + dx && tile.y === door.y + dy;
-      });
+      return doorwayApproaches(plan).some(({ outside }) => tile.x === outside.x && tile.y === outside.y);
     });
   }
 
