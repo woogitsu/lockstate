@@ -31,12 +31,20 @@ export function obliqueAssetIdForObject(objectId: string): string | undefined {
   return OBLIQUE_OBJECT_ASSET_IDS[objectId];
 }
 
-const YARD_VISUAL_VARIANTS: Readonly<Record<string, string>> = Object.freeze({
-  'object.bench': 'furniture.yard.steel-bench',
-  'object.waste-bin': 'fixture.yard.steel-waste-bin',
-});
+const ROOM_VISUAL_VARIANTS: readonly {
+  readonly roomCatalogId: string;
+  readonly objectAssets: Readonly<Record<string, string>>;
+}[] = Object.freeze([
+  { roomCatalogId: 'room.yard', objectAssets: Object.freeze({
+    'object.bench': 'furniture.yard.steel-bench',
+    'object.waste-bin': 'fixture.yard.steel-waste-bin',
+  }) },
+  { roomCatalogId: 'room.common-room', objectAssets: Object.freeze({
+    'object.bench': 'furniture.common-room.upholstered-bench',
+  }) },
+]);
 
-/** Presentation-only skin for a completed object wholly inside a published Yard rectangle. */
+/** Presentation-only skin for a completed object wholly inside a published room rectangle. */
 export function obliqueAssetIdForPlacedObject(
   objectId: string,
   tileX: number,
@@ -44,12 +52,14 @@ export function obliqueAssetIdForPlacedObject(
   footprint: { readonly width: number; readonly height: number },
   rooms: readonly RenderRoom[],
 ): string | undefined {
-  const yardAssetId = YARD_VISUAL_VARIANTS[objectId];
-  if (yardAssetId !== undefined && rooms.some(room => room.roomCatalogId === 'room.yard' &&
-    tileX >= room.anchorTileX && tileY >= room.anchorTileY &&
-    tileX + footprint.width <= room.anchorTileX + room.width &&
-    tileY + footprint.height <= room.anchorTileY + room.height)) {
-    return yardAssetId;
+  for (const variant of ROOM_VISUAL_VARIANTS) {
+    const assetId = variant.objectAssets[objectId];
+    if (assetId !== undefined && rooms.some(room => room.roomCatalogId === variant.roomCatalogId &&
+      tileX >= room.anchorTileX && tileY >= room.anchorTileY &&
+      tileX + footprint.width <= room.anchorTileX + room.width &&
+      tileY + footprint.height <= room.anchorTileY + room.height)) {
+      return assetId;
+    }
   }
   return obliqueAssetIdForObject(objectId);
 }
