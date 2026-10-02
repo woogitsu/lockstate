@@ -51,7 +51,8 @@ canonical runtime descriptor and exact unit min-corner transform. Native
 occupied orientations and actual camera offsets/forward vectors for72poses.
 Both entrypoints explicitly require the pinned Blender version.
 
-Blender5.2.1LTS upstream build ID `9e2066aef7ef` is not a Git commit citation.
+Blender5.2.1LTS upstream identifier `blender-build-id=9e2066aef7ef` names the
+Blender executable build, not a commit in this game repository.
 Executable SHA256
 `284f4041f98e113f3dc10654a7193ffaaa9bfdfec8b87fa116620a48b5f6d4cb`.
 

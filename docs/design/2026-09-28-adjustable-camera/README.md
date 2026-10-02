@@ -1318,3 +1318,14 @@ The Laundry/camera predecessor is published as draft
 The root catalogue typo producer negative fails both gates, exact restoration
 passes16/16. Full exact-head CI, merge gates and production delivery remain
 separate from these local integration results.
+
+The same following integration also includes the actual #1986 atomic template
+Redo admission correction: newer accepted zoning cannot make Redo reapprove
+paid orders, spend twice or strand old furniture. Root integrated the published
+producer-checked source and passed163 tests across10 gameplay/renderer files
+in14.00s, plus both TypeScript projects and production build (client6.99s).
+The resulting worker is `worker-DIP7pP3A.js`, SHA256
+`5247173b87c7d7935c4c2b312676b4e35bf2c3a35b8568c83ff9a678c78c21d2`.
+[Actual baseline, guarded reversal, legal retry and both producer negatives](../../research/2026-10-03-template-redo-zoning/README.md)
+are retained. Bin/drawer native acceptance must use this rebuilt combined
+subject; earlier upstream native captures are not relabelled as this client.
