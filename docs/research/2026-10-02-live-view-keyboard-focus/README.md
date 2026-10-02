@@ -1,11 +1,27 @@
-# Keyboard live view focus ? pending native diagnosis
+# Live View keyboard focus ? actual production acceptance
 
-## VERIFIED: source audit
+Issue: [#1956](https://github.com/woogitsu/lockstate/issues/1956).
 
-The native View select sets `disabled=true` while awaiting the renderer port, then re-enables itself. It does not explicitly restore focus after success. Failure calls native `reportValidity`, whose actual focus behavior must be measured in the browser. The existing unit stub does not implement native disabling/focus behavior, so source inspection alone cannot establish a player regression.
+## VERIFIED: native regression
 
-## Prepared actual regression
+At 1920?1080, actual Tab/Enter creates a prison through the worker and focuses View. Native ArrowDown successfully activates Angled, but disabling the select during asynchronous replacement loses focus to the body. The old source failed both prepared cases after a successful activation (19.8 seconds each). An actual registry 503 rollback retained focus through native validity feedback; its successful retry then lost focus again. This is a HUD focus defect, independent of renderer geometry or save fields.
 
-`tests/browser/live-view-keyboard-focus.spec.ts` navigates with Tab to New prison, activates Enter, then tabs to the View selector. It changes the real production renderer with native ArrowDown/ArrowUp and checks that focus remains available for the next keyboard action. A second case injects an actual registry503 response and checks focus for immediate keyboard retry.
+## Correction and navigation intent
 
-TypeScript passed. The shared browser lease belongs to the camera agent; these cases have not run. No Issue or source correction is claimed yet.
+The control records whether it was focused before disabling. After replacement it restores focus with preventScroll only if the active element is the body and no Tab or pointer navigation occurred during loading. A different focused control is preserved. Temporary document navigation handlers are removed after completion. The select remains genuinely disabled during loading, preventing duplicate requests; rollback and native validity feedback retain their existing behavior.
+
+## Actual proof
+
+`tests/browser/live-view-keyboard-focus.spec.ts` uses native Tab, Enter and ArrowDown/ArrowUp, never programmatic focus or selectOption:
+
+- World ? Angled ? World retains focus for the next keyboard action.
+- Real registry 503 refusal returns to World and permits immediate keyboard retry.
+- A held registry response allows actual Tab navigation while busy; completion preserves the player's new focus.
+
+Production build baseline with the correction: **3/3 passed, 35.0 s**. Mutating only the focus recovery line out of the production source and rebuilding: **1/1 failed, 20.0 s**, focused selector expected but inactive. Restoring and rebuilding: **3/3 passed, 34.5 s**, terminal exit 0. One browser worker, existing 60-second case and 10-second assertion budgets, no retries or budget changes.
+
+The same production mutation fails the focused DOM unit (1 red/5 green); restored unit suite **6/6 green**, TypeScript green. Unit cases also protect pointer navigation and another control's focus. They do not replace the native browser proof.
+
+![Actual Full HD focused View selector after Angled activation](./focused.png)
+
+The screenshot was opened: View is visible above compact camera controls with its native focus border. The screenshot proves the visible final control; the test assertions prove focus and navigation through the actual worker-driven application. The correction does not change camera poses, worker lifecycle, deployment, renderer defaults or save format.
