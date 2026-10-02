@@ -1,0 +1,66 @@
+node : [2m[WebServer] [22m(node:55172) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:4 char:1
++ node --experimental-transform-types --disable-warning=ExperimentalWar ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m
+[2m[WebServer] [22m  VITE v8.2.2  ready in 348 ms
+[2m[WebServer] [22m
+[2m[WebServer] [22m  ➜  Local:   http://127.0.0.1:5417/
+LOCKSTATE_BROWSER_PREWARM_READY elapsedMs=5205
+
+Running 1 test using 1 worker
+
+(node:18924) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:18924) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 tests\browser\oblique-room-template-picking.spec.ts:5:1 › angled room plan ghost and mouse placement agree through four yaw directions (48.5s)
+
+
+  1) tests\browser\oblique-room-template-picking.spec.ts:5:1 › angled room plan ghost and mouse placement agree through four yaw directions 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveAttribute[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  locator('.room-template-world-ghost')
+    Expected: [32m"blocked"[39m
+    Received: [31m"clear"[39m
+    Timeout:  10000ms
+
+    Call log:
+    [2m  - Expect "toHaveAttribute" with timeout 10000ms[22m
+    [2m  - waiting for locator('.room-template-world-ghost')[22m
+    [2m    13 × locator resolved to <div data-ready="clear" class="room-template-world-ghost">…</div>[22m
+    [2m       - unexpected value "clear"[22m
+
+
+      111 |     await dialog.getByRole('button', { name: 'Place on map', exact: true }).click();
+      112 |     await page.mouse.move(hover.x, hover.y);
+    > 113 |     await expect(ghost).toHaveAttribute('data-ready', 'blocked');
+          |                         ^
+      114 |     expect((await sentCommands(page)).filter(command => command.type === 'PlaceRoomTemplate')).toHaveLength(placedBefore + 1);
+      115 |     await page.keyboard.press('Escape');
+      116 |     if (pose.yawSteps !== 21) {
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-first-ci-integration-20261002\tests\browser\oblique-room-template-picking.spec.ts:113:25
+
+    Error Context: test-results\oblique-room-template-pick-a294a-through-four-yaw-directions\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\oblique-room-template-pick-a294a-through-four-yaw-directions\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\oblique-room-template-pick-a294a-through-four-yaw-directions\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    tests\browser\oblique-room-template-picking.spec.ts:5:1 › angled room plan ghost and mouse placement agree through four yaw directions 
+
+==============================================================================
+LOCKSTATE_BROWSER_SUITE_NO_RETRY suite=browser failures=1 withSignature=0
+1 of 1 failing test(s) carry no net::ERR_NETWORK_CHANGED evidence: "oblique-room-template-picking.spec.ts > angled room plan ghost and mouse placement agree through four yaw directions". A retry is permitted only when every failure is this host-level abort.
+==============================================================================
+

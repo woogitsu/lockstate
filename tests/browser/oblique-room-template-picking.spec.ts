@@ -83,6 +83,10 @@ test('angled room plan ghost and mouse placement agree through four yaw directio
       return {
         area,
         safe,
+        repeatHover: {
+          x: bounds.left + first.reduce((sum, vertex) => sum + vertex.x, 0) / first.length / sx,
+          y: bounds.top + first.reduce((sum, vertex) => sum + vertex.y, 0) / first.length / sy,
+        },
         outside: vertices.flatMap((square, index) => square.filter(point =>
           !Number.isFinite(point.x) || !Number.isFinite(point.y) ||
           point.x < safe.left - 0.01 || point.x > safe.right + 0.01 ||
@@ -109,8 +113,13 @@ test('angled room plan ghost and mouse placement agree through four yaw directio
     await expect(ghost).toBeHidden();
     await page.getByRole('button', { name: 'Room plans', exact: true }).click();
     await dialog.getByRole('button', { name: 'Place on map', exact: true }).click();
-    await page.mouse.move(hover.x, hover.y);
+    // The completed placement retains the fitted camera. Revisit the actual
+    // ground centre of its origin square, not the obsolete pre-fit screen point.
+    // The first placement above still checks an independently calculated origin.
+    await page.mouse.move(footprint.repeatHover.x, footprint.repeatHover.y);
     await expect(ghost).toHaveAttribute('data-ready', 'blocked');
+    await expect.poll(preflightOrigin, { message: 'the blocked repeat must revisit the exact placed world square' }).toEqual(expectedOrigin);
+    await page.mouse.click(footprint.repeatHover.x, footprint.repeatHover.y);
     expect((await sentCommands(page)).filter(command => command.type === 'PlaceRoomTemplate')).toHaveLength(placedBefore + 1);
     await page.keyboard.press('Escape');
     if (pose.yawSteps !== 21) {

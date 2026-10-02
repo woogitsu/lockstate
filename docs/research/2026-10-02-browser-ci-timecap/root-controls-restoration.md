@@ -35,3 +35,30 @@ wall,exact material purchase,focused labels,queue,speed and completion guards
 remain. This larger keyboard route is native-pending, not covered by the four
 cases above. Retained-origin room picking is likewise integrated but native
 pending. No full CI/hosted acceptance, no timeout/retry/guard relaxation claimed.
+
+## Further actual native acceptance
+
+Root rebuilt source `0715917fc9` before these test-only actor/picking consumers:
+`worker-BSO5d01V.js`, `index-DbWBPLYN.js`, `index-5Z_kNv7Y.css`. The actual built
+View control now passes all four native mouse cases at Full HD, both renderers
+and 100/200% scale, in25.6s. Every real press hits SELECT and changes the renderer;
+all four actual worker-command deltas are empty, and blank surrounding HUD chrome
+still hits the canvas. [Complete output](root-view-four-restored.txt).
+
+The authored actor source consumer passes all five original cases in41.1s after
+moving captured-PNG decoding out of the game thread. Role visibility, exact
+occlusion zero, foreground thresholds, image reuse, moving depth and independent
+headings remain unchanged. [Complete output](root-actors-five-restored.txt).
+The prior archived60s failure spent26.608639s decoding inside the browser; the
+new helper samples the same opaque captures with the same RGB difference8 and
+unchanged rectangles. Native renderer mutation/equivalence acceptance is still
+separate from this positive run.
+
+The corrected first picking placement reaches its independent pre-fit world
+origin, but the old repeat hover(880,380) then targets a different world square
+after the approved camera fit. Root's actual48.5s run remains
+[RED](root-picking-obsolete-repeat-red.txt). The repeat now targets the retained
+ground centre of the placed origin square and additionally checks same-origin
+worker preflight and a genuine blocked click issuing no second command. It keeps
+all28 polygons, area and HUD-safe bounds, exact first-placement origin and Escape
+guards. This follow-up is native-pending; the five keyboard routes remain pending.
