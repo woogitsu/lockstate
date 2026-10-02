@@ -261,16 +261,21 @@ feature with a reader and no producer.
 ### Walls, doors and the build queue
 
 - A wall is an edge value. `finalizeConstruction`
-  (`src/simulation/construction/system.ts:1965`, `finalizeConstruction`) writes it through `writeEdge`
+  (`src/simulation/construction/system.ts:1971`, `finalizeConstruction`) writes it through `writeEdge`
   (`:2031`, called at `:1934`), which calls `setTopEdge`/`setLeftEdge` and
   therefore bumps `geometryRevision`.
 - `BuildableCategory` is `'wall' | 'object' | 'utility'`
   (`src/simulation/construction/definition.ts:6`). `wall-brick` is the only
   `'wall'`; a door is an `'object'` row carrying `placesDoor`.
 - Cancelling a `completed` order reverses its geometry
-  (`src/simulation/construction/system.ts:1175`, `revertConstruction`, defined at
-  `:2185`), rewriting the edge from any other completed order that still claims
+  (`src/simulation/construction/system.ts:1181`, `revertConstruction`, defined at
+  `:2191`), rewriting the edge from any other completed order that still claims
   it rather than clearing it.
+- **Pending-template footprint amendment at checkpoint ff609c7b9f.** The previous
+  `system.ts:1965`, `:1175` and `:2185` indications
+  remain historical before the incoming-object reservation check. The live
+  completion and cancellation fragments still quote `finalizeConstruction` and
+  `revertConstruction`; the reversal implementation remains `private revertConstruction`.
 - **Object footprint admission amendment at checkpoint 81dc3159f4.** The prior
   `system.ts:1157` and `:2167` indications remain historical before extending
   existing bounds/ownership admission to every object tile. The live call and
@@ -283,7 +288,7 @@ feature with a reader and no producer.
   and `:1966` coordinates are historical indications, retained here rather than
   erased. The current cancellation call is `revertConstruction` above; its
   implementation is `private revertConstruction` at
-  `src/simulation/construction/system.ts:2185`. The earlier numbered span had
+  `src/simulation/construction/system.ts:2191`. The earlier numbered span had
   already drifted into a comment, so the amended anchor names the actual call.
   **Occupied-template source amendment at checkpoint 322cb5e5a4:** the previous
   `system.ts:1120` and `:2092` coordinates remain historical indications before

@@ -115,7 +115,7 @@ pricing, selection and UI; it is not the ownership test.
 - Checks terrain properties (e.g. `requiresBuildableTerrain`, `allowWater`).
 
 It has three production callers, each supplying its own requirement set:
-`ConstructionSystem.submitOrder` (`src/simulation/construction/system.ts:709`,
+`ConstructionSystem.submitOrder` (`src/simulation/construction/system.ts:715`,
 inside `admits`, with `SUBMISSION_REQUIREMENT`), `ObjectPlacementService`
 (`src/simulation/objects/object-placement-service.ts:535`,
 `PLACEMENT_REQUIREMENT`) and room zoning (`src/simulation/rooms/zoning.ts:559`,
@@ -148,6 +148,11 @@ the edge admission rule is unchanged.
 existing bounds/ownership admission to every physically occupied object tile.
 The live call still quotes `SUBMISSION_REQUIREMENT`; terrain stays deferred.
 
+**Pending-template footprint amendment at checkpoint ff609c7b9f.** The preceding
+`system.ts:709` and `:705` indications remain historical before the six-line
+incoming-object reservation check. The live call quotes `SUBMISSION_REQUIREMENT`;
+the helper is still `private admits` and the edge rule is unchanged.
+
 ### An edge order is judged by both tiles the edge separates
 
 An *edge* order is permitted when **either** of the two tiles the edge
@@ -156,7 +161,7 @@ of both and satisfied by either. The world keeps one slot per edge and keeps it
 on the north and west side, so the south face of owned land is addressed as the
 north edge of the first unowned row and its east face as the west edge of the
 first unowned column; `ConstructionSystem.submitOrder`
-(`src/simulation/construction/system.ts:594`, `public submitOrder`) asks `admits` (`:705`) about the
+(`src/simulation/construction/system.ts:594`, `public submitOrder`) asks `admits` (`:711`) about the
 order's own tile and, only if that refuses, about the tile across the named
 edge. Non-edge buildables are unaffected — an object is addressed by a tile and
 has no far side, which is what `occupiesTileEdge` decides — and the refusal the
