@@ -1,4 +1,4 @@
-# Research records
+﻿# Research records
 
 
 Dated evidence gathered to answer a specific open decision, kept because the
@@ -284,6 +284,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 | [2026-10-02 Kitchen square fixtures](./2026-10-02-kitchen-square-fixtures/README.md) | Do the existing stove, prep counter and fridge models fit their actual occupied tiles at angled camera poses? | Aligned three Blender sources to 2 x 1 / 1 x 1 footprints, rendered 216 deterministic poses with exact scale and hashes; real player Kitchen pixel proof pending. |
 | [2026-10-02 first square clock hint](./2026-10-02-first-square-clock-hint/README.md) | Is the paused construction hint readable and Play reachable in the angled Full HD game? | Source already renders the true note; bounded actual queue/line-geometry/keyboard test prepared, runtime pending; no newcomer-comprehension claim. |
 | [2026-10-02 Layout menu Escape and placement](./2026-10-02-layout-menu-escape-placement.md) | Does closing Layout with Escape also cancel the armed Build tool? | Actual Full HD standard/angled red, scoped menu propagation fix, production mutation red and exact restoration green. |
+| [2026-10-02 pending Delivery Bay readiness](./2026-10-02-delivery-bay-pending-readiness/README.md) | Do normal and mirrored plans retain exact fixture quantity and reachable doorway state after pending and completed Save/Load? | Real scheduled construction and both worker producers checked; dropping the detail producer's placed-object reader makes both cases red, exact restoration returns green. Simulation evidence, no browser or freight-throughput claim. |
 
 ### Findings from the first four records that changed a decision
 
