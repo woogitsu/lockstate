@@ -154,7 +154,7 @@ const sourceAt = (where: string): ScannedSource => {
 const mentionsOf = (name: string): readonly string[] =>
   sources.filter((source) => new RegExp(`\\b${name}\\b`).test(source.text)).map((source) => source.where);
 
-const adrBody = readFileSync(ADR_PATH, 'utf8');
+const adrBody = readFileSync(ADR_PATH, 'utf8').replace(/\r\n/g, '\n');
 
 describe('ADR 0007 deferred status: the accessors are gone and the decision is still kept', () => {
   it('scans a real source tree, and finds the accessors that do exist there', () => {
