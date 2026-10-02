@@ -98,6 +98,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 
 | Record | Question it answered | Decision it fed |
 | --- | --- | --- |
+| [2026-10-02 oblique wheel anchor](./2026-10-02-oblique-wheel-anchor/README.md) | Does angled native wheel zoom keep the Build square beneath the stationary cursor at changed yaw/elevation and after renderer switching? | [#1955](https://github.com/woogitsu/lockstate/issues/1955); browser red, fix green, wheel-listener mutation red, restored green |
 | [2026-10-02 oblique mixed mouse buttons](./2026-10-02-oblique-mixed-buttons/README.md) | Can a second mouse button start or commit Build while the same pointer owns a camera turn? | [#1954](https://github.com/woogitsu/lockstate/issues/1954); production browser red, fix green, guard mutation red |
 | [2026-10-02 Build target readability](./2026-10-02-build-target-readability/README.md) | Does the complete whole-square target/cost remain visible without moving controls? | Issue1953: actual angled input at Full HD, larger and effective 200% CSS size; nowrap mutation red, restored three cases green. |
 | [2026-08-25 room zoning gesture](./2026-08-25-room-zoning-gesture.md) | What gesture designates a room, and where does the control live? | ADR 0022 |
