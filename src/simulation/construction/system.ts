@@ -686,7 +686,8 @@ export class ConstructionSystem implements SystemRegistration {
             this.orders.set(order.id, order);
             return;
           }
-          if (this.pendingRoomTemplateClaims?.(tile, order.placementSequence) === true) {
+          if (this.world.getSquareStructure(tile) !== 0 ||
+              this.pendingRoomTemplateClaims?.(tile, order.placementSequence) === true) {
             this.setState(order, 'failed');
             order.failReason = 'unbuildable';
             this.orders.set(order.id, order);
