@@ -1,4 +1,4 @@
-# Research records
+﻿# Research records
 
 
 Dated evidence gathered to answer a specific open decision, kept because the
@@ -283,6 +283,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 | [2026-10-02 Staff Room desk](./2026-10-02-staff-room-desk/README.md) | Can the existing authored employee desk replace the generic 2 x 1 desk in Staff Room without spillover or changing gameplay? | Reused Blender source, aligned bounds to occupied squares and exported 72 deterministic poses. Real worker construction, Save/Load and Full HD production pixel mutation verified. |
 | [2026-10-02 Kitchen square fixtures](./2026-10-02-kitchen-square-fixtures/README.md) | Do the existing stove, prep counter and fridge models fit their actual occupied tiles at angled camera poses? | Aligned three Blender sources to 2 x 1 / 1 x 1 footprints, rendered 216 deterministic poses with exact scale and hashes; real player Kitchen pixel proof pending. |
 | [2026-10-02 first square clock hint](./2026-10-02-first-square-clock-hint/README.md) | Is the paused construction hint readable and Play reachable in the angled Full HD game? | Source already renders the true note; bounded actual queue/line-geometry/keyboard test prepared, runtime pending; no newcomer-comprehension claim. |
+| [2026-10-02 pending Delivery Bay readiness](./2026-10-02-delivery-bay-pending-readiness/README.md) | Do normal and mirrored plans retain exact fixture quantity and reachable doorway state after pending and completed Save/Load? | Real scheduled construction and both worker producers checked; dropping the detail producer's placed-object reader makes both cases red, exact restoration returns green. Simulation evidence, no browser or freight-throughput claim. |
 
 ### Findings from the first four records that changed a decision
 
