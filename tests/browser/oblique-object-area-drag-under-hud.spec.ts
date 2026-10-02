@@ -98,7 +98,7 @@ for (const scale of [1, 2]) {
     expect((await sentCommands(page)).filter(c => c.type === 'PlaceObject')).toHaveLength(2);
   });
 
-  test(`Full HD ${scale * 100}% native Yard area drag beneath its HUD row preserves the held rectangle through explicit confirmation`, async ({ page }, info) => {
+  test(`Full HD ${scale * 100}% native Yard area drag beneath View preserves the held rectangle through explicit confirmation`, async ({ page }, info) => {
     await openPaused(page, scale);
     await page.locator('.ui-tab[data-tab="zones"]').click();
     const yard = page.locator('.hud-rooms__list [data-room="room.yard"]');
@@ -106,16 +106,17 @@ for (const scale of [1, 2]) {
     await expect(yard).toHaveAttribute('aria-checked', 'true');
     await page.locator('.hud-rooms__arm').click();
     await expect(page.locator('.hud-rooms__arm')).toHaveAttribute('aria-pressed', 'true');
-    const box = await yard.boundingBox();
-    if (!box) throw new Error('Yard row missing');
-    // The right edge of the actual row yields an at-least-eight-square area
-    // from exposed canvas at both scales; no world state is injected.
-    const end = { x: box.x + box.width - 12, y: box.y + box.height / 2 };
-    const from = { x: 840, y: end.y };
+    const view = page.getByRole('combobox', { name: 'View', exact: true });
+    const box = await view.boundingBox();
+    if (!box) throw new Error('View missing');
+    // Rooms intentionally hides its catalogue when armed. View stays visible
+    // and its left edge yields a legal at-least-eight-square Yard at both scales.
+    const end = { x: box.x + 12, y: box.y + box.height / 2 };
+    const from = { x: 1170, y: end.y };
     const a = await tileOf(page, from), b = await tileOf(page, end);
     const area = { x: Math.min(a.x, b.x), y: Math.min(a.y, b.y), width: Math.abs(b.x - a.x) + 1, height: Math.abs(b.y - a.y) + 1 };
     expect(area.width >= 8 && area.height >= 8 && area.x >= 0 && area.y >= 0 && area.x + area.width <= 32 && area.y + area.height <= 32).toBe(true);
-    expect(await page.evaluate(p => document.elementFromPoint(p.x, p.y)?.closest('[data-room]')?.getAttribute('data-room'), end)).toBe('room.yard');
+    expect(await page.evaluate(p => document.elementFromPoint(p.x, p.y)?.tagName, end)).toBe('SELECT');
     await drag(page, from, end);
     const held = await page.locator('.hud-rooms__area-value').innerText();
     await page.screenshot({ path: info.outputPath('held-yard-area.png') });
@@ -132,8 +133,10 @@ for (const scale of [1, 2]) {
     expect(held, 'the held area beneath the HUD must match the exact rectangle explicitly confirmed to the worker')
       .toBe(`${area.width} × ${area.height} tiles at ${area.x}, ${area.y}`);
     await expect(page.locator('.hud-rooms__arm')).toHaveAttribute('aria-pressed', 'false');
-    await yard.click();
-    await expect(yard).toHaveAttribute('aria-checked', 'true');
+    await view.click();
+    await page.keyboard.press('Escape');
+    await expect(view).toBeFocused();
+    await expect(view).toHaveValue('oblique');
     expect((await sentCommands(page)).filter(c => c.type === 'ZoneRoom')).toHaveLength(1);
   });
 }
