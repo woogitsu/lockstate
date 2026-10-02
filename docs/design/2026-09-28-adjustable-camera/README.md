@@ -651,3 +651,7 @@ Laundry visual checks now sample the authored blue door palette separately in bo
 ## Laundry visual acceptance completed — 2026-10-02
 The previous missing-asset mutation remains explicitly inconclusive. A new production consumer mutation replaced only object.washing-machine with the existing generic desk asset, preserving normal catalog loading. Setup passed; real Laundry completion failed precisely on authored door pixels (0 instead of more than100). Exact byte restoration and rebuilt production client returned2/2green (43.0/38.1seconds). Separate door regions for both machines have equal palette counts before and after SaveLoad. The pending consumer sensitivity boundary is now satisfied for this FullHD player scene; no all-angle or deployed-availability claim is made.
 
+
+## Solo security/utility Blender alignment — 2026-10-02
+The generic evaluated-source audit now accepts a source basename and authoritative width/height. Hydrated original models had negative footprint coordinates: security console X[-.88,.88],Y[-.485,.38] for2x1; utility panel X[-.55,.55],Y[-.485,.30] for1x1. Export-only transforms now fit security X[.12,1.88],Y[.0635,.842] and panel X[.06,.94],Y[.0635,.77]. Existing sources remain unchanged. The existing deterministic square exporter produced72poses per model at256px/4tiles=64pixels per tile and checked transparent borders. Root opened both30/40 renders. Actual worker/SaveLoad/pixel proof and repeated-export comparison remain pending.
+
