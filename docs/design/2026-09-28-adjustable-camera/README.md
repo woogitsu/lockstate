@@ -1124,3 +1124,36 @@ the next Blender prep-counter task receives the exclusive browser slot after
 its offline source/export checks. Prior PR1899 and PR1972 remain frozen while
 their exact-head browser gates run. Ownership Issue1975 is a separate owner
 proposal; no new saved ownership field, migration or refusal copy is implemented.
+## Whole-square admission release checkpoint — 2026-10-02
+
+This third integration independently reproduces the generic-object far-square
+ownership bypass before its source fix: two failed PlaceBuildOrder cases with six
+legal controls green in 2.64 s. The ordinary PlaceObject route already refuses
+both saved frontier cases. Every incoming object footprint square now passes the
+existing bounds/ownership admission before approval; the preceding collision
+check also keeps all claimed furniture squares unavailable. Terrain permission
+remains deliberately deferred, including the real owned rock/water controls.
+No persistent field, owner migration or player copy is added.
+
+Root's final combined admission, paused removal, manual-door, collective refund,
+fit, fridge/stove integrity and four documentation gates pass 99 cases in eleven
+files (39.06 s), followed by all 24 actual generic collision controls (3.65 s).
+Both TypeScript targets and the real named production build pass at source
+`66f1271a5b`: worker `worker-ZJIkVaeZ.js` (435.85 kB), client
+`index-CH_kwFP_.js`, existing CSS `index-BtHvjcB7.css`. The ten native Kitchen/fit
+cases above predate this worker admission change; their earlier client identity
+is retained rather than presented as native coverage of the later change.
+[Collision record](../../research/2026-10-02-generic-object-build-footprint.md)
+and [ownership admission](../../research/2026-10-02-object-footprint-admission.md)
+retain producer-only negatives and exact restoration.
+
+PR1899's browser job ended cancelled at its existing 90-minute cap: 330 passed,
+38 failed and four serial did-not-run reports were retained before cancellation.
+Verification and asset jobs passed. The failures include stale HUD selectors and
+a test-only texture lookup reading the former renderer key map; the actual
+failed traces are being investigated on a separate source-matched branch.
+No timeout, retry or assertion relaxation is authorized by this checkpoint.
+PR1972 remains a separate stacked candidate. This following delivery is ready
+for a draft PR; hosted delivery still requires repaired complete exact-head CI,
+clean mergeability and serial green main CI. Blender prep-counter acceptance is
+published separately and is not silently added to a frozen release candidate.
