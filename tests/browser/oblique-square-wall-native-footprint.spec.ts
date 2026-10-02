@@ -92,8 +92,8 @@ async function wallEvidence(page: Page, png: Buffer, yaw: number, elevation: num
   }, { base64: png.toString('base64'), yaw, elevation, target });
 }
 
-for (const pose of poses) test(`native completed Brick wall occupies its chosen whole square at ${pose.yaw}/${pose.elevation}`, async ({ page }, info) => {
-  const save = completedWallLogisticsSave();
+for (const cutaway of [false, true]) for (const pose of poses) test(`native completed ${cutaway ? 'cutaway' : 'full'} Brick wall occupies its chosen whole square at ${pose.yaw}/${pose.elevation}`, async ({ page }, info) => {
+  const save = completedWallLogisticsSave(cutaway);
   await installTee(page);
   await installSnapshotReader(page);
   await page.addInitScript(()=>{
@@ -154,7 +154,7 @@ for (const pose of poses) test(`native completed Brick wall occupies its chosen 
   const target={x:mapClick.fx*32,y:mapClick.fy*32};
   for(let i=0;i<pose.turns;i++)await page.getByRole('button',{name:'Rotate camera right',exact:true}).click();
   for(let i=0;i<pose.raises;i++)await page.getByRole('button',{name:'Raise camera angle',exact:true}).click();
-  await expect.poll(() => wallTextures.some(url => url.includes(`yaw${pose.yaw<0?'-':'+'}${String(Math.abs(pose.yaw)).padStart(3,'0')}-elev${pose.elevation===80?65:pose.elevation}`))).toBe(true);
+  await expect.poll(() => wallTextures.some(url => url.includes(`square-brick-${cutaway ? 'low' : 'full'}-wall-yaw${pose.yaw<0?'-':'+'}${String(Math.abs(pose.yaw)).padStart(3,'0')}-elev${pose.elevation===80?65:pose.elevation}`))).toBe(true);
   // Request completion can precede Phaser's batch-complete repaint. Require
   // authored material, then retain the exact buffer used for pixel evidence.
   await expect.poll(async()=> (await wallEvidence(page,await canvas.screenshot(),pose.yaw,pose.elevation,target)).masonryInside).toBeGreaterThan(200);
@@ -162,7 +162,7 @@ for (const pose of poses) test(`native completed Brick wall occupies its chosen 
   const measured = await wallEvidence(page,png,pose.yaw,pose.elevation,target);
   await writeFile(info.outputPath('native-wall-canvas.png'),png);
   await page.screenshot({path:info.outputPath('native-completed-wall.png')});
-  await writeFile(info.outputPath('native-ground-footprint.json'),JSON.stringify({pose,point,mapClick,target,measured,wallTextures,snapshot,workerCommands:await sentCommands(page)},null,2));
+  await writeFile(info.outputPath('native-ground-footprint.json'),JSON.stringify({cutaway,pose,point,mapClick,target,measured,wallTextures,snapshot,workerCommands:await sentCommands(page)},null,2));
   expect((await sentCommands(page)).filter(c=>c.type==='PlaceBuildOrder')).toHaveLength(1);
   expect(measured.masonryInside,'actual wall material must be visible in the occupied volume').toBeGreaterThan(200);
   expect(measured.masonryOutsideGroundSpan,'visible masonry must fit the horizontal span of its occupied1×1 square; height and shadows cannot justify sideways spill').toBeLessThanOrEqual(20);
