@@ -4,9 +4,22 @@ import { inflateSync } from 'node:zlib';
 import { expect, it } from 'vitest';
 import { defaultObjectRegistry } from '../../src/content/object-catalog';
 import { parseObliqueModuleCatalog } from '../../src/rendering/assets/oblique-module-catalog';
+import { parseObliqueModuleRegistry } from '../../src/rendering/assets/oblique-module-registry';
+import { obliqueAssetIdForObject, obliqueCatalogForObject } from '../../src/rendering/assets/oblique-object-mapping';
 
 const root = new URL('../../', import.meta.url);
 const hash = (bytes: Buffer): string => createHash('sha256').update(bytes).digest('hex');
+
+it('routes the existing dining object descriptor through the registered aligned source', () => {
+  const assetId = obliqueAssetIdForObject('object.dining-table');
+  expect(assetId).toBe('furniture.dining.table.wooden');
+  const registry = parseObliqueModuleRegistry(JSON.parse(readFileSync(new URL('public/game-content/oblique-module-registry.v1.json', root), 'utf8')) as unknown);
+  const descriptor = registry.entries.find(entry => entry.assetId === assetId)!;
+  expect(descriptor.manifest).toBe('/game-content/oblique-furniture.canteen-dining-table.v1.json');
+  const catalog = parseObliqueModuleCatalog(JSON.parse(readFileSync(new URL(`public${descriptor.manifest}`, root), 'utf8')) as unknown);
+  expect(obliqueCatalogForObject('object.dining-table', new Map([[catalog.assetId, catalog]]))).toBe(catalog);
+  expect(defaultObjectRegistry.getById('object.dining-table')!.footprint).toEqual({ width: 3, height: 2 });
+});
 
 it('retains the original authored dining mesh set and exports the authoritative3x2 footprint', () => {
   const provenance = JSON.parse(readFileSync(new URL('assets/source/blender/furniture.canteen.dining-table.provenance.json', root), 'utf8')) as {
