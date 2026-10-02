@@ -129,6 +129,41 @@ def point_camera(camera, target, yaw, elevation):
 
 exporter.point_camera = point_camera
 
+def render():
+    # The canonical legacy asset ID contains an underscore; published frame
+    # paths intentionally retain its existing hyphenated, schema-valid stem.
+    poses = [(45, 45)] if exporter.PREVIEW_ONLY else [(yaw, elev) for yaw in exporter.YAW for elev in exporter.ELEVATION]
+    directory = exporter.PREVIEW if exporter.PREVIEW_ONLY else exporter.OUTPUT
+    directory.mkdir(parents=True, exist_ok=True)
+    for model in exporter.MODELS:
+        scene, camera, target = configure(model)
+        frames = []
+        for yaw, elevation in poses:
+            point_camera(camera, target, yaw, elevation)
+            temporary = directory / f'fixture.cell.waste-bin-yaw{yaw:+03d}-elev{elevation:02d}.render.png'
+            scene.render.filepath = str(temporary)
+            exporter.bpy.ops.render.render(write_still=True)
+            exporter.normalize_and_check_border(temporary)
+            digest = hashlib.sha256(temporary.read_bytes()).hexdigest()
+            if exporter.PREVIEW_ONLY:
+                print(f'preview {temporary} sha256 {digest}')
+                continue
+            name = f'fixture.cell.waste-bin-yaw{yaw:+03d}-elev{elevation:02d}.{digest[:12]}.png'
+            temporary.replace(directory / name)
+            frames.append({'yawDegrees': yaw, 'elevationDegrees': elevation,
+                           'image': '/assets/environment/oblique/' + name, 'sha256': digest})
+        if exporter.PREVIEW_ONLY:
+            continue
+        descriptor = {'schemaVersion': 1, 'assetId': ASSET_ID,
+                      'source': 'assets/source/blender/' + model[1],
+                      'sourceSha256': hashlib.sha256((exporter.ROOT / 'assets/source/blender' / model[1]).read_bytes()).hexdigest(),
+                      'resolutionPx': [256, 256], 'nominalPixelsPerTile': 64,
+                      'pivotPx': [128, 128], 'cameraTargetTiles': list(target),
+                      'projection': 'orthographic', 'yawDegrees': list(exporter.YAW),
+                      'elevationDegrees': list(exporter.ELEVATION), 'frames': frames}
+        pipeline_common.write_text(exporter.ROOT / 'public/game-content' / model[2], json.dumps(descriptor, indent=2) + '\n')
+        print('DEFAULT_BIN_RENDER72 canonical descriptor and schema-valid paths', flush=True)
+
 if __name__ == '__main__':
     if '--verify' in sys.argv:
         for model in exporter.MODELS:
@@ -138,4 +173,4 @@ if __name__ == '__main__':
                     point_camera(camera, target, yaw, elevation)
         print('DEFAULT_BIN_VERIFY72 cameras and four occupied orientations', flush=True)
     else:
-        exporter.main()
+        render()
