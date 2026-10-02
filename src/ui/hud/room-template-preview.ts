@@ -152,7 +152,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
   if (tool !== undefined) {
     const rotation = element('select', {
       className: 'hud-template__rotation',
-      attributes: { 'aria-label': t('hud.build.template-rotation') },
+      attributes: { 'aria-label': t(HUD_MESSAGE_KEY.buildTemplateRotation) },
       children: ([0, 1, 2, 3] as const).map(turn => element('option', {
         text: `${turn * 90}°`, attributes: { value: String(turn) },
       })),
@@ -165,7 +165,7 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
     // context, without taking the player's remapped camera rotation keys.
     const orientationControls = element('div', { className: 'hud-template__orientation' });
     orientationControls.append(element('label', { children: [
-      element('span', { text: t('hud.build.template-rotation') }), rotation,
+      element('span', { text: t(HUD_MESSAGE_KEY.buildTemplateRotation) }), rotation,
     ] }));
     choices.after(orientationControls);
     const onMap = element('button', { text: t(HUD_MESSAGE_KEY.buildTemplateOnMap), attributes: { type: 'button' } });
