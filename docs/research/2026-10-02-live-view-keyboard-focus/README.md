@@ -25,3 +25,9 @@ The same production mutation fails the focused DOM unit (1 red/5 green); restore
 ![Actual Full HD focused View selector after Angled activation](./focused.png)
 
 The screenshot was opened: View is visible above compact camera controls with its native focus border. The screenshot proves the visible final control; the test assertions prove focus and navigation through the actual worker-driven application. The correction does not change camera poses, worker lifecycle, deployment, renderer defaults or save format.
+
+## Follow-up: asynchronous refusal after intentional navigation
+
+Integrator review identified an additional path: native reportValidity can focus an invalid selector after a player has deliberately navigated elsewhere during a delayed 503 refusal. Source checkpoint 5ea9fe850c applies the same navigation/active-element guard to the popup, while always retaining truthful validity, error callback and mode rollback. A focused unit mutating that guard out fails (reported 1 instead of 0; 1 red/6 green); restored 7/7 green and TypeScript green.
+
+A fourth actual browser case holds the real registry response, tabs away, releases a 503 refusal and asserts unchanged focus plus retained failure validity. **Native acceptance of this fourth path is pending the shared browser lease.** The earlier 3-case runtime acceptance does not establish this new refusal/navigation path.
