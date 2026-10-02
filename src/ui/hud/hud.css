@@ -1719,7 +1719,9 @@
 .hud-template__card-details strong { overflow-wrap: anywhere; }
 .hud-template__miniature { display: grid; justify-self: center; gap: 0; width: max-content; }
 .hud-template__miniature .hud-template__tile { border: 0; }
-.hud-template__miniature .hud-template__tile--floor { background: var(--surface-raised); }
+.hud-template__miniature .hud-template__tile--floor,
+.hud-template__miniature .hud-template__tile--object { background: var(--surface-raised); border-radius: 0; }
+.hud-template__fixture { background: var(--text-body); margin: 0.5px; border-radius: 1px; pointer-events: none; }
 .hud-template button {
   min-height: var(--tap-target);
   padding: 0 var(--space-3);
