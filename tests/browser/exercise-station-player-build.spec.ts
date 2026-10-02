@@ -1,5 +1,5 @@
 import { expect, test } from './network-changed-fixture';
-import type { Page } from '@playwright/test';
+import type { Page } from './network-changed-fixture';
 interface StationProbeWindow extends Window { lockstateAsk?: (kind: string, payload: unknown) => Promise<unknown>; lockstateSentToWorker?: unknown[]; lockstateFromWorker?: unknown[]; }
 async function installProbe(page: Page): Promise<void> {
   await page.addInitScript(() => {

@@ -422,3 +422,10 @@ PR1894 was merged as b4ed27c55bb52646cd7ff655cbc5275e0e2279b7 after exact head02
 The new exercise station's explicit catalogue counts, furniture membership, consumed-content inventory and generated player-string inventory are reconciled: six targeted suites pass81/81 and TypeScript passes. Its angled Blender model is registered; overhead rendering explicitly retains the colour fallback because no overhead sprite exists. The stale Remove locale source citation is re-aimed to its declaration without raising the quotation budget. Full local-suite green is not claimed.
 
 Three independent scopes remain active: actual station player placement/collision/SaveLoad proof, outdoor bench context integration, and pointer cancellation/remapping. Browser work is serialized to one worker to avoid concurrent headless CPU pressure.
+
+
+## Actual station player acceptance and outdoor bench integration
+
+The real player station flow now passes1/1 at Full HD with a filled two-square ghost, third-square exclusion, quoted80 matching treasury25000 to24920, completed worker construction, occupied-second-square refusal and production Save/Load. Removing only its authored asset mapping fails with zero steel pixels; restoration passes. Root inspected the completed Full HD screenshot. See [player acceptance and screenshots](../../research/2026-10-02-exercise-station-player-build/README.md). This is integration-branch acceptance, not deployed station availability.
+
+The existing bench now selects a Blender weatherproof variant only when its entire completed footprint lies inside an authoritative Yard rectangle. Indoor, partial, absent and planned contexts retain their previous appearance. No buildable, price or save identity changed. Bench context/art, world projection and station command integration pass13/13; TypeScript passes. Actual bench player placement remains queued behind the camera pointer-cancellation browser proof.
