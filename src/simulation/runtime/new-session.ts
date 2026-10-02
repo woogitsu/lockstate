@@ -41,7 +41,7 @@ import { InsolvencyRungSystem, JustInTimeMaterialsService, LoanBook, PayrollSyst
 import { SimulationEventLog } from '../events';
 import { createIntakeHousedNotice } from '../events/intake-housed-notice';
 import { createResidentRelocationNotice } from '../events/resident-relocation-notice';
-import { RefusalLog, UNZONE_REFUSAL_REASONS, materialsFundingSupersessionKey } from '../refusals';
+import { RefusalLog, ROOM_TEMPLATE_REVERSAL_REFUSAL_REASONS, materialsFundingSupersessionKey } from '../refusals';
 import { StaffDismissalService, StaffHiringService } from '../staff';
 import { createSessionCommandHandler } from './session-commands';
 import { ACTOR_IDENTITY_RNG_STREAM, ActorIdentityRegistry } from '../identity';
@@ -854,8 +854,8 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     world,
     new ContainerMaterialsProvider(constructionMaterials),
     {
-      onOrderCompleted: (objectId, anchor, orientation) => objectPlacement?.onOrderCompleted(objectId, anchor, orientation) ?? false,
-      onOrderReverted: (objectId, anchor) => objectPlacement?.onOrderReverted(objectId, anchor) ?? false,
+      onOrderCompleted: (objectId, anchor, orientation, sourceOrderId) => objectPlacement?.onOrderCompleted(objectId, anchor, orientation, sourceOrderId) ?? false,
+      onOrderReverted: (objectId, anchor, sourceOrderId) => objectPlacement?.onOrderReverted(objectId, anchor, sourceOrderId) ?? false,
     },
     doorConstruction,
     justInTimeMaterials,
@@ -1634,7 +1634,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     const key = 'room-template-undo';
     const refusal = roomTemplates.prepareUndo(orderIds, kernel.tick);
     if (refusal !== undefined) {
-      refusals.record(UNZONE_REFUSAL_REASONS[refusal.reason], kernel.tick, key);
+      refusals.record(ROOM_TEMPLATE_REVERSAL_REFUSAL_REASONS[refusal.reason], kernel.tick, key);
       return false;
     }
     refusals.supersede(key);

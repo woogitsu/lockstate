@@ -1,3 +1,4 @@
+import type { RoomTemplateReversalRefusal } from '../construction/room-template-coordinator';
 import type { BuildOrderFailReason } from '../construction/build-order';
 import type { ConstructionFundingRefusalReason } from '../construction/materials-procurement';
 import type { CancelBuildOrderRefusalReason, RemoveWallRefusalReason } from '../construction/system';
@@ -671,6 +672,13 @@ export const UNZONE_REFUSAL_REASONS: Readonly<Record<UnzoneRoomRefusalReason, Re
   'nothing-to-remove': 'unzone.nothing-to-remove',
   'room-occupied': 'unzone.room-occupied',
 };
+
+/** Approved #1975 adds one protective refusal to the existing unzone reasons. */
+export const ROOM_TEMPLATE_REVERSAL_REFUSAL_REASONS: Readonly<Record<RoomTemplateReversalRefusal['reason'], RefusalReason>> = {
+  ...UNZONE_REFUSAL_REASONS,
+  'object-ownership-unknown': 'construction.object-ownership-unknown',
+};
+
 
 /**
  * Supersession keys (issue #492): one per route, built from the same

@@ -801,6 +801,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
     'Nikogo nie przyjęto — to więzienie przetrzymuje już tylu ludzi, ilu może.',
   'hud.alert.refusal.build.duplicate-order': 'Zlecenie budowy nie doszło do skutku — takie zlecenie już istnieje.',
   'hud.alert.refusal.build.out-of-bounds': 'Zlecenie budowy nie doszło do skutku — to pole leży poza mapą.',
+  'hud.alert.refusal.construction.object-ownership-unknown': 'Nie można ustalić, które zlecenie utworzyło zapisany obiekt. Usuń go ręcznie, zanim cofniesz lub anulujesz plan pomieszczenia.',
   'hud.alert.refusal.build.unbuildable': 'Zlecenie budowy nie doszło do skutku — na tym polu nie da się nic zbudować.',
   'hud.alert.refusal.build.unbuildable-terrain': 'Zlecenie budowy nie doszło do skutku — na tym gruncie nie da się budować.',
   'hud.alert.refusal.build.unknown-buildable':

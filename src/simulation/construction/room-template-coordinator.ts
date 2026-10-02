@@ -14,6 +14,10 @@ import { BUILDABLE_REGISTRY, DOOR_EDGE_NUMERIC_ID, WALL_EDGE_NUMERIC_ID } from '
 import { resolveBuildEdge, type BuildOrder } from './build-order';
 import { validateRoomTemplatePlacement, type RoomTemplatePlacement } from './room-template-placement';
 
+export type RoomTemplateReversalRefusal = UnzoneRoomRefusal | {
+  readonly kind: 'refused'; readonly reason: 'object-ownership-unknown';
+};
+
 export interface PendingRoomTemplate {
   readonly templateId: RoomTemplatePlan['id'];
   readonly origin: RoomTemplatePlan['origin'];
@@ -318,7 +322,7 @@ export class RoomTemplateCoordinator implements SystemRegistration {
   }
 
   /** A queue cancellation removes the same coupled gesture as Undo (#1657/#1608). */
-  public prepareCancellation(orderId: string, tick: number): UnzoneRoomRefusal | undefined {
+  public prepareCancellation(orderId: string, tick: number): RoomTemplateReversalRefusal | undefined {
     const ids = this.cancellationGestureIds(orderId);
     return ids === undefined ? undefined : this.prepareUndo(ids, tick);
   }
@@ -334,6 +338,7 @@ export class RoomTemplateCoordinator implements SystemRegistration {
       ?? this.recoverCompletedGesture(ids);
     if (request === undefined) return undefined;
     const built = createRoomTemplateBuildPlan(request.templateId, request.origin, request.mirrorX, request.sequence, request.quarterTurns ?? 0);
+    if (this.hasUnknownReversalOwnership(built.orders.map(order => order.id))) return [];
     const refusal = this.roomZoning.previewUnzoneTogether(built.plan.zones, 0);
     if (refusal !== undefined && refusal.reason !== 'nothing-to-remove') return [];
     return [orderId, ...built.orders.map(order => order.id).filter(id => id !== orderId)];
@@ -357,11 +362,15 @@ export class RoomTemplateCoordinator implements SystemRegistration {
   }
 
   /** Clear or refuse the completed gesture's zones before its shell is touched. */
-  public prepareUndo(orderIds: readonly string[], tick: number): UnzoneRoomRefusal | undefined {
+  public prepareUndo(orderIds: readonly string[], tick: number): RoomTemplateReversalRefusal | undefined {
     const transaction = new Set(orderIds);
     const recorded = this.completed.find((entry) => this.shellOrderIds(entry).some((id) => transaction.has(id)));
     const request = recorded ?? this.recoverCompletedGesture(orderIds);
     if (request === undefined) return undefined;
+    const built = createRoomTemplateBuildPlan(request.templateId, request.origin, request.mirrorX, request.sequence, request.quarterTurns ?? 0);
+    if (this.hasUnknownReversalOwnership(built.orders.map(order => order.id))) {
+      return { kind: 'refused', reason: 'object-ownership-unknown' };
+    }
     const plan = instantiateRoomTemplateForConstruction(request.templateId, request.origin, request.mirrorX, request.quarterTurns ?? 0);
     // One all-or-nothing unzone happens while the original beds and all other
     // rooms still stand. A row's residents cannot move into another row member
@@ -373,6 +382,24 @@ export class RoomTemplateCoordinator implements SystemRegistration {
     // Retain successful recovery for the existing cancellation/Redo path only.
     if (recorded === undefined) this.completed.push(request);
     return undefined;
+  }
+
+  /** A template cannot infer physical ownership from matching location or order history. */
+  private hasUnknownReversalOwnership(orderIds: readonly string[]): boolean {
+    return orderIds.some(id => {
+      const order = this.construction.getOrder(id);
+      if (order?.state !== 'completed') return false;
+      const objectId = BUILDABLE_REGISTRY.get(order.definitionId)?.placesObjectId;
+      if (objectId === undefined) return false;
+      const object = this.placedObjects.objectAt(order.location);
+      if (object === undefined || object.objectId !== objectId ||
+          object.anchorTile.x !== order.location.x || object.anchorTile.y !== order.location.y) return false;
+      const owner = object.sourceOrderId === undefined ? undefined : this.construction.getOrder(object.sourceOrderId);
+      return owner?.state !== 'completed' ||
+        BUILDABLE_REGISTRY.get(owner.definitionId)?.placesObjectId !== object.objectId ||
+        owner.location.x !== object.anchorTile.x || owner.location.y !== object.anchorTile.y ||
+        (owner.objectOrientation ?? 0) !== object.orientation;
+    });
   }
 
   /** Command dispatch also runs while paused, so release invalidated plans then. */
