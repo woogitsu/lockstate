@@ -647,3 +647,7 @@ Repeated full72-frame render has identical manifest SHA2563ed65a7523e002e505e26d
 
 Laundry visual checks now sample the authored blue door palette separately in both fixed model regions before and after SaveLoad, require more than100pixels each and identical counts. Corrected artifact baseline passes2/2 (43.5/42.5s); missing-mapping mutation was inconclusive because the fresh page timed out before clicking Load, not on pixels. Exact mapping restoration and rebuild pass2/2 (43.9/37.5s). No mutation acceptance is claimed; final missing-model sensitivity remains pending. Tools TypeScript passes.
 
+
+## Laundry visual acceptance completed — 2026-10-02
+The previous missing-asset mutation remains explicitly inconclusive. A new production consumer mutation replaced only object.washing-machine with the existing generic desk asset, preserving normal catalog loading. Setup passed; real Laundry completion failed precisely on authored door pixels (0 instead of more than100). Exact byte restoration and rebuilt production client returned2/2green (43.0/38.1seconds). Separate door regions for both machines have equal palette counts before and after SaveLoad. The pending consumer sensitivity boundary is now satisfied for this FullHD player scene; no all-angle or deployed-availability claim is made.
+
