@@ -484,6 +484,19 @@ describe('a held key is released by a real keyup, by focus loss, and by nothing 
     expect(adapter.isActive('camera.right')).toBe(false);
   });
 
+  it('disarms only held arrows when a roving radio takes their navigation keys', () => {
+    const adapter = new KeyboardInputAdapter(DEFAULT_KEYBOARD_BINDINGS, () => ['world']);
+    adapter.keyDown({ code: 'ArrowDown' });
+    adapter.keyDown({ code: 'KeyE' });
+    expect(adapter.isActive('camera.down')).toBe(true);
+    expect(adapter.isActive('camera.rotate.right')).toBe(true);
+    adapter.releaseCodes(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']);
+    expect(adapter.isActive('camera.down')).toBe(false);
+    expect(adapter.isActive('camera.rotate.right')).toBe(true);
+    adapter.keyUp({ code: 'ArrowDown' });
+    expect(adapter.keyDown({ code: 'ArrowDown' })).toMatchObject([{ action: 'camera.down', phase: 'started' }]);
+  });
+
   it('accepts the same key again after a synthetic release, so the keyboard is not left dead', () => {
     // `keyDown` ignores a code already in the set, so a release that failed to
     // clear it would make that key permanently inert rather than permanently

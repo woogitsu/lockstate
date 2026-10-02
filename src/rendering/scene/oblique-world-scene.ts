@@ -193,6 +193,15 @@ export class ObliqueWorldScene extends Phaser.Scene {
     });
     const keyDown = (event: KeyboardEvent): void => this.handleActionEvents(this.keyboard.keyDown(event));
     const keyUp = (event: KeyboardEvent): void => { this.keyboard.keyUp(event); };
+    const disarmRovingArrows = (event: FocusEvent): void => {
+      const target = event.target;
+      if (!(target instanceof Element) || !target.matches('[role="radio"]') ||
+        target.closest('[role="radiogroup"]') === null) return;
+      // A held world arrow does not emit a new keydown when focus enters the
+      // list, so its normal stopPropagation cannot end the already-held pan.
+      // Release only the arrows the list consumes, keeping WASD and pose keys.
+      this.keyboard.releaseCodes(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']);
+    };
     const cancelPointerInput = (): void => {
       this.turnPointerId = undefined;
       this.turnPointerAt = undefined;
@@ -205,10 +214,12 @@ export class ObliqueWorldScene extends Phaser.Scene {
     canvas.addEventListener('lostpointercapture', cancelPointerInput);
     window.addEventListener('keydown', keyDown);
     window.addEventListener('keyup', keyUp);
+    window.addEventListener('focusin', disarmRovingArrows);
     window.addEventListener('blur', cancelOnBlur);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       window.removeEventListener('keydown', keyDown);
       window.removeEventListener('keyup', keyUp);
+      window.removeEventListener('focusin', disarmRovingArrows);
       window.removeEventListener('blur', cancelOnBlur);
       canvas.removeEventListener('pointercancel', cancelPointerInput);
       canvas.removeEventListener('lostpointercapture', cancelPointerInput);
