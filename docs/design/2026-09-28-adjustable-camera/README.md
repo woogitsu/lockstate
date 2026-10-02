@@ -974,3 +974,33 @@ develops independently. Three agents continue new Kitchen stove native
 acceptance, existing View control mouse targeting, and the separately observed
 manual RemoveWall entrance into completed-template cancellation. Prototype or
 scoped local proof does not replace exact-head CI and actual release gates.
+
+## Next delivery: real stove model and manual cancellation — 2026-10-02
+
+The dedicated Kitchen stove retains its 29 authored assemblies and six material
+colors, with 51 new physical detail meshes. Its grounded 2x1 model follows all
+four occupied orientations and 72 repeatable shared-camera renders. Five native
+geometry/camera mutations and a PNG mutation fail, then exact restoration
+passes. Actual normal/rotated Kitchen construction and Save/Load pass three
+native cases; removing the stove consumer produces eight independent pixel
+failures. Root opened the loaded rotated Full HD image. The side wall occludes
+some oven/vent details, so visibility of those hidden details is not claimed.
+[Stove evidence](../../research/2026-10-02-kitchen-stove-angled/README.md)
+records the complete source/export/native chain and collector recovery.
+
+Manual removal of a completed template door now uses the existing collective
+preparation before touching geometry, retaining ordinary walls and finished
+individual object removal. The actual source-disconnection mutation produces
+12 failures and five legal controls; the 17 restored command cases include
+current/legacy saves, occupied refusal, spare relocation and Undo/Redo.
+[Manual removal evidence](../../research/2026-10-02-template-manual-door-removal.md)
+preserves the narrower command-level scope. Root passes 137 combined cases in
+nine files after integration with collective refund preview.
+
+The stove spec joins the complementary artifact/dev partition. Root's subsequent
+11-file art, transaction and documentation scope returns 66 passes and one
+citation failure: two PNG filename hash fragments were interpreted as commits.
+Replacing those fragments with their real full file paths restores the unchanged
+eight-case citation gate. Both TypeScript targets and the hydrated production
+build pass. Integrated native acceptance and remote release remain separate
+gates; the prior PR1899 candidate remains unchanged.
