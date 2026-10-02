@@ -14,7 +14,7 @@ const anchor = (x: number, y: number) => ({ x: tileCoordinate(x), y: tileCoordin
 it.each([0, 1, 2, 3] as const)('rotates a two-tile fixture footprint and its authored facing by %s quarter turns', orientation => {
   expect(structureAppearance('washing-machine-brick', orientation).footprintTiles)
     .toEqual(orientation % 2 === 0 ? { width: 2, height: 1 } : { width: 1, height: 2 });
-  expect(objectArtYaw(Math.PI / 4, orientation)).toBeCloseTo(Math.PI / 4 - orientation * Math.PI / 2);
+  expect(objectArtYaw(Math.PI / 4, orientation)).toBeCloseTo(Math.PI / 4 + orientation * Math.PI / 2);
 });
 
 it.each([
@@ -52,5 +52,19 @@ it.each([0, 1, 2, 3] as const)('projects the occupied fixture rectangle and loca
   if (solid?.kind !== 'structure') throw new Error('Missing machine');
   const [width, height] = orientation % 2 === 0 ? [2, 1] : [1, 2];
   expect(solid.footprint[2]).toEqual(groundToScreen({ x: width! * 64, y: height! * 64 }, camera));
-  expect(solid.assetYawRadians ?? camera.yawRadians).toBeCloseTo(camera.yawRadians - orientation * Math.PI / 2);
+  expect(solid.assetYawRadians ?? camera.yawRadians).toBeCloseTo(camera.yawRadians + orientation * Math.PI / 2);
+});
+
+// Independently compare the exported source long axis with the rotated world
+// long axis. A sign reversal still swaps 2x1 extents correctly, but faces the
+// artwork in the opposite direction and fails this projection equivalence.
+it.each([0, 1, 2, 3] as const)('aligns authored long-axis pixels with world geometry at %s turns', orientation => {
+  const camera: ObliqueCameraState = { target: { x: 0, y: 0 }, viewport: { width: 1920, height: 1080 },
+    zoom: 1, yawRadians: Math.PI / 6, elevationRadians: Math.PI / 4 };
+  const rotatedAxis = [[64, 0], [0, 64], [-64, 0], [0, -64]][orientation]!;
+  const origin = groundToScreen({ x: 0, y: 0 }, camera);
+  const endpoint = groundToScreen({ x: rotatedAxis[0]!, y: rotatedAxis[1]! }, camera);
+  const sourceYaw = objectArtYaw(camera.yawRadians, orientation);
+  expect(64 * Math.cos(sourceYaw)).toBeCloseTo(endpoint.x - origin.x);
+  expect(64 * Math.sin(sourceYaw) * Math.sin(camera.elevationRadians)).toBeCloseTo(endpoint.y - origin.y);
 });

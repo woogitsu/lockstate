@@ -13,7 +13,13 @@ export function orientedObjectArtTarget(
   }
 }
 
-/** Choose a source frame in the object's local coordinates, preserving perspective. */
+/**
+ * Compose the camera with clockwise world turns (+X toward +Y).
+ * The exported source X axis projects as (cos(yaw), sin(yaw) * sin(elevation));
+ * after a world quarter turn it must project like world +Y. Actor headings use
+ * the opposite turn convention (south toward east), so their subtraction is
+ * not interchangeable with this object rotation.
+ */
 export function objectArtYaw(cameraYawRadians: number, orientation: ObjectOrientation): number {
-  return cameraYawRadians - orientation * Math.PI / 2;
+  return cameraYawRadians + orientation * Math.PI / 2;
 }
