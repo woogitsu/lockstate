@@ -14,6 +14,14 @@ test('Full HD catalogue compares all room footprints before selection and keeps 
   await expect(basic).toContainText('Furniture \u00d7 2');
   await expect(basic.locator('.hud-template__miniature .hud-template__tile')).toHaveCount(28);
   await expect(basic.locator('.hud-template__miniature .hud-template__tile--object')).toHaveCount(3);
+  await expect(basic.locator('.hud-template__fixture')).toHaveCount(2);
+  const bed = basic.locator('.hud-template__fixture').first();
+  const bedBounds = await bed.boundingBox();
+  expect(bedBounds!.height).toBeGreaterThan(bedBounds!.width * 1.8);
+  const large = dialog.getByRole('button', { name: 'Large cell', exact: true });
+  await expect(large.locator('.hud-template__fixture')).toHaveCount(3);
+  const row = dialog.getByRole('button', { name: 'Four-cell row', exact: true });
+  await expect(row.locator('.hud-template__fixture')).toHaveCount(8);
   const yard = dialog.getByRole('button',{name:'Yard',exact:true});
   await expect(yard).toContainText('8 \u00d7 8');
   await expect(yard).toContainText('Furniture \u00d7 0');

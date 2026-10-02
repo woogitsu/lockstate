@@ -6,6 +6,7 @@ import type { HudLocalizer } from './view-model';
 import type { RoomTemplateTool } from '../room-template-tool';
 import { HUD_MESSAGE_KEY } from './messages';
 import { formatRoomTemplateQuote } from './room-template-quote';
+import { roomTemplateMiniatureFixtures } from './room-template-miniature';
 
 const NAME_KEYS: Record<RoomTemplateId, LocalizationKey> = {
   'cell-basic': HUD_MESSAGE_KEY.buildTemplateCellBasic,
@@ -241,7 +242,15 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
       const tile = element('span', { className: `hud-template__tile hud-template__tile--${kind}` });
       tile.style.width = `${cellSize}px`;
       tile.style.height = `${cellSize}px`;
+      tile.style.gridColumn = String(x + 1);
+      tile.style.gridRow = String(y + 1);
       miniature.append(tile);
+    }
+    for (const fixture of roomTemplateMiniatureFixtures(plan, id => tool?.objectFootprint(id) ?? { width: 1, height: 1 })) {
+      const marker = element('span', { className: 'hud-template__fixture' });
+      marker.style.gridColumn = `${fixture.x + 1} / span ${fixture.width}`;
+      marker.style.gridRow = `${fixture.y + 1} / span ${fixture.height}`;
+      miniature.append(marker);
     }
     const button = element('button', {
       className: 'hud-template__card',
