@@ -114,6 +114,17 @@ independent actual Blender controls above establish native source behavior.
 The new unit test verifies all72hashes, PNG signatures, decodedRGBA borders,
 retained raw vertex/material/modifier records and explicitly changed topology.
 
-Genuine UtilityRoom normal/90° worker Build/SaveLoad, actual camera pixel
-calibration, consumer-only removal and exact restored final native green remain
-queued. No browser was started while root/delivery owned the lease.
+At that source checkpoint genuine UtilityRoom Build/SaveLoad remained queued.
+
+2026-10-03: actual production player normal/90° Build/SaveLoad passed3/3.
+Both observed front bodies contain945 pixels before and after Load, preserving
+the original RGB,crops and >100 threshold. Only the existing default consumer
+was removed: each actual orientation gave two expected zero-count palette
+errors while real commands,anchors and Load remained correct. Byte-exact
+mapping restoration and rebuild passed3/3 again. Whole worker and all source/
+descriptor72frame bytes remained identical. Both final loaded FullHDs were
+opened. See [native-player-acceptance.md](native-player-acceptance.md), compact
+receipt, first/final/negative results, pixel calibration and final images.
+All native processes are terminal and the exclusive lease was explicitly
+released to root; ports5198/5199/5200 have zero listeners. Integrated ownership
+and hosted acceptance remain separate.
