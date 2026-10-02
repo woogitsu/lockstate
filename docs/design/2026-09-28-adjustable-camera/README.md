@@ -691,3 +691,9 @@ Integrated rotation checkpointb51831047a joins authoritative orientation/save/hi
 
 Actual integrated rotation acceptance atb51831047a: native90degree control submits quarterTurns1, real worker console anchor23,6 orientation1 andfrontdisplay1116pixels persist through SaveLoad. Deliberately reversing only production yaw composition leaves correct authoritative objects but displaypixels0red; byte-exact restore/rebuild2/2green43.6/35.6seconds. Root openedthecommittedFullHD loaded screenshot. 160-plan simulation matrix and four command-atomic collision cases complement this specific player/renderer scene; no all-angle or hosted-deployment claim. Evidence docs/research/2026-10-02-rotated-console-rendering/README.md.
 
+## Bookshelf visual acceptance and current parallel work — 2026-10-02
+
+The actual built-client Classroom flow now proves bookshelf anchor21,6 through worker construction and Save/Load, and174 authored spine pixels in the loaded scene. Baseline2/2green42.3/43.4seconds; substituting only its production mapping with the generic desk yields the intended0-pixel failure after successful bootstrap; byte-exact restoration/rebuild2/2green44.3/43.0seconds. Root opened the loaded1920x1080 screenshot. [Bookshelf evidence](../2026-10-01-oblique-bookshelf/README.md) records the tested angle and retained historical files. No hosted availability is claimed.
+
+The approved rotation draft now states the implemented checkpoint and links actual runtime and rendered player evidence, keeping its earlier sink audit as historical. Three agents continue on independent surfaces: release/gameplay integration, FullHD ghost-label visibility and medical Blender source/export alignment. The separately based Layout Escape fix is pushed as PR1963; exact-head CI and serial main remain delivery gates. Local browser execution is serialized to limit CPU use.
+

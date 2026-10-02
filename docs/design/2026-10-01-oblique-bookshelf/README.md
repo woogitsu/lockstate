@@ -30,3 +30,9 @@ Two complete exports have identical manifest SHA2566722915a4f0e4f7f2ad733a012c99
 
 Actual rebuilt-client Classroom baseline passes2/2 (43.1/42.9seconds): real Storage/Delivery bootstrap, fresh IndexedDB Load, worker completion with bookshelf21,6, save and reload retain its anchor. Root opened [the loaded FullHD scene](./bookshelf-loaded-fullhd.png): the corrected shelf is wholly visible against the room wall. Authored book palette sampling and consumer mutation remain pending; this is not final visual acceptance.
 
+## Player visual acceptance completed — 2026-10-02
+
+The palette/consumer boundary above is now satisfied for this FullHD scene. The built-client player test samples two authored spine colours in the bookshelf-only rectangle, requires more than100 matching pixels after construction and after Load, and requires equal counts. The baseline passed2/2 (42.3/43.4seconds). Replacing only the production bookshelf mapping with the existing generic desk preserves real bootstrap and construction but makes the authored pixel assertion fail precisely at0 (setup43.2seconds, expected failure35.9seconds). The mapping was restored byte-for-byte and its diff is empty; a rebuilt client passed2/2 (44.3/43.0seconds). Root opened the newly loaded screenshot at integrated checkpoint8317b42820 and independently counted174 matching spine pixels. Tools TypeScript passes.
+
+This proves the corrected authored model is consumed by the real Classroom build and survives Save/Load at the selected angle. It does not claim every camera pose or hosted delivery. Original unhashed render files remain retained because the original rebuild script still names them; deleting them requires a separate source/reference cleanup.
+

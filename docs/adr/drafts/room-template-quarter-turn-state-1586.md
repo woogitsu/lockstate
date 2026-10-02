@@ -2,7 +2,9 @@
 
 ## Status
 
-Owner approved the optional quarterTurns/objectOrientation fields0..3 with absent0 compatibility and separately approved orientation-independent rectangular minima through clickable decisions on2026-10-02. Implementation and full runtime acceptance remain pending. No ADR number is reserved. No persistent field, command schema, gameplay rule or player message is implemented by this draft. Tracks existing [#1586](https://github.com/woogitsu/lockstate/issues/1586), which already requires rotation/mirroring in the player flow.
+Owner approved the optional quarterTurns/objectOrientation fields0..3 with absent0 compatibility and separately approved orientation-independent rectangular minima through clickable decisions on2026-10-02. The integrated branch now implements these decisions in the worker, persistence, native room-plan control and renderer. The specific rotated Security Office player flow has passed real construction and Save/Load with authored model pixels. Full release acceptance and hosted delivery remain pending. No ADR number is reserved. Tracks existing [#1586](https://github.com/woogitsu/lockstate/issues/1586), which already requires rotation/mirroring in the player flow.
+
+The sink audit and proposed sequence below record the pre-implementation state; their descriptions of missing fields and orientation0-only producers are historical. The current implementation checkpoints are8f430b9a9b (authoritative rotation/history),086ee794e5 (saved order schema),b51831047a (native control/preview),9654b8e30e (correct authored yaw) and2466cd8863 (actual rotated model player acceptance). [Runtime evidence](../../research/2026-10-02-authoritative-room-template-rotation/README.md) and [rendered player evidence](../../research/2026-10-02-rotated-console-rendering/README.md) delimit what was verified. This update neither assigns an ADR number nor claims the integration branch has been released.
 
 ## Concrete decision requested
 
