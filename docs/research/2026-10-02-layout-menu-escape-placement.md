@@ -36,6 +36,14 @@ An earlier suspected Layout-menu overflow was disproved: unchanged production
 passed viewport and final-action hit tests in English and Polish at this same
 resolution and scale. No layout sizing change was made.
 
+The post-fix production build and both typecheck projects passed. The complete
+research-index, documentation-citation and documentation-claims files passed
+28/28. A full Vitest attempt completed with 6325 passed, 6 failed and 2 skipped;
+the document failures were resolved and rechecked in those three complete
+files, while the inherited player-string inventory and Blender entrypoint
+guards belong to the integration follow-up. This does not claim a green full
+suite on this worktree.
+
 ## Scope and delivery boundary
 
 Only the Layout menu's consumed Escape changes. Rendering, camera behavior,

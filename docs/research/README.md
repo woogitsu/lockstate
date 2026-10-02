@@ -283,6 +283,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 | [2026-10-02 Staff Room desk](./2026-10-02-staff-room-desk/README.md) | Can the existing authored employee desk replace the generic 2 x 1 desk in Staff Room without spillover or changing gameplay? | Reused Blender source, aligned bounds to occupied squares and exported 72 deterministic poses. Real worker construction, Save/Load and Full HD production pixel mutation verified. |
 | [2026-10-02 Kitchen square fixtures](./2026-10-02-kitchen-square-fixtures/README.md) | Do the existing stove, prep counter and fridge models fit their actual occupied tiles at angled camera poses? | Aligned three Blender sources to 2 x 1 / 1 x 1 footprints, rendered 216 deterministic poses with exact scale and hashes; real player Kitchen pixel proof pending. |
 | [2026-10-02 first square clock hint](./2026-10-02-first-square-clock-hint/README.md) | Is the paused construction hint readable and Play reachable in the angled Full HD game? | Source already renders the true note; bounded actual queue/line-geometry/keyboard test prepared, runtime pending; no newcomer-comprehension claim. |
+| [2026-10-02 Layout menu Escape and placement](./2026-10-02-layout-menu-escape-placement.md) | Does closing Layout with Escape also cancel the armed Build tool? | Actual Full HD standard/angled red, scoped menu propagation fix, production mutation red and exact restoration green. |
 
 ### Findings from the first four records that changed a decision
 
