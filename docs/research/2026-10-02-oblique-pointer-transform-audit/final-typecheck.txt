@@ -1,0 +1,7 @@
+pnpm : $ tsc -b --pretty false && tsc -b tsconfig.tools.json --pretty false
+At line:7 char:428
++ ... +$env:PATH; pnpm typecheck *> '../hud-oblique-ground-transform-audit- ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ tsc -b --pret... --pretty false:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
