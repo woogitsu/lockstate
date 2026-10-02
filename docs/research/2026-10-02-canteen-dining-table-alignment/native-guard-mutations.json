@@ -1,0 +1,24 @@
+{
+  "mutations": [
+    {
+      "mutation": "occupied-width",
+      "exitCode": 1,
+      "expectedGuard": "escapes its 2 x 2",
+      "observed": true
+    },
+    {
+      "mutation": "camera-scale",
+      "exitCode": 1,
+      "expectedGuard": "camera scale is not64",
+      "observed": true
+    },
+    {
+      "mutation": "camera-target",
+      "exitCode": 1,
+      "expectedGuard": "camera target/yaw basis",
+      "observed": true
+    }
+  ],
+  "restoreExitCode": 0,
+  "restoredExporterSha256": "627acebd1c746f2da61979ffaec9e074a35125f8b432d0a76cf2e83736a6a096"
+}
