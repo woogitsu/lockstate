@@ -8,6 +8,17 @@ interface ProbeWindow extends Window {
   askWorker?: (kind: string, payload: unknown) => Promise<unknown>;
 }
 
+interface DeskSnapshotData {
+  simulation: { objects: { placedObjects: {
+    placedObjectId: string; objectId: string; sourceOrderId?: string;
+    anchorTile: { x: number; y: number }; orientation: number;
+  }[] } };
+  construction: { orders: {
+    id: string; definitionId: string; location: { x: number; y: number };
+    state: string; objectOrientation?: number;
+  }[] };
+}
+
 async function installWorkerProbe(page: Page): Promise<void> {
   await page.addInitScript(() => {
     const RealWorker = Worker;
@@ -38,10 +49,26 @@ async function installWorkerProbe(page: Page): Promise<void> {
   });
 }
 
-async function recordWorkerSnapshot(page: Page, path: string): Promise<void> {
+async function recordWorkerSnapshot(page: Page, path: string): Promise<DeskSnapshotData> {
   const reply = await page.evaluate(async () =>
     (window as ProbeWindow).askWorker!('simulation/request-snapshot', { reason: 'consistency-check' }));
   await writeFile(path, JSON.stringify(reply, null, 2));
+  return (reply as { payload: { snapshot: { data: DeskSnapshotData } } }).payload.snapshot.data;
+}
+
+function assertDeskProducer(data: DeskSnapshotData, quarterTurns: 0 | 1): void {
+  const desk = data.simulation.objects.placedObjects.find(object => object.objectId === 'object.desk');
+  expect(desk).toMatchObject({
+    placedObjectId: quarterTurns === 0 ? 'object:21:6' : 'object:24:6',
+    objectId: 'object.desk', anchorTile: { x: quarterTurns === 0 ? 21 : 24, y: 6 },
+    orientation: quarterTurns, sourceOrderId: 'room-template-000000000002-2-object-000',
+  });
+  const order = data.construction.orders.find(candidate => candidate.id === desk!.sourceOrderId);
+  expect(order).toMatchObject({
+    id: desk!.sourceOrderId, definitionId: 'desk-wooden', state: 'completed',
+    location: desk!.anchorTile,
+  });
+  expect(order!.objectOrientation ?? 0).toBe(quarterTurns);
 }
 
 async function fixtureAnchors(page: Page): Promise<string[]> {
@@ -60,13 +87,11 @@ async function deskPalettePixels(page: Page, png: Buffer, quarterTurns: 0 | 1): 
     const bitmap = await createImageBitmap(new Blob([Uint8Array.from(atob(base64), c => c.charCodeAt(0))], { type: 'image/png' }));
     const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
     const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0);
-    // Historical original-source calibration; deliberately provisional for the new physical-detail source.
-    // Do not describe a pass here as individual keycap/pull calibration.
+    // These unchanged historical controls passed the fresh actual source run:
+    // q0 281/111 and q1 497/455 before/after Load. They do not measure every key/pull.
     // Default view yaw-45/elev45 selects source yaw300/elev40 for q0 and
     // source yaw30/elev40 for q1. Keep disjoint regions: desktop + document
     // for q0; desktop + steel monitor for q1 (the right wall hides its document).
-    // Historical before/after counts only: q0 339/111, q1 353/455.
-    // Fresh counts and detailed geometry visibility must be recorded from native screenshots.
     const rects = quarterTurns === 0
       ? [[815, 450, 25, 35], [780, 420, 35, 32]]
       : [[945, 382, 25, 23], [905, 348, 45, 27]];
@@ -184,7 +209,8 @@ test(`player builds Reception at quarterTurns${quarterTurns} and retains dedicat
   await minimap.click({ position: { x: bounds.width * 23 / 32, y: bounds.height * 8 / 32 } });
   await page.mouse.move(1300, 700);
   const completed = await page.screenshot({ path: info.outputPath('dedicated-office-desk-worker-completed-fullhd.png') });
-  await recordWorkerSnapshot(page, info.outputPath('dedicated-office-desk-completed-worker-snapshot.json'));
+  const completedData = await recordWorkerSnapshot(page, info.outputPath('dedicated-office-desk-completed-worker-snapshot.json'));
+  assertDeskProducer(completedData, quarterTurns);
   const beforePixels = await deskPalettePixels(page, completed, quarterTurns);
   await writeFile(info.outputPath('worker-and-completed-save-evidence.json'), JSON.stringify({
     quarterTurns, actualBefore, beforePixels, commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
@@ -201,7 +227,9 @@ test(`player builds Reception at quarterTurns${quarterTurns} and retains dedicat
   await minimap.click({ position: { x: bounds.width * 23 / 32, y: bounds.height * 8 / 32 } });
   await page.mouse.move(1300, 700);
   const loaded = await page.screenshot({ path: info.outputPath('dedicated-office-desk-loaded-fullhd.png') });
-  await recordWorkerSnapshot(page, info.outputPath('dedicated-office-desk-loaded-worker-snapshot.json'));
+  const loadedData = await recordWorkerSnapshot(page, info.outputPath('dedicated-office-desk-loaded-worker-snapshot.json'));
+  assertDeskProducer(loadedData, quarterTurns);
+  expect(loadedData).toEqual(completedData);
   const afterPixels = await deskPalettePixels(page, loaded, quarterTurns);
   afterPixels.forEach((count, index) => expect.soft(count, `desk ${index === 0 ? "oak desktop" : quarterTurns === 0 ? "teal document" : "steel monitor"} after Load`)
     .toBeGreaterThan(index === 0 || quarterTurns === 1 ? 200 : 70));
@@ -212,6 +240,14 @@ test(`player builds Reception at quarterTurns${quarterTurns} and retains dedicat
     commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
   }, null, 2));
   await info.attach('dedicated-office-desk-worker-and-save-evidence', { path: evidencePath, contentType: 'application/json' });
+
+  // Native opposite-side observation exposes the pedestal face hidden in the
+  // default palette views. Keep those palette crops/thresholds unchanged.
+  for (let step = 0; step < 12; step++) {
+    await page.getByRole('button', { name: 'Rotate camera right', exact: true }).click();
+  }
+  await page.mouse.move(1300, 700);
+  await page.screenshot({ path: info.outputPath('dedicated-office-desk-hardware-loaded-fullhd.png') });
 
 });
 }

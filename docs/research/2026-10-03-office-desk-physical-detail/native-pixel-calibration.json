@@ -1,0 +1,131 @@
+{
+  "status": "first actual new-source run passed unchanged palette guards; opposite-side pull observation still pending",
+  "frozenFirstSource": "49bb6a22c2660ef4cecf11d4dc74d3995f01beac",
+  "rawLog": "raw-native-provisional.txt",
+  "thresholds": {
+    "oakDesktop": 200,
+    "q0TealDocument": 70,
+    "q1SteelMonitor": 200
+  },
+  "cases": [
+    {
+      "quarterTurns": 0,
+      "actualBefore": [
+        "object.desk@21,6:orientation=0"
+      ],
+      "actualAfter": [
+        "object.desk@21,6:orientation=0"
+      ],
+      "beforePixels": [
+        281,
+        111
+      ],
+      "afterPixels": [
+        281,
+        111
+      ],
+      "commands": [
+        {
+          "type": "PlaceRoomTemplate",
+          "templateId": "reception-basic",
+          "origin": {
+            "x": 20,
+            "y": 5
+          }
+        }
+      ],
+      "placedObject": {
+        "placedObjectId": "object:21:6",
+        "objectId": "object.desk",
+        "anchorTile": {
+          "x": 21,
+          "y": 6
+        },
+        "orientation": 0,
+        "sourceOrderId": "room-template-000000000002-2-object-000"
+      },
+      "completedSourceOrder": {
+        "id": "room-template-000000000002-2-object-000",
+        "definitionId": "desk-wooden",
+        "location": {
+          "x": 21,
+          "y": 6
+        },
+        "placementSequence": 2,
+        "state": "completed",
+        "progress": 60,
+        "materialsAllocated": [
+          {
+            "itemId": "item.wood-plank",
+            "quantity": 2
+          }
+        ],
+        "assignedWorkerId": "mock-worker-1"
+      },
+      "completeSnapshotDataEqualsLoaded": true,
+      "worldVersion": 1,
+      "worldPhysicalOwnerPlanesPresent": false
+    },
+    {
+      "quarterTurns": 1,
+      "actualBefore": [
+        "object.desk@24,6:orientation=1"
+      ],
+      "actualAfter": [
+        "object.desk@24,6:orientation=1"
+      ],
+      "beforePixels": [
+        497,
+        455
+      ],
+      "afterPixels": [
+        497,
+        455
+      ],
+      "commands": [
+        {
+          "type": "PlaceRoomTemplate",
+          "templateId": "reception-basic",
+          "origin": {
+            "x": 20,
+            "y": 5
+          },
+          "quarterTurns": 1
+        }
+      ],
+      "placedObject": {
+        "placedObjectId": "object:24:6",
+        "objectId": "object.desk",
+        "anchorTile": {
+          "x": 24,
+          "y": 6
+        },
+        "orientation": 1,
+        "sourceOrderId": "room-template-000000000002-2-object-000"
+      },
+      "completedSourceOrder": {
+        "id": "room-template-000000000002-2-object-000",
+        "definitionId": "desk-wooden",
+        "location": {
+          "x": 24,
+          "y": 6
+        },
+        "objectOrientation": 1,
+        "placementSequence": 2,
+        "state": "completed",
+        "progress": 60,
+        "materialsAllocated": [
+          {
+            "itemId": "item.wood-plank",
+            "quantity": 2
+          }
+        ],
+        "assignedWorkerId": "mock-worker-1"
+      },
+      "completeSnapshotDataEqualsLoaded": true,
+      "worldVersion": 1,
+      "worldPhysicalOwnerPlanesPresent": false
+    }
+  ],
+  "visualInspection": "All four original FullHD screenshots opened; separately modeled keys visible in both default views. Raised drawer face hidden behind pedestal in both; no native pull visibility claim yet."
+}
