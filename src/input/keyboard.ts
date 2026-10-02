@@ -59,6 +59,16 @@ export class KeyboardInputAdapter {
 
   public isActive(action: ActionId): boolean {
     const contexts = this.activeContexts();
+    if (contexts.includes('modal')) {
+      // Native select popups can consume keyup before it reaches the page.
+      // A modal takes ownership of excluded held codes, rather than merely
+      // pausing them and reviving a physically released key after it closes.
+      for (const code of this.pressedCodes) {
+        if (!this.bindings.some(binding => binding.code === code && intersects(binding.contexts, contexts))) {
+          this.pressedCodes.delete(code);
+        }
+      }
+    }
     return this.bindings.some((binding) =>
       binding.action === action && this.pressedCodes.has(binding.code) && intersects(binding.contexts, contexts),
     );
