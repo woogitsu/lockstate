@@ -233,6 +233,10 @@
                     {
                         "assetId":  "furniture.yard.steel-bench",
                         "manifest":  "/game-content/oblique-furniture.yard-steel-bench.v1.json"
+                    },
+                    {
+                        "assetId":  "fixture.yard.steel-waste-bin",
+                        "manifest":  "/game-content/oblique-fixture.yard-steel-waste-bin.v1.json"
                     }
                 ]
 }

@@ -31,7 +31,12 @@ export function obliqueAssetIdForObject(objectId: string): string | undefined {
   return OBLIQUE_OBJECT_ASSET_IDS[objectId];
 }
 
-/** Presentation-only Yard skin for a completed bench wholly inside a published Yard rectangle. */
+const YARD_VISUAL_VARIANTS: Readonly<Record<string, string>> = Object.freeze({
+  'object.bench': 'furniture.yard.steel-bench',
+  'object.waste-bin': 'fixture.yard.steel-waste-bin',
+});
+
+/** Presentation-only skin for a completed object wholly inside a published Yard rectangle. */
 export function obliqueAssetIdForPlacedObject(
   objectId: string,
   tileX: number,
@@ -39,11 +44,12 @@ export function obliqueAssetIdForPlacedObject(
   footprint: { readonly width: number; readonly height: number },
   rooms: readonly RenderRoom[],
 ): string | undefined {
-  if (objectId === 'object.bench' && rooms.some(room => room.roomCatalogId === 'room.yard' &&
+  const yardAssetId = YARD_VISUAL_VARIANTS[objectId];
+  if (yardAssetId !== undefined && rooms.some(room => room.roomCatalogId === 'room.yard' &&
     tileX >= room.anchorTileX && tileY >= room.anchorTileY &&
     tileX + footprint.width <= room.anchorTileX + room.width &&
     tileY + footprint.height <= room.anchorTileY + room.height)) {
-    return 'furniture.yard.steel-bench';
+    return yardAssetId;
   }
   return obliqueAssetIdForObject(objectId);
 }
