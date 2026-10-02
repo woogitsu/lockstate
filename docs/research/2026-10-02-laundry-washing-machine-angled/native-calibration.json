@@ -1,0 +1,73 @@
+{
+  "initialFrozenHead": "f78f02404777722f174a54ae333bd5f799eb4138",
+  "q0InitialGreen": true,
+  "q1InitialProvisionalRedCounts": [
+    2,
+    0
+  ],
+  "calibratedFromOpenedNativeFullHD": true,
+  "observations": [
+    {
+      "quarterTurns": 0,
+      "rectangles": [
+        [
+          820,
+          400,
+          90,
+          140
+        ],
+        [
+          975,
+          340,
+          65,
+          110
+        ]
+      ],
+      "rgb": [
+        32,
+        59,
+        66
+      ],
+      "beforePixels": [
+        827,
+        833
+      ],
+      "afterPixels": [
+        827,
+        833
+      ],
+      "thresholdGreaterThan": 100
+    },
+    {
+      "quarterTurns": 1,
+      "rectangles": [
+        [
+          990,
+          384,
+          48,
+          54
+        ],
+        [
+          1100,
+          465,
+          52,
+          61
+        ]
+      ],
+      "rgb": [
+        36,
+        67,
+        76
+      ],
+      "beforePixels": [
+        1484,
+        1480
+      ],
+      "afterPixels": [
+        1484,
+        1480
+      ],
+      "thresholdGreaterThan": 100
+    }
+  ]
+}
