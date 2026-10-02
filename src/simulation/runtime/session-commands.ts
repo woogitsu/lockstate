@@ -881,6 +881,16 @@ export function createSessionCommandHandler(
        * stay claimed with nothing standing on it -- and the order it cancels is
        * found from the tile rather than named on the wire.
        */
+      const pendingObjectOrderId = objectPlacement.pendingRemovalOrderId({ x: simCommand.x, y: simCommand.y });
+      if (pendingObjectOrderId !== undefined) {
+        const refusal = roomTemplates.prepareCancellation(pendingObjectOrderId, context.tick);
+        if (refusal !== undefined) {
+          refusals.record(UNZONE_REFUSAL_REASONS[refusal.reason], context.tick, removeObjectSupersessionKey(simCommand.x, simCommand.y), {
+            x: simCommand.x, y: simCommand.y,
+          });
+          return;
+        }
+      }
       const outcome = objectPlacement.remove({ x: simCommand.x, y: simCommand.y }, context.tick);
       const removeKey = removeObjectSupersessionKey(simCommand.x, simCommand.y);
       if (outcome.kind === 'refused') {
@@ -946,11 +956,14 @@ export function createSessionCommandHandler(
          * over the relocation's `'info'`; this arm relocates nobody, raises
          * nothing else, and returns immediately -- so there is no order to get
          * right, and the sentence belongs with the other command successes this
-         * file answers. It also keeps `ObjectPlacementService` free of a second
+         * file answers. Template cancellation now prepares any collective
+         * relocation before removal, then reconciles before this notice.
+         * It also keeps `ObjectPlacementService` free of a second
          * notice port: the state travels out on the outcome, which is a fact
          * about what happened rather than a dependency on the events channel.
          */
         if (outcome.kind === 'order-cancelled') {
+          roomTemplates.reconcileCancelledShells();
           events.recordBuildOrderCancelled(outcome.stateAtCancellation, context.tick);
         }
       }
@@ -980,6 +993,16 @@ export function createSessionCommandHandler(
        * `remove-wall.nothing-to-remove`, below, and it is the only one this
        * branch ever records.
        */
+      const pendingObjectOrderId = objectPlacement.pendingRemovalOrderId({ x: simCommand.x, y: simCommand.y });
+      if (pendingObjectOrderId !== undefined) {
+        const refusal = roomTemplates.prepareCancellation(pendingObjectOrderId, context.tick);
+        if (refusal !== undefined) {
+          refusals.record(UNZONE_REFUSAL_REASONS[refusal.reason], context.tick, removeObjectSupersessionKey(simCommand.x, simCommand.y), {
+            x: simCommand.x, y: simCommand.y,
+          });
+          return;
+        }
+      }
       const outcome = objectPlacement.remove({ x: simCommand.x, y: simCommand.y }, context.tick);
       if (outcome.kind !== 'refused') {
         // The object arm won. Handled exactly as `RemoveObject`'s own branch
@@ -989,6 +1012,7 @@ export function createSessionCommandHandler(
         // same event for a cancelled pending order.
         refusals.supersede(removeObjectSupersessionKey(simCommand.x, simCommand.y));
         if (outcome.kind === 'order-cancelled') {
+          roomTemplates.reconcileCancelledShells();
           events.recordBuildOrderCancelled(outcome.stateAtCancellation, context.tick);
         }
         return;
