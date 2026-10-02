@@ -31,8 +31,10 @@ The current drawer search also returns PRs #1444 and #1451: their existing
 owner-approved rule explicitly closes with Escape and returns trigger focus.
 Those records were read; the correction preserves that rule.
 Issue[#1962](https://github.com/woogitsu/lockstate/issues/1962) covers the same
-propagation cause for the Layout menu at FullHD UI200%; it should be extended
-with the newly uncovered navigation drawer boundary, rather than duplicated.
+propagation cause for the Layout menu at FullHD UI200%. The new drawer boundary
+was added in [comment5962484013](https://github.com/woogitsu/lockstate/issues/1962#issuecomment-5962484013),
+explicitly labelled source proof with native acceptance pending. A fresh GET
+verified the persisted comment body exactly; no duplicate Issue was opened.
 Its current body and current comment collection were read before this proposal.
 Issue#1479 covers keys changing semantic action across input contexts;#959 is
 the earlier accepted world-Escape stand-down behavior. Neither is this drawer
