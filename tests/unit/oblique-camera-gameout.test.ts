@@ -1,6 +1,7 @@
 import { afterEach, expect, it, vi } from 'vitest';
 import { ObliqueWorldScene } from '../../src/rendering/scene/oblique-world-scene';
 import type { RenderFeed } from '../../src/rendering/feed/render-feed';
+import { TouchGestureTracker } from '../../src/input/gestures';
 
 const plumbing = vi.hoisted(() => ({ handlers: new Map<string, (...args: unknown[]) => void>() }));
 vi.mock('phaser', () => {
@@ -68,4 +69,22 @@ it.each(gestures)('already ends %s on its existing GameObject pointerout handler
   plumbing.handlers.get('pointerout')!(pointer(button, buttons, 960));
   plumbing.handlers.get('pointermove')!(pointer(button, buttons, 1040));
   expect(actual.captureCameraView()).toEqual(moved);
+});
+
+it('preserves a retained construction hover, pressed footprint and touch tracker on canvas exit', async () => {
+  const actual = await scene();
+  const hover = { x: 900, y: 440 };
+  const gesture = { pointerId: 3, kind: 'room', press: { x: 128, y: 128 }, current: { x: 256, y: 256 } };
+  Reflect.set(actual, 'hoveredScreenPoint', hover);
+  Reflect.set(actual, 'gesture', gesture);
+  const touch = Reflect.get(actual, 'touchGestures') as TouchGestureTracker;
+  touch.begin({ id: 3, x: 900, y: 440 });
+  const pointers = Reflect.get(actual, 'touchPointers') as Set<number>;
+  pointers.add(3);
+  plumbing.handlers.get('gameout')?.(123, { type: 'mouseout', timeStamp: 123, buttons: 1 });
+  expect(Reflect.get(actual, 'hoveredScreenPoint')).toBe(hover);
+  expect(Reflect.get(actual, 'gesture')).toBe(gesture);
+  expect(Reflect.get(actual, 'touchPointers')).toEqual(new Set([3]));
+  expect(touch.move({ id: 3, x: 910, y: 440 })).toEqual({ kind: 'pan', deltaX: 10, deltaY: 0 });
+  expect(Reflect.get(actual, 'touchGestures')).toBe(touch);
 });
