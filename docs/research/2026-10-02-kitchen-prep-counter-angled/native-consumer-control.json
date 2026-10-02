@@ -1,0 +1,78 @@
+{
+  "sourceCommit": "fb5f48ea64ef0e112d1e3da08b4c0e751b07f2b6",
+  "mappingSha256": "a9eada806ff523bc9933da9b7a2e8a731c5a896286e33b0551119d8e389dd2d4",
+  "workerBytes": 435322,
+  "workerSha256": "6f2288898096bb4f7a98fea503c4c2805140dd81a655ddc5b73e29047a6addd4",
+  "negativeRuns": [
+    {
+      "quarterTurns": 0,
+      "actualExitCode": 1,
+      "actualBefore": [
+        "object.fridge@21,8:orientation=0",
+        "object.prep-counter@23,6:orientation=0",
+        "object.stove@21,6:orientation=0"
+      ],
+      "actualAfter": [
+        "object.fridge@21,8:orientation=0",
+        "object.prep-counter@23,6:orientation=0",
+        "object.stove@21,6:orientation=0"
+      ],
+      "beforePixels": [
+        0,
+        3
+      ],
+      "afterPixels": [
+        0,
+        3
+      ],
+      "commands": [
+        {
+          "type": "PlaceRoomTemplate",
+          "templateId": "kitchen-basic",
+          "origin": {
+            "x": 20,
+            "y": 5
+          }
+        }
+      ]
+    },
+    {
+      "quarterTurns": 1,
+      "actualExitCode": 1,
+      "actualBefore": [
+        "object.fridge@22,6:orientation=1",
+        "object.prep-counter@24,8:orientation=1",
+        "object.stove@24,6:orientation=1"
+      ],
+      "actualAfter": [
+        "object.fridge@22,6:orientation=1",
+        "object.prep-counter@24,8:orientation=1",
+        "object.stove@24,6:orientation=1"
+      ],
+      "beforePixels": [
+        0,
+        27
+      ],
+      "afterPixels": [
+        0,
+        27
+      ],
+      "commands": [
+        {
+          "type": "PlaceRoomTemplate",
+          "templateId": "kitchen-basic",
+          "origin": {
+            "x": 20,
+            "y": 5
+          },
+          "quarterTurns": 1
+        }
+      ]
+    }
+  ],
+  "mutatedWorkerBytesEqual": true,
+  "exactMappingBytesRestored": true,
+  "exactSourceBytesRestored": true,
+  "restoredWorkerBytesEqual": true,
+  "finalNativeExitCode": 0
+}
