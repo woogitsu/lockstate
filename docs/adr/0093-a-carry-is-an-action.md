@@ -869,6 +869,14 @@ here rather than in a commit message nobody keeps:**
    recorded as awaiting exactly this consumer). No balance number, and the
    bootstrap dissolves by construction: the dock door and the racks are build
    orders paid for by deliveries that still land directly.
+
+   **Correction after ready-made room plans (#1750).** Both furnished rooms
+   can now finish before the first Cell without admitting a prisoner. That
+   refutes the assumption that furnishing guarantees a carrier. The route
+   keeps direct deposit whenever the living prisoner count is zero; after
+   admission, the furnished route carries deliveries as before. The first-bed
+   case is the same bootstrap obligation, reached later in construction, and
+   adds no balance number.
 2. **A restored carrier is resumed by re-selection, not re-seated as
    `travelling`.** Decision 5 sketched *"a carrier is instead re-seated from
    the board after it loads — `actionIndex` the carry, `travelling`, no
