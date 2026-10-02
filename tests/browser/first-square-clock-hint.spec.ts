@@ -6,7 +6,7 @@ test('Full HD first paused square order explains clock dependency and keyboard P
   const view=page.getByRole('combobox',{name:'View',exact:true});await view.selectOption('oblique');await expect(view).toBeEnabled();
   await page.getByRole('button',{name:'Build',exact:true}).click();await page.locator('.hud-build__arm').click();
   await page.mouse.click(750,350);
-  const rows=page.locator('.hud-build__queue-row');await expect(rows).toHaveCount(1);
+  const rows=page.locator('.hud-build__queue-row[data-order]');await expect(rows).toHaveCount(1);
   const note=page.locator('.hud-build__order-note');await expect(note).toHaveText('An order is queued now and built while the clock runs.');
   const geometry=await note.evaluate(element=>{
     const rect=element.getBoundingClientRect();const rail=element.closest('.hud-build')!.getBoundingClientRect();
@@ -19,3 +19,4 @@ test('Full HD first paused square order explains clock dependency and keyboard P
   for(let index=0;index<100;index++) {if(await play.evaluate(element=>element===document.activeElement))break;await page.keyboard.press('Tab');}
   await expect(play).toBeFocused();await page.keyboard.press('Enter');await expect(rows).toHaveCount(0);
 });
+
