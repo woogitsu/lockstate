@@ -98,6 +98,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 
 | Record | Question it answered | Decision it fed |
 | --- | --- | --- |
+| [2026-10-02 angled ground band audit](./2026-10-02-angled-ground-band/README.md) | Is the black band in the 2560 capture an intentional world edge? | Source and saved-image inspection distinguish it from the void color; actual page/canvas runtime diagnosis pending, no repair or Issue claimed. |
 | [2026-10-02 oblique mixed mouse buttons](./2026-10-02-oblique-mixed-buttons/README.md) | Can a second mouse button start or commit Build while the same pointer owns a camera turn? | [#1954](https://github.com/woogitsu/lockstate/issues/1954); production browser red, fix green, guard mutation red |
 | [2026-08-25 room zoning gesture](./2026-08-25-room-zoning-gesture.md) | What gesture designates a room, and where does the control live? | ADR 0022 |
 | [2026-08-25 room occupancy](./2026-08-25-room-occupancy.md) | Where does a room's occupancy capacity come from? | ADR 0023 |
