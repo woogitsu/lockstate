@@ -193,11 +193,13 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
       const tile = origin();
       if (tile === undefined || place.disabled) return;
       place.disabled = true;
+      const current = revision;
       try {
         const result = await tool.placeAt(tile);
+        if (current !== revision) return;
         status.textContent = result.ok ? t(HUD_MESSAGE_KEY.buildTemplateSubmitted) : t(HUD_MESSAGE_KEY.buildTemplateBlocked);
       } catch {
-        status.textContent = t(HUD_MESSAGE_KEY.buildTemplateUnavailable);
+        if (current === revision) status.textContent = t(HUD_MESSAGE_KEY.buildTemplateUnavailable);
       }
       // Keep this origin locked after queuing. The worker may not have run the
       // command yet, so an immediate read can still say "clear" and allow a
