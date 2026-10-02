@@ -13,6 +13,7 @@ export function createRendererSelectionControl(
   initial: HudRendererMode,
   onSelect: (mode: HudRendererMode) => Promise<void>,
   onError: (error: unknown) => void,
+  onFocus?: () => void,
 ): RendererSelectionControl {
   let current=initial;
   const select=element('select', {
@@ -21,6 +22,9 @@ export function createRendererSelectionControl(
     children: [element('option',{text:labels.world,attributes:{value:'world'}}),element('option',{text:labels.oblique,attributes:{value:'oblique'}})],
   });
   select.value=initial;
+  // Native popups may swallow keyup. Transfer existing keyboard ownership
+  // before opening one, without discarding the world's pointer/tool state.
+  select.addEventListener('focus',()=>onFocus?.());
   select.addEventListener('keydown',event=>{
     // Native option navigation belongs to the selector. Preserve its default
     // change while keeping the same key out of the still-live world scene.
