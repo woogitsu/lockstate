@@ -98,7 +98,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 
 | Record | Question it answered | Decision it fed |
 | --- | --- | --- |
-| [2026-10-02 live view keyboard focus](./2026-10-02-live-view-keyboard-focus/README.md) | Can keyboard users continue changing a view after asynchronous selection? | Source audit and actual Tab/Arrow regression prepared; native diagnosis pending, no bug or fix claimed. |
+| [2026-10-02 live view keyboard focus](./2026-10-02-live-view-keyboard-focus/README.md) | Can keyboard users continue changing a view after asynchronous selection? | Verified #1956 native focus loss; intent-preserving recovery, 3-case actual worker proof and production mutation red ? restore green. |
 | [2026-10-02 oblique Load Room and Object](./2026-10-02-oblique-load-room-object/README.md) | Can held Room and Object gestures commit into a newly loaded prison, and can fresh gestures still work? | [#1949](https://github.com/woogitsu/lockstate/issues/1949); 2/2 green, cancellation mutation 2/2 red, restored green |
 | [2026-10-02 angled ground band audit](./2026-10-02-angled-ground-band/README.md) | Is the black band in the 2560 capture an intentional world edge? | Actual compositor screenshot has the strip, raw real WebGL canvas has complete terrain; downstream presentation/capture discrepancy, no unproven ground repair or game Issue. |
 | [2026-10-02 oblique wheel anchor](./2026-10-02-oblique-wheel-anchor/README.md) | Does angled native wheel zoom keep the Build square beneath the stationary cursor at changed yaw/elevation and after renderer switching? | [#1955](https://github.com/woogitsu/lockstate/issues/1955); browser red, fix green, wheel-listener mutation red, restored green |
