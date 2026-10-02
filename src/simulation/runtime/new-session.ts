@@ -1627,6 +1627,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   const roomTemplates = new RoomTemplateCoordinator(world, construction, roomZoning, placedObjects, objectPlacement);
   construction.setPendingRoomTemplateClaims((tile, sequence) => roomTemplates.claimsPendingFootprint(tile, sequence));
   construction.setPendingRoomTemplateDoorApproachClaims((order) => roomTemplates.claimsRoomDoorApproach(order));
+  construction.setObjectFootprintClaims(objectPlacement.claimsObjectFootprint.bind(objectPlacement));
   objectPlacement.setPendingRoomDoorApproachClaim((tile) => roomTemplates.claimsRoomDoorApproachTile(tile));
   construction.setUndoPreparation((orderIds) => {
     const key = 'room-template-undo';

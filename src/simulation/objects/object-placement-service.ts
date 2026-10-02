@@ -892,6 +892,15 @@ export class ObjectPlacementService {
     this.relocationNotice?.announceRelocations(outcome.relocated);
   }
 
+  /** Shared physical occupancy for later whole-square wall orders (#1705). */
+  public claimsObjectFootprint(tile: TilePosition): boolean {
+    if (this.placedObjects.isTileOccupied(tile)) return true;
+    for (const entry of this.ordersBuildingObjects()) {
+      if (entry.tiles.some(claim => claim.x === tile.x && claim.y === tile.y)) return true;
+    }
+    return false;
+  }
+
   /**
    * Every tile claimed by an object order that has not finished and has not
    * been given up on.

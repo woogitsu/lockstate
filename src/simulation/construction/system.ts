@@ -394,6 +394,7 @@ export class ConstructionSystem implements SystemRegistration {
   private currentTransactionId: string | undefined;
   private pendingRoomTemplateClaims?: (tile: TilePosition, sequence: number | undefined) => boolean;
   private pendingRoomTemplateDoorApproachClaims?: (order: BuildOrder) => boolean;
+  private objectFootprintClaims?: (tile: TilePosition) => boolean;
 
   /** The session supplies its live template reservations after both systems exist. */
   public setPendingRoomTemplateClaims(reader: (tile: TilePosition, sequence: number | undefined) => boolean): void {
@@ -402,6 +403,11 @@ export class ConstructionSystem implements SystemRegistration {
 
   public setPendingRoomTemplateDoorApproachClaims(reader: (order: BuildOrder) => boolean): void {
     this.pendingRoomTemplateDoorApproachClaims = reader;
+  }
+
+  /** A whole wall square cannot share a standing or in-flight object tile. */
+  public setObjectFootprintClaims(reader: (tile: TilePosition) => boolean): void {
+    this.objectFootprintClaims = reader;
   }
 
   public constructor(
@@ -606,6 +612,13 @@ export class ConstructionSystem implements SystemRegistration {
     if (order.footprint === 'square' && this.world.getSquareStructure(order.location) !== 0) {
       this.setState(order, 'failed');
       order.failReason = 'duplicate-order';
+      this.orders.set(order.id, order);
+      return;
+    }
+
+    if (order.footprint === 'square' && this.objectFootprintClaims?.(order.location) === true) {
+      this.setState(order, 'failed');
+      order.failReason = 'unbuildable';
       this.orders.set(order.id, order);
       return;
     }
