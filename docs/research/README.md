@@ -237,6 +237,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 | [2026-10-01 square brick wall detail](./2026-10-01-square-brick-wall-detail.md) | Can authored masonry remain readable within the accepted square wall bounds? | Blender full and cutaway models, staggered joints and cap stones, 144 refreshed poses with source/frame hashes; scene acceptance remains separate. |
 | [2026-10-02 authored oblique actors](./2026-10-02-oblique-authored-actors/README.md) | Do existing Blender prisoner and guard frames draw at real feet anchors and respect wall depth? | Actual Full HD canvas pixel comparisons, invisible-image production mutation, restored green cases and static-frame limitations. |
 | [2026-10-02 oblique role actors](./2026-10-02-oblique-role-actors/README.md) | Do existing cook, medic and staff Blender sources match the prisoner/guard angled actor scale and foot pivot? | Three real Blender role previews, source-detail audit and alpha-bound comparison; full pose catalog and runtime mapping follow. |
+| [2026-10-02 outdoor steel bench art draft](./2026-10-02-yard-steel-bench/README.md) | Can existing bench gameplay get a weatherproof Yard visual variant without a new object identity? | Blender source, 72 hashed angled poses, exact 2×1 bounds and scale contract; contextual runtime selector remains separate. |
 
 ### Findings from the first four records that changed a decision
 
