@@ -22,7 +22,7 @@ Nothing mechanical can. That argument belongs in a docblock beside that code —
 `hud.alert.event.construction.undo-refused-newer-action` is the worked example, arguing
 each of its three clauses at the code that decides it.
 
-## The 590 authored sentences
+## The 593 authored sentences
 
 Source: `src/content/default-locale-en.ts`, in the order they are declared.
 
@@ -591,31 +591,34 @@ Source: `src/content/default-locale-en.ts`, in the order they are declared.
 | `input.action.camera.right` | `Pan camera right` | `src/content/default-locale-en.ts:4408` |
 | `input.action.camera.zoom.in` | `Zoom in` | `src/content/default-locale-en.ts:4409` |
 | `input.action.camera.zoom.out` | `Zoom out` | `src/content/default-locale-en.ts:4410` |
-| `input.action.camera.rotate.left` | `Rotate camera left` | `src/content/default-locale-en.ts:4411` |
-| `input.action.camera.rotate.right` | `Rotate camera right` | `src/content/default-locale-en.ts:4412` |
-| `input.action.camera.tilt.up` | `Raise camera angle` | `src/content/default-locale-en.ts:4413` |
-| `input.action.camera.tilt.down` | `Lower camera angle` | `src/content/default-locale-en.ts:4414` |
-| `input.action.selection.primary` | `Select` | `src/content/default-locale-en.ts:4415` |
-| `input.action.build.confirm` | `Confirm placement` | `src/content/default-locale-en.ts:4416` |
-| `input.action.build.cancel` | `Cancel` | `src/content/default-locale-en.ts:4419` |
-| `input.action.edit.undo` | `Undo` | `src/content/default-locale-en.ts:4423` |
-| `input.action.edit.redo` | `Redo` | `src/content/default-locale-en.ts:4424` |
-| `brand.region` | `Lockstate build` | `src/content/default-locale-en.ts:4429` |
-| `brand.wordmark` | `LockState.io` | `src/content/default-locale-en.ts:4432` |
-| `brand.stage` | `PRE-ALPHA` | `src/content/default-locale-en.ts:4440` |
-| `brand.build` | `v{version} · {commit}` | `src/content/default-locale-en.ts:4449` |
-| `brand.description` | `Lockstate, {stage} build, version {version}, commit {commit}.` | `src/content/default-locale-en.ts:4453` |
-| `display.scale.region` | `Interface scale` | `src/content/default-locale-en.ts:4469` |
-| `display.scale.cycle` | `Change the interface scale` | `src/content/default-locale-en.ts:4470` |
-| `display.theme.region` | `Theme` | `src/content/default-locale-en.ts:4486` |
-| `display.theme.system` | `System` | `src/content/default-locale-en.ts:4487` |
-| `display.theme.light` | `Light` | `src/content/default-locale-en.ts:4488` |
-| `display.theme.dark` | `Dark` | `src/content/default-locale-en.ts:4489` |
-| `display.theme.cycle` | `Change the interface theme` | `src/content/default-locale-en.ts:4490` |
-| `display.language.region` | `Language` | `src/content/default-locale-en.ts:4515` |
-| `display.language.automatic` | `Automatic ({language})` | `src/content/default-locale-en.ts:4516` |
-| `display.language.english` | `English` | `src/content/default-locale-en.ts:4517` |
-| `display.language.polish` | `Polski` | `src/content/default-locale-en.ts:4518` |
-| `display.language.cycle` | `Change the interface language and reload the game` | `src/content/default-locale-en.ts:4526` |
-| `app.shell.label` | `Lockstate game application` | `src/content/default-locale-en.ts:4536` |
+| `hud.camera.view` | `View` | `src/content/default-locale-en.ts:4411` |
+| `hud.camera.view.world` | `Top-down` | `src/content/default-locale-en.ts:4412` |
+| `hud.camera.view.oblique` | `Angled view` | `src/content/default-locale-en.ts:4413` |
+| `input.action.camera.rotate.left` | `Rotate camera left` | `src/content/default-locale-en.ts:4414` |
+| `input.action.camera.rotate.right` | `Rotate camera right` | `src/content/default-locale-en.ts:4415` |
+| `input.action.camera.tilt.up` | `Raise camera angle` | `src/content/default-locale-en.ts:4416` |
+| `input.action.camera.tilt.down` | `Lower camera angle` | `src/content/default-locale-en.ts:4417` |
+| `input.action.selection.primary` | `Select` | `src/content/default-locale-en.ts:4418` |
+| `input.action.build.confirm` | `Confirm placement` | `src/content/default-locale-en.ts:4419` |
+| `input.action.build.cancel` | `Cancel` | `src/content/default-locale-en.ts:4422` |
+| `input.action.edit.undo` | `Undo` | `src/content/default-locale-en.ts:4426` |
+| `input.action.edit.redo` | `Redo` | `src/content/default-locale-en.ts:4427` |
+| `brand.region` | `Lockstate build` | `src/content/default-locale-en.ts:4432` |
+| `brand.wordmark` | `LockState.io` | `src/content/default-locale-en.ts:4435` |
+| `brand.stage` | `PRE-ALPHA` | `src/content/default-locale-en.ts:4443` |
+| `brand.build` | `v{version} · {commit}` | `src/content/default-locale-en.ts:4452` |
+| `brand.description` | `Lockstate, {stage} build, version {version}, commit {commit}.` | `src/content/default-locale-en.ts:4456` |
+| `display.scale.region` | `Interface scale` | `src/content/default-locale-en.ts:4472` |
+| `display.scale.cycle` | `Change the interface scale` | `src/content/default-locale-en.ts:4473` |
+| `display.theme.region` | `Theme` | `src/content/default-locale-en.ts:4489` |
+| `display.theme.system` | `System` | `src/content/default-locale-en.ts:4490` |
+| `display.theme.light` | `Light` | `src/content/default-locale-en.ts:4491` |
+| `display.theme.dark` | `Dark` | `src/content/default-locale-en.ts:4492` |
+| `display.theme.cycle` | `Change the interface theme` | `src/content/default-locale-en.ts:4493` |
+| `display.language.region` | `Language` | `src/content/default-locale-en.ts:4518` |
+| `display.language.automatic` | `Automatic ({language})` | `src/content/default-locale-en.ts:4519` |
+| `display.language.english` | `English` | `src/content/default-locale-en.ts:4520` |
+| `display.language.polish` | `Polski` | `src/content/default-locale-en.ts:4521` |
+| `display.language.cycle` | `Change the interface language and reload the game` | `src/content/default-locale-en.ts:4529` |
+| `app.shell.label` | `Lockstate game application` | `src/content/default-locale-en.ts:4539` |
 
