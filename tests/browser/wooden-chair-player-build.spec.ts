@@ -1,5 +1,4 @@
-// Prepared native route and independent consumer assertion. Material/pixel
-// candidates and regions below are provisional until actual FullHD calibration.
+// Real worker-built Staff Room, calibrated independent chair pixels and Save/Load.
 import { writeFile } from 'node:fs/promises';
 import { expect, test as base, type Page } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
@@ -54,15 +53,13 @@ async function timberPixels(page: Page, png: Buffer, quarterTurns: 0 | 1): Promi
     const bitmap = await createImageBitmap(new Blob([Uint8Array.from(atob(base64), c => c.charCodeAt(0))], { type: 'image/png' }));
     const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
     const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0);
-    // The retained seat/back use original wood diffuse RGBA(.48,.27,.11,1).
-    // Candidate RGB(150,115,75) occurs in the actual yaw30/elev40 export;
-    // source pixels do not establish the native camera's runtime palette.
-    // These separate chair regions are layout estimates pending native images.
-    // Actual calibration must also exclude desk/door pixels, then removing only
-    // the default chair binding must fail both regions with objects/save intact.
+    // Actual native FullHD calibration at e3eff8678c: timber RGB(150,115,75).
+    // Two isolated chair regions exclude the Staff Room desk. The normal rear
+    // chair is partly behind the door; its visible seat still supplies 106 pixels.
+    // Normal counts108/106; clockwise90 counts54/49, equal after actual Load.
     const rects = quarterTurns === 0
-      ? [[775, 455, 120, 150], [940, 420, 130, 150]]
-      : [[875, 470, 125, 160], [800, 350, 120, 150]];
+      ? [[770, 490, 100, 115], [940, 440, 100, 115]]
+      : [[825, 390, 95, 100], [885, 500, 100, 105]];
     const colour = [150, 115, 75];
     return rects.map(rect => {
       const pixels = context.getImageData(...rect as [number, number, number, number]).data;
@@ -141,7 +138,7 @@ test('player creates storage and delivery capacity before Staff Room', async ({ 
 });
 
 for (const quarterTurns of [0, 1] as const) {
-test(`player builds Staff Room at quarterTurns${quarterTurns} and retains wooden chair anchors after Save/Load`, async ({ page }, info) => {
+test(`player builds Staff Room at quarterTurns${quarterTurns} and retains both authored chair palettes and anchors after Save/Load`, async ({ page }, info) => {
   expect(routeStorage, 'this case consumes the first stage actual IndexedDB save').toBeDefined();
   await installWorkerProbe(page);
   await installTee(page);
@@ -179,7 +176,7 @@ test(`player builds Staff Room at quarterTurns${quarterTurns} and retains wooden
     quarterTurns, actualBefore, beforePixels, commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
   }, null, 2));
   beforePixels.forEach((count, index) => expect.soft(count, `chair${index + 1} authored timber after construction`)
-    .toBeGreaterThan(20));
+    .toBeGreaterThan(40));
   await page.getByRole('button', { name: 'Overview', exact: true }).click();
   await page.getByRole('button', { name: 'Save now', exact: true }).click();
   await expect(page.locator('.save-panel__status')).toContainText('Saved');
@@ -192,7 +189,7 @@ test(`player builds Staff Room at quarterTurns${quarterTurns} and retains wooden
   const loaded = await page.screenshot({ path: info.outputPath('wooden-chair-loaded-fullhd.png') });
   const afterPixels = await timberPixels(page, loaded, quarterTurns);
   afterPixels.forEach((count, index) => expect.soft(count, `chair${index + 1} authored timber after Load`)
-    .toBeGreaterThan(20));
+    .toBeGreaterThan(40));
   expect(afterPixels).toEqual(beforePixels);
   const evidencePath = info.outputPath('wooden-chair-worker-and-save-evidence.json');
   await writeFile(evidencePath, JSON.stringify({
