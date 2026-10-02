@@ -1,0 +1,8 @@
+{
+  "source": "src/rendering/assets/oblique-object-mapping.ts",
+  "originalSha256": "a9eada806ff523bc9933da9b7a2e8a731c5a896286e33b0551119d8e389dd2d4",
+  "mutatedSha256": "b38872c6b9a14d693c23001d3f13c8f55b851cbabb7abfc26cf5b855a4c05a2d",
+  "removedOnly": "default object.bench binding; Yard and Common Room overrides retained",
+  "restoredSha256": "a9eada806ff523bc9933da9b7a2e8a731c5a896286e33b0551119d8e389dd2d4",
+  "exactSourceByteEquality": true
+}
