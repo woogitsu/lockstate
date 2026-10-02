@@ -4,6 +4,7 @@ import {
   screenToGround,
   visibleGroundBounds,
   changeObliquePoseAtScreenPoint,
+  panObliqueGroundAnchorToScreen,
   obliqueFromTopDown,
   type ObliqueCameraState,
 } from '../../src/rendering/camera/oblique-projection';
@@ -73,6 +74,21 @@ describe('oblique ground-plane projection', () => {
     expect(groundAfter.y).toBeCloseTo(groundBefore.y, 9);
     expect(turned.yawRadians).toBe(Math.PI / 3);
     expect(turned.elevationRadians).toBe(Math.PI / 4);
+  });
+
+  it('keeps the grabbed ground point beneath a middle-drag cursor at low and high angles', () => {
+    for (const yawRadians of [0, Math.PI / 4, Math.PI]) {
+      for (const elevationRadians of [Math.PI / 9, Math.PI / 3]) {
+        const angled = { ...camera, yawRadians, elevationRadians };
+        const anchor = screenToGround({ x: 720, y: 480 }, angled);
+        const panned = panObliqueGroundAnchorToScreen(angled, anchor, { x: 900, y: 560 });
+        const projected = groundToScreen(anchor, panned);
+        expect(projected.x).toBeCloseTo(900, 8);
+        expect(projected.y).toBeCloseTo(560, 8);
+        expect(panned.yawRadians).toBe(yawRadians);
+        expect(panned.elevationRadians).toBe(elevationRadians);
+      }
+    }
   });
 
   it('culls by the inverse projection of all four viewport corners', () => {
