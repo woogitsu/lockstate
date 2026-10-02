@@ -22,6 +22,11 @@ OUTPUT = ROOT / "public/assets/environment/oblique"
 PREVIEW = ROOT / "assets/intermediate/yard-exercise-preview"
 MANIFEST = ROOT / "public/game-content/oblique-furniture.yard-exercise-station.v1.json"
 ASSET_ID = "furniture.yard.exercise-station"
+RESOLUTION_PX = 256
+ORTHO_SCALE_TILES = 4.0
+NOMINAL_PIXELS_PER_TILE = RESOLUTION_PX / ORTHO_SCALE_TILES
+if not NOMINAL_PIXELS_PER_TILE.is_integer():
+    raise ValueError("The authored camera must render an integral number of pixels per tile")
 YAW = tuple(range(0, 360, 30))
 ELEVATION = tuple(range(20, 80, 10))
 TARGET = Vector((1.0, 0.5, 0.82))
@@ -110,8 +115,8 @@ def configure() -> tuple[bpy.types.Scene, bpy.types.Object]:
     bpy.ops.wm.open_mainfile(filepath=str(SOURCE))
     scene = bpy.context.scene
     scene.render.engine = "BLENDER_WORKBENCH"
-    scene.render.resolution_x = 256
-    scene.render.resolution_y = 256
+    scene.render.resolution_x = RESOLUTION_PX
+    scene.render.resolution_y = RESOLUTION_PX
     scene.render.resolution_percentage = 100
     pipeline_common.apply_deterministic_render_settings(scene)
     scene.display.shading.light = "STUDIO"
@@ -122,7 +127,7 @@ def configure() -> tuple[bpy.types.Scene, bpy.types.Object]:
     camera = bpy.data.objects.new("YardModuleCamera", camera_data)
     bpy.context.collection.objects.link(camera)
     camera_data.type = "ORTHO"
-    camera_data.ortho_scale = 3.7
+    camera_data.ortho_scale = ORTHO_SCALE_TILES
     scene.camera = camera
     return scene, camera
 
@@ -171,8 +176,8 @@ def main() -> None:
         "assetId": ASSET_ID,
         "source": "assets/source/blender/furniture.yard.exercise-station.blend",
         "sourceSha256": hashlib.sha256(SOURCE.read_bytes()).hexdigest(),
-        "resolutionPx": [256, 256],
-        "nominalPixelsPerTile": 128,
+        "resolutionPx": [RESOLUTION_PX, RESOLUTION_PX],
+        "nominalPixelsPerTile": int(NOMINAL_PIXELS_PER_TILE),
         "pivotPx": [128, 128],
         "cameraTargetTiles": [1.0, 0.5, 0.82],
         "projection": "orthographic",
