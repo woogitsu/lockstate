@@ -10,7 +10,7 @@ import { tileCoordinate, type TilePosition } from '../world/coordinates';
 import type { ConstructionSystem } from './system';
 import { createRoomTemplateBuildPlan, instantiateRoomTemplateForConstruction } from './room-template-build-plan';
 import { BUILDABLE_REGISTRY, WALL_EDGE_NUMERIC_ID } from './definition';
-import { resolveBuildEdge } from './build-order';
+import { resolveBuildEdge, type BuildOrder } from './build-order';
 import { validateRoomTemplatePlacement, type RoomTemplatePlacement } from './room-template-placement';
 
 export interface PendingRoomTemplate {
@@ -150,6 +150,21 @@ export class RoomTemplateCoordinator implements SystemRegistration {
       const turns = request.quarterTurns ?? 0;
       const plan = instantiateRoomTemplateForConstruction(request.templateId, request.origin, request.mirrorX, turns);
       return doorwayApproaches(plan).some(({ outside }) => tile.x === outside.x && tile.y === outside.y);
+    });
+  }
+
+  /** An ordinary opaque wall cannot supersede a pending plan's entrance (#1696). */
+  public claimsPendingDoorApproach(order: BuildOrder): boolean {
+    if (BUILDABLE_REGISTRY.get(order.definitionId)?.category !== 'wall') return false;
+    return this.pending.some((request) => {
+      if (request.sequence === order.placementSequence) return false;
+      const plan = instantiateRoomTemplateForConstruction(request.templateId, request.origin, request.mirrorX, request.quarterTurns ?? 0);
+      return doorwayApproaches(plan).some(({ door, outside }) => {
+        if (order.footprint === 'square') return order.location.x === outside.x && order.location.y === outside.y;
+        const edge = outside.x === door.x ? 'north' : 'west';
+        return resolveBuildEdge(order) === edge &&
+          order.location.x === Math.max(door.x, outside.x) && order.location.y === Math.max(door.y, outside.y);
+      });
     });
   }
 

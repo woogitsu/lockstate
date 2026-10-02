@@ -392,10 +392,15 @@ export class ConstructionSystem implements SystemRegistration {
   private currentTransaction: string[] = [];
   private currentTransactionId: string | undefined;
   private pendingRoomTemplateClaims?: (tile: TilePosition, sequence: number | undefined) => boolean;
+  private pendingRoomTemplateDoorApproachClaims?: (order: BuildOrder) => boolean;
 
   /** The session supplies its live template reservations after both systems exist. */
   public setPendingRoomTemplateClaims(reader: (tile: TilePosition, sequence: number | undefined) => boolean): void {
     this.pendingRoomTemplateClaims = reader;
+  }
+
+  public setPendingRoomTemplateDoorApproachClaims(reader: (order: BuildOrder) => boolean): void {
+    this.pendingRoomTemplateDoorApproachClaims = reader;
   }
 
   public constructor(
@@ -609,7 +614,8 @@ export class ConstructionSystem implements SystemRegistration {
     // own shell/furniture orders retain the plan's sequence and may enter.
     const across = order.footprint !== 'square' && occupiesTileEdge(definition)
       ? tileAcrossEdge(order.location, resolveBuildEdge(order)) : undefined;
-    if (this.pendingRoomTemplateClaims?.(order.location, order.placementSequence) === true ||
+    if (this.pendingRoomTemplateDoorApproachClaims?.(order) === true ||
+        this.pendingRoomTemplateClaims?.(order.location, order.placementSequence) === true ||
         (across !== undefined && this.pendingRoomTemplateClaims?.(across, order.placementSequence) === true)) {
       this.setState(order, 'failed');
       order.failReason = 'unbuildable';
