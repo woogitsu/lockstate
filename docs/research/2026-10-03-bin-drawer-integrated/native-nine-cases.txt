@@ -1,0 +1,40 @@
+node : [2m[WebServer] [22m(node:63916) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:2 char:473
++ ... -20261003'; node --experimental-transform-types --disable-warning=Exp ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 9 tests using 1 worker
+
+(node:33652) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:33652) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\default-waste-bin-player-build.spec.ts:184:1 › player creates storage and delivery capacity before Garbage Room (43.9s)
+  ok 2 tests\browser\default-waste-bin-player-build.spec.ts:247:3 › player builds Garbage Room at quarterTurns0 and retains waste bin palettes and anchors after Save/Load (30.3s)
+  ok 3 tests\browser\default-waste-bin-player-build.spec.ts:247:3 › player builds Garbage Room at quarterTurns1 and retains waste bin palettes and anchors after Save/Load (30.3s)
+  ok 4 tests\browser\navigation-drawer-escape-native.spec.ts:8:5 › world navigation drawer Escape retains armed wall until ordinary world Escape (3.0s)
+  ok 5 tests\browser\navigation-drawer-escape-native.spec.ts:8:5 › world navigation drawer Escape retains armed object until ordinary world Escape (3.0s)
+  ok 6 tests\browser\navigation-drawer-escape-native.spec.ts:8:5 › world navigation drawer Escape retains armed room-area until ordinary world Escape (3.0s)
+  ok 7 tests\browser\navigation-drawer-escape-native.spec.ts:8:5 › oblique navigation drawer Escape retains armed wall until ordinary world Escape (3.6s)
+  ok 8 tests\browser\navigation-drawer-escape-native.spec.ts:8:5 › oblique navigation drawer Escape retains armed object until ordinary world Escape (3.7s)
+  ok 9 tests\browser\navigation-drawer-escape-native.spec.ts:8:5 › oblique navigation drawer Escape retains armed room-area until ordinary world Escape (3.6s)
+
+  9 passed (2.1m)

@@ -1,0 +1,445 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bin-drawer-integration-20261003\\tests\\browser\\playwright.artifact.config.ts",
+    "rootDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-bin-drawer-integration-20261003/tests/browser",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/matma/AppData/Local/Temp/lockstate-bin-drawer-combined-results-20261003",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-bin-drawer-integration-20261003/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "/(?:production-artifact|rotated-security-console-player-build|infirmary-player-build|room-template-live-orientation|room-plan-dialog-escape|canteen-dining-table-player-build|room-plan-native-picker|shower-head-player-build|live-view-held-native-arrow|wooden-bench-player-build|live-view-native-popup-held-key|hud-separator-held-arrow|wooden-chair-player-build|build-category-native-camera|generic-wooden-rack-player-build|build-category-native-popup-held-key|build-category-native-typeahead|bookshelf-player-build|utility-panel-player-build|hud-layout-menu-fullhd|generic-office-desk-player-build|oblique-build-drag-under-hud|dedicated-kitchen-stove-player-build|live-view-native-mouse-target|oblique-object-area-drag-under-hud|dedicated-kitchen-fridge-player-build|dedicated-kitchen-prep-counter-player-build|room-preview-retained-hover-fit|oblique-square-wall-native-footprint|dedicated-laundry-washing-machine-player-build|camera-wheel-axis-native|oblique-camera-gameout-native|default-waste-bin-player-build|navigation-drawer-escape-native)\\.spec\\.ts$/"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 1,
+    "webServer": {
+      "command": "\"C:\\\\Users\\\\matma\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\node\\\\bin\\\\node.exe\" \"C:\\\\Users\\\\matma\\\\Documents\\\\Rozwój gier\\\\lockstate-1382-doc-anchor-2026-09-24\\\\node_modules\\\\.pnpm\\\\vite@8.2.2_@types+node@24.10.1_esbuild@0.28.1\\\\node_modules\\\\vite\\\\bin\\\\vite.js\" preview --port 5418 --strictPort --host 127.0.0.1",
+      "cwd": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bin-drawer-integration-20261003\\",
+      "env": {
+        "CLOUDFLARE_ENV": "production"
+      },
+      "url": "http://127.0.0.1:5418/",
+      "reuseExistingServer": false,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "default-waste-bin-player-build.spec.ts",
+      "file": "default-waste-bin-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player creates storage and delivery capacity before Garbage Room",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 43851,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T23:08:47.804Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3fc38d310ce6cc086d41-5bfadffe43e98542ebc5",
+          "file": "default-waste-bin-player-build.spec.ts",
+          "line": 184,
+          "column": 1
+        },
+        {
+          "title": "player builds Garbage Room at quarterTurns0 and retains waste bin palettes and anchors after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 30286,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T23:09:31.724Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "default-waste-bin-worker-and-save-evidence",
+                      "contentType": "application/json",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bin-drawer-combined-results-20261003\\default-waste-bin-player-b-85474-and-anchors-after-Save-Load\\attachments\\default-waste-bin-worker-and-save-evidence-0e440a0d10bf2f957f5d4a97955b7e87b6cc2714.json"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3fc38d310ce6cc086d41-db83e146f6bcfbe2e739",
+          "file": "default-waste-bin-player-build.spec.ts",
+          "line": 247,
+          "column": 3
+        },
+        {
+          "title": "player builds Garbage Room at quarterTurns1 and retains waste bin palettes and anchors after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 30320,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T23:10:02.020Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "default-waste-bin-worker-and-save-evidence",
+                      "contentType": "application/json",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bin-drawer-combined-results-20261003\\default-waste-bin-player-b-fb943-and-anchors-after-Save-Load\\attachments\\default-waste-bin-worker-and-save-evidence-85df41f60e46d289e2255025e173f8b1114cdf00.json"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3fc38d310ce6cc086d41-3a3fc347cfe5ef12bf99",
+          "file": "default-waste-bin-player-build.spec.ts",
+          "line": 247,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "navigation-drawer-escape-native.spec.ts",
+      "file": "navigation-drawer-escape-native.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "world navigation drawer Escape retains armed wall until ordinary world Escape",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2984,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T23:10:32.359Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "drawer-key-and-worker-evidence",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZW5kZXJlciI6ICJ3b3JsZCIsCiAgInRvb2wiOiAid2FsbCIsCiAgInZpZXdwb3J0IjogewogICAgIndpZHRoIjogOTYwLAogICAgImhlaWdodCI6IDU0MAogIH0sCiAgInVpU2NhbGUiOiAyLAogICJrZXlzIjogWwogICAgewogICAgICAia2V5IjogIkVzY2FwZSIsCiAgICAgICJ0cnVzdGVkIjogdHJ1ZSwKICAgICAgInRhcmdldCI6ICJ1aS10YWIiCiAgICB9LAogICAgewogICAgICAia2V5IjogIkVzY2FwZSIsCiAgICAgICJ0cnVzdGVkIjogdHJ1ZSwKICAgICAgInRhcmdldCI6ICJ1aS1pY29uLWJ1dHRvbiB1aS1pY29uLWJ1dHRvbi0tYm9yZGVyZWQgaHVkLW5hdmlnYXRpb24tZHJhd2VyX190cmlnZ2VyIgogICAgfQogIF0sCiAgImNvbW1hbmRzIjogW10KfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "ee60d0a7717e10ffb86d-06264c7f99d4c6039f26",
+          "file": "navigation-drawer-escape-native.spec.ts",
+          "line": 8,
+          "column": 5
+        },
+        {
+          "title": "world navigation drawer Escape retains armed object until ordinary world Escape",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3043,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T23:10:35.349Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "drawer-key-and-worker-evidence",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZW5kZXJlciI6ICJ3b3JsZCIsCiAgInRvb2wiOiAib2JqZWN0IiwKICAidmlld3BvcnQiOiB7CiAgICAid2lkdGgiOiA5NjAsCiAgICAiaGVpZ2h0IjogNTQwCiAgfSwKICAidWlTY2FsZSI6IDIsCiAgImtleXMiOiBbCiAgICB7CiAgICAgICJrZXkiOiAiRXNjYXBlIiwKICAgICAgInRydXN0ZWQiOiB0cnVlLAogICAgICAidGFyZ2V0IjogInVpLXRhYiIKICAgIH0sCiAgICB7CiAgICAgICJrZXkiOiAiRXNjYXBlIiwKICAgICAgInRydXN0ZWQiOiB0cnVlLAogICAgICAidGFyZ2V0IjogInVpLWljb24tYnV0dG9uIHVpLWljb24tYnV0dG9uLS1ib3JkZXJlZCBodWQtbmF2aWdhdGlvbi1kcmF3ZXJfX3RyaWdnZXIiCiAgICB9CiAgXSwKICAiY29tbWFuZHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "ee60d0a7717e10ffb86d-12e6eadb32dc2e115500",
+          "file": "navigation-drawer-escape-native.spec.ts",
+          "line": 8,
+          "column": 5
+        },
+        {
+          "title": "world navigation drawer Escape retains armed room-area until ordinary world Escape",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3012,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T23:10:38.400Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "drawer-key-and-worker-evidence",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZW5kZXJlciI6ICJ3b3JsZCIsCiAgInRvb2wiOiAicm9vbS1hcmVhIiwKICAidmlld3BvcnQiOiB7CiAgICAid2lkdGgiOiA5NjAsCiAgICAiaGVpZ2h0IjogNTQwCiAgfSwKICAidWlTY2FsZSI6IDIsCiAgImtleXMiOiBbCiAgICB7CiAgICAgICJrZXkiOiAiRXNjYXBlIiwKICAgICAgInRydXN0ZWQiOiB0cnVlLAogICAgICAidGFyZ2V0IjogInVpLXRhYiIKICAgIH0sCiAgICB7CiAgICAgICJrZXkiOiAiRXNjYXBlIiwKICAgICAgInRydXN0ZWQiOiB0cnVlLAogICAgICAidGFyZ2V0IjogInVpLWljb24tYnV0dG9uIHVpLWljb24tYnV0dG9uLS1ib3JkZXJlZCBodWQtbmF2aWdhdGlvbi1kcmF3ZXJfX3RyaWdnZXIiCiAgICB9CiAgXSwKICAiY29tbWFuZHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "ee60d0a7717e10ffb86d-33bb63c3298f51fdd6f9",
+          "file": "navigation-drawer-escape-native.spec.ts",
+          "line": 8,
+          "column": 5
+        },
+        {
+          "title": "oblique navigation drawer Escape retains armed wall until ordinary world Escape",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3600,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T23:10:41.418Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "drawer-key-and-worker-evidence",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZW5kZXJlciI6ICJvYmxpcXVlIiwKICAidG9vbCI6ICJ3YWxsIiwKICAidmlld3BvcnQiOiB7CiAgICAid2lkdGgiOiA5NjAsCiAgICAiaGVpZ2h0IjogNTQwCiAgfSwKICAidWlTY2FsZSI6IDIsCiAgImtleXMiOiBbCiAgICB7CiAgICAgICJrZXkiOiAiRXNjYXBlIiwKICAgICAgInRydXN0ZWQiOiB0cnVlLAogICAgICAidGFyZ2V0IjogInVpLXRhYiIKICAgIH0sCiAgICB7CiAgICAgICJrZXkiOiAiRXNjYXBlIiwKICAgICAgInRydXN0ZWQiOiB0cnVlLAogICAgICAidGFyZ2V0IjogInVpLWljb24tYnV0dG9uIHVpLWljb24tYnV0dG9uLS1ib3JkZXJlZCBodWQtbmF2aWdhdGlvbi1kcmF3ZXJfX3RyaWdnZXIiCiAgICB9CiAgXSwKICAiY29tbWFuZHMiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "ee60d0a7717e10ffb86d-605bd8b942300eb1e69f",
+          "file": "navigation-drawer-escape-native.spec.ts",
+          "line": 8,
+          "column": 5
+        },
+        {
+          "title": "oblique navigation drawer Escape retains armed object until ordinary world Escape",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3657,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T23:10:45.023Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "drawer-key-and-worker-evidence",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZW5kZXJlciI6ICJvYmxpcXVlIiwKICAidG9vbCI6ICJvYmplY3QiLAogICJ2aWV3cG9ydCI6IHsKICAgICJ3aWR0aCI6IDk2MCwKICAgICJoZWlnaHQiOiA1NDAKICB9LAogICJ1aVNjYWxlIjogMiwKICAia2V5cyI6IFsKICAgIHsKICAgICAgImtleSI6ICJFc2NhcGUiLAogICAgICAidHJ1c3RlZCI6IHRydWUsCiAgICAgICJ0YXJnZXQiOiAidWktdGFiIgogICAgfSwKICAgIHsKICAgICAgImtleSI6ICJFc2NhcGUiLAogICAgICAidHJ1c3RlZCI6IHRydWUsCiAgICAgICJ0YXJnZXQiOiAidWktaWNvbi1idXR0b24gdWktaWNvbi1idXR0b24tLWJvcmRlcmVkIGh1ZC1uYXZpZ2F0aW9uLWRyYXdlcl9fdHJpZ2dlciIKICAgIH0KICBdLAogICJjb21tYW5kcyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "ee60d0a7717e10ffb86d-53244d4e0c686d6ce1fb",
+          "file": "navigation-drawer-escape-native.spec.ts",
+          "line": 8,
+          "column": 5
+        },
+        {
+          "title": "oblique navigation drawer Escape retains armed room-area until ordinary world Escape",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3564,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T23:10:48.687Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "drawer-key-and-worker-evidence",
+                      "contentType": "application/json",
+                      "body": "ewogICJyZW5kZXJlciI6ICJvYmxpcXVlIiwKICAidG9vbCI6ICJyb29tLWFyZWEiLAogICJ2aWV3cG9ydCI6IHsKICAgICJ3aWR0aCI6IDk2MCwKICAgICJoZWlnaHQiOiA1NDAKICB9LAogICJ1aVNjYWxlIjogMiwKICAia2V5cyI6IFsKICAgIHsKICAgICAgImtleSI6ICJFc2NhcGUiLAogICAgICAidHJ1c3RlZCI6IHRydWUsCiAgICAgICJ0YXJnZXQiOiAidWktdGFiIgogICAgfSwKICAgIHsKICAgICAgImtleSI6ICJFc2NhcGUiLAogICAgICAidHJ1c3RlZCI6IHRydWUsCiAgICAgICJ0YXJnZXQiOiAidWktaWNvbi1idXR0b24gdWktaWNvbi1idXR0b24tLWJvcmRlcmVkIGh1ZC1uYXZpZ2F0aW9uLWRyYXdlcl9fdHJpZ2dlciIKICAgIH0KICBdLAogICJjb21tYW5kcyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "ee60d0a7717e10ffb86d-0d41f42d75feab43d750",
+          "file": "navigation-drawer-escape-native.spec.ts",
+          "line": 8,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-02T23:08:45.270Z",
+    "duration": 127552.238,
+    "expected": 9,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

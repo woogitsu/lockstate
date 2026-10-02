@@ -1,0 +1,16 @@
+pnpm : $ vitest run "tests/foundation/typecheck-coverage-contract.test.ts" "--maxWorkers=2"
+At line:4 char:1
++ pnpm --config.verify-deps-before-run=false test tests/foundation/type ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...--maxWorkers=2":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-bin-drawer-integration-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  01:23:43
+   Duration  273ms (transform 17ms, setup 0ms, import 37ms, tests 74ms, environment 0ms)
+

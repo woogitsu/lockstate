@@ -1,6 +1,7 @@
 # Research records
 
 
+
 Dated evidence gathered to answer a specific open decision, kept because the
 decision cites it.
 
@@ -99,6 +100,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 
 | Record | Question it answered | Decision it fed |
 | --- | --- | --- |
+| [2026-10-03 combined Bin and drawer](./2026-10-03-bin-drawer-integrated/README.md) | Do exact V8 bin owners and drawer Escape survive in the same production client? | Nine canonical artifact cases pass; both room orientations retain owners and pixels through Load, and six trusted drawer key cases retain the tool without map commands. Historical-source archival fixes the unchanged coverage gate; full CI remains separate. |
 | [2026-10-03 template Redo over later zoning](./2026-10-03-template-redo-zoning/README.md) | Does a completed saved template Redo respect genuinely accepted later Yard zoning? | Actual worker preflight refuses, but Redo buys the old plan again and leaves two completed fixtures after zoning fails: two red/two legal controls. Existing admission gate fixed:12 real transitions, production negatives and exact restoration,147 neighbouring tests green; no format change. |
 | [2026-10-02 dedicated Laundry washer](./2026-10-02-laundry-washing-machine-angled/README.md) | Does the retained washer with real service detail fit the canonical angled poses and survive genuine Laundry construction and Load? | Fourteen retained and sixty-six new meshes; 72 canonical frames, producer controls and three native player cases pass. Removing the actual default render mapping fails both orientations, restored acceptance passes; following V8 integration is separate. |
 | [2026-10-02 combined walls and ownership](./2026-10-02-wall-owner-integrated/README.md) | Do the calibrated square walls and V8 Kitchen ownership work in the combined built client? | Nine actual Full HD cases pass; three object owners survive normal/rotated player Save/Load, and all six wall poses have zero outside-span/hull masonry pixels. Full release gates remain separate. |

@@ -1,0 +1,41 @@
+pnpm : $ vitest run "tests/foundation/typecheck-coverage-contract.test.ts" "--maxWorkers=2"
+At line:3 char:1
++ pnpm --config.verify-deps-before-run=false test tests/foundation/type ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...--maxWorkers=2":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-bin-drawer-integration-20261003
+
+ ❯ tests/foundation/typecheck-coverage-contract.test.ts (4 tests | 1 failed) 40ms
+     × leaves no tracked module file outside every TypeScript project 38ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/foundation/typecheck-coverage-contract.test.ts > typecheck coverage contract > leaves no tracked module fi
+le outside every TypeScript project
+AssertionError: a tracked module file is in no tsconfig `include`, so no typechecker reads it. That is how #602 happene
+d: a benchmark kept calling a production signature that had changed, and neither `pnpm typecheck` nor `pnpm test` could
+ see it. Add the path to `tsconfig.json` or to `tsconfig.tools.json`: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/research/2026-10-03-template-redo-zoning/packed-baseline.test.ts",
++ ]
+
+ ❯ tests/foundation/typecheck-coverage-contract.test.ts:121:7
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 3 passed (4)
+   Start at  01:22:01
+   Duration  194ms (transform 14ms, setup 0ms, import 33ms, tests 40ms, environment 0ms)
+
+[ELIFECYCLE] Test failed. See above for more details.

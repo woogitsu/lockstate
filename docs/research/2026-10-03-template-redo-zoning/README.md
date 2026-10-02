@@ -36,9 +36,9 @@ Retained four full snapshots: [blocked live](./blocked-live.json),
 [blocked Load](./blocked-load.json), [legal live](./legal-live.json),
 [legal Load](./legal-load.json). Each holds before, immediate and settled
 kernel/world/history/economy/object/room state and actual events.
-[Executable baseline](./packed-baseline.test.ts) is outside the ordinary
+[Captured baseline source](./packed-baseline.test.ts.txt) is outside the ordinary
 suite; copy to the existing `tests/integration/` directory under a temporary
-filename to reproduce its intentional failures. Relative imports assume that
+`.test.ts` filename to reproduce its intentional failures. The archived bytes are unchanged; relative imports assume that
 location; no fixture replaces authoritative state.
 
 ## Existing rule, source cause and duplicate check
