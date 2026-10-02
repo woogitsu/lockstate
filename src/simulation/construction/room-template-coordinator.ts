@@ -317,6 +317,16 @@ export class RoomTemplateCoordinator implements SystemRegistration {
     this.pending = remaining;
   }
 
+  /** A queue cancellation removes the same coupled gesture as Undo (#1657/#1608). */
+  public prepareCancellation(orderId: string, tick: number): UnzoneRoomRefusal | undefined {
+    const history = this.construction.snapshot();
+    const transaction = [...history.undoStack, history.currentTransaction ?? []]
+      .find((ids) => ids.includes(orderId));
+    // Actual history membership permits the existing exact legacy recovery;
+    // an ordinary order does not acquire template ownership by its location.
+    return transaction === undefined ? undefined : this.prepareUndo(transaction, tick);
+  }
+
   /** Clear or refuse the completed gesture's zones before its shell is touched. */
   public prepareUndo(orderIds: readonly string[], tick: number): UnzoneRoomRefusal | undefined {
     const transaction = new Set(orderIds);
