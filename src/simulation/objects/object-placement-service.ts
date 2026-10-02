@@ -461,6 +461,11 @@ export class ObjectPlacementService {
   private readonly refusals: PlaceObjectRefusal[] = [];
   /** The same window for the other gesture; see `recentRemovalRefusals`. */
   private readonly removalRefusals: RemoveObjectRefusal[] = [];
+  private pendingRoomDoorApproachClaim?: (tile: TilePosition) => boolean;
+
+  public setPendingRoomDoorApproachClaim(reader: (tile: TilePosition) => boolean): void {
+    this.pendingRoomDoorApproachClaim = reader;
+  }
 
   public constructor(
     private readonly world: SparseWorld,
@@ -530,7 +535,7 @@ export class ObjectPlacementService {
       if (!canBuildAt(this.world, tile, PLACEMENT_REQUIREMENT).buildable) {
         return this.refuse('unowned-land', request, tick, tile);
       }
-      if (this.placedObjects.isTileOccupied(tile) || claimed.has(tileKey(tile))) {
+      if (this.placedObjects.isTileOccupied(tile) || claimed.has(tileKey(tile)) || this.pendingRoomDoorApproachClaim?.(tile) === true) {
         return this.refuse('tile-occupied', request, tick, tile);
       }
     }
