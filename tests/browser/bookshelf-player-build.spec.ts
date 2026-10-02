@@ -46,6 +46,20 @@ async function fixtureAnchors(page: Page): Promise<string[]> {
   });
 }
 
+async function authoredBookPixels(page: Page, png: Buffer): Promise<number> {
+  return page.evaluate(async base64 => {
+    const bitmap = await createImageBitmap(new Blob([Uint8Array.from(atob(base64), c => c.charCodeAt(0))], { type: 'image/png' }));
+    const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
+    const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0);
+    const pixels = context.getImageData(790, 350, 77, 150).data;
+    let count = 0;
+    for (let i = 0; i < pixels.length; i += 4) {
+      if ((pixels[i] === 37 && pixels[i + 1] === 90 && pixels[i + 2] === 95)
+          || (pixels[i] === 43 && pixels[i + 1] === 75 && pixels[i + 2] === 110)) count++;
+    }
+    return count;
+  }, png.toString('base64'));
+}
 let routeStorage: Awaited<ReturnType<ReturnType<Page['context']>['storageState']>> | undefined;
 const test = base.extend({
   storageState: async ({}, use) => { await use(routeStorage ?? { cookies: [], origins: [] }); },
@@ -131,6 +145,8 @@ test('player builds the bookshelf in Classroom and keeps it after Save/Load', as
   await minimap.click({ position: { x: bounds.width * 22.5 / 32, y: bounds.height * 8.5 / 32 } });
   await page.mouse.move(1300, 700);
   const completed = await page.screenshot({ path: info.outputPath('bookshelf-worker-completed-fullhd.png') });
+  const beforePixels = await authoredBookPixels(page, completed);
+  expect(beforePixels, 'authored book spines after construction').toBeGreaterThan(100);
   await page.getByRole('button', { name: 'Overview', exact: true }).click();
   await page.getByRole('button', { name: 'Save now', exact: true }).click();
   await expect(page.locator('.save-panel__status')).toContainText('Saved');
@@ -140,5 +156,8 @@ test('player builds the bookshelf in Classroom and keeps it after Save/Load', as
   await minimap.click({ position: { x: bounds.width * 22.5 / 32, y: bounds.height * 8.5 / 32 } });
   await page.mouse.move(1300, 700);
   const loaded = await page.screenshot({ path: info.outputPath('bookshelf-loaded-fullhd.png') });
+  const afterPixels = await authoredBookPixels(page, loaded);
+  expect(afterPixels, 'authored book spines after Load').toBeGreaterThan(100);
+  expect(afterPixels).toBe(beforePixels);
 
 });
