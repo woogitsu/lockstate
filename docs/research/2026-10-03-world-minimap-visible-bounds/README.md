@@ -31,7 +31,9 @@ controls GREEN**, 1.95s, maxWorkers2. No native completion is claimed.
 Fresh all-state minimap+zoom and minimap+viewport searches were read. #1674
 covers routing/pixels and angled visible bounds, explicitly retaining the
 ordinary World route. #794 covers off-world recovery; neither names this
-World viewport-origin producer. #1988 is the separately corrected main room-plan
+World viewport-origin producer. Fresh source-only [Issue #1989](https://github.com/woogitsu/lockstate/issues/1989)
+records this producer and pending native proof; fetched persisted body matches
+the authored text. #1988 is the separately corrected main room-plan
 forward adapter; this indicator has its own scene producer and reference.
 
 Only this World minimap viewport producer changes, using
