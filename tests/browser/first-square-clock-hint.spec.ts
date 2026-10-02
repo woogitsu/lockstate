@@ -3,6 +3,8 @@ import {expect,test} from './network-changed-fixture';
 test('Full HD first paused square order explains clock dependency and keyboard Play completes it',async({page})=>{
   await page.setViewportSize({width:1920,height:1080});await page.goto('/');
   await page.getByRole('button',{name:'New prison',exact:true}).click();
+  await expect(page.locator('.hud-clock__day')).toHaveText('1');
+  await page.getByRole('button',{name:'Pause',exact:true}).click();
   const view=page.getByRole('combobox',{name:'View',exact:true});await view.selectOption('oblique');await expect(view).toBeEnabled();
   await page.getByRole('button',{name:'Build',exact:true}).click();await page.locator('.hud-build__arm').click();
   await page.mouse.click(750,350);
