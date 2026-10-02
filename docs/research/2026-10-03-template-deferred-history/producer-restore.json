@@ -1,0 +1,7 @@
+﻿{
+    "byteExactRestore":  true,
+    "negativeExit":  1,
+    "source":  "room-template-coordinator.ts",
+    "restoredSHA256":  "36CFEC4C82ACF6B0BA267D6BAC4E69507BDBA8F314E419F937DF6365E754ED84",
+    "fixedSHA256":  "36CFEC4C82ACF6B0BA267D6BAC4E69507BDBA8F314E419F937DF6365E754ED84"
+}
