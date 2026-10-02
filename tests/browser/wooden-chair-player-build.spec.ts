@@ -1,5 +1,5 @@
-// Prepared native worker/SaveLoad route. Per-chair runtime palette acceptance
-// will be calibrated from actual FullHDs after the exclusive browser lease.
+// Prepared native route and independent consumer assertion. Material/pixel
+// candidates and regions below are provisional until actual FullHD calibration.
 import { writeFile } from 'node:fs/promises';
 import { expect, test as base, type Page } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
@@ -47,6 +47,32 @@ async function fixtureAnchors(page: Page): Promise<string[]> {
       .filter(o => ['object.chair'].includes(o.objectId))
       .map(o => `${o.objectId}@${o.anchorTile.x},${o.anchorTile.y}:orientation=${o.orientation}`).sort() ?? [];
   });
+}
+
+async function timberPixels(page: Page, png: Buffer, quarterTurns: 0 | 1): Promise<number[]> {
+  return page.evaluate(async ({ base64, quarterTurns }) => {
+    const bitmap = await createImageBitmap(new Blob([Uint8Array.from(atob(base64), c => c.charCodeAt(0))], { type: 'image/png' }));
+    const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
+    const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0);
+    // The retained seat/back use original wood diffuse RGBA(.48,.27,.11,1).
+    // Candidate RGB(150,115,75) occurs in the actual yaw30/elev40 export;
+    // source pixels do not establish the native camera's runtime palette.
+    // These separate chair regions are layout estimates pending native images.
+    // Actual calibration must also exclude desk/door pixels, then removing only
+    // the default chair binding must fail both regions with objects/save intact.
+    const rects = quarterTurns === 0
+      ? [[775, 455, 120, 150], [940, 420, 130, 150]]
+      : [[875, 470, 125, 160], [800, 350, 120, 150]];
+    const colour = [150, 115, 75];
+    return rects.map(rect => {
+      const pixels = context.getImageData(...rect as [number, number, number, number]).data;
+      let count = 0;
+      for (let i = 0; i < pixels.length; i += 4) {
+        if (pixels[i] === colour[0] && pixels[i + 1] === colour[1] && pixels[i + 2] === colour[2]) count++;
+      }
+      return count;
+    });
+  }, { base64: png.toString('base64'), quarterTurns });
 }
 
 let routeStorage: Awaited<ReturnType<ReturnType<Page['context']>['storageState']>> | undefined;
@@ -147,10 +173,13 @@ test(`player builds Staff Room at quarterTurns${quarterTurns} and retains wooden
   if (bounds === null) throw new Error('minimap absent');
   await minimap.click({ position: { x: bounds.width * 23 / 32, y: bounds.height * 8 / 32 } });
   await page.mouse.move(1300, 700);
-  await page.screenshot({ path: info.outputPath('wooden-chair-worker-completed-fullhd.png') });
+  const completed = await page.screenshot({ path: info.outputPath('wooden-chair-worker-completed-fullhd.png') });
+  const beforePixels = await timberPixels(page, completed, quarterTurns);
   await writeFile(info.outputPath('worker-and-completed-save-evidence.json'), JSON.stringify({
-    quarterTurns, actualBefore, commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
+    quarterTurns, actualBefore, beforePixels, commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
   }, null, 2));
+  beforePixels.forEach((count, index) => expect.soft(count, `chair${index + 1} authored timber after construction`)
+    .toBeGreaterThan(20));
   await page.getByRole('button', { name: 'Overview', exact: true }).click();
   await page.getByRole('button', { name: 'Save now', exact: true }).click();
   await expect(page.locator('.save-panel__status')).toContainText('Saved');
@@ -160,10 +189,14 @@ test(`player builds Staff Room at quarterTurns${quarterTurns} and retains wooden
   expect(actualAfter).toEqual(expected);
   await minimap.click({ position: { x: bounds.width * 23 / 32, y: bounds.height * 8 / 32 } });
   await page.mouse.move(1300, 700);
-  await page.screenshot({ path: info.outputPath('wooden-chair-loaded-fullhd.png') });
+  const loaded = await page.screenshot({ path: info.outputPath('wooden-chair-loaded-fullhd.png') });
+  const afterPixels = await timberPixels(page, loaded, quarterTurns);
+  afterPixels.forEach((count, index) => expect.soft(count, `chair${index + 1} authored timber after Load`)
+    .toBeGreaterThan(20));
+  expect(afterPixels).toEqual(beforePixels);
   const evidencePath = info.outputPath('wooden-chair-worker-and-save-evidence.json');
   await writeFile(evidencePath, JSON.stringify({
-    quarterTurns, actualBefore, actualAfter,
+    quarterTurns, actualBefore, actualAfter, beforePixels, afterPixels,
     commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
   }, null, 2));
   await info.attach('wooden-chair-worker-and-save-evidence', { path: evidencePath, contentType: 'application/json' });
