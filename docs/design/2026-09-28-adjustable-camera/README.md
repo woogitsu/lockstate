@@ -1055,3 +1055,22 @@ Native Kitchen/View/drag acceptance above predates this worker-only removal fix,
 so those earlier client bytes are not presented as acceptance of the later fix.
 PR1972 remains the next delivery after the frozen PR1899 candidate; the fridge
 is still an independent model and native acceptance task.
+## Following delivery: retain keyboard-armed fitted origin — 2026-10-02
+
+The next isolated integration starts from published PR1972 candidate
+`41998ff60f013c099a2337dcd64172aa0ab12c34`, keeping both preceding release
+candidates frozen while their exact-head CI runs. Root independently reproduced
+two actual-math controller failures in 285 ms with four inherited controls green:
+a retained hover at 17,13 shifts to 21,15 or 26,11 on the first stationary click
+for a 7x16 or 16x7 fitted row. The approved rule keeps the chosen origin until
+physical movement, so a stationary confirmation must not select another square.
+
+The narrow controller fix records the retained screen anchor before fitting pans
+the camera. Genuine physical movement still clears the lock; a new positive
+control preserves that behavior. Root's focused controller verification passes
+seven cases in 242 ms after integration. The agent's independent producer
+reversion fails both new cases, followed by exact byte restoration. A native
+keyboard-arming/click/worker-origin fixture is prepared, but native acceptance
+and an actual player-level Issue remain pending the exclusive browser slot.
+Fridge geometry/export work and separate simulation collision coverage continue
+on independent branches; no hosted or complete-suite claim is made here.
