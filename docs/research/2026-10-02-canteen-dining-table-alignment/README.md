@@ -2,7 +2,7 @@
 
 ## Current checkpoint
 
-This source/export checkpoint starts at integrated `e44ac6f66e`. A fresh remote audit found earlier dining art, so the existing authored table was reused. This checkpoint extracts and aligns that existing authored prop. The runtime registry still uses its previous manifest. Native player construction, rotated placement, Save/Load and pixel mutation acceptance remain pending integration and an exclusive browser lease. No hosted completion is claimed.
+This source/export checkpoint starts at integrated `e44ac6f66e`. A fresh remote audit found earlier dining art, so the existing authored table was reused. Source/export `1c203c6e8a` extracts and aligns that existing authored prop. The following consumer checkpoint changes only its existing registry descriptor to the aligned manifest. Native player construction, rotated placement, Save/Load and pixel mutation acceptance remain pending integration and an exclusive browser lease. No hosted completion is claimed.
 
 The durable camera/art plan already records the table among the five existing legacy fixture mappings. Current source has no standalone dining `.blend`, but `environment.mvp.catalog.blend` contains a detailed 62-mesh table collection. Published earlier work includes `3ddf0fe427` and `74c026362f` oblique exports, `2e7e49c62c` refinement and `1a4e3e49e9` place settings. Those were inspected before choosing reuse. The existing four walnut planks, bolted steel frame, three fixed stools, trays, plates and utensils are retained.
 
@@ -51,4 +51,6 @@ node node_modules/vitest/vitest.mjs run tests/unit/oblique-canteen-dining-table-
 
 Exports use Blender 5.2.1 LTS, upstream build identifier 9e2066aef7ef. The inspected executable SHA256 is `284f4041f98e113f3dc10654a7193ffaaa9bfdfec8b87fa116620a48b5f6d4cb`. Render determinism is from that pinned host with the committed standalone source; byte-identical `.blend` regeneration across hosts is not claimed.
 
-Next concrete gate: switch only the existing dining-table registry manifest to `/game-content/oblique-furniture.canteen-dining-table.v1.json`, preserving its asset/object identity; verify occupied anchors and facing in actual normal/rotated Canteen construction, Save/Load and isolated plate/wood palette consumer mutation. No registry, renderer, UI, gameplay, or CI file was changed in this checkpoint.
+The existing dining-table registry descriptor now points to `/game-content/oblique-furniture.canteen-dining-table.v1.json`, preserving asset ID `furniture.dining.table.wooden`, object ID `object.dining-table`, and its authoritative 3x2 footprint. The object mapping already resolves that canonical identity and needs no source change. Its consumer integrity test initially failed against the old manifest; deliberate registry rollback repeats that failure, and exact restoration passes the four registry/mapping/coverage/integrity suites, 45/45. Both TypeScript projects pass.
+
+Next concrete gate: verify occupied anchors and facing in actual normal/rotated Canteen construction, Save/Load and isolated plate/wood palette consumer mutation. Only the dining registry row changed after the source/export checkpoint; no renderer, UI, gameplay, or CI file changed. Browser execution is queued until the coordinator grants the exclusive lease.
