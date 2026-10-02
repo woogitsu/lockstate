@@ -9,18 +9,46 @@ const poses = [
   { yaw: 45, elevation: 80, turns: 6, raises: 4 },
 ] as const;
 
-async function wallEvidence(page: Page, png: Buffer, yaw: number, elevation: number) {
-  return page.evaluate(async ({ base64, yaw, elevation }) => {
+async function installSnapshotReader(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    const RealWorker = Worker;
+    let worker: Worker | undefined;
+    const replies = new Map<string,(reply:unknown)=>void>();
+    class SnapshotReaderWorker extends RealWorker {
+      public constructor(url:string|URL,options?:WorkerOptions) {
+        super(url,options);worker=this;
+        this.addEventListener('message',(event:MessageEvent) => {
+          const replyTo=(event.data as {replyTo?:string}).replyTo;
+          if(replyTo===undefined)return;
+          const resolve=replies.get(replyTo);
+          if(resolve) {replies.delete(replyTo);resolve(event.data);}
+        });
+      }
+    }
+    (window as unknown as {Worker:typeof Worker}).Worker=SnapshotReaderWorker as unknown as typeof Worker;
+    (window as unknown as {readWallSnapshot:()=>Promise<unknown>}).readWallSnapshot=()=>new Promise((resolve,reject)=>{
+      if(!worker) {reject(new Error('Real worker missing'));return;}
+      const messageId=crypto.randomUUID();
+      const timer=setTimeout(()=>{replies.delete(messageId);reject(new Error('Actual snapshot did not return within existing10s expectation budget'));},10000);
+      replies.set(messageId,reply=>{clearTimeout(timer);resolve(reply);});
+      worker.postMessage({protocolVersion:1,messageId,kind:'simulation/request-snapshot',payload:{reason:'consistency-check'}});
+    });
+  });
+}
+
+async function wallEvidence(page: Page, png: Buffer, yaw: number, elevation: number, target: {x:number;y:number}) {
+  return page.evaluate(async ({ base64, yaw, elevation, target }) => {
     const bitmap = await createImageBitmap(new Blob([Uint8Array.from(atob(base64), c => c.charCodeAt(0))], { type: 'image/png' }));
     const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
     const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0);
     const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
     const r = yaw * Math.PI / 180, e = elevation * Math.PI / 180;
     // Independent occupied tile and full-height allowance. Camera buttons turn
-    // about the centre after native minimap framing at world20.5,20.5.
+    // about the centre after minimap framing. Target derives only from the
+    // passive physical click/DOM rectangle, including native click rounding.
     const project = (x: number, y: number, z: number) => ({
-      x: canvas.width / 2 + (Math.cos(r) * (x - 20.5) - Math.sin(r) * (y - 20.5)) * 80,
-      y: canvas.height / 2 + ((Math.sin(r) * (x - 20.5) + Math.cos(r) * (y - 20.5)) * Math.sin(e) - z * Math.cos(e)) * 80,
+      x: canvas.width / 2 + (Math.cos(r) * (x - target.x) - Math.sin(r) * (y - target.y)) * 80,
+      y: canvas.height / 2 + ((Math.sin(r) * (x - target.x) + Math.cos(r) * (y - target.y)) * Math.sin(e) - z * Math.cos(e)) * 80,
     });
     const ground = [[20,20], [21,20], [21,21], [20,21]].map(([x,y]) => project(x!,y!,0));
     const points = [...ground, ...[[20,20], [21,20], [21,21], [20,21]].map(([x,y]) => project(x!,y!,0.75))];
@@ -48,7 +76,9 @@ async function wallEvidence(page: Page, png: Buffer, yaw: number, elevation: num
       for(let x=Math.floor(canvas.width/2-220);x<canvas.width/2+220;x++) {
         const index=(y*canvas.width+x)*4;
         const red=pixels[index]!,green=pixels[index+1]!,blue=pixels[index+2]!;
-        if(red<125 || red>240 || red-green<4 || red-green>32 || green-blue<5 || green-blue>38)continue;
+        // Calibrated from opened native Brick/cap pixels170,167,162 and
+        //131,125,118; nearby brown ground132,112,95 is excluded.
+        if(red<125 || red>240 || Math.abs(red-green)>=9 || Math.abs(green-blue)>=9)continue;
         // Height has no horizontal component. These supported yaw angles are
         // exact authored frames, so even the nearest elevation frame must fit
         // this horizontal ground span. Full prism bounds remain diagnostic:
@@ -59,12 +89,22 @@ async function wallEvidence(page: Page, png: Buffer, yaw: number, elevation: num
           outsideBounds.right=Math.max(outsideBounds.right,x);outsideBounds.bottom=Math.max(outsideBounds.bottom,y);}
       }
     return { yaw,elevation,ground,hull,groundMinX,groundMaxX,masonryInside,masonryOutside,masonryOutsideGroundSpan,outsideBounds };
-  }, { base64: png.toString('base64'), yaw, elevation });
+  }, { base64: png.toString('base64'), yaw, elevation, target });
 }
 
 for (const pose of poses) test(`native completed Brick wall occupies its chosen whole square at ${pose.yaw}/${pose.elevation}`, async ({ page }, info) => {
   const save = completedWallLogisticsSave();
   await installTee(page);
+  await installSnapshotReader(page);
+  await page.addInitScript(()=>{
+    window.addEventListener('click',event=>{
+      const surface=(event.target as Element | null)?.closest('.hud-minimap__surface');
+      if(!surface)return;
+      const box=surface.getBoundingClientRect();
+      (window as unknown as {wallMinimapClick:unknown}).wallMinimapClick={clientX:event.clientX,clientY:event.clientY,
+        rect:{x:box.x,y:box.y,width:box.width,height:box.height},fx:(event.clientX-box.x)/box.width,fy:(event.clientY-box.y)/box.height};
+    },true);
+  });
   const wallTextures: string[] = [];
   page.on('requestfinished', request => { if(request.url().includes('square-brick-'))wallTextures.push(request.url()); });
   await page.setViewportSize({ width:1920,height:1080 });
@@ -76,8 +116,8 @@ for (const pose of poses) test(`native completed Brick wall occupies its chosen 
   await page.locator('.save-panel__item').getByRole('button',{name:'Load',exact:true}).click();
   await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
   await page.getByRole('button',{name:'Pause',exact:true}).click();
-  await expect(page.locator('.hud-build')).toHaveAttribute('data-queued','0');
   await page.getByRole('button',{name:'Build',exact:true}).click();
+  await expect.poll(async()=>Number(await page.locator('.hud-build').getAttribute('data-queued') ?? 0)).toBe(0);
   await page.locator('.hud-build__list [data-buildable="wall-brick"]').click();
   await page.locator('.hud-build__arm').click();
   const canvas = page.locator('#game-root canvas');
@@ -96,19 +136,33 @@ for (const pose of poses) test(`native completed Brick wall occupies its chosen 
   await page.keyboard.press('Escape');
   await page.getByRole('button',{name:'Fast forward',exact:true}).click();
   await page.getByRole('button',{name:'Fast forward',exact:true}).click();
-  await expect(page.locator('.hud-build')).toHaveAttribute('data-queued','0');
+  await expect.poll(async()=>Number(await page.locator('.hud-build').getAttribute('data-queued') ?? 0)).toBe(0);
   await page.getByRole('button',{name:'Pause',exact:true}).click();
+  const snapshot = await page.evaluate(async()=>{
+    const reply=await (window as unknown as {readWallSnapshot:()=>Promise<unknown>}).readWallSnapshot() as {
+      payload:{snapshot:{data:{construction:{orders:Array<{definitionId:string;location:{x:number;y:number};state:string;footprint?:string}>}}}}
+    };
+    return reply.payload.snapshot.data.construction.orders.filter(order=>order.location.x===20 && order.location.y===20);
+  });
+  expect(snapshot).toEqual([expect.objectContaining({definitionId:'wall-brick',location:{x:20,y:20},state:'completed',footprint:'square'})]);
   await page.getByRole('button',{name:'Overview',exact:true}).click();
   const minimap = page.locator('.hud-minimap__surface');
   const map = await minimap.boundingBox();
   if(!map)throw new Error('Native minimap missing');
   await minimap.click({position:{x:map.width*20.5/32,y:map.height*20.5/32}});
+  const mapClick=await page.evaluate(()=>(window as unknown as {wallMinimapClick:{fx:number;fy:number}}).wallMinimapClick);
+  const target={x:mapClick.fx*32,y:mapClick.fy*32};
   for(let i=0;i<pose.turns;i++)await page.getByRole('button',{name:'Rotate camera right',exact:true}).click();
   for(let i=0;i<pose.raises;i++)await page.getByRole('button',{name:'Raise camera angle',exact:true}).click();
   await expect.poll(() => wallTextures.some(url => url.includes(`yaw${pose.yaw<0?'-':'+'}${String(Math.abs(pose.yaw)).padStart(3,'0')}-elev${pose.elevation===80?65:pose.elevation}`))).toBe(true);
+  // Request completion can precede Phaser's batch-complete repaint. Require
+  // authored material, then retain the exact buffer used for pixel evidence.
+  await expect.poll(async()=> (await wallEvidence(page,await canvas.screenshot(),pose.yaw,pose.elevation,target)).masonryInside).toBeGreaterThan(200);
+  const png=await canvas.screenshot();
+  const measured = await wallEvidence(page,png,pose.yaw,pose.elevation,target);
+  await writeFile(info.outputPath('native-wall-canvas.png'),png);
   await page.screenshot({path:info.outputPath('native-completed-wall.png')});
-  const measured = await wallEvidence(page,await canvas.screenshot(),pose.yaw,pose.elevation);
-  await writeFile(info.outputPath('native-ground-footprint.json'),JSON.stringify({pose,point,measured,wallTextures,workerCommands:await sentCommands(page)},null,2));
+  await writeFile(info.outputPath('native-ground-footprint.json'),JSON.stringify({pose,point,mapClick,target,measured,wallTextures,snapshot,workerCommands:await sentCommands(page)},null,2));
   expect((await sentCommands(page)).filter(c=>c.type==='PlaceBuildOrder')).toHaveLength(1);
   expect(measured.masonryInside,'actual wall material must be visible in the occupied volume').toBeGreaterThan(200);
   expect(measured.masonryOutsideGroundSpan,'visible masonry must fit the horizontal span of its occupied1×1 square; height and shadows cannot justify sideways spill').toBeLessThanOrEqual(20);
