@@ -311,7 +311,7 @@ Source: `src/content/default-locale-en.ts`, in the order they are declared.
 | `hud.build.target-value` | `{x}, {y} · {edge}` | `src/content/default-locale-en.ts:2505` |
 | `hud.build.target-run` | `{count} × {edge} from {x}, {y}` | `src/content/default-locale-en.ts:2506` |
 | `hud.build.target-squares` | `one: {count} whole square from {x}, {y} \| catalogue value {cost} · other: {count} whole squares from {x}, {y} \| catalogue value {cost}` | `src/content/default-locale-en.ts:2507` |
-| `hud.build.object-footprint` | `Occupied squares: {width} u00d7 {height}` | `src/content/default-locale-en.ts:2508` |
+| `hud.build.object-footprint` | `Occupied squares: {width} × {height}` | `src/content/default-locale-en.ts:2508` |
 | `hud.build.target-tile` | `{x}, {y}` | `src/content/default-locale-en.ts:2509` |
 | `hud.build.coordinates` | `Enter coordinates` | `src/content/default-locale-en.ts:2510` |
 | `hud.build.coordinates-hint` | `The keyboard route. Pointing at the map is quicker.` | `src/content/default-locale-en.ts:2511` |

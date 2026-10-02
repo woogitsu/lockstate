@@ -516,7 +516,7 @@ box.
 
 ### What changed
 
-`BUILD_QUEUE_ROW_LIMIT` is now **64** (`src/ui/hud/build-panel.ts:756`,
+`BUILD_QUEUE_ROW_LIMIT` is now **64** (`src/ui/hud/build-panel.ts:761`,
 `export const BUILD_QUEUE_ROW_LIMIT = 64;`) —
 **this read `:737` when it landed, which was wrong by three lines**: the
 declaration was opened at the end of the window and read 740 at that time.
