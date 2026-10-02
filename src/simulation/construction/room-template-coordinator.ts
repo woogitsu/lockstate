@@ -44,6 +44,8 @@ function doorwayApproaches(plan: RoomTemplatePlan & { readonly quarterTurns?: Qu
   });
 }
 
+const DOORWAY_INWARD_DIRECTIONS = [[0, -1], [0, 1], [-1, 0], [1, 0]] as const;
+
 /** Finishes zoning only after every authored shell order has actually built. */
 export class RoomTemplateCoordinator implements SystemRegistration {
   public readonly id = 'room-templates';
@@ -188,7 +190,7 @@ export class RoomTemplateCoordinator implements SystemRegistration {
     // From the approach, look through the perimeter door square into the zoned
     // interior. Read standing geometry rather than completed gesture metadata:
     // older saves omit that optional list, and removing a door releases it.
-    for (const [dx, dy] of [[0, -1], [0, 1], [-1, 0], [1, 0]] as const) {
+    for (const [dx, dy] of DOORWAY_INWARD_DIRECTIONS) {
       const edge = dx === 0 ? 'north' : 'west';
       if (order.footprint !== 'square' && resolveBuildEdge(order) !== edge) continue;
       // An edge order stores the greater coordinate of its adjacent tiles.
@@ -196,19 +198,29 @@ export class RoomTemplateCoordinator implements SystemRegistration {
       // perpendicular to the entrance is still legal.
       const x = order.location.x - (order.footprint === 'square' ? 0 : Math.max(dx, 0));
       const y = order.location.y - (order.footprint === 'square' ? 0 : Math.max(dy, 0));
-      const interiorX = x + 2 * dx;
-      const interiorY = y + 2 * dy;
-      if (![x, y, interiorX, interiorY].every(Number.isSafeInteger)) continue;
-      const interior = { x: tileCoordinate(interiorX), y: tileCoordinate(interiorY) };
-      if (this.world.getZoning(interior) === 0) continue;
-      const storedDoor = {
-        x: tileCoordinate(Math.max(x + dx, interiorX)),
-        y: tileCoordinate(Math.max(y + dy, interiorY)),
-      };
-      const doorValue = edge === 'north' ? this.world.getTopEdge(storedDoor) : this.world.getLeftEdge(storedDoor);
-      if (doorValue === DOOR_EDGE_NUMERIC_ID) return true;
+      if (this.hasCompletedDoorApproach(x, y, dx, dy)) return true;
     }
     return false;
+  }
+
+  /** Furniture checks every footprint tile, including non-anchor squares. */
+  public claimsRoomDoorApproachTile(tile: TilePosition): boolean {
+    return this.claimsPendingDoorApproachTile(tile) || DOORWAY_INWARD_DIRECTIONS.some(([dx, dy]) =>
+      this.hasCompletedDoorApproach(tile.x, tile.y, dx, dy));
+  }
+
+  private hasCompletedDoorApproach(x: number, y: number, dx: number, dy: number): boolean {
+    const interiorX = x + 2 * dx;
+    const interiorY = y + 2 * dy;
+    if (![x, y, interiorX, interiorY].every(Number.isSafeInteger)) return false;
+    const interior = { x: tileCoordinate(interiorX), y: tileCoordinate(interiorY) };
+    if (this.world.getZoning(interior) === 0) return false;
+    const storedDoor = {
+      x: tileCoordinate(Math.max(x + dx, interiorX)),
+      y: tileCoordinate(Math.max(y + dy, interiorY)),
+    };
+    const doorValue = dx === 0 ? this.world.getTopEdge(storedDoor) : this.world.getLeftEdge(storedDoor);
+    return doorValue === DOOR_EDGE_NUMERIC_ID;
   }
 
   public place(request: PendingRoomTemplate): RoomTemplatePlacement {
