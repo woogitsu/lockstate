@@ -878,7 +878,7 @@ export interface HudUnavailableNotice {
 export interface MountHudOptions {
   readonly localizer: HudLocalizer;
   readonly roomTemplateTool?: RoomTemplateTool;
-  readonly onBuildCategoryFocus?: () => void;
+  readonly onBuildCategoryKeyboardOwnership?: () => void;
   readonly roomTemplatePreflight?: (request: RoomTemplatePlacementRequest) => Promise<RoomTemplatePreflight>;
   /**
    * The player's stored layout: which regions are folded and how wide or tall
@@ -2322,7 +2322,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       }));
   const buildPanel: BuildPanel = createBuildPanel({
     localizer,
-    ...(options.onBuildCategoryFocus === undefined ? {} : { onCategoryFocus: options.onBuildCategoryFocus }),
+    ...(options.onBuildCategoryKeyboardOwnership === undefined ? {} : { onCategoryKeyboardOwnership: options.onBuildCategoryKeyboardOwnership }),
     ...(roomTemplateTool === undefined ? {} : { roomTemplateTool }),
     model: options.build ?? { buildables: [], origin: { x: 0, y: 0 } },
     onPlace: (intent) => {

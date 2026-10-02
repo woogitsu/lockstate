@@ -164,8 +164,8 @@ export interface BuildPanelOptions {
   readonly localizer: HudLocalizer;
   readonly model: HudBuildViewModel;
   readonly roomTemplateTool?: RoomTemplateTool;
-  /** Transfer held keyboard ownership before a native popup can swallow release. */
-  readonly onCategoryFocus?: () => void;
+  /** Transfer held keyboard ownership on native focus or actual selection change. */
+  readonly onCategoryKeyboardOwnership?: () => void;
   /** The numeric route: place exactly one order at the coordinates shown. */
   readonly onPlace: (intent: BuildPanelIntent) => void;
   /**
@@ -1102,13 +1102,14 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     ),
   });
   categoryFilter.value = activeCategoryId;
-  categoryFilter.addEventListener('focus', () => options.onCategoryFocus?.());
+  categoryFilter.addEventListener('focus', () => options.onCategoryKeyboardOwnership?.());
   categoryFilter.addEventListener('keydown', (event) => {
     // Keep native option navigation in the filter without suppressing its
     // default selection change or unrelated world keyboard bindings.
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End', 'PageUp', 'PageDown'].includes(event.key)) event.stopPropagation();
   });
   categoryFilter.addEventListener('change', () => {
+    options.onCategoryKeyboardOwnership?.();
     activeCategoryId = categoryFilter.value;
     paintCatalogue();
     revealSelectedRow();
