@@ -35,3 +35,14 @@ test('keyboard Tab during asynchronous view loading keeps the new focus',async({
   await expect(view).toBeEnabled();await expect(view).toHaveValue('oblique');
   expect(await page.evaluate(()=>document.activeElement?.outerHTML)).toBe(focused);await expect(view).not.toBeFocused();
 });
+
+test('Tab during delayed registry refusal keeps new focus and truthful failure validity',async({page})=>{
+  const view=await bootKeyboard(page);const url='**/game-content/oblique-module-registry.v1.json';
+  let release!:()=>void;const gate=new Promise<void>(resolve=>{release=resolve;});
+  await page.route(url,async route=>{await gate;await route.fulfill({status:503,body:'unavailable'});});
+  await page.keyboard.press('ArrowDown');await expect(view).toBeDisabled();await page.keyboard.press('Tab');
+  const focused=await page.evaluate(()=>document.activeElement?.outerHTML);release();
+  await expect(view).toBeEnabled();await expect(view).toHaveValue('world');
+  expect(await view.evaluate(element=>(element as HTMLSelectElement).validationMessage)).toContain('Could not change view');
+  expect(await page.evaluate(()=>document.activeElement?.outerHTML)).toBe(focused);await expect(view).not.toBeFocused();
+});
