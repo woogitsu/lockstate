@@ -144,12 +144,17 @@ of both and satisfied by either. The world keeps one slot per edge and keeps it
 on the north and west side, so the south face of owned land is addressed as the
 north edge of the first unowned row and its east face as the west edge of the
 first unowned column; `ConstructionSystem.submitOrder`
-(`src/simulation/construction/system.ts:580`, `public submitOrder`) asks `admits` (`:651`) about the
+(`src/simulation/construction/system.ts:585`, `public submitOrder`) asks `admits` (`:657`) about the
 order's own tile and, only if that refuses, about the tile across the named
 edge. Non-edge buildables are unaffected — an object is addressed by a tile and
 has no far side, which is what `occupiesTileEdge` decides — and the refusal the
 player is told about is still the order's own tile's, because that is the tile
 they named.
+
+**2026-10-02 source amendment.** The earlier `system.ts:580` and `:651`
+coordinates are retained here as historical references from before the pending
+entrance reader was wired. The current `public submitOrder` and `admits`
+anchors above were checked against the source after that integration.
 
 **This paragraph said the opposite until issue #448, and the reason it did is
 the durable half.** It read:
