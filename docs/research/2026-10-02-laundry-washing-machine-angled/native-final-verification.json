@@ -1,0 +1,182 @@
+{
+  "sourceCommit": "3fc97ac2797ada48ddbd65dbd95fc11da1a348f5",
+  "terminalRuns": {
+    "initial-q0-native": {
+      "caseSeconds": [
+        43.2,
+        37.1
+      ],
+      "washingPixelFailureCount": 0
+    },
+    "initial-q1-native": {
+      "caseSeconds": [
+        42.8,
+        38.3
+      ],
+      "washingPixelFailureCount": 4
+    },
+    "calibrated-native": {
+      "caseSeconds": [
+        43.3,
+        37.7,
+        38.2
+      ],
+      "washingPixelFailureCount": 0
+    },
+    "consumer-mutation-q0": {
+      "caseSeconds": [
+        43.2,
+        39.0
+      ],
+      "washingPixelFailureCount": 4
+    },
+    "consumer-mutation-q1": {
+      "caseSeconds": [
+        42.8,
+        38.2
+      ],
+      "washingPixelFailureCount": 4
+    },
+    "exact-restored-native": {
+      "caseSeconds": [
+        43.4,
+        37.2,
+        38.0
+      ],
+      "washingPixelFailureCount": 0
+    }
+  },
+  "accepted": [
+    {
+      "quarterTurns": 0,
+      "actualBefore": [
+        "object.washing-machine@21,6:orientation=0",
+        "object.washing-machine@23,6:orientation=0"
+      ],
+      "actualAfter": [
+        "object.washing-machine@21,6:orientation=0",
+        "object.washing-machine@23,6:orientation=0"
+      ],
+      "beforePixels": [
+        827,
+        833
+      ],
+      "afterPixels": [
+        827,
+        833
+      ],
+      "commands": [
+        {
+          "type": "PlaceRoomTemplate",
+          "templateId": "laundry-basic",
+          "origin": {
+            "x": 20,
+            "y": 5
+          }
+        }
+      ]
+    },
+    {
+      "quarterTurns": 1,
+      "actualBefore": [
+        "object.washing-machine@24,6:orientation=1",
+        "object.washing-machine@24,8:orientation=1"
+      ],
+      "actualAfter": [
+        "object.washing-machine@24,6:orientation=1",
+        "object.washing-machine@24,8:orientation=1"
+      ],
+      "beforePixels": [
+        1484,
+        1480
+      ],
+      "afterPixels": [
+        1484,
+        1480
+      ],
+      "commands": [
+        {
+          "type": "PlaceRoomTemplate",
+          "templateId": "laundry-basic",
+          "origin": {
+            "x": 20,
+            "y": 5
+          },
+          "quarterTurns": 1
+        }
+      ]
+    }
+  ],
+  "images": {
+    "accepted-q0-loaded-fullhd.png": {
+      "bytes": 1375640,
+      "sha256": "0ca2f768141453f20082dd0af110694a5c63809681f6cda5845da99f0b0bbbe7"
+    },
+    "accepted-q0-worker-completed-fullhd.png": {
+      "bytes": 1408445,
+      "sha256": "9cd6c2a99751abc14be3978b4f77d5ac072c00b4ba68c888efd67e2c3917e13a"
+    },
+    "accepted-q1-loaded-fullhd.png": {
+      "bytes": 1379747,
+      "sha256": "63f786faf9246cf74973422fc9d9807d185954c5f0139c5a778379ec017c4912"
+    },
+    "accepted-q1-worker-completed-fullhd.png": {
+      "bytes": 1412316,
+      "sha256": "1add1b00b3173564ba9c9a2d73f6581bf8603688cdfaeeb43c6e53bdf3230522"
+    },
+    "baseline-q0-loaded-fullhd.png": {
+      "bytes": 1375642,
+      "sha256": "e850ccbb8a47429af90ef0413ab3db08466f73d75c6273fc78a6f3d56aa8dd2d"
+    },
+    "baseline-q0-worker-completed-fullhd.png": {
+      "bytes": 1408462,
+      "sha256": "cc946e7b989d80dec38c12edbe56c57f1c897b963ff12813916abd73763acba7"
+    },
+    "baseline-q1-loaded-fullhd.png": {
+      "bytes": 1379720,
+      "sha256": "8f697718214bcd7b72681f4108d773666dbfdd121e20bf74ca5e19e7bceaa62a"
+    },
+    "baseline-q1-worker-completed-fullhd.png": {
+      "bytes": 1412298,
+      "sha256": "4d93334e89269cff279a9eb3d928a803e9cf6c502511a66b1777d887e9daf16f"
+    },
+    "initial-q0-loaded-fullhd.png": {
+      "bytes": 1375562,
+      "sha256": "45d65935a64c9ce4d32b40cef3b6516f7adf2bc3cf514f9f3631525e12d022e1"
+    },
+    "initial-q0-worker-completed-fullhd.png": {
+      "bytes": 1408381,
+      "sha256": "cfc28b8b371706d8e281a83f735f393b61eaa36e7b2347ecb2b01cd193b82f5e"
+    },
+    "initial-q1-loaded-fullhd.png": {
+      "bytes": 1379650,
+      "sha256": "d249fc2019e15cc0cbc8d4a771d65f570a20e402997c1ff5b1c1037633294a14"
+    },
+    "initial-q1-worker-completed-fullhd.png": {
+      "bytes": 1412220,
+      "sha256": "5625f174c2af2ab631aa61bb18296019e86787b3d22e7981f56c9150cfbeaf63"
+    },
+    "negative-q0-loaded-fullhd.png": {
+      "bytes": 1358077,
+      "sha256": "7b028abc44ecd48415f4862816045eeaac127dbf28d3b5fc66a014e12844b8a6"
+    },
+    "negative-q0-worker-completed-fullhd.png": {
+      "bytes": 1391145,
+      "sha256": "64323bd4c59bd17f6b6baa374b023ffcebe99cbc6a7978d56c6068fc1752f419"
+    },
+    "negative-q1-loaded-fullhd.png": {
+      "bytes": 1369698,
+      "sha256": "376d8b08361c4e88454b4a39b161e43d5cee12f67e5e14c6c18096086cf421ce"
+    },
+    "negative-q1-worker-completed-fullhd.png": {
+      "bytes": 1402880,
+      "sha256": "a20aeeb9372156aa7dec313a7c020ae35c9190cadbeae8a69c5e73549fa8e1da"
+    }
+  },
+  "limits": {
+    "caseMs": 60000,
+    "progressMs": 10000,
+    "workers": 1
+  },
+  "claimBoundary": "own isolated production client only; root integration/hosted acceptance not claimed"
+}

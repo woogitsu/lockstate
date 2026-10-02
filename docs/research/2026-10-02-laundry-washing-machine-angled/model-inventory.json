@@ -621,5 +621,17 @@
     "nativeAccepted": false,
     "nativePaletteCalibrated": false
   },
-  "nativeEvidenceBoundary": "Recorded evidence was read from the exact published head; no historical browser tests were rerun or older images newly inspected. No claim that absent scoped research receipt means a test was never executed."
+  "nativeEvidenceBoundary": "Recorded evidence was read from the exact published head; no historical browser tests were rerun or older images newly inspected. No claim that absent scoped research receipt means a test was never executed.",
+  "dedicatedWashingNativeFollowup": {
+    "sourceCommit": "3fc97ac2797ada48ddbd65dbd95fc11da1a348f5",
+    "actualTerminalCases": 3,
+    "bothQuarterTurns": [
+      0,
+      1
+    ],
+    "defaultConsumerNegativePixelFailuresPerOrientation": 4,
+    "exactRestored": true,
+    "record": "docs/research/2026-10-02-laundry-washing-machine-angled/native-final-verification.json",
+    "historicalInventoryUnchanged": true
+  }
 }
