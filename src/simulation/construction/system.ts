@@ -1,3 +1,5 @@
+import { defaultObjectRegistry } from '../../content/object-catalog';
+import { objectFootprintTiles } from '../objects/placed-object';
 import { type SystemRegistration, type SimulationContext } from '../kernel/system';
 import { type BuildEdge, type BuildOrder, type BuildOrderFailReason, compareBuildOrderExecution, resolveBuildEdge } from './build-order';
 import { BUILDABLE_REGISTRY, type BuildableDefinition, type MaterialRequirement, edgeNumericIdFor, getBuildableDefinition, occupiesTileEdge } from './definition';
@@ -642,6 +644,20 @@ export class ConstructionSystem implements SystemRegistration {
       order.failReason = 'duplicate-order';
       this.orders.set(order.id, order);
       return;
+    }
+
+    // The generic build-order entry must respect the same physical object
+    // claims as PlaceObject, including the non-anchor squares of either model.
+    // Bare construction fixtures retain their existing optional-reader path.
+    if (this.objectFootprintClaims !== undefined && definition.placesObjectId !== undefined) {
+      const object = defaultObjectRegistry.getById(definition.placesObjectId);
+      if (object !== undefined && objectFootprintTiles(object, order.location, order.objectOrientation ?? 0)
+        .some((tile) => this.objectFootprintClaims?.(tile) === true)) {
+        this.setState(order, 'failed');
+        order.failReason = 'unbuildable';
+        this.orders.set(order.id, order);
+        return;
+      }
     }
 
     const refusal = this.admits(order.location);
