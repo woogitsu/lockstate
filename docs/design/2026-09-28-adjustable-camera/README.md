@@ -660,3 +660,7 @@ Repeated144-frame export matches both manifests byte-for-byte: security a0d3ed3d
 ## Security console player baseline — 2026-10-02
 Root's built production-client player flow passes2/2 (45.6/32.3seconds): Storage/Delivery worker capacity, fresh-page IndexedDB Load, Security Office real worker completion, exact object.security-console anchor21,6 and one approved security-office-basic command, then SaveLoad retaining the anchor. Root opened [the actual loaded FullHD scene](./security-loaded-fullhd.png): the authored console is visible inside the room. This is a baseline; palette/mutated-consumer acceptance remains pending, and Utility Room is not covered by this test.
 
+
+## Utility panel player baseline — 2026-10-02
+Actual built-client flow passes2/2 (42.2/28.4seconds): Storage/Delivery completed, fresh IndexedDB page Load, Utility Room real worker completion with object.utility-panel anchor22,6 and exact utility-room-basic command, SaveLoad retaining the anchor. Root opened [the loaded FullHD scene](./utility-loaded-fullhd.png). Panel geometry is visible, but the door partially obscures its front at this selected camera angle; a clearer angle and palette/mutated-consumer test remain required for final art acceptance. No production deployment is claimed.
+
