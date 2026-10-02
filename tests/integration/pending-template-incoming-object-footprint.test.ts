@@ -2,9 +2,11 @@ import { expect, it } from 'vitest';
 import { createSaveEnvelope, decodeSaveEnvelope } from '../../src/persistence/save-schema';
 import { packCommand, type SimulationCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { captureSessionSnapshot, restoreSimulationRuntime, type SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
 
 type Runtime = ReturnType<typeof createNewSimulationRuntime>;
+const tile = (position: { readonly x: number; readonly y: number }) => ({ x: tileCoordinate(position.x), y: tileCoordinate(position.y) });
 const shapes = [
   { definitionId: 'bed-wooden', axis: 'north', conflict: { x: 11, y: 9 }, legal: { x: 11, y: 8 }, far: { x: 11, y: 10 } },
   { definitionId: 'desk-wooden', axis: 'west', conflict: { x: 9, y: 11 }, legal: { x: 8, y: 11 }, far: { x: 10, y: 11 } },
@@ -61,8 +63,8 @@ it.each(cases)('pending plan protects incoming $axis far square: q=$quarterTurns
     if (load) runtime = reload(runtime);
     const anchor = conflicts ? conflict : legal;
     const sequence = runtime.kernel.expectedSequence;
-    expect(runtime.roomTemplates.claimsPendingFootprint(anchor, sequence)).toBe(false);
-    expect(runtime.roomTemplates.claimsPendingFootprint(far, sequence)).toBe(true);
+    expect(runtime.roomTemplates.claimsPendingFootprint(tile(anchor), sequence)).toBe(false);
+    expect(runtime.roomTemplates.claimsPendingFootprint(tile(far), sequence)).toBe(true);
     const before = gameplay(runtime);
     const revisions = runtime.construction.allOrders().map(order => [order.id, runtime.construction.revisionOf(order.id)]);
     const funds = runtime.treasury.balanceMinorUnits;
@@ -103,7 +105,7 @@ it.each(shapes.flatMap(shape => [false, true].map(load => ({ ...shape, load })))
     send(runtime, { type: 'CancelBuildOrder', orderId: door.id, expectedRevision: runtime.construction.revisionOf(door.id)! });
     expect(runtime.roomTemplates.snapshot().pending).toHaveLength(0);
     runtime = reload(runtime);
-    expect(runtime.roomTemplates.claimsPendingFootprint(far, runtime.kernel.expectedSequence)).toBe(false);
+    expect(runtime.roomTemplates.claimsPendingFootprint(tile(far), runtime.kernel.expectedSequence)).toBe(false);
     send(runtime, { type: 'PlaceBuildOrder', orderId: 'released-fixture', definitionId, ...conflict });
     expect(runtime.construction.getOrder('released-fixture')?.state).toBe('approved');
     finish(runtime);
