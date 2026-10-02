@@ -2505,7 +2505,7 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.target-value': '{x}, {y} · {edge}',
   'hud.build.target-run': '{count} × {edge} from {x}, {y}',
   'hud.build.target-squares': { one: '{count} whole square from {x}, {y} | catalogue value {cost}', other: '{count} whole squares from {x}, {y} | catalogue value {cost}' },
-  'hud.build.object-footprint': 'Occupied squares: {width} \u00d7 {height}',
+  'hud.build.object-footprint': 'Occupied squares: {width} × {height}',
   'hud.build.target-tile': '{x}, {y}',
   'hud.build.coordinates': 'Enter coordinates',
   'hud.build.coordinates-hint': 'The keyboard route. Pointing at the map is quicker.',
