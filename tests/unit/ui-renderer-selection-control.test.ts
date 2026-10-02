@@ -63,3 +63,12 @@ it('does not steal focus moved to a different control while replacing',async()=>
   const other=new ElementStub();other.focus();s.finish();await vi.waitFor(()=>expect(s.select.disabled).toBe(false));
   expect(document.activeElement).toBe(other);
 });
+
+it('keeps failure validity without opening a focus-stealing popup after navigation',async()=>{
+  const s=setup();let refuse!:(error:Error)=>void;s.change.mockImplementationOnce(()=>new Promise<void>((_,reject)=>{refuse=reject;}));
+  s.select.focus();s.select.value='oblique';s.select.dispatchEvent(new Event('change'));
+  const event=new Event('keydown');Object.defineProperty(event,'key',{value:'Tab'});document.dispatchEvent(event);
+  const other=new ElementStub();other.focus();refuse(new Error('503'));
+  await vi.waitFor(()=>expect(s.select.disabled).toBe(false));
+  expect(s.select.validity.valid).toBe(false);expect(s.select.reported).toBe(0);expect(s.error).toHaveBeenCalledOnce();expect(document.activeElement).toBe(other);
+});

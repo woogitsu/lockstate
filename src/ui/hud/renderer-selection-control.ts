@@ -41,7 +41,7 @@ export function createRendererSelectionControl(
       document.removeEventListener('pointerdown',navigationPointer,true);
       select.disabled=false;select.setAttribute('aria-busy','false');
       if(focusedBeforeChange&&!navigatedAway&&document.activeElement===document.body) select.focus({preventScroll:true});
-      if (!select.validity.valid) select.reportValidity();
+      if (!select.validity.valid&&!navigatedAway&&(document.activeElement===document.body||document.activeElement===select)) select.reportValidity();
     });
   });
   return {element:select,update:(mode)=>{current=mode;select.value=mode;}};
