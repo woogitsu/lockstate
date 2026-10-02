@@ -8,6 +8,7 @@ import {
 } from '../../simulation/construction/definition';
 import { DEFAULT_TERRAIN_DEFINITIONS } from '../../simulation/world/terrain';
 import { catalogueObjectId } from './structures';
+import { orientedFootprint, type ObjectOrientation } from '../../simulation/objects/placed-object';
 
 /**
  * How the world *looks*, kept as data keyed by the same stable identifiers the
@@ -410,8 +411,10 @@ const CATEGORY_FALLBACK: Readonly<Record<BuildableCategory, StructureAppearance>
  * the footprint, so a newly catalogued object renders at the right size
  * without a renderer change. An id in neither registry still draws, as a
  * generic object, rather than vanishing.
+ * Object orientation rotates its occupied rectangle; apparent height and
+ * materials stay attached to the authored object.
  */
-export function structureAppearance(definitionId: string): StructureAppearance {
+export function structureAppearance(definitionId: string, orientation: ObjectOrientation = 0): StructureAppearance {
   const explicit = STRUCTURE_APPEARANCE[definitionId];
   const buildable = BUILDABLE_REGISTRY.get(definitionId);
   // The two ways a buildable id reaches an object definition are
@@ -425,7 +428,7 @@ export function structureAppearance(definitionId: string): StructureAppearance {
   const base = explicit ?? CATEGORY_FALLBACK[buildable?.category ?? 'object'];
 
   if (catalogued === undefined) return base;
-  return { ...base, footprintTiles: { width: catalogued.footprint.width, height: catalogued.footprint.height } };
+  return { ...base, footprintTiles: orientedFootprint(catalogued.footprint, orientation) };
 }
 
 /**

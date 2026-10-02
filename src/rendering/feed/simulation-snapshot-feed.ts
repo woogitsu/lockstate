@@ -635,7 +635,7 @@ export class SimulationSnapshotFeed implements RenderFeed {
       this.frame = {
         revision: this.frame.revision + 1,
         world: WorldRenderView.fromSnapshot(bundle.world),
-        structures: structuresFromConstruction(bundle.construction),
+        structures: structuresFromConstruction(bundle.construction, bundle.simulation?.objects?.placedObjects),
         // Decoded from the bundle's own `simulation` and `entities` sections
         // (#70 put prisoner tile positions there; `CURRENT_SAVE_RESTORED_SCOPE`
         // reports them under `restored` as `save.scope.prisoners`). Empty
