@@ -237,11 +237,12 @@ export function createSessionCommandHandler(
       construction.noteActionThatDoesNotWriteTheUndoStack();
     }
     if (simCommand !== null && simCommand.type === 'PlaceRoomTemplate') {
-      const key = `room-template:${simCommand.templateId}:${simCommand.origin.x}:${simCommand.origin.y}:${simCommand.mirrorX ?? false}`;
+      const key = `room-template:${simCommand.templateId}:${simCommand.origin.x}:${simCommand.origin.y}:${simCommand.mirrorX ?? false}:${simCommand.quarterTurns ?? 0}`;
       const verdict = roomTemplates.place({
         templateId: simCommand.templateId,
         origin: simCommand.origin,
         mirrorX: simCommand.mirrorX ?? false,
+        ...(simCommand.quarterTurns === undefined ? {} : { quarterTurns: simCommand.quarterTurns }),
         sequence: command.sequence,
       });
       if (!verdict.ok) {

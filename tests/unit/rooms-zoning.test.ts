@@ -415,6 +415,29 @@ describe('the authored minimum size is enforced, for the first time', () => {
   // and nothing in `src/` had ever read one, so a 1x1 canteen was a legal room.
   // These are the assertions that say it is not.
 
+  it.each([{ width: 2, height: 3 }, { width: 3, height: 2 }])('accepts a Cell minimum in either orientation ($width x $height)', ({ width, height }) => {
+    const { zoning } = service(ownedWorld());
+    expect(zoning.zone({ roomCatalogId: CELL, x: 4, y: 4, width, height }, 0).kind).toBe('zoned');
+  });
+
+  it.each([{ width: 1, height: 6 }, { width: 6, height: 1 }, { width: 2, height: 2 }])('refuses a Cell below both oriented side bounds ($width x $height)', ({ width, height }) => {
+    const { zoning } = service(ownedWorld());
+    expect(zoning.zone({ roomCatalogId: CELL, x: 4, y: 4, width, height }, 0)).toMatchObject({ reason: 'below-minimum-size' });
+  });
+
+  it('preserves an authored area floor above the rectangle side minima in both orientations', () => {
+    const { registry, errors } = loadRoomCatalog([{ schemaVersion: 1, id: 'room.probe', numericId: 200,
+      nameKey: 'room.probe.name', category: 'housing',
+      requirements: [{ type: 'minimum-size', minWidth: 2, minHeight: 3, minTiles: 8 }],
+    }]);
+    expect(errors).toEqual([]);
+    for (const [width, height] of [[2, 3], [3, 2], [2, 4], [4, 2]]) {
+      const zoning = new RoomZoningService(ownedWorld(), new RoomInstanceRegistry(), registry);
+      expect(zoning.zone({ roomCatalogId: 'room.probe', x: 4, y: 4, width: width!, height: height! }, 0))
+        .toMatchObject(width! * height! < 8 ? { reason: 'below-minimum-size' } : { kind: 'zoned' });
+    }
+  });
+
   it('refuses a canteen smaller than the 6x6 the catalogue authors', () => {
     const world = ownedWorld();
     const { zoning, rooms } = service(world);

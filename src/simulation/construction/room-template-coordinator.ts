@@ -1,4 +1,5 @@
-import { instantiateRoomTemplate, roomTemplateOriginFitsSafeCoordinates, type RoomTemplatePlan } from '../../content/room-template-catalog';
+import { roomTemplateOriginFitsSafeCoordinates, type RoomTemplatePlan } from '../../content/room-template-catalog';
+import type { QuarterTurns } from '../../content/room-template-rotation';
 import type { SystemRegistration, SimulationContext } from '../kernel/system';
 import type { PlacedObjectRegistry } from '../objects/placed-object-registry';
 import type { ObjectPlacementService } from '../objects/object-placement-service';
@@ -7,7 +8,7 @@ import type { RoomZoningService } from '../rooms/zoning';
 import type { SparseWorld } from '../world/sparse-world';
 import { tileCoordinate, type TilePosition } from '../world/coordinates';
 import type { ConstructionSystem } from './system';
-import { createRoomTemplateBuildPlan } from './room-template-build-plan';
+import { createRoomTemplateBuildPlan, instantiateRoomTemplateForConstruction } from './room-template-build-plan';
 import { BUILDABLE_REGISTRY } from './definition';
 import { validateRoomTemplatePlacement, type RoomTemplatePlacement } from './room-template-placement';
 
@@ -15,6 +16,7 @@ export interface PendingRoomTemplate {
   readonly templateId: RoomTemplatePlan['id'];
   readonly origin: RoomTemplatePlan['origin'];
   readonly mirrorX: boolean;
+  readonly quarterTurns?: QuarterTurns;
   readonly sequence: number;
 }
 
@@ -53,7 +55,7 @@ export class RoomTemplateCoordinator implements SystemRegistration {
     // Shell orders claim only perimeter tiles. Until zoning completes, the
     // interior is still empty world, but it belongs to the same atomic plan.
     const pendingPlans = this.pending.map((request) =>
-      instantiateRoomTemplate(request.templateId, request.origin, { mirrorX: request.mirrorX }));
+      instantiateRoomTemplateForConstruction(request.templateId, request.origin, request.mirrorX, request.quarterTurns ?? 0));
     for (const order of active) {
       const objectId = BUILDABLE_REGISTRY.get(order.definitionId)?.placesObjectId;
       if (objectId === undefined) {
@@ -67,7 +69,7 @@ export class RoomTemplateCoordinator implements SystemRegistration {
       }
       // ObjectPlacementService reserves every square of an in-flight object's
       // footprint, not just its anchor. The template preflight must agree.
-      for (const tile of objectFootprintTiles(definition, order.location, 0)) {
+      for (const tile of objectFootprintTiles(definition, order.location, order.objectOrientation ?? 0)) {
         objectClaims.add(tileKey(tile));
       }
     }
@@ -85,19 +87,19 @@ export class RoomTemplateCoordinator implements SystemRegistration {
   public claimsPendingFootprint(tile: TilePosition, orderSequence: number | undefined): boolean {
     return this.pending.some((request) => {
       if (orderSequence === request.sequence) return false;
-      const plan = instantiateRoomTemplate(request.templateId, request.origin, { mirrorX: request.mirrorX });
+      const plan = instantiateRoomTemplateForConstruction(request.templateId, request.origin, request.mirrorX, request.quarterTurns ?? 0);
       return tile.x >= plan.origin.x && tile.x < plan.origin.x + plan.width &&
         tile.y >= plan.origin.y && tile.y < plan.origin.y + plan.height;
     });
   }
 
   public place(request: PendingRoomTemplate): RoomTemplatePlacement {
-    if (!roomTemplateOriginFitsSafeCoordinates(request.templateId, request.origin)) {
+    if (!roomTemplateOriginFitsSafeCoordinates(request.templateId, request.origin, request.quarterTurns ?? 0)) {
       return { ok: false, reason: 'unowned-land', tile: {
         x: tileCoordinate(request.origin.x), y: tileCoordinate(request.origin.y),
       } };
     }
-    const built = createRoomTemplateBuildPlan(request.templateId, request.origin, request.mirrorX, request.sequence);
+    const built = createRoomTemplateBuildPlan(request.templateId, request.origin, request.mirrorX, request.sequence, request.quarterTurns ?? 0);
     const verdict = this.preflight(built.plan);
     if (!verdict.ok) return verdict;
     // An all-footprint preflight precedes the first mutation. If a build rule
@@ -127,7 +129,7 @@ export class RoomTemplateCoordinator implements SystemRegistration {
       this.construction.canRedoOrdersTogether(this.historyEntryIds(request)));
     const remaining: PendingRoomTemplate[] = [];
     for (const request of this.pending) {
-      const built = createRoomTemplateBuildPlan(request.templateId, request.origin, request.mirrorX, request.sequence);
+      const built = createRoomTemplateBuildPlan(request.templateId, request.origin, request.mirrorX, request.sequence, request.quarterTurns ?? 0);
       const states = built.shellOrderIds.map((id) => this.construction.getOrder(id)?.state);
       if (states.some((state) => state !== 'completed')) {
         remaining.push(request);
@@ -161,6 +163,7 @@ export class RoomTemplateCoordinator implements SystemRegistration {
           x: order.location.x,
           y: order.location.y,
           transactionId: `room-template-${request.sequence}`,
+          ...(order.objectOrientation === undefined ? {} : { objectOrientation: order.objectOrientation }),
         }, context.tick, request.sequence);
         if (outcome.kind === 'refused') {
           for (const previous of zoned.reverse()) this.roomZoning.unzone(previous, context.tick);
@@ -179,7 +182,7 @@ export class RoomTemplateCoordinator implements SystemRegistration {
   /** Command dispatch also runs while paused, so release invalidated plans then. */
   public reconcileCancelledShells(): void {
     this.completed = this.completed.filter((request) => {
-      const built = createRoomTemplateBuildPlan(request.templateId, request.origin, request.mirrorX, request.sequence);
+      const built = createRoomTemplateBuildPlan(request.templateId, request.origin, request.mirrorX, request.sequence, request.quarterTurns ?? 0);
       if (!built.orders.some((order) => this.construction.getOrder(order.id)?.state === 'cancelled')) return true;
       for (const zone of built.plan.zones) this.roomZoning.unzone(zone, 0);
       for (const order of built.orders) {
@@ -241,13 +244,13 @@ export class RoomTemplateCoordinator implements SystemRegistration {
     this.construction.attachReversibleWorldTransaction(this.zoningTransactionId(request), {
       canUndo: () => [...this.pending, ...this.completed].some(entry => entry.sequence === request.sequence),
       canRedo: () => this.undone.some(entry => entry.sequence === request.sequence) &&
-        this.preflight(instantiateRoomTemplate(request.templateId, request.origin, { mirrorX: request.mirrorX })).ok,
+        this.preflight(instantiateRoomTemplateForConstruction(request.templateId, request.origin, request.mirrorX, request.quarterTurns ?? 0)).ok,
       undo: () => {
         const pending = this.pending.some(entry => entry.sequence === request.sequence);
         const completed = this.completed.some(entry => entry.sequence === request.sequence);
         if (!pending && !completed) return false;
         if (completed) {
-          const plan = instantiateRoomTemplate(request.templateId, request.origin, { mirrorX: request.mirrorX });
+          const plan = instantiateRoomTemplateForConstruction(request.templateId, request.origin, request.mirrorX, request.quarterTurns ?? 0);
           for (const zone of plan.zones) {
             if (this.roomZoning.unzone(zone, 0).kind === 'refused') return false;
           }
@@ -259,7 +262,7 @@ export class RoomTemplateCoordinator implements SystemRegistration {
       },
       redo: () => {
         if (!this.undone.some(entry => entry.sequence === request.sequence)) return false;
-        const plan = instantiateRoomTemplate(request.templateId, request.origin, { mirrorX: request.mirrorX });
+        const plan = instantiateRoomTemplateForConstruction(request.templateId, request.origin, request.mirrorX, request.quarterTurns ?? 0);
         if (!this.preflight(plan).ok) return false;
         this.undone = this.undone.filter(entry => entry.sequence !== request.sequence);
         this.pending.push({ ...request, origin: { ...request.origin } });
@@ -270,7 +273,7 @@ export class RoomTemplateCoordinator implements SystemRegistration {
   }
 
   private shellOrderIds(request: PendingRoomTemplate): readonly string[] {
-    return createRoomTemplateBuildPlan(request.templateId, request.origin, request.mirrorX, request.sequence).shellOrderIds;
+    return createRoomTemplateBuildPlan(request.templateId, request.origin, request.mirrorX, request.sequence, request.quarterTurns ?? 0).shellOrderIds;
   }
 
   public snapshot(): RoomTemplateCoordinatorSnapshot {

@@ -509,6 +509,8 @@ export class RoomZoningService {
      * a separate authored number, so a future room could ask for 6 tiles in
      * any 2x4 shape and this has to be the check that says so rather than one
      * that assumes the product.
+     * The owner-approved template rotation rule accepts the two side minima in
+     * either orientation. The separate minTiles floor still applies to both.
      *
      * Ahead of every per-tile check, and that ordering is deliberate: a
      * canteen dragged 1x1 over land the player does not own is refused for
@@ -525,8 +527,8 @@ export class RoomZoningService {
     const minimum = minimumSizeRequirement(definition);
     if (
       minimum !== undefined &&
-      (request.width < minimum.minWidth ||
-        request.height < minimum.minHeight ||
+      (((request.width < minimum.minWidth || request.height < minimum.minHeight) &&
+        (request.width < minimum.minHeight || request.height < minimum.minWidth)) ||
         request.width * request.height < minimum.minTiles)
     ) {
       return this.refuse('below-minimum-size', request, tick);
