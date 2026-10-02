@@ -1,5 +1,10 @@
 # Dedicated desk: pending native Reception acceptance
 
+Historical preparation checkpoint. The scoped native plan subsequently ran on
+frozen42eabb with baseline3/3green, four expected palette errors per orientation
+and byte-exact final3/3green. See `native-player-acceptance.md`; this original
+plan is retained to distinguish preparation from executed acceptance.
+
 Prepared offline on the existing isolated physical-detail branch after the
 Bin, corrected Cell toilet and Utility native processes ended. The sole browser
 lease was released to the coordinator. No browser has run for this new desk
