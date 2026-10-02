@@ -76,7 +76,7 @@ matched two surface-audit call sites and refused to mutate; its hook was made
 unique before both actual negative runs. No such preflight is counted as
 accepted model or pixel evidence.
 
-Blender5.2.1LTS upstream build ID `9e2066aef7ef`, executable SHA256
+Blender5.2.1LTS upstream `blender-build-id=9e2066aef7ef` (not a repository commit), executable SHA256
 `284f4041f98e113f3dc10654a7193ffaaa9bfdfec8b87fa116620a48b5f6d4cb`.
 Full72pose repeat, scoped consumer descriptor integration, strict published
 PNG/integrity controls and genuine UtilityRoom q0/q1 worker Build/SaveLoad
