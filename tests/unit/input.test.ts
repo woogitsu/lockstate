@@ -307,10 +307,42 @@ describe('semantic input', () => {
     store.setItem('lockstate.settings.input', JSON.stringify({ version: 1, keyboardBindings: oldBindings }));
     const loaded = loadInputSettings(store).keyboardBindings;
     expect(loaded.find((binding) => binding.action === 'camera.up' && binding.code === 'KeyQ')).toBeDefined();
-    expect(loaded.find((binding) => binding.action === 'camera.rotate.left')).toBeUndefined();
+    expect(loaded.find((binding) => binding.action === 'camera.rotate.left')?.code).toBe('KeyW');
     expect(loaded.find((binding) => binding.action === 'camera.rotate.right')?.code).toBe('KeyE');
     expect(loaded.find((binding) => binding.action === 'camera.tilt.up')?.code).toBe('KeyR');
     expect(loaded.find((binding) => binding.action === 'camera.tilt.down')?.code).toBe('KeyF');
+  });
+
+  it('uses vacated physical positions for two blocked camera turns without overwriting remaps', () => {
+    const store = new MemoryStore();
+    const oldBindings = DEFAULT_KEYBOARD_BINDINGS
+      .filter((binding) => !binding.action.startsWith('camera.rotate.') && !binding.action.startsWith('camera.tilt.'))
+      .map((binding) => binding.code === 'KeyW' ? { ...binding, code: 'KeyQ' }
+        : binding.code === 'KeyS' ? { ...binding, code: 'KeyE' } : binding);
+    store.setItem('lockstate.settings.input', JSON.stringify({ version: 1, keyboardBindings: oldBindings }));
+    const loaded = loadInputSettings(store).keyboardBindings;
+    expect(findBindingConflicts(loaded)).toEqual([]);
+    expect(loaded.find((binding) => binding.action === 'camera.up' && binding.code === 'KeyQ')).toBeDefined();
+    expect(loaded.find((binding) => binding.action === 'camera.down' && binding.code === 'KeyE')).toBeDefined();
+    expect(loaded.find((binding) => binding.action === 'camera.rotate.left')?.code).toBe('KeyW');
+    expect(loaded.find((binding) => binding.action === 'camera.rotate.right')?.code).toBe('KeyS');
+    const keyboard = new KeyboardInputAdapter(loaded, () => ['world']);
+    expect(keyboard.keyDown({ code: 'KeyW' })[0]?.action).toBe('camera.rotate.left');
+    expect(keyboard.keyDown({ code: 'KeyS' })[0]?.action).toBe('camera.rotate.right');
+  });
+
+  it('follows vacated physical positions through multiple remaps', () => {
+    const store = new MemoryStore();
+    const oldBindings = DEFAULT_KEYBOARD_BINDINGS
+      .filter((binding) => !binding.action.startsWith('camera.rotate.') && !binding.action.startsWith('camera.tilt.'))
+      .map((binding) => binding.code === 'KeyW' ? { ...binding, code: 'KeyQ' }
+        : binding.code === 'KeyS' ? { ...binding, code: 'KeyW' } : binding);
+    store.setItem('lockstate.settings.input', JSON.stringify({ version: 1, keyboardBindings: oldBindings }));
+    const loaded = loadInputSettings(store).keyboardBindings;
+    expect(findBindingConflicts(loaded)).toEqual([]);
+    expect(loaded.find((binding) => binding.action === 'camera.rotate.left')?.code).toBe('KeyS');
+    expect(loaded.find((binding) => binding.action === 'camera.up' && binding.code === 'KeyQ')).toBeDefined();
+    expect(loaded.find((binding) => binding.action === 'camera.down' && binding.code === 'KeyW')).toBeDefined();
   });
 
   it('only persists a remap once it is conflict-free', () => {
