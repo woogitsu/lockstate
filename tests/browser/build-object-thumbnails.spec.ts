@@ -33,7 +33,7 @@ test('Full HD Build shows authored station and bench thumbnails with accessible 
   const stationImage=station.locator('img.hud-build__object-thumbnail');
   await expect(stationImage).toBeVisible();
   expect(await stationImage.evaluate(image=>(image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
-  expect(await stationImage.getAttribute('src')).not.toBe(await benchImage.getAttribute('src'));
+  expect(await stationImage.getAttribute('data-authored-src')).not.toBe(await benchImage.getAttribute('data-authored-src'));
   await expect(stationImage).toHaveAttribute('alt','');
   await expect(station).toHaveAccessibleName(/Exercise station.*80/);
   await expect(station.locator('svg')).toBeHidden();
@@ -44,4 +44,9 @@ test('Full HD Build shows authored station and bench thumbnails with accessible 
   await expect(page.locator('.hud-build__arm')).toHaveAttribute('data-armed','false');
   await expect(target).toHaveText('Point at the world');
   await page.screenshot({path:info.outputPath('station-escape-fullhd.png')});
+  await stationImage.evaluate(image => { (image as HTMLImageElement).src = '/missing-object-thumbnail.png'; });
+  await expect(stationImage).toBeHidden();
+  await expect(station.locator('svg')).toBeVisible();
+  await expect(station).toContainText('80');
+  await expect(footprint).toHaveText('Occupied squares: 2 \u00d7 1');
 });

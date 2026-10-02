@@ -1,3 +1,4 @@
+import { trimObjectThumbnail } from './object-thumbnail';
 import type { LocalizationKey } from '../../content/localization';
 import { deriveSimulationMessageKey } from '../../content/simulation-message-keys';
 import type { MessageParameters } from '../../services/localization/format';
@@ -1238,7 +1239,16 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
         attributes: { src: buildable.thumbnailUrl, alt: '', 'aria-hidden': 'true' },
       });
       thumbnail.hidden = true;
-      thumbnail.addEventListener('load', () => { thumbnail.hidden = false; fallback.setAttribute('hidden', ''); });
+      thumbnail.dataset['authoredSrc'] = buildable.thumbnailUrl;
+      let trimmed = false;
+      thumbnail.addEventListener('load', () => {
+        if (!trimmed) {
+          trimmed = true;
+          if (trimObjectThumbnail(thumbnail)) return;
+          thumbnail.hidden = true; fallback.removeAttribute('hidden'); return;
+        }
+        thumbnail.hidden = false; fallback.setAttribute('hidden', '');
+      });
       thumbnail.addEventListener('error', () => { thumbnail.hidden = true; fallback.removeAttribute('hidden'); });
       row.element.prepend(thumbnail);
     }
