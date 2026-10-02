@@ -58,7 +58,7 @@ async function washerPalettePixels(page: Page, png: Buffer, quarterTurns: 0 | 1)
     const rects = quarterTurns === 0
       ? [[820, 400, 90, 140], [975, 340, 65, 110]]
       : [[900, 370, 140, 160], [1030, 410, 140, 160]];
-    const colour = quarterTurns === 0 ? [32, 59, 66] : [26, 33, 35];
+    const colour = quarterTurns === 0 ? [32, 59, 66] : [119, 122, 123];
     return rects.map(rect => {
       const pixels = context.getImageData(...rect as [number, number, number, number]).data;
       let count = 0;
