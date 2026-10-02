@@ -245,6 +245,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 | [2026-10-02 outdoor steel bench art draft](./2026-10-02-yard-steel-bench/README.md) | Can existing bench gameplay get a weatherproof Yard visual variant without a new object identity? | Blender source, 72 hashed angled poses, exact 2×1 bounds and scale contract; contextual runtime selector remains separate. |
 | [2026-10-02 exercise station player build](./2026-10-02-exercise-station-player-build/README.md) | Does the real player flow build and preserve the authored station? | Full HD 2x1 ghost, worker construction, collision refusal, Blender pixels, Save/Load and mapping mutation. |
 | [2026-10-02 camera pointer cancellation](./2026-10-02-oblique-camera-cancel/README.md) | Does a cancelled right-button turn remain stopped? | Actual Full HD blur/pointercancel canvas comparison, production reset mutation and restored green. |
+| [2026-10-02 authored Build thumbnails](./2026-10-02-build-object-thumbnails/README.md) | Can objects be recognized before placement? | Verified authored angled frame URL through a clean HUD seam, fallback and source mutation; actual Full HD proof pending. |
 | [2026-10-02 object occupied dimensions](./2026-10-02-build-object-occupied-dimensions/README.md) | Does Build state the selected object footprint? | Catalogue content footprint and localized selected/hover dimensions, preserved cost and meaningful branch mutation; browser acceptance pending. |
 | [2026-10-02 oblique role actors](./2026-10-02-oblique-role-actors/README.md) | Do existing cook, medic and staff Blender sources match the prisoner/guard angled actor scale and foot pivot? | Three real Blender role previews, 216 hashed poses, source-detail audit, alpha-bound comparison and catalog mutation proof; runtime consumer mapping follows. |
 | [2026-10-02 native modal keyboard](./2026-10-02-native-modal-keyboard/README.md) | Does an open room-plan dialog prevent keyboard camera movement and return focus afterward? | Actual production canvas red/green mutation, Tab containment, Escape focus return and resumed camera controls for issue1918. |
@@ -366,4 +367,3 @@ and it stopped one step short of its own consequence.
   three layers deeper.
 
 
-- [Authored Build catalogue thumbnails](2026-10-02-build-object-thumbnails/README.md) - presentation URL seam and pending Full HD proof.
