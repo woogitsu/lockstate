@@ -56,15 +56,22 @@ test('actual HUD changes both renderers while retaining one unsaved worker world
   await bootUnsavedYard(page);
   const view=page.getByRole('combobox',{name:'View',exact:true});
   await expect(view).toHaveValue('world');const before=await state(page);
+  await page.locator('.hud-build__arm').click();
+  await page.mouse.move(960,540);
+  const target=page.locator('.hud-build__target-value');
+  await expect(target).toHaveText(/^-?\d+, -?\d+$/);
+  const centreTile=await target.textContent();
   const url=page.url();const canvas=page.locator('#game-root canvas');const top=await canvas.screenshot();
   await view.selectOption('oblique');await expect(view).toBeEnabled();await expect(view).toHaveValue('oblique');
   await expect(page.getByRole('button',{name:'Rotate camera right',exact:true})).toBeVisible();
   expect(await state(page)).toEqual(before);expect(page.url()).toBe(url);
+  await page.mouse.move(960,540);await expect(target).toHaveText(centreTile!);
   expect((await canvas.screenshot()).equals(top)).toBe(false);
   await page.screenshot({path:'test-results/live-renderer-angled-fullhd.png'});
   await view.selectOption('world');await expect(view).toBeEnabled();await expect(view).toHaveValue('world');
   await expect(page.getByRole('button',{name:'Rotate camera right',exact:true})).toBeHidden();
   expect(await state(page)).toEqual(before);expect(page.url()).toBe(url);
+  await page.mouse.move(960,540);await expect(target).toHaveText(centreTile!);
   expect(await page.locator('.room-template-world-ghost').count()).toBe(1);
 });
 
