@@ -256,6 +256,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 | [2026-10-02 actor facing](./2026-10-02-oblique-actor-facing/README.md) | Which existing Blender pose should face world movement when the camera turns? | Eight SHA-checked guard views across four headings and two camera yaws establish the signed yaw rule and the stationary-heading limitation. |
 | [2026-10-02 room-template quarter turns](./2026-10-02-room-template-quarter-turns/README.md) | Can all authored room plans rotate reversibly with exact occupied object extents and canonical door edges? | Pure geometry and worker-footprint adapter mutation evidence; durable state and gameplay UI remain separately pending. |
 | [2026-10-02 first Cell delivery bootstrap](./2026-10-02-first-cell-delivery-bootstrap/README.md) | Can a fresh prison build its first Cell after furnishing delivery and storage plans? | Live and JSON Save/Load kernel regressions plus actual Full HD dialog build, saved IndexedDB transfer, fresh-browser Load and first Cell completion; production carrier-guard mutation fails, restore2/2green. |
+| [2026-10-02 Common Room bench art](./2026-10-02-common-room-bench/README.md) | Can the existing bench have distinct indoor recreation-room art without changing gameplay identity? | Blender source, evaluated 2×1 bounds, deterministic 72-pose catalog and source/scale/hash mutation evidence; runtime acceptance follows. |
 
 ### Findings from the first four records that changed a decision
 
