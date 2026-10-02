@@ -268,6 +268,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 | [2026-10-02 Storage Room rack art](./2026-10-02-storage-room-rack/README.md) | Can the existing rack get a distinct Storage Room visual without changing its gameplay identity? | Blender source, 72 deterministic poses, contextual consumer and Full HD two-rack Build, worker, Save/Load and visual mutation proof. |
 | [2026-10-02 oblique Load gesture](./2026-10-02-oblique-load-gesture/README.md) | Can a held right-button camera turn in the outgoing prison rotate the loaded prison? | Actual Full HD browser failure, input-session release, production callback mutation red and restored green. |
 | [2026-10-02 Cell cot art](./2026-10-02-cell-cot/README.md) | Can the existing 1 x 2 bed have a complete authored oblique model at every angle without changing gameplay identity? | Blender source, 72 deterministic hashed poses, production mapping, footprint/source tests; real player browser proof pending. |
+| [2026-10-02 oblique middle pan](./2026-10-02-oblique-middle-pan/README.md) | Does the advertised middle button move the angled camera while Build remains armed? | Full HD browser red/green, Load-boundary and movement production mutations, ground-anchor math at six poses. |
 
 ### Findings from the first four records that changed a decision
 
