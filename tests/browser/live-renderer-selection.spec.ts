@@ -59,7 +59,7 @@ test('actual HUD changes both renderers while retaining one unsaved worker world
   await page.locator('.hud-build__arm').click();
   await page.mouse.move(960,540);
   const target=page.locator('.hud-build__target-value');
-  await expect(target).toHaveText(/^-?\d+, -?\d+$/);
+  await expect(target).toHaveText(/1 whole squares from -?\d+, -?\d+ \| catalogue value 80/);
   const centreTile=await target.textContent();
   const url=page.url();const canvas=page.locator('#game-root canvas');const top=await canvas.screenshot();
   await view.selectOption('oblique');await expect(view).toBeEnabled();await expect(view).toHaveValue('oblique');
@@ -94,7 +94,7 @@ test('partial scene activation failure restores the unsaved world without retain
     const fault={armed:false,count:()=>{let total=0;for(const events of handlers.values())for(const listeners of events.values())total+=listeners.size;return total;}};
     (window as unknown as {rendererListenerFault:typeof fault}).rendererListenerFault=fault;
     EventTarget.prototype.addEventListener=function(type,listener,options) {
-      if(listener && (this===window || this instanceof HTMLCanvasElement) && ['keydown','keyup','blur','focusin','pointercancel','lostpointercapture','pointerdown'].includes(type)) {
+      if(listener && (this===window || this instanceof HTMLCanvasElement) && ['keydown','keyup','blur','focusin','pointercancel','lostpointercapture','pointerdown'].includes(type) && !(this===window && type==='pointerdown')) {
         if(this===window && type==='keydown' && fault.armed) {fault.armed=false;throw Error('injected scene listener activation failure');}
         let events=handlers.get(this);if(!events){events=new Map();handlers.set(this,events);}
         let listeners=events.get(type);if(!listeners){listeners=new Set();events.set(type,listeners);}listeners.add(listener);

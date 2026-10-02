@@ -573,7 +573,6 @@ export class WorldScene extends Phaser.Scene {
     const capturePointer = (event: PointerEvent): void => {
       canvas.setPointerCapture(event.pointerId);
     };
-    canvas.addEventListener('pointerdown', capturePointer);
 
     const keyDown = (event: KeyboardEvent): void => {
       this.handleActionEvents(this.keyboard.keyDown(event));
@@ -606,6 +605,30 @@ export class WorldScene extends Phaser.Scene {
       this.keyboard.releaseAll();
       this.cancelAllGestures();
     };
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      window.removeEventListener('keydown', keyDown);
+      window.removeEventListener('keyup', keyUp);
+      window.removeEventListener('blur', blur);
+      canvas.removeEventListener('pointerdown', capturePointer);
+      this.tiles?.destroy();
+      this.roomLabels?.destroy();
+      this.roomConditions?.destroy();
+      this.actors?.destroy();
+      this.buildOverlay?.destroy();
+      this.areaOverlay?.destroy();
+      this.objectOverlay?.destroy();
+      this.homeIndicator?.destroy();
+      this.tiles = undefined;
+      this.roomLabels = undefined;
+      this.roomConditions = undefined;
+      this.actors = undefined;
+      this.buildOverlay = undefined;
+      this.areaOverlay = undefined;
+      this.objectOverlay = undefined;
+      this.homeIndicator = undefined;
+    });
+
+    canvas.addEventListener('pointerdown', capturePointer);
     window.addEventListener('keydown', keyDown);
     window.addEventListener('keyup', keyUp);
     window.addEventListener('blur', blur);
@@ -730,29 +753,6 @@ export class WorldScene extends Phaser.Scene {
     };
     this.input.on('pointerup', finishPointer);
     this.input.on('pointerupoutside', finishPointer);
-
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
-      window.removeEventListener('keydown', keyDown);
-      window.removeEventListener('keyup', keyUp);
-      window.removeEventListener('blur', blur);
-      canvas.removeEventListener('pointerdown', capturePointer);
-      this.tiles?.destroy();
-      this.roomLabels?.destroy();
-      this.roomConditions?.destroy();
-      this.actors?.destroy();
-      this.buildOverlay?.destroy();
-      this.areaOverlay?.destroy();
-      this.objectOverlay?.destroy();
-      this.homeIndicator?.destroy();
-      this.tiles = undefined;
-      this.roomLabels = undefined;
-      this.roomConditions = undefined;
-      this.actors = undefined;
-      this.buildOverlay = undefined;
-      this.areaOverlay = undefined;
-      this.objectOverlay = undefined;
-      this.homeIndicator = undefined;
-    });
 
     // Art is not correctness: a batch that fails to load must leave a playable,
     // legible tile world rather than a blank screen.
