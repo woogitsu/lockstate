@@ -184,6 +184,10 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.input.on('pointerupoutside', stopTurn);
     this.input.on('pointerout', (pointer: Phaser.Input.Pointer) => {
       if (this.gesture?.pointerId === pointer.id) this.cancelGesture();
+      if (pointer.id === this.turnPointerId) {
+        this.turnPointerId = undefined;
+        this.turnPointerAt = undefined;
+      }
       this.hoveredWorldPoint = undefined;
       this.paintGesturePreview();
     });
@@ -198,7 +202,16 @@ export class ObliqueWorldScene extends Phaser.Scene {
       // Release only the arrows the list consumes, keeping WASD and pose keys.
       this.keyboard.releaseCodes(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']);
     };
-    const cancelOnBlur = (): void => { this.keyboard.releaseAll(); this.cancelGesture(); };
+    const cancelPointerInput = (): void => {
+      this.turnPointerId = undefined;
+      this.turnPointerAt = undefined;
+      this.hoveredWorldPoint = undefined;
+      this.cancelGesture();
+    };
+    const cancelOnBlur = (): void => { this.keyboard.releaseAll(); cancelPointerInput(); };
+    const canvas = this.game.canvas;
+    canvas.addEventListener('pointercancel', cancelPointerInput);
+    canvas.addEventListener('lostpointercapture', cancelPointerInput);
     window.addEventListener('keydown', keyDown);
     window.addEventListener('keyup', keyUp);
     window.addEventListener('focusin', disarmRovingArrows);
@@ -208,6 +221,8 @@ export class ObliqueWorldScene extends Phaser.Scene {
       window.removeEventListener('keyup', keyUp);
       window.removeEventListener('focusin', disarmRovingArrows);
       window.removeEventListener('blur', cancelOnBlur);
+      canvas.removeEventListener('pointercancel', cancelPointerInput);
+      canvas.removeEventListener('lostpointercapture', cancelPointerInput);
     });
     void this.loadCatalogTextures().finally(() => this.resolveReady());
   }
