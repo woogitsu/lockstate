@@ -40,3 +40,7 @@ Refusal compares the complete gameplay snapshot except kernel dispatch progress 
 - tests/integration/object-placement-loop.test.ts
 
 Both application/toolsTypeScript pass. Production client build passes in6.30s with its existing chunk/plugin warnings. These gates verify legal authored furnishing/history and previous collision/admission/provenance controls; they are not a browser or CI result. Both committed production files have zero worktree diff after restoration. Source leases released. Narrow doc source-anchor closure is separate.
+
+## Terminal live-anchor closure
+
+The initial eight documentation gates passed62tests in21.09s. The approved precision amendment updates only the newly shifted live System/service coordinates (+1), retaining the prior dated coordinates and quotations as historical checkpoints in WORLD/ADR0047/ADRindex. No budget or guard changes. The exact amended [documentation gates](./docs-terminal.txt) pass62tests/eight files in16.78s. Both production files remain byte-restored with zero source diff. No browser or hosted CI was run for this checkpoint.
