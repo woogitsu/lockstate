@@ -178,6 +178,7 @@ export class BuildTool
    * as a broken world, not as a missing selection.
    */
   public setArmed(armed: boolean, definitionId?: string, squareFootprint = this.squareFootprint): void {
+    const wasArmed = this.armed;
     this.definitionId = definitionId ?? this.definitionId;
     this.squareFootprint = squareFootprint;
     this.armed = armed && this.definitionId !== undefined;
@@ -197,7 +198,8 @@ export class BuildTool
     // way *out* rather than filtered on the way in, because the three tools
     // publish into one line and nothing downstream knows which of them is
     // currently allowed to.
-    if (!this.armed) this.readout?.(undefined);
+    // An already inactive sibling owns no hover claim to withdraw.
+    if (wasArmed && !this.armed) this.readout?.(undefined);
   }
 
   public setDefinition(definitionId: string): void {
