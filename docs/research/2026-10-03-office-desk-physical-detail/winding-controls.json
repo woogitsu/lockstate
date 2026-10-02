@@ -1,0 +1,20 @@
+{
+  "controls": [
+    {
+      "control": "producer-only-reversed-keycap-winding",
+      "exitCode": 1,
+      "actualError": "Evaluated office desk convex surface normals face inward: angled-desk.keycap row0 column0"
+    },
+    {
+      "control": "loaded-only-reversed-keycap-winding",
+      "exitCode": 1,
+      "actualError": "Evaluated office desk convex surface normals face inward: angled-desk.keycap row0 column0"
+    }
+  ],
+  "exactRestoredNativeVerifyExitCode": 0,
+  "sourceBytesUnchangedByNegative": true,
+  "builderSha256": "53003a5520dd6ca41653b6bcb42f6d14c2876b16fb444da1e150a4fcdcd9e756",
+  "wrapperSha256": "d578e8f6e25fabdaf06f766cf235bb59b097bfe63495aa23d7e91aa1fc9097a7",
+  "sourceSha256": "486b83b5079698faeb1cd58e989d1a1dfe524996813474b04550dd4c82a2fd46",
+  "originalSourceSha256": "87ecf22ec7f4d82e5c2c47bb18870b8ef060a84759cb55d38b131fc34e72e11b"
+}
