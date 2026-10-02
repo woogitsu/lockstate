@@ -1,10 +1,10 @@
 # Infirmary source/export alignment - 2026-10-02
 
-## Current checkpoint and next player gates
+## Current checkpoint
 
-Export work is based on integrated checkpoint `e8bb730290`. The original Blender models are byte-identical. All 144 committed poses were exported twice with identical PNG and manifest bytes. The evaluated-source, actual camera and frame integrity gates passed after deliberate mutations failed. This is an export checkpoint. Actual Infirmary player construction, isolated bed/cabinet pixel regions and Save/Load acceptance are pending the exclusive browser lease and an integrated artifact. No hosted delivery is claimed.
+Export work is based on integrated checkpoint `e8bb730290`. The original Blender models are byte-identical. All 144 committed poses were exported twice with identical PNG and manifest bytes. The evaluated-source, actual camera and frame integrity gates passed after deliberate mutations failed. Actual built-client Infirmary construction and Save/Load were then verified at integrated checkpoint `84bff0e11c`, with isolated palette regions and a production renderer mutation. See [player acceptance](player-acceptance.md). No hosted delivery or CI completion is claimed.
 
-The next route is the actual Storage Room and Delivery Bay capacity/save bootstrap, followed by native Infirmary placement at (20,5), completion through workers, authoritative medical-bed anchor (21,6) and medicine-cabinet anchor (23,6), an angled fullHD screenshot, real Save/Load, then separate renderer binding/palette mutation evidence. Renderer sources, UI and gameplay were outside this export change.
+The completed route used actual Storage Room and Delivery Bay capacity/save bootstrap, native Infirmary placement at (20,5), worker completion, authoritative medical-bed anchor (21,6) and medicine-cabinet anchor (23,6), angled FullHD screenshots, real Save/Load, and independent bed/cabinet palette evidence. Renderer sources were mutated temporarily and restored byte-exactly; no UI or gameplay source change belongs to this proof.
 
 ## Proven source and framing defects
 
