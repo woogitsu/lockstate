@@ -12,7 +12,9 @@ Actual dialog DOM listener test: before correction 1 failed / 8 passed; correcti
 
 ## Runtime evidence status
 
-`tests/browser/room-template-legend.spec.ts` is prepared for actual angled Full HD startup and Four-cell row selection. It checks furniture aspect/radius, door-bar clearance, existing labels, eight selected fixtures and bounded dialog geometry. It has not yet run: browser lease remains with the coordinator's existing queue.
+`tests/browser/room-template-legend.spec.ts` is prepared for actual angled Full HD startup and Four-cell row selection. It checks furniture aspect/radius, door-bar clearance, existing labels, eight selected fixtures and bounded dialog geometry. First shape run passed 1/1 in 4.5 seconds; restoring the old object-circle class failed 1/1, then restored source passed 1/1 in 4.5 seconds. All runs used one worker and the unchanged 60-second test / 10-second assertion budgets.
+
+Opening the actual screenshot exposed a missed CSS cascade: the generic tile background replaced fixture ink in the legend. The swatch was a rectangle but pale like a floor. Commit `bb2e978795` adds the explicit semantic fixture background and an actual computed-color equality assertion against the selected diagram. Full visual acceptance remains pending until this correction is run, mutated and inspected.
 
 ## Weakest claim
 
