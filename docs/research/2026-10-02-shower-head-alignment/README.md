@@ -2,7 +2,7 @@
 
 ## Current checkpoint
 
-Source/export work starts at integrated `5f20b9eb15`. The existing authored shower fixture is reused rather than duplicated: its 43 meshes are extracted from the unchanged catalog into a standalone source and exported through the existing shared camera pipeline. The canonical `object.shower-head` -> `fixture.shower.head` mapping and existing `/game-content/oblique-shower-head.v1.json` registry descriptor remain unchanged. Native guards, repeated full exports, decoded frame borders and mutation/restoration are verified. Actual worker-build/SaveLoad/palette acceptance is the next gate; no browser or hosted completion is claimed yet.
+Source/export work starts at integrated `5f20b9eb15`. The existing authored shower fixture is reused: its 43 meshes are extracted from the unchanged catalog into a standalone source and exported through the existing shared camera pipeline. The canonical `object.shower-head` -> `fixture.shower.head` mapping and existing `/game-content/oblique-shower-head.v1.json` registry descriptor remain unchanged. Source/export checkpoint `1bb8da5775` and calibrated fixture `654b74df7a` now have actual worker-build, normal/90° placement, palette and real Save/Load proof: final restored suite 3/3 green after eight expected missing-model pixel failures. [Final player acceptance](player-acceptance.md) contains the opened loaded FullHD images and full hashes. Native bounds/camera/mesh and decoded frame integrity remain separately verified. Browser work is terminal and the lease released. Integration, canonical artifact gate routing and hosted CI remain coordinator-owned; no hosted completion is claimed.
 
 Fresh remote audit covered `codex/shower-head-refine-2026-09-25`, `codex/shower-fixture-wall-profile-2026-09-27`, and `art/oblique-shower-head-alias`; alias commit `5d687059b3` already supplies the current canonical mapping. Catalog history includes `571079ee28` (shallow wall fixture) and `65409e33af` (angled nozzle face). The current committed catalog is authoritative for this extraction. The retained assembly includes the mounting plate, pipe arm, nozzle shell, teal ring, 21 nozzles and two colored service valves.
 
@@ -41,7 +41,7 @@ The contact sheet contains only the actual exports resized to 128px each and was
 
 The full-size 256px frame was opened. SHA256: `b432075feef3daf1cb687f9fbac4cf3ea5f92918e2e49b888f8b3f2e898fd92f`.
 
-## Repeat and next player gate
+## Repeat and original player preparation
 
 ```powershell
 & 'C:\Program Files\Blender Foundation\Blender 5.2\blender.exe' -b --python-exit-code 1 --python tooling/blender/extract-shower-head.py
@@ -56,8 +56,8 @@ Unlike the sink, this fixture already has a real `shower-head-brick` buildable a
 
 ### Actual routes and calibration checkpoint
 
-The first actual capacity bootstrap passed43.5s; normal Shower Room completed both worker objects and preserved their anchors through real Save/Load in35.0s. The provisional RGB from the30° source preview yielded0 in the runtime-selected pose, so its two initial palette assertions were red. This was a calibration error, not a production model fix. The opened [normal FullHD](normal-calibration-loaded-fullhd.png) visibly contains both authored assemblies; [raw provisional evidence](normal-provisional-palette.json) retains the original0 counts honestly.
+The first actual capacity bootstrap passed in 43.5s; normal Shower Room completed both worker objects and preserved their anchors through real Save/Load in 35.0s. The provisional RGB from the 30° source preview yielded 0 in the runtime-selected pose, so its two initial palette assertions were red. This was a calibration error; no production model fix resulted. The opened [normal FullHD](normal-calibration-loaded-fullhd.png) visibly contains both authored assemblies; [raw provisional evidence](normal-provisional-palette.json) retains the original 0 counts honestly.
 
-The exact rotated native route then passed2/2 (bootstrap44.7s, fixture35.3s), with anchors(23,6)/(23,8), orientation1 before and after Load. The opened [rotated FullHD](rotated-calibration-loaded-fullhd.png) shows the second fixture partially occluded by the tall wall; [raw broad evidence](rotated-broad-palette.json) has114 authored RGB(95,119,131) pixels at both stages.
+The exact rotated native route then passed 2/2 (bootstrap 44.7s, fixture 35.3s), with anchors (23,6)/(23,8), orientation 1 before and after Load. The opened [rotated FullHD](rotated-calibration-loaded-fullhd.png) shows the second fixture partially occluded by the tall wall; [raw broad evidence](rotated-broad-palette.json) has 114 authored RGB(95,119,131) pixels at both stages.
 
-Offline independent counting of the actual completed/loaded image pairs gives separate normal regions(780,450,115,90)/(900,360,115,90): [93,93] at both stages. Rotated regions(900,360,110,100)/(1000,450,110,110): [86,28], also equal before/after Load. The calibrated fixture requires each normal region and the first rotated region>50; the partially occluded second rotated region>20. Construction timeout60s and progress guard10s remain unchanged. Missing-consumer mutation and final complete restored-suite acceptance remain pending at this calibration checkpoint.
+Offline independent counting of the actual completed/loaded image pairs gives separate normal regions (780,450,115,90)/(900,360,115,90): [93,93] at both stages. Rotated regions (900,360,110,100)/(1000,450,110,110): [86,28], also equal before/after Load. The calibrated fixture requires each normal region and the first rotated region >50; the partially occluded second rotated region >20. Construction timeout 60s and progress guard 10s remain unchanged. This historical calibration checkpoint preceded the completed [final negative/restored proof](player-acceptance.md).
