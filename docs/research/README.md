@@ -335,3 +335,4 @@ and it stopped one step short of its own consequence.
   summariser, the incident alert projection and the whole tunnel registry with no
   caller in `src/` — the same class as issue #287's two uncalled capabilities,
   three layers deeper.
+| [2026-10-02 held camera arrow and HUD radio focus](./2026-10-02-held-arrow-radio/README.md) | Does a held camera arrow stop when Build radio takes focus (#1943)? | Production input release with unit and integration-branch player mutation proof; independent main acceptance pending. |
