@@ -289,6 +289,8 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 | [2026-10-02 authoritative room-template rotation](./2026-10-02-authoritative-room-template-rotation/README.md) | Do all mirrored quarter-turn plans retain exact authoritative geometry, fixture facing and history through encoded Save/Load and Undo/Redo? | 160-plan matrix plus strict-domain, legacy, reservation and partial-shell cases; completion-facing mutation gives six failures, exact restoration returns 519 related cases green. UI, renderer and browser acceptance remain separate. |
 | [2026-10-02 rotated template collision atomicity](./2026-10-02-rotated-template-collision-atomicity/README.md) | Does a second-tile-only rotated fixture collision refuse the actual template command without changing funds, orders or Undo history after Save/Load and Undo/Redo? | Four focused pending/partial/restored/completed scenarios pass; bypassing only the commit preflight creates orders and history in all four cases, exact restoration returns 77 related checks green. |
 
+| [2026-10-02 rotated console player rendering](./2026-10-02-rotated-console-rendering/README.md) | Do native quarter-turn controls produce the correct actual worker facing and authored front display after Save/Load? | Actual FullHD console23,6 orientation1;1116 display pixels before/after Load. Wrong-yaw production consumer0red; exact rebuilt restoration2/2green. Root opened loaded screenshot; no deployment claim. |
+
 ### Findings from the first four records that changed a decision
 
 Recorded here because each contradicted something the project believed, and a
