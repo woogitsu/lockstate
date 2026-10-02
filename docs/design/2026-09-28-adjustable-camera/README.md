@@ -1004,3 +1004,32 @@ Replacing those fragments with their real full file paths restores the unchanged
 eight-case citation gate. Both TypeScript targets and the hydrated production
 build pass. Integrated native acceptance and remote release remain separate
 gates; the prior PR1899 candidate remains unchanged.
+
+## Integrated stove, View and square-drag acceptance — 2026-10-02
+
+Root's prepared production client at source
+`535b3ee102` (worker `worker-uDQlX8sj.js`, client `index-YCUrdKYO.js`,
+CSS `index-BtHvjcB7.css`) passed all 11 native browser cases in 3.0 minutes.
+The complementary artifact/dev routing commit `b390df7345` changes test routing,
+not the emitted production client. One worker and the original test budgets were
+used. The actual normal and rotated Kitchen retain the dedicated authored stove
+and authoritative placement after Save/Load (three cases). View receives native
+mouse acquisition in both renderer directions at Full HD 100% and 200%, changes
+the renderer by native keyboard choice, and sends no accidental map command
+(four cases). This does not claim native popup-row mouse selection.
+[View evidence](../../research/2026-10-02-native-view-mouse-target.md)
+records the source-only negative and exact restoration.
+
+Bed footprints and Yard area rectangles stay attached to their actual released
+square targets when a native canvas-origin drag crosses HUD controls at both
+scales (four cases). The existing wall fix supplies this shared capture; the
+new object/area tests do not change production behavior.
+[Object/area evidence](../../research/2026-10-02-native-object-area-hud-drag.md)
+retains the independent predicate mutation and exact source restoration.
+
+Serial main CI at the preceding merge is now terminal green. PR1899 stays frozen
+at its published candidate while its exact-head browser check runs. This next
+integration is PR1972, stacked onto PR1899; passing these scoped local cases is
+not approval to merge before all exact-head checks and clean mergeability.
+Three independent agents continue real fridge modeling and native acceptance,
+paused-template pending-object removal, and angled camera/footprint review.
