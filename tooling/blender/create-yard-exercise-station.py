@@ -1,7 +1,7 @@
 """Author a compact two-square outdoor exercise station for future Yard content.
 
-The source is centered on (0,0), with a 2x1 occupied-square footprint. The
-separate oblique renderer supplies cameras; this file stores authored geometry.
+The source uses minimum-corner occupied-square coordinates: X [0,2], Y [0,1].
+The separate oblique renderer supplies cameras; this file stores geometry.
 """
 from __future__ import annotations
 
@@ -102,14 +102,23 @@ def build() -> None:
     for x in (-0.78, 0.78):
         tube("side stabilizer", (x, 0, 0.27), 0.031, 0.54, navy, "y")
 
-    origin = bpy.data.objects.new("FootprintOrigin (2x1 squares, centered)", None)
+    # Model construction above is symmetric around zero for readable paired
+    # features. Commit the source in the game's min-corner coordinate system:
+    # after this shift its real bounds are x .05..1.95, y .06...94. The camera
+    # target and runtime sprite anchor then both use the same (1,.5) center.
+    for item in bpy.data.objects:
+        if item.type == "MESH":
+            item.location.x += 1.0
+            item.location.y += 0.5
+    origin = bpy.data.objects.new("FootprintOrigin (2x1 squares, min-corner)", None)
     bpy.context.collection.objects.link(origin)
-    origin.location = (0, 0, 0)
+    origin.location = (1, 0.5, 0)
     bpy.context.scene.render.engine = "BLENDER_WORKBENCH"
     bpy.context.scene.display.shading.light = "STUDIO"
     bpy.context.scene.display.shading.studio_light = "paint.sl"
     bpy.context.scene.display.shading.color_type = "MATERIAL"
     bpy.context.scene.display.shading.show_shadows = True
+    bpy.context.preferences.filepaths.save_version = 0
     SOURCE.parent.mkdir(parents=True, exist_ok=True)
     bpy.ops.wm.save_as_mainfile(filepath=str(SOURCE))
     print(f"authored source: {SOURCE}")
