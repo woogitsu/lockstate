@@ -877,3 +877,22 @@ Three independent agents continue actual native typeahead diagnosis, retained
 Blender desk acceptance, and the next reproducible build transaction issue.
 Full-square furniture collision #1705 is published and awaits root integration.
 Exact remote CI, mergeability and serial main CI remain required before merge.
+
+## Furniture collision integration and dependency delivery — 2026-10-02
+
+Existing #1705 now shares the authoritative standing and pending object
+footprint reader with whole-square wall submission. A wall cannot enter a far
+furniture tile through rotation, saved delivery or Undo/Redo. Existing legacy
+edge walls and actual RemoveObject release retain their legal behavior.
+[Collision evidence](../../research/2026-10-02-square-wall-object-footprint.md)
+records22 mutation failures and four legal controls. Root confirms461 combined
+collision, template, object and documentation tests in14files after integration;
+both TypeScript targets pass. No save format, price or player-copy change.
+
+Dependency PR1898 exactbfae195e7470bf606b27dedfcf18c5f91d7703e0 passed every
+seven remote check runs and was CLEAN/MERGEABLE. After fresh serial-main green
+and verification that the intervening main delta was only its automatic version
+increment, it merged as48da4ac330b43b8e2a8612d8dff160f2d380f05d. Its resulting
+main CI must finish before another merge. Root incorporates the actual merged
+ancestry and automatic0.0.838 release; PR1899 now targetsmain and remains draft
+until its own exact-head release gates finish. No hosted art claim follows.
