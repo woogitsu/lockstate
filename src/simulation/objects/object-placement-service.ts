@@ -537,7 +537,8 @@ export class ObjectPlacementService {
       if (!canBuildAt(this.world, tile, PLACEMENT_REQUIREMENT).buildable) {
         return this.refuse('unowned-land', request, tick, tile);
       }
-      if (this.placedObjects.isTileOccupied(tile) || claimed.has(tileKey(tile)) || this.pendingRoomDoorApproachClaim?.(tile) === true) {
+      if (this.world.getSquareStructure(tile) !== 0 || this.placedObjects.isTileOccupied(tile) ||
+          claimed.has(tileKey(tile)) || this.pendingRoomDoorApproachClaim?.(tile) === true) {
         return this.refuse('tile-occupied', request, tick, tile);
       }
     }

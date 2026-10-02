@@ -43,12 +43,25 @@ it.each(poses.flatMap(pose => (['PlaceObject', 'PlaceBuildOrder'] as const).flat
     expect(runtime.world.getSquareStructure(tile(anchor.x, anchor.y + 1))).toBe(conflicts ? 1 : 0);
     expect(runtime.placedObjects.isTileOccupied(tile(anchor.x, anchor.y))).toBe(false);
     expect(runtime.placedObjects.isTileOccupied(tile(anchor.x, anchor.y + 1))).toBe(false);
+    const { kernel: _beforeKernel, ...before } = captureSessionSnapshot(runtime);
+    const revisions = runtime.construction.allOrders().map(order => [order.id, runtime.construction.revisionOf(order.id)]);
 
     send(runtime, { type, orderId: 'later-bed', definitionId: 'bed-wooden', ...anchor });
 
     if (conflicts) {
       if (type === 'PlaceObject') expect(runtime.construction.getOrder('later-bed')).toBeUndefined();
       else expect(runtime.construction.getOrder('later-bed')).toMatchObject({ state: 'failed', failReason: 'unbuildable' });
+      const { kernel: _afterKernel, ...after } = captureSessionSnapshot(runtime);
+      expect({
+        ...after,
+        construction: { ...after.construction, orders: after.construction.orders.filter(order => order.id !== 'later-bed') },
+      }).toEqual(before);
+      expect(runtime.construction.allOrders().filter(order => order.id !== 'later-bed').map(order => [order.id, runtime.construction.revisionOf(order.id)])).toEqual(revisions);
+      // Load the refused state and ensure the unchanged paid room can continue.
+      runtime = reload(runtime);
+      finish(runtime);
+      expect(runtime.placedObjects.getSnapshot()).toHaveLength(2);
+      expect(runtime.world.getSquareStructure(tile(anchor.x, anchor.y + 1))).toBe(1);
     } else {
       expect(runtime.construction.getOrder('later-bed')?.state).toBe('approved');
       finish(runtime);

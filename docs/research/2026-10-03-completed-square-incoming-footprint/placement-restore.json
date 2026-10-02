@@ -1,0 +1,7 @@
+﻿{
+    "byteExactRestore":  true,
+    "negativeExit":  1,
+    "source":  "object-placement-service.ts",
+    "restoredSHA256":  "D5E2D05D1CBB4AD41744B1B80DC978A8A1479A981013D9BD8B185F30FB0EFC96",
+    "fixedSHA256":  "D5E2D05D1CBB4AD41744B1B80DC978A8A1479A981013D9BD8B185F30FB0EFC96"
+}
