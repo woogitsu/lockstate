@@ -7380,3 +7380,12 @@
 .hud-template__coordinates { margin-top: var(--space-3); }
 .hud-template__coordinates summary { cursor: pointer; min-height: var(--tap-target); display: list-item; }
 .hud-template__placement label:has(input[type='number']) { display: grid; gap: var(--space-1); }
+
+/* Reuse the existing row/tap geometry; authored object images replace the hammer without spending a new row. */
+.hud-build__object-thumbnail {
+  width: calc(var(--tap-target) - 2 * var(--space-2));
+  height: calc(var(--tap-target) - 2 * var(--space-2));
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+.hud-build__object-thumbnail[hidden], .hud-build__list > .ui-row > svg[hidden] { display: none; }

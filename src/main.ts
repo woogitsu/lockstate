@@ -45,6 +45,8 @@ import {
   type PreparedProductionRenderScene,
 } from './rendering/scene/production-render-bootstrap';
 import { fetchObliqueModuleSet } from './rendering/assets/oblique-module-registry';
+import type { ObliqueModuleCatalog } from './rendering/assets/oblique-module-catalog';
+import { buildCatalogueThumbnail } from './rendering/assets/build-catalogue-thumbnail';
 import { VOID_COLOR } from './rendering/world/appearance';
 import { applyAccessibilitySettings, createDisplayScaleControl } from './ui/display-scale';
 import { createThemeControl, createThemeController, resolveSystemThemeQuery } from './ui/theme';
@@ -710,20 +712,24 @@ const createTopDownWorldScene = (): WorldScene => new WorldScene({
  * Phaser game exists, and the scene lifecycle is awaited immediately after
  * Phaser starts it.
  */
+let hudThumbnailCatalogs: ReadonlyMap<string, ObliqueModuleCatalog> = new Map();
 let productionSceneSelection: PreparedProductionRenderScene<WorldScene, ObliqueWorldScene>;
 try {
   productionSceneSelection = await prepareProductionRenderScene({
     mode: productionRenderMode(window.location.search),
     loadObliqueCatalogs: () => fetchObliqueModuleSet(),
     createWorld: createTopDownWorldScene,
-    createOblique: (catalogs) => new ObliqueWorldScene({
+    createOblique: (catalogs) => {
+      hudThumbnailCatalogs = catalogs;
+      return new ObliqueWorldScene({
       feed: renderFeed,
       keyValueStore: resolveBrowserKeyValueStore(),
       catalogs,
       ...(buildTool === undefined ? {} : { buildTool, editHistory: buildTool, toolStandDown: buildTool }),
       ...(roomTool === undefined ? {} : { roomTool }),
       ...(objectTool === undefined ? {} : { objectTool }),
-    }),
+    });
+    },
   });
 } catch (error) {
   renderProductionRenderFailure(error);
@@ -1053,8 +1059,10 @@ function buildCatalogue(): HudBuildViewModel {
     const material = purchasableMaterialFor(definition.materialsRequired);
     const placementCost = placementCostMinorUnits(definition.materialsRequired);
     const objectFootprint = objectFootprintOf(definition.id);
+    const thumbnailUrl = buildCatalogueThumbnail(definition.placesObjectId, hudThumbnailCatalogs);
     buildables.push({
       definitionId: definition.id,
+      ...(thumbnailUrl === undefined ? {} : { thumbnailUrl }),
       labelKey,
       // The simulation's own predicate, called rather than re-derived. This
       // read `definition.category === 'wall'`, which is the same answer for
