@@ -6,6 +6,7 @@ import { TILE_SIZE_PX, worldToTile } from '../tile-metrics';
 import { VOID_COLOR, ZONING_TINT_ALPHA, UNOWNED_SHADE_ALPHA, UNOWNED_SHADE_COLOR } from '../world/appearance';
 import {
   changeObliquePoseAtScreenPoint,
+  panObliqueGroundAnchorToScreen,
   groundToScreen,
   screenToGround,
   visibleGroundBounds,
@@ -73,6 +74,8 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private selected: { tileX: number; tileY: number } | undefined;
   private turnPointerId: number | undefined;
   private turnPointerAt: Point | undefined;
+  private panPointerId: number | undefined;
+  private panGroundAnchor: Point | undefined;
   private lastFrame: RenderFrame | undefined;
   private lastProjection: ObliqueWorldProjection | undefined;
   private lastPaintedRevision = -1;
@@ -139,6 +142,8 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.keyboard.releaseAll();
     this.turnPointerId = undefined;
     this.turnPointerAt = undefined;
+    this.panPointerId = undefined;
+    this.panGroundAnchor = undefined;
     this.hoveredScreenPoint = undefined;
     this.cancelGesture();
   }
@@ -168,7 +173,17 @@ export class ObliqueWorldScene extends Phaser.Scene {
       this.stepCameraZoom(deltaY > 0 ? 'out' : 'in');
     });
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      if (pointer.button === 1 && !pointer.wasTouch) {
+        if (this.gesture !== undefined || this.turnPointerId !== undefined) return;
+        this.panPointerId = pointer.id;
+        this.panGroundAnchor = this.worldPointOf(pointer);
+        this.hoveredScreenPoint = undefined;
+        this.paintGesturePreview();
+        return;
+      }
+      if (this.panPointerId !== undefined) return;
       if (pointer.button === 2 && !pointer.wasTouch) {
+        if (this.gesture !== undefined) return;
         this.turnPointerId = pointer.id;
         this.turnPointerAt = { x: pointer.x, y: pointer.y };
         return;
@@ -191,6 +206,13 @@ export class ObliqueWorldScene extends Phaser.Scene {
       this.paintSelection();
     });
     this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
+      if (pointer.id === this.panPointerId && this.panGroundAnchor !== undefined) {
+        this.pose = panObliqueGroundAnchorToScreen(this.pose, this.panGroundAnchor, { x: pointer.x, y: pointer.y });
+        this.poseRevision += 1;
+        this.repaint();
+        this.publishMinimap();
+        return;
+      }
       this.hoveredScreenPoint = { x: pointer.x, y: pointer.y };
       if (this.gesture?.pointerId === pointer.id) {
         this.gesture.current = this.worldPointOf(pointer);
@@ -209,6 +231,14 @@ export class ObliqueWorldScene extends Phaser.Scene {
       );
     });
     const stopTurn = (pointer: Phaser.Input.Pointer): void => {
+      if (pointer.id === this.panPointerId) {
+        if ((pointer.buttons & 4) !== 0) return;
+        this.panPointerId = undefined;
+        this.panGroundAnchor = undefined;
+        this.hoveredScreenPoint = { x: pointer.x, y: pointer.y };
+        this.paintGesturePreview();
+        return;
+      }
       if (this.gesture?.pointerId === pointer.id) {
         this.gesture.current = this.worldPointOf(pointer);
         this.commitGesture();
@@ -222,6 +252,10 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.input.on('pointerupoutside', stopTurn);
     this.input.on('pointerout', (pointer: Phaser.Input.Pointer) => {
       if (this.gesture?.pointerId === pointer.id) this.cancelGesture();
+      if (pointer.id === this.panPointerId) {
+        this.panPointerId = undefined;
+        this.panGroundAnchor = undefined;
+      }
       if (pointer.id === this.turnPointerId) {
         this.turnPointerId = undefined;
         this.turnPointerAt = undefined;
@@ -243,11 +277,18 @@ export class ObliqueWorldScene extends Phaser.Scene {
     const cancelPointerInput = (): void => {
       this.turnPointerId = undefined;
       this.turnPointerAt = undefined;
+      this.panPointerId = undefined;
+      this.panGroundAnchor = undefined;
       this.hoveredScreenPoint = undefined;
       this.cancelGesture();
     };
     const cancelOnBlur = (): void => { this.keyboard.releaseAll(); cancelPointerInput(); };
     const canvas = this.game.canvas;
+    const preventMiddleAutoScroll = (event: MouseEvent): void => {
+      if (event.button === 1) event.preventDefault();
+    };
+    canvas.addEventListener('mousedown', preventMiddleAutoScroll);
+    canvas.addEventListener('auxclick', preventMiddleAutoScroll);
     canvas.addEventListener('pointercancel', cancelPointerInput);
     canvas.addEventListener('lostpointercapture', cancelPointerInput);
     window.addEventListener('keydown', keyDown);
@@ -263,6 +304,8 @@ export class ObliqueWorldScene extends Phaser.Scene {
       window.removeEventListener('blur', cancelOnBlur);
       canvas.removeEventListener('pointercancel', cancelPointerInput);
       canvas.removeEventListener('lostpointercapture', cancelPointerInput);
+      canvas.removeEventListener('mousedown', preventMiddleAutoScroll);
+      canvas.removeEventListener('auxclick', preventMiddleAutoScroll);
     });
     void this.loadCatalogTextures().then(() => this.loadFloorTextures()).finally(() => this.resolveReady());
   }
