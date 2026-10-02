@@ -312,6 +312,12 @@ export class ObliqueWorldScene extends Phaser.Scene {
     };
     this.input.on('pointerup', stopTurn);
     this.input.on('pointerupoutside', stopTurn);
+    this.input.on('gameout', () => {
+      this.turnPointerId = undefined;
+      this.turnPointerAt = undefined;
+      this.panPointerId = undefined;
+      this.panGroundAnchor = undefined;
+    });
     this.input.on('pointerout', (pointer: Phaser.Input.Pointer) => {
       if (pointer.wasTouch) {
         this.touchPointers.delete(pointer.id);
