@@ -1,0 +1,382 @@
+{
+  "schemaVersion": 1,
+  "originalSource": "assets/source/blender/environment.mvp.catalog.blend",
+  "originalSourceSha256": "57db9afb7e48996cef9aaedda72b8e874e865eb56862ee4add8b177a9713887d",
+  "collection": "furniture.dining.table.wooden",
+  "source": "assets/source/blender/furniture.canteen.dining-table.blend",
+  "sourceSha256": "c1a1e8b0cfd2e47fe420ebbaa3eeb72c426d896d0a42b5a708c9bcbb83230fd1",
+  "footprintTiles": [
+    3,
+    2
+  ],
+  "minimum": [
+    -1.4199999570846558,
+    -0.8600004315376282,
+    0.0
+  ],
+  "maximum": [
+    1.4199999570846558,
+    0.9600005149841309,
+    0.9449999928474426
+  ],
+  "meshes": [
+    {
+      "name": "Brushed meal tray.0",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Brushed meal tray.1",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Brushed meal tray.2",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Dark tabletop inset",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Deep bolted tabletop rim",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Enamel plate rim.0",
+      "evaluatedVertices": 64,
+      "modifiers": []
+    },
+    {
+      "name": "Enamel plate rim.1",
+      "evaluatedVertices": 64,
+      "modifiers": []
+    },
+    {
+      "name": "Enamel plate rim.2",
+      "evaluatedVertices": 64,
+      "modifiers": []
+    },
+    {
+      "name": "Floor plate.-1.13",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Floor plate.1.13",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Fork.0",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Fork.1",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Fork.2",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Individual walnut tabletop plank.0",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Individual walnut tabletop plank.1",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Individual walnut tabletop plank.2",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Individual walnut tabletop plank.3",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Meal tray shadow.0",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Meal tray shadow.1",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Meal tray shadow.2",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Recessed plate well.0",
+      "evaluatedVertices": 64,
+      "modifiers": []
+    },
+    {
+      "name": "Recessed plate well.1",
+      "evaluatedVertices": 64,
+      "modifiers": []
+    },
+    {
+      "name": "Recessed plate well.2",
+      "evaluatedVertices": 64,
+      "modifiers": []
+    },
+    {
+      "name": "Recessed tabletop bolt.0.-1.27",
+      "evaluatedVertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Recessed tabletop bolt.0.1.27",
+      "evaluatedVertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Recessed tabletop bolt.1.-1.27",
+      "evaluatedVertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Recessed tabletop bolt.1.1.27",
+      "evaluatedVertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Recessed tabletop bolt.2.-1.27",
+      "evaluatedVertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Recessed tabletop bolt.2.1.27",
+      "evaluatedVertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Recessed tabletop bolt.3.-1.27",
+      "evaluatedVertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Recessed tabletop bolt.3.1.27",
+      "evaluatedVertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Spoon.0",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Spoon.1",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Spoon.2",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Stool dark rim.0",
+      "evaluatedVertices": 64,
+      "modifiers": []
+    },
+    {
+      "name": "Stool dark rim.1",
+      "evaluatedVertices": 64,
+      "modifiers": []
+    },
+    {
+      "name": "Stool dark rim.2",
+      "evaluatedVertices": 64,
+      "modifiers": []
+    },
+    {
+      "name": "Stool floor bolt.0.-0.08",
+      "evaluatedVertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Stool floor bolt.0.0.08",
+      "evaluatedVertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Stool floor bolt.1.-0.08",
+      "evaluatedVertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Stool floor bolt.1.0.08",
+      "evaluatedVertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Stool floor bolt.2.-0.08",
+      "evaluatedVertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Stool floor bolt.2.0.08",
+      "evaluatedVertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Stool floor mount.0",
+      "evaluatedVertices": 32,
+      "modifiers": []
+    },
+    {
+      "name": "Stool floor mount.1",
+      "evaluatedVertices": 32,
+      "modifiers": []
+    },
+    {
+      "name": "Stool floor mount.2",
+      "evaluatedVertices": 32,
+      "modifiers": []
+    },
+    {
+      "name": "Stool post.0",
+      "evaluatedVertices": 32,
+      "modifiers": []
+    },
+    {
+      "name": "Stool post.1",
+      "evaluatedVertices": 32,
+      "modifiers": []
+    },
+    {
+      "name": "Stool post.2",
+      "evaluatedVertices": 32,
+      "modifiers": []
+    },
+    {
+      "name": "Stool seat rivet.0.-0.18",
+      "evaluatedVertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Stool seat rivet.0.0.18",
+      "evaluatedVertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Stool seat rivet.1.-0.18",
+      "evaluatedVertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Stool seat rivet.1.0.18",
+      "evaluatedVertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Stool seat rivet.2.-0.18",
+      "evaluatedVertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Stool seat rivet.2.0.18",
+      "evaluatedVertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Stool support rail",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Table underframe",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Trestle.-1.13",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Trestle.1.13",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Worn wooden stool seat.0",
+      "evaluatedVertices": 64,
+      "modifiers": []
+    },
+    {
+      "name": "Worn wooden stool seat.1",
+      "evaluatedVertices": 64,
+      "modifiers": []
+    },
+    {
+      "name": "Worn wooden stool seat.2",
+      "evaluatedVertices": 64,
+      "modifiers": []
+    }
+  ]
+}
