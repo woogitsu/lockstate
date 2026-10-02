@@ -1074,3 +1074,25 @@ keyboard-arming/click/worker-origin fixture is prepared, but native acceptance
 and an actual player-level Issue remain pending the exclusive browser slot.
 Fridge geometry/export work and separate simulation collision coverage continue
 on independent branches; no hosted or complete-suite claim is made here.
+## Following delivery: dedicated fridge model integrated — 2026-10-02
+
+The fridge retains its nine original meshes and six materials, adding 64 physical
+hinges, seals, grilles and louvres. Its measured 1x1 anchor and 72 repeatable
+camera poses preserve the actual occupied square. Both upstream native Kitchen
+orientations finish through the worker and survive player Save/Load; removing
+only the fridge consumer fails four isolated pixel checks per orientation.
+Exact restored acceptance passes three cases. Root opened the final loaded
+rotated Full HD image: the blue panel and side louvres are visible, while the
+door genuinely hides the lower front grille.
+[Fridge evidence](../../research/2026-10-02-kitchen-fridge-angled/README.md)
+retains source/export receipts, initial calibration failures and exact restore.
+
+Root preserved the newer stove tuple while merging only the shared fridge row.
+The combined fridge/stove integrity, camera-fit, world-bridge, routing and index
+scope passes 39 cases across eight files in 584 ms. An initial index pass found
+one new fridge row separated from the table by a blank line; moving that row
+inside the contiguous table restores the unchanged guard. Both TypeScript
+targets pass. Fridge and retained-hover specs join the complementary native
+artifact partition; integrated browser acceptance is next, with one exclusive
+browser worker and the original budgets. These new changes stay on this next
+branch, so neither PR1899 nor PR1972 is repeatedly replaced during CI.
