@@ -414,6 +414,9 @@ export class WorldScene extends Phaser.Scene {
     this.feed = feed;
   }
 
+  /** A native HUD selector takes keyboard ownership without cancelling tools. */
+  public releaseKeyboardInput(): void { this.keyboard.releaseAll(); }
+
   public create(): void {
     this.cameras.main.setBackgroundColor(VOID_COLOR);
     this.tiles = new TileLayer(this);

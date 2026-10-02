@@ -1079,7 +1079,7 @@ export interface MountHudOptions {
   /** Renderer-only pose controls; omitted for the fixed top-down renderer. */
   readonly onCameraPoseStep?: CameraPoseStep;
   /** Live renderer port; preserves the current simulation session. */
-  readonly rendererSelection?: { readonly mode: HudRendererMode; readonly select: (mode: HudRendererMode) => Promise<void> };
+  readonly rendererSelection?: { readonly mode: HudRendererMode; readonly select: (mode: HudRendererMode) => Promise<void>; readonly focus?: () => void };
   /**
    * Receives every player action, and may be async.
    *
@@ -2305,7 +2305,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   if (poseControl !== undefined && options.rendererSelection?.mode === 'world') poseControl.hidden = true;
   const rendererControl = options.rendererSelection === undefined ? undefined : createRendererSelectionControl({
     region: t(HUD_MESSAGE_KEY.cameraView), world: t(HUD_MESSAGE_KEY.cameraViewWorld), oblique: t(HUD_MESSAGE_KEY.cameraViewOblique), failure: t(HUD_MESSAGE_KEY.cameraViewFailed),
-  }, options.rendererSelection.mode, options.rendererSelection.select, error => console.warn('Renderer selection failed', error));
+  }, options.rendererSelection.mode, options.rendererSelection.select, error => console.warn('Renderer selection failed', error), options.rendererSelection.focus);
   corner = element('div', { className: 'hud__corner', children: [...(rendererControl === undefined ? [] : [rendererControl.element]), zoomControl, ...(poseControl === undefined ? [] : [poseControl]), minimapPanel.element] });
 
   // ---- bottom-right build panel ------------------------------------

@@ -8,7 +8,7 @@ class ElementStub extends EventTarget {
   private unavailable=false;
   get disabled():boolean{return this.unavailable;}
   set disabled(value:boolean){this.unavailable=value;if(value&&document.activeElement===this as unknown as Element) (document as unknown as DocumentStub).activeElement=(document as unknown as DocumentStub).body;}
-  focus():void{(document as unknown as DocumentStub).activeElement=this;}
+  focus():void{const previous=document.activeElement;(document as unknown as DocumentStub).activeElement=this;if(previous!==this as unknown as Element)this.dispatchEvent(new Event('focus'));}
 
   readonly validity={valid:true};
   setCustomValidity(message:string):void {this.validationMessage=message;this.validity.valid=message==='';}
@@ -88,6 +88,24 @@ function keyFromSelect(select:ElementStub,keyboard:KeyboardInputAdapter):Event {
   if(!stopped) keyboard.keyDown({code:'ArrowDown'});
   return event;
 }
+
+it.each(['default','remapped'] as const)('View focus relinquishes a world-held %s key before a native popup can swallow release', mapping => {
+  vi.stubGlobal('document',new DocumentStub());
+  const code=mapping==='remapped'?'KeyJ':'KeyE';
+  const bindings=DEFAULT_KEYBOARD_BINDINGS.map(binding=>mapping==='remapped'&&binding.action==='camera.rotate.right'?{...binding,code}:binding);
+  const keyboard=new KeyboardInputAdapter(bindings,()=>['world']);
+  const change=vi.fn(async()=>{});
+  const control=createRendererSelectionControl({region:'View',world:'Top-down',oblique:'Angled',failure:'Failed'},'oblique',change,vi.fn(),()=>keyboard.releaseAll());
+  keyboard.keyDown({code});
+  expect(keyboard.isActive('camera.rotate.right')).toBe(true);
+  (control.element as unknown as ElementStub).focus();
+  // There is deliberately no keyUp: native popup ownership can consume it.
+  expect(keyboard.isActive('camera.rotate.right')).toBe(false);
+  expect(change).not.toHaveBeenCalled();
+  expect(keyboard.keyDown({code})).toMatchObject([{action:'camera.rotate.right',phase:'started'}]);
+  keyboard.keyUp({code});
+  expect(keyboard.isActive('camera.rotate.right')).toBe(false);
+});
 
 it.each(['default','remapped'] as const)('keeps native View arrows out of the preparing scene and preserves fresh %s world input',async mapping=>{
   const bindings=DEFAULT_KEYBOARD_BINDINGS.map(binding=>mapping==='remapped'&&binding.action==='camera.up'&&binding.code==='KeyW'
