@@ -2,6 +2,11 @@
 
 /** Stable object-id to oblique asset mapping. Unknown objects fail closed so the flat fallback remains authoritative. */
 export const OBLIQUE_OBJECT_ASSET_IDS: Readonly<Record<string, string>> = Object.freeze({
+  // The authored cell fixture contains the toilet and its adjacent sink on
+  // the same tile. Both buildable sanitation objects use that stable module
+  // until the two fixtures receive independent authored collections.
+  'object.toilet': 'fixture.cell.toilet_sink',
+  'object.sink': 'fixture.cell.toilet_sink',
   'object.medical-bed': 'furniture.medical-bed.variants',
   'object.medicine-cabinet': 'fixture.medicine-cabinet.variants',
   'object.security-console': 'utility.security-console.variants',
