@@ -47,6 +47,8 @@ test('a native View arrow starts renderer selection without panning the old map 
   // A fresh key on an ordinary world-context button remains a camera action.
   await page.getByRole('button', { name: 'Build', exact: true }).focus();
   const switchedPixels = await page.screenshot({ clip });
+  await page.waitForTimeout(300);
+  expect((await page.screenshot({ clip })).equals(switchedPixels), 'the replaced map settles before testing its fresh world key').toBe(true);
   await page.keyboard.down('ArrowRight');
   await page.waitForTimeout(300);
   await page.keyboard.up('ArrowRight');
