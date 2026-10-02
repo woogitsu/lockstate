@@ -1,0 +1,84 @@
+{
+  "capacitySeconds": 43.8,
+  "q0Seconds": 42.9,
+  "q0NativeBeforeAfterCounts": [
+    339,
+    111
+  ],
+  "q1Seconds": 47.6,
+  "q1ActualQueueProgressAndSaveLoad": "passed",
+  "q1ProvisionalBeforeAfterCounts": [
+    1,
+    0
+  ],
+  "q1ProvisionalPixelFailures": 4,
+  "nativeQ1ImageOpened": true,
+  "q1Document": "hidden behind right wall; no visibility claim",
+  "finalCalibratedNativeRegions": {
+    "q0": {
+      "desktop": {
+        "RGB": [
+          143,
+          116,
+          86
+        ],
+        "rectangle": [
+          815,
+          450,
+          25,
+          35
+        ],
+        "pixels": 339,
+        "thresholdGreaterThan": 200
+      },
+      "document": {
+        "RGB": [
+          91,
+          148,
+          149
+        ],
+        "rectangle": [
+          780,
+          420,
+          35,
+          32
+        ],
+        "pixels": 111,
+        "thresholdGreaterThan": 70
+      }
+    },
+    "q1": {
+      "desktop": {
+        "RGB": [
+          143,
+          116,
+          87
+        ],
+        "rectangle": [
+          945,
+          382,
+          25,
+          23
+        ],
+        "pixels": 353,
+        "thresholdGreaterThan": 200
+      },
+      "steelMonitor": {
+        "RGB": [
+          75,
+          86,
+          89
+        ],
+        "rectangle": [
+          905,
+          348,
+          45,
+          27
+        ],
+        "pixels": 455,
+        "thresholdGreaterThan": 200
+      }
+    }
+  },
+  "nativeConsumerMutationAndExactRestore": "pending"
+}
