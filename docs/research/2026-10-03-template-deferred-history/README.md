@@ -33,3 +33,25 @@ Additional controls bring the focused suite to13cases: full independent→templa
 [Fixed13GREEN](./fixed-terminal.txt),1.02s tests/3.38s total. Genuine coordinator producer disconnection removes only the continuation argument: [8RED/5GREEN](./producer-negative.txt),917ms/3.53s; finally byte-exact restoration [13GREEN](./producer-restored.txt),1.00s/3.28s. A second real System reader disconnection also catches the pure missing-history boundary: [9RED/4GREEN](./reader-negative.txt),1.06s/3.82s; exact restored terminal output follows. [Coordinator hash receipt](./producer-restore.json), [System hash receipt](./reader-restore.json). Detached branches excluded mutation work from branch-based WIP sweeping; finally blocks restore the captured bytes.
 
 The newer unrelated-action controls are LIVE only: #1985's missing persisted eligibility marker is separately pending an owner choice and is not silently fixed here. The no-history control exercises the internal membership writer on the actual system after real ordinary Undo; it does not claim a natural player command prunes template history. Neighbouring/type/build/doc gates pending at this source checkpoint. Browser not run.
+
+## Terminal source gates
+
+Second exact restored run:[13GREEN](./reader-restored.txt),1.32s tests/4.09s total. [Neighbouring source gates](./neighbours.txt):443GREEN across13files,29.05s total (two workers), including real all-catalogue completion, rotated history, current/legacy occupied reversal, provenance, Redo admission and ordinary object placement. Both application/toolsTypeScript pass; production client build6.01s passes with its existing chunk/plugin warnings. Committed production diff is zero after exact restoration.
+
+Exact neighbour test paths:
+
+- tests/integration/template-deferred-history-order.test.ts
+- tests/unit/room-template-command-reservation.test.ts
+- tests/unit/room-template-session.test.ts
+- tests/unit/room-template-redo.test.ts
+- tests/unit/undo-redo.test.ts
+- tests/unit/construction-edit-history-availability.test.ts
+- tests/integration/room-template-rotated-history.test.ts
+- tests/integration/room-template-replacement-order-ownership.test.ts
+- tests/integration/room-template-redo-admission-atomicity.test.ts
+- tests/integration/room-template-occupied-undo-atomicity.test.ts
+- tests/integration/room-template-occupied-cancel-atomicity.test.ts
+- tests/integration/room-template-legacy-occupied-history.test.ts
+- tests/integration/object-placement-loop.test.ts
+
+Separate first-task #1654 chain ends at de44ac5ad7f764374e30cde140a2f564a599da40; this branch started at its earlier source/test checkpoint2dc395b5cc27b605c79f1bbf5e7f5657b7e14b60 so that diagnostic8case baseline stayed independent. Its historical doc corrections and Blender identifier correction must be retained when the branches integrate; inherited failure is not attributed to new deferred history code. No browser/CI/hosted acceptance claimed.
