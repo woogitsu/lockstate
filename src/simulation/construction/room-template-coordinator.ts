@@ -1,4 +1,5 @@
-import { roomTemplateOriginFitsSafeCoordinates, type RoomTemplatePlan } from '../../content/room-template-catalog';
+import { defaultRoomContentRegistry } from '../../content/room-catalog';
+import { ROOM_TEMPLATE_IDS, roomTemplateOriginFitsSafeCoordinates, type RoomTemplatePlan } from '../../content/room-template-catalog';
 import type { QuarterTurns } from '../../content/room-template-rotation';
 import type { SystemRegistration, SimulationContext } from '../kernel/system';
 import type { PlacedObjectRegistry } from '../objects/placed-object-registry';
@@ -322,7 +323,8 @@ export class RoomTemplateCoordinator implements SystemRegistration {
   /** Clear or refuse the completed gesture's zones before its shell is touched. */
   public prepareUndo(orderIds: readonly string[], tick: number): UnzoneRoomRefusal | undefined {
     const transaction = new Set(orderIds);
-    const request = this.completed.find((entry) => this.shellOrderIds(entry).some((id) => transaction.has(id)));
+    const recorded = this.completed.find((entry) => this.shellOrderIds(entry).some((id) => transaction.has(id)));
+    const request = recorded ?? this.recoverCompletedGesture(orderIds);
     if (request === undefined) return undefined;
     const plan = instantiateRoomTemplateForConstruction(request.templateId, request.origin, request.mirrorX, request.quarterTurns ?? 0);
     // One all-or-nothing unzone happens while the original beds and all other
@@ -330,7 +332,11 @@ export class RoomTemplateCoordinator implements SystemRegistration {
     // which this same Undo will also remove. Pending plans and shell-free Yard
     // transactions retain their existing paths.
     const outcome = this.roomZoning.unzoneTogether(plan.zones, tick);
-    return outcome.kind === 'refused' && outcome.reason !== 'nothing-to-remove' ? outcome : undefined;
+    if (outcome.kind === 'refused' && outcome.reason !== 'nothing-to-remove') return outcome;
+    // A refused legacy Undo must leave even optional gesture metadata alone.
+    // Retain successful recovery for the existing cancellation/Redo path only.
+    if (recorded === undefined) this.completed.push(request);
+    return undefined;
   }
 
   /** Command dispatch also runs while paused, so release invalidated plans then. */
@@ -446,5 +452,55 @@ export class RoomTemplateCoordinator implements SystemRegistration {
     for (const request of [...this.pending, ...this.completed, ...this.undone]) {
       if (this.shellOrderIds(request).length === 0) this.attachZoningTransaction(request);
     }
+  }
+
+  /** Reconstruct only an exact authored gesture carried by real Undo history. */
+  private recoverCompletedGesture(orderIds: readonly string[]): PendingRoomTemplate | undefined {
+    const first = orderIds[0];
+    const matched = first === undefined ? undefined : /^room-template-(\d+)-[012]-(?:wall|door|object)-\d+$/.exec(first);
+    if (matched === undefined || matched === null) return undefined;
+    const sequence = Number(matched[1]);
+    if (!Number.isSafeInteger(sequence) || sequence < 0) return undefined;
+    const prefix = `room-template-${sequence.toString().padStart(12, '0')}-`;
+    const ids = new Set(orderIds);
+    if (ids.size !== orderIds.length || orderIds.some(id => !id.startsWith(prefix))) return undefined;
+    const actual = new Map<string, BuildOrder>();
+    let minX = Number.POSITIVE_INFINITY;
+    let minY = Number.POSITIVE_INFINITY;
+    for (const id of orderIds) {
+      const order = this.construction.getOrder(id);
+      if (order === undefined) return undefined;
+      actual.set(id, order);
+      minX = Math.min(minX, order.location.x);
+      minY = Math.min(minY, order.location.y);
+    }
+    const origin = { x: minX, y: minY };
+    for (const templateId of ROOM_TEMPLATE_IDS) {
+      for (const mirrorX of [false, true]) for (const quarterTurns of [0, 1, 2, 3] as const) {
+        if (!roomTemplateOriginFitsSafeCoordinates(templateId, origin, quarterTurns)) continue;
+        const built = createRoomTemplateBuildPlan(templateId, origin, mirrorX, sequence, quarterTurns);
+        if (built.orders.length !== actual.size || built.shellOrderIds.length === 0) continue;
+        if (!built.orders.every(expected => {
+          const order = actual.get(expected.id);
+          return order !== undefined && order.definitionId === expected.definitionId &&
+            order.location.x === expected.location.x && order.location.y === expected.location.y &&
+            order.footprint === expected.footprint && resolveBuildEdge(order) === resolveBuildEdge(expected) &&
+            (order.objectOrientation ?? 0) === (expected.objectOrientation ?? 0);
+        })) continue;
+        if (!built.shellOrderIds.every(id => actual.get(id)?.state === 'completed')) continue;
+        // Zoning distinguishes catalogue entries even when their shell and
+        // furniture happen to agree. Orders alone cannot name a room purpose.
+        if (!built.plan.zones.every(zone => {
+          const numericId = defaultRoomContentRegistry.getById(zone.roomId)?.numericId;
+          if (numericId === undefined) return false;
+          for (let y = zone.y; y < zone.y + zone.height; y++) for (let x = zone.x; x < zone.x + zone.width; x++) {
+            if (this.world.getZoning({ x: tileCoordinate(x), y: tileCoordinate(y) }) !== numericId) return false;
+          }
+          return true;
+        })) continue;
+        return { templateId, origin, mirrorX, sequence, ...(quarterTurns === 0 ? {} : { quarterTurns }) };
+      }
+    }
+    return undefined;
   }
 }
