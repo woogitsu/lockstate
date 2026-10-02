@@ -68,9 +68,10 @@ for (const uiScale of [1, 2]) test(`World FullHD ${uiScale * 100}% zoomed room-p
   expect(chosen.ok).toBe(true);
   expect(chosen.target.templateId).toBe('cell-basic');
 
-  // This separate HUD channel currently emits Phaser scroll, not the visible
-  // top-left ground point. Read that exact producer contract rather than
-  // treating the drawn minimap rectangle's centre as the camera centre.
+  // This separate HUD channel emits actual visible ground bounds. Its
+  // producer is independently checked against real Camera.getWorldPoint.
+  // Compare the real SVG with that channel and with the physical pointer;
+  // neither observation calls the main forward callback as its reference.
   const measured = await page.evaluate(() => {
     const canvas = document.querySelector<HTMLCanvasElement>('#game-root canvas')!;
     const map = document.querySelector<HTMLCanvasElement>('.hud-minimap canvas')!;
@@ -95,10 +96,10 @@ for (const uiScale of [1, 2]) test(`World FullHD ${uiScale * 100}% zoomed room-p
   const zoomX = measured.canvas.width / (measured.width * measured.map.width * 64);
   const zoomY = measured.canvas.height / (measured.height * measured.map.height * 64);
   expect(zoomX).toBeCloseTo(1.25, 5); expect(zoomY).toBeCloseTo(1.25, 5);
-  const scroll = { x: measured.left * 32 * 64, y: measured.top * 32 * 64 };
+  const visible = { left: measured.left * 32 * 64, top: measured.top * 32 * 64 };
   const screen = (x: number, y: number) => ({
-    x: measured.canvas.left + ((x * 64 - scroll.x - measured.canvas.width / 2) * zoomX + measured.canvas.width / 2) * measured.canvas.widthCss / measured.canvas.width,
-    y: measured.canvas.top + ((y * 64 - scroll.y - measured.canvas.height / 2) * zoomY + measured.canvas.height / 2) * measured.canvas.heightCss / measured.canvas.height,
+    x: measured.canvas.left + (x * 64 - visible.left) * zoomX * measured.canvas.widthCss / measured.canvas.width,
+    y: measured.canvas.top + (y * 64 - visible.top) * zoomY * measured.canvas.heightCss / measured.canvas.height,
   });
   const { x, y } = chosen.target.origin;
   const expected = [screen(x, y), screen(x + 4, y), screen(x + 4, y + 7), screen(x, y + 7)];
