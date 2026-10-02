@@ -174,6 +174,16 @@ const readoutOf = (target: BuildPanelTarget | undefined): string =>
   );
 
 describe('the Where readout names the tile the player is aiming at', () => {
+  it('keeps the active object hover when the inactive wall tool is disarmed again during object selection', () => {
+    const tools = panelWithTools();
+    armFromBuildPanel(tools, { armed: true, definitionId: 'bench-wooden', footprint: { width: 2, height: 1 }, removing: false });
+    hoverAt(tools, 15, 15);
+    armFromBuildPanel(tools, { armed: true, definitionId: 'exercise-station', footprint: { width: 2, height: 1 }, removing: false });
+    expect(tools.shown()).toEqual({ x: 15, y: 15 });
+    armFromBuildPanel(tools, { armed: false, removing: false });
+    expect(tools.shown()).toBeUndefined();
+  });
+
   it('names the exact whole-square count and catalogue value for a wall run', () => {
     expect(readoutOf({ x: 4, y: 7, squareRun: true, segments: 3, catalogueCostMinorUnits: 240 }))
       .toBe('squares/3/4/7/240');
