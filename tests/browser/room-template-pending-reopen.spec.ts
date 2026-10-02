@@ -57,6 +57,8 @@ test('reopening an active large plan withdraws obsolete readiness and blocked sq
     await expect(submit).toBeDisabled();
     await expect(dialog.locator('.hud-template__tile--blocked')).toHaveCount(0);
     await expect(dialog.locator('.hud-template__quote')).toContainText('Materials catalogue value: 5,000');
+    await dialog.evaluate(el=>{el.scrollTop=el.scrollHeight;});
+    await expect(submit).toBeInViewport();
     await page.screenshot({path:testInfo.outputPath(`reopen-${previous}-pending.png`)});
     await page.evaluate(()=>{(window as unknown as {reopenDelay:{release:()=>void}}).reopenDelay.release();});
     await expect(status).toHaveAttribute('aria-busy','false');
