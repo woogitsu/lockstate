@@ -1,0 +1,17 @@
+pnpm : $ vitest run "tests/unit/oblique-held-footprint-pose-input.test.ts" "tests/unit/ui-camera-pose-control.test.ts" 
+"tests/unit/oblique-projection.test.ts" "--maxWorkers=2"
+At line:5 char:1
++ pnpm --config.verify-deps-before-run=false test tests/unit/oblique-he ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...--maxWorkers=2":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-camera-pose-build-handler-audit-20261003
+
+
+ Test Files  3 passed (3)
+      Tests  43 passed (43)
+   Start at  00:40:10
+   Duration  813ms (transform 441ms, setup 0ms, import 1.09s, tests 35ms, environment 0ms)
+

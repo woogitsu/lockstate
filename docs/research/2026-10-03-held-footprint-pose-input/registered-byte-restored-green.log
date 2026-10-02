@@ -1,0 +1,10 @@
+$ vitest run "tests/unit/oblique-held-footprint-pose-input.test.ts" "--maxWorkers=2"
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-camera-pose-build-handler-audit-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  32 passed (32)
+   Start at  00:39:08
+   Duration  877ms (transform 254ms, setup 0ms, import 690ms, tests 18ms, environment 0ms)
+

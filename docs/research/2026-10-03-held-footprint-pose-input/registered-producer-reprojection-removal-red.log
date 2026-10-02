@@ -1,0 +1,493 @@
+$ vitest run "tests/unit/oblique-held-footprint-pose-input.test.ts" "--maxWorkers=2"
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-camera-pose-build-handler-audit-20261003
+
+ ❯ tests/unit/oblique-held-footprint-pose-input.test.ts (32 tests | 30 failed) 32ms
+   × held 'wall' footprint follows registered 'KeyQ' pose input (remapped=false) before release 11ms
+   × held 'wall' footprint follows registered 'KeyQ' pose input (remapped=true) before release 2ms
+   × held 'wall' footprint follows registered 'KeyR' pose input (remapped=false) before release 1ms
+   × held 'wall' footprint follows registered 'KeyR' pose input (remapped=true) before release 1ms
+   × held 'wall' footprint follows registered 'KeyF' pose input (remapped=false) before release 1ms
+   × held 'wall' footprint follows registered 'KeyF' pose input (remapped=true) before release 1ms
+   × held 'room' footprint follows registered 'KeyQ' pose input (remapped=false) before release 1ms
+   × held 'room' footprint follows registered 'KeyQ' pose input (remapped=true) before release 1ms
+   × held 'room' footprint follows registered 'KeyE' pose input (remapped=false) before release 1ms
+   × held 'room' footprint follows registered 'KeyE' pose input (remapped=true) before release 1ms
+   × held 'room' footprint follows registered 'KeyR' pose input (remapped=false) before release 0ms
+   × held 'room' footprint follows registered 'KeyR' pose input (remapped=true) before release 0ms
+   × held 'room' footprint follows registered 'KeyF' pose input (remapped=false) before release 0ms
+   × held 'room' footprint follows registered 'KeyF' pose input (remapped=true) before release 1ms
+   × held 'object-q0' footprint follows registered 'KeyQ' pose input (remapped=false) before release 1ms
+   × held 'object-q0' footprint follows registered 'KeyQ' pose input (remapped=true) before release 0ms
+   × held 'object-q0' footprint follows registered 'KeyE' pose input (remapped=false) before release 1ms
+   × held 'object-q0' footprint follows registered 'KeyE' pose input (remapped=true) before release 1ms
+   × held 'object-q0' footprint follows registered 'KeyR' pose input (remapped=false) before release 0ms
+   × held 'object-q0' footprint follows registered 'KeyR' pose input (remapped=true) before release 1ms
+   × held 'object-q0' footprint follows registered 'KeyF' pose input (remapped=false) before release 0ms
+   × held 'object-q0' footprint follows registered 'KeyF' pose input (remapped=true) before release 1ms
+   × held 'object-q1' footprint follows registered 'KeyQ' pose input (remapped=false) before release 0ms
+   × held 'object-q1' footprint follows registered 'KeyQ' pose input (remapped=true) before release 1ms
+   × held 'object-q1' footprint follows registered 'KeyE' pose input (remapped=false) before release 0ms
+   × held 'object-q1' footprint follows registered 'KeyE' pose input (remapped=true) before release 0ms
+   × held 'object-q1' footprint follows registered 'KeyR' pose input (remapped=false) before release 0ms
+   × held 'object-q1' footprint follows registered 'KeyR' pose input (remapped=true) before release 1ms
+   × held 'object-q1' footprint follows registered 'KeyF' pose input (remapped=false) before release 1ms
+   × held 'object-q1' footprint follows registered 'KeyF' pose input (remapped=true) before release 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 30 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-held-footprint-pose-input.test.ts > held 'wall' footprint follows registered 'KeyQ' pose input (remapped=false) before release
+ FAIL  tests/unit/oblique-held-footprint-pose-input.test.ts > held 'wall' footprint follows registered 'KeyQ' pose input (remapped=true) before release
+AssertionError: expected last "vi.fn()" call to have been called with [ [ { x: 15, y: 15 }, …(4) ] ]
+
+- Expected
++ Received
+
+@@ -3,22 +3,26 @@
+      {
+        "x": 15,
+        "y": 15,
+      },
+      {
+-       "x": 15,
+-       "y": 16,
++       "x": 16,
++       "y": 15,
+      },
+      {
+-       "x": 15,
+-       "y": 17,
++       "x": 17,
++       "y": 15,
+      },
+      {
+-       "x": 15,
+-       "y": 18,
++       "x": 18,
++       "y": 15,
+      },
+      {
+-       "x": 15,
+-       "y": 19,
++       "x": 19,
++       "y": 15,
++     },
++     {
++       "x": 20,
++       "y": 15,
+      },
+    ],
+  ]
+
+ ❯ tests/unit/oblique-held-footprint-pose-input.test.ts:97:20
+     95|       expected = rect;
+     96|     }
+     97|     expect(target).toHaveBeenLastCalledWith(expected);
+       |                    ^
+     98|     const rectangles = tool === 'wall' ? (expected as Array<Point>).ma…
+     99|     const polygons = input.layers[3]!.polygons;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/30]⎯
+
+ FAIL  tests/unit/oblique-held-footprint-pose-input.test.ts > held 'wall' footprint follows registered 'KeyR' pose input (remapped=false) before release
+ FAIL  tests/unit/oblique-held-footprint-pose-input.test.ts > held 'wall' footprint follows registered 'KeyR' pose input (remapped=true) before release
+AssertionError: expected last "vi.fn()" call to have been called with [ [ { x: 15, y: 15 }, …(4) ] ]
+
+- Expected
++ Received
+
+@@ -18,7 +18,11 @@
+      },
+      {
+        "x": 19,
+        "y": 15,
+      },
++     {
++       "x": 20,
++       "y": 15,
++     },
+    ],
+  ]
+
+ ❯ tests/unit/oblique-held-footprint-pose-input.test.ts:97:20
+     95|       expected = rect;
+     96|     }
+     97|     expect(target).toHaveBeenLastCalledWith(expected);
+       |                    ^
+     98|     const rectangles = tool === 'wall' ? (expected as Array<Point>).ma…
+     99|     const polygons = input.layers[3]!.polygons;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/30]⎯
+
+ FAIL  tests/unit/oblique-held-footprint-pose-input.test.ts > held 'wall' footprint follows registered 'KeyF' pose input (remapped=false) before release
+ FAIL  tests/unit/oblique-held-footprint-pose-input.test.ts > held 'wall' footprint follows registered 'KeyF' pose input (remapped=true) before release
+AssertionError: expected last "vi.fn()" call to have been called with [ [ { x: 15, y: 15 }, …(7) ] ]
+
+- Expected
++ Received
+
+@@ -22,15 +22,7 @@
+      },
+      {
+        "x": 20,
+        "y": 15,
+      },
+-     {
+-       "x": 21,
+-       "y": 15,
+-     },
+-     {
+-       "x": 22,
+-       "y": 15,
+-     },
+    ],
+  ]
+
+ ❯ tests/unit/oblique-held-footprint-pose-input.test.ts:97:20
+     95|       expected = rect;
+     96|     }
+     97|     expect(target).toHaveBeenLastCalledWith(expected);
+       |                    ^
+     98|     const rectangles = tool === 'wall' ? (expected as Array<Point>).ma…
+     99|     const polygons = input.layers[3]!.polygons;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/30]⎯
+
+ FAIL  tests/unit/oblique-held-footprint-pose-input.test.ts > held 'room' footprint follows registered 'KeyQ' pose input (remapped=false) before release
+ FAIL  tests/unit/oblique-held-footprint-pose-input.test.ts > held 'room' footprint follows registered 'KeyQ' pose input (remapped=true) before release
+AssertionError: expected last "vi.fn()" call to have been called with [ { tileX: 15, tileY: 15, …(2) } ]
+
+- Expected
++ Received
+
+  [
+    {
+-     "height": 5,
++     "height": 3,
+      "tileX": 15,
+      "tileY": 15,
+-     "width": 4,
++     "width": 6,
+    },
+  ]
+
+ ❯ tests/unit/oblique-held-footprint-pose-input.test.ts:97:20
+     95|       expected = rect;
+     96|     }
+     97|     expect(target).toHaveBeenLastCalledWith(expected);
+       |                    ^
+     98|     const rectangles = tool === 'wall' ? (expected as Array<Point>).ma…
+     99|     const polygons = input.layers[3]!.polygons;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/30]⎯
+
+ FAIL  tests/unit/oblique-held-footprint-pose-input.test.ts > held 'room' footprint follows registered 'KeyE' pose input (remapped=false) before release
+ FAIL  tests/unit/oblique-held-footprint-pose-input.test.ts > held 'room' footprint follows registered 'KeyE' pose input (remapped=true) before release
+AssertionError: expected last "vi.fn()" call to have been called with [ { tileX: 15, tileY: 14, …(2) } ]
+
+- Expected
++ Received
+
+  [
+    {
+-     "height": 2,
++     "height": 3,
+      "tileX": 15,
+-     "tileY": 14,
++     "tileY": 15,
+      "width": 6,
+    },
+  ]
+
+ ❯ tests/unit/oblique-held-footprint-pose-input.test.ts:97:20
+     95|       expected = rect;
+     96|     }
+     97|     expect(target).toHaveBeenLastCalledWith(expected);
+       |                    ^
+     98|     const rectangles = tool === 'wall' ? (expected as Array<Point>).ma…
+     99|     const polygons = input.layers[3]!.polygons;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/30]⎯
+
+ FAIL  tests/unit/oblique-held-footprint-pose-input.test.ts > held 'room' footprint follows registered 'KeyR' pose input (remapped=false) before release
+ FAIL  tests/unit/oblique-held-footprint-pose-input.test.ts > held 'room' footprint follows registered 'KeyR' pose input (remapped=true) before release
+AssertionError: expected last "vi.fn()" call to have been called with [ { tileX: 15, tileY: 15, …(2) } ]
+
+- Expected
++ Received
+
+  [
+    {
+      "height": 3,
+      "tileX": 15,
+      "tileY": 15,
+-     "width": 5,
++     "width": 6,
+    },
+  ]
+
+ ❯ tests/unit/oblique-held-footprint-pose-input.test.ts:97:20
+     95|       expected = rect;
+     96|     }
+     97|     expect(target).toHaveBeenLastCalledWith(expected);
+       |                    ^
+     98|     const rectangles = tool === 'wall' ? (expected as Array<Point>).ma…
+     99|     const polygons = input.layers[3]!.polygons;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/30]⎯
+
+ FAIL  tests/unit/oblique-held-footprint-pose-input.test.ts > held 'room' footprint follows registered 'KeyF' pose input (remapped=false) before release
+ FAIL  tests/unit/oblique-held-footprint-pose-input.test.ts > held 'room' footprint follows registered 'KeyF' pose input (remapped=true) before release
+AssertionError: expected last "vi.fn()" call to have been called with [ { tileX: 15, tileY: 15, …(2) } ]
+
+- Expected
++ Received
+
+  [
+    {
+-     "height": 1,
++     "height": 3,
+      "tileX": 15,
+      "tileY": 15,
+-     "width": 8,
++     "width": 6,
+    },
+  ]
+
+ ❯ tests/unit/oblique-held-footprint-pose-input.test.ts:97:20
+     95|       expected = rect;
+     96|     }
+     97|     expect(target).toHaveBeenLastCalledWith(expected);
+       |                    ^
+     98|     const rectangles = tool === 'wall' ? (expected as Array<Point>).ma…
+     99|     const polygons = input.layers[3]!.polygons;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/30]⎯
+
+ FAIL  tests/unit/oblique-held-footprint-pose-input.test.ts > held 'object-q0' footprint follows registered 'KeyQ' pose input (remapped=false) before release
+ FAIL  tests/unit/oblique-held-footprint-pose-input.test.ts > held 'object-q0' footprint follows registered 'KeyQ' pose input (remapped=true) before release
+AssertionError: expected last "vi.fn()" call to have been called with [ { tileX: 18, tileY: 19, …(2) } ]
+
+- Expected
++ Received
+
+  [
+    {
+      "height": 2,
+-     "tileX": 18,
+-     "tileY": 19,
++     "tileX": 20,
++     "tileY": 17,
+      "width": 1,
+    },
+  ]
+
+ ❯ tests/unit/oblique-held-footprint-pose-input.test.ts:97:20
+     95|       expected = rect;
+     96|     }
+     97|     expect(target).toHaveBeenLastCalledWith(expected);
+       |                    ^
+     98|     const rectangles = tool === 'wall' ? (expected as Array<Point>).ma…
+     99|     const polygons = input.layers[3]!.polygons;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/30]⎯
+
+ FAIL  tests/unit/oblique-held-footprint-pose-input.test.ts > held 'object-q0' footprint follows registered 'KeyE' pose input (remapped=false) before release
+ FAIL  tests/unit/oblique-held-footprint-pose-input.test.ts > held 'object-q0' footprint follows registered 'KeyE' pose input (remapped=true) before release
+AssertionError: expected last "vi.fn()" call to have been called with [ { tileX: 20, tileY: 14, …(2) } ]
+
+- Expected
++ Received
+
+  [
+    {
+      "height": 2,
+      "tileX": 20,
+-     "tileY": 14,
++     "tileY": 17,
+      "width": 1,
+    },
+  ]
+
+ ❯ tests/unit/oblique-held-footprint-pose-input.test.ts:97:20
+     95|       expected = rect;
+     96|     }
+     97|     expect(target).toHaveBeenLastCalledWith(expected);
+       |                    ^
+     98|     const rectangles = tool === 'wall' ? (expected as Array<Point>).ma…
+     99|     const polygons = input.layers[3]!.polygons;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/30]⎯
+
+ FAIL  tests/unit/oblique-held-footprint-pose-input.test.ts > held 'object-q0' footprint follows registered 'KeyR' pose input (remapped=false) before release
+ FAIL  tests/unit/oblique-held-footprint-pose-input.test.ts > held 'object-q0' footprint follows registered 'KeyR' pose input (remapped=true) before release
+AssertionError: expected last "vi.fn()" call to have been called with [ { tileX: 19, tileY: 17, …(2) } ]
+
+- Expected
++ Received
+
+  [
+    {
+      "height": 2,
+-     "tileX": 19,
++     "tileX": 20,
+      "tileY": 17,
+      "width": 1,
+    },
+  ]
+
+ ❯ tests/unit/oblique-held-footprint-pose-input.test.ts:97:20
+     95|       expected = rect;
+     96|     }
+     97|     expect(target).toHaveBeenLastCalledWith(expected);
+       |                    ^
+     98|     const rectangles = tool === 'wall' ? (expected as Array<Point>).ma…
+     99|     const polygons = input.layers[3]!.polygons;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/30]⎯
+
+ FAIL  tests/unit/oblique-held-footprint-pose-input.test.ts > held 'object-q0' footprint follows registered 'KeyF' pose input (remapped=false) before release
+ FAIL  tests/unit/oblique-held-footprint-pose-input.test.ts > held 'object-q0' footprint follows registered 'KeyF' pose input (remapped=true) before release
+AssertionError: expected last "vi.fn()" call to have been called with [ { tileX: 22, tileY: 15, …(2) } ]
+
+- Expected
++ Received
+
+  [
+    {
+      "height": 2,
+-     "tileX": 22,
+-     "tileY": 15,
++     "tileX": 20,
++     "tileY": 17,
+      "width": 1,
+    },
+  ]
+
+ ❯ tests/unit/oblique-held-footprint-pose-input.test.ts:97:20
+     95|       expected = rect;
+     96|     }
+     97|     expect(target).toHaveBeenLastCalledWith(expected);
+       |                    ^
+     98|     const rectangles = tool === 'wall' ? (expected as Array<Point>).ma…
+     99|     const polygons = input.layers[3]!.polygons;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/30]⎯
+
+ FAIL  tests/unit/oblique-held-footprint-pose-input.test.ts > held 'object-q1' footprint follows registered 'KeyQ' pose input (remapped=false) before release
+ FAIL  tests/unit/oblique-held-footprint-pose-input.test.ts > held 'object-q1' footprint follows registered 'KeyQ' pose input (remapped=true) before release
+AssertionError: expected last "vi.fn()" call to have been called with [ { tileX: 18, tileY: 19, …(2) } ]
+
+- Expected
++ Received
+
+  [
+    {
+      "height": 1,
+-     "tileX": 18,
+-     "tileY": 19,
++     "tileX": 20,
++     "tileY": 17,
+      "width": 2,
+    },
+  ]
+
+ ❯ tests/unit/oblique-held-footprint-pose-input.test.ts:97:20
+     95|       expected = rect;
+     96|     }
+     97|     expect(target).toHaveBeenLastCalledWith(expected);
+       |                    ^
+     98|     const rectangles = tool === 'wall' ? (expected as Array<Point>).ma…
+     99|     const polygons = input.layers[3]!.polygons;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/30]⎯
+
+ FAIL  tests/unit/oblique-held-footprint-pose-input.test.ts > held 'object-q1' footprint follows registered 'KeyE' pose input (remapped=false) before release
+ FAIL  tests/unit/oblique-held-footprint-pose-input.test.ts > held 'object-q1' footprint follows registered 'KeyE' pose input (remapped=true) before release
+AssertionError: expected last "vi.fn()" call to have been called with [ { tileX: 20, tileY: 14, …(2) } ]
+
+- Expected
++ Received
+
+  [
+    {
+      "height": 1,
+      "tileX": 20,
+-     "tileY": 14,
++     "tileY": 17,
+      "width": 2,
+    },
+  ]
+
+ ❯ tests/unit/oblique-held-footprint-pose-input.test.ts:97:20
+     95|       expected = rect;
+     96|     }
+     97|     expect(target).toHaveBeenLastCalledWith(expected);
+       |                    ^
+     98|     const rectangles = tool === 'wall' ? (expected as Array<Point>).ma…
+     99|     const polygons = input.layers[3]!.polygons;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/30]⎯
+
+ FAIL  tests/unit/oblique-held-footprint-pose-input.test.ts > held 'object-q1' footprint follows registered 'KeyR' pose input (remapped=false) before release
+ FAIL  tests/unit/oblique-held-footprint-pose-input.test.ts > held 'object-q1' footprint follows registered 'KeyR' pose input (remapped=true) before release
+AssertionError: expected last "vi.fn()" call to have been called with [ { tileX: 19, tileY: 17, …(2) } ]
+
+- Expected
++ Received
+
+  [
+    {
+      "height": 1,
+-     "tileX": 19,
++     "tileX": 20,
+      "tileY": 17,
+      "width": 2,
+    },
+  ]
+
+ ❯ tests/unit/oblique-held-footprint-pose-input.test.ts:97:20
+     95|       expected = rect;
+     96|     }
+     97|     expect(target).toHaveBeenLastCalledWith(expected);
+       |                    ^
+     98|     const rectangles = tool === 'wall' ? (expected as Array<Point>).ma…
+     99|     const polygons = input.layers[3]!.polygons;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/30]⎯
+
+ FAIL  tests/unit/oblique-held-footprint-pose-input.test.ts > held 'object-q1' footprint follows registered 'KeyF' pose input (remapped=false) before release
+ FAIL  tests/unit/oblique-held-footprint-pose-input.test.ts > held 'object-q1' footprint follows registered 'KeyF' pose input (remapped=true) before release
+AssertionError: expected last "vi.fn()" call to have been called with [ { tileX: 22, tileY: 15, …(2) } ]
+
+- Expected
++ Received
+
+  [
+    {
+      "height": 1,
+-     "tileX": 22,
+-     "tileY": 15,
++     "tileX": 20,
++     "tileY": 17,
+      "width": 2,
+    },
+  ]
+
+ ❯ tests/unit/oblique-held-footprint-pose-input.test.ts:97:20
+     95|       expected = rect;
+     96|     }
+     97|     expect(target).toHaveBeenLastCalledWith(expected);
+       |                    ^
+     98|     const rectangles = tool === 'wall' ? (expected as Array<Point>).ma…
+     99|     const polygons = input.layers[3]!.polygons;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/30]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  30 failed | 2 passed (32)
+   Start at  00:39:07
+   Duration  916ms (transform 286ms, setup 0ms, import 747ms, tests 32ms, environment 0ms)
+
+[ELIFECYCLE] Test failed. See above for more details.
