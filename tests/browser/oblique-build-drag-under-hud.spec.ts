@@ -1,5 +1,6 @@
 import { expect, test, type Page } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
+import { writeFile } from 'node:fs/promises';
 
 interface Point { x: number; y: number }
 
@@ -32,7 +33,7 @@ for (const scale of [1, 2]) {
       localStorage.setItem('lockstate.settings.accessibility', JSON.stringify({ version: 1, reducedMotion: false, uiScale: scale }));
       const events: Array<{ type: string; target: string; hit: string; buttons: number }> = [];
       (window as unknown as { nativeHudDragEvents: typeof events }).nativeHudDragEvents = events;
-      for (const type of ['pointerdown', 'pointerup', 'pointerout', 'gotpointercapture', 'lostpointercapture']) {
+      for (const type of ['pointerdown', 'pointerup', 'pointerout', 'mousedown', 'mouseup', 'gotpointercapture', 'lostpointercapture']) {
         window.addEventListener(type, event => {
           const pointer = event as PointerEvent;
           events.push({ type, target: (event.target as Element | null)?.tagName ?? '',
@@ -61,7 +62,11 @@ for (const scale of [1, 2]) {
       await page.screenshot({ path: testInfo.outputPath(`held-run-${before}.png`) });
       await page.mouse.up();
       const events = await page.evaluate(() => (window as unknown as { nativeHudDragEvents: unknown[] }).nativeHudDragEvents);
-      await testInfo.attach(`native-run-${before}`, { body: JSON.stringify({ from, to, expected, target, events }, null, 2), contentType: 'application/json' });
+      const actualWorkerCommands = (await sentCommands(page)).filter(c => c.type === 'PlaceBuildOrder').slice(before);
+      const evidence = JSON.stringify({ from, to, expected, target, actualWorkerCommands, events }, null, 2);
+      const evidencePath = testInfo.outputPath(`native-run-${before}.json`);
+      await writeFile(evidencePath, evidence);
+      await testInfo.attach(`native-run-${before}`, { path: evidencePath, contentType: 'application/json' });
       await expect.poll(async () => (await sentCommands(page)).filter(c => c.type === 'PlaceBuildOrder').length,
         { message: 'the native canvas-origin drag must submit every square through its release beneath the HUD' }).toBe(before + expected.length);
       const produced = (await sentCommands(page)).filter(c => c.type === 'PlaceBuildOrder').slice(before);
