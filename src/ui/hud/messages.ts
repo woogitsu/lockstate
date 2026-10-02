@@ -391,6 +391,10 @@ export const HUD_MESSAGE_KEY = {
   zoomRegion: 'hud.zoom.title',
   zoomIn: 'hud.zoom.in',
   zoomOut: 'hud.zoom.out',
+  cameraView: 'hud.camera.view',
+  cameraViewWorld: 'hud.camera.view.world',
+  cameraViewOblique: 'hud.camera.view.oblique',
+  cameraViewFailed: 'hud.camera.view.failed',
 
   minimapTitle: 'hud.minimap.title',
     minimapPlaceholder: 'hud.minimap.placeholder',
