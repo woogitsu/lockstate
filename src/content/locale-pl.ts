@@ -1566,6 +1566,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'input.action.camera.right': 'Przesuń kamerę w prawo',
   'input.action.camera.zoom.in': 'Przybliż',
   'input.action.camera.zoom.out': 'Oddal',
+  'hud.camera.view.failed': 'Nie uda\u0142o si\u0119 zmieni\u0107 widoku. Wybierz widok, aby spr\u00f3bowa\u0107 ponownie.',
   'hud.camera.view': 'Widok',
   'hud.camera.view.world': 'Z g\u00f3ry',
   'hud.camera.view.oblique': 'Pod k\u0105tem',
