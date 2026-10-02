@@ -525,3 +525,11 @@ Issue1946 pending-plan reopen proof is now integrated: actual worker baseline gr
 Serial main CI36959628731 is still running. PR1941's previous browser job ended cancelled after 90 minutes; its artifact includes a real keyboard-only room-removal timeout, so it is not classified as a purely environmental failure. One exact-job rerun is underway, without increased budgets or workers. PR1945 is ready but remains subject to exact-head full CI and the serial main gate.
 
 Three independent work surfaces continue: authored Storage Room rack, new-prison camera framing after an off-map pan, and matching room-plan legend shapes. New-session framing was reproduced in the actual browser; its production fix and mutation/restore acceptance are being recorded before integration. These integration results do not establish production deployment.
+
+## Local keyboard-room-removal follow-up
+
+The failed CI1941 attempt1 artifact contains a genuine keyboard room-removal timeout; it has not been dismissed as infrastructure-only. Root reproduced the exact head887aa65bde66d5c65173b923b3f723b9d9897e2d in an isolated worktree and ran only the existing assembled-page case with its existing slow-test budget, one worker and no retry. Process6777 ended exit0, 1/1 green (1.1m). This is a local result, not proof that the remote job is green; the exact-job attempt2 remains in progress.
+
+The camera new-session correction is integrated as269ab5d2b7 after resolving the callback conflict by retaining both outgoing-plan standDown and revision-gated centering of the incoming world. Strict TypeScript and research-index5/5 pass; root opened the actual new-prison Full HD capture. The selected-plan legend now shares the actual rectangular furniture and door-gap shapes; root90 focused status/design/index cases pass. Its actual browser mutation proof is still being completed by HUD.
+
+PR1945 was DIRTY after pointer cancellation landed. Root merged current main into its own branch, preserving the existing pointercancel/lostpointercapture cleanup as well as the new held-arrow radio-focus release, and pushed830fa5742c. TypeScript passes. Its new exact-head CI is required before merge; previous-head proof and runs are not silently treated as current-head full CI.
