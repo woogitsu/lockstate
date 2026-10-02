@@ -71,3 +71,33 @@ it('ordinary shared wall gestures retain single-order cancellation and its displ
   compareRowWithActualCommand(runtime, 'assigned');
   expect(runtime.construction.getOrder('ordinary-b')?.state).toBe('assigned');
 });
+it.each([false, true])('quotes the actual occupied partial-row cancellation result with older spare=%s', spare => {
+  let runtime = createNewSimulationRuntime(73);
+  if (spare) {
+    send(runtime, { type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 20, y: 5 } });
+    until(runtime, () => runtime.roomTemplates.snapshot().pending.length === 0 && runtime.construction.allOrders().every(order => order.state === 'completed'));
+  }
+  const rowSequence = runtime.kernel.expectedSequence.toString().padStart(12, '0');
+  send(runtime, { type: 'PlaceRoomTemplate', templateId: 'cell-row-four', origin: { x: 10, y: 10 } });
+  until(runtime, () => runtime.construction.allOrders().some(order => order.id.includes(`${rowSequence}-2-object-`) && order.state === 'completed'));
+  send(runtime, { type: 'AdmitPrisoner', sentenceLengthTicks: 1_000_000, priorIncidents: 0, x: 16, y: 16 });
+  until(runtime, () => runtime.prisoners.roomInstances.totalOccupancy === 1);
+  runtime = reload(runtime);
+  expect(runtime.prisoners.roomInstances.occupancyOf('room.cell:11:11')).toBe(1);
+  const row = rows(runtime).find(candidate => candidate.state === 'assigned')!;
+  expect(row).toBeDefined();
+  const beforeFunds = runtime.treasury.balanceMinorUnits;
+  const { kernel: _beforeKernel, ...before } = captureSessionSnapshot(runtime);
+  send(runtime, { type: 'CancelBuildOrder', orderId: row.orderId, expectedRevision: row.revision });
+  const actualRefund = runtime.treasury.balanceMinorUnits - beforeFunds;
+  console.log(JSON.stringify({ spare, rowRefund: row.cancelRefundMinorUnits, actualRefund, refusal: runtime.refusals.last?.reason }));
+  if (!spare) {
+    const { kernel: _afterKernel, ...after } = captureSessionSnapshot(runtime);
+    expect(after).toEqual(before);
+    expect(runtime.refusals.last).toMatchObject({ reason: 'unzone.room-occupied' });
+  } else {
+    expect(runtime.prisoners.roomInstances.occupancyOf('room.cell:21:6')).toBe(1);
+    expect(runtime.prisoners.roomInstances.getById('room.cell:11:11')).toBeUndefined();
+  }
+  expect(actualRefund).toBe(row.cancelRefundMinorUnits);
+});
