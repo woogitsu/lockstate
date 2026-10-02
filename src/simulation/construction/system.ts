@@ -2,7 +2,7 @@ import { type SystemRegistration, type SimulationContext } from '../kernel/syste
 import { type BuildEdge, type BuildOrder, type BuildOrderFailReason, compareBuildOrderExecution, resolveBuildEdge } from './build-order';
 import { BUILDABLE_REGISTRY, type BuildableDefinition, type MaterialRequirement, edgeNumericIdFor, getBuildableDefinition, occupiesTileEdge } from './definition';
 import { type ConstructionMaterialsProvider, UNLIMITED_MATERIALS_PROVIDER } from './materials-provider';
-import { type ConstructionProcurementSink, type MaterialsProcurementReport, type QueuedOrderDemand } from './materials-procurement';
+import { type CancellationRefundPreviewStep, type ConstructionProcurementSink, type MaterialsProcurementReport, type QueuedOrderDemand } from './materials-procurement';
 import { SnapshotRefusedError } from '../runtime/restore-refusal';
 import { SparseWorld } from '../world/sparse-world';
 import { type BuildabilityRequirement, canBuildAt } from '../world/buildability';
@@ -1275,6 +1275,39 @@ export class ConstructionSystem implements SystemRegistration {
     }
   }
 
+  private cancellationSequenceReader?: (orderId: string) => readonly string[] | undefined;
+
+  /** Session-only association/feasibility reader; nothing is added to snapshots. */
+  public setCancellationSequenceReader(reader: (orderId: string) => readonly string[] | undefined): void {
+    this.cancellationSequenceReader = reader;
+  }
+
+  private previewCancellationSequence(ids: readonly string[], sink: ConstructionProcurementSink): number {
+    const excluded = new Set<string>();
+    const steps: CancellationRefundPreviewStep[] = [];
+    for (const id of ids) {
+      const order = this.orders.get(id);
+      if (order === undefined || !isCancellable(order.state) || excluded.has(id)) continue;
+      excluded.add(id);
+      const surplus: Array<{ itemId: string; demandedQuantity: number; limit: number }> = [];
+      if (order.state === 'approved' || order.state === 'materials-pending') {
+        const definition = BUILDABLE_REGISTRY.get(order.definitionId);
+        if (definition !== undefined) {
+          const requirements = requiredQuantitiesByItemId(definition);
+          const demand = this.pendingOrderDemand(this.orderedOrders().filter(candidate => !excluded.has(candidate.id)));
+          for (const itemId of [...requirements.keys()].sort()) {
+            let demandedQuantity = 0;
+            for (const pending of demand) for (const material of pending.requirements)
+              if (material.itemId === itemId) demandedQuantity += material.quantity;
+            surplus.push({ itemId, demandedQuantity, limit: requirements.get(itemId)! });
+          }
+        }
+      }
+      steps.push({ allocations: destroysSpendOnCancel(order.state) ? [] : order.materialsAllocated, surplus });
+    }
+    return sink.previewCancellationSequenceRefundMinorUnits?.(steps) ?? 0;
+  }
+
   /**
    * What `cancelOrder(orderId)` would credit the treasury right now, without
    * calling it -- the figure the Build panel's queue row shows beside its own
@@ -1297,7 +1330,7 @@ export class ConstructionSystem implements SystemRegistration {
    * preview has no mutated `order.state` to dispatch on and therefore cannot
    * be folded into `refundSurplusOf`'s existing dispatch the way this method's
    * one sibling call is. What is **not** restated is any arithmetic: every
-   * money figure below is computed by one of the sink's three preview methods
+   * ordinary-order money figure below is computed by one of the sink's three preview methods
    * -- `previewSurplusRefundMinorUnits`, `previewSurplusStockRefundMinorUnits`
    * and `previewAllocatedRefundMinorUnits` -- the exact non-mutating twins of
    * the three calls `cancelOrder` itself makes (`refundSurplusDeliveries`,
@@ -1319,7 +1352,7 @@ export class ConstructionSystem implements SystemRegistration {
    * that, so it passes the order's own id to exclude it explicitly instead --
    * see `pendingOrderDemand`'s comment.
    *
-   * `0` for an id that names no order, for a terminal state (`isCancellable`
+   * For an ordinary order, `0` for an id that names no order, for a terminal state (`isCancellable`
    * says no), and for every state ruling 20 (and the owner's ruling of
    * 2026-09-01 for `completed`) pays nothing for: `'planned'`,
    * `'in-progress'`, `'completed'`. `0` also when no procurement sink is
@@ -1332,11 +1365,16 @@ export class ConstructionSystem implements SystemRegistration {
    * `refundSurplusDeliveries` and its siblings are held to (must not throw)
    * binds transitively -- a row that cannot be cancelled simply reads `0`.
    */
+  // A template queue press also cancels its coupled orders. Its figure is
+  // the sequential supply preview, or zero when collective unzoning refuses.
   public previewCancelRefundMinorUnits(orderId: string): number {
     const order = this.orders.get(orderId);
     if (order === undefined || !isCancellable(order.state)) return 0;
     const sink = this.materialsProcurement;
     if (sink === undefined) return 0;
+
+    const sequence = this.cancellationSequenceReader?.(orderId);
+    if (sequence !== undefined) return this.previewCancellationSequence(sequence, sink);
 
     const stateAtCancellation = order.state;
     if (order.materialsAllocated.length > 0) {

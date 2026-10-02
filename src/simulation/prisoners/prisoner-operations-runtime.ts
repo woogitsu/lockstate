@@ -687,6 +687,15 @@ export class PrisonerOperationsRuntime {
     return views;
   }
 
+  /** Test the identical relocation walk over private room/residency claims. */
+  public canRelocateResidentsOutOf(instanceIds: readonly string[]): boolean {
+    const registry = new RoomInstanceRegistry();
+    const residency = this.roomInstances.getSnapshot();
+    for (const [instanceId] of residency) registry.register(this.roomInstances.getById(instanceId)!);
+    registry.loadSnapshot(residency);
+    return this.relocateResidentsWithRegistry(instanceIds, registry, false) === 'relocated';
+  }
+
   /**
    * Moves every **resident** of every instance named in `instanceIds` into
    * other suitable accommodation, so the caller can then remove those
@@ -744,11 +753,19 @@ export class PrisonerOperationsRuntime {
    * when at least one had nowhere to go and nothing was changed.
    */
   public relocateResidentsOutOf(instanceIds: readonly string[]): 'relocated' | 'no-vacancy' {
+    return this.relocateResidentsWithRegistry(instanceIds, this.roomInstances, true);
+  }
+
+  // Preview uses private claims; the live path retains its move/rollback and
+  // cold-state write order. Both ask the same accommodation/sharing policy.
+  private relocateResidentsWithRegistry(
+    instanceIds: readonly string[], registry: RoomInstanceRegistry, updateColdState: boolean,
+  ): 'relocated' | 'no-vacancy' {
     const excluded = new Set(instanceIds);
 
     const pending: Array<{ readonly entityId: EntityId; readonly fromInstanceId: string }> = [];
     for (const instanceId of instanceIds) {
-      for (const entityId of this.roomInstances.occupantsOf(instanceId)) pending.push({ entityId, fromInstanceId: instanceId });
+      for (const entityId of registry.occupantsOf(instanceId)) pending.push({ entityId, fromInstanceId: instanceId });
     }
     // A resident can hold at most one residency claim, so no id above can
     // repeat across two different `instanceId`s -- the sort below is total.
@@ -758,12 +775,12 @@ export class PrisonerOperationsRuntime {
     for (const { entityId, fromInstanceId } of pending) {
       const index = this.entityStore.getIndex(entityId);
       const groupId = classificationGroupIdFromIndex(this.records.classificationGroupIndex[index]!);
-      const target = firstAvailableAccommodationTarget(this.accommodationPolicy, this.roomInstances, groupId);
+      const target = firstAvailableAccommodationTarget(this.accommodationPolicy, registry, groupId);
       const arrival = this.sharingViewOf(entityId, index);
       const instance =
         target === undefined
           ? undefined
-          : this.roomInstances.findBestAvailable(
+          : registry.findBestAvailable(
               target.roomCatalogId,
               (occupants) => rateCellSharing(arrival, this.sharingViewsOf(occupants)),
               target.requiredObjectCapability,
@@ -776,16 +793,16 @@ export class PrisonerOperationsRuntime {
         // so the order they are unwound in cannot matter, only that each one
         // is unwound exactly once.
         for (const done of moved) {
-          this.roomInstances.release(done.toInstanceId, done.entityId);
-          this.roomInstances.assign(done.fromInstanceId, done.entityId);
-          this.coldState.setAccommodation(done.entityId, done.fromInstanceId);
+          registry.release(done.toInstanceId, done.entityId);
+          registry.assign(done.fromInstanceId, done.entityId);
+          if (updateColdState) this.coldState.setAccommodation(done.entityId, done.fromInstanceId);
         }
         return 'no-vacancy';
       }
 
-      this.roomInstances.release(fromInstanceId, entityId);
-      this.roomInstances.assign(instance.instanceId, entityId);
-      this.coldState.setAccommodation(entityId, instance.instanceId);
+      registry.release(fromInstanceId, entityId);
+      registry.assign(instance.instanceId, entityId);
+      if (updateColdState) this.coldState.setAccommodation(entityId, instance.instanceId);
       moved.push({ entityId, fromInstanceId, toInstanceId: instance.instanceId });
     }
 

@@ -1625,6 +1625,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
 
   kernel.registerSystem(construction);
   const roomTemplates = new RoomTemplateCoordinator(world, construction, roomZoning, placedObjects, objectPlacement);
+  construction.setCancellationSequenceReader(orderId => roomTemplates.previewCancellationOrderIds(orderId));
   construction.setPendingRoomTemplateClaims((tile, sequence) => roomTemplates.claimsPendingFootprint(tile, sequence));
   construction.setPendingRoomTemplateDoorApproachClaims((order) => roomTemplates.claimsRoomDoorApproach(order));
   construction.setObjectFootprintClaims(objectPlacement.claimsObjectFootprint.bind(objectPlacement));
