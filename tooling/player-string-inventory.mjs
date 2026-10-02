@@ -73,7 +73,7 @@
 
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const REPOSITORY_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 export const LOCALE_SOURCE_PATH = 'src/content/default-locale-en.ts';
@@ -343,4 +343,4 @@ function main() {
   process.stdout.write(`Wrote ${INVENTORY_PATH}: ${String(entries.length)} authored sentences\n`);
 }
 
-if (process.argv[1] !== undefined && import.meta.url === `file://${process.argv[1]}`) main();
+if (process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href) main();
