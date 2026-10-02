@@ -36,8 +36,8 @@ async function installSnapshotReader(page: Page): Promise<void> {
   });
 }
 
-async function wallEvidence(page: Page, png: Buffer, yaw: number, elevation: number, target: {x:number;y:number}) {
-  return page.evaluate(async ({ base64, yaw, elevation, target }) => {
+async function wallEvidence(page: Page, png: Buffer, yaw: number, elevation: number, target: {x:number;y:number}, cutaway: boolean) {
+  return page.evaluate(async ({ base64, yaw, elevation, target, cutaway }) => {
     const bitmap = await createImageBitmap(new Blob([Uint8Array.from(atob(base64), c => c.charCodeAt(0))], { type: 'image/png' }));
     const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
     const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0);
@@ -60,14 +60,25 @@ async function wallEvidence(page: Page, png: Buffer, yaw: number, elevation: num
       h.pop(); return h;
     };
     const hull = [...half(sorted),...half([...sorted].reverse())];
-    const inside = (x:number,y:number) => hull.every((p,i) => {
-      const q=hull[(i+1)%hull.length]!;
+    // At80° the accepted nearest authored elevation is65°. Its local sprite
+    // geometry must still pivot at the actual80° ground centre. This catches
+    // vertical anchor errors at+45°, where a diagonal shift has zero X effect.
+    const centre=project(20.5,20.5,0);
+    const authoredElevation=Math.min(elevation,65)*Math.PI/180;
+    const authoredPoints = [-.5,.5].flatMap(x=>[-.5,.5].flatMap(y=>[0,cutaway?.34:.75].map(z=>({
+      x:centre.x+(Math.cos(r)*x-Math.sin(r)*y)*80,
+      y:centre.y+((Math.sin(r)*x+Math.cos(r)*y)*Math.sin(authoredElevation)-z*Math.cos(authoredElevation))*80,
+    }))));
+    const authoredSorted=[...authoredPoints].sort((a,b)=>a.x-b.x||a.y-b.y);
+    const authoredHull=[...half(authoredSorted),...half([...authoredSorted].reverse())];
+    const inside = (polygon: typeof hull,x:number,y:number) => polygon.every((p,i) => {
+      const q=polygon[(i+1)%polygon.length]!;
       // Three screen pixels cover minimap click rounding and antialiasing.
       return cross(p,q,{x,y})>=-3*Math.hypot(q.x-p.x,q.y-p.y);
     });
     const groundMinX = Math.min(...ground.map(point => point.x));
     const groundMaxX = Math.max(...ground.map(point => point.x));
-    let masonryInside=0,masonryOutside=0,masonryOutsideGroundSpan=0;
+    let masonryInside=0,masonryOutside=0,masonryOutsideGroundSpan=0,masonryOutsideAuthoredHull=0;
     const outsideBounds = { left:Infinity, top:Infinity, right:-Infinity, bottom:-Infinity };
     // Isolated wall: the logistics rooms are fifteen rows away. The material
     // palette excludes dark footing/shadows and worker clothes. Native images
@@ -84,12 +95,13 @@ async function wallEvidence(page: Page, png: Buffer, yaw: number, elevation: num
         // this horizontal ground span. Full prism bounds remain diagnostic:
         // the80° camera legitimately selects a65° authored elevation frame.
         if(x+.5<groundMinX-3 || x+.5>groundMaxX+3)masonryOutsideGroundSpan++;
-        if(inside(x+.5,y+.5))masonryInside++;
+        if(!inside(authoredHull,x+.5,y+.5))masonryOutsideAuthoredHull++;
+        if(inside(hull,x+.5,y+.5))masonryInside++;
         else {masonryOutside++;outsideBounds.left=Math.min(outsideBounds.left,x);outsideBounds.top=Math.min(outsideBounds.top,y);
           outsideBounds.right=Math.max(outsideBounds.right,x);outsideBounds.bottom=Math.max(outsideBounds.bottom,y);}
       }
-    return { yaw,elevation,ground,hull,groundMinX,groundMaxX,masonryInside,masonryOutside,masonryOutsideGroundSpan,outsideBounds };
-  }, { base64: png.toString('base64'), yaw, elevation, target });
+    return { yaw,elevation,ground,hull,authoredHull,groundMinX,groundMaxX,masonryInside,masonryOutside,masonryOutsideGroundSpan,masonryOutsideAuthoredHull,outsideBounds };
+  }, { base64: png.toString('base64'), yaw, elevation, target,cutaway });
 }
 
 for (const cutaway of [false, true]) for (const pose of poses) test(`native completed ${cutaway ? 'cutaway' : 'full'} Brick wall occupies its chosen whole square at ${pose.yaw}/${pose.elevation}`, async ({ page }, info) => {
@@ -157,13 +169,14 @@ for (const cutaway of [false, true]) for (const pose of poses) test(`native comp
   await expect.poll(() => wallTextures.some(url => url.includes(`square-brick-${cutaway ? 'low' : 'full'}-wall-yaw${pose.yaw<0?'-':'+'}${String(Math.abs(pose.yaw)).padStart(3,'0')}-elev${pose.elevation===80?65:pose.elevation}`))).toBe(true);
   // Request completion can precede Phaser's batch-complete repaint. Require
   // authored material, then retain the exact buffer used for pixel evidence.
-  await expect.poll(async()=> (await wallEvidence(page,await canvas.screenshot(),pose.yaw,pose.elevation,target)).masonryInside).toBeGreaterThan(200);
+  await expect.poll(async()=> (await wallEvidence(page,await canvas.screenshot(),pose.yaw,pose.elevation,target,cutaway)).masonryInside).toBeGreaterThan(200);
   const png=await canvas.screenshot();
-  const measured = await wallEvidence(page,png,pose.yaw,pose.elevation,target);
+  const measured = await wallEvidence(page,png,pose.yaw,pose.elevation,target,cutaway);
   await writeFile(info.outputPath('native-wall-canvas.png'),png);
   await page.screenshot({path:info.outputPath('native-completed-wall.png')});
   await writeFile(info.outputPath('native-ground-footprint.json'),JSON.stringify({cutaway,pose,point,mapClick,target,measured,wallTextures,snapshot,workerCommands:await sentCommands(page)},null,2));
   expect((await sentCommands(page)).filter(c=>c.type==='PlaceBuildOrder')).toHaveLength(1);
   expect(measured.masonryInside,'actual wall material must be visible in the occupied volume').toBeGreaterThan(200);
   expect(measured.masonryOutsideGroundSpan,'visible masonry must fit the horizontal span of its occupied1×1 square; height and shadows cannot justify sideways spill').toBeLessThanOrEqual(20);
+  expect(measured.masonryOutsideAuthoredHull,'nearest authored frame must pivot at the occupied square ground centre, preserving accepted elevation quantization').toBeLessThanOrEqual(20);
 });
