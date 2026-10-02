@@ -203,6 +203,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
         return;
       }
       if (pointer.button !== 0) return;
+      if (this.turnPointerId !== undefined) return;
       this.hoveredScreenPoint = { x: pointer.x, y: pointer.y };
       const world = this.worldPointOf(pointer);
       const kind = this.buildTool?.isArmed() === true ? 'build'
@@ -254,11 +255,13 @@ export class ObliqueWorldScene extends Phaser.Scene {
         return;
       }
       if (this.gesture?.pointerId === pointer.id) {
+        if ((pointer.buttons & 1) !== 0) return;
         this.gesture.current = this.worldPointOf(pointer);
         this.commitGesture();
         return;
       }
       if (pointer.id !== this.turnPointerId) return;
+      if ((pointer.buttons & 2) !== 0) return;
       this.turnPointerId = undefined;
       this.turnPointerAt = undefined;
     };
