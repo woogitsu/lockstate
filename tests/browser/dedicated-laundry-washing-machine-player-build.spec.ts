@@ -48,6 +48,24 @@ async function fixtureAnchors(page: Page): Promise<string[]> {
   });
 }
 
+async function fixtureOwnership(page: Page) {
+  return page.evaluate(async () => {
+    const reply = await (window as ProbeWindow).askWorker!('simulation/request-snapshot', { reason: 'consistency-check' }) as {
+      payload: { snapshot: { data: {
+        construction: { orders: { id: string; state: string; location: { x: number; y: number }; objectOrientation?: number }[] };
+        simulation: { objects?: { placedObjects: { objectId: string; anchorTile: { x: number; y: number }; orientation: number; sourceOrderId?: string }[] } };
+      } } };
+    };
+    const data = reply.payload.snapshot.data;
+    return (data.simulation.objects?.placedObjects ?? [])
+      .filter(object => object.objectId === 'object.washing-machine')
+      .map(object => ({ objectId: object.objectId, sourceOrderId: object.sourceOrderId,
+        anchorTile: object.anchorTile, orientation: object.orientation,
+        order: data.construction.orders.find(order => order.id === object.sourceOrderId),
+      })).sort((a, b) => a.anchorTile.x - b.anchorTile.x || a.anchorTile.y - b.anchorTile.y);
+  });
+}
+
 async function washerPalettePixels(page: Page, png: Buffer, quarterTurns: 0 | 1): Promise<number[]> {
   return page.evaluate(async ({ base64, quarterTurns }) => {
     const bitmap = await createImageBitmap(new Blob([Uint8Array.from(atob(base64), c => c.charCodeAt(0))], { type: 'image/png' }));
@@ -158,6 +176,16 @@ test(`player builds Laundry at quarterTurns${quarterTurns} and retains washing m
     : ['object.washing-machine@24,6:orientation=1', 'object.washing-machine@24,8:orientation=1'];
   const actualBefore = await fixtureAnchors(page);
   expect(actualBefore).toEqual(expected);
+  const ownershipBefore = await fixtureOwnership(page);
+  expect(ownershipBefore).toHaveLength(2);
+  expect(new Set(ownershipBefore.map(object => object.sourceOrderId)).size).toBe(2);
+  for (const object of ownershipBefore) {
+    expect(object.sourceOrderId).toEqual(expect.any(String));
+    expect(object.sourceOrderId!.length).toBeGreaterThan(0);
+    expect(object.order?.state).toBe('completed');
+    expect(object.order?.location).toEqual(object.anchorTile);
+    expect(object.order?.objectOrientation ?? 0).toBe(object.orientation);
+  }
   await writeFile(info.outputPath('completed-worker-snapshot.json'), JSON.stringify(await page.evaluate(async () =>
     (window as ProbeWindow).askWorker!('simulation/request-snapshot', { reason: 'consistency-check' })), null, 2));
   await expect.poll(async () => (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate')).toEqual([
@@ -187,6 +215,8 @@ test(`player builds Laundry at quarterTurns${quarterTurns} and retains washing m
   await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
   const actualAfter = await fixtureAnchors(page);
   expect(actualAfter).toEqual(expected);
+  const ownershipAfter = await fixtureOwnership(page);
+  expect(ownershipAfter).toEqual(ownershipBefore);
   await writeFile(info.outputPath('loaded-worker-snapshot.json'), JSON.stringify(await page.evaluate(async () =>
     (window as ProbeWindow).askWorker!('simulation/request-snapshot', { reason: 'consistency-check' })), null, 2));
   await minimap.click({ position: { x: bounds.width * 22.5 / 32, y: bounds.height * 7.5 / 32 } });
@@ -198,7 +228,7 @@ test(`player builds Laundry at quarterTurns${quarterTurns} and retains washing m
   expect(afterPixels).toEqual(beforePixels);
   const evidencePath = info.outputPath('dedicated-laundry-washing-machine-worker-and-save-evidence.json');
   await writeFile(evidencePath, JSON.stringify({
-    quarterTurns, actualBefore, actualAfter, beforePixels, afterPixels,
+    quarterTurns, actualBefore, actualAfter, ownershipBefore, ownershipAfter, beforePixels, afterPixels,
     commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
   }, null, 2));
   await info.attach('dedicated-laundry-washing-machine-worker-and-save-evidence', { path: evidencePath, contentType: 'application/json' });
