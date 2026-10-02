@@ -13,9 +13,15 @@ Keep the existing four-column catalogue, card names, dimensions, furniture count
 - Production mutation changing every footprint to 1 by 1: 16 failures, 5 passes; restoring full footprints: 97 tests green.
 - Module boundary gates: 46 tests green. TypeScript build green.
 
-## Runtime verification pending
+## Obtained runtime verification
 
-Prepared actual Full HD room-template-cards browser assertions for two distinct basic-cell fixtures, the elongated bed, three large-cell fixtures and eight four-cell-row fixtures. Browser execution and visual recognizability are pending the coordinator's exclusive browser lease. Unit results do not establish readable runtime miniatures.
+Production Cloudflare artifact, actual angled 1920 by 1080 player UI: New prison, Build, Room plans. A single-worker browser case measured all 20 miniature envelopes at most 56 pixels on either axis and every fixture rectangle inside its diagram. The basic cell has two fixtures including one elongated two-square bed; the large cell has three and the four-cell row eight. Door bars leave visible clearance rather than looking like full walls. The modal and Place on map control stay within the Full HD viewport. Actual Four-cell row selection and map arming produce the real 112-square world ghost.
+
+Baseline session 25807: exit 0, one pass, 20.4 seconds. Production mutation in room-template-preview.ts forcing every fixture grid-row span to one: session 63003 exit 1, one failure, 19.4 seconds; the actual bed height became 7 pixels, below the required 12.6 pixel aspect-ratio bound. Restored source rebuilt: session 59155 exit 0, one pass, 20.5 seconds. Original 60-second budget, one worker and zero retries were retained.
+
+Opened and visually inspected the saved Full HD screenshot: all 20 cards visible, basic/large/four-cell layouts distinct, full fixture rectangles visible, selected large preview and controls usable. Small card schematics communicate arrangement and footprint, not individually textured furniture artwork. This proves Full HD at the existing default UI scale, not every browser scaling setting.
+
+![Actual room-plan miniature catalogue](./room-catalogue-cards-fullhd.png)
 
 ## Source-scale and contrast audit
 
