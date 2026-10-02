@@ -1,0 +1,477 @@
+{
+  "schemaVersion": 1,
+  "assetId": "furniture.yard.steel-bench",
+  "source": "assets/source/blender/furniture.yard.steel-bench.blend",
+  "sourceSha256": "c8da6cb0ac4a4160483873e61041e3fbfc9f4450dbf20eced59ddc4ab11ea7a7",
+  "resolutionPx": [
+    256,
+    256
+  ],
+  "nominalPixelsPerTile": 64,
+  "pivotPx": [
+    128,
+    128
+  ],
+  "cameraTargetTiles": [
+    1.0,
+    0.5,
+    0.52
+  ],
+  "projection": "orthographic",
+  "yawDegrees": [
+    0,
+    30,
+    60,
+    90,
+    120,
+    150,
+    180,
+    210,
+    240,
+    270,
+    300,
+    330
+  ],
+  "elevationDegrees": [
+    20,
+    30,
+    40,
+    50,
+    60,
+    70
+  ],
+  "frames": [
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+00-elev20.52b6317496d9.png",
+      "sha256": "52b6317496d98fd58176da55cd22304a37e56cc11f70e40966f06dde0213aa9e"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+00-elev30.4daf054d27be.png",
+      "sha256": "4daf054d27be67312360423ae24f2092d651a42df55bdedb991ce6c4b2fa921a"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+00-elev40.187e563b43f1.png",
+      "sha256": "187e563b43f1bb05a5d051d1dd55c1b1baa64b6558b5ae79f0740c08f4b918a4"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+00-elev50.28c20a91cd2c.png",
+      "sha256": "28c20a91cd2c59420a76f37b792d6ee65c103bd9b0b46fd9fbe32a27d54f97a9"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+00-elev60.6c9726c8bb76.png",
+      "sha256": "6c9726c8bb76975e64778f5d8e29d193795e46bb08d1f1286cd8ce5379f5c389"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+00-elev70.75ea91c8c551.png",
+      "sha256": "75ea91c8c5514930dc25cfc6f471f446d84e42960161d7266423630f18ea51ef"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+30-elev20.11f13a07d2cf.png",
+      "sha256": "11f13a07d2cf17ab336d583653ed10fceab2a58256498650cf959a3028b0ed9b"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+30-elev30.ba7984baa822.png",
+      "sha256": "ba7984baa8228cfca3b55a5d16a3db0d510e7a685948c1a1adb8a6a7db51e104"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+30-elev40.cd474614250e.png",
+      "sha256": "cd474614250e2e1a9b0ee82d5eb60518c2bbd4a0b2dc758487585a148db9b10a"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+30-elev50.1e231cd4a976.png",
+      "sha256": "1e231cd4a976bccbe04099d39620e33e7c2c4f95ed2f16787565ca2de4fca07c"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+30-elev60.51de72d8d6c6.png",
+      "sha256": "51de72d8d6c6cd9f15e94840b2d469f9c744fa3818679cc4e8be3bfe08580989"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+30-elev70.8c64ed89827e.png",
+      "sha256": "8c64ed89827ed7f451edcf89d5eb54ad9a9954a5ca3df7404e67b2366a834adc"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+60-elev20.36f4cfc3a3ac.png",
+      "sha256": "36f4cfc3a3ac7282b164a41386785ca38180547452a2218b766f0c682d03906d"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+60-elev30.2758579c7104.png",
+      "sha256": "2758579c71041e5c4a18966d1787431c6bc7bd8188f6f1af29bb466dad51382b"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+60-elev40.ffa6900717d2.png",
+      "sha256": "ffa6900717d273fceecccab9c0f9a2441023907a0aeae5c0946d5e0455da9337"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+60-elev50.1b06b655fc9e.png",
+      "sha256": "1b06b655fc9e1e9748ecbeb755963a52806116615036a041b52246a85f49b8d0"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+60-elev60.2c5d12aa5646.png",
+      "sha256": "2c5d12aa56462e23c908a0d881205cd2dbe55df201aaa4a266c350feb059ae3b"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+60-elev70.44679c45f71b.png",
+      "sha256": "44679c45f71b08e3a4717fad489a8e8edfb20b615097150d26f63e0a7112a57d"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+90-elev20.673fcfe368b1.png",
+      "sha256": "673fcfe368b111d886d1d81081ab01dd911301eeba6fab896a03e1d085b805e0"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+90-elev30.2bc23d5002c8.png",
+      "sha256": "2bc23d5002c85a5a2b0c8b03bb68fc427596ec0b677c04d570497f06cfa8c301"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+90-elev40.e0d3694c525d.png",
+      "sha256": "e0d3694c525dd816736871d57a19b6ff9e0335819b8a5dcf24a22a6464a2bd6e"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+90-elev50.3d816a367dfa.png",
+      "sha256": "3d816a367dfaf04940276a98f2f4da11dca84985658295a14d216744ef09133a"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+90-elev60.fecfd4512fa6.png",
+      "sha256": "fecfd4512fa6d6456348fe0c798ebe3aea2c9c7cce97530fa7e68afd17ba97ba"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+90-elev70.462c81522e3e.png",
+      "sha256": "462c81522e3e16cc896e5fec8c3b198c512bfdaef317d16a508c6e037452c64d"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+120-elev20.dc936104ca08.png",
+      "sha256": "dc936104ca08d24a162ffaa3a45055b114497768dc772d5dd96ce97a2038afc7"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+120-elev30.0a3c14d40a22.png",
+      "sha256": "0a3c14d40a22c7b9f8d6ecf1bbe3c1140bd64b7bb3ff01d554e33776803fcd7b"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+120-elev40.8f9f8ac0ed98.png",
+      "sha256": "8f9f8ac0ed9810571ce0eb034bae20b96851428e74e6aabb09f0f9c7baa7c5d1"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+120-elev50.d6607e87c967.png",
+      "sha256": "d6607e87c967f84356990aa305d277979b81eba5226e305db4d7dae35c010246"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+120-elev60.5e0ccc631b4e.png",
+      "sha256": "5e0ccc631b4ef59b4e91ed4b23167f7b3e5152f787935af92cc4e69f99e2e56e"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+120-elev70.4cf7ba5be00b.png",
+      "sha256": "4cf7ba5be00bc4e6bc5596b922be0a8f7e2ad2cb7220017ad1f6592273711548"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+150-elev20.d6bacfc0502e.png",
+      "sha256": "d6bacfc0502eb916298c6faab2f31da956ec49be491efa7b7da3306d283f141d"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+150-elev30.370cb9842d68.png",
+      "sha256": "370cb9842d68826e182acad5246cde6a140aeadea222705dec82b9aba3576b29"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+150-elev40.d948b6ea29d1.png",
+      "sha256": "d948b6ea29d127eb7e80e5cfb41c4e60414bb22927f51f691355dd896cb576ed"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+150-elev50.31ac782a0f32.png",
+      "sha256": "31ac782a0f3224537f49886d73b0a926a2c18e6e37a6212be4f4fd373262d72a"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+150-elev60.067f59fd67bd.png",
+      "sha256": "067f59fd67bdf601c443bf590faae1116e92c6e522cf38945e38786cd14309c5"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+150-elev70.e43bd5d09958.png",
+      "sha256": "e43bd5d099589e3249547d66a457514a418a9f6c735fa0b219366d94cabdb762"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+180-elev20.0da5dc85bbbe.png",
+      "sha256": "0da5dc85bbbe9326d30dd2b8f4ea762f951d6b05c929379454d9dc6869126e78"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+180-elev30.d3c4c593a315.png",
+      "sha256": "d3c4c593a31540f6b9d14111d859b8421b09b10caff9006c988f3d3790b3c369"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+180-elev40.c1271192ef7c.png",
+      "sha256": "c1271192ef7c14c6b32d1c0348a0c39136e09083bb426801eab4794d11b4bd92"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+180-elev50.4f36a518f5f5.png",
+      "sha256": "4f36a518f5f535e7df18f68cc2e9c21b9e7793dff8bf2ebab7e5e13a58f82cff"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+180-elev60.9ab599fcb328.png",
+      "sha256": "9ab599fcb328425b03d724a39723d26d272a6e12a2e84db6737c16ed7cdcdf52"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+180-elev70.edd6a6a38cef.png",
+      "sha256": "edd6a6a38cef08863973e6623c0a2f52e1b309a635fd8a711a79ba709239b9e4"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+210-elev20.925a4b12aa28.png",
+      "sha256": "925a4b12aa28ad992d0a017e8de8b25a30ab533aabaabfe6df457caa64e306b1"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+210-elev30.bfd259e1ade5.png",
+      "sha256": "bfd259e1ade5d4f585147b4f01fdb5f088a38c3de8a7910a165feeca8b97ae8e"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+210-elev40.5325ba14a548.png",
+      "sha256": "5325ba14a548b5327512c6ff8fbdbf1efa5de22467ebd66d0b761649827c6c39"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+210-elev50.98dda21aba6e.png",
+      "sha256": "98dda21aba6eb7d8f5a01709f1eefb06cf58f9a4023d189a5fc6254229296346"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+210-elev60.7f151ce9b9ae.png",
+      "sha256": "7f151ce9b9ae16640fe9d04439231fd196b13c6c991de8ec6122ac634750d8e3"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+210-elev70.1429da177f94.png",
+      "sha256": "1429da177f946afed86e6707e8c93104f5aa89f193c2bf442d35425311611499"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+240-elev20.13b8ae1635b2.png",
+      "sha256": "13b8ae1635b2d81b0e77969dba6c8b628ae5b11b670283de8ced533b806fec31"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+240-elev30.4f4cbce39e36.png",
+      "sha256": "4f4cbce39e364b5d45339c2cf8e05692ae3fd53ac0eeebd320afc48e072f142f"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+240-elev40.83cfde14b33c.png",
+      "sha256": "83cfde14b33c087c1d1f32cfcbe99ca1a08acd01bb772583be7b12440fef3255"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+240-elev50.9f821d446680.png",
+      "sha256": "9f821d44668013a0b7ec45bddeb673e548d78572e57a4eb83ed330babcfd4b0e"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+240-elev60.76048719aeb3.png",
+      "sha256": "76048719aeb3017cbf41ff136ca173190c559aaa9ef84293708c7760acec7864"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+240-elev70.c4450b0b5c03.png",
+      "sha256": "c4450b0b5c03a7bd3662fb9b4def22824b642c45192147bf37a936fa5b1bab69"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+270-elev20.a2c261475cff.png",
+      "sha256": "a2c261475cffa76872e33302909d1f5224bfc767b12858caa39093f66def24d6"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+270-elev30.61cab073b03c.png",
+      "sha256": "61cab073b03c193eb4258470b852fe74d9886db4e37a078b01e8a0f5154e08f0"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+270-elev40.13a33d24a894.png",
+      "sha256": "13a33d24a8946d8f7fdb038f13e81017e2d63010650ef39251c87809d2395316"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+270-elev50.5ed41e90f121.png",
+      "sha256": "5ed41e90f1213aff6ae5e09ef3f74f93d9eea43441a2316b22de1dc3967e859f"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+270-elev60.6eb796de264e.png",
+      "sha256": "6eb796de264e4553ba84ab10049402d7d685ecbfa0564f72e0672aeb695f3206"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+270-elev70.d02555c653d5.png",
+      "sha256": "d02555c653d565cb1fdc283be1d52262b9a38d76fb79c44aaf88508592d84e01"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+300-elev20.a6e342506637.png",
+      "sha256": "a6e342506637ea7bc074287b2d4c4d64483e9661cb81058c0a7c06dd9cda28af"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+300-elev30.07e062e2cdcc.png",
+      "sha256": "07e062e2cdccc30df09cef72fc67ea7e05c914dadff1fe155bb642fc8878ba72"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+300-elev40.5e4ce93fa297.png",
+      "sha256": "5e4ce93fa297120ed8ea22b4afe49ff1141ebcfc2934fe3b2f0d7d2aeb54c6e8"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+300-elev50.c1f83e0f436d.png",
+      "sha256": "c1f83e0f436d9f7c3a7c752fc6b08e6382630a293ae0a5b13b93d1a24e15ff16"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+300-elev60.e53f65e06a8d.png",
+      "sha256": "e53f65e06a8d8a593fa26ac55d94b37c1d9469c4d92d625e163b51cf6a59c88f"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+300-elev70.21669ac88b95.png",
+      "sha256": "21669ac88b95624e1e2d56016ad7014819a10152fd52b54ff3780105d49b1517"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+330-elev20.298c10012cc6.png",
+      "sha256": "298c10012cc6eaf73e2ddd2e3c307231cf08782e4181d5eb2df1f79a97571fc6"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+330-elev30.44af2b3214dc.png",
+      "sha256": "44af2b3214dce2d9895dbcd5dc4043e61709e2f13594dbf20b8e9f0d542b1062"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+330-elev40.0ea48069a27d.png",
+      "sha256": "0ea48069a27d766daaa74a33a5e8a40e37578b8b6d5bf4e53a62585d1c5d4ce0"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+330-elev50.d7f1a54d2ef8.png",
+      "sha256": "d7f1a54d2ef859943c3fcc8e9bb8fb070c5c445308802a5a3cde85e3cd7c6524"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+330-elev60.c5022e2f490e.png",
+      "sha256": "c5022e2f490e518748300e905012ce0d42f9e1e97d1123509102c6be7b86e6f0"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+330-elev70.26341961da90.png",
+      "sha256": "26341961da904759d76d33a46e4be7c9fa30d9a4a2b3f40e5939d31122c75574"
+    }
+  ]
+}
