@@ -62,3 +62,28 @@ ground centre of the placed origin square and additionally checks same-origin
 worker preflight and a genuine blocked click issuing no second command. It keeps
 all28 polygons, area and HUD-safe bounds, exact first-placement origin and Escape
 guards. This follow-up is native-pending; the five keyboard routes remain pending.
+
+## Retained-origin and captured-PNG checks completed
+
+The corrected picking consumer now passes its complete four-yaw native case in
+35.9s, retaining the original 120s budget. Every first placement agrees with the
+independent pre-fit inverse calculation. The repeat uses the placed square's
+captured ground centre after fitting, remains blocked at that exact origin and
+issues no second placement command. [Complete output](root-picking-four-yaw-restored.txt).
+
+The actual actor image producer was temporarily changed to hide pooled images.
+The unchanged canonical cook/medic/staff test then failed in5.2s at its original
+pixel guard: zero changed pixels versus greater than100. The original source
+bytes were restored in a finally block and verified equal; production diff is
+zero. [Actual negative](root-actors-visibility-negative.txt).
+
+All five original actor cases subsequently pass in40.9s with the explicit PNG
+equivalence diagnostic enabled. The old browser decoder and new Node decoder
+consume the SAME captured opaque PNGs and unchanged RGB threshold/rectangles.
+Their three measured samples agree exactly: [3731,3557,3685] for roles,
+[0,56,3177] for wall depth, and [0] after movement behind the wall. Node decoding
+and sampling takes79.54–89.20ms; browser decoding and sampling takes3230.03–3319.71ms
+on this local run. These are measured per-sample diagnostics, not a whole-CI
+speed prediction. [Restored output](root-actors-equivalence-restored.txt) and
+[exact same-capture counts](root-actors-equivalence-counts.json) are retained.
+The five longer real keyboard routes remain a separate pending native run.
