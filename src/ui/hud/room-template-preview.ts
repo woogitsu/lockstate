@@ -168,6 +168,10 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
       const current = ++revision;
       place.disabled = true;
       quoteReadout.textContent = '';
+      // The previous verdict is not a result of this new worker query.
+      status.textContent = '';
+      status.setAttribute('aria-busy', 'true');
+      for (const square of diagram.children) square.classList.remove('hud-template__tile--blocked');
       // A static catalogue quote also serves map placement. Invalid advanced
       // coordinates may disable that submit, but cannot erase the map quote.
       void tool.quote().then((quote) => {
@@ -177,12 +181,14 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
       });
       const tile = origin();
       if (tile === undefined) {
+        status.setAttribute('aria-busy', 'false');
         status.textContent = t(HUD_MESSAGE_KEY.buildTemplateInvalidPosition);
         return;
       }
       try {
         const { plan, verdict } = await tool.inspectAt(tile);
         if (current !== revision) return;
+        status.setAttribute('aria-busy', 'false');
         place.disabled = !verdict.ok;
         for (const square of diagram.children) square.classList.remove('hud-template__tile--blocked');
         if (!verdict.ok) {
@@ -198,7 +204,10 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
         }
         status.textContent = verdict.ok ? t(HUD_MESSAGE_KEY.buildTemplateReady) : `${t(HUD_MESSAGE_KEY.buildTemplateBlocked)} (${verdict.tile.x}, ${verdict.tile.y})`;
       } catch {
-        if (current === revision) status.textContent = t(HUD_MESSAGE_KEY.buildTemplateUnavailable);
+        if (current === revision) {
+          status.setAttribute('aria-busy', 'false');
+          status.textContent = t(HUD_MESSAGE_KEY.buildTemplateUnavailable);
+        }
       }
     };
     x.addEventListener('input', () => void refreshPlacement());
