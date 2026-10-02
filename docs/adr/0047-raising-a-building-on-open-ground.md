@@ -261,16 +261,21 @@ feature with a reader and no producer.
 ### Walls, doors and the build queue
 
 - A wall is an edge value. `finalizeConstruction`
-  (`src/simulation/construction/system.ts:1982`, `finalizeConstruction`) writes it through `writeEdge`
+  (`src/simulation/construction/system.ts:1983`, `finalizeConstruction`) writes it through `writeEdge`
   (`:2031`, called at `:1934`), which calls `setTopEdge`/`setLeftEdge` and
   therefore bumps `geometryRevision`.
 - `BuildableCategory` is `'wall' | 'object' | 'utility'`
   (`src/simulation/construction/definition.ts:6`). `wall-brick` is the only
   `'wall'`; a door is an `'object'` row carrying `placesDoor`.
 - Cancelling a `completed` order reverses its geometry
-  (`src/simulation/construction/system.ts:1192`, `revertConstruction`, defined at
-  `:2202`), rewriting the edge from any other completed order that still claims
+  (`src/simulation/construction/system.ts:1193`, `revertConstruction`, defined at
+  `:2203`), rewriting the edge from any other completed order that still claims
   it rather than clearing it.
+- **Completed-square footprint amendment at checkpoint f8c2957af1.** The previous
+  `system.ts:1982`, `:1192`, `:2202` and `object-placement-service.ts:551`
+  indications remain historical before the one-line expanded predicates in both
+  footprint loops. The live fragments still quote `finalizeConstruction`,
+  `revertConstruction`, `private revertConstruction` and `this.refuse('outside-room'`.
 - **Deferred-history source amendment at checkpoint a8435e3b90.** The previous
   `system.ts:1971`, `:1181` and `:2191` indications remain historical
   before the eleven-line exact gesture-continuation reader. The live completion
@@ -295,7 +300,7 @@ feature with a reader and no producer.
   and `:1966` coordinates are historical indications, retained here rather than
   erased. The current cancellation call is `revertConstruction` above; its
   implementation is `private revertConstruction` at
-  `src/simulation/construction/system.ts:2202`. The earlier numbered span had
+  `src/simulation/construction/system.ts:2203`. The earlier numbered span had
   already drifted into a comment, so the amended anchor names the actual call.
   **Occupied-template source amendment at checkpoint 322cb5e5a4:** the previous
   `system.ts:1120` and `:2092` coordinates remain historical indications before
@@ -324,7 +329,7 @@ feature with a reader and no producer.
   rectangle's own perimeter, with the south and east sides read off neighbouring
   tiles.
 - Objects already require a room: `PlaceObject` refuses `outside-room`
-  (`src/simulation/objects/object-placement-service.ts:551`, `this.refuse('outside-room'`; previously `:544` before the pending entrance claim reader).
+  (`src/simulation/objects/object-placement-service.ts:552`, `this.refuse('outside-room'`; previously `:544` before the pending entrance claim reader).
 
 ### Rendering
 
