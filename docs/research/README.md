@@ -366,3 +366,5 @@ and it stopped one step short of its own consequence.
   caller in `src/` — the same class as issue #287's two uncalled capabilities,
   three layers deeper.
 
+
+- [Authored Build catalogue thumbnails](2026-10-02-build-object-thumbnails/README.md) - presentation URL seam and pending Full HD proof.
