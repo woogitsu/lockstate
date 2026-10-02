@@ -674,3 +674,11 @@ Utility Room readable-angle baseline passes2/2 (43.6/35.5seconds). Four real HUD
 
 ## Utility panel visual acceptance completed — 2026-10-02
 Authored teal display pixels (RGB41/113/118) are sampled in a fixed panel-only region before and after SaveLoad, requiring more than100 pixels and identical counts. Baseline2/2green45.1/37.5seconds. Replacing only object.utility-panel's production mapping with the existing generic desk leaves setup/construction working but fails exactly on authored panel pixels (0). Exact source-byte restoration and a rebuilt production client return2/2green45.0/33.6seconds. Tools TypeScript passes. This completes consumer sensitivity for the readable FullHD scene, not all-angle coverage or deployment. Three authorized parallel agents now cover loading-dock Blender, FullHD HUD menu and room-template coverage; browser execution is serialized.
+
+## Owner decisions and parallel integration — 2026-10-02
+The owner explicitly approved through clickable decisions in this conversation:
+- Optional simulation.roomTemplates.undone and completed save fields; older saves without them load empty lists.
+- quarterTurns and objectOrientation values0..3; older absent values mean0. This authorizes the proposed save-format compatibility strategy for room-template rotation.
+- Rectangular room minima accept either orientation (e.g.2x5 or5x2), retaining minimum tile count and other requirements.
+These remove the three previously recorded owner-decision blockers. Implementation and actual acceptance of rotation are still pending; approval is not completion. Gameplay/persistence and UI/preview are assigned to separate agents; root integrates their results.
+Integrated Layout Escape fix preserves armed Build in standard and angled FullHD200% views (baseline red, scoped fix green, production mutation red, exact restoration green). Mirrored and normal Delivery Bay pending/completed SaveLoad now check both worker projections; targeted producer mutation red and exact restoration45/45green. Loading dock now has actual construction/SaveLoad browser proof with anchors13,6 and21,6, authored glazing2522pixels before/afterLoad, consumer mapping mutation0red and exact rebuilt restoration2/2green. Hosted availability and exact-head CI remain unverified.
