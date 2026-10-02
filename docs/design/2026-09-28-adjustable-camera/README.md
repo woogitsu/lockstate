@@ -1286,7 +1286,7 @@ The actual actor-visibility producer mutation gives zero pixels and RED; exact
 restoration passes all five with old/new decoders agreeing on the same captures.
 One keyboard consumer had rescanned into a different cell after an alert grew
 the minimap; its corrected measured-column aim retains exact origins and passes.
-[Root repair receipts](../../research/2026-10-02-browser-ci-timecap/root-controls-restoration.md)
+[Root repair receipts](https://github.com/woogitsu/lockstate/blob/873093cae8/docs/research/2026-10-02-browser-ci-timecap/root-controls-restoration.md)
 are on `codex/integrate-first-ci-repair-20261002`; they have not been silently
 applied to the frozen candidate head or represented as full-suite success.
 
