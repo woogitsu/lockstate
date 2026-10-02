@@ -359,7 +359,7 @@ describe('what the placement does to the rest of the prison', () => {
     // capacity is a function of them and is recomputed on load, which is what
     // makes a restored session equal to the live one by construction.
     expect(bundle.simulation?.objects?.placedObjects).toEqual([
-      { placedObjectId: 'object:4:6', objectId: 'object.bed', anchorTile: { x: 4, y: 6 }, orientation: 0 },
+      { placedObjectId: 'object:4:6', objectId: 'object.bed', anchorTile: { x: 4, y: 6 }, orientation: 0, sourceOrderId: 'bed-1' },
     ]);
     expect(bundle.simulation?.prisoners.roomInstanceDefinitions).toEqual([
       { instanceId: cellInstanceId, roomCatalogId: CELL, anchorTile: { x: 4, y: 6 }, width: 2, height: 3 },

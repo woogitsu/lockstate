@@ -541,8 +541,8 @@ describe('what the toilet does and does not change in the running prison', () =>
     // put `object:10:6` before `object:9:6`. `computeSaveChecksum` hashes array
     // order, so the key is part of the format rather than a detail.
     expect(bundle.simulation?.objects?.placedObjects).toEqual([
-      { placedObjectId: 'object:4:6', objectId: 'object.bed', anchorTile: { x: 4, y: 6 }, orientation: 0 },
-      { placedObjectId: 'object:5:6', objectId: 'object.toilet', anchorTile: { x: 5, y: 6 }, orientation: 0 },
+      { placedObjectId: 'object:4:6', objectId: 'object.bed', anchorTile: { x: 4, y: 6 }, orientation: 0, sourceOrderId: 'bed-1' },
+      { placedObjectId: 'object:5:6', objectId: 'object.toilet', anchorTile: { x: 5, y: 6 }, orientation: 0, sourceOrderId: 'toilet-1' },
     ]);
     // And no capacity anywhere in the room-instance row: it is a function of
     // those two rows and is recomputed on load.
