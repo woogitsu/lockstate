@@ -1,5 +1,7 @@
 # Dedicated authored Kitchen stove detail source
 
+Current checkpoint: genuine own production-client Kitchen normal/90 worker construction and Save/Load pass, eight consumer pixel negatives observed, byte-exact restoration and final3/3green. Integration/hosted acceptance is not claimed.
+
 Source preparation based on published integration `e43ec87516d94d40eec12018fca8f945faed455e`. Canonical `object.stove` / numeric ID 9 / `stove-brick`, authoritative 2x1 footprint and food-preparation capability remain unchanged. Existing asset ID `furniture.kitchen.stove.variants` and descriptor `oblique-furniture.kitchen-stove.v1.json` remain the production identities.
 
 ## Existing counterpart and truthful scope
@@ -30,7 +32,7 @@ Five native production mutations each exit 1: remove an authored collar; move an
 
 Seven focused suites pass 58 cases with one pre-existing optional live-Blender skip; both own entrypoints also ran through pinned native Blender, independently of that skip. App/tools TypeScript checks pass.
 
-## Native acceptance pending
+## Native acceptance queue at export checkpoint
 
 Real Kitchen workers, normal/90 degree isolated palette regions, actual SaveLoad, default stove consumer-only mutation and exact restoration remain pending an exclusive browser grant. No stove browser has launched. Existing prep counter/fridge source, registry, mapping and gameplay rules remain unchanged. No hosted acceptance claim.
 
@@ -46,4 +48,16 @@ Exclusive browser lease was granted by the coordinator. Initial actual built-cli
 
 Both initial loaded FullHD images were opened. Final disjoint stove-only regions are calibrated from their actual pixels: normal enamel125/124/121 at735,490,50,35 gives832, cast-iron44/50/52 at790,390,45,30 gives35; rotated enamel148/147/145 at885,375,70,40 gives77, grate44/50/52 at905,320,50,35 gives82. Final thresholds500/25 and50/50 keep a visible margin. The rotated right wall genuinely hides the right oven/side vents; no claim is made that those hidden details are visible. Final assertions test the exposed enamel and grate geometry. The authored orange cores remain visible but occupy few exact sampled pixels.
 
-The fixture now uses these calibrated isolated regions. Its rebuilt baseline, consumer-only removal, exact source/mapping restoration and final green remain next; `native-calibration.json` intentionally records that boundary. Original source SHA remains unchanged. No core/UI/save/workflow edits.
+The fixture now uses these calibrated isolated regions. At this checkpoint its rebuilt baseline, consumer-only removal, exact source/mapping restoration and final green remained next (completed below); `native-calibration.json` intentionally records that boundary. Original source SHA remains unchanged. No core/UI/save/workflow edits.
+
+## Final actual consumer negative and restoration proof
+
+Calibrated native baseline3/3green43.6/38.5/38.6s. Remove only the existing default `object.stove` mapping row and rebuild the actual client. Both separately executed real two-stage normal/90 Kitchen routes retain all three expected authoritative objects/orientations before/after Save/Load. Each case produces four expected pixel failures (enamel and grate before/after Load), all counts0: eight pixel negatives total. Both negative loaded FullHD images were opened; other Kitchen fixtures remain rendered and the stove alone uses the flat fallback.
+
+The q0 evidence collector initially stopped after the valid completed negative because ordinary Windows path traversal did not see long artifact paths. Its finally block restored exact source/mapping bytes. Extended paths recovered the existing actual q0 evidence without repeating that browser route; the q1 negative and final restoration group ran afterward. This was postprocessing recovery, with no timeout/flow/assertion relaxation.
+
+Exact source and mapping byte restoration is followed by production rebuild and native3/3green44.2/40.1/41.3s. Final measured counts remain normal832/35 and rotated77/82, before/after Load. Original and dedicated Blender source hashes remain cbf3ed97... and540c8b22... respectively; mapping SHA256 `a9eada806ff523bc9933da9b7a2e8a731c5a896286e33b0551119d8e389dd2d4`. Baseline/mutated/restored simulation worker430906bytes are directly byte-identical, SHA256 `9a1b44f37fc50a2278905f0dfae45c1ef42b18f23a03e1d37929591952024c3f`, at frozen source commit `0e51c0830541d78c541af3bff4542272e0e2dfa4`.
+
+Both final `accepted-q0-loaded-fullhd.png` and `accepted-q1-loaded-fullhd.png` were opened and inspected. Their SHA256 values are `64c1ed7cc5f547febd51b63aaf4649bb4424532bf98fddfc4b1b596470e20ca7` and `3b2bb65d5c28e9c984ae3e8b5e0fd7dee44aee3c5e69ca7b689d8f543980b0db`. Worker-completed images and exact authoritative JSON evidence are preserved too; all four final PNG hashes are in `accepted-player-verification.json`. Terminal summaries and all eight measured failures are preserved in `native-terminal-excerpts.md`.
+
+Final focused gates58passed/1optional live-Blender skip; app/tools TypeScript green. Own pinned native Blender verification was already completed, including five production geometry/camera negatives and exact restoration. All browser processes are terminal; own preview port5197 has no listener. Exclusive browser lease explicitly released to coordinator/HUD. Manual ignored config removed. The coordinator owns canonical artifact-suite routing and root integration; no workflow, core, HUD, gameplay identity, footprint, palette or save rule edits were introduced.
