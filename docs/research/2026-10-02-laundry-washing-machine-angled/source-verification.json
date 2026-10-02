@@ -1,6 +1,10 @@
 {
   "negativeControls": [
     {
+      "name": "wrong-runtime-manifest",
+      "exitCode": 1
+    },
+    {
       "name": "omit-added-vent",
       "exitCode": 1
     },
@@ -24,7 +28,7 @@
   "exactWrapperBytesRestored": true,
   "sourceBytesUnchanged": true,
   "restoredNativeExitCode": 0,
-  "wrapperSha256": "9583370226e2849e09c58c48667d516c037a11a4a7d2d7114df61cd400ab3556",
+  "wrapperSha256": "5b6806165e3a1453c2f165695d294498933f6bc2c64a40405d1a9e4076b62efe",
   "sources": [
     {
       "path": "assets/source/blender/utility.washing-machine.variants.blend",

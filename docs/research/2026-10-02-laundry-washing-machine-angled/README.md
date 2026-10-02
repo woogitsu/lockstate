@@ -24,6 +24,14 @@ Five real native producer mutations each exit1: remove an added vent(mesh-set gu
 
 Pinned Blender5.2.1LTS upstream build ID9e2066aef7ef; executable SHA256 `284f4041f98e113f3dc10654a7193ffaaa9bfdfec8b87fa116620a48b5f6d4cb`. Both own entrypoints explicitly assert the version. The existing washing exporter MODELS row and all shared functions/default callbacks remain unchanged at this source checkpoint.
 
-## Next checkpoint
+## Canonical export checkpoint
 
-Production descriptor/72frames remain their accepted earlier version. Full deterministic export/repeat, all decoded borders/contact sheet, actual PNG mutation and focused integrity follow. A genuine normal/90Laundry native worker/SaveLoad fixture is queued behind coordinator's browser leases; no browser launched. No registry/schema/palette/buildable decisions or hosted acceptance claim.
+The first source checkpoint retained the previous production descriptor. Its dedicated wrapper initially used an incorrect manifest basename. Inspecting the first contact sheet exposed that the repeat harness read the old canonical descriptor while new geometry was rendered elsewhere. That old-descriptor comparison is not evidence for this model. The wrong untracked descriptor was removed; the wrapper now writes the existing runtime descriptor, independently checks its output basename against the actual registry, and the repeat harness requires the dedicated source path and its actual digest before collecting files.
+
+After correction, two full canonical exports produced 73/73 directly byte-identical files: the existing descriptor and all72 referenced frames. Manifest SHA256 `2c44d5a2c6f0b2497b4d3ad99c2da3de05a2bc2933bc1fb9295adb4d95cb5a32`. All72 decoded256x256 frames have transparent borders, minimum54pixels. The opened contact sheet shows the new physical door rim, side louvres and raised inspection seam across the actual exported poses. Contact-sheet SHA256 `6902ba94e7dc46cbf299f516a31771f79d4f3d7eb826aab845deaacc88f6ef83`; machine-readable receipt in `export-verification.json`.
+
+Six actual native producer negatives now include the incorrect runtime manifest name as well as mesh omission, moved geometry, loaded scale, camera span and camera vector. Each exits1; exact wrapper/source restoration yields native verification exit0. The receipt records the final wrapper bytes. Appending bytes to an actual referenced PNG fails the dedicated integrity test at its content hash; exact PNG restoration passes (`png-control.json`). Focused seven-suite run:55passed,1optional Blender-subprocess skipped. App/tools TypeScript validation exits0.
+
+Only the existing washing-machine exporter's MODELS tuple changes to the dedicated source, unit fit and measured target. The prior approved Y contraction is baked into retained geometry. Shared pipeline functions/default callbacks, other model rows, original source and runtime identity/registry remain unchanged.
+
+A genuine normal/90Laundry native worker/SaveLoad fixture remains queued behind coordinator's browser leases; no browser launched. This source/export checkpoint does not claim native or hosted acceptance. No registry/schema/palette/buildable decisions.

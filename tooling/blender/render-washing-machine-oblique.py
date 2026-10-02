@@ -12,7 +12,7 @@ spec.loader.exec_module(exporter)
 exporter.PREVIEW = exporter.ROOT / 'assets/intermediate/washing-machine-preview'
 # Y needs slight contraction: the evaluated front handle extends past -0.5.
 exporter.MODELS = (
-    ('utility.washing-machine.variants', 'utility.washing-machine.variants.blend',
-     'oblique-utility.washing-machine.v1.json', 2, 1, 1.0, 0.8, 0.8),
+    ('utility.washing-machine.variants', 'utility.washing-machine.angled.blend',
+     'oblique-utility.washing-machine.v1.json', 2, 1, 1.0, 1.0, 0.7825000286102295),
 )
 exporter.main()
