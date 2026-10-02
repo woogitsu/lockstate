@@ -1,0 +1,10 @@
+$ vitest run "tests/unit/ui-room-plan-world-camera-projector.test.ts" "--maxWorkers=2"
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-preview-minimap-audit-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  24 passed (24)
+   Start at  00:56:59
+   Duration  226ms (transform 17ms, setup 0ms, import 74ms, tests 13ms, environment 0ms)
+
