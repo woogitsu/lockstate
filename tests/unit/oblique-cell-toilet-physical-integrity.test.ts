@@ -15,11 +15,12 @@ it('retains nineteen authored toilet meshes/eight material graphs and adds physi
     retainedMaterialGraphs: { name: string; canonicalMaterialSha256: string }[];
     meshes: { name: string; evaluatedVertices: number }[]; addedMeshNames: string[];
     retainedMeshesCount: number; addedMeshesCount: number; totalMeshesCount: number;
+    physicalValveMinimumOutwardNormalDot: number;
   };
   expect(hash(readFileSync(new URL(provenance.originalSource, root)))).toBe(provenance.originalSourceSha256);
   expect(provenance.originalSourceSha256).toBe('57db9afb7e48996cef9aaedda72b8e874e865eb56862ee4add8b177a9713887d');
   expect(hash(readFileSync(new URL(provenance.source, root)))).toBe(provenance.sourceSha256);
-  expect(provenance.sourceSha256).toBe('4ced3356c2f2d17d08e4ce3f9b58e4d63d8500be7927da66a982d7752e513d6d');
+  expect(provenance.sourceSha256).toBe('335544282e27ff01608f7f10987c054012d38ec3905340c24c142b7b794b1b2a');
   expect(provenance.retainedMeshesCount).toBe(19);
   expect(provenance.retainedMeshes).toHaveLength(19);
   expect(new Set(provenance.retainedMeshes.map(row => row.name)).size).toBe(19);
@@ -39,6 +40,7 @@ it('retains nineteen authored toilet meshes/eight material graphs and adds physi
   expect(provenance.addedMeshNames.filter(name => name.startsWith('angled-toilet.seat hinge fixing bolt'))).toHaveLength(4);
   expect(provenance.addedMeshNames.filter(name => name.startsWith('angled-toilet.cistern lid'))).toHaveLength(4);
   expect(provenance.meshes.find(row => row.name === 'angled-toilet.shutoff valve wheel')?.evaluatedVertices).toBe(480);
+  expect(provenance.physicalValveMinimumOutwardNormalDot).toBeGreaterThan(.99);
   const catalog = parseObliqueModuleCatalog(JSON.parse(readFileSync(new URL('public/game-content/oblique-cell-toilet.v1.json', root), 'utf8')));
   expect(catalog.assetId).toBe('fixture.cell.toilet_sink');
   expect(catalog.source).toBe(provenance.source);

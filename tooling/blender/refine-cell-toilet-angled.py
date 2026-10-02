@@ -107,11 +107,22 @@ def torus(name, centre, radius, thickness, material):
                              centre[2] + (radius + thickness * math.cos(tilt)) * math.sin(angle)))
     for ring in range(major):
         for segment in range(minor):
-            faces.append((ring * minor + segment, ((ring + 1) % major) * minor + segment,
+            faces.append((ring * minor + segment, ring * minor + (segment + 1) % minor,
                           ((ring + 1) % major) * minor + (segment + 1) % minor,
-                          ring * minor + (segment + 1) % minor))
+                          ((ring + 1) % major) * minor + segment))
     mesh = bpy.data.meshes.new(name); mesh.from_pydata(vertices, [], faces); mesh.update()
+    # Check the actual polygon normals against the analytic outer tube surface,
+    # independently of the face index construction above.
+    normal_dots = []
+    for polygon in mesh.polygons:
+        dx = polygon.center.x - centre[0]; dz = polygon.center.z - centre[2]
+        radial = math.hypot(dx, dz)
+        outer = Vector((dx - radius * dx / radial, polygon.center.y - centre[1], dz - radius * dz / radial))
+        if polygon.normal.dot(outer) <= 0:
+            raise ValueError('Physical valve wheel surface normals face inward')
+        normal_dots.append(polygon.normal.dot(outer.normalized()))
     obj = bpy.data.objects.new('angled-toilet.' + name, mesh); bpy.context.scene.collection.objects.link(obj)
+    obj['minimum_outward_normal_dot'] = min(normal_dots)
     mesh.materials.append(material)
     return obj
 
@@ -206,6 +217,7 @@ def build():
                            'evaluatedPositionSha256': hashlib.sha256(b''.join(struct.pack('<3f', *point) for point in values)).hexdigest()}
                           for name, values in sorted(after.items())],
                'addedMeshNames': sorted(set(after) - set(fitted)), 'retainedMeshesCount': 19,
+               'physicalValveMinimumOutwardNormalDot': bpy.data.objects['angled-toilet.shutoff valve wheel']['minimum_outward_normal_dot'],
                'addedMeshesCount': len(after) - len(fitted), 'totalMeshesCount': len(after)}
     pipeline_common.write_text(SOURCE.with_suffix('.provenance.json'), json.dumps(receipt, indent=2) + '\n')
     print('CELL_TOILET_PHYSICAL_SOURCE', len(fitted), len(after) - len(fitted), json.dumps(minimum), json.dumps(maximum), receipt['sourceSha256'], flush=True)

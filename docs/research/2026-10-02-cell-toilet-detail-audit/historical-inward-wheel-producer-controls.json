@@ -1,11 +1,6 @@
 {
   "controls": [
     {
-      "control": "reverse-loaded-wheel-topology",
-      "exitCode": 1,
-      "error": "ValueError: Loaded physical valve wheel surface normals face inward"
-    },
-    {
       "control": "omit-physical-valve-wheel",
       "exitCode": 1,
       "error": "ValueError: Dedicated Cell toilet loaded authored mesh set changed"
@@ -48,7 +43,7 @@
   ],
   "exactRestoredNativeVerifyExitCode": 0,
   "sourceBytesUnchanged": true,
-  "wrapperSha256": "bc9be39e946ac442b412b41247ad3084a4900a34dbcd6fe3eab10f49a98dbade",
-  "preparedSourceSha256": "335544282e27ff01608f7f10987c054012d38ec3905340c24c142b7b794b1b2a",
+  "wrapperSha256": "54e0d89e69d33a373b6c39b498467044f965f6c765629384f63bca314370936d",
+  "preparedSourceSha256": "4ced3356c2f2d17d08e4ce3f9b58e4d63d8500be7927da66a982d7752e513d6d",
   "originalSourceSha256": "57db9afb7e48996cef9aaedda72b8e874e865eb56862ee4add8b177a9713887d"
 }

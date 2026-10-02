@@ -2,6 +2,13 @@
 
 2026-10-02. **Prepared, not yet executed or accepted.**
 
+Current source for this queued proof is the outward-normal corrected SHA256
+`335544282e27ff01608f7f10987c054012d38ec3905340c24c142b7b794b1b2a`, descriptor
+`f26bf5fbad201a088fcc4bae294681e72600f941a360881c6e902657e2e15f3e`.
+The earlier inward-wheel export receipts are historical. Freeze the corrected
+checkpoint and rebuild production before the first actual baseline; no native
+visibility or completion for either dedicated source has yet been claimed.
+
 `tests/browser/dedicated-cell-toilet-player-build.spec.ts` uses the existing
 accepted three-case capacity route: real native Build StorageRoom5,5 and
 DeliveryBay12,5, real worker completion and IndexedDB save; fresh contexts

@@ -1,0 +1,8 @@
+{
+  "historicalCheckpoint": "9e63aa218ce1bdba3ef8ced3d1da9e5878904176",
+  "producerOnlyReversedWindingExitCode": 1,
+  "actualSurfaceError": "Physical valve wheel surface normals face inward",
+  "builderExactRestoredSha256": "7ae422968e9cd05dac189e455d466d3a836eca1b361d22f1471543fafa902e65",
+  "preparedSourceBytesUnchangedByNegative": true,
+  "correctedSourceSha256": "335544282e27ff01608f7f10987c054012d38ec3905340c24c142b7b794b1b2a"
+}
