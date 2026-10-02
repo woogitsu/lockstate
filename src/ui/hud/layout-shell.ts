@@ -330,6 +330,7 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
   const onDrawerKeyDown = (event: KeyboardEvent): void => {
     if (event.key !== 'Escape' || !drawerOpen) return;
     event.preventDefault();
+    event.stopPropagation();
     setDrawerOpen(false);
   };
   options.navigation.container.addEventListener('keydown', onDrawerKeyDown);
