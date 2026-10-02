@@ -79,3 +79,33 @@ test('failed lazy angled catalogue keeps the existing unsaved world and offers a
   await page.unroute(route);await view.selectOption('oblique');await expect(view).toBeEnabled();await expect(view).toHaveValue('oblique');
   expect(await state(page)).toEqual(before);
 });
+
+test('partial scene activation failure restores the unsaved world without retaining native input handlers',async({page})=>{
+  await page.addInitScript(()=>{
+    const add=EventTarget.prototype.addEventListener,remove=EventTarget.prototype.removeEventListener;
+    const handlers=new Map<EventTarget,Map<string,Set<EventListenerOrEventListenerObject>>>();
+    const fault={armed:false,count:()=>{let total=0;for(const events of handlers.values())for(const listeners of events.values())total+=listeners.size;return total;}};
+    (window as unknown as {rendererListenerFault:typeof fault}).rendererListenerFault=fault;
+    EventTarget.prototype.addEventListener=function(type,listener,options) {
+      if(listener && (this===window || this instanceof HTMLCanvasElement) && ['keydown','keyup','blur','focusin','pointercancel','lostpointercapture','pointerdown'].includes(type)) {
+        if(this===window && type==='keydown' && fault.armed) {fault.armed=false;throw Error('injected scene listener activation failure');}
+        let events=handlers.get(this);if(!events){events=new Map();handlers.set(this,events);}
+        let listeners=events.get(type);if(!listeners){listeners=new Set();events.set(type,listeners);}listeners.add(listener);
+      }
+      add.call(this,type,listener,options);
+    };
+    EventTarget.prototype.removeEventListener=function(type,listener,options) {
+      if(listener)handlers.get(this)?.get(type)?.delete(listener);
+      remove.call(this,type,listener,options);
+    };
+  });
+  await bootUnsavedYard(page);const before=await state(page);
+  const handlersBefore=await page.evaluate(()=>{const f=(window as unknown as {rendererListenerFault:{armed:boolean;count:()=>number}}).rendererListenerFault;f.armed=true;return f.count();});
+  const view=page.getByRole('combobox',{name:'View',exact:true});
+  await view.selectOption('oblique');await expect(view).toBeEnabled();await expect(view).toHaveValue('world');
+  expect(await view.evaluate(el=>(el as HTMLSelectElement).validationMessage)).toContain('Could not change view');
+  expect(await state(page)).toEqual(before);
+  expect(await page.evaluate(()=>(window as unknown as {rendererListenerFault:{count:()=>number}}).rendererListenerFault.count())).toBe(handlersBefore);
+  await view.selectOption('oblique');await expect(view).toBeEnabled();await expect(view).toHaveValue('oblique');
+  expect(await state(page)).toEqual(before);
+});
