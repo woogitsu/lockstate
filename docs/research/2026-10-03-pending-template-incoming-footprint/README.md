@@ -25,3 +25,9 @@ ConstructionSystem's existing full object admission loop additionally asks its e
 Actual [fixed run](./fixed.txt):36GREEN,1.73s tests/4.19s total. Detached production mutation removed exactly that six-line callback check: [negative](./mutation.txt)16RED/20GREEN,1.01s tests/3.31s total, reproducing the original approved-versus-failed violation. A finally block restored the captured source bytes; [hash receipt](./mutation-restore.json) verifies equality. [Exact restored run](./restored.txt):36GREEN,2.02s tests/4.54s total. The live and V8Load refusal assertions compare complete gameplay snapshots excluding only kernel dispatch progress and the established single failed diagnostic row; original order revisions, treasury, geometry, material state and history are preserved.
 
 Neighbouring admission/duplicate/collision/catalogue gates remain pending at this source checkpoint. Browser not run.
+
+## Additional terminal gates
+
+[Neighbouring admission/collision/construction/catalogue run](./neighbours.txt):198GREEN across9files,6.90s total. This includes unchanged full catalogue completion, generic footprint bounds/ownership, physical collisions, ordinary square/legacy geometry and bare-constructor controls. The final branded TilePosition fixture correction uses the existing tileCoordinate constructor; the first TypeScript run caught three incorrect unbranded reader calls (fixture typing errors). Both application and tools TypeScript pass after that correction. Production client build passes in5.26s (existing chunk/plugin warnings retained). Final standalone regression after typing correction:[36GREEN](./terminal.txt),1.75s tests/4.32s total. Production bytes are unchanged from the exact restored source.
+
+[Initial packed capture facts](./initial-packed-captures.json) retain the four actual baseline tuples, object/order owners, allocations, balance transitions and SHA256 of their original full captures. No native browser or CI/hosted result is claimed.
