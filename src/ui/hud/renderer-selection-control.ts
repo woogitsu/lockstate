@@ -26,10 +26,21 @@ export function createRendererSelectionControl(
     const requested=select.value;
     if(requested!=='world'&&requested!=='oblique') {select.value=current;return;}
     select.setCustomValidity('');
+    const focusedBeforeChange=document.activeElement===select;
+    let navigatedAway=false;
+    const navigationKey=(event:KeyboardEvent)=>{if(event.key==='Tab') navigatedAway=true;};
+    const navigationPointer=()=>{navigatedAway=true;};
+    if(focusedBeforeChange){
+      document.addEventListener('keydown',navigationKey,true);
+      document.addEventListener('pointerdown',navigationPointer,true);
+    }
     select.disabled=true;
     select.setAttribute('aria-busy','true');
     void onSelect(requested).then(()=>{current=requested;select.value=current;},error=>{select.value=current;select.setCustomValidity(labels.failure);onError(error);}).finally(()=>{
+      document.removeEventListener('keydown',navigationKey,true);
+      document.removeEventListener('pointerdown',navigationPointer,true);
       select.disabled=false;select.setAttribute('aria-busy','false');
+      if(focusedBeforeChange&&!navigatedAway&&document.activeElement===document.body) select.focus({preventScroll:true});
       if (!select.validity.valid) select.reportValidity();
     });
   });
