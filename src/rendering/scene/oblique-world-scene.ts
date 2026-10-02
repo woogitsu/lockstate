@@ -195,6 +195,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.input.mouse?.disableContextMenu();
     this.input.addPointer(2);
     this.input.on('wheel', (pointer: Phaser.Input.Pointer, _objects: Phaser.GameObjects.GameObject[], _deltaX: number, deltaY: number) => {
+      if (deltaY === 0) return;
       this.stepCameraZoom(deltaY > 0 ? 'out' : 'in', { x: pointer.x, y: pointer.y });
     });
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
