@@ -319,6 +319,14 @@ export class RoomTemplateCoordinator implements SystemRegistration {
 
   /** A queue cancellation removes the same coupled gesture as Undo (#1657/#1608). */
   public prepareCancellation(orderId: string, tick: number): UnzoneRoomRefusal | undefined {
+    for (const request of this.completed) {
+      const ids = createRoomTemplateBuildPlan(request.templateId, request.origin, request.mirrorX, request.sequence, request.quarterTurns ?? 0)
+        .orders.map((order) => order.id);
+      if (ids.includes(orderId)) return this.prepareUndo(ids, tick);
+    }
+    // Legacy recovery still requires the real gesture's history. A numeric
+    // template producer prefix is only a prefilter, never an association.
+    if (!/^room-template-\d+-[012]-(?:wall|door|object)-\d+$/.test(orderId)) return undefined;
     const history = this.construction.snapshot();
     const transaction = [...history.undoStack, history.currentTransaction ?? []]
       .find((ids) => ids.includes(orderId));
