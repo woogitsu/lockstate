@@ -24,7 +24,7 @@ import { BUILDABLE_REGISTRY, buildableObjectCategory } from '../../src/simulatio
  */
 describe('every buildable belongs to exactly one catalogue group', () => {
   /**
-   * The 21 rows of `BUILDABLE_REGISTRY`, by the group the Build panel's filter
+   * The 22 rows of `BUILDABLE_REGISTRY`, by the group the Build panel's filter
    * puts each one in, at the tree this contract was written against.
    *
    * `undefined` is the group for a buildable that places no object, and it has
@@ -50,6 +50,7 @@ describe('every buildable belongs to exactly one catalogue group', () => {
       'chair-wooden',
       'desk-wooden',
       'dining-table-wooden',
+      'exercise-station',
     ],
     utility: ['loading-dock-door-wooden', 'utility-panel-brick', 'washing-machine-brick', 'waste-bin-brick'],
     'food-service': ['fridge-brick', 'prep-counter-brick', 'stove-brick'],
@@ -61,7 +62,7 @@ describe('every buildable belongs to exactly one catalogue group', () => {
     '': ['door-wooden', 'wall-brick'],
   };
 
-  it('puts each of the twenty-one rows in the group this contract names', () => {
+  it('puts each of the twenty-two rows in the group this contract names', () => {
     const actual: Record<string, string[]> = {};
     for (const definition of BUILDABLE_REGISTRY.values()) {
       const group = buildableObjectCategory(definition) ?? '';
@@ -88,8 +89,8 @@ describe('every buildable belongs to exactly one catalogue group', () => {
    */
   it('leaves the largest group well under the whole registry', () => {
     const largest = Math.max(...Object.values(EXPECTED_GROUPS).map((ids) => ids.length));
-    expect(largest).toBe(6);
-    expect(BUILDABLE_REGISTRY.size).toBe(21);
+    expect(largest).toBe(7);
+    expect(BUILDABLE_REGISTRY.size).toBe(22);
   });
 });
 
