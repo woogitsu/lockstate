@@ -53,13 +53,13 @@ async function panelPalettePixels(page: Page, png: Buffer, quarterTurns: 0 | 1):
     const bitmap = await createImageBitmap(new Blob([Uint8Array.from(atob(base64), c => c.charCodeAt(0))], { type: 'image/png' }));
     const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
     const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0);
-    // These disjoint regions and authored source colours are provisional.
-    // No native pixel calibration is claimed until genuine completed scenes
-    // are opened. Camera/reachability/worker guards remain unchanged.
+    // Both genuine completed/loaded FullHDs were opened: these original
+    // body crops and RGB each contain 945 pixels in q0/q1. The original
+    // >100 threshold and exact after-Load equality remain unchanged.
     const rects = quarterTurns === 0
       ? [[940, 420, 110, 100]]
       : [[900, 420, 110, 100]];
-    const colour = [41, 113, 118]; // Historical actual utility oracle; new source needs native calibration.
+    const colour = [41, 113, 118];
     return rects.map(rect => {
       const pixels = context.getImageData(...rect as [number, number, number, number]).data;
       let count = 0;
@@ -173,7 +173,9 @@ test(`player builds Utility Room at quarterTurns${quarterTurns} and retains util
   if (bounds === null) throw new Error('minimap absent');
   await minimap.click({ position: { x: bounds.width * 22 / 32, y: bounds.height * 7 / 32 } });
   await page.mouse.move(1300, 700);
-  for (let step = 0; step < 4; step++) await page.getByRole('button', { name: 'Rotate camera right', exact: true }).click();
+  // Observe the real front controls after the actual template quarter turn.
+  const turn = quarterTurns === 0 ? 'Rotate camera right' : 'Rotate camera left';
+  for (let step = 0; step < 4; step++) await page.getByRole('button', { name: turn, exact: true }).click();
   const completed = await page.screenshot({ path: info.outputPath('dedicated-utility-panel-worker-completed-fullhd.png') });
   const beforePixels = await panelPalettePixels(page, completed, quarterTurns);
   await writeFile(info.outputPath('worker-and-completed-save-evidence.json'), JSON.stringify({
