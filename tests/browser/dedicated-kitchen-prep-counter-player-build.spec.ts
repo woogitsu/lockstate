@@ -1,4 +1,4 @@
-// Queued genuine Kitchen workers and Save/Load; source-derived prep palette candidates remain provisional until actual native calibration.
+// Genuine Kitchen workers and Save/Load; isolated wood and physical tray-rim regions calibrated from opened native scenes.
 import { writeFile } from 'node:fs/promises';
 import { expect, test as base, type Page } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
@@ -53,11 +53,12 @@ async function prepPalettePixels(page: Page, png: Buffer, quarterTurns: 0 | 1): 
     const bitmap = await createImageBitmap(new Blob([Uint8Array.from(atob(base64), c => c.charCodeAt(0))], { type: 'image/png' }));
     const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
     const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0);
-    // Provisional source-derived wood/steel candidates, pending native pixels.
-    // Broad target regions must be calibrated from actual worker/Load scenes.
+    // Disjoint native wood and physical tray-rim regions: q0 counts149/122,
+    // q1 counts238/151 before and after actual Load. The rotated right wall
+    // hides farther trays; only the genuinely exposed first tray is sampled.
     const rects = quarterTurns === 0
-      ? [[858, 315, 120, 110], [878, 326, 75, 63]]
-      : [[982, 382, 145, 120], [1005, 414, 91, 56]];
+      ? [[948, 338, 15, 15], [912, 329, 34, 24]]
+      : [[1030, 455, 42, 12], [1048, 432, 30, 23]];
     const colour = [150, 105, 67];
     return rects.map((rect, regionIndex) => {
       const pixels = context.getImageData(...rect as [number, number, number, number]).data;
@@ -66,7 +67,10 @@ async function prepPalettePixels(page: Page, png: Buffer, quarterTurns: 0 | 1): 
         const r = pixels[i]!, g = pixels[i + 1]!, b = pixels[i + 2]!;
         const matches = regionIndex === 0
           ? r === colour[0] && g === colour[1] && b === colour[2]
-          : r === 142 && g === 149 && b === 152;
+          // Thin steel rims blend with neighboring authored brown surfaces.
+          // Wood/contents have much larger negative channel gaps; room walls
+          // are brighter than this actual native steel/antialias envelope.
+          : r >= 90 && r <= 155 && g - r >= -25 && g - r <= 18 && b - g >= -25 && b - g <= 8;
         if (matches) count++;
       }
       return count;
@@ -178,7 +182,7 @@ test(`player builds Kitchen at quarterTurns${quarterTurns} and retains authored 
     quarterTurns, actualBefore, beforePixels, commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
   }, null, 2));
   beforePixels.forEach((count, index) => expect.soft(count, `prep counter ${index === 0 ? "wood worktop" : "physical tray rims"} after construction`)
-    .toBeGreaterThan(index === 0 ? 100 : 20));
+    .toBeGreaterThan(quarterTurns === 0 ? index === 0 ? 100 : 80 : index === 0 ? 150 : 100));
   await page.getByRole('button', { name: 'Overview', exact: true }).click();
   await page.getByRole('button', { name: 'Save now', exact: true }).click();
   await expect(page.locator('.save-panel__status')).toContainText('Saved');
@@ -191,7 +195,7 @@ test(`player builds Kitchen at quarterTurns${quarterTurns} and retains authored 
   const loaded = await page.screenshot({ path: info.outputPath('dedicated-kitchen-prep-counter-loaded-fullhd.png') });
   const afterPixels = await prepPalettePixels(page, loaded, quarterTurns);
   afterPixels.forEach((count, index) => expect.soft(count, `prep counter ${index === 0 ? "wood worktop" : "physical tray rims"} after Load`)
-    .toBeGreaterThan(index === 0 ? 100 : 20));
+    .toBeGreaterThan(quarterTurns === 0 ? index === 0 ? 100 : 80 : index === 0 ? 150 : 100));
   expect(afterPixels).toEqual(beforePixels);
   const evidencePath = info.outputPath('dedicated-kitchen-prep-counter-worker-and-save-evidence.json');
   await writeFile(evidencePath, JSON.stringify({
