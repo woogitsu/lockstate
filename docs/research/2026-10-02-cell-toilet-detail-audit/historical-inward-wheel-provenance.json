@@ -4,7 +4,7 @@
   "originalSource": "assets/source/blender/environment.mvp.catalog.blend",
   "originalSourceSha256": "57db9afb7e48996cef9aaedda72b8e874e865eb56862ee4add8b177a9713887d",
   "source": "assets/source/blender/fixture.cell.toilet_sink.angled.blend",
-  "sourceSha256": "335544282e27ff01608f7f10987c054012d38ec3905340c24c142b7b794b1b2a",
+  "sourceSha256": "4ced3356c2f2d17d08e4ce3f9b58e4d63d8500be7927da66a982d7752e513d6d",
   "footprintTiles": [
     1,
     1
@@ -2304,7 +2304,6 @@
     "angled-toilet.valve wheel spoke 3"
   ],
   "retainedMeshesCount": 19,
-  "physicalValveMinimumOutwardNormalDot": 0.9998946785926819,
   "addedMeshesCount": 25,
   "totalMeshesCount": 44
 }

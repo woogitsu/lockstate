@@ -161,3 +161,48 @@ A single fresh GitHub read of historical Issue1952 was rate-limited; its current
 remote status was not verified and is not claimed here. No repeated API polling
 or Issue mutation followed. The next real-player route is recorded separately
 in `native-player-acceptance.md` with calibration and consumer proof pending.
+
+## Corrected physical valve surface normals
+
+Before native player acceptance, an independent analytic check of the actual
+polygon normals found the newly authored torus wheel's face winding pointed
+inward. The first source-normal audit exited1. This was a real new-detail
+geometry defect; the original retained nineteen meshes were unaffected.
+The preceding source/export hashes above describe the historical checkpoint,
+not the current corrected source. Its descriptor, provenance, repeat and
+producer receipts from commit `9e63aa218ce1bdba3ef8ced3d1da9e5878904176` are
+preserved as `historical-inward-wheel-*.json`, alongside that Git history.
+
+The builder now winds the wheel faces outward and checks every actual polygon
+normal against the analytic outer tube direction. The exporter independently
+performs the corresponding check after loading the Blender source. The
+minimum normalized outward dot is `0.9998946785926819`. Original mesh vertex,
+topology and material audits,44mesh count, allfour occupied orientations,
+accepted fit, evaluated bounds, camera target and64pixels per tile remain
+verified at their existing limits.
+
+Corrected source SHA256
+`335544282e27ff01608f7f10987c054012d38ec3905340c24c142b7b794b1b2a`.
+Corrected descriptor SHA256
+`f26bf5fbad201a088fcc4bae294681e72600f941a360881c6e902657e2e15f3e`.
+Two fresh full72pose exports produced73/73 directly byte-identical files.
+All72RGBA frames decode, minimum transparent border207px. Four PNG hashes
+changed after the winding correction. The refreshed cropped sheet and actual
+45/60 corrected PNG were opened; these remain source-export evidence.
+
+A producer-only control reverses the builder's wheel faces before mesh
+creation: actual Blender exits1 at the surface-normal guard, before saving.
+The builder is restored byte-exactly (SHA256
+`7ae422968e9cd05dac189e455d466d3a836eca1b361d22f1471543fafa902e65`), and
+the prepared source bytes remain unchanged by the negative. A second control
+reverses only the loaded wheel topology while preserving its vertex positions;
+the independent exporter exits1 at its surface-normal guard. The previous
+eight geometry/material/camera/descriptor controls were rerun and each exits1.
+Exact restored wrapper/source native verification exits0. Actual published
+PNG byte mutation remains red, then byte-exact restoration green.
+
+Current focused check: six suites,34passed/1optional Blender subprocess skip;
+application/tools TypeScript compilation exits0. Actual Blender subprocess
+controls supply the native evidence independently. No browser was launched;
+fresh worker-built Cell pixels, calibration, SaveLoad and consumer-negative
+acceptance remain required for this corrected source.

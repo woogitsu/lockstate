@@ -78,6 +78,15 @@ def append_collection() -> bpy.types.Collection:
     bpy.context.view_layer.update()
     if sorted(obj.name for obj in collection.objects if obj.type == 'MESH') != sorted(expected_names):
         raise ValueError('Dedicated Cell toilet loaded authored mesh set changed')
+    wheel = collection.objects['angled-toilet.shutoff valve wheel']
+    normal_matrix = wheel.matrix_world.to_3x3().inverted().transposed()
+    for polygon in wheel.data.polygons:
+        point = wheel.matrix_world @ polygon.center
+        dx, dz = point.x - .344, point.z - .405
+        radius = math.hypot(dx, dz)
+        expected_outer = Vector((dx - .058 * dx / radius, point.y + .372, dz - .058 * dz / radius))
+        if (normal_matrix @ polygon.normal).dot(expected_outer) <= 0:
+            raise ValueError('Loaded physical valve wheel surface normals face inward')
     helper_spec = importlib.util.spec_from_file_location('toilet_retained_audit', SCRIPT_DIR / 'refine-cell-toilet-angled.py')
     helper = importlib.util.module_from_spec(helper_spec)
     helper_spec.loader.exec_module(helper)
