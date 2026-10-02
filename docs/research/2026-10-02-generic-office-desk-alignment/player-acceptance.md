@@ -12,4 +12,21 @@ The default world camera yaw-45/elevation45 selects shared source yaw300/elevati
 
 `native-calibration.json` records four small, nonoverlapping native regions. Normal desktop/document: 339/111 pixels; rotated desktop/steel monitor: 353/455 pixels. Thresholds >200 for desktop/monitor and >70 for the normal document strengthen the provisional >40/>2 gates. The native workflow, source geometry and 60 s/case + 10 s/progress guards remain unchanged.
 
-A complete repeat at these calibrated regions, default desk mapping removal with actual worker completion/SaveLoad, and exact mapping/worker-byte restoration remain pending. These preparation/calibration runs do not claim hosted completion or final consumer acceptance.
+The following full repeats and consumer control close the local native acceptance; initial preparation/calibration failures remain historical evidence.
+
+
+## Actual calibrated baseline and consumer controls
+
+At tested head `781d9dbf8f7e7e4eb1e0f479236d36ba21b24975`, actual production build passed and complete calibrated native baseline passed 3/3: capacity 43.9 s, q0 Reception 38.9 s, q1 Reception 39.9 s. Read-only worker snapshots confirmed canonical desk anchors/orientations both before and after genuine SaveLoad. Counts were 339/111 and 353/455, identical before/after Load; source frames and material choices were unchanged.
+
+The negative control removed only the canonical default `object.desk` to `furniture.office.desk.generic` mapping. The accepted StaffRoom employee override remained present. The actual mutated production build passed. The native q0 route completed capacity 44.2 s and Reception 39.7 s; q1 route completed capacity 43.9 s and Reception 39.5 s. Each run produced 4 expected pixel failures, desktop/detail before and after Load; every count was 0. Canonical worker completion, orientation and SaveLoad still passed. Both negative FullHDs were opened and show fallback geometry rather than authored details.
+
+## Exact restoration and final accepted player state
+
+Original mapping bytes were restored exactly: SHA256 `a9eada806ff523bc9933da9b7a2e8a731c5a896286e33b0551119d8e389dd2d4`, empty scoped diff. Original 103228 byte Blender source is directly byte-equal to its pre-mutation backup, SHA256 `87ecf22ec7f4d82e5c2c47bb18870b8ef060a84759cb55d38b131fc34e72e11b`. No simulation, save, palette, UI, cost or buildable rule changed.
+
+The exact-restored production build passed. Baseline/mutated/restored simulation worker files are directly byte-equal: 430480 bytes, SHA256 `a49b10a378d7501a0745b0e968d3c88be30e2936441c3f0e8634ddec8feec72b`. Final native group 3/3 green: capacity 45.8 s, normal 38.9 s, rotated 38.9 s. Actual before/after Load pixel counts returned to 339/111 and 353/455. All 60 s/case and 10 s/queue-progress guards were retained. No worker construction command, completion or placed-object injection was used.
+
+Both final loaded 1920x1080 FullHD images were opened and inspected; q0 shows authored desktop/monitor/pedestal/document, q1 shows the proper quarter-turned desk with visible original desktop/monitor and genuine wall occlusion. `accepted-player-run.json` records all four completed/loaded images and exact SHA256 digests; raw accepted/negative native JSON records are retained.
+
+After restoration five focused suites passed 52 cases, with 1 unrelated general Blender live scene rebuild skip; app/tools TypeScript passed. All browser processes are terminal; exclusive browser lease was explicitly released to root and HUD before this offline evidence checkpoint. Canonical artifact gate integration and hosted acceptance remain coordinator work; no new workflow/config was committed.
