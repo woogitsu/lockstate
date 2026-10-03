@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-construction-next-collision-audit-20261003
+
+
+ Test Files  2 passed (2)
+      Tests  17 passed (17)
+   Start at  02:16:49
+   Duration  2.29s (transform 781ms, setup 0ms, import 2.20s, tests 224ms, environment 0ms)
+
