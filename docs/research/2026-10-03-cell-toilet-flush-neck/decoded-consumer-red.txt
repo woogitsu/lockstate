@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-cell-toilet-physical-connection-20261003
+
+ ❯ tests/unit/oblique-cell-toilet-physical-integrity.test.ts (1 test | 1 failed) 33ms
+   × retains nineteen authored toilet meshes/eight material graphs and adds physical valve, hinges and joint rails 33ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  09:37:50
+   Duration  269ms (transform 24ms, setup 0ms, import 95ms, tests 33ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-cell-toilet-physical-integrity.test.ts > retains nineteen authored toilet meshes/eight material graphs and adds physical valve, hinges and joint rails
+AssertionError: /assets/environment/oblique/cell-toilet-yaw-165-elev20.fb4186365fbf.png: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/oblique-cell-toilet-physical-integrity.test.ts:62:52
+     60|     expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual([512,…
+     61|     expect(frame.image).toContain(`.${frame.sha256.slice(0, 12)}.png`);
+     62|     expect(hasTransparentBorder(png), frame.image).toBe(true);
+       |                                                    ^
+     63|   }
+     64| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

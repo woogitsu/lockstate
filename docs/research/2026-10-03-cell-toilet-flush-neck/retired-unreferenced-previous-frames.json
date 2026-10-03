@@ -1,0 +1,154 @@
+{
+  "allPublicGameContentJsonParsed": 68,
+  "removedOnlyOldToiletFramesNoLongerReferenced": [
+    {
+      "path": "/assets/environment/oblique/cell-toilet-yaw-135-elev20.6c2eacfe769f.png",
+      "previousSha256": "6c2eacfe769fef645dedca3e8ed80ac8b7ed4ccc1ab1efd7c8d80d0eb11ae298"
+    },
+    {
+      "path": "/assets/environment/oblique/cell-toilet-yaw-135-elev30.7574a449b7c5.png",
+      "previousSha256": "7574a449b7c50f05778b877e5b29c82d530e4f95124834745afc787afd79aa2c"
+    },
+    {
+      "path": "/assets/environment/oblique/cell-toilet-yaw-135-elev40.241dad232ca0.png",
+      "previousSha256": "241dad232ca08bfd5c91796ee450b42d665988a8e159daeee7c3a968d79665b7"
+    },
+    {
+      "path": "/assets/environment/oblique/cell-toilet-yaw-135-elev50.a0722c8f4ed4.png",
+      "previousSha256": "a0722c8f4ed4ea4980ae1b6a7b22c8b6448e378db643a7e26d2d8ef798cd18fe"
+    },
+    {
+      "path": "/assets/environment/oblique/cell-toilet-yaw-105-elev20.f5317bafd941.png",
+      "previousSha256": "f5317bafd9411cc2f3dc77298cba49254cdf919ff72ddd2fc9fcf37353512411"
+    },
+    {
+      "path": "/assets/environment/oblique/cell-toilet-yaw-105-elev30.a800d95a8312.png",
+      "previousSha256": "a800d95a8312b3a1eba1d48ee9e70444ab8fdb3aa15f4f8b73db8d1f16bf1776"
+    },
+    {
+      "path": "/assets/environment/oblique/cell-toilet-yaw-105-elev40.2213639cc227.png",
+      "previousSha256": "2213639cc2271466e582ebc80fd0e3985326b6a5700915fbb42ea18689c3a84c"
+    },
+    {
+      "path": "/assets/environment/oblique/cell-toilet-yaw-105-elev50.71d7e8aca251.png",
+      "previousSha256": "71d7e8aca2515121f0dbc4a7931208c75f6e3b1ed24d6f230b3a1a7ca3b07032"
+    },
+    {
+      "path": "/assets/environment/oblique/cell-toilet-yaw-105-elev60.381b4b1e0f25.png",
+      "previousSha256": "381b4b1e0f25547499880c080be7dd28c978a011b223bd8a660629e4ed1475fc"
+    },
+    {
+      "path": "/assets/environment/oblique/cell-toilet-yaw-75-elev20.15cbe32ab2f0.png",
+      "previousSha256": "15cbe32ab2f0a18166cef0e66a41cf2a8a7696f67a0e77638d7c6c9bd1acb2d9"
+    },
+    {
+      "path": "/assets/environment/oblique/cell-toilet-yaw-45-elev20.7c7424fc1028.png",
+      "previousSha256": "7c7424fc1028bf2c43caaf24ba0927b12c73b02fedf03716373ea401e54412da"
+    },
+    {
+      "path": "/assets/environment/oblique/cell-toilet-yaw-45-elev30.bb0177f02f1a.png",
+      "previousSha256": "bb0177f02f1a89904ce66b4275bc93afc74a767c113c20a3751536571faa368d"
+    },
+    {
+      "path": "/assets/environment/oblique/cell-toilet-yaw-45-elev40.f315c0e4faac.png",
+      "previousSha256": "f315c0e4faac15aea4e1e8ef0a13b3f6b879a15fada4a991873e33667033ad83"
+    },
+    {
+      "path": "/assets/environment/oblique/cell-toilet-yaw-45-elev50.af1ad1067390.png",
+      "previousSha256": "af1ad106739068d30d77f61aaadb1d12b2dc0e56f629f259ed5d2725ea2db6a2"
+    },
+    {
+      "path": "/assets/environment/oblique/cell-toilet-yaw-15-elev20.50cd797d0011.png",
+      "previousSha256": "50cd797d00117e3f14c4ae9c6d3789bcca3d93139208f9cf7c0c7497fd286480"
+    },
+    {
+      "path": "/assets/environment/oblique/cell-toilet-yaw-15-elev30.8d1938ac054c.png",
+      "previousSha256": "8d1938ac054c3ead1b5f9832e391e66f28b7d5c802030dbbdc187680fa68125e"
+    },
+    {
+      "path": "/assets/environment/oblique/cell-toilet-yaw-15-elev40.a97a1a528ed3.png",
+      "previousSha256": "a97a1a528ed3324a83bc012a48b4fbabcfbeeae53f5d3f3af5d505552d1d4bc8"
+    },
+    {
+      "path": "/assets/environment/oblique/cell-toilet-yaw-15-elev50.9f207a99282f.png",
+      "previousSha256": "9f207a99282f7d7173855a9d1b65a30f03abf664ab1bb143fa0e25b70b87a3d7"
+    },
+    {
+      "path": "/assets/environment/oblique/cell-toilet-yaw-15-elev60.7c81830d7e85.png",
+      "previousSha256": "7c81830d7e85e0adf78ddf2dd635533d67a9bc0d91e541399fc5865318b9e610"
+    },
+    {
+      "path": "/assets/environment/oblique/cell-toilet-yaw+15-elev20.6c012a11c467.png",
+      "previousSha256": "6c012a11c467f52a00976da11f7c3ed900a15a0f49e525c0ecffb63576e3ac94"
+    },
+    {
+      "path": "/assets/environment/oblique/cell-toilet-yaw+15-elev30.5297448a04f0.png",
+      "previousSha256": "5297448a04f0ae588d5ca0030a512f188f738f4db1622c6343b31fd6ae501d9b"
+    },
+    {
+      "path": "/assets/environment/oblique/cell-toilet-yaw+15-elev40.d6ef9828fb3b.png",
+      "previousSha256": "d6ef9828fb3b52b7a0b09678ee730e23a33175b3ffaad4361193bb5545e624e3"
+    },
+    {
+      "path": "/assets/environment/oblique/cell-toilet-yaw+15-elev50.872996e5ae17.png",
+      "previousSha256": "872996e5ae170270f8cf2f09f5ab23fb32c94061f85f08ba57d6682d18c05ff2"
+    },
+    {
+      "path": "/assets/environment/oblique/cell-toilet-yaw+15-elev60.3ddf8afdfd2f.png",
+      "previousSha256": "3ddf8afdfd2f0a4a9634927fb1e5a10af6378733b1720c29af25355cd8b00bd8"
+    },
+    {
+      "path": "/assets/environment/oblique/cell-toilet-yaw+45-elev20.1fbf36230245.png",
+      "previousSha256": "1fbf36230245e6e6090c7c762cf38c382a54d8f4e0d349988409c03854f6e6e1"
+    },
+    {
+      "path": "/assets/environment/oblique/cell-toilet-yaw+45-elev30.3ec0edf936d7.png",
+      "previousSha256": "3ec0edf936d7930de537a3813a56763b1456f6a5c44f354de7b6731770f9686d"
+    },
+    {
+      "path": "/assets/environment/oblique/cell-toilet-yaw+45-elev40.4fc3f8da449d.png",
+      "previousSha256": "4fc3f8da449d1950f582c9b3058ebddf2aedfbe8b645af14a9e3bb90231aba4b"
+    },
+    {
+      "path": "/assets/environment/oblique/cell-toilet-yaw+45-elev50.105ef0d11197.png",
+      "previousSha256": "105ef0d1119793dad2cf90f90194678c7428ef1ccef7d06e1c5039b3e4ad2521"
+    },
+    {
+      "path": "/assets/environment/oblique/cell-toilet-yaw+75-elev20.880c9d658d99.png",
+      "previousSha256": "880c9d658d998ff4dfbbbe2f48514b6a6da1a92d96b502ad1b8556fec449071f"
+    },
+    {
+      "path": "/assets/environment/oblique/cell-toilet-yaw+105-elev20.d69be613de5e.png",
+      "previousSha256": "d69be613de5e2b5a745e6ddac7804ff33eb77f196b44a31cf0eb92d967e2b10c"
+    },
+    {
+      "path": "/assets/environment/oblique/cell-toilet-yaw+105-elev30.8426140c0f17.png",
+      "previousSha256": "8426140c0f17f4bb773bcb06062e587bcc309a50867bd6ffa46d1df6e45ff051"
+    },
+    {
+      "path": "/assets/environment/oblique/cell-toilet-yaw+105-elev40.c678cad85f29.png",
+      "previousSha256": "c678cad85f2956b68a36383f443eddca11df02b7994cba7a2643658324b9ef37"
+    },
+    {
+      "path": "/assets/environment/oblique/cell-toilet-yaw+105-elev50.5235454f63aa.png",
+      "previousSha256": "5235454f63aa23e108daf8447a2aba16d3d4768fe4fba91c75be90c488b8fc66"
+    },
+    {
+      "path": "/assets/environment/oblique/cell-toilet-yaw+105-elev60.7b6fd2de463d.png",
+      "previousSha256": "7b6fd2de463d7b0c070db0043f12ad1c4b198f0b0656c8ac259c13e83434a60c"
+    },
+    {
+      "path": "/assets/environment/oblique/cell-toilet-yaw+135-elev20.5660203871e2.png",
+      "previousSha256": "5660203871e2f257d0e3ef7b387d04c7adeb63ded8288a917128ade1a5049f20"
+    },
+    {
+      "path": "/assets/environment/oblique/cell-toilet-yaw+135-elev30.e50bd0c0039b.png",
+      "previousSha256": "e50bd0c0039b20dabc151ee273ee4601021baa482bc41a7868370917bc0f62b5"
+    },
+    {
+      "path": "/assets/environment/oblique/cell-toilet-yaw+135-elev40.3fc82aec8790.png",
+      "previousSha256": "3fc82aec879014efd50668b7d68924039ce2d6af33a260999d163d6eba8a10ae"
+    }
+  ],
+  "oldSourceUnchanged": true
+}

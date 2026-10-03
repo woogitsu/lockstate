@@ -42,9 +42,13 @@ it('retains nineteen authored toilet meshes/eight material graphs and adds physi
   expect(provenance.meshes.find(row => row.name === 'angled-toilet.shutoff valve wheel')?.evaluatedVertices).toBe(480);
   expect(provenance.physicalValveMinimumOutwardNormalDot).toBeGreaterThan(.99);
   const catalog = parseObliqueModuleCatalog(JSON.parse(readFileSync(new URL('public/game-content/oblique-cell-toilet.v1.json', root), 'utf8')));
+  const connected = JSON.parse(readFileSync(new URL('assets/source/blender/fixture.cell.toilet_sink.angled-connection.provenance.json', root), 'utf8')) as { source: string; sourceSha256: string; originalSource: string; originalSourceSha256: string };
+  expect(connected.originalSource).toBe(provenance.source);
+  expect(connected.originalSourceSha256).toBe(provenance.sourceSha256);
+  expect(hash(readFileSync(new URL(connected.source, root)))).toBe(connected.sourceSha256);
   expect(catalog.assetId).toBe('fixture.cell.toilet_sink');
-  expect(catalog.source).toBe(provenance.source);
-  expect(catalog.sourceSha256).toBe(provenance.sourceSha256);
+  expect(catalog.source).toBe(connected.source);
+  expect(catalog.sourceSha256).toBe(connected.sourceSha256);
   expect(catalog.cameraTargetTiles).toEqual([.5, .5, .5537500381469727]);
   expect(catalog.resolutionPx).toEqual([512, 512]);
   expect(catalog.nominalPixelsPerTile).toBe(64);

@@ -1,0 +1,6 @@
+00:01.094  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-cell-toilet-physical-connection-20261003\assets\source\blender\fixture.cell.toilet_sink.angled.blend"
+Info: Saved as "fixture.cell.toilet_sink.angled-connection.blend"
+TOILET44_RETAINED/8GRAPHS/45AUTHORED/2ACTUAL_CONTACTS ebc1570274663d22315eed0adfafe8886120bdbf9901dfa744edcde540428ff8 [{"addedPart": "physical-toilet.rear ceramic flush neck", "retainedTarget": "Cistern teal ceramic band", "actualInteriorWitness": [-0.0560000017285347, -0.3264000117778778, 0.5574999451637268], "distanceToActualSurfaces": [0.013599991798400879, 0.007499992847442627]}, {"addedPart": "physical-toilet.rear ceramic flush neck", "retainedTarget": "Sculpted ceramic bowl", "actualInteriorWitness": [-0.0560000017285347, -0.18956001102924347, 0.5270000100135803], "distanceToActualSurfaces": [0.00707622105255723, 0.0016146032139658928]}]
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
