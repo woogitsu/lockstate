@@ -78,7 +78,7 @@ test('a publicly hired Guard keeps actual identity and visible authored body thr
   await expect.poll(async () => (await loadedImages()).responses.some(response =>
     decodeURIComponent(new URL(response.url).pathname) === GUARD_REAR_FRAME.url && response.sha256 === GUARD_REAR_FRAME.sha256)).toBe(true);
   await expect.poll(async () => (await loadedImages()).images.some(image =>
-    image.sha256 === GUARD_REAR_FRAME.sha256 && image.sha256 === GUARD_INITIAL_FRAME.sha256 && image.complete && !image.error && image.width === 512 && image.height === 512)).toBe(true);
+    image.sha256 === GUARD_REAR_FRAME.sha256 && image.complete && !image.error && image.width === 512 && image.height === 512)).toBe(true);
   const pngLoading = await loadedImages();
   expect(pngLoading.errors).toEqual([]);
   expect(pngLoading.descriptors).toContainEqual(expect.objectContaining({ status: 200,
