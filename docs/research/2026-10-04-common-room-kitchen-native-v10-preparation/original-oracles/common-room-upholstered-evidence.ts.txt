@@ -3,9 +3,9 @@ import { createHash } from 'node:crypto';
 import { writeFile } from 'node:fs/promises';
 import { expect, type Page, type Response, type TestInfo } from '@playwright/test';
 const descriptorPath = '/game-content/oblique-furniture.common-room-bench.v1.json';
-const sourceSha256 = '70be43170198172589904862ed627e0c3360be9da4788fb93098feb7b4ecb4c7';
-const exposedFrame = '/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+60-elev40.a75487c09dc1.png';
-const exposedSha256 = 'a75487c09dc18f99526dc77265c93764fad2927b2a2beb762057ad36f99e1ab0';
+const sourceSha256 = '825f228a6bb81dd03ab06d80c52af02646b92a16880e929c112c461b68992772';
+const exposedFrame = '/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+60-elev40.5941441c6168.png';
+const exposedSha256 = '5941441c6168900b1cf2eb6110b9bdb51708d8f2ff2b25c93629c6b3f1d6409a';
 const sha = (body: Buffer): string => createHash('sha256').update(body).digest('hex');
 interface NetworkRow {
   url: string; decodedPath: string; status: number; location?: string; sha256?: string;
@@ -63,7 +63,7 @@ export function observeCommonRoomNetwork(page: Page) {
       await Promise.all(pending);
       const catalog = JSON.parse(bodies.get(descriptorPath)!.toString('utf8')) as BenchCatalog;
       expect(catalog.assetId).toBe('furniture.common-room.upholstered-bench');
-      expect(catalog.source).toBe('assets/source/blender/furniture.common-room.upholstered-bench.soft-light.blend');
+      expect(catalog.source).toBe('assets/source/blender/furniture.common-room.upholstered-bench.angled-detail.blend');
       expect(catalog.sourceSha256).toBe(sourceSha256);
       expect(catalog.resolutionPx).toEqual([256,256]); expect(catalog.pivotPx).toEqual([128,128]);
       expect(catalog.cameraTargetTiles).toEqual([1,.5,.52]); expect(catalog.nominalPixelsPerTile).toBe(64);

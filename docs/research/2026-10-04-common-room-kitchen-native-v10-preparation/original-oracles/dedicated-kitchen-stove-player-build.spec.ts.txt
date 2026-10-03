@@ -3,9 +3,8 @@ import { openCameraControls } from './public-camera-controls';
 import { writeFile } from 'node:fs/promises';
 import { expect, test as base, type Page } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
-import { assertOwnedObjectOrders, type OwnedObjectSnapshotData } from './owned-object-worker-evidence';
+import { assertOwnedObjectOrders, recordOwnedObjectSnapshot, type OwnedObjectSnapshotData } from './owned-object-worker-evidence';
 import { fridgePalettePixels } from './kitchen-fixture-palette-evidence';
-import { observeKitchenModernNetwork, frameKitchenModernSource, readKitchenWholeSnapshot } from './common-room-kitchen-modern-evidence';
 
 function assertKitchenOwners(data: OwnedObjectSnapshotData, quarterTurns: 0 | 1): void {
   // Authored catalogue order, independent of the objects we are checking.
@@ -99,11 +98,9 @@ const test = base.extend({
   storageState: async ({}, use) => { await use(routeStorage ?? { cookies: [], origins: [] }); },
 });
 test.describe.configure({ mode: 'serial' });
-const captures = new WeakMap<Page,ReturnType<typeof observeKitchenModernNetwork>>();
 
 test.afterEach(async ({ page }, info) => {
   if (info.status === info.expectedStatus) return;
-  await captures.get(page)?.raw(info.outputPath('failed-kitchen-modern-network.json'));
   const snapshot = await page.evaluate(async () => (window as ProbeWindow).askWorker
     ? (window as ProbeWindow).askWorker!('simulation/request-snapshot', { reason: 'consistency-check' })
     : null);
@@ -164,8 +161,6 @@ test('player creates storage and delivery capacity before Kitchen', async ({ pag
 for (const quarterTurns of [0, 1] as const) {
 test(`player builds Kitchen at quarterTurns${quarterTurns} and retains stove and fridge detail palettes and all completed owners after Save/Load`, async ({ page }, info) => {
   expect(routeStorage, 'this case consumes the first stage actual IndexedDB save').toBeDefined();
-  const network=observeKitchenModernNetwork(page,'stove');
-  captures.set(page,network);
   await installWorkerProbe(page);
   await installTee(page);
   await page.setViewportSize({ width: 1920, height: 1080 });
@@ -187,7 +182,7 @@ test(`player builds Kitchen at quarterTurns${quarterTurns} and retains stove and
     { type: 'PlaceRoomTemplate', templateId: 'kitchen-basic', origin: { x: 20, y: 5 }, ...(quarterTurns === 0 ? {} : { quarterTurns }) },
   ]);
   await page.getByRole('button', { name: 'Pause', exact: true }).click();
-  const pausedBefore = await readKitchenWholeSnapshot(page, info.outputPath('kitchen-paused-before-save.json'));
+  const pausedBefore = await recordOwnedObjectSnapshot(page, info.outputPath('kitchen-paused-before-save.json'));
   assertKitchenOwners(pausedBefore, quarterTurns);
   const minimapRegion = page.getByRole('region', { name: 'Minimap', exact: true });
   if (!await page.locator('.hud-minimap__surface').isVisible()) {
@@ -213,7 +208,7 @@ test(`player builds Kitchen at quarterTurns${quarterTurns} and retains stove and
   await expect(page.locator('.save-panel__status')).toContainText('Saved');
   await page.locator('.save-panel__item').first().getByRole('button', { name: 'Load', exact: true }).click();
   await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
-  const pausedAfter = await readKitchenWholeSnapshot(page, info.outputPath('kitchen-paused-after-load.json'));
+  const pausedAfter = await recordOwnedObjectSnapshot(page, info.outputPath('kitchen-paused-after-load.json'));
   assertKitchenOwners(pausedAfter, quarterTurns);
   expect(pausedAfter).toEqual(pausedBefore);
   const actualAfter = await fixtureAnchors(page);
@@ -239,13 +234,6 @@ test(`player builds Kitchen at quarterTurns${quarterTurns} and retains stove and
   await page.getByRole('button', { name: 'Rotate camera left', exact: true }).click();
   await page.getByRole('button', { name: 'Rotate camera left', exact: true }).click();
   await page.screenshot({ path: info.outputPath('kitchen-loaded-physical-fixings-fullhd.png') });
-  // Restore the two original left turns before the shared canonical source route.
-  await page.getByRole('button', { name: 'Rotate camera right', exact: true }).click();
-  await page.getByRole('button', { name: 'Rotate camera right', exact: true }).click();
-  await frameKitchenModernSource(page,quarterTurns);
-  await page.screenshot({path:info.outputPath('kitchen-stove-canonical-source60-e40-fullhd.png')});
-  await network.evidence(info,quarterTurns);
-  expect(await readKitchenWholeSnapshot(page,info.outputPath('kitchen-stove-canonical-whole-state.json'))).toEqual(pausedAfter);
 
 });
 }

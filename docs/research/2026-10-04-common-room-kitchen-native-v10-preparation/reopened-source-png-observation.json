@@ -1,0 +1,515 @@
+[
+  {
+    "catalog": "public/game-content/oblique-furniture.common-room-bench.v1.json",
+    "source": "assets/source/blender/furniture.common-room.upholstered-bench.soft-light.blend",
+    "sourceSha256": "70be43170198172589904862ed627e0c3360be9da4788fb93098feb7b4ecb4c7",
+    "yaw": 30,
+    "elevation": 40,
+    "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+30-elev40.95f1fb5090c5.png",
+    "sha256": "95f1fb5090c578aa476697f7892a9f1d52f7032a716958352ba4e2b85878c4f8",
+    "width": 256,
+    "height": 256,
+    "wholeOpaqueSourcePixelsOnly": true,
+    "nativeRoiCalibration": false,
+    "oldPetrolEnvelope": 938,
+    "oldSteelEnvelope": 561,
+    "oldExactRGB": [
+      {
+        "rgb": [
+          125,
+          124,
+          121
+        ],
+        "count": 0
+      },
+      {
+        "rgb": [
+          148,
+          147,
+          145
+        ],
+        "count": 0
+      },
+      {
+        "rgb": [
+          44,
+          50,
+          52
+        ],
+        "count": 0
+      },
+      {
+        "rgb": [
+          39,
+          67,
+          77
+        ],
+        "count": 0
+      },
+      {
+        "rgb": [
+          44,
+          77,
+          87
+        ],
+        "count": 0
+      }
+    ]
+  },
+  {
+    "catalog": "public/game-content/oblique-furniture.common-room-bench.v1.json",
+    "source": "assets/source/blender/furniture.common-room.upholstered-bench.soft-light.blend",
+    "sourceSha256": "70be43170198172589904862ed627e0c3360be9da4788fb93098feb7b4ecb4c7",
+    "yaw": 60,
+    "elevation": 40,
+    "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+60-elev40.a75487c09dc1.png",
+    "sha256": "a75487c09dc18f99526dc77265c93764fad2927b2a2beb762057ad36f99e1ab0",
+    "width": 256,
+    "height": 256,
+    "wholeOpaqueSourcePixelsOnly": true,
+    "nativeRoiCalibration": false,
+    "oldPetrolEnvelope": 949,
+    "oldSteelEnvelope": 457,
+    "oldExactRGB": [
+      {
+        "rgb": [
+          125,
+          124,
+          121
+        ],
+        "count": 0
+      },
+      {
+        "rgb": [
+          148,
+          147,
+          145
+        ],
+        "count": 0
+      },
+      {
+        "rgb": [
+          44,
+          50,
+          52
+        ],
+        "count": 0
+      },
+      {
+        "rgb": [
+          39,
+          67,
+          77
+        ],
+        "count": 0
+      },
+      {
+        "rgb": [
+          44,
+          77,
+          87
+        ],
+        "count": 0
+      }
+    ]
+  },
+  {
+    "catalog": "public/game-content/oblique-furniture.common-room-bench.v1.json",
+    "source": "assets/source/blender/furniture.common-room.upholstered-bench.soft-light.blend",
+    "sourceSha256": "70be43170198172589904862ed627e0c3360be9da4788fb93098feb7b4ecb4c7",
+    "yaw": 300,
+    "elevation": 40,
+    "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+300-elev40.fbf9376425bb.png",
+    "sha256": "fbf9376425bb06eb59655fadc59417e5310b309beb4e875fc78138407f63b779",
+    "width": 256,
+    "height": 256,
+    "wholeOpaqueSourcePixelsOnly": true,
+    "nativeRoiCalibration": false,
+    "oldPetrolEnvelope": 789,
+    "oldSteelEnvelope": 406,
+    "oldExactRGB": [
+      {
+        "rgb": [
+          125,
+          124,
+          121
+        ],
+        "count": 0
+      },
+      {
+        "rgb": [
+          148,
+          147,
+          145
+        ],
+        "count": 0
+      },
+      {
+        "rgb": [
+          44,
+          50,
+          52
+        ],
+        "count": 0
+      },
+      {
+        "rgb": [
+          39,
+          67,
+          77
+        ],
+        "count": 0
+      },
+      {
+        "rgb": [
+          44,
+          77,
+          87
+        ],
+        "count": 0
+      }
+    ]
+  },
+  {
+    "catalog": "public/game-content/oblique-furniture.kitchen-stove.v1.json",
+    "source": "assets/source/blender/furniture.kitchen.stove.soft-light.blend",
+    "sourceSha256": "7ac1027aca308b946acf902ebf611547621227535dc70b29db1c06d3db2d03bb",
+    "yaw": 30,
+    "elevation": 40,
+    "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+30-elev40.86340147e019.png",
+    "sha256": "86340147e0195e8ed2ea057f0614360a1fee777e878f0c5afb9e3c12f9e118a7",
+    "width": 256,
+    "height": 256,
+    "wholeOpaqueSourcePixelsOnly": true,
+    "nativeRoiCalibration": false,
+    "oldPetrolEnvelope": 1163,
+    "oldSteelEnvelope": 3961,
+    "oldExactRGB": [
+      {
+        "rgb": [
+          125,
+          124,
+          121
+        ],
+        "count": 0
+      },
+      {
+        "rgb": [
+          148,
+          147,
+          145
+        ],
+        "count": 0
+      },
+      {
+        "rgb": [
+          44,
+          50,
+          52
+        ],
+        "count": 0
+      },
+      {
+        "rgb": [
+          39,
+          67,
+          77
+        ],
+        "count": 0
+      },
+      {
+        "rgb": [
+          44,
+          77,
+          87
+        ],
+        "count": 0
+      }
+    ]
+  },
+  {
+    "catalog": "public/game-content/oblique-furniture.kitchen-stove.v1.json",
+    "source": "assets/source/blender/furniture.kitchen.stove.soft-light.blend",
+    "sourceSha256": "7ac1027aca308b946acf902ebf611547621227535dc70b29db1c06d3db2d03bb",
+    "yaw": 60,
+    "elevation": 40,
+    "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+60-elev40.2c45a7fe1656.png",
+    "sha256": "2c45a7fe165699ebdf209ba6a092956d9e8097d3095bc5f09dd35b9344749d65",
+    "width": 256,
+    "height": 256,
+    "wholeOpaqueSourcePixelsOnly": true,
+    "nativeRoiCalibration": false,
+    "oldPetrolEnvelope": 0,
+    "oldSteelEnvelope": 3231,
+    "oldExactRGB": [
+      {
+        "rgb": [
+          125,
+          124,
+          121
+        ],
+        "count": 0
+      },
+      {
+        "rgb": [
+          148,
+          147,
+          145
+        ],
+        "count": 0
+      },
+      {
+        "rgb": [
+          44,
+          50,
+          52
+        ],
+        "count": 2
+      },
+      {
+        "rgb": [
+          39,
+          67,
+          77
+        ],
+        "count": 0
+      },
+      {
+        "rgb": [
+          44,
+          77,
+          87
+        ],
+        "count": 0
+      }
+    ]
+  },
+  {
+    "catalog": "public/game-content/oblique-furniture.kitchen-stove.v1.json",
+    "source": "assets/source/blender/furniture.kitchen.stove.soft-light.blend",
+    "sourceSha256": "7ac1027aca308b946acf902ebf611547621227535dc70b29db1c06d3db2d03bb",
+    "yaw": 300,
+    "elevation": 40,
+    "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+300-elev40.aed487667fa9.png",
+    "sha256": "aed487667fa98273e0110f43295fa78f196edffb4415397f37d2797321f6ab1e",
+    "width": 256,
+    "height": 256,
+    "wholeOpaqueSourcePixelsOnly": true,
+    "nativeRoiCalibration": false,
+    "oldPetrolEnvelope": 0,
+    "oldSteelEnvelope": 3215,
+    "oldExactRGB": [
+      {
+        "rgb": [
+          125,
+          124,
+          121
+        ],
+        "count": 1
+      },
+      {
+        "rgb": [
+          148,
+          147,
+          145
+        ],
+        "count": 0
+      },
+      {
+        "rgb": [
+          44,
+          50,
+          52
+        ],
+        "count": 3
+      },
+      {
+        "rgb": [
+          39,
+          67,
+          77
+        ],
+        "count": 0
+      },
+      {
+        "rgb": [
+          44,
+          77,
+          87
+        ],
+        "count": 0
+      }
+    ]
+  },
+  {
+    "catalog": "public/game-content/oblique-furniture.kitchen-fridge.v1.json",
+    "source": "assets/source/blender/furniture.kitchen.fridge.soft-light.blend",
+    "sourceSha256": "1bad1e58abc9cd6c7a5773742df6b365ceb85db0a1e20d3c20a46c2e2508ce7d",
+    "yaw": 30,
+    "elevation": 40,
+    "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+30-elev40.a5def4b3ef13.png",
+    "sha256": "a5def4b3ef13dbfcc2d3679a410ce7ee4ee5c4368f614e4b75a1e479716f401c",
+    "width": 256,
+    "height": 256,
+    "wholeOpaqueSourcePixelsOnly": true,
+    "nativeRoiCalibration": false,
+    "oldPetrolEnvelope": 1235,
+    "oldSteelEnvelope": 2586,
+    "oldExactRGB": [
+      {
+        "rgb": [
+          125,
+          124,
+          121
+        ],
+        "count": 0
+      },
+      {
+        "rgb": [
+          148,
+          147,
+          145
+        ],
+        "count": 0
+      },
+      {
+        "rgb": [
+          44,
+          50,
+          52
+        ],
+        "count": 0
+      },
+      {
+        "rgb": [
+          39,
+          67,
+          77
+        ],
+        "count": 0
+      },
+      {
+        "rgb": [
+          44,
+          77,
+          87
+        ],
+        "count": 0
+      }
+    ]
+  },
+  {
+    "catalog": "public/game-content/oblique-furniture.kitchen-fridge.v1.json",
+    "source": "assets/source/blender/furniture.kitchen.fridge.soft-light.blend",
+    "sourceSha256": "1bad1e58abc9cd6c7a5773742df6b365ceb85db0a1e20d3c20a46c2e2508ce7d",
+    "yaw": 60,
+    "elevation": 40,
+    "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+60-elev40.6d705ce7fcb5.png",
+    "sha256": "6d705ce7fcb58f091d1f974716fe988cecea85167f6402ea5e55ba563b04b0c6",
+    "width": 256,
+    "height": 256,
+    "wholeOpaqueSourcePixelsOnly": true,
+    "nativeRoiCalibration": false,
+    "oldPetrolEnvelope": 757,
+    "oldSteelEnvelope": 1642,
+    "oldExactRGB": [
+      {
+        "rgb": [
+          125,
+          124,
+          121
+        ],
+        "count": 0
+      },
+      {
+        "rgb": [
+          148,
+          147,
+          145
+        ],
+        "count": 0
+      },
+      {
+        "rgb": [
+          44,
+          50,
+          52
+        ],
+        "count": 0
+      },
+      {
+        "rgb": [
+          39,
+          67,
+          77
+        ],
+        "count": 0
+      },
+      {
+        "rgb": [
+          44,
+          77,
+          87
+        ],
+        "count": 0
+      }
+    ]
+  },
+  {
+    "catalog": "public/game-content/oblique-furniture.kitchen-fridge.v1.json",
+    "source": "assets/source/blender/furniture.kitchen.fridge.soft-light.blend",
+    "sourceSha256": "1bad1e58abc9cd6c7a5773742df6b365ceb85db0a1e20d3c20a46c2e2508ce7d",
+    "yaw": 300,
+    "elevation": 40,
+    "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+300-elev40.a6d73e1d54a8.png",
+    "sha256": "a6d73e1d54a877812e867aa877d5deda3c944259b35dd95506be64e31ce77fbc",
+    "width": 256,
+    "height": 256,
+    "wholeOpaqueSourcePixelsOnly": true,
+    "nativeRoiCalibration": false,
+    "oldPetrolEnvelope": 787,
+    "oldSteelEnvelope": 1792,
+    "oldExactRGB": [
+      {
+        "rgb": [
+          125,
+          124,
+          121
+        ],
+        "count": 0
+      },
+      {
+        "rgb": [
+          148,
+          147,
+          145
+        ],
+        "count": 0
+      },
+      {
+        "rgb": [
+          44,
+          50,
+          52
+        ],
+        "count": 1
+      },
+      {
+        "rgb": [
+          39,
+          67,
+          77
+        ],
+        "count": 0
+      },
+      {
+        "rgb": [
+          44,
+          77,
+          87
+        ],
+        "count": 0
+      }
+    ]
+  }
+]

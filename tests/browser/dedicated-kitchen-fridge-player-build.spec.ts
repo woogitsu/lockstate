@@ -2,6 +2,23 @@
 import { writeFile } from 'node:fs/promises';
 import { expect, test as base, type Page } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
+import { assertOwnedObjectOrders, type OwnedObjectSnapshotData } from './owned-object-worker-evidence';
+import { observeKitchenModernNetwork, frameKitchenModernSource, readKitchenWholeSnapshot } from './common-room-kitchen-modern-evidence';
+
+function assertKitchenOwners(data: OwnedObjectSnapshotData, quarterTurns: 0 | 1): void {
+  // Authored catalogue order, independent of the objects we are checking.
+  const fixtures = quarterTurns === 0
+    ? [{ objectId: 'object.stove', definitionId: 'stove-brick', index: '000', x: 21, y: 6 },
+      { objectId: 'object.prep-counter', definitionId: 'prep-counter-brick', index: '001', x: 23, y: 6 },
+      { objectId: 'object.fridge', definitionId: 'fridge-brick', index: '002', x: 21, y: 8 }]
+    : [{ objectId: 'object.stove', definitionId: 'stove-brick', index: '000', x: 24, y: 6 },
+      { objectId: 'object.prep-counter', definitionId: 'prep-counter-brick', index: '001', x: 24, y: 8 },
+      { objectId: 'object.fridge', definitionId: 'fridge-brick', index: '002', x: 22, y: 6 }];
+  for (const fixture of fixtures) assertOwnedObjectOrders(data, fixture.objectId, fixture.definitionId, [{
+    anchorTile: { x: fixture.x, y: fixture.y }, orientation: quarterTurns,
+    sourceOrderId: `room-template-000000000002-2-object-${fixture.index}`,
+  }]);
+}
 
 interface ProbeWindow extends Window {
   askWorker?: (kind: string, payload: unknown) => Promise<unknown>;
@@ -83,9 +100,11 @@ const test = base.extend({
   storageState: async ({}, use) => { await use(routeStorage ?? { cookies: [], origins: [] }); },
 });
 test.describe.configure({ mode: 'serial' });
+const captures = new WeakMap<Page,ReturnType<typeof observeKitchenModernNetwork>>();
 
 test.afterEach(async ({ page }, info) => {
   if (info.status === info.expectedStatus) return;
+  await captures.get(page)?.raw(info.outputPath('failed-kitchen-modern-network.json'));
   const snapshot = await page.evaluate(async () => (window as ProbeWindow).askWorker
     ? (window as ProbeWindow).askWorker!('simulation/request-snapshot', { reason: 'consistency-check' })
     : null);
@@ -146,6 +165,8 @@ test('player creates storage and delivery capacity before Kitchen', async ({ pag
 for (const quarterTurns of [0, 1] as const) {
 test(`player builds Kitchen at quarterTurns${quarterTurns} and retains authored fridge panel and detail palettes and anchors after Save/Load`, async ({ page }, info) => {
   expect(routeStorage, 'this case consumes the first stage actual IndexedDB save').toBeDefined();
+  const network=observeKitchenModernNetwork(page,'fridge');
+  captures.set(page,network);
   await installWorkerProbe(page);
   await installTee(page);
   await page.setViewportSize({ width: 1920, height: 1080 });
@@ -167,6 +188,8 @@ test(`player builds Kitchen at quarterTurns${quarterTurns} and retains authored 
     { type: 'PlaceRoomTemplate', templateId: 'kitchen-basic', origin: { x: 20, y: 5 }, ...(quarterTurns === 0 ? {} : { quarterTurns }) },
   ]);
   await page.getByRole('button', { name: 'Pause', exact: true }).click();
+  const pausedBefore=await readKitchenWholeSnapshot(page,info.outputPath('kitchen-fridge-paused-before-save.json'));
+  assertKitchenOwners(pausedBefore,quarterTurns);
   const minimapRegion = page.getByRole('region', { name: 'Minimap', exact: true });
   if (!await page.locator('.hud-minimap__surface').isVisible()) {
     await minimapRegion.getByRole('button', { name: 'Expand', exact: true }).click();
@@ -188,6 +211,8 @@ test(`player builds Kitchen at quarterTurns${quarterTurns} and retains authored 
   await expect(page.locator('.save-panel__status')).toContainText('Saved');
   await page.locator('.save-panel__item').first().getByRole('button', { name: 'Load', exact: true }).click();
   await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
+  const pausedAfter=await readKitchenWholeSnapshot(page,info.outputPath('kitchen-fridge-paused-after-load.json'));
+  assertKitchenOwners(pausedAfter,quarterTurns); expect(pausedAfter).toEqual(pausedBefore);
   const actualAfter = await fixtureAnchors(page);
   expect(actualAfter).toEqual(expected);
   await minimap.click({ position: { x: bounds.width * 23 / 32, y: bounds.height * 8 / 32 } });
@@ -203,6 +228,10 @@ test(`player builds Kitchen at quarterTurns${quarterTurns} and retains authored 
     commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
   }, null, 2));
   await info.attach('dedicated-kitchen-fridge-worker-and-save-evidence', { path: evidencePath, contentType: 'application/json' });
+  await frameKitchenModernSource(page,quarterTurns);
+  await page.screenshot({path:info.outputPath('kitchen-fridge-canonical-source60-e40-fullhd.png')});
+  await network.evidence(info,quarterTurns);
+  expect(await readKitchenWholeSnapshot(page,info.outputPath('kitchen-fridge-canonical-whole-state.json'))).toEqual(pausedAfter);
 
 });
 }
