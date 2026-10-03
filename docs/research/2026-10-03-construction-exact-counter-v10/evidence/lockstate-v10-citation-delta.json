@@ -1,0 +1,301 @@
+{
+  "base": "c28d4815844af9081c4d16925bbf498eb3df2ff1",
+  "newlyLost": [
+    {
+      "source": "docs/adr/0012-derived-identifier-reproducibility.md",
+      "token": "src/persistence/save-schema.ts:673",
+      "path": "src/persistence/save-schema.ts",
+      "first": 673,
+      "last": 673,
+      "candidates": [
+        "pathRequestId",
+        "simulation"
+      ]
+    },
+    {
+      "source": "docs/adr/0015-actor-identity-allocation.md",
+      "token": "src/persistence/save-schema.ts:785-795",
+      "path": "src/persistence/save-schema.ts",
+      "first": 785,
+      "last": 795,
+      "candidates": [
+        "main",
+        "sessionSystemsSchemaFor",
+        "prisoners",
+        "operations",
+        "navigation",
+        "security",
+        "contraband",
+        "incidents"
+      ]
+    },
+    {
+      "source": "docs/adr/0015-actor-identity-allocation.md",
+      "token": "src/persistence/save-schema.ts:1153",
+      "path": "src/persistence/save-schema.ts",
+      "first": 1153,
+      "last": 1153,
+      "candidates": [
+        "identity",
+        "actorIdentitySnapshotSchema"
+      ]
+    },
+    {
+      "source": "docs/adr/0015-actor-identity-allocation.md",
+      "token": "src/persistence/save-schema.ts:785-795",
+      "path": "src/persistence/save-schema.ts",
+      "first": 785,
+      "last": 795,
+      "candidates": [
+        "sessionSystemsSchemaFor",
+        "prisoners",
+        "operations",
+        "navigation",
+        "security",
+        "contraband",
+        "incidents"
+      ]
+    },
+    {
+      "source": "docs/adr/0028-object-placement-and-derived-room-capacity.md",
+      "token": "src/persistence/save-schema.ts:585-593",
+      "path": "src/persistence/save-schema.ts",
+      "first": 585,
+      "last": 593,
+      "candidates": [
+        "roomInstanceSchemaV5",
+        ".strict()",
+        "roomInstanceSchemaV5",
+        "roomInstanceSchema"
+      ]
+    },
+    {
+      "source": "docs/adr/0029-concurrent-room-use-claims.md",
+      "token": "src/persistence/save-schema.ts:39",
+      "path": "src/persistence/save-schema.ts",
+      "first": 39,
+      "last": 39,
+      "candidates": [
+        "SAVE_ENVELOPE_VERSION",
+        "SAVE_ENVELOPE_VERSION",
+        "SAVE_SCHEMA_VERSION"
+      ]
+    },
+    {
+      "source": "docs/adr/0029-concurrent-room-use-claims.md",
+      "token": "src/simulation/worker/projection-catalog.ts:316",
+      "path": "src/simulation/worker/projection-catalog.ts",
+      "first": 316,
+      "last": 316,
+      "candidates": [
+        "lowestNeed",
+        "projectPrisonerDetail",
+        "hud/prisoner-detail",
+        "src/ui/"
+      ]
+    },
+    {
+      "source": "docs/adr/0042-attaching-consequences-to-the-simulation-loop.md",
+      "token": "src/persistence/save-schema.ts:1220",
+      "path": "src/persistence/save-schema.ts",
+      "first": 1220,
+      "last": 1220,
+      "candidates": [
+        "kernel.registerSystem(payroll)",
+        "unpaidWagesMinorUnits",
+        ".object({ unpaidWagesMinorUnits: z.number().int().nonnegative().safe() })"
+      ]
+    },
+    {
+      "source": "docs/adr/0042-attaching-consequences-to-the-simulation-loop.md",
+      "token": "src/persistence/save-schema.ts:39",
+      "path": "src/persistence/save-schema.ts",
+      "first": 39,
+      "last": 39,
+      "candidates": [
+        "Treasury",
+        "grep -n \"nonnegative\" src/simulation/economy/treasury.ts",
+        "SAVE_SCHEMA_VERSION",
+        "StateIncomeSystem"
+      ]
+    },
+    {
+      "source": "docs/adr/0047-raising-a-building-on-open-ground.md",
+      "token": "src/persistence/save-schema.ts:126",
+      "path": "src/persistence/save-schema.ts",
+      "first": 126,
+      "last": 126,
+      "candidates": [
+        "SerializedChunkState",
+        "decodeChunk",
+        "allowedKeys",
+        "terrain",
+        "topEdge",
+        "leftEdge",
+        "zoning",
+        "terrainRleSchema.optional()"
+      ]
+    },
+    {
+      "source": "docs/adr/0047-raising-a-building-on-open-ground.md",
+      "token": "src/simulation/construction/system.ts:2182",
+      "path": "src/simulation/construction/system.ts",
+      "first": 2182,
+      "last": 2182,
+      "candidates": [
+        "finalizeConstruction",
+        "finalizeConstruction",
+        "writeEdge",
+        "setTopEdge",
+        "setLeftEdge"
+      ]
+    },
+    {
+      "source": "docs/adr/0047-raising-a-building-on-open-ground.md",
+      "token": "src/simulation/construction/system.ts:2235",
+      "path": "src/simulation/construction/system.ts",
+      "first": 2235,
+      "last": 2235,
+      "candidates": [
+        "revertConstruction",
+        "private revertConstruction"
+      ]
+    },
+    {
+      "source": "docs/adr/0062-who-gets-the-room-when-more-prisoners-want-it-than-it-seats.md",
+      "token": "src/persistence/save-schema.ts:42",
+      "path": "src/persistence/save-schema.ts",
+      "first": 42,
+      "last": 42,
+      "candidates": [
+        "ebe2c41f81",
+        "export const SAVE_SCHEMA_VERSION = 8 as const;",
+        "export const SAVE_SCHEMA_VERSION = 9 as const;"
+      ]
+    },
+    {
+      "source": "docs/adr/0093-a-carry-is-an-action.md",
+      "token": "src/persistence/save-schema.ts:40",
+      "path": "src/persistence/save-schema.ts",
+      "first": 40,
+      "last": 40,
+      "candidates": [
+        "SAVE_SCHEMA_VERSION"
+      ]
+    },
+    {
+      "source": "docs/adr/0109-what-a-stale-local-save-is-refused-for.md",
+      "token": "src/persistence/save-schema.ts:2240-2260",
+      "path": "src/persistence/save-schema.ts",
+      "first": 2240,
+      "last": 2260,
+      "candidates": [
+        "createSaveEnvelope",
+        "revision",
+        "checksum: computeSaveChecksum(payload as JsonValue),"
+      ]
+    },
+    {
+      "source": "docs/adr/0116-whether-a-finished-object-is-an-event.md",
+      "token": "src/persistence/save-schema.ts:39",
+      "path": "src/persistence/save-schema.ts",
+      "first": 39,
+      "last": 39,
+      "candidates": [
+        "SAVE_SCHEMA_VERSION",
+        "alertsSectionSchema"
+      ]
+    },
+    {
+      "source": "docs/PERSISTENCE.md",
+      "token": "src/simulation/runtime/restore-session.ts:104",
+      "path": "src/simulation/runtime/restore-session.ts",
+      "first": 104,
+      "last": 104,
+      "candidates": [
+        "01536a3",
+        "export const SESSION_SNAPSHOT_SCHEMA_VERSION = 3;",
+        "## V2:"
+      ]
+    },
+    {
+      "source": "docs/WORLD.md",
+      "token": "src/simulation/construction/system.ts:599",
+      "path": "src/simulation/construction/system.ts",
+      "first": 599,
+      "last": 599,
+      "candidates": [
+        "public submitOrder",
+        "admits"
+      ]
+    }
+  ],
+  "budgetFailures": [
+    {
+      "doc": "docs/adr/0012-derived-identifier-reproducibility.md",
+      "before": 0,
+      "after": 1,
+      "budget": 0
+    },
+    {
+      "doc": "docs/adr/0028-object-placement-and-derived-room-capacity.md",
+      "before": 19,
+      "after": 20,
+      "budget": 19
+    },
+    {
+      "doc": "docs/adr/0029-concurrent-room-use-claims.md",
+      "before": 6,
+      "after": 8,
+      "budget": 6
+    },
+    {
+      "doc": "docs/adr/0031-build-queue-cancellation-surface.md",
+      "before": 1,
+      "after": 1,
+      "budget": 0
+    },
+    {
+      "doc": "docs/adr/0042-attaching-consequences-to-the-simulation-loop.md",
+      "before": 48,
+      "after": 50,
+      "budget": 49
+    },
+    {
+      "doc": "docs/adr/0047-raising-a-building-on-open-ground.md",
+      "before": 15,
+      "after": 18,
+      "budget": 15
+    },
+    {
+      "doc": "docs/adr/0062-who-gets-the-room-when-more-prisoners-want-it-than-it-seats.md",
+      "before": 3,
+      "after": 4,
+      "budget": 3
+    },
+    {
+      "doc": "docs/adr/0109-what-a-stale-local-save-is-refused-for.md",
+      "before": 9,
+      "after": 10,
+      "budget": 9
+    },
+    {
+      "doc": "docs/adr/0116-whether-a-finished-object-is-an-event.md",
+      "before": 21,
+      "after": 22,
+      "budget": 21
+    },
+    {
+      "doc": "docs/PERSISTENCE.md",
+      "before": 0,
+      "after": 1,
+      "budget": 0
+    },
+    {
+      "doc": "docs/WORLD.md",
+      "before": 0,
+      "after": 1,
+      "budget": 0
+    }
+  ]
+}

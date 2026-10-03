@@ -1,0 +1,48 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/ls-v10-20261003
+
+ ❯ tests/unit/construction-exact-counter-protocol.test.ts (20 tests | 1 failed) 8ms
+   × exact increment carries across arbitrary decimal length without saturation or number coercion 3ms
+ ❯ tests/integration/construction-exact-counter-v10.test.ts (6 tests | 1 failed) 109ms
+   × genuine completion at tick171 advances beyond MAX and remains whole-saveable 19ms
+
+ Test Files  2 failed (2)
+      Tests  2 failed | 24 passed (26)
+   Start at  23:14:11
+   Duration  2.41s (transform 1.50s, setup 0ms, import 4.13s, tests 117ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/construction-exact-counter-v10.test.ts > genuine completion at tick171 advances beyond MAX and remains whole-saveable
+AssertionError: expected '9007199254740992' to be '9007199254740994' // Object.is equality
+
+Expected: "9007199254740994"
+Received: "9007199254740992"
+
+ ❯ tests/integration/construction-exact-counter-v10.test.ts:79:58
+     77|   expect(runtime.construction.getOrder('actual-wall')?.state).toBe('co…
+     78|   expect(runtime.kernel.tick).toBe(171);
+     79|   expect(runtime.construction.revisionOf('actual-wall')).toBe('9007199…
+       |                                                          ^
+     80|   expect(runtime.treasury.balanceMinorUnits).toBe(24920);
+     81|   load(runtime);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/unit/construction-exact-counter-protocol.test.ts > exact increment carries across arbitrary decimal length without saturation or number coercion
+AssertionError: expected '9007199254740992' to be '9007199254740993' // Object.is equality
+
+Expected: "9007199254740993"
+Received: "9007199254740992"
+
+ ❯ tests/unit/construction-exact-counter-protocol.test.ts:21:54
+     19| it('exact increment carries across arbitrary decimal length without sa…
+     20|   expect(incrementOrderRevision('9007199254740991')).toBe('90071992547…
+     21|   expect(incrementOrderRevision('9007199254740992')).toBe('90071992547…
+       |                                                      ^
+     22|   expect(incrementOrderRevision('9'.repeat(200))).toBe(`1${'0'.repeat(…
+     23| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+

@@ -223,8 +223,9 @@ where this sentence took the name from. The constant is `SAVE_SCHEMA_VERSION`,
 `src/persistence/save-schema.ts` at historical line 37, already declared and already `5` on the
 day this was written. The ownership checkpoint `ebe2c41f81` historically had
 `save-schema.ts:41`, `export const SAVE_SCHEMA_VERSION = 8 as const;`.
-The live V9 constant is `src/persistence/save-schema.ts:42`,
-`export const SAVE_SCHEMA_VERSION = 9 as const;`.
+The V9 checkpoint historically used `save-schema.ts:42`,
+`export const SAVE_SCHEMA_VERSION = 9 as const;`. The V10 live constant is
+`src/persistence/save-schema.ts:44`, `export const SAVE_SCHEMA_VERSION = 10 as const;`.
 V8 belongs to object provenance #1975; V9 to owner-approved construction
 continuity #1985/#2021, not this decision. The decision is untouched and the wrong name is kept
 rather than overwritten, per `docs/AGENT_WORKFLOW.md` §4.)

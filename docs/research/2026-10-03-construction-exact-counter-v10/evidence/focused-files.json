@@ -1,0 +1,25 @@
+{
+  "source": "d38f5ec3670467ad274c2c4fb54abe349a1d3d93",
+  "result": "345 GREEN /16 files /5.91s",
+  "maxWorkers": 4,
+  "browser": false,
+  "build": false,
+  "files": [
+    "tests/integration/construction-exact-counter-v10.test.ts",
+    "tests/unit/construction-exact-counter-protocol.test.ts",
+    "tests/migrations/save-v8-to-v9-construction-history.test.ts",
+    "tests/migrations/save-v9-to-v10-exact-counter.test.ts",
+    "tests/integration/construction-history-restore-validation.test.ts",
+    "tests/integration/construction-cancel-order-stale-revision.test.ts",
+    "tests/integration/room-template-queued-cancellation-save.test.ts",
+    "tests/unit/construction.test.ts",
+    "tests/unit/construction-build-queue-projection.test.ts",
+    "tests/unit/ui-simulation-build-queue.test.ts",
+    "tests/unit/ui-hud-build-panel.test.ts",
+    "tests/unit/worker-state-machine.test.ts",
+    "tests/integration/occupied-template-refusal-undo-selection.test.ts",
+    "tests/integration/room-template-occupied-cancel-atomicity.test.ts",
+    "tests/integration/command-success-notices.test.ts",
+    "tests/integration/economy-money-conservation.test.ts"
+  ]
+}

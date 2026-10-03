@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/ls-v10-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+   Start at  23:14:32
+   Duration  2.38s (transform 852ms, setup 0ms, import 2.25s, tests 4ms, environment 0ms)
+

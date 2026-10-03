@@ -1,0 +1,78 @@
+{
+  "source": "d38f5ec3670467ad274c2c4fb54abe349a1d3d93",
+  "rows": [
+    {
+      "name": "increment-number-coercion",
+      "source": "src/simulation/construction/order-revision.ts",
+      "sha256Before": "2263fcf747d9d49a104b707933423f45808a5d1f9f19d93aa958fe89fd633c6e",
+      "sha256Restored": "2263fcf747d9d49a104b707933423f45808a5d1f9f19d93aa958fe89fd633c6e",
+      "negative": {
+        "status": 1,
+        "summary": "Tests  2 failed | 24 passed (26)"
+      },
+      "restored": {
+        "status": 0,
+        "summary": "Tests  26 passed (26)"
+      },
+      "tests": [
+        "tests/integration/construction-exact-counter-v10.test.ts",
+        "tests/unit/construction-exact-counter-protocol.test.ts"
+      ]
+    },
+    {
+      "name": "state-token-write-omission",
+      "source": "src/simulation/construction/system.ts",
+      "sha256Before": "1591baecbf053cc24268bb743f9567ff7a952d99fa21cfd5e231ebc2d5c8fda6",
+      "sha256Restored": "1591baecbf053cc24268bb743f9567ff7a952d99fa21cfd5e231ebc2d5c8fda6",
+      "negative": {
+        "status": 1,
+        "summary": "Tests  3 failed | 3 passed (6)"
+      },
+      "restored": {
+        "status": 0,
+        "summary": "Tests  6 passed (6)"
+      },
+      "tests": [
+        "tests/integration/construction-exact-counter-v10.test.ts"
+      ]
+    },
+    {
+      "name": "queued-token-conversion-omission",
+      "source": "src/persistence/save-migrations.ts",
+      "sha256Before": "ced93351454dc66a6b654f26e6a3a34a1df2b4aa4eb81ae09a107f443a71a431",
+      "sha256Restored": "ced93351454dc66a6b654f26e6a3a34a1df2b4aa4eb81ae09a107f443a71a431",
+      "negative": {
+        "status": 1,
+        "summary": "Tests  2 failed | 9 passed (11)"
+      },
+      "restored": {
+        "status": 0,
+        "summary": "Tests  11 passed (11)"
+      },
+      "tests": [
+        "tests/integration/construction-exact-counter-v10.test.ts",
+        "tests/migrations/save-v9-to-v10-exact-counter.test.ts"
+      ]
+    },
+    {
+      "name": "live-v1-cancel-guard-omission",
+      "source": "src/simulation/protocol/commands.ts",
+      "sha256Before": "f6dcfec6acf0c1dd08d64e93d97c31df28f34cf82cce078ba1360d85be9c8811",
+      "sha256Restored": "f6dcfec6acf0c1dd08d64e93d97c31df28f34cf82cce078ba1360d85be9c8811",
+      "negative": {
+        "status": 1,
+        "summary": "Tests  1 failed | 19 passed (20)"
+      },
+      "restored": {
+        "status": 0,
+        "summary": "Tests  20 passed (20)"
+      },
+      "tests": [
+        "tests/unit/construction-exact-counter-protocol.test.ts"
+      ]
+    }
+  ],
+  "productionDiffZero": true,
+  "browser": false,
+  "build": false
+}

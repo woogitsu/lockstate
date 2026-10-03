@@ -321,7 +321,7 @@ rather than a query answered afterwards.
 
 **Save consequence, which is the decisive half.** `roomInstanceSchemaV5` is
 `.strict()` inside `prisoners.roomInstanceDefinitions`
-(`src/persistence/save-schema.ts:585-593`, `roomInstanceSchemaV5`; the earlier
+(`src/persistence/save-schema.ts:597-605` (V10 live coordinate; historical `:585-593`), `roomInstanceSchemaV5`; the earlier
 indication `save-schema.ts:371-393` and name `roomInstanceSchema` are historical), so the objects become a
 variable-length array nested in every room-instance row. Deleting a room then
 silently deletes its furniture from the save with no record that it existed, and

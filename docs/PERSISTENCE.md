@@ -181,6 +181,36 @@ zero counter to a coincidentally matching queued token. Migration does not guess
 old counters or rewrite commands, and this is not a blanket safe-stale guarantee
 for historical queues. No cloud database migration is added.
 
+**V10 exact construction counters, owner-approved 2026-10-03
+([#2025](https://github.com/woogitsu/lockstate/issues/2025)).**
+The owner selected “Tak — V10, dokładne liczniki i migracja (zalecane)”;
+[the decision and actual controls](./research/2026-10-03-construction-exact-counter-v10/README.md)
+retain its provenance and the original V9 overflow. New
+`payload.construction.orderRevisions` values are canonical nonnegative decimal
+strings: `0` or a nonzero first digit followed by decimal digits, without signs,
+leading zeros, whitespace, exponent or fractional notation. Each state write
+adds exactly one, without Number conversion, saturation or wrap. The independent
+boolean marker, history, owners and refund rules are unchanged.
+
+Historical V1–V9 validators remain frozen. V9→V10 clones all validated raw data,
+converts every explicit numeric ledger entry losslessly to decimal text, and
+preserves prototype-like keys. Absence still means an empty ledger and missing
+order tokens read as `0`. Valid saved V1 cancellation payloads under
+`lockstate.simulation.command` become V2 with text `expectedRevision`; command
+ID, sequence, execute tick, transport and every unrelated field are preserved.
+Other queued commands are unchanged. Earlier migrations still supply false/{}
+for the fields not recorded by V1–V8; this does not infer lost historical state
+or repair their previously documented ambiguous queues.
+
+Live cancellation accepts only command payload V2 and canonical text; V1
+cancellation is upgraded only through the historical save migration. Unchanged
+live V1 commands remain accepted, unknown command versions are refused, and
+the existing stale-token comparison/refusal is unchanged. The raw current
+session snapshot has domain version4 and build-queue projection version2;
+other HUD projections and envelope protocol version1 remain unchanged, as
+ADR0003 Decision5 separates domain shape versions from the envelope. No new
+player sentence, tariff, exhaustion refusal or database migration is added.
+
 **The ninth is the one whose bump was authorised and not spent, which is the
 case this section had not yet had.** The owner's #589 ruling said
 `SAVE_SCHEMA_VERSION` would move by one field. It does not, because the three
@@ -1805,8 +1835,10 @@ exactly this, and a build handed the other shape now faults
 > since 2026-08-23.** `a5ec448` (#50) raised it 1 → 2, which is the change this
 > section narrates; `01536a3` (#70, *"persist the whole prison, not just its
 > terrain and walls"*) raised it 2 → 3 the same day, and
-> `src/simulation/runtime/restore-session.ts:104` has read
-> `export const SESSION_SNAPSHOT_SCHEMA_VERSION = 3;` ever since. The number is
+> the historical `restore-session.ts:104` read
+> `export const SESSION_SNAPSHOT_SCHEMA_VERSION = 3;` until V10. The current
+> `src/simulation/runtime/restore-session.ts:107` reads
+> `export const SESSION_SNAPSHOT_SCHEMA_VERSION = 4;`. The number is
 > left standing rather than swapped because a `## V2:` section describing the
 > bump *it* made is the correct record; what was wrong is that it read as the
 > current value with nothing beside it. Any later section that needs the live

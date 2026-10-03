@@ -951,7 +951,7 @@ describe('rooted src/ and tests/ anchors in the documentation carry a checkable 
     expect({
       'regime.ts:12': control('docs/adr/0079-a-sentence-long-enough-to-be-a-history.md', 'src/simulation/prisoners/regime.ts:12'),
       'gangs.ts:71': control('docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md', 'src/simulation/incidents/gangs.ts:71'),
-      'save-schema.ts:40': control('docs/adr/0093-a-carry-is-an-action.md', 'src/persistence/save-schema.ts:40'),
+      'save-schema.ts:44': control('docs/adr/0093-a-carry-is-an-action.md', 'src/persistence/save-schema.ts:44'),
       'main.ts:621': control('docs/adr/0092-who-decides-where-a-guard-stands.md', 'src/main.ts:621'),
       'new-session.ts:1400': control('docs/adr/0093-a-carry-is-an-action.md', 'src/simulation/runtime/new-session.ts:1400'),
       'actor-identity.ts:210': control('docs/adr/0103-what-a-gang-is-and-how-a-grudge-forms.md', 'src/simulation/identity/actor-identity.ts:210'),
@@ -960,7 +960,7 @@ describe('rooted src/ and tests/ anchors in the documentation carry a checkable 
     }).toEqual({
       'regime.ts:12': true,
       'gangs.ts:71': true,
-      'save-schema.ts:40': true,
+      'save-schema.ts:44': true,
       'main.ts:621': false,
       'new-session.ts:1400': false,
       'actor-identity.ts:210': false,

@@ -351,7 +351,7 @@ the tick already holds.
 
 ### 4b. Save format: zero version bump, one bounded forward-compatibility cost
 
-`SAVE_SCHEMA_VERSION` is `6` (`src/persistence/save-schema.ts:39`) and does not
+`SAVE_SCHEMA_VERSION` is `6` (`src/persistence/save-schema.ts:44` (V10 live coordinate; historical `:39`)) and does not
 move. `alertsSectionSchema` (`:624-630`) stores `records:
 z.array(simulationEventSchema).max(MAX_BUFFERED_SIMULATION_EVENTS)` — **the
 protocol's own union, not a copy** (`:613-617` argues why), so a new member is

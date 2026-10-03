@@ -1,0 +1,137 @@
+[
+    {
+        "file":  "citation-tooling-limit.txt",
+        "bytes":  553,
+        "sha256":  "f23b3c30d59b9fe3ef8713665c3b461fef1f8e8a9f2c593e902a4202689bd3d0"
+    },
+    {
+        "file":  "controls.json",
+        "bytes":  2617,
+        "sha256":  "5495658cf98724e8e160d4271ae380e22083a30c2ae62b69ebeb0bf14879196e"
+    },
+    {
+        "file":  "executed-citation-delta.cjs.txt",
+        "bytes":  1820,
+        "sha256":  "a41dfb5bb318a9fcb431f48d04dfb3bf883d0065570729209138e655fb103ccd"
+    },
+    {
+        "file":  "executed-controls.cjs.txt",
+        "bytes":  3128,
+        "sha256":  "6b98b8199de2d89f248adff877501a635e193aa7776925beb6edbfd1bb1aa635"
+    },
+    {
+        "file":  "focused-files.json",
+        "bytes":  1157,
+        "sha256":  "6c1baa6f301e304410329c3597fcd8c8e7bbc8fdf66c24e323e9a8ca9ff7ca24"
+    },
+    {
+        "file":  "increment-number-coercion-negative.txt",
+        "bytes":  2368,
+        "sha256":  "7c1c5ba030644fe69a3030dd6aaed4d5a01c228c10752e3bf432f54963d28b6d"
+    },
+    {
+        "file":  "increment-number-coercion-restored.txt",
+        "bytes":  240,
+        "sha256":  "088d29f47bc7e8f37f16dcfd96aae6d8baf9a5d4b0e14e40d645fd1f4af4b7a0"
+    },
+    {
+        "file":  "live-v1-cancel-guard-omission-negative.txt",
+        "bytes":  1502,
+        "sha256":  "5bf09591b4a4acd6eb9d7fb79a8189a0aa079ce63606acbd24be9d5a947f4eb2"
+    },
+    {
+        "file":  "live-v1-cancel-guard-omission-restored.txt",
+        "bytes":  238,
+        "sha256":  "3b43bddac549a772b386bd9a4fe28b97e1edbb02efd41c1307c1d88aa72e5393"
+    },
+    {
+        "file":  "lockstate-2025-v10-owner-issue.json",
+        "bytes":  12534,
+        "sha256":  "e0d9a03b105205105544be65a21ed3aa85df782799839a234f05fdc6a97576bf"
+    },
+    {
+        "file":  "lockstate-v10-app-types.txt",
+        "bytes":  38100,
+        "sha256":  "268be25ae4b97938642ce150eea9bef393d1e0a004b5e29729a290feadea500f"
+    },
+    {
+        "file":  "lockstate-v10-app-types-final.txt",
+        "bytes":  0,
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+        "file":  "lockstate-v10-app-types-third.txt",
+        "bytes":  0,
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+        "file":  "lockstate-v10-citation-delta.json",
+        "bytes":  8132,
+        "sha256":  "a80c283b31029146a4c49af428f3489225b256029fabafc0242b33f94e6806ff"
+    },
+    {
+        "file":  "lockstate-v10-docs-corrected.txt",
+        "bytes":  4762,
+        "sha256":  "302bca759ed70b0880a17b8be99781600ea85549a653eed6f2dd8acbf95fd869"
+    },
+    {
+        "file":  "lockstate-v10-docs-final.txt",
+        "bytes":  3636,
+        "sha256":  "a5e21248a384b78b09c6519ae05191862a82ee91060f3cd01f18f8a8f9b1221e"
+    },
+    {
+        "file":  "lockstate-v10-docs-first.txt",
+        "bytes":  11636,
+        "sha256":  "ab16af8b658816bb104851b66999d70b18e70c8f9ca4308a4fa938a2ef5eafb6"
+    },
+    {
+        "file":  "lockstate-v10-owned-contracts-first.txt",
+        "bytes":  508,
+        "sha256":  "68617569a5e460086cc1ab51512922b7f7cf75ef567a46e7649affddead24a21"
+    },
+    {
+        "file":  "lockstate-v10-rich-migration-corrected.txt",
+        "bytes":  498,
+        "sha256":  "4fdfd46bdbbc3ba799127de4a9a1c87424bb788cb6c4579e3f354ac5675918db"
+    },
+    {
+        "file":  "lockstate-v10-rich-migration-first.txt",
+        "bytes":  3364,
+        "sha256":  "e7df0d8fc8af6d8b64bc79c43b57d36f8436e18ca74b285466a6710f1c21e8e3"
+    },
+    {
+        "file":  "lockstate-v10-tools-types-final.txt",
+        "bytes":  0,
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+        "file":  "lockstate-v10-tools-types-first.txt",
+        "bytes":  0,
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+        "file":  "lockstate-v10-versions-first.txt",
+        "bytes":  498,
+        "sha256":  "ed8c282591cd8c31cf85b0bbc84d31674077a4779badc86680841d498e919b1f"
+    },
+    {
+        "file":  "queued-token-conversion-omission-negative.txt",
+        "bytes":  2852,
+        "sha256":  "1619c1b2620d8c75ca8a9823c51c695006bb11501a92fd021dc074e7a2848e6f"
+    },
+    {
+        "file":  "queued-token-conversion-omission-restored.txt",
+        "bytes":  240,
+        "sha256":  "01299a36781f7181bca16eacf477fe8f87f8b2d02f690bbf9d469cd9d6068e15"
+    },
+    {
+        "file":  "state-token-write-omission-negative.txt",
+        "bytes":  3265,
+        "sha256":  "037e8ffb1bf3e3fa1350dba9a0fef3ce027f2127dc6e6d9fd2612e91e92e441e"
+    },
+    {
+        "file":  "state-token-write-omission-restored.txt",
+        "bytes":  238,
+        "sha256":  "48b8461f8e2982c48e3b82a8f6cc30c0f8d199d8d588ef48eacf2f74924bf460"
+    }
+]

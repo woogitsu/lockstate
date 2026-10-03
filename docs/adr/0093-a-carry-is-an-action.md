@@ -738,7 +738,7 @@ snapshots and saves is the work"*):
 > **2026-09-26 correction for #1376:** the sentence above records this ADR's
 > original carry change. The later in-flight persistence change adds a V7
 > payload; `SAVE_SCHEMA_VERSION` is now `7`
-> (`src/persistence/save-schema.ts:40`). The no-bump ruling above applies to
+> (`src/persistence/save-schema.ts:44` (V10 live coordinate; historical `:40`)). The no-bump ruling above applies to
 > the original carry change, not to the new V7 fields.
 
 - **The appended action.** A new positional index at the end of

@@ -1,0 +1,62 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/ls-v10-20261003
+
+ ❯ tests/integration/construction-exact-counter-v10.test.ts (6 tests | 1 failed) 117ms
+   × queued historical MAX token migrates, survives another V10 Save/Load and dispatches once 15ms
+ ❯ tests/migrations/save-v9-to-v10-exact-counter.test.ts (5 tests | 1 failed) 133ms
+   × V9 preserves a real complete/pending/undone template, owners, marker, unusual ledger keys and exact queued envelope fields 120ms
+
+ Test Files  2 failed (2)
+      Tests  2 failed | 9 passed (11)
+   Start at  23:14:23
+   Duration  2.54s (transform 1.69s, setup 0ms, import 4.55s, tests 250ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/migrations/save-v9-to-v10-exact-counter.test.ts > V9 preserves a real complete/pending/undone template, owners, marker, unusual ledger keys and exact queued envelope fields
+AssertionError: expected { masterSeed: 73, …(6) } to strictly equal { masterSeed: 73, …(6) }
+
+- Expected
++ Received
+
+@@ -1006,11 +1006,11 @@
+        {
+          "executeAtTick": 1382,
+          "id": "genuine-held-cancel",
+          "payload": {
+            "data": {
+-             "expectedRevision": "1",
++             "expectedRevision": 1,
+              "orderId": "room-template-000000000001-0-wall-000",
+              "type": "CancelBuildOrder",
+            },
+            "schemaId": "lockstate.simulation.command",
+            "schemaVersion": 2,
+
+ ❯ tests/migrations/save-v9-to-v10-exact-counter.test.ts:61:26
+     59|     command.payload.data.expectedRevision = String(command.payload.dat…
+     60|   }
+     61|   expect(direct.payload).toStrictEqual(expected);
+       |                          ^
+     62|   expect(direct.checksum).toBe(computeSaveChecksum(direct.payload as u…
+     63|   const decoded = decodeSaveEnvelope(JSON.parse(oldBytes));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/integration/construction-exact-counter-v10.test.ts > queued historical MAX token migrates, survives another V10 Save/Load and dispatches once
+AssertionError: expected 'materials-pending' to be 'cancelled' // Object.is equality
+
+Expected: "cancelled"
+Received: "materials-pending"
+
+ ❯ tests/integration/construction-exact-counter-v10.test.ts:88:63
+     86|   expect(captureSessionSnapshot(runtime).kernel.commands).toHaveLength…
+     87|   expect(runtime.kernel.dispatchDueCommands()).toBe(1);
+     88|   expect(runtime.construction.getOrder('actual-wall')?.state).toBe('ca…
+       |                                                               ^
+     89|   expect(runtime.construction.revisionOf('actual-wall')).toBe(NEXT);
+     90|   expect(runtime.treasury.balanceMinorUnits).toBe(25000);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
