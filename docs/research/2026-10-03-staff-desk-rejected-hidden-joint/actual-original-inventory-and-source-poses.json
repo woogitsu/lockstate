@@ -1,0 +1,7194 @@
+{
+  "source": "assets/source/blender/furniture.office.desk.employee.blend",
+  "sourceSha256": "4a7134622b170fae660aeb1a8155aa9adee4b54cff02c2fcdd8a0ea19dd7218c",
+  "allRawMeshes": [
+    {
+      "name": "Cable grommet dark surround",
+      "rawVertexBytesSha256": "439d0d9a0b66cbf3a474fffbe456c7302155fc4a1a2ba4960ce7f402861db114",
+      "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+      "materials": [
+        "steel"
+      ],
+      "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+      "modifiers": []
+    },
+    {
+      "name": "Cable opening",
+      "rawVertexBytesSha256": "d8cb7cfef1304afc04ef26811b70d468304284091b1e783b4194e820fed1ff88",
+      "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+      "materials": [
+        "shade"
+      ],
+      "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+      "modifiers": []
+    },
+    {
+      "name": "Cream sheet in tray",
+      "rawVertexBytesSha256": "6c149ef3ffa6ba8524383a4cceb48b5da704f1da1486b5669dc4e315950e9fd3",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "Aged desk paper"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Soft edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "Soft edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.004000000189989805,
+            "width_pct": 0.004000000189989805,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dark worktop edge band",
+      "rawVertexBytesSha256": "eff278e746b429ad9480518fce227c384c0a9406724dea86df6159edc51c5238",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "steel"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Soft edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "Soft edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.017999999225139618,
+            "width_pct": 0.017999999225139618,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Drawer front.0",
+      "rawVertexBytesSha256": "6aafceff2b050a19233240b82c0b2b54546e8895dcc307674b570c77373a940f",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "steel"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Soft edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "Soft edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.006000000052154064,
+            "width_pct": 0.006000000052154064,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Drawer front.1",
+      "rawVertexBytesSha256": "6aafceff2b050a19233240b82c0b2b54546e8895dcc307674b570c77373a940f",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "steel"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Soft edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "Soft edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.006000000052154064,
+            "width_pct": 0.006000000052154064,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Drawer front.2",
+      "rawVertexBytesSha256": "6aafceff2b050a19233240b82c0b2b54546e8895dcc307674b570c77373a940f",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "steel"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Soft edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "Soft edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.006000000052154064,
+            "width_pct": 0.006000000052154064,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Drawer pedestal shell",
+      "rawVertexBytesSha256": "885cbb59517560657783e7c0163b6ec34b9b5aaa21f0625677126480db5bd66d",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "Canteen worn steel"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Soft edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "Soft edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.014999999664723873,
+            "width_pct": 0.014999999664723873,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Drawer pull.0",
+      "rawVertexBytesSha256": "4bb0d28b42bf06e2e9ac6c973ce5b5c6dde8ac9ad773520afc98b282bd2a4dea",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "galvanized_edge"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Soft edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "Soft edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.006000000052154064,
+            "width_pct": 0.006000000052154064,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Drawer pull.1",
+      "rawVertexBytesSha256": "4bb0d28b42bf06e2e9ac6c973ce5b5c6dde8ac9ad773520afc98b282bd2a4dea",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "galvanized_edge"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Soft edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "Soft edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.006000000052154064,
+            "width_pct": 0.006000000052154064,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Drawer pull.2",
+      "rawVertexBytesSha256": "4bb0d28b42bf06e2e9ac6c973ce5b5c6dde8ac9ad773520afc98b282bd2a4dea",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "galvanized_edge"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Soft edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "Soft edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.006000000052154064,
+            "width_pct": 0.006000000052154064,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Front frame rail",
+      "rawVertexBytesSha256": "51fd7cd470766b2ad89e5d0f197897fad0c4d87567f0a72cc8ebefd21668ef4b",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "steel"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Soft edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "Soft edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.009999999776482582,
+            "width_pct": 0.009999999776482582,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Grey oak laminate",
+      "rawVertexBytesSha256": "8d9a35f86321d14d05f9ca60e1d0ce449095a0c2838b7f59110bce986e21b0a4",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "Employee desk grey laminate.001"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Soft edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "Soft edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.017999999225139618,
+            "width_pct": 0.017999999225139618,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Lamp articulated arm",
+      "rawVertexBytesSha256": "e0e0afdc6437afdb45e39907d13b8efe9aff3b8a4b4c69b8fc868db4438f6222",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "galvanized_edge"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Soft edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "Soft edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.008999999612569809,
+            "width_pct": 0.008999999612569809,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Lamp bolted base",
+      "rawVertexBytesSha256": "b119986eba400c7f4a9d3b5d33d698a38a388e961b350b3563fdc8638c1056f2",
+      "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+      "materials": [
+        "Desk blue-grey enamel"
+      ],
+      "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+      "modifiers": []
+    },
+    {
+      "name": "Lamp dark swivel",
+      "rawVertexBytesSha256": "3f41ee22f113625b1fd5034e639aaa19d5c8c32223eb7c276525150d839fb7d1",
+      "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+      "materials": [
+        "Ledger ink and cup"
+      ],
+      "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+      "modifiers": []
+    },
+    {
+      "name": "Lamp enamel hood",
+      "rawVertexBytesSha256": "77882f96be28ed736bf5b15cba48532d774b4c4e38e09eb2fdfa6c6c937fec7b",
+      "rawTopologyBytesSha256": "4ec426337df10bb5e05381ca5c97e7669605ff63b1d732e957cdd66d86138849",
+      "materials": [
+        "Desk blue-grey enamel"
+      ],
+      "polygonMaterialIndicesSha256": "6d9c54dee5660c46886f32d80e57e9dd0ffa57ee0cd2a762b036d9c8e0c3a33a",
+      "modifiers": []
+    },
+    {
+      "name": "Lamp hood top seam",
+      "rawVertexBytesSha256": "d62286dd2783e60ae0476a579944777100b64cd42637a31daffede9f5b6eca61",
+      "rawTopologyBytesSha256": "b6e11bbfddc4542f5f6c73da63430680ccd765184f383d9aa46dd21e45f28e52",
+      "materials": [
+        "Ledger ink and cup"
+      ],
+      "polygonMaterialIndicesSha256": "80422bc3d307b4a25bdafcc84ac7fb01cb55a09810e8b0f37bb12e0edb5c48ca",
+      "modifiers": []
+    },
+    {
+      "name": "Lamp stem",
+      "rawVertexBytesSha256": "9360d45f670e8ff49703fc72e83977698a080639f540ebd05394bb79df4e30df",
+      "rawTopologyBytesSha256": "050058d07159905ebe22ba29bc005602546f226726057ef471fbbccd62243196",
+      "materials": [
+        "galvanized_edge"
+      ],
+      "polygonMaterialIndicesSha256": "834a709ba2534ebe3ee1397fd4f7bd288b2acc1d20a08d6c862dcd99b6f04400",
+      "modifiers": []
+    },
+    {
+      "name": "Lamp swivel collar",
+      "rawVertexBytesSha256": "7be75b679a456a69f0e9ce6973795c12a1cce884a212d740a6c1d727d8876517",
+      "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+      "materials": [
+        "galvanized_edge"
+      ],
+      "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+      "modifiers": []
+    },
+    {
+      "name": "Lamp warm diffuser",
+      "rawVertexBytesSha256": "8ce957f82ef8a87439074bc8d07e4e52880467d317c4fc170d21f46db5238d1f",
+      "rawTopologyBytesSha256": "4ec426337df10bb5e05381ca5c97e7669605ff63b1d732e957cdd66d86138849",
+      "materials": [
+        "Aged desk paper"
+      ],
+      "polygonMaterialIndicesSha256": "6d9c54dee5660c46886f32d80e57e9dd0ffa57ee0cd2a762b036d9c8e0c3a33a",
+      "modifiers": []
+    },
+    {
+      "name": "Ledger centre seam",
+      "rawVertexBytesSha256": "c56befc345b920fc986b2b263db878565d56564c8a90ed45d364116d5173e146",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "Ledger ink and cup"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Soft edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "Soft edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.0020000000949949026,
+            "width_pct": 0.0020000000949949026,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ledger dark cover",
+      "rawVertexBytesSha256": "c05b3c2fb2d63931995088d68da31f904cdb16c20f0b21629f11eeacfc889b89",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "Desk blue-grey enamel"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Soft edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "Soft edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.00800000037997961,
+            "width_pct": 0.00800000037997961,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ledger left page",
+      "rawVertexBytesSha256": "8ff7b252061a7224a39d08f7744243c2c0080e4c9be0f0bea4a8ddb8bf8b2dce",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "Aged desk paper"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Soft edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "Soft edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.006000000052154064,
+            "width_pct": 0.006000000052154064,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ledger right page",
+      "rawVertexBytesSha256": "8ff7b252061a7224a39d08f7744243c2c0080e4c9be0f0bea4a8ddb8bf8b2dce",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "Aged desk paper"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Soft edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "Soft edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.006000000052154064,
+            "width_pct": 0.006000000052154064,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ledger rule.0.-0.1",
+      "rawVertexBytesSha256": "ddcfc876080a15049ac6dc51c5db5bd8c13a055e2aebc5f5cf1c758c055253a1",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "Ledger ink and cup"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": []
+    },
+    {
+      "name": "Ledger rule.0.0.19",
+      "rawVertexBytesSha256": "ddcfc876080a15049ac6dc51c5db5bd8c13a055e2aebc5f5cf1c758c055253a1",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "Ledger ink and cup"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": []
+    },
+    {
+      "name": "Ledger rule.1.-0.1",
+      "rawVertexBytesSha256": "ddcfc876080a15049ac6dc51c5db5bd8c13a055e2aebc5f5cf1c758c055253a1",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "Ledger ink and cup"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": []
+    },
+    {
+      "name": "Ledger rule.1.0.19",
+      "rawVertexBytesSha256": "ddcfc876080a15049ac6dc51c5db5bd8c13a055e2aebc5f5cf1c758c055253a1",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "Ledger ink and cup"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": []
+    },
+    {
+      "name": "Ledger rule.2.-0.1",
+      "rawVertexBytesSha256": "ddcfc876080a15049ac6dc51c5db5bd8c13a055e2aebc5f5cf1c758c055253a1",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "Ledger ink and cup"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": []
+    },
+    {
+      "name": "Ledger rule.2.0.19",
+      "rawVertexBytesSha256": "ddcfc876080a15049ac6dc51c5db5bd8c13a055e2aebc5f5cf1c758c055253a1",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "Ledger ink and cup"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": []
+    },
+    {
+      "name": "Ledger rule.3.-0.1",
+      "rawVertexBytesSha256": "ddcfc876080a15049ac6dc51c5db5bd8c13a055e2aebc5f5cf1c758c055253a1",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "Ledger ink and cup"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": []
+    },
+    {
+      "name": "Ledger rule.3.0.19",
+      "rawVertexBytesSha256": "ddcfc876080a15049ac6dc51c5db5bd8c13a055e2aebc5f5cf1c758c055253a1",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "Ledger ink and cup"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": []
+    },
+    {
+      "name": "Leg foot.-0.75.-0.3",
+      "rawVertexBytesSha256": "9ff1c841b7a4d151eddb180cce714264fc6f81b0daf35f6794815d5f50e2938e",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "steel"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Soft edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "Soft edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.012000000104308128,
+            "width_pct": 0.012000000104308128,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Leg foot.-0.75.0.3",
+      "rawVertexBytesSha256": "9ff1c841b7a4d151eddb180cce714264fc6f81b0daf35f6794815d5f50e2938e",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "steel"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Soft edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "Soft edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.012000000104308128,
+            "width_pct": 0.012000000104308128,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Leg foot.0.75.-0.3",
+      "rawVertexBytesSha256": "9ff1c841b7a4d151eddb180cce714264fc6f81b0daf35f6794815d5f50e2938e",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "steel"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Soft edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "Soft edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.012000000104308128,
+            "width_pct": 0.012000000104308128,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Leg foot.0.75.0.3",
+      "rawVertexBytesSha256": "9ff1c841b7a4d151eddb180cce714264fc6f81b0daf35f6794815d5f50e2938e",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "steel"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Soft edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "Soft edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.012000000104308128,
+            "width_pct": 0.012000000104308128,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Olive paperwork tray",
+      "rawVertexBytesSha256": "cdb3c0c36d391ad8cb43bed16f5a4c239b0dd238d1cac2807c74c9671ea3c434",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "green"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Soft edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "Soft edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.014000000432133675,
+            "width_pct": 0.014000000432133675,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pedestal visible top",
+      "rawVertexBytesSha256": "0f2d738893e87175bed9ec627fd7462064cb3bfafb52a455be6444af969d6b26",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "steel"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Soft edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "Soft edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.009999999776482582,
+            "width_pct": 0.009999999776482582,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pencil cup opening",
+      "rawVertexBytesSha256": "89f8dc51a76bbb1b9b9389cab5723fd428d57c25513bad74e663b5b4df88096c",
+      "rawTopologyBytesSha256": "73b469c78d9188be2779564e760ab5a8c75206d940ef00787a0829e1823d8cc9",
+      "materials": [
+        "shade"
+      ],
+      "polygonMaterialIndicesSha256": "39f37f8d1931b3bdf767e7510dd69509fbf23af1f7654933d0a4d291cbdd4418",
+      "modifiers": []
+    },
+    {
+      "name": "Pencil cup outer",
+      "rawVertexBytesSha256": "68243021d398f5689367633314f045367bd3719835a954173bf1ec09f1352241",
+      "rawTopologyBytesSha256": "73b469c78d9188be2779564e760ab5a8c75206d940ef00787a0829e1823d8cc9",
+      "materials": [
+        "Ledger ink and cup"
+      ],
+      "polygonMaterialIndicesSha256": "39f37f8d1931b3bdf767e7510dd69509fbf23af1f7654933d0a4d291cbdd4418",
+      "modifiers": []
+    },
+    {
+      "name": "Pencil point.0",
+      "rawVertexBytesSha256": "099dfa3c8485875432e3ebb389074671e67e4275eb2e5240fdccfa23097b0f0e",
+      "rawTopologyBytesSha256": "17fdccdb1eb934dd219313af54a171c6f8502f6859d98732da8b383a9381236f",
+      "materials": [
+        "Aged desk paper"
+      ],
+      "polygonMaterialIndicesSha256": "2c34ce1df23b838c5abf2a7f6437cca3d3067ed509ff25f11df6b11b582b51eb",
+      "modifiers": []
+    },
+    {
+      "name": "Pencil point.1",
+      "rawVertexBytesSha256": "099dfa3c8485875432e3ebb389074671e67e4275eb2e5240fdccfa23097b0f0e",
+      "rawTopologyBytesSha256": "17fdccdb1eb934dd219313af54a171c6f8502f6859d98732da8b383a9381236f",
+      "materials": [
+        "Desk folder terracotta"
+      ],
+      "polygonMaterialIndicesSha256": "2c34ce1df23b838c5abf2a7f6437cca3d3067ed509ff25f11df6b11b582b51eb",
+      "modifiers": []
+    },
+    {
+      "name": "Pencil point.2",
+      "rawVertexBytesSha256": "099dfa3c8485875432e3ebb389074671e67e4275eb2e5240fdccfa23097b0f0e",
+      "rawTopologyBytesSha256": "17fdccdb1eb934dd219313af54a171c6f8502f6859d98732da8b383a9381236f",
+      "materials": [
+        "Aged desk paper"
+      ],
+      "polygonMaterialIndicesSha256": "2c34ce1df23b838c5abf2a7f6437cca3d3067ed509ff25f11df6b11b582b51eb",
+      "modifiers": []
+    },
+    {
+      "name": "Steel leg.-0.75.-0.3",
+      "rawVertexBytesSha256": "d1fc303bc870865155f38c744fe9ed5c2638ce09152e43ac8aa91af4999d053e",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "Canteen worn steel"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Soft edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "Soft edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.012000000104308128,
+            "width_pct": 0.012000000104308128,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Steel leg.-0.75.0.3",
+      "rawVertexBytesSha256": "d1fc303bc870865155f38c744fe9ed5c2638ce09152e43ac8aa91af4999d053e",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "Canteen worn steel"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Soft edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "Soft edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.012000000104308128,
+            "width_pct": 0.012000000104308128,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Steel leg.0.75.-0.3",
+      "rawVertexBytesSha256": "d1fc303bc870865155f38c744fe9ed5c2638ce09152e43ac8aa91af4999d053e",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "Canteen worn steel"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Soft edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "Soft edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.012000000104308128,
+            "width_pct": 0.012000000104308128,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Steel leg.0.75.0.3",
+      "rawVertexBytesSha256": "d1fc303bc870865155f38c744fe9ed5c2638ce09152e43ac8aa91af4999d053e",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "Canteen worn steel"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Soft edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "Soft edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.012000000104308128,
+            "width_pct": 0.012000000104308128,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Terracotta folder in tray",
+      "rawVertexBytesSha256": "732530e83a766f72694e14b7b809791d2d4e6461c109a5c9e6beee177428f5e2",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "Desk folder terracotta"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Soft edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "Soft edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.004000000189989805,
+            "width_pct": 0.004000000189989805,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    }
+  ],
+  "allFullStoredMaterialGraphs": [
+    {
+      "name": "Aged desk paper",
+      "diffuse": [
+        0.8700000047683716,
+        0.7900000214576721,
+        0.6299999952316284,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.4000000059604645,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ],
+          "properties": {
+            "location": [
+              200.0,
+              100.0
+            ],
+            "location_absolute": [
+              200.0,
+              100.0
+            ],
+            "width": 140.0,
+            "height": 100.0,
+            "name": "Material Output",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeOutputMaterial",
+            "bl_label": "Material Output",
+            "bl_description": "Output surface material information for use in rendering",
+            "bl_icon": "NONE",
+            "bl_width_default": 140.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "is_active_output": true,
+            "target": "ALL"
+          }
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.8700000047683716,
+                0.7900000214576721,
+                0.6299999952316284,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.9200000166893005
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ],
+          "properties": {
+            "location": [
+              -200.0,
+              100.0
+            ],
+            "location_absolute": [
+              -200.0,
+              100.0
+            ],
+            "width": 240.0,
+            "height": 100.0,
+            "name": "Principled BSDF",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeBsdfPrincipled",
+            "bl_label": "Principled BSDF",
+            "bl_description": "Physically-based, easy-to-use shader for rendering surface materials, based on the OpenPBR model",
+            "bl_icon": "NONE",
+            "bl_width_default": 240.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "distribution": "MULTI_GGX",
+            "subsurface_method": "RANDOM_WALK"
+          }
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "e40f8bee00a3e01cd79269bc03061830ab7ecbc1ae86243d88c6862bc4fa3e1f"
+    },
+    {
+      "name": "Canteen worn steel",
+      "diffuse": [
+        0.23999999463558197,
+        0.25999999046325684,
+        0.27000001072883606,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.4000000059604645,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Image Texture",
+          "type": "ShaderNodeTexImage",
+          "inputs": [
+            {
+              "name": "Vector",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            }
+          ],
+          "properties": {
+            "location": [
+              0.0,
+              0.0
+            ],
+            "location_absolute": [
+              0.0,
+              0.0
+            ],
+            "width": 240.0,
+            "height": 100.0,
+            "name": "Image Texture",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeTexImage",
+            "bl_label": "Image Texture",
+            "bl_description": "Sample an image file as a texture",
+            "bl_icon": "NONE",
+            "bl_width_default": 240.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "projection": "FLAT",
+            "interpolation": "Linear",
+            "projection_blend": 0.0,
+            "extension": "CLIP"
+          },
+          "image": {
+            "name": "dining-table-steel-v1.png",
+            "size": [
+              1254,
+              1254
+            ],
+            "colorspace": "sRGB",
+            "packedSha256": [
+              "45b7a6def5e8ba94c187c93484160015c7d38e667eaaa516a33a7624936a678d"
+            ]
+          }
+        },
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ],
+          "properties": {
+            "location": [
+              200.0,
+              100.0
+            ],
+            "location_absolute": [
+              200.0,
+              100.0
+            ],
+            "width": 140.0,
+            "height": 100.0,
+            "name": "Material Output",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeOutputMaterial",
+            "bl_label": "Material Output",
+            "bl_description": "Output surface material information for use in rendering",
+            "bl_icon": "NONE",
+            "bl_width_default": 140.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "is_active_output": true,
+            "target": "ALL"
+          }
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.23999999463558197,
+                0.25999999046325684,
+                0.27000001072883606,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.3799999952316284
+            },
+            {
+              "name": "Roughness",
+              "value": 0.6399999856948853
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ],
+          "properties": {
+            "location": [
+              -200.0,
+              100.0
+            ],
+            "location_absolute": [
+              -200.0,
+              100.0
+            ],
+            "width": 240.0,
+            "height": 100.0,
+            "name": "Principled BSDF",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeBsdfPrincipled",
+            "bl_label": "Principled BSDF",
+            "bl_description": "Physically-based, easy-to-use shader for rendering surface materials, based on the OpenPBR model",
+            "bl_icon": "NONE",
+            "bl_width_default": 240.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "distribution": "MULTI_GGX",
+            "subsurface_method": "RANDOM_WALK"
+          }
+        },
+        {
+          "name": "Texture Coordinate",
+          "type": "ShaderNodeTexCoord",
+          "inputs": [],
+          "properties": {
+            "location": [
+              0.0,
+              0.0
+            ],
+            "location_absolute": [
+              0.0,
+              0.0
+            ],
+            "width": 140.0,
+            "height": 100.0,
+            "name": "Texture Coordinate",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeTexCoord",
+            "bl_label": "Texture Coordinate",
+            "bl_description": "Retrieve multiple types of texture coordinates.\nTypically used as inputs for texture nodes",
+            "bl_icon": "NONE",
+            "bl_width_default": 140.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "from_instancer": false
+          }
+        }
+      ],
+      "links": [
+        [
+          "Image Texture",
+          "Color",
+          "Principled BSDF",
+          "Base Color"
+        ],
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ],
+        [
+          "Texture Coordinate",
+          "Generated",
+          "Image Texture",
+          "Vector"
+        ]
+      ],
+      "canonicalMaterialSha256": "dc890178a6da729225008208f4fa44cea7ef5d3eb0b3ccebfef34e82aaf0128f"
+    },
+    {
+      "name": "Desk blue-grey enamel",
+      "diffuse": [
+        0.12999999523162842,
+        0.23000000417232513,
+        0.28999999165534973,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.4000000059604645,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ],
+          "properties": {
+            "location": [
+              200.0,
+              100.0
+            ],
+            "location_absolute": [
+              200.0,
+              100.0
+            ],
+            "width": 140.0,
+            "height": 100.0,
+            "name": "Material Output",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeOutputMaterial",
+            "bl_label": "Material Output",
+            "bl_description": "Output surface material information for use in rendering",
+            "bl_icon": "NONE",
+            "bl_width_default": 140.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "is_active_output": true,
+            "target": "ALL"
+          }
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.12999999523162842,
+                0.23000000417232513,
+                0.28999999165534973,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.550000011920929
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ],
+          "properties": {
+            "location": [
+              -200.0,
+              100.0
+            ],
+            "location_absolute": [
+              -200.0,
+              100.0
+            ],
+            "width": 240.0,
+            "height": 100.0,
+            "name": "Principled BSDF",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeBsdfPrincipled",
+            "bl_label": "Principled BSDF",
+            "bl_description": "Physically-based, easy-to-use shader for rendering surface materials, based on the OpenPBR model",
+            "bl_icon": "NONE",
+            "bl_width_default": 240.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "distribution": "MULTI_GGX",
+            "subsurface_method": "RANDOM_WALK"
+          }
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "0cecc4546a557466645d347f9984717172a4f2b3eb0e61724f40e88492f02e2b"
+    },
+    {
+      "name": "Desk folder terracotta",
+      "diffuse": [
+        0.6499999761581421,
+        0.3100000023841858,
+        0.1599999964237213,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.4000000059604645,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ],
+          "properties": {
+            "location": [
+              200.0,
+              100.0
+            ],
+            "location_absolute": [
+              200.0,
+              100.0
+            ],
+            "width": 140.0,
+            "height": 100.0,
+            "name": "Material Output",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeOutputMaterial",
+            "bl_label": "Material Output",
+            "bl_description": "Output surface material information for use in rendering",
+            "bl_icon": "NONE",
+            "bl_width_default": 140.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "is_active_output": true,
+            "target": "ALL"
+          }
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.6499999761581421,
+                0.3100000023841858,
+                0.1599999964237213,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.8799999952316284
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ],
+          "properties": {
+            "location": [
+              -200.0,
+              100.0
+            ],
+            "location_absolute": [
+              -200.0,
+              100.0
+            ],
+            "width": 240.0,
+            "height": 100.0,
+            "name": "Principled BSDF",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeBsdfPrincipled",
+            "bl_label": "Principled BSDF",
+            "bl_description": "Physically-based, easy-to-use shader for rendering surface materials, based on the OpenPBR model",
+            "bl_icon": "NONE",
+            "bl_width_default": 240.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "distribution": "MULTI_GGX",
+            "subsurface_method": "RANDOM_WALK"
+          }
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "e3aebd528360ec7c79dda34e70c85b69fa3540ed7a1b0d06582bf101ba793f0d"
+    },
+    {
+      "name": "Employee desk grey laminate.001",
+      "diffuse": [
+        0.47999998927116394,
+        0.44999998807907104,
+        0.4000000059604645,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.4000000059604645,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Image Texture",
+          "type": "ShaderNodeTexImage",
+          "inputs": [
+            {
+              "name": "Vector",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            }
+          ],
+          "properties": {
+            "location": [
+              0.0,
+              0.0
+            ],
+            "location_absolute": [
+              0.0,
+              0.0
+            ],
+            "width": 240.0,
+            "height": 100.0,
+            "name": "Image Texture",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeTexImage",
+            "bl_label": "Image Texture",
+            "bl_description": "Sample an image file as a texture",
+            "bl_icon": "NONE",
+            "bl_width_default": 240.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "projection": "FLAT",
+            "interpolation": "Linear",
+            "projection_blend": 0.0,
+            "extension": "CLIP"
+          },
+          "image": {
+            "name": "employee-desk-laminate-v1.png",
+            "size": [
+              1254,
+              1254
+            ],
+            "colorspace": "sRGB",
+            "packedSha256": [
+              "c0966428e10fad8b7c8380abf3dca34f70fac0bb7b0adda5cfbb7fe1fc08c1d2"
+            ]
+          }
+        },
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ],
+          "properties": {
+            "location": [
+              200.0,
+              100.0
+            ],
+            "location_absolute": [
+              200.0,
+              100.0
+            ],
+            "width": 140.0,
+            "height": 100.0,
+            "name": "Material Output",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeOutputMaterial",
+            "bl_label": "Material Output",
+            "bl_description": "Output surface material information for use in rendering",
+            "bl_icon": "NONE",
+            "bl_width_default": 140.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "is_active_output": true,
+            "target": "ALL"
+          }
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.47999998927116394,
+                0.44999998807907104,
+                0.4000000059604645,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.7799999713897705
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ],
+          "properties": {
+            "location": [
+              -200.0,
+              100.0
+            ],
+            "location_absolute": [
+              -200.0,
+              100.0
+            ],
+            "width": 240.0,
+            "height": 100.0,
+            "name": "Principled BSDF",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeBsdfPrincipled",
+            "bl_label": "Principled BSDF",
+            "bl_description": "Physically-based, easy-to-use shader for rendering surface materials, based on the OpenPBR model",
+            "bl_icon": "NONE",
+            "bl_width_default": 240.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "distribution": "MULTI_GGX",
+            "subsurface_method": "RANDOM_WALK"
+          }
+        },
+        {
+          "name": "Texture Coordinate",
+          "type": "ShaderNodeTexCoord",
+          "inputs": [],
+          "properties": {
+            "location": [
+              0.0,
+              0.0
+            ],
+            "location_absolute": [
+              0.0,
+              0.0
+            ],
+            "width": 140.0,
+            "height": 100.0,
+            "name": "Texture Coordinate",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeTexCoord",
+            "bl_label": "Texture Coordinate",
+            "bl_description": "Retrieve multiple types of texture coordinates.\nTypically used as inputs for texture nodes",
+            "bl_icon": "NONE",
+            "bl_width_default": 140.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "from_instancer": false
+          }
+        }
+      ],
+      "links": [
+        [
+          "Image Texture",
+          "Color",
+          "Principled BSDF",
+          "Base Color"
+        ],
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ],
+        [
+          "Texture Coordinate",
+          "Generated",
+          "Image Texture",
+          "Vector"
+        ]
+      ],
+      "canonicalMaterialSha256": "927d4a05679e4af694e53da181bc426eaf5e87948a15cb2fd6bd6b6eadd502c6"
+    },
+    {
+      "name": "Ledger ink and cup",
+      "diffuse": [
+        0.07500000298023224,
+        0.11999999731779099,
+        0.15000000596046448,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.4000000059604645,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ],
+          "properties": {
+            "location": [
+              200.0,
+              100.0
+            ],
+            "location_absolute": [
+              200.0,
+              100.0
+            ],
+            "width": 140.0,
+            "height": 100.0,
+            "name": "Material Output",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeOutputMaterial",
+            "bl_label": "Material Output",
+            "bl_description": "Output surface material information for use in rendering",
+            "bl_icon": "NONE",
+            "bl_width_default": 140.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "is_active_output": true,
+            "target": "ALL"
+          }
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.07500000298023224,
+                0.11999999731779099,
+                0.15000000596046448,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.75
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ],
+          "properties": {
+            "location": [
+              -200.0,
+              100.0
+            ],
+            "location_absolute": [
+              -200.0,
+              100.0
+            ],
+            "width": 240.0,
+            "height": 100.0,
+            "name": "Principled BSDF",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeBsdfPrincipled",
+            "bl_label": "Principled BSDF",
+            "bl_description": "Physically-based, easy-to-use shader for rendering surface materials, based on the OpenPBR model",
+            "bl_icon": "NONE",
+            "bl_width_default": 240.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "distribution": "MULTI_GGX",
+            "subsurface_method": "RANDOM_WALK"
+          }
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "fd96a3b055d9ba3c22e56d3b9efda9010bfd6d1aa4c99bc284d06bd22f25059b"
+    },
+    {
+      "name": "galvanized_edge",
+      "diffuse": [
+        0.7200000286102295,
+        0.7400000095367432,
+        0.7200000286102295,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.4000000059604645,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ],
+          "properties": {
+            "location": [
+              200.0,
+              100.0
+            ],
+            "location_absolute": [
+              200.0,
+              100.0
+            ],
+            "width": 140.0,
+            "height": 100.0,
+            "name": "Material Output",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeOutputMaterial",
+            "bl_label": "Material Output",
+            "bl_description": "Output surface material information for use in rendering",
+            "bl_icon": "NONE",
+            "bl_width_default": 140.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "is_active_output": true,
+            "target": "ALL"
+          }
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.7200000286102295,
+                0.7400000095367432,
+                0.7200000286102295,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.4699999988079071
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ],
+          "properties": {
+            "location": [
+              -200.0,
+              100.0
+            ],
+            "location_absolute": [
+              -200.0,
+              100.0
+            ],
+            "width": 240.0,
+            "height": 100.0,
+            "name": "Principled BSDF",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeBsdfPrincipled",
+            "bl_label": "Principled BSDF",
+            "bl_description": "Physically-based, easy-to-use shader for rendering surface materials, based on the OpenPBR model",
+            "bl_icon": "NONE",
+            "bl_width_default": 240.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "distribution": "MULTI_GGX",
+            "subsurface_method": "RANDOM_WALK"
+          }
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "5d84c2f77f2034fb16841ccd6ead65cea17c7a4efbd4cabf75b76a0173af36b7"
+    },
+    {
+      "name": "green",
+      "diffuse": [
+        0.11999999731779099,
+        0.20000000298023224,
+        0.14000000059604645,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.4000000059604645,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ],
+          "properties": {
+            "location": [
+              200.0,
+              100.0
+            ],
+            "location_absolute": [
+              200.0,
+              100.0
+            ],
+            "width": 140.0,
+            "height": 100.0,
+            "name": "Material Output",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeOutputMaterial",
+            "bl_label": "Material Output",
+            "bl_description": "Output surface material information for use in rendering",
+            "bl_icon": "NONE",
+            "bl_width_default": 140.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "is_active_output": true,
+            "target": "ALL"
+          }
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.11999999731779099,
+                0.20000000298023224,
+                0.14000000059604645,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.699999988079071
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ],
+          "properties": {
+            "location": [
+              -200.0,
+              100.0
+            ],
+            "location_absolute": [
+              -200.0,
+              100.0
+            ],
+            "width": 240.0,
+            "height": 100.0,
+            "name": "Principled BSDF",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeBsdfPrincipled",
+            "bl_label": "Principled BSDF",
+            "bl_description": "Physically-based, easy-to-use shader for rendering surface materials, based on the OpenPBR model",
+            "bl_icon": "NONE",
+            "bl_width_default": 240.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "distribution": "MULTI_GGX",
+            "subsurface_method": "RANDOM_WALK"
+          }
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "2d76d38ded10ae64601432b69635d75324834ddfc8e50c23f5a15b055bb447bd"
+    },
+    {
+      "name": "shade",
+      "diffuse": [
+        0.03500000014901161,
+        0.03999999910593033,
+        0.04500000178813934,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.4000000059604645,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ],
+          "properties": {
+            "location": [
+              200.0,
+              100.0
+            ],
+            "location_absolute": [
+              200.0,
+              100.0
+            ],
+            "width": 140.0,
+            "height": 100.0,
+            "name": "Material Output",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeOutputMaterial",
+            "bl_label": "Material Output",
+            "bl_description": "Output surface material information for use in rendering",
+            "bl_icon": "NONE",
+            "bl_width_default": 140.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "is_active_output": true,
+            "target": "ALL"
+          }
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.03500000014901161,
+                0.03999999910593033,
+                0.04500000178813934,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.8999999761581421
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ],
+          "properties": {
+            "location": [
+              -200.0,
+              100.0
+            ],
+            "location_absolute": [
+              -200.0,
+              100.0
+            ],
+            "width": 240.0,
+            "height": 100.0,
+            "name": "Principled BSDF",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeBsdfPrincipled",
+            "bl_label": "Principled BSDF",
+            "bl_description": "Physically-based, easy-to-use shader for rendering surface materials, based on the OpenPBR model",
+            "bl_icon": "NONE",
+            "bl_width_default": 240.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "distribution": "MULTI_GGX",
+            "subsurface_method": "RANDOM_WALK"
+          }
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "e4f455aec5253887f71bb6a3537648b7830310c930c68531a122e060d4bcdd50"
+    },
+    {
+      "name": "steel",
+      "diffuse": [
+        0.09000000357627869,
+        0.11999999731779099,
+        0.15000000596046448,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.4000000059604645,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ],
+          "properties": {
+            "location": [
+              200.0,
+              100.0
+            ],
+            "location_absolute": [
+              200.0,
+              100.0
+            ],
+            "width": 140.0,
+            "height": 100.0,
+            "name": "Material Output",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeOutputMaterial",
+            "bl_label": "Material Output",
+            "bl_description": "Output surface material information for use in rendering",
+            "bl_icon": "NONE",
+            "bl_width_default": 140.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "is_active_output": true,
+            "target": "ALL"
+          }
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.09000000357627869,
+                0.11999999731779099,
+                0.15000000596046448,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.44999998807907104
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ],
+          "properties": {
+            "location": [
+              -200.0,
+              100.0
+            ],
+            "location_absolute": [
+              -200.0,
+              100.0
+            ],
+            "width": 240.0,
+            "height": 100.0,
+            "name": "Principled BSDF",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeBsdfPrincipled",
+            "bl_label": "Principled BSDF",
+            "bl_description": "Physically-based, easy-to-use shader for rendering surface materials, based on the OpenPBR model",
+            "bl_icon": "NONE",
+            "bl_width_default": 240.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "distribution": "MULTI_GGX",
+            "subsurface_method": "RANDOM_WALK"
+          }
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "b13f63279bfc70ec0105fea0e81e52cbc611f338c8d1c0e24585483c17959592"
+    }
+  ],
+  "allObjectMatrices": {
+    "Cable grommet dark surround": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.7199993133544922
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.28999996185302734
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.9890000224113464
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Cable opening": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.7199993133544922
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.28999996185302734
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.9959999918937683
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Cream sheet in tray": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.5400009155273438
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.07499980926513672
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        1.0540000200271606
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Dark worktop edge band": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.039999961853027344
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.9100000262260437
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Drawer front.0": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.5599994659423828
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.45800018310546875
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.25
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Drawer front.1": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.5599994659423828
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.45800018310546875
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.44999998807907104
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Drawer front.2": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.5599994659423828
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.45800018310546875
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.6499999761581421
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Drawer pedestal shell": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.5599994659423828
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.25
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.44999998807907104
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Drawer pull.0": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.5599994659423828
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.47100019454956055
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.25
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Drawer pull.1": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.5599994659423828
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.47100019454956055
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.44999998807907104
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Drawer pull.2": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.5599994659423828
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.47100019454956055
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.6499999761581421
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Front frame rail": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.28999996185302734
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.7699999809265137
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Grey oak laminate": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.039999961853027344
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.9649999737739563
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Lamp articulated arm": [
+      [
+        0.9928086400032043,
+        0.0,
+        -0.11971220374107361,
+        -0.5699996948242188
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.26999998092651367
+      ],
+      [
+        0.11971220374107361,
+        0.0,
+        0.9928086400032043,
+        1.1770000457763672
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Lamp bolted base": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.7199993133544922
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.26999998092651367
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        1.0199999809265137
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Lamp dark swivel": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.39999961853027344
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.26999998092651367
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        1.2619999647140503
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Lamp enamel hood": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.39999961853027344
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.26999998092651367
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        1.190000057220459
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Lamp hood top seam": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.39999961853027344
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.26999998092651367
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        1.2309999465942383
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Lamp stem": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.7199993133544922
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.26999998092651367
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        1.1050000190734863
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Lamp swivel collar": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.39999961853027344
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.26999998092651367
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        1.2450000047683716
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Lamp warm diffuser": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.39999961853027344
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.26999998092651367
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        1.1449999809265137
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Ledger centre seam": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.04000091552734375
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.05000019073486328
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        1.031000018119812
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Ledger dark cover": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.04000091552734375
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.05000019073486328
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        1.003999948501587
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Ledger left page": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.10499954223632812
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.05000019073486328
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        1.0199999809265137
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Ledger right page": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.1849994659423828
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.05000019073486328
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        1.0199999809265137
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Ledger rule.0.-0.1": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.10000038146972656
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.07499980926513672
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        1.0329999923706055
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Ledger rule.0.0.19": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.1900005340576172
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.07499980926513672
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        1.0329999923706055
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Ledger rule.1.-0.1": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.10000038146972656
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.005000114440917969
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        1.0329999923706055
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Ledger rule.1.0.19": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.1900005340576172
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.005000114440917969
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        1.0329999923706055
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Ledger rule.2.-0.1": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.10000038146972656
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.06500005722045898
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        1.0329999923706055
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Ledger rule.2.0.19": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.1900005340576172
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.06500005722045898
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        1.0329999923706055
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Ledger rule.3.-0.1": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.10000038146972656
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.13500022888183594
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        1.0329999923706055
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Ledger rule.3.0.19": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.1900005340576172
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.13500022888183594
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        1.0329999923706055
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Leg foot.-0.75.-0.3": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.75
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.3000001907348633
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.03500000014901161
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Leg foot.-0.75.0.3": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.75
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.3000001907348633
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.03500000014901161
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Leg foot.0.75.-0.3": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.75
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.3000001907348633
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.03500000014901161
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Leg foot.0.75.0.3": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.75
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.3000001907348633
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.03500000014901161
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Olive paperwork tray": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.5300006866455078
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.09999990463256836
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        1.003999948501587
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Pedestal visible top": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.5599994659423828
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.25
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.8500000238418579
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Pencil cup opening": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.5799999237060547
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.11999988555908203
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        1.1410000324249268
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Pencil cup outer": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.5799999237060547
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.11999988555908203
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        1.0700000524520874
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Pencil point.0": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.5499992370605469
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.11999988555908203
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        1.1649999618530273
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Pencil point.1": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.5900001525878906
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.11999988555908203
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        1.1649999618530273
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Pencil point.2": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.6200008392333984
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.11999988555908203
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        1.1649999618530273
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Steel leg.-0.75.-0.3": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.75
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.3000001907348633
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.4399999976158142
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Steel leg.-0.75.0.3": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.75
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.3000001907348633
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.4399999976158142
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Steel leg.0.75.-0.3": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.75
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.3000001907348633
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.4399999976158142
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Steel leg.0.75.0.3": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.75
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.3000001907348633
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.4399999976158142
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "Terracotta folder in tray": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.5300006866455078
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.09999990463256836
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        1.0379999876022339
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ]
+  },
+  "allEvaluatedHashes": {
+    "Cable grommet dark surround": "868c3da10f487935ea6888cd536cca0fcf60b6696fa946714e68906ba5bc659a",
+    "Cable opening": "674dadacce5755c925a81d840a26899b7a82d66e4b29bdcacbd5f6a7b3c24683",
+    "Cream sheet in tray": "01d7d59f0fef320a0082e8228d7b2f8aedbb0a6f5e75c315cc7e1f945106ceed",
+    "Dark worktop edge band": "b6b7e567469c3f9efdec574f315d54adc09f7e6813eeabfb45e03bd225a99ae1",
+    "Drawer front.0": "af3caf4625116d257e77714ef8bb900b63b6d6fcc91c059df4db8784ad3ee488",
+    "Drawer front.1": "9ba3c4ae83d4b67a6bc51be102046d6bddff6f0d4c5cc2126a7693d144cbf9f7",
+    "Drawer front.2": "7eb8b07f0b326dd0284b7ec808496edb11c53f7ecdf810e6c2681e2f566b9540",
+    "Drawer pedestal shell": "afeb04a04ebab290012adeb00cdb5f8942ecff5398557cb8c369c5f1e9aebc07",
+    "Drawer pull.0": "a237e4b733997540708a062f4e9c05055c0277ae57eee7d5dd2914a0975492f4",
+    "Drawer pull.1": "c44136d927446a0879aed60b2ce90598dda20bb0c2c7a2ed6d513ae94c36aec0",
+    "Drawer pull.2": "cf948bf84dbae18f0e8bf55a7620834af7fcc93d8d6502193e162c3622bd6350",
+    "Front frame rail": "b00a944ceb4cb991aeb7872de5a3902659c33a79e36470593cf9328b85309e1e",
+    "Grey oak laminate": "6ed7b43242c40cd63b5ebabb00ed204b40c4c42d210d8246266f635d47fc1611",
+    "Lamp articulated arm": "d93894c6a1a4c1882c184194b6bd1d8334675d44d886fc09ba9b076ff5567bd3",
+    "Lamp bolted base": "576d485902fd205fa905fcb2b41d1945b7a995e909559f39c467f21026951158",
+    "Lamp dark swivel": "05528b2978f8672294d20ccd78c74aab6c70cc706b2ff04a4a71ac4270866075",
+    "Lamp enamel hood": "b9bc40fbc42fdb17fc9cc4b608dab9d908c0ba85c95f5c924d59e0c4a3c0b372",
+    "Lamp hood top seam": "3efa76c7b1a4ea47ea8e3eaec1661ca61815c506d4c01bcd920bbee58f69b9d8",
+    "Lamp stem": "ccd91ed3340b7c0112f439a47d5a13ec6b5a9cb24c7be99b3f19f7c839c0c6de",
+    "Lamp swivel collar": "5e5bd73c529d36739307787846db8bb8eb4692f0acdef51b3030497375bb15cd",
+    "Lamp warm diffuser": "ac51015861a85b907686882773fe88062ba86895ef48f884af1d366e85012483",
+    "Ledger centre seam": "bf14b6698ac55c7922f76203e8d24e0fd814f6653482edd6f5d7f2aa833d10a4",
+    "Ledger dark cover": "558d03c0c6bf476848d71f4eb73e70effdc3e4a66f8eacbde8c0a21b324b6482",
+    "Ledger left page": "6d9019526c9105a7a6173ac80416cc845d2cbf2fee61f2bb56f4f2c865b6875d",
+    "Ledger right page": "339c28a530bef3fc5140332bfec50b5c289d09331e589458a7bb4557b25d674a",
+    "Ledger rule.0.-0.1": "0cad08fc5b586977127cf2b649026bf3df86d3916ff0add1474936e4ed14892c",
+    "Ledger rule.0.0.19": "47d85cf871979ee32aa3dbb48b2d3265e57a32ccebe401c7f450c6f7af1554ce",
+    "Ledger rule.1.-0.1": "49641381feea88f54fa18eb92a1c71731b15a6a27712b5591357396be16ed3bf",
+    "Ledger rule.1.0.19": "4041b4d06a18bda9c31f676581475ae0df66592eaf666ddba0a8122227f88aad",
+    "Ledger rule.2.-0.1": "b46d8ca7a0b38d7a76af1f8e133733103bfe37e4c0b4fbe00892ee1907422fc8",
+    "Ledger rule.2.0.19": "08540234e8cd9338ac0477d926c2231070e5ad74f13c7dfc2de25f8e20a9b5ab",
+    "Ledger rule.3.-0.1": "e586b61b8d4c07538bb96339fb8260ea5002cd217e308169a505a751c2adaa6f",
+    "Ledger rule.3.0.19": "cd3e1348c96cc15d8c3c4ed74a986b05d4c689387b866ca8192b92045339c848",
+    "Leg foot.-0.75.-0.3": "94aaeeec60f5b211c4ad3479a9e9e6881659fb1b8238866cf180d2a11eb84c55",
+    "Leg foot.-0.75.0.3": "e14dd5bff9ace5a0d59c22adf305e1dcd1e029b8c57c983cf570e4fa59d8bbee",
+    "Leg foot.0.75.-0.3": "2504025312107b8a4e3913e4716d230ba28b6dc89b83132aa7b26c7ef840b173",
+    "Leg foot.0.75.0.3": "1225eaabb5817b8c0b0b315c48d4879999c5cf33c7efbcb4e9b347cc0a47c10d",
+    "Olive paperwork tray": "69c0c4054f1259d22fac4fcbad51378a7ad84b2b47a0370701ebf5a7d101c902",
+    "Pedestal visible top": "a40f9a4cc6e0deabd1c42cb132cff4c51f3d900fbda578c8ebec4939f9413775",
+    "Pencil cup opening": "862191260ed90a744c3b4011532d3ac0860de956a33aea46437c44f6368d0173",
+    "Pencil cup outer": "a2495f6e0e25e6c8a7abc9d969b7aeecbe8257d9bf23d852eb5453fdf32e420a",
+    "Pencil point.0": "1a5a96c7d9931bf79ef9444711fdee34b9543db24d3c06ed0821317fc72ac230",
+    "Pencil point.1": "d2bd21c6ed377bbb35f544d44f3c66d4a5be6255e0380fbbefcc85001a8ab1e7",
+    "Pencil point.2": "c5d91a76627063a16d2a8ae3b1ecb67ad6dc3dc71d64f6f5ffb81b8a49ec39b1",
+    "Steel leg.-0.75.-0.3": "f4b70a82dd8ef085225fe1bdca1fd04c2765ad4ee57eda939f85ddef063b4d0f",
+    "Steel leg.-0.75.0.3": "390e8c4beaf6ac920e4305e7ddc159f5aa995cbedfdc7eaf8a72c4e8386ce5d0",
+    "Steel leg.0.75.-0.3": "bab91c154618f98ad4a5774a658f87de3fffbd5703515928c4177cb49fc88914",
+    "Steel leg.0.75.0.3": "dd0d060edc5bdab107c95596c7b5bea36ffdc86e9a61f6e0f10f15113316a581",
+    "Terracotta folder in tray": "0a3c5b387a99c637a0cac6792e57a07f7c4f04619aa556d49ee28004da186bdf"
+  },
+  "allEvaluatedNormalAudit": [
+    {
+      "name": "Cable grommet dark surround",
+      "polygons": 34,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.004499614238739014,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Cable opening",
+      "polygons": 34,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.004999816417694092,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Cream sheet in tray",
+      "polygons": 54,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.005999922752380371,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Dark worktop edge band",
+      "polygons": 54,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.04500001668930054,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Drawer front.0",
+      "polygons": 54,
+      "degenerateIndices": [
+        24,
+        25,
+        28,
+        29,
+        38,
+        39,
+        40,
+        41,
+        48,
+        49,
+        51,
+        53
+      ],
+      "minimumOutwardDistance": 0.0059999823570251465,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Drawer front.1",
+      "polygons": 54,
+      "degenerateIndices": [
+        24,
+        25,
+        28,
+        29,
+        38,
+        39,
+        40,
+        41,
+        48,
+        49,
+        51,
+        53
+      ],
+      "minimumOutwardDistance": 0.0059999823570251465,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Drawer front.2",
+      "polygons": 54,
+      "degenerateIndices": [
+        24,
+        25,
+        28,
+        29,
+        38,
+        39,
+        40,
+        41,
+        48,
+        49,
+        51,
+        53
+      ],
+      "minimumOutwardDistance": 0.0059999823570251465,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Drawer pedestal shell",
+      "polygons": 54,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.19999998807907104,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Drawer pull.0",
+      "polygons": 54,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.009000003337860107,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Drawer pull.1",
+      "polygons": 54,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.00899997353553772,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Drawer pull.2",
+      "polygons": 54,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.008999884128570557,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Front frame rail",
+      "polygons": 54,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.027500003576278687,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Grey oak laminate",
+      "polygons": 54,
+      "degenerateIndices": [
+        26,
+        27,
+        30,
+        31,
+        36,
+        37,
+        42,
+        43,
+        49,
+        50,
+        52,
+        53
+      ],
+      "minimumOutwardDistance": 0.017499923706054688,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Lamp articulated arm",
+      "polygons": 54,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.013499975204467773,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Lamp bolted base",
+      "polygons": 34,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.024999022483825684,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Lamp dark swivel",
+      "polygons": 34,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.007499814033508301,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Lamp enamel hood",
+      "polygons": 50,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.039998412132263184,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Lamp hood top seam",
+      "polygons": 384,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": -0.08023131082882173,
+      "inwardPolygons": 192,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Lamp stem",
+      "polygons": 18,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.020596425980329514,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Lamp swivel collar",
+      "polygons": 34,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.011000036261975765,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Lamp warm diffuser",
+      "polygons": 50,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.003999471664428711,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Ledger centre seam",
+      "polygons": 54,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.003999948501586914,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Ledger dark cover",
+      "polygons": 54,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.008999704383313656,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Ledger left page",
+      "polygons": 54,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.006499767303466797,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Ledger right page",
+      "polygons": 54,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.006499767303466797,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Ledger rule.0.-0.1",
+      "polygons": 6,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.0019999740179628134,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Ledger rule.0.0.19",
+      "polygons": 6,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.0019999740179628134,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Ledger rule.1.-0.1",
+      "polygons": 6,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.001999974250793457,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Ledger rule.1.0.19",
+      "polygons": 6,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.001999974250793457,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Ledger rule.2.-0.1",
+      "polygons": 6,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.0019999740179628134,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Ledger rule.2.0.19",
+      "polygons": 6,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.0019999740179628134,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Ledger rule.3.-0.1",
+      "polygons": 6,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.001999974250793457,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Ledger rule.3.0.19",
+      "polygons": 6,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.001999974250793457,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Leg foot.-0.75.-0.3",
+      "polygons": 54,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.03500000014901161,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Leg foot.-0.75.0.3",
+      "polygons": 54,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.03500000014901161,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Leg foot.0.75.-0.3",
+      "polygons": 54,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.03500000014901161,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Leg foot.0.75.0.3",
+      "polygons": 54,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.03500000014901161,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Olive paperwork tray",
+      "polygons": 54,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.026000022888183594,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Pedestal visible top",
+      "polygons": 54,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.017499804496765137,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Pencil cup opening",
+      "polygons": 26,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.003999829292297363,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Pencil cup outer",
+      "polygons": 26,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.06499934196472168,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Pencil point.0",
+      "polygons": 10,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.008314846432767808,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Pencil point.1",
+      "polygons": 10,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.008314846432767808,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Pencil point.2",
+      "polygons": 10,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.008314846432767808,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Steel leg.-0.75.-0.3",
+      "polygons": 54,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.037499964237213135,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Steel leg.-0.75.0.3",
+      "polygons": 54,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.03749993443489075,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Steel leg.0.75.-0.3",
+      "polygons": 54,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.037499964237213135,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Steel leg.0.75.0.3",
+      "polygons": 54,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.03749993443489075,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Terracotta folder in tray",
+      "polygons": 54,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.006000041961669922,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    }
+  ],
+  "actualRawSourceBounds": {
+    "min": [
+      -0.9200000166893005,
+      -0.4299999475479126,
+      0.0
+    ],
+    "max": [
+      0.9200000166893005,
+      0.48250019550323486,
+      1.2695000171661377
+    ]
+  },
+  "allPartBounds": {
+    "Cable grommet dark surround": {
+      "min": [
+        0.6619993448257446,
+        -0.3479999601840973,
+        0.9845000505447388
+      ],
+      "max": [
+        0.7779992818832397,
+        -0.2319999635219574,
+        0.9934999942779541
+      ]
+    },
+    "Cable opening": {
+      "min": [
+        0.6839993000030518,
+        -0.3259999752044678,
+        0.9909999966621399
+      ],
+      "max": [
+        0.7559993267059326,
+        -0.2539999485015869,
+        1.0010000467300415
+      ]
+    },
+    "Cream sheet in tray": {
+      "min": [
+        -0.6650009155273438,
+        -0.045000188052654266,
+        1.0479999780654907
+      ],
+      "max": [
+        -0.41500091552734375,
+        0.1949998140335083,
+        1.0600000619888306
+      ]
+    },
+    "Dark worktop edge band": {
+      "min": [
+        -0.9200000166893005,
+        -0.4299999475479126,
+        0.8650000095367432
+      ],
+      "max": [
+        0.9200000166893005,
+        0.3500000238418579,
+        0.9550000429153442
+      ]
+    },
+    "Drawer front.0": {
+      "min": [
+        0.3449994623661041,
+        0.4520001709461212,
+        0.17000000178813934
+      ],
+      "max": [
+        0.7749994993209839,
+        0.4640001952648163,
+        0.32999998331069946
+      ]
+    },
+    "Drawer front.1": {
+      "min": [
+        0.3449994623661041,
+        0.4520001709461212,
+        0.3700000047683716
+      ],
+      "max": [
+        0.7749994993209839,
+        0.4640001952648163,
+        0.5299999713897705
+      ]
+    },
+    "Drawer front.2": {
+      "min": [
+        0.3449994623661041,
+        0.4520001709461212,
+        0.5699999928474426
+      ],
+      "max": [
+        0.7749994993209839,
+        0.4640001952648163,
+        0.7299999594688416
+      ]
+    },
+    "Drawer pedestal shell": {
+      "min": [
+        0.3099994659423828,
+        0.04999999701976776,
+        0.06000000238418579
+      ],
+      "max": [
+        0.8099994659423828,
+        0.44999998807907104,
+        0.8399999737739563
+      ]
+    },
+    "Drawer pull.0": {
+      "min": [
+        0.4949994683265686,
+        0.45950019359588623,
+        0.2409999966621399
+      ],
+      "max": [
+        0.624999463558197,
+        0.48250019550323486,
+        0.2590000033378601
+      ]
+    },
+    "Drawer pull.1": {
+      "min": [
+        0.4949994683265686,
+        0.45950019359588623,
+        0.44099998474121094
+      ],
+      "max": [
+        0.624999463558197,
+        0.48250019550323486,
+        0.45899999141693115
+      ]
+    },
+    "Drawer pull.2": {
+      "min": [
+        0.4949994683265686,
+        0.45950019359588623,
+        0.640999972820282
+      ],
+      "max": [
+        0.624999463558197,
+        0.48250019550323486,
+        0.6589999794960022
+      ]
+    },
+    "Front frame rail": {
+      "min": [
+        -0.7549999952316284,
+        0.26249995827674866,
+        0.699999988079071
+      ],
+      "max": [
+        0.7549999952316284,
+        0.31749996542930603,
+        0.8399999737739563
+      ]
+    },
+    "Grey oak laminate": {
+      "min": [
+        -0.8949999809265137,
+        -0.4049999713897705,
+        0.9474999904632568
+      ],
+      "max": [
+        0.8949999809265137,
+        0.3250000476837158,
+        0.9824999570846558
+      ]
+    },
+    "Lamp articulated arm": {
+      "min": [
+        -0.7244836091995239,
+        -0.28349998593330383,
+        1.145622730255127
+      ],
+      "max": [
+        -0.41551581025123596,
+        -0.2564999759197235,
+        1.2083773612976074
+      ]
+    },
+    "Lamp bolted base": {
+      "min": [
+        -0.7979993224143982,
+        -0.3479999899864197,
+        0.9950000047683716
+      ],
+      "max": [
+        -0.6419993042945862,
+        -0.19199997186660767,
+        1.0449999570846558
+      ]
+    },
+    "Lamp dark swivel": {
+      "min": [
+        -0.4369996190071106,
+        -0.30699998140335083,
+        1.254499912261963
+      ],
+      "max": [
+        -0.3629996180534363,
+        -0.2329999804496765,
+        1.2695000171661377
+      ]
+    },
+    "Lamp enamel hood": {
+      "min": [
+        -0.5149996280670166,
+        -0.38499999046325684,
+        1.1500000953674316
+      ],
+      "max": [
+        -0.2849996089935303,
+        -0.1549999713897705,
+        1.2300000190734863
+      ]
+    },
+    "Lamp hood top seam": {
+      "min": [
+        -0.5049996376037598,
+        -0.375,
+        1.222000002861023
+      ],
+      "max": [
+        -0.2949995994567871,
+        -0.16499997675418854,
+        1.2399998903274536
+      ]
+    },
+    "Lamp stem": {
+      "min": [
+        -0.7409993410110474,
+        -0.29099997878074646,
+        1.0199999809265137
+      ],
+      "max": [
+        -0.698999285697937,
+        -0.24899998307228088,
+        1.190000057220459
+      ]
+    },
+    "Lamp swivel collar": {
+      "min": [
+        -0.4549996256828308,
+        -0.32499998807907104,
+        1.2339999675750732
+      ],
+      "max": [
+        -0.34499961137771606,
+        -0.2149999737739563,
+        1.25600004196167
+      ]
+    },
+    "Lamp warm diffuser": {
+      "min": [
+        -0.48199963569641113,
+        -0.35199999809265137,
+        1.1410000324249268
+      ],
+      "max": [
+        -0.31799960136413574,
+        -0.18799997866153717,
+        1.1489999294281006
+      ]
+    },
+    "Ledger centre seam": {
+      "min": [
+        0.03400091454386711,
+        -0.11499981582164764,
+        1.027000069618225
+      ],
+      "max": [
+        0.04600091651082039,
+        0.2150001972913742,
+        1.034999966621399
+      ]
+    },
+    "Ledger dark cover": {
+      "min": [
+        -0.2599990963935852,
+        -0.13999980688095093,
+        0.9949999451637268
+      ],
+      "max": [
+        0.3400009274482727,
+        0.2400001883506775,
+        1.0129998922348022
+      ]
+    },
+    "Ledger left page": {
+      "min": [
+        -0.24499954283237457,
+        -0.11999981105327606,
+        1.0134999752044678
+      ],
+      "max": [
+        0.03500045835971832,
+        0.22000019252300262,
+        1.0264999866485596
+      ]
+    },
+    "Ledger right page": {
+      "min": [
+        0.044999465346336365,
+        -0.11999981105327606,
+        1.0134999752044678
+      ],
+      "max": [
+        0.32499945163726807,
+        0.22000019252300262,
+        1.0264999866485596
+      ]
+    },
+    "Ledger rule.0.-0.1": {
+      "min": [
+        -0.19000038504600525,
+        -0.07799980789422989,
+        1.031000018119812
+      ],
+      "max": [
+        -0.010000377893447876,
+        -0.07199981063604355,
+        1.034999966621399
+      ]
+    },
+    "Ledger rule.0.0.19": {
+      "min": [
+        0.1000005304813385,
+        -0.07799980789422989,
+        1.031000018119812
+      ],
+      "max": [
+        0.2800005376338959,
+        -0.07199981063604355,
+        1.034999966621399
+      ]
+    },
+    "Ledger rule.1.-0.1": {
+      "min": [
+        -0.19000038504600525,
+        -0.008000114932656288,
+        1.031000018119812
+      ],
+      "max": [
+        -0.010000377893447876,
+        -0.0020001144148409367,
+        1.034999966621399
+      ]
+    },
+    "Ledger rule.1.0.19": {
+      "min": [
+        0.1000005304813385,
+        -0.008000114932656288,
+        1.031000018119812
+      ],
+      "max": [
+        0.2800005376338959,
+        -0.0020001144148409367,
+        1.034999966621399
+      ]
+    },
+    "Ledger rule.2.-0.1": {
+      "min": [
+        -0.19000038504600525,
+        0.062000058591365814,
+        1.031000018119812
+      ],
+      "max": [
+        -0.010000377893447876,
+        0.06800005584955215,
+        1.034999966621399
+      ]
+    },
+    "Ledger rule.2.0.19": {
+      "min": [
+        0.1000005304813385,
+        0.062000058591365814,
+        1.031000018119812
+      ],
+      "max": [
+        0.2800005376338959,
+        0.06800005584955215,
+        1.034999966621399
+      ]
+    },
+    "Ledger rule.3.-0.1": {
+      "min": [
+        -0.19000038504600525,
+        0.13200022280216217,
+        1.031000018119812
+      ],
+      "max": [
+        -0.010000377893447876,
+        0.1380002349615097,
+        1.034999966621399
+      ]
+    },
+    "Ledger rule.3.0.19": {
+      "min": [
+        0.1000005304813385,
+        0.13200022280216217,
+        1.031000018119812
+      ],
+      "max": [
+        0.2800005376338959,
+        0.1380002349615097,
+        1.034999966621399
+      ]
+    },
+    "Leg foot.-0.75.-0.3": {
+      "min": [
+        -0.8100000023841858,
+        -0.3600001931190491,
+        0.0
+      ],
+      "max": [
+        -0.6899999976158142,
+        -0.2400001883506775,
+        0.07000000029802322
+      ]
+    },
+    "Leg foot.-0.75.0.3": {
+      "min": [
+        -0.8100000023841858,
+        0.2400001883506775,
+        0.0
+      ],
+      "max": [
+        -0.6899999976158142,
+        0.3600001931190491,
+        0.07000000029802322
+      ]
+    },
+    "Leg foot.0.75.-0.3": {
+      "min": [
+        0.6899999976158142,
+        -0.3600001931190491,
+        0.0
+      ],
+      "max": [
+        0.8100000023841858,
+        -0.2400001883506775,
+        0.07000000029802322
+      ]
+    },
+    "Leg foot.0.75.0.3": {
+      "min": [
+        0.6899999976158142,
+        0.2400001883506775,
+        0.0
+      ],
+      "max": [
+        0.8100000023841858,
+        0.3600001931190491,
+        0.07000000029802322
+      ]
+    },
+    "Olive paperwork tray": {
+      "min": [
+        -0.7000007033348083,
+        -0.09000009298324585,
+        0.9779999256134033
+      ],
+      "max": [
+        -0.3600006699562073,
+        0.28999990224838257,
+        1.0299999713897705
+      ]
+    },
+    "Pedestal visible top": {
+      "min": [
+        0.28999945521354675,
+        0.040000006556510925,
+        0.8325000405311584
+      ],
+      "max": [
+        0.8299994468688965,
+        0.4599999785423279,
+        0.8675000071525574
+      ]
+    },
+    "Pencil cup opening": {
+      "min": [
+        0.5279999375343323,
+        -0.17199988663196564,
+        1.1370000839233398
+      ],
+      "max": [
+        0.6319999098777771,
+        -0.06799988448619843,
+        1.1449999809265137
+      ]
+    },
+    "Pencil cup outer": {
+      "min": [
+        0.5069999098777771,
+        -0.19299988448619843,
+        1.005000114440918
+      ],
+      "max": [
+        0.6529999375343323,
+        -0.04699988663196564,
+        1.1349999904632568
+      ]
+    },
+    "Pencil point.0": {
+      "min": [
+        0.5409992337226868,
+        -0.12899988889694214,
+        1.1399999856948853
+      ],
+      "max": [
+        0.558999240398407,
+        -0.11099988222122192,
+        1.1899999380111694
+      ]
+    },
+    "Pencil point.1": {
+      "min": [
+        0.5810001492500305,
+        -0.12899988889694214,
+        1.1399999856948853
+      ],
+      "max": [
+        0.5990001559257507,
+        -0.11099988222122192,
+        1.1899999380111694
+      ]
+    },
+    "Pencil point.2": {
+      "min": [
+        0.6110008358955383,
+        -0.12899988889694214,
+        1.1399999856948853
+      ],
+      "max": [
+        0.6290008425712585,
+        -0.11099988222122192,
+        1.1899999380111694
+      ]
+    },
+    "Steel leg.-0.75.-0.3": {
+      "min": [
+        -0.7875000238418579,
+        -0.3375001847743988,
+        0.0
+      ],
+      "max": [
+        -0.7124999761581421,
+        -0.26250019669532776,
+        0.8799999952316284
+      ]
+    },
+    "Steel leg.-0.75.0.3": {
+      "min": [
+        -0.7875000238418579,
+        0.26250019669532776,
+        0.0
+      ],
+      "max": [
+        -0.7124999761581421,
+        0.3375001847743988,
+        0.8799999952316284
+      ]
+    },
+    "Steel leg.0.75.-0.3": {
+      "min": [
+        0.7124999761581421,
+        -0.3375001847743988,
+        0.0
+      ],
+      "max": [
+        0.7875000238418579,
+        -0.26250019669532776,
+        0.8799999952316284
+      ]
+    },
+    "Steel leg.0.75.0.3": {
+      "min": [
+        0.7124999761581421,
+        0.26250019669532776,
+        0.0
+      ],
+      "max": [
+        0.7875000238418579,
+        0.3375001847743988,
+        0.8799999952316284
+      ]
+    },
+    "Terracotta folder in tray": {
+      "min": [
+        -0.6650006771087646,
+        -0.05000010132789612,
+        1.031999945640564
+      ],
+      "max": [
+        -0.395000696182251,
+        0.24999991059303284,
+        1.0440000295639038
+      ]
+    }
+  },
+  "storedActions": [],
+  "originalSourceReplays": [
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 40,
+      "sha256": "6be60435920b240023e56ab57722557a4ddab994bc06a7004682dd44f39c13e9"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 40,
+      "sha256": "f54df9e651e23b09d33f3d2ebab25e9b10e7c54c368a41ae6c4a4a5890ca6bb2"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 40,
+      "sha256": "8e236f095099afd6614ac175325fae9681e95ac874f2002e9a106a46c3c0932c"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 40,
+      "sha256": "09dee978bfed1a2fdcf32a66ed5f25ae7547e9e3b2e79386f5e96e3e9acb1737"
+    }
+  ],
+  "acceptedCamera": {
+    "resolution": [
+      512,
+      512
+    ],
+    "orthoScale": 8.0,
+    "target": [
+      1.0,
+      0.5,
+      0.550000011920929
+    ],
+    "engine": "BLENDER_WORKBENCH",
+    "sourceNominalPixelsPerTile": 64.0,
+    "yawDegrees": [
+      0,
+      30,
+      60,
+      90,
+      120,
+      150,
+      180,
+      210,
+      240,
+      270,
+      300,
+      330
+    ],
+    "elevationDegrees": [
+      20,
+      30,
+      40,
+      50,
+      60,
+      70
+    ]
+  }
+}

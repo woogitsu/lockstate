@@ -1,0 +1,36 @@
+{
+  "savedSourceModified": false,
+  "canonicalExportsModified": false,
+  "prototypePartOnlyInMemory": true,
+  "actualBeforeAfterPoses": [
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 40,
+      "originalSha256": "6be60435920b240023e56ab57722557a4ddab994bc06a7004682dd44f39c13e9",
+      "actualCandidateSha256": "6be60435920b240023e56ab57722557a4ddab994bc06a7004682dd44f39c13e9",
+      "byteIdentical": true
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 40,
+      "originalSha256": "f54df9e651e23b09d33f3d2ebab25e9b10e7c54c368a41ae6c4a4a5890ca6bb2",
+      "actualCandidateSha256": "f54df9e651e23b09d33f3d2ebab25e9b10e7c54c368a41ae6c4a4a5890ca6bb2",
+      "byteIdentical": true
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 40,
+      "originalSha256": "8e236f095099afd6614ac175325fae9681e95ac874f2002e9a106a46c3c0932c",
+      "actualCandidateSha256": "8e236f095099afd6614ac175325fae9681e95ac874f2002e9a106a46c3c0932c",
+      "byteIdentical": true
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 40,
+      "originalSha256": "09dee978bfed1a2fdcf32a66ed5f25ae7547e9e3b2e79386f5e96e3e9acb1737",
+      "actualCandidateSha256": "4fdce10481771e94b39d1ee65f8bc562ce9e3209f34a7778ff534e7bc1f7d3c8",
+      "byteIdentical": false
+    }
+  ],
+  "allFourActualRastersUnchanged": false
+}

@@ -1,0 +1,18 @@
+[
+  {
+    "yawDegrees": 0,
+    "actualDifferentRGBAPixels": 0
+  },
+  {
+    "yawDegrees": 60,
+    "actualDifferentRGBAPixels": 0
+  },
+  {
+    "yawDegrees": 180,
+    "actualDifferentRGBAPixels": 0
+  },
+  {
+    "yawDegrees": 300,
+    "actualDifferentRGBAPixels": 3
+  }
+]

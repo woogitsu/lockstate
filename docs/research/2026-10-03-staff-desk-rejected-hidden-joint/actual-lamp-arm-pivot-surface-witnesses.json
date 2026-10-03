@@ -1,0 +1,200 @@
+{
+  "sourceSha256": "4a7134622b170fae660aeb1a8155aa9adee4b54cff02c2fcdd8a0ea19dd7218c",
+  "actualTriangleSurfaceIterations": [
+    {
+      "iteration": 0,
+      "actualArmTriangle": 103,
+      "actualArmSurfacePoint": [
+        -0.4267255961894989,
+        -0.27000001072883606,
+        1.2083773612976074
+      ],
+      "actualCollarTriangle": 123,
+      "actualCollarSurfacePoint": [
+        -0.4267255961894989,
+        -0.27000001072883606,
+        1.2339999675750732
+      ],
+      "actualSurfaceWitnessDistance": 0.02562260627746582
+    },
+    {
+      "iteration": 1,
+      "actualArmTriangle": 103,
+      "actualArmSurfacePoint": [
+        -0.4267255961894989,
+        -0.27000001072883606,
+        1.2083773612976074
+      ],
+      "actualCollarTriangle": 123,
+      "actualCollarSurfacePoint": [
+        -0.4267255961894989,
+        -0.27000001072883606,
+        1.2339999675750732
+      ],
+      "actualSurfaceWitnessDistance": 0.02562260627746582
+    },
+    {
+      "iteration": 2,
+      "actualArmTriangle": 103,
+      "actualArmSurfacePoint": [
+        -0.4267255961894989,
+        -0.27000001072883606,
+        1.2083773612976074
+      ],
+      "actualCollarTriangle": 123,
+      "actualCollarSurfacePoint": [
+        -0.4267255961894989,
+        -0.27000001072883606,
+        1.2339999675750732
+      ],
+      "actualSurfaceWitnessDistance": 0.02562260627746582
+    },
+    {
+      "iteration": 3,
+      "actualArmTriangle": 103,
+      "actualArmSurfacePoint": [
+        -0.4267255961894989,
+        -0.27000001072883606,
+        1.2083773612976074
+      ],
+      "actualCollarTriangle": 123,
+      "actualCollarSurfacePoint": [
+        -0.4267255961894989,
+        -0.27000001072883606,
+        1.2339999675750732
+      ],
+      "actualSurfaceWitnessDistance": 0.02562260627746582
+    },
+    {
+      "iteration": 4,
+      "actualArmTriangle": 103,
+      "actualArmSurfacePoint": [
+        -0.4267255961894989,
+        -0.27000001072883606,
+        1.2083773612976074
+      ],
+      "actualCollarTriangle": 123,
+      "actualCollarSurfacePoint": [
+        -0.4267255961894989,
+        -0.27000001072883606,
+        1.2339999675750732
+      ],
+      "actualSurfaceWitnessDistance": 0.02562260627746582
+    },
+    {
+      "iteration": 5,
+      "actualArmTriangle": 103,
+      "actualArmSurfacePoint": [
+        -0.4267255961894989,
+        -0.27000001072883606,
+        1.2083773612976074
+      ],
+      "actualCollarTriangle": 123,
+      "actualCollarSurfacePoint": [
+        -0.4267255961894989,
+        -0.27000001072883606,
+        1.2339999675750732
+      ],
+      "actualSurfaceWitnessDistance": 0.02562260627746582
+    },
+    {
+      "iteration": 6,
+      "actualArmTriangle": 103,
+      "actualArmSurfacePoint": [
+        -0.4267255961894989,
+        -0.27000001072883606,
+        1.2083773612976074
+      ],
+      "actualCollarTriangle": 123,
+      "actualCollarSurfacePoint": [
+        -0.4267255961894989,
+        -0.27000001072883606,
+        1.2339999675750732
+      ],
+      "actualSurfaceWitnessDistance": 0.02562260627746582
+    },
+    {
+      "iteration": 7,
+      "actualArmTriangle": 103,
+      "actualArmSurfacePoint": [
+        -0.4267255961894989,
+        -0.27000001072883606,
+        1.2083773612976074
+      ],
+      "actualCollarTriangle": 123,
+      "actualCollarSurfacePoint": [
+        -0.4267255961894989,
+        -0.27000001072883606,
+        1.2339999675750732
+      ],
+      "actualSurfaceWitnessDistance": 0.02562260627746582
+    },
+    {
+      "iteration": 8,
+      "actualArmTriangle": 103,
+      "actualArmSurfacePoint": [
+        -0.4267255961894989,
+        -0.27000001072883606,
+        1.2083773612976074
+      ],
+      "actualCollarTriangle": 123,
+      "actualCollarSurfacePoint": [
+        -0.4267255961894989,
+        -0.27000001072883606,
+        1.2339999675750732
+      ],
+      "actualSurfaceWitnessDistance": 0.02562260627746582
+    },
+    {
+      "iteration": 9,
+      "actualArmTriangle": 103,
+      "actualArmSurfacePoint": [
+        -0.4267255961894989,
+        -0.27000001072883606,
+        1.2083773612976074
+      ],
+      "actualCollarTriangle": 123,
+      "actualCollarSurfacePoint": [
+        -0.4267255961894989,
+        -0.27000001072883606,
+        1.2339999675750732
+      ],
+      "actualSurfaceWitnessDistance": 0.02562260627746582
+    },
+    {
+      "iteration": 10,
+      "actualArmTriangle": 103,
+      "actualArmSurfacePoint": [
+        -0.4267255961894989,
+        -0.27000001072883606,
+        1.2083773612976074
+      ],
+      "actualCollarTriangle": 123,
+      "actualCollarSurfacePoint": [
+        -0.4267255961894989,
+        -0.27000001072883606,
+        1.2339999675750732
+      ],
+      "actualSurfaceWitnessDistance": 0.02562260627746582
+    },
+    {
+      "iteration": 11,
+      "actualArmTriangle": 103,
+      "actualArmSurfacePoint": [
+        -0.4267255961894989,
+        -0.27000001072883606,
+        1.2083773612976074
+      ],
+      "actualCollarTriangle": 123,
+      "actualCollarSurfacePoint": [
+        -0.4267255961894989,
+        -0.27000001072883606,
+        1.2339999675750732
+      ],
+      "actualSurfaceWitnessDistance": 0.02562260627746582
+    }
+  ],
+  "claimBoundary": "No direct arm/pivot collar connection. Arm already intersects lamp hood and collar already intersects hood seam; not a claim that complete lamp assembly is disconnected.",
+  "browserStarted": false,
+  "canonicalProducerEdited": false
+}

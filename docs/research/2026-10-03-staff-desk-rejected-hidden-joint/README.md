@@ -1,0 +1,9 @@
+# Staff Room desk: reject the hidden lamp joint candidate
+
+VERIFIED using actual current furniture.office.desk.employee.blend source4a7134622b170fae660aeb1a8155aa9adee4b54cff02c2fcdd8a0ea19dd7218c. This is the actual Staff Room contextual object.desk skin,2?1, distinct from the already refined generic94-part default. [Inventory](actual-original-inventory-and-source-poses.json) records all49 original meshes/10 full stored graphs/modifiers/matrices/evaluated hashes/actions. Four actual legacy-camera Workbench512/ortho8/64ppt renders at0/60/180/300,elev40 match all four existing canonical PNG hashes exactly. Original source bytes and canonical exports remain untouched.
+
+The arm and upper pivot collar have a true separatingZgap.02562260627746582tile; [actual triangle surface witnesses](actual-lamp-arm-pivot-surface-witnesses.json) agree with the separating plane. This does not imply a disconnected lamp: retained hood/top seam already bridge those elements. A cylindrical riser prototype was added **only in memory**, inside unchanged bounds and using the existing arm material, to test whether additional joint hardware improves the actual player-visible silhouette.
+
+[Opened actual before/after comparison](actual-internal-joint-visibility-four-yaws.png) and [RGBA measurement](actual-internal-joint-rgba-pixels.json) show0/0/0/3changed source pixels. The new part is almost entirely hidden. **Rejected**, no new.blend, canonical producer, descriptor, mapping or frame batch published. This record does not claim the whole model has no other gap; it rejects this concrete candidate on measured source visibility. No browser/server ran and no native claim is made.
+
+Next approved source lease is the distinct existing Common Room upholstered Bench: two actual front arm risers, pending confirmation of original source geometry and before/after visibility. That work proceeds in a new isolated worktree; generic Bench and Staff desk remain unchanged.
