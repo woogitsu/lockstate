@@ -1,0 +1,74 @@
+{
+  "controls": [
+    {
+      "control": "omit-real-L-bearing",
+      "exitCode": 1,
+      "error": "ValueError: Library bookshelf retained/authored mesh set changed"
+    },
+    {
+      "control": "move-real-mount",
+      "exitCode": 1,
+      "error": "ValueError: Library bookshelf actual evaluated authored geometry changed"
+    },
+    {
+      "control": "move-retained-carcass",
+      "exitCode": 1,
+      "error": "ValueError: Library bookshelf actual evaluated authored geometry changed"
+    },
+    {
+      "control": "change-retained-bevel",
+      "exitCode": 1,
+      "error": "ValueError: Library bookshelf actual authored topology/material assignment/modifier data changed"
+    },
+    {
+      "control": "change-retained-material-graph",
+      "exitCode": 1,
+      "error": "ValueError: Library bookshelf retained nine stored material graphs changed"
+    },
+    {
+      "control": "change-added-joint-material",
+      "exitCode": 1,
+      "error": "ValueError: Library bookshelf actual authored topology/material assignment/modifier data changed"
+    },
+    {
+      "control": "actual-reversed-joint-winding",
+      "exitCode": 1,
+      "error": "ValueError: Evaluated library bookshelf geometric surfaces face inward: angled-library-bookshelf.shelf end vertical bearing 0 -0.875"
+    },
+    {
+      "control": "unpin-retained-unused-material",
+      "exitCode": 1,
+      "error": "ValueError: Retained unused bookshelf material graph is not pinned for source persistence"
+    },
+    {
+      "control": "wrong-loaded-fit",
+      "exitCode": 1,
+      "error": "ValueError: Library bookshelf declared occupied rectangle/source fit/accepted target changed"
+    },
+    {
+      "control": "wrong-accepted-target",
+      "exitCode": 1,
+      "error": "ValueError: Library bookshelf declared occupied rectangle/source fit/accepted target changed"
+    },
+    {
+      "control": "wrong-canonical-descriptor",
+      "exitCode": 1,
+      "error": "ValueError: Library bookshelf exporter targets the wrong canonical descriptor"
+    },
+    {
+      "control": "wrong-camera-span",
+      "exitCode": 1,
+      "error": "ValueError: Library bookshelf actual camera pitch differs from64pixels per tile"
+    },
+    {
+      "control": "wrong-camera-vector",
+      "exitCode": 1,
+      "error": "ValueError: Library bookshelf actual camera ground basis differs from world projection"
+    }
+  ],
+  "exactRestoredNativeVerifyExitCode": 0,
+  "sourceBytesUnchanged": true,
+  "wrapperSha256": "3f747149a2be524e44d3d282e436426a09ed9086b3c4632a9256c803eeec540f",
+  "sourceSha256": "ac0dd8e1a3345c3e791934b534d13c2043e9a5a04f85ed7cc9fe965e6716e9b7",
+  "originalSourceSha256": "64a18ea80a6b3f97d3b3b389f82c3f52b282cd6c29e343d4f971eab9c0b42c02"
+}

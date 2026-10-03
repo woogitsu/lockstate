@@ -1,0 +1,972 @@
+{
+  "sourceSha256": "ac0dd8e1a3345c3e791934b534d13c2043e9a5a04f85ed7cc9fe965e6716e9b7",
+  "descriptorSha256": "f4462809d880681c193460d11c9398f5d928584c4c291053a911a941523ac168",
+  "repeat": [
+    {
+      "label": "first",
+      "wrapper": "render-library-bookshelf-detail-oblique.py",
+      "exitCode": 0,
+      "descriptorAndFrameBytesExactlyEqual": true,
+      "comparedFiles": 73
+    },
+    {
+      "label": "dedicated-repeat",
+      "wrapper": "render-library-bookshelf-detail-oblique.py",
+      "exitCode": 0,
+      "descriptorAndFrameBytesExactlyEqual": true,
+      "comparedFiles": 73
+    },
+    {
+      "label": "production-repeat",
+      "wrapper": "render-library-bookshelf-oblique.py",
+      "exitCode": 0,
+      "descriptorAndFrameBytesExactlyEqual": true,
+      "comparedFiles": 73
+    }
+  ],
+  "decodedRGBAFrames": 72,
+  "minimumTransparentBorderPx": 36,
+  "frames": [
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 20,
+      "alphaBounds": [
+        65,
+        58,
+        191,
+        200
+      ],
+      "minimumTransparentBorderPx": 56,
+      "sha256": "97d31985aa5c7fd862375bbff7913746b7634fff9657a200c464dfec43421772"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 30,
+      "alphaBounds": [
+        65,
+        60,
+        191,
+        199
+      ],
+      "minimumTransparentBorderPx": 57,
+      "sha256": "96924d83a3b3a1484fa52390113055b9f38ca4c08e270942ffe5b3a9934c50a1"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 40,
+      "alphaBounds": [
+        65,
+        63,
+        191,
+        196
+      ],
+      "minimumTransparentBorderPx": 60,
+      "sha256": "09e57ed29994e21f55f14db387586a460da4c891ac73b94136cde95afd59be1b"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 50,
+      "alphaBounds": [
+        65,
+        69,
+        191,
+        191
+      ],
+      "minimumTransparentBorderPx": 65,
+      "sha256": "0668b0fd1f00bf40ab33ba864e3bedbad7e76e7b9cc9786e156d42d6f26d9df0"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 60,
+      "alphaBounds": [
+        65,
+        76,
+        191,
+        184
+      ],
+      "minimumTransparentBorderPx": 65,
+      "sha256": "ff439d6cafed4a294559d40dd0482a00ed1a0b0af64394361e583d16acd2cee3"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 70,
+      "alphaBounds": [
+        65,
+        84,
+        191,
+        176
+      ],
+      "minimumTransparentBorderPx": 65,
+      "sha256": "acf8d47cee4fbab170bcaa72aadb99a767c2a8c33bf6b9e1eea9e6142aceeaf1"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 20,
+      "alphaBounds": [
+        61,
+        49,
+        193,
+        209
+      ],
+      "minimumTransparentBorderPx": 47,
+      "sha256": "9b3aaa75c98d9e10b55742f200195fec4917ce02f0b5025541458389648fb719"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 30,
+      "alphaBounds": [
+        61,
+        46,
+        193,
+        212
+      ],
+      "minimumTransparentBorderPx": 44,
+      "sha256": "346cc52db4e57e1e92b64791398488c7729bb6cb62db9eb4553e15e687d693f3"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 40,
+      "alphaBounds": [
+        61,
+        46,
+        193,
+        213
+      ],
+      "minimumTransparentBorderPx": 43,
+      "sha256": "f5feda43b3966699dfd60d9ad798e40a4a0440cc9ae70e13b8192eb6db948104"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 50,
+      "alphaBounds": [
+        61,
+        48,
+        193,
+        211
+      ],
+      "minimumTransparentBorderPx": 45,
+      "sha256": "2dc997f973388e2e64ac157ea6b8aa378b3ef58137a9f3176ccb9e520db8b872"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 60,
+      "alphaBounds": [
+        61,
+        52,
+        193,
+        206
+      ],
+      "minimumTransparentBorderPx": 50,
+      "sha256": "00afaa1571cfb810251482065c0d974da6c5e68e48a8265f78eec3a545260da6"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 70,
+      "alphaBounds": [
+        61,
+        58,
+        193,
+        200
+      ],
+      "minimumTransparentBorderPx": 56,
+      "sha256": "9daa64e7a493157b8b013320c5d4111dc55ed6614909a93e0c366098f58b4656"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 20,
+      "alphaBounds": [
+        75,
+        44,
+        179,
+        213
+      ],
+      "minimumTransparentBorderPx": 43,
+      "sha256": "8c689f32ba89374b51acfa97bc29b57ac0427307c0932e4230b3e38a4d9c38ea"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 30,
+      "alphaBounds": [
+        75,
+        39,
+        179,
+        218
+      ],
+      "minimumTransparentBorderPx": 38,
+      "sha256": "56413096bc730c4af158782fa8e7bb34e9e0f1bae8be8406eecd217519c55b40"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 40,
+      "alphaBounds": [
+        75,
+        36,
+        179,
+        220
+      ],
+      "minimumTransparentBorderPx": 36,
+      "sha256": "95f60188aa981482b54f3b429a8ab7bfa737251dc5e5157a32eeeded458bdd42"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 50,
+      "alphaBounds": [
+        75,
+        36,
+        179,
+        220
+      ],
+      "minimumTransparentBorderPx": 36,
+      "sha256": "3434bfd575d49d4d8cb1c8dff7a4c1717b6b91bc7d545c04800c3f1e79fbc4a3"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 60,
+      "alphaBounds": [
+        75,
+        39,
+        179,
+        218
+      ],
+      "minimumTransparentBorderPx": 38,
+      "sha256": "99a2e850ecdedb17439a85c0d397028c38f7844a0b8cd2edfbb2b41698cafe43"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 70,
+      "alphaBounds": [
+        75,
+        45,
+        179,
+        212
+      ],
+      "minimumTransparentBorderPx": 44,
+      "sha256": "8a9a3a6bce24c869e050961acd841fa0431b38609c3e496625e10b8a1af08387"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 20,
+      "alphaBounds": [
+        97,
+        44,
+        151,
+        212
+      ],
+      "minimumTransparentBorderPx": 44,
+      "sha256": "3b8d6caf58136e27fa466610c12617b3979fab8ee6f6d79975c9fea731c26a18"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 30,
+      "alphaBounds": [
+        97,
+        39,
+        151,
+        217
+      ],
+      "minimumTransparentBorderPx": 39,
+      "sha256": "473a466fa8ae8ccf85bb038b3a2a182944c3ac2a24b81887ad837e9a55743f01"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 40,
+      "alphaBounds": [
+        97,
+        37,
+        151,
+        219
+      ],
+      "minimumTransparentBorderPx": 37,
+      "sha256": "5e125b7348503e7383bf886ac4a6a3818283caa282df116b03c7cc0bd1c136f0"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 50,
+      "alphaBounds": [
+        97,
+        38,
+        151,
+        218
+      ],
+      "minimumTransparentBorderPx": 38,
+      "sha256": "79591a0bcbb30e3da895e1bfb4c8afbaad97dd31e25ab5f73f28c2c7f6901192"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 60,
+      "alphaBounds": [
+        97,
+        41,
+        151,
+        215
+      ],
+      "minimumTransparentBorderPx": 41,
+      "sha256": "9af053fccc1afdcda92de894b6b7192afa4ca53898b57494fc7c479788edce5f"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 70,
+      "alphaBounds": [
+        97,
+        47,
+        151,
+        209
+      ],
+      "minimumTransparentBorderPx": 47,
+      "sha256": "512001aaaa19c546a90e76838a46aaffac9331d87f33f7f04968a60591e74337"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 20,
+      "alphaBounds": [
+        75,
+        44,
+        179,
+        212
+      ],
+      "minimumTransparentBorderPx": 44,
+      "sha256": "aa94540192dc247e11fa940a63706842d829086d050254c701397a135e253a3e"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 30,
+      "alphaBounds": [
+        75,
+        38,
+        179,
+        217
+      ],
+      "minimumTransparentBorderPx": 38,
+      "sha256": "99be2511d1ca57b69d787bb8dc8c132c8320ce93f55c94c5b0424762add13a6b"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 40,
+      "alphaBounds": [
+        75,
+        36,
+        179,
+        220
+      ],
+      "minimumTransparentBorderPx": 36,
+      "sha256": "8540cd45945cdad23056d46d30c44563cfd347d62b77a68a698cf08789eee3d1"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 50,
+      "alphaBounds": [
+        75,
+        36,
+        179,
+        220
+      ],
+      "minimumTransparentBorderPx": 36,
+      "sha256": "35ff089e8a47531365375cb4b88a065c7f11b5c993249dc22fe1af15cd419170"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 60,
+      "alphaBounds": [
+        75,
+        38,
+        179,
+        217
+      ],
+      "minimumTransparentBorderPx": 38,
+      "sha256": "a5f3df9d2fd1bbc45bb7f1af04711b70a874d6423774d12d9aead0554f52f741"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 70,
+      "alphaBounds": [
+        75,
+        44,
+        179,
+        211
+      ],
+      "minimumTransparentBorderPx": 44,
+      "sha256": "d9c827c9ca41bdd54ac2c185245fcc2b0adb4615f7751ffcbeb28c9665a10f61"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 20,
+      "alphaBounds": [
+        61,
+        49,
+        193,
+        207
+      ],
+      "minimumTransparentBorderPx": 49,
+      "sha256": "d68bcceea6cdf263c4f9e20d137dc1cf7e504fed83c73e434f0858a6635983c8"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 30,
+      "alphaBounds": [
+        61,
+        45,
+        193,
+        210
+      ],
+      "minimumTransparentBorderPx": 45,
+      "sha256": "c7b8cd2d5c4126d89f1eb8894ab36d2066790baf2c09a86bad7fb3669df50c66"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 40,
+      "alphaBounds": [
+        61,
+        45,
+        193,
+        210
+      ],
+      "minimumTransparentBorderPx": 45,
+      "sha256": "ea4e360edd440851d291ae14ab96bff1da83a57ddea7419722867c5fe43667b1"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 50,
+      "alphaBounds": [
+        61,
+        46,
+        193,
+        208
+      ],
+      "minimumTransparentBorderPx": 46,
+      "sha256": "fda7c452a76de78a5f121d3b0440a6673fb00aa41d83a829474fe280eaee9a67"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 60,
+      "alphaBounds": [
+        61,
+        50,
+        193,
+        204
+      ],
+      "minimumTransparentBorderPx": 50,
+      "sha256": "099ea21368596eaa06a68dd9fa4f449d8112ab8795c1bb74d3b3bb940d0e38f5"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 70,
+      "alphaBounds": [
+        61,
+        57,
+        193,
+        197
+      ],
+      "minimumTransparentBorderPx": 57,
+      "sha256": "b67bef1044f11c876959519ec0598ff4e23676d36e89a9ce6a9fedd38899881e"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 20,
+      "alphaBounds": [
+        65,
+        58,
+        191,
+        198
+      ],
+      "minimumTransparentBorderPx": 58,
+      "sha256": "2380d95e47ee7e28906bf7d4416b6ef7a8581f7ba48b4c24874afc882bb1393c"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 30,
+      "alphaBounds": [
+        65,
+        59,
+        191,
+        196
+      ],
+      "minimumTransparentBorderPx": 59,
+      "sha256": "cea064a9ade049619c06ad3d51e114d3f5d4179dd55aa898bc46a0dd2cb854c0"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 40,
+      "alphaBounds": [
+        65,
+        62,
+        191,
+        193
+      ],
+      "minimumTransparentBorderPx": 62,
+      "sha256": "d2cd5671d788022b45d7591a76bd2ed70a497f9b307bb204bdb9c28b088304b0"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 50,
+      "alphaBounds": [
+        65,
+        67,
+        191,
+        187
+      ],
+      "minimumTransparentBorderPx": 65,
+      "sha256": "12d8366bb7d90cad7645815dde24f95779e4948a2ec79afec5ca2310fbfbef7b"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 60,
+      "alphaBounds": [
+        65,
+        74,
+        191,
+        180
+      ],
+      "minimumTransparentBorderPx": 65,
+      "sha256": "eb51355f008bc1dced0b57eef306bbf7f0bf62ec604b45bfa1fee5ce8ee7fe4a"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 70,
+      "alphaBounds": [
+        65,
+        82,
+        191,
+        172
+      ],
+      "minimumTransparentBorderPx": 65,
+      "sha256": "b25a20c3c01b867542007e32eae794afa72b324d092bad07b6049e93bf8b1448"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 20,
+      "alphaBounds": [
+        63,
+        49,
+        195,
+        207
+      ],
+      "minimumTransparentBorderPx": 49,
+      "sha256": "724b4c7343320d7e168963b3d6b2e67eaaebb1ae1739996c21da2e27f8d84587"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 30,
+      "alphaBounds": [
+        63,
+        45,
+        195,
+        210
+      ],
+      "minimumTransparentBorderPx": 45,
+      "sha256": "12bd1f65a779cc6ba99b2ecad2697eff11da8ea7919012d77f0e1004c454d796"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 40,
+      "alphaBounds": [
+        63,
+        45,
+        195,
+        210
+      ],
+      "minimumTransparentBorderPx": 45,
+      "sha256": "72bae915f19dbcb374b8cb1d9698ac2dd74aed75f0eb94b831a5f68332154b4f"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 50,
+      "alphaBounds": [
+        63,
+        46,
+        195,
+        208
+      ],
+      "minimumTransparentBorderPx": 46,
+      "sha256": "da4745a5b7efeba4c1e26547c05fcac2296960ffd9f1802a933a573ca3a81b45"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 60,
+      "alphaBounds": [
+        63,
+        50,
+        195,
+        204
+      ],
+      "minimumTransparentBorderPx": 50,
+      "sha256": "f21a1e67247e95ac9bf9e840e0a88c50a115582d927f2441eaac8d19d16b2dd6"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 70,
+      "alphaBounds": [
+        63,
+        57,
+        195,
+        198
+      ],
+      "minimumTransparentBorderPx": 57,
+      "sha256": "7ee42ccf0fa079df4e1060fe2464de92d9e0a819ce54d05aa5eb56da7bc5a1fc"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 20,
+      "alphaBounds": [
+        77,
+        44,
+        181,
+        212
+      ],
+      "minimumTransparentBorderPx": 44,
+      "sha256": "aab7ea49054797a68aa8b6ca091311d7bf42f4b6b851cc3d7296e90e104723d2"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 30,
+      "alphaBounds": [
+        77,
+        38,
+        181,
+        217
+      ],
+      "minimumTransparentBorderPx": 38,
+      "sha256": "32c7957680c8c390611485983de553fc1791ae55ad7ad47a336e472d50cba591"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 40,
+      "alphaBounds": [
+        77,
+        36,
+        181,
+        220
+      ],
+      "minimumTransparentBorderPx": 36,
+      "sha256": "8a460e3d76bd4f0546a2593f99763452407460135dd3cfa0fd00544d5b7e6d12"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 50,
+      "alphaBounds": [
+        77,
+        36,
+        181,
+        220
+      ],
+      "minimumTransparentBorderPx": 36,
+      "sha256": "33313f7fb5b5a7bdac4e4290ec8e9869846b2cdeeae58278fd452161d6e34d87"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 60,
+      "alphaBounds": [
+        77,
+        38,
+        181,
+        217
+      ],
+      "minimumTransparentBorderPx": 38,
+      "sha256": "60de2743a718da9b7adf50a6b07ddd92a3386b63b6d0039175139399a87f071a"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 70,
+      "alphaBounds": [
+        77,
+        44,
+        181,
+        211
+      ],
+      "minimumTransparentBorderPx": 44,
+      "sha256": "e4848587fc3295aeb3371502095117b032a1bc7d37da16d1839bf455733492a3"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 20,
+      "alphaBounds": [
+        105,
+        44,
+        159,
+        212
+      ],
+      "minimumTransparentBorderPx": 44,
+      "sha256": "11304a12d01f075c3398bdd5cb7020c23c1005504043696ed03d97dfe532d736"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 30,
+      "alphaBounds": [
+        105,
+        39,
+        159,
+        217
+      ],
+      "minimumTransparentBorderPx": 39,
+      "sha256": "88ec5ed7b069477bdeb78ed74f8b12f272bbb9e45303bf2cfade9995e84405e5"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 40,
+      "alphaBounds": [
+        105,
+        37,
+        159,
+        219
+      ],
+      "minimumTransparentBorderPx": 37,
+      "sha256": "cb9d59f4ba152be6a6c56c30a62343b6c1d0bd56191dc8869154a65b57c71c90"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 50,
+      "alphaBounds": [
+        105,
+        38,
+        159,
+        218
+      ],
+      "minimumTransparentBorderPx": 38,
+      "sha256": "8ff4243b197b60c27ceac44f39631a68c2fe923ac8198c14c37e7ca130befe6f"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 60,
+      "alphaBounds": [
+        105,
+        41,
+        159,
+        215
+      ],
+      "minimumTransparentBorderPx": 41,
+      "sha256": "0d7057b3f35e29ebf96c96297108e6382244bdd58383ca9d9392ac4fc8bb0af3"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 70,
+      "alphaBounds": [
+        105,
+        47,
+        159,
+        209
+      ],
+      "minimumTransparentBorderPx": 47,
+      "sha256": "1e06e9dd00520e8a3cd29a6529c99a6c41299ff57599339b835e51d05910b5e2"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 20,
+      "alphaBounds": [
+        77,
+        44,
+        181,
+        213
+      ],
+      "minimumTransparentBorderPx": 43,
+      "sha256": "6fbc826eced8cefce27da893522fc731852f01fab3a1a5634e9d64464c4412c9"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 30,
+      "alphaBounds": [
+        77,
+        39,
+        181,
+        218
+      ],
+      "minimumTransparentBorderPx": 38,
+      "sha256": "e1c1714e350d6872c4f5b214ba852de83a4d2cdf3b898edd656be87b9077d648"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 40,
+      "alphaBounds": [
+        77,
+        36,
+        181,
+        220
+      ],
+      "minimumTransparentBorderPx": 36,
+      "sha256": "ec72ac7ae01dff96f4b1d79852334d4af60e80a0de87a7240f33aa63b854c643"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 50,
+      "alphaBounds": [
+        77,
+        36,
+        181,
+        220
+      ],
+      "minimumTransparentBorderPx": 36,
+      "sha256": "ed89cebcab4bc4e2386923a658391c9642b640a46e4457132400d7b7f7dafcbe"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 60,
+      "alphaBounds": [
+        77,
+        39,
+        181,
+        218
+      ],
+      "minimumTransparentBorderPx": 38,
+      "sha256": "2ea78e4e633335f1344d5a90a152e7917719e565b5ddff2b612dbebde5d38539"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 70,
+      "alphaBounds": [
+        77,
+        45,
+        181,
+        212
+      ],
+      "minimumTransparentBorderPx": 44,
+      "sha256": "f66cfcdd28b215df567ca6d162ed63fe1329055cee6e2ba3721c118391ce7d63"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 20,
+      "alphaBounds": [
+        63,
+        49,
+        195,
+        209
+      ],
+      "minimumTransparentBorderPx": 47,
+      "sha256": "dd6b51c9ffc23dea76dc413f69bb59221ae5c8480cf52cdba0974ab541aaa641"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 30,
+      "alphaBounds": [
+        63,
+        46,
+        195,
+        212
+      ],
+      "minimumTransparentBorderPx": 44,
+      "sha256": "54d226f192baf6c933a92dc793e581be82d4e3d45044004286eabd2b7c87f7cf"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 40,
+      "alphaBounds": [
+        63,
+        46,
+        195,
+        212
+      ],
+      "minimumTransparentBorderPx": 44,
+      "sha256": "2f961851223ca89e5679bc8140315e197dea93bfe6436992ce59fbe3d7813d6f"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 50,
+      "alphaBounds": [
+        63,
+        48,
+        195,
+        211
+      ],
+      "minimumTransparentBorderPx": 45,
+      "sha256": "48b33fb901194e3c9b4c1be003ad63bf009825e39f441e78163b4f7ea4ec333d"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 60,
+      "alphaBounds": [
+        63,
+        52,
+        195,
+        206
+      ],
+      "minimumTransparentBorderPx": 50,
+      "sha256": "9391aa7878655f75979ff6498aaae3fd1c0a297bd23fb96f284042ed5cd864a1"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 70,
+      "alphaBounds": [
+        63,
+        59,
+        195,
+        199
+      ],
+      "minimumTransparentBorderPx": 57,
+      "sha256": "3bdc76f23c25b0070a3187bf4913eb3d4eec48b17686ed7c1496b95bf9f37489"
+    }
+  ],
+  "retiredUnreferencedSameAssetFrames": [
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+00-elev20.236c8c35cf62.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+00-elev30.10c3a6d13ef4.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+00-elev40.36297a28ce3f.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+00-elev50.c431fe21a457.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+00-elev60.5a99af8b450a.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+00-elev70.d1785bd09b30.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+30-elev20.34ee21bcf645.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+30-elev30.065a6fcd54cb.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+30-elev40.bc1d2607d556.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+30-elev50.389647183e66.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+30-elev60.b8f298d94730.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+30-elev70.9c6fe612c9d8.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+60-elev20.234a4ae88b76.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+60-elev30.529761b016c9.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+60-elev40.0c04c4724122.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+60-elev50.884d954bb578.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+60-elev60.bcc54e912d3d.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+60-elev70.fc9b7709dd09.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+90-elev20.0ed0e118730d.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+90-elev30.91cbeb618846.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+90-elev40.494bb818854f.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+90-elev50.8b019fcad045.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+90-elev60.1391ead8e2bc.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+90-elev70.86c2cb93cc1a.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+120-elev20.3515ad77c8c5.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+120-elev30.34100efd55ab.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+120-elev40.4b657311cf12.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+120-elev50.44413b29ac99.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+120-elev60.f55af2de566b.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+120-elev70.fd0f9cdcbf92.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+150-elev20.0410e412e096.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+150-elev30.102f42a59816.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+150-elev40.cb2ddeb148b8.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+150-elev50.6cf307e74619.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+150-elev60.3d667d65aa55.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+150-elev70.efa27301f6d4.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+180-elev20.cb5a4ff3b90c.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+180-elev30.81050628d84e.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+180-elev40.20c0634a9da9.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+180-elev50.8d8f08bc1181.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+180-elev60.2f9e9b9c24c4.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+180-elev70.6e4b973e18b0.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+210-elev20.1ee44a240948.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+210-elev30.aecc91a95098.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+210-elev40.3cf31897d304.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+210-elev50.c7ed6e7c99bf.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+210-elev60.fd21c5736f28.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+210-elev70.88e0747980bb.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+240-elev20.f72babb4fe84.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+240-elev30.1b5acc58b79a.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+240-elev40.2e593362ab9b.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+240-elev50.bdcd7b746e40.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+240-elev60.86f06d23f33c.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+240-elev70.62bdd692ec95.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+270-elev20.a21c24245e43.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+270-elev30.70fd7ecf2bfe.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+270-elev40.9d9e774ee654.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+270-elev50.6d40bee67758.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+270-elev60.99fd9bc98e91.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+270-elev70.d634d106beec.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+300-elev20.ae9e91805906.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+300-elev30.2b2284f6d297.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+300-elev40.0b310595c5c8.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+300-elev50.cad4236bb978.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+300-elev60.dc390b782f02.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+300-elev70.c391c17bed2c.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+330-elev20.38abde28d9de.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+330-elev30.1727ee244ee4.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+330-elev40.0d7c0d57e106.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+330-elev50.8cb5c83b7626.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+330-elev60.580d6565c55b.png",
+    "public/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+330-elev70.89fecd1263d4.png"
+  ],
+  "allGameContentJSONReferencesScanned": true,
+  "nativeBrowserStarted": false,
+  "serverStarted": false
+}
