@@ -131,3 +131,20 @@ Affected30 files plus the three actual environment/citation consumers passed
 protocol, schema, UI, native fixtures, workflows and test configuration have no
 changes in this follow-up. Final complete result is recorded after its bounded
 verification, without a browser/server/build/native claim.
+
+The coherent consumer correction was published as
+`e845dd4a5b5eb3147641afb8dfe948ded59fe768`. Its ONE final complete run is
+**8609 GREEN /1 inherited ADR0031 RED /8 unchanged skips**,734 files
+(733 GREEN/1 RED),102.84s. The total8618 cases is unchanged from the original
+complete result. All247 other original failures are resolved:226 stale current
+consumer assumptions,20 Bash environment failures and one published-ref lookup
+environment failure. No production fault was demonstrated, and production
+source/schema/protocol/UI/browser/config/workflow diff against7b20 is empty.
+
+The remaining quotation failure names only the inherited ADR0031 selector;
+root independently corrected its actual CSS line2330→2336 and obtained12 GREEN.
+That separate root patch is intentionally absent from this own branch and its
+original complete result. No optional complete-suite reruns followed the final
+outcome. The30 changed files retain the same number of actual expect calls and
+skip declarations; raw counters accompany the reviewed narrow diffs rather
+than claiming that counts alone prove assertion strength.
