@@ -5,6 +5,8 @@
     "./minimap-geometry-probe.ts",
     "./camera-variant-native.ts",
     "./camera-variant-native-recipe.ts",
+    "./camera-variant-review.spec.ts",
+    "./playwright.review.config.ts",
     "./vitest.config.ts"
   ]
 }

@@ -55,9 +55,10 @@ export function installCameraReviewVariant(options: {
       trigger?.focus({ preventScroll: true });
     });
   }
-  const style = document.createElement('style');
-  style.dataset['cameraReview'] = options.variant;
-  style.textContent = `
+  // The built page deliberately rejects inline style tags via CSP. Use the
+  // browser's CSSOM for this authorized transient DOM review; keep CSP intact.
+  const style = new CSSStyleSheet();
+  style.replaceSync(`
     .camera-review-toolbox {
       position: fixed; z-index: 4; display: flex; flex-wrap: wrap;
       align-content: flex-start; align-items: flex-start; gap: var(--space-2);
@@ -72,8 +73,8 @@ export function installCameraReviewVariant(options: {
       flex: 0 0 auto; flex-wrap: wrap; max-width: 100%;
     }
     .camera-review-trigger { font: inherit; padding-inline: var(--space-1); flex: none; pointer-events: auto; }
-  `;
-  document.head.append(style);
+  `);
+  document.adoptedStyleSheets = [...document.adoptedStyleSheets, style];
   function position() {
     const tabs = document.querySelector('.hud__tabs')?.getBoundingClientRect();
     const strip = document.querySelector('.hud-strip')?.getBoundingClientRect();
@@ -89,6 +90,13 @@ export function installCameraReviewVariant(options: {
   }
   position();
   window.addEventListener('resize', position);
+  // Interface scale changes these public boxes without resizing the window.
+  // An always-open toolbox must follow the same bounds as opening disclosure.
+  const boundsObserver = new ResizeObserver(position);
+  for (const selector of ['.hud-strip', '.hud__tabs', '.hud__rail']) {
+    const bounds = document.querySelector(selector);
+    if (bounds) boundsObserver.observe(bounds);
+  }
   return {
     variant: options.variant, controlsReused: true,
     panButtons: pan.querySelectorAll('button').length,
@@ -139,7 +147,12 @@ export async function assertCameraAndAlertFloors(page: Page, scale: 1 | 2, varia
       controls: controls.map(element => {
         const rect = element.getBoundingClientRect();
         const hit = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
-        return { width: rect.width, height: rect.height, owned: hit === element || (hit !== null && element.contains(hit)) };
+        return {
+          classes: element.className, label: element.getAttribute('aria-label'), rect: rect.toJSON(),
+          width: rect.width, height: rect.height,
+          hit: hit ? { tag: hit.tagName, classes: hit.className } : null,
+          owned: hit === element || (hit !== null && element.contains(hit)),
+        };
       }),
     };
   });
@@ -155,7 +168,7 @@ export async function assertCameraAndAlertFloors(page: Page, scale: 1 | 2, varia
   for (const control of observations.controls) {
     expect(control.width).toBeGreaterThanOrEqual(44 * scale - 0.1);
     expect(control.height).toBeGreaterThanOrEqual(44 * scale - 0.1);
-    expect(control.owned).toBe(true);
+    expect(control.owned, JSON.stringify(control)).toBe(true);
   }
   return observations;
 }
