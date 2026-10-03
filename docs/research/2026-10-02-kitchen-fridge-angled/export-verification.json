@@ -1,0 +1,14 @@
+{
+  "repeatFiles": 73,
+  "allBytesEqual": true,
+  "manifestSha256": "6b3da7c72dd1ac07375791f16b4c12912373af08e01c179563966f61ea1d0417",
+  "originalSourceSha256": "44bf77f85241539e9ada8bd584c850738f467f3fea244877f3eb47a2d0a6df76",
+  "dedicatedSourceSha256": "d85097c30f524948f3e3c9c82d0a15b11eea956a680227569c37d6e52a6a52bc",
+  "smallestTransparentBorderPixels": 43,
+  "contactSheetSha256": "b34698975efe1defe484552179a3afc25a46a0b5100caf4fc9abe9cb8af2935f",
+  "pngMutation": {
+    "actualNegativeExitCode": 1,
+    "exactRestoredExitCode": 0,
+    "exactPngBytesRestored": true
+  }
+}

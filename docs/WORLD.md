@@ -115,7 +115,7 @@ pricing, selection and UI; it is not the ownership test.
 - Checks terrain properties (e.g. `requiresBuildableTerrain`, `allowWater`).
 
 It has three production callers, each supplying its own requirement set:
-`ConstructionSystem.submitOrder` (`src/simulation/construction/system.ts:675`,
+`ConstructionSystem.submitOrder` (`src/simulation/construction/system.ts:709`,
 inside `admits`, with `SUBMISSION_REQUIREMENT`), `ObjectPlacementService`
 (`src/simulation/objects/object-placement-service.ts:535`,
 `PLACEMENT_REQUIREMENT`) and room zoning (`src/simulation/rooms/zoning.ts:559`,
@@ -138,6 +138,16 @@ submission**, so a wall may currently be ordered on water or on rock. Turning
 either on is its own gameplay decision, and `SUBMISSION_REQUIREMENT` in
 `src/simulation/construction/system.ts` is where it would be taken.
 
+**Generic object-order source amendment at checkpoint ca785768fd.** The preceding
+`system.ts:675`, `:592` and `:671` indications remain historical before the
+full-footprint submission guard. The live call quotes `SUBMISSION_REQUIREMENT`;
+the edge admission rule is unchanged.
+
+**Object footprint admission amendment at checkpoint 81dc3159f4.** The prior
+`system.ts:691` and `:687` indications remain historical before extending
+existing bounds/ownership admission to every physically occupied object tile.
+The live call still quotes `SUBMISSION_REQUIREMENT`; terrain stays deferred.
+
 ### An edge order is judged by both tiles the edge separates
 
 An *edge* order is permitted when **either** of the two tiles the edge
@@ -146,7 +156,7 @@ of both and satisfied by either. The world keeps one slot per edge and keeps it
 on the north and west side, so the south face of owned land is addressed as the
 north edge of the first unowned row and its east face as the west edge of the
 first unowned column; `ConstructionSystem.submitOrder`
-(`src/simulation/construction/system.ts:592`, `public submitOrder`) asks `admits` (`:671`) about the
+(`src/simulation/construction/system.ts:594`, `public submitOrder`) asks `admits` (`:705`) about the
 order's own tile and, only if that refuses, about the tile across the named
 edge. Non-edge buildables are unaffected — an object is addressed by a tile and
 has no far side, which is what `occupiesTileEdge` decides — and the refusal the

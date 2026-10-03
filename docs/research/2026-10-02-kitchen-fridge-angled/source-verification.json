@@ -1,0 +1,46 @@
+{
+  "nativeMutations": [
+    {
+      "mutation": "omit-added-grille",
+      "actualExitCode": 1,
+      "failure": [
+        "ValueError: Dedicated fridge authored mesh set changed"
+      ]
+    },
+    {
+      "mutation": "added-vent-outside-footprint",
+      "actualExitCode": 1,
+      "failure": [
+        "ValueError: Dedicated fridge evaluated source bounds changed"
+      ]
+    },
+    {
+      "mutation": "incorrect-unit-fit",
+      "actualExitCode": 1,
+      "failure": [
+        "ValueError: Dedicated fridge actual loaded transform is not unit-scale anchor translation"
+      ]
+    },
+    {
+      "mutation": "wrong-camera-span",
+      "actualExitCode": 1,
+      "failure": [
+        "ValueError: Dedicated Kitchen fridge actual camera scale is not 64 pixels per tile"
+      ]
+    },
+    {
+      "mutation": "wrong-camera-position",
+      "actualExitCode": 1,
+      "failure": [
+        "ValueError: Dedicated Kitchen fridge actual camera target/yaw basis differs from declared square pose"
+      ]
+    }
+  ],
+  "nativeExactRestoredExitCode": 0,
+  "wrapperExactRestoredBytesEqual": true,
+  "wrapperSha256": "9551d4aca9057ddb230a9626d99c676395d3f096c24efcb10671069ed1d93327",
+  "originalSourceSha256": "44bf77f85241539e9ada8bd584c850738f467f3fea244877f3eb47a2d0a6df76",
+  "dedicatedSourceSha256": "d85097c30f524948f3e3c9c82d0a15b11eea956a680227569c37d6e52a6a52bc",
+  "production72PoseRepeat": "pending",
+  "nativePlayerAcceptance": "pending; browser lease HUD"
+}

@@ -1,3 +1,5 @@
+import { defaultObjectRegistry } from '../../content/object-catalog';
+import { objectFootprintTiles } from '../objects/placed-object';
 import { type SystemRegistration, type SimulationContext } from '../kernel/system';
 import { type BuildEdge, type BuildOrder, type BuildOrderFailReason, compareBuildOrderExecution, resolveBuildEdge } from './build-order';
 import { BUILDABLE_REGISTRY, type BuildableDefinition, type MaterialRequirement, edgeNumericIdFor, getBuildableDefinition, occupiesTileEdge } from './definition';
@@ -644,6 +646,20 @@ export class ConstructionSystem implements SystemRegistration {
       return;
     }
 
+    // The generic build-order entry must respect the same physical object
+    // claims as PlaceObject, including the non-anchor squares of either model.
+    // Bare construction fixtures retain their existing optional-reader path.
+    if (this.objectFootprintClaims !== undefined && definition.placesObjectId !== undefined) {
+      const object = defaultObjectRegistry.getById(definition.placesObjectId);
+      if (object !== undefined && objectFootprintTiles(object, order.location, order.objectOrientation ?? 0)
+        .some((tile) => this.objectFootprintClaims?.(tile) === true)) {
+        this.setState(order, 'failed');
+        order.failReason = 'unbuildable';
+        this.orders.set(order.id, order);
+        return;
+      }
+    }
+
     const refusal = this.admits(order.location);
     if (refusal !== undefined) {
       const across = order.footprint !== 'square' && occupiesTileEdge(definition)
@@ -653,6 +669,24 @@ export class ConstructionSystem implements SystemRegistration {
         order.failReason = refusal;
         this.orders.set(order.id, order);
         return;
+      }
+    }
+
+    // Object geometry occupies every footprint square, not only its anchor.
+    // Use the same bounds/ownership requirement as admission above: terrain
+    // remains deliberately deferred, and edge geometry keeps its either-side rule.
+    if (definition.placesObjectId !== undefined) {
+      const object = defaultObjectRegistry.getById(definition.placesObjectId);
+      if (object !== undefined) {
+        for (const tile of objectFootprintTiles(object, order.location, order.objectOrientation ?? 0)) {
+          const footprintRefusal = this.admits(tile);
+          if (footprintRefusal !== undefined) {
+            this.setState(order, 'failed');
+            order.failReason = footprintRefusal;
+            this.orders.set(order.id, order);
+            return;
+          }
+        }
       }
     }
 

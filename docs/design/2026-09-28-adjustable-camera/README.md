@@ -1055,3 +1055,105 @@ Native Kitchen/View/drag acceptance above predates this worker-only removal fix,
 so those earlier client bytes are not presented as acceptance of the later fix.
 PR1972 remains the next delivery after the frozen PR1899 candidate; the fridge
 is still an independent model and native acceptance task.
+## Following delivery: retain keyboard-armed fitted origin — 2026-10-02
+
+The next isolated integration starts from published PR1972 candidate
+`41998ff60f013c099a2337dcd64172aa0ab12c34`, keeping both preceding release
+candidates frozen while their exact-head CI runs. Root independently reproduced
+two actual-math controller failures in 285 ms with four inherited controls green:
+a retained hover at 17,13 shifts to 21,15 or 26,11 on the first stationary click
+for a 7x16 or 16x7 fitted row. The approved rule keeps the chosen origin until
+physical movement, so a stationary confirmation must not select another square.
+
+The narrow controller fix records the retained screen anchor before fitting pans
+the camera. Genuine physical movement still clears the lock; a new positive
+control preserves that behavior. Root's focused controller verification passes
+seven cases in 242 ms after integration. The agent's independent producer
+reversion fails both new cases, followed by exact byte restoration. A native
+keyboard-arming/click/worker-origin fixture is prepared, but native acceptance
+and an actual player-level Issue remain pending the exclusive browser slot.
+Fridge geometry/export work and separate simulation collision coverage continue
+on independent branches; no hosted or complete-suite claim is made here.
+## Following delivery: dedicated fridge model integrated — 2026-10-02
+
+The fridge retains its nine original meshes and six materials, adding 64 physical
+hinges, seals, grilles and louvres. Its measured 1x1 anchor and 72 repeatable
+camera poses preserve the actual occupied square. Both upstream native Kitchen
+orientations finish through the worker and survive player Save/Load; removing
+only the fridge consumer fails four isolated pixel checks per orientation.
+Exact restored acceptance passes three cases. Root opened the final loaded
+rotated Full HD image: the blue panel and side louvres are visible, while the
+door genuinely hides the lower front grille.
+[Fridge evidence](../../research/2026-10-02-kitchen-fridge-angled/README.md)
+retains source/export receipts, initial calibration failures and exact restore.
+
+Root preserved the newer stove tuple while merging only the shared fridge row.
+The combined fridge/stove integrity, camera-fit, world-bridge, routing and index
+scope passes 39 cases across eight files in 584 ms. An initial index pass found
+one new fridge row separated from the table by a blank line; moving that row
+inside the contiguous table restores the unchanged guard. Both TypeScript
+targets pass. Fridge and retained-hover specs join the complementary native
+artifact partition; integrated browser acceptance is next, with one exclusive
+browser worker and the original budgets. These new changes stay on this next
+branch, so neither PR1899 nor PR1972 is repeatedly replaced during CI.
+## Combined Kitchen and fitted-origin player acceptance — 2026-10-02
+
+Root's actual production client prepared at `471c42468f`, with worker
+`worker-BpBnawSv.js`, client `index-CiIOhJZe.js` and retained
+`index-BtHvjcB7.css`, passes ten native browser cases in 4.7 minutes.
+The subsequent `8b3096c888` changes routing/index/plan, not client source.
+Both dedicated fridge and stove complete in actual normal and rotated Kitchen
+and retain their anchors, orientation and distinct visible detail pixels through
+player Save/Load: six cases. The new fridge tuple preserves the newer stove
+source, so this combined run verifies both consumers in the same integration.
+
+Four Full HD 100%/200% cases arm the mirrored four-cell row by keyboard, retain
+all 112 displayed squares and the worker quote at origin 15,12, then perform a
+stationary native mouse press/release. All keep the same target and submit
+exactly one matching PlaceRoomTemplate command in 0/90-degree orientations.
+Real physical movement repicks the target, and Escape cancels without another
+placement. The independent original and producer-only negative runs each fail
+all four cases at changed pointerdown origins; they do not claim construction
+completed in the wrong location.
+[Retained-hover evidence](../../research/2026-10-02-retained-hover-preview-fit/README.md)
+records exact producer byte restoration and native source boundaries.
+
+This is scoped local built-Chromium acceptance with one worker and unchanged
+budgets, not full hosted CI or deployment. Root's browser handle is terminal;
+the next Blender prep-counter task receives the exclusive browser slot after
+its offline source/export checks. Prior PR1899 and PR1972 remain frozen while
+their exact-head browser gates run. Ownership Issue1975 is a separate owner
+proposal; no new saved ownership field, migration or refusal copy is implemented.
+## Whole-square admission release checkpoint — 2026-10-02
+
+This third integration independently reproduces the generic-object far-square
+ownership bypass before its source fix: two failed PlaceBuildOrder cases with six
+legal controls green in 2.64 s. The ordinary PlaceObject route already refuses
+both saved frontier cases. Every incoming object footprint square now passes the
+existing bounds/ownership admission before approval; the preceding collision
+check also keeps all claimed furniture squares unavailable. Terrain permission
+remains deliberately deferred, including the real owned rock/water controls.
+No persistent field, owner migration or player copy is added.
+
+Root's final combined admission, paused removal, manual-door, collective refund,
+fit, fridge/stove integrity and four documentation gates pass 99 cases in eleven
+files (39.06 s), followed by all 24 actual generic collision controls (3.65 s).
+Both TypeScript targets and the real named production build pass at source
+`66f1271a5b`: worker `worker-ZJIkVaeZ.js` (435.85 kB), client
+`index-CH_kwFP_.js`, existing CSS `index-BtHvjcB7.css`. The ten native Kitchen/fit
+cases above predate this worker admission change; their earlier client identity
+is retained rather than presented as native coverage of the later change.
+[Collision record](../../research/2026-10-02-generic-object-build-footprint.md)
+and [ownership admission](../../research/2026-10-02-object-footprint-admission.md)
+retain producer-only negatives and exact restoration.
+
+PR1899's browser job ended cancelled at its existing 90-minute cap: 330 passed,
+38 failed and four serial did-not-run reports were retained before cancellation.
+Verification and asset jobs passed. The failures include stale HUD selectors and
+a test-only texture lookup reading the former renderer key map; the actual
+failed traces are being investigated on a separate source-matched branch.
+No timeout, retry or assertion relaxation is authorized by this checkpoint.
+PR1972 remains a separate stacked candidate. This following delivery is ready
+for a draft PR; hosted delivery still requires repaired complete exact-head CI,
+clean mergeability and serial green main CI. Blender prep-counter acceptance is
+published separately and is not silently added to a frozen release candidate.

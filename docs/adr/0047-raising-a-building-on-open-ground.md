@@ -268,14 +268,22 @@ feature with a reader and no producer.
   (`src/simulation/construction/definition.ts:6`). `wall-brick` is the only
   `'wall'`; a door is an `'object'` row carrying `placesDoor`.
 - Cancelling a `completed` order reverses its geometry
-  (`src/simulation/construction/system.ts:1141`, `revertConstruction`, defined at
-  `:2151`), rewriting the edge from any other completed order that still claims
+  (`src/simulation/construction/system.ts:1175`, `revertConstruction`, defined at
+  `:2185`), rewriting the edge from any other completed order that still claims
   it rather than clearing it.
+- **Object footprint admission amendment at checkpoint 81dc3159f4.** The prior
+  `system.ts:1157` and `:2167` indications remain historical before extending
+  existing bounds/ownership admission to every object tile. The live call and
+  implementation still quote `revertConstruction` and `private revertConstruction`.
+- **Generic object-order source amendment at checkpoint ca785768fd.** The
+  preceding `system.ts:1141` and `:2151` indications remain historical before
+  the full-footprint submission guard. The live cancellation call still quotes
+  `revertConstruction`; its implementation is `private revertConstruction`.
 - **2026-10-02 source amendment.** The earlier `system.ts:1044` through `:1046`
   and `:1966` coordinates are historical indications, retained here rather than
   erased. The current cancellation call is `revertConstruction` above; its
   implementation is `private revertConstruction` at
-  `src/simulation/construction/system.ts:2151`. The earlier numbered span had
+  `src/simulation/construction/system.ts:2185`. The earlier numbered span had
   already drifted into a comment, so the amended anchor names the actual call.
   **Occupied-template source amendment at checkpoint 322cb5e5a4:** the previous
   `system.ts:1120` and `:2092` coordinates remain historical indications before
