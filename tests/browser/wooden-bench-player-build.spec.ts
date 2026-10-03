@@ -3,6 +3,7 @@ import { writeFile } from 'node:fs/promises';
 import { openCameraControls } from './public-camera-controls';
 import { expect, test as base, type Page } from './network-changed-fixture';
 import { installTee, sentCommands, currentClock } from './playtest-harness';
+import { observeCanteenImages, CANTEEN_BENCH_FRAME } from './canteen-dining-table-evidence';
 import { assertBenchProducer, observeBenchNetwork, type BenchSnapshotData } from './wooden-bench-crossrails-evidence';
 
 interface ProbeWindow extends Window {
@@ -154,6 +155,7 @@ test('player creates storage and delivery capacity before Holding Cell', async (
 for (const quarterTurns of [0, 1] as const) {
 test(`player builds Holding Cell at quarterTurns${quarterTurns} and retains authored timber palette after Save/Load`, async ({ page }, info) => {
   expect(routeStorage, 'this case consumes the first stage actual IndexedDB save').toBeDefined();
+  const realLoaderImages = await observeCanteenImages(page);
   const network = observeBenchNetwork(page);
   networkCaptures.set(page,network);
   await installWorkerProbe(page);
@@ -239,6 +241,10 @@ test(`player builds Holding Cell at quarterTurns${quarterTurns} and retains auth
   await page.mouse.up({button:'right'});
   await minimap.click({ position: { x: bounds.width * 23 / 32, y: bounds.height * 8 / 32 } });
   const networkEvidence = await network.evidence(info,quarterTurns);
+  await expect.poll(async () => (await realLoaderImages()).images.some(image =>
+    image.sha256 === CANTEEN_BENCH_FRAME.sha256 && image.complete && !image.error && image.width === 256 && image.height === 256)).toBe(true);
+  const actualLoader = await realLoaderImages();
+  expect(actualLoader.errors).toEqual([]);
   await page.mouse.move(1300,700);
   await page.screenshot({path:info.outputPath('bench-connected-rails-local60-elev40-loaded-fullhd.png')});
   const detailData = await recordBenchSnapshot(page,info.outputPath('bench-detail-whole-paused-worker-snapshot.json'));
@@ -247,7 +253,7 @@ test(`player builds Holding Cell at quarterTurns${quarterTurns} and retains auth
     quarterTurns,cameraRightButtons:quarterTurns===0?7:1,rightButtonDragFrom:[1200,650],rightButtonDragTo:[1200,667],
     expectedGlobalYawDegrees:quarterTurns===0?60:-30,expectedLocalObjectYawDegrees:60,
     expectedGlobalElevationDegrees:45-17*.005*180/Math.PI,selectedSourcePose:[60,40],
-    networkEvidence,hardwareRoiMeasured:false,sourcePreviewSubstitutedForNative:false,
+    networkEvidence,actualLoader,hardwareRoiMeasured:false,sourcePreviewSubstitutedForNative:false,
   },null,2));
 
 });
