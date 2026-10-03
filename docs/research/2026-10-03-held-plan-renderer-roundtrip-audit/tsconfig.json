@@ -1,0 +1,7 @@
+{
+  "extends": "../../../tsconfig.json",
+  "include": [
+    "./held-roundtrip.test.ts",
+    "./vitest.config.ts"
+  ]
+}
