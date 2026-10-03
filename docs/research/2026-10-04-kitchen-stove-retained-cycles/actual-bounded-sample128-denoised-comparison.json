@@ -1,0 +1,16 @@
+[
+  {
+    "yaw": 60,
+    "samples": 128,
+    "denoising": true,
+    "seconds": 4.1253162999637425,
+    "sha256": "2c45a7fe165699ebdf209ba6a092956d9e8097d3095bc5f09dd35b9344749d65"
+  },
+  {
+    "yaw": 300,
+    "samples": 128,
+    "denoising": true,
+    "seconds": 3.786322299973108,
+    "sha256": "aed487667fa98273e0110f43295fa78f196edffb4415397f37d2797321f6ab1e"
+  }
+]
