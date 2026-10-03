@@ -44,3 +44,30 @@ it('reserves a pending template interior against an ordinary square wall', () =>
   expect(restored.placedObjects.isTileOccupied({ x: tileCoordinate(11), y: tileCoordinate(11) })).toBe(true);
   expect(restored.world.getSquareStructure({ x: tileCoordinate(11), y: tileCoordinate(11) })).toBe(0);
 }, 120000);
+
+it('refuses a square wall through a completed multi-tile furniture footprint (#1705)', () => {
+  const runtime = createNewSimulationRuntime(73);
+  runtime.kernel.submitCommand('template', 0, runtime.kernel.tick, packCommand({
+    type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 10, y: 10 },
+  }));
+  for (let tick = 0; tick < 30000; tick += 1) {
+    runtime.kernel.step();
+    if (runtime.roomTemplates.snapshot().pending.length === 0) break;
+  }
+  runtime.kernel.submitCommand('desk', 1, runtime.kernel.tick, packCommand({
+    type: 'PlaceObject', orderId: 'desk', definitionId: 'desk-wooden', x: 12, y: 12,
+  }));
+  runtime.kernel.step();
+  for (let tick = 0; tick < 30000; tick += 1) {
+    runtime.kernel.step();
+    if (runtime.construction.getOrder('desk')?.state === 'completed') break;
+  }
+  expect(runtime.construction.getOrder('desk')).toMatchObject({ state: 'completed' });
+  expect(runtime.placedObjects.isTileOccupied({ x: 13, y: 12 })).toBe(true);
+  runtime.kernel.submitCommand('wall', 2, runtime.kernel.tick, packCommand({
+    type: 'PlaceBuildOrder', orderId: 'wall', definitionId: 'wall-brick', x: 13, y: 12, footprint: 'square',
+  }));
+  runtime.kernel.step();
+  expect(runtime.construction.getOrder('wall')).toMatchObject({ state: 'failed', failReason: 'unbuildable' });
+  expect(runtime.placedObjects.isTileOccupied({ x: 13, y: 12 })).toBe(true);
+}, 120000);
