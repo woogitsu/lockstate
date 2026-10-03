@@ -1,0 +1,4 @@
+{"mode":"world","replacement":"new","oldPreflightReplyDropped":true,"status":"This footprint is clear.","disabled":false,"actualCommands":[{"type":"PlaceRoomTemplate","templateId":"cell-basic","origin":{"x":20,"y":5},"quarterTurns":1}],"orders":18}
+{"mode":"world","replacement":"load","oldPreflightReplyDropped":true,"status":"This footprint is blocked. Choose another position. (20, 5)","disabled":true,"actualCommands":[],"orders":18}
+{"mode":"oblique","replacement":"new","oldPreflightReplyDropped":true,"status":"This footprint is clear.","disabled":false,"actualCommands":[{"type":"PlaceRoomTemplate","templateId":"cell-basic","origin":{"x":20,"y":5},"quarterTurns":1}],"orders":18}
+{"mode":"oblique","replacement":"load","oldPreflightReplyDropped":true,"status":"This footprint is blocked. Choose another position. (20, 5)","disabled":true,"actualCommands":[],"orders":18}

@@ -1,0 +1,44 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-template-numeric-session-20261003
+
+ ❯ tests/unit/ui-template-numeric-session-readiness.test.ts (4 tests | 2 failed) 99ms
+   × world/load: legal close-session-reopen numeric verdict belongs to real replacement worker 12ms
+   × oblique/load: legal close-session-reopen numeric verdict belongs to real replacement worker 8ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-template-numeric-session-readiness.test.ts > world/load: legal close-session-reopen numeric verdict belongs to real replacement worker
+ FAIL  tests/unit/ui-template-numeric-session-readiness.test.ts > oblique/load: legal close-session-reopen numeric verdict belongs to real replacement worker
+SnapshotRestoreRejectedError: Simulation worker fault (snapshot-incompatible): Snapshot could not be restored: World snapshot must be an object.
+ ❯ WorkerSessionHost.startFromSnapshot src/persistence/session/worker-session-host.ts:161:15
+    159|       }
+    160|       if (reason !== undefined) {
+    161|         throw new SnapshotRestoreRejectedError(reason, error.message, …
+       |               ^
+    162|       }
+    163|       if (error.code === 'snapshot-incompatible') {
+ ❯ WorkerPerSessionHost.startFromSnapshot src/persistence/session/worker-per-session-host.ts:98:5
+ ❯ tests/unit/ui-template-numeric-session-readiness.test.ts:111:57
+
+Caused by: WorkerFaultError: Simulation worker fault (snapshot-incompatible): Snapshot could not be restored: World snapshot must be an object.
+ ❯ WorkerSessionHost.handleMessage src/persistence/session/worker-session-host.ts:82:20
+ ❯ src/persistence/session/worker-session-host.ts:69:47
+ ❯ InProcessClient.emit tests/unit/ui-template-numeric-session-readiness.test.ts:37:79
+ ❯ Object.postMessage tests/unit/ui-template-numeric-session-readiness.test.ts:31:15
+ ❯ SimulationWorkerStateMachine.post src/simulation/worker/state-machine.ts:433:15
+ ❯ SimulationWorkerStateMachine.fault src/simulation/worker/state-machine.ts:1028:10
+ ❯ SimulationWorkerStateMachine.handleInitialize src/simulation/worker/state-machine.ts:1269:21
+ ❯ SimulationWorkerStateMachine.handleMessage src/simulation/worker/state-machine.ts:1120:16
+ ❯ InProcessClient.send tests/unit/ui-template-numeric-session-readiness.test.ts:35:78
+ ❯ src/persistence/session/worker-session-host.ts:97:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'snapshot-incompatible', details: { snapshotRestore: 'damaged-payload' } }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 2 passed (4)
+   Start at  09:08:55
+   Duration  6.37s (transform 3.70s, setup 0ms, import 6.14s, tests 99ms, environment 0ms)
+
