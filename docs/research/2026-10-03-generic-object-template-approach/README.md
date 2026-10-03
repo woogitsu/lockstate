@@ -77,3 +77,42 @@ Restored production SHA256:
 
 Expanded orientation, neighbouring compatibility and documentation gates are
 pending at this first source checkpoint. There is no browser/CI claim.
+## Terminal expanded source checkpoint
+
+VERIFIED:32/32GREEN, total4.00s, across all four quarter turns and both
+mirrors, live and encoded V8Load. Expected exterior points come from a literal
+4x7 Cell transform, not the production geometry helper. Each legal adjacent
+purchase then finishes, retains its exact sourceOrderId, survives encoded
+Load, undoes independently leaving the original two template fixtures and
+completed gesture, and redoes after another encoded Load.
+
+Expanded actual producer negatives preserve16RED/16legalGREEN each: System
+predicate total4.55s; session binding total4.98s. Both finally restores reproduce
+the SHA256 above. The earlier8-case restored run was8GREEN2.62s.
+
+Restored neighbouring verification:389GREEN in10files, total26.83s, two
+workers. Exact paths:
+- tests/integration/generic-object-template-approach.test.ts
+- tests/integration/room-template-rotated-history.test.ts
+- tests/integration/build-order-object-collision-boundary.test.ts
+- tests/integration/completed-square-incoming-object-footprint.test.ts
+- tests/integration/pending-square-wall-incoming-object.test.ts
+- tests/integration/room-template-completed-furniture-access.test.ts
+- tests/integration/template-deferred-history-order.test.ts
+- tests/unit/construction.test.ts
+- tests/unit/construction-geometry.test.ts
+- tests/unit/construction-doors.test.ts
+
+The existing all-catalogue rotated lifecycle test is included specifically to
+check that the new admission reader does not self-block deferred furnishing;
+it is compatibility evidence, not a newly discovered matrix gap. Existing
+edge/door and bare ConstructionSystem controls remain unchanged and GREEN.
+App and tools TypeScript exit0; production client build6.85sGREEN with existing
+size/plugin timing warnings. Source diff0 after exact restore and source commit.
+
+Documentation first pass:60GREEN/2RED in8files, total21.66s: quotation gate
+reports the three granted shifted docs; published-commit gate lacks the local
+own remote tracking ref for the already pushed parentdb745. An explicit
+bounded fetch of this own published branch restores that ref. No publication
+or citation guard change is proposed. Only measured live coordinates and own
+index row will be corrected in the next separate documentation checkpoint.
