@@ -1,0 +1,32 @@
+{
+  "base": "32c28ff27d2f30957ba207a65a722a57a08f5778",
+  "subject": "45e3215edd76606dbe690e60eadc1702cc5e4cd5",
+  "source": {
+    "cases": 766,
+    "files": 107
+  },
+  "sourcePartitions": [
+    {
+      "cases": 236,
+      "files": 45
+    },
+    {
+      "cases": 530,
+      "files": 62
+    }
+  ],
+  "artifact": {
+    "cases": 2,
+    "files": 1,
+    "duration": "UNMEASURED",
+    "collections": 1
+  },
+  "exactMetadataUnion": true,
+  "noDuplicateIds": true,
+  "wholeFiles": true,
+  "exactPhysicalSpecInventory": true,
+  "fullyParallel": false,
+  "workersPerRunner": 1,
+  "browserOrServerLaunched": false,
+  "buildExit": 0
+}
