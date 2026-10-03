@@ -56,6 +56,33 @@
       "skipped": 0,
       "unexpected": 0,
       "flaky": 0
+    },
+    {
+      "name": "max-original-import",
+      "startTime": "2026-10-03T22:15:46.232Z",
+      "duration": 2168.62,
+      "expected": 0,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    {
+      "name": "max-original-status",
+      "startTime": "2026-10-03T22:25:08.746Z",
+      "duration": 17709.63,
+      "expected": 0,
+      "skipped": 0,
+      "unexpected": 1,
+      "flaky": 0
+    },
+    {
+      "name": "max-corrected",
+      "startTime": "2026-10-03T22:27:46.335Z",
+      "duration": 12744.409,
+      "expected": 1,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
     }
   ]
 }

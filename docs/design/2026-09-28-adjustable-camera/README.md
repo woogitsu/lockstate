@@ -1766,3 +1766,11 @@ checks. Three independent lanes cover Kitchen Blender production, the public
 extreme-counter boundary, and the reproduced open-View auto-Fit occlusion
 [#2026](https://github.com/woogitsu/lockstate/issues/2026). No model sample,
 partial gate or source-only reproduction is called a completed release.
+
+2026-10-04: the actual public V9 MAX → one queue Cancel → V10 Export/Load
+boundary is GREEN on the frozen85f4471 client: exact next token,80 refund,
+whole state and five fixture owners retained. Laundry's full three native
+routes also pass. Root is integrating subsequent Common Room/Kitchen matrices
+and the prepared public open-View Fit fix; current three lanes cover Kitchen
+fridge art, Fit runtime preparation and concrete historical-failure triage.
+Complete exact-head release gates still follow the integrated real game.

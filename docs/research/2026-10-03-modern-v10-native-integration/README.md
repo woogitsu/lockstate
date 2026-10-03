@@ -40,6 +40,12 @@ replacement renderer, timeout extension or weaker pixel floor is introduced.
 - Laundry: all three original capacity/q0/q1 cases GREEN, including independent
   linen-rack purchases, exact distinct material-purchase UUID identity, genuine
   model delivery/Blob receipt and whole paused V10 Export/Load equality.
+- Historical MAX import: one GREEN actual public V9 Import → queue Cancel →
+  Save/Export V10 → Load case. The exact token advances from
+  `"9007199254740991"` to `"9007199254740992"`, with exactly one command-v2
+  submission, an80 refund (20215→20295), all five physical fixture owners and
+  the whole paused exported/restored payload retained. This is immediate
+  paused cancellation, not the separate running600ms race.
 
 All actual reports, screenshots, worker replies and native input traces are in
 [the archive](./native/capture-aliases.json), including their source and archived
@@ -49,7 +55,16 @@ required capacity stage and failed before game purchase; its original report
 is retained separately. The corrected selection includes the original stage,
 without changing the test or its budgets.
 
-Cot/Toilet/full-wall native acceptance and the extreme #2025
-public import boundary are still being checked. The complete combined source
+The original MAX collection failed before browser execution because the Node
+ESM JSON import needed its explicit JSON type attribute. The next execution
+reached a genuine successful V9 migration but expected ordinary-import copy.
+Both original reports are retained; the final GREEN corrects only that existing
+migration-message expectation. The input, producer, approved player copy,
+counter/refund/owner assertions and original runtime budgets are unchanged.
+The actual post-Load [game screenshot](./native/max-corrected/004-actual-v10-max-after-public-load.png)
+and [whole public receipt](./native/max-corrected/005-actual-v10-max-public-receipt.json)
+are archived with the other original runs.
+
+Cot/Toilet/full-wall native acceptance is still being checked. The complete combined source
 gate and exact-head hosted CI remain required before release. This record does
 not claim deployment or a finished visual redesign.

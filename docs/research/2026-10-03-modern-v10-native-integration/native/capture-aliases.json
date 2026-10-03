@@ -1175,5 +1175,144 @@
     "archivedBytes": 629,
     "archivedSha256": "43e55f1112f578476c56fc3d69bcf422bca24e8000da6fddf54ccca96b8ff787",
     "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-max-native-20261004.json",
+    "archived": "max-original-import/report.json",
+    "sourceBytes": 2846,
+    "sourceSha256": "5e92df00c59d0440eea7b05f9a20f16c02c14c2b9fff7d82a607e945afee4a47",
+    "archivedBytes": 2846,
+    "archivedSha256": "5e92df00c59d0440eea7b05f9a20f16c02c14c2b9fff7d82a607e945afee4a47"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-max-native-20261004.txt",
+    "archived": "max-original-import/console.txt",
+    "sourceBytes": 3036,
+    "sourceSha256": "9c904d51456b1c9541e97461459ef2a7b595f49782450accdeb9802f5049ea57",
+    "archivedBytes": 1519,
+    "archivedSha256": "c11beef16907a0472d76415c9848c96baaf8c9ded6fa1a4ad479cc368094e722",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-max-native-20261004\\.last-run.json",
+    "archived": "max-original-import/001-.last-run.json",
+    "sourceBytes": 45,
+    "sourceSha256": "e22df5d0991eb28c09093b1e678b3fa8cd1fab48185d38e67cf79fb6e63ad5ea",
+    "archivedBytes": 45,
+    "archivedSha256": "e22df5d0991eb28c09093b1e678b3fa8cd1fab48185d38e67cf79fb6e63ad5ea"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-max-json-fixed-native-20261004.json",
+    "archived": "max-original-status/report.json",
+    "sourceBytes": 11393,
+    "sourceSha256": "a4a356265d96c66ef90028821efcf94d11942758957647dff7241ef797bfe8b5",
+    "archivedBytes": 11393,
+    "archivedSha256": "a4a356265d96c66ef90028821efcf94d11942758957647dff7241ef797bfe8b5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-max-json-fixed-native-20261004.txt",
+    "archived": "max-original-status/console.txt",
+    "sourceBytes": 10652,
+    "sourceSha256": "83549c6dc566787b2c7f7a46844833e857eabaaf0246a2ce8f0af5bfa3ec99ce",
+    "archivedBytes": 5956,
+    "archivedSha256": "8674308de7004fe44325b2d0e6c141f996d683a6d456558beb979bb01c1fd2ff",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-max-json-fixed-native-20261004\\.last-run.json",
+    "archived": "max-original-status/001-.last-run.json",
+    "sourceBytes": 96,
+    "sourceSha256": "9d7c5a3966d2d9588aedc53909629907624099a52e0bd25893edd4eb16409cf9",
+    "archivedBytes": 96,
+    "archivedSha256": "9d7c5a3966d2d9588aedc53909629907624099a52e0bd25893edd4eb16409cf9"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-max-json-fixed-native-20261004\\construction-v10-max-count-6c070-refunds-and-existing-owners\\actual-v10-max-public-receipt.json",
+    "archived": "max-original-status/002-actual-v10-max-public-receipt.json",
+    "sourceBytes": 201,
+    "sourceSha256": "06456d66c7cc411e23efaa29ab3391e8b38d494a729057d78948212bc59b5348",
+    "archivedBytes": 201,
+    "archivedSha256": "06456d66c7cc411e23efaa29ab3391e8b38d494a729057d78948212bc59b5348"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-max-json-fixed-native-20261004\\construction-v10-max-count-6c070-refunds-and-existing-owners\\error-context.md",
+    "archived": "max-original-status/003-error-context.md",
+    "sourceBytes": 8435,
+    "sourceSha256": "10fa9c060180814985aa7a56b7a86c78b1e54b2fa0bad94c1156de9856b10d9f",
+    "archivedBytes": 8435,
+    "archivedSha256": "10fa9c060180814985aa7a56b7a86c78b1e54b2fa0bad94c1156de9856b10d9f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-max-json-fixed-native-20261004\\construction-v10-max-count-6c070-refunds-and-existing-owners\\test-failed-1.png",
+    "archived": "max-original-status/004-test-failed-1.png",
+    "sourceBytes": 210634,
+    "sourceSha256": "11bc9830d2245eedd8a4d6d509461aac8c10bbbce730988f07f56be802a4d6c1",
+    "archivedBytes": 210634,
+    "archivedSha256": "11bc9830d2245eedd8a4d6d509461aac8c10bbbce730988f07f56be802a4d6c1"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-max-json-fixed-native-20261004\\construction-v10-max-count-6c070-refunds-and-existing-owners\\trace.zip",
+    "archived": "max-original-status/005-trace.zip",
+    "sourceBytes": 16461887,
+    "sourceSha256": "79704ff40090b1581dcf834c8a893e47531a538a2ce44b45d8b2839172006dd5",
+    "archivedBytes": 16461887,
+    "archivedSha256": "79704ff40090b1581dcf834c8a893e47531a538a2ce44b45d8b2839172006dd5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-max-migration-status-native-20261004.json",
+    "archived": "max-corrected/report.json",
+    "sourceBytes": 3679,
+    "sourceSha256": "3991ef77f53ce2fe20a61c66ae1cf26c3aa5d2be42657908019c3e37ed71a6f4",
+    "archivedBytes": 3679,
+    "archivedSha256": "3991ef77f53ce2fe20a61c66ae1cf26c3aa5d2be42657908019c3e37ed71a6f4"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-max-migration-status-native-20261004.txt",
+    "archived": "max-corrected/console.txt",
+    "sourceBytes": 3774,
+    "sourceSha256": "b57c47da02c80ad5ab089adfce11722f3b0125381fdffb0d726e2f654a59d292",
+    "archivedBytes": 1890,
+    "archivedSha256": "8caee19dfa8619c692898cbdd56e3ac84b57d18002eb8c79d4e2cfd858355d96",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-max-migration-status-native-20261004\\.last-run.json",
+    "archived": "max-corrected/001-.last-run.json",
+    "sourceBytes": 45,
+    "sourceSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "archivedBytes": 45,
+    "archivedSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-max-migration-status-native-20261004\\construction-v10-max-count-6c070-refunds-and-existing-owners\\actual-exported-v10-max.lockstate.json",
+    "archived": "max-corrected/002-actual-exported-v10-max.lockstate.json",
+    "sourceBytes": 66758,
+    "sourceSha256": "38310308ef6203d2133143cf9112ebf968020518b5e000c1c1aabc5ea5171867",
+    "archivedBytes": 66758,
+    "archivedSha256": "38310308ef6203d2133143cf9112ebf968020518b5e000c1c1aabc5ea5171867"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-max-migration-status-native-20261004\\construction-v10-max-count-6c070-refunds-and-existing-owners\\actual-imported-v9-max-before-cancel.png",
+    "archived": "max-corrected/003-actual-imported-v9-max-before-cancel.png",
+    "sourceBytes": 240667,
+    "sourceSha256": "83c5ef688daf31b7101bb5e046e6d3b641eb92fb89199bc735fe3ba682bd7299",
+    "archivedBytes": 240667,
+    "archivedSha256": "83c5ef688daf31b7101bb5e046e6d3b641eb92fb89199bc735fe3ba682bd7299"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-max-migration-status-native-20261004\\construction-v10-max-count-6c070-refunds-and-existing-owners\\actual-v10-max-after-public-load.png",
+    "archived": "max-corrected/004-actual-v10-max-after-public-load.png",
+    "sourceBytes": 239498,
+    "sourceSha256": "d77310edcc7756572e82dc7f55b6786c6af913ea1b0ec45e47d9c2521f5d7785",
+    "archivedBytes": 239498,
+    "archivedSha256": "d77310edcc7756572e82dc7f55b6786c6af913ea1b0ec45e47d9c2521f5d7785"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-max-migration-status-native-20261004\\construction-v10-max-count-6c070-refunds-and-existing-owners\\actual-v10-max-public-receipt.json",
+    "archived": "max-corrected/005-actual-v10-max-public-receipt.json",
+    "sourceBytes": 273073,
+    "sourceSha256": "9cf96513659c4a9f3b2ab6ba57476961e6cca2c4afeac0fdf34b668cf910e663",
+    "archivedBytes": 273073,
+    "archivedSha256": "9cf96513659c4a9f3b2ab6ba57476961e6cca2c4afeac0fdf34b668cf910e663"
   }
 ]

@@ -1,0 +1,81 @@
+
+node : [1A[2K[2m[WebServer] [22m(node:30152) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env be
+ing set.
+At line:8 char:1
++ node node_modules/@playwright/test/cli.js test --config docs/research ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([1A[2K[2m[We... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wra
+ngler.json configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+
+Running 1 test using 1 worker
+
+[1A[2K(node:40500) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K(node:40500) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K[1/1] tests\browser\construction-v10-max-counter.native.ts:31:1 › Full HD public historical V9 MAX import, queued-order Cancel and exact V10 Export/Load retain refunds and existing owners
+[1A[2K  1) tests\browser\construction-v10-max-counter.native.ts:31:1 › Full HD public historical V9 MAX import, queued-order Cancel and exact V10 Export/Load retain refunds and existing owners 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoContainText[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator: locator('.save-panel__status')
+    Expected substring: [32m"Imported [7mthe[27m save f[7mile into this prison[27m"[39m
+    Received string:    [31m"Imported [7ma[27m save f[7mrom an older version of Lockstate and brought it up to date (generation gen-bf1f186a-11d3-442f-b85d-f8e683614426).[27m"[39m
+    Timeout: 10000ms
+
+    Call log:
+    [2m  - Expect "toContainText" with timeout 10000ms[22m
+    [2m  - waiting for locator('.save-panel__status')[22m
+    [2m    4 × locator resolved to <p role="status" aria-live="polite" data-kind="saving" class="save-panel__status">Reading the save file…</p>[22m
+    [2m      - unexpected value "Reading the save file…"[22m
+    [2m    9 × locator resolved to <p role="status" data-kind="saved" aria-live="polite" class="save-panel__status">Imported a save from an older version of Lockstat…</p>[22m
+    [2m      - unexpected value "Imported a save from an older version of Lockstate and brought it up to date (generation gen-bf1f186a-11d3-442f-b85d-f8e683614426)."[22m
+
+
+      43 |     await (await choosing).setFiles({ name: 'legal-v9-max.lockstate.json', mimeType: 'application/json',
+      44 |       buffer: Buffer.from(JSON.stringify(input), 'utf8') });
+    > 45 |     await expect(page.locator('.save-panel__status')).toContainText('Imported the save file into this prison');
+         |                                                       ^
+      46 |     await expect(page.locator('.save-panel__detail')).toContainText('Restored:');
+      47 |     await expect(pause).toHaveAttribute('aria-pressed', 'true');
+      48 |     const expected = expectedMaxImport(input);
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\tests\browser\construction-v10-max-counter.native.ts:45:55
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\..\AppData\Local\Temp\lockstate-modern-v10-max-json-fixed-native-20261004\construction-v10-max-count-6c070-refunds-and-existing-owners\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-modern-v10-max-json-fixed-native-20261004\construction-v10-max-count-6c070-refunds-and-existing-owners\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\..\AppData\Local\Temp\lockstate-modern-v10-max-json-fixed-native-20261004\construction-v10-max-count-6c070-refunds-and-existing-owners\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\..\..\AppData\Local\Temp\lockstate-modern-v10-max-json-fixed-native-20261004\construction-v10-max-count-6c070-refunds-and-existing-owners\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  1 failed
+    tests\browser\construction-v10-max-counter.native.ts:31:1 › Full HD public historical V9 MAX import, queued-order Cancel and exact V10 Export/Load retain refunds and existing owners 

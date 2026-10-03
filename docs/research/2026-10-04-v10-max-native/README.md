@@ -94,3 +94,17 @@ and screenshots before cancellation and after Load. Preserve any initial RED;
 do not add retries, alter the input after seeing a failure, or report the
 offline control as genuine artifact acceptance. Native UI hit geometry,
 public Import/Export/Load execution and the screenshots remain **pending**.
+
+## Root actual execution checkpoint
+
+Root subsequently executed this public recipe against the frozen, genuinely
+built `85f4471ebebc08f50400ee606c613197999be39a` client. The final result is
+**1 GREEN,12.744s**, with unchanged60s/expect10s/w1/r0. Actual public migration,
+one exact command-v2 cancellation,80 refund, token`"9007199254740992"`, all five
+original owners, genuine V10 download and whole paused public Load equality
+pass. The [combined native record](../2026-10-03-modern-v10-native-integration/README.md)
+preserves original pre-browser JSON-import and migration-message oracle errors
+plus the corrected result, screenshots, transport and full raw worker states.
+The preceding sections describe the preparation boundary; this later checkpoint
+supplies actual runtime evidence. No deployment or separate running queued
+cancellation race is claimed.

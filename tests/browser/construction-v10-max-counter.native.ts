@@ -42,7 +42,7 @@ test('Full HD public historical V9 MAX import, queued-order Cancel and exact V10
     await page.getByRole('button', { name: 'Import', exact: true }).click();
     await (await choosing).setFiles({ name: 'legal-v9-max.lockstate.json', mimeType: 'application/json',
       buffer: Buffer.from(JSON.stringify(input), 'utf8') });
-    await expect(page.locator('.save-panel__status')).toContainText('Imported the save file into this prison');
+    await expect(page.locator('.save-panel__status')).toContainText('Imported a save from an older version of Lockstate and brought it up to date');
     await expect(page.locator('.save-panel__detail')).toContainText('Restored:');
     await expect(pause).toHaveAttribute('aria-pressed', 'true');
     const expected = expectedMaxImport(input);

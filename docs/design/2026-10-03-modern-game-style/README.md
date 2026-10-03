@@ -113,3 +113,12 @@ where the open Camera A panel covers a complete room template. Root integrates
 their separate work and retains the sole browser/build lease. Common Room's
 new genuine matrix is published separately; this frozen client does not yet
 include or establish its runtime acceptance.
+
+The public historical MAX case has now passed on that same frozen V10 client:
+genuine V9 Import, one paused queue Cancel, exact80 refund and the next text
+counter survive actual V10 Export/Load with all five fixture owners. Laundry's
+three original runtime cases also pass. Current lanes cover the next Kitchen
+fridge Blender matrix, actual public open-View Fit verification, and a bounded
+mapping of historical PR failures to current source. Root continues remaining
+model/native integration before complete release gates; original errors and
+compiled bytes remain in the linked record.
