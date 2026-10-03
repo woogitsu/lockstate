@@ -1,0 +1,91 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-canteen-arms-native-20261003
+
+ ❯ tests/foundation/research-index-contract.test.ts (5 tests | 1 failed) 71ms
+     × names every collection of records that lives in a subdirectory 46ms
+ ❯ tests/foundation/documentation-links-contract.test.ts (10 tests | 2 failed) 524ms
+     × resolves every link target 56ms
+     × resolves every cited path 308ms
+
+ Test Files  2 failed (2)
+      Tests  3 failed | 12 passed (15)
+   Start at  06:53:01
+   Duration  1.35s (transform 50ms, setup 0ms, import 744ms, tests 595ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/foundation/documentation-links-contract.test.ts > every relative markdown link points at a file that exists > resolves every link target
+AssertionError: these markdown links name a file that does not exist: expected [ …(2) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/research/2026-10-02-utility-panel-angled/native-player-acceptance.md -> q0",
++   "docs/research/2026-10-02-utility-panel-angled/native-player-acceptance.md -> q1",
++ ]
+
+ ❯ tests/foundation/documentation-links-contract.test.ts:127:76
+    125|       .map(({ source, target }) => `${source} -> ${target}`);
+    126|
+    127|     expect(broken, 'these markdown links name a file that does not exi…
+       |                                                                            ^
+    128|   });
+    129| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  tests/foundation/documentation-links-contract.test.ts > every rooted path cited in the documentation is on disk > resolves every cited path
+AssertionError: these documented paths name a file that does not exist: expected [ …(2) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/research/2026-10-02-kitchen-stove-angled/README.md -> public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+300-elev40.1c60dccb6ab8.png",
++   "docs/research/2026-10-02-kitchen-stove-angled/README.md -> public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+30-elev40.e654758736c0.png",
++ ]
+
+ ❯ tests/foundation/documentation-links-contract.test.ts:416:80
+    414|       .map(cited);
+    415|
+    416|     expect(dangling, 'these documented paths name a file that does not…
+       |                                                                                ^
+    417|   });
+    418| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  tests/foundation/research-index-contract.test.ts > research index contract > names every collection of records that lives in a subdirectory
+AssertionError: expected [ …(10) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/research/2026-10-03-generic-rack-physical-detail/ holds records the index neither rows nor links to",
++   "docs/research/2026-10-03-library-bookshelf-physical-detail/ holds records the index neither rows nor links to",
++   "docs/research/2026-10-03-loading-dock-physical-detail/ holds records the index neither rows nor links to",
++   "docs/research/2026-10-03-loading-dock-player-preparation/ holds records the index neither rows nor links to",
++   "docs/research/2026-10-03-medical-bed-physical-detail/ holds records the index neither rows nor links to",
++   "docs/research/2026-10-03-medicine-cabinet-physical-detail/ holds records the index neither rows nor links to",
++   "docs/research/2026-10-03-next-wooden-chair-physical-detail/ holds records the index neither rows nor links to",
++   "docs/research/2026-10-03-office-desk-physical-detail/ holds records the index neither rows nor links to",
++   "docs/research/2026-10-03-shower-head-physical-detail/ holds records the index neither rows nor links to",
++   "docs/research/2026-10-03-wooden-chair-physical-detail/ holds records the index neither rows nor links to",
++ ]
+
+ ❯ tests/foundation/research-index-contract.test.ts:195:21
+    193|       );
+    194|
+    195|     expect(unnamed).toEqual([]);
+       |                     ^
+    196|   });
+    197|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+

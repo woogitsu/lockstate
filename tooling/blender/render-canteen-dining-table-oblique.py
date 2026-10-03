@@ -14,7 +14,7 @@ exporter = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(exporter)
 exporter.pipeline_common.require_blender_version()
 ASSET_ID = 'furniture.dining.table.wooden'
-exporter.MODELS = ((ASSET_ID, 'furniture.canteen.dining-table.blend',
+exporter.MODELS = ((ASSET_ID, 'furniture.canteen.dining-table.angled-detail.blend',
                     'oblique-furniture.canteen-dining-table.v1.json', 3, 2, 1.0, 1.0, 0.4725),)
 exporter.PREVIEW = exporter.ROOT / 'assets/intermediate/canteen-dining-table-preview'
 
@@ -49,6 +49,11 @@ configure_shared = exporter.configure
 
 
 def configure(model):
+    if model[1] == 'furniture.canteen.dining-table.angled-detail.blend':
+        detail_spec = importlib.util.spec_from_file_location('dining_detail_dispatch', SCRIPT.with_name('render-canteen-dining-table-detail-oblique.py'))
+        detail = importlib.util.module_from_spec(detail_spec)
+        detail_spec.loader.exec_module(detail)
+        return detail.configure(model)
     scene, camera, target = configure_shared(model, prepare_source)
     points = evaluated_points(scene)
     minimum = [min(point[axis] for point in points) for axis in range(3)]
@@ -81,6 +86,8 @@ point_camera_shared = exporter.point_camera
 
 
 def point_camera(camera, target, yaw, elevation):
+    # Geometry guard already ran in configure; existing independent camera guard
+    # continues to inspect the same actual camera transforms for every pose.
     point_camera_shared(camera, target, yaw, elevation)
     # Independent world projection basis: yaw0 camera looks north from -Y;
     # positive yaw moves its ground position toward +X. Read actual transforms.

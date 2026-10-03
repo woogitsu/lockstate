@@ -5,6 +5,8 @@ import { roomTemplateMiniatureFixtures } from './hud/room-template-miniature';
 interface Point { readonly x: number; readonly y: number }
 export interface RoomTemplateWorldBridgeOptions {
   readonly tileSize: number;
+  /** Existing published geometry revision; changing world invalidates only the read-only preview. */
+  readonly worldRevision?: () => number;
   /** Physical client coordinates only; no previous renderer state is retained. */
   readonly initialCanvasHover?: { readonly clientX: number; readonly clientY: number } | undefined;
   readonly labelSafeBounds?: () => { left: number; top: number; right: number; bottom: number };
@@ -31,6 +33,7 @@ export function installRoomTemplateWorldBridge(canvas: HTMLCanvasElement, tool: 
   let quote: RoomTemplateCostQuote | undefined;
   let origin: TemplateSquare | undefined;
   let selection = -1;
+  let worldRevision: number | undefined;
   let requestRevision = 0;
   let downPointer: number | undefined;
   let downSelection: number | undefined;
@@ -45,7 +48,9 @@ export function installRoomTemplateWorldBridge(canvas: HTMLCanvasElement, tool: 
     if (physicalMove) mapHover = screen;
     options.preparePreview?.(screen, physicalMove);
     const next = options.pick(screen);
-    if (origin?.x === next.x && origin.y === next.y && selection === tool.revision) return;
+    const nextWorldRevision = options.worldRevision?.();
+    if (origin?.x === next.x && origin.y === next.y && selection === tool.revision && worldRevision === nextWorldRevision) return;
+    worldRevision = nextWorldRevision;
     origin = next;
     selection = tool.revision;
     plan = tool.planAt(next);
@@ -102,6 +107,8 @@ export function installRoomTemplateWorldBridge(canvas: HTMLCanvasElement, tool: 
   };
   const resetPress = (): void => { downPointer = undefined; downSelection = undefined; };
   const pointerDown = (event: PointerEvent): void => {
+    // A second touch abandons construction before either finger can commit.
+    if (event.pointerType === 'touch' && event.isPrimary === false) { resetPress(); return; }
     if (capture(event)) { downPointer = event.pointerId; downSelection = tool.revision; }
   };
   const pointerUp = (event: PointerEvent): void => {

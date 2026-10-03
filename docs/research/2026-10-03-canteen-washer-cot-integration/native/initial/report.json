@@ -1,0 +1,579 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\playwright.artifact.config.ts",
+    "rootDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-canteen-washer-cot-integration-20261003/tests/browser",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/matma/AppData/Local/Temp/lockstate-three-models-initial-20261003",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-canteen-washer-cot-integration-20261003/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "/(?:production-artifact|rotated-security-console-player-build|infirmary-player-build|room-template-live-orientation|room-plan-dialog-escape|canteen-dining-table-player-build|room-plan-native-picker|shower-head-player-build|live-view-held-native-arrow|wooden-bench-player-build|live-view-native-popup-held-key|hud-separator-held-arrow|wooden-chair-player-build|build-category-native-camera|generic-wooden-rack-player-build|build-category-native-popup-held-key|build-category-native-typeahead|bookshelf-player-build|utility-panel-player-build|hud-layout-menu-fullhd|generic-office-desk-player-build|oblique-build-drag-under-hud|dedicated-kitchen-stove-player-build|live-view-native-mouse-target|oblique-object-area-drag-under-hud|dedicated-kitchen-fridge-player-build|dedicated-kitchen-prep-counter-player-build|room-preview-retained-hover-fit|oblique-square-wall-native-footprint|dedicated-laundry-washing-machine-player-build|camera-wheel-axis-native|oblique-camera-gameout-native|default-waste-bin-player-build|navigation-drawer-escape-native|dedicated-cell-toilet-player-build|dedicated-utility-panel-player-build|room-template-world-camera-origin|dedicated-office-desk-player-build|room-template-renderer-preflight-receipt|dedicated-medicine-cabinet-player-build|dedicated-security-console-player-build|dedicated-medical-bed-player-build|dedicated-loading-dock-door-player-build|dedicated-camera-pan-player|oblique-pending-wall-player|room-template-renderer-stationary-hover|world-construction-chord-release|room-template-session-preflight|world-build-session-ownership|cell-cot-player-build|room-template-second-touch-ownership)\\.spec\\.ts$/"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 1,
+    "webServer": {
+      "command": "\"C:\\\\Users\\\\matma\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\node\\\\bin\\\\node.exe\" \"C:\\\\Users\\\\matma\\\\Documents\\\\Rozwój gier\\\\lockstate-1382-doc-anchor-2026-09-24\\\\node_modules\\\\.pnpm\\\\vite@8.2.2_@types+node@24.10.1_esbuild@0.28.1\\\\node_modules\\\\vite\\\\bin\\\\vite.js\" preview --port 5184 --strictPort --host 127.0.0.1",
+      "cwd": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\",
+      "env": {
+        "CLOUDFLARE_ENV": "production"
+      },
+      "url": "http://127.0.0.1:5184/",
+      "reuseExistingServer": false,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "canteen-dining-table-player-build.spec.ts",
+      "file": "canteen-dining-table-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player creates storage and delivery capacity before Canteen",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 42959,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T05:48:17.102Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b692cd9cd048f51d3b66-472b23b7516399244e0f",
+          "file": "canteen-dining-table-player-build.spec.ts",
+          "line": 167,
+          "column": 1
+        },
+        {
+          "title": "player builds Canteen at quarterTurns0 and retains authored plates after Save/Load",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 60335,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\nCall Log:\n- Test timeout of 60000ms exceeded",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\nCall Log:\n- Test timeout of 60000ms exceeded\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\canteen-dining-table-player-build.spec.ts:212:3",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\canteen-dining-table-player-build.spec.ts",
+                      "column": 3,
+                      "line": 212
+                    },
+                    "snippet": "  210 |   // low camera capture is pending native support-pixel calibration by root.\n  211 |   const cameraControls = await publicSupportPose(page, quarterTurns);\n> 212 |   await expect.poll(async () => (await loadedImages()).responses.some(response =>\n      |   ^\n  213 |     new URL(response.url).pathname === SUPPORT_FRAME.url && response.sha256 === SUPPORT_FRAME.sha256)).toBe(true);\n  214 |   await expect.poll(async () => (await loadedImages()).images.some(image =>\n  215 |     image.sha256 === SUPPORT_FRAME.sha256 && image.complete && !image.error && image.width === 256 && image.height === 256)).toBe(true);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\canteen-dining-table-player-build.spec.ts",
+                        "column": 3,
+                        "line": 212
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\nCall Log:\n- Test timeout of 60000ms exceeded\n\n  210 |   // low camera capture is pending native support-pixel calibration by root.\n  211 |   const cameraControls = await publicSupportPose(page, quarterTurns);\n> 212 |   await expect.poll(async () => (await loadedImages()).responses.some(response =>\n      |   ^\n  213 |     new URL(response.url).pathname === SUPPORT_FRAME.url && response.sha256 === SUPPORT_FRAME.sha256)).toBe(true);\n  214 |   await expect.poll(async () => (await loadedImages()).images.some(image =>\n  215 |     image.sha256 === SUPPORT_FRAME.sha256 && image.complete && !image.error && image.width === 256 && image.height === 256)).toBe(true);\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\canteen-dining-table-player-build.spec.ts:212:3"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T05:49:00.128Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-initial-20261003\\canteen-dining-table-playe-34971-ored-plates-after-Save-Load\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\canteen-dining-table-player-build.spec.ts",
+                    "column": 3,
+                    "line": 212
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b692cd9cd048f51d3b66-e7a386b8238d58647434",
+          "file": "canteen-dining-table-player-build.spec.ts",
+          "line": 231,
+          "column": 3
+        },
+        {
+          "title": "player builds Canteen at quarterTurns1 and retains authored plates after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T05:50:00.547Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "b692cd9cd048f51d3b66-4f16157b13aab1e63149",
+          "file": "canteen-dining-table-player-build.spec.ts",
+          "line": 231,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "cell-cot-player-build.spec.ts",
+      "file": "cell-cot-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player furnishes delivery and storage plans before the cot test",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 42710,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T05:50:01.014Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "aa9a0c8e618a314db016-382f61b31fea1074e287",
+          "file": "cell-cot-player-build.spec.ts",
+          "line": 167,
+          "column": 1
+        },
+        {
+          "title": "player builds the existing bed in a Basic cell q0 and keeps it after Save/Load at Full HD",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 44515,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  1\u001b[39m\n\u001b[31m+ Received  + 10\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Error: response.body: Response body is unavailable for redirect responses\",\u001b[39m\n\u001b[31m+   \"Error: response.body: Response body is unavailable for redirect responses\",\u001b[39m\n\u001b[31m+   \"Error: response.body: Response body is unavailable for redirect responses\",\u001b[39m\n\u001b[31m+   \"Error: response.body: Response body is unavailable for redirect responses\",\u001b[39m\n\u001b[31m+   \"Error: response.body: Response body is unavailable for redirect responses\",\u001b[39m\n\u001b[31m+   \"Error: response.body: Response body is unavailable for redirect responses\",\u001b[39m\n\u001b[31m+   \"Error: response.body: Response body is unavailable for redirect responses\",\u001b[39m\n\u001b[31m+   \"Error: response.body: Response body is unavailable for redirect responses\",\u001b[39m\n\u001b[31m+ ]\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  1\u001b[39m\n\u001b[31m+ Received  + 10\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Error: response.body: Response body is unavailable for redirect responses\",\u001b[39m\n\u001b[31m+   \"Error: response.body: Response body is unavailable for redirect responses\",\u001b[39m\n\u001b[31m+   \"Error: response.body: Response body is unavailable for redirect responses\",\u001b[39m\n\u001b[31m+   \"Error: response.body: Response body is unavailable for redirect responses\",\u001b[39m\n\u001b[31m+   \"Error: response.body: Response body is unavailable for redirect responses\",\u001b[39m\n\u001b[31m+   \"Error: response.body: Response body is unavailable for redirect responses\",\u001b[39m\n\u001b[31m+   \"Error: response.body: Response body is unavailable for redirect responses\",\u001b[39m\n\u001b[31m+   \"Error: response.body: Response body is unavailable for redirect responses\",\u001b[39m\n\u001b[31m+ ]\u001b[39m\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\cell-cot-player-build.spec.ts:206:25",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\cell-cot-player-build.spec.ts",
+                      "column": 25,
+                      "line": 206
+                    },
+                    "snippet": "  204 |     { message: 'real cot loader decodes the canonical source-visible headboard PNG' }).toBe(true);\n  205 |   const images = await readImages();\n> 206 |   expect(images.errors).toEqual([]);\n      |                         ^\n  207 |   expect(images.responses).toContainEqual({ url: new URL(HEADBOARD_FRAME.url, page.url()).href,\n  208 |     status: 200, sha256: HEADBOARD_FRAME.sha256, width: 256, height: 256 });\n  209 |   const descriptor = images.descriptors.find(row => row.status === 200)?.data as {"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\cell-cot-player-build.spec.ts",
+                        "column": 25,
+                        "line": 206
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  1\u001b[39m\n\u001b[31m+ Received  + 10\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Error: response.body: Response body is unavailable for redirect responses\",\u001b[39m\n\u001b[31m+   \"Error: response.body: Response body is unavailable for redirect responses\",\u001b[39m\n\u001b[31m+   \"Error: response.body: Response body is unavailable for redirect responses\",\u001b[39m\n\u001b[31m+   \"Error: response.body: Response body is unavailable for redirect responses\",\u001b[39m\n\u001b[31m+   \"Error: response.body: Response body is unavailable for redirect responses\",\u001b[39m\n\u001b[31m+   \"Error: response.body: Response body is unavailable for redirect responses\",\u001b[39m\n\u001b[31m+   \"Error: response.body: Response body is unavailable for redirect responses\",\u001b[39m\n\u001b[31m+   \"Error: response.body: Response body is unavailable for redirect responses\",\u001b[39m\n\u001b[31m+ ]\u001b[39m\n\n  204 |     { message: 'real cot loader decodes the canonical source-visible headboard PNG' }).toBe(true);\n  205 |   const images = await readImages();\n> 206 |   expect(images.errors).toEqual([]);\n      |                         ^\n  207 |   expect(images.responses).toContainEqual({ url: new URL(HEADBOARD_FRAME.url, page.url()).href,\n  208 |     status: 200, sha256: HEADBOARD_FRAME.sha256, width: 256, height: 256 });\n  209 |   const descriptor = images.descriptors.find(row => row.status === 200)?.data as {\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\cell-cot-player-build.spec.ts:206:25"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T05:50:43.790Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-initial-20261003\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\cell-cot-player-build.spec.ts",
+                    "column": 25,
+                    "line": 206
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "aa9a0c8e618a314db016-3a166a38e6c65b7c5f6d",
+          "file": "cell-cot-player-build.spec.ts",
+          "line": 232,
+          "column": 3
+        },
+        {
+          "title": "player builds the existing bed in a Basic cell q1 and keeps it after Save/Load at Full HD",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T05:51:28.366Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "aa9a0c8e618a314db016-66dd97464410eebf5057",
+          "file": "cell-cot-player-build.spec.ts",
+          "line": 232,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "dedicated-laundry-washing-machine-player-build.spec.ts",
+      "file": "dedicated-laundry-washing-machine-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player creates storage and delivery capacity before Laundry",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 42085,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T05:51:28.826Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b2134c71373b9d15230c-6e89ff704e523d72e54c",
+          "file": "dedicated-laundry-washing-machine-player-build.spec.ts",
+          "line": 193,
+          "column": 1
+        },
+        {
+          "title": "player builds Laundry at quarterTurns0 and retains washing machine palettes and anchors after Save/Load",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 58090,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\nCall Log:\n- Timeout 10000ms exceeded while waiting on the predicate",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\nCall Log:\n- Timeout 10000ms exceeded while waiting on the predicate\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\dedicated-laundry-washing-machine-player-build.spec.ts:258:3",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\dedicated-laundry-washing-machine-player-build.spec.ts",
+                      "column": 3,
+                      "line": 258
+                    },
+                    "snippet": "  256 |   // service-grip pixels must be calibrated from the actual screenshot by root.\n  257 |   const cameraControls = await publicGripPose(page, quarterTurns);\n> 258 |   await expect.poll(async () => (await loadedImages()).responses.some(response =>\n      |   ^\n  259 |     new URL(response.url).pathname === GRIP_FRAME.url && response.sha256 === GRIP_FRAME.sha256)).toBe(true);\n  260 |   await expect.poll(async () => (await loadedImages()).images.some(image =>\n  261 |     image.sha256 === GRIP_FRAME.sha256 && image.complete && !image.error && image.width === 256 && image.height === 256)).toBe(true);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\dedicated-laundry-washing-machine-player-build.spec.ts",
+                        "column": 3,
+                        "line": 258
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\nCall Log:\n- Timeout 10000ms exceeded while waiting on the predicate\n\n  256 |   // service-grip pixels must be calibrated from the actual screenshot by root.\n  257 |   const cameraControls = await publicGripPose(page, quarterTurns);\n> 258 |   await expect.poll(async () => (await loadedImages()).responses.some(response =>\n      |   ^\n  259 |     new URL(response.url).pathname === GRIP_FRAME.url && response.sha256 === GRIP_FRAME.sha256)).toBe(true);\n  260 |   await expect.poll(async () => (await loadedImages()).images.some(image =>\n  261 |     image.sha256 === GRIP_FRAME.sha256 && image.complete && !image.error && image.width === 256 && image.height === 256)).toBe(true);\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\dedicated-laundry-washing-machine-player-build.spec.ts:258:3"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T05:52:10.974Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-initial-20261003\\dedicated-laundry-washing--5d714-and-anchors-after-Save-Load\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\dedicated-laundry-washing-machine-player-build.spec.ts",
+                    "column": 3,
+                    "line": 258
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b2134c71373b9d15230c-516dce1d19226ea8d68c",
+          "file": "dedicated-laundry-washing-machine-player-build.spec.ts",
+          "line": 257,
+          "column": 3
+        },
+        {
+          "title": "player builds Laundry at quarterTurns1 and retains washing machine palettes and anchors after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T05:53:09.121Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "b2134c71373b9d15230c-9439ca6c0d49b5535d43",
+          "file": "dedicated-laundry-washing-machine-player-build.spec.ts",
+          "line": 257,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "room-template-second-touch-ownership.spec.ts",
+      "file": "room-template-second-touch-ownership.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "world FullHD: second touch release abandons room-template press; fresh primary tap remains legal",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5413,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "TEMPLATE_SECOND_TOUCH {\"mode\":\"world\",\"uiScale\":1,\"first\":{\"x\":900,\"y\":460,\"id\":202},\"second\":{\"x\":930,\"y\":460,\"id\":101},\"before\":{\"orders\":[],\"balance\":25000},\"events\":[{\"type\":\"pointerdown\",\"id\":2,\"primary\":true,\"trusted\":true,\"canvas\":true,\"active\":[2]},{\"type\":\"pointerdown\",\"id\":3,\"primary\":false,\"trusted\":true,\"canvas\":true,\"active\":[2,3]},{\"type\":\"pointerup\",\"id\":3,\"primary\":false,\"trusted\":true,\"canvas\":true,\"active\":[2]},{\"type\":\"pointerup\",\"id\":2,\"primary\":true,\"trusted\":true,\"canvas\":true,\"active\":[]}],\"after\":{\"orders\":[],\"balance\":25000},\"fresh\":{\"target\":{\"kind\":\"room-template\",\"templateId\":\"cell-basic\",\"origin\":{\"x\":15,\"y\":14},\"quarterTurns\":1},\"ok\":true},\"quote\":\"Click map to place; Esc cancels. | This footprint is clear. | Brick × 35 · Wood Plank × 2 · Materials catalogue value: 1,530\",\"commands\":[{\"type\":\"PlaceRoomTemplate\",\"templateId\":\"cell-basic\",\"origin\":{\"x\":15,\"y\":14},\"quarterTurns\":1}],\"final\":{\"orders\":[{\"id\":\"room-template-000000000000-0-wall-000\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":21,\"y\":14},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-001\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":21,\"y\":15},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-002\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":21,\"y\":16},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-003\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":21,\"y\":17},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-004\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":20,\"y\":14},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-005\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":20,\"y\":17},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-006\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":19,\"y\":14},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-007\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":19,\"y\":17},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-008\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":18,\"y\":14},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-009\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":18,\"y\":17},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-010\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":17,\"y\":14},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-011\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":17,\"y\":17},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-012\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":16,\"y\":14},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-013\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":16,\"y\":17},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-014\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":15,\"y\":14},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-015\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":15,\"y\":16},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-016\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":15,\"y\":17},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-1-door-000\",\"definitionId\":\"door-wooden\",\"location\":{\"x\":16,\"y\":15},\"edge\":\"west\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]}],\"pending\":[{\"templateId\":\"cell-basic\",\"origin\":{\"x\":15,\"y\":14},\"mirrorX\":false,\"quarterTurns\":1,\"sequence\":0}],\"balance\":25000},\"finalPointers\":[{\"type\":\"pointerdown\",\"id\":2,\"primary\":true,\"trusted\":true,\"canvas\":true,\"active\":[2]},{\"type\":\"pointerdown\",\"id\":3,\"primary\":false,\"trusted\":true,\"canvas\":true,\"active\":[2,3]},{\"type\":\"pointerup\",\"id\":3,\"primary\":false,\"trusted\":true,\"canvas\":true,\"active\":[2]},{\"type\":\"pointerup\",\"id\":2,\"primary\":true,\"trusted\":true,\"canvas\":true,\"active\":[]},{\"type\":\"pointerdown\",\"id\":4,\"primary\":true,\"trusted\":true,\"canvas\":true,\"active\":[4]},{\"type\":\"pointerup\",\"id\":4,\"primary\":true,\"trusted\":true,\"canvas\":true,\"active\":[]}]}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T05:53:09.594Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f5122c813361ac71c1e2-1886600e46df1dc21f1f",
+          "file": "room-template-second-touch-ownership.spec.ts",
+          "line": 104,
+          "column": 42
+        },
+        {
+          "title": "oblique FullHD: second touch release abandons room-template press; fresh primary tap remains legal",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8082,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "TEMPLATE_SECOND_TOUCH {\"mode\":\"oblique\",\"uiScale\":1,\"first\":{\"x\":900,\"y\":460,\"id\":202},\"second\":{\"x\":930,\"y\":460,\"id\":101},\"before\":{\"orders\":[],\"balance\":25000},\"events\":[{\"type\":\"pointerdown\",\"id\":2,\"primary\":true,\"trusted\":true,\"canvas\":true,\"active\":[2]},{\"type\":\"pointerdown\",\"id\":3,\"primary\":false,\"trusted\":true,\"canvas\":true,\"active\":[2,3]},{\"type\":\"pointerup\",\"id\":3,\"primary\":false,\"trusted\":true,\"canvas\":true,\"active\":[2]},{\"type\":\"pointerup\",\"id\":2,\"primary\":true,\"trusted\":true,\"canvas\":true,\"active\":[]}],\"after\":{\"orders\":[],\"balance\":25000},\"fresh\":{\"target\":{\"kind\":\"room-template\",\"templateId\":\"cell-basic\",\"origin\":{\"x\":16,\"y\":14},\"quarterTurns\":1},\"ok\":true},\"quote\":\"Click map to place; Esc cancels. | This footprint is clear. | Brick × 35 · Wood Plank × 2 · Materials catalogue value: 1,530\",\"commands\":[{\"type\":\"PlaceRoomTemplate\",\"templateId\":\"cell-basic\",\"origin\":{\"x\":16,\"y\":14},\"quarterTurns\":1}],\"final\":{\"orders\":[{\"id\":\"room-template-000000000000-0-wall-000\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":22,\"y\":14},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-001\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":22,\"y\":15},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-002\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":22,\"y\":16},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-003\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":22,\"y\":17},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-004\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":21,\"y\":14},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-005\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":21,\"y\":17},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-006\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":20,\"y\":14},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-007\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":20,\"y\":17},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-008\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":19,\"y\":14},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-009\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":19,\"y\":17},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-010\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":18,\"y\":14},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-011\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":18,\"y\":17},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-012\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":17,\"y\":14},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-013\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":17,\"y\":17},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-014\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":16,\"y\":14},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-015\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":16,\"y\":16},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-016\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":16,\"y\":17},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-1-door-000\",\"definitionId\":\"door-wooden\",\"location\":{\"x\":17,\"y\":15},\"edge\":\"west\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]}],\"pending\":[{\"templateId\":\"cell-basic\",\"origin\":{\"x\":16,\"y\":14},\"mirrorX\":false,\"quarterTurns\":1,\"sequence\":0}],\"balance\":25000},\"finalPointers\":[{\"type\":\"pointerdown\",\"id\":2,\"primary\":true,\"trusted\":true,\"canvas\":true,\"active\":[2]},{\"type\":\"pointerdown\",\"id\":3,\"primary\":false,\"trusted\":true,\"canvas\":true,\"active\":[2,3]},{\"type\":\"pointerup\",\"id\":3,\"primary\":false,\"trusted\":true,\"canvas\":true,\"active\":[2]},{\"type\":\"pointerup\",\"id\":2,\"primary\":true,\"trusted\":true,\"canvas\":true,\"active\":[]},{\"type\":\"pointerdown\",\"id\":4,\"primary\":true,\"trusted\":true,\"canvas\":true,\"active\":[4]},{\"type\":\"pointerup\",\"id\":4,\"primary\":true,\"trusted\":true,\"canvas\":true,\"active\":[]}]}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T05:53:15.071Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f5122c813361ac71c1e2-3b64aaae651427c53549",
+          "file": "room-template-second-touch-ownership.spec.ts",
+          "line": 104,
+          "column": 42
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-03T05:48:14.505Z",
+    "duration": 310290.016,
+    "expected": 5,
+    "skipped": 3,
+    "unexpected": 3,
+    "flaky": 0
+  }
+}

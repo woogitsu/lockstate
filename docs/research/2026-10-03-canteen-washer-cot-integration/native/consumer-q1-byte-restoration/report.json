@@ -1,0 +1,38 @@
+{
+    "frozen":  "371bec12cecd0dc465b0f2d18d481e27bbc0dc1e",
+    "branch":  "codex/integrate-canteen-washer-cot-20261003",
+    "after":  {
+                  "src/rendering/assets/oblique-actor-mapping.ts":  "c4a0fa53f870605dd846c04d142636f1e9d1cb4656dee380679d9b316ceb71f9",
+                  "src/rendering/assets/oblique-object-mapping.ts":  "a9eada806ff523bc9933da9b7a2e8a731c5a896286e33b0551119d8e389dd2d4",
+                  "src/main.ts":  "dd4eabcc7822ad31ca35adba9cdf25049c1f527b44fcd6e289e7e215b182887e",
+                  "src/ui/room-template-world-bridge.ts":  "c581ca1ac8016b2a58a5eac21ef544c8bfbb4f0d90d8716a2aa02d907c8d18a1"
+              },
+    "before":  {
+                   "src/rendering/assets/oblique-actor-mapping.ts":  "c4a0fa53f870605dd846c04d142636f1e9d1cb4656dee380679d9b316ceb71f9",
+                   "src/rendering/assets/oblique-object-mapping.ts":  "a9eada806ff523bc9933da9b7a2e8a731c5a896286e33b0551119d8e389dd2d4",
+                   "src/main.ts":  "dd4eabcc7822ad31ca35adba9cdf25049c1f527b44fcd6e289e7e215b182887e",
+                   "src/ui/room-template-world-bridge.ts":  "c581ca1ac8016b2a58a5eac21ef544c8bfbb4f0d90d8716a2aa02d907c8d18a1"
+               },
+    "buildBefore":  {
+                        "worker-40c9mMyA.js":  {
+                                                   "bytes":  441796,
+                                                   "sha256":  "524593e41358d423aa49a7caa6adb8ae25150e1e1eff1e889b6fcfc2c7f977d5"
+                                               },
+                        "index-DgLWULGF.js":  {
+                                                  "bytes":  1932360,
+                                                  "sha256":  "08e1deea3dacfcdd0e120005fc7da0bb017e9400114cc276c42c0850d5fcc545"
+                                              }
+                    },
+    "restoreBuildExit":  0,
+    "buildAfter":  {
+                       "worker-40c9mMyA.js":  {
+                                                  "bytes":  441796,
+                                                  "sha256":  "524593e41358d423aa49a7caa6adb8ae25150e1e1eff1e889b6fcfc2c7f977d5"
+                                              },
+                       "index-DgLWULGF.js":  {
+                                                 "bytes":  1932360,
+                                                 "sha256":  "08e1deea3dacfcdd0e120005fc7da0bb017e9400114cc276c42c0850d5fcc545"
+                                             }
+                   },
+    "controlExit":  1
+}

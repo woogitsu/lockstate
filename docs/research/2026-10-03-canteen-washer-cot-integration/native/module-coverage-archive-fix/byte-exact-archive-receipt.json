@@ -1,0 +1,18 @@
+{
+  "frozen": "0672b058cc8818f22782783a4a1bc66409afc402",
+  "hostedFailureRun": 37110213920,
+  "archivedModules": [
+    {
+      "original": "docs/research/2026-10-03-canteen-washer-cot-integration/integrate-history-native.cjs",
+      "archived": "docs/research/2026-10-03-canteen-washer-cot-integration/integrate-history-native.cjs.txt",
+      "bytes": 2347,
+      "sha256": "4a1a87b01212ddf8a238f5e29f87631998121e1b9241027e2eed53fcf7c37163"
+    },
+    {
+      "original": "docs/research/2026-10-03-canteen-washer-cot-integration/integrate-history-guard.cjs",
+      "archived": "docs/research/2026-10-03-canteen-washer-cot-integration/integrate-history-guard.cjs.txt",
+      "bytes": 2693,
+      "sha256": "0d809554ef3e9bb699ba3058b73301acee6bcafef1a5e48db8fc28a7586ea613"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+pnpm : $ vitest run "tests/unit/oblique-canteen-dining-table-integrity.test.ts" "tests/unit/oblique-canteen-dining-tabl
+e-detail-integrity.test.ts" "tests/unit/oblique-laundry-washing-machine-detail-integrity.test.ts" "tests/unit/oblique-c
+ell-cot-art.test.ts" "tests/unit/oblique-cell-cot-detail-integrity.test.ts" "tests/unit/oblique-cell-cot-consumer.test.
+ts" "tests/unit/oblique-guard-belt-detail-integrity.test.ts" "tests/unit/ui-template-chord-release.test.ts" "tests/foun
+dation/browser-suite-partition-contract.test.ts" "tests/foundation/browser-network-changed-retry-contract.test.ts" "--m
+axWorkers=2"
+At line:5 char:1
++ pnpm --config.verify-deps-before-run=false test tests/unit/oblique-ca ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...--maxWorkers=2":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-canteen-washer-cot-integration-20261003
+
+
+ Test Files  10 passed (10)
+      Tests  52 passed (52)
+   Start at  07:45:59
+   Duration  5.68s (transform 3.34s, setup 0ms, import 6.11s, tests 3.49s, environment 1ms)
+

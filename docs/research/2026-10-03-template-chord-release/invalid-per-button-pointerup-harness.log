@@ -1,0 +1,47 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-template-chord-release-audit-20261003
+
+ ❯ tests/unit/ui-template-chord-release.test.ts (24 tests | 8 failed) 92ms
+   × world/normal: camera button1 up cannot discard still-held primary template ownership 27ms
+   × world/normal: camera button2 up cannot discard still-held primary template ownership 4ms
+   × world/mirrored: camera button1 up cannot discard still-held primary template ownership 2ms
+   × world/mirrored: camera button2 up cannot discard still-held primary template ownership 3ms
+   × oblique/normal: camera button1 up cannot discard still-held primary template ownership 3ms
+   × oblique/normal: camera button2 up cannot discard still-held primary template ownership 2ms
+   × oblique/mirrored: camera button1 up cannot discard still-held primary template ownership 2ms
+   × oblique/mirrored: camera button2 up cannot discard still-held primary template ownership 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-template-chord-release.test.ts > world/normal: camera button1 up cannot discard still-held primary template ownership
+ FAIL  tests/unit/ui-template-chord-release.test.ts > world/normal: camera button2 up cannot discard still-held primary template ownership
+ FAIL  tests/unit/ui-template-chord-release.test.ts > world/mirrored: camera button1 up cannot discard still-held primary template ownership
+ FAIL  tests/unit/ui-template-chord-release.test.ts > world/mirrored: camera button2 up cannot discard still-held primary template ownership
+ FAIL  tests/unit/ui-template-chord-release.test.ts > oblique/normal: camera button1 up cannot discard still-held primary template ownership
+ FAIL  tests/unit/ui-template-chord-release.test.ts > oblique/normal: camera button2 up cannot discard still-held primary template ownership
+ FAIL  tests/unit/ui-template-chord-release.test.ts > oblique/mirrored: camera button1 up cannot discard still-held primary template ownership
+ FAIL  tests/unit/ui-template-chord-release.test.ts > oblique/mirrored: camera button2 up cannot discard still-held primary template ownership
+AssertionError: actual owning primary release must still submit the displayed template: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ tests/unit/ui-template-chord-release.test.ts:157:102
+    155|       expect(submitted(h)).toHaveLength(0); expect(h.tool.isArmed()).t…
+    156|       dispatch(h.canvas, 'pointerup', h.point, 0, 0); await h.paint();…
+    157|       expect(submitted(h), 'actual owning primary release must still s…
+       |                                                                                                      ^
+    158|       expect(submitted(h)[0]!.payload).toMatchObject({ command: { data…
+    159|       expect(h.tool.isArmed()).toBe(false);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  8 failed | 16 passed (24)
+   Start at  06:57:03
+   Duration  5.62s (transform 3.23s, setup 0ms, import 5.39s, tests 92ms, environment 0ms)
+

@@ -1,0 +1,66 @@
+node : [2m[WebServer] [22m(node:15800) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:5 char:1
++ node --experimental-transform-types --disable-warning=ExperimentalWar ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 3 tests using 1 worker
+
+(node:39988) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:39988) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\room-template-history-verdict-player.spec.ts:333:1 › player completes and saves actual Storage/Delivery capacity before stationary Cell history cases (43.5s)
+  x  2 tests\browser\room-template-history-verdict-player.spec.ts:431:42 › world FullHD: stationary q1 Cell ghost follows actual completed Undo and pending Redo (11.0s)
+  -  3 tests\browser\room-template-history-verdict-player.spec.ts:431:42 › oblique FullHD: stationary q1 Cell ghost follows actual completed Undo and pending Redo
+
+
+  1) tests\browser\room-template-history-verdict-player.spec.ts:431:42 › world FullHD: stationary q1 Cell ghost follows actual completed Undo and pending Redo 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    Expected: [32m{"mode": "paused"}[39m
+    Received: [31mnull[39m
+
+    Call Log:
+    - Timeout 10000ms exceeded while waiting on the predicate
+
+      205 |   await page.locator('.save-panel__item').first().getByRole('button',{name:'Load',exact:true}).click();
+      206 |   await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
+    > 207 |   await expect.poll(() => currentClock(page)).toEqual({mode:'paused'});
+          |   ^
+      208 |   const loaded = await snapshot(page);
+      209 |   expect(loaded.world).toEqual(capacitySnapshot!.world);
+      210 |   expect(loaded.construction).toEqual(capacitySnapshot!.construction);
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-washer-cot-integration-20261003\tests\browser\room-template-history-verdict-player.spec.ts:207:3
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-history-corrected-20261003\room-template-history-verd-f1488-leted-Undo-and-pending-Redo\error-context.md
+
+  1 failed
+    tests\browser\room-template-history-verdict-player.spec.ts:431:42 › world FullHD: stationary q1 Cell ghost follows actual completed Undo and pending Redo 
+  1 did not run
+  1 passed (57.8s)
+
+==============================================================================
+LOCKSTATE_BROWSER_SUITE_NO_RETRY suite=artifact reason=no-last-run-file
+Playwright left no readable test-results/.last-run.json, so the run failed before it
+could record which tests failed. That is not net::ERR_NETWORK_CHANGED; not retrying.
+==============================================================================
+

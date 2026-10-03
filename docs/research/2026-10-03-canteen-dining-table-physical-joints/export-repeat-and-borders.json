@@ -1,0 +1,895 @@
+{
+  "sourceSha256": "5f27967600a64ce4ded10a01fe6217ea849c2be9b57ff92353fd60b97af4ede1",
+  "descriptorSha256": "cdeec41d9ba43c672b20e72ae35aa19f46e035bc5d879e28f3188bfe2c4ece9c",
+  "repeat": [
+    {
+      "label": "first",
+      "wrapper": "render-canteen-dining-table-detail-oblique.py",
+      "exitCode": 0,
+      "descriptorAndFrameBytesExactlyEqual": true,
+      "comparedFiles": 73
+    },
+    {
+      "label": "dedicated-repeat",
+      "wrapper": "render-canteen-dining-table-detail-oblique.py",
+      "exitCode": 0,
+      "descriptorAndFrameBytesExactlyEqual": true,
+      "comparedFiles": 73
+    },
+    {
+      "label": "production-repeat",
+      "wrapper": "render-canteen-dining-table-oblique.py",
+      "exitCode": 0,
+      "descriptorAndFrameBytesExactlyEqual": true,
+      "comparedFiles": 73
+    }
+  ],
+  "decodedRGBAFrames": 72,
+  "minimumTransparentBorderPx": 22,
+  "frames": [
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 20,
+      "alphaBounds": [
+        36,
+        95,
+        220,
+        174
+      ],
+      "minimumTransparentBorderPx": 36,
+      "sha256": "036c2290c1a630cb1d0cccb1a7d72915daf69f768fd7b64f5203de54022b136a"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 30,
+      "alphaBounds": [
+        36,
+        87,
+        220,
+        179
+      ],
+      "minimumTransparentBorderPx": 36,
+      "sha256": "7c46d8a4fd1720244d983e319d30aefca6131f298e813111625001b346d0d756"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 40,
+      "alphaBounds": [
+        36,
+        79,
+        220,
+        183
+      ],
+      "minimumTransparentBorderPx": 36,
+      "sha256": "8c074f8f296c0ae4fa896b72bf8ad0a098e45c4f63772ffdc6cd0ab4d461fc75"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 50,
+      "alphaBounds": [
+        36,
+        73,
+        220,
+        185
+      ],
+      "minimumTransparentBorderPx": 36,
+      "sha256": "ad3be9311c484c24ac021d635006d30a3446ae3b91ef075cbbabc991e9dea2a5"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 60,
+      "alphaBounds": [
+        36,
+        68,
+        220,
+        186
+      ],
+      "minimumTransparentBorderPx": 36,
+      "sha256": "5decbe645c3ae5c13d9dab705f773fbefff5f5ef86b874650b99248cbc85c978"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 70,
+      "alphaBounds": [
+        36,
+        66,
+        220,
+        185
+      ],
+      "minimumTransparentBorderPx": 36,
+      "sha256": "70ec59b97b5e38d4f54eb4e61073c0ed9c282a05b1f6749398ed5d124eedab20"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 20,
+      "alphaBounds": [
+        22,
+        84,
+        218,
+        185
+      ],
+      "minimumTransparentBorderPx": 22,
+      "sha256": "670fabc9ed7b5db9977954bc5c4c737c84e29ed396107f67387edd1126e63104"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 30,
+      "alphaBounds": [
+        22,
+        75,
+        218,
+        196
+      ],
+      "minimumTransparentBorderPx": 22,
+      "sha256": "4981c648431fcac15a401cfc075776c51a315265ee24c88f4f07bf5d8c51be6b"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 40,
+      "alphaBounds": [
+        22,
+        65,
+        218,
+        205
+      ],
+      "minimumTransparentBorderPx": 22,
+      "sha256": "9b324d6785ecc5b9f08003c9e3a6074457fad256ce2792c1b641a7d64ea5fd08"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 50,
+      "alphaBounds": [
+        22,
+        56,
+        218,
+        212
+      ],
+      "minimumTransparentBorderPx": 22,
+      "sha256": "9b3a9efc2215268e62e9b186e25377928e5a8b2499ee5f773431a86fc7215866"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 60,
+      "alphaBounds": [
+        22,
+        49,
+        218,
+        216
+      ],
+      "minimumTransparentBorderPx": 22,
+      "sha256": "db2e813bda53d0aec37a7d39dceb37797dc98d2212169aa5dca6211db8d574b0"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 70,
+      "alphaBounds": [
+        22,
+        45,
+        218,
+        217
+      ],
+      "minimumTransparentBorderPx": 22,
+      "sha256": "d6941e5761cbcce1e7b1e39979e1792ddad516d523f670db05c6ca95bc5ee16c"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 20,
+      "alphaBounds": [
+        35,
+        75,
+        213,
+        190
+      ],
+      "minimumTransparentBorderPx": 35,
+      "sha256": "df5a64e316380bd11c00a5ea6e5a5deac850b5358e021bd77172d604bf18e558"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 30,
+      "alphaBounds": [
+        35,
+        64,
+        213,
+        203
+      ],
+      "minimumTransparentBorderPx": 35,
+      "sha256": "ffb6e8682a4c1d153d89d2722ac7e913b44fc79d7f73e9c44924810d52c48dcc"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 40,
+      "alphaBounds": [
+        35,
+        55,
+        213,
+        213
+      ],
+      "minimumTransparentBorderPx": 35,
+      "sha256": "59d78fa3aceb0ece9eff6c7eedcc6d9e96ec41b4b4df347a9f3c7a1b64a17eb7"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 50,
+      "alphaBounds": [
+        35,
+        47,
+        213,
+        221
+      ],
+      "minimumTransparentBorderPx": 35,
+      "sha256": "b6c636035fc90ecb5ec5e481a16cba576c068a43358e8c8a937ec5234b6948e7"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 60,
+      "alphaBounds": [
+        35,
+        41,
+        213,
+        227
+      ],
+      "minimumTransparentBorderPx": 29,
+      "sha256": "e69d49f635e836ba58e9b7064778742868897b397c0e4029b49b9cd2574415e6"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 70,
+      "alphaBounds": [
+        35,
+        38,
+        213,
+        229
+      ],
+      "minimumTransparentBorderPx": 27,
+      "sha256": "920d66c466120e6d0bfee0b4b1208371d5f7e119adc835b5479d73d4e2d1d4de"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 20,
+      "alphaBounds": [
+        72,
+        74,
+        190,
+        185
+      ],
+      "minimumTransparentBorderPx": 66,
+      "sha256": "a000fd81f375c33258e08b73c8ddc8ae6b081cfa0b2c148e31f8ad1663d6dc97"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 30,
+      "alphaBounds": [
+        72,
+        62,
+        190,
+        196
+      ],
+      "minimumTransparentBorderPx": 60,
+      "sha256": "8c301a698ce6b20bdd1c5cd86f1991c53f9bd15232c4dc753439e23e0146cfbf"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 40,
+      "alphaBounds": [
+        72,
+        52,
+        190,
+        205
+      ],
+      "minimumTransparentBorderPx": 51,
+      "sha256": "a83cd9598a5e2f62a0dffc5fb85012b9ed6c66759caa8fd6e40eb4027818db95"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 50,
+      "alphaBounds": [
+        72,
+        44,
+        190,
+        212
+      ],
+      "minimumTransparentBorderPx": 44,
+      "sha256": "8f1736716cce2445af9000cab05d71dfd4aee3356807f02dba231782ace4d34b"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 60,
+      "alphaBounds": [
+        72,
+        38,
+        190,
+        216
+      ],
+      "minimumTransparentBorderPx": 38,
+      "sha256": "9435241522356b1a3806dafbde51308eb6216a894c9ea9f6df59c119af5f8ef9"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 70,
+      "alphaBounds": [
+        72,
+        35,
+        190,
+        217
+      ],
+      "minimumTransparentBorderPx": 35,
+      "sha256": "19e7cfad37629c21ba50ac324b7c18bb60b62d430afd989bf8fad2ea0cda14b7"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 20,
+      "alphaBounds": [
+        35,
+        69,
+        213,
+        184
+      ],
+      "minimumTransparentBorderPx": 35,
+      "sha256": "cc16b4c5a2dbacd069ffd249b8536b8c9b01f9191b528b0063f640af49ef2b58"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 30,
+      "alphaBounds": [
+        35,
+        56,
+        213,
+        195
+      ],
+      "minimumTransparentBorderPx": 35,
+      "sha256": "9e95b636e6c046f17f5d9114021785569f41d31aa0ccc221199839b9334daa6a"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 40,
+      "alphaBounds": [
+        35,
+        44,
+        213,
+        203
+      ],
+      "minimumTransparentBorderPx": 35,
+      "sha256": "2197f4b64375221e41e479d1d2ebea026cb30785ad6b493428bb230ce6970da5"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 50,
+      "alphaBounds": [
+        35,
+        34,
+        213,
+        209
+      ],
+      "minimumTransparentBorderPx": 34,
+      "sha256": "af32171c97c5e0f49c07a6a37570c7343475d8f53baa2a899bb5deb09de56165"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 60,
+      "alphaBounds": [
+        35,
+        26,
+        213,
+        213
+      ],
+      "minimumTransparentBorderPx": 26,
+      "sha256": "5855fdf8afafc3b22947300d1f860ec7281152bab41c0e481c5346695f5a1b68"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 70,
+      "alphaBounds": [
+        35,
+        22,
+        213,
+        215
+      ],
+      "minimumTransparentBorderPx": 22,
+      "sha256": "a29232c6e0e38e09b407700d50be3c695bd3d923b3df96c2786fa0a1435d80cb"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 20,
+      "alphaBounds": [
+        22,
+        74,
+        218,
+        183
+      ],
+      "minimumTransparentBorderPx": 22,
+      "sha256": "4ff9ca9b661d88eead45cf1ea7c27ee634fab741696d07502001d32660caa0d3"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 30,
+      "alphaBounds": [
+        22,
+        62,
+        218,
+        192
+      ],
+      "minimumTransparentBorderPx": 22,
+      "sha256": "6c1b721d141b254c3afcb533a8ba2316f1ed690d7b1d86dbba15a2dfb1731cdc"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 40,
+      "alphaBounds": [
+        22,
+        52,
+        218,
+        200
+      ],
+      "minimumTransparentBorderPx": 22,
+      "sha256": "e593cea9f30712c0cea892903bcd86923f3766dad81c9f4a18a20b0e15131bba"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 50,
+      "alphaBounds": [
+        22,
+        44,
+        218,
+        206
+      ],
+      "minimumTransparentBorderPx": 22,
+      "sha256": "44243c81ab2497e13e2b3a09cfa6b1a71959c0f8a3c5b0b1daf378a0aec2952a"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 60,
+      "alphaBounds": [
+        22,
+        38,
+        218,
+        209
+      ],
+      "minimumTransparentBorderPx": 22,
+      "sha256": "fe8faafb5e4ac7397b0ab551d6504e34c8b98a436dc4f1b52e503361b2fc3884"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 70,
+      "alphaBounds": [
+        22,
+        34,
+        218,
+        210
+      ],
+      "minimumTransparentBorderPx": 22,
+      "sha256": "6e500c545a23c2cdcdb162fa278bce71a8f02f2ee29f3d4755ad73be49040cd6"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 20,
+      "alphaBounds": [
+        36,
+        86,
+        220,
+        175
+      ],
+      "minimumTransparentBorderPx": 36,
+      "sha256": "f79b912960f52362fc2de00aa131d187182f408f7b1db2474be1df0ff839c798"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 30,
+      "alphaBounds": [
+        36,
+        80,
+        220,
+        181
+      ],
+      "minimumTransparentBorderPx": 36,
+      "sha256": "19327c27a1145154855146cbfa7f8242c542c678fe75774df51d2f1a2ca7873b"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 40,
+      "alphaBounds": [
+        36,
+        76,
+        220,
+        186
+      ],
+      "minimumTransparentBorderPx": 36,
+      "sha256": "2b7d2b3d580d49f592e0e61c898f056bdb1ccf51c0ca1d4b47c046a1ad4bc425"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 50,
+      "alphaBounds": [
+        36,
+        72,
+        220,
+        189
+      ],
+      "minimumTransparentBorderPx": 36,
+      "sha256": "27fffac26584ca65e887f1ff75b145ebe9c306f651188e4fcfc9cdd4e98dd84e"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 60,
+      "alphaBounds": [
+        36,
+        69,
+        220,
+        190
+      ],
+      "minimumTransparentBorderPx": 36,
+      "sha256": "e8fbc157197d1332daf1dd22c6a04aebfe30bd5eb52520211428ee1cab58b076"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 70,
+      "alphaBounds": [
+        36,
+        69,
+        220,
+        189
+      ],
+      "minimumTransparentBorderPx": 36,
+      "sha256": "87d3514c3bfe72d79a1c4939fd5cd2275f743cb225dfc2a77934ddf1f4798092"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 20,
+      "alphaBounds": [
+        38,
+        74,
+        234,
+        183
+      ],
+      "minimumTransparentBorderPx": 22,
+      "sha256": "fadeb2011514fab94953e013d775bcf120562113bbbcadd5b18e26a489ac5222"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 30,
+      "alphaBounds": [
+        38,
+        62,
+        234,
+        192
+      ],
+      "minimumTransparentBorderPx": 22,
+      "sha256": "e04a68d582b27b494956d5732dcf31d594623220998029f583f962729142cb57"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 40,
+      "alphaBounds": [
+        38,
+        52,
+        234,
+        200
+      ],
+      "minimumTransparentBorderPx": 22,
+      "sha256": "066c3569ae37c79a3fafbab7183d8e399b635d947696abf6052e31ee31d2667b"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 50,
+      "alphaBounds": [
+        38,
+        44,
+        234,
+        206
+      ],
+      "minimumTransparentBorderPx": 22,
+      "sha256": "4ae8986a8a4f5fcab6e12d7a3d83537c4884cda5a17c29c6d42bb84aa71b97cc"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 60,
+      "alphaBounds": [
+        38,
+        38,
+        234,
+        209
+      ],
+      "minimumTransparentBorderPx": 22,
+      "sha256": "1db60c4c556f53d3056fc9219ef838bf567133dd8b75c34e2bbeffe803c0dd04"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 70,
+      "alphaBounds": [
+        38,
+        34,
+        234,
+        210
+      ],
+      "minimumTransparentBorderPx": 22,
+      "sha256": "600add60b2bb9b4cebb11c00e7fc0b24fed63c73d6be293e06a5f1c8225c9afb"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 20,
+      "alphaBounds": [
+        43,
+        69,
+        221,
+        184
+      ],
+      "minimumTransparentBorderPx": 35,
+      "sha256": "d886c340037ba712cd3815319bea79b45267bb797a20e6081fff380b3a4145ab"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 30,
+      "alphaBounds": [
+        43,
+        56,
+        221,
+        195
+      ],
+      "minimumTransparentBorderPx": 35,
+      "sha256": "896e32a1063a2495353a90f9827041fc001288365676aa851f2f6c6418fdc74d"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 40,
+      "alphaBounds": [
+        43,
+        44,
+        221,
+        203
+      ],
+      "minimumTransparentBorderPx": 35,
+      "sha256": "6bd2f682d47f9f27a1f0b933c4d00eb2587f79c2171c25294ba4fab46455c4bb"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 50,
+      "alphaBounds": [
+        43,
+        34,
+        221,
+        209
+      ],
+      "minimumTransparentBorderPx": 34,
+      "sha256": "88b99bb4057659b0e423db94acf2fc4f69e3564672956907c2368f41a1c3914a"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 60,
+      "alphaBounds": [
+        43,
+        26,
+        221,
+        213
+      ],
+      "minimumTransparentBorderPx": 26,
+      "sha256": "286c573377094cff01fe536a7eed27b656dc056460de07d4c57fe94ccabb873a"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 70,
+      "alphaBounds": [
+        43,
+        22,
+        221,
+        215
+      ],
+      "minimumTransparentBorderPx": 22,
+      "sha256": "00e9c0f413e6c96bd3af453e985bced7e389a298fb936c7abc9c94b259e168e7"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 20,
+      "alphaBounds": [
+        66,
+        74,
+        184,
+        185
+      ],
+      "minimumTransparentBorderPx": 66,
+      "sha256": "8e8283df0514cff8951b08b6714a6208b940d00b43c093729e3d19f70dd6870c"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 30,
+      "alphaBounds": [
+        66,
+        62,
+        184,
+        196
+      ],
+      "minimumTransparentBorderPx": 60,
+      "sha256": "dd90fe3d9a98b9a2919cc11d9a6bd80edf6a8c177ee224f0e579abc0e632e434"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 40,
+      "alphaBounds": [
+        66,
+        52,
+        184,
+        205
+      ],
+      "minimumTransparentBorderPx": 51,
+      "sha256": "c2f5a38e87399715fd1ad9877e5884cdf920d41c09c11d16b72f327bc4191036"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 50,
+      "alphaBounds": [
+        66,
+        44,
+        184,
+        212
+      ],
+      "minimumTransparentBorderPx": 44,
+      "sha256": "ddb2bc40fac9c4bf8f28036479adada858c60505689666387e4b5521790204da"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 60,
+      "alphaBounds": [
+        66,
+        38,
+        184,
+        216
+      ],
+      "minimumTransparentBorderPx": 38,
+      "sha256": "7a3a9de91e6951111f7a4503a3d75a4a4551970437f674b2ae66afd0738c7284"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 70,
+      "alphaBounds": [
+        66,
+        35,
+        184,
+        217
+      ],
+      "minimumTransparentBorderPx": 35,
+      "sha256": "1b8676fa3f959bcf6c48cfbd11e6e986b8fd5dbd9aebe3dee124fb74529fc02a"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 20,
+      "alphaBounds": [
+        43,
+        75,
+        221,
+        190
+      ],
+      "minimumTransparentBorderPx": 35,
+      "sha256": "d2df8645fa0ad11b5dfa7629322c957b212ad569a9900543e9def309a18dd948"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 30,
+      "alphaBounds": [
+        43,
+        64,
+        221,
+        203
+      ],
+      "minimumTransparentBorderPx": 35,
+      "sha256": "fd9982ead9f65fc513d6ae8db8dd0907677c837c5f862b50ff6ed4a03f33497b"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 40,
+      "alphaBounds": [
+        43,
+        55,
+        221,
+        213
+      ],
+      "minimumTransparentBorderPx": 35,
+      "sha256": "88831c70a40decd8db51c3a0e475fd547564d31be0275d60c2b68f49481935d8"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 50,
+      "alphaBounds": [
+        43,
+        47,
+        221,
+        222
+      ],
+      "minimumTransparentBorderPx": 34,
+      "sha256": "b9e77d03f0b7306c928b5f6c39823466e05160b8c40e27cac6fec982e72b1fc9"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 60,
+      "alphaBounds": [
+        43,
+        41,
+        221,
+        227
+      ],
+      "minimumTransparentBorderPx": 29,
+      "sha256": "6279a65910ef5d0a6fafedbe16f98b9ac1ec10811c799ca547ece2020c7f398c"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 70,
+      "alphaBounds": [
+        43,
+        38,
+        221,
+        229
+      ],
+      "minimumTransparentBorderPx": 27,
+      "sha256": "db92dfc76550ea36b6690cb5935a7f2afbdb2f079cdaf30d59b2b80bd56c9813"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 20,
+      "alphaBounds": [
+        38,
+        84,
+        234,
+        185
+      ],
+      "minimumTransparentBorderPx": 22,
+      "sha256": "4cd218f842dcec54c953894d5b78bde8ae12df3774e8ae25c9fe199229546452"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 30,
+      "alphaBounds": [
+        38,
+        75,
+        234,
+        196
+      ],
+      "minimumTransparentBorderPx": 22,
+      "sha256": "e4fe2c7e7650edb4d34c99309a97efac103a6508bc2ee38c45625145d376f13b"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 40,
+      "alphaBounds": [
+        38,
+        65,
+        234,
+        205
+      ],
+      "minimumTransparentBorderPx": 22,
+      "sha256": "76441f2aac9d5d6c27c23daa46a3c221054b8e9ddaad818ca349abdb114e85a6"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 50,
+      "alphaBounds": [
+        38,
+        56,
+        234,
+        212
+      ],
+      "minimumTransparentBorderPx": 22,
+      "sha256": "e854c3e9feeeee6dcb6ea82745a66f035672999569af54139c969cb6c763411e"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 60,
+      "alphaBounds": [
+        38,
+        49,
+        234,
+        216
+      ],
+      "minimumTransparentBorderPx": 22,
+      "sha256": "fb9866f19c0ccde00cf92e772049289f1ab6d74f88eb57bddc1a16bf940de9e4"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 70,
+      "alphaBounds": [
+        38,
+        45,
+        234,
+        217
+      ],
+      "minimumTransparentBorderPx": 22,
+      "sha256": "4fd363f1fea80f6a638afa67ec70f9b48e38f10de8c950c65609b85e93341ced"
+    }
+  ]
+}

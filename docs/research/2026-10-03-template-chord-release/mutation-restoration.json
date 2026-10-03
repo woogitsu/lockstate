@@ -1,0 +1,9 @@
+{
+  "originalSha256": "334e9359b2f55808ef7d22324db648274cfee877ee90a1e896869beb156018e6",
+  "negativeExit": 1,
+  "exactRestore": true,
+  "restoredExit": 0,
+  "neighborsExit": 0,
+  "strictExit": 0,
+  "buildExit": 0
+}

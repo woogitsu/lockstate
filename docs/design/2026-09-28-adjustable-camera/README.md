@@ -1525,3 +1525,19 @@ existing owners/palette gates and genuine decoded-loader evidence. Three
 agents model the visibly missing rear Guard belt, correct an actual terminal
 predecessor CI contract failure, and audit held-plan rotation/mirror ownership.
 Do not mistake local acceptance for full exact-head hosted green/deployment.
+
+## 2026-10-03 active model integration
+
+Current frozen built-client4443da6c integrates retained Canteen rail arms, Washer grip mounts, Cell headboard uprights and Guard rear band. Real public q0/q1room purchases, whole paused Save/Load and trusted two-touch ownership are under one-worker FullHD acceptance. [Integration record](../../research/2026-10-03-canteen-washer-cot-integration/README.md) holds exact sources and honest pending hardware/hosted boundaries. Three independent agents continue actual hired-Guard acceptance preparation, Prisoner source-scale measurement and stationary ghost invalidation after real Undo/Redo.
+
+### 2026-10-03 integrated stationary history and genuine Guard acceptance
+
+Canteen/Washer/Cot actual FullHD pack is11/11GREEN, preserving exact owners and paused wholeSaveLoad. The original5GREEN/3RED/3SKIP observer result is retained. Root now integrates #2007 stationary completed Undo/PendingRedo readiness and historical Guard projection, original meshes/materials/actions intact; actual public hire and history native acceptance plus consumer omission/restoration are the next gates. Full hosted CI/release remains separate; no prototype or loader-only claim is completion.
+
+Actual integrated public Guard hire passes1native case. Actual stationary q1Cell history now passes3/3native cases across World/Angled, preserving cursor/origin/camera/28-square footprint and full quote across genuine completedUndo/pendingRedo. Initial observer failures are retained in the integration record, not hidden by a retry. Root next executes bounded consumer omissions and a restored15-case pack, then integrates the completed Blender woodenBench and real gameplay fixes. Three agents currently model the Cell toilet transfer neck, fix duplicate accepted numeric placement and fix delivery selection of blocked room anchors. Each coherent change is pushed; exact hosted fullCI remains the merge/release gate.
+
+### 2026-10-03 complete compiled acceptance and approved CI activation
+
+The current frozen371bec client passes15/15actual built-browser cases, no skip/flaky, after real consumer omissions7RED/4legal/1serialSKIP and complementary q1 4RED/4legal. Both source and compiled index/worker bytes restore exactly. Public q0/q1room purchases, retained models, whole paused Save/Load, genuine Guard hire and both stationary Undo/Redo/touch scenes are proved together; tiny hardware-only crops/private texture binding are not claimed. PR2010 carries this integration and the preserved raw proof.
+
+The owner explicitly approved #1983 browser source partitioning, separate once-only built-client tests and a fail-closed same-subject aggregate, preserving test budgets/retries. Fresh main32c28 activation is published in PR2012; root reviews exact hosted CI before merging and then preserves serial main gates. While hosted jobs run, root integrates connected Bench/Toilet and actual blocked-anchor, delivery, numeric-owner and completed-door-square fixes. Three agents continue new Common Room Blender hardware, genuine numeric pointer acceptance preparation and room-interaction defects. This does not narrow the top-priority playable angled camera/full-square/templates/model integration objective.

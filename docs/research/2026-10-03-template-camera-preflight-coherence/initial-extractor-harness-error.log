@@ -1,0 +1,42 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-template-camera-revision-audit-20261003
+
+ ❯ tests/unit/ui-template-camera-preflight-coherence.test.ts (8 tests | 8 failed) 55ms
+   × actual angled pose/normal: pending old preflight, stationary primary release retains displayed footprint/quote 29ms
+   × actual angled pose/mirrored: pending old preflight, stationary primary release retains displayed footprint/quote 5ms
+   × actual angled zoom/normal: pending old preflight, stationary primary release retains displayed footprint/quote 4ms
+   × actual angled zoom/mirrored: pending old preflight, stationary primary release retains displayed footprint/quote 3ms
+   × actual angled resize/normal: pending old preflight, stationary primary release retains displayed footprint/quote 4ms
+   × actual angled resize/mirrored: pending old preflight, stationary primary release retains displayed footprint/quote 3ms
+   × actual angled ui-scale/normal: pending old preflight, stationary primary release retains displayed footprint/quote 3ms
+   × actual angled ui-scale/mirrored: pending old preflight, stationary primary release retains displayed footprint/quote 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-template-camera-preflight-coherence.test.ts > actual angled pose/normal: pending old preflight, stationary primary release retains displayed footprint/quote
+ FAIL  tests/unit/ui-template-camera-preflight-coherence.test.ts > actual angled pose/mirrored: pending old preflight, stationary primary release retains displayed footprint/quote
+ FAIL  tests/unit/ui-template-camera-preflight-coherence.test.ts > actual angled zoom/normal: pending old preflight, stationary primary release retains displayed footprint/quote
+ FAIL  tests/unit/ui-template-camera-preflight-coherence.test.ts > actual angled zoom/mirrored: pending old preflight, stationary primary release retains displayed footprint/quote
+ FAIL  tests/unit/ui-template-camera-preflight-coherence.test.ts > actual angled resize/normal: pending old preflight, stationary primary release retains displayed footprint/quote
+ FAIL  tests/unit/ui-template-camera-preflight-coherence.test.ts > actual angled resize/mirrored: pending old preflight, stationary primary release retains displayed footprint/quote
+ FAIL  tests/unit/ui-template-camera-preflight-coherence.test.ts > actual angled ui-scale/normal: pending old preflight, stationary primary release retains displayed footprint/quote
+ FAIL  tests/unit/ui-template-camera-preflight-coherence.test.ts > actual angled ui-scale/mirrored: pending old preflight, stationary primary release retains displayed footprint/quote
+Error: Actual camera callback missing: onCameraZoom
+ ❯ callback tests/unit/ui-template-camera-preflight-coherence.test.ts:113:31
+    111|   const callback = (name: string) => {
+    112|     const match = source.match(new RegExp(name + ': [^\n]+=> (\{[\s\S]…
+    113|     if (match === null) throw Error('Actual camera callback missing: '…
+       |                               ^
+    114|     return new Function('worldScene', 'ObliqueWorldScene', 'rendererCh…
+    115|       (scene, ObliqueWorldScene, false, { current: { scene } }) as (..…
+ ❯ setup tests/unit/ui-template-camera-preflight-coherence.test.ts:125:11
+ ❯ tests/unit/ui-template-camera-preflight-coherence.test.ts:130:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  8 failed (8)
+   Start at  06:50:14
+   Duration  4.10s (transform 1.57s, setup 0ms, import 3.86s, tests 55ms, environment 0ms)
+

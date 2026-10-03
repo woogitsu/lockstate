@@ -1,0 +1,33 @@
+{
+  "retiredAfterAllCurrentGameContentJSONReferenceScan": true,
+  "retired": [
+    "/assets/environment/oblique/utility.washing-machine.variants-yaw+00-elev20.d7401a25f28f.png",
+    "/assets/environment/oblique/utility.washing-machine.variants-yaw+00-elev30.05f9f838d185.png",
+    "/assets/environment/oblique/utility.washing-machine.variants-yaw+00-elev40.18e95d465fa6.png",
+    "/assets/environment/oblique/utility.washing-machine.variants-yaw+00-elev50.f274561256a8.png",
+    "/assets/environment/oblique/utility.washing-machine.variants-yaw+00-elev60.912361355e11.png",
+    "/assets/environment/oblique/utility.washing-machine.variants-yaw+30-elev20.44dbc91d1244.png",
+    "/assets/environment/oblique/utility.washing-machine.variants-yaw+30-elev30.318211870a6b.png",
+    "/assets/environment/oblique/utility.washing-machine.variants-yaw+30-elev40.9b01ee07910b.png",
+    "/assets/environment/oblique/utility.washing-machine.variants-yaw+30-elev50.aac2cc82a7a0.png",
+    "/assets/environment/oblique/utility.washing-machine.variants-yaw+30-elev60.8f4c1044bee3.png",
+    "/assets/environment/oblique/utility.washing-machine.variants-yaw+60-elev20.5bb771fed0b2.png",
+    "/assets/environment/oblique/utility.washing-machine.variants-yaw+60-elev30.edaab43ac45c.png",
+    "/assets/environment/oblique/utility.washing-machine.variants-yaw+60-elev40.aba3342bb394.png",
+    "/assets/environment/oblique/utility.washing-machine.variants-yaw+60-elev50.156a49a45d65.png",
+    "/assets/environment/oblique/utility.washing-machine.variants-yaw+90-elev20.69e76dd18cf0.png",
+    "/assets/environment/oblique/utility.washing-machine.variants-yaw+90-elev30.6f24f1e040a3.png",
+    "/assets/environment/oblique/utility.washing-machine.variants-yaw+270-elev20.3afe1f19481c.png",
+    "/assets/environment/oblique/utility.washing-machine.variants-yaw+270-elev30.e70cf7d2ebbc.png",
+    "/assets/environment/oblique/utility.washing-machine.variants-yaw+300-elev20.bf6696dfcc47.png",
+    "/assets/environment/oblique/utility.washing-machine.variants-yaw+300-elev30.b717a692e6ab.png",
+    "/assets/environment/oblique/utility.washing-machine.variants-yaw+300-elev40.9e85c81dd26d.png",
+    "/assets/environment/oblique/utility.washing-machine.variants-yaw+300-elev50.39fe12b4944c.png",
+    "/assets/environment/oblique/utility.washing-machine.variants-yaw+330-elev20.165297cecd13.png",
+    "/assets/environment/oblique/utility.washing-machine.variants-yaw+330-elev30.9c4932037706.png",
+    "/assets/environment/oblique/utility.washing-machine.variants-yaw+330-elev40.8a72aa99b09d.png",
+    "/assets/environment/oblique/utility.washing-machine.variants-yaw+330-elev50.0b21b591d033.png",
+    "/assets/environment/oblique/utility.washing-machine.variants-yaw+330-elev60.9739771747d3.png"
+  ],
+  "retainedPixelIdenticalFramesCount": 45
+}

@@ -1,0 +1,16 @@
+{
+  "sourceFreeze": "4443da6c8888e44430e01c516fb971173270ce2c",
+  "stats": {
+    "startTime": "2026-10-03T05:48:14.505Z",
+    "duration": 310290.016,
+    "expected": 5,
+    "skipped": 3,
+    "unexpected": 3,
+    "flaky": 0
+  },
+  "fixtureCorrections": [
+    "retain actual3xx location/status but decode only terminal200 PNG responses",
+    "compare decoded canonical path while retaining actual encoded network URL and exact decoded PNG/hash/HTMLImageElement checks"
+  ],
+  "sourceConsumerOrPaletteChanged": false
+}

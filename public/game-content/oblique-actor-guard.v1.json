@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "assetId": "actor.guard.base",
-  "source": "actor.guard.base.blend",
-  "sourceSha256": "4a900b2d61ad2c7386f48176381a08ee6f796da9d57f096b478f7ba7e42501c7",
+  "source": "actor.guard.base.angled-detail.blend",
+  "sourceSha256": "b1f402e1096c49e1ea65c2e7727df2b6c498a77d09fc485679f1dcf72c95b456",
   "resolutionPx": [
     512,
     512
@@ -13,9 +13,9 @@
     256
   ],
   "cameraTargetTiles": [
-    0.0,
-    0.0,
-    0.0
+    0,
+    0,
+    0
   ],
   "projection": "orthographic",
   "yawDegrees": [
@@ -53,434 +53,434 @@
     {
       "yawDegrees": -180,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/actor-guard-yaw-180-elev25.66f668f73040.png",
-      "sha256": "66f668f73040ce4f7c01faf159b6a96ebdd14dc8e2fa5b0116b4ddb2bd3ffba1"
+      "image": "/assets/environment/oblique/actor-guard-yaw-180-elev25.7d38d8f38dcc.png",
+      "sha256": "7d38d8f38dcc9bd6d852f52ec823f9546183fd560f14187ce8629425481d2ebc"
     },
     {
       "yawDegrees": -180,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/actor-guard-yaw-180-elev45.8763587f340c.png",
-      "sha256": "8763587f340cda29f0e3a3d0fa908d060021c35d2c13d958f095c6231a15a00e"
+      "image": "/assets/environment/oblique/actor-guard-yaw-180-elev45.0c4bb5ba00eb.png",
+      "sha256": "0c4bb5ba00ebeb3deb5417dc69d3288bacd5bd7cf27549fc6609b739657f6a1e"
     },
     {
       "yawDegrees": -180,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/actor-guard-yaw-180-elev65.88e17a4e2b1c.png",
-      "sha256": "88e17a4e2b1c1d8310ec9ebea2de567f838deca2d84f94b59f9ce3f2da9bf755"
+      "image": "/assets/environment/oblique/actor-guard-yaw-180-elev65.756174b7a811.png",
+      "sha256": "756174b7a811c98cfe752a2d284708778bce48e7f8f60f6232e7e0a3ec0148e3"
     },
     {
       "yawDegrees": -165,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/actor-guard-yaw-165-elev25.0f2d401e7fef.png",
-      "sha256": "0f2d401e7fef267633b8fca37336673e47eb5ef572dee2391c185460c1041a58"
+      "image": "/assets/environment/oblique/actor-guard-yaw-165-elev25.ceb67c84501a.png",
+      "sha256": "ceb67c84501ab5cf49e2027b15825dcffd04ac44274d203dbb5e0a18735c686d"
     },
     {
       "yawDegrees": -165,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/actor-guard-yaw-165-elev45.ae3a5b7d146f.png",
-      "sha256": "ae3a5b7d146f803ee498db5efc871ab96653bbf7a5206e177d72166b75b5b10b"
+      "image": "/assets/environment/oblique/actor-guard-yaw-165-elev45.9e47c478198c.png",
+      "sha256": "9e47c478198c0c6df05b1e47c5157287a1b5d0ea879504977796e604ca2b576c"
     },
     {
       "yawDegrees": -165,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/actor-guard-yaw-165-elev65.ea3b0ef0adea.png",
-      "sha256": "ea3b0ef0adea630b57c65ae3271704c797cf0aaf9453f11bc8f07802235dcc47"
+      "image": "/assets/environment/oblique/actor-guard-yaw-165-elev65.ed51e08fcde4.png",
+      "sha256": "ed51e08fcde47580e91c4d9f21eb85142a753227b5fa5309a0ec2cb22fc78073"
     },
     {
       "yawDegrees": -150,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/actor-guard-yaw-150-elev25.6ba2c66cd00c.png",
-      "sha256": "6ba2c66cd00ccfa31856bdb145a00aa9dfee1998f5e4e64b6b43bf05173d2722"
+      "image": "/assets/environment/oblique/actor-guard-yaw-150-elev25.3a64f0f76e4c.png",
+      "sha256": "3a64f0f76e4c5f4cb35a69d04328e4fc81d2ef15ebe04d7e80437190e09e7a73"
     },
     {
       "yawDegrees": -150,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/actor-guard-yaw-150-elev45.02a0a65ed065.png",
-      "sha256": "02a0a65ed06518b40311b863255ec25c27b0b98459f56bff65bc654430cbe739"
+      "image": "/assets/environment/oblique/actor-guard-yaw-150-elev45.cc0b32f7521f.png",
+      "sha256": "cc0b32f7521fbe2c7d6d5ef78b8aa773cc5ff045ae7c96d35c072291a3215faa"
     },
     {
       "yawDegrees": -150,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/actor-guard-yaw-150-elev65.76dc824a0c8e.png",
-      "sha256": "76dc824a0c8e1f14b9549b19edd46c020e35c2773e854213e7ac75a81288d434"
+      "image": "/assets/environment/oblique/actor-guard-yaw-150-elev65.32aaf198e4ad.png",
+      "sha256": "32aaf198e4ad930caa515756fe8f5db1418c6586aaf0a3197635f3a93b440276"
     },
     {
       "yawDegrees": -135,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/actor-guard-yaw-135-elev25.a48cf600fd81.png",
-      "sha256": "a48cf600fd81f94d8278b0abb3d8f1af63498383ad6fb0fe0852d833568487af"
+      "image": "/assets/environment/oblique/actor-guard-yaw-135-elev25.3f946283a2ba.png",
+      "sha256": "3f946283a2ba2cfc58f6ac7f50f261d2faebbc8d170f8a3beadd2a61fc0d9aaf"
     },
     {
       "yawDegrees": -135,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/actor-guard-yaw-135-elev45.83d398db70dd.png",
-      "sha256": "83d398db70ddeecec83096e3af9b01dceec84158d584a0e62b4b7252426fccd2"
+      "image": "/assets/environment/oblique/actor-guard-yaw-135-elev45.882ef390240f.png",
+      "sha256": "882ef390240f95779f3691d4053c8656ea31fdf6f2ce435568822194aa20f75d"
     },
     {
       "yawDegrees": -135,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/actor-guard-yaw-135-elev65.d056beaf2f46.png",
-      "sha256": "d056beaf2f4682c9bfa3dafa490d088aeddc3e46f7b873e50533d1812dcf0644"
+      "image": "/assets/environment/oblique/actor-guard-yaw-135-elev65.ef11292d1ce5.png",
+      "sha256": "ef11292d1ce5247364440e7954d8252fc679cdd8930451caa13ce38feee0de1a"
     },
     {
       "yawDegrees": -120,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/actor-guard-yaw-120-elev25.519b97acc955.png",
-      "sha256": "519b97acc9554a622b7ec1c6034baecd535947241f9df3db74a190a051f28e4d"
+      "image": "/assets/environment/oblique/actor-guard-yaw-120-elev25.0a9712e0de9b.png",
+      "sha256": "0a9712e0de9bdcc7d9e4ad00694eb8a18d72bc5467c33bdb66abf6df75b09dbd"
     },
     {
       "yawDegrees": -120,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/actor-guard-yaw-120-elev45.e25a4b3972bc.png",
-      "sha256": "e25a4b3972bc6c59916c2305d04526a22a16a1140a76d0eb0fab937ec841beaa"
+      "image": "/assets/environment/oblique/actor-guard-yaw-120-elev45.27526070f60e.png",
+      "sha256": "27526070f60e3626ed420889ce3f3d14a7bd1655bdd4feb8afb2f5a9d20b70c0"
     },
     {
       "yawDegrees": -120,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/actor-guard-yaw-120-elev65.47b5912d2e5b.png",
-      "sha256": "47b5912d2e5b276fb5642be0780aaed3742cd0ad70f7d0c822f62790bcf3d475"
+      "image": "/assets/environment/oblique/actor-guard-yaw-120-elev65.7ec84e6c22e6.png",
+      "sha256": "7ec84e6c22e64da2d07e94c78feefb253197940894fb7f13f7ef33fe9a5df4ff"
     },
     {
       "yawDegrees": -105,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/actor-guard-yaw-105-elev25.20cf3818211f.png",
-      "sha256": "20cf3818211f6b1b6e4845c2f2d4afadf77fd8fe51ccea29601276caed40d796"
+      "image": "/assets/environment/oblique/actor-guard-yaw-105-elev25.b987fdb3d840.png",
+      "sha256": "b987fdb3d84064fd32ab5a4676b29db0a3af1a6651fdb8637ba109a1860bae79"
     },
     {
       "yawDegrees": -105,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/actor-guard-yaw-105-elev45.c7fbd03be3bf.png",
-      "sha256": "c7fbd03be3bfcb28b9cc4b17cbf2f26f2f030229396eee9b0651213ee9c52983"
+      "image": "/assets/environment/oblique/actor-guard-yaw-105-elev45.54ae51635897.png",
+      "sha256": "54ae516358971582a36b48f668d0d6064d377c7fe6f514ac43f0729a5472cdb0"
     },
     {
       "yawDegrees": -105,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/actor-guard-yaw-105-elev65.3aa4d27d184e.png",
-      "sha256": "3aa4d27d184efbddd6a355f29827f9b1627671fc944aca8f6c48f05c42af082a"
+      "image": "/assets/environment/oblique/actor-guard-yaw-105-elev65.9ef93e6e4df1.png",
+      "sha256": "9ef93e6e4df181d83593a43e125f3ea6d8ccc32473fc3ff2edd1b886a45aa1ab"
     },
     {
       "yawDegrees": -90,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/actor-guard-yaw-90-elev25.e74849b25595.png",
-      "sha256": "e74849b25595de9e30dc9329ea431d7ec62d16546ef185de252625c273ce7d61"
+      "image": "/assets/environment/oblique/actor-guard-yaw-90-elev25.5bf16483310a.png",
+      "sha256": "5bf16483310a81581edfad744189cedcb99aadbddfef9034827ffafa083c9d96"
     },
     {
       "yawDegrees": -90,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/actor-guard-yaw-90-elev45.be0a93a4e850.png",
-      "sha256": "be0a93a4e850150f8aad6b77c0183e273bac358eb071597139d379c82855a7f1"
+      "image": "/assets/environment/oblique/actor-guard-yaw-90-elev45.9d652fb38262.png",
+      "sha256": "9d652fb382624060b6dc0b4da85fed8c934d91c7af6d1b10435b4d0134183141"
     },
     {
       "yawDegrees": -90,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/actor-guard-yaw-90-elev65.f5546570fd4a.png",
-      "sha256": "f5546570fd4a1867c8fa479e9d815f4035e0f19c24a4234ff30f1a8b9ef44e05"
+      "image": "/assets/environment/oblique/actor-guard-yaw-90-elev65.5e3403754ff5.png",
+      "sha256": "5e3403754ff56e3672f56306d87b87eebb34fdd94d0ed2101defa208b97677eb"
     },
     {
       "yawDegrees": -75,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/actor-guard-yaw-75-elev25.fb5c7daf77b0.png",
-      "sha256": "fb5c7daf77b052ab907c2591b04c6aff3a57e62a0e2cdea515705d366f3c49fe"
+      "image": "/assets/environment/oblique/actor-guard-yaw-75-elev25.82c26cc4e726.png",
+      "sha256": "82c26cc4e72686ed77fc17ad604446ec0ed73421909763c149a772d8cb1e1b04"
     },
     {
       "yawDegrees": -75,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/actor-guard-yaw-75-elev45.21dc5d3367cc.png",
-      "sha256": "21dc5d3367cc86c26adf2a761f683a8ace25eb3d0c2cb8e1c9e8ae536803e920"
+      "image": "/assets/environment/oblique/actor-guard-yaw-75-elev45.30cb7cd5ad0f.png",
+      "sha256": "30cb7cd5ad0fd7f212551227808f1d2d0bd975208761b652cbed9dcc672dd022"
     },
     {
       "yawDegrees": -75,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/actor-guard-yaw-75-elev65.74aed330261b.png",
-      "sha256": "74aed330261b37e784d1dc71ca0cd2bc5b702aa81e129a72e250fde0f6da8a65"
+      "image": "/assets/environment/oblique/actor-guard-yaw-75-elev65.bec470cecb9d.png",
+      "sha256": "bec470cecb9df3735b4ecfd3abe52e24d28c56e81a49c5d5a98209549c93035e"
     },
     {
       "yawDegrees": -60,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/actor-guard-yaw-60-elev25.4e7cd442eb22.png",
-      "sha256": "4e7cd442eb221081d3b559585ebd0ceca32008cfcdec345675f835feafb7f1d3"
+      "image": "/assets/environment/oblique/actor-guard-yaw-60-elev25.758713800165.png",
+      "sha256": "758713800165dfb6c58234b5c3a8d30ff9871dfa8c811a5ab54fb603525b499c"
     },
     {
       "yawDegrees": -60,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/actor-guard-yaw-60-elev45.e09bba50892c.png",
-      "sha256": "e09bba50892c3b71177129312bd5458164d98692d3d0fbed803d3d74d41409de"
+      "image": "/assets/environment/oblique/actor-guard-yaw-60-elev45.8db7f6314de9.png",
+      "sha256": "8db7f6314de924f83bb0d552060d5fe7f5c9cf8ca24fc05280aebe99962ab2ef"
     },
     {
       "yawDegrees": -60,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/actor-guard-yaw-60-elev65.afc8f10777ba.png",
-      "sha256": "afc8f10777ba95f3a547639a5ffa936e92aa0019d8647370d1da7fcccf8e9a65"
+      "image": "/assets/environment/oblique/actor-guard-yaw-60-elev65.652089cbaf59.png",
+      "sha256": "652089cbaf59785d30347027e3cd23db2d0bdc7773104f49f62b36c9638e67f1"
     },
     {
       "yawDegrees": -45,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/actor-guard-yaw-45-elev25.a25ce2699dd2.png",
-      "sha256": "a25ce2699dd2eb1071a7b0f533543368609706db1a0d9ad04e3243e0a486e8b7"
+      "image": "/assets/environment/oblique/actor-guard-yaw-45-elev25.0c5abba5a804.png",
+      "sha256": "0c5abba5a804e4cdd9878eab01ba981ad15eccb8769b5b45349e68f59bc5beab"
     },
     {
       "yawDegrees": -45,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/actor-guard-yaw-45-elev45.546da7a81d4b.png",
-      "sha256": "546da7a81d4b29e233fb6a5b6d29ff0613df339e317caa4c3dee0908fe704ce0"
+      "image": "/assets/environment/oblique/actor-guard-yaw-45-elev45.c7352a388ac2.png",
+      "sha256": "c7352a388ac2bb8075e924066c4abe39019d09272582ad2273a8dec5ffa55b17"
     },
     {
       "yawDegrees": -45,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/actor-guard-yaw-45-elev65.f9c0ef52c2a4.png",
-      "sha256": "f9c0ef52c2a444e974a3da1e6153b585dc803d45df9ca8ee9422a5670baeb696"
+      "image": "/assets/environment/oblique/actor-guard-yaw-45-elev65.74e5d20053e2.png",
+      "sha256": "74e5d20053e2ca09ecd2fad6ae82954fdc93a705760290df4f12d5b18ad54b71"
     },
     {
       "yawDegrees": -30,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/actor-guard-yaw-30-elev25.0b923d267f11.png",
-      "sha256": "0b923d267f11de6304ff04a86377adb91e51c2b60f38ca90a2c57ac07d3b7e25"
+      "image": "/assets/environment/oblique/actor-guard-yaw-30-elev25.dc5673e8a94b.png",
+      "sha256": "dc5673e8a94bbce81a324973c82a143b2e5e4d97ac713a249ab8c38cd14f6819"
     },
     {
       "yawDegrees": -30,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/actor-guard-yaw-30-elev45.0425bc31a3b0.png",
-      "sha256": "0425bc31a3b07ea9a4a434652f666a22d8c5a08c5304b2b2cb21cdc45c7e6d78"
+      "image": "/assets/environment/oblique/actor-guard-yaw-30-elev45.6512baf80824.png",
+      "sha256": "6512baf80824085074ffd5910320b43c4dccda7b8dfd8f4f8098a10da2a6af17"
     },
     {
       "yawDegrees": -30,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/actor-guard-yaw-30-elev65.f9da01785c5b.png",
-      "sha256": "f9da01785c5b3031cea66a8863d5ca2d1c00a904f07098dbc84e318c6007c999"
+      "image": "/assets/environment/oblique/actor-guard-yaw-30-elev65.c2e00ec13681.png",
+      "sha256": "c2e00ec136816eabb32cb400ac64066675f7b5c6b39f54ae9094f9d67e2f2a00"
     },
     {
       "yawDegrees": -15,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/actor-guard-yaw-15-elev25.9045342b4b58.png",
-      "sha256": "9045342b4b5890f6e160dd4a851d0aa2089051804b05bf9b01611656b856a643"
+      "image": "/assets/environment/oblique/actor-guard-yaw-15-elev25.541967bc978b.png",
+      "sha256": "541967bc978b551747d61f587c497ba6e2fbcfd669ebdc341c28992796804ae8"
     },
     {
       "yawDegrees": -15,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/actor-guard-yaw-15-elev45.b1089adbd1e4.png",
-      "sha256": "b1089adbd1e470128ce581ca5957e02371a33a6ea96fbca514834c29c4718591"
+      "image": "/assets/environment/oblique/actor-guard-yaw-15-elev45.8970da9a3d16.png",
+      "sha256": "8970da9a3d163f2d5b35f2ccd54c03c6670a8e53f9b6956b8d9530015e7a4412"
     },
     {
       "yawDegrees": -15,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/actor-guard-yaw-15-elev65.9ed12918384e.png",
-      "sha256": "9ed12918384e2b685b95539faf988a63f4540bf612b6184ebde10cd10a56ac61"
+      "image": "/assets/environment/oblique/actor-guard-yaw-15-elev65.950159d1658d.png",
+      "sha256": "950159d1658d79ff0039b8157f668502455501d14e218c76942bc663ec8ec289"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/actor-guard-yaw+00-elev25.dd1c251ac382.png",
-      "sha256": "dd1c251ac38274ad6c103fe0d369bdfec7f78c5f97dc4306d7f9832e42b496fb"
+      "image": "/assets/environment/oblique/actor-guard-yaw+00-elev25.572ac468464b.png",
+      "sha256": "572ac468464b4839571410bd50fc71523093e13a2ee3c1613086e6a4123f5092"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/actor-guard-yaw+00-elev45.e802e6f19ad1.png",
-      "sha256": "e802e6f19ad10ab0bfb64c452ed46651daa27910ea5cac8a9b80aed9288b1de6"
+      "image": "/assets/environment/oblique/actor-guard-yaw+00-elev45.27b27b26518f.png",
+      "sha256": "27b27b26518f443edb43132a94ce7fcfbde22ca0cdab4c3f42019730df5a32ee"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/actor-guard-yaw+00-elev65.2fc64fc22dce.png",
-      "sha256": "2fc64fc22dce714a9ffe74592171658b38300e58010d9b11675ceeccfa996628"
+      "image": "/assets/environment/oblique/actor-guard-yaw+00-elev65.fed62813d88a.png",
+      "sha256": "fed62813d88a7db3db9938d5f81bbf70b08a482e357656387e4154a6e38b62de"
     },
     {
       "yawDegrees": 15,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/actor-guard-yaw+15-elev25.3823ae7c0528.png",
-      "sha256": "3823ae7c0528704874406942aa10fa281ffa6fee2309db2ce2d212adcae1feaa"
+      "image": "/assets/environment/oblique/actor-guard-yaw+15-elev25.5802c158563e.png",
+      "sha256": "5802c158563eef6514b681f24c9cc98075f643677578009365d8717a10df93ba"
     },
     {
       "yawDegrees": 15,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/actor-guard-yaw+15-elev45.706b405b9444.png",
-      "sha256": "706b405b9444e000d8daa9c314d79e7af14050ebddfecbac0be7a6e483d5af83"
+      "image": "/assets/environment/oblique/actor-guard-yaw+15-elev45.78ae78a49e9e.png",
+      "sha256": "78ae78a49e9ecfcb2367a3986a86042098503203b3be0a733771fcf50887eb3b"
     },
     {
       "yawDegrees": 15,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/actor-guard-yaw+15-elev65.c09c8f0c93b7.png",
-      "sha256": "c09c8f0c93b7f83285efb4bcc484de7bb82c25280c1bf240e86c10388c6ed913"
+      "image": "/assets/environment/oblique/actor-guard-yaw+15-elev65.2cda6ce9684c.png",
+      "sha256": "2cda6ce9684c48099b559b26bf85a55b101c6d9ae03907f4d0cfaaa31788602e"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/actor-guard-yaw+30-elev25.111bf33148f3.png",
-      "sha256": "111bf33148f3565c29adc2eb8a23068b6193b867580a181f90187d820b9d4525"
+      "image": "/assets/environment/oblique/actor-guard-yaw+30-elev25.b50363e0f5ce.png",
+      "sha256": "b50363e0f5cee1a296a65b29e6fe70628921bbcca273aef221b884c0684ed2bd"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/actor-guard-yaw+30-elev45.c114bcb9ba46.png",
-      "sha256": "c114bcb9ba4666ce35613a5945682b94525c879726a317b3cd73fa4a714232f3"
+      "image": "/assets/environment/oblique/actor-guard-yaw+30-elev45.582e6658633f.png",
+      "sha256": "582e6658633fdbc9f957c02be32339fa5eef7ac25d6e70b115caeec019d2b8b8"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/actor-guard-yaw+30-elev65.ca40ed719c36.png",
-      "sha256": "ca40ed719c3699935233c19134ab5749b832626a0d73202f859b38141731545d"
+      "image": "/assets/environment/oblique/actor-guard-yaw+30-elev65.b80f68bf0e1d.png",
+      "sha256": "b80f68bf0e1dd00084f341252c24ef7b371fcc664675b12a4fb680fe67bb05df"
     },
     {
       "yawDegrees": 45,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/actor-guard-yaw+45-elev25.04ff4ac27c02.png",
-      "sha256": "04ff4ac27c02eb3b13835436111bd5856c1a526c66d4367ace55890bdd1b0fd5"
+      "image": "/assets/environment/oblique/actor-guard-yaw+45-elev25.b42c08f69e81.png",
+      "sha256": "b42c08f69e81c464ba36caf9081b11667a1b23bf0955b40e6a6e52f63e9f154c"
     },
     {
       "yawDegrees": 45,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/actor-guard-yaw+45-elev45.1406ef8916a4.png",
-      "sha256": "1406ef8916a471edee6ef5e381a3b8b7cbf5485ea9094c9e2a476f98081317df"
+      "image": "/assets/environment/oblique/actor-guard-yaw+45-elev45.0ae0536a2ab9.png",
+      "sha256": "0ae0536a2ab94d5597196dc2243f3890ce8e1f9dc67daeec73367c1098e3b4a0"
     },
     {
       "yawDegrees": 45,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/actor-guard-yaw+45-elev65.82a8a1de2ecd.png",
-      "sha256": "82a8a1de2ecd0e48155ec2fcb54ae59122ebef5c9cd70d973901f6084cbbdf00"
+      "image": "/assets/environment/oblique/actor-guard-yaw+45-elev65.7a7dd202ba04.png",
+      "sha256": "7a7dd202ba041bf6485c1122b4e6f0d3bbb195b464cb07be7284c9cb18ab780d"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/actor-guard-yaw+60-elev25.e81673b45b07.png",
-      "sha256": "e81673b45b07917b6e67672aed1f9f2e427ff11f3f00b0e41a9d809f0f25fb88"
+      "image": "/assets/environment/oblique/actor-guard-yaw+60-elev25.79aefc4fc948.png",
+      "sha256": "79aefc4fc948fed532749178a17431fce901556d53ee5b3597ec735c1beb1a94"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/actor-guard-yaw+60-elev45.5b19fe8ab9ff.png",
-      "sha256": "5b19fe8ab9ffeffb2b84577f8c14bd9e1d143b3692455b8d78d82cb49b1c21e5"
+      "image": "/assets/environment/oblique/actor-guard-yaw+60-elev45.580a5aab4e1d.png",
+      "sha256": "580a5aab4e1dd9eab54c90629e2b38df910c176aefd913dfe3828cd870f5b17a"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/actor-guard-yaw+60-elev65.9087d9df60de.png",
-      "sha256": "9087d9df60de6200c061ba0a33bb4e5a6d7a43b859fc3ba5988c722b68ee6da1"
+      "image": "/assets/environment/oblique/actor-guard-yaw+60-elev65.ea32ffb32d10.png",
+      "sha256": "ea32ffb32d10a5dbd2c83aaa69ded8ca913a90f562e5aafa45757e2843c39fe5"
     },
     {
       "yawDegrees": 75,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/actor-guard-yaw+75-elev25.f64c8a483efd.png",
-      "sha256": "f64c8a483efd87c659e0c7f23de412aa9b6ea8b965991445c611201028043371"
+      "image": "/assets/environment/oblique/actor-guard-yaw+75-elev25.3f7a7e7c7747.png",
+      "sha256": "3f7a7e7c77472e02b7b41cbdca2b5fb2822a8668bebf0312599268a117cb6c65"
     },
     {
       "yawDegrees": 75,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/actor-guard-yaw+75-elev45.5f30b07b4fb0.png",
-      "sha256": "5f30b07b4fb0e7ff3d989a0ed672a5f6805bd713b5b4a24085b1ef4caf388d12"
+      "image": "/assets/environment/oblique/actor-guard-yaw+75-elev45.6d2dba69b52e.png",
+      "sha256": "6d2dba69b52e022a4066c4b87b2e118d8d5076cc3b5106bf58bd00f5170bed69"
     },
     {
       "yawDegrees": 75,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/actor-guard-yaw+75-elev65.7c7b2b28a825.png",
-      "sha256": "7c7b2b28a825aaa7f638e07b76189afe9dba017834c3d651560e381e0292fccf"
+      "image": "/assets/environment/oblique/actor-guard-yaw+75-elev65.18305730d471.png",
+      "sha256": "18305730d4714773f6655dc0a604127917cbf9312f3a02a76923eee10f9f9561"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/actor-guard-yaw+90-elev25.0b43c3e2b149.png",
-      "sha256": "0b43c3e2b149d3b36a79d373ff27b5b0d8e21d4d2a21abc16fecd3a2c8318934"
+      "image": "/assets/environment/oblique/actor-guard-yaw+90-elev25.02661e6751f5.png",
+      "sha256": "02661e6751f5a5a6e6b712ec0f367cba4557345a927fb96f8b6ecb2da2c0f311"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/actor-guard-yaw+90-elev45.f9349866825c.png",
-      "sha256": "f9349866825cdb386d58e608a0499b6f6138180767a43a6938c0b71b1f510cbb"
+      "image": "/assets/environment/oblique/actor-guard-yaw+90-elev45.826949d0baef.png",
+      "sha256": "826949d0baeff959b041c5d9510751aca26e18c5415270ac0f29a1f84f0549ca"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/actor-guard-yaw+90-elev65.a6f5c806f164.png",
-      "sha256": "a6f5c806f1649e2fd222cf7b5ffb281b6b15cc1f851e8ed4f5f97b19baf7adce"
+      "image": "/assets/environment/oblique/actor-guard-yaw+90-elev65.19f59a9942b8.png",
+      "sha256": "19f59a9942b8767a254774b7b9cdf77e3b33cce080e5576fd0ba2ffcfdaf6242"
     },
     {
       "yawDegrees": 105,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/actor-guard-yaw+105-elev25.6f010632207e.png",
-      "sha256": "6f010632207e574d3d3108534f5515a50264d21f62a390ea039d8dd9398935bd"
+      "image": "/assets/environment/oblique/actor-guard-yaw+105-elev25.eaeaf9f349cd.png",
+      "sha256": "eaeaf9f349cdf10e84781b47e6d02f689950811f191a146df443780dab40d8e8"
     },
     {
       "yawDegrees": 105,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/actor-guard-yaw+105-elev45.5d085722dc5f.png",
-      "sha256": "5d085722dc5f708161605fab3111029e0e38dcdf4869d9fd9a7ac3428698f319"
+      "image": "/assets/environment/oblique/actor-guard-yaw+105-elev45.5619ec76344d.png",
+      "sha256": "5619ec76344dcc5fd24c003bf8c8e515a220af0821aa22102144ea6c7d0ca298"
     },
     {
       "yawDegrees": 105,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/actor-guard-yaw+105-elev65.4c477cbb2c79.png",
-      "sha256": "4c477cbb2c79786a6c59c290e5fcc6215455c6b675e8c2caf00e78fc177ed13a"
+      "image": "/assets/environment/oblique/actor-guard-yaw+105-elev65.d3fbf0352b49.png",
+      "sha256": "d3fbf0352b49a28cce86571b9eb0d56c378c8fa47c04f68e613408648eeca192"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/actor-guard-yaw+120-elev25.612b7147c0b6.png",
-      "sha256": "612b7147c0b631c19927f5efdd184a916a926e2bc6585947f8f9d19dd6c06c47"
+      "image": "/assets/environment/oblique/actor-guard-yaw+120-elev25.3fbef9f94ab8.png",
+      "sha256": "3fbef9f94ab8ee07d2b52e9ad245a72de17328d9b965c846b21efabe6169486c"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/actor-guard-yaw+120-elev45.5153c77be750.png",
-      "sha256": "5153c77be750553560b26f3f9f8f37b4426dcf142168ee390cccb415a2c3d1db"
+      "image": "/assets/environment/oblique/actor-guard-yaw+120-elev45.1c669be0e926.png",
+      "sha256": "1c669be0e9266f18cf077a49e0c83ab35867a56e20f6790dfbe3414f0c9769b2"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/actor-guard-yaw+120-elev65.c724a33ef77e.png",
-      "sha256": "c724a33ef77e015dddf3d2972ad40f8bd77ab204fdfffb90d2ce1dea43f3a2ce"
+      "image": "/assets/environment/oblique/actor-guard-yaw+120-elev65.8c542ee80262.png",
+      "sha256": "8c542ee80262df27fffe4fc302617432a00a10786af0bcd3c3f6084535e4fe51"
     },
     {
       "yawDegrees": 135,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/actor-guard-yaw+135-elev25.09ccd80fa61f.png",
-      "sha256": "09ccd80fa61ffeaec623ac55bd239e3e21ef2f5db67cc134a4b2b3522547f2c5"
+      "image": "/assets/environment/oblique/actor-guard-yaw+135-elev25.391355d70119.png",
+      "sha256": "391355d701195b78c324ed14a99e8209febe81596ef210b7fb71295ad2eaf771"
     },
     {
       "yawDegrees": 135,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/actor-guard-yaw+135-elev45.8facb6291c93.png",
-      "sha256": "8facb6291c93119184b35db9c8dd1f01703530ccf46286549e45b02ddc414853"
+      "image": "/assets/environment/oblique/actor-guard-yaw+135-elev45.48c8e171af14.png",
+      "sha256": "48c8e171af14cd92bd5542e65c7fbdfb1be23644427ebd95ed8ab5a2877e7e95"
     },
     {
       "yawDegrees": 135,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/actor-guard-yaw+135-elev65.355dbccf626f.png",
-      "sha256": "355dbccf626f07c782692077339095841881c849a11e5613edbaed877fcdf2c8"
+      "image": "/assets/environment/oblique/actor-guard-yaw+135-elev65.10271f80ece0.png",
+      "sha256": "10271f80ece01bb106d97f819032ebacb5261a154e1369a5962c6b5cdd0df1ee"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/actor-guard-yaw+150-elev25.bc103920ef93.png",
-      "sha256": "bc103920ef93e838ece15028fef1a8fed6dc839d2ba495e55acf94a37d9fa6f3"
+      "image": "/assets/environment/oblique/actor-guard-yaw+150-elev25.c3e092fb7bdd.png",
+      "sha256": "c3e092fb7bdda27b96538125376eb41722d888d3884a798d426ea8b8ba193af1"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/actor-guard-yaw+150-elev45.2447e7330295.png",
-      "sha256": "2447e73302950151956fb4630ef12595afabb8721e7f99a6f19788570cb94398"
+      "image": "/assets/environment/oblique/actor-guard-yaw+150-elev45.18a466d5ef17.png",
+      "sha256": "18a466d5ef1782d66d1900fc6d6705622ea1308ad4eea987df4b99a9a0078e26"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/actor-guard-yaw+150-elev65.99d72e0d5210.png",
-      "sha256": "99d72e0d521087ce464232337e16d71509c451fa808e17c35b7e254e62906759"
+      "image": "/assets/environment/oblique/actor-guard-yaw+150-elev65.a5f8cf9d241b.png",
+      "sha256": "a5f8cf9d241b1340da60632d8f0ea41458324befe5dbfe271927cbf24665e83f"
     },
     {
       "yawDegrees": 165,
       "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/actor-guard-yaw+165-elev25.dfd92bad0335.png",
-      "sha256": "dfd92bad0335b4e6085332afbe07a79ca84c4d59498c9e016686b645ad340359"
+      "image": "/assets/environment/oblique/actor-guard-yaw+165-elev25.b46fa90eade7.png",
+      "sha256": "b46fa90eade7040abf97d0a530a47f63f122ff7325d4331a9eaa886ec679e4fc"
     },
     {
       "yawDegrees": 165,
       "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/actor-guard-yaw+165-elev45.eb05616617ea.png",
-      "sha256": "eb05616617ea5ce37c37c8fcbc14beadcf2c9ffc76b029d0cd6be0b09d9ea661"
+      "image": "/assets/environment/oblique/actor-guard-yaw+165-elev45.77af41ff4ae8.png",
+      "sha256": "77af41ff4ae8338b0c5f50da7c39e3e22273c7647f373d9c9417741f0882affb"
     },
     {
       "yawDegrees": 165,
       "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/actor-guard-yaw+165-elev65.d84f4d94ead7.png",
-      "sha256": "d84f4d94ead717caca161f005bcb8a46c6d91776741c9a561c3d21c11540812b"
+      "image": "/assets/environment/oblique/actor-guard-yaw+165-elev65.2f846709d452.png",
+      "sha256": "2f846709d45205cfe1f6d4080a30656fa84fa5b4ded08a134c2f9734a7b53eca"
     }
   ]
 }

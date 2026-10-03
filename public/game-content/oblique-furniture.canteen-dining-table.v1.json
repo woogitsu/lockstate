@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "assetId": "furniture.dining.table.wooden",
-  "source": "assets/source/blender/furniture.canteen.dining-table.blend",
-  "sourceSha256": "c1a1e8b0cfd2e47fe420ebbaa3eeb72c426d896d0a42b5a708c9bcbb83230fd1",
+  "source": "assets/source/blender/furniture.canteen.dining-table.angled-detail.blend",
+  "sourceSha256": "5f27967600a64ce4ded10a01fe6217ea849c2be9b57ff92353fd60b97af4ede1",
   "resolutionPx": [
     256,
     256
@@ -116,20 +116,20 @@
     {
       "yawDegrees": 60,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+60-elev20.0d3a757749fb.png",
-      "sha256": "0d3a757749fb85f5cee24f09963462f17f8cf7d229d84c3429603562f05f1623"
+      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+60-elev20.df5a64e31638.png",
+      "sha256": "df5a64e316380bd11c00a5ea6e5a5deac850b5358e021bd77172d604bf18e558"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+60-elev30.378ababb6aed.png",
-      "sha256": "378ababb6aedaa6f465c928228574853e8d559eec2a98f2449c6f8e590e6e0ff"
+      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+60-elev30.ffb6e8682a4c.png",
+      "sha256": "ffb6e8682a4c1d153d89d2722ac7e913b44fc79d7f73e9c44924810d52c48dcc"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+60-elev40.835f374750cd.png",
-      "sha256": "835f374750cdbd2eb5a7f4e078aecb32472c5c146e3d5977497a00e6da96ff26"
+      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+60-elev40.59d78fa3aceb.png",
+      "sha256": "59d78fa3aceb0ece9eff6c7eedcc6d9e96ec41b4b4df347a9f3c7a1b64a17eb7"
     },
     {
       "yawDegrees": 60,
@@ -152,20 +152,20 @@
     {
       "yawDegrees": 90,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+90-elev20.9d89a74c582a.png",
-      "sha256": "9d89a74c582a3818490b7e2f3f56ebb19569b51ef58cad2d403fe802d18e3961"
+      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+90-elev20.a000fd81f375.png",
+      "sha256": "a000fd81f375c33258e08b73c8ddc8ae6b081cfa0b2c148e31f8ad1663d6dc97"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+90-elev30.2b292ea01ac2.png",
-      "sha256": "2b292ea01ac2546255ff255206d48b31d2a0735151d0b706820e73fd00c0dcee"
+      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+90-elev30.8c301a698ce6.png",
+      "sha256": "8c301a698ce6b20bdd1c5cd86f1991c53f9bd15232c4dc753439e23e0146cfbf"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+90-elev40.96ebeadc781b.png",
-      "sha256": "96ebeadc781bb229a316d1db6b2918867d882e0290ca1f89f7e29a7ca2735754"
+      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+90-elev40.a83cd9598a5e.png",
+      "sha256": "a83cd9598a5e2f62a0dffc5fb85012b9ed6c66759caa8fd6e40eb4027818db95"
     },
     {
       "yawDegrees": 90,
@@ -188,14 +188,14 @@
     {
       "yawDegrees": 120,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+120-elev20.5b7c2712f3dd.png",
-      "sha256": "5b7c2712f3dda917f12a04b1fc4a8e83c918ea335d940f197067bba175538d02"
+      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+120-elev20.cc16b4c5a2db.png",
+      "sha256": "cc16b4c5a2dbacd069ffd249b8536b8c9b01f9191b528b0063f640af49ef2b58"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+120-elev30.b3905926380b.png",
-      "sha256": "b3905926380b9b76e796fb91cc478321a841e40195be170eff7db4008134c1c3"
+      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+120-elev30.9e95b636e6c0.png",
+      "sha256": "9e95b636e6c046f17f5d9114021785569f41d31aa0ccc221199839b9334daa6a"
     },
     {
       "yawDegrees": 120,
@@ -224,14 +224,14 @@
     {
       "yawDegrees": 150,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+150-elev20.9219bef44034.png",
-      "sha256": "9219bef44034cc09899279f4220eda18b46bd69cffc626b6f99b84adad31ac83"
+      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+150-elev20.4ff9ca9b661d.png",
+      "sha256": "4ff9ca9b661d88eead45cf1ea7c27ee634fab741696d07502001d32660caa0d3"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+150-elev30.48593cea9f54.png",
-      "sha256": "48593cea9f54ab1f4680546d24b1552dc13aefdb98076c204e109938afaf5786"
+      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+150-elev30.6c1b721d141b.png",
+      "sha256": "6c1b721d141b254c3afcb533a8ba2316f1ed690d7b1d86dbba15a2dfb1731cdc"
     },
     {
       "yawDegrees": 150,
@@ -296,14 +296,14 @@
     {
       "yawDegrees": 210,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+210-elev20.fc9a27d5c4d3.png",
-      "sha256": "fc9a27d5c4d31858c084b4b3a21ec7aee6be0efe87162aa812e8cb75760ffca8"
+      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+210-elev20.fadeb2011514.png",
+      "sha256": "fadeb2011514fab94953e013d775bcf120562113bbbcadd5b18e26a489ac5222"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+210-elev30.32d4003a886f.png",
-      "sha256": "32d4003a886f88e4a2b6aa5db3a79e54c7986281bea6c485844faf2f17096998"
+      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+210-elev30.e04a68d582b2.png",
+      "sha256": "e04a68d582b27b494956d5732dcf31d594623220998029f583f962729142cb57"
     },
     {
       "yawDegrees": 210,
@@ -332,14 +332,14 @@
     {
       "yawDegrees": 240,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+240-elev20.adb30fb1c2df.png",
-      "sha256": "adb30fb1c2dfb7849bc4ed226ca513919ac04531cc57c9d2475a87e816ee091e"
+      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+240-elev20.d886c340037b.png",
+      "sha256": "d886c340037ba712cd3815319bea79b45267bb797a20e6081fff380b3a4145ab"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+240-elev30.f47be61478dc.png",
-      "sha256": "f47be61478dc5e90fcffc2dc5aa4e603c06f15c3851a6b02f116f5959378b9ce"
+      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+240-elev30.896e32a1063a.png",
+      "sha256": "896e32a1063a2495353a90f9827041fc001288365676aa851f2f6c6418fdc74d"
     },
     {
       "yawDegrees": 240,
@@ -368,20 +368,20 @@
     {
       "yawDegrees": 270,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+270-elev20.f0c8e9017d8e.png",
-      "sha256": "f0c8e9017d8e47a2a873cd34a3b38f52695333eacaf587bd4c58c2837a3d6f4c"
+      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+270-elev20.8e8283df0514.png",
+      "sha256": "8e8283df0514cff8951b08b6714a6208b940d00b43c093729e3d19f70dd6870c"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+270-elev30.3d4d2b2cb72b.png",
-      "sha256": "3d4d2b2cb72b3a0df9724c4345611a8894494465c1316b56f7213a7197913121"
+      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+270-elev30.dd90fe3d9a98.png",
+      "sha256": "dd90fe3d9a98b9a2919cc11d9a6bd80edf6a8c177ee224f0e579abc0e632e434"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+270-elev40.7f5b35106142.png",
-      "sha256": "7f5b35106142ec474f2f27e4217a3ba7f81b79d3d0a38c316974dbbde185e740"
+      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+270-elev40.c2f5a38e8739.png",
+      "sha256": "c2f5a38e87399715fd1ad9877e5884cdf920d41c09c11d16b72f327bc4191036"
     },
     {
       "yawDegrees": 270,
@@ -404,20 +404,20 @@
     {
       "yawDegrees": 300,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+300-elev20.e11670731db3.png",
-      "sha256": "e11670731db3542e9ffeaa1153c930f7c83a34e54637b3b089c5a5a76ee5d8d2"
+      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+300-elev20.d2df8645fa0a.png",
+      "sha256": "d2df8645fa0ad11b5dfa7629322c957b212ad569a9900543e9def309a18dd948"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+300-elev30.4a4902ef9dd4.png",
-      "sha256": "4a4902ef9dd4c3a307b3bf392981021dd5b2c23067c27561e4947891e092b5d2"
+      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+300-elev30.fd9982ead9f6.png",
+      "sha256": "fd9982ead9f65fc513d6ae8db8dd0907677c837c5f862b50ff6ed4a03f33497b"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+300-elev40.cc088f01d7b2.png",
-      "sha256": "cc088f01d7b2e43aabfb6ed99989ebfd2a28f8a0f25c2a43e21ae595d53239a2"
+      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+300-elev40.88831c70a40d.png",
+      "sha256": "88831c70a40decd8db51c3a0e475fd547564d31be0275d60c2b68f49481935d8"
     },
     {
       "yawDegrees": 300,

@@ -1,0 +1,32 @@
+{
+  "controls": [
+    {
+      "control": "actual-source-producer-omits-grip-mounts",
+      "producerExitCode": 1,
+      "error": "ValueError: Expected eighty retained and two real washer service grip supports",
+      "rejectedBeforeSourceSave": true
+    },
+    {
+      "control": "actual-source-producer-reverses-mount",
+      "producerExitCode": 1,
+      "error": "ValueError: Evaluated Laundry washing machine geometric surfaces face inward: physical-laundry-washer.service grip end support -1",
+      "rejectedBeforeSourceSave": true
+    },
+    {
+      "control": "actual-source-producer-short-mount-cannot-reach-grip",
+      "producerExitCode": 1,
+      "error": "ValueError: Washer mounting shoe lacks real triangle-interior contact: physical-laundry-washer.service grip end support -1 / angled-washer.service grip",
+      "rejectedBeforeSourceSave": true
+    },
+    {
+      "control": "actual-source-producer-mount-disconnected-from-grip",
+      "producerExitCode": 1,
+      "error": "ValueError: Washer mounting shoe lacks real triangle-interior contact: physical-laundry-washer.service grip end support -1 / angled-washer.service grip",
+      "rejectedBeforeSourceSave": true
+    }
+  ],
+  "sourceProvenanceBuilderExactlyRestored": true,
+  "originalSourceBytesUnchanged": true,
+  "exactRestoredProductionVerifyExitCode": 0,
+  "sourceSha256": "4c4b52811935cb5fe44ee4ad09bbee1b5179484aecdb7eb001c71047c4a493c0"
+}

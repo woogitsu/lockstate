@@ -1,0 +1,14 @@
+﻿const fs=require('node:fs');const crypto=require('node:crypto');const path=require('node:path');const {spawnSync}=require('node:child_process');const dir='docs/research/2026-10-03-cell-cot-native-preparation';
+fs.appendFileSync(`${dir}/README.md`, `
+## Terminal documentation boundary
+
+Scoped documentation gate is **4 failures/11 passes**,11.69s: inherited malformed Washer/Canteen date-first rows strand the table after the corrected own Cot structural row; twelve unrelated collections lack accepted index rows; Utility note q0/q1 targets and two old Stove PNG citations remain unresolved on this model base. Own Cot structural row was explicitly authorized and converted to the existing record-link shape; own preparation row is inside the continuous table. No unrelated row, path, guard or budget was changed. Parent holds independent newer corrections.
+
+Local canonical frame bytes were opened and hashed: genuine PNG signature,7792 bytes,256×256 and exact pinned SHA. That is offline source/provenance evidence, not a runtime loaded/bound frame claim. The record-writing runner initially used a relative require from its TEMP location and failed MODULE_NOT_FOUND after writing the README. Its actual executed inert source is kept; the corrected runner uses an explicit cwd-relative read and generated provenance/index. This preparation-script error was not a test or game failure.
+`);
+const diff=spawnSync('git',['diff','--name-only','--','src','.github','tests/browser/playwright.config.ts','tests/browser/playwright.artifact.config.ts'],{encoding:'utf8'});
+if(diff.status!==0||diff.stdout.trim())throw Error('unexpected production/config diff '+diff.stdout);
+const receipt={base:'9cf6818ddccc96e379f888caacb77060a42c960d',preparedSpec:'tests/browser/cell-cot-player-build.spec.ts',helper:'tests/browser/cell-cot-evidence.ts',routing:'existing dev/source; root owns future artifact registration',strictTypeExitCode:0,collectedTests:3,collectedFiles:1,docs:{failed:4,passed:11,durationSeconds:11.69,inherited:true},nativeExecuted:false,browserStarted:false,serverStarted:false,buildPerformed:false,producerMutationPerformed:false,hardwareCalibrationPending:true,privateBoundTextureExposed:false,productionConfigurationDiff:diff.stdout};
+fs.writeFileSync(`${dir}/receipt.json`,JSON.stringify(receipt,null,2));
+const files=fs.readdirSync(dir).filter(name=>name!=='evidence-sha256.json').map(name=>`${dir}/${name}`).concat(['tests/browser/cell-cot-player-build.spec.ts','tests/browser/cell-cot-evidence.ts']);
+const hashes=Object.fromEntries(files.map(file=>[file,crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex')]));fs.writeFileSync(`${dir}/evidence-sha256.json`,JSON.stringify(hashes,null,2));console.log(JSON.stringify(receipt));

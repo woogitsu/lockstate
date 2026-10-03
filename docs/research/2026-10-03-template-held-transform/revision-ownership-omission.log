@@ -1,0 +1,67 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-template-held-transform-audit-20261003
+
+ ❯ tests/unit/ui-template-held-dialog-transform.test.ts (24 tests | 18 failed) 218ms
+   × world/cell-basic: public dialog rotation while primary held requires fresh press and matches whole current quote/footprint 47ms
+   × world/cell-basic: public dialog mirror while primary held requires fresh press and matches whole current quote/footprint 17ms
+   × world/cell-basic: public dialog both while primary held requires fresh press and matches whole current quote/footprint 7ms
+   × world/canteen-basic: public dialog rotation while primary held requires fresh press and matches whole current quote/footprint 9ms
+   × world/canteen-basic: public dialog mirror while primary held requires fresh press and matches whole current quote/footprint 15ms
+   × world/canteen-basic: public dialog both while primary held requires fresh press and matches whole current quote/footprint 10ms
+   × world/laundry-basic: public dialog rotation while primary held requires fresh press and matches whole current quote/footprint 9ms
+   × world/laundry-basic: public dialog mirror while primary held requires fresh press and matches whole current quote/footprint 6ms
+   × world/laundry-basic: public dialog both while primary held requires fresh press and matches whole current quote/footprint 6ms
+   × oblique/cell-basic: public dialog rotation while primary held requires fresh press and matches whole current quote/footprint 6ms
+   × oblique/cell-basic: public dialog mirror while primary held requires fresh press and matches whole current quote/footprint 5ms
+   × oblique/cell-basic: public dialog both while primary held requires fresh press and matches whole current quote/footprint 4ms
+   × oblique/canteen-basic: public dialog rotation while primary held requires fresh press and matches whole current quote/footprint 8ms
+   × oblique/canteen-basic: public dialog mirror while primary held requires fresh press and matches whole current quote/footprint 11ms
+   × oblique/canteen-basic: public dialog both while primary held requires fresh press and matches whole current quote/footprint 7ms
+   × oblique/laundry-basic: public dialog rotation while primary held requires fresh press and matches whole current quote/footprint 5ms
+   × oblique/laundry-basic: public dialog mirror while primary held requires fresh press and matches whole current quote/footprint 5ms
+   × oblique/laundry-basic: public dialog both while primary held requires fresh press and matches whole current quote/footprint 5ms
+
+ Test Files  1 failed (1)
+      Tests  18 failed | 6 passed (24)
+   Start at  07:31:21
+   Duration  3.85s (transform 1.23s, setup 0ms, import 3.52s, tests 218ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 18 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-template-held-dialog-transform.test.ts > world/cell-basic: public dialog rotation while primary held requires fresh press and matches whole current quote/footprint
+ FAIL  tests/unit/ui-template-held-dialog-transform.test.ts > world/cell-basic: public dialog mirror while primary held requires fresh press and matches whole current quote/footprint
+ FAIL  tests/unit/ui-template-held-dialog-transform.test.ts > world/cell-basic: public dialog both while primary held requires fresh press and matches whole current quote/footprint
+ FAIL  tests/unit/ui-template-held-dialog-transform.test.ts > world/canteen-basic: public dialog rotation while primary held requires fresh press and matches whole current quote/footprint
+ FAIL  tests/unit/ui-template-held-dialog-transform.test.ts > world/canteen-basic: public dialog mirror while primary held requires fresh press and matches whole current quote/footprint
+ FAIL  tests/unit/ui-template-held-dialog-transform.test.ts > world/canteen-basic: public dialog both while primary held requires fresh press and matches whole current quote/footprint
+ FAIL  tests/unit/ui-template-held-dialog-transform.test.ts > world/laundry-basic: public dialog rotation while primary held requires fresh press and matches whole current quote/footprint
+ FAIL  tests/unit/ui-template-held-dialog-transform.test.ts > world/laundry-basic: public dialog mirror while primary held requires fresh press and matches whole current quote/footprint
+ FAIL  tests/unit/ui-template-held-dialog-transform.test.ts > world/laundry-basic: public dialog both while primary held requires fresh press and matches whole current quote/footprint
+ FAIL  tests/unit/ui-template-held-dialog-transform.test.ts > oblique/cell-basic: public dialog rotation while primary held requires fresh press and matches whole current quote/footprint
+ FAIL  tests/unit/ui-template-held-dialog-transform.test.ts > oblique/cell-basic: public dialog mirror while primary held requires fresh press and matches whole current quote/footprint
+ FAIL  tests/unit/ui-template-held-dialog-transform.test.ts > oblique/cell-basic: public dialog both while primary held requires fresh press and matches whole current quote/footprint
+ FAIL  tests/unit/ui-template-held-dialog-transform.test.ts > oblique/canteen-basic: public dialog rotation while primary held requires fresh press and matches whole current quote/footprint
+ FAIL  tests/unit/ui-template-held-dialog-transform.test.ts > oblique/canteen-basic: public dialog mirror while primary held requires fresh press and matches whole current quote/footprint
+ FAIL  tests/unit/ui-template-held-dialog-transform.test.ts > oblique/canteen-basic: public dialog both while primary held requires fresh press and matches whole current quote/footprint
+ FAIL  tests/unit/ui-template-held-dialog-transform.test.ts > oblique/laundry-basic: public dialog rotation while primary held requires fresh press and matches whole current quote/footprint
+ FAIL  tests/unit/ui-template-held-dialog-transform.test.ts > oblique/laundry-basic: public dialog mirror while primary held requires fresh press and matches whole current quote/footprint
+ FAIL  tests/unit/ui-template-held-dialog-transform.test.ts > oblique/laundry-basic: public dialog both while primary held requires fresh press and matches whole current quote/footprint
+AssertionError: old held primary must not place the new public selection: expected [ { protocolVersion: 1, …(3) } ] to have a length of +0 but got 1
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/unit/ui-template-held-dialog-transform.test.ts:241:87
+    239|       await checkCurrent(h,id,change!=='rotation');
+    240|       dispatch(h.canvas,'pointerup',h.point);await h.paint();await h.p…
+    241|       expect(submitted(h),'old held primary must not place the new pub…
+       |                                                                                       ^
+    242|       expect(h.actors.snapshot()).toEqual(before);expect(h.tool.isArme…
+    243|       dispatch(h.canvas,'pointerdown',h.point);dispatch(h.canvas,'poin…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/18]⎯
+

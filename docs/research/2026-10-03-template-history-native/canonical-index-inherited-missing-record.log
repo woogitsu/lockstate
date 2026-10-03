@@ -1,0 +1,35 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-template-history-native-20261003
+
+ ❯ tests/foundation/research-index-contract.test.ts (5 tests | 1 failed) 1861ms
+     × names every collection of records that lives in a subdirectory 1832ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/foundation/research-index-contract.test.ts > research index contract > names every collection of records that lives in a subdirectory
+AssertionError: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/research/2026-10-03-camera-build-gesture-audit/ holds records the index neither rows nor links to",
++ ]
+
+ ❯ tests/foundation/research-index-contract.test.ts:195:21
+    193|       );
+    194|
+    195|     expect(unnamed).toEqual([]);
+       |                     ^
+    196|   });
+    197|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 4 passed (5)
+   Start at  08:24:20
+   Duration  2.02s (transform 15ms, setup 0ms, import 32ms, tests 1.86s, environment 0ms)
+

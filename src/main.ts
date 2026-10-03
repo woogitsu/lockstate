@@ -4770,6 +4770,7 @@ if (roomTemplateTool !== undefined) {
     disposePlanGhost = installRoomTemplateWorldBridge(canvas, roomTemplateTool, {
       initialCanvasHover: canvasHover,
       tileSize: TILE_SIZE_PX,
+      worldRevision: () => renderFeed.readFrame(performance.now() / 1000).revision,
       labelSafeBounds: () => {
         const rect = canvas.getBoundingClientRect();
         const bounds = (selector: string) => appRoot?.querySelector(selector)?.getBoundingClientRect();

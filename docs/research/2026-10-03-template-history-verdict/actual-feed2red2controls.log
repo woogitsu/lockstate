@@ -1,0 +1,35 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-template-history-verdict-audit-20261003
+
+ ❯ tests/unit/ui-template-history-verdict.test.ts (4 tests | 2 failed) 309ms
+   × world: stationary blocked ghost must refresh after actual public Undo removes completed template 113ms
+   × oblique: stationary blocked ghost must refresh after actual public Undo removes completed template 66ms
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 2 passed (4)
+   Start at  07:43:11
+   Duration  3.86s (transform 1.25s, setup 0ms, import 3.43s, tests 309ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-template-history-verdict.test.ts > world: stationary blocked ghost must refresh after actual public Undo removes completed template
+ FAIL  tests/unit/ui-template-history-verdict.test.ts > oblique: stationary blocked ghost must refresh after actual public Undo removes completed template
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ tests/unit/ui-template-history-verdict.test.ts:197:59
+    195|     try {
+    196|       expect(h.actors.snapshot().simulation?.objects?.placedObjects).t…
+    197|       const oldFrame=h.readFrame();expect(oldFrame.rooms).toHaveLength…
+       |                                                           ^
+    198|       const oldQueries=queries(h);history(h,'undo');await h.paint();aw…
+    199|       const after=h.actors.snapshot();expect(after.simulation?.objects…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+

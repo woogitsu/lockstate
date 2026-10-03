@@ -1,0 +1,82 @@
+{
+  "controls": [
+    {
+      "control": "omit-real-upright",
+      "exitCode": 1,
+      "error": "ValueError: Cell cot retained/authored mesh set changed"
+    },
+    {
+      "control": "move-real-upright",
+      "exitCode": 1,
+      "error": "ValueError: Cot mounting shoe lacks real triangle-interior contact: physical-cell-cot.north headboard upright 1 / north headboard infill"
+    },
+    {
+      "control": "move-retained-leg",
+      "exitCode": 1,
+      "error": "ValueError: Cell cot actual evaluated retained/authored geometry changed"
+    },
+    {
+      "control": "change-retained-bevel",
+      "exitCode": 1,
+      "error": "ValueError: Cell cot actual topology/material assignment/modifiers changed"
+    },
+    {
+      "control": "change-retained-weighted-normal",
+      "exitCode": 1,
+      "error": "ValueError: Cell cot actual topology/material assignment/modifiers changed"
+    },
+    {
+      "control": "change-used-complete-material-graph",
+      "exitCode": 1,
+      "error": "ValueError: Cell cot nine complete stored shader graphs changed"
+    },
+    {
+      "control": "change-unused-complete-Material-graph",
+      "exitCode": 1,
+      "error": "ValueError: Cell cot nine complete stored shader graphs changed"
+    },
+    {
+      "control": "change-upright-material",
+      "exitCode": 1,
+      "error": "ValueError: Cell cot actual topology/material assignment/modifiers changed"
+    },
+    {
+      "control": "reversed-real-upright-winding",
+      "exitCode": 1,
+      "error": "ValueError: Evaluated Cell cot geometric surfaces face inward: physical-cell-cot.north headboard upright 0"
+    },
+    {
+      "control": "actual-upright-disconnected-from-assembly",
+      "exitCode": 1,
+      "error": "ValueError: Cot mounting shoe lacks real triangle-interior contact: physical-cell-cot.north headboard upright 0 / square steel leg"
+    },
+    {
+      "control": "wrong-loaded-fit",
+      "exitCode": 1,
+      "error": "ValueError: Cell cot actual evaluated retained/authored geometry changed"
+    },
+    {
+      "control": "wrong-actual-target",
+      "exitCode": 1,
+      "error": "ValueError: Cell cot accepted target changed"
+    },
+    {
+      "control": "wrong-canonical-descriptor",
+      "exitCode": 1,
+      "error": "ValueError: Cell cot exporter targets the wrong canonical descriptor"
+    },
+    {
+      "control": "wrong-camera-span",
+      "exitCode": 1,
+      "error": "ValueError: Cell cot actual camera span differs from64pixels per tile"
+    },
+    {
+      "control": "wrong-camera-vector",
+      "exitCode": 1,
+      "error": "ValueError: Cell cot actual camera ground basis changed"
+    }
+  ],
+  "wrapperSourceOriginalBytesExactlyRestored": true,
+  "finalActual72CameraVerifyExitCode": 0,
+  "sourceSha256": "ca8ed38a7250dd941b542a93b6e371ccdd692f6a0829d3646401d53d43a561ef"
+}

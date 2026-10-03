@@ -1,0 +1,4 @@
+tests/unit/ui-template-history-verdict.test.ts(92,104): error TS2353: Object literal may only specify known properties, and 'speed' does not exist in type '{ readonly clientBuildId: string; readonly supportedProtocolVersions: readonly number[]; readonly capabilities: readonly string[]; } | { readonly nonce: string; } | { readonly sessionId: string; readonly source: { ...; } | { ...; }; } | ... 4 more ... | { ...; }'.
+tests/unit/ui-template-history-verdict.test.ts(194,14): error TS2532: Object is possibly 'undefined'.
+tests/unit/ui-template-history-verdict.test.ts(196,46): error TS18048: 'after.simulation.objects' is possibly 'undefined'.
+tests/unit/ui-template-history-verdict.test.ts(201,365): error TS18048: 'after.simulation.objects' is possibly 'undefined'.

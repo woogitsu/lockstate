@@ -1,0 +1,19 @@
+{
+  "sourceCommit": "7dbb2ea5b8e9ba924d04058e941cf6c6b8399582",
+  "typecheckExitCode": 0,
+  "focusedFinalUnit": {
+    "filesPassed": 5,
+    "testsPassed": 18,
+    "testsSkipped": 1
+  },
+  "productionBuildExitCode": 0,
+  "worker": {
+    "path": "dist/client/assets/worker-BIP3kNTH.js",
+    "bytes": 438431,
+    "sha256": "9166c2f2db0a79bda78acb09828a2f8b15d9c29eab70c486fd79432609c82a64"
+  },
+  "sourceSha256": "b1f402e1096c49e1ea65c2e7727df2b6c498a77d09fc485679f1dcf72c95b456",
+  "descriptorSha256": "8a1a96d3639b76f1f94d0cae9009a40251ec3e58a7f534bc107a13970ffcbe6e",
+  "nativeBrowserStarted": false,
+  "serverStarted": false
+}

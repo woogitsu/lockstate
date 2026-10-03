@@ -1,0 +1,32 @@
+{
+  "controls": [
+    {
+      "control": "actual-source-producer-omits-rail-arms",
+      "producerExitCode": 1,
+      "error": "ValueError: Expected sixty-two retained and three real dining-table rail-to-post arms",
+      "rejectedBeforeSourceSave": true
+    },
+    {
+      "control": "actual-source-producer-reverses-arm",
+      "producerExitCode": 1,
+      "error": "ValueError: Evaluated Canteen dining table geometric surfaces face inward: physical-canteen-dining-table.rail-to-post arm 0",
+      "rejectedBeforeSourceSave": true
+    },
+    {
+      "control": "actual-source-producer-short-arm-cannot-reach-rail",
+      "producerExitCode": 1,
+      "error": "ValueError: Dining mounting shoe lacks real triangle-interior contact: physical-canteen-dining-table.rail-to-post arm 0 / Stool support rail",
+      "rejectedBeforeSourceSave": true
+    },
+    {
+      "control": "actual-source-producer-arm-disconnected-from-post",
+      "producerExitCode": 1,
+      "error": "ValueError: Dining mounting shoe lacks real triangle-interior contact: physical-canteen-dining-table.rail-to-post arm 0 / Stool post.0",
+      "rejectedBeforeSourceSave": true
+    }
+  ],
+  "sourceProvenanceBuilderExactlyRestored": true,
+  "originalSourceBytesUnchanged": true,
+  "exactRestoredProductionVerifyExitCode": 0,
+  "sourceSha256": "5f27967600a64ce4ded10a01fe6217ea849c2be9b57ff92353fd60b97af4ede1"
+}

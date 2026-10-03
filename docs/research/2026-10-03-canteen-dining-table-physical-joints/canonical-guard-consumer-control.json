@@ -1,0 +1,10 @@
+{
+  "actualSourceProducer": "deleted real rail-to-post arm0 in saved .blend; recomputed source hash to reach actual structural gate",
+  "correctCanonicalGuardRejectsMissingGeometry": true,
+  "onlyCanonicalDetailGuardConsumerRemovedExitCode": 1,
+  "expectedFailure": "canonical dispatch accepted saved source without real support arm",
+  "exactRestoredConsumerRejectsMalformedSource": true,
+  "sourceProvenanceWrapperBytesExactlyRestored": true,
+  "finalNative72CameraVerifyExitCode": 0,
+  "sourceSha256": "5f27967600a64ce4ded10a01fe6217ea849c2be9b57ff92353fd60b97af4ede1"
+}

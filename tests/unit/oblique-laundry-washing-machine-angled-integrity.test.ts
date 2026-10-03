@@ -45,8 +45,11 @@ it('retains the original washing-machine assembly/materials and registers dedica
   expect(obliqueAssetIdForObject('object.washing-machine')).toBe('utility.washing-machine.variants');
   const catalog = parseObliqueModuleCatalog(JSON.parse(readFileSync(new URL('public/game-content/oblique-utility.washing-machine.v1.json', root), 'utf8')));
   expect(catalog.assetId).toBe('utility.washing-machine.variants');
-  expect(catalog.source).toBe(provenance.source);
-  expect(catalog.sourceSha256).toBe(provenance.sourceSha256);
+  const physical = JSON.parse(readFileSync(new URL('assets/source/blender/utility.washing-machine.angled-detail.provenance.json', root), 'utf8')) as {originalSource:string;originalSourceSha256:string;source:string;sourceSha256:string};
+  expect(physical.originalSource).toBe(provenance.source);
+  expect(physical.originalSourceSha256).toBe(provenance.sourceSha256);
+  expect(catalog.source).toBe(physical.source);
+  expect(catalog.sourceSha256).toBe(physical.sourceSha256);
   expect(catalog.cameraTargetTiles).toEqual(provenance.cameraTargetTiles);
   expect(catalog.resolutionPx).toEqual([256, 256]);
   expect(catalog.nominalPixelsPerTile).toBe(64);

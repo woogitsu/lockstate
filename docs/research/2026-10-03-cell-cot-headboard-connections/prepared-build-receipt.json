@@ -1,0 +1,19 @@
+{
+  "sourceCommit": "4d11cb4e44c3004cc48ea56082356f94aa43104a",
+  "typecheckExitCode": 0,
+  "focusedFinalUnit": {
+    "filesPassed": 4,
+    "testsPassed": 10,
+    "testsSkipped": 1
+  },
+  "productionBuildExitCode": 0,
+  "worker": {
+    "path": "dist/client/assets/worker-Cmz38VjB.js",
+    "bytes": 438431,
+    "sha256": "9c5c838f3a681d0a83763719290f20c3cb222d566e1ae2ed0bfa9213f85481d0"
+  },
+  "sourceSha256": "ca8ed38a7250dd941b542a93b6e371ccdd692f6a0829d3646401d53d43a561ef",
+  "descriptorSha256": "57bea0e61e4f57c83b7736305e0eb7477a389b634e327675a9ecdc7e301efb0e",
+  "nativeBrowserStarted": false,
+  "serverStarted": false
+}

@@ -1,0 +1,9 @@
+const fs=require('node:fs'),cp=require('node:child_process');
+const dir='docs/research/2026-10-03-canteen-table-arms-native-preparation';
+const r=cp.spawnSync(process.execPath,['node_modules/vitest/vitest.mjs','run','tests/foundation/research-index-contract.test.ts','tests/foundation/documentation-links-contract.test.ts','--maxWorkers=2'],{encoding:'utf8',env:{...process.env,GIT_NO_LAZY_FETCH:'1'}});
+fs.writeFileSync(`${dir}/docs-after-owned-canteen-row.txt`,r.stdout+r.stderr);
+process.stdout.write(r.stdout+r.stderr);
+const receipt=JSON.parse(fs.readFileSync(`${dir}/receipt.json`,'utf8'));
+receipt.finalScopedDocsExit=r.status;
+fs.writeFileSync(`${dir}/receipt.json`,JSON.stringify(receipt,null,2)+'\n');
+process.exitCode=r.status;

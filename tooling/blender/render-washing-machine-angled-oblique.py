@@ -14,7 +14,7 @@ exporter = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(exporter)
 exporter.pipeline_common.require_blender_version()
 ASSET_ID = 'utility.washing-machine.variants'
-exporter.MODELS = ((ASSET_ID, 'utility.washing-machine.angled.blend',
+exporter.MODELS = ((ASSET_ID, 'utility.washing-machine.angled-detail.blend',
                     'oblique-utility.washing-machine.v1.json', 2, 1, 1.0, 1.0, 0.7825000286102295),)
 exporter.PREVIEW = exporter.ROOT / 'assets/intermediate/dedicated-washing-machine-angled-preview'
 
@@ -56,6 +56,11 @@ configure_shared = exporter.configure
 
 
 def configure(model):
+    if model[1] == 'utility.washing-machine.angled-detail.blend':
+        detail_spec = importlib.util.spec_from_file_location('washer_detail_dispatch', SCRIPT.with_name('render-washing-machine-detail-oblique.py'))
+        detail = importlib.util.module_from_spec(detail_spec)
+        detail_spec.loader.exec_module(detail)
+        return detail.configure(model)
     registry = json.loads((exporter.ROOT / 'public/game-content/oblique-module-registry.v1.json').read_text())
     entries = [entry for entry in registry['entries'] if entry['assetId'] == ASSET_ID]
     if len(entries) != 1 or model[0] != ASSET_ID or entries[0]['manifest'] != '/game-content/' + model[2]:

@@ -1,0 +1,26 @@
+{
+  "retiredOnlyAfterAllCurrentGameContentJSONReferenceScan": true,
+  "retired": [
+    "/assets/environment/oblique/furniture.dining.table.wooden-yaw+60-elev20.0d3a757749fb.png",
+    "/assets/environment/oblique/furniture.dining.table.wooden-yaw+60-elev30.378ababb6aed.png",
+    "/assets/environment/oblique/furniture.dining.table.wooden-yaw+60-elev40.835f374750cd.png",
+    "/assets/environment/oblique/furniture.dining.table.wooden-yaw+90-elev20.9d89a74c582a.png",
+    "/assets/environment/oblique/furniture.dining.table.wooden-yaw+90-elev30.2b292ea01ac2.png",
+    "/assets/environment/oblique/furniture.dining.table.wooden-yaw+90-elev40.96ebeadc781b.png",
+    "/assets/environment/oblique/furniture.dining.table.wooden-yaw+120-elev20.5b7c2712f3dd.png",
+    "/assets/environment/oblique/furniture.dining.table.wooden-yaw+120-elev30.b3905926380b.png",
+    "/assets/environment/oblique/furniture.dining.table.wooden-yaw+150-elev20.9219bef44034.png",
+    "/assets/environment/oblique/furniture.dining.table.wooden-yaw+150-elev30.48593cea9f54.png",
+    "/assets/environment/oblique/furniture.dining.table.wooden-yaw+210-elev20.fc9a27d5c4d3.png",
+    "/assets/environment/oblique/furniture.dining.table.wooden-yaw+210-elev30.32d4003a886f.png",
+    "/assets/environment/oblique/furniture.dining.table.wooden-yaw+240-elev20.adb30fb1c2df.png",
+    "/assets/environment/oblique/furniture.dining.table.wooden-yaw+240-elev30.f47be61478dc.png",
+    "/assets/environment/oblique/furniture.dining.table.wooden-yaw+270-elev20.f0c8e9017d8e.png",
+    "/assets/environment/oblique/furniture.dining.table.wooden-yaw+270-elev30.3d4d2b2cb72b.png",
+    "/assets/environment/oblique/furniture.dining.table.wooden-yaw+270-elev40.7f5b35106142.png",
+    "/assets/environment/oblique/furniture.dining.table.wooden-yaw+300-elev20.e11670731db3.png",
+    "/assets/environment/oblique/furniture.dining.table.wooden-yaw+300-elev30.4a4902ef9dd4.png",
+    "/assets/environment/oblique/furniture.dining.table.wooden-yaw+300-elev40.cc088f01d7b2.png"
+  ],
+  "retainedPixelIdenticalPoses": 52
+}
