@@ -1,0 +1,18 @@
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
+Traceback (most recent call last):
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-structural-component-art-audit-20261003\tooling\blender\render-interior-north-door-oblique.py", line 363, in <module>
+    if __name__ == "__main__":main()
+                              ~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-structural-component-art-audit-20261003\tooling\blender\render-interior-north-door-oblique.py", line 343, in main
+    verify_exports();return
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-structural-component-art-audit-20261003\tooling\blender\render-interior-north-door-oblique.py", line 325, in verify_exports
+    validate_png(body)
+    ~~~~~~~~~~~~^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-structural-component-art-audit-20261003\tooling\blender\render-interior-north-door-oblique.py", line 306, in validate_png
+    raise ValueError("North door decoded silhouette clips frame border")
+ValueError: North door decoded silhouette clips frame border
+
+Error: script failed, file: 'C:\Users\matma\Documents\Rozwój gier\lockstate-structural-component-art-audit-20261003\tooling\blender\render-interior-north-door-oblique.py', exiting.

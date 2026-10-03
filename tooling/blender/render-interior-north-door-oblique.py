@@ -240,6 +240,42 @@ def verify_assembly():
           "material graphs", json.dumps(contacts), flush=True)
 
 
+def verify_studio():
+    scene = bpy.context.scene
+    camera = scene.camera
+    background = scene.world.node_tree.nodes.get("Background")
+    lights = [o for o in scene.objects if o.type == "LIGHT" and not o.hide_render]
+    if (scene.render.engine != "BLENDER_EEVEE" or scene.eevee.taa_render_samples != 64 or
+        scene.eevee.use_raytracing or camera.data.type != "ORTHO" or camera.data.ortho_scale != 8 or
+        (scene.render.resolution_x, scene.render.resolution_y, scene.render.resolution_percentage) != (512,512,100) or
+        scene.view_settings.view_transform != "Standard" or scene.view_settings.look != "Medium High Contrast"):
+        raise ValueError("North door retained render quality/camera/color-management changed")
+    if (len(lights) != 1 or lights[0].data.type != "AREA" or lights[0].data.shape != "DISK" or
+        lights[0].data.energy != 600 or lights[0].data.size != 5 or tuple(lights[0].location) != (-3,-4,7) or
+        max(abs(a-b) for a,b in zip(background.inputs["Color"].default_value,(.72,.77,.82,1))) > 1e-6 or
+        abs(background.inputs["Strength"].default_value-.7) > 1e-6):
+        raise ValueError("North door retained actual studio lighting changed")
+    print("NORTH_DOOR_STUDIO_GREEN original EEVEE64/512/8span/64ppU lighting",flush=True)
+
+
+def initialize_bounded_pose(yaw, elevation):
+    """Reproduce original canonical first render before a later isolated EEVEE pose.
+
+    Full72 output is exactly historical; a fresh later-pose-only first render differs.
+    Initialization stays in ignored scratch and never replaces descriptor-owned PNGs.
+    """
+    global OUTPUT
+    if (yaw,elevation) == (YAW[0],ELEVATION[0]):return
+    destination = OUTPUT
+    try:
+        OUTPUT = ROOT / "assets/intermediate/interior-north-door-repeat-initialization"
+        render_module(ASSET,SLUG,LEAF,[WALL],512,(YAW[0],),(ELEVATION[0],))
+    finally:
+        OUTPUT = destination
+    verify_assembly()
+    print("NORTH_DOOR_CANONICAL_INITIALIZATION_GREEN -180/25 before bounded later pose",flush=True)
+
+
 def validate_png(body):
     """Decode all five PNG filters; reject clipping after the real render, before hashing."""
     if body[:8] != b"\x89PNG\r\n\x1a\n": raise ValueError("North door frame is not PNG")
@@ -313,9 +349,11 @@ def main():
         if CONTRACT.exists(): raise ValueError("Refusing to replace retained contract")
         pipeline_common.write_text(CONTRACT,json.dumps(assembly_record(),indent=2)+"\n")
     verify_assembly()
+    verify_studio()
     if args.verify_only or args.capture_contract:return
     if (args.yaw is None)!=(args.elevation is None):raise ValueError("Bounded pose needs both yaw and elevation")
     if args.yaw is not None and (args.yaw not in YAW or args.elevation not in ELEVATION):raise ValueError("Noncanonical bounded pose")
+    if args.yaw is not None:initialize_bounded_pose(args.yaw,args.elevation)
     render_module(ASSET,SLUG,LEAF,[WALL],512,
                   (args.yaw,) if args.yaw is not None else YAW,
                   (args.elevation,) if args.elevation is not None else ELEVATION)

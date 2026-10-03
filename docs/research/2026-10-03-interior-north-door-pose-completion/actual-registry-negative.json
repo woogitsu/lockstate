@@ -1,0 +1,9 @@
+{
+  "actualProductionMutation": "Remove only north accepted door entry from actual public registry",
+  "actualRedTests": 5,
+  "remainingGreenWestControl": 1,
+  "restoredGreenTests": 6,
+  "beforeSha256": "978ce3494304dc8157982d3eca1ea34af6801a861e5543422ec7d15e8079d4c5",
+  "afterSha256": "978ce3494304dc8157982d3eca1ea34af6801a861e5543422ec7d15e8079d4c5",
+  "exactRestored": true
+}
