@@ -39,9 +39,11 @@ Original production source: **5 RED / 0 GREEN** in the two extracted orientation
 tests. The old main producer dropped orientation; the old tool remained q0;
 the scene refresh capability was absent. Raw output is retained in `evidence/`.
 
-After extraction: **177 GREEN / 13 files**. A test plumbing parse error during
-the added callback probe was corrected; its original output remains retained.
-This was not a product failure.
+After extraction: **177 GREEN / 13 files**. The added callback probe first
+failed to parse a top-level return in its TypeScript stripper; the actual body
+was placed inside a function. That intermediate raw log was overwritten;
+this record reports it explicitly rather than claiming preserved raw output.
+This was a test plumbing error, not a product failure.
 
 Genuine production negative: omit only `quarterTurns` from the actual ObjectTool
 preflight request. **1 RED / 4 GREEN**: the query became q0 while the consumer
