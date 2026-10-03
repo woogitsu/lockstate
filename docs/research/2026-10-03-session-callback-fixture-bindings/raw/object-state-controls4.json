@@ -1,0 +1,9 @@
+{
+  "args": [
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "tests/unit/ui-object-preflight-session-arm.test.ts",
+    "--maxWorkers=2"
+  ],
+  "exitCode": 0
+}
