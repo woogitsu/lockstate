@@ -87,13 +87,7 @@ function assertCompletedCell(data: SessionSnapshotBundle): void {
   const orders = cellOrders(data); expect(orders).toHaveLength(20);
   expect(orders.every(order => order.state === 'completed')).toBe(true);
   const expectedShell: string[] = [];
-  for (let y = 5; y < 9; y++) for (let x = 20; x < 27; x++) {
-    if ((y === 5 || y === 8 || x === 20 || x === 26) && !(x === 20 && y === 6)) expectedShell.push(`wall-brick@${x},${y}`);
-  }
-  // The visible door occupies square20,6; its east boundary is stored as
-  // the neighbouring tile21,6's west edge (the established q1 contract).
-  expectedShell.push('door-wooden@21,6');
-  expect(orders.filter(order => order.definitionId === 'door-wooden')).toMatchObject([{ location: { x: 21, y: 6, edge: 'west' } }]);
+  for (let y = 5; y < 9; y++) for (let x = 20; x < 27; x++) if (y === 5 || y === 8 || x === 20 || x === 26) expectedShell.push(`${x === 20 && y === 6 ? 'door-wooden' : 'wall-brick'}@${x},${y}`);
   expect(orders.map(o => `${o.definitionId}@${o.location.x},${o.location.y}`).sort()).toEqual([...expectedShell, 'bed-wooden@24,6', 'toilet-brick@22,7'].sort());
   expect(cellObjects(data).map(o => ({ id: o.objectId, anchor: o.anchorTile, orientation: o.orientation })).sort((a,b) => a.id.localeCompare(b.id))).toEqual([
     { id: 'object.bed', anchor: { x: 24, y: 6 }, orientation: 1 }, { id: 'object.toilet', anchor: { x: 22, y: 7 }, orientation: 1 },

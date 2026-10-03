@@ -1,0 +1,75 @@
+node : [2m[WebServer] [22m(node:12844) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:6 char:1
++ node --experimental-transform-types --disable-warning=ExperimentalWar ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 3 tests using 1 worker
+
+(node:568) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:568) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\room-template-history-verdict-player.spec.ts:333:1 › player completes and saves actual Storage/Delivery capacity before stationary Cell history cases (44.4s)
+  x  2 tests\browser\room-template-history-verdict-player.spec.ts:431:42 › world FullHD: stationary q1 Cell ghost follows actual completed Undo and pending Redo (22.7s)
+  -  3 tests\browser\room-template-history-verdict-player.spec.ts:431:42 › oblique FullHD: stationary q1 Cell ghost follows actual completed Undo and pending Redo
+
+
+  1) tests\browser\room-template-history-verdict-player.spec.ts:431:42 › world FullHD: stationary q1 Cell ghost follows actual completed Undo and pending Redo 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 1[39m
+
+    [33m@@ -1,8 +1,8 @@[39m
+    [2m  Array [[22m
+    [2m    "bed-wooden@24,6",[22m
+    [32m-   "door-wooden@20,6",[39m
+    [31m+   "door-wooden@21,6",[39m
+    [2m    "toilet-brick@22,7",[22m
+    [2m    "wall-brick@20,5",[22m
+    [2m    "wall-brick@20,7",[22m
+    [2m    "wall-brick@20,8",[22m
+    [2m    "wall-brick@21,5",[22m
+
+      89 |   const expectedShell: string[] = [];
+      90 |   for (let y = 5; y < 9; y++) for (let x = 20; x < 27; x++) if (y === 5 || y === 8 || x === 20 || x === 26) expectedShell.push(`${x === 20 && y === 6 ? 'door-wooden' : 'wall-brick'}@${x},${y}`);
+    > 91 |   expect(orders.map(o => `${o.definitionId}@${o.location.x},${o.location.y}`).sort()).toEqual([...expectedShell, 'bed-wooden@24,6', 'toilet-brick@22,7'].sort());
+         |                                                                                       ^
+      92 |   expect(cellObjects(data).map(o => ({ id: o.objectId, anchor: o.anchorTile, orientation: o.orientation })).sort((a,b) => a.id.localeCompare(b.id))).toEqual([
+      93 |     { id: 'object.bed', anchor: { x: 24, y: 6 }, orientation: 1 }, { id: 'object.toilet', anchor: { x: 22, y: 7 }, orientation: 1 },
+      94 |   ]);
+        at assertCompletedCell (C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-washer-cot-integration-20261003\tests\browser\room-template-history-verdict-player.spec.ts:91:87)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-washer-cot-integration-20261003\tests\browser\room-template-history-verdict-player.spec.ts:221:43
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-history-paused-20261003\room-template-history-verd-f1488-leted-Undo-and-pending-Redo\error-context.md
+
+  1 failed
+    tests\browser\room-template-history-verdict-player.spec.ts:431:42 › world FullHD: stationary q1 Cell ghost follows actual completed Undo and pending Redo 
+  1 did not run
+  1 passed (1.2m)
+
+==============================================================================
+LOCKSTATE_BROWSER_SUITE_NO_RETRY suite=artifact reason=no-last-run-file
+Playwright left no readable test-results/.last-run.json, so the run failed before it
+could record which tests failed. That is not net::ERR_NETWORK_CHANGED; not retrying.
+==============================================================================
+
