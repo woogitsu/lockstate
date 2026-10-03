@@ -240,8 +240,12 @@ export function createRoomTemplatePreview(localizer: HudLocalizer, tool?: RoomTe
       if (tile === undefined || place.disabled) return;
       place.disabled = true;
       const current = revision;
+      const owningSelection = tool.revision;
       try {
         const result = await tool.placeAt(tile);
+        // Acceptance consumes its original map owner even if this form moved
+        // on; a newer selected/rearmed tool still belongs to its newer press.
+        if (result.ok && tool.isArmed() && tool.revision === owningSelection) tool.standDown();
         if (current !== revision) return;
         status.textContent = result.ok ? t(HUD_MESSAGE_KEY.buildTemplateSubmitted) : t(HUD_MESSAGE_KEY.buildTemplateBlocked);
       } catch {
