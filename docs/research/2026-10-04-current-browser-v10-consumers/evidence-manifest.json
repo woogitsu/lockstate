@@ -1,0 +1,72 @@
+﻿{
+    "fixedConsumerCheckpoint":  "4e95167816e5348f39c7cf89065b63418694a3f6",
+    "sourceGuardOriginal":  "6 RED/2.53s",
+    "files":  [
+                  {
+                      "path":  "evidence/bounded-existing-gates.txt",
+                      "sha256":  "857b176ea7813e52087a4a8bdbb284cff53477db2d732bb8084e7c60872ba73b",
+                      "bytes":  532
+                  },
+                  {
+                      "path":  "evidence/consumer-source-port.config.mjs.txt",
+                      "sha256":  "5ce3aef292d9110673a1251d691759bb54491461ed019346869cf98e5d497d1a",
+                      "bytes":  265
+                  },
+                  {
+                      "path":  "evidence/consumer-source-port.research.ts.txt",
+                      "sha256":  "48aa81654303ae674f50749a5ae9725af802021a31e0a25d030301ea7ffc9c48",
+                      "bytes":  4534
+                  },
+                  {
+                      "path":  "evidence/fixed-source-consumers.txt",
+                      "sha256":  "58144a174bb6add7ec9dd6008a379936e2c65dff486144b6c653096d5cd29d53",
+                      "bytes":  528
+                  },
+                  {
+                      "path":  "evidence/initial-source-probe-fixture-error.txt",
+                      "sha256":  "cd38cc049923f788cacd2249db632ef3c754711b1749291cb0c7f485eda0db1b",
+                      "bytes":  11484
+                  },
+                  {
+                      "path":  "evidence/original-common-room.spec.ts.txt",
+                      "sha256":  "fac2c6e424904d8e90defd5cb0e70bb699ed22ab614c54d62e425dd77cccd8ac",
+                      "bytes":  17585
+                  },
+                  {
+                      "path":  "evidence/original-queued-cancellation.spec.ts.txt",
+                      "sha256":  "e0f79bedce9e26b6748ea48aa42b163c8d96ebccc7e6347d0335ae34b19c106c",
+                      "bytes":  11453
+                  },
+                  {
+                      "path":  "evidence/original-session-preflight.spec.ts.txt",
+                      "sha256":  "309405dea88bce980b89f9d4fb382db54e1a6e1bbbbf532f2d4219e664889f69",
+                      "bytes":  16767
+                  },
+                  {
+                      "path":  "evidence/original-source-consumers.txt",
+                      "sha256":  "01e0a1fd2fe441c5d45a9adc56eea935b26b30402b6711206fb2d16ab34a8910",
+                      "bytes":  15378
+                  },
+                  {
+                      "path":  "evidence/original-wooden-bench.spec.ts.txt",
+                      "sha256":  "c3557e868910aec004b102d3dc9fe905ef33094d0d43bccd6bea5056cea15cca",
+                      "bytes":  15874
+                  },
+                  {
+                      "path":  "evidence/types-app.txt",
+                      "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                      "bytes":  0
+                  },
+                  {
+                      "path":  "evidence/types-tools.txt",
+                      "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                      "bytes":  0
+                  }
+              ],
+    "sourceGuardFixed":  "6 GREEN/2.42s",
+    "productionChanged":  false,
+    "boundedExistingGates":  "15 GREEN/3 files/1.92s",
+    "nativeExecuted":  false,
+    "sourceBase":  "85f4471ebebc08f50400ee606c613197999be39a",
+    "preparationDependency":  "e145defbd39ad73fef09e188504255d7c827c1e8"
+}

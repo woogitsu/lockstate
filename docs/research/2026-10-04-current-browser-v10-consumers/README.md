@@ -43,14 +43,22 @@ the VM received a TypeScript non-null assertion. The executed corrected probe
 uses Node's actual TypeScript stripping before evaluating the exact guard; the
 initial raw output is preserved. It makes no claim that this probe drives
 public controls, native600ms timing, a renderer, pixels or full browser
-callbacks. These seven existing native cases (two CommonRoom, two Bench,
-New/Load preflight and one queued cancellation) remain unexecuted here.
+callbacks. These nine existing native cases (two capacity bootstraps,
+two CommonRoom, two Bench, New/Load preflight and one queued cancellation)
+remain unexecuted here.
 
 Application and tools strict types are GREEN. The correction is scoped to
 the approved current V10 contracts: snapshot4, save10, cancellation command2
 and exact textual ledger. It is not evidence that the77 archived PR2024 browser
 failures were caused by V10; that old hosted305 subject was V8 and remains
 independent historical evidence.
+
+The only subsequent bounded checks are the existing research-index and
+browser selection/partition guards:15GREEN/3files,1.92s. The protected
+production/shared workflow/config/View-helper diff is zero against e145.
+The evidence manifest records SHA256 for every raw output, original browser
+source and executed inert probe. No additional source/native/full-suite run
+was performed after these GREEN results.
 
 ## Intentionally unchanged boundaries
 
