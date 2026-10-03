@@ -1,0 +1,18 @@
+{
+    "wallDoorFamilies":  8,
+    "workers":  4,
+    "subject":  "51e6f6fcca",
+    "exactByteRestore":  true,
+    "wallDoorSourceFrames":  576,
+    "configuredCaseTimeoutMs":  5000,
+    "buildExecuted":  false,
+    "restoredExit":  0,
+    "productionChangeRetained":  false,
+    "nativeExecuted":  false,
+    "sourceRestoredSha256":  "F2E7A4D5EA441B19049B158745F1125D83BB3DACC69FD225E0B0141E2A2C7E88",
+    "redExit":  1,
+    "mutated":  "tests/browser/staff-room-padded-chair/material-observer.ts",
+    "framesPerFamily":  72,
+    "omitted":  "complete opaque 5x5 with three authored colours",
+    "sourceBeforeSha256":  "F2E7A4D5EA441B19049B158745F1125D83BB3DACC69FD225E0B0141E2A2C7E88"
+}
