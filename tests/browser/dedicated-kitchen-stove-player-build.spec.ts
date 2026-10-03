@@ -1,3 +1,4 @@
+import { openCameraControls } from './public-camera-controls';
 // Queued real Kitchen workers and Save/Load; native enamel/grate palette regions calibrated from actual loaded pixels.
 import { writeFile } from 'node:fs/promises';
 import { expect, test as base, type Page } from './network-changed-fixture';
@@ -229,6 +230,7 @@ test(`player builds Kitchen at quarterTurns${quarterTurns} and retains stove and
     commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
   }, null, 2));
   await info.attach('dedicated-kitchen-stove-worker-and-save-evidence', { path: evidencePath, contentType: 'application/json' });
+  await openCameraControls(page);
   await page.getByRole('button', { name: 'Rotate camera left', exact: true }).click();
   await page.getByRole('button', { name: 'Rotate camera left', exact: true }).click();
   await page.screenshot({ path: info.outputPath('kitchen-loaded-physical-fixings-fullhd.png') });

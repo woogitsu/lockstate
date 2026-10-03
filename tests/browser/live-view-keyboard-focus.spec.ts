@@ -10,6 +10,8 @@ async function tabTo(page:Page,target:Locator):Promise<void> {
 async function bootKeyboard(page:Page):Promise<Locator> {
   await page.setViewportSize({width:1920,height:1080});await page.goto('/');
   const newPrison=page.getByRole('button',{name:'New prison',exact:true});await tabTo(page,newPrison);await page.keyboard.press('Enter');
+  const disclosure=page.getByRole('button',{name:'View',exact:true});await tabTo(page,disclosure);await page.keyboard.press('Enter');
+  await expect(page.locator('.hud-camera-panel')).toBeVisible();
   const view=page.getByRole('combobox',{name:'View',exact:true});await tabTo(page,view);return view;
 }
 test('actual keyboard-only live view roundtrip preserves selector focus',async({page})=>{

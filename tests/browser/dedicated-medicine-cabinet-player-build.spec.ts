@@ -1,3 +1,4 @@
+import { openCameraControls } from './public-camera-controls';
 // Actual combined-source Infirmary Build/SaveLoad accepted in both orientations.
 // Original regions/colours/>100 retained; root opened q0/q1 real FullHD captures.
 import { writeFile } from 'node:fs/promises';
@@ -240,6 +241,7 @@ test(`player builds Infirmary at quarterTurns${quarterTurns} and retains the aut
 
   // Native opposite-side observation exposes the front hinge/handle hardware hidden in the
   // default palette views. Keep those palette crops/thresholds unchanged.
+  await openCameraControls(page);
   for (let step = 0; step < 12; step++) {
     await page.getByRole('button', { name: 'Rotate camera right', exact: true }).click();
   }

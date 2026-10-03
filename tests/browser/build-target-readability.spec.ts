@@ -1,3 +1,4 @@
+import { openCameraControls } from './public-camera-controls';
 import {expect,test} from './network-changed-fixture';
 import type {Locator} from './network-changed-fixture';
 async function assertReadable(value:Locator):Promise<void> {
@@ -13,6 +14,7 @@ async function assertReadable(value:Locator):Promise<void> {
 }
 for(const width of [960,1920,2560]) test(`${width} CSS-pixel actual square target and catalogue value stay readable without moving controls during a drag`,async({page})=>{
   await page.setViewportSize({width,height:width===960?540:1080});await page.goto('/');
+  await openCameraControls(page);
   await page.getByRole('button',{name:'New prison',exact:true}).click();
   const view=page.getByRole('combobox',{name:'View',exact:true});await view.selectOption('oblique');await expect(view).toBeEnabled();await expect(view).toHaveValue('oblique');
   await page.getByRole('button',{name:'Build',exact:true}).click();await page.locator('.hud-build__arm').click();

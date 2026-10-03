@@ -1,3 +1,4 @@
+import { openCameraControls } from './public-camera-controls';
 /** Opt-in genuine public built-client route. Preparation only: no private
  * commands, injected snapshots, fabricated owners or guessed pixel thresholds. */
 import { writeFile } from 'node:fs/promises';
@@ -135,6 +136,7 @@ for (const turns of [0, 1] as const) test(`Classroom plan q${turns}: genuine sep
     concurrentUse: [{ capability: 'education', capacity: 2, inUse: 0 }, { capability: 'seating', capacity: 4, inUse: 0 }, { capability: 'workstation', capacity: 2, inUse: 0 }],
   });
   // BOTH desks have orientation0: initial−45 +7*15 = source60, default45→frame40.
+  await openCameraControls(page);
   for (let step = 0; step < CLASSROOM_ART.cameraRightClicks; step++) await page.getByRole('button', { name: 'Rotate camera right', exact: true }).click();
   await framePublicRoom(page);
   await page.screenshot({ path: info.outputPath('actual-classroom-desk-before-save-fullhd.png') });

@@ -1,3 +1,4 @@
+import { openCameraControls } from './public-camera-controls';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { expect, test, type Page } from './network-changed-fixture';
@@ -174,6 +175,7 @@ for (const yaw of [0, 180]) test(`actual loaded guard stays behind pending whole
   page.on('requestfinished', request => { if (new URL(request.url()).pathname === frame.image) completed = true; });
   try {
     // -45°→0° or -45°→-180°, always real buttons. Only final wall PNG is held.
+    await openCameraControls(page);
     for (let i = 0; i < (yaw === 0 ? 3 : 9); i++) await page.getByRole('button', { name: yaw === 0 ? 'Rotate camera right' : 'Rotate camera left', exact: true }).click();
     await expect.poll(() => held).toBe(true);
     expect(completed).toBe(false);

@@ -1,3 +1,4 @@
+import { openCameraControls } from './public-camera-controls';
 import { createHash } from 'node:crypto';
 import { expect, type Page } from './network-changed-fixture';
 import type { SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
@@ -103,6 +104,7 @@ export function requireCanteenOwners(snapshot: SessionSnapshotBundle, quarterTur
 // objectArtYaw = cameraYaw + orientation*90, so q1 needs camera30, not210.
 export async function publicSupportPose(page: Page, quarterTurns: 0 | 1) {
   const yawClicks = quarterTurns === 0 ? 11 : 5; // genuine initial yaw -45, steps +15
+  await openCameraControls(page);
   for (let index = 0; index < yawClicks; index++) {
     await page.getByRole('button', { name: 'Rotate camera right', exact: true }).click();
   }

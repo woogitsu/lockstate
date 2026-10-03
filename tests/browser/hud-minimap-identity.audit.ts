@@ -1,3 +1,4 @@
+import { openCameraControls } from './public-camera-controls';
 import { writeFileSync } from 'node:fs';
 import { expect, test, type Page } from './network-changed-fixture';
 import { observeDemandRoute } from './oblique-demand-native-observers';
@@ -45,6 +46,7 @@ test('opt-in actual paused minimap DOM identity across New, viewport, locale and
     await expect(page.getByRole('button', { name: 'Pause', exact: true })).toHaveAttribute('aria-pressed', 'true');
     await expect(page.locator('.hud-minimap__canvas')).not.toHaveAttribute('hidden');
     const initial = await check('paused-active');
+    await openCameraControls(page);
     await page.getByRole('button', { name: 'Rotate camera right', exact: true }).click();
     await expect.poll(() => page.locator('.hud-minimap__viewport').getAttribute('style')).not.toBe(initial.viewport);
     await check('changed-viewport');

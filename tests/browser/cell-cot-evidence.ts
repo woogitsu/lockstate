@@ -1,3 +1,4 @@
+import { openCameraControls } from './public-camera-controls';
 import { createHash } from 'node:crypto';
 import { expect, type Page } from './network-changed-fixture';
 import type { SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
@@ -109,6 +110,7 @@ export function requireCotOwner(snapshot: SessionSnapshotBundle, quarterTurns: 0
 // Lower3 reaches the existing20-degree clamp; Raise2 reaches40 exactly.
 export async function publicHeadboardPose(page: Page, quarterTurns: 0 | 1) {
   const yawClicks = quarterTurns === 0 ? 7 : 1;
+  await openCameraControls(page);
   for (let index = 0; index < yawClicks; index++) {
     await page.getByRole('button', { name: 'Rotate camera right', exact: true }).click();
   }

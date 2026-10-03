@@ -1,9 +1,11 @@
+import { openCameraControls } from './public-camera-controls';
 import {expect,test} from './network-changed-fixture';
 
 test('Full HD camera icon group keeps four labelled keyboard actions above the minimap',async({page},testInfo)=>{
   await page.setViewportSize({width:1920,height:1080});
   await page.goto('/?renderer=oblique');
   await page.getByRole('button',{name:'New prison',exact:true}).click();
+  await openCameraControls(page);
   const group=page.locator('.hud-camera-pose');
   const buttons=group.getByRole('button');
   await expect(buttons).toHaveCount(4);

@@ -1,3 +1,4 @@
+import { openCameraControls } from './public-camera-controls';
 // Actual combined native Security Office Build/Load accepted on bb521c103e, 2026-10-03.
 // Historical q0/q1 controls retained unchanged; actual producer removal failed and exact restoration passed.
 import { writeFile } from 'node:fs/promises';
@@ -241,6 +242,7 @@ test(`player builds Security Office at quarterTurns${quarterTurns} and retains t
 
   // Native camera controls face the -Y authored front for independent
   // physical keycap/knob inspection in either genuine object orientation.
+  await openCameraControls(page);
   const frontTurn = quarterTurns === 0 ? 'Rotate camera right' : 'Rotate camera left';
   for (let step = 0; step < 3; step++) {
     await page.getByRole('button', { name: frontTurn, exact: true }).click();
