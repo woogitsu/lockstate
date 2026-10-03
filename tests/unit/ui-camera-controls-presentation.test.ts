@@ -23,7 +23,7 @@ class ObserverStub {
   disconnect() { this.disconnected = true; }
 }
 afterEach(() => vi.unstubAllGlobals());
-function setup(variant: 'disclosure' | 'always') {
+function setup(variant: 'disclosure' | 'always', withNotice = false) {
   const doc = { createElement: () => new ElementStub(), activeElement: new ElementStub(), documentElement: new ElementStub() };
   vi.stubGlobal('document', doc); vi.stubGlobal('window', new EventTarget()); vi.stubGlobal('ResizeObserver', ObserverStub);
   let scale = 1;
@@ -32,13 +32,15 @@ function setup(variant: 'disclosure' | 'always') {
   const tabs = new ElementStub(), strip = new ElementStub(), rail = new ElementStub();
   tabs.bounds.right = 180; strip.bounds.bottom = 80; rail.bounds.left = 1100;
   hud.selectors.set('.hud__tabs', tabs); hud.selectors.set('.hud-strip', strip); hud.selectors.set('.hud__rail', rail);
+  const notice = new ElementStub(); notice.bounds.bottom = 142;
+  if (withNotice) hud.selectors.set('.hud__refusal', notice);
   const focus = vi.fn(); const click = vi.fn(); pan.addEventListener('click', click); pose.hidden = true;
   zoom.append(select, pan, pose);
   const view = createCameraControlsPresentation({ variant, viewLabel: 'View', hud: hud as unknown as HTMLElement,
     zoom: zoom as unknown as HTMLElement, select: select as unknown as HTMLElement,
     controls: [pan, pose] as unknown as HTMLElement[], onFocus: focus });
   return { view, panel: view.element as unknown as ElementStub, trigger: view.trigger as unknown as ElementStub | undefined,
-    hud, select, pan, pose, zoom, focus, click, tabs, strip, rail, scale: (next: number) => { scale = next; } };
+    hud, select, pan, pose, zoom, focus, click, tabs, strip, rail, notice, scale: (next: number) => { scale = next; } };
 }
 it('A reuses original nodes/listeners, transfers keyboard ownership, opens/selects and closes/returns focus', () => {
   const s = setup('disclosure');
@@ -65,4 +67,10 @@ it.each(['disclosure', 'always'] as const)('%s follows supplied DOM bounds on UI
   s.rail.bounds.left = 700; window.dispatchEvent(new Event('resize')); expect(s.panel.style.width).toBe('396px');
   s.view.destroy(); expect(observer.disconnected).toBe(true); expect(s.panel.removed).toBe(true);
   const old = s.panel.style.width; s.rail.bounds.left = 600; window.dispatchEvent(new Event('resize')); expect(s.panel.style.width).toBe(old);
+});
+it.each(['disclosure', 'always'] as const)('%s keeps a visible refusal band above the panel and follows its publication', variant => {
+  const s = setup(variant, true), observer = ObserverStub.latest;
+  expect(s.panel.style.top).toBe('154px'); expect(observer.observed).toContain(s.notice);
+  s.notice.hidden = true; observer.callback(); expect(s.panel.style.top).toBe('92px');
+  s.scale(2); s.notice.hidden = false; s.notice.bounds.bottom = 300; observer.callback(); expect(s.panel.style.top).toBe('324px');
 });

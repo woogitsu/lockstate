@@ -43,11 +43,18 @@ export function createCameraControlsPresentation(options: {
     const scale = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ui-scale'));
     if (tabs === undefined || strip === undefined || rail === undefined || !Number.isFinite(scale)) return;
     const gap = 12 * scale, left = tabs.right + gap;
-    panel.style.left = `${left}px`; panel.style.top = `${strip.bottom + gap}px`;
+    // Existing transient notices occupy rows below the strip. A camera panel
+    // must follow their actual bottom too, rather than covering a refusal.
+    let top = strip.bottom;
+    for (const selector of ['.hud__unavailable', '.hud__refusal', '.hud__event']) {
+      const band = options.hud.querySelector<HTMLElement>(selector);
+      if (band !== null && !band.hidden) top = Math.max(top, band.getBoundingClientRect().bottom);
+    }
+    panel.style.left = `${left}px`; panel.style.top = `${top + gap}px`;
     panel.style.width = `${Math.max(0, Math.min(396 * scale, rail.left - left - gap))}px`;
   }
   const observer = new ResizeObserver(position);
-  for (const selector of ['.hud-strip', '.hud__tabs', '.hud__rail']) {
+  for (const selector of ['.hud-strip', '.hud__tabs', '.hud__rail', '.hud__unavailable', '.hud__refusal', '.hud__event']) {
     const bounds = options.hud.querySelector(selector); if (bounds !== null) observer.observe(bounds);
   }
   window.addEventListener('resize', position);
