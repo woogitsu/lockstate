@@ -132,6 +132,8 @@ for (const mode of ['world', 'oblique'] as const) for (const uiScale of [1, 2]) 
     await page.getByRole('button', { name: 'Pause', exact: true }).click();
     expect(await page.evaluate(() => ({ width: innerWidth, height: innerHeight, zoom: visualViewport!.scale,
       uiScale: Number(getComputedStyle(document.documentElement).getPropertyValue('--ui-scale')) }))).toEqual({ width: 1920, height: 1080, zoom: 1, uiScale });
+    await expect(page.locator('#game-root canvas')).toBeVisible();
+    await expect(page.locator('.hud-minimap__viewport')).toBeVisible();
     await expect(page.locator('.hud-camera-pan button')).toHaveCount(4);
     // Keep all four movement observations strictly inside the map. Clipped
     // minimap boxes cannot serve as a precise camera-ground reference.
