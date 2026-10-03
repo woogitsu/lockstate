@@ -1,0 +1,19 @@
+{
+  "quarterTurns": 0,
+  "actualBefore": [
+    "object.utility-panel@22,6:orientation=0"
+  ],
+  "beforePixels": [
+    945
+  ],
+  "commands": [
+    {
+      "type": "PlaceRoomTemplate",
+      "templateId": "utility-room-basic",
+      "origin": {
+        "x": 20,
+        "y": 5
+      }
+    }
+  ]
+}
