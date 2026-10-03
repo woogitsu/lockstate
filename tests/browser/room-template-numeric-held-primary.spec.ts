@@ -154,7 +154,7 @@ for (const mode of ['world', 'oblique'] as const) test(`${mode} FullHD: numeric 
   const ghost = page.locator('.room-template-world-ghost');
   await expect(ghost).toHaveAttribute('data-ready', 'clear');
   await expect(ghost.locator('polygon')).toHaveCount(28);
-  await expect(ghost.getByRole('status')).toHaveText(quote);
+  await expect(ghost.getByRole('status')).toHaveText(`Click map to place; Esc cancels. | This footprint is clear. | ${quote}`);
   const mapOrigin = mode === 'world' ? { x: 11, y: 11 } : { x: 10, y: 11 };
   expect((await receipts(page)).replies.at(-1)).toMatchObject({ target: { templateId: 'cell-basic', origin: mapOrigin, quarterTurns: 1 }, verdict: { ok: true } });
   const before = await snapshot(page);
