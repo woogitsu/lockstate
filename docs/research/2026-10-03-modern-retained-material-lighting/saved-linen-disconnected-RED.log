@@ -1,0 +1,21 @@
+00:01.203  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-modern-retained-material-lighting-draft-20261003\assets\source\blender\draft.laundry.linen-rack.soft-light.blend"
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
+Traceback (most recent call last):
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-modern-retained-material-lighting-draft-20261003\tooling\blender\render-modern-retained-material-draft.py", line 196, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-modern-retained-material-lighting-draft-20261003\tooling\blender\render-modern-retained-material-draft.py", line 138, in main
+    verify_presentation(scene, scene.camera, target, before)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-modern-retained-material-lighting-draft-20261003\tooling\blender\render-modern-retained-material-draft.py", line 80, in verify_presentation
+    after = frozen_model(scene)
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-modern-retained-material-lighting-draft-20261003\tooling\blender\render-modern-retained-material-draft.py", line 34, in frozen_model
+    'actualContacts': source.builder.source_contacts(scene, source.receipt['actualContactPairs']),
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-modern-retained-material-lighting-draft-20261003\tooling\blender\build-laundry-linen-rack.py", line 76, in source_contacts
+    raise ValueError(f'Laundry linen rack actual contact disconnected: {first} / {second}')
+ValueError: Laundry linen rack actual contact disconnected: Laundry linen rack.folded linen panel 0 / Laundry linen rack.linen rail return fold 0
+
+Error: script failed, file: 'C:\Users\matma\Documents\Rozwój gier\lockstate-modern-retained-material-lighting-draft-20261003\tooling\blender\render-modern-retained-material-draft.py', exiting.

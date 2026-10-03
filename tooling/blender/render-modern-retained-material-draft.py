@@ -117,9 +117,31 @@ def main():
                  ROOT / 'src/rendering/assets/oblique-object-mapping.ts', ROOT / 'src/content/room-catalog.ts']
     protected += list((ROOT / 'public/assets/environment/oblique').glob(source.ASSET_ID + '-*.png'))
     protected_before = {path.relative_to(ROOT).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest() for path in protected}
+    if '--mutate-saved-disconnect' in sys.argv or '--mutate-saved-light-omit' in sys.argv or '--mutate-saved-camera' in sys.argv:
+        bpy.ops.wm.open_mainfile(filepath=str(DRAFT_SOURCE))
+        if '--mutate-saved-disconnect' in sys.argv:
+            bpy.data.objects['Laundry linen rack.folded linen panel 0'].location.z += 1
+        elif '--mutate-saved-light-omit' in sys.argv:
+            bpy.data.objects.remove(bpy.data.objects['Modern draft soft warm key'], do_unlink=True)
+        else:
+            bpy.context.scene.camera.data.ortho_scale = 2
+        bpy.context.preferences.filepaths.save_version = 0
+        bpy.ops.wm.save_as_mainfile(filepath=str(DRAFT_SOURCE))
+        print('ACTUAL_OWN_DRAFT_BLEND_MUTANT_SAVED', flush=True)
+        return
+    if '--verify-saved' in sys.argv:
+        expected = json.loads((REPORT / 'actual-before-after.json').read_text(encoding='utf-8'))
+        bpy.ops.wm.open_mainfile(filepath=str(DRAFT_SOURCE))
+        scene = bpy.context.scene
+        target = Vector((.5, .5, source.TARGET_Z))
+        before = expected['physicalAssembly']
+        verify_presentation(scene, scene.camera, target, before)
+        print('ACTUAL_SAVED_DRAFT_RETAINED_SOURCE_CAMERA_MATERIALS_RIG_GREEN', flush=True)
+        return
     frames = []
     repeat_only = '--repeat60-only' in sys.argv
-    if not repeat_only:
+    verify_only = '--verify-only' in sys.argv
+    if not repeat_only and not verify_only:
         scene, camera, target = source.configure(source.MODEL)
         for yaw, elevation in POSES:
             frame = render(scene, camera, target, yaw, elevation, 'before-workbench')
