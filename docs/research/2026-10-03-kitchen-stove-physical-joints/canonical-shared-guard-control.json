@@ -1,0 +1,9 @@
+{
+  "actualSourceMissingMountingShoe": "physical-kitchen-stove.east-west grate shoe 0 -1",
+  "tamperedSourceHashRecomputedToReachGeometryGuard": true,
+  "canonicalGuardRejectsBadSourceExitCode": 0,
+  "disabledFridgeOnlyEarlyDispatchExpectedAssertionFailureExitCode": 1,
+  "exactRestoredCanonicalGuardRejectsBadSourceExitCode": 0,
+  "allSourceProvenanceSharedWrapperBytesExactlyRestored": true,
+  "finalNativeVerifyExitCode": 0
+}
