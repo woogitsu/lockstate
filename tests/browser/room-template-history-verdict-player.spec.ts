@@ -217,6 +217,7 @@ for (const mode of ['world', 'oblique'] as const) test(`${mode} FullHD: stationa
   expect(capacitySnapshot).toBeDefined();
   await page.locator('.save-panel__item').first().getByRole('button',{name:'Load',exact:true}).click();
   await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
+  await expect(page.getByRole('combobox', { name: 'View', exact: true })).toHaveValue(mode);
   // Restore starts a fresh paused kernel; explicitly confirm it through the real public control.
   await page.getByRole('button', { name: 'Pause', exact: true }).click();
   await expect.poll(() => currentClock(page)).toEqual({mode:'paused'});
