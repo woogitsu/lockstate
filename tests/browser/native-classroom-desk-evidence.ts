@@ -5,7 +5,7 @@ import { CLASSROOM_CASES, CLASSROOM_DESK, CLASSROOM_ORIGIN, CLASSROOM_PLAN, clas
 import { createHash } from 'node:crypto';
 import { writeFile } from 'node:fs/promises';
 import { observeCotImages } from './cell-cot-evidence';
-import { CLASSROOM_ART } from '../fixtures/native-classroom-desk-plan';
+import { CLASSROOM_ART, CLASSROOM_STUDENT_ART } from '../fixtures/native-classroom-desk-plan';
 
 /** Literal typed/public UI oracle, read-only worker and real network evidence. */
 
@@ -87,7 +87,10 @@ export async function observeClassroomDeskNetwork(page: Page) {
   const pending = new Set<Promise<void>>();
   page.on('response', response => {
     const path = decodeURIComponent(new URL(response.url()).pathname);
-    if (path !== CLASSROOM_ART.descriptor && !path.startsWith('/assets/environment/oblique/furniture.classroom.teacher-desk-') && !/\/assets\/worker-[^/]+\.js$/.test(path)) return;
+    if (path !== CLASSROOM_ART.descriptor && path !== CLASSROOM_STUDENT_ART.descriptor
+      && !path.startsWith('/assets/environment/oblique/furniture.classroom.teacher-desk-')
+      && !path.startsWith('/assets/environment/oblique/furniture.classroom.student-chair-')
+      && !/\/assets\/worker-[^/]+\.js$/.test(path)) return;
     const row: typeof rows[number] = { url: response.url(), path, status: response.status() };
     rows.push(row);
     const job = (async () => {
@@ -105,9 +108,11 @@ export async function observeClassroomDeskNetwork(page: Page) {
   return {
     async raw(path: string) { await Promise.all(pending); await writeFile(path, JSON.stringify(rows, null, 2)); },
     async evidence(info: TestInfo, quarterTurns: 0 | 1) {
+      const studentFrame = CLASSROOM_STUDENT_ART.frames[quarterTurns];
       try {
-        await expect.poll(() => bodies.has(CLASSROOM_ART.descriptor) && bodies.has(CLASSROOM_ART.exposedFrame),
-          { message: 'native Classroom teacher desk consumer must request its descriptor and actual source60/elev40 frame' }).toBe(true);
+        await expect.poll(() => bodies.has(CLASSROOM_ART.descriptor) && bodies.has(CLASSROOM_ART.exposedFrame)
+          && bodies.has(CLASSROOM_STUDENT_ART.descriptor) && bodies.has(studentFrame.image),
+          { message: 'actual combined Classroom consumers must deliver both correctly oriented source frames' }).toBe(true);
       } finally { await Promise.all(pending); await writeFile(info.outputPath('classroom-desk-actual-network.json'), JSON.stringify(rows, null, 2)); }
       expect(rows.filter(row => row.error !== undefined)).toEqual([]);
       for (const row of rows.filter(row => row.location !== undefined))
@@ -128,12 +133,26 @@ export async function observeClassroomDeskNetwork(page: Page) {
       const images = await decoded();
       expect(images.errors).toEqual([]);
       expect(images.images.some(image => image.sha256 === CLASSROOM_ART.exposedFrameSha256 && image.complete && !image.error && image.width === 256 && image.height === 256)).toBe(true);
+      const studentBody = bodies.get(CLASSROOM_STUDENT_ART.descriptor)!;
+      const studentCatalog = JSON.parse(studentBody.toString('utf8')) as NetworkCatalog;
+      expect(studentCatalog).toMatchObject({ assetId: CLASSROOM_STUDENT_ART.assetId,
+        source: CLASSROOM_STUDENT_ART.source, sourceSha256: CLASSROOM_STUDENT_ART.sourceSha256,
+        resolutionPx: [256, 256], nominalPixelsPerTile: 64, pivotPx: [128, 128], cameraTargetTiles: [.5, .5, .58] });
+      expect(studentCatalog.frames).toHaveLength(72);
+      expect(studentCatalog.frames.filter(frame => frame.yawDegrees === studentFrame.yawDegrees && frame.elevationDegrees === 40)).toEqual([studentFrame]);
+      const studentPng = bodies.get(studentFrame.image)!;
+      expect(createHash('sha256').update(studentPng).digest('hex')).toBe(studentFrame.sha256);
+      expect(studentPng.subarray(0, 8).toString('hex')).toBe('89504e470d0a1a0a');
+      expect([studentPng.readUInt32BE(16), studentPng.readUInt32BE(20)]).toEqual([256, 256]);
+      expect(images.images.some(image => image.sha256 === studentFrame.sha256 && image.complete && !image.error && image.width === 256 && image.height === 256)).toBe(true);
       expect(rows.some(row => /\/assets\/worker-[^/]+\.js$/.test(row.path) && row.status === 200 && row.sha256 !== undefined)).toBe(true);
       const receipt = { classroomPlanQuarterTurns: quarterTurns, publicIndividualDeskOrientation: 0, catalog, descriptorBodySha256: createHash('sha256').update(body).digest('hex'),
+        studentCatalog, studentDescriptorBodySha256: createHash('sha256').update(studentBody).digest('hex'), studentFrame,
         exposedFrameSha256: CLASSROOM_ART.exposedFrameSha256, network: rows, actualDecodedImages: images.images,
         syntheticFetchUsed: false, rendererTextureReadUsed: false, deskVisualCalibrationComplete: false,
         visualAcceptancePending: true };
       await writeFile(info.outputPath('classroom-desk-actual200-source60-elev40.png'), png);
+      await writeFile(info.outputPath('classroom-student-chair-actual200-frame.png'), studentPng);
       await writeFile(info.outputPath('classroom-desk-actual-network-and-decoder-receipt.json'), JSON.stringify(receipt, null, 2));
       return receipt;
     },

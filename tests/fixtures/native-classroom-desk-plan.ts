@@ -34,3 +34,20 @@ export const CLASSROOM_ART = {
   exposedFrameSha256: '721cae760da76bdb6830e99255ee7e9c01c0d1733735621b419a62997094a561',
   cameraTarget: [1, .5, .6349999904632568], cameraRightClicks: 7,
 } as const;
+
+/** The room keeps its authored chair orientation while the separately bought
+ * teacher desk stays orientation0. At world60/e40 this selects 60 vs150. */
+export const CLASSROOM_STUDENT_ART = {
+  assetId: 'furniture.classroom.student-chair',
+  descriptor: '/game-content/oblique-furniture-classroom-student-chair.v1.json',
+  source: 'assets/source/blender/furniture.classroom.student-chair.blend',
+  sourceSha256: '0c3d7dc54a594659c810f8e1d76bd4980bf1293f7a5b22c367805760de1a9b1b',
+  frames: {
+    0: { yawDegrees: 60, elevationDegrees: 40,
+      image: '/assets/environment/oblique/furniture.classroom.student-chair-yaw+60-elev40.eb690a439214.png',
+      sha256: 'eb690a4392146a594fa1b692a2dc0b28b881820e541a7125f7f112c474c50260' },
+    1: { yawDegrees: 150, elevationDegrees: 40,
+      image: '/assets/environment/oblique/furniture.classroom.student-chair-yaw+150-elev40.1da832419795.png',
+      sha256: '1da832419795e08cf8062eea139ddcc9e34bcbbdcf4e5b76ed74024326420479' },
+  },
+} as const;

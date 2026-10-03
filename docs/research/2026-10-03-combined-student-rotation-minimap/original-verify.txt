@@ -1,0 +1,89 @@
+pnpm : $ pnpm typecheck && pnpm test && node scripts/cloudflare-task.mjs build production
+At line:2 char:189
++ ... +$env:PATH; pnpm --config.verify-deps-before-run=false verify *> (Joi ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ pnpm typechec...uild production:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+$ tsc -b --pretty false && tsc -b tsconfig.tools.json --pretty false
+$ vitest run
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-common-room-connectivity-integration-20261003
+
+ ❯ tests/foundation/ci-configuration-contract.test.ts (50 tests | 1 failed) 5488ms
+     × carries no documentation claim that nothing here handles one 5006ms
+ ❯ tests/foundation/documentation-commit-citation-contract.test.ts (8 tests | 1 failed) 34ms
+     × cites only commits this repository publishes, so CI reads the same history a reader can 7ms
+ ❯ tests/foundation/documentation-anchor-quotation-contract.test.ts (12 tests | 1 failed) 18ms
+     × adds no unverified anchor to any document beyond its pinned budget 11ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/foundation/ci-configuration-contract.test.ts > service-role credential documentation contract > carries no
+ documentation claim that nothing here handles one
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/foundation/ci-configuration-contract.test.ts:608:3
+    606|   });
+    607|
+    608|   it('carries no documentation claim that nothing here handles one', a…
+       |   ^
+    609|     // Narrow by design: this catches the exact sentence that regresse…
+    610|     // near variants of it, and nothing else. A general "is this secur…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  tests/foundation/documentation-anchor-quotation-contract.test.ts > rooted src/ and tests/ anchors in the documen
+tation carry a checkable quoted fragment > adds no unverified anchor to any document beyond its pinned budget
+AssertionError: these documents cite code by a line number nothing can check: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/adr/0107-what-a-stale-build-order-cancellation-is-refused-for.md: 18 anchors into src/ or tests/ carry no quo
+ted fragment that occurs within 3 lines of them, against a budget of 17. Quote the code beside the anchor -- `file.ts:1
+23`, `theSymbolOnThatLine` -- rather than raising the budget.",
++ ]
+
+ ❯ tests/foundation/documentation-anchor-quotation-contract.test.ts:984:82
+    982|     }
+    983|
+    984|     expect(over, 'these documents cite code by a line number nothing c…
+       |                                                                                  ^
+    985|   });
+    986|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  tests/foundation/documentation-commit-citation-contract.test.ts > a commit sha cited in prose names a commit tha
+t exists > cites only commits this repository publishes, so CI reads the same history a reader can
+AssertionError: these cite a commit that exists on this disk and on no ref this repository publishes, so nobody else ca
+n check them and CI cannot either: `fetch-depth: 0` fetches all history for every published branch and tag and nothing 
+more. The usual cause is a sha read out of an agent's own worktree before the coordinator cherry-picked it, which rewri
+tes it -- `git branch -r --contains <sha>` tells you. Cite the commit as published, or record it in UNPUBLISHED_BY_ORIG
+IN with what it is and why the anchor cannot move: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/research/2026-10-03-individual-object-rotation-command/README.md:6 -> 7d61fa9f197c06aa3b809a715ae159f319fbb72
+e",
++ ]
+
+ ❯ tests/foundation/documentation-commit-citation-contract.test.ts:748:7
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  3 failed | 695 passed (698)
+      Tests  3 failed | 8226 passed | 2 skipped (8231)
+   Start at  15:34:35
+   Duration  36.48s (transform 40.10s, setup 0ms, import 224.03s, tests 415.90s, environment 51ms)
+
+[ELIFECYCLE] Test failed. See above for more details.
+[ELIFECYCLE] Command failed with exit code 1.

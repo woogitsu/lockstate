@@ -1589,3 +1589,18 @@ three agents continue its actual integration, ordinary object rotation and
 minimap work. The rotation control's proposed new copy remains a review draft
 until the owner's clickable decision; the accepted quarter-turn command path
 can proceed independently.
+
+### 2026-10-03 student furniture and individual placement integration
+
+The genuine student writing chair is now registered and selected only for
+Classroom chairs; retained teacher desks, Reception and generic furniture keep
+their contexts. Approved individual quarter turns reach real construction and
+whole V8 persistence. The unapproved Rotate object UI draft is kept separately.
+Minimap unchanged-text publications now retain the actual DOM child.
+[Current combined checkpoint](../../research/2026-10-03-combined-student-rotation-minimap/README.md)
+preserves the original full-gate failures and prepares exact combined student
+and teacher PNG/body/native construction checks without raising any budget.
+Three agents continue Reception registration-desk models, authoritative object
+preflight and concrete gameplay fixes. Root owns integration and one browser.
+Approved sharding remains merged with terminal successful main CI; the angled
+release still needs exact full hosted CI and serial landing of its dependencies.
