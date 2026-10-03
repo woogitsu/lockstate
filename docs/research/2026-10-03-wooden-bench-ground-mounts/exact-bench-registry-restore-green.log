@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-wooden-bench-ground-mounts-20261003
+
+···
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  19:05:36
+   Duration  609ms (transform 169ms, setup 0ms, import 481ms, tests 13ms, environment 0ms)

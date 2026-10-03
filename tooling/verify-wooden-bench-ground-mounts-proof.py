@@ -6,11 +6,20 @@ ROOT=Path(__file__).resolve().parents[1]
 REPORT=ROOT/'docs/research/2026-10-03-wooden-bench-ground-mounts'
 SCRATCH=ROOT/'assets/intermediate/wooden-bench-ground-mounts-proof-controls'
 PRODUCER=ROOT/'tooling/blender/render-wooden-bench-ground-mounts-oblique.py'
+STANDALONE=ROOT/'tooling/blender/render-wooden-bench-oblique.py'
 SOURCE=ROOT/'assets/source/blender/furniture.corridor.bench.grounded-detail.blend'
 MANIFEST=ROOT/'public/game-content/oblique-canteen-bench.v1.json'
 BLENDER=os.environ.get('LOCKSTATE_BLENDER',r'C:\Program Files\Blender Foundation\Blender 5.2\blender.exe')
 CLI=[BLENDER,'--background','--factory-startup','--threads','1','--python-exit-code','1']
 sha=lambda b:hashlib.sha256(b).hexdigest()
+def run_unit(label,red=False):
+ node=Path(os.environ['USERPROFILE'])/'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe'
+ r=subprocess.run([str(node),'node_modules/vitest/vitest.mjs','run','tests/unit/oblique-wooden-bench-ground-mounts-integrity.test.ts','--reporter=dot'],cwd=ROOT,capture_output=True,timeout=30)
+ out=(r.stdout+r.stderr).decode('utf-8',errors='replace')
+ (REPORT/(label+'.log')).write_text('\n'.join(line.rstrip()for line in out.splitlines()).rstrip()+'\n',encoding='utf-8',newline='\n')
+ if (red and(r.returncode==0 or 'AssertionError'not in out))or(not red and r.returncode):raise AssertionError(label+'\n'+out)
+ print(label,'RED'if red else'GREEN',r.returncode,flush=True)
+ return {'label':label,'exitCode':r.returncode,'expectedRed':red}
 def run(label,script=PRODUCER,args=(),error=None):
  r=subprocess.run(CLI+['--python',str(script),'--',*args],cwd=ROOT,capture_output=True,timeout=60)
  out=(r.stdout+r.stderr).decode('utf-8',errors='replace')
@@ -21,9 +30,11 @@ def run(label,script=PRODUCER,args=(),error=None):
 def main():
  SCRATCH.mkdir(parents=True,exist_ok=True)
  source_only='--source-only' in sys.argv
- protected={SOURCE,PRODUCER,ROOT/'tooling/blender/build-wooden-bench-ground-mounts.py',SOURCE.with_suffix('.provenance.json'),ROOT/'assets/source/blender/furniture.corridor.bench.angled-detail.blend',ROOT/'public/game-content/oblique-module-registry.v1.json',ROOT/'src/rendering/assets/oblique-object-mapping.ts'}
+ protected={SOURCE,PRODUCER,STANDALONE,ROOT/'tooling/blender/build-wooden-bench-ground-mounts.py',SOURCE.with_suffix('.provenance.json'),ROOT/'assets/source/blender/furniture.corridor.bench.angled-detail.blend',ROOT/'public/game-content/oblique-module-registry.v1.json',ROOT/'src/rendering/assets/oblique-object-mapping.ts'}
  if not source_only:
   catalog=json.loads(MANIFEST.read_text());protected.add(MANIFEST);protected.update(ROOT/'public'/f['image'].lstrip('/') for f in catalog['frames'])
+  old_catalog=json.loads((REPORT/'previous-42part-runtime-descriptor.json').read_text())
+  protected.update(ROOT/'public'/f['image'].lstrip('/')for f in old_catalog['frames'])
  before={p.relative_to(ROOT).as_posix():sha(p.read_bytes())for p in sorted(protected)};receipt={'controls':[],'protectedBefore':before}
  source_bytes=SOURCE.read_bytes();producer_bytes=PRODUCER.read_bytes()
  try:
@@ -34,8 +45,10 @@ def main():
    receipt['actualMutantSourceSha256']=sha(SOURCE.read_bytes())
    if receipt['actualMutantSourceSha256']==sha(source_bytes):raise AssertionError('Actual source did not mutate')
    receipt['controls'].append(run('actual-disconnected-source-red',args=('--verify',),error='Bench floor mounting shoe actual contact disconnected'))
+   if not source_only:receipt['controls'].append(run_unit('actual-saved-model-integrity-unit-red',True))
   finally:SOURCE.write_bytes(source_bytes)
   receipt['controls'].append(run('exact-source-restore-green',args=('--verify',)))
+  if not source_only:receipt['controls'].append(run_unit('exact-model-integrity-unit-restore-green'))
   try:
    text=producer_bytes.decode().replace("ASSET_ID = 'furniture.corridor.bench.variants'","ASSET_ID = 'furniture.chair.wooden'")
    if text==producer_bytes.decode():raise AssertionError('Real producer dispatch did not mutate')
@@ -44,6 +57,14 @@ def main():
   finally:PRODUCER.write_bytes(producer_bytes)
   receipt['controls'].append(run('exact-dispatch-restore-green',args=('--verify',)))
   if not source_only:
+   standalone_bytes=STANDALONE.read_bytes()
+   try:
+    text=standalone_bytes.decode().replace('return bench_ground_mount_exporter().configure(model)','return bench_crossrail_exporter().configure(model)')
+    if text==standalone_bytes.decode():raise AssertionError('Actual standalone source dispatch did not mutate')
+    STANDALONE.write_text(text,encoding='utf-8',newline='\n')
+    receipt['controls'].append(run('actual-standalone-old-source-dispatch-red',script=STANDALONE,args=('--verify',),error='Bench producer dispatch source changed'))
+   finally:STANDALONE.write_bytes(standalone_bytes)
+   receipt['controls'].append(run('exact-standalone-dispatch-restore-green',script=STANDALONE,args=('--verify',)))
    manifest_bytes=MANIFEST.read_bytes();bad_image=None
    try:
     f=next(f for f in catalog['frames']if(f['yawDegrees'],f['elevationDegrees'])==(60,40));original=ROOT/'public'/f['image'].lstrip('/')

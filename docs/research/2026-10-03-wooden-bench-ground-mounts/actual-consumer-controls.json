@@ -1,0 +1,45 @@
+{
+  "controls": [
+    {
+      "label": "actual-previous42-descriptor-selected-red",
+      "exitCode": 1,
+      "expectedRed": true
+    },
+    {
+      "label": "exact-current46-descriptor-restore-green",
+      "exitCode": 0,
+      "expectedRed": false
+    },
+    {
+      "label": "actual-default-bench-mapping-omission-red",
+      "exitCode": 1,
+      "expectedRed": true
+    },
+    {
+      "label": "exact-default-mapping-restore-green",
+      "exitCode": 0,
+      "expectedRed": false
+    },
+    {
+      "label": "actual-bench-registry-omission-red",
+      "exitCode": 1,
+      "expectedRed": true
+    },
+    {
+      "label": "exact-bench-registry-restore-green",
+      "exitCode": 0,
+      "expectedRed": false
+    }
+  ],
+  "protectedBefore": {
+    "src/rendering/assets/oblique-object-mapping.ts": "f4044495d916005451ef375977eaf417b4e1432d8513ff256a0da0721156b4fc",
+    "public/game-content/oblique-module-registry.v1.json": "04e2899d378bd546170da202a5fb1b558d89074a1126db1ef5b9b4f3c3aa3abe",
+    "public/game-content/oblique-canteen-bench.v1.json": "4969cf1a382b4b74883d5bd77f01c2a260be1c6fdf3bf3213e1da3a13f368c35"
+  },
+  "protectedAfter": {
+    "src/rendering/assets/oblique-object-mapping.ts": "f4044495d916005451ef375977eaf417b4e1432d8513ff256a0da0721156b4fc",
+    "public/game-content/oblique-module-registry.v1.json": "04e2899d378bd546170da202a5fb1b558d89074a1126db1ef5b9b4f3c3aa3abe",
+    "public/game-content/oblique-canteen-bench.v1.json": "4969cf1a382b4b74883d5bd77f01c2a260be1c6fdf3bf3213e1da3a13f368c35"
+  },
+  "exactRestore": true
+}

@@ -1,0 +1,30 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-wooden-bench-ground-mounts-20261003
+
+xx·
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 1 passed (3)
+   Start at  19:05:31
+   Duration  619ms (transform 169ms, setup 0ms, import 491ms, tests 15ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-wooden-bench-ground-mounts-consumer.test.ts > existing completed bench consumers select the genuinely grounded retained assembly > selects both literal Holding Cell benches q0 at world60/-30 and elevation40
+ FAIL  tests/unit/oblique-wooden-bench-ground-mounts-consumer.test.ts > existing completed bench consumers select the genuinely grounded retained assembly > selects both literal Holding Cell benches q1 at world60/-30 and elevation40
+AssertionError: expected 'assets/source/blender/furniture.corri…' to be 'assets/source/blender/furniture.corri…' // Object.is equality
+
+Expected: "assets/source/blender/furniture.corridor.bench.grounded-detail.blend"
+Received: "assets/source/blender/furniture.corridor.bench.angled-detail.blend"
+
+ ❯ registeredCatalog tests/unit/oblique-wooden-bench-ground-mounts-consumer.test.ts:25:26
+     23|   const entry = entries[0]!;
+     24|   const catalog = parseObliqueModuleCatalog(json(entry.manifest.slice(…
+     25|   expect(catalog.source).toBe('assets/source/blender/furniture.corrido…
+       |                          ^
+     26|   expect(catalog.sourceSha256).toBe('8518e5d755352f6511bcb4f2165674e1b…
+     27|   expect(obliqueCatalogForObject('object.bench', new Map([[catalog.ass…
+ ❯ tests/unit/oblique-wooden-bench-ground-mounts-consumer.test.ts:49:74
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯

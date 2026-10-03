@@ -14,12 +14,23 @@ exporter = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(exporter)
 exporter.pipeline_common.require_blender_version()
 ASSET_ID = 'furniture.corridor.bench.variants'
-exporter.MODELS = ((ASSET_ID, 'furniture.corridor.bench.angled-detail.blend',
+exporter.MODELS = ((ASSET_ID, 'furniture.corridor.bench.grounded-detail.blend',
                     'oblique-canteen-bench.v1.json', 2, 1, 1.0, 1.0, 0.44325),)
 exporter.PREVIEW = exporter.ROOT / 'assets/intermediate/wooden-bench-preview'
 
 
 _detail_module = None
+_ground_module = None
+
+
+def bench_ground_mount_exporter():
+    global _ground_module
+    if _ground_module is None:
+        ground_spec = importlib.util.spec_from_file_location('wooden_bench_ground_mount_detail', SCRIPT.with_name('render-wooden-bench-ground-mounts-oblique.py'))
+        assert ground_spec and ground_spec.loader
+        _ground_module = importlib.util.module_from_spec(ground_spec)
+        ground_spec.loader.exec_module(_ground_module)
+    return _ground_module
 
 
 def bench_crossrail_exporter():
@@ -62,6 +73,8 @@ configure_shared = exporter.configure
 
 
 def configure(model):
+    if model[0] == ASSET_ID and model[1] == 'furniture.corridor.bench.grounded-detail.blend':
+        return bench_ground_mount_exporter().configure(model)
     if model[0] == ASSET_ID and model[1] == 'furniture.corridor.bench.angled-detail.blend':
         return bench_crossrail_exporter().configure(model)
     scene, camera, target = configure_shared(model, prepare_source)
