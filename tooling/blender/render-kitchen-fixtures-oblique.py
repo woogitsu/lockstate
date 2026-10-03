@@ -31,7 +31,7 @@ MODELS = (
     # id, source basename, manifest basename, width, height, x scale, y scale, camera target height
     ("furniture.kitchen.stove.variants", "furniture.kitchen.stove.angled.blend", "oblique-furniture.kitchen-stove.v1.json", 2, 1, 1.0, 1.0, 1.1230000257492065),
     ("furniture.kitchen.prep-counter.variants", "furniture.kitchen.prep-counter.angled.blend", "oblique-furniture.kitchen-prep-counter.v1.json", 2, 1, 1.0, 1.0, 0.8100000619888306),
-    ("furniture.kitchen.fridge.variants", "furniture.kitchen.fridge.angled.blend", "oblique-furniture.kitchen-fridge.v1.json", 1, 1, 1.0, 1.0, 1.1999999284744263),
+    ("furniture.kitchen.fridge.variants", "furniture.kitchen.fridge.angled-detail.blend", "oblique-furniture.kitchen-fridge.v1.json", 1, 1, 1.0, 1.0, 1.1999999284744263),
 )
 
 
@@ -112,6 +112,11 @@ def normalize_and_check_border(path: Path) -> None:
 
 
 def configure(model: tuple, prepare_source=None) -> tuple[bpy.types.Scene, bpy.types.Object, Vector]:
+    if prepare_source is None and model[0] == "furniture.kitchen.fridge.variants" and model[1] == "furniture.kitchen.fridge.angled-detail.blend":
+        import importlib.util
+        detail_spec = importlib.util.spec_from_file_location("fridge_physical_detail_dispatch", Path(__file__).with_name("render-kitchen-fridge-detail-oblique.py"))
+        detail = importlib.util.module_from_spec(detail_spec); detail_spec.loader.exec_module(detail)
+        return detail.configure(model)
     asset_id, source_name, _, width, height, scale_x, scale_y, target_z = model
     source = ROOT / "assets/source/blender" / source_name
     if not source.is_file():
