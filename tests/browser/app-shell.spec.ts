@@ -4107,6 +4107,15 @@ test.describe('the assembled application', () => {
     expect(await planChoices.count(), 'the plans catalogue has no choices').toBeGreaterThan(0);
     for (const choice of await planChoices.all()) {
       await choice.click();
+      // Coordinates are a public native disclosure. Closed details children
+      // can retain a nonzero GBCR without being hittable; visit the actual
+      // open state before measuring every X/Y/Place control, not an exemption.
+      const coordinates = roomPlans.locator('details.hud-template__coordinates');
+      const coordinateSummary = coordinates.locator('summary');
+      await expect(coordinates).toHaveJSProperty('open', false);
+      await expect(coordinateSummary).toHaveText(localeText('hud.build.coordinates'));
+      await coordinateSummary.click();
+      await expect(coordinates).toHaveJSProperty('open', true);
       const plans = await controlReachability(page);
       record(plans);
       const modalIndexes = plans.controls.flatMap((name, index) => name.includes('hud-template >') ? [index] : []);
@@ -4119,6 +4128,8 @@ test.describe('the assembled application', () => {
         plans.unreachable.filter((entry) => entry.control.includes('hud-template >')),
         `plans controls covered while open at ${width}x${height}`,
       ).toEqual([]);
+      await coordinateSummary.click();
+      await expect(coordinates).toHaveJSProperty('open', false);
     }
     await roomPlans.locator('.hud-template__close').click();
     await expect(roomPlans).toBeHidden();
