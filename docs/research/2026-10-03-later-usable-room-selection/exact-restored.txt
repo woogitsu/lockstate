@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-template-door-object-audit-20261003
+
+
+ Test Files  2 passed (2)
+      Tests  8 passed (8)
+   Start at  11:05:48
+   Duration  3.94s (transform 1.49s, setup 0ms, import 4.12s, tests 3.03s, environment 0ms)
+

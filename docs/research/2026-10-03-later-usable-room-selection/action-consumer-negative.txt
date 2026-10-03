@@ -1,0 +1,50 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-template-door-object-audit-20261003
+
+stdout | tests/integration/later-usable-shower-selection.test.ts > uses a later working Shower instead of dropping the entire action: blocked=true V8=false
+{"blocked":true,"load":false,"entityId":0,"showerTicks":0,"targets":[],"hygiene":14920,"metrics":{"unmetDemandCycles":206,"actionsStarted":223,"actionsCompleted":16,"routeFailures":206,"substitutionCycles":1,"contendedSubstitutionCycles":0,"substitutionsCountedSinceTick":0}}
+
+stdout | tests/integration/later-usable-shower-selection.test.ts > uses a later working Shower instead of dropping the entire action: blocked=true V8=true
+{"blocked":true,"load":true,"entityId":0,"showerTicks":0,"targets":[],"hygiene":14920,"metrics":{"unmetDemandCycles":206,"actionsStarted":222,"actionsCompleted":16,"routeFailures":206,"substitutionCycles":0,"contendedSubstitutionCycles":0,"substitutionsCountedSinceTick":5901}}
+
+ ❯ tests/integration/later-usable-shower-selection.test.ts (4 tests | 2 failed) 1270ms
+   × uses a later working Shower instead of dropping the entire action: blocked=true V8=false 291ms
+   × uses a later working Shower instead of dropping the entire action: blocked=true V8=true 292ms
+ ❯ tests/integration/room-template-blocked-anchor-fallback.test.ts (4 tests | 2 failed) 1770ms
+   × uses existing meal fallback when q1 Canteen anchor is blocked: wall offset0 / V8false 527ms
+   × uses existing meal fallback when q1 Canteen anchor is blocked: wall offset0 / V8true 434ms
+
+ Test Files  2 failed (2)
+      Tests  4 failed | 4 passed (8)
+   Start at  11:05:43
+   Duration  3.90s (transform 1.41s, setup 0ms, import 3.97s, tests 3.04s, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/later-usable-shower-selection.test.ts > uses a later working Shower instead of dropping the entire action: blocked=true V8=false
+ FAIL  tests/integration/later-usable-shower-selection.test.ts > uses a later working Shower instead of dropping the entire action: blocked=true V8=true
+AssertionError: expected 0 to be greater than 0
+ ❯ tests/integration/later-usable-shower-selection.test.ts:92:25
+     90|     console.log(JSON.stringify({ blocked, load, entityId, showerTicks,…
+     91|       hygiene: runtime.prisoners.needs.getScaled(0, 'hygiene'), metric…
+     92|     expect(showerTicks).toBeGreaterThan(0);
+       |                         ^
+     93|     expect([...targets]).toEqual([blocked ? 'room.shower-room:6:15' : …
+     94|     expect(runtime.prisoners.needs.getScaled(0, 'hygiene')).toBeGreate…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tests/integration/room-template-blocked-anchor-fallback.test.ts > uses existing meal fallback when q1 Canteen anchor is blocked: wall offset0 / V8false
+ FAIL  tests/integration/room-template-blocked-anchor-fallback.test.ts > uses existing meal fallback when q1 Canteen anchor is blocked: wall offset0 / V8true
+AssertionError: expected [] to include 'action.eat-in-cell'
+ ❯ tests/integration/room-template-blocked-anchor-fallback.test.ts:101:24
+     99|       }
+    100|     }
+    101|     expect(performing).toContain(offset === 0 ? 'action.eat-in-cell' :…
+       |                        ^
+    102|     expect(performing.has(offset === 0 ? 'action.eat-meal' : 'action.e…
+    103|     expect(runtime.prisoners.needs.getScaled(0, 'hunger')).toBeGreater…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+

@@ -1,0 +1,15 @@
+const fs=require('node:fs'),path=require('node:path'),cp=require('node:child_process'),crypto=require('node:crypto'),assert=require('node:assert/strict');
+const root=process.cwd(),scratch=path.join(process.env.TEMP,'lockstate-later-room-selection-20261003');
+const branch='codex/later-usable-room-selection-audit-20261003',checkpoint='885c53630e0b3a9a5e6fe94888b076b410c1a066';
+const registry='src/simulation/prisoners/room-instance-registry.ts',consumer='src/simulation/prisoners/action-system.ts',files=[registry,consumer];
+const original=new Map(files.map(f=>[f,fs.readFileSync(path.join(root,f))]));const hash=b=>crypto.createHash('sha256').update(b).digest('hex');
+function git(args){const p=cp.spawnSync('git',args,{cwd:root});assert.equal(p.status,0,Buffer.concat([p.stdout,p.stderr]).toString());return p.stdout.toString().trim();}
+function test(label){const p=cp.spawnSync(process.execPath,['node_modules/vitest/vitest.mjs','run','tests/integration/later-usable-shower-selection.test.ts','tests/integration/room-template-blocked-anchor-fallback.test.ts','--maxWorkers=2'],{cwd:root});fs.writeFileSync(path.join(scratch,label+'.txt'),Buffer.concat([p.stdout,p.stderr]));return p.status;}
+function restore(){for(const [f,bytes]of original)fs.writeFileSync(path.join(root,f),bytes);}
+const changes=[{name:'registry-predicate-negative',file:registry,from:'      if (!isEligible(instance)) return false;',to:''},
+{name:'action-consumer-negative',file:consumer,from:'this.roomInstances.findAvailableForUse(action.target.roomCatalogId, action.requiredObjectCapability,\n      (candidate) => this.navigation.getGraph().tileToRegion.has(tileKey(candidate.anchorTile)))',to:'this.roomInstances.findAvailableForUse(action.target.roomCatalogId, action.requiredObjectCapability)'}];
+const negatives=[];git(['switch','--detach',checkpoint]);
+try {for(const change of changes){const bytes=original.get(change.file);let s=bytes.toString('utf8');const needle=s.includes(change.from)?change.from:change.from.replaceAll('\n','\r\n');assert.equal(s.split(needle).length,2);try{fs.writeFileSync(path.join(root,change.file),s.replace(needle,change.to));negatives.push({producer:change.name,exitCode:test(change.name)});}finally{restore();for(const[f,b]of original)assert.equal(hash(fs.readFileSync(path.join(root,f))),hash(b));}}}
+finally {restore();git(['switch',branch]);}
+const restoredExitCode=test('exact-restored');const diff=cp.spawnSync('git',['diff','--exit-code',checkpoint,'--',...files],{cwd:root});
+const receipt={checkpoint,branch,detachedDuringMutations:true,negatives,restoredExitCode,sourceDiffExitCode:diff.status,source:files.map(f=>({file:f,before:hash(original.get(f)),after:hash(fs.readFileSync(path.join(root,f)))})),branchRestored:git(['branch','--show-current'])};fs.writeFileSync(path.join(scratch,'mutation-restoration.json'),JSON.stringify(receipt,null,2));console.log(JSON.stringify(receipt));for(const n of negatives)assert.equal(n.exitCode,1);assert.equal(restoredExitCode,0);assert.equal(diff.status,0);

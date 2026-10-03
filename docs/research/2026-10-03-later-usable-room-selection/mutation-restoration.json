@@ -1,0 +1,30 @@
+{
+  "checkpoint": "885c53630e0b3a9a5e6fe94888b076b410c1a066",
+  "branch": "codex/later-usable-room-selection-audit-20261003",
+  "detachedDuringMutations": true,
+  "negatives": [
+    {
+      "producer": "registry-predicate-negative",
+      "exitCode": 1
+    },
+    {
+      "producer": "action-consumer-negative",
+      "exitCode": 1
+    }
+  ],
+  "restoredExitCode": 0,
+  "sourceDiffExitCode": 0,
+  "source": [
+    {
+      "file": "src/simulation/prisoners/room-instance-registry.ts",
+      "before": "57fa14f1fff71bab8aefd40ed25f5ff25eace0fb31e6441f326a7f0724f6b1aa",
+      "after": "57fa14f1fff71bab8aefd40ed25f5ff25eace0fb31e6441f326a7f0724f6b1aa"
+    },
+    {
+      "file": "src/simulation/prisoners/action-system.ts",
+      "before": "b591fad2b3a609ca9e7b226eeb321e594950ba68257b193a8ca342405f9a03fd",
+      "after": "b591fad2b3a609ca9e7b226eeb321e594950ba68257b193a8ca342405f9a03fd"
+    }
+  ],
+  "branchRestored": "codex/later-usable-room-selection-audit-20261003"
+}
