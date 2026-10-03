@@ -10,6 +10,11 @@
         "sha256":  "66de788139f5524e2f7a3d682b3d5148f4c01442b0a5ed061fc6f8f73890a9f0"
     },
     {
+        "path":  "exact-restored.txt",
+        "bytes":  264,
+        "sha256":  "0649d6cc8db231a39b61bf571901fc4288102c4d7db00c0bdc9a10e6c3751de3"
+    },
+    {
         "path":  "executed-probe.ts.txt",
         "bytes":  4066,
         "sha256":  "06f63250855dbe3dcacc93983cc93a97ceebb6425a4d750ef4b1fbee1551d9f1"
@@ -20,9 +25,19 @@
         "sha256":  "fef4bcb2d041e5ea5ad4e18cc21e0b80eeb160037dea5a88283b0d7fad38335b"
     },
     {
+        "path":  "final-docs.txt",
+        "bytes":  544,
+        "sha256":  "474744c09f8336bde67cb8286e85769b97d961f3a183e15b017b30b5ab2d83b9"
+    },
+    {
         "path":  "fixed.txt",
         "bytes":  546,
         "sha256":  "71dea9461e39150da183bb47a76edfbe6845b971ebd74353d62ea0acbcc12b39"
+    },
+    {
+        "path":  "initial-docs.txt",
+        "bytes":  2780,
+        "sha256":  "991ebbd91c7f78957c019d92a4028f7ed04602a00537db7ec9c935dd24cb30a6"
     },
     {
         "path":  "initial-expanded-key-fixture.test.ts.txt",
@@ -50,6 +65,11 @@
         "sha256":  "430c9834e17887e0108d1bd2690ab70edef4b1a9b14d55feb101a4ea6916aa6b"
     },
     {
+        "path":  "initial-own-row-boundary.txt",
+        "bytes":  3028,
+        "sha256":  "83edf9b1da5b240d3d8062da0ca0e21fc19bdf33ae7cff0c7e7e9c3bd8b96a32"
+    },
+    {
         "path":  "initial-probe.ts.txt",
         "bytes":  3960,
         "sha256":  "0bdd9d14e0a39794751021a4fa59822e8dd298275f6b86c1e483b192d524cffe"
@@ -65,13 +85,48 @@
         "sha256":  "5c29ce22334bdad04627a9a59a77965ce3f0210caaa6b2ffcf2c1b6458880cdc"
     },
     {
+        "path":  "mutation-endpoint-omission.txt",
+        "bytes":  4122,
+        "sha256":  "0b159a9ec424c02f8614d30b3a721dc97102670972a8bcc6cb031b07bbfda8c5"
+    },
+    {
+        "path":  "mutation-restoration.json",
+        "bytes":  880,
+        "sha256":  "4539993dd04ba3fbadb1dd607989f7715fd17e4b9ad33f159ada801612c98bf7"
+    },
+    {
+        "path":  "mutation-session-wire-omission.txt",
+        "bytes":  4122,
+        "sha256":  "5733e523a848cef4f99d291e05841fce5da804dc82cbb1fe4d8e1c22f0cd13a4"
+    },
+    {
+        "path":  "neighbors.txt",
+        "bytes":  546,
+        "sha256":  "5cdf709a166e6ab07ff879596273ed763ba8feead133ce417e33ad6f2113b549"
+    },
+    {
         "path":  "README.md",
-        "bytes":  5896,
-        "sha256":  "901d9754f938140edb7be65918e465c76a4de9cdbc80c904a126d2c00e9a3ff7"
+        "bytes":  7991,
+        "sha256":  "b7abb5bc15f8dd2f8a6f1b6e728fb656b857184b4b4f3eefec830eb0d9c0085b"
+    },
+    {
+        "path":  "run-mutations.cjs.txt",
+        "bytes":  2559,
+        "sha256":  "791481d682547d78198b3d4f257f0863030e417569f9f202978d5caad616907a"
     },
     {
         "path":  "run-probe.cjs.txt",
         "bytes":  588,
         "sha256":  "7cd045f1b3f8e55026d500171dadf7be3db8e3d2781816f77048252220b764fe"
+    },
+    {
+        "path":  "tools-types.txt",
+        "bytes":  0,
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+        "path":  "types.txt",
+        "bytes":  0,
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     }
 ]
