@@ -1,0 +1,34 @@
+{
+  "controls": [
+    {
+      "control": "producer-only-reversed-retained-bed-base-winding",
+      "exitCode": 1,
+      "sourceFilesByteEqualBaseline": true,
+      "vertexBytesChangedByWinding": false
+    },
+    {
+      "control": "loaded-only-reversed-retained-bed-base-winding",
+      "exitCode": 1,
+      "sourceFilesByteEqualBaseline": true,
+      "vertexBytesChangedByWinding": false
+    },
+    {
+      "control": "exact-restored-winding-verify",
+      "exitCode": 0,
+      "sourceFilesByteEqualBaseline": true,
+      "vertexBytesChangedByWinding": null
+    }
+  ],
+  "builderBytesRestored": true,
+  "wrapperBytesRestored": true,
+  "sourceIdentities": [
+    {
+      "path": "assets\\source\\blender\\furniture.medical-bed.variants.blend",
+      "sha256": "1737b03a3ee1342e813e7096e0aef189f05d714d5a69437a8fe490c026d232be"
+    },
+    {
+      "path": "assets\\source\\blender\\furniture.medical-bed.angled-detail.blend",
+      "sha256": "d18a702e585d6e69f15602d9e9f294bc0c539da3f78bf4f48fe1330da286c4fe"
+    }
+  ]
+}

@@ -1,0 +1,4349 @@
+[
+  {
+    "assetId": "furniture.medical-bed.variants",
+    "source": "assets/source/blender/furniture.medical-bed.variants.blend",
+    "sourceSha256": "1737b03a3ee1342e813e7096e0aef189f05d714d5a69437a8fe490c026d232be",
+    "meshCount": 11,
+    "materials": [
+      "mattress edge",
+      "medical linen",
+      "rail accent",
+      "warm painted steel"
+    ],
+    "sourceBounds": {
+      "min": [
+        -0.46000000834465027,
+        -0.9100000262260437,
+        -0.09000000357627869
+      ],
+      "max": [
+        0.46000000834465027,
+        0.9100000262260437,
+        1.2599999904632568
+      ]
+    },
+    "acceptedFit": [
+      1,
+      1,
+      1
+    ],
+    "declaredTarget": [
+      0.5,
+      1,
+      0.675
+    ],
+    "preparedBounds": {
+      "min": [
+        0.03999999165534973,
+        0.0899999737739563,
+        0.0
+      ],
+      "max": [
+        0.9600000381469727,
+        1.9100000858306885,
+        1.350000023841858
+      ]
+    },
+    "allFourFootprints": [
+      {
+        "quarterTurns": 0,
+        "footprint": [
+          1,
+          2
+        ],
+        "bounds": {
+          "min": [
+            0.03999999165534973,
+            0.0899999737739563,
+            0.0
+          ],
+          "max": [
+            0.9600000381469727,
+            1.9100000858306885,
+            1.350000023841858
+          ]
+        }
+      },
+      {
+        "quarterTurns": 1,
+        "footprint": [
+          2,
+          1
+        ],
+        "bounds": {
+          "min": [
+            0.08999991416931152,
+            0.03999999165534973,
+            0.0
+          ],
+          "max": [
+            1.9100000858306885,
+            0.9600000381469727,
+            1.350000023841858
+          ]
+        }
+      },
+      {
+        "quarterTurns": 2,
+        "footprint": [
+          1,
+          2
+        ],
+        "bounds": {
+          "min": [
+            0.039999961853027344,
+            0.08999991416931152,
+            0.0
+          ],
+          "max": [
+            0.9600000381469727,
+            1.9100000858306885,
+            1.350000023841858
+          ]
+        }
+      },
+      {
+        "quarterTurns": 3,
+        "footprint": [
+          2,
+          1
+        ],
+        "bounds": {
+          "min": [
+            0.0899999737739563,
+            0.039999961853027344,
+            0.0
+          ],
+          "max": [
+            1.9100000858306885,
+            0.9600000381469727,
+            1.350000023841858
+          ]
+        }
+      }
+    ],
+    "meshes": [
+      {
+        "name": "bed_base",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.09999998658895493,
+        "maximumEvaluatedOutwardDistance": 0.9938037544488907,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.18000000715255737
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "control",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.029999971389770508,
+        "maximumEvaluatedOutwardDistance": 0.06691331323236227,
+        "materials": [
+          "rail accent"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.3799999952316284
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.699999988079071
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.8199999928474426
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "headboard",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.04999995231628418,
+        "maximumEvaluatedOutwardDistance": 0.5251387059688568,
+        "materials": [
+          "mattress edge"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.7799999713897705
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.8999999761581421
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "leg",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.04999983310699463,
+        "maximumEvaluatedOutwardDistance": 0.14020509365946054,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.4000000059604645
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.7799999713897705
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.05000000074505806
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "leg.001",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.04999986290931702,
+        "maximumEvaluatedOutwardDistance": 0.14020505547523499,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.4000000059604645
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.7799999713897705
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.05000000074505806
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "leg.002",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.04999983310699463,
+        "maximumEvaluatedOutwardDistance": 0.14020505547523499,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.4000000059604645
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.7799999713897705
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.05000000074505806
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "leg.003",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.04999995231628418,
+        "maximumEvaluatedOutwardDistance": 0.14020501729100943,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.4000000059604645
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.7799999713897705
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.05000000074505806
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "mattress",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.12499991059303284,
+        "maximumEvaluatedOutwardDistance": 0.8838667869567871,
+        "materials": [
+          "medical linen"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.41999998688697815
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "pillow",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.059999823570251465,
+        "maximumEvaluatedOutwardDistance": 0.3562142625451152,
+        "materials": [
+          "medical linen"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.47999998927116394
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.6000000238418579
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "rail",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.03499990701675415,
+        "maximumEvaluatedOutwardDistance": 0.44576022028923035,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.8199999928474426
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.7200000286102295
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "rail.001",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.034999966621398926,
+        "maximumEvaluatedOutwardDistance": 0.44576022028923035,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.8199999928474426
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.7200000286102295
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      }
+    ],
+    "totalRawInwardFaces": 0,
+    "totalEvaluatedInwardFaces": 0,
+    "totalEvaluatedFaces": 594
+  },
+  {
+    "assetId": "furniture.medical-bed.angled-detail",
+    "source": "assets/source/blender/furniture.medical-bed.angled-detail.blend",
+    "sourceSha256": "d18a702e585d6e69f15602d9e9f294bc0c539da3f78bf4f48fe1330da286c4fe",
+    "meshCount": 76,
+    "materials": [
+      "mattress edge",
+      "medical linen",
+      "rail accent",
+      "warm painted steel"
+    ],
+    "sourceBounds": {
+      "min": [
+        -0.48900002241134644,
+        -0.9100000262260437,
+        0.0
+      ],
+      "max": [
+        0.48900002241134644,
+        0.9100000262260437,
+        1.350000023841858
+      ]
+    },
+    "acceptedFit": [
+      1,
+      1,
+      1
+    ],
+    "declaredTarget": [
+      0.5,
+      1,
+      0.675000011920929
+    ],
+    "preparedBounds": {
+      "min": [
+        0.010999977588653564,
+        0.0899999737739563,
+        0.0
+      ],
+      "max": [
+        0.9890000224113464,
+        1.9100000858306885,
+        1.350000023841858
+      ]
+    },
+    "allFourFootprints": [
+      {
+        "quarterTurns": 0,
+        "footprint": [
+          1,
+          2
+        ],
+        "bounds": {
+          "min": [
+            0.010999977588653564,
+            0.0899999737739563,
+            0.0
+          ],
+          "max": [
+            0.9890000224113464,
+            1.9100000858306885,
+            1.350000023841858
+          ]
+        }
+      },
+      {
+        "quarterTurns": 1,
+        "footprint": [
+          2,
+          1
+        ],
+        "bounds": {
+          "min": [
+            0.08999991416931152,
+            0.010999977588653564,
+            0.0
+          ],
+          "max": [
+            1.9100000858306885,
+            0.9890000224113464,
+            1.350000023841858
+          ]
+        }
+      },
+      {
+        "quarterTurns": 2,
+        "footprint": [
+          1,
+          2
+        ],
+        "bounds": {
+          "min": [
+            0.010999977588653564,
+            0.08999991416931152,
+            0.0
+          ],
+          "max": [
+            0.9890000224113464,
+            1.9100000858306885,
+            1.350000023841858
+          ]
+        }
+      },
+      {
+        "quarterTurns": 3,
+        "footprint": [
+          2,
+          1
+        ],
+        "bounds": {
+          "min": [
+            0.0899999737739563,
+            0.010999977588653564,
+            0.0
+          ],
+          "max": [
+            1.9100000858306885,
+            0.9890000224113464,
+            1.350000023841858
+          ]
+        }
+      }
+    ],
+    "meshes": [
+      {
+        "name": "angled-medical-bed.adjustment actuator barrel",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.04378809250194732,
+        "maximumEvaluatedOutwardDistance": 0.15495678083971143,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            7.549790126404332e-08,
+            -1.0,
+            -0.36000001430511475
+          ],
+          [
+            0.0,
+            1.0,
+            7.549790126404332e-08,
+            0.12300000339746475
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.adjustment actuator rod",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.01890849554911417,
+        "maximumEvaluatedOutwardDistance": 0.09999999403953676,
+        "materials": [
+          "rail accent"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            7.549790126404332e-08,
+            -1.0,
+            -0.11999999731779099
+          ],
+          [
+            0.0,
+            1.0,
+            7.549790126404332e-08,
+            0.12300000339746475
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.control backing plate",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.003999888896942139,
+        "maximumEvaluatedOutwardDistance": 0.0859437305480524,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.3799999952316284
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.6660000085830688
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.9099999666213989
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.control fastener 0.331 0.763",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.00349992513657119,
+        "maximumEvaluatedOutwardDistance": 0.006664792774245143,
+        "materials": [
+          "rail accent"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.3310000002384186
+          ],
+          [
+            0.0,
+            7.549790126404332e-08,
+            -1.0,
+            0.6589999794960022
+          ],
+          [
+            0.0,
+            1.0,
+            7.549790126404332e-08,
+            0.8530000448226929
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.control fastener 0.331 0.877",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.0034999251365531903,
+        "maximumEvaluatedOutwardDistance": 0.00666490235744277,
+        "materials": [
+          "rail accent"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.3310000002384186
+          ],
+          [
+            0.0,
+            7.549790126404332e-08,
+            -1.0,
+            0.6589999794960022
+          ],
+          [
+            0.0,
+            1.0,
+            7.549790126404332e-08,
+            0.9670000076293945
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.control fastener 0.429 0.763",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.0034999251365621397,
+        "maximumEvaluatedOutwardDistance": 0.006664766231551766,
+        "materials": [
+          "rail accent"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.42899999022483826
+          ],
+          [
+            0.0,
+            7.549790126404332e-08,
+            -1.0,
+            0.6589999794960022
+          ],
+          [
+            0.0,
+            1.0,
+            7.549790126404332e-08,
+            0.8530000448226929
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.control fastener 0.429 0.877",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.00349992513654414,
+        "maximumEvaluatedOutwardDistance": 0.006664899661700474,
+        "materials": [
+          "rail accent"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.42899999022483826
+          ],
+          [
+            0.0,
+            7.549790126404332e-08,
+            -1.0,
+            0.6589999794960022
+          ],
+          [
+            0.0,
+            1.0,
+            7.549790126404332e-08,
+            0.9670000076293945
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.control raised button 0.365",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.005999922752375811,
+        "maximumEvaluatedOutwardDistance": 0.01037972024641931,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.36500000953674316
+          ],
+          [
+            0.0,
+            7.549790126404332e-08,
+            -1.0,
+            0.6579999923706055
+          ],
+          [
+            0.0,
+            1.0,
+            7.549790126404332e-08,
+            0.9099999666213989
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.control raised button 0.395",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.005999922752375931,
+        "maximumEvaluatedOutwardDistance": 0.01037972024641931,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.39500001072883606
+          ],
+          [
+            0.0,
+            7.549790126404332e-08,
+            -1.0,
+            0.6579999923706055
+          ],
+          [
+            0.0,
+            1.0,
+            7.549790126404332e-08,
+            0.9099999666213989
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.foot lift cross shaft",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.01890840765554459,
+        "maximumEvaluatedOutwardDistance": 0.4650000929832328,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            7.549790126404332e-08,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.27000001072883606
+          ],
+          [
+            -1.0,
+            0.0,
+            7.549790126404332e-08,
+            0.12800000607967377
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.head lift cross shaft",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.01890846295282247,
+        "maximumEvaluatedOutwardDistance": 0.4650000929832328,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            7.549790126404332e-08,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.27000001072883606
+          ],
+          [
+            -1.0,
+            0.0,
+            7.549790126404332e-08,
+            0.12800000607967377
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.left adjustment link -1",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.008499771356582789,
+        "maximumEvaluatedOutwardDistance": 0.3064718618988991,
+        "materials": [
+          "rail accent"
+        ],
+        "matrixWorld": [
+          [
+            -1.0,
+            8.742277657347586e-08,
+            2.721940376001694e-16,
+            -0.4779999852180481
+          ],
+          [
+            4.1362046232507055e-08,
+            0.473126620054245,
+            0.880994439125061,
+            0.0
+          ],
+          [
+            7.701898141476704e-08,
+            0.880994439125061,
+            -0.4731266498565674,
+            0.20000000298023224
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.left adjustment link 1",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.008499771356582612,
+        "maximumEvaluatedOutwardDistance": 0.3064718618988991,
+        "materials": [
+          "rail accent"
+        ],
+        "matrixWorld": [
+          [
+            -1.0,
+            8.742277657347586e-08,
+            -2.721940376001694e-16,
+            -0.4779999852180481
+          ],
+          [
+            -4.1362046232507055e-08,
+            -0.4731266498565674,
+            0.880994439125061,
+            0.0
+          ],
+          [
+            7.701898141476704e-08,
+            0.880994439125061,
+            0.473126620054245,
+            0.20000000298023224
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.left foot caster brake linkage",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.011999905109405518,
+        "maximumEvaluatedOutwardDistance": 0.0353451669216156,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.43799999356269836
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.7799999713897705
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.18299999833106995
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.left foot caster brake tread",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.012499988079071045,
+        "maximumEvaluatedOutwardDistance": 0.06055828649550728,
+        "materials": [
+          "rail accent"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.43799999356269836
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.8259999752044678
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.1980000138282776
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.left foot caster fork cheek -1",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.01199987530708313,
+        "maximumEvaluatedOutwardDistance": 0.0625,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.4410000145435333
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.8320000171661377
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.1420000046491623
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.left foot caster fork cheek 1",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.01199987530708313,
+        "maximumEvaluatedOutwardDistance": 0.0625,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.4410000145435333
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.7279999852180481
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.1420000046491623
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.left foot caster hub cap",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.006499856710435142,
+        "maximumEvaluatedOutwardDistance": 0.03980796871474123,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            7.549790126404332e-08,
+            0.0,
+            1.0,
+            -0.460999995470047
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.7799999713897705
+          ],
+          [
+            -1.0,
+            0.0,
+            7.549790126404332e-08,
+            0.10500000417232513
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.left foot caster wheel",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.03749999403953673,
+        "maximumEvaluatedOutwardDistance": 0.11012572248000652,
+        "materials": [
+          "mattress edge"
+        ],
+        "matrixWorld": [
+          [
+            7.549790126404332e-08,
+            0.0,
+            1.0,
+            -0.41499999165534973
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.7799999713897705
+          ],
+          [
+            -1.0,
+            0.0,
+            7.549790126404332e-08,
+            0.10500000417232513
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.left foot rail mount",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.024499982595443726,
+        "maximumEvaluatedOutwardDistance": 0.051377045921981335,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.4580000042915344
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.5600000023841858
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.3659999966621399
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.left foot rail pivot",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.01749974489212371,
+        "maximumEvaluatedOutwardDistance": 0.03665567236021161,
+        "materials": [
+          "rail accent"
+        ],
+        "matrixWorld": [
+          [
+            7.549790126404332e-08,
+            0.0,
+            1.0,
+            -0.4690000116825104
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.5600000023841858
+          ],
+          [
+            -1.0,
+            0.0,
+            7.549790126404332e-08,
+            0.3569999933242798
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.left foot rail post",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.013932417146861553,
+        "maximumEvaluatedOutwardDistance": 0.2350001335144043,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.46000000834465027
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.5600000023841858
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.5900000333786011
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.left head caster brake linkage",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.011999905109405518,
+        "maximumEvaluatedOutwardDistance": 0.0353451669216156,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.43799999356269836
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.7799999713897705
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.18299999833106995
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.left head caster brake tread",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.012499988079071045,
+        "maximumEvaluatedOutwardDistance": 0.06055828649550728,
+        "materials": [
+          "rail accent"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.43799999356269836
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.8259999752044678
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.1980000138282776
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.left head caster fork cheek -1",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.01199987530708313,
+        "maximumEvaluatedOutwardDistance": 0.0625,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.4410000145435333
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.7279999852180481
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.1420000046491623
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.left head caster fork cheek 1",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.01199987530708313,
+        "maximumEvaluatedOutwardDistance": 0.0625,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.4410000145435333
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.8320000171661377
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.1420000046491623
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.left head caster hub cap",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.006499856710435142,
+        "maximumEvaluatedOutwardDistance": 0.03980741649866818,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            7.549790126404332e-08,
+            0.0,
+            1.0,
+            -0.460999995470047
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.7799999713897705
+          ],
+          [
+            -1.0,
+            0.0,
+            7.549790126404332e-08,
+            0.10500000417232513
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.left head caster wheel",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.03749999403953673,
+        "maximumEvaluatedOutwardDistance": 0.11012566927820444,
+        "materials": [
+          "mattress edge"
+        ],
+        "matrixWorld": [
+          [
+            7.549790126404332e-08,
+            0.0,
+            1.0,
+            -0.41499999165534973
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.7799999713897705
+          ],
+          [
+            -1.0,
+            0.0,
+            7.549790126404332e-08,
+            0.10500000417232513
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.left head rail mount",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.024499982595443726,
+        "maximumEvaluatedOutwardDistance": 0.05137699004262686,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.4580000042915344
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.5199999809265137
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.3659999966621399
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.left head rail pivot",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.01749974489212371,
+        "maximumEvaluatedOutwardDistance": 0.03665566770359874,
+        "materials": [
+          "rail accent"
+        ],
+        "matrixWorld": [
+          [
+            7.549790126404332e-08,
+            0.0,
+            1.0,
+            -0.4690000116825104
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.5199999809265137
+          ],
+          [
+            -1.0,
+            0.0,
+            7.549790126404332e-08,
+            0.3569999933242798
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.left head rail post",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.013932417146861553,
+        "maximumEvaluatedOutwardDistance": 0.2350001335144043,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.46000000834465027
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.5199999809265137
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.5900000333786011
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.left lower bearing track",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.009000003337860107,
+        "maximumEvaluatedOutwardDistance": 0.32499998807907104,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.4779999852180481
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.055000003427267075
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.left lower lift pivot",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.007999628782272339,
+        "maximumEvaluatedOutwardDistance": 0.02842311791027896,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            7.549790126404332e-08,
+            0.0,
+            1.0,
+            -0.48100000619888306
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.27000001072883606
+          ],
+          [
+            -1.0,
+            0.0,
+            7.549790126404332e-08,
+            0.055000003427267075
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.left middle lift pivot",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.00799962878226731,
+        "maximumEvaluatedOutwardDistance": 0.028423050418496132,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            7.549790126404332e-08,
+            0.0,
+            1.0,
+            -0.48100000619888306
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            -1.0,
+            0.0,
+            7.549790126404332e-08,
+            0.20000000298023224
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.left side safety rail",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.017913159448652342,
+        "maximumEvaluatedOutwardDistance": 0.614999830722846,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.46000000834465027
+          ],
+          [
+            0.0,
+            7.549790126404332e-08,
+            -1.0,
+            -0.019999999552965164
+          ],
+          [
+            0.0,
+            1.0,
+            7.549790126404332e-08,
+            0.8450000286102295
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.left upper bearing track",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.009000003337860107,
+        "maximumEvaluatedOutwardDistance": 0.32499998807907104,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.4779999852180481
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.3449999988079071
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.left upper lift pivot",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.007999628782254234,
+        "maximumEvaluatedOutwardDistance": 0.0284232790581882,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            7.549790126404332e-08,
+            0.0,
+            1.0,
+            -0.48100000619888306
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.27000001072883606
+          ],
+          [
+            -1.0,
+            0.0,
+            7.549790126404332e-08,
+            0.3449999988079071
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.left washable hand grip",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.019999951124191284,
+        "maximumEvaluatedOutwardDistance": 0.2800000309944153,
+        "materials": [
+          "medical linen"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.46000000834465027
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.07999999821186066
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.8450000286102295
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.right adjustment link -1",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.008500009775161625,
+        "maximumEvaluatedOutwardDistance": 0.3064718618988991,
+        "materials": [
+          "rail accent"
+        ],
+        "matrixWorld": [
+          [
+            -1.0,
+            8.742277657347586e-08,
+            2.721940376001694e-16,
+            0.4779999852180481
+          ],
+          [
+            4.1362046232507055e-08,
+            0.473126620054245,
+            0.880994439125061,
+            0.0
+          ],
+          [
+            7.701898141476704e-08,
+            0.880994439125061,
+            -0.4731266498565674,
+            0.20000000298023224
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.right adjustment link 1",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.008500009775161714,
+        "maximumEvaluatedOutwardDistance": 0.3064718618988991,
+        "materials": [
+          "rail accent"
+        ],
+        "matrixWorld": [
+          [
+            -1.0,
+            8.742277657347586e-08,
+            -2.721940376001694e-16,
+            0.4779999852180481
+          ],
+          [
+            -4.1362046232507055e-08,
+            -0.4731266498565674,
+            0.880994439125061,
+            0.0
+          ],
+          [
+            7.701898141476704e-08,
+            0.880994439125061,
+            0.473126620054245,
+            0.20000000298023224
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.right foot caster brake linkage",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.011999964714050293,
+        "maximumEvaluatedOutwardDistance": 0.035345147363841534,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.43799999356269836
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.7799999713897705
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.18299999833106995
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.right foot caster brake tread",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.012499988079071045,
+        "maximumEvaluatedOutwardDistance": 0.06055828649550625,
+        "materials": [
+          "rail accent"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.43799999356269836
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.8259999752044678
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.1980000138282776
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.right foot caster fork cheek -1",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.01199987530708313,
+        "maximumEvaluatedOutwardDistance": 0.0625,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.4410000145435333
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.8320000171661377
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.1420000046491623
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.right foot caster fork cheek 1",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.01199987530708313,
+        "maximumEvaluatedOutwardDistance": 0.0625,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.4410000145435333
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.7279999852180481
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.1420000046491623
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.right foot caster hub cap",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.006499856710432886,
+        "maximumEvaluatedOutwardDistance": 0.039807968714739024,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            7.549790126404332e-08,
+            0.0,
+            1.0,
+            0.460999995470047
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.7799999713897705
+          ],
+          [
+            -1.0,
+            0.0,
+            7.549790126404332e-08,
+            0.10500000417232513
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.right foot caster wheel",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.03749999403953494,
+        "maximumEvaluatedOutwardDistance": 0.11012572329491377,
+        "materials": [
+          "mattress edge"
+        ],
+        "matrixWorld": [
+          [
+            7.549790126404332e-08,
+            0.0,
+            1.0,
+            0.41499999165534973
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.7799999713897705
+          ],
+          [
+            -1.0,
+            0.0,
+            7.549790126404332e-08,
+            0.10500000417232513
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.right foot rail mount",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.024499982595443726,
+        "maximumEvaluatedOutwardDistance": 0.051377045921981335,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.4580000042915344
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.5600000023841858
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.3659999966621399
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.right foot rail pivot",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.017499744892116812,
+        "maximumEvaluatedOutwardDistance": 0.03665566397830844,
+        "materials": [
+          "rail accent"
+        ],
+        "matrixWorld": [
+          [
+            7.549790126404332e-08,
+            0.0,
+            1.0,
+            0.4690000116825104
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.5600000023841858
+          ],
+          [
+            -1.0,
+            0.0,
+            7.549790126404332e-08,
+            0.3569999933242798
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.right foot rail post",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.013932439862401225,
+        "maximumEvaluatedOutwardDistance": 0.2350001335144043,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.46000000834465027
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.5600000023841858
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.5900000333786011
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.right head caster brake linkage",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.011999964714050293,
+        "maximumEvaluatedOutwardDistance": 0.035345147363841534,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.43799999356269836
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.7799999713897705
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.18299999833106995
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.right head caster brake tread",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.012499988079071045,
+        "maximumEvaluatedOutwardDistance": 0.06055828649550625,
+        "materials": [
+          "rail accent"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.43799999356269836
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.8259999752044678
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.1980000138282776
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.right head caster fork cheek -1",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.01199987530708313,
+        "maximumEvaluatedOutwardDistance": 0.0625,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.4410000145435333
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.7279999852180481
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.1420000046491623
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.right head caster fork cheek 1",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.01199987530708313,
+        "maximumEvaluatedOutwardDistance": 0.0625,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.4410000145435333
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.8320000171661377
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.1420000046491623
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.right head caster hub cap",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.006499856710432886,
+        "maximumEvaluatedOutwardDistance": 0.0398074164986539,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            7.549790126404332e-08,
+            0.0,
+            1.0,
+            0.460999995470047
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.7799999713897705
+          ],
+          [
+            -1.0,
+            0.0,
+            7.549790126404332e-08,
+            0.10500000417232513
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.right head caster wheel",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.03749999403953494,
+        "maximumEvaluatedOutwardDistance": 0.11012567114084959,
+        "materials": [
+          "mattress edge"
+        ],
+        "matrixWorld": [
+          [
+            7.549790126404332e-08,
+            0.0,
+            1.0,
+            0.41499999165534973
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.7799999713897705
+          ],
+          [
+            -1.0,
+            0.0,
+            7.549790126404332e-08,
+            0.10500000417232513
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.right head rail mount",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.024499982595443726,
+        "maximumEvaluatedOutwardDistance": 0.05137699004262686,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.4580000042915344
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.5199999809265137
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.3659999966621399
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.right head rail pivot",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.017499744892116812,
+        "maximumEvaluatedOutwardDistance": 0.03665566071867943,
+        "materials": [
+          "rail accent"
+        ],
+        "matrixWorld": [
+          [
+            7.549790126404332e-08,
+            0.0,
+            1.0,
+            0.4690000116825104
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.5199999809265137
+          ],
+          [
+            -1.0,
+            0.0,
+            7.549790126404332e-08,
+            0.3569999933242798
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.right head rail post",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.013932439862401225,
+        "maximumEvaluatedOutwardDistance": 0.2350001335144043,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.46000000834465027
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.5199999809265137
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.5900000333786011
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.right lower bearing track",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.00899997353553772,
+        "maximumEvaluatedOutwardDistance": 0.32499998807907104,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.4779999852180481
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.055000003427267075
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.right lower lift pivot",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.007999628782272339,
+        "maximumEvaluatedOutwardDistance": 0.02842311791027896,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            7.549790126404332e-08,
+            0.0,
+            1.0,
+            0.48100000619888306
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.27000001072883606
+          ],
+          [
+            -1.0,
+            0.0,
+            7.549790126404332e-08,
+            0.055000003427267075
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.right middle lift pivot",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.007999628782278112,
+        "maximumEvaluatedOutwardDistance": 0.028423049952834845,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            7.549790126404332e-08,
+            0.0,
+            1.0,
+            0.48100000619888306
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            -1.0,
+            0.0,
+            7.549790126404332e-08,
+            0.20000000298023224
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.right side safety rail",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.017913169227539282,
+        "maximumEvaluatedOutwardDistance": 0.6149998307228268,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.46000000834465027
+          ],
+          [
+            0.0,
+            7.549790126404332e-08,
+            -1.0,
+            -0.019999999552965164
+          ],
+          [
+            0.0,
+            1.0,
+            7.549790126404332e-08,
+            0.8450000286102295
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.right upper bearing track",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.00899997353553772,
+        "maximumEvaluatedOutwardDistance": 0.32499998807907104,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.4779999852180481
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.3449999988079071
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.right upper lift pivot",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.007999628782293126,
+        "maximumEvaluatedOutwardDistance": 0.028423274867236614,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            7.549790126404332e-08,
+            0.0,
+            1.0,
+            0.48100000619888306
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.27000001072883606
+          ],
+          [
+            -1.0,
+            0.0,
+            7.549790126404332e-08,
+            0.3449999988079071
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-medical-bed.right washable hand grip",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.019999951124191284,
+        "maximumEvaluatedOutwardDistance": 0.2800000309944153,
+        "materials": [
+          "medical linen"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.46000000834465027
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.07999999821186066
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.8450000286102295
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "bed_base",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.09999996423721313,
+        "maximumEvaluatedOutwardDistance": 0.9938037544488907,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.27000001072883606
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "control",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.029999971389770508,
+        "maximumEvaluatedOutwardDistance": 0.0669134808704257,
+        "materials": [
+          "rail accent"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.3799999952316284
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.699999988079071
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.9099999666213989
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "headboard",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.04999995231628418,
+        "maximumEvaluatedOutwardDistance": 0.5251387506723404,
+        "materials": [
+          "mattress edge"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.7799999713897705
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.9900000095367432
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "leg",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.04999983310699463,
+        "maximumEvaluatedOutwardDistance": 0.14020513091236353,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.4000000059604645
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.7799999713897705
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.14000000059604645
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "leg.001",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.04999986290931702,
+        "maximumEvaluatedOutwardDistance": 0.14020509272813797,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.4000000059604645
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.7799999713897705
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.14000000059604645
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "leg.002",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.04999983310699463,
+        "maximumEvaluatedOutwardDistance": 0.14020509272813797,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.4000000059604645
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.7799999713897705
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.14000000059604645
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "leg.003",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.04999995231628418,
+        "maximumEvaluatedOutwardDistance": 0.1402050545439124,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.4000000059604645
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.7799999713897705
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.14000000059604645
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "mattress",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.12499988079071045,
+        "maximumEvaluatedOutwardDistance": 0.8838667869567871,
+        "materials": [
+          "medical linen"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.5099999904632568
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "pillow",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.059999942779541016,
+        "maximumEvaluatedOutwardDistance": 0.3562142625451109,
+        "materials": [
+          "medical linen"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.47999998927116394
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.690000057220459
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "rail",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.03499990701675415,
+        "maximumEvaluatedOutwardDistance": 0.44576024264097214,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.8199999928474426
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.8100000619888306
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "rail.001",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.034999966621398926,
+        "maximumEvaluatedOutwardDistance": 0.44576024264097214,
+        "materials": [
+          "warm painted steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.8199999928474426
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.8100000619888306
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      }
+    ],
+    "totalRawInwardFaces": 0,
+    "totalEvaluatedInwardFaces": 0,
+    "totalEvaluatedFaces": 7776
+  }
+]
