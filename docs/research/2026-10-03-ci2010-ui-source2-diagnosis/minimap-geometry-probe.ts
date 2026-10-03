@@ -38,7 +38,7 @@ export function readMinimapGeometry() {
   const corner = document.querySelector('.hud__corner')?.getBoundingClientRect();
   const strip = document.querySelector('.hud-strip')?.getBoundingClientRect();
   const tabs = [...document.querySelectorAll('.hud-tabs__inner > .ui-tab')];
-  const ancestors = [];
+  const ancestors: ReturnType<typeof measure>[] = [];
   for (let element = list?.parentElement; element; element = element.parentElement) {
     ancestors.push(measure(element));
     if (element.matches('.hud')) break;

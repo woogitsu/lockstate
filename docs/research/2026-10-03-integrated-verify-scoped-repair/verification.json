@@ -1,0 +1,44 @@
+{
+    "base":  "3d454c2872fb6b777cd9afc2cc13c286bf8346ef",
+    "original":  {
+                     "failed":  3,
+                     "passed":  16,
+                     "noDoorMetrics":  {
+                                           "unmetDemandCycles":  0,
+                                           "actionsStarted":  592,
+                                           "actionsCompleted":  590,
+                                           "routeFailures":  0,
+                                           "substitutionCycles":  526,
+                                           "contendedSubstitutionCycles":  180,
+                                           "substitutionsCountedSinceTick":  0
+                                       },
+                     "withDoorMetrics":  {
+                                             "unmetDemandCycles":  0,
+                                             "actionsStarted":  483,
+                                             "actionsCompleted":  481,
+                                             "routeFailures":  0,
+                                             "substitutionCycles":  410,
+                                             "contendedSubstitutionCycles":  0,
+                                             "substitutionsCountedSinceTick":  0
+                                         },
+                     "logSha256":  "077F3F2B0AD5E28EF5B2C6277D21FE2762EF4AE546ABC586D11D276E7355D87E"
+                 },
+    "corrected":  {
+                      "appAndToolsTypecheckExit":  0,
+                      "focusedTestsPassed":  24,
+                      "roomCasesPassed":  9,
+                      "existingQuoteDomPassed":  1,
+                      "logSha256":  "D87E2FD48A9A3FC8F12C175BA3A95B50E910FFB9C2C486F518FEE1F708153E11"
+                  },
+    "inventory":  {
+                      "authoredSentences":  596,
+                      "gitBlobBeforeAndAfter":  "3d09f5d75f461ab58e90fad5c33a1f27c8e7f0fa",
+                      "semanticCopyChanged":  false,
+                      "generatedSha256":  "DEDC17DD010C2A14D8A44AB0B41F4B06FDE68E4BD55706E0DC7950FB583B48FF",
+                      "autocrlfTrueFreshCheckoutByteExact":  true,
+                      "durableRule":  "docs/PLAYER_STRINGS.md text eol=lf"
+                  },
+    "simulationSourceChanged":  false,
+    "fullVerifyExecuted":  false,
+    "browserServerLaunched":  false
+}

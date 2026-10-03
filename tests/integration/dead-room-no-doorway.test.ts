@@ -69,6 +69,13 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * population it is therefore 0"*. It is also a population aggregate with no
  * room in it, so it could never have said *which* room was dead. That is why
  * the fix is a per-room signal on the projection and not a published counter.
+ *
+ * **That route-failure equality is historical after #2014's physical
+ * connectivity filter.** The current no-door prison is excluded before a
+ * journey starts: routeFailures and unmetDemandCycles are both 0. Its blocked
+ * need is still measured by hygiene above and contendedSubstitutionCycles
+ * below; the working door prison keeps those contention cycles at 0. The
+ * original diagnosis above is retained as the pre-filter finding.
  */
 
 /** Distinct from every other seed in the suite, so no shared fixture can make these figures true by accident. */
@@ -311,17 +318,19 @@ describe('the worker asks the question, so a real session gets the answer', () =
 });
 
 describe('what the simulation already knew and published to nobody', () => {
-  it('counts the wasted journeys, as route failures and not as an exhausted candidate walk', () => {
+  it('filters no-door journeys before routing while still counting blocked-need substitutions', () => {
     const withDoor = prison(true).runtime.prisoners.actionSystem.getMetrics();
     const noDoor = prison(false).runtime.prisoners.actionSystem.getMetrics();
 
-    expect(withDoor).toMatchObject({ unmetDemandCycles: 0, routeFailures: 0 });
-    // 162 when this landed. Asserted as "the same number, and more than none"
-    // rather than as 162: the equality is the finding -- every unmet cycle in
-    // this prison is a route that could not be built, which is the prisoner
-    // selecting the shower room, being sent to it and never arriving -- and the
-    // absolute figure is a function of the reconsideration cadence.
-    expect(noDoor.routeFailures).toBeGreaterThan(0);
-    expect(noDoor.unmetDemandCycles).toBe(noDoor.routeFailures);
+    expect(withDoor).toMatchObject({ unmetDemandCycles: 0, routeFailures: 0, contendedSubstitutionCycles: 0 });
+    // Historical pre-filter finding: 162 when this landed, guarded by
+    // routeFailures>0 and unmetDemandCycles==routeFailures. Retained in the
+    // original RED record; no longer the expected post-#2014 behavior.
+    // #2014 excludes the disconnected room before a route is requested. The
+    // old journey counters are now exactly zero, not a proxy for satisfaction:
+    // the blocked-need substitution counter and hygiene controls expose it.
+    expect(noDoor.routeFailures).toBe(0);
+    expect(noDoor.unmetDemandCycles).toBe(0);
+    expect(noDoor.contendedSubstitutionCycles).toBeGreaterThan(0);
   });
 });
