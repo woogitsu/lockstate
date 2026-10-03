@@ -1,0 +1,21 @@
+﻿import { expect, it } from 'vitest';
+import { createSaveEnvelope, decodeSaveEnvelope } from '../../src/persistence/save-schema';
+import { packCommand, type SimulationCommand } from '../../src/simulation/protocol/commands';
+import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { captureSessionSnapshot, restoreSimulationRuntime, type SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
+type Runtime = ReturnType<typeof createNewSimulationRuntime>;
+function send(r: Runtime, c: SimulationCommand) { const s=r.kernel.expectedSequence; r.kernel.submitCommand(`far-owner-${s}`,s,r.kernel.tick,packCommand(c)); expect(r.kernel.dispatchDueCommands()).toBe(1); }
+function finish(r: Runtime) { for(let t=0;t<30000 && r.construction.allOrders().some(o=>o.state!=='completed'&&o.state!=='cancelled');t++)r.kernel.step(); expect(r.construction.allOrders().every(o=>o.state==='completed'||o.state==='cancelled')).toBe(true); }
+function reload(r:Runtime) { const b=captureSessionSnapshot(r); const d=decodeSaveEnvelope(JSON.parse(JSON.stringify(createSaveEnvelope({gameVersion:'test',prisonId:'far-owner',revision:1,createdAt:0,updatedAt:1,...b})))); expect(d.ok).toBe(true); if(!d.ok)throw Error('decode'); return restoreSimulationRuntime(d.value.payload as unknown as SessionSnapshotBundle).runtime; }
+it.each(([0,1] as const).flatMap(q=>[false,true].map(load=>({q,load}))))('independent far-anchor Desk survives old Cell Cancel q=$q load=$load',({q,load})=>{
+ let r=createNewSimulationRuntime(73); send(r,{type:'PlaceRoomTemplate',templateId:'cell-basic',origin:{x:10,y:10},quarterTurns:q});finish(r);
+ const old=r.construction.allOrders().find(o=>o.definitionId==='bed-wooden')!; expect(old.location).toEqual(q===0?{x:11,y:11}:{x:14,y:11});
+ send(r,{type:'RemoveObject',...old.location});
+ const anchor=q===0?{x:11,y:12}:{x:15,y:11};
+ send(r,{type:'PlaceObject',orderId:'independent-far-desk',definitionId:'desk-wooden',...anchor,quarterTurns:1});expect(r.construction.getOrder('independent-far-desk')?.state).toBe('approved');finish(r);
+ if(load)r=reload(r); const standing=r.placedObjects.getSnapshot().find(o=>o.sourceOrderId==='independent-far-desk')!;expect(standing).toMatchObject({objectId:'object.desk',anchorTile:anchor,orientation:1});
+ const funds=r.treasury.balanceMinorUnits;send(r,{type:'CancelBuildOrder',orderId:old.id,expectedRevision:r.construction.revisionOf(old.id)});
+ expect(r.construction.allOrders().filter(o=>o.id.startsWith('room-template-')).every(o=>o.state==='cancelled')).toBe(true); expect(r.construction.getOrder('independent-far-desk')?.state).toBe('completed');expect(r.placedObjects.getSnapshot()).toEqual([standing]);expect(r.treasury.balanceMinorUnits).toBe(funds);
+ r=reload(r);expect(r.placedObjects.getSnapshot()).toEqual([standing]);expect(r.treasury.balanceMinorUnits).toBe(funds);
+ console.log(JSON.stringify({q,load,old:old.location,anchor,sourceOrderId:standing.sourceOrderId,orientation:standing.orientation,balance:funds,orders:r.construction.allOrders().length}));
+});
