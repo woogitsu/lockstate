@@ -1,0 +1,377 @@
+{
+  "scope": "Two first original EN FullHD UI100 native runs only; no browser zoom, no UI200/Polish acceptance, no approval or production import",
+  "runtime": "Cloudflare production build + existing workerd artifact preview; Chrome physical public input;1920x1080;workers1;retries0;case60000ms;expect10000ms",
+  "mutation": "No native production mutation or restore performed in this exact two-case lease. Earlier actual source-only2RED/restored23G retained separately.",
+  "lease": "Explicitly released after both terminal runs; port5371 noLISTEN; own preview PIDs9952/47472 and test worker PIDs20652/40132 absent. No process was killed.",
+  "receipts": [
+    {
+      "variant": "a",
+      "subject": "12a1ee465df672b57d5dfd547e8f678d4f494bdc",
+      "buildExit": 0,
+      "nativePassed": 1,
+      "nativeFailed": 0,
+      "durationMs": 4457,
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "zoom": 1,
+        "uiScale": 1
+      },
+      "panel": {
+        "left": 140,
+        "top": 144,
+        "right": 536,
+        "bottom": 274,
+        "width": 396,
+        "height": 130,
+        "hidden": false,
+        "clientHeight": 128,
+        "scrollHeight": 128,
+        "text": "Top-down\nAngled view\nPan camera left\nPan camera up\nPan camera down\nPan camera right\nRotate camera left\nRotate camera right\nRaise camera angle\nLower camera angle",
+        "display": "flex"
+      },
+      "activeBand": {
+        "left": 0,
+        "top": 95,
+        "right": 1920,
+        "bottom": 132,
+        "width": 1920,
+        "height": 37,
+        "hidden": false,
+        "clientHeight": 36,
+        "scrollHeight": 36,
+        "text": "Nothing was removed — there is no object on that tile, none being built there, and no finished wall there either.",
+        "display": "flex"
+      },
+      "alertList": {
+        "left": 165,
+        "top": 980,
+        "right": 537,
+        "bottom": 1047,
+        "width": 372,
+        "height": 67,
+        "hidden": false,
+        "clientHeight": 67,
+        "scrollHeight": 67,
+        "text": "Nothing was removed — there is no object on that tile, none being built there, and no finished wall there either.\nWarning",
+        "display": "flex"
+      },
+      "alertRows": [
+        {
+          "left": 165,
+          "top": 980,
+          "right": 537,
+          "bottom": 1047,
+          "width": 372,
+          "height": 67,
+          "text": "Nothing was removed — there is no object on that tile, none being built there, and no finished wall there either.\nWarning"
+        }
+      ],
+      "controls": {
+        "count": 12,
+        "minWidth": 44,
+        "minHeight": 44,
+        "allPhysicalCentresReachable": true
+      },
+      "wholeBeforeSha256": "2c35464e82d9ced7a156f8d6aebf106f8f81711dbf5d77b07afda9e6715c6de5",
+      "wholeAfterSha256": "2c35464e82d9ced7a156f8d6aebf106f8f81711dbf5d77b07afda9e6715c6de5",
+      "wholeExactlyEqual": true,
+      "panSteps": 4,
+      "poseSteps": 4,
+      "commandsBeforeCamera": [
+        {
+          "type": "RemoveWall",
+          "x": 15,
+          "y": 15,
+          "edge": "west"
+        }
+      ],
+      "compiledFileCount": 9519,
+      "compiledClientCode": [
+        {
+          "path": "dist\\client\\assets\\catalog-lZH0TBdb.js",
+          "sha256": "08bd70d5439f7ebc3e6575010b0cfdfc633e78a9c5981ec9c4dd84069141a0fd",
+          "bytes": 86413
+        },
+        {
+          "path": "dist\\client\\assets\\index-B3_VpDGw.js",
+          "sha256": "a8ab052958a739a5a21889d66da116ceb7ceb62a79b29fcbf4b20803f4e0971d",
+          "bytes": 1939101
+        },
+        {
+          "path": "dist\\client\\assets\\index-COS6GfLr.css",
+          "sha256": "6b05c4a020a2c01fdf3dd296e8faf1e1afa87d3f380abca6ad36bfdca4faf35a",
+          "bytes": 84111
+        },
+        {
+          "path": "dist\\client\\assets\\pl-catalog-DQ0PXWG1.js",
+          "sha256": "111a4f3417e067ac13e15474423ef80139f2ca55aa3cfe50345a7239f28a7840",
+          "bytes": 51260
+        },
+        {
+          "path": "dist\\client\\assets\\worker-B6gaZnfd.js",
+          "sha256": "47f1c131c5f1c504dea210c971fd1927cd0f84a6827eaaa292ebbe8d8b85a6ca",
+          "bytes": 443793
+        }
+      ]
+    },
+    {
+      "variant": "b",
+      "subject": "21a2917a4d9f414c7d97d66495ac073ccf92674f",
+      "buildExit": 0,
+      "nativePassed": 1,
+      "nativeFailed": 0,
+      "durationMs": 4298,
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "zoom": 1,
+        "uiScale": 1
+      },
+      "panel": {
+        "left": 140,
+        "top": 144,
+        "right": 536,
+        "bottom": 274,
+        "width": 396,
+        "height": 130,
+        "hidden": false,
+        "clientHeight": 128,
+        "scrollHeight": 128,
+        "text": "Top-down\nAngled view\nPan camera left\nPan camera up\nPan camera down\nPan camera right\nRotate camera left\nRotate camera right\nRaise camera angle\nLower camera angle",
+        "display": "flex"
+      },
+      "activeBand": {
+        "left": 0,
+        "top": 95,
+        "right": 1920,
+        "bottom": 132,
+        "width": 1920,
+        "height": 37,
+        "hidden": false,
+        "clientHeight": 36,
+        "scrollHeight": 36,
+        "text": "Nothing was removed — there is no object on that tile, none being built there, and no finished wall there either.",
+        "display": "flex"
+      },
+      "alertList": {
+        "left": 165,
+        "top": 980,
+        "right": 537,
+        "bottom": 1047,
+        "width": 372,
+        "height": 67,
+        "hidden": false,
+        "clientHeight": 67,
+        "scrollHeight": 67,
+        "text": "Nothing was removed — there is no object on that tile, none being built there, and no finished wall there either.\nWarning",
+        "display": "flex"
+      },
+      "alertRows": [
+        {
+          "left": 165,
+          "top": 980,
+          "right": 537,
+          "bottom": 1047,
+          "width": 372,
+          "height": 67,
+          "text": "Nothing was removed — there is no object on that tile, none being built there, and no finished wall there either.\nWarning"
+        }
+      ],
+      "controls": {
+        "count": 11,
+        "minWidth": 44,
+        "minHeight": 44,
+        "allPhysicalCentresReachable": true
+      },
+      "wholeBeforeSha256": "c821668178e60d13f108bd23eb92fc8fd6c0d8908ea21b9e3e2352cd2cd582ae",
+      "wholeAfterSha256": "c821668178e60d13f108bd23eb92fc8fd6c0d8908ea21b9e3e2352cd2cd582ae",
+      "wholeExactlyEqual": true,
+      "panSteps": 4,
+      "poseSteps": 4,
+      "commandsBeforeCamera": [
+        {
+          "type": "RemoveWall",
+          "x": 15,
+          "y": 15,
+          "edge": "west"
+        }
+      ],
+      "compiledFileCount": 9519,
+      "compiledClientCode": [
+        {
+          "path": "dist\\client\\assets\\catalog-lZH0TBdb.js",
+          "sha256": "08bd70d5439f7ebc3e6575010b0cfdfc633e78a9c5981ec9c4dd84069141a0fd",
+          "bytes": 86413
+        },
+        {
+          "path": "dist\\client\\assets\\index-BG9gYjbU.js",
+          "sha256": "05956bb4c7ebd6275eb57cb03ca0655ca54ce2cc0b399095d97cbeaf0adb4b6c",
+          "bytes": 1939097
+        },
+        {
+          "path": "dist\\client\\assets\\index-COS6GfLr.css",
+          "sha256": "6b05c4a020a2c01fdf3dd296e8faf1e1afa87d3f380abca6ad36bfdca4faf35a",
+          "bytes": 84111
+        },
+        {
+          "path": "dist\\client\\assets\\pl-catalog-DQ0PXWG1.js",
+          "sha256": "111a4f3417e067ac13e15474423ef80139f2ca55aa3cfe50345a7239f28a7840",
+          "bytes": 51260
+        },
+        {
+          "path": "dist\\client\\assets\\worker-Dkpv65Wk.js",
+          "sha256": "0a60937f165891bfb754e578892a186e1e9cd5322c4174a5f68874080deb226d",
+          "bytes": 443793
+        }
+      ]
+    }
+  ],
+  "originalArtifacts": [
+    {
+      "path": "native/a-original/actual-paused-after-camera-whole.json",
+      "bytes": 15792,
+      "sha256": "286fc00452b3a1360b53341ad49f558830d9d60393055b467f4b17d1d467d389"
+    },
+    {
+      "path": "native/a-original/actual-paused-before-camera-whole.json",
+      "bytes": 15792,
+      "sha256": "26a98dbe65f9bea4ac8a83120ab213f4319f81453427831291faf73f24e67008"
+    },
+    {
+      "path": "native/a-original/actual-public-camera-interactions.json",
+      "bytes": 2933,
+      "sha256": "7ef6830e397cfe5b052e9d7939d3b6014f9c345d059492b81bdf12bbeb5f4050"
+    },
+    {
+      "path": "native/a-original/actual-ui100-active-status-all-camera-geometry.json",
+      "bytes": 6370,
+      "sha256": "cf3541b8df612edffc5e662c2447a01ff4b20e860b3f8572db7885fa35d494a0"
+    },
+    {
+      "path": "native/a-original/actual-ui100-active-status-all-camera.png",
+      "bytes": 1508857,
+      "sha256": "955c7cec97f220ace64d8b6044a5b2831f2ffcb245a7c5da88f5f30f9fb37509"
+    },
+    {
+      "path": "native/a-original/actual-ui100-disclosure-closed.png",
+      "bytes": 204020,
+      "sha256": "a77dbaa152f9eadd41efbab87e7c645fe2a9f680230db9aa80d7feccf82ccf29"
+    },
+    {
+      "path": "native/a-original/actual-ui100-returned-world-active-status.png",
+      "bytes": 243760,
+      "sha256": "15eb77c5c31cce681c08b2523c6bb2424ed87f818c523143bfb823b9b5f1eac3"
+    },
+    {
+      "path": "native/a-original/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "path": "native/a-source-head.txt",
+      "bytes": 86,
+      "sha256": "da95cb8069fbef0922ac39e33e7310f883a50ebfa8b06788ca9f3ed19ba77214"
+    },
+    {
+      "path": "native/a-frozen-status.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "native/a-source-file-hashes.txt",
+      "bytes": 2004,
+      "sha256": "26781aa110c4a55218c7718e4ca9023aa819f0fc59f1dfbd7f0b8fccee9ed242"
+    },
+    {
+      "path": "native/a-original-build.txt",
+      "bytes": 4404,
+      "sha256": "f0045a48cc545d53baf820edd59e656bb66940f61cd3a49c75e8ca6c017d72e4"
+    },
+    {
+      "path": "native/a-original-native.txt",
+      "bytes": 3662,
+      "sha256": "603d49a79fd1827450fe793f9c13bdf68d230a8cd91bcb7a1cccb6111d1dda92"
+    },
+    {
+      "path": "native/a-original-report.json",
+      "bytes": 3704,
+      "sha256": "60bd081d90c0fe17193dcf2fec8355bc52b5d3b9a2e1b18ca62ea914e5c46ace"
+    },
+    {
+      "path": "native/a-actual-compiled-sha256.json",
+      "bytes": 2363966,
+      "sha256": "ad958349221b3e2356c4e9d9d8794fb6bdc0358009cda1fe64a615a93d48e51d"
+    },
+    {
+      "path": "native/b-original/actual-paused-after-camera-whole.json",
+      "bytes": 15795,
+      "sha256": "b4de847877459cb2b06f6dbb0a8ccf2f5b9a48ed5680d77532216123a10dabee"
+    },
+    {
+      "path": "native/b-original/actual-paused-before-camera-whole.json",
+      "bytes": 15795,
+      "sha256": "6015260635e53a0ac71c9e3ed19c70eced434eb7c48e4aa3d04f19ab57bcbe83"
+    },
+    {
+      "path": "native/b-original/actual-public-camera-interactions.json",
+      "bytes": 2929,
+      "sha256": "cf7b2d59384d355b4d6848f4f27e3db2b0c41f423144e9aa1a8eb31dbd7ed75b"
+    },
+    {
+      "path": "native/b-original/actual-ui100-active-status-all-camera-geometry.json",
+      "bytes": 6121,
+      "sha256": "dbb1adb160584d1c31c4bed6c23a45994d39564b5be936f2adef8612d654ec87"
+    },
+    {
+      "path": "native/b-original/actual-ui100-active-status-all-camera.png",
+      "bytes": 1510311,
+      "sha256": "35e4f05691a5798ecaa9c3bc74d2cfd1edc286a1b0e5b6dd98f8bedad4860388"
+    },
+    {
+      "path": "native/b-original/actual-ui100-returned-world-active-status.png",
+      "bytes": 242943,
+      "sha256": "2825e23eedbaad9b70de21e75fb9a749f3a0018c41f144d67df401bfcd5d4276"
+    },
+    {
+      "path": "native/b-original/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "path": "native/b-source-head.txt",
+      "bytes": 86,
+      "sha256": "85aed8204ca6caf0acb858452edecf84ed199bd5ddf6a55e80216c2497ed05f2"
+    },
+    {
+      "path": "native/b-frozen-status.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "native/b-source-file-hashes.txt",
+      "bytes": 2004,
+      "sha256": "5dc79e6f4635d363720ff6cb29b46ecca7af2037296c0545357d88ae1293677f"
+    },
+    {
+      "path": "native/b-original-build.txt",
+      "bytes": 4404,
+      "sha256": "ca5bafa452239de61e97c48b6705c99074dffa3101ec0bec803b599d05520da8"
+    },
+    {
+      "path": "native/b-original-native.txt",
+      "bytes": 3656,
+      "sha256": "13d5a2cec605e103d137e66d5ae3fe29f5528a63d20cdc24c236d820dfe19cd6"
+    },
+    {
+      "path": "native/b-original-report.json",
+      "bytes": 3709,
+      "sha256": "26e01b698c5baca7983ff4e33872a7bbb60f616f5c79aa562f9a3ce4f36ba123"
+    },
+    {
+      "path": "native/b-actual-compiled-sha256.json",
+      "bytes": 2363966,
+      "sha256": "342ed4066161622c0f8ed303f6d46ca48127038f2baf6afd8dcb115d8c534c05"
+    }
+  ]
+}

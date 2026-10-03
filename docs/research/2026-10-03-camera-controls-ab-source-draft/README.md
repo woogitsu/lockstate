@@ -1,5 +1,11 @@
 # UNAPPROVED #1292 camera presentation A/B source drafts
 
+**Current result:** [two actual original EN/UI100 native runs GREEN](./NATIVE_RESULTS.md)
+on frozen A12a/B21a, with real active status/alert, all44px targets, physical
+camera actions and whole paused worker state unchanged. Approval remains
+pending. The source-preparation statements below are retained history; their
+earlier "no browser/build" state has been superseded by this bounded result.
+
 Base: exact published root `30568432f5f4a681849002962a87bfa8134ddc4a`. Own isolated worktree; AGENTS/workflow unchanged from previously read6d. No browser, preview/server, build or CI monitoring. Neither source variant is release approved. This does not import global200 allocation, object Rotate UI or any proposed new locale key.
 
 ## The concrete source decision
