@@ -12,7 +12,8 @@ p = load('original_common_room_bench_producer', 'render-common-room-bench-obliqu
 a = load('common_room_full_raw_audit', 'refine-guard-belt-detail.py')
 scratch = ROOT / 'assets/intermediate/common-room-arm-support-audit'
 scratch.mkdir(parents=True, exist_ok=True)
-source = p.SOURCE; original = source.read_bytes()
+source = ROOT / 'assets/source/blender/furniture.common-room.upholstered-bench.blend'
+original = source.read_bytes()
 bpy.ops.wm.open_mainfile(filepath=str(source)); scene = bpy.context.scene; rows = a.capture(scene)
 receipt = {'source': source.relative_to(ROOT).as_posix(), 'sourceSha256': hashlib.sha256(original).hexdigest(),
     'allRawMeshes': [a.raw_record(bpy.data.objects[n]) for n in sorted(rows)],
@@ -20,12 +21,18 @@ receipt = {'source': source.relative_to(ROOT).as_posix(), 'sourceSha256': hashli
     'allEvaluatedHashes': {n:rows[n]['evaluatedPositionSha256'] for n in sorted(rows)}, 'allEvaluatedNormals': a.normal_record(scene),
     'sourceEvaluatedBounds': a.bounds(scene), 'storedActions': a.animation_record(),
     'allPartBounds': {n:{'min':[min(v[i] for v in row['points']) for i in range(3)],'max':[max(v[i] for v in row['points']) for i in range(3)]} for n,row in rows.items()}, 'actualOriginal72Replay': []}
+# Replay the retained historical camera against its original source, before the
+# dedicated-source production guard. The canonical original manifest is retained
+# separately once the detailed model replaces the player's existing descriptor.
+p.SOURCE = source
+p.verify_source = lambda scene: None
 scene, camera = p.configure()
 receipt['acceptedCamera'] = {'resolution':[256,256], 'orthoScale':camera.data.ortho_scale, 'target':list(p.TARGET),
     'engine':scene.render.engine, 'light':scene.display.shading.light, 'studioLight':scene.display.shading.studio_light,
     'viewTransform':scene.view_settings.view_transform, 'look':scene.view_settings.look, 'exposure':scene.view_settings.exposure,
     'gamma':scene.view_settings.gamma, 'nominalPixelsPerTile':64, 'sourceFit':[1,1,1], 'footprint':[2,1]}
-manifest = json.loads(p.MANIFEST.read_text())
+historical = ROOT / 'docs/research/2026-10-03-common-room-bench-front-arm-supports/original-canonical-manifest.json'
+manifest = json.loads((historical if historical.is_file() else p.MANIFEST).read_text())
 for frame in manifest['frames']:
     yaw = frame['yawDegrees']; elevation = frame['elevationDegrees']; p.point_camera(camera, yaw, elevation)
     path = scratch / f'original-yaw{yaw:+03d}-elev{elevation}.png'
