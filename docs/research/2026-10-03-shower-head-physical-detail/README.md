@@ -16,7 +16,7 @@ New source `assets/source/blender/fixture.shower.head.angled-detail.blend` SHA25
 
 Before/after centered fullbounds exactly `[-0.35499998927116394,-0.49999961256980896,0.7099999785423279]` to `[0.35499998927116394,0.47500067949295044,1.1399999856948853]`. This is an elevated wall fixture; the accepted positive minimumZ is preserved. Existing unitXY min-corner translation(.5,.5,0),1x1 footprint, target `[.5,.5,.925]`,256px/4tile camera=64ppt are unchanged. Both historical production and new dedicated actual native Blender verification passed72 cameras/allfour occupied orientations.
 
-Four actual old/new yaw0/60/180/300, elevation40 comparison renders were opened. New grips and connection fittings are visible; accepted original head/nozzle/enamel appearance remains. This is source inspection, not gameplay screenshot acceptance. Pinned Blender5.2.1LTS upstream ID `9e2066aef7ef`, executable SHA256 `284f4041f98e113f3dc10654a7193ffaaa9bfdfec8b87fa116620a48b5f6d4cb`.
+Four actual old/new yaw0/60/180/300, elevation40 comparison renders were opened. New grips and connection fittings are visible; accepted original head/nozzle/enamel appearance remains. This is source inspection, not gameplay screenshot acceptance. Pinned Blender5.2.1LTS upstream `build_hash=9e2066aef7ef`, executable SHA256 `284f4041f98e113f3dc10654a7193ffaaa9bfdfec8b87fa116620a48b5f6d4cb`.
 
 ## Current boundary
 
