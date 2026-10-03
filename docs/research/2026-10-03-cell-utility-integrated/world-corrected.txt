@@ -1,0 +1,37 @@
+node : [2m[WebServer] [22m(node:62912) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:7 char:1
++ node --experimental-transform-types --disable-warning=ExperimentalWar ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 2 tests using 1 worker
+
+(node:53620) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:53620) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+WORLD_ROOM_PLAN_CAMERA_REFERENCE {"uiScale":1,"chosen":{"target":{"kind":"room-template","templateId":"cell-basic","origin":{"x":15,"y":14}},"ok":true},"measured":{"canvas":{"width":1920,"height":1080,"left":0,"top":0,"widthCss":1920,"heightCss":1080},"map":{"width":32,"height":32},"left":0.125,"top":0.289062,"width":0.75,"height":0.421875,"unrounded":{"left":12.5,"top":28.90625,"width":75,"height":42.1875},"first":[{"x":880,"y":380},{"x":960,"y":380},{"x":960,"y":460},{"x":880,"y":460}],"bounds":{"left":880,"right":1200,"top":380,"bottom":940}},"zoomX":1.25,"zoomY":1.25,"expected":[{"x":880,"y":380},{"x":1200,"y":380},{"x":1200,"y":940},{"x":880,"y":940}],"actual":[{"x":880,"y":380},{"x":1200,"y":380},{"x":1200,"y":940},{"x":880,"y":940}]}
+WORLD_ROOM_PLAN_CAMERA_ORIGIN {"uiScale":1,"chosen":{"target":{"kind":"room-template","templateId":"cell-basic","origin":{"x":15,"y":14}},"ok":true},"zoomX":1.25,"zoomY":1.25,"expected":[{"x":880,"y":380},{"x":1200,"y":380},{"x":1200,"y":940},{"x":880,"y":940}],"actual":[{"x":880,"y":380},{"x":1200,"y":380},{"x":1200,"y":940},{"x":880,"y":940}],"first":[{"x":880,"y":380},{"x":960,"y":380},{"x":960,"y":460},{"x":880,"y":460}]}
+  ok 1 tests\browser\room-template-world-camera-origin.spec.ts:37:31 › World FullHD 100% zoomed room-plan corners and actual placement share the picked ground (4.3s)
+WORLD_ROOM_PLAN_CAMERA_REFERENCE {"uiScale":2,"chosen":{"target":{"kind":"room-template","templateId":"cell-basic","origin":{"x":15,"y":14}},"ok":true},"measured":{"canvas":{"width":1920,"height":1080,"left":0,"top":0,"widthCss":1920,"heightCss":1080},"map":{"width":32,"height":32},"left":0.125,"top":0.289062,"width":0.75,"height":0.421875,"unrounded":{"left":12.5,"top":28.90625,"width":75,"height":42.1875},"first":[{"x":880,"y":380},{"x":960,"y":380},{"x":960,"y":460},{"x":880,"y":460}],"bounds":{"left":880,"right":1200,"top":380,"bottom":940}},"zoomX":1.25,"zoomY":1.25,"expected":[{"x":880,"y":380},{"x":1200,"y":380},{"x":1200,"y":940},{"x":880,"y":940}],"actual":[{"x":880,"y":380},{"x":1200,"y":380},{"x":1200,"y":940},{"x":880,"y":940}]}
+WORLD_ROOM_PLAN_CAMERA_ORIGIN {"uiScale":2,"chosen":{"target":{"kind":"room-template","templateId":"cell-basic","origin":{"x":15,"y":14}},"ok":true},"zoomX":1.25,"zoomY":1.25,"expected":[{"x":880,"y":380},{"x":1200,"y":380},{"x":1200,"y":940},{"x":880,"y":940}],"actual":[{"x":880,"y":380},{"x":1200,"y":380},{"x":1200,"y":940},{"x":880,"y":940}],"first":[{"x":880,"y":380},{"x":960,"y":380},{"x":960,"y":460},{"x":880,"y":460}]}
+  ok 2 tests\browser\room-template-world-camera-origin.spec.ts:37:31 › World FullHD 200% zoomed room-plan corners and actual placement share the picked ground (3.9s)
+
+  2 passed (11.3s)

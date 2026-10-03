@@ -1,5 +1,11 @@
 # Combined Cell, Utility and World-camera acceptance
 
+Current conclusion2026-10-03: six model cases and both World-camera cases are
+accepted on the same unchanged production build, in the initial model run and
+a separate corrected two-case World run. The initial eight-case failure and
+the first incompatible test observer remain recorded below. This is not a
+claim that the original eight-case run or the full hosted suite passed.
+
 Observed2026-10-03. Frozen integrated source
 `282f6413443d784e588ff4c5ec43095796e0244a`, production build labelled
 `282f641` in the four opened loaded FullHD screenshots. No source mutation or
@@ -38,7 +44,7 @@ integrated observations. The earlier independent art consumer negatives and
 exact restoration remain in the dedicated Cell/Utility records; this run did
 not repeat those mutations or claim that each physical detail is pixel-tested.
 
-## World reference discrepancy under investigation
+## World reference discrepancy and observed correction
 
 Both100% and200% cases reach the zoomed whole-plan SVG and clear worker
 preflight, then fail the original precision3 corner comparison:
@@ -50,13 +56,33 @@ The raw existing percentage assignment must be observed before serialization
 and compared with CSS readback to establish the cause. Neither the SVG itself
 nor the production forward callback may become its expected-value reference.
 
-The original precision, budgets, physical pointer and exact-command assertions
-remain required. Corrected World native acceptance is outstanding here.
+Native inspection established CSSStyleDeclaration uses own data/exotic named
+properties, rather than prototype accessors. The first observer assumed the
+latter and caused two test-setup failures before the reference comparison;
+that receipt is retained in the adjustable-camera native-reference record.
+The corrected test-only observer reads the actual HUD viewport assignment
+before forwarding its unchanged string to the real native style object.
+An independent offline reader mutation fails five cases with eight controls;
+exact byte restoration passes all thirteen. No production source changed.
+
+Fresh actual native run: **2/2 GREEN**,11314.786ms total,4265ms and3941ms,
+same worker/build, canonical artifact config and original budgets. Both scales
+observe raw top28.90625% against CSS readback28.9062%, reproducing the original
+0.00128px reference error. Raw independent ground bounds yield all four exact
+corners `(880,380),(1200,380),(1200,940),(880,940)`, equal to the real SVG.
+Physical pointer `(900,380)` lies on the chosen first ground square; no early
+map command exists, and the actual click submits exactly one Cell plan at15,14
+then hides the ghost. Precision3 and every original placement assertion remain.
+See `world-corrected.json`, `world-corrected.txt` and both FullHD PNGs.
+
+`src`, `public` and `tooling` are byte-identical to the frozen build source;
+later commits contain only test/reference/evidence changes. The raw channel
+observation confirms the rounding cause for these two native cases.
 
 ## Limits
 
 Six focused production-artifact cases establish this model integration and
 local persistence path. They do not establish the full hosted CI suite, merge,
 deployment, every camera pose, furniture collision policy, or production release.
-The weakest current claim is the cause of the two reference discrepancies;
-the unrounded native channel observation can confirm or falsify it.
+The weakest current claim is breadth across other navigation sequences and
+camera poses; these focused cases do not measure every one of them.

@@ -1371,3 +1371,20 @@ HUD checks renderer-switch acceptance ownership; gameplay probes an existing
 completed-wall furniture collision report. Continue those concrete tasks while
 CI runs. The owner-only CI split and new-action persistence proposals remain
 pending; no protected workflow or save-format decision is inferred from time.
+
+## Root integrated Cell, Utility and zoomed ground — 2026-10-03
+
+Actual frozen built source282f6413443d784e588ff4c5ec43095796e0244a now has
+six dedicated Cell/Utility construction, q0/q1 and Save/Load cases GREEN.
+Each matching sourceOrderId resolves to its actual completed order/location/
+orientation and remains identical after Load. Both World100/200 native cases
+also pass after observing the independent minimap assignment before native CSS
+rounding, with original precision3 and exact physical placement assertions.
+The original six-GREEN/two-RED run and incompatible observer setup are retained;
+the production source/build was unchanged throughout corrected acceptance.
+Full receipts, opened loaded screenshots and limits:
+[combined acceptance](../../research/2026-10-03-cell-utility-integrated/README.md).
+The next isolated integration contains the actual detailed Reception desk,
+Medicine Cabinet, renderer-change accepted-receipt fix and completed/pending
+square furniture collision fixes. Its native proof and full hosted CI remain
+separate gates; prototype screenshots do not count as release.
