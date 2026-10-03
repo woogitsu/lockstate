@@ -1,0 +1,14 @@
+﻿import {expect,it} from 'vitest';
+import {readFileSync} from 'node:fs';
+import {stripTypeScriptTypes} from 'node:module';
+it('actual catalogue geometry callback measures Category, not earlier View with reused class',async()=>{
+ const s=readFileSync('tests/browser/ui-hud-fullhd-build-catalogue.spec.ts','utf8');const a=s.indexOf('async ({ page }) => {')+'async ({ page }) => {'.length;const body=s.slice(a,s.lastIndexOf('\n});'));
+ const heading={textContent:'What to build',scrollWidth:180,clientWidth:180,scrollHeight:30,clientHeight:30,getBoundingClientRect:()=>({top:10,bottom:40})};
+ const view={label:'View',getBoundingClientRect:()=>({top:70,bottom:105,right:600})};
+ const category={label:'Category',getBoundingClientRect:()=>({top:10,bottom:50,right:600})};
+ const document={querySelector:(selector:string)=>selector.includes('eyebrow')?heading:view};
+ const item={marker:true,click:async()=>{},waitFor:async()=>{},evaluate:async(fn:(element:typeof category)=>unknown)=>fn(category)};
+ const page={setViewportSize:async()=>{},goto:async()=>{},locator:()=>item,getByRole:(role:string,options:{name:string|RegExp})=>{if(role==='combobox'){expect(options.name instanceof RegExp?options.name.test('Category'):options.name==='Category').toBe(true);expect(options.name instanceof RegExp?options.name.test('View'):options.name==='View').toBe(false);}return item;},evaluate:async(fn:()=>unknown)=>fn()};
+ const assertions=(target:unknown,message?:string)=>target===item?{toHaveCount:async(n:number)=>expect(n).toBe(1),toBeVisible:async()=>{}}:expect(target,message);
+ const code=stripTypeScriptTypes(`async function actual(page: unknown){${body}}`);const actual=new Function('expect','document','innerWidth','innerHeight',`return (${code});`)(assertions,document,1920,1080);await actual(page);
+});

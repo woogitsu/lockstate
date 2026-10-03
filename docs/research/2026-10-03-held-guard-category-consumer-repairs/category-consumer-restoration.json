@@ -1,0 +1,8 @@
+{
+  "before": "10dab6e445c4666142d2606555e8e20c315b70e01148b675f597714254d3da05",
+  "scope": "existing browser observer only; no production mutation",
+  "negativeExit": 1,
+  "after": "10dab6e445c4666142d2606555e8e20c315b70e01148b675f597714254d3da05",
+  "exactBytesRestored": true,
+  "restoredExit": 0
+}
