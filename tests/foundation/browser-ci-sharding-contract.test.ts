@@ -44,7 +44,8 @@ const files = (value: CollectedReport) => [...new Set(specs(value).map(spec => s
 
 describe('owner-approved browser CI sharding contract (#1983)', () => {
   it('preserves exact #1899 verification/assets/provisioning, fork and event/concurrency gates', () => {
-    expect(createHash('sha256').update(readFileSync(beforePath)).digest('hex')).toBe('749bfab9c2467b8442f89f238e796fd8aae9dd9aee4e8976cd622ca9e8241833');
+    // Check the immutable LF Git blob on both Unix and autocrlf Windows checkouts.
+    expect(createHash('sha256').update(read(beforePath).replaceAll('\r\n', '\n')).digest('hex')).toBe('749bfab9c2467b8442f89f238e796fd8aae9dd9aee4e8976cd622ca9e8241833');
     const active = workflow();
     for (const key of ['on', 'env', 'concurrency', 'permissions'] as const) expect(active[key]).toEqual(before[key]);
     expect(Object.keys(active.jobs).sort()).toEqual(['assets', 'browser', 'browser-artifact', 'browser-source', 'verify']);
