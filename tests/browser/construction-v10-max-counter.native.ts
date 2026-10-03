@@ -1,6 +1,6 @@
 import { writeFile } from 'node:fs/promises';
 import { expect, test, type Page } from './network-changed-fixture';
-import historicalJson from './fixtures/v9-max-active-order.json';
+import historicalJson from './fixtures/v9-max-active-order.json' with { type: 'json' };
 import { expectedMaxImport, MAX_NATIVE_ORDER_ID } from './fixtures/v9-max-active-order';
 import { cancellationSnapshot, cancellationTransportReceipt, observeQueuedCancellation } from './queued-template-cancellation-observer';
 import type { SaveEnvelope, SaveEnvelopeV9 } from '../../src/persistence/save-schema';
