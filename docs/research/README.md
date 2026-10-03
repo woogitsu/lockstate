@@ -100,6 +100,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 
 | Record | Question it answered | Decision it fed |
 | --- | --- | --- |
+| 2026-10-03 | [Reception armchair native preparation](./2026-10-03-reception-armchair-native-preparation/README.md) | Public q0/q1 shell, desk and two chair owners, cost, whole V8 and actual typed producer RED/exact restore; native visual pending. |
 | 2026-10-03 | [Reception waiting armchair](./2026-10-03-reception-waiting-armchair/README.md) | Existing Reception context; all 52 chair parts/four graphs retained, broad physical arms, 72 poses and actual producer RED-to-restore; native pending. |
 | 2026-10-03 | [Classroom desk native preparation](./2026-10-03-classroom-desk-native-preparation/README.md) | Literal free 2 by 1 desk slots in both original Classroom plan rotations; separate paid orientation0 ownership, actual producer RED-to-restore and wholeV8 proof; native pending. |
 | 2026-10-03 | [Classroom teacher desk](./2026-10-03-classroom-teacher-desk/README.md) | Genuine retained 94-part desk plus visible textbook rack/shelf; 72 poses, actual contacts and producer RED-to-restore; native integration pending. |
