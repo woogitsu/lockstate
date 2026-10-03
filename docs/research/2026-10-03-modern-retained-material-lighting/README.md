@@ -1,6 +1,6 @@
 # Genuine modern material/light draft: original Laundry linen rack
 
-This is a bounded source/render draft for the owner's direction that the game should look modern and warmer rather than like a1990s RTS. It is not final visual acceptance or a production art replacement. The forthcoming modern reference is pending review; no full72 rerender, runtime dispatch change, browser/server/build or synthetic image has occurred.
+This is a bounded source/render draft for the owner's direction that the game should look modern and warmer rather than like a1990s RTS. It is not final visual acceptance or a production art replacement. The generated modern-warm-concept is now available and was opened by the art agent; root/owner review of these actual samples remains pending; no full72 rerender, runtime dispatch change, browser/server/build or synthetic image has occurred.
 
 ## Actual cause and proposed change
 
@@ -17,7 +17,7 @@ Both renders use exact original256?RGBA/canonical4tile orthographic span/64pixel
 | ![Before source60/e40](before-workbench-yaw60-elev40.png) | ![Draft after source60/e40](after-soft-original-materials-yaw60-elev40.png) |
 | ![Before source300/e40](before-workbench-yaw300-elev40.png) | ![Draft after source300/e40](after-soft-original-materials-yaw300-elev40.png) |
 
-All four genuine256px PNGs were opened. After rendering, texture/grain and physical metal highlights become visible; panels/rail cast actual self-shadow. The steel appears darker than Workbench's display colour. This is an honest material/light difference to judge against the forthcoming reference, not a claim that unchanged intrinsic RGBs make perceived palette identical. Object silhouette, proportions and111part/12graph/eightcontact assembly remain exactly the same. At64px per tile this rack is still a small sprite; lighting alone is not a complete modern art direction for the whole prison.
+All four genuine256px PNGs were opened. After rendering, texture/grain and physical metal highlights become visible; panels/rail cast actual self-shadow. The steel appears darker than Workbench's display colour. This is an honest material/light difference to judge against the now available reference, not a claim that unchanged intrinsic RGBs make perceived palette identical. Object silhouette, proportions and111part/12graph/eightcontact assembly remain exactly the same. At64px per tile this rack is still a small sprite; lighting alone is not a complete modern art direction for the whole prison.
 
 ## Genuine source, invariants and hashes
 
@@ -33,4 +33,11 @@ One genuine bounded source60/e40Cy?cles repeat has the same PNG bytes/SHA as the
 
 The first new unit draft incorrectly compared source-centered normal signed distances bit-for-bit to the existing min-corner translated export. Its counts/directions/raw parts were exact but floating distances differed below1e-7; corrected contract keeps exact raw topology/direction counts and positive outward distances within the established1e-6geometry precision. Before-versus-after lighting records and saved draft replay remain bit-exact. This harness correction is not counted as a geometry repair or one of the three meaningful producer negatives.
 
-No production build/browser/server, full72, catalogue/alias/gameplay/copy/palette or native visual acceptance. Review this precise actual comparison against root's forthcoming modern visualreference before broadening the rendering profile. Lighting exposes existing material authorship; it does not by itself modernize whole-scene floors/walls/HUD/actors or enlarge sprites.
+No production build/browser/server, full72, catalogue/alias/gameplay/copy/palette or native visual acceptance. Review this precise actual comparison against root's now available modern visualreference before broadening the rendering profile. Lighting exposes existing material authorship; it does not by itself modernize whole-scene floors/walls/HUD/actors or enlarge sprites.
+
+
+## Reference comparison after source checkpoint
+
+The actual root reference `docs/design/2026-10-03-modern-game-style/modern-warm-concept.png` and its README were opened after the genuine source/render checkpoint. `actual-reference-read.json` pins the precise generated reference and original prompt hashes; it is explicitly an AI concept, not runtime source art.
+
+Its warmer timber/steel/ceramic and softer depth support evaluating the original node materials under broad light. This actual draft exposes those retained wood/steel responses; the source60and300pairs are the concrete comparison. The draft steel is darker than the baseline and has no surrounding floor/contact-shadow stage, so owner/root review of actual samples is still necessary. Original source proportions and all occupied tiles remain intact. The reference's illustrative lights/plants/world arrangement/HUD omissions are not copied or claimed as gameplay. No concept pixels, full72 adoption, new material colours or runtime source switch are introduced by viewing the reference.

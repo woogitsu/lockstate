@@ -7,4 +7,4 @@ Base own completed native-preparation088a436cf5 (root2102 + only Laundry source2
 1. DONE: inspected actual111part/12completegraph Laundry source and current Workbench paint.sl/material-display exporter; packed2172?724 authored wood texture and Principled materials exist but Workbench ignores node shader responses.
 2. DONE: same source/canonical camera before/after samples at source60/e40 and300/e40; genuine Cycles CPU/thread1 soft area lighting using original unchanged material graphs/roughness/metallic/texture, unchanged18roompalette/allmaterials/physicalbounds/contacts.
 3. DONE: open actual samples and report exact source/frame/rig hashes and measured lighting/material effect; meaningful actual camera/source/rig negative and exact restoration, protected live bytes unchanged.
-4. PENDING OWNER: compare against forthcoming modern reference. No full72, no production dispatch or native acceptance before review.
+4. PENDING OWNER: root/owner compare actual samples against the generated modern reference, now opened by art agent. No full72, no production dispatch or native acceptance before review.

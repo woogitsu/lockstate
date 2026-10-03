@@ -1,0 +1,20 @@
+{
+  "referencePath": "C:/Users/matma/Documents/Rozw\u00f3j gier/lockstate-staff-chair-v9-integration-20261003/docs/design/2026-10-03-modern-game-style/modern-warm-concept.png",
+  "referenceSHA256": "0466167dfbf3d6f4c3b15a505eb96d38bd9c4ad3b21d320cf253fd510fb6118b",
+  "referenceDimensions": [
+    1672,
+    941
+  ],
+  "promptSHA256": "bca1c053d27b258ba72f100fc65bd05fadf95b2beef51c0f9861d21927ad6dcd",
+  "referenceOpenedByArtAgent": true,
+  "aiConceptOnly": true,
+  "conceptPixelsCopiedIntoBlenderOrRuntime": false,
+  "rootOrOwnerActualComparisonReviewPending": true,
+  "full72RenderAuthorizedByThisReference": false,
+  "observations": [
+    "Reference uses warm timber/ceramic/steel with soft depth rather than display-colour-only fixtures.",
+    "Actual source samples expose already-retained packed wood texture and material roughness/metallic response without palette edits.",
+    "Current Cycles draft steel is darker than the Workbench baseline; review the actual side-by-side before broad adoption.",
+    "Source samples have no world floor/wall/light gameplay; the AI concept does not authorize copying those unimplemented details."
+  ]
+}
