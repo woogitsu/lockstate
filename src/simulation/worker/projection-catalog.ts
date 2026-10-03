@@ -1,4 +1,5 @@
 import { projectRoomTemplateCost } from '../presentation/room-template-cost';
+import { projectObjectPlacementPreflight } from '../presentation/object-placement-preflight';
 import type { JsonValue } from '../../shared/json';
 import {
   HUD_VIEW_MODEL_SCHEMA_VERSION,
@@ -111,7 +112,7 @@ export interface ProjectionResult {
 }
 
 /** What a request may name, and what the worker rejects when it names the wrong thing. */
-export type ProjectionTargetKind = 'none' | 'entity' | 'id' | 'room-template';
+export type ProjectionTargetKind = 'none' | 'entity' | 'id' | 'room-template' | 'object-placement';
 
 export interface ProjectionCatalogEntry {
   /**
@@ -507,6 +508,17 @@ export const PROJECTION_CATALOG: Readonly<Record<ProjectionId, ProjectionCatalog
       const target = request.target;
       if (target?.kind !== 'room-template') throw new Error('Room template target required');
       return { view: projectRoomTemplatePreflight(runtime.roomTemplates, target.templateId, target.origin, target.mirrorX, target.quarterTurns) as unknown as JsonValue };
+    },
+  },
+  'world/object-placement-preflight': {
+    schemaId: 'object-placement-preflight', schemaVersion: 1, paged: false, target: 'object-placement',
+    project: (runtime, _tick, request) => {
+      const target = request.target;
+      if (target?.kind !== 'object-placement') throw new Error('Object placement target required');
+      return { view: projectObjectPlacementPreflight(runtime.objectPlacement, { definitionId: target.definitionId,
+        x: target.anchor.x, y: target.anchor.y,
+        ...(target.quarterTurns === undefined ? {} : { objectOrientation: target.quarterTurns }),
+      }) as unknown as JsonValue };
     },
   },
 };
