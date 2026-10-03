@@ -17,7 +17,7 @@ import { SimulationWorkerStateMachine } from '../../src/simulation/worker/state-
 import type { MainToWorkerMessage, WorkerToMainMessage } from '../../src/simulation/protocol/types';
 import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { captureSessionSnapshot, SESSION_SNAPSHOT_SCHEMA_ID, SESSION_SNAPSHOT_SCHEMA_VERSION } from '../../src/simulation/runtime/restore-session';
-import type { RenderFeed } from '../../src/rendering/feed/render-feed';
+import { EMPTY_RENDER_FRAME, type RenderFeed } from '../../src/rendering/feed/render-feed';
 
 vi.mock('phaser', () => ({ default: { Scene: class { readonly cameras = { main: {} }; readonly scale = { displayScale: { x: 1, y: 1 } }; } } }));
 afterEach(() => vi.unstubAllGlobals());
@@ -105,13 +105,13 @@ async function setup(initialMode: 'world' | 'oblique', mirrored: boolean, contro
     place: async request => actors.commands.submit({ type: 'PlaceRoomTemplate', ...request }) });
   tool.select('cell-basic', mirrored, 1); tool.arm();
   const main = new Function('worldScene', 'roomTemplateTool', 'appRoot', 'WorldScene', 'ObliqueWorldScene', 'RoomTemplatePreviewFitController', 'installRoomTemplateWorldBridge',
-    'screenToGround', 'groundToScreen', 'computeObliqueFit', 'TILE_SIZE_PX', 'objectFootprintOf', 'localizer', 'formatRoomTemplateQuote',
+    'screenToGround', 'groundToScreen', 'computeObliqueFit', 'renderFeed', 'TILE_SIZE_PX', 'objectFootprintOf', 'localizer', 'formatRoomTemplateQuote',
     `let reinstallPlanGhost = () => {}; let withdrawPlanGhost = () => {}; let productionSceneSelection; const rendererHudChanged = () => {};
     ${installBody}
     const changed = selection => ${changed[0]![1]};
     return { changed, withdraw: () => withdrawPlanGhost() };`)
     (initialMode === 'world' ? world : angled, tool, { querySelector: (selector: string) => selector === 'canvas' ? canvas : undefined }, WorldScene, ObliqueWorldScene,
-      RoomTemplatePreviewFitController, installRoomTemplateWorldBridge, screenToGround, groundToScreen, computeObliqueFit, 64, () => undefined,
+      RoomTemplatePreviewFitController, installRoomTemplateWorldBridge, screenToGround, groundToScreen, computeObliqueFit, { readFrame: () => EMPTY_RENDER_FRAME }, 64, () => undefined,
       { format: (key: string) => key }, (_localizer: unknown, quote: unknown) => JSON.stringify(quote)) as { changed: (value: unknown) => void; withdraw: () => void };
   let expectedOrigin: { x: number; y: number } | undefined;
   const independentPick = (scene: WorldScene | ObliqueWorldScene) => {
