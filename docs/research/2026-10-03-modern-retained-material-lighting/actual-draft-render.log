@@ -1,0 +1,25 @@
+00:01.609  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-modern-retained-material-lighting-draft-20261003\assets\source\blender\furniture.laundry.linen-rack.blend"
+LAUNDRY_LINEN_RACK_SOURCE_GREEN 111 meshes/8 actual contacts/all original materials/four occupied turns
+00:02.375  render           | Saved: 'C:\Users\matma\Documents\Rozwój gier\lockstate-modern-retained-material-lighting-draft-20261003\docs\research\2026-10-03-modern-retained-material-lighting\before-workbench-yaw60-elev40.png'
+00:02.547  render           | Saved: 'C:\Users\matma\Documents\Rozwój gier\lockstate-modern-retained-material-lighting-draft-20261003\docs\research\2026-10-03-modern-retained-material-lighting\before-workbench-yaw300-elev40.png'
+00:02.703  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-modern-retained-material-lighting-draft-20261003\assets\source\blender\furniture.laundry.linen-rack.blend"
+KITCHEN_BOUNDS furniture.laundry.linen-rack [0.004999697208404541, 0.04500061273574829, 0.0] [0.9950003027915955, 0.9549993872642517, 1.4079999923706055]
+LAUNDRY_LINEN_RACK_SOURCE_GREEN 111 meshes/8 actual contacts/all original materials/four occupied turns
+blender.exe : C:\Users\matma\Documents\Rozwój gier\lockstate-modern-retained-material-lighting-draft-20261003\tooling\b
+lender\render-modern-retained-material-draft.py:70: DeprecationWarning: 'World.use_nodes' is expected to be removed in 
+Blender 6.0
+At line:181 char:1
++ & 'C:\Program Files\Blender Foundation\Blender 5.2\blender.exe' --bac ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (C:\Users\matma\... in Blender 6.0:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  world.use_nodes = True
+00:04.016  render           | Saved: 'C:\Users\matma\Documents\Rozwój gier\lockstate-modern-retained-material-lighting-draft-20261003\docs\research\2026-10-03-modern-retained-material-lighting\after-soft-original-materials-yaw60-elev40.png'
+00:04.953  render           | Saved: 'C:\Users\matma\Documents\Rozwój gier\lockstate-modern-retained-material-lighting-draft-20261003\docs\research\2026-10-03-modern-retained-material-lighting\after-soft-original-materials-yaw300-elev40.png'
+KITCHEN_BOUNDS furniture.laundry.linen-rack [0.004999697208404541, 0.04500061273574829, 0.0] [0.9950003027915955, 0.9549993872642517, 1.4079999923706055]
+Info: Saved as "draft.laundry.linen-rack.soft-light.blend"
+MODERN_DRAFT_BOUNDED_GENUINE_COMPARISON_GREEN
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
