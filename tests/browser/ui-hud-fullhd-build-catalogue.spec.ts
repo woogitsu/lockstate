@@ -7,11 +7,14 @@ test('Full HD Build catalogue names its category control without clipping', asyn
   await page.getByRole('button', { name: /New prison|Nowe więzienie/ }).click();
   await page.locator('.ui-tab[data-tab="build"]').click();
 
-  const reading = await page.evaluate(() => {
+  const category = page.getByRole('combobox', { name: /Category|Kategoria/, exact: true });
+  await expect(category).toHaveCount(1);
+  await expect(category).toBeVisible();
+  // View reuses the select class; measure the intended named Category control.
+  const reading = await category.evaluate((control) => {
     const heading = document.querySelector<HTMLElement>(
       '.hud-build__catalogue > .ui-section__header-row .ui-section__eyebrow',
     )!;
-    const control = document.querySelector<HTMLElement>('.hud-build__category')!;
     const headingBox = heading.getBoundingClientRect();
     const controlBox = control.getBoundingClientRect();
     return {
