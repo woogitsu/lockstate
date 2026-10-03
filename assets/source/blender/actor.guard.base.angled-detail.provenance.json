@@ -27316,7 +27316,9 @@
       512,
       512
     ],
-    "orthoScale": 15.5,
+    "orthoScale": 8,
+    "exportRootScale": 0.5,
+    "historicalProducerCommit": "428cd89e48cdbb30c2b5dfda4476dec3a2e9cad0",
     "target": [
       0,
       0,
