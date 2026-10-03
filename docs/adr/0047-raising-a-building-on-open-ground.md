@@ -261,7 +261,7 @@ feature with a reader and no producer.
 ### Walls, doors and the build queue
 
 - A wall is an edge value. `finalizeConstruction`
-  (`src/simulation/construction/system.ts:2166`, `finalizeConstruction`) writes it through `writeEdge`
+  (`src/simulation/construction/system.ts:2182`, `finalizeConstruction`) writes it through `writeEdge`
   (`:2031`, called at `:1934`), which calls `setTopEdge`/`setLeftEdge` and
   therefore bumps `geometryRevision`.
 - `BuildableCategory` is `'wall' | 'object' | 'utility'`
@@ -269,8 +269,12 @@ feature with a reader and no producer.
   `'wall'`; a door is an `'object'` row carrying `placesDoor`.
 - Cancelling a `completed` order reverses its geometry
   (`src/simulation/construction/system.ts:1209`, `revertConstruction`, defined at
-  `:2219`), rewriting the edge from any other completed order that still claims
+  `:2235`), rewriting the edge from any other completed order that still claims
   it rather than clearing it.
+- **Occupied template supply-cancellation amendment at checkpoint 302c3028b1.**
+  The previous `system.ts:2166` and `:2219` indications remain historical
+  before the pure withdrawal reader; the live anchors quote `finalizeConstruction`
+  and `revertConstruction`. Its call site at `:1209` did not move.
 - **Generic template-entrance footprint amendment at checkpoint 28cd9067cd.**
   The preceding `system.ts:2160`, `:1203` and `:2213` indications remain
   historical before the optional admission reader and its footprint predicate.
@@ -313,7 +317,7 @@ feature with a reader and no producer.
   and `:1966` coordinates are historical indications, retained here rather than
   erased. The current cancellation call is `revertConstruction` above; its
   implementation is `private revertConstruction` at
-  `src/simulation/construction/system.ts:2219`. The earlier numbered span had
+  `src/simulation/construction/system.ts:2235`. The earlier numbered span had
   already drifted into a comment, so the amended anchor names the actual call.
   **Occupied-template source amendment at checkpoint 322cb5e5a4:** the previous
   `system.ts:1120` and `:2092` coordinates remain historical indications before
