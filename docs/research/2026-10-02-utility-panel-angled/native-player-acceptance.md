@@ -27,7 +27,7 @@ front after actual template rotation. Both first capacity+fixture routes
 passed2/2; no provisional colour failure occurred. All four completed/loaded
 FullHDs were opened. The retained display/body and physical lower knobs,
 bezel/hatch are visible. Historical RGB41/113/118 and original crops
-[940,420,110,100](q0),[900,420,110,100](q1) remained correct, each945 pixels.
+q0 rectangle `(940,420,110,100)`, q1 rectangle `(900,420,110,100)` remained correct, each945 pixels.
 The original >100 threshold and exact Load equality remain unchanged.
 The source-palette-candidates.json remains separately qualified export evidence.
 
