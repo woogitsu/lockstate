@@ -1,0 +1,18 @@
+{
+  "sourceExportsOnlyNotNativeAcceptance": true,
+  "yawDegrees": 120,
+  "elevationDegrees": 20,
+  "changedPixels": 159,
+  "RGBDifferenceBoundsPx": [
+    128,
+    120,
+    191,
+    162
+  ],
+  "newCanonicalFrame": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+120-elev20.cc16b4c5a2db.png",
+  "newCanonicalFrameSha256": "cc16b4c5a2dbacd069ffd249b8536b8c9b01f9191b528b0063f640af49ef2b58",
+  "originalSourceSha256": "c1a1e8b0cfd2e47fe420ebbaa3eeb72c426d896d0a42b5a708c9bcbb83230fd1",
+  "newSourceSha256": "5f27967600a64ce4ded10a01fe6217ea849c2be9b57ff92353fd60b97af4ede1",
+  "retainedPixelIdenticalCanonicalPoses": 52,
+  "changedCanonicalPoses": 20
+}
