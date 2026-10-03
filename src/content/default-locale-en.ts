@@ -2395,6 +2395,8 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.submit': 'Place order',
   'hud.build.note': 'An order is queued now and built while the clock runs.',
   'hud.build.arm': 'Place on map',
+  // REVIEW DRAFT #2019: exact new copy still requires the owner's decision.
+  'hud.build.rotate-object': 'Rotate object',
   /*
    * The removal mode (ADR 0028 phase 3). One word on the button, because
    * `.hud-build__actions` already holds two and ADR 0022 measured a third

@@ -1,0 +1,38 @@
+﻿{
+    "sourceBase":  "f83e2150d3a7c0f6023192312c6e52793fdfd771",
+    "nativeExecuted":  false,
+    "branch":  "codex/individual-object-rotation-ui-draft-20261003",
+    "buildExit":  0,
+    "nativeCollected":  2,
+    "compiled":  {
+                     "dist/client/assets/index-k4aatKSk.js":  "483A37A84C5253A7DB7643FF6179BCD30AD6D2119A809B77E485C4783552F4DB",
+                     "dist/client/index.html":  "F4B6216278D9DFB077B533D1BE7DD6CBED596B7229C6A73C6C7B150AD8E51264",
+                     "dist/client/assets/pl-catalog-BNDM3KT8.js":  "A9E4701DC3A731601972FE7E1127FCB037124258B06A73F343BD142BA0A54689",
+                     "dist/client/assets/catalog-DwDh8vBS.js":  "C2561FBC63FB3C411B80A7FF7A122F8684EF76CD73D4D3B32D2651046260F4C1",
+                     "dist/client/assets/worker-BIinEbxt.js":  "7C649741D2FD8B9241A9BD5D461A8A1871C2D68512F42296922D1F1A1A7E0978"
+                 },
+    "previewCollisionVerdict":  false,
+    "browserServerStarted":  false,
+    "source":  {
+                   "src/ui/hud/build-panel.ts":  "DAA60A01575A4E073E5D9E5012931D38D91B293E1193996D088E4A4DA5546C65",
+                   "src/ui/object-tool.ts":  "096F9CAE048BC3C790D3983C501969399FF97DA79A14E1CDC45BC3482501EC19",
+                   "src/ui/object-rotation.ts":  "09B21C0492A205E1BE614B7BA4AFE5BD6686E37FA9BFA087CB3392E50233DB50",
+                   "src/rendering/scene/world-scene.ts":  "581A3DC33618FEF19BE347F5961AA5CCC67488863B018CC35C176E92533F7AE0",
+                   "src/rendering/scene/oblique-world-scene.ts":  "6B98F244BC6C12B957A7F0792842582AD3F2E6108CCCC6722589522250DDC464",
+                   "src/content/default-locale-en.ts":  "32B243B4F8FF766C4636E8067D2D0A0035E699C447541BDCA920AE3A4245C9E4",
+                   "src/main.ts":  "29FD673F8048DD94DD932021D789F051B3ADF95406BCE801E2330854D84A8EDC",
+                   "src/ui/hud/messages.ts":  "61E72D6B9EEEBB58347AEB18D6B3CC89F4568421C4C6A31825D6C6B0F89C83A5",
+                   "src/content/locale-pl.ts":  "59A7C62360D5A0B8EDADB02F65EDB7563EA6B047DEF97A48B58CACB35F16ACA9",
+                   "src/ui/hud/hud.ts":  "7BDD42283CD72ACE6DBCE3FD144783E51F4B37A6E03C24AF45CB5A5E0A9B1D7A"
+               },
+    "focusedGreen":  161,
+    "restore":  {
+                    "src/rendering/scene/oblique-world-scene.ts":  "6B98F244BC6C12B957A7F0792842582AD3F2E6108CCCC6722589522250DDC464",
+                    "src/main.ts":  "29FD673F8048DD94DD932021D789F051B3ADF95406BCE801E2330854D84A8EDC",
+                    "src/rendering/scene/world-scene.ts":  "581A3DC33618FEF19BE347F5961AA5CCC67488863B018CC35C176E92533F7AE0",
+                    "src/ui/object-tool.ts":  "096F9CAE048BC3C790D3983C501969399FF97DA79A14E1CDC45BC3482501EC19"
+                },
+    "typecheckExit":  0,
+    "measuredActionGeometry":  false,
+    "copyApproval":  false
+}

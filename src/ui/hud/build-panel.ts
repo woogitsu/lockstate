@@ -1,4 +1,5 @@
 import { trimObjectThumbnail } from './object-thumbnail';
+import { nextObjectQuarterTurns, rotatedObjectFootprint } from '../object-rotation';
 import type { LocalizationKey } from '../../content/localization';
 import { deriveSimulationMessageKey } from '../../content/simulation-message-keys';
 import type { MessageParameters } from '../../services/localization/format';
@@ -86,6 +87,7 @@ export interface BuildPanelIntent {
   readonly y: number;
   readonly edge: HudBuildEdge;
   readonly squareFootprint?: boolean;
+  readonly quarterTurns?: 0 | 1 | 2 | 3;
   /**
    * Whether the selected row places a discrete object rather than a wall
    * segment (ADR 0028 phase 1), which decides *which* command the press
@@ -175,7 +177,7 @@ export interface BuildPanelOptions {
    * does: the two describe one armed tool, and a host that saw them disagree
    * would draw a removal ghost for a placing gesture.
    */
-  readonly onArm: (armed: boolean, definitionId: string | undefined, removing: boolean) => void;
+  readonly onArm: (armed: boolean, definitionId: string | undefined, removing: boolean, quarterTurns?: 0 | 1 | 2 | 3) => void;
   /** Buy the selected buildable's material, in the quantity the stepper shows (#89). */
   readonly onPurchase: (intent: BuildPanelPurchaseIntent) => void;
   /**
@@ -1016,6 +1018,8 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   let tileY = Math.trunc(model.origin.y);
   let edge: HudBuildEdge = HUD_DEFAULT_BUILD_EDGE;
   let armed = false;
+  let quarterTurns: 0 | 1 | 2 | 3 = 0;
+  const reportArmed = (): void => options.onArm(armed, selectedId, removing, quarterTurns);
   /** Whether the armed gesture takes an object away instead of placing one (ADR 0028 phase 3). */
   let removing = false;
   /** Whether the buy row is disclosed. Closed on arrival -- see `.hud-build__buy` in `hud.css`. */
@@ -1165,7 +1169,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     selectedSummary.textContent = selected === undefined ? '' : t(selected.labelKey);
     selectedFootprint.hidden = selected?.objectFootprint === undefined;
     selectedFootprint.textContent = selected?.objectFootprint === undefined ? '' : t(HUD_MESSAGE_KEY.buildObjectFootprint, {
-      width: localizer.formatNumber(selected.objectFootprint.width), height: localizer.formatNumber(selected.objectFootprint.height),
+      width: localizer.formatNumber(quarterTurns % 2 === 0 ? selected.objectFootprint.width : selected.objectFootprint.height), height: localizer.formatNumber(quarterTurns % 2 === 0 ? selected.objectFootprint.height : selected.objectFootprint.width),
     });
     const visible = new Set(focusRing.visibleIds);
     for (const [id, row] of rows) {
@@ -1223,6 +1227,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       icon: 'build',
       label: buildCatalogueRowLabel(t, buildable, total),
       onActivate: () => {
+        if (selectedId !== buildable.definitionId) quarterTurns = 0;
         selectedId = buildable.definitionId;
         paintCatalogue();
         paintPlacement();
@@ -1237,7 +1242,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
         // asked to place a bed.
         removing = false;
         paintArmed();
-        options.onArm(armed, selectedId, removing);
+        reportArmed();
       },
     });
 
@@ -1407,7 +1412,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       removing = false;
       armed = (wasRemoving || !armed) && selectedId !== undefined;
       paintArmed();
-      options.onArm(armed, selectedId, removing);
+      reportArmed();
     },
   });
   armButton.element.dataset['armed'] = 'false';
@@ -1495,10 +1500,25 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       removing = nextArming.removing;
       paintArmed();
       paintBuy();
-      options.onArm(armed, selectedId, removing);
+      reportArmed();
     },
   });
   removeButton.element.classList.add('hud-build__remove');
+
+  // REVIEW DRAFT #2019: this visible copy/control has no owner acceptance yet.
+  // Native button activation supplies pointer/Enter/Space; KeyR remains camera tilt.
+  const rotateButton = createActionButton({
+    label: t(HUD_MESSAGE_KEY.buildRotateObject),
+    onActivate: () => {
+      if (removing || selectedBuildable()?.objectFootprint === undefined) return;
+      quarterTurns = nextObjectQuarterTurns(quarterTurns);
+      paintCatalogue();
+      paintArmed();
+      if (currentTarget !== undefined) setTarget(currentTarget);
+      reportArmed();
+    },
+  });
+  rotateButton.element.classList.add('hud-build__rotate-object');
 
   const targetValue = valueText(t(HUD_MESSAGE_KEY.buildTargetNone), 'hud-build__target-value');
   const targetBlock = element('div', {
@@ -1676,6 +1696,9 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   orderNote.hidden = true;
 
   function paintArmed(): void {
+    rotateButton.element.hidden = removing || selectedBuildable()?.objectFootprint === undefined;
+    rotateButton.setLabel(`${t(HUD_MESSAGE_KEY.buildRotateObject)} ${localizer.formatNumber(quarterTurns * 90)}°`);
+    rotateButton.element.dataset['quarterTurns'] = String(quarterTurns);
     // "Armed" on the arm button means armed *to place*, which is what its label
     // and its pressed state are about. A tool armed to remove is armed, and this
     // button is not the control that is on -- the same split `.hud-rooms__arm`
@@ -3215,7 +3238,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
         // panel at no cost to the height budget issue #174 closed.
         element('div', {
           className: 'hud-build__actions',
-          children: [armButton.element, removeButton.element, buyToggle.element],
+          children: [armButton.element, removeButton.element, buyToggle.element, rotateButton.element],
         }),
         targetBlock,
         armHint,
@@ -3293,13 +3316,19 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       // simulation content the HUD may not read.
       placesObject: buildable.placesObject === true,
       squareFootprint: buildable.squareFootprint === true,
+      ...(buildable.placesObject === true && !removing && quarterTurns !== 0 ? { quarterTurns } : {}),
       removing,
     };
   }
 
+  function selectedObjectFootprint(): { readonly width: number; readonly height: number } | undefined {
+    const footprint = selectedBuildable()?.objectFootprint;
+    return footprint === undefined ? undefined : rotatedObjectFootprint(footprint, quarterTurns);
+  }
+
   function setTarget(target: BuildPanelTarget | undefined): void {
     currentTarget = target;
-    targetValue.textContent = formatBuildTargetText(t, target, (value) => localizer.formatNumber(value), removing ? undefined : selectedBuildable()?.objectFootprint);
+    targetValue.textContent = formatBuildTargetText(t, target, (value) => localizer.formatNumber(value), removing ? undefined : selectedObjectFootprint());
     if (target === undefined) {
       delete targetBlock.dataset['target'];
       return;

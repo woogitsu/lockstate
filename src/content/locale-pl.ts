@@ -1115,6 +1115,8 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.submit': 'Złóż zlecenie',
   'hud.build.note': 'Zlecenie trafia do kolejki od razu, a budowa idzie, gdy zegar chodzi.',
   'hud.build.arm': 'Stawiaj na mapie',
+  // REVIEW DRAFT #2019: exact new copy still requires the owner's decision.
+  'hud.build.rotate-object': 'Obróć obiekt',
   'hud.build.arm-hint':
     'Kliknij krawędź pola, aby postawić ścianę. Przeciągnij wzdłuż niej, aby położyć cały ciąg. Dwa palce, środkowy przycisk i strzałki nadal poruszają kamerą.',
   'hud.build.arm-hint-square':
