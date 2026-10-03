@@ -1695,3 +1695,28 @@ Cleanup audit verified the old own generated `original-dist` backup (9383 files,
 `92cd1944afe4a2e0a020f2259085af3cb43eb3f5` is published and a PR2024 ancestor.
 Automatic approval review rejected its deletion as blocked by policy. The
 directory still exists; no deletion or completed cleanup is claimed.
+
+### 2026-10-03 combined model and save integration gate
+
+The next own branch now also contains the complete retained wooden Bench with
+four connected ground mounts and the new Laundry-only linen-rack context.
+Both have72 genuine Blender poses and real source/consumer RED-to-exact-restore
+proofs; previous sources/exports remain retained. Laundry uses a separately
+paid ordinary StorageRack and preserves both original washer owners, costs,
+footprint and simulation capability. Staff native acceptance remains pending.
+
+Original combined V9 root2102 complete gate is retained: strict types0,
+182 failures/8361passes/twoexisting skips in717files; chained build not reached.
+The failures exposed now-visible failed-order counters, correct saved
+newer-action protection, two outdated Staff asset IDs and local publication/link
+boundaries. Three isolated correction scopes preserve exact state/owner/refund
+assertions, existing policies and frozen V8 controls; they do not erase counters
+or reset the marker. The next whole combined run and fresh native builds are
+required before release.
+
+Camera control A/B drafts now each have a separately fresh built-client native
+case GREEN at1920x1080/UI100, including a genuine refusal/alert row, all44px
+controls, physical input/focus and whole paused state equality. A opens the
+panel with the existing View button; B keeps it visible. Both remain separate
+owner choices, with no silent import of layout or ordinary-object Rotate drafts.
+Root retains the sole browser/build lease after both bounded subjects finished.

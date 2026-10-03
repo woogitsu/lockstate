@@ -163,3 +163,14 @@ Load defect. In particular, occupied Undo fixtures that relied on lost current
 save data must separately prove current V9 refusal and genuine frozen V8
 compatibility. This paragraph records the failing integration gate, not a
 claim of complete test, build or native acceptance.
+
+The independently checked correction scopes are now published: the nine
+failed-purchase/footprint files require each exact new failed order's revision1
+and all earlier entries unchanged (132RED/114GREEN becomes246GREEN); the four
+occupied/command-marker files retain current V9 protection before executing
+genuine checksum-valid historical V8 occupancy controls (40RED/91GREEN becomes
+131GREEN). Production is unchanged by either correction. Root's Staff/context
+and documentation scope is201GREEN/3files. These are bounded outcomes, not a
+replacement for the next complete run on the combined product. The separate
+Laundry public consumer now explicitly captures/restores V9 while its original
+V8 receipts remain historical evidence.
