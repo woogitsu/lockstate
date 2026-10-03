@@ -1,0 +1,698 @@
+[
+  {
+    "offset": 0,
+    "load": false,
+    "tick": 9862,
+    "room": {
+      "instanceId": "room.storage-room:6:6",
+      "roomCatalogId": "room.storage-room",
+      "anchorTile": {
+        "x": 6,
+        "y": 6
+      },
+      "width": 3,
+      "height": 3,
+      "residentCapacity": 0,
+      "concurrentUseCapacity": 1,
+      "objectCapabilities": [
+        "item-storage"
+      ],
+      "openArea": false,
+      "concurrentUseCapacityByCapability": [
+        [
+          "item-storage",
+          1
+        ]
+      ]
+    },
+    "path": {
+      "id": "anchor-route",
+      "result": {
+        "ok": false,
+        "failure": {
+          "reason": "invalid-destination"
+        }
+      },
+      "usedFlowField": false,
+      "expansions": 0,
+      "waitedTicks": 0
+    },
+    "beforeStock": 0,
+    "afterStock": 0,
+    "beforeTreasury": {
+      "balanceMinorUnits": 20135
+    },
+    "paidTreasury": {
+      "balanceMinorUnits": 19940
+    },
+    "afterTreasury": {
+      "balanceMinorUnits": 20480
+    },
+    "beforeMetrics": {
+      "unmetDemandCycles": 0,
+      "actionsStarted": 1,
+      "actionsCompleted": 0,
+      "routeFailures": 0,
+      "substitutionCycles": 1,
+      "contendedSubstitutionCycles": 0,
+      "substitutionsCountedSinceTick": 0
+    },
+    "afterMetrics": {
+      "unmetDemandCycles": 289,
+      "actionsStarted": 2,
+      "actionsCompleted": 1,
+      "routeFailures": 1,
+      "substitutionCycles": 1,
+      "contendedSubstitutionCycles": 0,
+      "substitutionsCountedSinceTick": 0
+    },
+    "jobs": [
+      {
+        "id": "delivery.measured-new-planks.3962",
+        "priority": 1,
+        "itemId": "item.wood-plank",
+        "quantity": 3,
+        "sourceContainerId": "container:room.delivery-bay:13:6",
+        "sourceTile": {
+          "x": 13,
+          "y": 6
+        },
+        "destinationContainerId": "construction-materials",
+        "destinationTile": {
+          "x": 6,
+          "y": 6
+        },
+        "createdAtTick": 3962,
+        "state": "failed",
+        "leg": "dropoff",
+        "assignedWorkerId": 0,
+        "failReason": "invalid-destination"
+      }
+    ],
+    "containers": [
+      [
+        "construction-materials",
+        []
+      ],
+      [
+        "container:room.delivery-bay:13:6",
+        [
+          [
+            "item.wood-plank",
+            3,
+            0
+          ]
+        ]
+      ]
+    ],
+    "construction": {
+      "id": "storage-anchor-wall",
+      "definitionId": "wall-brick",
+      "location": {
+        "x": 6,
+        "y": 6
+      },
+      "footprint": "square",
+      "placementSequence": 4,
+      "state": "completed",
+      "progress": 50,
+      "materialsAllocated": [
+        {
+          "itemId": "item.brick",
+          "quantity": 2
+        }
+      ],
+      "assignedWorkerId": "mock-worker-1"
+    }
+  },
+  {
+    "offset": 0,
+    "load": true,
+    "tick": 9862,
+    "room": {
+      "instanceId": "room.storage-room:6:6",
+      "roomCatalogId": "room.storage-room",
+      "anchorTile": {
+        "x": 6,
+        "y": 6
+      },
+      "width": 3,
+      "height": 3,
+      "residentCapacity": 0,
+      "concurrentUseCapacity": 1,
+      "objectCapabilities": [
+        "item-storage"
+      ],
+      "openArea": false,
+      "concurrentUseCapacityByCapability": [
+        [
+          "item-storage",
+          1
+        ]
+      ]
+    },
+    "path": {
+      "id": "anchor-route",
+      "result": {
+        "ok": false,
+        "failure": {
+          "reason": "invalid-destination"
+        }
+      },
+      "usedFlowField": false,
+      "expansions": 0,
+      "waitedTicks": 0
+    },
+    "beforeStock": 0,
+    "afterStock": 0,
+    "beforeTreasury": {
+      "balanceMinorUnits": 20135
+    },
+    "paidTreasury": {
+      "balanceMinorUnits": 19940
+    },
+    "afterTreasury": {
+      "balanceMinorUnits": 20480
+    },
+    "beforeMetrics": {
+      "unmetDemandCycles": 0,
+      "actionsStarted": 0,
+      "actionsCompleted": 0,
+      "routeFailures": 0,
+      "substitutionCycles": 0,
+      "contendedSubstitutionCycles": 0,
+      "substitutionsCountedSinceTick": 3861
+    },
+    "afterMetrics": {
+      "unmetDemandCycles": 289,
+      "actionsStarted": 1,
+      "actionsCompleted": 1,
+      "routeFailures": 1,
+      "substitutionCycles": 0,
+      "contendedSubstitutionCycles": 0,
+      "substitutionsCountedSinceTick": 3861
+    },
+    "jobs": [
+      {
+        "id": "delivery.measured-new-planks.3962",
+        "priority": 1,
+        "itemId": "item.wood-plank",
+        "quantity": 3,
+        "sourceContainerId": "container:room.delivery-bay:13:6",
+        "sourceTile": {
+          "x": 13,
+          "y": 6
+        },
+        "destinationContainerId": "construction-materials",
+        "destinationTile": {
+          "x": 6,
+          "y": 6
+        },
+        "createdAtTick": 3962,
+        "state": "failed",
+        "leg": "dropoff",
+        "assignedWorkerId": 0,
+        "failReason": "invalid-destination"
+      }
+    ],
+    "containers": [
+      [
+        "construction-materials",
+        []
+      ],
+      [
+        "container:room.delivery-bay:13:6",
+        [
+          [
+            "item.wood-plank",
+            3,
+            0
+          ]
+        ]
+      ]
+    ],
+    "construction": {
+      "id": "storage-anchor-wall",
+      "definitionId": "wall-brick",
+      "location": {
+        "x": 6,
+        "y": 6
+      },
+      "footprint": "square",
+      "placementSequence": 4,
+      "state": "completed",
+      "progress": 50,
+      "materialsAllocated": [
+        {
+          "itemId": "item.brick",
+          "quantity": 2
+        }
+      ],
+      "assignedWorkerId": "mock-worker-1"
+    }
+  },
+  {
+    "offset": 1,
+    "load": false,
+    "tick": 9862,
+    "room": {
+      "instanceId": "room.storage-room:6:6",
+      "roomCatalogId": "room.storage-room",
+      "anchorTile": {
+        "x": 6,
+        "y": 6
+      },
+      "width": 3,
+      "height": 3,
+      "residentCapacity": 0,
+      "concurrentUseCapacity": 1,
+      "objectCapabilities": [
+        "item-storage"
+      ],
+      "openArea": false,
+      "concurrentUseCapacityByCapability": [
+        [
+          "item-storage",
+          1
+        ]
+      ]
+    },
+    "path": {
+      "id": "anchor-route",
+      "result": {
+        "ok": true,
+        "route": {
+          "segments": [
+            {
+              "regionId": 1,
+              "waypoints": [
+                {
+                  "x": 16,
+                  "y": 16
+                },
+                {
+                  "x": 15,
+                  "y": 16
+                },
+                {
+                  "x": 14,
+                  "y": 16
+                },
+                {
+                  "x": 13,
+                  "y": 16
+                },
+                {
+                  "x": 12,
+                  "y": 16
+                },
+                {
+                  "x": 11,
+                  "y": 16
+                },
+                {
+                  "x": 10,
+                  "y": 16
+                },
+                {
+                  "x": 10,
+                  "y": 15
+                },
+                {
+                  "x": 10,
+                  "y": 14
+                },
+                {
+                  "x": 10,
+                  "y": 13
+                },
+                {
+                  "x": 10,
+                  "y": 12
+                },
+                {
+                  "x": 10,
+                  "y": 11
+                },
+                {
+                  "x": 10,
+                  "y": 10
+                },
+                {
+                  "x": 9,
+                  "y": 10
+                },
+                {
+                  "x": 8,
+                  "y": 10
+                },
+                {
+                  "x": 7,
+                  "y": 10
+                },
+                {
+                  "x": 7,
+                  "y": 9
+                }
+              ]
+            },
+            {
+              "regionId": 2,
+              "waypoints": [
+                {
+                  "x": 7,
+                  "y": 8
+                },
+                {
+                  "x": 7,
+                  "y": 7
+                },
+                {
+                  "x": 7,
+                  "y": 6
+                },
+                {
+                  "x": 6,
+                  "y": 6
+                }
+              ],
+              "enteredViaDoorId": "door:top:7:9"
+            }
+          ],
+          "totalCost": 20.5
+        }
+      },
+      "usedFlowField": false,
+      "expansions": 89,
+      "waitedTicks": 0
+    },
+    "beforeStock": 0,
+    "afterStock": 3,
+    "beforeTreasury": {
+      "balanceMinorUnits": 20135
+    },
+    "paidTreasury": {
+      "balanceMinorUnits": 19940
+    },
+    "afterTreasury": {
+      "balanceMinorUnits": 20480
+    },
+    "beforeMetrics": {
+      "unmetDemandCycles": 0,
+      "actionsStarted": 1,
+      "actionsCompleted": 0,
+      "routeFailures": 0,
+      "substitutionCycles": 1,
+      "contendedSubstitutionCycles": 0,
+      "substitutionsCountedSinceTick": 0
+    },
+    "afterMetrics": {
+      "unmetDemandCycles": 285,
+      "actionsStarted": 2,
+      "actionsCompleted": 2,
+      "routeFailures": 0,
+      "substitutionCycles": 1,
+      "contendedSubstitutionCycles": 0,
+      "substitutionsCountedSinceTick": 0
+    },
+    "jobs": [
+      {
+        "id": "delivery.measured-new-planks.3962",
+        "priority": 1,
+        "itemId": "item.wood-plank",
+        "quantity": 3,
+        "sourceContainerId": "container:room.delivery-bay:13:6",
+        "sourceTile": {
+          "x": 13,
+          "y": 6
+        },
+        "destinationContainerId": "construction-materials",
+        "destinationTile": {
+          "x": 6,
+          "y": 6
+        },
+        "createdAtTick": 3962,
+        "state": "completed",
+        "leg": "dropoff",
+        "assignedWorkerId": 0
+      }
+    ],
+    "containers": [
+      [
+        "construction-materials",
+        [
+          [
+            "item.wood-plank",
+            3,
+            0
+          ]
+        ]
+      ],
+      [
+        "container:room.delivery-bay:13:6",
+        []
+      ]
+    ],
+    "construction": {
+      "id": "storage-anchor-wall",
+      "definitionId": "wall-brick",
+      "location": {
+        "x": 6,
+        "y": 7
+      },
+      "footprint": "square",
+      "placementSequence": 4,
+      "state": "completed",
+      "progress": 50,
+      "materialsAllocated": [
+        {
+          "itemId": "item.brick",
+          "quantity": 2
+        }
+      ],
+      "assignedWorkerId": "mock-worker-1"
+    }
+  },
+  {
+    "offset": 1,
+    "load": true,
+    "tick": 9862,
+    "room": {
+      "instanceId": "room.storage-room:6:6",
+      "roomCatalogId": "room.storage-room",
+      "anchorTile": {
+        "x": 6,
+        "y": 6
+      },
+      "width": 3,
+      "height": 3,
+      "residentCapacity": 0,
+      "concurrentUseCapacity": 1,
+      "objectCapabilities": [
+        "item-storage"
+      ],
+      "openArea": false,
+      "concurrentUseCapacityByCapability": [
+        [
+          "item-storage",
+          1
+        ]
+      ]
+    },
+    "path": {
+      "id": "anchor-route",
+      "result": {
+        "ok": true,
+        "route": {
+          "segments": [
+            {
+              "regionId": 1,
+              "waypoints": [
+                {
+                  "x": 16,
+                  "y": 16
+                },
+                {
+                  "x": 15,
+                  "y": 16
+                },
+                {
+                  "x": 14,
+                  "y": 16
+                },
+                {
+                  "x": 13,
+                  "y": 16
+                },
+                {
+                  "x": 12,
+                  "y": 16
+                },
+                {
+                  "x": 11,
+                  "y": 16
+                },
+                {
+                  "x": 10,
+                  "y": 16
+                },
+                {
+                  "x": 10,
+                  "y": 15
+                },
+                {
+                  "x": 10,
+                  "y": 14
+                },
+                {
+                  "x": 10,
+                  "y": 13
+                },
+                {
+                  "x": 10,
+                  "y": 12
+                },
+                {
+                  "x": 10,
+                  "y": 11
+                },
+                {
+                  "x": 10,
+                  "y": 10
+                },
+                {
+                  "x": 9,
+                  "y": 10
+                },
+                {
+                  "x": 8,
+                  "y": 10
+                },
+                {
+                  "x": 7,
+                  "y": 10
+                },
+                {
+                  "x": 7,
+                  "y": 9
+                }
+              ]
+            },
+            {
+              "regionId": 2,
+              "waypoints": [
+                {
+                  "x": 7,
+                  "y": 8
+                },
+                {
+                  "x": 7,
+                  "y": 7
+                },
+                {
+                  "x": 7,
+                  "y": 6
+                },
+                {
+                  "x": 6,
+                  "y": 6
+                }
+              ],
+              "enteredViaDoorId": "door:top:7:9"
+            }
+          ],
+          "totalCost": 20.5
+        }
+      },
+      "usedFlowField": false,
+      "expansions": 89,
+      "waitedTicks": 0
+    },
+    "beforeStock": 0,
+    "afterStock": 3,
+    "beforeTreasury": {
+      "balanceMinorUnits": 20135
+    },
+    "paidTreasury": {
+      "balanceMinorUnits": 19940
+    },
+    "afterTreasury": {
+      "balanceMinorUnits": 20480
+    },
+    "beforeMetrics": {
+      "unmetDemandCycles": 0,
+      "actionsStarted": 0,
+      "actionsCompleted": 0,
+      "routeFailures": 0,
+      "substitutionCycles": 0,
+      "contendedSubstitutionCycles": 0,
+      "substitutionsCountedSinceTick": 3861
+    },
+    "afterMetrics": {
+      "unmetDemandCycles": 285,
+      "actionsStarted": 1,
+      "actionsCompleted": 2,
+      "routeFailures": 0,
+      "substitutionCycles": 0,
+      "contendedSubstitutionCycles": 0,
+      "substitutionsCountedSinceTick": 3861
+    },
+    "jobs": [
+      {
+        "id": "delivery.measured-new-planks.3962",
+        "priority": 1,
+        "itemId": "item.wood-plank",
+        "quantity": 3,
+        "sourceContainerId": "container:room.delivery-bay:13:6",
+        "sourceTile": {
+          "x": 13,
+          "y": 6
+        },
+        "destinationContainerId": "construction-materials",
+        "destinationTile": {
+          "x": 6,
+          "y": 6
+        },
+        "createdAtTick": 3962,
+        "state": "completed",
+        "leg": "dropoff",
+        "assignedWorkerId": 0
+      }
+    ],
+    "containers": [
+      [
+        "construction-materials",
+        [
+          [
+            "item.wood-plank",
+            3,
+            0
+          ]
+        ]
+      ],
+      [
+        "container:room.delivery-bay:13:6",
+        []
+      ]
+    ],
+    "construction": {
+      "id": "storage-anchor-wall",
+      "definitionId": "wall-brick",
+      "location": {
+        "x": 6,
+        "y": 7
+      },
+      "footprint": "square",
+      "placementSequence": 4,
+      "state": "completed",
+      "progress": 50,
+      "materialsAllocated": [
+        {
+          "itemId": "item.brick",
+          "quantity": 2
+        }
+      ],
+      "assignedWorkerId": "mock-worker-1"
+    }
+  }
+]

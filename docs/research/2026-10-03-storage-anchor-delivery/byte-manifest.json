@@ -1,0 +1,57 @@
+[
+    {
+        "path":  ".gitattributes",
+        "bytes":  12,
+        "sha256":  "fd13dad2ecae9b5cdde18e56b396b87ce73a5e3d9c05455bb00a1afc2c424106"
+    },
+    {
+        "path":  "baseline.txt",
+        "bytes":  3566,
+        "sha256":  "66de788139f5524e2f7a3d682b3d5148f4c01442b0a5ed061fc6f8f73890a9f0"
+    },
+    {
+        "path":  "executed-probe.ts.txt",
+        "bytes":  4066,
+        "sha256":  "06f63250855dbe3dcacc93983cc93a97ceebb6425a4d750ef4b1fbee1551d9f1"
+    },
+    {
+        "path":  "initial-measurement.txt",
+        "bytes":  2900,
+        "sha256":  "0b996236371fbaddba853fc8abe4d7a3fc440a05ce67c602d63dd9d485c0cb8b"
+    },
+    {
+        "path":  "initial-owner-fixture.test.ts.txt",
+        "bytes":  5429,
+        "sha256":  "4560db1b518f0083ad4b9fb91d540bc12303b29637c9798e247a1f9c3b89352c"
+    },
+    {
+        "path":  "initial-owner-fixture.txt",
+        "bytes":  4806,
+        "sha256":  "430c9834e17887e0108d1bd2690ab70edef4b1a9b14d55feb101a4ea6916aa6b"
+    },
+    {
+        "path":  "initial-probe.ts.txt",
+        "bytes":  3960,
+        "sha256":  "0bdd9d14e0a39794751021a4fa59822e8dd298275f6b86c1e483b192d524cffe"
+    },
+    {
+        "path":  "measured-results.json",
+        "bytes":  15434,
+        "sha256":  "67a12a725ebae79e3c7665d0e9fd2f0a36cc94936d34d216363cb2d2481edeab"
+    },
+    {
+        "path":  "measurement.txt",
+        "bytes":  15702,
+        "sha256":  "5c29ce22334bdad04627a9a59a77965ce3f0210caaa6b2ffcf2c1b6458880cdc"
+    },
+    {
+        "path":  "README.md",
+        "bytes":  4156,
+        "sha256":  "c5344dbde7d944861eadbb285d1c20c8252f46e2684e2fce5a8ae1080cd97521"
+    },
+    {
+        "path":  "run-probe.cjs.txt",
+        "bytes":  588,
+        "sha256":  "7cd045f1b3f8e55026d500171dadf7be3db8e3d2781816f77048252220b764fe"
+    }
+]

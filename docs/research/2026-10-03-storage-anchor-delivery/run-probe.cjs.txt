@@ -1,0 +1,4 @@
+const fs=require('node:fs'),path=require('node:path'),{createRequire}=require('node:module');
+const root=process.cwd(),esbuild=createRequire(createRequire(path.join(root,'package.json')).resolve('vite/package.json'))('esbuild');
+const scratch=path.join(process.env.TEMP,'lockstate-storage-anchor-delivery-audit-20261003');
+esbuild.buildSync({stdin:{contents:fs.readFileSync(path.join(scratch,'probe.ts'),'utf8'),resolveDir:root,loader:'ts'},platform:'node',format:'cjs',bundle:true,outfile:path.join(scratch,'compiled.cjs'),logLevel:'warning'});require(path.join(scratch,'compiled.cjs'));
