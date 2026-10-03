@@ -1,0 +1,11 @@
+{
+    "restoredSha256":  "CB8EA29278B15CF3895C8652E79BACCECB915930729E782AEB7F20F46A8BA256",
+    "omission":  "opaque 5x5 complete + three-colour gradient qualification",
+    "beforeSha256":  "CB8EA29278B15CF3895C8652E79BACCECB915930729E782AEB7F20F46A8BA256",
+    "nativeExecuted":  false,
+    "buildExecuted":  false,
+    "redExit":  1,
+    "exactByteRestoration":  true,
+    "mutated":  "tests/browser/staff-room-padded-chair/material-observer.ts",
+    "restoredExit":  0
+}
