@@ -1,0 +1,31 @@
+{
+  "actualControls": [
+    {
+      "control": "actual .blend caster wheel rigid x+0.18, matched provenance source hash",
+      "mutatedSourceSHA256": "4ead83ad9bcb29236aeba4fd650acf36617ac2ba15903dcea3a3913c7cda0a31",
+      "exitCode": 1,
+      "reason": "Refuse trolley actual contact disconnected: Refuse trolley.rubber caster wheel.-0.35.-0.23 / Refuse trolley.solid wheel axle.-0.35.-0.23"
+    },
+    {
+      "control": "actual producer omits its own dispatch tuple",
+      "exitCode": 1,
+      "reason": "Garbage Room bin dedicated producer dispatch changed"
+    },
+    {
+      "control": "actual valid RGBA PNG with opaque corner, matched descriptor hash and filename hash",
+      "badPNG_SHA256": "88fee33c99734b4fcd24b27b65b7392d8ef0677c694ab226f519afe0fede41be",
+      "exitCode": 1,
+      "reason": "Garbage Room PNG transparent border"
+    }
+  ],
+  "boundedNewRepeatRenderCount": 4,
+  "actualProducerRepeatReceipt": "four-real-producer-repeats.json",
+  "sourceSHA256": "5d9cafee94af08098b045e389b642ec655536fe0cc8aae8b5e026822f7d984cc",
+  "provenanceSHA256": "43520c19f25d1471fa9799353743f8ac469c275dc7f82f517ca1d24cbfb9460d",
+  "descriptorSHA256": "0041d15d3dd5fe1ccf25ed2f358ee7a7f3c86d81e79e4923bc3f87ecd07dc8aa",
+  "exactSourceProvenanceProducerDescriptorRestoration": true,
+  "all72OwnExportsExactBytePreservation": true,
+  "originalBin72ExportsAndSharedFilesUnchanged": true,
+  "restoredProducerExitCode": 0,
+  "restoredUnitExitCode": 0
+}
