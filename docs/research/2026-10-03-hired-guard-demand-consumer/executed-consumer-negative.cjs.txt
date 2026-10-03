@@ -1,0 +1,14 @@
+﻿const fs=require('node:fs'),path=require('node:path'),cp=require('node:child_process'),crypto=require('node:crypto');
+const root=process.cwd(),out=__dirname,file=path.join(root,'tests/browser/hired-guard-player-build.spec.ts');
+const node='C:/Users/matma/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe';
+const args=['node_modules/vitest/vitest.mjs','run','tests/unit/hired-guard-demand-consumer.test.ts','tests/unit/oblique-demand-texture-lifecycle.test.ts','--maxWorkers=4'];
+const before=fs.readFileSync(file);const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
+const old=cp.execFileSync('git',['show','757ddd83ab7b717a0adecf51abc2b3fe0d7c786d:tests/browser/hired-guard-player-build.spec.ts'],{cwd:root});
+let negative;
+try {fs.writeFileSync(file,old);negative=cp.spawnSync(node,args,{cwd:root,encoding:'utf8'});fs.writeFileSync(path.join(out,'actual-consumer-negative.txt'),negative.stdout+negative.stderr);}
+finally {fs.writeFileSync(file,before);}
+const after=fs.readFileSync(file);if(sha(before)!==sha(after))throw Error('not byte-exact');
+const restored=cp.spawnSync(node,args,{cwd:root,encoding:'utf8'});fs.writeFileSync(path.join(out,'exact-restored.txt'),restored.stdout+restored.stderr);
+const receipt={head:cp.execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(),mutated:'actual native fixture callback, not production renderer',originalConsumer:'757ddd83ab7b717a0adecf51abc2b3fe0d7c786d',negativeStatus:negative.status,restoredStatus:restored.status,beforeSha256:sha(before),afterSha256:sha(after),byteExact:before.equals(after),productionDiff:cp.execFileSync('git',['diff','--name-only','--','src'],{cwd:root,encoding:'utf8'}).trim(),nativeExecution:false};
+fs.writeFileSync(path.join(out,'mutation-receipt.json'),JSON.stringify(receipt,null,2)+'\n');console.log(receipt);
+if(negative.status!==1||restored.status!==0)process.exitCode=1;

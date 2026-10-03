@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-hired-guard-demand-consumer-20261003
+
+
+ Test Files  2 passed (2)
+      Tests  9 passed (9)
+   Start at  21:06:14
+   Duration  940ms (transform 316ms, setup 0ms, import 802ms, tests 45ms, environment 0ms)
+

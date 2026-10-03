@@ -1,0 +1,12 @@
+{
+  "head": "e3c6b2050df53c198e3089d8868143e49007348e",
+  "mutated": "actual native fixture callback, not production renderer",
+  "originalConsumer": "757ddd83ab7b717a0adecf51abc2b3fe0d7c786d",
+  "negativeStatus": 1,
+  "restoredStatus": 0,
+  "beforeSha256": "2f930ec75b3716d0c90aa7490d0d79ffb6d29b75a92c7587b051ae70026bf14e",
+  "afterSha256": "2f930ec75b3716d0c90aa7490d0d79ffb6d29b75a92c7587b051ae70026bf14e",
+  "byteExact": true,
+  "productionDiff": "",
+  "nativeExecution": false
+}
