@@ -1851,7 +1851,7 @@ describe('fork pull request execution contract', () => {
     const guarded = names.filter((job) =>
       (blocks.get(job) ?? [])
         .filter((line) => !line.trim().startsWith('#'))
-        .some((line) => line === FORK_GUARD),
+        .some((line) => line === FORK_GUARD || (job === 'browser' && line === FORK_GUARD.replace('if: ', 'if: always() && (') + ')')),
     );
 
     // Positive presence first, so the assertion below cannot pass by finding
@@ -2518,9 +2518,9 @@ describe('browser failure evidence contract', () => {
     return entries;
   }
 
-  it('uploads, on failure, exactly the two things the browser suite leaves behind', async () => {
+  for (const job of ['browser-source', 'browser-artifact']) it(`${job} uploads exactly the two things its browser suite leaves behind`, async () => {
     const contents = await readRepositoryFile(CI);
-    const steps = jobSteps(CI, contents, 'browser');
+    const steps = jobSteps(CI, contents, job);
 
     // Vacuity guard, in the shape the two contracts above use: every
     // assertion below is about a step found in this list, and a list of none
@@ -2537,8 +2537,9 @@ describe('browser failure evidence contract', () => {
       step.lines
         .filter((line) => !line.trim().startsWith('#'))
         .flatMap((line) => {
-          const match = /\|\s*tee\s+(\S+)/u.exec(line);
-          return match?.[1] === undefined ? [] : [match[1]];
+          const match = /\|\s*tee\s+(\S+)|printf.*"\$output"\s*>\s*(\S+)/u.exec(line);
+          const target = match?.[1] ?? match?.[2];
+          return target === undefined ? [] : [target];
         }),
     );
 
@@ -2635,7 +2636,7 @@ describe('browser failure evidence contract', () => {
     // The suite step must have run before there is anything to collect, and a
     // step ordered above it would upload the previous run's leftovers.
     const suiteStep = steps.find((step) =>
-      step.lines.some((line) => !line.trim().startsWith('#') && line.includes(`| tee ${suiteLog}`)),
+      step.lines.some((line) => !line.trim().startsWith('#') && (line.includes(`| tee ${suiteLog}`) || line.includes(`"$output" > ${suiteLog}`))),
     );
 
     expect(
