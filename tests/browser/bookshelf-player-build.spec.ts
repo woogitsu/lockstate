@@ -157,8 +157,9 @@ test(`player builds the bookshelf in Classroom at quarterTurns${quarterTurns} an
   if (bounds === null) throw new Error('minimap absent');
   await minimap.click({ position: { x: bounds.width * 22.5 / 32, y: bounds.height * 8.5 / 32 } });
   // A quarter-turned 2x1 bookshelf is measured from the same authored face:
-  // rotate the actual camera 90 degrees, without rewriting renderer geometry.
-  if (quarterTurns === 1) for (let step = 0; step < 6; step++) await page.getByRole('button', { name: 'Rotate camera right', exact: true }).click();
+  // rotate the actual camera -90 degrees: assetYaw = cameraYaw +90.
+  // This retains the original -45-degree authored book face, not its rear.
+  if (quarterTurns === 1) for (let step = 0; step < 6; step++) await page.getByRole('button', { name: 'Rotate camera left', exact: true }).click();
   await page.mouse.move(1300, 700);
   const completed = await page.screenshot({ path: info.outputPath('bookshelf-worker-completed-fullhd.png') });
   // Authored object000 at local(1,1), size2x1, becomes local(5,1)

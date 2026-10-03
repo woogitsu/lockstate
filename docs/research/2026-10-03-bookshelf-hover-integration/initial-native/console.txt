@@ -1,0 +1,92 @@
+node : [2m[WebServer] [22m(node:20936) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:6 char:1
++ node --experimental-transform-types --disable-warning=ExperimentalWar ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 7 tests using 1 worker
+
+(node:7688) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:7688) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\bookshelf-player-build.spec.ts:159:1 › player creates storage and delivery capacity before Classroom (43.7s)
+  ok 2 tests\browser\bookshelf-player-build.spec.ts:222:3 › player builds the bookshelf in Classroom at quarterTurns0 and keeps it after Save/Load (45.2s)
+  x  3 tests\browser\bookshelf-player-build.spec.ts:222:3 › player builds the bookshelf in Classroom at quarterTurns1 and keeps it after Save/Load (49.7s)
+(node:18376) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:18376) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+RENDERER_STATIONARY_HOVER {"initialMode":"world","nextMode":"oblique","mirrored":false,"uiScale":1,"cursor":{"x":880,"y":380},"old":{"target":{"kind":"room-template","templateId":"cell-basic","origin":{"x":14,"y":13},"quarterTurns":1},"ok":true},"fresh":{"target":{"kind":"room-template","templateId":"cell-basic","origin":{"x":17,"y":13},"quarterTurns":1},"ok":true},"currentQuote":"Click map to place; Esc cancels. | This footprint is clear. | Brick × 35 · Wood Plank × 2 · Materials catalogue value: 1,530","moves":[{"x":1659.25,"y":219,"canvas":false,"trusted":true},{"x":1581.260009765625,"y":22,"canvas":false,"trusted":true},{"x":65.5,"y":225,"canvas":false,"trusted":true},{"x":1867.030029296875,"y":237,"canvas":false,"trusted":true},{"x":612.75,"y":200.5,"canvas":false,"trusted":true},{"x":880,"y":380,"canvas":true,"trusted":true}],"costs":[{"orderCount":20,"materials":[{"itemId":"item.brick","quantity":35},{"itemId":"item.wood-plank","quantity":2}],"catalogueCostMinorUnits":1530},{"orderCount":20,"materials":[{"itemId":"item.brick","quantity":35},{"itemId":"item.wood-plank","quantity":2}],"catalogueCostMinorUnits":1530},{"orderCount":20,"materials":[{"itemId":"item.brick","quantity":35},{"itemId":"item.wood-plank","quantity":2}],"catalogueCostMinorUnits":1530},{"orderCount":20,"materials":[{"itemId":"item.brick","quantity":35},{"itemId":"item.wood-plank","quantity":2}],"catalogueCostMinorUnits":1530},{"orderCount":20,"materials":[{"itemId":"item.brick","quantity":35},{"itemId":"item.wood-plank","quantity":2}],"catalogueCostMinorUnits":1530}]}
+  ok 4 tests\browser\room-template-renderer-stationary-hover.spec.ts:77:3 › FullHD world replacement keeps stationary rotated plan after old worker reply (7.6s)
+RENDERER_STATIONARY_HOVER {"initialMode":"world","nextMode":"oblique","mirrored":true,"uiScale":1,"cursor":{"x":880,"y":380},"old":{"target":{"kind":"room-template","templateId":"cell-basic","origin":{"x":14,"y":13},"mirrorX":true,"quarterTurns":1},"ok":true},"fresh":{"target":{"kind":"room-template","templateId":"cell-basic","origin":{"x":17,"y":13},"mirrorX":true,"quarterTurns":1},"ok":true},"currentQuote":"Click map to place; Esc cancels. | This footprint is clear. | Brick × 35 · Wood Plank × 2 · Materials catalogue value: 1,530","moves":[{"x":1659.25,"y":219,"canvas":false,"trusted":true},{"x":1581.260009765625,"y":22,"canvas":false,"trusted":true},{"x":65.5,"y":225,"canvas":false,"trusted":true},{"x":1867.030029296875,"y":237,"canvas":false,"trusted":true},{"x":612.75,"y":200.5,"canvas":false,"trusted":true},{"x":880,"y":380,"canvas":true,"trusted":true}],"costs":[{"orderCount":20,"materials":[{"itemId":"item.brick","quantity":35},{"itemId":"item.wood-plank","quantity":2}],"catalogueCostMinorUnits":1530},{"orderCount":20,"materials":[{"itemId":"item.brick","quantity":35},{"itemId":"item.wood-plank","quantity":2}],"catalogueCostMinorUnits":1530},{"orderCount":20,"materials":[{"itemId":"item.brick","quantity":35},{"itemId":"item.wood-plank","quantity":2}],"catalogueCostMinorUnits":1530},{"orderCount":20,"materials":[{"itemId":"item.brick","quantity":35},{"itemId":"item.wood-plank","quantity":2}],"catalogueCostMinorUnits":1530},{"orderCount":20,"materials":[{"itemId":"item.brick","quantity":35},{"itemId":"item.wood-plank","quantity":2}],"catalogueCostMinorUnits":1530},{"orderCount":20,"materials":[{"itemId":"item.brick","quantity":35},{"itemId":"item.wood-plank","quantity":2}],"catalogueCostMinorUnits":1530}]}
+  ok 5 tests\browser\room-template-renderer-stationary-hover.spec.ts:77:3 › FullHD world replacement keeps stationary rotated/mirrored plan after old worker reply (7.8s)
+RENDERER_STATIONARY_HOVER {"initialMode":"oblique","nextMode":"world","mirrored":false,"uiScale":1,"cursor":{"x":880,"y":380},"old":{"target":{"kind":"room-template","templateId":"cell-basic","origin":{"x":17,"y":13},"quarterTurns":1},"ok":true},"fresh":{"target":{"kind":"room-template","templateId":"cell-basic","origin":{"x":14,"y":13},"quarterTurns":1},"ok":true},"currentQuote":"Click map to place; Esc cancels. | This footprint is clear. | Brick × 35 · Wood Plank × 2 · Materials catalogue value: 1,530","moves":[{"x":1659.25,"y":219,"canvas":false,"trusted":true},{"x":1581.260009765625,"y":22,"canvas":false,"trusted":true},{"x":65.5,"y":225,"canvas":false,"trusted":true},{"x":1867.030029296875,"y":237,"canvas":false,"trusted":true},{"x":612.75,"y":200.5,"canvas":false,"trusted":true},{"x":880,"y":380,"canvas":true,"trusted":true}],"costs":[{"orderCount":20,"materials":[{"itemId":"item.brick","quantity":35},{"itemId":"item.wood-plank","quantity":2}],"catalogueCostMinorUnits":1530},{"orderCount":20,"materials":[{"itemId":"item.brick","quantity":35},{"itemId":"item.wood-plank","quantity":2}],"catalogueCostMinorUnits":1530},{"orderCount":20,"materials":[{"itemId":"item.brick","quantity":35},{"itemId":"item.wood-plank","quantity":2}],"catalogueCostMinorUnits":1530},{"orderCount":20,"materials":[{"itemId":"item.brick","quantity":35},{"itemId":"item.wood-plank","quantity":2}],"catalogueCostMinorUnits":1530},{"orderCount":20,"materials":[{"itemId":"item.brick","quantity":35},{"itemId":"item.wood-plank","quantity":2}],"catalogueCostMinorUnits":1530}]}
+  ok 6 tests\browser\room-template-renderer-stationary-hover.spec.ts:77:3 › FullHD oblique replacement keeps stationary rotated plan after old worker reply (6.6s)
+RENDERER_STATIONARY_HOVER {"initialMode":"oblique","nextMode":"world","mirrored":true,"uiScale":1,"cursor":{"x":880,"y":380},"old":{"target":{"kind":"room-template","templateId":"cell-basic","origin":{"x":17,"y":13},"mirrorX":true,"quarterTurns":1},"ok":true},"fresh":{"target":{"kind":"room-template","templateId":"cell-basic","origin":{"x":14,"y":13},"mirrorX":true,"quarterTurns":1},"ok":true},"currentQuote":"Click map to place; Esc cancels. | This footprint is clear. | Brick × 35 · Wood Plank × 2 · Materials catalogue value: 1,530","moves":[{"x":1659.25,"y":219,"canvas":false,"trusted":true},{"x":1581.260009765625,"y":22,"canvas":false,"trusted":true},{"x":65.5,"y":225,"canvas":false,"trusted":true},{"x":1867.030029296875,"y":237,"canvas":false,"trusted":true},{"x":612.75,"y":200.5,"canvas":false,"trusted":true},{"x":880,"y":380,"canvas":true,"trusted":true}],"costs":[{"orderCount":20,"materials":[{"itemId":"item.brick","quantity":35},{"itemId":"item.wood-plank","quantity":2}],"catalogueCostMinorUnits":1530},{"orderCount":20,"materials":[{"itemId":"item.brick","quantity":35},{"itemId":"item.wood-plank","quantity":2}],"catalogueCostMinorUnits":1530},{"orderCount":20,"materials":[{"itemId":"item.brick","quantity":35},{"itemId":"item.wood-plank","quantity":2}],"catalogueCostMinorUnits":1530},{"orderCount":20,"materials":[{"itemId":"item.brick","quantity":35},{"itemId":"item.wood-plank","quantity":2}],"catalogueCostMinorUnits":1530},{"orderCount":20,"materials":[{"itemId":"item.brick","quantity":35},{"itemId":"item.wood-plank","quantity":2}],"catalogueCostMinorUnits":1530},{"orderCount":20,"materials":[{"itemId":"item.brick","quantity":35},{"itemId":"item.wood-plank","quantity":2}],"catalogueCostMinorUnits":1530}]}
+  ok 7 tests\browser\room-template-renderer-stationary-hover.spec.ts:77:3 › FullHD oblique replacement keeps stationary rotated/mirrored plan after old worker reply (7.0s)
+
+
+  1) tests\browser\bookshelf-player-build.spec.ts:222:3 › player builds the bookshelf in Classroom at quarterTurns1 and keeps it after Save/Load 
+
+    Error: authored book spines after construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m100[39m
+    Received:   [31m0[39m
+
+      169 |   assertOwnedObjectOrders(completedData, 'object.bookshelf', 'bookshelf-wooden', owned);
+      170 |   const beforePixels = await authoredBookPixels(page, completed, quarterTurns);
+    > 171 |   expect.soft(beforePixels, 'authored book spines after construction').toBeGreaterThan(100);
+          |                                                                        ^
+      172 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+      173 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+      174 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-bookshelf-hover-integration-20261003\tests\browser\bookshelf-player-build.spec.ts:171:72
+
+    Error: authored book spines after Load
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m100[39m
+    Received:   [31m0[39m
+
+      183 |   expect(loadedData).toEqual(completedData);
+      184 |   const afterPixels = await authoredBookPixels(page, loaded, quarterTurns);
+    > 185 |   expect.soft(afterPixels, 'authored book spines after Load').toBeGreaterThan(100);
+          |                                                               ^
+      186 |   expect(afterPixels).toBe(beforePixels);
+      187 |   await writeFile(info.outputPath('bookshelf-worker-and-save-evidence.json'), JSON.stringify({ quarterTurns, owned, beforePixels, afterPixels,
+      188 |     commands: (await sentCommands(page)).filter(command => command.type === 'PlaceRoomTemplate') }, null, 2));
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-bookshelf-hover-integration-20261003\tests\browser\bookshelf-player-build.spec.ts:185:63
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-bookshelf-hover-initial-native-20261003\bookshelf-player-build-pla-4b936-nd-keeps-it-after-Save-Load\error-context.md
+
+  1 failed
+    tests\browser\bookshelf-player-build.spec.ts:222:3 › player builds the bookshelf in Classroom at quarterTurns1 and keeps it after Save/Load 
+  6 passed (2.9m)
+
+==============================================================================
+LOCKSTATE_BROWSER_SUITE_NO_RETRY suite=artifact reason=no-last-run-file
+Playwright left no readable test-results/.last-run.json, so the run failed before it
+could record which tests failed. That is not net::ERR_NETWORK_CHANGED; not retrying.
+==============================================================================
+

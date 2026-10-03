@@ -62,12 +62,12 @@ async function observeWorkerAndPointer(page: Page): Promise<void> {
   });
 }
 
-for (const initialMode of ['world', 'oblique'] as const) for (const mirrored of [false, true]) {
-  test(`FullHD ${initialMode} replacement keeps stationary rotated${mirrored ? '/mirrored' : ''} plan after old worker reply`, async ({ page }, testInfo) => {
+for (const uiScale of [1, 2] as const) for (const initialMode of ['world', 'oblique'] as const) for (const mirrored of [false, true]) {
+  test(`FullHD UI${uiScale * 100}% ${initialMode} replacement keeps stationary rotated${mirrored ? '/mirrored' : ''} plan after old worker reply`, async ({ page }, testInfo) => {
     await installTee(page); await observeWorkerAndPointer(page);
-    // UI scale100%, physical1920?1080. Page zoom and CSS canvas ratio are not
+    // UI scale100%/200%, physical1920x1080. Page zoom and CSS canvas ratio are not
     // substituted for the separate accessibility UI scale setting.
-    await page.addInitScript(() => localStorage.setItem('lockstate.settings.accessibility', JSON.stringify({ version: 1, reducedMotion: false, uiScale: 1 })));
+    await page.addInitScript(scale => localStorage.setItem('lockstate.settings.accessibility', JSON.stringify({ version: 1, reducedMotion: false, uiScale: scale })), uiScale);
     await page.setViewportSize({ width: 1920, height: 1080 });
     await page.goto(initialMode === 'world' ? '/' : '/?renderer=oblique');
     await page.getByRole('button', { name: 'New prison', exact: true }).click();
@@ -126,6 +126,6 @@ for (const initialMode of ['world', 'oblique'] as const) for (const mirrored of 
     await expect(ghost).toBeHidden();
     expect((await sentCommands(page)).filter(command => /^(Place|Build|Remove)/u.test(String(command.type)))).toHaveLength(1);
     await page.screenshot({ path: testInfo.outputPath('stationary-first-click-submitted-current-origin.png') });
-    console.log('RENDERER_STATIONARY_HOVER', JSON.stringify({ initialMode, nextMode, mirrored, uiScale: 1, cursor, old, fresh, currentQuote, moves: still.moves, costs: still.costs }));
+    console.log('RENDERER_STATIONARY_HOVER', JSON.stringify({ initialMode, nextMode, mirrored, uiScale, cursor, old, fresh, currentQuote, moves: still.moves, costs: still.costs }));
   });
 }
