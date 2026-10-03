@@ -8,6 +8,7 @@ import { SimulationSnapshotFeed } from '../../src/rendering/feed/simulation-snap
 import { SIMULATION_PROTOCOL_VERSION, type MainToWorkerMessage, type WorkerToMainMessage } from '../../src/simulation/protocol/types';
 import { structureAppearance } from '../../src/rendering/world/appearance';
 import { structuresFromConstruction } from '../../src/rendering/world/structures';
+import { tileCoordinate, type TilePosition } from '../../src/simulation/world/coordinates';
 
 type Runtime = ReturnType<typeof createNewSimulationRuntime>;
 function send(runtime: Runtime, command: SimulationCommand) {
@@ -64,12 +65,22 @@ function completedCell(quarterTurns: 0 | 1, mirrorX: boolean) {
   finish(runtime);
   return runtime;
 }
+function expectLegalNormalReplacement(runtime: Runtime, anchor: TilePosition, quarterTurns: 0 | 1) {
+  // Unmirrored authored poses keep both squares of a standalone normal Bed
+  // inside the room. Mirrored90° put its second square on the perimeter wall.
+  expect(anchor).toEqual({ x: quarterTurns === 1 ? 14 : 11, y: 11 });
+  for (const tile of [anchor, { x: anchor.x, y: tileCoordinate(anchor.y + 1) }]) {
+    expect(runtime.world.getSquareStructure(tile)).toBe(0);
+    expect(runtime.placedObjects.isTileOccupied(tile)).toBe(false);
+  }
+}
 
 it.each(([0, 1] as const).flatMap(quarterTurns => [false, true].map(reload => ({ quarterTurns, reload }))))
   ('real render feed shows one independently rebuilt Bed, original turn=$quarterTurns reload=$reload', ({ quarterTurns, reload }) => {
-    let runtime = completedCell(quarterTurns, quarterTurns === 1);
+    let runtime = completedCell(quarterTurns, false);
     const old = runtime.construction.allOrders().find(order => order.definitionId === 'bed-wooden')!;
     send(runtime, { type: 'RemoveObject', x: old.location.x, y: old.location.y });
+    expectLegalNormalReplacement(runtime, old.location, quarterTurns);
     send(runtime, { type: 'PlaceObject', orderId: 'replacement-bed', definitionId: 'bed-wooden', x: old.location.x, y: old.location.y });
     finish(runtime);
     if (reload) runtime = load(runtime);
@@ -98,10 +109,11 @@ it.each([0, 1] as const)('real render feed stops drawing a directly removed temp
 });
 
 it('keeps the genuine completed rotated Bed and pending replacement visible', () => {
-  const runtime = completedCell(1, true);
+  const runtime = completedCell(1, false);
   const old = runtime.construction.allOrders().find(order => order.definitionId === 'bed-wooden')!;
   expect(beds(runtime)).toEqual([expect.objectContaining({ id: old.id, orientation: 1, phase: 'built' })]);
   send(runtime, { type: 'RemoveObject', x: old.location.x, y: old.location.y });
+  expectLegalNormalReplacement(runtime, old.location, 1);
   send(runtime, { type: 'PlaceObject', orderId: 'pending-bed', definitionId: 'bed-wooden', x: old.location.x, y: old.location.y });
   expect(runtime.construction.getOrder('pending-bed')?.state).toBe('approved');
   const planned = beds(runtime).filter(shape => shape.phase === 'planned');
@@ -141,9 +153,10 @@ it('preserves actual walls, doors and a pending fixture ghost with an authoritat
 });
 
 it.each([0, 1] as const)('draws an ambiguous ownerless V7 replacement only once, original turn=%s', quarterTurns => {
-  let runtime = completedCell(quarterTurns, quarterTurns === 1);
+  let runtime = completedCell(quarterTurns, false);
   const old = runtime.construction.allOrders().find(order => order.definitionId === 'bed-wooden')!;
   send(runtime, { type: 'RemoveObject', x: old.location.x, y: old.location.y });
+  expectLegalNormalReplacement(runtime, old.location, quarterTurns);
   send(runtime, { type: 'PlaceObject', orderId: 'legacy-replacement-bed', definitionId: 'bed-wooden', x: old.location.x, y: old.location.y });
   finish(runtime);
   runtime = load(runtime, true);

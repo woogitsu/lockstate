@@ -37,3 +37,29 @@ After the published specific remainingRED, root granted only the final optional 
 [21GREEN](./owner-tie-fixed.txt),421ms/2.58s. Seven actual integration cases plus14 original registry units now cover original imported type/orientation ambiguity, equal explicit old/new owner rows with real collective Cancel, normal current-owner rebuild/old-Cancel preservation, nonconflicting absent-owner atomic refusal, and equal exact/absent saved-owner conflict with existing atomic refusal in both permutations. Unknown refusal compares full gameplay snapshot except kernel dispatch progress; direct physical RemoveObject remains available after refusal. Ordinary rows retain exact stored owner/orientation bytes. A corrupted import's canonical row is not evidence of the original physical owner; no legal duplicate-current-command claim is made.
 
 Disconnect ONLY the actual final saved sourceOrderId reader, retaining the earlier object/orientation ties: [2RED/19GREEN](./owner-tie-negative.txt),409ms/2.52s. Exact bytes restored in finally, [matching hashes](./owner-tie-restore.json); mutation detached from branch sweep. [Restored21GREEN](./owner-tie-restored.txt),411ms/2.47s. Wider existing ownership/template/migration/build/docs gates follow this coherent checkpoint; no browser/hosted CI claim.
+
+## Inherited renderer fixture failures and scoped legal correction
+
+First broader gate [222GREEN/4RED](./neighbours.txt),11.04s/11files: all four failures are room-template-rebuilt-render-identity's normal replacement purchases at the mirrored90° original Bed anchor. The newly integrated1651 occupancy guard correctly refuses the standalone Bed whose far square is on a completed perimeter wall; the replacement order does not exist before any Load/render call.
+
+Attribution is independently measured: temporarily use ONLY the original b8f796 registry blob, run the unchanged16-case renderer test and obtain [same4RED/12GREEN](./renderer-inherited-baseline.txt),3.38s. Finally [byte restore](./renderer-baseline-restore.json) to the committed current comparator hashB2270802354EBD39E519DD333AB9D1506F05F23BE85A8D166CB679C28815AE4D/source diff0. Therefore these are inherited invalid purchase fixtures, not a comparator regression, and neither renderer nor collision production is weakened.
+
+Root granted only three invalid purchase setup poses to use legal unmirrored90° (current known-owner, pending ghost, legacy ownerless). The actual authored Bed anchor is14,11, with the standalone normal Bed's second square14,12; q0 remains11,11 and11,12. Independent literal anchor and real floor/physical-clear assertions are added before those purchases. Other mirrored direct-removal/legacy-facing/invalid-owner controls remain unchanged. Every original model count/key/owner/orientation/footprint/SaveLoad/absence assertion is retained; sixteen cases remain. [Corrected16GREEN](./renderer-corrected.txt),3.33s. This is a fixture correction supporting existing1980 coverage, separate from the canonical comparator producer proof; no new renderer production edit/native claim.
+
+## Terminal original bounded source gates
+
+[226GREEN/11files](./neighbours-terminal.txt),11.09s/two workers:
+
+- tests/integration/conflicting-imported-template-objects.test.ts
+- tests/unit/objects-placed-object-registry.test.ts
+- tests/unit/objects-room-capacity.test.ts
+- tests/integration/room-template-replacement-order-ownership.test.ts
+- tests/integration/room-template-occupied-cancel-atomicity.test.ts
+- tests/integration/room-template-rebuilt-render-identity.test.ts
+- tests/integration/room-template-economy-transitions.test.ts
+- tests/integration/template-deferred-history-order.test.ts
+- tests/integration/object-placement-loop.test.ts
+- tests/migrations/save-v7-to-v8-object-ownership.test.ts
+- tests/determinism/canonical-iteration-contract.test.ts
+
+Both application/tools TypeScript pass. [Production client build](./build.txt) passes5.50s with existing plugin/chunk warnings. Initial documentation gate61GREEN/1missing own research-rowRED,20.20s; [original retained](./docs-initial.txt). Granted own row alone gives [62GREEN/eightfiles](./docs-terminal.txt),13.40s. No existing registry citation fails or requires correction; no historical anchor/budget/guard changes. Final index receipt closure follows. No native/hosted CI claim; ordinary current legal commands still do not create duplicate physical saved rows. Source leases released with committed production diff0.

@@ -1,0 +1,75 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-construction-next-collision-audit-20261003
+
+ ❯ tests/integration/room-template-rebuilt-render-identity.test.ts (16 tests | 4 failed) 824ms
+   × real render feed shows one independently rebuilt Bed, original turn=1 reload=false 53ms
+   × real render feed shows one independently rebuilt Bed, original turn=1 reload=true 44ms
+   × keeps the genuine completed rotated Bed and pending replacement visible 39ms
+   × draws an ambiguous ownerless V7 replacement only once, original turn=1 53ms
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 12 passed (16)
+   Start at  02:27:07
+   Duration  3.38s (transform 861ms, setup 0ms, import 2.43s, tests 824ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/room-template-rebuilt-render-identity.test.ts > real render feed shows one independently rebuilt Bed, original turn=1 reload=false
+ FAIL  tests/integration/room-template-rebuilt-render-identity.test.ts > real render feed shows one independently rebuilt Bed, original turn=1 reload=true
+AssertionError: expected undefined to be 'completed' // Object.is equality
+
+- Expected:
+"completed"
+
++ Received:
+undefined
+
+ ❯ tests/integration/room-template-rebuilt-render-identity.test.ts:77:69
+     75|     if (reload) runtime = load(runtime);
+     76|     expect(runtime.construction.getOrder(old.id)?.state).toBe('complet…
+     77|     expect(runtime.construction.getOrder('replacement-bed')?.state).to…
+       |                                                                     ^
+     78|     const standing = runtime.placedObjects.getSnapshot().filter(object…
+     79|     expect(standing).toHaveLength(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tests/integration/room-template-rebuilt-render-identity.test.ts > keeps the genuine completed rotated Bed and pending replacement visible
+AssertionError: expected undefined to be 'approved' // Object.is equality
+
+- Expected:
+"approved"
+
++ Received:
+undefined
+
+ ❯ tests/integration/room-template-rebuilt-render-identity.test.ts:106:63
+    104|   send(runtime, { type: 'RemoveObject', x: old.location.x, y: old.loca…
+    105|   send(runtime, { type: 'PlaceObject', orderId: 'pending-bed', definit…
+    106|   expect(runtime.construction.getOrder('pending-bed')?.state).toBe('ap…
+       |                                                               ^
+    107|   const planned = beds(runtime).filter(shape => shape.phase === 'plann…
+    108|   expect(planned).toEqual([expect.objectContaining({ id: 'pending-bed'…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  tests/integration/room-template-rebuilt-render-identity.test.ts > draws an ambiguous ownerless V7 replacement only once, original turn=1
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ tests/integration/room-template-rebuilt-render-identity.test.ts:151:20
+    149|   runtime = load(runtime, true);
+    150|   const physical = runtime.placedObjects.getSnapshot().filter(object =…
+    151|   expect(physical).toHaveLength(1);
+       |                    ^
+    152|   expect(physical[0]?.sourceOrderId).toBeUndefined();
+    153|   expect(runtime.construction.getOrder(old.id)?.state).toBe('completed…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
