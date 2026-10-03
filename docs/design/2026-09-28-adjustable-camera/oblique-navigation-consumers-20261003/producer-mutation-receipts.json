@@ -1,0 +1,22 @@
+[
+  {
+    "producer": "src\\rendering\\scene\\oblique-world-scene.ts",
+    "uniqueMatch": 1,
+    "mutation": {
+      "original": "width: (viewport.right - viewport.left) / TILE_SIZE_PX / spanX,",
+      "replacement": "width: (viewport.right - viewport.left) / TILE_SIZE_PX / spanX / 2,"
+    },
+    "originalRestoredSha256": "d461926ee16903ca9b430dd08f6cb649b55801cc4472449b22ecf7b51227949e",
+    "byteExactRestore": true
+  },
+  {
+    "producer": "src\\main.ts",
+    "uniqueMatch": 1,
+    "mutation": {
+      "original": "if (worldScene instanceof ObliqueWorldScene) return groundToScreen(point, worldScene.cameraPose);",
+      "replacement": "if (worldScene instanceof ObliqueWorldScene) { const projected = groundToScreen(point, worldScene.cameraPose); return { x: projected.x + 64, y: projected.y }; }"
+    },
+    "originalRestoredSha256": "4a2461e3655cdf5bfceb53eb62674cddcf711885125bf6f1c3b36587ea40d0d3",
+    "byteExactRestore": true
+  }
+]

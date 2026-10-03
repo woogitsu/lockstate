@@ -1,0 +1,109 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-oblique-camera-consumers-20261003
+
+ ❯ tests/unit/oblique-navigation-minimap-consumers.test.ts (12 tests | 12 failed) 14ms
+   × actual angled minimap/whole-square/main bridge consumers after registered navigation yaw-45 elevation20 CSSratio1 6ms
+   × actual angled minimap/whole-square/main bridge consumers after registered navigation yaw-45 elevation20 CSSratio2 1ms
+   × actual angled minimap/whole-square/main bridge consumers after registered navigation yaw+0 elevation45 CSSratio1 1ms
+   × actual angled minimap/whole-square/main bridge consumers after registered navigation yaw+0 elevation45 CSSratio2 1ms
+   × actual angled minimap/whole-square/main bridge consumers after registered navigation yaw37 elevation53 CSSratio1 1ms
+   × actual angled minimap/whole-square/main bridge consumers after registered navigation yaw37 elevation53 CSSratio2 1ms
+   × actual angled minimap/whole-square/main bridge consumers after registered navigation yaw90 elevation80 CSSratio1 1ms
+   × actual angled minimap/whole-square/main bridge consumers after registered navigation yaw90 elevation80 CSSratio2 1ms
+   × actual angled minimap/whole-square/main bridge consumers after registered navigation yaw217 elevation25 CSSratio1 1ms
+   × actual angled minimap/whole-square/main bridge consumers after registered navigation yaw217 elevation25 CSSratio2 1ms
+   × actual angled minimap/whole-square/main bridge consumers after registered navigation yaw323 elevation65 CSSratio1 0ms
+   × actual angled minimap/whole-square/main bridge consumers after registered navigation yaw323 elevation65 CSSratio2 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 12 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-navigation-minimap-consumers.test.ts > actual angled minimap/whole-square/main bridge consumers after registered navigation yaw-45 elevation20 CSSratio1
+ FAIL  tests/unit/oblique-navigation-minimap-consumers.test.ts > actual angled minimap/whole-square/main bridge consumers after registered navigation yaw-45 elevation20 CSSratio2
+AssertionError: expected 1024 to be close to 2460.1929166216105, received difference is 1436.1929166216105, but expected 5e-7
+ ❯ check tests/unit/oblique-navigation-minimap-consumers.test.ts:82:91
+     80|         right: bounds.minTileX * 64 + (emitted.viewport.x + emitted.vi…
+     81|       const expected = { left: Math.min(...grounds.map(p => p.x)), rig…
+     82|       for (const field of ['left','right','top','bottom'] as const) ex…
+       |                                                                                           ^
+     83|       const screen = { x: 1100, y: 460 }, ground = independent.ground(…
+     84|       callbacks.move(pointer(screen.x, screen.y));
+ ❯ tests/unit/oblique-navigation-minimap-consumers.test.ts:94:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/12]⎯
+
+ FAIL  tests/unit/oblique-navigation-minimap-consumers.test.ts > actual angled minimap/whole-square/main bridge consumers after registered navigation yaw+0 elevation45 CSSratio1
+ FAIL  tests/unit/oblique-navigation-minimap-consumers.test.ts > actual angled minimap/whole-square/main bridge consumers after registered navigation yaw+0 elevation45 CSSratio2
+AssertionError: expected 1024 to be close to 1792, received difference is 768, but expected 5e-7
+ ❯ check tests/unit/oblique-navigation-minimap-consumers.test.ts:82:91
+     80|         right: bounds.minTileX * 64 + (emitted.viewport.x + emitted.vi…
+     81|       const expected = { left: Math.min(...grounds.map(p => p.x)), rig…
+     82|       for (const field of ['left','right','top','bottom'] as const) ex…
+       |                                                                                           ^
+     83|       const screen = { x: 1100, y: 460 }, ground = independent.ground(…
+     84|       callbacks.move(pointer(screen.x, screen.y));
+ ❯ tests/unit/oblique-navigation-minimap-consumers.test.ts:94:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/12]⎯
+
+ FAIL  tests/unit/oblique-navigation-minimap-consumers.test.ts > actual angled minimap/whole-square/main bridge consumers after registered navigation yaw37 elevation53 CSSratio1
+ FAIL  tests/unit/oblique-navigation-minimap-consumers.test.ts > actual angled minimap/whole-square/main bridge consumers after registered navigation yaw37 elevation53 CSSratio2
+AssertionError: expected 1024 to be close to 1962.887421360728, received difference is 938.887421360728, but expected 5e-7
+ ❯ check tests/unit/oblique-navigation-minimap-consumers.test.ts:82:91
+     80|         right: bounds.minTileX * 64 + (emitted.viewport.x + emitted.vi…
+     81|       const expected = { left: Math.min(...grounds.map(p => p.x)), rig…
+     82|       for (const field of ['left','right','top','bottom'] as const) ex…
+       |                                                                                           ^
+     83|       const screen = { x: 1100, y: 460 }, ground = independent.ground(…
+     84|       callbacks.move(pointer(screen.x, screen.y));
+ ❯ tests/unit/oblique-navigation-minimap-consumers.test.ts:94:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/12]⎯
+
+ FAIL  tests/unit/oblique-navigation-minimap-consumers.test.ts > actual angled minimap/whole-square/main bridge consumers after registered navigation yaw90 elevation80 CSSratio1
+ FAIL  tests/unit/oblique-navigation-minimap-consumers.test.ts > actual angled minimap/whole-square/main bridge consumers after registered navigation yaw90 elevation80 CSSratio2
+AssertionError: expected 1024 to be close to 1462.664296334642, received difference is 438.6642963346419, but expected 5e-7
+ ❯ check tests/unit/oblique-navigation-minimap-consumers.test.ts:82:91
+     80|         right: bounds.minTileX * 64 + (emitted.viewport.x + emitted.vi…
+     81|       const expected = { left: Math.min(...grounds.map(p => p.x)), rig…
+     82|       for (const field of ['left','right','top','bottom'] as const) ex…
+       |                                                                                           ^
+     83|       const screen = { x: 1100, y: 460 }, ground = independent.ground(…
+     84|       callbacks.move(pointer(screen.x, screen.y));
+ ❯ tests/unit/oblique-navigation-minimap-consumers.test.ts:94:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/12]⎯
+
+ FAIL  tests/unit/oblique-navigation-minimap-consumers.test.ts > actual angled minimap/whole-square/main bridge consumers after registered navigation yaw217 elevation25 CSSratio1
+ FAIL  tests/unit/oblique-navigation-minimap-consumers.test.ts > actual angled minimap/whole-square/main bridge consumers after registered navigation yaw217 elevation25 CSSratio2
+AssertionError: expected 1024 to be close to 2252.526837072769, received difference is 1228.526837072769, but expected 5e-7
+ ❯ check tests/unit/oblique-navigation-minimap-consumers.test.ts:82:91
+     80|         right: bounds.minTileX * 64 + (emitted.viewport.x + emitted.vi…
+     81|       const expected = { left: Math.min(...grounds.map(p => p.x)), rig…
+     82|       for (const field of ['left','right','top','bottom'] as const) ex…
+       |                                                                                           ^
+     83|       const screen = { x: 1100, y: 460 }, ground = independent.ground(…
+     84|       callbacks.move(pointer(screen.x, screen.y));
+ ❯ tests/unit/oblique-navigation-minimap-consumers.test.ts:94:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/12]⎯
+
+ FAIL  tests/unit/oblique-navigation-minimap-consumers.test.ts > actual angled minimap/whole-square/main bridge consumers after registered navigation yaw323 elevation65 CSSratio1
+ FAIL  tests/unit/oblique-navigation-minimap-consumers.test.ts > actual angled minimap/whole-square/main bridge consumers after registered navigation yaw323 elevation65 CSSratio2
+AssertionError: expected 1024 to be close to 1924.212775905737, received difference is 900.2127759057371, but expected 5e-7
+ ❯ check tests/unit/oblique-navigation-minimap-consumers.test.ts:82:91
+     80|         right: bounds.minTileX * 64 + (emitted.viewport.x + emitted.vi…
+     81|       const expected = { left: Math.min(...grounds.map(p => p.x)), rig…
+     82|       for (const field of ['left','right','top','bottom'] as const) ex…
+       |                                                                                           ^
+     83|       const screen = { x: 1100, y: 460 }, ground = independent.ground(…
+     84|       callbacks.move(pointer(screen.x, screen.y));
+ ❯ tests/unit/oblique-navigation-minimap-consumers.test.ts:94:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/12]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  12 failed | 38 passed (50)
+   Start at  02:18:44
+   Duration  1.09s (transform 540ms, setup 0ms, import 1.52s, tests 28ms, environment 0ms)
+

@@ -1,0 +1,181 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-oblique-camera-consumers-20261003
+
+ ❯ tests/unit/oblique-navigation-minimap-consumers.test.ts (12 tests | 12 failed) 17ms
+   × actual angled minimap/whole-square/main bridge consumers after registered navigation yaw-45 elevation20 CSSratio1 8ms
+   × actual angled minimap/whole-square/main bridge consumers after registered navigation yaw-45 elevation20 CSSratio2 1ms
+   × actual angled minimap/whole-square/main bridge consumers after registered navigation yaw+0 elevation45 CSSratio1 1ms
+   × actual angled minimap/whole-square/main bridge consumers after registered navigation yaw+0 elevation45 CSSratio2 1ms
+   × actual angled minimap/whole-square/main bridge consumers after registered navigation yaw37 elevation53 CSSratio1 1ms
+   × actual angled minimap/whole-square/main bridge consumers after registered navigation yaw37 elevation53 CSSratio2 1ms
+   × actual angled minimap/whole-square/main bridge consumers after registered navigation yaw90 elevation80 CSSratio1 1ms
+   × actual angled minimap/whole-square/main bridge consumers after registered navigation yaw90 elevation80 CSSratio2 1ms
+   × actual angled minimap/whole-square/main bridge consumers after registered navigation yaw217 elevation25 CSSratio1 1ms
+   × actual angled minimap/whole-square/main bridge consumers after registered navigation yaw217 elevation25 CSSratio2 1ms
+   × actual angled minimap/whole-square/main bridge consumers after registered navigation yaw323 elevation65 CSSratio1 0ms
+   × actual angled minimap/whole-square/main bridge consumers after registered navigation yaw323 elevation65 CSSratio2 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 12 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-navigation-minimap-consumers.test.ts > actual angled minimap/whole-square/main bridge consumers after registered navigation yaw-45 elevation20 CSSratio1
+AssertionError: expected 1137.1370849898476 to be close to 1073.1370849898476, received difference is 64, but expected 5e-7
+ ❯ check tests/unit/oblique-navigation-minimap-consumers.test.ts:89:36
+     87|         const point = { x: (square.x + dx!) * 64, y: (square.y + dy!) …
+     88|         const shown = ports.project(point), wanted = independent.scree…
+     89|         expect(shown.x / cssRatio).toBeCloseTo(wanted.x / cssRatio, 6)…
+       |                                    ^
+     90|       }
+     91|       expect(place).not.toHaveBeenCalled();
+ ❯ tests/unit/oblique-navigation-minimap-consumers.test.ts:94:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/12]⎯
+
+ FAIL  tests/unit/oblique-navigation-minimap-consumers.test.ts > actual angled minimap/whole-square/main bridge consumers after registered navigation yaw-45 elevation20 CSSratio2
+AssertionError: expected 568.5685424949238 to be close to 536.5685424949238, received difference is 32, but expected 5e-7
+ ❯ check tests/unit/oblique-navigation-minimap-consumers.test.ts:89:36
+     87|         const point = { x: (square.x + dx!) * 64, y: (square.y + dy!) …
+     88|         const shown = ports.project(point), wanted = independent.scree…
+     89|         expect(shown.x / cssRatio).toBeCloseTo(wanted.x / cssRatio, 6)…
+       |                                    ^
+     90|       }
+     91|       expect(place).not.toHaveBeenCalled();
+ ❯ tests/unit/oblique-navigation-minimap-consumers.test.ts:94:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/12]⎯
+
+ FAIL  tests/unit/oblique-navigation-minimap-consumers.test.ts > actual angled minimap/whole-square/main bridge consumers after registered navigation yaw+0 elevation45 CSSratio1
+AssertionError: expected 1104 to be close to 1040, received difference is 64, but expected 5e-7
+ ❯ check tests/unit/oblique-navigation-minimap-consumers.test.ts:89:36
+     87|         const point = { x: (square.x + dx!) * 64, y: (square.y + dy!) …
+     88|         const shown = ports.project(point), wanted = independent.scree…
+     89|         expect(shown.x / cssRatio).toBeCloseTo(wanted.x / cssRatio, 6)…
+       |                                    ^
+     90|       }
+     91|       expect(place).not.toHaveBeenCalled();
+ ❯ tests/unit/oblique-navigation-minimap-consumers.test.ts:94:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/12]⎯
+
+ FAIL  tests/unit/oblique-navigation-minimap-consumers.test.ts > actual angled minimap/whole-square/main bridge consumers after registered navigation yaw+0 elevation45 CSSratio2
+AssertionError: expected 552 to be close to 520, received difference is 32, but expected 5e-7
+ ❯ check tests/unit/oblique-navigation-minimap-consumers.test.ts:89:36
+     87|         const point = { x: (square.x + dx!) * 64, y: (square.y + dy!) …
+     88|         const shown = ports.project(point), wanted = independent.scree…
+     89|         expect(shown.x / cssRatio).toBeCloseTo(wanted.x / cssRatio, 6)…
+       |                                    ^
+     90|       }
+     91|       expect(place).not.toHaveBeenCalled();
+ ❯ tests/unit/oblique-navigation-minimap-consumers.test.ts:94:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/12]⎯
+
+ FAIL  tests/unit/oblique-navigation-minimap-consumers.test.ts > actual angled minimap/whole-square/main bridge consumers after registered navigation yaw37 elevation53 CSSratio1
+AssertionError: expected 1168.4356055564915 to be close to 1104.4356055564915, received difference is 64, but expected 5e-7
+ ❯ check tests/unit/oblique-navigation-minimap-consumers.test.ts:89:36
+     87|         const point = { x: (square.x + dx!) * 64, y: (square.y + dy!) …
+     88|         const shown = ports.project(point), wanted = independent.scree…
+     89|         expect(shown.x / cssRatio).toBeCloseTo(wanted.x / cssRatio, 6)…
+       |                                    ^
+     90|       }
+     91|       expect(place).not.toHaveBeenCalled();
+ ❯ tests/unit/oblique-navigation-minimap-consumers.test.ts:94:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/12]⎯
+
+ FAIL  tests/unit/oblique-navigation-minimap-consumers.test.ts > actual angled minimap/whole-square/main bridge consumers after registered navigation yaw37 elevation53 CSSratio2
+AssertionError: expected 584.2178027782458 to be close to 552.2178027782458, received difference is 32, but expected 5e-7
+ ❯ check tests/unit/oblique-navigation-minimap-consumers.test.ts:89:36
+     87|         const point = { x: (square.x + dx!) * 64, y: (square.y + dy!) …
+     88|         const shown = ports.project(point), wanted = independent.scree…
+     89|         expect(shown.x / cssRatio).toBeCloseTo(wanted.x / cssRatio, 6)…
+       |                                    ^
+     90|       }
+     91|       expect(place).not.toHaveBeenCalled();
+ ❯ tests/unit/oblique-navigation-minimap-consumers.test.ts:94:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/12]⎯
+
+ FAIL  tests/unit/oblique-navigation-minimap-consumers.test.ts > actual angled minimap/whole-square/main bridge consumers after registered navigation yaw90 elevation80 CSSratio1
+AssertionError: expected 1184 to be close to 1120, received difference is 64, but expected 5e-7
+ ❯ check tests/unit/oblique-navigation-minimap-consumers.test.ts:89:36
+     87|         const point = { x: (square.x + dx!) * 64, y: (square.y + dy!) …
+     88|         const shown = ports.project(point), wanted = independent.scree…
+     89|         expect(shown.x / cssRatio).toBeCloseTo(wanted.x / cssRatio, 6)…
+       |                                    ^
+     90|       }
+     91|       expect(place).not.toHaveBeenCalled();
+ ❯ tests/unit/oblique-navigation-minimap-consumers.test.ts:94:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/12]⎯
+
+ FAIL  tests/unit/oblique-navigation-minimap-consumers.test.ts > actual angled minimap/whole-square/main bridge consumers after registered navigation yaw90 elevation80 CSSratio2
+AssertionError: expected 592 to be close to 560, received difference is 32, but expected 5e-7
+ ❯ check tests/unit/oblique-navigation-minimap-consumers.test.ts:89:36
+     87|         const point = { x: (square.x + dx!) * 64, y: (square.y + dy!) …
+     88|         const shown = ports.project(point), wanted = independent.scree…
+     89|         expect(shown.x / cssRatio).toBeCloseTo(wanted.x / cssRatio, 6)…
+       |                                    ^
+     90|       }
+     91|       expect(place).not.toHaveBeenCalled();
+ ❯ tests/unit/oblique-navigation-minimap-consumers.test.ts:94:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/12]⎯
+
+ FAIL  tests/unit/oblique-navigation-minimap-consumers.test.ts > actual angled minimap/whole-square/main bridge consumers after registered navigation yaw217 elevation25 CSSratio1
+AssertionError: expected 1120.2904037043277 to be close to 1056.2904037043277, received difference is 64, but expected 5e-7
+ ❯ check tests/unit/oblique-navigation-minimap-consumers.test.ts:89:36
+     87|         const point = { x: (square.x + dx!) * 64, y: (square.y + dy!) …
+     88|         const shown = ports.project(point), wanted = independent.scree…
+     89|         expect(shown.x / cssRatio).toBeCloseTo(wanted.x / cssRatio, 6)…
+       |                                    ^
+     90|       }
+     91|       expect(place).not.toHaveBeenCalled();
+ ❯ tests/unit/oblique-navigation-minimap-consumers.test.ts:94:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/12]⎯
+
+ FAIL  tests/unit/oblique-navigation-minimap-consumers.test.ts > actual angled minimap/whole-square/main bridge consumers after registered navigation yaw217 elevation25 CSSratio2
+AssertionError: expected 560.1452018521638 to be close to 528.1452018521638, received difference is 32, but expected 5e-7
+ ❯ check tests/unit/oblique-navigation-minimap-consumers.test.ts:89:36
+     87|         const point = { x: (square.x + dx!) * 64, y: (square.y + dy!) …
+     88|         const shown = ports.project(point), wanted = independent.scree…
+     89|         expect(shown.x / cssRatio).toBeCloseTo(wanted.x / cssRatio, 6)…
+       |                                    ^
+     90|       }
+     91|       expect(place).not.toHaveBeenCalled();
+ ❯ tests/unit/oblique-navigation-minimap-consumers.test.ts:94:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/12]⎯
+
+ FAIL  tests/unit/oblique-navigation-minimap-consumers.test.ts > actual angled minimap/whole-square/main bridge consumers after registered navigation yaw323 elevation65 CSSratio1
+AssertionError: expected 1151.781681607567 to be close to 1087.781681607567, received difference is 64, but expected 5e-7
+ ❯ check tests/unit/oblique-navigation-minimap-consumers.test.ts:89:36
+     87|         const point = { x: (square.x + dx!) * 64, y: (square.y + dy!) …
+     88|         const shown = ports.project(point), wanted = independent.scree…
+     89|         expect(shown.x / cssRatio).toBeCloseTo(wanted.x / cssRatio, 6)…
+       |                                    ^
+     90|       }
+     91|       expect(place).not.toHaveBeenCalled();
+ ❯ tests/unit/oblique-navigation-minimap-consumers.test.ts:94:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/12]⎯
+
+ FAIL  tests/unit/oblique-navigation-minimap-consumers.test.ts > actual angled minimap/whole-square/main bridge consumers after registered navigation yaw323 elevation65 CSSratio2
+AssertionError: expected 575.8908408037835 to be close to 543.8908408037835, received difference is 32, but expected 5e-7
+ ❯ check tests/unit/oblique-navigation-minimap-consumers.test.ts:89:36
+     87|         const point = { x: (square.x + dx!) * 64, y: (square.y + dy!) …
+     88|         const shown = ports.project(point), wanted = independent.scree…
+     89|         expect(shown.x / cssRatio).toBeCloseTo(wanted.x / cssRatio, 6)…
+       |                                    ^
+     90|       }
+     91|       expect(place).not.toHaveBeenCalled();
+ ❯ tests/unit/oblique-navigation-minimap-consumers.test.ts:94:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/12]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  12 failed | 38 passed (50)
+   Start at  02:18:47
+   Duration  1.04s (transform 486ms, setup 0ms, import 1.43s, tests 31ms, environment 0ms)
+
