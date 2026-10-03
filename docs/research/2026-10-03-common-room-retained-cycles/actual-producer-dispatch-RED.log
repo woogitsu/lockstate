@@ -1,0 +1,15 @@
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
+Traceback (most recent call last):
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-common-room-cycles-20261003\tooling\blender\render-common-room-cycles.py", line 114, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-common-room-cycles-20261003\tooling\blender\render-common-room-cycles.py", line 72, in main
+    scene,camera = configure()
+                   ~~~~~~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-common-room-cycles-20261003\tooling\blender\render-common-room-cycles.py", line 30, in configure
+    raise ValueError('Common Room Cycles dedicated producer dispatch changed')
+ValueError: Common Room Cycles dedicated producer dispatch changed
+
+Error: script failed, file: 'C:\Users\matma\Documents\Rozwój gier\lockstate-common-room-cycles-20261003\tooling\blender\render-common-room-cycles.py', exiting.

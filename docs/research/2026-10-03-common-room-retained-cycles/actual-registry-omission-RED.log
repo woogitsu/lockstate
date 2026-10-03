@@ -1,0 +1,32 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-common-room-cycles-20261003
+
+xx
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  23:48:09
+   Duration  640ms (transform 175ms, setup 0ms, import 504ms, tests 17ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-common-room-modern-consumer.test.ts > selects genuine modern upholstered benches in literal Common Room q0 over both whole paid occupied footprints
+ FAIL  tests/unit/oblique-common-room-modern-consumer.test.ts > selects genuine modern upholstered benches in literal Common Room q1 over both whole paid occupied footprints
+AssertionError: expected [] to deeply equal [ { …(2) } ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "assetId": "furniture.common-room.upholstered-bench",
+-     "manifest": "/game-content/oblique-furniture.common-room-bench.v1.json",
+-   },
+- ]
++ []
+
+ ❯ tests/unit/oblique-common-room-modern-consumer.test.ts:41:71
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
