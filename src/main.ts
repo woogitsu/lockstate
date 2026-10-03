@@ -4751,12 +4751,39 @@ if (roomTemplateTool !== undefined) {
       const world = worldScene instanceof ObliqueWorldScene ? screenToGround(point, worldScene.cameraPose) : worldScene.cameras.main.getWorldPoint(point.x, point.y);
       return { x: Math.floor(world.x / TILE_SIZE_PX), y: Math.floor(world.y / TILE_SIZE_PX) };
     };
+    const previewOccluders = ['.hud-camera-panel', '.hud__unavailable', '.hud__refusal', '.hud__event'];
+    const previewSafeBounds = () => {
+      const rect = canvas.getBoundingClientRect();
+      const bounds = (selector: string) => appRoot?.querySelector(selector)?.getBoundingClientRect();
+      const sx = canvas.width / rect.width, sy = canvas.height / rect.height;
+      let safe = { left: (Math.max(bounds('.hud__tabs')?.right ?? rect.left, bounds('.hud__corner')?.right ?? rect.left) - rect.left) * sx + 8,
+        right: ((bounds('.hud__rail')?.left ?? rect.right) - rect.left) * sx - 8,
+        top: ((bounds('.hud-strip')?.bottom ?? rect.top) - rect.top) * sy + 8, bottom: canvas.height - 8 };
+      // Preserve the existing map corridor. A hidden/disconnected panel has no
+      // positive rectangle; visible controls and notices must not be called map.
+      for (const selector of previewOccluders) {
+        const r = bounds(selector);
+        if (r === undefined || r.width <= 0 || r.height <= 0) continue;
+        const blocked = { left: (r.left - rect.left) * sx - 8, right: (r.right - rect.left) * sx + 8,
+          top: (r.top - rect.top) * sy - 8, bottom: (r.bottom - rect.top) * sy + 8 };
+        if (blocked.right <= safe.left || blocked.left >= safe.right || blocked.bottom <= safe.top || blocked.top >= safe.bottom) continue;
+        // Largest remaining rectangular area, with stable ties. Fit and its
+        // readout share this measurement rather than painting under the HUD.
+        const candidates = [{ ...safe, right: Math.min(safe.right, blocked.left) },
+          { ...safe, left: Math.max(safe.left, blocked.right) },
+          { ...safe, bottom: Math.min(safe.bottom, blocked.top) },
+          { ...safe, top: Math.max(safe.top, blocked.bottom) }];
+        const area = (b: typeof safe) => Math.max(0, b.right - b.left) * Math.max(0, b.bottom - b.top);
+        safe = candidates.reduce((best, candidate) => area(candidate) > area(best) ? candidate : best);
+      }
+      return safe;
+    };
     const fitController = worldScene instanceof ObliqueWorldScene ? new RoomTemplatePreviewFitController({
       pick: pickTemplateSquare,
       size: () => roomTemplateTool.planAt({ x: 0, y: 0 }),
       revision: () => roomTemplateTool.revision,
       viewRevision: () => {
-        const selectors = ['.hud__tabs', '.hud__corner', '.hud__rail', '.hud-strip'];
+        const selectors = ['.hud__tabs', '.hud__corner', '.hud__rail', '.hud-strip', ...previewOccluders];
         return JSON.stringify([worldScene instanceof ObliqueWorldScene ? worldScene.cameraPose : undefined, canvas.width, canvas.height,
           ...selectors.map(selector => { const r = appRoot?.querySelector(selector)?.getBoundingClientRect(); return r === undefined ? null : [r.left, r.right, r.top, r.bottom]; })]);
       },
@@ -4764,12 +4791,7 @@ if (roomTemplateTool !== undefined) {
         if (!(worldScene instanceof ObliqueWorldScene)) return false;
         const rect = canvas.getBoundingClientRect();
         if (rect.width <= 0 || rect.height <= 0) return false;
-        const bounds = (selector: string) => appRoot?.querySelector(selector)?.getBoundingClientRect();
-        const left = Math.max(bounds('.hud__tabs')?.right ?? rect.left, bounds('.hud__corner')?.right ?? rect.left);
-        const right = bounds('.hud__rail')?.left ?? rect.right;
-        const top = bounds('.hud-strip')?.bottom ?? rect.top;
-        const sx = canvas.width / rect.width, sy = canvas.height / rect.height;
-        const safeScreenBounds = { left: (left - rect.left) * sx + 8, right: (right - rect.left) * sx - 8, top: (top - rect.top) * sy + 8, bottom: canvas.height - 8 };
+        const safeScreenBounds = previewSafeBounds();
         if (safeScreenBounds.right <= safeScreenBounds.left || safeScreenBounds.bottom <= safeScreenBounds.top) return false;
         const groundBounds = { left: origin.x * TILE_SIZE_PX, top: origin.y * TILE_SIZE_PX, right: (origin.x + size.width) * TILE_SIZE_PX, bottom: (origin.y + size.height) * TILE_SIZE_PX };
         const pose = worldScene.cameraPose;
@@ -4786,14 +4808,7 @@ if (roomTemplateTool !== undefined) {
       initialCanvasHover: canvasHover,
       tileSize: TILE_SIZE_PX,
       worldRevision: () => renderFeed.readFrame(performance.now() / 1000).revision,
-      labelSafeBounds: () => {
-        const rect = canvas.getBoundingClientRect();
-        const bounds = (selector: string) => appRoot?.querySelector(selector)?.getBoundingClientRect();
-        const sx = canvas.width / rect.width, sy = canvas.height / rect.height;
-        return { left: (Math.max(bounds('.hud__tabs')?.right ?? rect.left, bounds('.hud__corner')?.right ?? rect.left) - rect.left) * sx + 8,
-          right: ((bounds('.hud__rail')?.left ?? rect.right) - rect.left) * sx - 8,
-          top: ((bounds('.hud-strip')?.bottom ?? rect.top) - rect.top) * sy + 8, bottom: canvas.height - 8 };
-      },
+      labelSafeBounds: previewSafeBounds,
       objectFootprint: objectFootprintOf,
       ...(fitController === undefined ? {} : {
         preparePreview: (point, physicalMove) => fitController.prepare(point, physicalMove),
