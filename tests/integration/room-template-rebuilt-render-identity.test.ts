@@ -26,13 +26,16 @@ function load(runtime: Runtime, legacy = false) {
   const bundle = captureSessionSnapshot(runtime);
   const envelope = createSaveEnvelope({ gameVersion: 'test', prisonId: 'render-identity', revision: 1,
     createdAt: 0, updatedAt: 1, ...bundle });
-  expect(envelope.saveSchemaVersion).toBe(8);
+  expect(envelope.saveSchemaVersion).toBe(9);
   const encoded = JSON.parse(JSON.stringify(envelope)) as {
     saveSchemaVersion: number; checksum: string;
-    payload: { simulation: { objects: { placedObjects: { sourceOrderId?: string }[] } } };
+    payload: { construction: { newerActionThanTheStackTop?: boolean; orderRevisions?: Record<string, number> };
+      simulation: { objects: { placedObjects: { sourceOrderId?: string }[] } } };
   };
   if (legacy) {
     encoded.saveSchemaVersion = 7;
+    delete encoded.payload.construction.newerActionThanTheStackTop;
+    delete encoded.payload.construction.orderRevisions;
     for (const object of encoded.payload.simulation.objects.placedObjects) delete object.sourceOrderId;
     encoded.checksum = computeSaveChecksum(encoded.payload);
   }

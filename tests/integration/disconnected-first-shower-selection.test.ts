@@ -28,7 +28,7 @@ function reload(runtime: SimulationRuntime) {
   }))));
   expect(decoded.ok).toBe(true);
   if (!decoded.ok) throw new Error('Actual completed prison must decode');
-  expect(decoded.value.saveSchemaVersion).toBe(8);
+  expect(decoded.value.saveSchemaVersion).toBe(9);
   return restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle).runtime;
 }
 

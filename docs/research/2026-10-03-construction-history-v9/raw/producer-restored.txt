@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-construction-history-v9-20261003
+
+
+ Test Files  2 passed (2)
+      Tests  12 passed (12)
+   Start at  18:51:04
+   Duration  2.40s (transform 1.57s, setup 0ms, import 4.32s, tests 178ms, environment 0ms)
+

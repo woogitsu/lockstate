@@ -1,0 +1,30 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-construction-history-v9-20261003
+
+ ❯ tests/integration/construction-newer-action-save.test.ts (4 tests | 1 failed) 65ms
+   × Undo consistency after accepted hire=true, encodedLoad=true 12ms
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 11 passed (12)
+   Start at  18:50:59
+   Duration  2.51s (transform 1.60s, setup 0ms, import 4.56s, tests 169ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/construction-newer-action-save.test.ts > Undo consistency after accepted hire=true, encodedLoad=true
+AssertionError: expected 'cancelled' to be 'completed' // Object.is equality
+
+Expected: "completed"
+Received: "cancelled"
+
+ ❯ tests/integration/construction-newer-action-save.test.ts:39:66
+     37|     expect(runtime.securityGuards.allGuardIds()).toHaveLength(hire ? 1…
+     38|     expect(runtime.treasury.balanceMinorUnits).toBe(hire ? 24840 : 249…
+     39|     expect(runtime.construction.getOrder('owned-square')?.state).toBe(…
+       |                                                                  ^
+     40|     expect(runtime.world.getSquareStructure({ x: tileCoordinate(12), y…
+     41|     expect(runtime.events.since(0).slice(eventsBefore).map(event => ev…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

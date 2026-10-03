@@ -55,7 +55,8 @@ describe('save-schema V2 -> V3 migration', () => {
       // Every V2 field crosses untouched: V3 added a section beside them.
       expect(result.value.payload.kernel).toEqual(v2.payload.kernel);
       expect(result.value.payload.world).toEqual(v2.payload.world);
-      expect(result.value.payload.construction).toEqual(v2.payload.construction);
+      expect(result.value.payload.construction).toEqual({ ...v2.payload.construction,
+        newerActionThanTheStackTop: false, orderRevisions: {} });
       expect(result.value.payload.entities).toEqual(v2.payload.entities);
       expect(result.value.gameVersion).toBe(v2.gameVersion);
       expect(result.value.prisonId).toBe(v2.prisonId);
@@ -77,7 +78,8 @@ describe('save-schema V2 -> V3 migration', () => {
 
       expect(result.value.saveSchemaVersion).toBe(SAVE_SCHEMA_VERSION);
       expect(result.value.payload.kernel).toEqual(fixture.payload.kernel);
-      expect(result.value.payload.construction).toEqual(fixture.payload.construction);
+      expect(result.value.payload.construction).toEqual({ ...fixture.payload.construction,
+        newerActionThanTheStackTop: false, orderRevisions: {} });
       // The migration never mutates the fixture object it was handed.
       expect(JSON.stringify(fixture)).toBe(before);
     });

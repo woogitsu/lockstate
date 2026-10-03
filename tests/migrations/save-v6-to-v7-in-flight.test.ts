@@ -21,7 +21,8 @@ function envelopeFrom(payload: SaveEnvelopeV6['payload']): SaveEnvelopeV6 {
 
 function capturedV6(): SaveEnvelopeV6 {
   const bundle = captureSessionSnapshot(createNewSimulationRuntime(0x1376));
-  return envelopeFrom(bundle as SaveEnvelopeV6['payload']);
+  const { newerActionThanTheStackTop: _marker, orderRevisions: _revisions, ...construction } = bundle.construction;
+  return envelopeFrom({ ...bundle, construction } as SaveEnvelopeV6['payload']);
 }
 
 describe('V6 to V7 in-flight migration', () => {

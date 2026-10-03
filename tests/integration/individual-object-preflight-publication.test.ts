@@ -62,7 +62,7 @@ it('refreshes a stationary ghost after a REAL paused pending claim, then drops r
   const actual = saved.payload.snapshot.data as unknown as SessionSnapshotBundle;
   const envelope = createSaveEnvelope({ gameVersion: 'object-preflight', prisonId: 'object-preflight',
     revision: 1, createdAt: 0, updatedAt: 1, ...actual });
-  expect(envelope.saveSchemaVersion).toBe(8);
+  expect(envelope.saveSchemaVersion).toBe(9);
   const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope))); expectOk(decoded, 'actual worker pending purchase V8');
   expect(captureSessionSnapshot(restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle).runtime)).toEqual(actual);
   delay = true; tool.target(undefined); aim(); tool.setArmed(false);

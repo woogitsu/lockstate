@@ -108,6 +108,7 @@ function v5EnvelopeWithASession(): SaveEnvelopeV5 {
   const runtime = createNewSimulationRuntime(0x5ca1e);
   while (runtime.kernel.tick < 20) runtime.kernel.step();
   const bundle = captureSessionSnapshot(runtime);
+  const { newerActionThanTheStackTop: _marker, orderRevisions: _revisions, ...historicalConstruction } = bundle.construction;
   if (bundle.simulation === undefined) throw new Error('a captured session must carry a simulation section');
 
   const { regimeSchedules: _regimeSchedules, inFlight: _inFlight, ...simulation } = bundle.simulation;
@@ -115,7 +116,7 @@ function v5EnvelopeWithASession(): SaveEnvelopeV5 {
     ...(bundle.masterSeed === undefined ? {} : { masterSeed: bundle.masterSeed }),
     kernel: bundle.kernel,
     world: bundle.world,
-    construction: bundle.construction,
+    construction: historicalConstruction,
     ...(bundle.entities === undefined ? {} : { entities: bundle.entities }),
     simulation,
     ...(bundle.identity === undefined ? {} : { identity: bundle.identity }),

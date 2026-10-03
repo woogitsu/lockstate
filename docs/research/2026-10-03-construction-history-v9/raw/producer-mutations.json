@@ -1,0 +1,34 @@
+{
+  "checkpoint": "f374555e0ffc44c68d34636e2b39a42213080344",
+  "source": "src/simulation/construction/system.ts",
+  "beforeSha256": "f8a8bfee9cc587aa9b20a291d787c1c57c6907f504d53f305ef17f73138b21ce",
+  "restoredSha256": "f8a8bfee9cc587aa9b20a291d787c1c57c6907f504d53f305ef17f73138b21ce",
+  "rows": [
+    {
+      "name": "capture-marker",
+      "exitCode": 1,
+      "expectedFailures": 1,
+      "negativeSha256": "c3372c186453a621ba3ade3651851294ff6adc909b541152a84c9519acd62a57",
+      "initialHarnessExpectation": 1
+    },
+    {
+      "name": "capture-revisions",
+      "exitCode": 1,
+      "expectedFailures": 4,
+      "negativeSha256": "7d6c3c80e62df0c1daf40a4407bbf9d68c180c411dfcbdf8e88d9668f06b0f48",
+      "initialHarnessExpectation": 2
+    },
+    {
+      "name": "restore-marker",
+      "exitCode": 1,
+      "expectedFailures": 1,
+      "negativeSha256": "c9d2159b6bf5c0f3753bc7653ab6a3b6657ae1b3c2a527cf436e1d622af623ef"
+    },
+    {
+      "name": "restore-revisions",
+      "exitCode": 1,
+      "expectedFailures": 4,
+      "negativeSha256": "da36912fcca48520f5077d6ac406c91893bac25454472ff30ccf6d1b005944a9"
+    }
+  ]
+}

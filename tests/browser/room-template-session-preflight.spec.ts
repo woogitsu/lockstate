@@ -150,7 +150,7 @@ async function exportSaved(page: Page) {
   const path = await (await download).path();
   if (path === null) throw Error('Actual exported save absent');
   const raw: unknown = JSON.parse(await readFile(path, 'utf8'));
-  expect(raw).toMatchObject({ saveSchemaVersion: 8 });
+  expect(raw).toMatchObject({ saveSchemaVersion: 9 });
   const decoded = decodeSaveEnvelope(raw);
   expect(decoded.ok).toBe(true);
   if (!decoded.ok) throw Error('Actual player-exported V8 must decode');

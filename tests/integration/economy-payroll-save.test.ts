@@ -366,10 +366,11 @@ describe('the historical chain still walks a save older than the field', () => {
     // too, since issue #1373, and for the same reason.
     const { objects: _objects, alerts: _alerts, regimeSchedules: _regimeSchedules, inFlight: _inFlight, ...simulation } = captured.simulation;
     const { payroll: _payroll, ...economy } = captured.economy;
+    const { newerActionThanTheStackTop: _marker, orderRevisions: _revisions, ...historicalConstruction } = bundle.construction;
     const payload = {
       kernel: bundle.kernel,
       world: bundle.world,
-      construction: bundle.construction,
+      construction: historicalConstruction,
       ...(bundle.entities === undefined ? {} : { entities: bundle.entities }),
       simulation: {
         ...simulation,
@@ -412,7 +413,7 @@ describe('the historical chain still walks a save older than the field', () => {
 });
 
 describe('the version this all rests on', () => {
-  it('is 8, and no subsequent bump was payroll\'s', () => {
+  it('is 9, and no subsequent bump was payroll\'s', () => {
     // Pinned rather than deleted, for the reason
     // `economy-state-income-persistence.test.ts` gives about the same number:
     // what this guards is that a bump has a reason, not that the number never
@@ -422,6 +423,7 @@ describe('the version this all rests on', () => {
     // precisely because its absence is *not* unambiguous once a schedule can be
     // edited. Version 7 relocates travel fields (#1459), still unrelated to
     // payroll's optional section. V8 records exact object construction ownership (#1975).
-    expect(SAVE_SCHEMA_VERSION).toBe(8);
+    // V9 preserves the newer-action marker and revision counters (#1985/#2021).
+    expect(SAVE_SCHEMA_VERSION).toBe(9);
   });
 });

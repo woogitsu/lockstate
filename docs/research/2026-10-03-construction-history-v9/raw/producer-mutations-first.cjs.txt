@@ -1,0 +1,16 @@
+﻿const fs=require('fs'), path=require('path'),cp=require('child_process'),crypto=require('crypto');
+const cwd=process.argv[2], source=path.join(cwd,'src/simulation/construction/system.ts'), original=fs.readFileSync(source);
+const dir=path.join(cwd,'docs/research/2026-10-03-construction-history-v9/raw');
+const hash=b=>crypto.createHash('sha256').update(b).digest('hex');
+const cases=[
+ ['capture-marker','newerActionThanTheStackTop: this.newerActionThanTheStackTop,','newerActionThanTheStackTop: false,',1],
+ ['capture-revisions','orderRevisions: Object.fromEntries([...this.orderRevisions].sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)),','orderRevisions: {},',2],
+ ['restore-marker','this.newerActionThanTheStackTop = data.newerActionThanTheStackTop ?? false;','this.newerActionThanTheStackTop = false;',1],
+ ['restore-revisions','this.orderRevisions = new Map(Object.entries(data.orderRevisions ?? {}));','this.orderRevisions = new Map();',2],
+];
+const rows=[];
+function run(label){const r=cp.spawnSync(process.execPath,['node_modules/vitest/vitest.mjs','run','tests/integration/room-template-queued-cancellation-save.test.ts','tests/integration/construction-newer-action-save.test.ts','--maxWorkers=2'],{cwd,encoding:'utf8',env:{...process.env,NO_COLOR:'1'},maxBuffer:12*1024*1024});const out=r.stdout+r.stderr;fs.writeFileSync(path.join(dir,label+'.txt'),out);return {status:r.status,out};}
+try {
+ for(const [name,from,to,expected] of cases){const txt=original.toString('utf8');if(txt.split(from).length!==2)throw Error('Nonunique '+name);fs.writeFileSync(source,txt.replace(from,to));const r=run('negative-'+name);rows.push({name,exitCode:r.status,expectedFailures:expected,negativeSha256:hash(fs.readFileSync(source))});if(r.status!==1 || !r.out.includes(expected+' failed')) throw Error('Mutation did not fail as expected '+name);fs.writeFileSync(source,original);if(hash(fs.readFileSync(source))!==hash(original))throw Error('Byte restore failed');}
+} finally {fs.writeFileSync(source,original);fs.writeFileSync(path.join(dir,'producer-mutations.json'),JSON.stringify({checkpoint:'f374555e0ffc44c68d34636e2b39a42213080344',source:'src/simulation/construction/system.ts',beforeSha256:hash(original),restoredSha256:hash(fs.readFileSync(source)),rows},null,2));}
+const restored=run('producer-restored');if(restored.status!==0)throw Error('Restored tests failed');console.log(JSON.stringify(rows), 'restored exit0',hash(original));

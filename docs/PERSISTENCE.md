@@ -158,6 +158,29 @@ is tested explicitly and is not a blanket claim that every legacy order is
 protected. Unlike the optional additions above, the owner approved a V8 boundary
 for this changed legacy reversal behavior. No cloud database migration is added.
 
+**V9 construction continuity, owner-approved 2026-10-03
+([#1985](https://github.com/woogitsu/lockstate/issues/1985),
+[#2021](https://github.com/woogitsu/lockstate/issues/2021)).**
+The approved package and original failures are recorded in
+[the decision and proof](./research/2026-10-03-construction-history-v9/README.md).
+`payload.construction.newerActionThanTheStackTop` records the existing boolean;
+optional `payload.construction.orderRevisions` records every exact Map entry as
+an own-key JSON object: nonempty order IDs, integer values from zero through
+`Number.MAX_SAFE_INTEGER`. Explicit zero, terminal/nonexisting-order counters
+and prototype-like keys are preserved. No ownership is inferred.
+
+Historical V1–V8 validators remain frozen. V8→V9 clones the validated raw payload
+and supplies false and `{}` for the absent fields, preserving every other value,
+including owners, template history and queued command tokens. Current capture
+and restore carry the live ledger and marker before any queued command executes.
+Matching and stale tokens still use the existing exact-revision comparison and
+refusal; Undo still follows the existing newer-action rule. Refunds and messages
+are unchanged. Historical saves did not record these values, so their approved
+defaults cannot reconstruct them: later state transitions may advance an old
+zero counter to a coincidentally matching queued token. Migration does not guess
+old counters or rewrite commands, and this is not a blanket safe-stale guarantee
+for historical queues. No cloud database migration is added.
+
 **The ninth is the one whose bump was authorised and not spent, which is the
 case this section had not yet had.** The owner's #589 ruling said
 `SAVE_SCHEMA_VERSION` would move by one field. It does not, because the three

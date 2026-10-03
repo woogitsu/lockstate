@@ -58,7 +58,7 @@ it.each([0, 1] as const)('builds literal public Garbage Room q%s owners and squa
   expect(Object.fromEntries(materials)).toEqual({ 'item.brick': 92, 'item.wood-plank': 8 });
   const envelope = createSaveEnvelope({ gameVersion: 'garbage-native-preparation', prisonId: `garbage-q${turns}`,
     revision: 1, createdAt: 0, updatedAt: 1, ...before });
-  expect(envelope.saveSchemaVersion).toBe(8);
+  expect(envelope.saveSchemaVersion).toBe(9);
   const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope)));
   expect(decoded.ok).toBe(true);
   if (!decoded.ok) throw new Error('Actual completed Garbage Room V8 save refused');

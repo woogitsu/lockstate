@@ -131,7 +131,8 @@ describe('the V1 -> V5 chain carries every V1 field, link by link', () => {
       expect(result.value.saveSchemaVersion).toBe(SAVE_SCHEMA_VERSION);
       expect(result.value.payload.kernel).toEqual(fixture.payload.kernel);
       expect(result.value.payload.world).toEqual(fixture.payload.world);
-      expect(result.value.payload.construction).toEqual(fixture.payload.construction);
+      expect(result.value.payload.construction).toEqual({ ...fixture.payload.construction,
+        newerActionThanTheStackTop: false, orderRevisions: {} });
 
       // Metadata is untouched by every step (each spreads `...metadata`).
       expect(result.value.gameVersion).toBe(fixture.gameVersion);

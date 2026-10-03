@@ -58,7 +58,7 @@ it.each([0, 1] as const)('builds literal public Reception Room q%s owners and sq
   expect(Object.fromEntries(materials)).toEqual({ 'item.brick': 106, 'item.wood-plank': 12 });
   const envelope = createSaveEnvelope({ gameVersion: 'reception-native-preparation', prisonId: `reception-q${turns}`,
     revision: 1, createdAt: 0, updatedAt: 1, ...before });
-  expect(envelope.saveSchemaVersion).toBe(8);
+  expect(envelope.saveSchemaVersion).toBe(9);
   const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope)));
   expect(decoded.ok).toBe(true);
   if (!decoded.ok) throw new Error('Actual completed Reception Room V8 save refused');
