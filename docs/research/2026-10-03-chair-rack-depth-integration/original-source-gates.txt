@@ -1,0 +1,97 @@
+pnpm : $ vitest run "tests/unit/oblique-wooden-chair-detail-integrity.test.ts" "tests/unit/oblique-generic-rack-detail-
+integrity.test.ts" "tests/unit/oblique-pending-wall-depth.test.ts" "tests/integration/search-target-departure.test.ts" 
+"tests/foundation/browser-suite-partition-contract.test.ts" "tests/foundation/research-index-contract.test.ts" "tests/f
+oundation/documentation-commit-citation-contract.test.ts" "tests/foundation/adr-quotation-verbatim-contract.test.ts" "t
+ests/foundation/documentation-anchor-quotation-contract.test.ts" "--maxWorkers=2"
+At line:6 char:1
++ pnpm --config.verify-deps-before-run=false test $cases --maxWorkers=2 ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...--maxWorkers=2":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-chair-rack-depth-integration-20261003
+
+ ❯ tests/foundation/research-index-contract.test.ts (5 tests | 1 failed) 1721ms
+     × names every collection of records that lives in a subdirectory 1694ms
+ ❯ tests/foundation/documentation-commit-citation-contract.test.ts (8 tests | 2 failed) 25ms
+     × resolves every cited commit 4ms
+     × cites only commits this repository publishes, so CI reads the same history a reader can 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/foundation/documentation-commit-citation-contract.test.ts > a commit sha cited in prose names a commit tha
+t exists > resolves every cited commit
+AssertionError: these cite a commit that does not exist in this repository. A sha is how a claim about a tree stops exp
+iring, so a sha that names nothing is a claim that can never be checked -- and `git cat-file -e <sha>^{commit}` before 
+writing one is two seconds. If a citation is real but unreachable from any published branch or tag, it belongs in UNPUB
+LISHED_BY_ORIGIN with the reason, not here: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/research/2026-10-03-generic-rack-physical-detail/README.md:19 -> 9e2066aef7ef",
++ ]
+
+ ❯ tests/foundation/documentation-commit-citation-contract.test.ts:726:7
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  tests/foundation/documentation-commit-citation-contract.test.ts > a commit sha cited in prose names a commit tha
+t exists > cites only commits this repository publishes, so CI reads the same history a reader can
+AssertionError: these cite a commit that exists on this disk and on no ref this repository publishes, so nobody else ca
+n check them and CI cannot either: `fetch-depth: 0` fetches all history for every published branch and tag and nothing 
+more. The usual cause is a sha read out of an agent's own worktree before the coordinator cherry-picked it, which rewri
+tes it -- `git branch -r --contains <sha>` tells you. Cite the commit as published, or record it in UNPUBLISHED_BY_ORIG
+IN with what it is and why the anchor cannot move: expected [ …(4) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/research/2026-10-03-angled-pending-wall-depth/README.md:3 -> 1ffc57d1e9ca71f0b44ef769fe5228313a17adb3",
++   "docs/research/2026-10-03-angled-pending-wall-depth/README.md:3 -> e83743bd2d1236b3c2714baaf6540606a65340ec",
++   "docs/research/2026-10-03-generic-rack-physical-detail/README.md:42 -> bd850f86d616bb7367096b23cee381940bd1b259",
++   "docs/research/2026-10-03-wooden-chair-physical-detail/README.md:46 -> 7e6e1567eb4e07fe691ee8310c3f7496f02b38e6",
++ ]
+
+ ❯ tests/foundation/documentation-commit-citation-contract.test.ts:748:7
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  tests/foundation/research-index-contract.test.ts > research index contract > names every collection of records t
+hat lives in a subdirectory
+AssertionError: expected [ …(3) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/research/2026-10-03-angled-pending-wall-depth/ holds records the index neither rows nor links to",
++   "docs/research/2026-10-03-generic-rack-physical-detail/ holds records the index neither rows nor links to",
++   "docs/research/2026-10-03-wooden-chair-physical-detail/ holds records the index neither rows nor links to",
++ ]
+
+ ❯ tests/foundation/research-index-contract.test.ts:195:21
+    193|       );
+    194|
+    195|     expect(unnamed).toEqual([]);
+       |                     ^
+    196|   });
+    197|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  2 failed | 7 passed (9)
+      Tests  3 failed | 75 passed (78)
+   Start at  04:50:16
+   Duration  16.78s (transform 2.63s, setup 0ms, import 19.03s, tests 3.23s, environment 0ms)
+
+[ELIFECYCLE] Test failed. See above for more details.

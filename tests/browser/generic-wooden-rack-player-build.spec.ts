@@ -1,5 +1,6 @@
 // Genuine native generic rack routes, calibrated independent pixels and Save/Load.
 import { writeFile } from 'node:fs/promises';
+import { assertOwnedObjectOrders, recordOwnedObjectSnapshot, type ExpectedOwnedObject } from './owned-object-worker-evidence';
 import { expect, test as base, type Page } from './network-changed-fixture';
 import { buy, installTee, sentCommands } from './playtest-harness';
 
@@ -226,6 +227,17 @@ test(`player reaches default generic racks at quarterTurns${quarterTurns} and re
   await minimap.click({ position: { x: bounds.width * 23 / 32, y: bounds.height * 8 / 32 } });
   await page.mouse.move(1300, 700);
   const completed = await page.screenshot({ path: info.outputPath('generic-wooden-rack-worker-completed-fullhd.png') });
+  const bought = (await sentCommands(page)).filter(command => command.type === 'PlaceObject');
+  for (const command of bought) expect(typeof command.orderId).toBe('string');
+  const owned: readonly ExpectedOwnedObject[] = quarterTurns === 0 ? [
+    { anchorTile: { x: 23, y: 6 }, orientation: 0, sourceOrderId: String(bought[0]!.orderId) },
+    { anchorTile: { x: 24, y: 7 }, orientation: 0, sourceOrderId: String(bought[1]!.orderId) },
+  ] : [
+    { anchorTile: { x: 23, y: 6 }, orientation: 1, sourceOrderId: 'room-template-000000000002-2-object-000' },
+    { anchorTile: { x: 23, y: 8 }, orientation: 1, sourceOrderId: 'room-template-000000000002-2-object-001' },
+  ];
+  const completedData = await recordOwnedObjectSnapshot(page, info.outputPath('completed-worker-snapshot.json'));
+  assertOwnedObjectOrders(completedData, 'object.storage-rack', 'storage-rack-wooden', owned);
   const beforePixels = await rackPixels(page, completed, quarterTurns);
   await writeFile(info.outputPath('worker-and-completed-save-evidence.json'), JSON.stringify({
     quarterTurns, actualBefore, beforePixels, commands: (await sentCommands(page)).filter(c => ['PlaceRoomTemplate', 'PlaceObject', 'UnzoneRoom'].includes(String(c.type))),
@@ -243,6 +255,9 @@ test(`player reaches default generic racks at quarterTurns${quarterTurns} and re
   await minimap.click({ position: { x: bounds.width * 23 / 32, y: bounds.height * 8 / 32 } });
   await page.mouse.move(1300, 700);
   const loaded = await page.screenshot({ path: info.outputPath('generic-wooden-rack-loaded-fullhd.png') });
+  const loadedData = await recordOwnedObjectSnapshot(page, info.outputPath('loaded-worker-snapshot.json'));
+  assertOwnedObjectOrders(loadedData, 'object.storage-rack', 'storage-rack-wooden', owned);
+  expect(loadedData).toEqual(completedData);
   const afterPixels = await rackPixels(page, loaded, quarterTurns);
   afterPixels.forEach((count, index) => expect.soft(count, `rack${index + 1} authored timber after Load`)
     .toBeGreaterThan(quarterTurns === 0 ? 200 : 70));
@@ -253,6 +268,11 @@ test(`player reaches default generic racks at quarterTurns${quarterTurns} and re
     commands: (await sentCommands(page)).filter(c => ['PlaceRoomTemplate', 'PlaceObject', 'UnzoneRoom'].includes(String(c.type))),
   }, null, 2));
   await info.attach('generic-wooden-rack-worker-and-save-evidence', { path: evidencePath, contentType: 'application/json' });
+
+  // Real native pose changes expose the authored support hardware after Load.
+  for (let step = 0; step < 3; step++) await page.getByRole('button', { name: quarterTurns === 0 ? 'Rotate camera right' : 'Rotate camera left', exact: true }).click();
+  await page.mouse.move(1300, 700);
+  await page.screenshot({ path: info.outputPath('physical-hardware-loaded-fullhd.png') });
 
 });
 }

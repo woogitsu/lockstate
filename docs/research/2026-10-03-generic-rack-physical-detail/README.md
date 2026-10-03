@@ -16,7 +16,7 @@ Exact centered bounds before/after: `[-0.49500030279159546,-0.4549993872642517,0
 
 Initial new brace build stopped before saving: its cross-section rotation exceeded rear Y bounds. Corrected the newly authored brace cross-section; the strict bounds gate remains. The retained source had no such defect.
 
-Blender5.2.1LTS upstream build ID `9e2066aef7ef`; executable SHA256 `284f4041f98e113f3dc10654a7193ffaaa9bfdfec8b87fa116620a48b5f6d4cb`.
+Blender5.2.1LTS upstream build metadata build_hash=9e2066aef7ef; executable SHA256 `284f4041f98e113f3dc10654a7193ffaaa9bfdfec8b87fa116620a48b5f6d4cb`.
 
 ## Acceptance boundary
 
