@@ -17,4 +17,4 @@ export default defineConfig({
 });
 `, 'utf8');
 console.log(`Prepared opt-in actual built-client recipe: ${path}`);
-console.log('Inherited 60s cases/expect10s/workers1/retries0. No build/browser/server started. Root must first register/map the dedicated Reception Room asset.');
+console.log('Inherited 60s cases/expect10s/workers1/retries0. No build/browser/server started. Requires the integrated Reception waiting-armchair AND registration-desk models in the actual production build.');
