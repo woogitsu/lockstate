@@ -1,45 +1,21 @@
 {
-  "schemaVersion": 1,
-  "assetId": "furniture.common-room.upholstered-bench",
-  "source": "assets/source/blender/furniture.common-room.upholstered-bench.soft-light.blend",
+  "genuineBlenderVersion": [
+    5,
+    2,
+    1
+  ],
+  "engine": "CYCLES",
+  "device": "CPU",
+  "threads": 1,
+  "samples": 64,
+  "seed": 0,
+  "adaptiveSampling": false,
+  "denoising": false,
+  "viewTransform": "AgX",
+  "actualExportSeconds": 73.93335759994807,
+  "realRenderCount": 72,
   "sourceSha256": "70be43170198172589904862ed627e0c3360be9da4788fb93098feb7b4ecb4c7",
-  "resolutionPx": [
-    256,
-    256
-  ],
-  "nominalPixelsPerTile": 64,
-  "pivotPx": [
-    128,
-    128
-  ],
-  "cameraTargetTiles": [
-    1.0,
-    0.5,
-    0.52
-  ],
-  "projection": "orthographic",
-  "yawDegrees": [
-    0,
-    30,
-    60,
-    90,
-    120,
-    150,
-    180,
-    210,
-    240,
-    270,
-    300,
-    330
-  ],
-  "elevationDegrees": [
-    20,
-    30,
-    40,
-    50,
-    60,
-    70
-  ],
+  "descriptorSha256": "9e3f229fd79302f2164a1152e7f429d5274e68dfb448601f858aaacad70ede11",
   "frames": [
     {
       "yawDegrees": 0,
@@ -473,5 +449,7 @@
       "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+330-elev70.4ab09054d829.png",
       "sha256": "4ab09054d8291da2cdf2049d5f56f016160ace45d58d9c9fe99da20287adf8bf"
     }
-  ]
+  ],
+  "groundPlaneAdded": false,
+  "nativeAcceptance": false
 }

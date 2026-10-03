@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-common-room-cycles-20261003
+
+·········
+
+ Test Files  3 passed (3)
+      Tests  9 passed (9)
+   Start at  23:39:55
+   Duration  808ms (transform 365ms, setup 0ms, import 841ms, tests 107ms, environment 0ms)
