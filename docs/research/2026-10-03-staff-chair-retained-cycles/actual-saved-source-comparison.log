@@ -1,0 +1,12 @@
+00:01.531  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-retained-cycles-production-20261003\assets\source\blender\furniture.staff-room.padded-chair.blend"
+STAFF_ROOM_CHAIR_SOURCE_GREEN 54 meshes/3 actual contacts/all original materials/four occupied turns
+00:02.141  render           | Saved: 'C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-retained-cycles-production-20261003\docs\research\2026-10-03-staff-chair-retained-cycles\before-workbench-yaw60-elev40.png'
+00:02.312  render           | Saved: 'C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-retained-cycles-production-20261003\docs\research\2026-10-03-staff-chair-retained-cycles\before-workbench-yaw300-elev40.png'
+00:03.437  render           | Saved: 'C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-retained-cycles-production-20261003\docs\research\2026-10-03-staff-chair-retained-cycles\after-soft-materials-yaw60-elev40.png'
+00:04.344  render           | Saved: 'C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-retained-cycles-production-20261003\docs\research\2026-10-03-staff-chair-retained-cycles\after-soft-materials-yaw300-elev40.png'
+KITCHEN_BOUNDS furniture.staff-room.padded-chair [0.11400030553340912, 0.014750592410564423, 0.0] [0.8859996795654297, 0.9852507710456848, 1.3200000524520874]
+Info: Saved as "furniture.staff-room.padded-chair.soft-light.blend"
+STAFF_CYCLES_GENUINE_SAVED_SOURCE_COMPARE_GREEN 2dde0a33689685fd067c124c82b7b88b31c606d6c950a0789903e1b0b4b0e934
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
