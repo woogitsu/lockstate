@@ -46,8 +46,10 @@ it('retains every104-part generic rack mesh and twelve full shader graphs with s
 
 it('loads the dedicated descriptor and decodes 72 complete unclipped canonical PNG poses', () => {
   const catalog = parseObliqueModuleCatalog(json('public/game-content/oblique-furniture-laundry-linen-rack.v1.json'));
-  expect(catalog.assetId).toBe(provenance.assetId); expect(catalog.source).toBe(provenance.source);
-  expect(catalog.sourceSha256).toBe(provenance.sourceSha256);
+  expect(catalog.assetId).toBe(provenance.assetId);
+  expect(catalog.source).toBe('assets/source/blender/furniture.laundry.linen-rack.soft-light.blend');
+  expect(catalog.sourceSha256).toBe('2916717c4dd17d7be39a5725858b2356e53181cb735f2faeb28963d0adafa299');
+  expect(sourceHash(readFileSync(new URL(catalog.source, root)))).toBe(catalog.sourceSha256);
   expect(catalog.resolutionPx).toEqual([256, 256]); expect(catalog.pivotPx).toEqual([128, 128]);
   expect(catalog.nominalPixelsPerTile).toBe(64); expect(catalog.cameraTargetTiles).toEqual(provenance.cameraTargetTiles);
   expect(catalog.yawDegrees).toEqual(Array.from({ length: 12 }, (_, i) => i * 30));

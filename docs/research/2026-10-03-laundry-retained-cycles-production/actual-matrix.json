@@ -1,45 +1,21 @@
 {
-  "schemaVersion": 1,
-  "assetId": "furniture.laundry.linen-rack",
-  "source": "assets/source/blender/furniture.laundry.linen-rack.soft-light.blend",
+  "genuineBlenderVersion": [
+    5,
+    2,
+    1
+  ],
+  "engine": "CYCLES",
+  "device": "CPU",
+  "threads": 1,
+  "samples": 64,
+  "seed": 0,
+  "adaptiveSampling": false,
+  "denoising": false,
+  "viewTransform": "AgX",
+  "actualExportSeconds": 84.89337030000752,
+  "realRenderCount": 72,
   "sourceSha256": "2916717c4dd17d7be39a5725858b2356e53181cb735f2faeb28963d0adafa299",
-  "resolutionPx": [
-    256,
-    256
-  ],
-  "nominalPixelsPerTile": 64,
-  "pivotPx": [
-    128,
-    128
-  ],
-  "cameraTargetTiles": [
-    0.5,
-    0.5,
-    0.7039999961853027
-  ],
-  "projection": "orthographic",
-  "yawDegrees": [
-    0,
-    30,
-    60,
-    90,
-    120,
-    150,
-    180,
-    210,
-    240,
-    270,
-    300,
-    330
-  ],
-  "elevationDegrees": [
-    20,
-    30,
-    40,
-    50,
-    60,
-    70
-  ],
+  "descriptorSha256": "92928c0b7ce2e9d18959940fd0f70509ab0e09d3a2816bf4bc8a55d9fcc3eb14",
   "frames": [
     {
       "yawDegrees": 0,
@@ -473,5 +449,7 @@
       "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+330-elev70.442d4d746c83.png",
       "sha256": "442d4d746c83f010ce6dc2fd9d5f4916a57afc4f2f1f92659ec35d4501bbd132"
     }
-  ]
+  ],
+  "groundPlaneAdded": false,
+  "nativeAcceptance": false
 }
