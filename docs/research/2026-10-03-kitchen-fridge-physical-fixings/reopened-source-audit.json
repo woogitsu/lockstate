@@ -1,0 +1,1005 @@
+{
+  "sourceSha256": "0cb6861e636324cf4d1e6ad35c1739cbac6068f32eb702244f5ddb196715f3d5",
+  "actual97RawMeshesExactlyMatch": true,
+  "allSixFullGraphsMatch": true,
+  "allActualEvaluatedPositionHashesMatch": true,
+  "actualContactTargets": {
+    "physical-kitchen-fridge.handle fixing collar 0": "angled-fridge.handle standoff 0",
+    "physical-kitchen-fridge.handle fixing collar 1": "angled-fridge.handle standoff 1",
+    "physical-kitchen-fridge.handle fixing collar 2": "angled-fridge.handle standoff 2",
+    "physical-kitchen-fridge.handle fixing collar 3": "angled-fridge.handle standoff 3",
+    "physical-kitchen-fridge.handle retaining head 0": "physical-kitchen-fridge.handle fixing collar 0",
+    "physical-kitchen-fridge.handle retaining head 1": "physical-kitchen-fridge.handle fixing collar 1",
+    "physical-kitchen-fridge.handle retaining head 2": "physical-kitchen-fridge.handle fixing collar 2",
+    "physical-kitchen-fridge.handle retaining head 3": "physical-kitchen-fridge.handle fixing collar 3",
+    "physical-kitchen-fridge.hinge barrel endcap 0 -1": "angled-fridge.hinge barrel 0",
+    "physical-kitchen-fridge.hinge barrel endcap 0 1": "angled-fridge.hinge barrel 0",
+    "physical-kitchen-fridge.hinge barrel endcap 1 -1": "angled-fridge.hinge barrel 1",
+    "physical-kitchen-fridge.hinge barrel endcap 1 1": "angled-fridge.hinge barrel 1",
+    "physical-kitchen-fridge.hinge barrel endcap 2 -1": "angled-fridge.hinge barrel 2",
+    "physical-kitchen-fridge.hinge barrel endcap 2 1": "angled-fridge.hinge barrel 2",
+    "physical-kitchen-fridge.hinge barrel endcap 3 -1": "angled-fridge.hinge barrel 3",
+    "physical-kitchen-fridge.hinge barrel endcap 3 1": "angled-fridge.hinge barrel 3",
+    "physical-kitchen-fridge.hinge plate fixing 0 -0.016": "angled-fridge.hinge plate 0",
+    "physical-kitchen-fridge.hinge plate fixing 0 0.016": "angled-fridge.hinge plate 0",
+    "physical-kitchen-fridge.hinge plate fixing 1 -0.016": "angled-fridge.hinge plate 1",
+    "physical-kitchen-fridge.hinge plate fixing 1 0.016": "angled-fridge.hinge plate 1",
+    "physical-kitchen-fridge.hinge plate fixing 2 -0.016": "angled-fridge.hinge plate 2",
+    "physical-kitchen-fridge.hinge plate fixing 2 0.016": "angled-fridge.hinge plate 2",
+    "physical-kitchen-fridge.hinge plate fixing 3 -0.016": "angled-fridge.hinge plate 3",
+    "physical-kitchen-fridge.hinge plate fixing 3 0.016": "angled-fridge.hinge plate 3"
+  },
+  "evaluatedNormalAudit": [
+    {
+      "name": "angled-fridge.freezer gasket horizontal 1.54",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.00499996542930603,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.freezer gasket horizontal 2.26",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.00499996542930603,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.freezer gasket vertical -1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.00499996542930603,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.freezer gasket vertical 1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.00499996542930603,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.fridge gasket horizontal 0.27",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.00499996542930603,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.fridge gasket horizontal 1.575",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.00499996542930603,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.fridge gasket vertical -1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.00499996542930603,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.fridge gasket vertical 1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.00499996542930603,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.front grille blade 0",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.003999992739409208,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.front grille blade 1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.003999985288828611,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.front grille blade 2",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.003999962937086821,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.front grille blade 3",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.0039999778382480145,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.front grille blade 4",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.003999992739409208,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.front grille blade 5",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.003999962937086821,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.front grille recess",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.009000003337860107,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.handle standoff 0",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.010999917984008789,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.handle standoff 1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.010999917984008789,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.handle standoff 2",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.010999917984008789,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.handle standoff 3",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.010999917984008789,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.hinge barrel 0",
+      "evaluatedVertices": 32,
+      "evaluatedPolygons": 18,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 18,
+      "minimumOutwardNormalDistance": 0.008827039622701705,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.hinge barrel 1",
+      "evaluatedVertices": 32,
+      "evaluatedPolygons": 18,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 18,
+      "minimumOutwardNormalDistance": 0.008827039593597874,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.hinge barrel 2",
+      "evaluatedVertices": 32,
+      "evaluatedPolygons": 18,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 18,
+      "minimumOutwardNormalDistance": 0.008827039593597874,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.hinge barrel 3",
+      "evaluatedVertices": 32,
+      "evaluatedPolygons": 18,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 18,
+      "minimumOutwardNormalDistance": 0.008827039593597874,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.hinge plate 0",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.011499880813062191,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.hinge plate 1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.011499880813062191,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.hinge plate 2",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.011499880813062191,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.hinge plate 3",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.011499881744384766,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.protective plinth lip",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.010999888181686401,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.side vent louvre -1 0",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.0029999911785125732,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.side vent louvre -1 1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.0029999911785125732,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.side vent louvre -1 2",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.003000006079673767,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.side vent louvre -1 3",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.0029999613761901855,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.side vent louvre -1 4",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.002999931573867798,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.side vent louvre -1 5",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.0029998719692230225,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.side vent louvre -1 6",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.00299990177154541,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.side vent louvre -1 7",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.0029999911785125732,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.side vent louvre 1 0",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.0029999911785125732,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.side vent louvre 1 1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.0029999911785125732,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.side vent louvre 1 2",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.003000006079673767,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.side vent louvre 1 3",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.0029999613761901855,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.side vent louvre 1 4",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.002999931573867798,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.side vent louvre 1 5",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.0029998719692230225,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.side vent louvre 1 6",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.00299990177154541,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.side vent louvre 1 7",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.0029999911785125732,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.side vent recess -1 0",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.003999948501586914,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.side vent recess -1 1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.003999948501586914,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.side vent recess -1 2",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.003999948501586914,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.side vent recess -1 3",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.003999948501586914,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.side vent recess -1 4",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.003999948501586914,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.side vent recess -1 5",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.003999948501586914,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.side vent recess -1 6",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.003999948501586914,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.side vent recess -1 7",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.003999948501586914,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.side vent recess 1 0",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.003999829292297363,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.side vent recess 1 1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.003999829292297363,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.side vent recess 1 2",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.003999829292297363,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.side vent recess 1 3",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.003999829292297363,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.side vent recess 1 4",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.003999829292297363,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.side vent recess 1 5",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.003999829292297363,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.side vent recess 1 6",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.003999829292297363,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.side vent recess 1 7",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.003999829292297363,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.status bezel horizontal 2.141",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.0024995803833007812,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.status bezel horizontal 2.219",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.0024993419647216797,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.status bezel vertical -1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.0024999380111694336,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-fridge.status bezel vertical 1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.0024999380111694336,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "foot",
+      "evaluatedVertices": 96,
+      "evaluatedPolygons": 98,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 98,
+      "minimumOutwardNormalDistance": 0.04999997466802597,
+      "inwardPolygons": 0,
+      "transformDeterminant": 0.7225000262260437
+    },
+    {
+      "name": "foot.001",
+      "evaluatedVertices": 96,
+      "evaluatedPolygons": 98,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 98,
+      "minimumOutwardNormalDistance": 0.04999997466802597,
+      "inwardPolygons": 0,
+      "transformDeterminant": 0.7225000262260437
+    },
+    {
+      "name": "freezer-door",
+      "evaluatedVertices": 96,
+      "evaluatedPolygons": 98,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 98,
+      "minimumOutwardNormalDistance": 0.034000005573034286,
+      "inwardPolygons": 0,
+      "transformDeterminant": 0.7225000262260437
+    },
+    {
+      "name": "freezer-handle",
+      "evaluatedVertices": 96,
+      "evaluatedPolygons": 98,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 98,
+      "minimumOutwardNormalDistance": 0.025499820709228516,
+      "inwardPolygons": 0,
+      "transformDeterminant": 0.7225000262260437
+    },
+    {
+      "name": "fridge-body",
+      "evaluatedVertices": 96,
+      "evaluatedPolygons": 98,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 98,
+      "minimumOutwardNormalDistance": 0.38249996304512024,
+      "inwardPolygons": 0,
+      "transformDeterminant": 0.7225000262260437
+    },
+    {
+      "name": "fridge-door",
+      "evaluatedVertices": 96,
+      "evaluatedPolygons": 98,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 98,
+      "minimumOutwardNormalDistance": 0.034000009298324585,
+      "inwardPolygons": 0,
+      "transformDeterminant": 0.7225000262260437
+    },
+    {
+      "name": "fridge-handle",
+      "evaluatedVertices": 96,
+      "evaluatedPolygons": 98,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 98,
+      "minimumOutwardNormalDistance": 0.025499820709228516,
+      "inwardPolygons": 0,
+      "transformDeterminant": 0.7225000262260437
+    },
+    {
+      "name": "fridge-top",
+      "evaluatedVertices": 96,
+      "evaluatedPolygons": 98,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 98,
+      "minimumOutwardNormalDistance": 0.059999704360961914,
+      "inwardPolygons": 0,
+      "transformDeterminant": 0.7225000262260437
+    },
+    {
+      "name": "physical-kitchen-fridge.handle fixing collar 0",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 162,
+      "minimumOutwardNormalDistance": 0.005999952554702759,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "physical-kitchen-fridge.handle fixing collar 1",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 162,
+      "minimumOutwardNormalDistance": 0.005999952554702759,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "physical-kitchen-fridge.handle fixing collar 2",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 162,
+      "minimumOutwardNormalDistance": 0.005999952554702759,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "physical-kitchen-fridge.handle fixing collar 3",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 162,
+      "minimumOutwardNormalDistance": 0.005999952554702759,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "physical-kitchen-fridge.handle retaining head 0",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 162,
+      "minimumOutwardNormalDistance": 0.004499763250350952,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "physical-kitchen-fridge.handle retaining head 1",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 162,
+      "minimumOutwardNormalDistance": 0.004499763250350952,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "physical-kitchen-fridge.handle retaining head 2",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 162,
+      "minimumOutwardNormalDistance": 0.004499763250350952,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "physical-kitchen-fridge.handle retaining head 3",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 162,
+      "minimumOutwardNormalDistance": 0.004499763250350952,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "physical-kitchen-fridge.hinge barrel endcap 0 -1",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 162,
+      "minimumOutwardNormalDistance": 0.003999531269073486,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "physical-kitchen-fridge.hinge barrel endcap 0 1",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 162,
+      "minimumOutwardNormalDistance": 0.003999471664428711,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "physical-kitchen-fridge.hinge barrel endcap 1 -1",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 162,
+      "minimumOutwardNormalDistance": 0.003999114036560059,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "physical-kitchen-fridge.hinge barrel endcap 1 1",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 162,
+      "minimumOutwardNormalDistance": 0.003999233245849609,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "physical-kitchen-fridge.hinge barrel endcap 2 -1",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 162,
+      "minimumOutwardNormalDistance": 0.003998994827270508,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "physical-kitchen-fridge.hinge barrel endcap 2 1",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 162,
+      "minimumOutwardNormalDistance": 0.0039986371994018555,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "physical-kitchen-fridge.hinge barrel endcap 3 -1",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 162,
+      "minimumOutwardNormalDistance": 0.003998756408691406,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "physical-kitchen-fridge.hinge barrel endcap 3 1",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 162,
+      "minimumOutwardNormalDistance": 0.0039980411529541016,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "physical-kitchen-fridge.hinge plate fixing 0 -0.016",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 162,
+      "minimumOutwardNormalDistance": 0.00599932624027133,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "physical-kitchen-fridge.hinge plate fixing 0 0.016",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 162,
+      "minimumOutwardNormalDistance": 0.00599932624027133,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "physical-kitchen-fridge.hinge plate fixing 1 -0.016",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 162,
+      "minimumOutwardNormalDistance": 0.005999326705932617,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "physical-kitchen-fridge.hinge plate fixing 1 0.016",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 162,
+      "minimumOutwardNormalDistance": 0.005999326705932617,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "physical-kitchen-fridge.hinge plate fixing 2 -0.016",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 162,
+      "minimumOutwardNormalDistance": 0.005999326705932617,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "physical-kitchen-fridge.hinge plate fixing 2 0.016",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 162,
+      "minimumOutwardNormalDistance": 0.005999326705932617,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "physical-kitchen-fridge.hinge plate fixing 3 -0.016",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 162,
+      "minimumOutwardNormalDistance": 0.005999326705932617,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "physical-kitchen-fridge.hinge plate fixing 3 0.016",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 162,
+      "minimumOutwardNormalDistance": 0.005999326705932617,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "status-light",
+      "evaluatedVertices": 96,
+      "evaluatedPolygons": 98,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 98,
+      "minimumOutwardNormalDistance": 0.01699995994567871,
+      "inwardPolygons": 0,
+      "transformDeterminant": 0.7225000262260437
+    }
+  ],
+  "nativeBrowserStarted": false
+}
