@@ -60,7 +60,7 @@ async function setup() {
   await host.capture();
   commands.submit({ type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 10, y: 10 } });
   const saved = await host.capture();
-  expect(saved.simulation.roomTemplates?.pending).toHaveLength(1);
+  expect(saved.simulation?.roomTemplates?.pending).toHaveLength(1);
   const envelope = createSaveEnvelope({ gameVersion: 'test', prisonId: 'preflight-session', revision: 1,
     createdAt: 0, updatedAt: 1, ...saved });
   expect(envelope.saveSchemaVersion).toBe(8);
@@ -94,7 +94,7 @@ it.each((['new', 'load'] as const).flatMap(operation => [false, true].map(armed 
     sameAuthoritativeSnapshot: JSON.stringify(before) === JSON.stringify(after) }));
   try {
     expect(result).toEqual({ ok: true });
-    expect(after.simulation.roomTemplates?.pending.length).toBe((before.simulation.roomTemplates?.pending.length ?? 0) + 1);
+    expect(after.simulation?.roomTemplates?.pending.length).toBe((before.simulation?.roomTemplates?.pending.length ?? 0) + 1);
     expect(after.construction.orders).toHaveLength(before.construction.orders.length + 18);
     for (const existing of before.construction.orders) expect(after.construction.orders).toContainEqual(existing);
   } finally {
@@ -123,7 +123,7 @@ it('a delayed genuine same-session preflight submits exactly one plan', async ()
   h.clients[0]!.release();
   expect(await previous).toEqual({ ok: true });
   const after = await h.host.capture();
-  expect(after.simulation.roomTemplates?.pending).toHaveLength(2);
+  expect(after.simulation?.roomTemplates?.pending).toHaveLength(2);
   expect(h.clients[0]!.sent.filter(message => message.kind === 'simulation/submit-command')).toHaveLength(2);
   expect(after.simulation).not.toEqual(before.simulation);
   await h.host.stop();
@@ -180,4 +180,18 @@ it('an abandoned old session requester timing out cannot release a newer generat
     h.clients[0]!.release(); h.clients[1]!.release();
     await vi.advanceTimersByTimeAsync(15_000); await Promise.all([old, current]); await h.host.stop();
   }
+});
+
+it('standing down a numeric unarmed request discards its actual late clear result', async () => {
+  const h = await setup();
+  expect(h.tool.isArmed()).toBe(false);
+  h.clients[0]!.holdPreflight = true;
+  const pending = h.tool.placeAt({ x: 20, y: 10 });
+  const before = await h.host.capture();
+  h.tool.standDown(); h.clients[0]!.release();
+  try {
+    expect(await pending).toEqual({ ok: false, reason: 'busy' });
+    expect(await h.host.capture()).toEqual(before);
+    expect(h.clients[0]!.sent.filter(message => message.kind === 'simulation/submit-command')).toHaveLength(1);
+  } finally { await h.host.stop(); }
 });

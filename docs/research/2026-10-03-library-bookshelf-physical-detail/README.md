@@ -16,7 +16,7 @@ New `assets/source/blender/furniture.library.bookshelf.angled-detail.blend` SHA2
 
 Before/after exact centered fullbounds `[-0.9750000238418579,-0.5600000023841858,0]` to `[0.9750000238418579,0.4099999964237213,2.0999999046325684]`. Accepted fitX1/Y0.85 and min-corner translation(1,.5,0) give `[0.02499997615814209,0.02399998903274536,0]` to `[1.9750001430511475,0.8485000133514404,2.0999999046325684]`. Target `[1,.5,1.05]`,256px/4tile=64ppt and four authoritative2x1/1x2 rotated rectangles unchanged. Original/current dedicated native geometry verification checks allfour oriented footprints and72actualcamera transforms. Initial read-only camera helper called a nonexistent shared evaluated_points helper before verification; corrected independent evaluated-depsgraph traversal and obtained72/all4GREEN without production edits.
 
-Four actual original/new yaw0/60/180/300 at elevation40 were opened. Front shelf fixings and rear seam joiningplates are visible, original books/catalogue/wood appearance retained. These are source renders, not native gameplay screenshots. Pinned Blender5.2.1LTS upstreamID `9e2066aef7ef`; executable SHA256 `284f4041f98e113f3dc10654a7193ffaaa9bfdfec8b87fa116620a48b5f6d4cb`.
+Four actual original/new yaw0/60/180/300 at elevation40 were opened. Front shelf fixings and rear seam joiningplates are visible, original books/catalogue/wood appearance retained. These are source renders, not native gameplay screenshots. Pinned Blender5.2.1LTS upstream identifier `build_hash=9e2066aef7ef`; executable SHA256 `284f4041f98e113f3dc10654a7193ffaaa9bfdfec8b87fa116620a48b5f6d4cb`.
 
 ## First source checkpoint boundary
 

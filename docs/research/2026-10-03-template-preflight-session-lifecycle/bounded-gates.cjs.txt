@@ -1,0 +1,35 @@
+const fs = require('node:fs');
+const cp = require('node:child_process');
+const mode = process.argv[2];
+const dir = 'docs/research/2026-10-03-template-preflight-session-lifecycle';
+const neighbors = [
+  'tests/unit/ui-room-template-session-preflight.test.ts',
+  'tests/unit/ui-room-template-tool.test.ts',
+  'tests/unit/ui-room-template-dialog-status.test.ts',
+  'tests/unit/ui-room-template-world-bridge.test.ts',
+  'tests/unit/ui-room-template-preview-fit.test.ts',
+  'tests/unit/ui-renderer-template-stationary-hover.test.ts',
+  'tests/unit/ui-simulation-projections.test.ts',
+  'tests/unit/simulation-worker-channel.test.ts',
+  'tests/unit/persistence-worker-per-session-host.test.ts',
+  'tests/unit/room-template-session.test.ts',
+];
+const docs = [
+  'tests/foundation/research-index-contract.test.ts',
+  'tests/foundation/documented-wire-schema-membership-contract.test.ts',
+  'tests/foundation/documentation-version-claim-contract.test.ts',
+  'tests/foundation/documentation-source-anchor-contract.test.ts',
+  'tests/foundation/documentation-links-contract.test.ts',
+  'tests/foundation/documentation-commit-citation-contract.test.ts',
+  'tests/foundation/documentation-claims-contract.test.ts',
+  'tests/foundation/documentation-anchor-quotation-contract.test.ts',
+];
+const args = mode==='app-ts' ? ['node_modules/typescript/bin/tsc','-b','--pretty','false']
+  : mode==='tools-ts' ? ['node_modules/typescript/bin/tsc','-p','tsconfig.tools.json','--pretty','false']
+  : mode==='build' ? ['node_modules/vite/bin/vite.js','build']
+  : ['node_modules/vitest/vitest.mjs','run',...(mode==='neighbors'?neighbors:docs),'--maxWorkers=2'];
+const r = cp.spawnSync(process.execPath,args,{encoding:'utf8',env:{...process.env,GIT_NO_LAZY_FETCH:'1'}});
+fs.writeFileSync(`${dir}/${mode}.txt`,r.stdout+r.stderr);
+process.stdout.write(r.stdout+r.stderr);
+process.stdout.write(`exit=${r.status}\n`);
+process.exit(r.status ?? 1);
