@@ -1,5 +1,8 @@
 import { expect, it } from 'vitest';
 import { createSaveEnvelope, decodeSaveEnvelope } from '../../src/persistence/save-schema';
+import { computeSaveChecksum } from '../../src/persistence/checksum';
+import type { JsonValue } from '../../src/shared/json';
+import { MAX_BUFFERED_SIMULATION_EVENTS } from '../../src/simulation/events/event-log';
 import { packCommand, type SimulationCommand } from '../../src/simulation/protocol/commands';
 import type { RoomDetailViewModel } from '../../src/simulation/presentation/room-projection';
 import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
@@ -25,19 +28,28 @@ function finish(runtime: Runtime) {
     runtime.construction.allOrders().every(order => order.state === 'completed'));
 }
 
-function reload(runtime: Runtime): Runtime {
+function reload(runtime: Runtime, historicalV8 = false): Runtime {
   const bundle = captureSessionSnapshot(runtime);
-  const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(createSaveEnvelope({
+  const envelope = createSaveEnvelope({
     gameVersion: 'test', prisonId: 'occupied-template-undo', revision: 1, createdAt: 0, updatedAt: 1,
     kernel: bundle.kernel, world: bundle.world, construction: bundle.construction,
     ...(bundle.entities === undefined ? {} : { entities: bundle.entities }),
     ...(bundle.simulation === undefined ? {} : { simulation: bundle.simulation }),
     ...(bundle.identity === undefined ? {} : { identity: bundle.identity }),
     ...(bundle.masterSeed === undefined ? {} : { masterSeed: bundle.masterSeed }),
-  }))));
+  });
+  const { newerActionThanTheStackTop: _marker, orderRevisions: _revisions, ...oldConstruction } = envelope.payload.construction;
+  const oldPayload = { ...envelope.payload, construction: oldConstruction };
+  const input = historicalV8 ? { ...envelope, saveSchemaVersion: 8, payload: oldPayload,
+    checksum: computeSaveChecksum(oldPayload as unknown as JsonValue) } : envelope;
+  const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(input)));
   expect(decoded.ok).toBe(true);
   if (!decoded.ok) throw new Error('Occupied template save must decode');
-  return restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle).runtime;
+  const restored = restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle).runtime;
+  expect(captureSessionSnapshot(restored)).toEqual(historicalV8 ? {
+    ...bundle, construction: { ...oldConstruction, newerActionThanTheStackTop: false, orderRevisions: {} },
+  } : bundle);
+  return restored;
 }
 
 function detail(runtime: Runtime, id: string) {
@@ -64,12 +76,30 @@ function assertRefusedWithoutMutation(runtime: Runtime) {
   expect(runtime.refusals.last).toMatchObject({ reason: 'unzone.room-occupied' });
 }
 
-it.each(orientations)('keeps an occupied completed Cell intact through refused Undo, save and release retry, mirror=$mirrorX turn=$quarterTurns', orientation => {
+function assertV9NewerAdmissionProtection(runtime: Runtime) {
+  const before = captureSessionSnapshot(runtime);
+  expect(before.construction.newerActionThanTheStackTop).toBe(true);
+  const beforeEvents = before.simulation!.alerts!;
+  send(runtime, { type: 'Undo' });
+  const after = captureSessionSnapshot(runtime);
+  expect(after.kernel).toEqual({ ...before.kernel, expectedSequence: before.kernel.expectedSequence + 1 });
+  const { alerts: afterEvents, ...afterSystems } = after.simulation!;
+  const { alerts: _beforeEvents, ...beforeSystems } = before.simulation!;
+  expect({ ...after, kernel: before.kernel, simulation: afterSystems }).toEqual({ ...before, simulation: beforeSystems });
+  const event = { sequence: beforeEvents.sequence + 1, tick: runtime.kernel.tick, type: 'construction.undo-refused-newer-action' };
+  expect(afterEvents).toEqual({ ...beforeEvents, sequence: event.sequence,
+    records: [...beforeEvents.records, event].slice(-MAX_BUFFERED_SIMULATION_EVENTS) });
+  expect(runtime.refusals.count).toBe(0);
+}
+
+it.each(orientations)('keeps an occupied completed Cell intact through V9 later-action protection and historical V8 occupied Undo/release retry, mirror=$mirrorX turn=$quarterTurns', orientation => {
   let runtime = createNewSimulationRuntime(73);
   send(runtime, { type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 10, y: 10 }, ...orientation });
   finish(runtime);
   admit(runtime, 1, 400);
   runtime = reload(runtime);
+  assertV9NewerAdmissionProtection(runtime);
+  runtime = reload(runtime, true);
   const id = 'room.cell:11:11';
   expect(runtime.prisoners.roomInstances.occupancyOf(id)).toBe(1);
   expect(detail(runtime, id)).toMatchObject({ requirementSummary: { missingCapability: 0 }, access: 'doorway' });
@@ -107,13 +137,15 @@ it.each([false, true])('does not relocate a saved row resident into another Cell
   expect(runtime.prisoners.roomInstances.totalResidentCapacity).toBe(4);
   // Three other row rooms are empty, but all four belong to the same Undo.
   // They must be excluded together from the existing relocation search.
+  assertV9NewerAdmissionProtection(runtime);
+  runtime = reload(runtime, true);
   assertRefusedWithoutMutation(runtime);
   expect(runtime.placedObjects.getSnapshot()).toHaveLength(8);
   for (const room of rooms) expect(detail(runtime, room.instanceId))
     .toMatchObject({ requirementSummary: { missingCapability: 0 }, access: 'doorway' });
 });
 
-it.each(orientations)('relocates to a real older spare Cell before removing the occupied newest template, mirror=$mirrorX turn=$quarterTurns', orientation => {
+it.each(orientations)('preserves V9 later-action protection and historical V8 relocation into a real older spare Cell, mirror=$mirrorX turn=$quarterTurns', orientation => {
   let runtime = createNewSimulationRuntime(73);
   send(runtime, { type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 20, y: 5 } });
   finish(runtime);
@@ -121,6 +153,8 @@ it.each(orientations)('relocates to a real older spare Cell before removing the 
   finish(runtime);
   admit(runtime, 1);
   runtime = reload(runtime);
+  assertV9NewerAdmissionProtection(runtime);
+  runtime = reload(runtime, true);
   const target = 'room.cell:11:11';
   const spare = 'room.cell:21:6';
   expect(runtime.prisoners.roomInstances.occupancyOf(target)).toBe(1);

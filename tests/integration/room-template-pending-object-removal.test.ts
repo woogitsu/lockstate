@@ -114,7 +114,10 @@ it.each(['RemoveObject', 'RemoveWall'] as const)('completed template bed %s keep
   remove(runtime, type, { x: bed.anchorTile.x + 1, y: bed.anchorTile.y });
   expect(runtime.placedObjects.getSnapshot()).toHaveLength(1);
   expect(runtime.prisoners.roomInstances.getSnapshot()).toHaveLength(1);
-  expect(runtime.construction.snapshot()).toEqual(beforeOrders);
+  // Successful physical removal is an existing accepted later action. V9 now
+  // exposes that marker; completed order identities/revisions remain untouched.
+  expect(beforeOrders.newerActionThanTheStackTop).toBe(false);
+  expect(runtime.construction.snapshot()).toEqual({ ...beforeOrders, newerActionThanTheStackTop: true });
 });
 it.each([['RemoveObject', false], ['RemoveWall', false], ['RemoveObject', true], ['RemoveWall', true]] as const)('saved partial row %s relocates to a genuine older spare before collective reversal, legacy=%s', (type, legacy) => {
   let runtime = createNewSimulationRuntime(73);

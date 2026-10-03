@@ -66,7 +66,11 @@ it.each([false, true].flatMap(saved => surfaces.map(surface => ({ saved, surface
     const candidate = commands[surface];
     if (candidate !== undefined) send(runtime, candidate);
     const { kernel: _afterKernel, ...after } = captureSessionSnapshot(runtime);
-    expect(after).toEqual(before);
+    expect(after).toEqual(surface === 'dismiss-absent-acknowledgement'
+      ? { ...before, construction: { ...before.construction, newerActionThanTheStackTop: true } }
+      : before);
+    expect(after.construction.orderRevisions).toEqual(before.construction.orderRevisions);
+    expect(after.construction.newerActionThanTheStackTop).toBe(surface === 'dismiss-absent-acknowledgement');
     if (surface in reasons) {
       expect(runtime.refusals.count).toBe(1);
       expect(runtime.refusals.last).toMatchObject({ reason: reasons[surface as keyof typeof reasons] });

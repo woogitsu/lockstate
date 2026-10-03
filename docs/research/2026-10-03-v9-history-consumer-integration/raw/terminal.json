@@ -1,0 +1,14 @@
+{
+    "appExit":  0,
+    "fixedPassed":  131,
+    "toolsExit":  0,
+    "originalFullLogSha256":  "3387041d99523251dae02a3448609b16bc72388a163ae135a765e718035053d6",
+    "baselineFailed":  40,
+    "producerMutationExecuted":  false,
+    "originalFullLog":  "C:/Users/matma/AppData/Local/Temp/lockstate-staff-v9-complete-suite-20261003.txt",
+    "files":  4,
+    "baselinePassed":  91,
+    "nativeExecuted":  false,
+    "sourceBase":  "2102c1700f79f5f5191edfcb3e64bdc571b3e697",
+    "productionChanged":  false
+}
