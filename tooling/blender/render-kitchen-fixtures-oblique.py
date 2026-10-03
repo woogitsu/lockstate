@@ -29,7 +29,7 @@ ELEVATION = tuple(range(20, 80, 10))
 PREVIEW_ONLY = "--preview" in sys.argv
 MODELS = (
     # id, source basename, manifest basename, width, height, x scale, y scale, camera target height
-    ("furniture.kitchen.stove.variants", "furniture.kitchen.stove.angled-detail.blend", "oblique-furniture.kitchen-stove.v1.json", 2, 1, 1.0, 1.0, 1.1230000257492065),
+    ("furniture.kitchen.stove.variants", "furniture.kitchen.stove.soft-light.blend", "oblique-furniture.kitchen-stove.v1.json", 2, 1, 1.0, 1.0, 1.1230000257492065),
     ("furniture.kitchen.prep-counter.variants", "furniture.kitchen.prep-counter.angled.blend", "oblique-furniture.kitchen-prep-counter.v1.json", 2, 1, 1.0, 1.0, 0.8100000619888306),
     ("furniture.kitchen.fridge.variants", "furniture.kitchen.fridge.angled-detail.blend", "oblique-furniture.kitchen-fridge.v1.json", 1, 1, 1.0, 1.0, 1.1999999284744263),
 )
@@ -112,6 +112,12 @@ def normalize_and_check_border(path: Path) -> None:
 
 
 def configure(model: tuple, prepare_source=None) -> tuple[bpy.types.Scene, bpy.types.Object, Vector]:
+    if prepare_source is None and model[0] == "furniture.kitchen.stove.variants" and model[1] == "furniture.kitchen.stove.soft-light.blend":
+        import importlib.util
+        soft_spec = importlib.util.spec_from_file_location("stove_retained_soft_dispatch", Path(__file__).with_name("render-kitchen-stove-cycles.py"))
+        soft = importlib.util.module_from_spec(soft_spec); soft_spec.loader.exec_module(soft)
+        scene, camera = soft.configure()
+        return scene, camera, soft.TARGET
     if prepare_source is None and model[0] == "furniture.kitchen.stove.variants" and model[1] == "furniture.kitchen.stove.angled-detail.blend":
         import importlib.util
         detail_spec = importlib.util.spec_from_file_location("stove_physical_detail_dispatch", Path(__file__).with_name("render-kitchen-stove-detail-oblique.py"))

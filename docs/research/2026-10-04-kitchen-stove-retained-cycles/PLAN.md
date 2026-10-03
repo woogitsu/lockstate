@@ -1,7 +1,9 @@
 # Own Kitchen stove plan
 
-1. Verified actual kitchen-basic template stove-brick / object.stove, dedicated furniture.kitchen.stove.variants, Workbench current producer.
-2. Preserve all 96 authored parts (80 retained plus 16 prior grate shoes), all six complete shader graphs, 32 real contacts, 2 x 1 footprint and the existing ONE anchor translation (1,.5,0), target (1,.5,1.1230000257492065), 64 pixels per tile.
-3. Prepare actual saved Blender soft Cycles source and genuine same-source 60/300 e40 before/after; inspect actual images before full72. Deliberate creator shader RGBA and roughness remain unchanged.
-4. Publish first coherent source/checkpoint, then genuine72 CPU1, four actual byte-exact repeats, real source/dispatch/hash-validPNG/currentconsumer/registry/callback RED and exact restores.
-5. Strict types/focused original geometry and consumer controls; own hash handoff. Root owns build/browser/native evaluation. No UI/renderer/nativeobserver/schema/config/gameplay changes.
+1. Completed: verified actual kitchen-basic / stove-brick / object.stove / existing dedicated furniture.kitchen.stove.variants consumer.
+2. Completed: retain96 parts/six full graphs/32 real contacts/all four occupied orientations, the original ONE(1,.5,0) anchor translation, camera64ppU/pivot128/target(1,.5,1.1230000257492065).
+3. Completed and published24a740142c84341ea393e5df6e07b86c1328e928: genuine same-source before/after and saved source. Retained initial64 shader draft and bounded512/no-denoise study; selected actual cleaner Kitchen-only128/CPU OpenImageDenoise without graph or shared-profile changes.
+4. Completed: full genuine72 in250.927837s; four byte-exact actual repeats14.765766s; current descriptor, both dedicated entry points and shared stove callback use the same saved source.
+5. Completed: seven actual production REDs and exact restoration731files, old live-source RED/fixGREEN and typed q0/q1 exact whole-footprint/body consumer.
+6. Completed: two strict TypeScript projects and twelve focused suites206G/1existing optional generic Blender-PATH skip. Full own hash handoff and receipts.
+7. Pending root: integration/build and actual Kitchen public UI/network/Blob/V10/material acceptance. No browser/server/build/native observer/helper/fixture/renderer/UI/persistence/schema/config/gameplay edits or native playability claim.

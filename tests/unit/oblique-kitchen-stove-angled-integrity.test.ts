@@ -51,8 +51,12 @@ it('retains the original stove assembly/materials and registers dedicated physic
   expect(physical.originalSource).toBe(provenance.source);
   expect(physical.originalSourceSha256).toBe(provenance.sourceSha256);
   expect(hash(readFileSync(new URL(physical.source, root)))).toBe(physical.sourceSha256);
-  expect(catalog.source).toBe(physical.source);
-  expect(catalog.sourceSha256).toBe(physical.sourceSha256);
+  const soft=JSON.parse(readFileSync(new URL('assets/source/blender/furniture.kitchen.stove.soft-light.provenance.json',root),'utf8')) as {source:string;sourceSha256:string;retainedSource:string;retainedSourceSha256:string};
+  expect(soft.retainedSource).toBe(physical.source);expect(soft.retainedSourceSha256).toBe(physical.sourceSha256);
+  expect(catalog.source).toBe(soft.source);
+  expect(catalog.sourceSha256).toBe(soft.sourceSha256);
+  expect(catalog.sourceSha256).toBe('7ac1027aca308b946acf902ebf611547621227535dc70b29db1c06d3db2d03bb');
+  expect(hash(readFileSync(new URL(soft.source,root)))).toBe(catalog.sourceSha256);
   expect(catalog.cameraTargetTiles).toEqual(provenance.cameraTargetTiles);
   expect(catalog.resolutionPx).toEqual([256, 256]);
   expect(catalog.nominalPixelsPerTile).toBe(64);

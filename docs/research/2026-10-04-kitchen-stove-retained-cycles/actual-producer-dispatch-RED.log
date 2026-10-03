@@ -1,0 +1,15 @@
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
+Traceback (most recent call last):
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-kitchen-cooker-cycles-20261004\tooling\blender\render-kitchen-stove-cycles.py", line 116, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-kitchen-cooker-cycles-20261004\tooling\blender\render-kitchen-stove-cycles.py", line 76, in main
+    scene,camera = configure()
+                   ~~~~~~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-kitchen-cooker-cycles-20261004\tooling\blender\render-kitchen-stove-cycles.py", line 33, in configure
+    raise ValueError('Kitchen stove Cycles dedicated producer dispatch changed')
+ValueError: Kitchen stove Cycles dedicated producer dispatch changed
+
+Error: script failed, file: 'C:\Users\matma\Documents\Rozwój gier\lockstate-kitchen-cooker-cycles-20261004\tooling\blender\render-kitchen-stove-cycles.py', exiting.

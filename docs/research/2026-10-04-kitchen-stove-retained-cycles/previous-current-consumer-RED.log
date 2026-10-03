@@ -1,0 +1,38 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-kitchen-cooker-cycles-20261004
+
+xx
+node :
+At line:40 char:1
++ node node_modules/vitest/vitest.mjs run tests/unit/oblique-kitchen-st ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-kitchen-stove-modern-consumer.test.ts > selects genuine saved modern Kitchen stove q0 over it
+s whole unchanged paid footprint
+ FAIL  tests/unit/oblique-kitchen-stove-modern-consumer.test.ts > selects genuine saved modern Kitchen stove q1 over it
+s whole unchanged paid footprint
+AssertionError: expected 'assets/source/blender/furniture.kitch…' to be 'assets/source/blender/furniture.kitch…' // Obj
+ect.is equality
+
+Expected: "assets/source/blender/furniture.kitchen.stove.soft-light.blend"
+Received: "assets/source/blender/furniture.kitchen.stove.angled-detail.blend"
+
+ ❯ tests/unit/oblique-kitchen-stove-modern-consumer.test.ts:41:26
+     39|   expect(registry.entries.filter(row=>row.assetId===solid.assetId)).to…
+     40|   const catalog=parseObliqueModuleCatalog(JSON.parse(readFileSync(new …
+     41|   expect(catalog.source).toBe('assets/source/blender/furniture.kitchen…
+       |                          ^
+     42|   expect(catalog.sourceSha256).toBe('7ac1027aca308b946acf902ebf6115476…
+     43|   const selected=selectObliqueModuleFrame(catalog,{yawRadians:solid.as…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  00:10:27
+   Duration  785ms (transform 278ms, setup 0ms, import 639ms, tests 11ms, environment 0ms)

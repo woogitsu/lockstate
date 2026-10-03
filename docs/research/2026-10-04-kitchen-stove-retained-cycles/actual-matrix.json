@@ -1,45 +1,23 @@
 {
-  "schemaVersion": 1,
-  "assetId": "furniture.kitchen.stove.variants",
-  "source": "assets/source/blender/furniture.kitchen.stove.soft-light.blend",
+  "genuineBlenderVersion": [
+    5,
+    2,
+    1
+  ],
+  "engine": "CYCLES",
+  "device": "CPU",
+  "threads": 1,
+  "samples": 128,
+  "seed": 0,
+  "adaptiveSampling": false,
+  "denoising": true,
+  "denoiser": "OPENIMAGEDENOISE",
+  "denoisingUseGpu": false,
+  "viewTransform": "AgX",
+  "actualExportSeconds": 250.92783699999563,
+  "realRenderCount": 72,
   "sourceSha256": "7ac1027aca308b946acf902ebf611547621227535dc70b29db1c06d3db2d03bb",
-  "resolutionPx": [
-    256,
-    256
-  ],
-  "nominalPixelsPerTile": 64,
-  "pivotPx": [
-    128,
-    128
-  ],
-  "cameraTargetTiles": [
-    1.0,
-    0.5,
-    1.1230000257492065
-  ],
-  "projection": "orthographic",
-  "yawDegrees": [
-    0,
-    30,
-    60,
-    90,
-    120,
-    150,
-    180,
-    210,
-    240,
-    270,
-    300,
-    330
-  ],
-  "elevationDegrees": [
-    20,
-    30,
-    40,
-    50,
-    60,
-    70
-  ],
+  "descriptorSha256": "135cde5a764c1cfee7bc28abf91ec2c5c317d73c1044c8aecc46756783400ea7",
   "frames": [
     {
       "yawDegrees": 0,
@@ -473,5 +451,7 @@
       "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+330-elev70.b039086ac86c.png",
       "sha256": "b039086ac86cbb7f58155829d666c57a841d8199280f9a1e25b8c87e4cc3f561"
     }
-  ]
+  ],
+  "groundPlaneAdded": false,
+  "nativeAcceptance": false
 }

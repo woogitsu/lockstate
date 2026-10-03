@@ -74,8 +74,12 @@ it('preserves original Kitchen stove geometry/materials/modifiers and publishes 
   expect(obliqueAssetIdForObject('object.stove')).toBe('furniture.kitchen.stove.variants');
   const catalog = parseObliqueModuleCatalog(JSON.parse(readFileSync(new URL('public/game-content/oblique-furniture.kitchen-stove.v1.json', root), 'utf8')));
   expect(catalog.assetId).toBe('furniture.kitchen.stove.variants');
-  expect(catalog.source).toBe(provenance.source);
-  expect(catalog.sourceSha256).toBe(provenance.sourceSha256);
+  const soft=JSON.parse(readFileSync(new URL('assets/source/blender/furniture.kitchen.stove.soft-light.provenance.json',root),'utf8')) as {source:string;sourceSha256:string;retainedSource:string;retainedSourceSha256:string};
+  expect(soft.retainedSource).toBe(provenance.source);expect(soft.retainedSourceSha256).toBe(provenance.sourceSha256);
+  expect(catalog.source).toBe(soft.source);
+  expect(catalog.sourceSha256).toBe(soft.sourceSha256);
+  expect(catalog.sourceSha256).toBe('7ac1027aca308b946acf902ebf611547621227535dc70b29db1c06d3db2d03bb');
+  expect(hash(readFileSync(new URL(soft.source,root)))).toBe(catalog.sourceSha256);
   expect(catalog.resolutionPx).toEqual([256, 256]);
   expect(catalog.nominalPixelsPerTile).toBe(64);
   expect(catalog.cameraTargetTiles).toEqual([1, .5, 1.1230000257492065]);

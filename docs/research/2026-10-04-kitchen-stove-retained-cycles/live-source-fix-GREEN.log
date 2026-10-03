@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-kitchen-cooker-cycles-20261004
+
+····
+
+ Test Files  3 passed (3)
+      Tests  4 passed (4)
+   Start at  00:14:17
+   Duration  590ms (transform 271ms, setup 0ms, import 773ms, tests 150ms, environment 0ms)
