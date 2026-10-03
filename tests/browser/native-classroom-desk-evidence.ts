@@ -27,7 +27,7 @@ export function assertClassroomPlan(data: SessionSnapshotBundle, turns: 0 | 1, b
   expect(orders[23]).toMatchObject({ id: classroomOwner('door', 0), definitionId: 'door-wooden',
     location: { x: plan.doorOrder.x, y: plan.doorOrder.y }, edge: plan.doorOrder.edge, state: built ? 'completed' : 'approved' });
   const objects = data.simulation?.objects?.placedObjects ?? [];
-  expect(objects.filter(object => object.sourceOrderId.startsWith('room-template-000000000002-'))).toHaveLength(built ? 5 : 0);
+  expect(objects.filter(object => object.sourceOrderId?.startsWith('room-template-000000000002-'))).toHaveLength(built ? 5 : 0);
   expect(objects).toHaveLength(built ? (deskOwner === undefined ? 8 : 9) : 3);
   if (built) for (const [ordinal, [objectId, definitionId, x, y]] of plan.objects.entries()) {
     const sourceOrderId = classroomOwner('object', ordinal);
@@ -129,7 +129,7 @@ export async function observeClassroomDeskNetwork(page: Page) {
       expect(images.errors).toEqual([]);
       expect(images.images.some(image => image.sha256 === CLASSROOM_ART.exposedFrameSha256 && image.complete && !image.error && image.width === 256 && image.height === 256)).toBe(true);
       expect(rows.some(row => /\/assets\/worker-[^/]+\.js$/.test(row.path) && row.status === 200 && row.sha256 !== undefined)).toBe(true);
-      const receipt = { quarterTurns, catalog, descriptorBodySha256: createHash('sha256').update(body).digest('hex'),
+      const receipt = { classroomPlanQuarterTurns: quarterTurns, publicIndividualDeskOrientation: 0, catalog, descriptorBodySha256: createHash('sha256').update(body).digest('hex'),
         exposedFrameSha256: CLASSROOM_ART.exposedFrameSha256, network: rows, actualDecodedImages: images.images,
         syntheticFetchUsed: false, rendererTextureReadUsed: false, deskVisualCalibrationComplete: false,
         visualAcceptancePending: true };

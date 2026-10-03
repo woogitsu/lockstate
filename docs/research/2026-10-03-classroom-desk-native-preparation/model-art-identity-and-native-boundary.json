@@ -1,0 +1,8 @@
+{
+  "source": "assets/source/blender/furniture.classroom.teacher-desk.blend",
+  "sourceSHA256": "c1dd80d253667f8e1bca5b17371b183ec18b5a292bebdf9fd2062e85b01d55ff",
+  "descriptorSHA256": "701d89104a0ed18b5750a1ffabb9dfb7fa389504b0e80495d671a67797ddb4ff",
+  "all72OwnExportsMatchDeclaredHash": true,
+  "rootMustIntegrateRegistryAndClassroomMapping": true,
+  "nativeRunClaimed": false
+}

@@ -8,6 +8,7 @@ import { projectRoomTemplateCost } from '../../src/simulation/presentation/room-
 import { projectRoomTemplatePreflight } from '../../src/simulation/presentation/room-template-preflight';
 import { instantiateRoomTemplateForConstruction } from '../../src/simulation/construction/room-template-build-plan';
 import { objectFootprintTiles } from '../../src/simulation/objects/placed-object';
+import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { defaultObjectRegistry } from '../../src/content/object-catalog';
 import { getBuildableDefinition } from '../../src/simulation/construction/definition';
 import { PROJECTION_CATALOG } from '../../src/simulation/worker/projection-catalog';
@@ -54,7 +55,7 @@ it.each([0, 1] as const)('buys a separate public orientation0 desk inside litera
   const beforeDesk = captureSessionSnapshot(runtime);
   assertClassroomPlan(beforeDesk, turns, true);
   const slot = CLASSROOM_CASES[turns];
-  const footprint = objectFootprintTiles(defaultObjectRegistry.getById('object.desk')!, slot.desk, 0);
+  const footprint = objectFootprintTiles(defaultObjectRegistry.getById('object.desk')!, { x: tileCoordinate(slot.desk.x), y: tileCoordinate(slot.desk.y) }, 0);
   expect(footprint.map(tile => [tile.x, tile.y])).toEqual(slot.deskTiles);
   const occupied = new Set(CLASSROOM_CASES[turns].objects.flatMap(([, , x, y, width, height]) =>
     Array.from({ length: width * height }, (_, i) => `${x + i % width}:${y + Math.floor(i / width)}`)));

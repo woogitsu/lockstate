@@ -48,7 +48,25 @@ Root must first integrate the optional Classroom desk registry/mapping from the 
 - Literals: `tests/fixtures/native-classroom-desk-plan.ts`.
 - Actual typed route: `tests/integration/native-classroom-desk-preparation.test.ts`.
 - Shared typed/native oracle and real network observer: `tests/browser/native-classroom-desk-evidence.ts`.
+- Prepared public UI route: `tests/browser/native-classroom-desk.recipe.ts` — three serial cases, actual immutable bootstrap save then each independent Classroom plan and separate purchase.
 - Actual producer mutation driver: `tooling/research/prove-classroom-desk-typed-producer.py`.
 - Opt-in configuration generator: `tooling/research/write-classroom-desk-native-config.mjs`.
 
 The actual typed completion times above are simulation results, not measured browser wall-clock estimates.
+
+### Root production execution after genuine model integration/build
+
+```text
+node tooling/research/write-classroom-desk-native-config.mjs
+node node_modules/@playwright/test/cli.js test --config assets/intermediate/classroom-desk-native-preparation/playwright.classroom-desk.artifact.config.ts
+```
+
+The configuration generator was run and its actual output inspected. It inherits the existing production artifact configuration and overrides only recipe matching/output location. The recipe and helper passed full TypeScript checking. No Playwright/browser/server was started by these verification steps.
+
+### Separate verified player capability issue
+
+[Issue #2019 — Individual furniture placement has no public rotation control](https://github.com/woogitsu/lockstate/issues/2019) was created after fresh open/closed duplicate searches and reopened for persisted content verification. Current exact protocol/producer evidence and player impact are in the issue; the stored receipt is `individual-object-rotation-issue.json`. Existing #1586 covers complete room plans, so it is not a duplicate individual furniture control issue. This native/model branch implements no rotation protocol, save or UI change.
+
+### Final verification
+
+Both actual typed q0/q1 routes and whole V8 roundtrips are GREEN after exact producer restoration; full TypeScript typecheck is GREEN. The actual opt-in UI execution, network decoder proof, price screenshot, final camera screenshots, visual calibration and public paused Save/Load remain for root's single browser run. Merely preparing those assertions is not a native pass.
