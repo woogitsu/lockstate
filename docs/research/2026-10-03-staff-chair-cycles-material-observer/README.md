@@ -51,3 +51,64 @@ plus a default-body colour veto, with an actual omission of that veto returning
 RED. It must still pass the original native rectangles/floor on real q0/q1
 photos; that result is pending. The colour reading cannot establish native
 acceptance, correct object context or delivered texture use by itself.
+
+## Correction of the candidate above: spatial authored gradient
+
+The proposed default-body colour veto was measured and rejected: the real
+72-frame default chair shares54 of55 sampled colours. The one remaining colour
+leaves canonical positives0/2. `source-body-veto-rejected.json` retains this
+negative result. It is not shipped.
+
+The shipped candidate requires an opaque5×5 neighbourhood, entirely within
+the same original ROI, with at least three different frozen source colours.
+It counts the largest four-connected interior, rather than accumulating
+scattered metal highlights. The spatial rule is based on a broad shaded pad
+surface versus narrow frame members; the55 colours still derive only from the
+projected source inset. The original floor remains strictly greater than40.
+
+Offline reading of root's genuine original RED captures gives:
+
+| Actual captured pose | Completed chair1/2 | Loaded chair1/2 |
+| --- | --- | --- |
+| q0 |296/219|296/219|
+| q1 |46/53|46/53|
+
+`actual-root-photo-and-source-read.json` records the exact photo hashes, paths
+and original rectangles. These are readings of genuine c28 built-game photos,
+not a new browser execution or native acceptance. The q1 minimum46 has only six
+pixels of margin; a changed camera, render or capture requires real recalibration.
+Root retained the old observer failures in its published73a69 evidence.
+
+Default chair72 has maximum0, actual Staff desk72 maximum22. The additional
+read-only source sweep uses the **new full-wall72 subject b23798bcaa08b0e9c44dcf619191b39c9fa6fc3c**,
+including its entire opaque footing, plus three other wall72 sets, four door72
+sets and the actual Staff woven-vinyl floor. Each maximum is0. Wall descriptor
+Git blob8672a78815d6c33c1c1f779deede0316889baad7 was checked equal to b237's
+committed blob; all72 delivered PNG hashes were checked against that descriptor.
+`wall-door-floor-negatives.json` preserves every frame count/hash and source pins.
+The ordinary unit guard consumes the branch's current wall descriptor (old c28
+here); after integration it consumes the new descriptor. The separately pinned
+b237 read is not represented as an old-base unit test of the new wall.
+
+The implementation changes only the two Staff material readings in the native
+spec. Timber exactRGB readings, four original >40 assertions, before/after
+arrays, whole V9 Save/Load, command/owner/cost/network/Blob guards stay intact.
+Focused source plus original source-evidence neighbour:7GREEN in2files.
+Actual observer omission/restoration and strict types are still pending at
+this checkpoint; root owns the only native/build lease.
+
+### Reproduce the preserved offline reads
+
+Historical recipes are inert `.cjs.txt`, not executable source outside strict
+coverage. From this WT, copy `actual-photo-reader.cjs.txt` or
+`wall-door-floor-reader.cjs.txt` to an own temporary `.cjs`, then run
+`node --experimental-strip-types <temporary-file.cjs>`. They import the actual
+strict TypeScript helper. The photo recipe requires the original archived root
+captures; the wall recipe requires the b237 art checkout at its recorded path.
+These are read-only source/photo probes, not native acceptance commands.
+
+**Weakest claim:** the spatial source discriminator is specific enough for the
+preserved default camera q0/q1 captures and named real source negatives. It does
+not prove arbitrary camera poses or every possible background. A genuine
+consumer omission still must turn native material reception RED on root's
+built game before claiming native acceptance.

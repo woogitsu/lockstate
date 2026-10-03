@@ -1,0 +1,14 @@
+const fs=require('node:fs'),path=require('node:path'),{pathToFileURL}=require('node:url'),crypto=require('node:crypto');
+(async()=>{
+const o=await import(pathToFileURL(path.resolve('tests/browser/staff-room-padded-chair/material-observer.ts')).href);
+const wall='C:/Users/matma/Documents/Rozwój gier/lockstate-modern-ground-wall-material-study-20261003';
+const manifests=['oblique-square-brick-full-wall.v1.json','oblique-wall-cutaway.v1.json','oblique-wall-west.v1.json','oblique-wall-west-cutaway.v1.json','oblique-cell-door-open.v1.json','oblique-cell-door-north-cutaway.v1.json','oblique-cell-door-west-full.v1.json','oblique-cell-door-west-cutaway.v1.json'];
+const score=bytes=>{const b=o.decodeStaffMaterialPng(bytes);return o.staffPadSurfacePixels(b,[0,0,b.width,b.height]);};
+const sources=[];
+for(const manifest of manifests){const base=manifest===manifests[0]?wall:process.cwd(),p=base+'/public/game-content/'+manifest,bytes=fs.readFileSync(p),c=JSON.parse(bytes);
+const rows=c.frames.map(f=>{const bytes=fs.readFileSync(base+'/public'+f.image);const hash=crypto.createHash('sha256').update(bytes).digest('hex');if(hash!==f.sha256)throw Error('frame mismatch '+f.image);return {...f,count:score(bytes)};});
+sources.push({manifest,subject:base===wall?'b23798bcaa08b0e9c44dcf619191b39c9fa6fc3c':'c28d4815844af9081c4d16925bbf498eb3df2ff1',manifestSha256:crypto.createHash('sha256').update(bytes).digest('hex'),sourceSha256:c.sourceSha256,maximum:Math.max(...rows.map(r=>r.count)),rows});}
+const floor='public/game-content/source-art/rendered.floor.staff-room.woven-vinyl.8a17ffe2678c.png',bytes=fs.readFileSync(floor);sources.push({path:floor,sha256:crypto.createHash('sha256').update(bytes).digest('hex'),count:score(bytes)});
+fs.writeFileSync('docs/research/2026-10-03-staff-chair-cycles-material-observer/wall-door-floor-negatives.json',JSON.stringify({kind:'read-only whole opaque source bodies, including full footing; no material mask',sources},null,2)+'\n');
+console.log(sources.map(s=>[s.manifest||s.path,s.maximum??s.count,s.rows?.length]));
+})().catch(e=>{console.error(e);process.exitCode=1});

@@ -1,0 +1,21 @@
+const fs=require('node:fs'),path=require('node:path'),{pathToFileURL}=require('node:url'),crypto=require('node:crypto');
+(async()=>{
+ const observer=await import(pathToFileURL(path.resolve('tests/browser/staff-room-padded-chair/material-observer.ts')).href);
+ const root='C:/Users/matma/Documents/Rozwój gier/lockstate-staff-chair-v9-integration-20261003/docs/research/2026-10-03-staff-chair-retained-cycles/native/';
+ const runs=[[0,'original-fullhd'],[1,'original-q1-fullhd']];
+ const photos=[];
+ for(const [turns,folder] of runs)for(const file of ['021-wooden-chair-worker-completed-fullhd.png','019-wooden-chair-loaded-fullhd.png']) {
+  const name=root+folder+'/'+file,bytes=fs.readFileSync(name),bitmap=observer.decodeStaffMaterialPng(bytes);
+  const counts=observer.staffChairPadMaterialPixels(bytes,turns);
+  photos.push({turns,file:name,sha256:crypto.createHash('sha256').update(bytes).digest('hex'),width:bitmap.width,height:bitmap.height,originalRegions:observer.STAFF_CHAIR_MATERIAL_RECTS[turns],counts,everyOriginalRegionAbove40:counts.every(count=>count>40)});
+ }
+ const sources=[];
+ for(const manifest of ['oblique-cell-chair.v1.json','oblique-reception-employee-desk.v1.json','oblique-furniture-staff-room-padded-chair.v1.json']) {
+  const catalog=JSON.parse(fs.readFileSync('public/game-content/'+manifest,'utf8'));
+  const rows=catalog.frames.map(frame=>{const bitmap=observer.decodeStaffMaterialPng(fs.readFileSync('public'+frame.image));return {yawDegrees:frame.yawDegrees,elevationDegrees:frame.elevationDegrees,frame:frame.image,count:observer.staffPadSurfacePixels(bitmap,[0,0,bitmap.width,bitmap.height])};});
+  sources.push({manifest,assetId:catalog.assetId,sourceSha256:catalog.sourceSha256,maximum:Math.max(...rows.map(row=>row.count)),rows});
+ }
+ const receipt={actualBuiltRootSubject:'c28d4815844af9081c4d16925bbf498eb3df2ff1',observerSource:'tests/browser/staff-room-padded-chair/material-observer.ts',kind:'offline read of actual original RED native photos, not a browser rerun or native GREEN',photos,sources,originalNativePixelFloor:40,browserExecuted:false,buildExecuted:false,originalFailuresRetainedByRoot:true};
+ fs.writeFileSync('docs/research/2026-10-03-staff-chair-cycles-material-observer/actual-root-photo-and-source-read.json',JSON.stringify(receipt,null,2)+'\n');
+ console.log(JSON.stringify({photos,sourceMaxima:sources.map(source=>[source.assetId,source.maximum])},null,2));
+})().catch(error=>{console.error(error);process.exitCode=1;});
