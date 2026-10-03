@@ -1,3 +1,4 @@
+import { openCameraControls } from './public-camera-controls';
 import { expect, test } from './network-changed-fixture';
 
 test('production composition root boots the opted-in oblique scene at Full HD', async ({ page }) => {
@@ -132,6 +133,7 @@ test('production HUD angle buttons change the real oblique canvas', async ({ pag
   await page.getByRole('button', { name: 'New prison' }).click();
   await expect(page.locator('.hud-clock__day')).toHaveText('1');
   const canvas = page.locator('#game-root canvas');
+  await openCameraControls(page);
   const before = await canvas.screenshot();
   await page.getByRole('button', { name: 'Rotate camera right' }).click();
   const turned = await canvas.screenshot();

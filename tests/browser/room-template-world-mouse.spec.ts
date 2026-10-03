@@ -1,3 +1,4 @@
+import { openCameraControls } from './public-camera-controls';
 import { expect, test } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
 
@@ -8,6 +9,7 @@ for (const mode of ['top-down', 'oblique']) test(`${mode}: Full HD room catalogu
   await page.getByRole('button', { name: 'New prison' }).click();
   await expect(page.locator('.hud-clock__day')).toHaveText('1');
   if (mode === 'oblique') {
+    await openCameraControls(page);
     await page.getByRole('button', { name: 'Rotate camera right', exact: true }).click();
     await page.getByRole('button', { name: 'Raise camera angle', exact: true }).click();
   }

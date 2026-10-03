@@ -1,3 +1,4 @@
+import { openCameraControls } from './public-camera-controls';
 /** Opt-in built-client public Reception Room journey. No standard suite collects
  * .recipe.ts, no injected fixture/snapshot/command, no visual ROI guess. */
 import { writeFile } from 'node:fs/promises';
@@ -115,6 +116,7 @@ for (const turns of [0, 1] as const) test(`Reception Room q${turns}: literal two
   });
   // Existing public camera rule: local art yaw = camera yaw + object quarter turn.
   // q0: initial-45 +7*15 =60; q1: initial-45 +1*15 +90 =60.
+  await openCameraControls(page);
   for (let step = 0; step < RECEPTION_CASES[turns].cameraRightClicks; step++)
     await page.getByRole('button', { name: 'Rotate camera right', exact: true }).click();
   // Clamp at20 then raise twice: exact camera elevation40 through public UI.

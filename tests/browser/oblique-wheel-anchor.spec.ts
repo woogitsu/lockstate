@@ -1,3 +1,4 @@
+import { openCameraControls } from './public-camera-controls';
 import { expect, test } from './network-changed-fixture';
 
 test('native wheel zoom keeps the same Build square under the pointer after a pose change and renderer switch', async ({ page }) => {
@@ -9,6 +10,7 @@ test('native wheel zoom keeps the same Build square under the pointer after a po
   await page.getByRole('button', { name: 'Build', exact: true }).click();
   await page.locator('.hud-build__arm').click();
   await expect(page.locator('.hud-build__arm')).toHaveText('Stop placing');
+  await openCameraControls(page);
   await page.getByRole('button', { name: 'Rotate camera right' }).click();
   await page.getByRole('button', { name: 'Lower camera angle' }).click();
 

@@ -1,4 +1,5 @@
 import { expect, test } from './network-changed-fixture';
+import { openCameraControls } from './public-camera-controls';
 
 test('labelled HUD pose buttons send distinct renderer-only steps at Full HD', async ({ page }) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
@@ -17,6 +18,7 @@ test('labelled HUD pose buttons send distinct renderer-only steps at Full HD', a
       onCameraPoseStep: (axis: string, direction: number) => { steps.push([axis, direction]); },
     });
   });
+  await openCameraControls(page);
   for (const label of ['Rotate camera left', 'Rotate camera right', 'Raise camera angle', 'Lower camera angle']) {
     const button = page.getByRole('button', { name: label, exact: true });
     await expect(button).toBeVisible();
@@ -39,6 +41,7 @@ test('the fixed renderer does not offer inert pose buttons', async ({ page }) =>
   await expect(page.locator('#game-root canvas')).toBeVisible();
   // The live renderer switch retains the port and hides this group in WorldScene.
   // A hidden DOM group is legal; offering an accessible inert button is not.
+  await openCameraControls(page);
   await expect(page.locator('.hud-camera-pose')).toBeHidden();
   for (const label of ['Rotate camera left', 'Rotate camera right', 'Raise camera angle', 'Lower camera angle']) {
     await expect(page.getByRole('button', { name: label, exact: true })).toHaveCount(0);

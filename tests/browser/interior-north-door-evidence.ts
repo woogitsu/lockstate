@@ -1,3 +1,4 @@
+import { openCameraControls } from './public-camera-controls';
 import { createHash } from 'node:crypto';
 import { writeFile } from 'node:fs/promises';
 import type { TestInfo } from '@playwright/test';
@@ -105,6 +106,7 @@ export async function capturePublicNorthDoorBacksides(page: Page, info: TestInfo
   expect(SparseWorld.fromSnapshot(paused.world).getTopEdge({ x: tileCoordinate(21), y: tileCoordinate(11) }))
     .toBe(2);
   const shots: { cameraYaw: number; sourceYaw: number; screenshot: string }[] = [];
+  await openCameraControls(page);
   try {
     for (const frame of NORTH_DOOR_BACKSIDE_FRAMES) {
       for (let index = 0; index < frame.rightClicks; index++) {

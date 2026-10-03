@@ -1,3 +1,4 @@
+import { openCameraControls } from './public-camera-controls';
 /** Opt-in built-client showcase. Deliberately neither .spec.ts nor .playtest.ts:
  * no source-dev suite or existing gate collects this larger player journey. */
 import { createHash } from 'node:crypto';
@@ -157,6 +158,7 @@ test('07 same completed prison at three public camera poses and whole paused Sav
   const canvas = page.locator('#game-root canvas');
   const captures: { name: string; yawDegrees: number; elevationDegrees: number; canvasSHA256: string }[] = [];
   let previous: Buffer | undefined;
+  await openCameraControls(page);
   for (const pose of SMALL_PRISON_CAMERA_POSES) {
     for (let index = 0; index < pose.rightClicks; index++) await page.getByRole('button', { name: 'Rotate camera right', exact: true }).click();
     for (let index = 0; index < pose.raiseClicks; index++) await page.getByRole('button', { name: 'Raise camera angle', exact: true }).click();

@@ -1,3 +1,4 @@
+import { openCameraControls } from './public-camera-controls';
 import { expect, test, type Page } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
 
@@ -69,6 +70,7 @@ for (const initialMode of ['world', 'oblique'] as const) for (const rearm of [fa
     await installTee(page); await observeActualPreflight(page);
     await page.setViewportSize({ width: 1920, height: 1080 });
     await page.goto(initialMode === 'world' ? '/' : '/?renderer=oblique');
+    await openCameraControls(page);
     await page.getByRole('button', { name: 'New prison', exact: true }).click();
     await expect(page.locator('.hud-clock__day')).toHaveText('1');
     await page.getByRole('button', { name: 'Pause', exact: true }).click();

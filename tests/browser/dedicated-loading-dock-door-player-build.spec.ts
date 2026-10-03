@@ -1,3 +1,4 @@
+import { openCameraControls } from './public-camera-controls';
 // Pending dedicated-source native acceptance: actual Delivery Bay construction and Save/Load.
 // The historical q0 gate glazing control is retained; q1 crop is provisional until actual native PNG inspection.
 import { writeFile } from 'node:fs/promises';
@@ -252,6 +253,7 @@ test(`player builds Delivery Bay at quarterTurns${quarterTurns} and retains the 
 
   // Separate genuine native-camera detail view for hinge/escutcheon/threshold
   // inspection. No source-preview render is substituted for player pixels.
+  await openCameraControls(page);
   for (let step = 0; step < 3; step++) {
     await page.getByRole('button', { name: quarterTurns === 0 ? 'Rotate camera right' : 'Rotate camera left', exact: true }).click();
   }

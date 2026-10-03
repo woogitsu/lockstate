@@ -1,3 +1,4 @@
+import { openCameraControls } from './public-camera-controls';
 import { expect, test } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
 import { DEFAULT_KEYBOARD_BINDINGS } from '../../src/input/bindings';
@@ -18,6 +19,7 @@ test(`Full HD ${scale * 100}% View native popup relinquishes world-held ${code} 
   }, { code, scale, bindings: DEFAULT_KEYBOARD_BINDINGS.map(binding => binding.action === 'camera.rotate.right' ? { ...binding, code } : binding) });
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/?renderer=oblique');
+  await openCameraControls(page);
   await page.getByRole('button', { name: 'New prison', exact: true }).click();
   await page.getByRole('button', { name: 'Pause', exact: true }).click();
   const worldButton = page.getByRole('button', { name: 'Build', exact: true });

@@ -1,3 +1,4 @@
+import { openCameraControls } from './public-camera-controls';
 import { writeFile } from 'node:fs/promises';
 import { assertOwnedObjectOrders, recordOwnedObjectSnapshot, type ExpectedOwnedObject } from './owned-object-worker-evidence';
 import { expect, test as base, type Page } from './network-changed-fixture';
@@ -208,6 +209,7 @@ test(`player builds Shower Room at quarterTurns${quarterTurns} and retains autho
     commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
   }, null, 2));
   await info.attach('shower-worker-and-pixel-evidence', { path: evidencePath, contentType: 'application/json' });
+  await openCameraControls(page);
   for (let step = 0; step < 3; step++) await page.getByRole('button', { name: quarterTurns === 0 ? 'Rotate camera right' : 'Rotate camera left', exact: true }).click();
   await page.mouse.move(1300, 700);
   await page.screenshot({ path: info.outputPath('physical-hardware-loaded-fullhd.png') });

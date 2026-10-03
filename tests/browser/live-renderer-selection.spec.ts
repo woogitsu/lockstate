@@ -1,3 +1,4 @@
+import { openCameraControls } from './public-camera-controls';
 import {expect,test} from './network-changed-fixture';
 import type {Page} from './network-changed-fixture';
 interface RendererProbe {workers:number;terminations:number;sent:unknown[];snapshot:()=>Promise<unknown>}
@@ -37,6 +38,7 @@ async function state(page:Page) {
 }
 async function bootUnsavedYard(page:Page):Promise<void> {
   await installProbe(page);await page.setViewportSize({width:1920,height:1080});await page.goto('/');
+  await openCameraControls(page);
   await page.getByRole('button',{name:'New prison',exact:true}).click();
   await page.getByRole('button',{name:'Build',exact:true}).click();
   await page.getByRole('button',{name:'Room plans',exact:true}).click();

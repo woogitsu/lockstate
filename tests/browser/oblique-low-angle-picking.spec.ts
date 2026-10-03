@@ -1,3 +1,4 @@
+import { openCameraControls } from './public-camera-controls';
 import { expect, test } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
 
@@ -12,6 +13,7 @@ test('Full HD shallow-angle room preview and placement name the same ground squa
   // The scene starts at yaw -45/elevation 45. Five visible 15-degree turns and
   // two 10-degree lowers reach yaw 30/elevation 25 without a test-only camera
   // seam. This is a genuinely shallow, non-axis-aligned production pose.
+  await openCameraControls(page);
   const turn = page.getByRole('button', { name: 'Rotate camera right', exact: true });
   for (let step = 0; step < 5; step += 1) await turn.click();
   const lower = page.getByRole('button', { name: 'Lower camera angle', exact: true });
