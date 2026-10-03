@@ -1,0 +1,31 @@
+{
+  "actualControls": [
+    {
+      "control": "actual .blend front arm upright rigid x+0.18, matched provenance source hash",
+      "mutatedSourceSHA256": "5be2ee8fd59e2bf78b5bc6a0f297bfe059a59e1c3b423a10f1e20066a3bf3eb6",
+      "exitCode": 1,
+      "reason": "Reception waiting armchair actual contact disconnected: Reception waiting armchair.continuous steel arm bearer.-0.32 / Reception waiting armchair.front steel arm upright.-0.32"
+    },
+    {
+      "control": "actual producer omits its own dispatch tuple",
+      "exitCode": 1,
+      "reason": "Reception waiting armchair dedicated producer dispatch changed"
+    },
+    {
+      "control": "actual valid RGBA PNG with opaque corner, matched descriptor hash and filename hash",
+      "badPNG_SHA256": "1e576cb7576414fece4bac9a8fb7808eab491ea2f0d2a3d8aefcb87c52d694a8",
+      "exitCode": 1,
+      "reason": "Reception armchair PNG transparent border"
+    }
+  ],
+  "boundedNewRepeatRenderCount": 4,
+  "actualProducerRepeatReceipt": "four-real-producer-repeats.json",
+  "sourceSHA256": "12cd91c54feb1d35603752eb7efe5c6245be190d77aa31d6e6b81121ea18457d",
+  "provenanceSHA256": "e6c1f46f592a1fbcf0da23c09347405bb086aed50dfca55cd4174fdce8870d2f",
+  "descriptorSHA256": "55fa838b7d646a308ce9d97ff2167a2ffbb914aa35d9db3b7544578dab942aea",
+  "exactSourceProvenanceProducerDescriptorRestoration": true,
+  "all72OwnExportsExactBytePreservation": true,
+  "originalChair72ExportsAndSharedFilesUnchanged": true,
+  "restoredProducerExitCode": 0,
+  "restoredUnitExitCode": 0
+}
