@@ -77,13 +77,13 @@ describe('Reception ObjectChair context in the actual world projection', () => {
     }
   });
 
-  it('keeps the original Reception desk and other furniture unchanged', () => {
+  it('selects the Reception registration desk while preserving unrelated furniture', () => {
     const structures: RenderStructure[] = [
       { id: 'desk', definitionId: 'desk-wooden', tileX: 5, tileY: 5, phase: 'built' },
       { id: 'bin', definitionId: 'waste-bin-brick', tileX: 7, tileY: 7, phase: 'built' },
     ];
     const projected = projectObliqueWorldFrame(frame(structures), camera());
-    expect(projected.raised.find(item => item.id === 'desk')?.assetId).toBe('furniture.office.desk.generic');
+    expect(projected.raised.find(item => item.id === 'desk')?.assetId).toBe('furniture.reception.registration-desk');
     expect(projected.raised.find(item => item.id === 'bin')?.assetId).toBe('fixture.cell.waste_bin');
   });
 

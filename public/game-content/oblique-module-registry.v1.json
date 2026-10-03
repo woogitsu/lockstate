@@ -253,6 +253,10 @@
                     {
                         "assetId":  "furniture.reception.waiting-armchair",
                         "manifest":  "/game-content/oblique-furniture-reception-waiting-armchair.v1.json"
+                    },
+                    {
+                        "assetId":  "furniture.reception.registration-desk",
+                        "manifest":  "/game-content/oblique-furniture-reception-registration-desk.v1.json"
                     }
                 ]
 }
