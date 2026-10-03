@@ -1,0 +1,10 @@
+$ vitest run "tests/unit/oblique-common-room-bench-art.test.ts" "tests/unit/oblique-common-room-bench-arm-supports-integrity.test.ts" "tests/unit/oblique-common-room-bench-context.test.ts"
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-common-room-bench-arm-supports-20261003
+
+
+ Test Files  3 passed (3)
+      Tests  9 passed (9)
+   Start at  11:03:52
+   Duration  528ms (transform 188ms, setup 0ms, import 573ms, tests 95ms, environment 0ms)
+
