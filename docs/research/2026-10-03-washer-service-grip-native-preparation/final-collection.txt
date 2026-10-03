@@ -1,0 +1,5 @@
+Listing tests:
+  dedicated-laundry-washing-machine-player-build.spec.ts:193:1 › player creates storage and delivery capacity before Laundry
+  dedicated-laundry-washing-machine-player-build.spec.ts:257:3 › player builds Laundry at quarterTurns0 and retains washing machine palettes and anchors after Save/Load
+  dedicated-laundry-washing-machine-player-build.spec.ts:257:3 › player builds Laundry at quarterTurns1 and retains washing machine palettes and anchors after Save/Load
+Total: 3 tests in 1 file
