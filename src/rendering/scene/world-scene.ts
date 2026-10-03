@@ -417,6 +417,9 @@ export class WorldScene extends Phaser.Scene {
   /** A native HUD selector takes keyboard ownership without cancelling tools. */
   public releaseKeyboardInput(): void { this.keyboard.releaseAll(); }
 
+  /** Explicit HUD disarming invalidates its unfinished press immediately. */
+  public cancelConstructionGesture(): void { this.cancelAllGestures(); }
+
   public create(): void {
     this.cameras.main.setBackgroundColor(VOID_COLOR);
     this.tiles = new TileLayer(this);
