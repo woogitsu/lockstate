@@ -719,6 +719,7 @@ describe('UI orchestration boundaries', () => {
       'src/ui/host-refusal.ts',
       'src/ui/language-messages.ts',
       'src/ui/language.ts',
+      'src/ui/object-rotation.ts',
       'src/ui/object-tool.ts',
       'src/ui/prisoner-sentence.ts',
       'src/ui/room-template-label-position.ts',

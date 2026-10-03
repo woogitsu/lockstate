@@ -7443,3 +7443,11 @@
   object-fit: contain;
 }
 .hud-build__object-thumbnail[hidden], .hud-build__list > .ui-row > svg[hidden] { display: none; }
+
+/* The approved fourth object action retains the existing tap-target floor.
+ * Keep panel allocation, enlarged Arm placement and catalogue floors intact. */
+@media (min-width: 1920px) and (min-height: 1080px) {
+  .hud-build:has(.hud-build__rotate-object:not([hidden])) .hud-build__actions > .ui-action {
+    min-width: var(--tap-target);
+  }
+}

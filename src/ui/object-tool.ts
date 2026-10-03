@@ -1,6 +1,7 @@
 import type { ObjectToolPort, TileRect } from '../rendering/build/area-picking';
 import type { BuildEdgeId } from '../rendering/build/edge-picking';
 import type { BuildPanelTarget, HudObjectGesture, HudWorldObjectSource } from './hud';
+import { rotatedObjectFootprint, type ObjectQuarterTurns } from './object-rotation';
 import type { ObjectPlacementPreflight } from '../simulation/objects/object-placement-service';
 import type { ObjectPlacementPreviewTarget } from './simulation-object-placement-port';
 
@@ -64,9 +65,10 @@ const REMOVAL_FOOTPRINT = { width: 1, height: 1 } as const;
 export class ObjectTool implements ObjectToolPort, HudWorldObjectSource {
   private armed = false;
   private removing = false;
+  private quarterTurns: ObjectQuarterTurns = 0;
   private definitionId: string | undefined;
   private tileFootprint: { readonly width: number; readonly height: number } | undefined;
-  private previewOwner: { readonly definitionId: string; readonly x: number; readonly y: number; readonly world: number } | undefined;
+  private previewOwner: { readonly definitionId: string; readonly x: number; readonly y: number; readonly world: number; readonly quarterTurns: ObjectQuarterTurns } | undefined;
   private preview: ObjectPlacementPreflight | undefined;
   private aimedRect: TileRect | undefined;
 
@@ -157,15 +159,21 @@ export class ObjectTool implements ObjectToolPort, HudWorldObjectSource {
       readonly definitionId?: string;
       readonly footprint?: { readonly width: number; readonly height: number };
       readonly removing?: boolean;
+      readonly quarterTurns?: ObjectQuarterTurns;
     } = {},
   ): void {
-    const wasArmed = this.armed, wasRemoving = this.removing, wasDefinition = this.definitionId;
-    if (options.definitionId !== undefined) this.definitionId = options.definitionId;
+    const wasArmed = this.armed, wasRemoving = this.removing, wasDefinition = this.definitionId, wasQuarterTurns = this.quarterTurns;
+    if (options.definitionId !== undefined) {
+      if (options.definitionId !== this.definitionId) this.quarterTurns = 0;
+      this.definitionId = options.definitionId;
+    }
+    this.quarterTurns = options.quarterTurns ?? this.quarterTurns;
     if (options.footprint !== undefined) this.tileFootprint = options.footprint;
     this.removing = options.removing ?? this.removing;
     this.armed =
       armed && (this.removing || (this.definitionId !== undefined && this.tileFootprint !== undefined));
-    if (!this.armed || wasArmed !== this.armed || wasRemoving !== this.removing || wasDefinition !== this.definitionId) this.clearPreview();
+    if (!this.armed || wasArmed !== this.armed || wasRemoving !== this.removing || wasDefinition !== this.definitionId ||
+        wasQuarterTurns !== this.quarterTurns) this.clearPreview();
     // A tool that is not armed is aimed at nothing, and says so -- the rule
     // `BuildTool.setArmed` records in full (#550).
     if (!this.armed) this.readout?.(undefined);
@@ -188,7 +196,7 @@ export class ObjectTool implements ObjectToolPort, HudWorldObjectSource {
    */
   public footprint(): { readonly width: number; readonly height: number } | undefined {
     if (!this.armed) return undefined;
-    return this.removing ? REMOVAL_FOOTPRINT : this.tileFootprint;
+    return this.removing ? REMOVAL_FOOTPRINT : this.tileFootprint === undefined ? undefined : rotatedObjectFootprint(this.tileFootprint, this.quarterTurns);
   }
 
   public get selectedDefinitionId(): string | undefined {
@@ -226,11 +234,12 @@ export class ObjectTool implements ObjectToolPort, HudWorldObjectSource {
     if (options !== undefined && this.armed && !this.removing && this.definitionId !== undefined) {
       const world = options.worldRevision();
       if (this.previewOwner?.definitionId !== this.definitionId || this.previewOwner.x !== rect.tileX ||
-          this.previewOwner.y !== rect.tileY || this.previewOwner.world !== world) {
-        const owner = { definitionId: this.definitionId, x: rect.tileX, y: rect.tileY, world };
+          this.previewOwner.y !== rect.tileY || this.previewOwner.world !== world || this.previewOwner.quarterTurns !== this.quarterTurns) {
+        const owner = { definitionId: this.definitionId, x: rect.tileX, y: rect.tileY, world, quarterTurns: this.quarterTurns };
         this.previewOwner = owner;
         this.preview = undefined;
-        void options.preflight({ definitionId: owner.definitionId, anchor: { x: owner.x, y: owner.y } }).then(verdict => {
+        void options.preflight({ definitionId: owner.definitionId, anchor: { x: owner.x, y: owner.y },
+          ...(owner.quarterTurns === 0 ? {} : { quarterTurns: owner.quarterTurns }) }).then(verdict => {
           if (this.previewOwner !== owner || !this.armed || this.removing || options.worldRevision() !== owner.world) return;
           this.preview = verdict;
           this.reportTarget(rect);
@@ -287,6 +296,7 @@ export class ObjectTool implements ObjectToolPort, HudWorldObjectSource {
     }
     const definitionId = this.definitionId;
     if (definitionId === undefined) return;
-    this.gestures?.({ kind: 'place', definitionId, x: tile.tileX, y: tile.tileY });
+    this.gestures?.({ kind: 'place', definitionId, x: tile.tileX, y: tile.tileY,
+      ...(this.quarterTurns === 0 ? {} : { quarterTurns: this.quarterTurns }) });
   }
 }

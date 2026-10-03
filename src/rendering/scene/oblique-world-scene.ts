@@ -170,6 +170,12 @@ export class ObliqueWorldScene extends Phaser.Scene {
   /** Explicit HUD disarming invalidates its unfinished press immediately. */
   public cancelConstructionGesture(): void { this.cancelGesture(); }
 
+  /** Repaint a changed individual selection from the real retained cursor; cancel stale release. */
+  public refreshObjectToolPreview(): void {
+    this.cancelGesture();
+    this.paintGesturePreview();
+  }
+
   /** A replacement worker must never inherit a held input from its predecessor. */
   public releaseSessionInput(): void {
     this.touchPointers.clear();
