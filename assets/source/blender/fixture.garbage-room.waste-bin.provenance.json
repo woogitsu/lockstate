@@ -1,0 +1,4236 @@
+{
+  "schemaVersion": 1,
+  "assetId": "fixture.garbage-room.waste-bin",
+  "originalSource": "assets/source/blender/fixture.cell.waste_bin.angled.blend",
+  "originalSourceSha256": "ff8f91f62e67ad69293c0560849664524a5e7cd34824137171f5cb3d740376c3",
+  "source": "assets/source/blender/fixture.garbage-room.waste-bin.blend",
+  "sourceSha256": "5d9cafee94af08098b045e389b642ec655536fe0cc8aae8b5e026822f7d984cc",
+  "footprintTiles": [
+    1,
+    1
+  ],
+  "retainedOriginalMeshNames": [
+    "bin body",
+    "bin cavity",
+    "bin shoulder",
+    "hinge bridge",
+    "label",
+    "lid",
+    "lid front",
+    "lid inset",
+    "pedal",
+    "pedal stem",
+    "side handle -0.33",
+    "side handle 0.33"
+  ],
+  "retainedRigidAssemblyTranslation": [
+    0,
+    0,
+    0.16
+  ],
+  "maximumRigidVertexError": 8.940696716308594e-08,
+  "retainedOriginalRawMeshes": [
+    {
+      "name": "bin body",
+      "rawVertexBytesSha256": "6df9bf6837c2a5a844ead0b7c7f87ed0e8e69ba4a17acb0a4a9c8621a00599ab",
+      "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+      "materials": [
+        "waste bin enamel"
+      ],
+      "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+      "modifiers": []
+    },
+    {
+      "name": "bin cavity",
+      "rawVertexBytesSha256": "9670097999d56e35bd79258748f6a5dc29d63a8c44a7b672ea077e3c95c97eb0",
+      "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+      "materials": [
+        "waste bin cavity"
+      ],
+      "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+      "modifiers": []
+    },
+    {
+      "name": "bin shoulder",
+      "rawVertexBytesSha256": "f7836e0f13587cd1e39e8d2f243288cae104b647e4cfbaebf5f4ccd04edee16b",
+      "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+      "materials": [
+        "waste bin edge"
+      ],
+      "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+      "modifiers": []
+    },
+    {
+      "name": "hinge bridge",
+      "rawVertexBytesSha256": "2896029bbfc9a71268916bf3aea21dd2f981a5d9281803684c04d61fb7fe252f",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "waste bin enamel"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft_edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft_edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.02500000037252903,
+            "width_pct": 0.02500000037252903,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "label",
+      "rawVertexBytesSha256": "b487c2a0f2057177e611f9512ce793c23e2eaa48e74ac91260e467f612ecf94b",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "waste bin label"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft_edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft_edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.00800000037997961,
+            "width_pct": 0.00800000037997961,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "lid",
+      "rawVertexBytesSha256": "60078bc5b90ee6765834c49ce02546080fd302fab825d1e8ac0fae4349e20c0b",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "waste bin edge"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft_edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft_edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.03500000014901161,
+            "width_pct": 0.03500000014901161,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "lid front",
+      "rawVertexBytesSha256": "a87d851da9bb9e0e5c46642b7017a23ff71678ea685142e7b05d963ca2b4114b",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "waste bin edge"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft_edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft_edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.00800000037997961,
+            "width_pct": 0.00800000037997961,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "lid inset",
+      "rawVertexBytesSha256": "156b4886d73f29da44fd054645199a2ecf4bb068e7aa29b0aea45cf170f6c7a8",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "waste bin enamel"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft_edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft_edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.014999999664723873,
+            "width_pct": 0.014999999664723873,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "pedal",
+      "rawVertexBytesSha256": "efcd67311abaef779a1fbbc39a9033f0a48dafe1cd4109b44317cbd80686a394",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "waste bin pedal"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft_edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft_edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.017999999225139618,
+            "width_pct": 0.017999999225139618,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "pedal stem",
+      "rawVertexBytesSha256": "5a43bb2d5ac9bde770119dd1db94b4324493d805aad50ac9fb7c9f6c3ca1ebe5",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "waste bin enamel"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft_edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft_edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.009999999776482582,
+            "width_pct": 0.009999999776482582,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "side handle -0.33",
+      "rawVertexBytesSha256": "85543c6d84ccd2d36558dd47bce8ce39b3cf3bafaba6bd8a4d966194b2b77822",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "waste bin edge"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft_edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft_edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.009999999776482582,
+            "width_pct": 0.009999999776482582,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "side handle 0.33",
+      "rawVertexBytesSha256": "85543c6d84ccd2d36558dd47bce8ce39b3cf3bafaba6bd8a4d966194b2b77822",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "waste bin edge"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft_edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft_edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.009999999776482582,
+            "width_pct": 0.009999999776482582,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    }
+  ],
+  "retainedStoredMaterialGraphs": [
+    {
+      "name": "waste bin cavity",
+      "diffuse": [
+        0.017999999225139618,
+        0.02500000037252903,
+        0.027000000700354576,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.7200000286102295,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ],
+          "properties": {
+            "location": [
+              200.0,
+              100.0
+            ],
+            "location_absolute": [
+              200.0,
+              100.0
+            ],
+            "width": 140.0,
+            "height": 100.0,
+            "name": "Material Output",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeOutputMaterial",
+            "bl_label": "Material Output",
+            "bl_description": "Output surface material information for use in rendering",
+            "bl_icon": "NONE",
+            "bl_width_default": 140.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "is_active_output": true,
+            "target": "ALL"
+          }
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.800000011920929,
+                0.800000011920929,
+                0.800000011920929,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ],
+          "properties": {
+            "location": [
+              -200.0,
+              100.0
+            ],
+            "location_absolute": [
+              -200.0,
+              100.0
+            ],
+            "width": 240.0,
+            "height": 100.0,
+            "name": "Principled BSDF",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeBsdfPrincipled",
+            "bl_label": "Principled BSDF",
+            "bl_description": "Physically-based, easy-to-use shader for rendering surface materials, based on the OpenPBR model",
+            "bl_icon": "NONE",
+            "bl_width_default": 240.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "distribution": "MULTI_GGX",
+            "subsurface_method": "RANDOM_WALK"
+          }
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "7ea762404347cd8cb7da3c79e87f96e70f4d458314f5748532c03b40afa3e9c7"
+    },
+    {
+      "name": "waste bin edge",
+      "diffuse": [
+        0.3799999952316284,
+        0.550000011920929,
+        0.550000011920929,
+        1.0
+      ],
+      "metallic": 0.20000000298023224,
+      "roughness": 0.3499999940395355,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ],
+          "properties": {
+            "location": [
+              200.0,
+              100.0
+            ],
+            "location_absolute": [
+              200.0,
+              100.0
+            ],
+            "width": 140.0,
+            "height": 100.0,
+            "name": "Material Output",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeOutputMaterial",
+            "bl_label": "Material Output",
+            "bl_description": "Output surface material information for use in rendering",
+            "bl_icon": "NONE",
+            "bl_width_default": 140.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "is_active_output": true,
+            "target": "ALL"
+          }
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.800000011920929,
+                0.800000011920929,
+                0.800000011920929,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ],
+          "properties": {
+            "location": [
+              -200.0,
+              100.0
+            ],
+            "location_absolute": [
+              -200.0,
+              100.0
+            ],
+            "width": 240.0,
+            "height": 100.0,
+            "name": "Principled BSDF",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeBsdfPrincipled",
+            "bl_label": "Principled BSDF",
+            "bl_description": "Physically-based, easy-to-use shader for rendering surface materials, based on the OpenPBR model",
+            "bl_icon": "NONE",
+            "bl_width_default": 240.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "distribution": "MULTI_GGX",
+            "subsurface_method": "RANDOM_WALK"
+          }
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "e76775fa4e0516dd23bdf11010c6ccca2ff310bf3bc903a3e948a985698f825f"
+    },
+    {
+      "name": "waste bin enamel",
+      "diffuse": [
+        0.10000000149011612,
+        0.3400000035762787,
+        0.3700000047683716,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.47999998927116394,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ],
+          "properties": {
+            "location": [
+              200.0,
+              100.0
+            ],
+            "location_absolute": [
+              200.0,
+              100.0
+            ],
+            "width": 140.0,
+            "height": 100.0,
+            "name": "Material Output",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeOutputMaterial",
+            "bl_label": "Material Output",
+            "bl_description": "Output surface material information for use in rendering",
+            "bl_icon": "NONE",
+            "bl_width_default": 140.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "is_active_output": true,
+            "target": "ALL"
+          }
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.800000011920929,
+                0.800000011920929,
+                0.800000011920929,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ],
+          "properties": {
+            "location": [
+              -200.0,
+              100.0
+            ],
+            "location_absolute": [
+              -200.0,
+              100.0
+            ],
+            "width": 240.0,
+            "height": 100.0,
+            "name": "Principled BSDF",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeBsdfPrincipled",
+            "bl_label": "Principled BSDF",
+            "bl_description": "Physically-based, easy-to-use shader for rendering surface materials, based on the OpenPBR model",
+            "bl_icon": "NONE",
+            "bl_width_default": 240.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "distribution": "MULTI_GGX",
+            "subsurface_method": "RANDOM_WALK"
+          }
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "fbc6bfc7dbcf2646afed27e1fbe7af5cbe2f9194211aa90757b35f697bdf56e3"
+    },
+    {
+      "name": "waste bin label",
+      "diffuse": [
+        0.7799999713897705,
+        0.8199999928474426,
+        0.7200000286102295,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.5799999833106995,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ],
+          "properties": {
+            "location": [
+              200.0,
+              100.0
+            ],
+            "location_absolute": [
+              200.0,
+              100.0
+            ],
+            "width": 140.0,
+            "height": 100.0,
+            "name": "Material Output",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeOutputMaterial",
+            "bl_label": "Material Output",
+            "bl_description": "Output surface material information for use in rendering",
+            "bl_icon": "NONE",
+            "bl_width_default": 140.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "is_active_output": true,
+            "target": "ALL"
+          }
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.800000011920929,
+                0.800000011920929,
+                0.800000011920929,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ],
+          "properties": {
+            "location": [
+              -200.0,
+              100.0
+            ],
+            "location_absolute": [
+              -200.0,
+              100.0
+            ],
+            "width": 240.0,
+            "height": 100.0,
+            "name": "Principled BSDF",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeBsdfPrincipled",
+            "bl_label": "Principled BSDF",
+            "bl_description": "Physically-based, easy-to-use shader for rendering surface materials, based on the OpenPBR model",
+            "bl_icon": "NONE",
+            "bl_width_default": 240.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "distribution": "MULTI_GGX",
+            "subsurface_method": "RANDOM_WALK"
+          }
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "18cda3c19d275c471f4dae9c3eb5d30bd5f1185640f98b499cd005159a268020"
+    },
+    {
+      "name": "waste bin pedal",
+      "diffuse": [
+        0.6800000071525574,
+        0.41999998688697815,
+        0.1599999964237213,
+        1.0
+      ],
+      "metallic": 0.15000000596046448,
+      "roughness": 0.3799999952316284,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ],
+          "properties": {
+            "location": [
+              200.0,
+              100.0
+            ],
+            "location_absolute": [
+              200.0,
+              100.0
+            ],
+            "width": 140.0,
+            "height": 100.0,
+            "name": "Material Output",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeOutputMaterial",
+            "bl_label": "Material Output",
+            "bl_description": "Output surface material information for use in rendering",
+            "bl_icon": "NONE",
+            "bl_width_default": 140.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "is_active_output": true,
+            "target": "ALL"
+          }
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.800000011920929,
+                0.800000011920929,
+                0.800000011920929,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ],
+          "properties": {
+            "location": [
+              -200.0,
+              100.0
+            ],
+            "location_absolute": [
+              -200.0,
+              100.0
+            ],
+            "width": 240.0,
+            "height": 100.0,
+            "name": "Principled BSDF",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeBsdfPrincipled",
+            "bl_label": "Principled BSDF",
+            "bl_description": "Physically-based, easy-to-use shader for rendering surface materials, based on the OpenPBR model",
+            "bl_icon": "NONE",
+            "bl_width_default": 240.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "distribution": "MULTI_GGX",
+            "subsurface_method": "RANDOM_WALK"
+          }
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "ffdfdfff357b406bc458aa6e64d30ec48f896d8eb570a85e95ede955cab1d737"
+    }
+  ],
+  "allAuthoredRawMeshes": [
+    {
+      "name": "Refuse trolley.amber wheel hub.-0.35.-0.23",
+      "rawVertexBytesSha256": "7d1b17c206fd9e36ba014c7fb2bc770d7d255a7a791932bb551fe8860e882c55",
+      "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+      "materials": [
+        "waste bin pedal"
+      ],
+      "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+      "modifiers": []
+    },
+    {
+      "name": "Refuse trolley.amber wheel hub.-0.35.0.23",
+      "rawVertexBytesSha256": "7d1b17c206fd9e36ba014c7fb2bc770d7d255a7a791932bb551fe8860e882c55",
+      "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+      "materials": [
+        "waste bin pedal"
+      ],
+      "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+      "modifiers": []
+    },
+    {
+      "name": "Refuse trolley.amber wheel hub.0.35.-0.23",
+      "rawVertexBytesSha256": "7d1b17c206fd9e36ba014c7fb2bc770d7d255a7a791932bb551fe8860e882c55",
+      "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+      "materials": [
+        "waste bin pedal"
+      ],
+      "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+      "modifiers": []
+    },
+    {
+      "name": "Refuse trolley.amber wheel hub.0.35.0.23",
+      "rawVertexBytesSha256": "7d1b17c206fd9e36ba014c7fb2bc770d7d255a7a791932bb551fe8860e882c55",
+      "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+      "materials": [
+        "waste bin pedal"
+      ],
+      "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+      "modifiers": []
+    },
+    {
+      "name": "Refuse trolley.bin retention side rail.-0.39",
+      "rawVertexBytesSha256": "a8f7e8dd9690de3df6d2d21c20ee5d1f9d36f2ebda1a07e449601266d52c9f32",
+      "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+      "materials": [
+        "waste bin enamel"
+      ],
+      "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+      "modifiers": []
+    },
+    {
+      "name": "Refuse trolley.bin retention side rail.0.39",
+      "rawVertexBytesSha256": "a8f7e8dd9690de3df6d2d21c20ee5d1f9d36f2ebda1a07e449601266d52c9f32",
+      "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+      "materials": [
+        "waste bin enamel"
+      ],
+      "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+      "modifiers": []
+    },
+    {
+      "name": "Refuse trolley.caster mounting fork.-0.35.-0.23",
+      "rawVertexBytesSha256": "fca1a7fb1625744d570e5cf76d1c5053e9945c3504d533efc80fc5f39cb77817",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "waste bin edge"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Retained soft stamped-edge style",
+          "type": "BEVEL",
+          "values": {
+            "name": "Retained soft stamped-edge style",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.00800000037997961,
+            "width_pct": 0.00800000037997961,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Refuse trolley.caster mounting fork.-0.35.0.23",
+      "rawVertexBytesSha256": "fca1a7fb1625744d570e5cf76d1c5053e9945c3504d533efc80fc5f39cb77817",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "waste bin edge"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Retained soft stamped-edge style",
+          "type": "BEVEL",
+          "values": {
+            "name": "Retained soft stamped-edge style",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.00800000037997961,
+            "width_pct": 0.00800000037997961,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Refuse trolley.caster mounting fork.0.35.-0.23",
+      "rawVertexBytesSha256": "fca1a7fb1625744d570e5cf76d1c5053e9945c3504d533efc80fc5f39cb77817",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "waste bin edge"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Retained soft stamped-edge style",
+          "type": "BEVEL",
+          "values": {
+            "name": "Retained soft stamped-edge style",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.00800000037997961,
+            "width_pct": 0.00800000037997961,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Refuse trolley.caster mounting fork.0.35.0.23",
+      "rawVertexBytesSha256": "fca1a7fb1625744d570e5cf76d1c5053e9945c3504d533efc80fc5f39cb77817",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "waste bin edge"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Retained soft stamped-edge style",
+          "type": "BEVEL",
+          "values": {
+            "name": "Retained soft stamped-edge style",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.00800000037997961,
+            "width_pct": 0.00800000037997961,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Refuse trolley.front amber reflector.-0.2",
+      "rawVertexBytesSha256": "b172b4a910e9417d1ffd4ae0fb42f4e0e2d5bf78ebc0ec90a9fb7f451e55b559",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "waste bin pedal"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Retained soft stamped-edge style",
+          "type": "BEVEL",
+          "values": {
+            "name": "Retained soft stamped-edge style",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.003000000026077032,
+            "width_pct": 0.003000000026077032,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Refuse trolley.front amber reflector.0",
+      "rawVertexBytesSha256": "b172b4a910e9417d1ffd4ae0fb42f4e0e2d5bf78ebc0ec90a9fb7f451e55b559",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "waste bin pedal"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Retained soft stamped-edge style",
+          "type": "BEVEL",
+          "values": {
+            "name": "Retained soft stamped-edge style",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.003000000026077032,
+            "width_pct": 0.003000000026077032,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Refuse trolley.front amber reflector.0.2",
+      "rawVertexBytesSha256": "b172b4a910e9417d1ffd4ae0fb42f4e0e2d5bf78ebc0ec90a9fb7f451e55b559",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "waste bin pedal"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Retained soft stamped-edge style",
+          "type": "BEVEL",
+          "values": {
+            "name": "Retained soft stamped-edge style",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.003000000026077032,
+            "width_pct": 0.003000000026077032,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Refuse trolley.front protective bumper",
+      "rawVertexBytesSha256": "89e08ea8f4bdb89601a6029060b6452b36639940d223f8fd11b6ef6e2cf0b672",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "waste bin enamel"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Retained soft stamped-edge style",
+          "type": "BEVEL",
+          "values": {
+            "name": "Retained soft stamped-edge style",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.00800000037997961,
+            "width_pct": 0.00800000037997961,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Refuse trolley.full-width push handle",
+      "rawVertexBytesSha256": "da9a8d1a88e135e9e94c76e4ce4be0bf27fb34ed1572dfd02a59b7a6616ce48e",
+      "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+      "materials": [
+        "waste bin edge"
+      ],
+      "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+      "modifiers": []
+    },
+    {
+      "name": "Refuse trolley.pressed steel carrier deck",
+      "rawVertexBytesSha256": "c71a6b7e72d174f1b892c2f23054251c458482f448b311c1e3a45f779b2e7464",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "waste bin edge"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Retained soft stamped-edge style",
+          "type": "BEVEL",
+          "values": {
+            "name": "Retained soft stamped-edge style",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.014999999664723873,
+            "width_pct": 0.014999999664723873,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Refuse trolley.rail to push-frame bracket.-0.39",
+      "rawVertexBytesSha256": "cb2689fd8ac204743ebf2eceb45aac532428a450afae16ef0d1161817cf33aba",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "waste bin edge"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Retained soft stamped-edge style",
+          "type": "BEVEL",
+          "values": {
+            "name": "Retained soft stamped-edge style",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.00800000037997961,
+            "width_pct": 0.00800000037997961,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Refuse trolley.rail to push-frame bracket.0.39",
+      "rawVertexBytesSha256": "cb2689fd8ac204743ebf2eceb45aac532428a450afae16ef0d1161817cf33aba",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "waste bin edge"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Retained soft stamped-edge style",
+          "type": "BEVEL",
+          "values": {
+            "name": "Retained soft stamped-edge style",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.00800000037997961,
+            "width_pct": 0.00800000037997961,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Refuse trolley.rear caster brake lever.-0.35.-0.23",
+      "rawVertexBytesSha256": "d162d52e1a2b5dcf8f4558c06f3ae7ee84f861533fe64c6a9ed80b2608a37461",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "waste bin enamel"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Retained soft stamped-edge style",
+          "type": "BEVEL",
+          "values": {
+            "name": "Retained soft stamped-edge style",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.006000000052154064,
+            "width_pct": 0.006000000052154064,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Refuse trolley.rear caster brake lever.0.35.-0.23",
+      "rawVertexBytesSha256": "d162d52e1a2b5dcf8f4558c06f3ae7ee84f861533fe64c6a9ed80b2608a37461",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "waste bin enamel"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Retained soft stamped-edge style",
+          "type": "BEVEL",
+          "values": {
+            "name": "Retained soft stamped-edge style",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.006000000052154064,
+            "width_pct": 0.006000000052154064,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Refuse trolley.rear push upright.-0.39",
+      "rawVertexBytesSha256": "df2460948afbff5c04d35b31916320fa25328dfe2dd385314f316985db0e1435",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "waste bin edge"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Retained soft stamped-edge style",
+          "type": "BEVEL",
+          "values": {
+            "name": "Retained soft stamped-edge style",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.00800000037997961,
+            "width_pct": 0.00800000037997961,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Refuse trolley.rear push upright.0.39",
+      "rawVertexBytesSha256": "df2460948afbff5c04d35b31916320fa25328dfe2dd385314f316985db0e1435",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "waste bin edge"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "Retained soft stamped-edge style",
+          "type": "BEVEL",
+          "values": {
+            "name": "Retained soft stamped-edge style",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.00800000037997961,
+            "width_pct": 0.00800000037997961,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Refuse trolley.rubber caster wheel.-0.35.-0.23",
+      "rawVertexBytesSha256": "f481b5c720a9257b4bc75450479c589fd0a4cbfd9db6728e7076c6c044df4a29",
+      "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+      "materials": [
+        "waste bin cavity"
+      ],
+      "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+      "modifiers": []
+    },
+    {
+      "name": "Refuse trolley.rubber caster wheel.-0.35.0.23",
+      "rawVertexBytesSha256": "f481b5c720a9257b4bc75450479c589fd0a4cbfd9db6728e7076c6c044df4a29",
+      "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+      "materials": [
+        "waste bin cavity"
+      ],
+      "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+      "modifiers": []
+    },
+    {
+      "name": "Refuse trolley.rubber caster wheel.0.35.-0.23",
+      "rawVertexBytesSha256": "f481b5c720a9257b4bc75450479c589fd0a4cbfd9db6728e7076c6c044df4a29",
+      "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+      "materials": [
+        "waste bin cavity"
+      ],
+      "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+      "modifiers": []
+    },
+    {
+      "name": "Refuse trolley.rubber caster wheel.0.35.0.23",
+      "rawVertexBytesSha256": "f481b5c720a9257b4bc75450479c589fd0a4cbfd9db6728e7076c6c044df4a29",
+      "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+      "materials": [
+        "waste bin cavity"
+      ],
+      "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+      "modifiers": []
+    },
+    {
+      "name": "Refuse trolley.solid wheel axle.-0.35.-0.23",
+      "rawVertexBytesSha256": "18cac2f2a92bc0bebde35dd659daa6c5ab848aabaa3e42afceb8795dbb2ef9a5",
+      "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+      "materials": [
+        "waste bin edge"
+      ],
+      "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+      "modifiers": []
+    },
+    {
+      "name": "Refuse trolley.solid wheel axle.-0.35.0.23",
+      "rawVertexBytesSha256": "18cac2f2a92bc0bebde35dd659daa6c5ab848aabaa3e42afceb8795dbb2ef9a5",
+      "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+      "materials": [
+        "waste bin edge"
+      ],
+      "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+      "modifiers": []
+    },
+    {
+      "name": "Refuse trolley.solid wheel axle.0.35.-0.23",
+      "rawVertexBytesSha256": "18cac2f2a92bc0bebde35dd659daa6c5ab848aabaa3e42afceb8795dbb2ef9a5",
+      "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+      "materials": [
+        "waste bin edge"
+      ],
+      "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+      "modifiers": []
+    },
+    {
+      "name": "Refuse trolley.solid wheel axle.0.35.0.23",
+      "rawVertexBytesSha256": "18cac2f2a92bc0bebde35dd659daa6c5ab848aabaa3e42afceb8795dbb2ef9a5",
+      "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+      "materials": [
+        "waste bin edge"
+      ],
+      "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+      "modifiers": []
+    },
+    {
+      "name": "bin body",
+      "rawVertexBytesSha256": "6df9bf6837c2a5a844ead0b7c7f87ed0e8e69ba4a17acb0a4a9c8621a00599ab",
+      "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+      "materials": [
+        "waste bin enamel"
+      ],
+      "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+      "modifiers": []
+    },
+    {
+      "name": "bin cavity",
+      "rawVertexBytesSha256": "9670097999d56e35bd79258748f6a5dc29d63a8c44a7b672ea077e3c95c97eb0",
+      "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+      "materials": [
+        "waste bin cavity"
+      ],
+      "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+      "modifiers": []
+    },
+    {
+      "name": "bin shoulder",
+      "rawVertexBytesSha256": "f7836e0f13587cd1e39e8d2f243288cae104b647e4cfbaebf5f4ccd04edee16b",
+      "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+      "materials": [
+        "waste bin edge"
+      ],
+      "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+      "modifiers": []
+    },
+    {
+      "name": "hinge bridge",
+      "rawVertexBytesSha256": "2896029bbfc9a71268916bf3aea21dd2f981a5d9281803684c04d61fb7fe252f",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "waste bin enamel"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft_edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft_edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.02500000037252903,
+            "width_pct": 0.02500000037252903,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "label",
+      "rawVertexBytesSha256": "b487c2a0f2057177e611f9512ce793c23e2eaa48e74ac91260e467f612ecf94b",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "waste bin label"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft_edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft_edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.00800000037997961,
+            "width_pct": 0.00800000037997961,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "lid",
+      "rawVertexBytesSha256": "60078bc5b90ee6765834c49ce02546080fd302fab825d1e8ac0fae4349e20c0b",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "waste bin edge"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft_edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft_edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.03500000014901161,
+            "width_pct": 0.03500000014901161,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "lid front",
+      "rawVertexBytesSha256": "a87d851da9bb9e0e5c46642b7017a23ff71678ea685142e7b05d963ca2b4114b",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "waste bin edge"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft_edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft_edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.00800000037997961,
+            "width_pct": 0.00800000037997961,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "lid inset",
+      "rawVertexBytesSha256": "156b4886d73f29da44fd054645199a2ecf4bb068e7aa29b0aea45cf170f6c7a8",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "waste bin enamel"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft_edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft_edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.014999999664723873,
+            "width_pct": 0.014999999664723873,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "pedal",
+      "rawVertexBytesSha256": "efcd67311abaef779a1fbbc39a9033f0a48dafe1cd4109b44317cbd80686a394",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "waste bin pedal"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft_edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft_edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.017999999225139618,
+            "width_pct": 0.017999999225139618,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "pedal stem",
+      "rawVertexBytesSha256": "5a43bb2d5ac9bde770119dd1db94b4324493d805aad50ac9fb7c9f6c3ca1ebe5",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "waste bin enamel"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft_edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft_edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.009999999776482582,
+            "width_pct": 0.009999999776482582,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "side handle -0.33",
+      "rawVertexBytesSha256": "85543c6d84ccd2d36558dd47bce8ce39b3cf3bafaba6bd8a4d966194b2b77822",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "waste bin edge"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft_edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft_edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.009999999776482582,
+            "width_pct": 0.009999999776482582,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "side handle 0.33",
+      "rawVertexBytesSha256": "85543c6d84ccd2d36558dd47bce8ce39b3cf3bafaba6bd8a4d966194b2b77822",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "waste bin edge"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft_edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft_edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.009999999776482582,
+            "width_pct": 0.009999999776482582,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    }
+  ],
+  "allAuthoredEvaluatedHashes": {
+    "Refuse trolley.amber wheel hub.-0.35.-0.23": "020546b6244fbbfb58177ee783dbc9b61373c2c2a30a5f0377908a8fd1499e9c",
+    "Refuse trolley.amber wheel hub.-0.35.0.23": "2ab7f5c8f1ae08d38e2737f6c4a9580a145a02f9a441f8af4a65e8f7a637a10b",
+    "Refuse trolley.amber wheel hub.0.35.-0.23": "8e79f9276e594857dcc064e5097b481a2df41cb286febc629fd20261c5b92f57",
+    "Refuse trolley.amber wheel hub.0.35.0.23": "0c7127e3d8f4447dbc4b85321e33d9ed79570119401ec3242e72ec4f47e634ad",
+    "Refuse trolley.bin retention side rail.-0.39": "c511fd3ca3406a94ab0b24d1bc14836be2bc8e969a897e2480cddacb92b37c4c",
+    "Refuse trolley.bin retention side rail.0.39": "2fc7ecd8749b6ad436e1cf0fbffdbb6586f2d7ac41be7cb8992cc0fe96be5121",
+    "Refuse trolley.caster mounting fork.-0.35.-0.23": "73591ffa84634ec2b225081d9b89374500e05a0f81889e62a6fd2d095800298c",
+    "Refuse trolley.caster mounting fork.-0.35.0.23": "d153e0965f76ee3583fcbd07e55ce1e03ee1f60d248cddc3d35eb82b849f014c",
+    "Refuse trolley.caster mounting fork.0.35.-0.23": "fd2432193fc1d37473a2076e940a8c770fa10d123b2463412349d501dc6ca72a",
+    "Refuse trolley.caster mounting fork.0.35.0.23": "1f6f68889c7d2ed6ee440d03db8af6033d0ff4adcfb6b15468905e2bae9e46be",
+    "Refuse trolley.front amber reflector.-0.2": "0d1f0ef9f9aa31c94ef54168bc0d3dd337e4c2309ab95a3d19b3e037d0a051d7",
+    "Refuse trolley.front amber reflector.0": "58e1dbce2c995f4d661539ed00ba24a2f842f7dcd7dafeff7406565c33d973bc",
+    "Refuse trolley.front amber reflector.0.2": "398044c0b4bbd892b240fd027b895b0364fd2a1d0185188b8474a3f3e38ff0c8",
+    "Refuse trolley.front protective bumper": "0a55f542633ebf3cec99f65792eeca1bedef31eace02daec6f7837552d9cd7bb",
+    "Refuse trolley.full-width push handle": "e90205617e638f3dfd37ad4541373889d1659a2ecba3a18c6b936922f8395126",
+    "Refuse trolley.pressed steel carrier deck": "0503aa73ad2db7031e51b22823561ed368a2c07fe53ed9588f14593efd04b3cb",
+    "Refuse trolley.rail to push-frame bracket.-0.39": "45ec857195cbee557fc3021b88207ceb498b2f0d4075e422f6d44cc85c806af2",
+    "Refuse trolley.rail to push-frame bracket.0.39": "a471b46f64df916b66d541fb46c2c3b3ef31926008291b49775c0bd877270b20",
+    "Refuse trolley.rear caster brake lever.-0.35.-0.23": "e1ac2afb51e7b22e8b174772d3551588b7606724773d30a2f49ff081ad72b47d",
+    "Refuse trolley.rear caster brake lever.0.35.-0.23": "9a103f5d2b0e87b82a6812446f718f1944ba41771795f4f16bc10718e7a64aa2",
+    "Refuse trolley.rear push upright.-0.39": "5c164f984311b8dec0dd555d79224a44377920c78f892bdb908325f7ef7802de",
+    "Refuse trolley.rear push upright.0.39": "488e47f13f76b37a4be1730f32d73ebbffb303920b57f41f1a09ae3e9fa2ec08",
+    "Refuse trolley.rubber caster wheel.-0.35.-0.23": "818a361dd579cbc733b9b699c3bc55b2ba2dfb070456b1532c6821f1bbe9c8a2",
+    "Refuse trolley.rubber caster wheel.-0.35.0.23": "72ab00c10bffa7de9cadacd02ee4551724bb43b68d6b51fe5d9791a983eb7601",
+    "Refuse trolley.rubber caster wheel.0.35.-0.23": "80641e2da058b42e108d125cad69ad0149edea7c976384bd1327a34bcdd5501b",
+    "Refuse trolley.rubber caster wheel.0.35.0.23": "02aa3362b7273cad2cd27c99440d2268eef2f2c2f0f3724ce2e1e783603a080e",
+    "Refuse trolley.solid wheel axle.-0.35.-0.23": "32ff4962f79d23c3bf1df836a1ed35125669a4806ce4c25f5d8398351995fd9c",
+    "Refuse trolley.solid wheel axle.-0.35.0.23": "be61b5363fc246f6d39d9cd8ad5be75ced84a7d24b871b93d6b87f83e0da7d69",
+    "Refuse trolley.solid wheel axle.0.35.-0.23": "f36348fcb3570442a7284865df51daa6674047363397895093ba7618baf1b43a",
+    "Refuse trolley.solid wheel axle.0.35.0.23": "edc39e198770c96f0d778602a3e80040af97fa83a5abc9c7395f77b77a336060",
+    "bin body": "2cf6cc55e822cb0d71713c1982fa75e64b730669dcf2519f63c812952c729c23",
+    "bin cavity": "9d052cd7b4efd5919d9f61660a473653151cb3c475f2c9cf9d344af2ef414475",
+    "bin shoulder": "234871cf00c6c1b5bd239c69721b41573ccd6b98f625c7d6bb86c82f5b850530",
+    "hinge bridge": "92b6cc3d694841bc065b0c8b125a25fdfdd994a91389e7f195d5555f89f9c416",
+    "label": "d066dd674e2dbc57e497d3203d05b99c21d48f25ca437a57a09d696505dd9cba",
+    "lid": "0535b216f38eb19a8da0ce7c527a5ff54b8eb28ba7b658c8353cc98c11df0cb2",
+    "lid front": "2c6d15d6f847e6e47d79c5f40778007d14bfd5d13d91e5447303b97f4e5faeb7",
+    "lid inset": "5d7daf8c8e1bdceb8769c5126929c1dc9bbe14b52a45d3eeaa430178be579acc",
+    "pedal": "9dcd76816cdba0739ca2d6b5f1b938db6f89c9f0a18e8901aad90a13140d1ea6",
+    "pedal stem": "f94e09f982b5fd9b39f077eab953e6d770fb07090f42c5d1154ee4ee595e8837",
+    "side handle -0.33": "5ebd6a964c23cf0c923bfa7c6ce3d40215a0ac6725f82ed36dc59e1713e81516",
+    "side handle 0.33": "865bbe6584de88a493e916062e9c978b1fc8a331bf922f67032240eae381a9a7"
+  },
+  "authoredEvaluatedNormals": [
+    {
+      "name": "Refuse trolley.amber wheel hub.-0.35.-0.23",
+      "polygons": 34,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.010999947786331177,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Refuse trolley.amber wheel hub.-0.35.0.23",
+      "polygons": 34,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.010999947786331177,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Refuse trolley.amber wheel hub.0.35.-0.23",
+      "polygons": 34,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.010999947786331177,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Refuse trolley.amber wheel hub.0.35.0.23",
+      "polygons": 34,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.010999947786331177,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Refuse trolley.bin retention side rail.-0.39",
+      "polygons": 34,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.026869936846196298,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Refuse trolley.bin retention side rail.0.39",
+      "polygons": 34,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.026869921013712453,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Refuse trolley.caster mounting fork.-0.35.-0.23",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.03249990940093994,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Refuse trolley.caster mounting fork.-0.35.0.23",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.03249990940093994,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Refuse trolley.caster mounting fork.0.35.-0.23",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.032499849796295166,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Refuse trolley.caster mounting fork.0.35.0.23",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.032499849796295166,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Refuse trolley.front amber reflector.-0.2",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.00499996542930603,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Refuse trolley.front amber reflector.0",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.00499996542930603,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Refuse trolley.front amber reflector.0.2",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.00499996542930603,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Refuse trolley.front protective bumper",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.02999994158744812,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Refuse trolley.full-width push handle",
+      "polygons": 34,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.02985534444451332,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Refuse trolley.pressed steel carrier deck",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.0299999862909317,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Refuse trolley.rail to push-frame bracket.-0.39",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.02749994397163391,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Refuse trolley.rail to push-frame bracket.0.39",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.02749994397163391,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Refuse trolley.rear caster brake lever.-0.35.-0.23",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.012499943375587463,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Refuse trolley.rear caster brake lever.0.35.-0.23",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.012499943375587463,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Refuse trolley.rear push upright.-0.39",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.022499889135360718,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Refuse trolley.rear push upright.0.39",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.022499650716781616,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Refuse trolley.rubber caster wheel.-0.35.-0.23",
+      "polygons": 34,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.037499841302633286,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Refuse trolley.rubber caster wheel.-0.35.0.23",
+      "polygons": 34,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.037499845027923584,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Refuse trolley.rubber caster wheel.0.35.-0.23",
+      "polygons": 34,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.037499845027923584,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Refuse trolley.rubber caster wheel.0.35.0.23",
+      "polygons": 34,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.037499845027923584,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Refuse trolley.solid wheel axle.-0.35.-0.23",
+      "polygons": 34,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.01990367172402299,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Refuse trolley.solid wheel axle.-0.35.0.23",
+      "polygons": 34,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.019903680775317366,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Refuse trolley.solid wheel axle.0.35.-0.23",
+      "polygons": 34,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.019903671724023606,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Refuse trolley.solid wheel axle.0.35.0.23",
+      "polygons": 34,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.019903680775311773,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "bin body",
+      "polygons": 34,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.3383627594448626,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "bin cavity",
+      "polygons": 34,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.008999704383313656,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "bin shoulder",
+      "polygons": 34,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.029999613761901855,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "hinge bridge",
+      "polygons": 54,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.049999773502349854,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "label",
+      "polygons": 54,
+      "degenerateIndices": [
+        24,
+        25,
+        28,
+        29,
+        38,
+        39,
+        40,
+        41,
+        48,
+        49,
+        51,
+        53
+      ],
+      "minimumOutwardDistance": 0.005999892950057983,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "lid",
+      "polygons": 54,
+      "degenerateIndices": [
+        26,
+        27,
+        30,
+        31,
+        36,
+        37,
+        42,
+        43,
+        49,
+        50,
+        52,
+        53
+      ],
+      "minimumOutwardDistance": 0.034999966621398926,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "lid front",
+      "polygons": 54,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.00899970531463623,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "lid inset",
+      "polygons": 54,
+      "degenerateIndices": [
+        26,
+        27,
+        30,
+        37,
+        42,
+        49,
+        50,
+        52,
+        53
+      ],
+      "minimumOutwardDistance": -1.1920928955078125e-07,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "pedal",
+      "polygons": 54,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.024999946355819702,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "pedal stem",
+      "polygons": 54,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.030000001192092896,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "side handle -0.33",
+      "polygons": 54,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.017499923706054688,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "side handle 0.33",
+      "polygons": 54,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.017499864101409912,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    }
+  ],
+  "sourceEvaluatedBounds": {
+    "min": [
+      -0.42250001430511475,
+      -0.4874999523162842,
+      -1.6391771273660538e-09
+    ],
+    "max": [
+      0.42250001430511475,
+      0.48750001192092896,
+      1.1899999380111694
+    ]
+  },
+  "actualContactPairs": [
+    [
+      "Refuse trolley.pressed steel carrier deck",
+      "bin body"
+    ],
+    [
+      "Refuse trolley.caster mounting fork.-0.35.-0.23",
+      "Refuse trolley.pressed steel carrier deck"
+    ],
+    [
+      "Refuse trolley.solid wheel axle.-0.35.-0.23",
+      "Refuse trolley.caster mounting fork.-0.35.-0.23"
+    ],
+    [
+      "Refuse trolley.rubber caster wheel.-0.35.-0.23",
+      "Refuse trolley.solid wheel axle.-0.35.-0.23"
+    ],
+    [
+      "Refuse trolley.amber wheel hub.-0.35.-0.23",
+      "Refuse trolley.rubber caster wheel.-0.35.-0.23"
+    ],
+    [
+      "Refuse trolley.rear caster brake lever.-0.35.-0.23",
+      "Refuse trolley.rubber caster wheel.-0.35.-0.23"
+    ],
+    [
+      "Refuse trolley.caster mounting fork.-0.35.0.23",
+      "Refuse trolley.pressed steel carrier deck"
+    ],
+    [
+      "Refuse trolley.solid wheel axle.-0.35.0.23",
+      "Refuse trolley.caster mounting fork.-0.35.0.23"
+    ],
+    [
+      "Refuse trolley.rubber caster wheel.-0.35.0.23",
+      "Refuse trolley.solid wheel axle.-0.35.0.23"
+    ],
+    [
+      "Refuse trolley.amber wheel hub.-0.35.0.23",
+      "Refuse trolley.rubber caster wheel.-0.35.0.23"
+    ],
+    [
+      "Refuse trolley.caster mounting fork.0.35.-0.23",
+      "Refuse trolley.pressed steel carrier deck"
+    ],
+    [
+      "Refuse trolley.solid wheel axle.0.35.-0.23",
+      "Refuse trolley.caster mounting fork.0.35.-0.23"
+    ],
+    [
+      "Refuse trolley.rubber caster wheel.0.35.-0.23",
+      "Refuse trolley.solid wheel axle.0.35.-0.23"
+    ],
+    [
+      "Refuse trolley.amber wheel hub.0.35.-0.23",
+      "Refuse trolley.rubber caster wheel.0.35.-0.23"
+    ],
+    [
+      "Refuse trolley.rear caster brake lever.0.35.-0.23",
+      "Refuse trolley.rubber caster wheel.0.35.-0.23"
+    ],
+    [
+      "Refuse trolley.caster mounting fork.0.35.0.23",
+      "Refuse trolley.pressed steel carrier deck"
+    ],
+    [
+      "Refuse trolley.solid wheel axle.0.35.0.23",
+      "Refuse trolley.caster mounting fork.0.35.0.23"
+    ],
+    [
+      "Refuse trolley.rubber caster wheel.0.35.0.23",
+      "Refuse trolley.solid wheel axle.0.35.0.23"
+    ],
+    [
+      "Refuse trolley.amber wheel hub.0.35.0.23",
+      "Refuse trolley.rubber caster wheel.0.35.0.23"
+    ],
+    [
+      "Refuse trolley.rear push upright.-0.39",
+      "Refuse trolley.pressed steel carrier deck"
+    ],
+    [
+      "Refuse trolley.rail to push-frame bracket.-0.39",
+      "Refuse trolley.rear push upright.-0.39"
+    ],
+    [
+      "Refuse trolley.rail to push-frame bracket.-0.39",
+      "Refuse trolley.bin retention side rail.-0.39"
+    ],
+    [
+      "Refuse trolley.bin retention side rail.-0.39",
+      "bin body"
+    ],
+    [
+      "Refuse trolley.rear push upright.0.39",
+      "Refuse trolley.pressed steel carrier deck"
+    ],
+    [
+      "Refuse trolley.rail to push-frame bracket.0.39",
+      "Refuse trolley.rear push upright.0.39"
+    ],
+    [
+      "Refuse trolley.rail to push-frame bracket.0.39",
+      "Refuse trolley.bin retention side rail.0.39"
+    ],
+    [
+      "Refuse trolley.bin retention side rail.0.39",
+      "bin body"
+    ],
+    [
+      "Refuse trolley.full-width push handle",
+      "Refuse trolley.rear push upright.-0.39"
+    ],
+    [
+      "Refuse trolley.full-width push handle",
+      "Refuse trolley.rear push upright.0.39"
+    ],
+    [
+      "Refuse trolley.front protective bumper",
+      "Refuse trolley.pressed steel carrier deck"
+    ],
+    [
+      "Refuse trolley.front amber reflector.-0.2",
+      "Refuse trolley.front protective bumper"
+    ],
+    [
+      "Refuse trolley.front amber reflector.0",
+      "Refuse trolley.front protective bumper"
+    ],
+    [
+      "Refuse trolley.front amber reflector.0.2",
+      "Refuse trolley.front protective bumper"
+    ]
+  ],
+  "actualTriangleInteriorContacts": [
+    {
+      "partA": "Refuse trolley.pressed steel carrier deck",
+      "partB": "bin body",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        -0.041249990463256836,
+        0.16499999165534973
+      ]
+    },
+    {
+      "partA": "Refuse trolley.caster mounting fork.-0.35.-0.23",
+      "partB": "Refuse trolley.pressed steel carrier deck",
+      "actualTriangleInteriorWitness": [
+        -0.3499999940395355,
+        -0.23000000417232513,
+        0.14000000059604645
+      ]
+    },
+    {
+      "partA": "Refuse trolley.solid wheel axle.-0.35.-0.23",
+      "partB": "Refuse trolley.caster mounting fork.-0.35.-0.23",
+      "actualTriangleInteriorWitness": [
+        -0.3499999940395355,
+        -0.23000000417232513,
+        0.10000000149011612
+      ]
+    },
+    {
+      "partA": "Refuse trolley.rubber caster wheel.-0.35.-0.23",
+      "partB": "Refuse trolley.solid wheel axle.-0.35.-0.23",
+      "actualTriangleInteriorWitness": [
+        -0.3499999940395355,
+        -0.23000000417232513,
+        0.10000000149011612
+      ]
+    },
+    {
+      "partA": "Refuse trolley.amber wheel hub.-0.35.-0.23",
+      "partB": "Refuse trolley.rubber caster wheel.-0.35.-0.23",
+      "actualTriangleInteriorWitness": [
+        -0.38075000047683716,
+        -0.23000000417232513,
+        0.10000000149011612
+      ]
+    },
+    {
+      "partA": "Refuse trolley.rear caster brake lever.-0.35.-0.23",
+      "partB": "Refuse trolley.rubber caster wheel.-0.35.-0.23",
+      "actualTriangleInteriorWitness": [
+        -0.3499999940395355,
+        -0.22999998927116394,
+        0.18774999678134918
+      ]
+    },
+    {
+      "partA": "Refuse trolley.caster mounting fork.-0.35.0.23",
+      "partB": "Refuse trolley.pressed steel carrier deck",
+      "actualTriangleInteriorWitness": [
+        -0.3499999940395355,
+        0.23000000417232513,
+        0.14000000059604645
+      ]
+    },
+    {
+      "partA": "Refuse trolley.solid wheel axle.-0.35.0.23",
+      "partB": "Refuse trolley.caster mounting fork.-0.35.0.23",
+      "actualTriangleInteriorWitness": [
+        -0.3499999940395355,
+        0.23000000417232513,
+        0.10000000149011612
+      ]
+    },
+    {
+      "partA": "Refuse trolley.rubber caster wheel.-0.35.0.23",
+      "partB": "Refuse trolley.solid wheel axle.-0.35.0.23",
+      "actualTriangleInteriorWitness": [
+        -0.3499999940395355,
+        0.23000000417232513,
+        0.10000000149011612
+      ]
+    },
+    {
+      "partA": "Refuse trolley.amber wheel hub.-0.35.0.23",
+      "partB": "Refuse trolley.rubber caster wheel.-0.35.0.23",
+      "actualTriangleInteriorWitness": [
+        -0.38075000047683716,
+        0.23000000417232513,
+        0.10000000149011612
+      ]
+    },
+    {
+      "partA": "Refuse trolley.caster mounting fork.0.35.-0.23",
+      "partB": "Refuse trolley.pressed steel carrier deck",
+      "actualTriangleInteriorWitness": [
+        0.3499999940395355,
+        -0.23000000417232513,
+        0.14000000059604645
+      ]
+    },
+    {
+      "partA": "Refuse trolley.solid wheel axle.0.35.-0.23",
+      "partB": "Refuse trolley.caster mounting fork.0.35.-0.23",
+      "actualTriangleInteriorWitness": [
+        0.3499999940395355,
+        -0.23000000417232513,
+        0.10000000149011612
+      ]
+    },
+    {
+      "partA": "Refuse trolley.rubber caster wheel.0.35.-0.23",
+      "partB": "Refuse trolley.solid wheel axle.0.35.-0.23",
+      "actualTriangleInteriorWitness": [
+        0.3499999940395355,
+        -0.23000000417232513,
+        0.10000000149011612
+      ]
+    },
+    {
+      "partA": "Refuse trolley.amber wheel hub.0.35.-0.23",
+      "partB": "Refuse trolley.rubber caster wheel.0.35.-0.23",
+      "actualTriangleInteriorWitness": [
+        0.38075000047683716,
+        -0.23000000417232513,
+        0.10000000149011612
+      ]
+    },
+    {
+      "partA": "Refuse trolley.rear caster brake lever.0.35.-0.23",
+      "partB": "Refuse trolley.rubber caster wheel.0.35.-0.23",
+      "actualTriangleInteriorWitness": [
+        0.3499999940395355,
+        -0.22999998927116394,
+        0.18774999678134918
+      ]
+    },
+    {
+      "partA": "Refuse trolley.caster mounting fork.0.35.0.23",
+      "partB": "Refuse trolley.pressed steel carrier deck",
+      "actualTriangleInteriorWitness": [
+        0.3499999940395355,
+        0.23000000417232513,
+        0.14000000059604645
+      ]
+    },
+    {
+      "partA": "Refuse trolley.solid wheel axle.0.35.0.23",
+      "partB": "Refuse trolley.caster mounting fork.0.35.0.23",
+      "actualTriangleInteriorWitness": [
+        0.3499999940395355,
+        0.23000000417232513,
+        0.10000000149011612
+      ]
+    },
+    {
+      "partA": "Refuse trolley.rubber caster wheel.0.35.0.23",
+      "partB": "Refuse trolley.solid wheel axle.0.35.0.23",
+      "actualTriangleInteriorWitness": [
+        0.3499999940395355,
+        0.23000000417232513,
+        0.10000000149011612
+      ]
+    },
+    {
+      "partA": "Refuse trolley.amber wheel hub.0.35.0.23",
+      "partB": "Refuse trolley.rubber caster wheel.0.35.0.23",
+      "actualTriangleInteriorWitness": [
+        0.38075000047683716,
+        0.23000000417232513,
+        0.10000000149011612
+      ]
+    },
+    {
+      "partA": "Refuse trolley.rear push upright.-0.39",
+      "partB": "Refuse trolley.pressed steel carrier deck",
+      "actualTriangleInteriorWitness": [
+        -0.38374999165534973,
+        -0.27000001072883606,
+        0.1625000238418579
+      ]
+    },
+    {
+      "partA": "Refuse trolley.rail to push-frame bracket.-0.39",
+      "partB": "Refuse trolley.rear push upright.-0.39",
+      "actualTriangleInteriorWitness": [
+        -0.38999998569488525,
+        -0.27000001072883606,
+        0.44999998807907104
+      ]
+    },
+    {
+      "partA": "Refuse trolley.rail to push-frame bracket.-0.39",
+      "partB": "Refuse trolley.bin retention side rail.-0.39",
+      "actualTriangleInteriorWitness": [
+        -0.3372499942779541,
+        -0.23500001430511475,
+        0.44999998807907104
+      ]
+    },
+    {
+      "partA": "Refuse trolley.bin retention side rail.-0.39",
+      "partB": "bin body",
+      "actualTriangleInteriorWitness": [
+        -0.3215000033378601,
+        -0.020000003278255463,
+        0.44999998807907104
+      ]
+    },
+    {
+      "partA": "Refuse trolley.rear push upright.0.39",
+      "partB": "Refuse trolley.pressed steel carrier deck",
+      "actualTriangleInteriorWitness": [
+        0.38374999165534973,
+        -0.27000001072883606,
+        0.1625000238418579
+      ]
+    },
+    {
+      "partA": "Refuse trolley.rail to push-frame bracket.0.39",
+      "partB": "Refuse trolley.rear push upright.0.39",
+      "actualTriangleInteriorWitness": [
+        0.38999998569488525,
+        -0.27000001072883606,
+        0.44999998807907104
+      ]
+    },
+    {
+      "partA": "Refuse trolley.rail to push-frame bracket.0.39",
+      "partB": "Refuse trolley.bin retention side rail.0.39",
+      "actualTriangleInteriorWitness": [
+        0.3372499942779541,
+        -0.23500001430511475,
+        0.44999998807907104
+      ]
+    },
+    {
+      "partA": "Refuse trolley.bin retention side rail.0.39",
+      "partB": "bin body",
+      "actualTriangleInteriorWitness": [
+        0.3215000033378601,
+        -0.020000003278255463,
+        0.44999998807907104
+      ]
+    },
+    {
+      "partA": "Refuse trolley.full-width push handle",
+      "partB": "Refuse trolley.rear push upright.-0.39",
+      "actualTriangleInteriorWitness": [
+        -0.38999998569488525,
+        -0.27000001072883606,
+        1.1575000286102295
+      ]
+    },
+    {
+      "partA": "Refuse trolley.full-width push handle",
+      "partB": "Refuse trolley.rear push upright.0.39",
+      "actualTriangleInteriorWitness": [
+        0.38999998569488525,
+        -0.27000001072883606,
+        1.1575000286102295
+      ]
+    },
+    {
+      "partA": "Refuse trolley.front protective bumper",
+      "partB": "Refuse trolley.pressed steel carrier deck",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        0.29250001907348633,
+        0.1599999964237213
+      ]
+    },
+    {
+      "partA": "Refuse trolley.front amber reflector.-0.2",
+      "partB": "Refuse trolley.front protective bumper",
+      "actualTriangleInteriorWitness": [
+        -0.20000000298023224,
+        0.32850000262260437,
+        0.18000000715255737
+      ]
+    },
+    {
+      "partA": "Refuse trolley.front amber reflector.0",
+      "partB": "Refuse trolley.front protective bumper",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        0.32850000262260437,
+        0.18000000715255737
+      ]
+    },
+    {
+      "partA": "Refuse trolley.front amber reflector.0.2",
+      "partB": "Refuse trolley.front protective bumper",
+      "actualTriangleInteriorWitness": [
+        0.20000000298023224,
+        0.32850000262260437,
+        0.18000000715255737
+      ]
+    }
+  ],
+  "cameraTargetTiles": [
+    0.5,
+    0.5,
+    0.5949999681859961
+  ]
+}
