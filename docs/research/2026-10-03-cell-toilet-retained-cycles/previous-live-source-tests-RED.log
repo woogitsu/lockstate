@@ -2,13 +2,13 @@
  RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-cell-toilet-cycles-20261003
 
 x·x
-node : 
+node :
 At line:3 char:1
 + node node_modules/vitest/vitest.mjs run tests/unit/oblique-cell-toile ...
 + ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     + CategoryInfo          : NotSpecified: (:String) [], RemoteException
     + FullyQualifiedErrorId : NativeCommandError
- 
+
 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
 
  FAIL  tests/unit/oblique-cell-toilet-dense.test.ts > existing toilet has a complete, square-aligned oblique model > lo
@@ -52,4 +52,3 @@ Received: "assets/source/blender/fixture.cell.toilet_sink.soft-light.blend"
       Tests  2 failed | 1 passed (3)
    Start at  23:20:54
    Duration  331ms (transform 117ms, setup 0ms, import 294ms, tests 32ms, environment 0ms)
-
