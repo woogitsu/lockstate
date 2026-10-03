@@ -1,0 +1,20 @@
+{
+  "sourceAndToolingStrictTypesExitCode": 0,
+  "focusedSuites": 7,
+  "passed": 19,
+  "skipped": 1,
+  "skipReason": "generic optional live Blender not on node PATH; pinned actualBlender5.2.1 producer/render/mutation/repeats executed successfully",
+  "actualRenderCount": 72,
+  "actualFourRepeatsByteExact": true,
+  "repeatRenderSeconds": 4.998766299977433,
+  "actualExportSeconds": 84.89337030000752,
+  "actualSemanticDispatchPNGConsumerRedRestoreGreen": true,
+  "protectedExactRestoredFiles": 232,
+  "nativeArtFixturePinsUpdatedOnly": true,
+  "noBrowserHelperChange": true,
+  "browserRun": false,
+  "serverRun": false,
+  "buildRun": false,
+  "fullVerifyRun": false,
+  "visualAcceptancePendingRoot": true
+}

@@ -10,7 +10,7 @@ const readPublic = (path: string): Buffer => readFileSync(new URL(`public${path}
 const sha = (body: Buffer): string => createHash('sha256').update(body).digest('hex');
 
 it('accepts independently pinned real source/descriptor/PNG using the native observer assertions', () => {
-  expect(sha(readFileSync(new URL(LAUNDRY_LINEN_ART.source, root)))).toBe('779d11f79c28b8049ccd3371d840c75b52cd153439f3882e28c593d05dd964ec');
+  expect(sha(readFileSync(new URL(LAUNDRY_LINEN_ART.source, root)))).toBe('2916717c4dd17d7be39a5725858b2356e53181cb735f2faeb28963d0adafa299');
   const verified = assertLaundryDeliveredArt(readPublic(LAUNDRY_LINEN_ART.descriptor), readPublic(LAUNDRY_LINEN_ART.exposedFrame));
   expect(verified.catalog.assetId).toBe('furniture.laundry.linen-rack');
   expect(verified.catalog.frames).toHaveLength(72);

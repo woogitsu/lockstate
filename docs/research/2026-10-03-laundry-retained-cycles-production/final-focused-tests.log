@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-laundry-retained-cycles-production-20261003
+
+·-··················
+
+ Test Files  7 passed (7)
+      Tests  19 passed | 1 skipped (20)
+   Start at  21:06:55
+   Duration  2.57s (transform 1.10s, setup 0ms, import 3.45s, tests 1.56s, environment 0ms)
+
