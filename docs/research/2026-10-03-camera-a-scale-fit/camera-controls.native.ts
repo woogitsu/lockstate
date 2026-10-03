@@ -1,7 +1,8 @@
 import { writeFile } from 'node:fs/promises';
 import { expect, test } from '../../../tests/browser/network-changed-fixture';
 import { installTee, sentCommands } from '../../../tests/browser/playtest-harness';
-import { installShowcaseReadProbe, showcaseSnapshot } from '../../../tests/browser/native-small-prison-showcase-evidence';
+import { installShowcaseReadProbe } from '../../../tests/browser/native-small-prison-showcase-evidence';
+import { readV10WholeSnapshot as showcaseSnapshot } from '../2026-10-03-approved-individual-object-rotate/native-evidence';
 import { readMinimapCameraObservation } from '../../../tests/browser/minimap-camera-observation';
 import { Localizer, buildMessageCatalog, defaultMessageCatalogEn } from '../../../src/services/localization';
 import { localePlCatalog } from '../../../src/content/locale-pl';

@@ -1,10 +1,10 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { expect, test, type Page } from '../../../tests/browser/network-changed-fixture';
 import { armBuildable, installTee, sentCommands } from '../../../tests/browser/playtest-harness';
-import { installShowcaseReadProbe, showcaseSnapshot } from '../../../tests/browser/native-small-prison-showcase-evidence';
+import { installShowcaseReadProbe } from '../../../tests/browser/native-small-prison-showcase-evidence';
 import { observeUnroundedMinimapViewport } from '../../../tests/browser/minimap-unrounded-reference';
 import { decodeSaveEnvelope } from '../../../src/persistence/save-schema';
-import { actionGeometry, actualVerdict, changedPixels, groundPoint, observeRotation, traceRotation } from './native-evidence';
+import { actionGeometry, actualVerdict, changedPixels, groundPoint, observeRotation, traceRotation, readV10WholeSnapshot as showcaseSnapshot } from './native-evidence';
 
 async function aim(page: Page, anchor: { x: number; y: number }) {
   const reference = await groundPoint(page, anchor); await page.mouse.move(reference.point.x, reference.point.y);
@@ -13,7 +13,7 @@ async function aim(page: Page, anchor: { x: number; y: number }) {
 }
 const objectCommands = async (page: Page) => (await sentCommands(page)).filter(command => command.type === 'PlaceObject');
 
-for (const locale of ['en', 'pl'] as const) test(`${locale}: #2019 approved Rotate control at FullHD UI100, actual oriented preflight, paid orders and whole V9 Save/Load`, async ({ page }, info) => {
+for (const locale of ['en', 'pl'] as const) test(`${locale}: #2019 approved Rotate control at FullHD UI100, actual oriented preflight, paid orders and whole V10 Save/Load`, async ({ page }, info) => {
   await installShowcaseReadProbe(page); await installTee(page); await observeRotation(page); await page.addInitScript(observeUnroundedMinimapViewport);
   await page.setViewportSize({ width: 1920, height: 1080 }); await page.goto('/?renderer=world');
   for (let attempt = 0; attempt < 3 && await page.locator('html').getAttribute('lang') !== locale; attempt++) {
@@ -127,7 +127,7 @@ for (const locale of ['en', 'pl'] as const) test(`${locale}: #2019 approved Rota
     const whole = await showcaseSnapshot(page, info.outputPath(`${locale}-ui${scale}-actual-q1-whole.json`));
     expect(whole.construction.orders.at(-1)).toMatchObject({ id: orderId, definitionId: 'desk-wooden', location: anchor, objectOrientation: 1, state: 'approved' });
     expect(whole.simulation?.economy?.treasury.balanceMinorUnits).toBe(24870);
-    expect(whole.construction.orderRevisions).toEqual({ [String(orderId)]: 1 });
+    expect(whole.construction.orderRevisions).toEqual({ [String(orderId)]: '1' });
     expect(whole.simulation?.objects?.placedObjects ?? []).toEqual([]);
     // This real transaction paid for an approved pending q1 desk. It has not
     // completed construction; do not report a completed rendered object here.
@@ -161,13 +161,13 @@ for (const locale of ['en', 'pl'] as const) test(`${locale}: #2019 approved Rota
     expect(q3Owner).not.toBe(orderId);
     expect(q3Shape).toEqual({ type: 'PlaceObject', definitionId: 'desk-wooden', ...q3Anchor, quarterTurns: 3 });
     await expect.poll(async () => (await showcaseSnapshot(page)).construction.orders).toHaveLength(2);
-    const both = await showcaseSnapshot(page, info.outputPath(`${locale}-ui100-actual-q1-q3-paid-whole-v9.json`));
+    const both = await showcaseSnapshot(page, info.outputPath(`${locale}-ui100-actual-q1-q3-paid-whole-v10.json`));
     expect(both.construction.orders.map(order => ({ id: order.id, definitionId: order.definitionId, location: order.location,
       objectOrientation: order.objectOrientation, state: order.state }))).toEqual([
       { id: orderId, definitionId: 'desk-wooden', location: anchor, objectOrientation: 1, state: 'approved' },
       { id: q3Owner, definitionId: 'desk-wooden', location: q3Anchor, objectOrientation: 3, state: 'approved' },
     ]);
-    expect(both.construction.orderRevisions).toEqual({ [String(orderId)]: 1, [String(q3Owner)]: 1 });
+    expect(both.construction.orderRevisions).toEqual({ [String(orderId)]: '1', [String(q3Owner)]: '1' });
     expect(both.simulation?.economy?.treasury.balanceMinorUnits).toBe(24740);
     expect(both.simulation?.objects?.placedObjects ?? []).toEqual([]);
     await armBuildable(page, 'desk-wooden', 10_000);
@@ -186,18 +186,18 @@ for (const locale of ['en', 'pl'] as const) test(`${locale}: #2019 approved Rota
   const downloadPromise = page.waitForEvent('download');
   await page.getByRole('button', { name: locale === 'pl' ? 'Eksportuj' : 'Export', exact: true }).click();
   const exported = await downloadPromise;
-  const exportPath = info.outputPath(`${locale}-actual-public-export-v9.json`);
+  const exportPath = info.outputPath(`${locale}-actual-public-export-v10.json`);
   await exported.saveAs(exportPath);
   const decoded = decodeSaveEnvelope(JSON.parse(await readFile(exportPath, 'utf8')));
   expect(decoded.ok, 'real public export must pass the production checksum/schema decoder').toBe(true);
   if (!decoded.ok) throw new Error('Actual public rotation save refused');
-  expect(decoded.value.saveSchemaVersion).toBe(9);
+  expect(decoded.value.saveSchemaVersion).toBe(10);
   expect(decoded.value.payload).toEqual(whole);
   await page.locator('.save-panel__item').first().getByRole('button', { name: locale === 'pl' ? 'Wczytaj' : 'Load', exact: true }).click();
   await expect(page.locator('.save-panel__status')).toHaveText(locale === 'pl' ? 'Wczytano.' : 'Loaded.');
   expect(await showcaseSnapshot(page)).toEqual(whole);
   await page.screenshot({ path: info.outputPath(`${locale}-ui100-actual-loaded-fullhd.png`) });
-  await showcaseSnapshot(page, info.outputPath(`${locale}-ui100-actual-loaded-whole-v9.json`));
+  await showcaseSnapshot(page, info.outputPath(`${locale}-ui100-actual-loaded-whole-v10.json`));
   const trace = await traceRotation(page);
   await writeFile(info.outputPath(`${locale}-actual-review-receipt.json`), JSON.stringify({ receipts, trace, commands: await sentCommands(page), whole }, null, 2));
   expect(trace.clicks.every(click => click.trusted)).toBe(true);
