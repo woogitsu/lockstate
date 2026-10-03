@@ -1,0 +1,492 @@
+{
+  "kind": "read-only-existing-source-audit",
+  "source": "assets/source/blender/furniture.chair.wooden.blend",
+  "sourceSha256": "dab33079c7a42b2967950bab72048953270520383adbf3873a65aeb8e1b6687d",
+  "sourceBytes": 5730180,
+  "meshCount": 16,
+  "materials": [
+    "Canteen worn steel",
+    "Corridor bench worn wood plank 0",
+    "Corridor bench worn wood plank 1",
+    "shade"
+  ],
+  "centeredMinimum": [
+    -0.3859996795654297,
+    -0.485249400138855,
+    0.0
+  ],
+  "centeredMaximum": [
+    0.3859996795654297,
+    0.4852507412433624,
+    1.3200000524520874
+  ],
+  "quarterTurnBounds": [
+    {
+      "quarterTurns": 0,
+      "minimum": [
+        0.11400032043457031,
+        0.01475059986114502,
+        0.0
+      ],
+      "maximum": [
+        0.8859996795654297,
+        0.9852507412433624,
+        1.3200000524520874
+      ],
+      "within1x1": true
+    },
+    {
+      "quarterTurns": 1,
+      "minimum": [
+        0.014749258756637573,
+        0.11400032043457031,
+        0.0
+      ],
+      "maximum": [
+        0.985249400138855,
+        0.8859996795654297,
+        1.3200000524520874
+      ],
+      "within1x1": true
+    },
+    {
+      "quarterTurns": 2,
+      "minimum": [
+        0.11400032043457031,
+        0.014749258756637573,
+        0.0
+      ],
+      "maximum": [
+        0.8859996795654297,
+        0.985249400138855,
+        1.3200000524520874
+      ],
+      "within1x1": true
+    },
+    {
+      "quarterTurns": 3,
+      "minimum": [
+        0.01475059986114502,
+        0.11400032043457031,
+        0.0
+      ],
+      "maximum": [
+        0.9852507412433624,
+        0.8859996795654297,
+        1.3200000524520874
+      ],
+      "within1x1": true
+    }
+  ],
+  "meshes": [
+    {
+      "name": "Chair refinement.back bracket -0.32",
+      "rawVertices": 8,
+      "rawFaces": 6,
+      "rawGeometrySha256": "a253fe588bd6b4391e1e131f46a6c29bfbd21535541b6eea80b807eea8d2f181",
+      "rawWinding": {
+        "outward": 6,
+        "inward": 0,
+        "degenerateOrTangential": 0
+      },
+      "evaluatedFaces": 54,
+      "evaluatedGeometricWinding": {
+        "outward": 54,
+        "inward": 0,
+        "degenerateOrTangential": 0
+      },
+      "modifiers": [
+        {
+          "name": "Worn softened edge",
+          "type": "BEVEL"
+        },
+        {
+          "name": "Weighted normals",
+          "type": "WEIGHTED_NORMAL"
+        }
+      ],
+      "materials": [
+        "Canteen worn steel"
+      ]
+    },
+    {
+      "name": "Chair refinement.back bracket 0.32",
+      "rawVertices": 8,
+      "rawFaces": 6,
+      "rawGeometrySha256": "a253fe588bd6b4391e1e131f46a6c29bfbd21535541b6eea80b807eea8d2f181",
+      "rawWinding": {
+        "outward": 6,
+        "inward": 0,
+        "degenerateOrTangential": 0
+      },
+      "evaluatedFaces": 54,
+      "evaluatedGeometricWinding": {
+        "outward": 54,
+        "inward": 0,
+        "degenerateOrTangential": 0
+      },
+      "modifiers": [
+        {
+          "name": "Worn softened edge",
+          "type": "BEVEL"
+        },
+        {
+          "name": "Weighted normals",
+          "type": "WEIGHTED_NORMAL"
+        }
+      ],
+      "materials": [
+        "Canteen worn steel"
+      ]
+    },
+    {
+      "name": "Chair refinement.back edge highlight",
+      "rawVertices": 8,
+      "rawFaces": 6,
+      "rawGeometrySha256": "11ed001cab5cd7e4a74ca627bc4c8edf361cf4aa8d047702da75d68e6e857896",
+      "rawWinding": {
+        "outward": 6,
+        "inward": 0,
+        "degenerateOrTangential": 0
+      },
+      "evaluatedFaces": 54,
+      "evaluatedGeometricWinding": {
+        "outward": 54,
+        "inward": 0,
+        "degenerateOrTangential": 0
+      },
+      "modifiers": [
+        {
+          "name": "Worn softened edge",
+          "type": "BEVEL"
+        },
+        {
+          "name": "Weighted normals",
+          "type": "WEIGHTED_NORMAL"
+        }
+      ],
+      "materials": [
+        "Canteen worn steel"
+      ]
+    },
+    {
+      "name": "Chair refinement.dark back inset",
+      "rawVertices": 8,
+      "rawFaces": 6,
+      "rawGeometrySha256": "1f59a9d5f423f98df67bdddb656b7ecd9bacae9a42bb781142a81ea709673649",
+      "rawWinding": {
+        "outward": 6,
+        "inward": 0,
+        "degenerateOrTangential": 0
+      },
+      "evaluatedFaces": 54,
+      "evaluatedGeometricWinding": {
+        "outward": 54,
+        "inward": 0,
+        "degenerateOrTangential": 0
+      },
+      "modifiers": [
+        {
+          "name": "Worn softened edge",
+          "type": "BEVEL"
+        },
+        {
+          "name": "Weighted normals",
+          "type": "WEIGHTED_NORMAL"
+        }
+      ],
+      "materials": [
+        "shade"
+      ]
+    },
+    {
+      "name": "Chair refinement.front foot -0.32",
+      "rawVertices": 32,
+      "rawFaces": 18,
+      "rawGeometrySha256": "dbd62af1fbb64753aef80341f75ecf32ad526553951a1f356c3b68f0194f5715",
+      "rawWinding": {
+        "outward": 18,
+        "inward": 0,
+        "degenerateOrTangential": 0
+      },
+      "evaluatedFaces": 18,
+      "evaluatedGeometricWinding": {
+        "outward": 18,
+        "inward": 0,
+        "degenerateOrTangential": 0
+      },
+      "modifiers": [],
+      "materials": [
+        "shade"
+      ]
+    },
+    {
+      "name": "Chair refinement.front foot 0.32",
+      "rawVertices": 32,
+      "rawFaces": 18,
+      "rawGeometrySha256": "dbd62af1fbb64753aef80341f75ecf32ad526553951a1f356c3b68f0194f5715",
+      "rawWinding": {
+        "outward": 18,
+        "inward": 0,
+        "degenerateOrTangential": 0
+      },
+      "evaluatedFaces": 18,
+      "evaluatedGeometricWinding": {
+        "outward": 18,
+        "inward": 0,
+        "degenerateOrTangential": 0
+      },
+      "modifiers": [],
+      "materials": [
+        "shade"
+      ]
+    },
+    {
+      "name": "Chair refinement.front leg -0.32",
+      "rawVertices": 32,
+      "rawFaces": 18,
+      "rawGeometrySha256": "509a78e32cbce020fbdf436bae721b0bf3768d54e409a153b0be55f24b8537d1",
+      "rawWinding": {
+        "outward": 18,
+        "inward": 0,
+        "degenerateOrTangential": 0
+      },
+      "evaluatedFaces": 18,
+      "evaluatedGeometricWinding": {
+        "outward": 18,
+        "inward": 0,
+        "degenerateOrTangential": 0
+      },
+      "modifiers": [],
+      "materials": [
+        "Canteen worn steel"
+      ]
+    },
+    {
+      "name": "Chair refinement.front leg 0.32",
+      "rawVertices": 32,
+      "rawFaces": 18,
+      "rawGeometrySha256": "509a78e32cbce020fbdf436bae721b0bf3768d54e409a153b0be55f24b8537d1",
+      "rawWinding": {
+        "outward": 18,
+        "inward": 0,
+        "degenerateOrTangential": 0
+      },
+      "evaluatedFaces": 18,
+      "evaluatedGeometricWinding": {
+        "outward": 18,
+        "inward": 0,
+        "degenerateOrTangential": 0
+      },
+      "modifiers": [],
+      "materials": [
+        "Canteen worn steel"
+      ]
+    },
+    {
+      "name": "Chair refinement.front seat edge",
+      "rawVertices": 8,
+      "rawFaces": 6,
+      "rawGeometrySha256": "e98c14010549a9117d06be37d743c76ee0133ac6030982481b599bcdba09c9bd",
+      "rawWinding": {
+        "outward": 6,
+        "inward": 0,
+        "degenerateOrTangential": 0
+      },
+      "evaluatedFaces": 54,
+      "evaluatedGeometricWinding": {
+        "outward": 54,
+        "inward": 0,
+        "degenerateOrTangential": 0
+      },
+      "modifiers": [
+        {
+          "name": "Worn softened edge",
+          "type": "BEVEL"
+        },
+        {
+          "name": "Weighted normals",
+          "type": "WEIGHTED_NORMAL"
+        }
+      ],
+      "materials": [
+        "Canteen worn steel"
+      ]
+    },
+    {
+      "name": "Chair refinement.rear foot -0.32",
+      "rawVertices": 32,
+      "rawFaces": 18,
+      "rawGeometrySha256": "7c7827e66f27b6c6a8642f01a6f60f7f65e862333f9d470d841f0c21d15d46f2",
+      "rawWinding": {
+        "outward": 18,
+        "inward": 0,
+        "degenerateOrTangential": 0
+      },
+      "evaluatedFaces": 18,
+      "evaluatedGeometricWinding": {
+        "outward": 18,
+        "inward": 0,
+        "degenerateOrTangential": 0
+      },
+      "modifiers": [],
+      "materials": [
+        "shade"
+      ]
+    },
+    {
+      "name": "Chair refinement.rear foot 0.32",
+      "rawVertices": 32,
+      "rawFaces": 18,
+      "rawGeometrySha256": "7c7827e66f27b6c6a8642f01a6f60f7f65e862333f9d470d841f0c21d15d46f2",
+      "rawWinding": {
+        "outward": 18,
+        "inward": 0,
+        "degenerateOrTangential": 0
+      },
+      "evaluatedFaces": 18,
+      "evaluatedGeometricWinding": {
+        "outward": 18,
+        "inward": 0,
+        "degenerateOrTangential": 0
+      },
+      "modifiers": [],
+      "materials": [
+        "shade"
+      ]
+    },
+    {
+      "name": "Chair refinement.rear post -0.32",
+      "rawVertices": 32,
+      "rawFaces": 18,
+      "rawGeometrySha256": "09781a102492f23807ec3e7a64d89f8df478e49ff245fb2fea398130eba76ef0",
+      "rawWinding": {
+        "outward": 18,
+        "inward": 0,
+        "degenerateOrTangential": 0
+      },
+      "evaluatedFaces": 18,
+      "evaluatedGeometricWinding": {
+        "outward": 18,
+        "inward": 0,
+        "degenerateOrTangential": 0
+      },
+      "modifiers": [],
+      "materials": [
+        "Canteen worn steel"
+      ]
+    },
+    {
+      "name": "Chair refinement.rear post 0.32",
+      "rawVertices": 32,
+      "rawFaces": 18,
+      "rawGeometrySha256": "09781a102492f23807ec3e7a64d89f8df478e49ff245fb2fea398130eba76ef0",
+      "rawWinding": {
+        "outward": 18,
+        "inward": 0,
+        "degenerateOrTangential": 0
+      },
+      "evaluatedFaces": 18,
+      "evaluatedGeometricWinding": {
+        "outward": 18,
+        "inward": 0,
+        "degenerateOrTangential": 0
+      },
+      "modifiers": [],
+      "materials": [
+        "Canteen worn steel"
+      ]
+    },
+    {
+      "name": "Chair refinement.seat underframe",
+      "rawVertices": 8,
+      "rawFaces": 6,
+      "rawGeometrySha256": "860f8dd1f58e3197bb90131ec4d8e961baef4d54de562e305ffd97b19dc674b0",
+      "rawWinding": {
+        "outward": 6,
+        "inward": 0,
+        "degenerateOrTangential": 0
+      },
+      "evaluatedFaces": 54,
+      "evaluatedGeometricWinding": {
+        "outward": 54,
+        "inward": 0,
+        "degenerateOrTangential": 0
+      },
+      "modifiers": [
+        {
+          "name": "Worn softened edge",
+          "type": "BEVEL"
+        },
+        {
+          "name": "Weighted normals",
+          "type": "WEIGHTED_NORMAL"
+        }
+      ],
+      "materials": [
+        "Canteen worn steel"
+      ]
+    },
+    {
+      "name": "Chair refinement.walnut back rail",
+      "rawVertices": 8,
+      "rawFaces": 6,
+      "rawGeometrySha256": "705a5305fb1eb3d1e33fb5c3e15b94454663969e0331a6166511fd13121d4802",
+      "rawWinding": {
+        "outward": 6,
+        "inward": 0,
+        "degenerateOrTangential": 0
+      },
+      "evaluatedFaces": 54,
+      "evaluatedGeometricWinding": {
+        "outward": 54,
+        "inward": 0,
+        "degenerateOrTangential": 0
+      },
+      "modifiers": [
+        {
+          "name": "Worn softened edge",
+          "type": "BEVEL"
+        },
+        {
+          "name": "Weighted normals",
+          "type": "WEIGHTED_NORMAL"
+        }
+      ],
+      "materials": [
+        "Corridor bench worn wood plank 1"
+      ]
+    },
+    {
+      "name": "Chair refinement.wooden seat",
+      "rawVertices": 8,
+      "rawFaces": 6,
+      "rawGeometrySha256": "6a23a69f792201e65b68f51b4321eae77138a303f3ecefba46b8986200f6aa60",
+      "rawWinding": {
+        "outward": 6,
+        "inward": 0,
+        "degenerateOrTangential": 0
+      },
+      "evaluatedFaces": 54,
+      "evaluatedGeometricWinding": {
+        "outward": 42,
+        "inward": 0,
+        "degenerateOrTangential": 12
+      },
+      "modifiers": [
+        {
+          "name": "Worn softened edge",
+          "type": "BEVEL"
+        },
+        {
+          "name": "Weighted normals",
+          "type": "WEIGHTED_NORMAL"
+        }
+      ],
+      "materials": [
+        "Corridor bench worn wood plank 0"
+      ]
+    }
+  ],
+  "normalAudit": "Independent world-space polygon edge cross-sums, after actual modifiers/transforms. All retained parts are convex. Weighted face-normal attributes are not used to assert geometric winding. Initial normal-attribute seat dots showed12 negative despite0 geometric negatives, so no topology correction is proposed."
+}
