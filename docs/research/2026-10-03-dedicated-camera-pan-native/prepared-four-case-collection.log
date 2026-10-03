@@ -1,0 +1,6 @@
+Listing tests:
+  dedicated-camera-pan-player.spec.ts:162:3 › world FullHD 100% four physical pan controls and armed room-plan confirmation
+  dedicated-camera-pan-player.spec.ts:162:3 › world FullHD 200% four physical pan controls and armed room-plan confirmation
+  dedicated-camera-pan-player.spec.ts:162:3 › oblique FullHD 100% four physical pan controls and armed room-plan confirmation
+  dedicated-camera-pan-player.spec.ts:162:3 › oblique FullHD 200% four physical pan controls and armed room-plan confirmation
+Total: 4 tests in 1 file
