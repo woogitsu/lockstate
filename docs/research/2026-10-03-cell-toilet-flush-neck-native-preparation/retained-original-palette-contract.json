@@ -1,0 +1,14 @@
+{
+  "baselineSource": "62cb36c50911beba41de83866a7195ea5f3a0047:tests/browser/dedicated-cell-toilet-player-build.spec.ts",
+  "originalToiletPaletteFunctionByteEqual": true,
+  "allOriginalRoiColourPredicatesUnchanged": true,
+  "originalMinimaExpressionsUnchanged": true,
+  "oldNativeCameraFourStepRecipeUnchanged": true,
+  "canonicalArtifactConfigUnmodified": true,
+  "budgetSeconds": 60,
+  "expectBudgetSeconds": 10,
+  "workers": 1,
+  "retries": 0,
+  "browserStarted": false,
+  "nativeAcceptanceClaimed": false
+}
