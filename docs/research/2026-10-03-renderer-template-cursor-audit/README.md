@@ -86,11 +86,12 @@ fresh bodies/comments for1923,1951 and1908 are retained separately.
 
 This bounded reproduction does not prove failure with a native keyboard View
 selection or full HUD fit at100/200% scale. Those remain ROOT's browser queue.
-No production mutation was made under ROOT's integration lease. A narrow fix
-proposal may retain only a genuine physical canvas point across bridge
+At the original diagnostic checkpoint, no production mutation had been made
+under ROOT's integration lease. The then-pending narrow proposal retained only a genuine physical canvas point across bridge
 replacement, clear it on actual UI movement and recompute using the current
 camera; it must never copy old world origin, fit lock, verdict or cost. Source
-lease/implementation and production-negative/byte-restore proof are pending.
+lease/implementation and production-negative/byte-restore proof were pending
+at that diagnostic checkpoint; the completed source work is recorded below.
 
 ## Implemented handoff and source acceptance
 
@@ -138,3 +139,35 @@ and guards its production implementation; it does not establish physical View
 keyboard selection, actual FullHD HUD safe-fit or browser pixels. ROOT will run
 a dedicated four-case fixture against the built client and preserve any setup
 or acceptance failure before attributing it to production.
+
+## Dedicated native fixture, prepared only
+
+`tests/browser/room-template-renderer-stationary-hover.spec.ts` collects exactly
+four cases: World?Angled and Angled?World, quarter-turn1 Basic cell with mirror
+off/on, physical1920?1080 and explicit accessibility UI100%. Strict fixture
+TypeScript and offline Playwright collection exit0. No browser/server launched.
+UI200% remains outside this prepared four-case native acceptance.
+
+The fixture starts the genuine game/New prison/Pause and uses actual catalogue
+buttons, native rotation/checkbox keyboard input, a physically hit-tested canvas
+hover, and native View Home/End. A passive Worker observer delays exactly the
+first actual nonzero-origin map-preflight **reply**, forwards its exact bytes
+later, and observes actual fresh preflight/cost/command receipts. Simulation is
+not mocked and no command/verdict/ghost/camera state is injected. Physical pointer
+move capture checks trusted canvas coordinates and unchanged move count across
+replacement and old reply release. Fresh clear28-polygon preview/worker quote
+must precede release; afterward its full quoted status remains unchanged and a
+physical down/up, with no new move, submits exactly one current fresh-origin
+rotated/mirrored command, receives `queued`, and stands down.
+
+The chosen880,380 cursor is an existing UI100% fixture point, with a required
+actual canvas hit precondition. Its legal q1 footprint and actual native initial
+preflight are asserted rather than assumed to have passed. ROOT must preserve
+any setup/preflight failure and calibrate only from actual evidence. The
+independent source transform/origin controls above are separate from this native
+receipt/cursor proof; this spec does not invent a second camera oracle from SVG.
+
+Research-index integration and canonical artifact routing belong to ROOT's
+integration checkpoint. Current source correction is
+`eaea1b8bfec19390b6b60b3f3a6b1ad490368f9b`; Issue1923 extension is
+https://github.com/woogitsu/lockstate/issues/1923#issuecomment-5965013048.

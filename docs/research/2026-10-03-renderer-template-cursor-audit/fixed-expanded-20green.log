@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-renderer-template-cursor-audit-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+   Start at  05:16:35
+   Duration  4.56s (transform 1.81s, setup 0ms, import 4.21s, tests 101ms, environment 0ms)
+

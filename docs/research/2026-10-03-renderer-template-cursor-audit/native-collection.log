@@ -1,0 +1,6 @@
+Listing tests:
+  room-template-renderer-stationary-hover.spec.ts:77:3 › FullHD world replacement keeps stationary rotated plan after old worker reply
+  room-template-renderer-stationary-hover.spec.ts:77:3 › FullHD world replacement keeps stationary rotated/mirrored plan after old worker reply
+  room-template-renderer-stationary-hover.spec.ts:77:3 › FullHD oblique replacement keeps stationary rotated plan after old worker reply
+  room-template-renderer-stationary-hover.spec.ts:77:3 › FullHD oblique replacement keeps stationary rotated/mirrored plan after old worker reply
+Total: 4 tests in 1 file
