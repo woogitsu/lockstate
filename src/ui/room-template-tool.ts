@@ -46,7 +46,10 @@ export class RoomTemplateTool {
 
   public select(templateId: RoomTemplateId, mirrorX = false, quarterTurns: QuarterTurns = 0): void {
     if (!Number.isInteger(quarterTurns) || quarterTurns < 0 || quarterTurns > 3) throw new RangeError('Room plan quarter turns must be an integer from 0 to 3.');
-    if (this.selected !== templateId || this.mirrorX !== mirrorX || this.quarterTurns !== quarterTurns) this.selectionRevision += 1;
+    if (this.selected !== templateId || this.mirrorX !== mirrorX || this.quarterTurns !== quarterTurns) {
+      this.selectionRevision += 1;
+      this.busy = undefined;
+    }
     this.selected = templateId;
     this.mirrorX = mirrorX;
     this.quarterTurns = quarterTurns;
@@ -55,7 +58,7 @@ export class RoomTemplateTool {
   public objectFootprint(id: string): { readonly width: number; readonly height: number } { return this.port.objectFootprint?.(id) ?? { width: 1, height: 1 }; }
   public get revision(): number { return this.selectionRevision; }
   public isArmed(): boolean { return this.armed; }
-  public arm(): void { this.port.onArm?.(); this.armed = true; this.selectionRevision += 1; }
+  public arm(): void { this.port.onArm?.(); this.armed = true; this.selectionRevision += 1; this.busy = undefined; }
   public standDown(): void {
     this.selectionRevision += 1;
     this.armed = false;
