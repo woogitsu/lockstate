@@ -23,3 +23,7 @@ The observer is installed before page.goto. It records real renderer descriptor/
 Failure preserves raw network rows, worker snapshot and FullHD. Root must run real baseline ? default-consumer-only RED ? byte-exact restoration/rebuild ? final genuine q0/q1 SaveLoad. Root must open native detail FullHD before accepting physical neck visibility. This is **pending native preparation**, not completed deployment.
 
 App/tools TypeScript currently exit0. Initial canonical--list refused because this fresh worktree had not yet built its production client; [raw prebuild refusal](raw-prebuild-list-refusal.txt) is retained. Prepared production build and final three-case list are pending next checkpoint. No config bypass/new matcher or server was used.
+
+## Prepared client checkpoint
+
+First coherent fixture checkpoint60bfa27ea5 is published. [Prepared client receipt](prepared-client-receipt.json): app/tools strict TypeScript exit0, real production build exit0 and unchanged canonical artifact--list exit0 with exactly3existing cases. [Raw final list](final-canonical-list.txt), [production build](production-build.txt) and [strict output](final-typescript.txt) are retained. List mode started **zero tests, zero browsers and zero servers**. Initial missing-build refusal was resolved by building the real subject, with no config bypass. Real native proof, actual q0/q1 FullHD, consumer-only RED/restoration and physical-neck scene visibility are still pending root.
