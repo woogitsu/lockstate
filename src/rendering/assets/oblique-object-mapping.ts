@@ -46,6 +46,9 @@ const ROOM_VISUAL_VARIANTS: readonly {
     'object.chair': 'furniture.classroom.school-chair',
     'object.desk': 'furniture.classroom.teacher-desk',
   }) },
+  { roomCatalogId: 'room.reception', objectAssets: Object.freeze({
+    'object.chair': 'furniture.reception.waiting-armchair',
+  }) },
   { roomCatalogId: 'room.garbage-room', objectAssets: Object.freeze({
     'object.waste-bin': 'fixture.garbage-room.waste-bin',
   }) },

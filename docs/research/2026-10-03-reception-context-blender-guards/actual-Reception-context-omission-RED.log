@@ -1,0 +1,34 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-reception-context-blender-guards-20261003
+
+ ❯ tests/unit/oblique-reception-chair-context.test.ts (7 tests | 2 failed) 17ms
+     × selects BOTH literal completed Reception chairs q0 with their canonical source60/e40 frame 8ms
+     × selects BOTH literal completed Reception chairs q1 with their canonical source60/e40 frame 2ms
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 5 passed (7)
+   Start at  14:37:37
+   Duration  605ms (transform 164ms, setup 0ms, import 468ms, tests 17ms, environment 0ms)
+
+[ELIFECYCLE] Test failed. See above for more details.
+$ vitest run "tests/unit/oblique-reception-chair-context.test.ts"
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-reception-chair-context.test.ts > Reception ObjectChair context in the actual world projection > selects BOTH literal completed Reception chairs q0 with their canonical source60/e40 frame
+ FAIL  tests/unit/oblique-reception-chair-context.test.ts > Reception ObjectChair context in the actual world projection > selects BOTH literal completed Reception chairs q1 with their canonical source60/e40 frame
+AssertionError: actual Reception chair context selector: expected 'furniture.chair.wooden' to be 'furniture.reception.waiting-armchair' // Object.is equality
+
+Expected: "furniture.reception.waiting-armchair"
+Received: "furniture.chair.wooden"
+
+ ❯ tests/unit/oblique-reception-chair-context.test.ts:48:73
+     46|     for (const structure of structures) {
+     47|       const solid = projected.raised.find(item => item.id === structur…
+     48|       expect(solid?.assetId, 'actual Reception chair context selector'…
+       |                                                                         ^
+     49|       if (solid === undefined) throw new Error('Literal purchased Rece…
+     50|       const selected = selectObliqueModuleFrame(catalog, { yawRadians:…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+

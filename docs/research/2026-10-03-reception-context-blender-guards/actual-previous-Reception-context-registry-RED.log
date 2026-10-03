@@ -1,0 +1,59 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-reception-context-blender-guards-20261003
+
+ ❯ tests/unit/oblique-reception-chair-context.test.ts (7 tests | 3 failed) 20ms
+     × selects BOTH literal completed Reception chairs q0 with their canonical source60/e40 frame 11ms
+     × selects BOTH literal completed Reception chairs q1 with their canonical source60/e40 frame 2ms
+     × registers the selected asset once with its real source and complete descriptor 3ms
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 4 passed (7)
+   Start at  14:35:50
+   Duration  600ms (transform 155ms, setup 0ms, import 465ms, tests 20ms, environment 0ms)
+
+[ELIFECYCLE] Test failed. See above for more details.
+$ vitest run "tests/unit/oblique-reception-chair-context.test.ts"
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-reception-chair-context.test.ts > Reception ObjectChair context in the actual world projection > selects BOTH literal completed Reception chairs q0 with their canonical source60/e40 frame
+ FAIL  tests/unit/oblique-reception-chair-context.test.ts > Reception ObjectChair context in the actual world projection > selects BOTH literal completed Reception chairs q1 with their canonical source60/e40 frame
+AssertionError: actual Reception chair context selector: expected 'furniture.chair.wooden' to be 'furniture.reception.waiting-armchair' // Object.is equality
+
+Expected: "furniture.reception.waiting-armchair"
+Received: "furniture.chair.wooden"
+
+ ❯ tests/unit/oblique-reception-chair-context.test.ts:48:73
+     46|     for (const structure of structures) {
+     47|       const solid = projected.raised.find(item => item.id === structur…
+     48|       expect(solid?.assetId, 'actual Reception chair context selector'…
+       |                                                                         ^
+     49|       if (solid === undefined) throw new Error('Literal purchased Rece…
+     50|       const selected = selectObliqueModuleFrame(catalog, { yawRadians:…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  tests/unit/oblique-reception-chair-context.test.ts > Reception ObjectChair context in the actual world projection > registers the selected asset once with its real source and complete descriptor
+AssertionError: actual runtime Reception registry entry: expected [] to deeply equal [ { …(2) } ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "assetId": "furniture.reception.waiting-armchair",
+-     "manifest": "/game-content/oblique-furniture-reception-waiting-armchair.v1.json",
+-   },
+- ]
++ []
+
+ ❯ tests/unit/oblique-reception-chair-context.test.ts:92:64
+     90|     const registry = parseObliqueModuleRegistry(JSON.parse(readFileSyn…
+     91|     const entries = registry.entries.filter(entry => entry.assetId ===…
+     92|     expect(entries, 'actual runtime Reception registry entry').toEqual…
+       |                                                                ^
+     93|       manifest: '/game-content/oblique-furniture-reception-waiting-arm…
+     94|     const entry = entries[0];
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
