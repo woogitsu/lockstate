@@ -1,0 +1,477 @@
+{
+  "schemaVersion": 1,
+  "assetId": "fixture.garbage-room.waste-bin",
+  "source": "assets/source/blender/fixture.garbage-room.waste-bin.blend",
+  "sourceSha256": "5d9cafee94af08098b045e389b642ec655536fe0cc8aae8b5e026822f7d984cc",
+  "resolutionPx": [
+    256,
+    256
+  ],
+  "nominalPixelsPerTile": 64,
+  "pivotPx": [
+    128,
+    128
+  ],
+  "cameraTargetTiles": [
+    0.5,
+    0.5,
+    0.5949999681859961
+  ],
+  "projection": "orthographic",
+  "yawDegrees": [
+    0,
+    30,
+    60,
+    90,
+    120,
+    150,
+    180,
+    210,
+    240,
+    270,
+    300,
+    330
+  ],
+  "elevationDegrees": [
+    20,
+    30,
+    40,
+    50,
+    60,
+    70
+  ],
+  "frames": [
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+00-elev20.27b3ff2e2c53.png",
+      "sha256": "27b3ff2e2c53f13312572b4ecdc107e7959ff8abb0a67b761e15f93e73416beb"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+00-elev30.017e7477a9ef.png",
+      "sha256": "017e7477a9efbe6ad22698cef093bc01ea76075b795ce70cd80aa88c152f2d61"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+00-elev40.12651a040ff3.png",
+      "sha256": "12651a040ff337a65975291bfdc1cdb5277245b0247653c823f86c665c3c3284"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+00-elev50.b1cd2c26486c.png",
+      "sha256": "b1cd2c26486c26b2c16988b9b0af260c9e7a88827acb951e0f3cd5e0ff645da9"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+00-elev60.2dbc164f0c00.png",
+      "sha256": "2dbc164f0c00361f4eef8d71a32a5c301985a1ad9d455dfe3b372ee081d2384e"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+00-elev70.4bf477f7f119.png",
+      "sha256": "4bf477f7f11989f9024a967dffb7bd19f54a7364905309381baa67821bc02248"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+30-elev20.869e6bcc439f.png",
+      "sha256": "869e6bcc439fd6d54800f03cd686934d2cd91108ed296e913b4ae0266302cf07"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+30-elev30.53f62c38a777.png",
+      "sha256": "53f62c38a77793b6ebd1679a2e5cd956e5c0bc0253f2cb4bf1304caf5c5f9090"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+30-elev40.4bca18430593.png",
+      "sha256": "4bca184305934d447463bba66a94076de35c56c3918a642678bee7c1ce41ab00"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+30-elev50.42b956ba3966.png",
+      "sha256": "42b956ba39663eb00dbd5e7d7a2d7768a1642dcc8789633961dac6a3db89025b"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+30-elev60.06352c539cc6.png",
+      "sha256": "06352c539cc624432af5b866ec215349815e820c0813d11687b63a8567279ed3"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+30-elev70.be5fbbc9d205.png",
+      "sha256": "be5fbbc9d205ab93018cbe6347fbf32834c56522d4f10584eeba9c7ee66f01c0"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+60-elev20.3ed309fafe9c.png",
+      "sha256": "3ed309fafe9c802b2a226e5dd91fdc6b345cc4be17f3d9375574cc74f1da5336"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+60-elev30.4b23d396d9b7.png",
+      "sha256": "4b23d396d9b7734875a5a5a9924797bc09824e68ee24f80284fd33519c9e9df4"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+60-elev40.a573c065a873.png",
+      "sha256": "a573c065a8733517712fdbecd752a47599b407cd1dcd0847a9fc00470cb9e348"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+60-elev50.a2d4a53b4166.png",
+      "sha256": "a2d4a53b4166e38c3fc43064c02163659f0a2bcec60f7828cc0618ff644a1962"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+60-elev60.8242d96b5f54.png",
+      "sha256": "8242d96b5f5417310a876cf9ba9db35299919bc53d937b1e56d077daf0930424"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+60-elev70.32bbc6fcd562.png",
+      "sha256": "32bbc6fcd562e3cf9a17e50dc45e1721c0fe1b6f34759169db081bc6fd9a094d"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+90-elev20.da6ceaf7310c.png",
+      "sha256": "da6ceaf7310c315c5311dac1fc0aa986cf7ad4752cf2cb6b450155e30d3ea843"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+90-elev30.91ae4872db75.png",
+      "sha256": "91ae4872db75b10b62e18069cc886a119b489c846458fdcbda7e844ca7d62ef0"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+90-elev40.8852ad80c499.png",
+      "sha256": "8852ad80c4990cd2da70951be46f652143227d22e9d2a519adeaf9cff24e5353"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+90-elev50.e752535efa82.png",
+      "sha256": "e752535efa825b183e4e3aef4ba8c6a7c8e1b75ed8bc0a131a922447664ef81c"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+90-elev60.bb63453ad7bc.png",
+      "sha256": "bb63453ad7bcbb333bdfd6c4a768ca3316d5b599b2534dd5d144ae11f70dc3d8"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+90-elev70.3452af8a60da.png",
+      "sha256": "3452af8a60da2f05b8c639a5966a6e4843b8a645dc610570cd53badc558250c7"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+120-elev20.591f6ad6a169.png",
+      "sha256": "591f6ad6a1692f208be2e58f8b22db8eeb34ee6681eda965881079ac844cfedc"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+120-elev30.3c992d08a5e7.png",
+      "sha256": "3c992d08a5e712ba3c64036b69e1ebe3581f8d2471b64890ea41b90861880c27"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+120-elev40.de974ee045e1.png",
+      "sha256": "de974ee045e17510a463666b2aec5323421b841d7598e83bcf8d39fb0a54ed06"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+120-elev50.99b50261b785.png",
+      "sha256": "99b50261b7855397b3dea2225b33413da98d7cfad6cc807a81635552e7fa856d"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+120-elev60.feee605fed87.png",
+      "sha256": "feee605fed87ca29b5b10f7ba941665bde30c108b8251d37e9e66761a015cd89"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+120-elev70.39954a2d8ab6.png",
+      "sha256": "39954a2d8ab66e8e3bfd640fbeedc006e87470684c1cfef5c6bed42837e49d63"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+150-elev20.7db7869ff2b7.png",
+      "sha256": "7db7869ff2b7cf28a6509f83f1460af3bc2a576b4dba7ef69d2076c67dcdc5bc"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+150-elev30.bf9eb54756b6.png",
+      "sha256": "bf9eb54756b682e63e4a158eebf0ebf3c542039da0d302f7cd30c8f6f809f5de"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+150-elev40.200517e8ed97.png",
+      "sha256": "200517e8ed974a376c01bf59cdf829eec70b11d7438b0f01024fb63eebb191d6"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+150-elev50.ef2f2bfe36dd.png",
+      "sha256": "ef2f2bfe36ddc05cfe2079bed9ec2624121be5222e914316a6f3a8ba47af528e"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+150-elev60.d1192ff143ed.png",
+      "sha256": "d1192ff143ed48898a3a21957e077fb5f10ccfebe54e9582986d5421461a4db0"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+150-elev70.3e6173f9b0b3.png",
+      "sha256": "3e6173f9b0b3c727a6e0b89eea3c54af7b2229db1e150bbd56460eaf80aff123"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+180-elev20.472f4579c39b.png",
+      "sha256": "472f4579c39bbb0b730df2fe88754ef243afa3b1834d74d9d9780a7a236fa203"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+180-elev30.da64ebc433a2.png",
+      "sha256": "da64ebc433a2b9e758ed3c7402f32779ec1dd1365f7967fd009a8e5ba0dca576"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+180-elev40.ce1796e03f84.png",
+      "sha256": "ce1796e03f84592837e8e9cc602bc8f8d44706e840f15df0d70424bc87958581"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+180-elev50.acada4821d99.png",
+      "sha256": "acada4821d99ef9c79d765de436dd319a6a0a29ab56559108a35f1d11e798a94"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+180-elev60.ff2e3dd86278.png",
+      "sha256": "ff2e3dd86278ec6af9f7c31137fe3cc15e2f6633e18a5998eb2be6a6c9e39388"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+180-elev70.c3113eb95e55.png",
+      "sha256": "c3113eb95e55e306cd4ee3c17db6a2fbbac56f7b4ebd6d5d00d69b600e133a43"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+210-elev20.4d12f1988395.png",
+      "sha256": "4d12f198839546f6a56b2b898258ad05a14af0594ce6a819eb14077b7460f79b"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+210-elev30.037cc858b7cb.png",
+      "sha256": "037cc858b7cb10283150ddd41794ded47081de69dd18ba56e72ff9226088ecce"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+210-elev40.071eb76eb0dc.png",
+      "sha256": "071eb76eb0dcf78dfbb784acfcec91bf18a0aba88da95c2060a4ced6f4d01721"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+210-elev50.37111e6780e9.png",
+      "sha256": "37111e6780e926401dce1150153abd06551457e09bc1ed03a1c66924f7b933cd"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+210-elev60.91452166ef7e.png",
+      "sha256": "91452166ef7eda830ce9337bd6748da6812e5580503f8012b27aae76d6ea2172"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+210-elev70.49a67b1d66ae.png",
+      "sha256": "49a67b1d66ae956cecb2cdf8e3ce2447b807845261fb01e2c48610f3599edfef"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+240-elev20.4af954ba3fce.png",
+      "sha256": "4af954ba3fce97b0b4b068bd67bb585d06cb1fa0594b742df87ef8cd00213784"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+240-elev30.dd464340b31c.png",
+      "sha256": "dd464340b31ce75c622a4dcd75b6f92ff9dffeca9fccb6849fb6289008bf0961"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+240-elev40.77771ccc0810.png",
+      "sha256": "77771ccc0810b4ab85bb7706775ac333c7019575d2bbb581a01a1405ac5a8ba6"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+240-elev50.2a917ccb4a42.png",
+      "sha256": "2a917ccb4a4265594204d30f084da9fd562dd186f505c82324145d6a2d84cde0"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+240-elev60.23c7a548fccf.png",
+      "sha256": "23c7a548fccff60bdf65e3648b6f06d0381e7ef50fcf0ac7b0ab90d9a996d151"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+240-elev70.96ddaac91302.png",
+      "sha256": "96ddaac9130273f37dee28d4bd3648352895ad30eb4c69924211ac9e950a4fb6"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+270-elev20.1f6c88225a12.png",
+      "sha256": "1f6c88225a12b9b3f1a6919ebd2e90da483c87be41bf1ae6deeaf2027e34f142"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+270-elev30.2a30bc6b22ee.png",
+      "sha256": "2a30bc6b22ee8ae8284e589eb2be62c7238d67f727038bf5460d02330fecb855"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+270-elev40.ac43e19bf527.png",
+      "sha256": "ac43e19bf527b5c6819ba7cf4511da44f217444f6215576496925212d6b9805d"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+270-elev50.6fa345bf4b80.png",
+      "sha256": "6fa345bf4b80a47833e00023c6a24c76aa3d4544e853495192e933d7543c88cb"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+270-elev60.1a30cccebfa6.png",
+      "sha256": "1a30cccebfa6a185d23383f35b7890d374250b0f3404ba6213ee8c72727066b7"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+270-elev70.7db4f4b36aa2.png",
+      "sha256": "7db4f4b36aa2f40f6daceadb81d60234edd8d539bba310588a8a101f2b8eda6d"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+300-elev20.33f0ea8c1ea0.png",
+      "sha256": "33f0ea8c1ea000f7ba069fac10026dabbf779dd0fc297911350e235d41442ecc"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+300-elev30.d1b0a51fa3ba.png",
+      "sha256": "d1b0a51fa3ba368ddd0d06a6f6e5c70c3d68aaac4d1c668d4635ec8d22407b6c"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+300-elev40.2a807505ad10.png",
+      "sha256": "2a807505ad10545931ca717ac4cf8627d50e380323fb6052af4531f082df812b"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+300-elev50.30f9f2e92e19.png",
+      "sha256": "30f9f2e92e193252148dae3e0a25cc750139d357bd5e7a2dad61a7dd514e38c8"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+300-elev60.90a7cbdb532b.png",
+      "sha256": "90a7cbdb532b6b3b53df16e4fe2ab2c7b4b2cdfc36235707fb30a52b5d53eb08"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+300-elev70.81ac2c99ce68.png",
+      "sha256": "81ac2c99ce685c7558b9b0f02a7dd85956e83aa634e8853c3e2b2d5ce66e4742"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+330-elev20.57aae9c256a1.png",
+      "sha256": "57aae9c256a13ef2f682bfc5e1efece196407822fdc9d420a30ca3a4d0fe0437"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+330-elev30.576761371a3f.png",
+      "sha256": "576761371a3fb025980ebdfff9311b58bae96e81b7facb529d352ffd4a3568db"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+330-elev40.b1dade694cb5.png",
+      "sha256": "b1dade694cb57f30eb61633ee7def3578ce25dd380373912af2a711c50ec62d0"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+330-elev50.b6f66e6bfbd7.png",
+      "sha256": "b6f66e6bfbd70f8b2f7273db2a75a906fe126ae09cd86e9edf53f12e982d0124"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+330-elev60.8b147ad1e7e7.png",
+      "sha256": "8b147ad1e7e78f13ca55a78baf4d8d30580e3d70616ca8ded7088c345710bb2d"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+330-elev70.a2babbb8615a.png",
+      "sha256": "a2babbb8615adf57b09bd3d62ba8b3ae421d9e6db9635e78db82276190d3c8e0"
+    }
+  ]
+}
