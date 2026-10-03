@@ -1,0 +1,240 @@
+pnpm : $ vitest run "--maxWorkers=4"
+At line:13 char:1
++ pnpm --config.verify-deps-before-run=false test --maxWorkers=4 *> ($m ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "--maxWorkers=4":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-staff-chair-v9-integration-20261003
+
+ ❯ tests/foundation/documentation-commit-citation-contract.test.ts (8 tests | 1 failed) 29ms
+     × cites only commits this repository publishes, so CI reads the same history a reader can 6ms
+ ❯ tests/unit/oblique-hud-cancel-rearm.test.ts (21 tests | 15 failed) 59ms
+   × world/wall: HUD cancel then re-arm before next render frame must not complete the cancelled old left press 15ms
+   × world/wall: HUD cancel alone prevents old release and fresh primary press after re-arm still works 3ms
+   × world/wall: ordinary fresh armed gesture submits its genuine command 2ms
+   × world/object: HUD cancel then re-arm before next render frame must not complete the cancelled old left press 2ms
+   × world/object: HUD cancel alone prevents old release and fresh primary press after re-arm still works 3ms
+   × world/object: ordinary fresh armed gesture submits its genuine command 2ms
+   × oblique/wall: HUD cancel then re-arm before next render frame must not complete the cancelled old left press 3ms
+   × oblique/wall: HUD cancel alone prevents old release and fresh primary press after re-arm still works 2ms
+   × oblique/wall: ordinary fresh armed gesture submits its genuine command 1ms
+   × oblique/object: HUD cancel then re-arm before next render frame must not complete the cancelled old left press 1ms
+   × oblique/object: HUD cancel alone prevents old release and fresh primary press after re-arm still works 2ms
+   × oblique/object: ordinary fresh armed gesture submits its genuine command 2ms
+   × world: HUD disarm/re-arm preserves active camera button1 ownership without submitting construction 2ms
+   × oblique: HUD disarm/re-arm preserves active camera button1 ownership without submitting construction 1ms
+   × oblique: HUD disarm/re-arm preserves active camera button2 ownership without submitting construction 1ms
+ ❯ tests/foundation/second-locale-contract.test.ts (18 tests | 1 failed) 51ms
+     × holds exactly the assembled sentences this list names 5ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 17 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/foundation/documentation-commit-citation-contract.test.ts > a commit sha cited in prose names a commit tha
+t exists > cites only commits this repository publishes, so CI reads the same history a reader can
+AssertionError: these cite a commit that exists on this disk and on no ref this repository publishes, so nobody else ca
+n check them and CI cannot either: `fetch-depth: 0` fetches all history for every published branch and tag and nothing 
+more. The usual cause is a sha read out of an agent's own worktree before the coordinator cherry-picked it, which rewri
+tes it -- `git branch -r --contains <sha>` tells you. Cite the commit as published, or record it in UNPUBLISHED_BY_ORIG
+IN with what it is and why the anchor cannot move: expected [ …(4) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/research/2026-10-03-approved-camera-view-disclosure/README.md:20 -> 12a1ee465df672b57d5dfd547e8f678d4f494bdc"
+,
++   "docs/research/2026-10-03-approved-camera-view-disclosure/README.md:21 -> 85cff605f5888ae930b80aeb56d1ec5774b4f985"
+,
++   "docs/research/2026-10-03-approved-camera-view-disclosure/README.md:46 -> 12a1ee465d",
++   "docs/research/2026-10-03-approved-individual-object-rotate/README.md:12 -> ec3b6971356a4c5b9d2d802363b2ef2b67595bc
+1",
++ ]
+
+ ❯ tests/foundation/documentation-commit-citation-contract.test.ts:748:7
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/17]⎯
+
+ FAIL  tests/foundation/second-locale-contract.test.ts > no player-visible sentence is assembled from a localized fragm
+ent and a literal (#664) > holds exactly the assembled sentences this list names
+AssertionError: put the punctuation inside the message (docs/LOCALIZATION.md rule 4), or record the site here with its 
+reason.
+  ui/hud/build-panel.ts:1703  `${t(HUD_MESSAGE_KEY.buildRotateObject)} ${localizer.formatNumber(quarterTurns * 90)}°`
+  ui/hud/build-panel.ts:2554  `${t(HUD_MESSAGE_KEY.buildDeliveryCancel)}: ${row.label.textContent}`
+  ui/hud/build-panel.ts:3071  `${t(HUD_MESSAGE_KEY.buildQueueCancel)}: ${row.label.textContent}`
+  ui/hud/room-template-preview.ts:113  `${t(objectNames[objectId]!) } × ${count}`
+  ui/hud/room-template-preview.ts:114  `${t(NAME_KEYS[id])}, ${plan.width} × ${plan.height}`
+  ui/hud/room-template-preview.ts:224  `${t(HUD_MESSAGE_KEY.buildTemplateBlocked)} (${verdict.tile.x}, ${verdict.tile.y
+})`
+  ui/hud/room-template-preview.ts:310  `${t(HUD_MESSAGE_KEY.buildTemplateFurniture)} × ${plan.objects.length}`
+  ui/hud/room-template-quote.ts:12  `${localizer.format(definition.nameKey as LocalizationKey)} × ${localizer.formatNum
+ber(material.quantity)}`: expected [ …(8) ] to deeply equal [ …(7) ]
+
+- Expected
++ Received
+
+  [
+    "`${localizer.format(definition.nameKey as LocalizationKey)} × ${localizer.formatNumber(material.quantity)}`",
+    "`${t(HUD_MESSAGE_KEY.buildDeliveryCancel)}: ${row.label.textContent}`",
+    "`${t(HUD_MESSAGE_KEY.buildQueueCancel)}: ${row.label.textContent}`",
++   "`${t(HUD_MESSAGE_KEY.buildRotateObject)} ${localizer.formatNumber(quarterTurns * 90)}°`",
+    "`${t(HUD_MESSAGE_KEY.buildTemplateBlocked)} (${verdict.tile.x}, ${verdict.tile.y})`",
+    "`${t(HUD_MESSAGE_KEY.buildTemplateFurniture)} × ${plan.objects.length}`",
+    "`${t(NAME_KEYS[id])}, ${plan.width} × ${plan.height}`",
+    "`${t(objectNames[objectId]!) } × ${count}`",
+  ]
+
+ ❯ tests/foundation/second-locale-contract.test.ts:773:7
+    771|         .map((site) => `  ${site.where}  ${site.text}`)
+    772|         .join('\n')}`,
+    773|     ).toEqual(Object.keys(ASSEMBLED_SENTENCES).sort());
+       |       ^
+    774|   });
+    775|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/17]⎯
+
+ FAIL  tests/unit/oblique-hud-cancel-rearm.test.ts > world/wall: HUD cancel then re-arm before next render frame must n
+ot complete the cancelled old left press
+ FAIL  tests/unit/oblique-hud-cancel-rearm.test.ts > world/object: HUD cancel then re-arm before next render frame must
+ not complete the cancelled old left press
+ReferenceError: reportArmed is not defined
+ ❯ eval tests/unit/oblique-hud-cancel-rearm.test.ts:135:20
+    133|     transitions.push(armed); applyArm({ armed, definitionId, removing …
+    134|   } };
+    135|   const activate = new Function('options', 'selectedId', 'paintArmed',
+       |                    ^
+    136|     `let armed = false; let removing = false; return () => {${activati…
+    137|   activate(); return { activate, transitions };
+ ❯ armButton tests/unit/oblique-hud-cancel-rearm.test.ts:137:3
+ ❯ tests/unit/oblique-hud-cancel-rearm.test.ts:141:52
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/17]⎯
+
+ FAIL  tests/unit/oblique-hud-cancel-rearm.test.ts > world/wall: HUD cancel alone prevents old release and fresh primar
+y press after re-arm still works
+ FAIL  tests/unit/oblique-hud-cancel-rearm.test.ts > world/object: HUD cancel alone prevents old release and fresh prim
+ary press after re-arm still works
+ReferenceError: reportArmed is not defined
+ ❯ eval tests/unit/oblique-hud-cancel-rearm.test.ts:135:20
+    133|     transitions.push(armed); applyArm({ armed, definitionId, removing …
+    134|   } };
+    135|   const activate = new Function('options', 'selectedId', 'paintArmed',
+       |                    ^
+    136|     `let armed = false; let removing = false; return () => {${activati…
+    137|   activate(); return { activate, transitions };
+ ❯ armButton tests/unit/oblique-hud-cancel-rearm.test.ts:137:3
+ ❯ tests/unit/oblique-hud-cancel-rearm.test.ts:154:52
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/17]⎯
+
+ FAIL  tests/unit/oblique-hud-cancel-rearm.test.ts > world/wall: ordinary fresh armed gesture submits its genuine comma
+nd
+ FAIL  tests/unit/oblique-hud-cancel-rearm.test.ts > world/object: ordinary fresh armed gesture submits its genuine com
+mand
+ReferenceError: reportArmed is not defined
+ ❯ eval tests/unit/oblique-hud-cancel-rearm.test.ts:135:20
+    133|     transitions.push(armed); applyArm({ armed, definitionId, removing …
+    134|   } };
+    135|   const activate = new Function('options', 'selectedId', 'paintArmed',
+       |                    ^
+    136|     `let armed = false; let removing = false; return () => {${activati…
+    137|   activate(); return { activate, transitions };
+ ❯ armButton tests/unit/oblique-hud-cancel-rearm.test.ts:137:3
+ ❯ tests/unit/oblique-hud-cancel-rearm.test.ts:160:40
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/17]⎯
+
+ FAIL  tests/unit/oblique-hud-cancel-rearm.test.ts > oblique/wall: HUD cancel then re-arm before next render frame must
+ not complete the cancelled old left press
+ FAIL  tests/unit/oblique-hud-cancel-rearm.test.ts > oblique/object: HUD cancel then re-arm before next render frame mu
+st not complete the cancelled old left press
+ReferenceError: reportArmed is not defined
+ ❯ eval tests/unit/oblique-hud-cancel-rearm.test.ts:135:20
+    133|     transitions.push(armed); applyArm({ armed, definitionId, removing …
+    134|   } };
+    135|   const activate = new Function('options', 'selectedId', 'paintArmed',
+       |                    ^
+    136|     `let armed = false; let removing = false; return () => {${activati…
+    137|   activate(); return { activate, transitions };
+ ❯ armButton tests/unit/oblique-hud-cancel-rearm.test.ts:137:3
+ ❯ tests/unit/oblique-hud-cancel-rearm.test.ts:141:52
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/17]⎯
+
+ FAIL  tests/unit/oblique-hud-cancel-rearm.test.ts > oblique/wall: HUD cancel alone prevents old release and fresh prim
+ary press after re-arm still works
+ FAIL  tests/unit/oblique-hud-cancel-rearm.test.ts > oblique/object: HUD cancel alone prevents old release and fresh pr
+imary press after re-arm still works
+ReferenceError: reportArmed is not defined
+ ❯ eval tests/unit/oblique-hud-cancel-rearm.test.ts:135:20
+    133|     transitions.push(armed); applyArm({ armed, definitionId, removing …
+    134|   } };
+    135|   const activate = new Function('options', 'selectedId', 'paintArmed',
+       |                    ^
+    136|     `let armed = false; let removing = false; return () => {${activati…
+    137|   activate(); return { activate, transitions };
+ ❯ armButton tests/unit/oblique-hud-cancel-rearm.test.ts:137:3
+ ❯ tests/unit/oblique-hud-cancel-rearm.test.ts:154:52
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/17]⎯
+
+ FAIL  tests/unit/oblique-hud-cancel-rearm.test.ts > oblique/wall: ordinary fresh armed gesture submits its genuine com
+mand
+ FAIL  tests/unit/oblique-hud-cancel-rearm.test.ts > oblique/object: ordinary fresh armed gesture submits its genuine c
+ommand
+ReferenceError: reportArmed is not defined
+ ❯ eval tests/unit/oblique-hud-cancel-rearm.test.ts:135:20
+    133|     transitions.push(armed); applyArm({ armed, definitionId, removing …
+    134|   } };
+    135|   const activate = new Function('options', 'selectedId', 'paintArmed',
+       |                    ^
+    136|     `let armed = false; let removing = false; return () => {${activati…
+    137|   activate(); return { activate, transitions };
+ ❯ armButton tests/unit/oblique-hud-cancel-rearm.test.ts:137:3
+ ❯ tests/unit/oblique-hud-cancel-rearm.test.ts:160:40
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/17]⎯
+
+ FAIL  tests/unit/oblique-hud-cancel-rearm.test.ts > world: HUD disarm/re-arm preserves active camera button1 ownership
+ without submitting construction
+ReferenceError: reportArmed is not defined
+ ❯ eval tests/unit/oblique-hud-cancel-rearm.test.ts:135:20
+    133|     transitions.push(armed); applyArm({ armed, definitionId, removing …
+    134|   } };
+    135|   const activate = new Function('options', 'selectedId', 'paintArmed',
+       |                    ^
+    136|     `let armed = false; let removing = false; return () => {${activati…
+    137|   activate(); return { activate, transitions };
+ ❯ armButton tests/unit/oblique-hud-cancel-rearm.test.ts:137:3
+ ❯ tests/unit/oblique-hud-cancel-rearm.test.ts:168:54
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/17]⎯
+
+ FAIL  tests/unit/oblique-hud-cancel-rearm.test.ts > oblique: HUD disarm/re-arm preserves active camera button1 ownersh
+ip without submitting construction
+ FAIL  tests/unit/oblique-hud-cancel-rearm.test.ts > oblique: HUD disarm/re-arm preserves active camera button2 ownersh
+ip without submitting construction
+ReferenceError: reportArmed is not defined
+ ❯ eval tests/unit/oblique-hud-cancel-rearm.test.ts:135:20
+    133|     transitions.push(armed); applyArm({ armed, definitionId, removing …
+    134|   } };
+    135|   const activate = new Function('options', 'selectedId', 'paintArmed',
+       |                    ^
+    136|     `let armed = false; let removing = false; return () => {${activati…
+    137|   activate(); return { activate, transitions };
+ ❯ armButton tests/unit/oblique-hud-cancel-rearm.test.ts:137:3
+ ❯ tests/unit/oblique-hud-cancel-rearm.test.ts:168:54
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/17]⎯
+
+
+ Test Files  3 failed | 724 passed (727)
+      Tests  17 failed | 8556 passed | 2 skipped (8575)
+   Start at  20:51:59
+   Duration  110.22s (transform 11.14s, setup 0ms, import 128.39s, tests 217.31s, environment 37ms)
+
+[ELIFECYCLE] Test failed. See above for more details.

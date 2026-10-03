@@ -1,0 +1,17 @@
+pnpm : $ vitest run "tests/unit/oblique-hud-cancel-rearm.test.ts" "tests/foundation/second-locale-contract.test.ts" "te
+sts/foundation/documentation-commit-citation-contract.test.ts" "--maxWorkers=4"
+At line:5 char:1
++ pnpm --config.verify-deps-before-run=false test tests/unit/oblique-hu ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...--maxWorkers=4":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-staff-chair-v9-integration-20261003
+
+
+ Test Files  3 passed (3)
+      Tests  47 passed (47)
+   Start at  20:59:38
+   Duration  16.97s (transform 1.30s, setup 0ms, import 20.52s, tests 123ms, environment 1ms)
+

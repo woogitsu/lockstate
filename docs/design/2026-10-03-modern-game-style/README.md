@@ -41,3 +41,23 @@ agent implements a paint-only modern skin, independently preserving geometry.
 The art agent prepares a bounded genuine Workbench-versus-Cycles comparison
 of the same retained Laundry model before a complete runtime export decision.
 Publish each coherent change and update the durable adjustable-camera plan.
+
+## Integrated control/skin source gate
+
+Root has combined the approved individual Rotate control, camera A disclosure,
+the modern semantic HUD skin and the genuine retained-material comparison.
+The material comparison remains a source draft; a complete Laundry matrix is
+being exported separately and is not yet used by this built subject.
+
+The complete 757ddd83ab source gate retained strict types exit 0, 8556 passes,
+two existing skips and 17 failures across 727 files; build was not reached.
+Fifteen failures were an existing source-extracted arming harness that omitted
+the now-used actual reportArmed closure. That harness now extracts the genuine
+closure and preserves all old cancellation/rearming/command assertions. One
+localization inventory failure now records the expressly approved localized
+Rotate label with its locale-formatted numeric degree indicator. The remaining
+citation failure required fetching the actual published A/B and Rotate draft
+refs; no publication guard or allowlist was weakened. Those same three files
+then passed all 47 tests. [Original logs and encoding/hash receipt](./raw/original-complete-receipt.json)
+retain the complete failed gate and corrected bounded result. Fresh combined
+native photos and complete release gates are still required.

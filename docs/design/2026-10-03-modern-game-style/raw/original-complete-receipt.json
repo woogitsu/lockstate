@@ -1,0 +1,36 @@
+{
+  "subject": "757ddd83ab7b717a0adecf51abc2b3fe0d7c786d",
+  "typesExit": 0,
+  "originalSuiteExit": 1,
+  "originalSuite": {
+    "failed": 17,
+    "passed": 8556,
+    "skipped": 2,
+    "files": 727
+  },
+  "correctedOwned": {
+    "passed": 47,
+    "files": 3
+  },
+  "buildReached": false,
+  "logs": [
+    {
+      "name": "original-complete-types.txt",
+      "originalEncoding": "utf16le",
+      "originalSHA256": "ecdfa4cb0f299f7e68aa66499f83f38ea00e18993b367c82f1c5ffcee721da62",
+      "archiveSHA256": "58fa91668980ea44bc02fbffe0480e4c38ffc6aaf81f35d0f8dbf5be71a9ef2f"
+    },
+    {
+      "name": "original-complete-suite.txt",
+      "originalEncoding": "utf16le",
+      "originalSHA256": "55a2ad2ab5b7d708a09c441d85e985d68760d0bf0c6bbe425ff8486eaf72eedb",
+      "archiveSHA256": "96eca3ce5476db239469e3beae73b61db3f0891478094da7faa2ead321ddeb0f"
+    },
+    {
+      "name": "three-corrected-green.txt",
+      "originalEncoding": "utf16le",
+      "originalSHA256": "2d4b2479785b4d10f6114b1633a307fe36aae23937cb7236bef568e08c6caf1b",
+      "archiveSHA256": "56fb599ab1c51f6cbf09af9cb8c5171965127a226e17842fddd0fd20a62df4a5"
+    }
+  ]
+}

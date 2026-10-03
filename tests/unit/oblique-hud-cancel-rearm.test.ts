@@ -108,8 +108,9 @@ async function setup(mode: 'world' | 'oblique', selected: Tool) {
 const hudSource = readFileSync(new URL('../../src/ui/hud/build-panel.ts', import.meta.url), 'utf8');
 const marker = hudSource.indexOf('  const armButton: ActionButton = createActionButton(');
 const activation = hudSource.slice(marker).match(/onActivate: \(\) => \{([\s\S]*?)\r?\n    \},/);
+const armReport = hudSource.match(/const reportArmed = \(\): void => ([^\r\n]+);/);
 const armCase = source.match(/case 'arm-build-tool': \{([\s\S]*?)\r?\n        \}\r?\n\r?\n        case 'arm-room-tool':/);
-if (marker < 0 || activation === null || armCase === null) throw Error('Unique actual HUD/main arming callbacks absent');
+if (marker < 0 || activation === null || armReport === null || armCase === null) throw Error('Unique actual HUD/main arming callbacks absent');
 const applyArm = new Function('intent', 'roomTemplateTool', 'tool', 'objects', 'objectFootprintOf', 'BUILDABLE_REGISTRY', 'worldScene', armCase[1]!);
 function armButton(h: Awaited<ReturnType<typeof setup>>, selected: 'wall' | 'object' | 'room') {
   h.tools.wall.setArmed(false); h.tools.object.setArmed(false);
@@ -129,11 +130,13 @@ function armButton(h: Awaited<ReturnType<typeof setup>>, selected: 'wall' | 'obj
   const transitions: boolean[] = [];
   const objectFootprintOf = (id: string) => { const objectId = BUILDABLE_REGISTRY.get(id)?.placesObjectId;
     const found = objectId === undefined ? undefined : defaultObjectRegistry.getById(objectId); return found?.footprint; };
-  const options = { onArm: (armed: boolean, definitionId: string, removing: boolean) => {
-    transitions.push(armed); applyArm({ armed, definitionId, removing }, undefined, h.tools.wall, h.tools.object, objectFootprintOf, BUILDABLE_REGISTRY, h.actual);
+  const options = { onArm: (armed: boolean, definitionId: string, removing: boolean, quarterTurns: 0 | 1 | 2 | 3) => {
+    transitions.push(armed); applyArm({ armed, definitionId, removing, quarterTurns }, undefined, h.tools.wall, h.tools.object, objectFootprintOf, BUILDABLE_REGISTRY, h.actual);
   } };
   const activate = new Function('options', 'selectedId', 'paintArmed',
-    `let armed = false; let removing = false; return () => {${activation![1]}};`)(options, definitionId, () => undefined) as () => void;
+    `let armed = false; let removing = false; let quarterTurns = 0;
+     const reportArmed = () => ${armReport![1]};
+     return () => {${activation![1]}};`)(options, definitionId, () => undefined) as () => void;
   activate(); return { activate, transitions };
 }
 for (const mode of ['world', 'oblique'] as const) for (const tool of ['wall', 'object', 'room'] as const) {

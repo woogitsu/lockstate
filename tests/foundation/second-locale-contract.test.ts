@@ -650,6 +650,8 @@ const ASSEMBLED_SENTENCES: Readonly<Record<string, string>> = {
     "aria-label for a queue row's Cancel button -- the same shape as the " +
     'delivery row above it, for the same reason: a localized word, a ' +
     "hard-coded ': ', and the row's own already-localized label read back.",
+  '`${t(HUD_MESSAGE_KEY.buildRotateObject)} ${localizer.formatNumber(quarterTurns * 90)}°`':
+    'The owner approved the localized Rotate object control with its 0/90/180/270 degree indicator on 2026-10-03. The label is fully localized; the authoritative numeric angle is locale-formatted and the degree symbol is a stable numeric unit, not an assembled sentence.',
   '`${t(HUD_MESSAGE_KEY.buildTemplateFurniture)} × ${plan.objects.length}`':
     'Room catalogue card combines the approved localized Furniture label with the authored fixture count; this compact numeric legend uses the same stable multiplication separator as the object-count legend.',
   '`${localizer.format(definition.nameKey as LocalizationKey)} \u00d7 ${localizer.formatNumber(material.quantity)}`':
