@@ -87,3 +87,32 @@ ROOT retains the browser lease; no browser/server or remote CI was run here.
 Wall accepted-order, Bed transmission and Rooms report-only boundaries above
 remain distinct. Existing native #1949 evidence is not relabeled as these new
 World New/Load cases. Physical FullHD acceptance is pending parent integration.
+
+
+## Prepared native World Wall New/Load pair (not executed here)
+
+`tests/browser/world-build-session-ownership.spec.ts` collects two FullHD
+1920x1080, UI scale100% cases. It uses the unchanged accepted worker tee and
+unrounded public minimap viewport observer. A narrow local worker wrapper asks
+only real public consistency-check snapshots from the latest actual Worker.
+There is no fake simulation, scene, ghost, session transition or construction
+command. Initial prison is paused and saved through the real HUD before arming
+Brick wall. Real canvas primary down/drag remains held while the actual New or
+saved Load button receives focus and trusted Enter. The fixture observes both
+trusted input receipts and exactly one additional real worker initialization.
+
+Before the old mouse release, the replacement must be paused and its actual
+construction order list empty. After trusted old primary up and two real frames,
+all construction command transmissions must still be zero and actual order list
+identical. The Build arm remains active. A fresh native click is calculated
+independently from the CURRENT public minimap ground bounds at tile10,10;
+physical canvas hit is checked before either old drag endpoint or fresh click.
+Exactly one square Brick wall command and one actual worker order at that tile
+must result. Snapshots do not inject clock/commands; paused ownership remains
+checked throughout. Screenshot and raw input/worker/ground-reference receipts
+are emitted by the native run. Finally releases an outstanding held button if
+an assertion fails. No budget, retry, config or matcher change is made.
+
+`native-prepared-strict.log` exits0; `native-prepared-list.log` collects exactly
+2 cases. Listing and strict types do NOT execute those native assertions. ROOT
+owns real browser acceptance and routing; browser/server was not launched here.
