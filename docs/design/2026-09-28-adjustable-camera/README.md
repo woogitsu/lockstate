@@ -1529,3 +1529,7 @@ Do not mistake local acceptance for full exact-head hosted green/deployment.
 ## 2026-10-03 active model integration
 
 Current frozen built-client4443da6c integrates retained Canteen rail arms, Washer grip mounts, Cell headboard uprights and Guard rear band. Real public q0/q1room purchases, whole paused Save/Load and trusted two-touch ownership are under one-worker FullHD acceptance. [Integration record](../../research/2026-10-03-canteen-washer-cot-integration/README.md) holds exact sources and honest pending hardware/hosted boundaries. Three independent agents continue actual hired-Guard acceptance preparation, Prisoner source-scale measurement and stationary ghost invalidation after real Undo/Redo.
+
+### 2026-10-03 integrated stationary history and genuine Guard acceptance
+
+Canteen/Washer/Cot actual FullHD pack is11/11GREEN, preserving exact owners and paused wholeSaveLoad. The original5GREEN/3RED/3SKIP observer result is retained. Root now integrates #2007 stationary completed Undo/PendingRedo readiness and historical Guard projection, original meshes/materials/actions intact; actual public hire and history native acceptance plus consumer omission/restoration are the next gates. Full hosted CI/release remains separate; no prototype or loader-only claim is completion.
