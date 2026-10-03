@@ -1,0 +1,64 @@
+{
+  "subject": "9bd35eda547aca482116ddb5d7ad2e218bf63108",
+  "mutantsCommittedOrPushed": false,
+  "browserOrServerLaunched": false,
+  "mutations": [
+    {
+      "mutation": "partition-file-omission",
+      "producer": "tests/browser/partition-source-files.ts",
+      "negativeExit": 1,
+      "restoredExit": 0,
+      "sha256Before": "3c2d2a3bfcdba8d0246eac87f8363cf853fac3b90e2bcadb3925d341c03d68a9",
+      "sha256Restored": "3c2d2a3bfcdba8d0246eac87f8363cf853fac3b90e2bcadb3925d341c03d68a9",
+      "byteExact": true,
+      "realWrapperNegative": {
+        "cases": 701,
+        "expectedCases": 766,
+        "exactUnion": false,
+        "noDuplicateIds": true
+      },
+      "realWrapperRestored": {
+        "cases": 766,
+        "expectedCases": 766,
+        "exactUnion": true,
+        "noDuplicateIds": true
+      }
+    },
+    {
+      "mutation": "aggregate-source-result-omission",
+      "producer": ".github/workflows/ci.yml",
+      "negativeExit": 1,
+      "restoredExit": 0,
+      "sha256Before": "ecf8ebbe0348957f18724204578e10746f034e804e29d5b70b8a7e96c386bb19",
+      "sha256Restored": "ecf8ebbe0348957f18724204578e10746f034e804e29d5b70b8a7e96c386bb19",
+      "byteExact": true
+    },
+    {
+      "mutation": "aggregate-artifact-result-omission",
+      "producer": ".github/workflows/ci.yml",
+      "negativeExit": 1,
+      "restoredExit": 0,
+      "sha256Before": "ecf8ebbe0348957f18724204578e10746f034e804e29d5b70b8a7e96c386bb19",
+      "sha256Restored": "ecf8ebbe0348957f18724204578e10746f034e804e29d5b70b8a7e96c386bb19",
+      "byteExact": true
+    },
+    {
+      "mutation": "aggregate-source-sha-omission",
+      "producer": ".github/workflows/ci.yml",
+      "negativeExit": 1,
+      "restoredExit": 0,
+      "sha256Before": "ecf8ebbe0348957f18724204578e10746f034e804e29d5b70b8a7e96c386bb19",
+      "sha256Restored": "ecf8ebbe0348957f18724204578e10746f034e804e29d5b70b8a7e96c386bb19",
+      "byteExact": true
+    },
+    {
+      "mutation": "aggregate-artifact-sha-omission",
+      "producer": ".github/workflows/ci.yml",
+      "negativeExit": 1,
+      "restoredExit": 0,
+      "sha256Before": "ecf8ebbe0348957f18724204578e10746f034e804e29d5b70b8a7e96c386bb19",
+      "sha256Restored": "ecf8ebbe0348957f18724204578e10746f034e804e29d5b70b8a7e96c386bb19",
+      "byteExact": true
+    }
+  ]
+}
