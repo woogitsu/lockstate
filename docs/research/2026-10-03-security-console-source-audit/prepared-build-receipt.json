@@ -1,0 +1,20 @@
+{
+  "checkpoint": "prepared native fixture, not browser acceptance",
+  "builtAtUtc": "2026-10-03T00:44:50.698968+00:00",
+  "buildCommand": [
+    "node",
+    "scripts/cloudflare-task.mjs",
+    "build",
+    "production"
+  ],
+  "buildExitCode": 0,
+  "worker": {
+    "path": "dist/client/assets/worker-Cup9jRhW.js",
+    "bytes": 438031,
+    "sha256": "0969d6d1879e8c384505d7a8f40e8797fe6d84706f7c37a0ff9a356a48b782b1"
+  },
+  "nativeBrowserStarted": false,
+  "nativePaletteCalibration": "pending",
+  "sourceSha256": "5b32b08dfed1b1dad0e79e4dc3f618937f7815f4208594c64b0d7b1c0d81207f",
+  "canonicalDescriptorSha256": "2eefd13f5b349d2ad95bd5bcd55aa8f71bc3a0d125b730b000d6ebeef2f9994a"
+}
