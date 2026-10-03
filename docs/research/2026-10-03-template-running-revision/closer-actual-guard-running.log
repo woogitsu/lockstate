@@ -1,0 +1,34 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-template-running-revision-audit-20261003
+
+stdout | tests/unit/ui-template-running-world-revision.test.ts > world: actual running actors/ticks do not spam stationary preflight; real history still refreshes
+RUNNING_DIAGNOSTIC {"mode":"world","trace":[{"ms":0,"tick":1372,"revision":2,"queries":5,"deltaCount":0,"actors":[{"id":4294967296,"x":19,"y":16}]},{"ms":29000,"tick":1951,"revision":2,"queries":5,"deltaCount":277,"actors":[{"id":4294967296,"x":19,"y":16}]},{"ms":30000,"tick":1972,"revision":3,"queries":6,"deltaCount":286,"actors":[{"id":4294967296,"x":19,"y":16}]},{"ms":59000,"tick":2551,"revision":3,"queries":6,"deltaCount":562,"actors":[{"id":4294967296,"x":19,"y":16}]},{"ms":60000,"tick":2572,"revision":4,"queries":7,"deltaCount":572,"actors":[{"id":4294967296,"x":19,"y":16}]}],"positions":1,"initialGuards":{"entityStore":{"capacity":500,"nextAvailableIndex":1,"maxActiveIndex":0,"generations":[[0,500]],"freeIndices":[],"alive":[[1,1],[0,499]]},"records":[[0,{"staffRoleId":"staff-role.guard","tileX":19,"tileY":16,"deploymentPhase":"unassigned"}]]},"finalGuards":{"entityStore":{"capacity":500,"nextAvailableIndex":1,"maxActiveIndex":0,"generations":[[0,500]],"freeIndices":[],"alive":[[1,1],[0,499]]},"records":[[0,{"staffRoleId":"staff-role.guard","tileX":19,"tileY":16,"deploymentPhase":"unassigned"}]]}}
+
+stdout | tests/unit/ui-template-running-world-revision.test.ts > oblique: actual running actors/ticks do not spam stationary preflight; real history still refreshes
+RUNNING_DIAGNOSTIC {"mode":"oblique","trace":[{"ms":0,"tick":1372,"revision":2,"queries":5,"deltaCount":0,"actors":[{"id":4294967296,"x":19,"y":16}]},{"ms":29000,"tick":1951,"revision":2,"queries":5,"deltaCount":277,"actors":[{"id":4294967296,"x":19,"y":16}]},{"ms":30000,"tick":1972,"revision":3,"queries":6,"deltaCount":286,"actors":[{"id":4294967296,"x":19,"y":16}]},{"ms":59000,"tick":2551,"revision":3,"queries":6,"deltaCount":562,"actors":[{"id":4294967296,"x":19,"y":16}]},{"ms":60000,"tick":2572,"revision":4,"queries":7,"deltaCount":572,"actors":[{"id":4294967296,"x":19,"y":16}]}],"positions":1,"initialGuards":{"entityStore":{"capacity":500,"nextAvailableIndex":1,"maxActiveIndex":0,"generations":[[0,500]],"freeIndices":[],"alive":[[1,1],[0,499]]},"records":[[0,{"staffRoleId":"staff-role.guard","tileX":19,"tileY":16,"deploymentPhase":"unassigned"}]]},"finalGuards":{"entityStore":{"capacity":500,"nextAvailableIndex":1,"maxActiveIndex":0,"generations":[[0,500]],"freeIndices":[],"alive":[[1,1],[0,499]]},"records":[[0,{"staffRoleId":"staff-role.guard","tileX":19,"tileY":16,"deploymentPhase":"unassigned"}]]}}
+
+ ❯ tests/unit/ui-template-running-world-revision.test.ts (2 tests | 2 failed) 376ms
+   × world: actual running actors/ticks do not spam stationary preflight; real history still refreshes 238ms
+   × oblique: actual running actors/ticks do not spam stationary preflight; real history still refreshes 137ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-template-running-world-revision.test.ts > world: actual running actors/ticks do not spam stationary preflight; real history still refreshes
+ FAIL  tests/unit/ui-template-running-world-revision.test.ts > oblique: actual running actors/ticks do not spam stationary preflight; real history still refreshes
+AssertionError: actual hired guard must really move; empty/idle actor streams cannot prove motion immunity: expected 1 to be greater than 1
+ ❯ tests/unit/ui-template-running-world-revision.test.ts:225:121
+    223|     expect(final.simulation?.roomTemplates).toEqual(initial.simulation…
+    224|     console.log('RUNNING_DIAGNOSTIC',JSON.stringify({mode,trace,positi…
+    225|     expect(positions.size,'actual hired guard must really move; empty/…
+       |                                                                                                                         ^
+    226|     expect(trace[1]!.queries-initialQueries,'no geometry query for29se…
+    227|     expect(trace[2]!.queries-initialQueries,'one existing30s consisten…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  08:38:37
+   Duration  3.64s (transform 1.14s, setup 0ms, import 3.14s, tests 376ms, environment 0ms)
+

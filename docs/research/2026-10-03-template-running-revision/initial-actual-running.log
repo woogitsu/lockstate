@@ -1,0 +1,28 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-template-running-revision-audit-20261003
+
+ ❯ tests/unit/ui-template-running-world-revision.test.ts (2 tests | 2 failed) 401ms
+   × world: actual running actors/ticks do not spam stationary preflight; real history still refreshes 217ms
+   × oblique: actual running actors/ticks do not spam stationary preflight; real history still refreshes 183ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-template-running-world-revision.test.ts > world: actual running actors/ticks do not spam stationary preflight; real history still refreshes
+ FAIL  tests/unit/ui-template-running-world-revision.test.ts > oblique: actual running actors/ticks do not spam stationary preflight; real history still refreshes
+AssertionError: actual hired guard must really move; empty/idle actor streams cannot prove motion immunity: expected 1 to be greater than 1
+ ❯ tests/unit/ui-template-running-world-revision.test.ts:224:121
+    222|     expect(final.simulation?.objects).toEqual(initial.simulation?.obje…
+    223|     expect(final.simulation?.roomTemplates).toEqual(initial.simulation…
+    224|     expect(positions.size,'actual hired guard must really move; empty/…
+       |                                                                                                                         ^
+    225|     expect(trace[1]!.queries-initialQueries,'no geometry query for29se…
+    226|     expect(trace[2]!.queries-initialQueries,'one existing30s consisten…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  08:35:59
+   Duration  6.32s (transform 3.51s, setup 0ms, import 5.79s, tests 401ms, environment 0ms)
+

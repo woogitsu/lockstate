@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-template-running-revision-audit-20261003
+
+No test files found, exiting with code 1
+
+filter: tests/unit/research-index-links.test.ts
+include: src/**/*.test.ts, tests/**/*.test.ts
+exclude:  **/node_modules/**, **/dist/**, benchmarks/**
+
