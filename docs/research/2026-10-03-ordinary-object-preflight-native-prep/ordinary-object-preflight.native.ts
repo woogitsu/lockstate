@@ -142,7 +142,14 @@ test('World FullHD stationary ordinary q0 ghost: real pending claim, disarm, Loa
     await expect(page.locator('.hud-build__target-value')).toHaveText('Point at the world');
     expect(await showcaseSnapshot(page)).toEqual(whole);
     // Preserve the genuine fresh-press control: no extra arm toggle after Load.
-    const fresh = await aim(page, FRESH); await page.mouse.click(fresh.point.x, fresh.point.y);
+    // The physical pointer is still exactly where the abandoned press began.
+    // A same-coordinate move need not produce a new Phaser hover. Exercise the
+    // actual fresh press directly; exact worker coordinates remain the oracle.
+    const freshReference = await publicGroundReference(page);
+    const fresh = { measured: freshReference.actual,
+      point: freshReference.reference.screen(FRESH.x + .25, FRESH.y + .25) };
+    expect(await page.evaluate(p => document.elementFromPoint(p.x, p.y) === document.querySelector('#game-root canvas'), fresh.point)).toBe(true);
+    await page.mouse.click(fresh.point.x, fresh.point.y);
     await expect.poll(() => objectCommands(page)).toHaveLength(2);
     const freshCommand = (await objectCommands(page))[1]!;
     const { orderId: freshOwner, ...freshShape } = freshCommand;

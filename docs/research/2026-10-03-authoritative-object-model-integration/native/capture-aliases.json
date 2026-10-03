@@ -115,5 +115,126 @@
     "archivedBytes": 2715,
     "archivedSha256": "60ce278dae0127141cd588005e706100aa1b2f3416142cad452d685bb846b68c",
     "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-unclipped-native-20261003.json",
+    "archived": "stationary-before-fresh-expectation/report.json",
+    "sourceBytes": 10242,
+    "sourceSha256": "221da0cabb1f941e6741a3684f5c0e770369980a28110f2406ed739994135dd0",
+    "archivedBytes": 10242,
+    "archivedSha256": "221da0cabb1f941e6741a3684f5c0e770369980a28110f2406ed739994135dd0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-unclipped-native-20261003.txt",
+    "archived": "stationary-before-fresh-expectation/console.txt",
+    "sourceBytes": 9820,
+    "sourceSha256": "6e82568e2d4942624d1aef6b0ee64c2ed5b1af0e07889888aff18af3902d7414",
+    "archivedBytes": 5536,
+    "archivedSha256": "05a627dec94cd134289c594f5f48fc2bdb9aa571487a4e26fc342696c30c9c28",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-unclipped-native-20261003\\.last-run.json",
+    "archived": "stationary-before-fresh-expectation/001-.last-run.json",
+    "sourceBytes": 96,
+    "sourceSha256": "51ecb9b2b73a0903b790e4fd6114caa8fbe530f622523e112619f3734d6f8af1",
+    "archivedBytes": 96,
+    "archivedSha256": "51ecb9b2b73a0903b790e4fd6114caa8fbe530f622523e112619f3734d6f8af1"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-unclipped-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\actual-loaded-original-primary-held.png",
+    "archived": "stationary-before-fresh-expectation/002-actual-loaded-original-primary-held.png",
+    "sourceBytes": 489473,
+    "sourceSha256": "2de656ece3686937b28347cc48a44cdc7160b4cfe67424ba31cc65faba626dfc",
+    "archivedBytes": 489473,
+    "archivedSha256": "2de656ece3686937b28347cc48a44cdc7160b4cfe67424ba31cc65faba626dfc"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-unclipped-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\actual-one-pending-whole.json",
+    "archived": "stationary-before-fresh-expectation/003-actual-one-pending-whole.json",
+    "sourceBytes": 18260,
+    "sourceSha256": "617f445964e3580278b0355d89db4557b1ebbe91f95621b84b292734b6c4010b",
+    "archivedBytes": 18260,
+    "archivedSha256": "617f445964e3580278b0355d89db4557b1ebbe91f95621b84b292734b6c4010b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-unclipped-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\actual-paired-anchor-pixel-receipt.json",
+    "archived": "stationary-before-fresh-expectation/004-actual-paired-anchor-pixel-receipt.json",
+    "sourceBytes": 228,
+    "sourceSha256": "5708f56cc963b870a57528266702cfb4dfa46758c70a07944555ffe239cb826e",
+    "archivedBytes": 228,
+    "archivedSha256": "5708f56cc963b870a57528266702cfb4dfa46758c70a07944555ffe239cb826e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-unclipped-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\actual-stationary-allowed-fullhd.png",
+    "archived": "stationary-before-fresh-expectation/005-actual-stationary-allowed-fullhd.png",
+    "sourceBytes": 477064,
+    "sourceSha256": "07a366a4672c0070c3c0d7d4333c87cf7d4d6b6116e74c34a9e56f174a291394",
+    "archivedBytes": 477064,
+    "archivedSha256": "07a366a4672c0070c3c0d7d4333c87cf7d4d6b6116e74c34a9e56f174a291394"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-unclipped-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\actual-stationary-blocked-fullhd.png",
+    "archived": "stationary-before-fresh-expectation/006-actual-stationary-blocked-fullhd.png",
+    "sourceBytes": 511372,
+    "sourceSha256": "ad3c1b9f0ab00e50a161bd60a231d65a8eab820ac3d052be01a7130b6c3a2c18",
+    "archivedBytes": 511372,
+    "archivedSha256": "ad3c1b9f0ab00e50a161bd60a231d65a8eab820ac3d052be01a7130b6c3a2c18"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-unclipped-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\actual-stationary-disarmed-fullhd.png",
+    "archived": "stationary-before-fresh-expectation/007-actual-stationary-disarmed-fullhd.png",
+    "sourceBytes": 490288,
+    "sourceSha256": "b5cf67f62eae747c3b80867422af45a3a1a8347d5d69c9d03ffb56ac7f8dcac4",
+    "archivedBytes": 490288,
+    "archivedSha256": "b5cf67f62eae747c3b80867422af45a3a1a8347d5d69c9d03ffb56ac7f8dcac4"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-unclipped-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\actual-unclaimed-anchor-allowed.png",
+    "archived": "stationary-before-fresh-expectation/008-actual-unclaimed-anchor-allowed.png",
+    "sourceBytes": 7198,
+    "sourceSha256": "5fdc253cbee765fa3277969e890928c69aa2beffdf828148d28351edd83b5e7d",
+    "archivedBytes": 7198,
+    "archivedSha256": "5fdc253cbee765fa3277969e890928c69aa2beffdf828148d28351edd83b5e7d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-unclipped-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\actual-unclaimed-anchor-blocked.png",
+    "archived": "stationary-before-fresh-expectation/009-actual-unclaimed-anchor-blocked.png",
+    "sourceBytes": 7269,
+    "sourceSha256": "8401a336de3b18cb71e226257ba9fc4d70a1c68521cea5c6d8140832e7a5fd59",
+    "archivedBytes": 7269,
+    "archivedSha256": "8401a336de3b18cb71e226257ba9fc4d70a1c68521cea5c6d8140832e7a5fd59"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-unclipped-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\actual-unclaimed-anchor-disarmed.png",
+    "archived": "stationary-before-fresh-expectation/010-actual-unclaimed-anchor-disarmed.png",
+    "sourceBytes": 7872,
+    "sourceSha256": "d1fda11ea5a9609ab57ac99d752ffcc8444ad4097f8be720e65f50f1191a168f",
+    "archivedBytes": 7872,
+    "archivedSha256": "d1fda11ea5a9609ab57ac99d752ffcc8444ad4097f8be720e65f50f1191a168f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-unclipped-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\error-context.md",
+    "archived": "stationary-before-fresh-expectation/011-error-context.md",
+    "sourceBytes": 15657,
+    "sourceSha256": "4be317f74bf017fe96734bb9e448b65fdd312118c05f945d287af8155760911a",
+    "archivedBytes": 15657,
+    "archivedSha256": "4be317f74bf017fe96734bb9e448b65fdd312118c05f945d287af8155760911a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-unclipped-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\test-failed-1.png",
+    "archived": "stationary-before-fresh-expectation/012-test-failed-1.png",
+    "sourceBytes": 489473,
+    "sourceSha256": "2de656ece3686937b28347cc48a44cdc7160b4cfe67424ba31cc65faba626dfc",
+    "archivedBytes": 489473,
+    "archivedSha256": "2de656ece3686937b28347cc48a44cdc7160b4cfe67424ba31cc65faba626dfc"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-unclipped-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\trace.zip",
+    "archived": "stationary-before-fresh-expectation/013-trace.zip",
+    "sourceBytes": 64988210,
+    "sourceSha256": "f0f507dd588839000bc3786d7066b98d2dd4cfa6efd4fe776fbc6a5c91eb43e6",
+    "archivedBytes": 64988210,
+    "archivedSha256": "f0f507dd588839000bc3786d7066b98d2dd4cfa6efd4fe776fbc6a5c91eb43e6"
   }
 ]
