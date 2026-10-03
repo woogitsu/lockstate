@@ -27,3 +27,9 @@ Weakest claim: this browser-free packed kernel sequence does not prove native dr
 ## Bounded ownership and ordinary construction boundary
 
 Additional [9RED/5legal baseline](./expanded-baseline.txt),2.24s execution, adds one accepted legacy-compatible save without optional completed-gesture metadata: the existing retained completed door order still proves template membership, yet its square is admitted. One ordinary standalone door followed by a square wall remains deliberately legal, and separate genuine public gesture IDs keep its Undo from reversing the earlier door purchase. The first control omitted gesture IDs and therefore undid both purchases under existing grouping: [that fixture error](./initial-ordinary-gesture-fixture-error.txt) is retained, not called a new production defect. Application strict TypeScript exits0. Production remains unchanged.
+
+## Granted square-only correction
+
+After reviewing the actual helper, the parent granted only the square arm of existing claimsRoomDoorApproach. It now also reads the previous outside point (square location minus inward vector), so the same retained completed template door order and zoned interior prove that the requested square is the doorway itself. The ordinary edge branch, shared furniture tile reader, old-save shape, tariffs and player wording are unchanged. No added ownership inference or persistence field.
+
+The [fixed production run](./fixed.txt) is14GREEN,2.31s actual test execution, with genuine completed/pending/adjacent/ordinary controls, owner identity, brick allocations, treasury and Undo/V8/Redo routes retained. The earlier diagnosis receipt describes its immutable pre-fix checkpoint; producer omission/exact restoration and neighboring gates follow separately.
