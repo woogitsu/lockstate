@@ -1,0 +1,15 @@
+{
+  "controls": [
+    {
+      "label": "actual-native-source-assertion-corrupt-red",
+      "exitCode": 1
+    },
+    {
+      "label": "exact-native-observer-source-restore-green",
+      "exitCode": 0
+    }
+  ],
+  "exactRestore": true,
+  "observerBeforeAndAfterSHA256": "4b3e0449e2f431041a900bfd5b7e69c1ff8f97faa38cb76791fbb351ec8b403f",
+  "nativeBrowserRun": false
+}
