@@ -1,0 +1,22 @@
+00:01.156  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-retained-cycles-production-20261003\assets\source\blender\furniture.staff-room.padded-chair.soft-light.blend"
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
+Traceback (most recent call last):
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-retained-cycles-production-20261003\tooling\blender\render-staff-chair-cycles.py", line 109, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-retained-cycles-production-20261003\tooling\blender\render-staff-chair-cycles.py", line 69, in main
+    scene, camera, target = configure(MODEL)
+                            ~~~~~~~~~^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-retained-cycles-production-20261003\tooling\blender\render-staff-chair-cycles.py", line 36, in configure
+    prepare.verify_scene(scene, scene.camera, target, EXPECTED)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-retained-cycles-production-20261003\tooling\blender\prepare-staff-chair-cycles.py", line 64, in verify_scene
+    source.builder.source_contacts(scene, source.receipt['actualContactPairs'])
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-retained-cycles-production-20261003\tooling\blender\build-staff-room-padded-chair.py", line 64, in source_contacts
+    raise ValueError(f'Staff Room padded chair actual contact disconnected: {first} / {second}')
+ValueError: Staff Room padded chair actual contact disconnected: Staff Room padded chair.connected seat pad / Chair refinement.wooden seat
+
+Error: script failed, file: 'C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-retained-cycles-production-20261003\tooling\blender\render-staff-chair-cycles.py', exiting.

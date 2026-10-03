@@ -1,0 +1,46 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-staff-chair-retained-cycles-production-20261003
+
+xx·····x
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 5 passed (8)
+   Start at  21:21:42
+   Duration  660ms (transform 178ms, setup 0ms, import 521ms, tests 21ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-staff-room-padded-chair-context.test.ts > Staff Room ObjectChair context in the actual world projection > selects BOTH literal completed Staff Room chairs q0 with their canonical source60/e40 frame
+ FAIL  tests/unit/oblique-staff-room-padded-chair-context.test.ts > Staff Room ObjectChair context in the actual world projection > selects BOTH literal completed Staff Room chairs q1 with their canonical source60/e40 frame
+AssertionError: expected 'assets/source/blender/furniture.staff…' to be 'assets/source/blender/furniture.staff…' // Object.is equality
+
+Expected: "assets/source/blender/furniture.staff-room.padded-chair.soft-light.blend"
+Received: "assets/source/blender/furniture.staff-room.padded-chair.blend"
+
+ ❯ tests/unit/oblique-staff-room-padded-chair-context.test.ts:56:28
+     54|     const projected = projectObliqueWorldFrame(actualFrame, camera(tur…
+     55|     const catalog = parseObliqueModuleCatalog(JSON.parse(readFileSync(…
+     56|     expect(catalog.source).toBe('assets/source/blender/furniture.staff…
+       |                            ^
+     57|     expect(catalog.sourceSha256).toBe('2dde0a33689685fd067c124c82b7b88…
+     58|     for (const structure of structures) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  tests/unit/oblique-staff-room-padded-chair-context.test.ts > Staff Room ObjectChair context in the actual world projection > registers the selected asset once with its real source and complete descriptor
+AssertionError: expected 'assets/source/blender/furniture.staff…' to be 'assets/source/blender/furniture.staff…' // Object.is equality
+
+Expected: "assets/source/blender/furniture.staff-room.padded-chair.soft-light.blend"
+Received: "assets/source/blender/furniture.staff-room.padded-chair.blend"
+
+ ❯ tests/unit/oblique-staff-room-padded-chair-context.test.ts:119:28
+    117|     const catalog = parseObliqueModuleCatalog(JSON.parse(readFileSync(…
+    118|     expect(catalog.assetId).toBe(assetId);
+    119|     expect(catalog.source).toBe('assets/source/blender/furniture.staff…
+       |                            ^
+    120|     expect(catalog.sourceSha256).toBe('2dde0a33689685fd067c124c82b7b88…
+    121|     expect(catalog.frames).toHaveLength(72);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+

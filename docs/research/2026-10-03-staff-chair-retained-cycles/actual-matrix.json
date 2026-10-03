@@ -1,45 +1,21 @@
 {
-  "schemaVersion": 1,
-  "assetId": "furniture.staff-room.padded-chair",
-  "source": "assets/source/blender/furniture.staff-room.padded-chair.soft-light.blend",
+  "genuineBlenderVersion": [
+    5,
+    2,
+    1
+  ],
+  "engine": "CYCLES",
+  "device": "CPU",
+  "threads": 1,
+  "samples": 64,
+  "seed": 0,
+  "adaptiveSampling": false,
+  "denoising": false,
+  "viewTransform": "AgX",
+  "actualExportSeconds": 67.89988290000474,
+  "realRenderCount": 72,
   "sourceSha256": "2dde0a33689685fd067c124c82b7b88b31c606d6c950a0789903e1b0b4b0e934",
-  "resolutionPx": [
-    256,
-    256
-  ],
-  "nominalPixelsPerTile": 64,
-  "pivotPx": [
-    128,
-    128
-  ],
-  "cameraTargetTiles": [
-    0.5,
-    0.5,
-    0.6600000262260437
-  ],
-  "projection": "orthographic",
-  "yawDegrees": [
-    0,
-    30,
-    60,
-    90,
-    120,
-    150,
-    180,
-    210,
-    240,
-    270,
-    300,
-    330
-  ],
-  "elevationDegrees": [
-    20,
-    30,
-    40,
-    50,
-    60,
-    70
-  ],
+  "descriptorSha256": "d5d4c3a0db3a371aee7cddadaa7f5ef8f7ea9be86bc251b4947be3cf992d9bd9",
   "frames": [
     {
       "yawDegrees": 0,
@@ -473,5 +449,7 @@
       "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+330-elev70.97d666b10c06.png",
       "sha256": "97d666b10c06e33d46edfaebd4b5cabb277315f886a25495deccc813dc508a34"
     }
-  ]
+  ],
+  "groundPlaneAdded": false,
+  "nativeAcceptance": false
 }

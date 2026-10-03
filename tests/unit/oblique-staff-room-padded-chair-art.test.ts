@@ -61,8 +61,10 @@ it('retains all 52 authored chair parts and four complete material graphs in the
 
 it('loads the dedicated descriptor and decodes 72 complete unclipped canonical PNG poses', () => {
   const catalog = parseObliqueModuleCatalog(json('public/game-content/oblique-furniture-staff-room-padded-chair.v1.json'));
-  expect(catalog.assetId).toBe(provenance.assetId); expect(catalog.source).toBe(provenance.source);
-  expect(catalog.sourceSha256).toBe(provenance.sourceSha256);
+  expect(catalog.assetId).toBe(provenance.assetId);
+  expect(catalog.source).toBe('assets/source/blender/furniture.staff-room.padded-chair.soft-light.blend');
+  expect(catalog.sourceSha256).toBe('2dde0a33689685fd067c124c82b7b88b31c606d6c950a0789903e1b0b4b0e934');
+  expect(sourceHash(readFileSync(new URL(catalog.source, root)))).toBe(catalog.sourceSha256);
   expect(catalog.resolutionPx).toEqual([256, 256]); expect(catalog.pivotPx).toEqual([128, 128]);
   expect(catalog.nominalPixelsPerTile).toBe(64); expect(catalog.cameraTargetTiles).toEqual(provenance.cameraTargetTiles);
   expect(catalog.yawDegrees).toEqual(Array.from({ length: 12 }, (_, i) => i * 30));
