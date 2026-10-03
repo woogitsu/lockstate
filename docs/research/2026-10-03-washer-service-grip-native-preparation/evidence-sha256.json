@@ -1,0 +1,55 @@
+{
+    "preparedTests":  [
+                          {
+                              "file":  "tests/browser/dedicated-laundry-washing-machine-player-build.spec.ts",
+                              "sha256":  "96ec6d20c00e6bfa4c0e7226497bcd2b9b69eb9b8b1ed857fbdb292a3a69e853"
+                          },
+                          {
+                              "file":  "tests/browser/laundry-washer-evidence.ts",
+                              "sha256":  "8f2b8978403a4fa4731a2a97448fabf14d9a9134e3a05d170879a39c81d9b471"
+                          }
+                      ],
+    "files":  [
+                  {
+                      "file":  "build.txt",
+                      "sha256":  "b880a3018b6e30f5a7cec7186bdb3eb347291dbb77ca6bb5549a4c09b75a3380"
+                  },
+                  {
+                      "file":  "collection.txt",
+                      "sha256":  "36ea4c248aa2331448427550049218ee2420f8c27f26938509378d45328eafe4"
+                  },
+                  {
+                      "file":  "docs.txt",
+                      "sha256":  "39f927625e77eb9f66b94f74f2da33d688f8f7378afe10a57320b13b29b1bac0"
+                  },
+                  {
+                      "file":  "final-collection.txt",
+                      "sha256":  "36ea4c248aa2331448427550049218ee2420f8c27f26938509378d45328eafe4"
+                  },
+                  {
+                      "file":  "final-types.txt",
+                      "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                  },
+                  {
+                      "file":  "final-types-collection.cjs.txt",
+                      "sha256":  "74248b1e752f18a2666259916e495ca7ad20d0bbe77b8292d11c83854b9caa57"
+                  },
+                  {
+                      "file":  "preparation-run.cjs.txt",
+                      "sha256":  "f58dbd89d40f75047fefa00a98920e7648078a3b4e734f2e4af034fb25e50053"
+                  },
+                  {
+                      "file":  "README.md",
+                      "sha256":  "39a6028558ea0a7d0e09bcd4ef0a771b8daa6d5382cf3b8f9d7893afdfeafff2"
+                  },
+                  {
+                      "file":  "receipt.json",
+                      "sha256":  "73c1e5564ce93068663c6de384eea1266ee74915c89143dcebcd4c958ddef70e"
+                  },
+                  {
+                      "file":  "types.txt",
+                      "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                  }
+              ],
+    "nativeExecuted":  false
+}

@@ -1,0 +1,41 @@
+{
+  "base": "09b65486413d6d1221d9b0c344f26d5546811c10",
+  "outcomes": [
+    {
+      "name": "types",
+      "status": 0
+    },
+    {
+      "name": "build",
+      "status": 0
+    },
+    {
+      "name": "collection",
+      "status": 0
+    },
+    {
+      "name": "docs",
+      "status": 1
+    }
+  ],
+  "browserExecuted": false,
+  "serverStarted": false,
+  "nativeProducerNegativeVerified": false,
+  "boundPerObjectRuntimeFrameObserved": false,
+  "nativeGripPixelCalibrationPending": true,
+  "productionChanged": false,
+  "collectedCases": 3,
+  "existingArtifactRoutingPreserved": true,
+  "followUpGates": [
+    {
+      "name": "final-types",
+      "status": 0
+    },
+    {
+      "name": "final-collection",
+      "status": 0
+    }
+  ],
+  "correctedOrderField": "placementSequence",
+  "pendingAndCompletedMetadataField": "sequence"
+}

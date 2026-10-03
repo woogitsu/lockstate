@@ -2,6 +2,8 @@
 import { writeFile } from 'node:fs/promises';
 import { expect, test as base, type Page } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
+import type { SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
+import { observeWasherImages, publicGripPose, requireWasherOwners, GRIP_FRAME } from './laundry-washer-evidence';
 
 interface ProbeWindow extends Window {
   askWorker?: (kind: string, payload: unknown) => Promise<unknown>;
@@ -45,6 +47,14 @@ async function fixtureAnchors(page: Page): Promise<string[]> {
     return reply.payload.snapshot.data.simulation.objects?.placedObjects
       .filter(o => ['object.washing-machine'].includes(o.objectId))
       .map(o => `${o.objectId}@${o.anchorTile.x},${o.anchorTile.y}:orientation=${o.orientation}`).sort() ?? [];
+  });
+}
+
+async function workerSnapshot(page: Page): Promise<SessionSnapshotBundle> {
+  return page.evaluate(async () => {
+    const reply = await (window as ProbeWindow).askWorker!('simulation/request-snapshot', { reason: 'consistency-check' }) as {
+      payload: { snapshot: { data: SessionSnapshotBundle } } };
+    return reply.payload.snapshot.data;
   });
 }
 
@@ -136,6 +146,7 @@ test('player creates storage and delivery capacity before Laundry', async ({ pag
   await installTee(page);
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/?renderer=oblique');
+  expect(await page.evaluate(() => [innerWidth, innerHeight, devicePixelRatio])).toEqual([1920, 1080, 1]);
   await page.getByRole('button', { name: 'New prison', exact: true }).click();
   await expect(page.locator('.hud-clock__day')).toHaveText('1');
   await page.getByRole('button', { name: 'Pause', exact: true }).click();
@@ -158,18 +169,27 @@ test('player creates storage and delivery capacity before Laundry', async ({ pag
 
 for (const quarterTurns of [0, 1] as const) {
 test(`player builds Laundry at quarterTurns${quarterTurns} and retains washing machine palettes and anchors after Save/Load`, async ({ page }, info) => {
+  const beganAt = Date.now();
   expect(routeStorage, 'this case consumes the first stage actual IndexedDB save').toBeDefined();
   await installWorkerProbe(page);
   await installTee(page);
+  const loadedImages = await observeWasherImages(page);
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/?renderer=oblique');
+  expect(await page.evaluate(() => [innerWidth, innerHeight, devicePixelRatio])).toEqual([1920, 1080, 1]);
   await page.locator('.save-panel__item').first().getByRole('button', { name: 'Load', exact: true }).click();
   await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
   await expect(page.locator('[data-metric="rooms"] .ui-stat__value')).toHaveText('2');
   await placePlan(page, 'Laundry', 20, quarterTurns);
+  const planned = await workerSnapshot(page);
+  const request = planned.simulation?.roomTemplates?.pending.find(plan => plan.templateId === 'laundry-basic');
+  expect(request).toMatchObject({ templateId: 'laundry-basic', origin: { x: 20, y: 5 }, mirrorX: false,
+    ...(quarterTurns === 0 ? {} : { quarterTurns }) });
+  if (request === undefined) throw new Error('Actual Laundry command has no pending owner');
   await page.getByRole('button', { name: 'Fast forward', exact: true }).click();
   await page.getByRole('button', { name: 'Fast forward', exact: true }).click();
   await finishQueuedConstruction(page);
+  const completionElapsedMs = Date.now() - beganAt;
   await expect(page.locator('[data-metric="rooms"] .ui-stat__value')).toHaveText('3');
   const expected = quarterTurns === 0
     ? ['object.washing-machine@21,6:orientation=0', 'object.washing-machine@23,6:orientation=0']
@@ -192,6 +212,8 @@ test(`player builds Laundry at quarterTurns${quarterTurns} and retains washing m
     { type: 'PlaceRoomTemplate', templateId: 'laundry-basic', origin: { x: 20, y: 5 }, ...(quarterTurns === 0 ? {} : { quarterTurns }) },
   ]);
   await page.getByRole('button', { name: 'Pause', exact: true }).click();
+  const pausedBefore = await workerSnapshot(page);
+  const authoredOwnersBefore = requireWasherOwners(pausedBefore, quarterTurns, request.sequence);
   const minimapRegion = page.getByRole('region', { name: 'Minimap', exact: true });
   if (!await page.locator('.hud-minimap__surface').isVisible()) {
     await minimapRegion.getByRole('button', { name: 'Expand', exact: true }).click();
@@ -213,6 +235,10 @@ test(`player builds Laundry at quarterTurns${quarterTurns} and retains washing m
   await expect(page.locator('.save-panel__status')).toContainText('Saved');
   await page.locator('.save-panel__item').first().getByRole('button', { name: 'Load', exact: true }).click();
   await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
+  const pausedAfter = await workerSnapshot(page);
+  expect(pausedAfter).toEqual(pausedBefore);
+  const authoredOwnersAfter = requireWasherOwners(pausedAfter, quarterTurns, request.sequence);
+  expect(authoredOwnersAfter).toEqual(authoredOwnersBefore);
   const actualAfter = await fixtureAnchors(page);
   expect(actualAfter).toEqual(expected);
   const ownershipAfter = await fixtureOwnership(page);
@@ -226,9 +252,35 @@ test(`player builds Laundry at quarterTurns${quarterTurns} and retains washing m
   afterPixels.forEach((count, index) => expect.soft(count, `washing machine ${index + 1} authored palette after Load`)
     .toBeGreaterThan(100));
   expect(afterPixels).toEqual(beforePixels);
+  // Preserve all original native glass crops/colours/minima above. These new
+  // service-grip pixels must be calibrated from the actual screenshot by root.
+  const cameraControls = await publicGripPose(page, quarterTurns);
+  await expect.poll(async () => (await loadedImages()).responses.some(response =>
+    new URL(response.url).pathname === GRIP_FRAME.url && response.sha256 === GRIP_FRAME.sha256)).toBe(true);
+  await expect.poll(async () => (await loadedImages()).images.some(image =>
+    image.sha256 === GRIP_FRAME.sha256 && image.complete && !image.error && image.width === 256 && image.height === 256)).toBe(true);
+  const pngLoading = await loadedImages();
+  expect(pngLoading.errors).toEqual([]);
+  expect(pngLoading.descriptors).toContainEqual(expect.objectContaining({ status: 200,
+    data: expect.objectContaining({ assetId: 'utility.washing-machine.variants',
+      sourceSha256: '4c4b52811935cb5fe44ee4ad09bbee1b5179484aecdb7eb001c71047c4a493c0',
+      frames: expect.arrayContaining([expect.objectContaining({ yawDegrees: 0, elevationDegrees: 40,
+        image: GRIP_FRAME.url, sha256: GRIP_FRAME.sha256 })]),
+    }),
+  }));
+  const actualLoadedFrame = pngLoading.responses.find(response => new URL(response.url).pathname === GRIP_FRAME.url);
+  expect(actualLoadedFrame).toMatchObject({ status: 200, sha256: GRIP_FRAME.sha256, width: 256, height: 256 });
+  const gripPoseWorker = await workerSnapshot(page);
+  expect(gripPoseWorker).toEqual(pausedAfter);
+  await page.mouse.move(1300, 700);
+  await page.screenshot({ path: info.outputPath('washer-service-grip-pending-calibration-fullhd.png') });
   const evidencePath = info.outputPath('dedicated-laundry-washing-machine-worker-and-save-evidence.json');
   await writeFile(evidencePath, JSON.stringify({
     quarterTurns, actualBefore, actualAfter, ownershipBefore, ownershipAfter, beforePixels, afterPixels,
+    planned, pausedBefore, pausedAfter, authoredOwnersBefore, authoredOwnersAfter, gripPoseWorker,
+    cameraControls, expectedGripFrame: GRIP_FRAME, actualLoadedFrame, pngLoading,
+    completionElapsedMs, finalElapsedMs: Date.now() - beganAt,
+    boundPerObjectRuntimeFrameObserved: false, gripPixelCalibrationPending: true,
     commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
   }, null, 2));
   await info.attach('dedicated-laundry-washing-machine-worker-and-save-evidence', { path: evidencePath, contentType: 'application/json' });
