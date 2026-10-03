@@ -1,3 +1,4 @@
+import { incrementOrderRevision, isOrderRevision, type OrderRevision } from './order-revision';
 import { defaultObjectRegistry } from '../../content/object-catalog';
 import { objectFootprintTiles } from '../objects/placed-object';
 import { type SystemRegistration, type SimulationContext } from '../kernel/system';
@@ -13,7 +14,7 @@ import { type TilePosition, tileCoordinate, tileToChunk } from '../world/coordin
 export interface ConstructionSnapshot {
   /** V9 continuity; absent in historical snapshots means false / no counters. */
   readonly newerActionThanTheStackTop?: boolean;
-  readonly orderRevisions?: Readonly<Record<string, number>>;
+  readonly orderRevisions?: Readonly<Record<string, OrderRevision>>;
   readonly orders: readonly BuildOrder[];
   readonly undoStack: readonly (readonly string[])[];
   readonly redoStack: readonly (readonly string[])[];
@@ -363,7 +364,7 @@ export class ConstructionSystem implements SystemRegistration {
    * Actual queued commands do survive (#2021), so V9 snapshots carry
    * their comparison ledger. `BuildOrder`'s persisted shape is unchanged.
    */
-  private orderRevisions = new Map<string, number>();
+  private orderRevisions = new Map<string, OrderRevision>();
 
   // A transaction is just a list of order IDs.
   /** Runtime ports for real non-order transactions; their ids share history ordering. */
@@ -1689,8 +1690,8 @@ export class ConstructionSystem implements SystemRegistration {
    * for an id this system holds no order under (a mismatch a caller already
    * treats as "cancellable at all" fails on `getOrder` first, not on this).
    */
-  public revisionOf(orderId: string): number {
-    return this.orderRevisions.get(orderId) ?? 0;
+  public revisionOf(orderId: string): OrderRevision {
+    return this.orderRevisions.get(orderId) ?? '0';
   }
 
   /**
@@ -1709,7 +1710,7 @@ export class ConstructionSystem implements SystemRegistration {
    */
   private setState(order: BuildOrder, next: BuildOrder['state']): void {
     order.state = next;
-    this.orderRevisions.set(order.id, this.revisionOf(order.id) + 1);
+    this.orderRevisions.set(order.id, incrementOrderRevision(this.revisionOf(order.id)));
   }
 
   /**
@@ -2398,8 +2399,8 @@ export class ConstructionSystem implements SystemRegistration {
     }
     // Worker initialization also accepts raw snapshots, without the save codec.
     if (data.orderRevisions !== undefined && Object.entries(data.orderRevisions).some(([id, revision]) =>
-      id.length === 0 || typeof revision !== 'number' || !Number.isSafeInteger(revision) || revision < 0)) {
-      throw new SnapshotRefusedError('damaged-payload', 'Construction snapshot "orderRevisions" must map nonempty IDs to nonnegative safe integers.');
+      id.length === 0 || !isOrderRevision(revision))) {
+      throw new SnapshotRefusedError('damaged-payload', 'Construction snapshot "orderRevisions" must map nonempty IDs to canonical nonnegative decimal strings.');
     }
     for (const [field, value] of [
       ['orders', data.orders],

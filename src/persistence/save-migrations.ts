@@ -14,6 +14,7 @@ import type {
   SaveEnvelopeV7,
   SaveEnvelopeV8,
   SaveEnvelopeV9,
+  SaveEnvelopeV10,
   SavePayloadV1,
   SavePayloadV3,
   SavePayloadV4,
@@ -626,5 +627,30 @@ export function migrateSaveEnvelopeV8ToV9(input: SaveEnvelopeV8): SaveEnvelopeV9
     },
   };
   return { ...input, saveSchemaVersion: 9, payload: migratedPayload,
+    checksum: computeSaveChecksum(migratedPayload as unknown as JsonValue) };
+}
+
+/** V9 -> V10 preserves every raw validated field; converts only exact old counter tokens. */
+export function migrateSaveEnvelopeV9ToV10(input: SaveEnvelopeV9): SaveEnvelopeV10 {
+  const payload = structuredClone(input.payload);
+  const commands = payload.kernel.commands.map(command => {
+    const wrapper = command.payload as JsonValue;
+    if (typeof wrapper !== 'object' || wrapper === null || Array.isArray(wrapper) ||
+        wrapper.schemaId !== 'lockstate.simulation.command') return command;
+    const data = wrapper.data;
+    if (typeof data !== 'object' || data === null || Array.isArray(data) ||
+        data.type !== 'CancelBuildOrder' || typeof data.expectedRevision !== 'number' ||
+        !Number.isSafeInteger(data.expectedRevision) || data.expectedRevision < 0) return command;
+    return { ...command, payload: { ...wrapper, data: { ...data, expectedRevision: String(data.expectedRevision) } } };
+  });
+  const migratedPayload = {
+    ...payload,
+    kernel: { ...payload.kernel, commands },
+    construction: { ...payload.construction,
+      orderRevisions: Object.fromEntries(Object.entries(payload.construction.orderRevisions ?? {})
+        .map(([id, revision]) => [id, String(revision)])),
+    },
+  };
+  return { ...input, saveSchemaVersion: 10, payload: migratedPayload,
     checksum: computeSaveChecksum(migratedPayload as unknown as JsonValue) };
 }
