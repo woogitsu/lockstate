@@ -1,0 +1,38 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-laundry-retained-cycles-production-20261003
+
+·xx
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  2 failed | 1 passed (3)
+   Start at  21:02:52
+   Duration  3.07s (transform 947ms, setup 0ms, import 2.58s, tests 392ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/laundry-linen-rack-public-consumer.test.ts > buys a separate orientation0 rack inside actual public Laundry q0, retains both washers and whole V9
+ FAIL  tests/integration/laundry-linen-rack-public-consumer.test.ts > buys a separate orientation0 rack inside actual public Laundry q1, retains both washers and whole V9
+AssertionError: expected [] to deeply equal [ { …(2) } ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "assetId": "furniture.laundry.linen-rack",
+-     "manifest": "/game-content/oblique-furniture-laundry-linen-rack.v1.json",
+-   },
+- ]
++ []
+
+ ❯ tests/integration/laundry-linen-rack-public-consumer.test.ts:79:19
+     77|   const registry = parseObliqueModuleRegistry(JSON.parse(readFileSync(…
+     78|   const entries = registry.entries.filter(entry => entry.assetId === s…
+     79|   expect(entries).toEqual([{ assetId: 'furniture.laundry.linen-rack', …
+       |                   ^
+     80|   const catalog = parseObliqueModuleCatalog(JSON.parse(readFileSync(ne…
+     81|   expect(catalog.source).toBe('assets/source/blender/furniture.laundry…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
