@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { openCameraControls } from './public-camera-controls';
 import { expect, type Page } from './network-changed-fixture';
 import type { SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
 import type { BuildOrder } from '../../src/simulation/construction/build-order';
@@ -112,6 +113,7 @@ export function requireWasherOwners(snapshot: SessionSnapshotBundle, quarterTurn
 // actual buttons reach source local0/40 using the existing20-degree clamp:
 // camera0 for q0, camera-90 (normalized270) for q1, plus orientation*90.
 export async function publicGripPose(page: Page, quarterTurns: 0 | 1) {
+  await openCameraControls(page);
   const yawLabel = quarterTurns === 0 ? 'Rotate camera right' : 'Rotate camera left';
   for (let index = 0; index < 3; index++) {
     await page.getByRole('button', { name: yawLabel, exact: true }).click();

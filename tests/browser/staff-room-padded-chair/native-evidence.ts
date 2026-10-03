@@ -1,6 +1,7 @@
 /** Opt-in prepared evidence on the existing public Staff Room route. No native verdict. */
 import { createHash } from 'node:crypto';
 import { writeFile } from 'node:fs/promises';
+import { openCameraControls } from '../public-camera-controls';
 import type { SessionSnapshotBundle } from '../../../src/simulation/runtime/restore-session';
 import { SAVE_SCHEMA_VERSION } from '../../../src/persistence/save-schema';
 import { parseObliqueModuleCatalog } from '../../../src/rendering/assets/oblique-module-catalog';
@@ -122,6 +123,7 @@ export async function recordStaffCanonicalAfterLoad(page: Page, info: TestInfo, 
   observer: Awaited<ReturnType<typeof observeStaffChairNetwork>>, built: SessionSnapshotBundle, loaded: SessionSnapshotBundle) {
   expect(loaded, 'ALL current V9 worker state survives public paused Save/Load').toEqual(built);
   assertStaffNativeOwners(loaded, turns);
+  await openCameraControls(page);
   for (let step = 0; step < 4; step++) await page.getByRole('button', { name: 'Rotate camera right', exact: true }).click();
   for (let step = 0; step < 3; step++) await page.getByRole('button', { name: 'Lower camera angle', exact: true }).click();
   for (let step = 0; step < 2; step++) await page.getByRole('button', { name: 'Raise camera angle', exact: true }).click();

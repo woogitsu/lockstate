@@ -1,4 +1,5 @@
 import { writeFile } from 'node:fs/promises';
+import { openCameraControls } from './public-camera-controls';
 import { expect, test as base, type Page } from './network-changed-fixture';
 import { installTee, sentCommands, currentClock } from './playtest-harness';
 import { observeCommonRoomNetwork } from './common-room-upholstered-evidence';
@@ -215,6 +216,7 @@ for (const turns of [0,1] as const) test(`Common Room quarterTurns${turns}: actu
   afterPixels.forEach(count=>expect(count,'each Common Room bench retains authored upholstery after Load').toBeGreaterThan(1500));
   expect(afterPixels).toEqual(beforePixels);
   // Existing public Bench detail camera recipe; no fabricated renderer pose.
+  await openCameraControls(page);
   for (let step=0;step<(turns===0?7:1);step++) await page.getByRole('button', { name:'Rotate camera right',exact:true }).click();
   await page.mouse.move(1200,650); await page.mouse.down({ button:'right' }); await page.mouse.move(1200,667,{ steps:3 }); await page.mouse.up({ button:'right' });
   await frameRoom(page); const provenance=await network.evidence(info,turns);
