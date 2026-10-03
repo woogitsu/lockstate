@@ -8,7 +8,7 @@ The genuine released source `furniture.kitchen.stove.angled-detail.blend`, SHA25
 
 ## Genuine saved-source before/after
 
-The two actual Workbench before renders at 60/e40 and 300/e40 exactly reproduce their released PNG bodies. Both were opened. The final soft after renders are made again from the actual saved Blender source and were compared with the earlier in-memory render; both are byte exact. The author steel, emal and glass now respond to broad soft lights, with readable retained controls, grate assemblies and inset oven fronts.
+The two actual Workbench before renders at 60/e40 and 300/e40 exactly reproduce their released PNG bodies. Both were opened. The final soft after renders are made again from the actual saved Blender source and were compared with the earlier in-memory render; both are byte exact. The author steel, enamel and glass now respond to broad soft lights, with readable retained controls, grate assemblies and inset oven fronts.
 
 | Pose | Released Workbench | Saved shader Cycles |
 | --- | --- | --- |
@@ -26,6 +26,22 @@ The production anchor is the existing ONE translation (1,.5,0). This new saved s
 
 ## Checkpoint and pending proof
 
-This checkpoint publishes saved source and authentic inspected comparisons. Genuine72, independent repeated frames, real producer/source/hash-validPNG/consumer controls, strict types and focused neighbor tests follow. It is not a native or production gameplay acceptance result. Root owns the browser/build/integration lease and later evaluates the actual Kitchen scene. No renderer, UI, native observer/helper/fixture, persistence, schema, price, collision, camera, palette, template, config or alias is changed.
+This checkpoint publishes saved source and authentic inspected comparisons. The following final production section records the completed genuine72, independent repeats, real producer controls and focused verification. It is not a native or production gameplay acceptance result. Root owns the browser/build/integration lease and later evaluates the actual Kitchen scene. No renderer, UI, native observer/helper/fixture, persistence, schema, price, collision, camera, palette, template, config or alias is changed.
 
 Reproduction uses Blender5.2.1 LTS with `--background --threads 1 --python-exit-code 1` and `tooling/blender/prepare-kitchen-stove-cycles.py`, followed by `--refresh-saved-comparison` or `--verify-saved`. The bounded original64 study uses `tooling/research/compare-kitchen-stove-soft-samples.py`, optionally `--denoised`; study outputs are separate from final saved-source pictures. Logs preserve actual executed commands/output. No AI bitmap enters the game.
+
+## Complete genuine production and restoration
+
+All 72 canonical poses were genuinely rendered from the saved source in 250.92783699999563 seconds. Four independent actual repeats at 30/120/210/300 e40 are byte exact (14.765765700023621 seconds total). The final reopened-source 60/300 comparison pictures equal the actual production bodies. The old source and all 72 Workbench PNGs remain; an explicit historical descriptor archive preserves their source/body pins.
+
+The two original dedicated stove entry points and the stove-only entry in the shared Kitchen producer now consume the new saved source. The other Kitchen models retain their source entries and producers. Actual canonical callback omission and shared callback omission were observed RED and restored GREEN; removing the shared callback caused a real duplicate-anchor translation and occupied-footprint failure. Neither consumer is silently left on Workbench.
+
+Seven real production REDs cover a disconnected grate shoe in an actually saved .blend, wrong dedicated asset dispatch, a correctly hashed/decoded PNG with opaque border, old Workbench descriptor delivered to the current typed consumer, registry omission, canonical callback omission and shared Kitchen callback omission. Every mutation was exactly restored, with 731 source/history/descriptor/producer/registry/catalog/renderer/UI/browser files matching byte for byte. All four repeated bodies passed actual PNG decoding.
+
+Both strict TypeScript projects pass. Twelve focused suites pass: 206 tests GREEN, one existing optional generic Blender-PATH skip. Actual pinned Blender controls ran; the generic skip does not substitute for them. The two previous strict live-source tests were observed RED, then only their current source expectations were corrected; original mesh, material, normal, contact, camera and body guards remain active.
+
+Canonical LF descriptor SHA256: `135cde5a764c1cfee7bc28abf91ec2c5c317d73c1044c8aecc46756783400ea7`. Actual source60/e40 image: `/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+60-elev40.2c45a7fe1656.png`; source300/e40: `/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+300-elev40.aed487667fa9.png`. Source/body full hashes are recorded above.
+
+The typed genuine template consumer uses owner `room-template-000000000002-2-object-000`: q0 anchor(5,5), orientation0, occupied2 x 1, camera world60/e40; q1 anchor(8,5), orientation1, occupied1 x 2, camera world-30/e40. Both select exact source60/e40. Prep counter and fridge contents remain unchanged. This proves source-level renderer consumption and does not claim a public purchase, delivered HTTP response/Blob decode, whole V10 snapshot or native appearance result. Root owns those acceptance steps.
+
+See [HANDOFF](./HANDOFF.md) for the scoped chain, actual command profile and integration boundary.

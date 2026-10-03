@@ -1,0 +1,23 @@
+00:01.156  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-kitchen-cooker-cycles-20261004\assets\source\blender\furniture.kitchen.stove.soft-light.blend"
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
+Traceback (most recent call last):
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-kitchen-cooker-cycles-20261004\tooling\blender\render-kitchen-stove-cycles.py", line 116, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-kitchen-cooker-cycles-20261004\tooling\blender\render-kitchen-stove-cycles.py", line 76, in main
+    scene,camera = configure()
+                   ~~~~~~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-kitchen-cooker-cycles-20261004\tooling\blender\render-kitchen-stove-cycles.py", line 37, in configure
+    prepare.verify_scene(scene, scene.camera, EXPECTED)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-kitchen-cooker-cycles-20261004\tooling\blender\prepare-kitchen-stove-cycles.py", line 76, in verify_scene
+    audit.actual_triangle_contacts(scene, ORIGINAL_RECEIPT['actualContactTargets'])
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-kitchen-cooker-cycles-20261004\tooling\blender\refine-kitchen-stove-angled-detail.py", line 178, in actual_triangle_contacts
+    if zhigh-zlow<=1e-5 or not inside(shoe,point) or not inside(name,point):raise ValueError('Stove mounting shoe lacks real triangle-interior contact: '+shoe+' / '+name)
+                                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: Stove mounting shoe lacks real triangle-interior contact: physical-kitchen-stove.east-west grate shoe 0 -1 / angled-stove.burner collar 0
+
+Error: script failed, file: 'C:\Users\matma\Documents\Rozwój gier\lockstate-kitchen-cooker-cycles-20261004\tooling\blender\render-kitchen-stove-cycles.py', exiting.

@@ -121,12 +121,10 @@ def point_camera(camera, target, yaw, elevation):
 exporter.point_camera = point_camera
 
 if __name__ == '__main__':
-    if '--verify' in sys.argv:
-        for model in exporter.MODELS:
-            _, camera, target = configure(model)
-            for yaw in exporter.YAW:
-                for elevation in exporter.ELEVATION:
-                    point_camera(camera, target, yaw, elevation)
-        print('DEDICATED_KITCHEN_STOVE_VERIFY72 cameras and four occupied orientations', flush=True)
-    else:
-        exporter.main()
+    CYCLES_PRODUCER = 'render-kitchen-stove-cycles.py'
+    if CYCLES_PRODUCER != 'render-kitchen-stove-cycles.py':
+        raise ValueError('Kitchen stove canonical Cycles producer dispatch changed')
+    modern_spec = importlib.util.spec_from_file_location('kitchen_stove_retained_cycles_entry', Path(__file__).with_name(CYCLES_PRODUCER))
+    modern = importlib.util.module_from_spec(modern_spec)
+    modern_spec.loader.exec_module(modern)
+    modern.main()
