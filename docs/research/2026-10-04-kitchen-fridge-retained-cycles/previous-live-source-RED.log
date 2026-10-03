@@ -1,0 +1,54 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-kitchen-fridge-cycles-20261004
+
+xx
+node :
+At line:12 char:1
++ node node_modules/vitest/vitest.mjs run tests/unit/oblique-kitchen-fr ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-kitchen-fridge-angled-integrity.test.ts > retains the original fridge assembly/materials and
+registers dedicated physical details under the existing identity
+AssertionError: expected 'assets/source/blender/furniture.kitch…' to be 'assets/source/blender/furniture.kitch…' // Obj
+ect.is equality
+
+Expected: "assets/source/blender/furniture.kitchen.fridge.angled-detail.blend"
+Received: "assets/source/blender/furniture.kitchen.fridge.soft-light.blend"
+
+ ❯ tests/unit/oblique-kitchen-fridge-angled-integrity.test.ts:54:26
+     52|   expect(physical.originalSourceSha256).toBe(provenance.sourceSha256);
+     53|   expect(hash(readFileSync(new URL(physical.source, root)))).toBe(phys…
+     54|   expect(catalog.source).toBe(physical.source);
+       |                          ^
+     55|   expect(catalog.sourceSha256).toBe(physical.sourceSha256);
+     56|   expect(catalog.cameraTargetTiles).toEqual(provenance.cameraTargetTil…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/unit/oblique-kitchen-fridge-detail-integrity.test.ts > preserves original Kitchen fridge geometry/material
+s/modifiers and publishes actual attached hinge/handle fixing hardware
+AssertionError: expected 'assets/source/blender/furniture.kitch…' to be 'assets/source/blender/furniture.kitch…' // Obj
+ect.is equality
+
+Expected: "assets/source/blender/furniture.kitchen.fridge.angled-detail.blend"
+Received: "assets/source/blender/furniture.kitchen.fridge.soft-light.blend"
+
+ ❯ tests/unit/oblique-kitchen-fridge-detail-integrity.test.ts:70:26
+     68|   const catalog = parseObliqueModuleCatalog(JSON.parse(readFileSync(ne…
+     69|   expect(catalog.assetId).toBe('furniture.kitchen.fridge.variants');
+     70|   expect(catalog.source).toBe(provenance.source);
+       |                          ^
+     71|   expect(catalog.sourceSha256).toBe(provenance.sourceSha256);
+     72|   expect(catalog.resolutionPx).toEqual([256, 256]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  2 failed (2)
+   Start at  00:36:33
+   Duration  293ms (transform 95ms, setup 0ms, import 310ms, tests 27ms, environment 0ms)

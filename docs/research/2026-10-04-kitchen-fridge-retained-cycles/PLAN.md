@@ -5,3 +5,7 @@
 3. Genuine saved-source before/after60/300e40 with accepted64/no-denoise soft lighting first. Inspect actual images; scoped sample/denoise correction only for a concrete visible stochastic artifact. No material/palette transfer.
 4. Publish first source checkpoint; genuine72 and4independent byte-exact repeats, meaningful real source/dispatch/hashvalidPNG/consumer/registry/callback RED and exact restores.
 5. Strict types/focused old structural and consumer tests; own exact handoff. Native/build/browser/renderer/UI/config/persistence/simulation/native helpers remain root-owned.
+
+## Completed checkpoint
+
+Source checkpoint7ae30ae7a04e4084747b0fae1f4fdd6f2e6226fd is published. Actual72 and four exact repeats, seven real RED/exact-restore controls,731 protected files, current q0/q1 typed consumer, both strict TypeScript projects and13 focused suites are complete. Root native/build/browser acceptance remains pending.

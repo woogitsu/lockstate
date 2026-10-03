@@ -1,0 +1,13 @@
+00:01.109  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-kitchen-fridge-cycles-20261004\assets\source\blender\furniture.kitchen.fridge.soft-light.blend"
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
+Traceback (most recent call last):
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-kitchen-fridge-cycles-20261004\assets\intermediate\kitchen-fridge-cycles-production-controls\actual-shared-fridge-configure.py", line 8, in <module>
+    scene,camera,target=m.configure(model)
+                        ~~~~~~~~~~~^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-kitchen-fridge-cycles-20261004\tooling\blender\render-kitchen-fixtures-oblique.py", line 158, in configure
+    raise ValueError(f"{asset_id} escapes its {width} x {height} occupied footprint: {minimum} to {maximum}")
+ValueError: furniture.kitchen.fridge.variants escapes its 1 x 1 occupied footprint: [0.574999988079071, 0.515500009059906, 0.0] to [1.4249999523162842, 1.3995000123977661, 2.3999998569488525]
+
+Error: script failed, file: 'C:\Users\matma\Documents\Rozwój gier\lockstate-kitchen-fridge-cycles-20261004\assets\intermediate\kitchen-fridge-cycles-production-controls\actual-shared-fridge-configure.py', exiting.

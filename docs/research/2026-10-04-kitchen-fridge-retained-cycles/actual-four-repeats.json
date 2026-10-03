@@ -1,0 +1,30 @@
+[
+  {
+    "yawDegrees": 30,
+    "elevationDegrees": 40,
+    "sha256": "a5def4b3ef13dbfcc2d3679a410ce7ee4ee5c4368f614e4b75a1e479716f401c",
+    "byteExact": true,
+    "renderSeconds": 3.2138001000275835
+  },
+  {
+    "yawDegrees": 120,
+    "elevationDegrees": 40,
+    "sha256": "6476c75f50741e69b23064df70a883b80db2fb9073903393c40fc456f9a1911b",
+    "byteExact": true,
+    "renderSeconds": 2.974849400052335
+  },
+  {
+    "yawDegrees": 210,
+    "elevationDegrees": 40,
+    "sha256": "9f4d2299d2057f704cd85b7eeeeb57c74bffdd4034362dc8327221b999f1f036",
+    "byteExact": true,
+    "renderSeconds": 2.9197296000202186
+  },
+  {
+    "yawDegrees": 300,
+    "elevationDegrees": 40,
+    "sha256": "a6d73e1d54a877812e867aa877d5deda3c944259b35dd95506be64e31ce77fbc",
+    "byteExact": true,
+    "renderSeconds": 2.9989610000047833
+  }
+]
