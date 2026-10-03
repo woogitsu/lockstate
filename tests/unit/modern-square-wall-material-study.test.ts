@@ -75,7 +75,7 @@ it('pins the genuine retained59part/9graph wall, original palette mismatch and w
 });
 
 it('compares two genuine canonical poses while keeping all released wall descriptors and72 bodies intact', () => {
-  const catalog = parseObliqueModuleCatalog(JSON.parse(read('public/game-content/oblique-square-brick-full-wall.v1.json').toString('utf8')) as unknown);
+  const catalog = parseObliqueModuleCatalog(JSON.parse(read('assets/source/blender/wall.square.brick.full.workbench-descriptor.v1.json').toString('utf8')) as unknown);
   expect(catalog.sourceSha256).toBe(proof.sourceSha256); expect(catalog.frames).toHaveLength(72);
   expect(proof.frames).toHaveLength(4);
   for (const frame of proof.frames) { expect(sha(read(frame.image))).toBe(frame.sha256); decodeCanonical(frame.image); }

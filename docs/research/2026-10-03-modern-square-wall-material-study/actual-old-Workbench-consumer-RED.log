@@ -1,0 +1,38 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-modern-ground-wall-material-study-20261003
+
+ ❯ tests/unit/square-wall-retained-cycles-production.test.ts (1 test | 1 failed) 8ms
+   × existing full square wall consumers require the approved-material source at both real canonical yaws and whole footprint 8ms
+node.exe : 
+At line:2 char:110
++ ...  $env:PATH; & node node_modules/vitest/vitest.mjs run tests/unit/squa ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/square-wall-retained-cycles-production.test.ts > existing full square wall consumers require the appr
+oved-material source at both real canonical yaws and whole footprint
+AssertionError: current world selected the old flat material presentation: expected 'c73fcc00471682135b53049e0b74f1d715
+889…' to be '53c35a0013a93ed662983a2888031c8377ba1…' // Object.is equality
+
+Expected: "53c35a0013a93ed662983a2888031c8377ba1965981e3ef98757e20547bd9cd8"
+Received: "c73fcc00471682135b53049e0b74f1d71588909b245bfeac0cac6cd93d696ae1"
+
+ ❯ tests/unit/square-wall-retained-cycles-production.test.ts:35:95
+     33|     expect(entry).toBeDefined();
+     34|     const catalog = parseObliqueModuleCatalog(json('public' + entry.ma…
+     35|     expect(catalog.sourceSha256, 'current world selected the old flat …
+       |                                                                                               ^
+     36|     expect(catalog.source).toBe('wall.square.brick.full.soft-light.ble…
+     37|     expect(sourceSha(read('assets/source/blender/' + catalog.source)))…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  22:08:01
+   Duration  556ms (transform 148ms, setup 0ms, import 433ms, tests 8ms, environment 0ms)
+

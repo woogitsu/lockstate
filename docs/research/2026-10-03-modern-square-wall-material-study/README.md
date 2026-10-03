@@ -1,4 +1,10 @@
-# Modern square-wall retained-material study — review draft
+# Modern square-wall retained-material study and full-module adoption
+
+Current source state: the existing accepted full-wall descriptor consumes72
+genuine approved-material Cycles frames. Source/consumer proof is complete;
+actual built-game/native visual acceptance is pending root. The two earlier
+draft stages below remain explicit history, including the rejected literal
+grey-graph presentation. Low/cutaway and floor art are unchanged.
 
 ## Actual inventory and selected consumer
 
@@ -90,7 +96,8 @@ Focused wall/catalog/pipeline suites:9passed/1optional generic Blender-on-PATH
 live test skipped. Actual pinned Blender CLI controls and renders ran separately;
 the skip is not claimed as Blender proof. No native acceptance claim.
 
-No runtime source/descriptor/registry/context/alias,18room palette, floor art,
+At the bounded draft checkpoints there was no runtime source/descriptor/
+registry/context/alias,18room palette, floor art,
 world picking, gameplay, copy, save or UI change. No browser/server/build/native
 run. AI modern concept is direction only; none of its pixels enter these renders.
 
@@ -127,6 +134,38 @@ This is bounded source illumination evidence, not full seam or native acceptance
 [Actual saved shader control](actual-approved-material-controls.json): reverting
 the charcoal footing's shader to default grey was saved in Blender, rejected by
 the real producer (exit1), restored byte exactly and accepted (exit0). All2643
-protected source/frame/runtime files remained byte exact. Full72 integration
-remains next; low/cutaway source, floor and accepted aliases stay outside this
-specific full-module adoption.
+protected source/frame/runtime files remained byte exact. Low/cutaway source,
+floor and accepted aliases stay outside this specific full-module adoption.
+
+## Full72 and real existing consumer completion
+
+Actual standalone source `wall.square.brick.full.soft-light.blend` is the
+inspected approved-material scene, SHA53c35a0013a93ed662983a2888031c8377ba1965981e3ef98757e20547bd9cd8.
+The original square-wall producer delegates only its full branch to the new
+bounded producer; historical `prepare_scene` and the low branch are retained.
+The original source and all old72 frames remain byte exact, with an archived
+Workbench descriptor. Registry URL and existing built-square selector are unchanged.
+
+[Actual matrix](actual-production-matrix.json):72 genuine renders,168.1306337s,
+CPU/thread1/64samples;512RGBA/ortho8/64pixels-per-tile/target(.5,.5,0), original
+24×3 camera grid. Canonical sample bodies match the inspected draft photos exactly.
+Four independently reopened source renders at−135/−45/45/135,e45 were byte exact:
+[repeat receipt](actual-production-four-repeats.json).
+
+The real existing typed world consumer first rejected the old Workbench source
+against the new literal pin: [before RED](actual-old-Workbench-consumer-RED.log).
+After actual descriptor export it selects the new source and exact canonical body
+at both−45/e45 and135/e45 with the unchanged projected whole1×1 footprint.
+[Production controls](actual-production-controls.json) then repeated six real
+negative controls: saved cap source mutation, producer dispatch mutation,
+hash-valid512RGBA PNG with matching filename/descriptor hashes but invalid opaque
+border, old Workbench descriptor, omitted registry entry and actual built-square
+selector changed to low. Every RED was followed by exact restoration GREEN.
+All2713 protected source/frame/floor/alias/selector/runtime files restored exactly.
+
+Final six focused suites:23passed/1generic optional Blender-on-PATH skip; actual
+pinned Blender renders and controls ran separately. Both strict TypeScript
+targets exit0. No test assertion or PNG validation was disabled.
+[Exact integration handoff](INTEGRATION_HANDOFF.md) carries source/descriptor/frame
+pins, executable commands and the pending actual-game boundary. No browser,
+server, build, fullverify, native acceptance or global style adoption claimed.

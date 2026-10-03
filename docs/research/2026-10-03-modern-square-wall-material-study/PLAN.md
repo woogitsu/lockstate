@@ -26,7 +26,16 @@ owns browser/build/native and Staff acceptance; HUD owns public View helper.
    existing diffuseRGBA and roughness into Principled inputs, retain every other
    graph field/geometry/material and the literal draft. Next: two genuine same
    pose samples, joined-module review, then integrate only if visibly better.
-   No full72 or runtime adoption has occurred at this checkpoint.
+   **Complete after that checkpoint:** two synchronized canonical samples,
+   genuine joined-module diagnostic, actual saved shader RED→restore GREEN;
+   existing full descriptor now consumes genuine72 retained-material exports.
+6. **Complete:** actual source/dispatch/hash-valid PNG/old consumer/registry/
+   built-square-selector mutations each RED→exact restore GREEN, four reopened
+   canonical byte-exact repeats,2713 protected files exact. Six focused suites
+   23passed/1generic optional skip; both strict TypeScript targets exit0.
+7. **Pending root:** integrate published chain, actual built-game/native whole
+   wall footprint, tile joins and appearance calibration. No browser/build/server
+   run here. Low/cutaway remains its original released source/72 presentation.
 
 Directional SUN radiance is independent of tile position. The finite area-light
 profile approved for isolated furniture is not reused for tiled wall modules.

@@ -1,0 +1,25 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-modern-ground-wall-material-study-20261003
+
+ ❯ tests/unit/square-wall-retained-cycles-production.test.ts (1 test | 1 failed) 10ms
+   × existing full square wall consumers require the approved-material source at both real canonical yaws and whole footprint 10ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  22:12:12
+   Duration  557ms (transform 148ms, setup 0ms, import 431ms, tests 10ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/square-wall-retained-cycles-production.test.ts > existing full square wall consumers require the approved-material source at both real canonical yaws and whole footprint
+AssertionError: expected undefined to be defined
+ ❯ tests/unit/square-wall-retained-cycles-production.test.ts:33:19
+     31|     expect(wall.footprint).toEqual(projectedTileQuad(3, 3, camera));
+     32|     const entry = registry.entries.find(row => row.assetId === wall.as…
+     33|     expect(entry).toBeDefined();
+       |                   ^
+     34|     const catalog = parseObliqueModuleCatalog(json('public' + entry.ma…
+     35|     expect(catalog.sourceSha256, 'current world selected the old flat …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯

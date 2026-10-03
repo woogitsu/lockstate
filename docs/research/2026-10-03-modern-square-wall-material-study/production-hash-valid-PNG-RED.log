@@ -1,0 +1,20 @@
+00:01.063  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-modern-ground-wall-material-study-20261003\assets\source\blender\wall.square.brick.full.soft-light.blend"
+ACTUAL_FULL_WALL_SOURCE59_MATERIAL9_CONTACT58_DISPATCH_GREEN
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
+Traceback (most recent call last):
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-modern-ground-wall-material-study-20261003\tooling\blender\render-square-wall-retained-cycles.py", line 127, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-modern-ground-wall-material-study-20261003\tooling\blender\render-square-wall-retained-cycles.py", line 106, in main
+    verify_exports()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-modern-ground-wall-material-study-20261003\tooling\blender\render-square-wall-retained-cycles.py", line 53, in verify_exports
+    study.producer.normalize(path)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-modern-ground-wall-material-study-20261003\tooling\blender\render-square-brick-oblique.py", line 85, in normalize
+    raise ValueError(f'wall touches render border: {path}')
+ValueError: wall touches render border: C:\Users\matma\Documents\Rozwój gier\lockstate-modern-ground-wall-material-study-20261003\public\assets\environment\oblique\square-brick-full-wall-yaw-045-elev45.c133cd222188.png
+
+Error: script failed, file: 'C:\Users\matma\Documents\Rozwój gier\lockstate-modern-ground-wall-material-study-20261003\tooling\blender\render-square-wall-retained-cycles.py', exiting.

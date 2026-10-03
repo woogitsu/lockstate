@@ -1,0 +1,15 @@
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
+Traceback (most recent call last):
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-modern-ground-wall-material-study-20261003\tooling\blender\render-square-wall-retained-cycles.py", line 127, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-modern-ground-wall-material-study-20261003\tooling\blender\render-square-wall-retained-cycles.py", line 104, in main
+    configure()
+    ~~~~~~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-modern-ground-wall-material-study-20261003\tooling\blender\render-square-wall-retained-cycles.py", line 29, in configure
+    raise ValueError('Full wall retained-material producer dispatch changed')
+ValueError: Full wall retained-material producer dispatch changed
+
+Error: script failed, file: 'C:\Users\matma\Documents\Rozwój gier\lockstate-modern-ground-wall-material-study-20261003\tooling\blender\render-square-wall-retained-cycles.py', exiting.
