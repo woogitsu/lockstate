@@ -1,0 +1,21 @@
+{
+  "base": "161a2f18bcc3612a6c74609da1c7c390f33fb96d",
+  "verification": "actual base Git blobs against current file bytes normalized only for Windows line endings",
+  "files": [
+    {
+      "file": "tests/browser/dedicated-kitchen-stove-player-build.spec.ts",
+      "entireNativeBodyAfterRouteStorageUnchanged": true,
+      "bodySha256": "42d0926bc8a5d3f2a0a84df12c671b54f97c3ea0d6c1bdbeab7bb7c129552eed"
+    },
+    {
+      "file": "tests/browser/dedicated-kitchen-fridge-player-build.spec.ts",
+      "entireNativeBodyAfterRouteStorageUnchanged": true,
+      "bodySha256": "e02907af6b663984aacee24d57b30bc0a7dafd388617acf719ad5dacc175e2be"
+    },
+    {
+      "file": "tests/browser/common-room-kitchen-modern-evidence.ts",
+      "entireNetworkSourceWholeStateHelperUnchanged": true,
+      "canonicalLfSha256": "0cf95632c5a6d97affe2cf5554fdabebb3c92174b8db5d83c0bb769fab54fd5e"
+    }
+  ]
+}

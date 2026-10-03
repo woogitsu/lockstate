@@ -1,0 +1,8 @@
+{
+  "originalSha256": "220ed3d195fe7db3b821bfd56cc3dd71ebc52ece645625722524b10ab3ce7ea8",
+  "restoredSha256": "220ed3d195fe7db3b821bfd56cc3dd71ebc52ece645625722524b10ab3ce7ea8",
+  "byteExact": true,
+  "redExit": 1,
+  "restoredGreenExit": 0,
+  "mutation": "omit only actual observer burner-gradient spatial ownership qualifier; native production consumer was not mutated"
+}

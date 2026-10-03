@@ -23,7 +23,7 @@ All original soft assertions, before/after count equality, costs, three literal 
 
 The source sampling planes use the retained author camera target/pivot/64 pixels per tile, visible side face and inner freezer-gasket coordinates. The thin cast-iron cross tops use the actual authored four cross centers, dimensions and z values in the retained producer. The burner samples use the collar's actual inner aperture and retained `burner-hot` centers. Source samples exclude transparent pixels and select the observed neutral enamel, cool dark iron, blue freezer and warm burner responses. The exact source-only selection rules are printed in the recipe; native image colors are never added to a palette.
 
-The broad enamel/freezer score is the largest four-connected interior with a complete opaque 3x3 source-palette neighborhood and at least three distinct source RGB values across the connected surface. This excludes flat fallback bodies and sparse unrelated highlights, and counts fewer pixels than a raw RGB match. A local three-colour condition at *every* pixel was investigated and rejected: it fragments a valid smoothly lit surface. The whole connected surface is the gradient discriminator.
+The broad enamel/freezer score is the largest four-connected interior with a complete opaque 3x3 source-palette neighborhood and at least three distinct source RGB values across the connected surface. This rejects a single flat colour and sparse unrelated highlights, and counts fewer pixels than a raw RGB match. Rejection of the actual production fallback remains a root-native omission control, not a claim from a synthetic PNG. A local three-colour condition at *every* pixel was investigated and rejected: it fragments a valid smoothly lit surface. The whole connected surface is the gradient discriminator.
 
 Iron palette membership alone is unsafe: default chair/desk frame metal shares it. The observer therefore counts source-iron pixels only near a connected, opaque, at-least-three-colour source burner-core gradient. The distance is the actual authored collar radius `.192` tile ×64 pixels/tile × unchanged production initial zoom1.25, rounded up to16 pixels. This is an existing route parameter, not a new acceptance budget or guessed screen colour.
 
@@ -44,6 +44,14 @@ node $ownTemp/source-proof.mjs $actualOriginalQ0Directory $ownTemp/offline-proof
 ```
 
 `$actualOriginalQ0Directory` must contain the two original root screenshots listed in the receipt. The reader strips the **actual current** TypeScript observer/PNG decoder for Node24 evaluation; it does not replace the implementation with a second classifier. Run the source rederivation with actual Python/Pillow by copying the inert `.py.txt` into own TEMP and executing from the repository root. No fixture snapshot, native commands or PNG responses are injected.
+
+## Causal check and current gates
+
+The actual observer helper was mutated to omit only its burner-gradient spatial qualifier. The same read-only reader turned RED on the genuine default-chair source yaw0/e40. Restoring the exact original bytes returned GREEN for the original q0 images and all864 source checks. [Mutation receipt](./actual-qualifier-mutation-receipt.json), [original RED](./actual-qualifier-omission-red.raw.txt), [restored GREEN](./actual-exact-restoration-green.raw.txt). This is an observer-source mutation, **not** a production model-consumer omission or a native browser run.
+
+The existing package `typecheck` (app and tools) exited0; explicit `tsc -b tsconfig.tools.json` also exited0. A mistaken nonexistent `typecheck:tools` script attempt is retained separately and was corrected to the real tools command. Existing stove/fridge source consumers and retained-Cycles producer neighbors:10G/4files. Documentation contracts:31G/1R; the sole inherited RED is the prep base's missing tools include for `2026-10-04-v10-max-native/playwright.native.config.ts`, already root-owned/fixed in the newer integration. This patch adds no executable research module outside strict coverage: recipes are inert `.mjs.txt`/`.py.txt`, browser helper is inside the actual app project.
+
+A separate hypothesis that **archived Workbench stove art** should be material-negative was disproved ([retained raw RED](./archived-workbench-negative-hypothesis-red.raw.txt)). That source already contains the same correctly authored burner/cast-iron hardware, so rejecting it is not a valid material oracle. No classifier threshold was adjusted to force it negative. The unchanged literal source/descriptor/actual PNG body SHA guards are the independent stale-art-identity oracle. This read does not establish the actual production flat fallback negative; root must execute that omission.
 
 ## Remaining acceptance
 

@@ -1,0 +1,14 @@
+﻿import {readFileSync,writeFileSync} from 'node:fs';import {stripTypeScriptTypes} from 'node:module';import {createHash} from 'node:crypto';import assert from 'node:assert/strict';
+const root=process.cwd();const sha=b=>createHash('sha256').update(b).digest('hex');
+const dec='data:text/javascript;base64,'+Buffer.from(stripTypeScriptTypes(readFileSync('tests/browser/staff-room-padded-chair/material-observer.ts','utf8'),{mode:'strip'})).toString('base64');
+const src=readFileSync('tests/browser/kitchen-modern-material-observer.ts','utf8').replace("'./staff-room-padded-chair/material-observer'",JSON.stringify(dec));
+const o=await import('data:text/javascript;base64,'+Buffer.from(stripTypeScriptTypes(src,{mode:'strip'})).toString('base64'));const {decodeStaffMaterialPng}=await import(dec);let result=[];
+for(const kind of ['stove','fridge']){
+ const path=`assets/source/blender/furniture.kitchen.${kind}.workbench-descriptor.v1.json`;const d=JSON.parse(readFileSync(path));let mx={enamel:0,iron:0,freezer:0};assert.equal(d.frames.length,72);
+ for(const f of d.frames){const raw=readFileSync('public'+f.image);assert.equal(sha(raw),f.sha256);const b=decodeStaffMaterialPng(raw),r=[0,0,b.width,b.height];
+ const v={enamel:o.kitchenSourceGradientInterior(b,r,new Set(o.KITCHEN_ENAMEL_SOURCE_RGB_KEYS)),iron:o.kitchenBurnerAssociatedIron(b,r),freezer:o.kitchenSourceGradientInterior(b,r,new Set(o.KITCHEN_FREEZER_SOURCE_RGB_KEYS))};
+ for(const k in v)mx[k]=Math.max(mx[k],v[k]);assert(v.iron<=25);assert(v.freezer<=350);assert(!(v.enamel>50&&v.iron>25));
+ }
+ result.push({path,source:d.source,sourceSha256:d.sourceSha256,descriptorSha256:sha(readFileSync(path)),wholeImages:72,maxima:mx});console.log(kind,mx);
+}
+writeFileSync('docs/research/2026-10-04-kitchen-modern-material-observer/historical-flat-source-negatives.json',JSON.stringify({kind:'genuine archived Workbench bodies, not a synthetic fallback prism or native omission',families:result},null,2)+'\n');

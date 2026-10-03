@@ -1,0 +1,15 @@
+oblique-cell-chair.v1.json {"enamel":0,"iron":0,"freezer":0,"louvre":1044}
+oblique-reception-employee-desk.v1.json {"enamel":0,"iron":0,"freezer":0,"louvre":1949}
+oblique-furniture-office-desk-generic.v1.json {"enamel":0,"iron":0,"freezer":0,"louvre":2515}
+oblique-furniture-classroom-teacher-desk.v1.json {"enamel":0,"iron":0,"freezer":0,"louvre":2515}
+oblique-square-brick-full-wall.v1.json {"enamel":0,"iron":0,"freezer":0,"louvre":0}
+oblique-wall-cutaway.v1.json {"enamel":87,"iron":0,"freezer":0,"louvre":0}
+oblique-wall-west.v1.json {"enamel":19,"iron":0,"freezer":0,"louvre":0}
+oblique-wall-west-cutaway.v1.json {"enamel":20,"iron":0,"freezer":0,"louvre":0}
+oblique-floor-cell.v1.json {"enamel":0,"iron":0,"freezer":0,"louvre":0}
+oblique-floor-terrain-dirt.v1.json {"enamel":0,"iron":0,"freezer":0,"louvre":0}
+oblique-furniture.kitchen-prep-counter.v1.json {"enamel":0,"iron":0,"freezer":0,"louvre":9830}
+oblique-furniture.kitchen-fridge.v1.json {"enamel":2391,"iron":0,"freezer":758,"louvre":3261}
+PASS [{"name":"dedicated-kitchen-stove-worker-completed-fullhd.png","sha256":"05bade087cc9dd3c946df62ec63429417eeee68520a4bc0951440384debbd28b","stove":[691,112],"fridge":[363,394]},{"name":"dedicated-kitchen-stove-loaded-fullhd.png","sha256":"b3d03acb8bd7d9d9f82ff86a49c8df5b455ce14ac1f08c2c76e49fdbd8bcf202","stove":[691,112],"fridge":[363,394]}]
+(node:50204) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
