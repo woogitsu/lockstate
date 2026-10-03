@@ -35,7 +35,7 @@ it.each(cases)('standing sweep respects a genuine discharged target: saved=$save
   for (let guard = 0; guard < 3; guard++) {
     send(runtime, { type: 'HireStaff', staffRoleId: 'staff-role.guard', x: 16, y: 16 });
   }
-  // The classified sentence ends at1809. Natural discharge runs at1820,
+  // The classified sentence ends at 1809. Natural discharge runs at 1820,
   // during the standing sweep's real first travel/dwell rather than after it.
   send(runtime, { type: 'AdmitPrisoner', sentenceLengthTicks: surface === 'live-target' ? 10_000 : 1795 - runtime.kernel.tick,
     priorIncidents: 0, x: 16, y: 16 });
@@ -95,3 +95,85 @@ it.each(cases)('standing sweep respects a genuine discharged target: saved=$save
   }
 });
 
+
+// These are the existing domain search-order API, not a player search command.
+// Container location registration is an explicit scenario port; it is not
+// persisted by the current player save and is therefore tested live only.
+it.each(['room', 'staff', 'container'].flatMap(kind => [false, true].map(missing => ({ kind, missing }))))(
+  'keeps supported domain target scopes exact: kind=$kind missing=$missing', ({ kind, missing }) => {
+    const runtime = createNewSimulationRuntime(73);
+    let target: { holderKind: 'cell' | 'staff' | 'container'; holderId: string };
+    let scope: 'cell' | 'person' | 'delivery';
+    if (kind === 'room') {
+      send(runtime, { type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 5, y: 5 }, quarterTurns: 1 });
+      until(runtime, () => runtime.roomTemplates.snapshot().pending.length === 0 &&
+        runtime.construction.allOrders().every(order => order.state === 'completed'));
+      const room = runtime.prisoners.roomInstances.allByRoomCatalogId('room.cell')[0]!;
+      target = { holderKind: 'cell', holderId: room.instanceId };
+      scope = 'cell';
+      runtime.searchSystem.submitOrder({ id: 'domain-target', scope, targets: [target] });
+      if (missing) send(runtime, { type: 'UnzoneRoom', ...room.anchorTile, width: room.width!, height: room.height! });
+    } else if (kind === 'staff') {
+      send(runtime, { type: 'HireStaff', staffRoleId: 'staff-role.guard', x: 16, y: 16 });
+      const staff = runtime.securityGuards.allGuardIds()[0]!;
+      target = { holderKind: 'staff', holderId: String(staff) };
+      scope = 'person';
+      runtime.searchSystem.submitOrder({ id: 'domain-target', scope, targets: [target] });
+      if (missing) send(runtime, { type: 'DismissStaff', staffId: staff });
+    } else {
+      target = { holderKind: 'container', holderId: missing ? 'absent-domain-container' : 'construction-materials' };
+      scope = 'delivery';
+      runtime.searchContainerLocations.set(target.holderId, { x: 23, y: 23 });
+      runtime.searchSystem.submitOrder({ id: 'domain-target', scope, targets: [target] });
+    }
+    const before = runtime.searchSystem.getMetrics();
+    expect(before.searchesCompleted).toBe(0);
+    for (let tick = 0; tick < 30; tick++) runtime.kernel.step();
+    if (missing) {
+      expect(runtime.searchSystem.isQueued('domain-target')).toBe(false);
+      expect(runtime.searchSystem.getMetrics().searchesCancelled).toBe(1);
+      expect(runtime.searchSystem.claimedGuardIds()).toHaveLength(0);
+    } else expect(runtime.searchSystem.isQueued('domain-target')).toBe(true);
+    for (let guard = 0; guard < 3; guard++) {
+      send(runtime, { type: 'HireStaff', staffRoleId: 'staff-role.guard', x: 16, y: 16 });
+    }
+    for (let tick = 0; tick < 500; tick++) runtime.kernel.step();
+    expect(runtime.refusals.count).toBe(0);
+    expect(runtime.searchSystem.getMetrics()).toMatchObject({
+      searchesCompleted: missing ? 0 : 1, searchesCancelled: missing ? 1 : 0, searchesQueued: 0,
+    });
+    expect(runtime.searchSystem.claimedGuardIds()).toHaveLength(0);
+  });
+
+it.each([false, true])('domain queued order validates the full recycled ID, saved=%s', saved => {
+  let runtime = createNewSimulationRuntime(73);
+  send(runtime, { type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 5, y: 5 }, quarterTurns: 1 });
+  until(runtime, () => runtime.roomTemplates.snapshot().pending.length === 0 &&
+    runtime.construction.allOrders().every(order => order.state === 'completed'));
+  send(runtime, { type: 'AdmitPrisoner', sentenceLengthTicks: 100, priorIncidents: 0, x: 16, y: 16 });
+  until(runtime, () => runtime.prisoners.roomInstances.totalOccupancy === 1);
+  const old = runtime.prisoners.entityStore.getIdByIndex(0);
+  const index = runtime.prisoners.entityStore.getIndex(old);
+  until(runtime, () => !runtime.prisoners.entityStore.isAlive(old));
+  send(runtime, { type: 'AdmitPrisoner', sentenceLengthTicks: 100_000, priorIncidents: 0, x: 26, y: 26 });
+  const current = runtime.prisoners.entityStore.getIdByIndex(index);
+  expect(current).not.toBe(old);
+  expect(runtime.prisoners.entityStore.getIndex(current)).toBe(index);
+  expect(runtime.prisoners.entityStore.isAlive(current)).toBe(true);
+  // Existing domain API; both actual IDs are saved before any queued staffing.
+  runtime.searchSystem.submitOrder({ id: 'stale-owner', scope: 'person', targets: [{ holderKind: 'prisoner', holderId: String(old) }] });
+  runtime.searchSystem.submitOrder({ id: 'new-owner', scope: 'person', targets: [{ holderKind: 'prisoner', holderId: String(current) }] });
+  if (saved) runtime = reload(runtime);
+  for (let tick = 0; tick < 30; tick++) runtime.kernel.step();
+  expect(runtime.searchSystem.isQueued('stale-owner')).toBe(false);
+  expect(runtime.searchSystem.isQueued('new-owner')).toBe(true);
+  expect(runtime.searchSystem.getMetrics().searchesCancelled).toBe(1);
+  for (let guard = 0; guard < 3; guard++) send(runtime, { type: 'HireStaff', staffRoleId: 'staff-role.guard', x: 16, y: 16 });
+  until(runtime, () => runtime.searchSystem.getMetrics().searchesCompleted === 1, 500);
+  expect(runtime.refusals.count).toBe(0);
+  expect(runtime.searchSystem.getMetrics().searchesCancelled).toBe(1);
+  expect(runtime.searchSystem.orderIds()).toHaveLength(0);
+  expect(runtime.searchSystem.claimedGuardIds()).toHaveLength(0);
+  expect(runtime.prisoners.entityStore.isAlive(old)).toBe(false);
+  expect(runtime.prisoners.entityStore.isAlive(current)).toBe(true);
+});
