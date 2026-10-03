@@ -1,0 +1,24 @@
+{
+  "preparedSourceCommit": "60bfa27ea5",
+  "appTypescriptExitCode": 0,
+  "toolsTypescriptExitCode": 0,
+  "productionBuildExitCode": 0,
+  "canonicalArtifactListExitCode": 0,
+  "canonicalListedTests": 3,
+  "nativeTestsExecuted": 0,
+  "browserStarted": false,
+  "serverStarted": false,
+  "canonicalConfigSha256": "ac738633c0392ace1e63a5fe994c0e1798c76ed3b64165b23bb6b40761d21fbd",
+  "worker": {
+    "path": "dist/client/assets/worker-BA7jDAFY.js",
+    "bytes": 438431,
+    "sha256": "fac087de9aa26ee3c01a018e6e8cc5c36fdf3a6c546f6439f3c5cb27a39520f1",
+    "scope": "prepared production build at60bfa27ea5, not running or hosted"
+  },
+  "descriptor": {
+    "path": "public/game-content/oblique-cell-toilet.v1.json",
+    "actualCheckoutBytesSha256": "b651cc3e7cfceb218d1fd7496a1325e4f0205397265e3fed34ac64026523c906",
+    "sourceSha256": "ebc1570274663d22315eed0adfafe8886120bdbf9901dfa744edcde540428ff8"
+  },
+  "nextGate": "root real baseline/consumer-only mutation/exact restore/native q0/q1 loaded image inspection"
+}

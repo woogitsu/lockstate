@@ -1,0 +1,5 @@
+Listing tests:
+  dedicated-cell-toilet-player-build.spec.ts:197:1 › player creates storage and delivery capacity before Basic cell
+  dedicated-cell-toilet-player-build.spec.ts:263:3 › player builds Basic cell at quarterTurns0 and retains toilet palettes and anchors after Save/Load
+  dedicated-cell-toilet-player-build.spec.ts:263:3 › player builds Basic cell at quarterTurns1 and retains toilet palettes and anchors after Save/Load
+Total: 3 tests in 1 file
