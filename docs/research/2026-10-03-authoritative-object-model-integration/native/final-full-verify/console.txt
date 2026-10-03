@@ -1,0 +1,54 @@
+pnpm.cmd : $ pnpm typecheck && pnpm test && node scripts/cloudflare-task.mjs build production
+At line:2 char:943
++ ... 'Continue'; & pnpm --config.verify-deps-before-run=false verify *> (J ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ pnpm typechec...uild production:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+$ tsc -b --pretty false && tsc -b tsconfig.tools.json --pretty false
+$ vitest run
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-common-room-connectivity-integration-20261003
+
+
+ Test Files  707 passed (707)
+      Tests  8441 passed | 2 skipped (8443)
+   Start at  17:16:11
+   Duration  45.79s (transform 37.61s, setup 0ms, import 207.78s, tests 410.03s, environment 59ms)
+
+vite v8.2.2 building lockstate_development environment for production...
+transforming...
+✓ 92 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/lockstate_development/.vite/manifest.json    0.15 kB │ gzip:  0.11 kB
+dist/lockstate_development/wrangler.json          1.63 kB │ gzip:  0.80 kB
+dist/lockstate_development/index.js             289.15 kB │ gzip: 76.65 kB
+
+✓ built in 34ms
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 497 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/client/.assetsignore                      0.02 kB
+dist/client/index.html                         1.71 kB │ gzip:   0.87 kB
+dist/client/assets/worker-CWWnqc1J.js        443.79 kB
+dist/client/assets/index-5ZA72Oh0.css         83.36 kB │ gzip:  12.75 kB
+dist/client/assets/pl-catalog-DQ0PXWG1.js     51.26 kB │ gzip:  14.82 kB
+dist/client/assets/catalog-lZH0TBdb.js        86.41 kB │ gzip:  23.73 kB
+dist/client/assets/index-9IBTMpPQ.js       1,936.93 kB │ gzip: 512.87 kB
+
+✓ built in 4.86s
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeS
+plitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[33m[PLUGIN_TIMINGS] [0mYour build spent 93% of 4.9s inside plugin hooks (4.5s).
+Measured inside the callback, so queue time is excluded and time the callback itself awaited is not:
+  - vite:prepare-out-dir renderStart (90%, 4.4s, 1 call)
+See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+
+Verified Cloudflare production output: dist\lockstate_development\wrangler.json -> dist\client

@@ -57,5 +57,63 @@
     "archivedBytes": 1975,
     "archivedSha256": "b6aaecbdda432014c97490b12de4bd1df339fac645324817199c176e6c842900",
     "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-integration-native-20261003.json",
+    "archived": "original-ordinary-native/report.json",
+    "sourceBytes": 10408,
+    "sourceSha256": "495977cd012500db8c474022d2d8cecea96b2892013708d27f3f5af8d3b28845",
+    "archivedBytes": 10408,
+    "archivedSha256": "495977cd012500db8c474022d2d8cecea96b2892013708d27f3f5af8d3b28845"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-integration-native-20261003.txt",
+    "archived": "original-ordinary-native/console.txt",
+    "sourceBytes": 9892,
+    "sourceSha256": "36ac13fb1c170074b49cd54ed2d0f48dc5f747f019ec02293745f0fbfb4e3564",
+    "archivedBytes": 5572,
+    "archivedSha256": "5b33afb608a0dd17d3ae9cbd8c5bb487b451bf9fef4e5ec60bb6ee56f6f0e8fa",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-integration-native-20261003\\.last-run.json",
+    "archived": "original-ordinary-native/001-.last-run.json",
+    "sourceBytes": 96,
+    "sourceSha256": "51ecb9b2b73a0903b790e4fd6114caa8fbe530f622523e112619f3734d6f8af1",
+    "archivedBytes": 96,
+    "archivedSha256": "51ecb9b2b73a0903b790e4fd6114caa8fbe530f622523e112619f3734d6f8af1"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-integration-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\error-context.md",
+    "archived": "original-ordinary-native/002-error-context.md",
+    "sourceBytes": 14421,
+    "sourceSha256": "12567a0c0b9acc1f0d3a0d2e8c0a080c56b89f562714ccc8275e9948c099e47a",
+    "archivedBytes": 14421,
+    "archivedSha256": "12567a0c0b9acc1f0d3a0d2e8c0a080c56b89f562714ccc8275e9948c099e47a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-integration-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\test-failed-1.png",
+    "archived": "original-ordinary-native/003-test-failed-1.png",
+    "sourceBytes": 305260,
+    "sourceSha256": "b03deb0c25f2614879939af3b37860783f544fe7b10128174d0c46ed49cf9331",
+    "archivedBytes": 305260,
+    "archivedSha256": "b03deb0c25f2614879939af3b37860783f544fe7b10128174d0c46ed49cf9331"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-integration-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\trace.zip",
+    "archived": "original-ordinary-native/004-trace.zip",
+    "sourceBytes": 26977859,
+    "sourceSha256": "23f64321fca7af8cceb5cc7d70d1db08ff4f5d0a25af4b61fa1bd2aead57cce0",
+    "archivedBytes": 26977859,
+    "archivedSha256": "23f64321fca7af8cceb5cc7d70d1db08ff4f5d0a25af4b61fa1bd2aead57cce0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-authoritative-object-model-final-verify-20261003.txt",
+    "archived": "final-full-verify/console.txt",
+    "sourceBytes": 5382,
+    "sourceSha256": "77d64b2181346c1ff67832321717ca76bf679477a9278bb6c1ec89c452669811",
+    "archivedBytes": 2715,
+    "archivedSha256": "60ce278dae0127141cd588005e706100aa1b2f3416142cad452d685bb846b68c",
+    "conversion": "UTF16LE console to UTF8"
   }
 ]

@@ -35,10 +35,29 @@ async function frameYard(page: Page): Promise<void> {
     .getByRole('button', { name: 'Expand', exact: true }).click();
   const box = await surface.boundingBox(); if (box === null) throw new Error('Actual public minimap absent');
   await surface.click({ position: { x: box.width * 8 / 32, y: box.height * 8 / 32 } });
+  // A clipped minimap rectangle cannot independently recover the actual
+  // ground origin. Frame the Yard through public controls before measuring.
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const { actual } = await publicGroundReference(page);
+    const p = actual.percent;
+    if (p.left > 0 && p.top > 0 && p.left + p.width < 100 && p.top + p.height < 100) return;
+    await page.getByRole('button', { name: 'Zoom in', exact: true }).click();
+    await surface.click({ position: { x: box.width * 8 / 32, y: box.height * 8 / 32 } });
+    await twoFrames(page);
+  }
+  const { actual } = await publicGroundReference(page);
+  expect(actual.percent.left).toBeGreaterThan(0);
+  expect(actual.percent.top).toBeGreaterThan(0);
+  expect(actual.percent.left + actual.percent.width).toBeLessThan(100);
+  expect(actual.percent.top + actual.percent.height).toBeLessThan(100);
 }
 
 async function aim(page: Page, anchor: { x: number; y: number }) {
   const measured = await publicGroundReference(page), point = measured.reference.screen(anchor.x + .25, anchor.y + .25);
+  expect(measured.actual.percent.left).toBeGreaterThan(0);
+  expect(measured.actual.percent.top).toBeGreaterThan(0);
+  expect(measured.actual.percent.left + measured.actual.percent.width).toBeLessThan(100);
+  expect(measured.actual.percent.top + measured.actual.percent.height).toBeLessThan(100);
   expect(await page.evaluate(p => document.elementFromPoint(p.x, p.y) === document.querySelector('#game-root canvas'), point)).toBe(true);
   await page.mouse.move(point.x, point.y);
   await expect(page.locator('.hud-build__target')).toHaveAttribute('data-target', `${anchor.x},${anchor.y}`);
@@ -158,6 +177,7 @@ test('World FullHD stationary ordinary q0 ghost: real pending claim, disarm, Loa
     await expect(page.locator('.hud-build__target-value')).toHaveText('Point at the world');
     // New has no room yet. A genuine fresh press without rearming still reaches
     // the worker, whose outside-room refusal must not spend money/create an order.
+    await frameYard(page);
     const newUnzoned = await aim(page, FRESH);
     await expect.poll(() => latestActualVerdict(page, FRESH)).toEqual({ ok: false, reason: 'outside-room', tile: FRESH,
       footprint: [{ x: 10, y: 8 }, { x: 11, y: 8 }], catalogueCostMinorUnits: 130 });

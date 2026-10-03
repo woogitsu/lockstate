@@ -1,0 +1,74 @@
+node : [2m[WebServer] [22m(node:23996) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:2 char:434
++ ... 1003.json'; node node_modules/@playwright/test/cli.js test --config d ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 1 test using 1 worker
+
+(node:36772) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:36772) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 docs\research\2026-10-03-ordinary-object-preflight-native-prep\ordinary-object-preflight.native.ts:100:1 › World FullHD stationary ordinary q0 ghost: real pending claim, disarm, Load/New old release and fresh accepted press (19.5s)
+
+
+  1) docs\research\2026-10-03-ordinary-object-preflight-native-prep\ordinary-object-preflight.native.ts:100:1 › World FullHD stationary ordinary q0 ghost: real pending claim, disarm, Load/New old release and fresh accepted press 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveAttribute[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  locator('.hud-build__target')
+    Expected: [32m"[7m7[27m,6"[39m
+    Received: [31m"[7m2[27m,6"[39m
+    Timeout:  10000ms
+
+    Call log:
+    [2m  - Expect "toHaveAttribute" with timeout 10000ms[22m
+    [2m  - waiting for locator('.hud-build__target')[22m
+    [2m    13 × locator resolved to <div data-target="2,6" class="hud-build__target">…</div>[22m
+    [2m       - unexpected value "2,6"[22m
+
+
+      42 |   expect(await page.evaluate(p => document.elementFromPoint(p.x, p.y) === document.querySelector('#game-root canvas'), point)).toBe(true);
+      43 |   await page.mouse.move(point.x, point.y);
+    > 44 |   await expect(page.locator('.hud-build__target')).toHaveAttribute('data-target', `${anchor.x},${anchor.y}`);
+         |                                                    ^
+      45 |   return { measured: measured.actual, point, reference: measured.reference };
+      46 | }
+      47 |
+        at aim (C:\Users\matma\Documents\Rozwój gier\lockstate-common-room-connectivity-integration-20261003\docs\research\2026-10-03-ordinary-object-preflight-native-prep\ordinary-object-preflight.native.ts:44:52)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-common-room-connectivity-integration-20261003\docs\research\2026-10-03-ordinary-object-preflight-native-prep\ordinary-object-preflight.native.ts:63:20
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    docs\research\2026-10-03-ordinary-object-preflight-native-prep\native-results\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: docs\research\2026-10-03-ordinary-object-preflight-native-prep\native-results\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    docs\research\2026-10-03-ordinary-object-preflight-native-prep\native-results\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\trace.zip
+    Usage:
+
+        npx playwright show-trace docs\research\2026-10-03-ordinary-object-preflight-native-prep\native-results\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    docs\research\2026-10-03-ordinary-object-preflight-native-prep\ordinary-object-preflight.native.ts:100:1 › World FullHD stationary ordinary q0 ghost: real pending claim, disarm, Load/New old release and fresh accepted press 

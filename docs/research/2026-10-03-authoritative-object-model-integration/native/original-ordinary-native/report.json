@@ -1,0 +1,157 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-common-room-connectivity-integration-20261003\\docs\\research\\2026-10-03-ordinary-object-preflight-native-prep\\playwright.native.config.ts",
+    "rootDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-common-room-connectivity-integration-20261003/docs/research/2026-10-03-ordinary-object-preflight-native-prep",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-common-room-connectivity-integration-20261003/docs/research/2026-10-03-ordinary-object-preflight-native-prep/native-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-common-room-connectivity-integration-20261003/docs/research/2026-10-03-ordinary-object-preflight-native-prep",
+        "testIgnore": [],
+        "testMatch": [
+          "/ordinary-object-preflight\\.native\\.ts$/"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 1,
+    "webServer": {
+      "command": "\"C:\\\\Users\\\\matma\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\node\\\\bin\\\\node.exe\" \"C:\\\\Users\\\\matma\\\\Documents\\\\Rozwój gier\\\\lockstate-1382-doc-anchor-2026-09-24\\\\node_modules\\\\.pnpm\\\\vite@8.2.2_@types+node@24.10.1_esbuild@0.28.1\\\\node_modules\\\\vite\\\\bin\\\\vite.js\" preview --port 5365 --strictPort --host 127.0.0.1",
+      "cwd": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-common-room-connectivity-integration-20261003\\",
+      "env": {
+        "CLOUDFLARE_ENV": "production"
+      },
+      "url": "http://127.0.0.1:5365/",
+      "reuseExistingServer": false,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "ordinary-object-preflight.native.ts",
+      "file": "ordinary-object-preflight.native.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "World FullHD stationary ordinary q0 ghost: real pending claim, disarm, Load/New old release and fresh accepted press",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 19499,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveAttribute\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.hud-build__target')\nExpected: \u001b[32m\"\u001b[7m7\u001b[27m,6\"\u001b[39m\nReceived: \u001b[31m\"\u001b[7m2\u001b[27m,6\"\u001b[39m\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveAttribute\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.hud-build__target')\u001b[22m\n\u001b[2m    13 × locator resolved to <div data-target=\"2,6\" class=\"hud-build__target\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"2,6\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveAttribute\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.hud-build__target')\nExpected: \u001b[32m\"\u001b[7m7\u001b[27m,6\"\u001b[39m\nReceived: \u001b[31m\"\u001b[7m2\u001b[27m,6\"\u001b[39m\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveAttribute\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.hud-build__target')\u001b[22m\n\u001b[2m    13 × locator resolved to <div data-target=\"2,6\" class=\"hud-build__target\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"2,6\"\u001b[22m\n\n    at aim (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-common-room-connectivity-integration-20261003\\docs\\research\\2026-10-03-ordinary-object-preflight-native-prep\\ordinary-object-preflight.native.ts:44:52)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-common-room-connectivity-integration-20261003\\docs\\research\\2026-10-03-ordinary-object-preflight-native-prep\\ordinary-object-preflight.native.ts:63:20",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-common-room-connectivity-integration-20261003\\docs\\research\\2026-10-03-ordinary-object-preflight-native-prep\\ordinary-object-preflight.native.ts",
+                      "column": 52,
+                      "line": 44
+                    },
+                    "snippet": "  42 |   expect(await page.evaluate(p => document.elementFromPoint(p.x, p.y) === document.querySelector('#game-root canvas'), point)).toBe(true);\n  43 |   await page.mouse.move(point.x, point.y);\n> 44 |   await expect(page.locator('.hud-build__target')).toHaveAttribute('data-target', `${anchor.x},${anchor.y}`);\n     |                                                    ^\n  45 |   return { measured: measured.actual, point, reference: measured.reference };\n  46 | }\n  47 |"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-common-room-connectivity-integration-20261003\\docs\\research\\2026-10-03-ordinary-object-preflight-native-prep\\ordinary-object-preflight.native.ts",
+                        "column": 52,
+                        "line": 44
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveAttribute\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.hud-build__target')\nExpected: \u001b[32m\"\u001b[7m7\u001b[27m,6\"\u001b[39m\nReceived: \u001b[31m\"\u001b[7m2\u001b[27m,6\"\u001b[39m\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveAttribute\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.hud-build__target')\u001b[22m\n\u001b[2m    13 × locator resolved to <div data-target=\"2,6\" class=\"hud-build__target\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"2,6\"\u001b[22m\n\n\n  42 |   expect(await page.evaluate(p => document.elementFromPoint(p.x, p.y) === document.querySelector('#game-root canvas'), point)).toBe(true);\n  43 |   await page.mouse.move(point.x, point.y);\n> 44 |   await expect(page.locator('.hud-build__target')).toHaveAttribute('data-target', `${anchor.x},${anchor.y}`);\n     |                                                    ^\n  45 |   return { measured: measured.actual, point, reference: measured.reference };\n  46 | }\n  47 |\n    at aim (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-common-room-connectivity-integration-20261003\\docs\\research\\2026-10-03-ordinary-object-preflight-native-prep\\ordinary-object-preflight.native.ts:44:52)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-common-room-connectivity-integration-20261003\\docs\\research\\2026-10-03-ordinary-object-preflight-native-prep\\ordinary-object-preflight.native.ts:63:20"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T15:17:37.889Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-common-room-connectivity-integration-20261003\\docs\\research\\2026-10-03-ordinary-object-preflight-native-prep\\native-results\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-common-room-connectivity-integration-20261003\\docs\\research\\2026-10-03-ordinary-object-preflight-native-prep\\native-results\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-common-room-connectivity-integration-20261003\\docs\\research\\2026-10-03-ordinary-object-preflight-native-prep\\native-results\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-common-room-connectivity-integration-20261003\\docs\\research\\2026-10-03-ordinary-object-preflight-native-prep\\ordinary-object-preflight.native.ts",
+                    "column": 52,
+                    "line": 44
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b18a883e425af16cc4ae-feaa69b76842318853e1",
+          "file": "ordinary-object-preflight.native.ts",
+          "line": 100,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-03T15:17:35.132Z",
+    "duration": 23489.058,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

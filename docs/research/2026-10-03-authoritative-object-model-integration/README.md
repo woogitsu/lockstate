@@ -67,6 +67,22 @@ None of these corrections changes gameplay, verification thresholds, browser
 timeouts or retry rules. Fresh full verification and the two new native recipes
 remain pending until their own actual terminal outcomes are archived.
 
+The repaired full gate at **66fb8df81ce4311437e58191edc11bb89835de17** then
+passes **8441 cases / 707 files**, with two existing skips, both TypeScript
+projects and the actual Cloudflare production build. The preceding repair run
+preserved one documentation-only failure: an honest nonexistent helper command
+was accidentally written as a rooted existing-file citation. Its raw command
+is retained; the prose now distinguishes it explicitly.
+
+The first ordinary-object native execution is also retained unchanged. It
+fails before the intended scenario because the independent minimap origin was
+measured while its public rectangle was clipped. It observed column2 instead
+of the required column7. The preparation now uses genuine public Zoom/minimap
+controls and asserts all four unclipped bounds before deriving coordinates.
+Expected tiles, claims, money, full snapshot comparisons and budgets remain
+unchanged. This original failure is not described as a gameplay defect or as
+a successful stationary-preview acceptance.
+
 ## Consolidated delivery
 
 Independent read-only review verifies that current main6d25ebd and the earlier
