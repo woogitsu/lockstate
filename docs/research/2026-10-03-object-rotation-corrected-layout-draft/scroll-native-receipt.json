@@ -1,0 +1,1181 @@
+{
+  "subject": "1222c504450dbec120fd09a8e53fb10f41a9466e",
+  "baselineCompiledSubject": "6d231802299badc6940b2f233a45a0c3206c5d3d",
+  "publicUI": 200,
+  "browserZoom": "unchanged",
+  "viewport": [
+    1920,
+    1080
+  ],
+  "worker": 1,
+  "retries": 0,
+  "caseTimeout": 60000,
+  "expectTimeout": 10000,
+  "buildExit": 0,
+  "types": {
+    "tools": 0,
+    "appTsconfigJson": 0,
+    "originalWrongAppPath": "TS5058; not a source error"
+  },
+  "phases": {
+    "original": "fixture RED locale publication",
+    "baseline": "actual header RED twice plus fixture focus after async Save",
+    "fixed": "GREEN14.6s with empty Save list",
+    "fixedSaved": "GREEN16.6s actual1saved-prison item; stronger Save control"
+  },
+  "newProductionMutation": false,
+  "sourceScope": "hud.css local scroll only; unapproved allocation unchanged",
+  "leaseReleased": true,
+  "port": 5371,
+  "listeningAfterRun": false,
+  "actualSaved": [
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/scroll-fixed-saved/all20-cards.json",
+      "actual": [
+        {
+          "text": "Cela podstawowa",
+          "accessible": "Cela podstawowa",
+          "fits": true,
+          "top": 236,
+          "bottom": 347,
+          "hit": true
+        },
+        {
+          "text": "Cela duża",
+          "accessible": "Cela duża",
+          "fits": true,
+          "top": 236,
+          "bottom": 347,
+          "hit": true
+        },
+        {
+          "text": "Łaźnia",
+          "accessible": "Łaźnia",
+          "fits": true,
+          "top": 236,
+          "bottom": 347,
+          "hit": true
+        },
+        {
+          "text": "Blok czterech cel",
+          "accessible": "Blok czterech cel",
+          "fits": true,
+          "top": 236,
+          "bottom": 347,
+          "hit": true
+        },
+        {
+          "text": "Stołówka",
+          "accessible": "Stołówka",
+          "fits": true,
+          "top": 363,
+          "bottom": 474,
+          "hit": true
+        },
+        {
+          "text": "Kuchnia",
+          "accessible": "Kuchnia",
+          "fits": true,
+          "top": 363,
+          "bottom": 474,
+          "hit": true
+        },
+        {
+          "text": "Cela przejściowa",
+          "accessible": "Cela przejściowa",
+          "fits": true,
+          "top": 363,
+          "bottom": 474,
+          "hit": true
+        },
+        {
+          "text": "Cela izolacyjna",
+          "accessible": "Cela izolacyjna",
+          "fits": true,
+          "top": 363,
+          "bottom": 474,
+          "hit": true
+        },
+        {
+          "text": "Punkt przyjęć",
+          "accessible": "Punkt przyjęć",
+          "fits": true,
+          "top": 490,
+          "bottom": 601,
+          "hit": true
+        },
+        {
+          "text": "Pralnia",
+          "accessible": "Pralnia",
+          "fits": true,
+          "top": 490,
+          "bottom": 601,
+          "hit": true
+        },
+        {
+          "text": "Plac spacerowy",
+          "accessible": "Plac spacerowy",
+          "fits": true,
+          "top": 490,
+          "bottom": 601,
+          "hit": true
+        },
+        {
+          "text": "Świetlica",
+          "accessible": "Świetlica",
+          "fits": true,
+          "top": 490,
+          "bottom": 601,
+          "hit": true
+        },
+        {
+          "text": "Sala lekcyjna",
+          "accessible": "Sala lekcyjna",
+          "fits": true,
+          "top": 617,
+          "bottom": 728,
+          "hit": true
+        },
+        {
+          "text": "Ambulatorium",
+          "accessible": "Ambulatorium",
+          "fits": true,
+          "top": 617,
+          "bottom": 728,
+          "hit": true
+        },
+        {
+          "text": "Dyżurka ochrony",
+          "accessible": "Dyżurka ochrony",
+          "fits": true,
+          "top": 617,
+          "bottom": 728,
+          "hit": true
+        },
+        {
+          "text": "Pokój socjalny",
+          "accessible": "Pokój socjalny",
+          "fits": true,
+          "top": 617,
+          "bottom": 728,
+          "hit": true
+        },
+        {
+          "text": "Magazyn",
+          "accessible": "Magazyn",
+          "fits": true,
+          "top": 744,
+          "bottom": 890,
+          "hit": true
+        },
+        {
+          "text": "Rampa dostawcza",
+          "accessible": "Rampa dostawcza",
+          "fits": true,
+          "top": 744,
+          "bottom": 890,
+          "hit": true
+        },
+        {
+          "text": "Śmietnik",
+          "accessible": "Śmietnik",
+          "fits": true,
+          "top": 744,
+          "bottom": 890,
+          "hit": true
+        },
+        {
+          "text": "Pomieszczenie techniczne",
+          "accessible": "Pomieszczenie techniczne",
+          "fits": true,
+          "top": 744,
+          "bottom": 890,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/scroll-fixed-saved/q3-focus.json",
+      "actual": {
+        "geometry": {
+          "viewport": {
+            "width": 1920,
+            "height": 1080,
+            "dpr": 1,
+            "visualScale": 1
+          },
+          "uiScale": "200",
+          "row": {
+            "x": 1242,
+            "y": 531,
+            "width": 629,
+            "height": 88
+          },
+          "panel": {
+            "x": 1217,
+            "y": 159,
+            "width": 679,
+            "height": 813.171875
+          },
+          "gap": 16,
+          "flexWrap": "nowrap",
+          "flowWidth": 629,
+          "flowButtonCount": 4,
+          "overflowWidth": 0,
+          "allocations": [
+            {
+              "selector": ".hud__rail",
+              "x": 1192,
+              "y": 259,
+              "width": 728,
+              "height": 821,
+              "minimumHeight": "0px",
+              "maximumHeight": "none",
+              "heightRule": "821px",
+              "position": "relative",
+              "flexBasis": "auto",
+              "flexGrow": "0",
+              "flexShrink": "1",
+              "overflowY": "hidden",
+              "clientHeight": 821,
+              "scrollHeight": 821,
+              "scrollTop": 0,
+              "insideViewport": true
+            },
+            {
+              "selector": ".hud__side",
+              "x": 1193,
+              "y": 389,
+              "width": 727,
+              "height": 371.3125,
+              "minimumHeight": "0px",
+              "maximumHeight": "none",
+              "heightRule": "371.312px",
+              "position": "static",
+              "flexBasis": "auto",
+              "flexGrow": "1",
+              "flexShrink": "1",
+              "overflowY": "auto",
+              "clientHeight": 371,
+              "scrollHeight": 813,
+              "scrollTop": 230,
+              "insideViewport": true
+            },
+            {
+              "selector": ".hud-build",
+              "x": 1217,
+              "y": 159,
+              "width": 679,
+              "height": 813.171875,
+              "minimumHeight": "min-content",
+              "maximumHeight": "none",
+              "heightRule": "813.172px",
+              "position": "relative",
+              "flexBasis": "auto",
+              "flexGrow": "0",
+              "flexShrink": "0",
+              "overflowY": "visible",
+              "clientHeight": 811,
+              "scrollHeight": 811,
+              "scrollTop": 0,
+              "insideViewport": true
+            },
+            {
+              "selector": ".hud-build > .ui-panel__body",
+              "x": 1218,
+              "y": 249,
+              "width": 677,
+              "height": 722.171875,
+              "minimumHeight": "602.4px",
+              "maximumHeight": "none",
+              "heightRule": "690.172px",
+              "position": "static",
+              "flexBasis": "auto",
+              "flexGrow": "0",
+              "flexShrink": "1",
+              "overflowY": "visible",
+              "clientHeight": 722,
+              "scrollHeight": 722,
+              "scrollTop": 0,
+              "insideViewport": true
+            },
+            {
+              "selector": ".hud-build__catalogue",
+              "x": 1234,
+              "y": 265,
+              "width": 645,
+              "height": 249,
+              "minimumHeight": "214px",
+              "maximumHeight": "none",
+              "heightRule": "249px",
+              "position": "static",
+              "flexBasis": "auto",
+              "flexGrow": "0",
+              "flexShrink": "1",
+              "overflowY": "visible",
+              "clientHeight": 249,
+              "scrollHeight": 249,
+              "scrollTop": 0,
+              "insideViewport": true
+            },
+            {
+              "selector": ".hud-build__list",
+              "x": 1242,
+              "y": 388,
+              "width": 629,
+              "height": 110,
+              "minimumHeight": "110px",
+              "maximumHeight": "110px",
+              "heightRule": "110px",
+              "position": "static",
+              "flexBasis": "auto",
+              "flexGrow": "0",
+              "flexShrink": "0",
+              "overflowY": "scroll",
+              "clientHeight": 110,
+              "scrollHeight": 1936,
+              "scrollTop": 517,
+              "insideViewport": true
+            },
+            {
+              "selector": ".hud-build__map",
+              "x": 1234,
+              "y": 514,
+              "width": 645,
+              "height": 352.171875,
+              "minimumHeight": "auto",
+              "maximumHeight": "none",
+              "heightRule": "319.172px",
+              "position": "static",
+              "flexBasis": "auto",
+              "flexGrow": "0",
+              "flexShrink": "0",
+              "overflowY": "visible",
+              "clientHeight": 351,
+              "scrollHeight": 351,
+              "scrollTop": 0,
+              "insideViewport": true
+            },
+            {
+              "selector": ".save-panel",
+              "x": 1217,
+              "y": 776.3125,
+              "width": 680,
+              "height": 279.6875,
+              "minimumHeight": "25%",
+              "maximumHeight": "none",
+              "heightRule": "279.688px",
+              "position": "static",
+              "flexBasis": "auto",
+              "flexGrow": "0",
+              "flexShrink": "1",
+              "overflowY": "scroll",
+              "clientHeight": 278,
+              "scrollHeight": 551,
+              "scrollTop": 0,
+              "insideViewport": true
+            }
+          ],
+          "buttons": [
+            {
+              "className": "ui-action hud-build__arm",
+              "text": "Przestań stawiać",
+              "x": 1242,
+              "y": 531,
+              "width": 210,
+              "height": 88,
+              "minimumHeight": 88,
+              "position": "static",
+              "minWidth": "88px",
+              "flexBasis": "auto",
+              "flexGrow": "1",
+              "flexShrink": "1",
+              "padding": [
+                "16px",
+                "16px"
+              ],
+              "labelStyle": {
+                "whiteSpace": "normal",
+                "overflowWrap": "break-word"
+              },
+              "ink": [
+                {
+                  "x": 1322.625,
+                  "y": 540,
+                  "width": 96.75,
+                  "height": 35
+                },
+                {
+                  "x": 1329.296875,
+                  "y": 575,
+                  "width": 83.40625,
+                  "height": 35
+                }
+              ],
+              "insideRow": true,
+              "insidePanel": true,
+              "insideViewport": true,
+              "labelInside": true,
+              "inkInside": true,
+              "labelFits": true,
+              "hit": true
+            },
+            {
+              "className": "ui-action hud-build__remove",
+              "text": "Usuń",
+              "x": 1468,
+              "y": 531,
+              "width": 92.328125,
+              "height": 88,
+              "minimumHeight": 88,
+              "position": "static",
+              "minWidth": "88px",
+              "flexBasis": "auto",
+              "flexGrow": "0",
+              "flexShrink": "0",
+              "padding": [
+                "16px",
+                "16px"
+              ],
+              "labelStyle": {
+                "whiteSpace": "normal",
+                "overflowWrap": "break-word"
+              },
+              "ink": [
+                {
+                  "x": 1485,
+                  "y": 557.5,
+                  "width": 58.328125,
+                  "height": 35
+                }
+              ],
+              "insideRow": true,
+              "insidePanel": true,
+              "insideViewport": true,
+              "labelInside": true,
+              "inkInside": true,
+              "labelFits": true,
+              "hit": true
+            },
+            {
+              "className": "ui-action hud-build__buy-toggle",
+              "text": "Kup",
+              "x": 1576.328125,
+              "y": 531,
+              "width": 88,
+              "height": 88,
+              "minimumHeight": 88,
+              "position": "static",
+              "minWidth": "88px",
+              "flexBasis": "auto",
+              "flexGrow": "0",
+              "flexShrink": "0",
+              "padding": [
+                "16px",
+                "16px"
+              ],
+              "labelStyle": {
+                "whiteSpace": "normal",
+                "overflowWrap": "break-word"
+              },
+              "ink": [
+                {
+                  "x": 1597.78125,
+                  "y": 557.5,
+                  "width": 45.09375,
+                  "height": 35
+                }
+              ],
+              "insideRow": true,
+              "insidePanel": true,
+              "insideViewport": true,
+              "labelInside": true,
+              "inkInside": true,
+              "labelFits": true,
+              "hit": true
+            },
+            {
+              "className": "ui-action hud-build__rotate-object",
+              "text": "Obróć obiekt 270°",
+              "x": 1680.328125,
+              "y": 531,
+              "width": 190.671875,
+              "height": 88,
+              "minimumHeight": 88,
+              "position": "static",
+              "minWidth": "88px",
+              "flexBasis": "auto",
+              "flexGrow": "0",
+              "flexShrink": "1",
+              "padding": [
+                "16px",
+                "16px"
+              ],
+              "labelStyle": {
+                "whiteSpace": "normal",
+                "overflowWrap": "break-word"
+              },
+              "ink": [
+                {
+                  "x": 1700.4375,
+                  "y": 540,
+                  "width": 150.453125,
+                  "height": 35
+                },
+                {
+                  "x": 1749.734375,
+                  "y": 575,
+                  "width": 51.859375,
+                  "height": 35
+                }
+              ],
+              "insideRow": true,
+              "insidePanel": true,
+              "insideViewport": true,
+              "labelInside": true,
+              "inkInside": true,
+              "labelFits": true,
+              "hit": true
+            }
+          ]
+        },
+        "header": {
+          "x": 1218,
+          "y": 389,
+          "width": 677,
+          "height": 89,
+          "sideTop": 389,
+          "sideBottom": 760.3125,
+          "contained": true,
+          "hit": true,
+          "position": "sticky"
+        }
+      }
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/scroll-fixed-saved/save-keyboard-actions.json",
+      "actual": [
+        {
+          "text": "Nowe więzienie",
+          "top": 847.3125,
+          "bottom": 935.3125,
+          "width": 303.5,
+          "height": 88,
+          "contained": true,
+          "hit": true,
+          "scrollTop": 0,
+          "panelHeight": 279.6875,
+          "quarterRail": 205.25,
+          "scrollbarWidth": "auto"
+        },
+        {
+          "text": "Zapisz teraz",
+          "top": 847.3125,
+          "bottom": 935.3125,
+          "width": 303.5,
+          "height": 88,
+          "contained": true,
+          "hit": true,
+          "scrollTop": 0,
+          "panelHeight": 279.6875,
+          "quarterRail": 205.25,
+          "scrollbarWidth": "auto"
+        },
+        {
+          "text": "Eksportuj",
+          "top": 943.3125,
+          "bottom": 1031.3125,
+          "width": 303.5,
+          "height": 88,
+          "contained": true,
+          "hit": true,
+          "scrollTop": 0,
+          "panelHeight": 279.6875,
+          "quarterRail": 205.25,
+          "scrollbarWidth": "auto"
+        },
+        {
+          "text": "Importuj",
+          "top": 943.3125,
+          "bottom": 1031.3125,
+          "width": 303.5,
+          "height": 88,
+          "contained": true,
+          "hit": true,
+          "scrollTop": 0,
+          "panelHeight": 279.6875,
+          "quarterRail": 205.25,
+          "scrollbarWidth": "auto"
+        }
+      ]
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/scroll-fixed-saved/wheel-header.json",
+      "actual": {
+        "geometry": {
+          "viewport": {
+            "width": 1920,
+            "height": 1080,
+            "dpr": 1,
+            "visualScale": 1
+          },
+          "uiScale": "200",
+          "row": {
+            "x": 1242,
+            "y": 319,
+            "width": 629,
+            "height": 88
+          },
+          "panel": {
+            "x": 1217,
+            "y": -53,
+            "width": 679,
+            "height": 813.171875
+          },
+          "gap": 16,
+          "flexWrap": "nowrap",
+          "flowWidth": 629,
+          "flowButtonCount": 4,
+          "overflowWidth": 0,
+          "allocations": [
+            {
+              "selector": ".hud__rail",
+              "x": 1192,
+              "y": 259,
+              "width": 728,
+              "height": 821,
+              "minimumHeight": "0px",
+              "maximumHeight": "none",
+              "heightRule": "821px",
+              "position": "relative",
+              "flexBasis": "auto",
+              "flexGrow": "0",
+              "flexShrink": "1",
+              "overflowY": "hidden",
+              "clientHeight": 821,
+              "scrollHeight": 821,
+              "scrollTop": 0,
+              "insideViewport": true
+            },
+            {
+              "selector": ".hud__side",
+              "x": 1193,
+              "y": 389,
+              "width": 727,
+              "height": 371.3125,
+              "minimumHeight": "0px",
+              "maximumHeight": "none",
+              "heightRule": "371.312px",
+              "position": "static",
+              "flexBasis": "auto",
+              "flexGrow": "1",
+              "flexShrink": "1",
+              "overflowY": "auto",
+              "clientHeight": 371,
+              "scrollHeight": 813,
+              "scrollTop": 442,
+              "insideViewport": true
+            },
+            {
+              "selector": ".hud-build",
+              "x": 1217,
+              "y": -53,
+              "width": 679,
+              "height": 813.171875,
+              "minimumHeight": "min-content",
+              "maximumHeight": "none",
+              "heightRule": "813.172px",
+              "position": "relative",
+              "flexBasis": "auto",
+              "flexGrow": "0",
+              "flexShrink": "0",
+              "overflowY": "visible",
+              "clientHeight": 811,
+              "scrollHeight": 811,
+              "scrollTop": 0,
+              "insideViewport": false
+            },
+            {
+              "selector": ".hud-build > .ui-panel__body",
+              "x": 1218,
+              "y": 37,
+              "width": 677,
+              "height": 722.171875,
+              "minimumHeight": "602.4px",
+              "maximumHeight": "none",
+              "heightRule": "690.172px",
+              "position": "static",
+              "flexBasis": "auto",
+              "flexGrow": "0",
+              "flexShrink": "1",
+              "overflowY": "visible",
+              "clientHeight": 722,
+              "scrollHeight": 722,
+              "scrollTop": 0,
+              "insideViewport": true
+            },
+            {
+              "selector": ".hud-build__catalogue",
+              "x": 1234,
+              "y": 53,
+              "width": 645,
+              "height": 249,
+              "minimumHeight": "214px",
+              "maximumHeight": "none",
+              "heightRule": "249px",
+              "position": "static",
+              "flexBasis": "auto",
+              "flexGrow": "0",
+              "flexShrink": "1",
+              "overflowY": "visible",
+              "clientHeight": 249,
+              "scrollHeight": 249,
+              "scrollTop": 0,
+              "insideViewport": true
+            },
+            {
+              "selector": ".hud-build__list",
+              "x": 1242,
+              "y": 176,
+              "width": 629,
+              "height": 110,
+              "minimumHeight": "110px",
+              "maximumHeight": "110px",
+              "heightRule": "110px",
+              "position": "static",
+              "flexBasis": "auto",
+              "flexGrow": "0",
+              "flexShrink": "0",
+              "overflowY": "scroll",
+              "clientHeight": 110,
+              "scrollHeight": 1936,
+              "scrollTop": 517,
+              "insideViewport": true
+            },
+            {
+              "selector": ".hud-build__map",
+              "x": 1234,
+              "y": 302,
+              "width": 645,
+              "height": 352.171875,
+              "minimumHeight": "auto",
+              "maximumHeight": "none",
+              "heightRule": "319.172px",
+              "position": "static",
+              "flexBasis": "auto",
+              "flexGrow": "0",
+              "flexShrink": "0",
+              "overflowY": "visible",
+              "clientHeight": 351,
+              "scrollHeight": 351,
+              "scrollTop": 0,
+              "insideViewport": true
+            },
+            {
+              "selector": ".save-panel",
+              "x": 1217,
+              "y": 776.3125,
+              "width": 680,
+              "height": 279.6875,
+              "minimumHeight": "25%",
+              "maximumHeight": "none",
+              "heightRule": "279.688px",
+              "position": "static",
+              "flexBasis": "auto",
+              "flexGrow": "0",
+              "flexShrink": "1",
+              "overflowY": "scroll",
+              "clientHeight": 278,
+              "scrollHeight": 551,
+              "scrollTop": 0,
+              "insideViewport": true
+            }
+          ],
+          "buttons": [
+            {
+              "className": "ui-action hud-build__arm",
+              "text": "Przestań stawiać",
+              "x": 1242,
+              "y": 319,
+              "width": 210,
+              "height": 88,
+              "minimumHeight": 88,
+              "position": "static",
+              "minWidth": "88px",
+              "flexBasis": "auto",
+              "flexGrow": "1",
+              "flexShrink": "1",
+              "padding": [
+                "16px",
+                "16px"
+              ],
+              "labelStyle": {
+                "whiteSpace": "normal",
+                "overflowWrap": "break-word"
+              },
+              "ink": [
+                {
+                  "x": 1322.625,
+                  "y": 328,
+                  "width": 96.75,
+                  "height": 35
+                },
+                {
+                  "x": 1329.296875,
+                  "y": 363,
+                  "width": 83.40625,
+                  "height": 35
+                }
+              ],
+              "insideRow": true,
+              "insidePanel": true,
+              "insideViewport": true,
+              "labelInside": true,
+              "inkInside": true,
+              "labelFits": true,
+              "hit": false
+            },
+            {
+              "className": "ui-action hud-build__remove",
+              "text": "Usuń",
+              "x": 1468,
+              "y": 319,
+              "width": 92.328125,
+              "height": 88,
+              "minimumHeight": 88,
+              "position": "static",
+              "minWidth": "88px",
+              "flexBasis": "auto",
+              "flexGrow": "0",
+              "flexShrink": "0",
+              "padding": [
+                "16px",
+                "16px"
+              ],
+              "labelStyle": {
+                "whiteSpace": "normal",
+                "overflowWrap": "break-word"
+              },
+              "ink": [
+                {
+                  "x": 1485,
+                  "y": 345.5,
+                  "width": 58.328125,
+                  "height": 35
+                }
+              ],
+              "insideRow": true,
+              "insidePanel": true,
+              "insideViewport": true,
+              "labelInside": true,
+              "inkInside": true,
+              "labelFits": true,
+              "hit": false
+            },
+            {
+              "className": "ui-action hud-build__buy-toggle",
+              "text": "Kup",
+              "x": 1576.328125,
+              "y": 319,
+              "width": 88,
+              "height": 88,
+              "minimumHeight": 88,
+              "position": "static",
+              "minWidth": "88px",
+              "flexBasis": "auto",
+              "flexGrow": "0",
+              "flexShrink": "0",
+              "padding": [
+                "16px",
+                "16px"
+              ],
+              "labelStyle": {
+                "whiteSpace": "normal",
+                "overflowWrap": "break-word"
+              },
+              "ink": [
+                {
+                  "x": 1597.78125,
+                  "y": 345.5,
+                  "width": 45.09375,
+                  "height": 35
+                }
+              ],
+              "insideRow": true,
+              "insidePanel": true,
+              "insideViewport": true,
+              "labelInside": true,
+              "inkInside": true,
+              "labelFits": true,
+              "hit": false
+            },
+            {
+              "className": "ui-action hud-build__rotate-object",
+              "text": "Obróć obiekt 270°",
+              "x": 1680.328125,
+              "y": 319,
+              "width": 190.671875,
+              "height": 88,
+              "minimumHeight": 88,
+              "position": "static",
+              "minWidth": "88px",
+              "flexBasis": "auto",
+              "flexGrow": "0",
+              "flexShrink": "1",
+              "padding": [
+                "16px",
+                "16px"
+              ],
+              "labelStyle": {
+                "whiteSpace": "normal",
+                "overflowWrap": "break-word"
+              },
+              "ink": [
+                {
+                  "x": 1700.4375,
+                  "y": 328,
+                  "width": 150.453125,
+                  "height": 35
+                },
+                {
+                  "x": 1749.734375,
+                  "y": 363,
+                  "width": 51.859375,
+                  "height": 35
+                }
+              ],
+              "insideRow": true,
+              "insidePanel": true,
+              "insideViewport": true,
+              "labelInside": true,
+              "inkInside": true,
+              "labelFits": true,
+              "hit": false
+            }
+          ]
+        },
+        "header": {
+          "x": 1218,
+          "y": 389,
+          "width": 677,
+          "height": 89,
+          "sideTop": 389,
+          "sideBottom": 760.3125,
+          "contained": true,
+          "hit": true,
+          "position": "sticky"
+        }
+      }
+    }
+  ],
+  "compiled": [
+    {
+      "path": "dist/client/index.html",
+      "bytes": 1718,
+      "sha256": "45ee194e4e2ee52084c4fb3c6dd8fcb143703368b0f490400203decd1d4f207a"
+    },
+    {
+      "path": "dist/client/assets/catalog-lZH0TBdb.js",
+      "bytes": 86413,
+      "sha256": "08bd70d5439f7ebc3e6575010b0cfdfc633e78a9c5981ec9c4dd84069141a0fd"
+    },
+    {
+      "path": "dist/client/assets/index-C57ULzet.css",
+      "bytes": 84660,
+      "sha256": "e79f6392b8465a8d97bd64908dea05c7e1a9cce91e833f190ea90ba68c5a0512"
+    },
+    {
+      "path": "dist/client/assets/index-C9Sh57L6.js",
+      "bytes": 1938463,
+      "sha256": "530df890d05de195e4dc84cad95d66f17b369f084c8dfddb5cc97e83d5b6b00e"
+    },
+    {
+      "path": "dist/client/assets/pl-catalog-BkJSfdUM.js",
+      "bytes": 51303,
+      "sha256": "be75880d925a2e598c793bb11a33a6266684152156a199b256ce5001a1297c85"
+    },
+    {
+      "path": "dist/client/assets/worker-CnDzsQVN.js",
+      "bytes": 443793,
+      "sha256": "7ab56781a6f1d6c18055673391e1330343385ba47076f482784df7135180227c"
+    }
+  ],
+  "artifacts": [
+    {
+      "phase": "scroll-original",
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/scroll-original/error-context.md",
+      "bytes": 7625,
+      "sha256": "a92dc169a9b7e9756fb8ca20410732ddba73a5d7f578d70751caf6c3174c6716",
+      "committed": true
+    },
+    {
+      "phase": "scroll-original",
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/scroll-original/test-failed-1.png",
+      "bytes": 67504,
+      "sha256": "72b5a1d430a667cd2c3d0a0c1f746b513efc88e4e505dd4f830080d934102b7e",
+      "committed": true
+    },
+    {
+      "phase": "scroll-original",
+      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-object-rotation-corrected-native-6d23180229-20261003\\scroll-original\\object-rotation-scroll.nat-7f5b2--remains-keyboard-reachable\\trace.zip",
+      "bytes": 15897489,
+      "sha256": "1cf185873c6824b9dd6b286cdd0a6c38698b0b3df53e7495bb9cb4fe68b41d12",
+      "committed": false
+    },
+    {
+      "phase": "scroll-baseline",
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/scroll-baseline/error-context.md",
+      "bytes": 13631,
+      "sha256": "7824c42c14958afb5d02e8bc539b4632e0ad76730160c4a3d370771b08a40216",
+      "committed": true
+    },
+    {
+      "phase": "scroll-baseline",
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/scroll-baseline/q3-focus.json",
+      "bytes": 8494,
+      "sha256": "367188fcfc0ca5e2b7d059340f43bd1a9f5e2f5986f1f2bae8a215b13bd25121",
+      "committed": true
+    },
+    {
+      "phase": "scroll-baseline",
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/scroll-baseline/q3-focus.png",
+      "bytes": 270036,
+      "sha256": "e1fd4d188283db7c18e1c46655c4ccb32be05e83c3175be8387714cd8b41c894",
+      "committed": true
+    },
+    {
+      "phase": "scroll-baseline",
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/scroll-baseline/test-failed-1.png",
+      "bytes": 280580,
+      "sha256": "57a7ddafed7e5a629f574d65121eb856176ec7361108101823f9c3363f1242cb",
+      "committed": true
+    },
+    {
+      "phase": "scroll-baseline",
+      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-object-rotation-corrected-native-6d23180229-20261003\\scroll-baseline\\object-rotation-scroll.nat-7f5b2--remains-keyboard-reachable\\trace.zip",
+      "bytes": 31529413,
+      "sha256": "d9d4ae432221e44feb22d29a15cc0307fa24ee0e843b21001e0acf62f9ab6cc7",
+      "committed": false
+    },
+    {
+      "phase": "scroll-baseline",
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/scroll-baseline/wheel-header.json",
+      "bytes": 8497,
+      "sha256": "1e6298f2254f6ec5712b1f9b631b0839531dfe57c8abd4161e67728a4a0da478",
+      "committed": true
+    },
+    {
+      "phase": "scroll-baseline",
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/scroll-baseline/wheel-header.png",
+      "bytes": 279779,
+      "sha256": "69181b8ed93ce3180bd2788287dc00cee2477ca03c03b7912ed431360423cc9e",
+      "committed": true
+    },
+    {
+      "phase": "scroll-fixed",
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/scroll-fixed/all20-cards.json",
+      "bytes": 2834,
+      "sha256": "7ed4a456ab3e347937068c45491c2ea5ca7796c0bee90732039fca60380d6866",
+      "committed": true
+    },
+    {
+      "phase": "scroll-fixed",
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/scroll-fixed/q3-focus.json",
+      "bytes": 8497,
+      "sha256": "681d69aee02434dcf97dd37c8f0741cd76fd474c2dc828ae24506a95ef2fac4c",
+      "committed": true
+    },
+    {
+      "phase": "scroll-fixed",
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/scroll-fixed/q3-focus.png",
+      "bytes": 266657,
+      "sha256": "c2ffb221cb716ce48b12dd4cee8711d86065559ea1919c2de7ec6a86110f29d3",
+      "committed": true
+    },
+    {
+      "phase": "scroll-fixed",
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/scroll-fixed/save-keyboard-actions.json",
+      "bytes": 1060,
+      "sha256": "ba9ebfd646cd5574f575ced45081c57545f0aaf94c02744dfaa2bfa4b2714319",
+      "committed": true
+    },
+    {
+      "phase": "scroll-fixed",
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/scroll-fixed/save-lower-actions.png",
+      "bytes": 288670,
+      "sha256": "c64e384e2b9573b22bae541f76de39777eb092b1b4f3a317498a909379085914",
+      "committed": true
+    },
+    {
+      "phase": "scroll-fixed",
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/scroll-fixed/wheel-header.json",
+      "bytes": 8500,
+      "sha256": "6565f718218a092e3706d70256ec759363eb2b92638cb4299382b7d172b3632f",
+      "committed": true
+    },
+    {
+      "phase": "scroll-fixed",
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/scroll-fixed/wheel-header.png",
+      "bytes": 274043,
+      "sha256": "4a893743bac6047e959b8ba5a90647162e0380783230610e34f0298d900bf599",
+      "committed": true
+    },
+    {
+      "phase": "scroll-fixed-saved",
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/scroll-fixed-saved/all20-cards.json",
+      "bytes": 2834,
+      "sha256": "7ed4a456ab3e347937068c45491c2ea5ca7796c0bee90732039fca60380d6866",
+      "committed": true
+    },
+    {
+      "phase": "scroll-fixed-saved",
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/scroll-fixed-saved/q3-focus.json",
+      "bytes": 8497,
+      "sha256": "681d69aee02434dcf97dd37c8f0741cd76fd474c2dc828ae24506a95ef2fac4c",
+      "committed": true
+    },
+    {
+      "phase": "scroll-fixed-saved",
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/scroll-fixed-saved/q3-focus.png",
+      "bytes": 266654,
+      "sha256": "fada198f8f87680cb4673f43b9c525772c2ade8aa18a936e1ef71d949f029352",
+      "committed": true
+    },
+    {
+      "phase": "scroll-fixed-saved",
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/scroll-fixed-saved/save-keyboard-actions.json",
+      "bytes": 1060,
+      "sha256": "ba9ebfd646cd5574f575ced45081c57545f0aaf94c02744dfaa2bfa4b2714319",
+      "committed": true
+    },
+    {
+      "phase": "scroll-fixed-saved",
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/scroll-fixed-saved/save-lower-actions.png",
+      "bytes": 287999,
+      "sha256": "05b9d8da574d8d331ae78f20ca020fc172fcdeef46a8bab2282e543ccf8c4cb8",
+      "committed": true
+    },
+    {
+      "phase": "scroll-fixed-saved",
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/scroll-fixed-saved/wheel-header.json",
+      "bytes": 8500,
+      "sha256": "6565f718218a092e3706d70256ec759363eb2b92638cb4299382b7d172b3632f",
+      "committed": true
+    },
+    {
+      "phase": "scroll-fixed-saved",
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/scroll-fixed-saved/wheel-header.png",
+      "bytes": 274041,
+      "sha256": "2ae04b36f725ae208ec9258741fa905f2e09fac7e1c19705fb66bab1ce048ce4",
+      "committed": true
+    }
+  ],
+  "savedControlScope": {
+    "actualSavedItems": 1,
+    "roomCount": 0,
+    "savePanelHeight": 279.6875,
+    "originalRoomStateSavePanelHeight": 233.65625,
+    "testsExactOriginalTighterAllocation": false
+  },
+  "finalTypesExit": 0
+}

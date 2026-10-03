@@ -1,5 +1,11 @@
 # Obrót pojedynczego wyposażenia — zakres propozycji
 
+## Dalsza lokalna poprawa przewijania, nadal szkic
+
+Osobny runtime `1222c50445` naprawia obcinany nagłówek Budowy: pozostaje on widoczny i trafialny po fokusie obrotu270° oraz po prawdziwym przewijaniu. Nie dodaje wiersza ani napisu. Panel zapisu zachowuje25% minimum i otrzymuje stałe miejsce na pasek przewijania; Tab udostępnia wszystkie cztery działania w pełnej wysokości88px, również z rzeczywiście zapisanym więzieniem. Jedno ograniczone sprawdzenie PL200 zakończyło się GREEN. [Nagłówek i obrót](./native/scroll-fixed-saved/q3-focus.png) · [Dalsza część rzeczywistego zapisu](./native/scroll-fixed-saved/save-lower-actions.png).
+
+Wcześniejsze2G EN/PL poniżej nadal dokumentują pełne zakupy i Save/Load. Nowe sprawdzenie nie powtarza całej macierzy ani zakupów: zapisuje nowe więzienie bez pomieszczenia. Jego panel zapisu279.69px jest wyższy niż wcześniejsze233.66px z pomieszczeniem, więc nie zastępuje pomiaru tego ciaśniejszego przypadku. Dalsze wiersze Build i zapisu wymagają przewijania; nie deklarujemy widoczności całych paneli naraz. Progi kamery i alertów nie były ponownie wykonywane. Szersza alokacja oraz dialog1840px pozostają osobną niezaakceptowaną propozycją. Właściciel otrzymał pytanie wyłącznie o nowy przycisk/napis #2019; odpowiedź na nie nie zatwierdza szerszej alokacji.
+
 **Niezaakceptowana propozycja po rzeczywistym pomiarze.** Zamrożony `6d23180229` przeszedł oba pierwotne testy EN/PL: FullHD100/200, wszystkie20 kart, cztery działania także przy270°, prawdziwe zakupy q1 oraz pełny Save/Load. Wcześniejszy wariant pozostaje zachowany jako2RED. Parametry testów nie zostały osłabione.
 
 ## 1. Cztery działania w istniejącej grupie Buduj

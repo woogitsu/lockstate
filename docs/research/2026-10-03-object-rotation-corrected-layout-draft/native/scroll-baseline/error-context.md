@@ -1,0 +1,299 @@
+# Page snapshot
+
+```yaml
+- main "Aplikacja gry Lockstate" [ref=e2]:
+  - generic:
+    - region "Stan więzienia" [ref=e5]:
+      - generic [ref=e6]:
+        - note "Kompilacja Lockstate":
+          - img
+          - generic: LockState.io
+          - generic: PRE-ALPHA
+          - generic: v0.0.839 · 6d23180
+          - generic: Lockstate, kompilacja PRE-ALPHA, wersja 0.0.839, commit 6d23180.
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - img [ref=e9]
+          - generic [ref=e12]:
+            - generic [ref=e13]: "0"
+            - generic [ref=e14]: Osadzeni
+        - generic [ref=e16]:
+          - img [ref=e17]
+          - generic [ref=e19]:
+            - generic [ref=e20]: "0"
+            - generic [ref=e21]: Podwyższone ryzyko
+        - generic [ref=e23]:
+          - img [ref=e24]
+          - generic [ref=e29]:
+            - generic [ref=e30]: "0"
+            - generic [ref=e31]: Personel
+        - generic [ref=e33]:
+          - img [ref=e34]
+          - generic [ref=e36]:
+            - generic [ref=e37]: "0"
+            - generic [ref=e38]: Obsada
+          - generic [ref=e41]: Obsadzone
+        - generic [ref=e43]:
+          - img [ref=e44]
+          - generic [ref=e46]:
+            - generic [ref=e47]: "0"
+            - generic [ref=e48]: Pomieszczenia
+        - generic [ref=e50]:
+          - img [ref=e51]
+          - generic [ref=e53]:
+            - generic [ref=e54]: "0"
+            - generic [ref=e55]: Incydenty
+          - generic [ref=e58]: Spokój
+        - generic [ref=e60]:
+          - img [ref=e61]
+          - generic [ref=e64]:
+            - generic [ref=e65]: "0"
+            - generic [ref=e66]: Kontrabanda
+        - generic [ref=e68]:
+          - img [ref=e69]
+          - generic [ref=e73]:
+            - generic [ref=e74]: 25 000
+            - generic [ref=e75]: Środki
+        - generic [ref=e77]:
+          - img [ref=e78]
+          - generic [ref=e81]:
+            - generic [ref=e82]: "0"
+            - generic [ref=e83]: Zarobione dziś
+      - generic [ref=e85]:
+        - img [ref=e86]
+        - generic [ref=e89]: Dzień
+        - generic [ref=e90]: "1"
+        - generic [ref=e91]: Postęp dnia
+        - generic [ref=e92]: 0%
+      - group "Sterowanie czasem" [ref=e93]:
+        - button "Pauza" [pressed] [ref=e94] [cursor=pointer]:
+          - img [ref=e95]
+          - generic [ref=e96]: Pauza
+        - button "Odtwarzaj z normalną prędkością" [ref=e97] [cursor=pointer]:
+          - img [ref=e98]
+          - generic [ref=e100]: Odtwarzaj z normalną prędkością
+        - button "Przyspiesz" [ref=e101] [cursor=pointer]:
+          - img [ref=e102]
+          - generic [ref=e105]: Przyspiesz
+        - generic [ref=e106]:
+          - generic [ref=e107]: Prędkość 1×
+          - generic [ref=e108]: PAUZA
+      - group "Cofanie i ponawianie" [ref=e109]:
+        - button "Cofnij ostatnie postawienie" [disabled] [ref=e110]:
+          - img [ref=e111]
+          - generic [ref=e114]: Cofnij ostatnie postawienie
+        - button "Ponów ostatnie cofnięte postawienie" [disabled] [ref=e115]:
+          - img [ref=e116]
+          - generic [ref=e119]: Ponów ostatnie cofnięte postawienie
+      - group "Ustawienia" [ref=e121]:
+        - button "Otwórz menu ustawień" [ref=e122] [cursor=pointer]:
+          - img [ref=e123]
+          - generic [ref=e128]: Otwórz menu ustawień
+    - generic:
+      - combobox "Widok" [ref=e129] [cursor=pointer]:
+        - option "Z góry" [selected]
+        - option "Pod kątem"
+      - group "Powiększenie":
+        - generic: Powiększenie
+        - button "Oddal" [ref=e130] [cursor=pointer]:
+          - img [ref=e131]
+          - generic [ref=e134]: Oddal
+        - button "Przybliż" [ref=e135] [cursor=pointer]:
+          - img [ref=e136]
+          - generic [ref=e139]: Przybliż
+      - generic [ref=e140]:
+        - button "Przesuń kamerę w lewo" [ref=e141] [cursor=pointer]:
+          - img [ref=e142]
+          - generic [ref=e144]: Przesuń kamerę w lewo
+        - button "Przesuń kamerę w górę" [ref=e145] [cursor=pointer]:
+          - img [ref=e146]
+          - generic [ref=e148]: Przesuń kamerę w górę
+        - button "Przesuń kamerę w dół" [ref=e149] [cursor=pointer]:
+          - img [ref=e150]
+          - generic [ref=e152]: Przesuń kamerę w dół
+        - button "Przesuń kamerę w prawo" [ref=e153] [cursor=pointer]:
+          - img [ref=e154]
+          - generic [ref=e156]: Przesuń kamerę w prawo
+      - region "Minimapa":
+        - generic:
+          - img
+          - heading "Minimapa" [level=2]
+          - button "Rozwiń" [ref=e157] [cursor=pointer]:
+            - img [ref=e158]
+            - generic [ref=e160]: Rozwiń
+      - generic:
+        - button "Powiadomienia" [expanded] [ref=e161] [cursor=pointer]:
+          - img [ref=e162]
+          - generic [ref=e164]: Powiadomienia
+        - generic [ref=e166]:
+          - img [ref=e167]
+          - generic [ref=e169]: Brak aktywnych powiadomień
+    - generic:
+      - button "Ukryj panele" [expanded] [ref=e170] [cursor=pointer]:
+        - img [ref=e171]
+        - generic [ref=e173]: Ukryj panele
+      - generic:
+        - generic [ref=e174]:
+          - group "Skala interfejsu" [ref=e175]:
+            - generic: Skala interfejsu
+            - button "Zmień skalę interfejsu" [ref=e176] [cursor=pointer]:
+              - status [ref=e177]: 200%
+          - group "Motyw" [ref=e178]:
+            - generic: Motyw
+            - button "Zmień motyw interfejsu" [ref=e179] [cursor=pointer]:
+              - status [ref=e180]: Systemowy
+        - complementary "Zapisy więzień" [active] [ref=e181]:
+          - heading "Więzienia" [level=2] [ref=e182]
+          - generic [ref=e183]:
+            - button "Nowe więzienie" [ref=e184] [cursor=pointer]
+            - button "Zapisz teraz" [ref=e185] [cursor=pointer]
+            - button "Eksportuj" [ref=e186] [cursor=pointer]
+            - button "Importuj" [ref=e187] [cursor=pointer]
+          - list [ref=e188]:
+            - listitem [ref=e189]:
+              - generic [ref=e190]: Nowe więzienie (2 gen.)
+              - button "Wczytaj" [ref=e191] [cursor=pointer]
+              - button "Usuń" [ref=e192] [cursor=pointer]
+          - status [ref=e193]: Zapisano (generacja gen-0fbf8e59-cfd1-43f3-ac8d-b5603409f9ff).
+          - paragraph
+      - region "Budowa" [ref=e194]:
+        - generic [ref=e195]:
+          - img [ref=e196]
+          - heading "Budowa" [level=2] [ref=e200]
+          - button "Zwiń" [expanded] [ref=e201] [cursor=pointer]:
+            - img [ref=e202]
+            - generic [ref=e204]: Zwiń
+        - generic [ref=e205]:
+          - generic [ref=e206]:
+            - generic [ref=e207]:
+              - button "Co zbudować Biurko ↓" [expanded] [ref=e208] [cursor=pointer]:
+                - img [ref=e209]
+                - generic [ref=e211]: Co zbudować
+                - generic [ref=e212]: Biurko
+                - text: ↓
+              - generic [ref=e213]:
+                - combobox "Kategoria" [ref=e214] [cursor=pointer]:
+                  - option "Wszystko" [selected]
+                  - option "Ściany i drzwi"
+                  - option "Meble"
+                  - option "Gastronomia"
+                  - option "Instalacje"
+                  - option "Sprzęt medyczny"
+                  - option "Ochrona"
+                  - option "Hydraulika"
+                  - option "Magazyn"
+                - button "Wzory pomieszczeń" [ref=e215] [cursor=pointer]: Wzory
+            - generic [ref=e216]:
+              - generic [ref=e217]: "Zajmowane pola: 1 × 2"
+              - radiogroup "Co zbudować" [ref=e218]:
+                - radio "Ściana z cegły · 80 za pole" [ref=e219] [cursor=pointer]:
+                  - img [ref=e220]
+                  - generic [ref=e224]: Ściana z cegły · 80 za pole
+                - radio "Drewniane drzwi · 65 za segment" [ref=e225] [cursor=pointer]:
+                  - img [ref=e226]
+                  - generic [ref=e230]: Drewniane drzwi · 65 za segment
+                - radio "Łóżko · 65" [ref=e231] [cursor=pointer]:
+                  - img [ref=e232]
+                  - generic [ref=e236]: Łóżko · 65
+                - radio "Ławka · 130" [ref=e237] [cursor=pointer]:
+                  - img [ref=e238]
+                  - generic [ref=e242]: Ławka · 130
+                - radio "Regał na książki · 130" [ref=e243] [cursor=pointer]:
+                  - img [ref=e244]
+                  - generic [ref=e248]: Regał na książki · 130
+                - radio "Krzesło · 65" [ref=e249] [cursor=pointer]:
+                  - img [ref=e250]
+                  - generic [ref=e254]: Krzesło · 65
+                - radio "Biurko · 130 Wybrane" [checked] [ref=e255] [cursor=pointer]:
+                  - img [ref=e256]
+                  - generic [ref=e260]: Biurko · 130
+                  - generic [ref=e262]: Wybrane
+                - radio "Stół jadalny · 195" [ref=e263] [cursor=pointer]:
+                  - img [ref=e264]
+                  - generic [ref=e268]: Stół jadalny · 195
+                - radio "Stanowisko ćwiczeń · 80" [ref=e269] [cursor=pointer]:
+                  - img [ref=e270]
+                  - generic [ref=e274]: Stanowisko ćwiczeń · 80
+                - radio "Lodówka · 40" [ref=e275] [cursor=pointer]:
+                  - img [ref=e276]
+                  - generic [ref=e280]: Lodówka · 40
+                - radio "Blat roboczy · 80" [ref=e281] [cursor=pointer]:
+                  - img [ref=e282]
+                  - generic [ref=e286]: Blat roboczy · 80
+                - radio "Kuchenka · 80" [ref=e287] [cursor=pointer]:
+                  - img [ref=e288]
+                  - generic [ref=e292]: Kuchenka · 80
+                - radio "Brama rozładunkowa · 195" [ref=e293] [cursor=pointer]:
+                  - img [ref=e294]
+                  - generic [ref=e298]: Brama rozładunkowa · 195
+                - radio "Panel techniczny · 40" [ref=e299] [cursor=pointer]:
+                  - img [ref=e300]
+                  - generic [ref=e304]: Panel techniczny · 40
+                - radio "Pralka · 80" [ref=e305] [cursor=pointer]:
+                  - img [ref=e306]
+                  - generic [ref=e310]: Pralka · 80
+                - radio "Kosz na odpady · 40" [ref=e311] [cursor=pointer]:
+                  - img [ref=e312]
+                  - generic [ref=e316]: Kosz na odpady · 40
+                - radio "Łóżko szpitalne · 65" [ref=e317] [cursor=pointer]:
+                  - img [ref=e318]
+                  - generic [ref=e322]: Łóżko szpitalne · 65
+                - radio "Szafka na leki · 65" [ref=e323] [cursor=pointer]:
+                  - img [ref=e324]
+                  - generic [ref=e328]: Szafka na leki · 65
+                - radio "Pulpit ochrony · 80" [ref=e329] [cursor=pointer]:
+                  - img [ref=e330]
+                  - generic [ref=e334]: Pulpit ochrony · 80
+                - radio "Prysznic · 40" [ref=e335] [cursor=pointer]:
+                  - img [ref=e336]
+                  - generic [ref=e340]: Prysznic · 40
+                - radio "Toaleta · 40" [ref=e341] [cursor=pointer]:
+                  - img [ref=e342]
+                  - generic [ref=e346]: Toaleta · 40
+                - radio "Regał magazynowy · 65" [ref=e347] [cursor=pointer]:
+                  - img [ref=e348]
+                  - generic [ref=e352]: Regał magazynowy · 65
+          - generic [ref=e353]:
+            - generic [ref=e354]:
+              - button "Przestań stawiać" [pressed] [ref=e355] [cursor=pointer]:
+                - img [ref=e356]
+                - generic [ref=e360]: Przestań stawiać
+              - button "Usuń" [ref=e361] [cursor=pointer]:
+                - generic [ref=e362]: Usuń
+              - button "Kup" [ref=e363] [cursor=pointer]:
+                - generic [ref=e364]: Kup
+              - button "Obróć obiekt 270°" [ref=e365] [cursor=pointer]:
+                - generic [ref=e366]: Obróć obiekt 270°
+            - generic [ref=e367]:
+              - generic [ref=e368]: Gdzie
+              - generic [ref=e369]: Wskaż miejsce na mapie
+            - generic [ref=e370]: Kliknij pole wewnątrz wyznaczonego pomieszczenia, aby go postawić. Jedno naciśnięcie, jeden obiekt. Dwa palce, środkowy przycisk i strzałki nadal poruszają kamerą.
+          - button "Wpisz współrzędne" [ref=e372] [cursor=pointer]:
+            - img [ref=e373]
+            - generic [ref=e375]: Wpisz współrzędne
+      - separator "Zmień rozmiar paneli" [ref=e376]
+    - navigation "Sekcje więzienia":
+      - button "Ukryj sekcje" [expanded] [ref=e377] [cursor=pointer]:
+        - img [ref=e378]
+        - generic [ref=e380]: Ukryj sekcje
+      - generic [ref=e381]:
+        - button "Przegląd" [ref=e382] [cursor=pointer]:
+          - img [ref=e383]
+          - generic [ref=e388]: Przegląd
+        - button "Buduj" [ref=e389] [cursor=pointer]:
+          - img [ref=e390]
+          - generic [ref=e394]: Buduj
+        - button "Strefy" [ref=e395] [cursor=pointer]:
+          - img [ref=e396]
+          - generic [ref=e398]: Strefy
+        - button "Zarządzaj" [ref=e399] [cursor=pointer]:
+          - img [ref=e400]
+          - generic [ref=e402]: Zarządzaj
+        - button "Plan dnia" [ref=e403] [cursor=pointer]:
+          - img [ref=e404]
+          - generic [ref=e406]: Plan dnia
+        - button "Ochrona" [ref=e407] [cursor=pointer]:
+          - img [ref=e408]
+          - generic [ref=e410]: Ochrona
+      - separator "Zmień rozmiar sekcji" [ref=e411]
+```

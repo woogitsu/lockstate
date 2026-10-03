@@ -1,0 +1,54 @@
+[
+  {
+    "text": "Nowe więzienie",
+    "top": 847.3125,
+    "bottom": 935.3125,
+    "width": 303.5,
+    "height": 88,
+    "contained": true,
+    "hit": true,
+    "scrollTop": 0,
+    "panelHeight": 279.6875,
+    "quarterRail": 205.25,
+    "scrollbarWidth": "auto"
+  },
+  {
+    "text": "Zapisz teraz",
+    "top": 847.3125,
+    "bottom": 935.3125,
+    "width": 303.5,
+    "height": 88,
+    "contained": true,
+    "hit": true,
+    "scrollTop": 0,
+    "panelHeight": 279.6875,
+    "quarterRail": 205.25,
+    "scrollbarWidth": "auto"
+  },
+  {
+    "text": "Eksportuj",
+    "top": 943.3125,
+    "bottom": 1031.3125,
+    "width": 303.5,
+    "height": 88,
+    "contained": true,
+    "hit": true,
+    "scrollTop": 0,
+    "panelHeight": 279.6875,
+    "quarterRail": 205.25,
+    "scrollbarWidth": "auto"
+  },
+  {
+    "text": "Importuj",
+    "top": 943.3125,
+    "bottom": 1031.3125,
+    "width": 303.5,
+    "height": 88,
+    "contained": true,
+    "hit": true,
+    "scrollTop": 0,
+    "panelHeight": 279.6875,
+    "quarterRail": 205.25,
+    "scrollbarWidth": "auto"
+  }
+]

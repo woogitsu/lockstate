@@ -1,0 +1,162 @@
+[
+  {
+    "text": "Cela podstawowa",
+    "accessible": "Cela podstawowa",
+    "fits": true,
+    "top": 236,
+    "bottom": 347,
+    "hit": true
+  },
+  {
+    "text": "Cela duża",
+    "accessible": "Cela duża",
+    "fits": true,
+    "top": 236,
+    "bottom": 347,
+    "hit": true
+  },
+  {
+    "text": "Łaźnia",
+    "accessible": "Łaźnia",
+    "fits": true,
+    "top": 236,
+    "bottom": 347,
+    "hit": true
+  },
+  {
+    "text": "Blok czterech cel",
+    "accessible": "Blok czterech cel",
+    "fits": true,
+    "top": 236,
+    "bottom": 347,
+    "hit": true
+  },
+  {
+    "text": "Stołówka",
+    "accessible": "Stołówka",
+    "fits": true,
+    "top": 363,
+    "bottom": 474,
+    "hit": true
+  },
+  {
+    "text": "Kuchnia",
+    "accessible": "Kuchnia",
+    "fits": true,
+    "top": 363,
+    "bottom": 474,
+    "hit": true
+  },
+  {
+    "text": "Cela przejściowa",
+    "accessible": "Cela przejściowa",
+    "fits": true,
+    "top": 363,
+    "bottom": 474,
+    "hit": true
+  },
+  {
+    "text": "Cela izolacyjna",
+    "accessible": "Cela izolacyjna",
+    "fits": true,
+    "top": 363,
+    "bottom": 474,
+    "hit": true
+  },
+  {
+    "text": "Punkt przyjęć",
+    "accessible": "Punkt przyjęć",
+    "fits": true,
+    "top": 490,
+    "bottom": 601,
+    "hit": true
+  },
+  {
+    "text": "Pralnia",
+    "accessible": "Pralnia",
+    "fits": true,
+    "top": 490,
+    "bottom": 601,
+    "hit": true
+  },
+  {
+    "text": "Plac spacerowy",
+    "accessible": "Plac spacerowy",
+    "fits": true,
+    "top": 490,
+    "bottom": 601,
+    "hit": true
+  },
+  {
+    "text": "Świetlica",
+    "accessible": "Świetlica",
+    "fits": true,
+    "top": 490,
+    "bottom": 601,
+    "hit": true
+  },
+  {
+    "text": "Sala lekcyjna",
+    "accessible": "Sala lekcyjna",
+    "fits": true,
+    "top": 617,
+    "bottom": 728,
+    "hit": true
+  },
+  {
+    "text": "Ambulatorium",
+    "accessible": "Ambulatorium",
+    "fits": true,
+    "top": 617,
+    "bottom": 728,
+    "hit": true
+  },
+  {
+    "text": "Dyżurka ochrony",
+    "accessible": "Dyżurka ochrony",
+    "fits": true,
+    "top": 617,
+    "bottom": 728,
+    "hit": true
+  },
+  {
+    "text": "Pokój socjalny",
+    "accessible": "Pokój socjalny",
+    "fits": true,
+    "top": 617,
+    "bottom": 728,
+    "hit": true
+  },
+  {
+    "text": "Magazyn",
+    "accessible": "Magazyn",
+    "fits": true,
+    "top": 744,
+    "bottom": 890,
+    "hit": true
+  },
+  {
+    "text": "Rampa dostawcza",
+    "accessible": "Rampa dostawcza",
+    "fits": true,
+    "top": 744,
+    "bottom": 890,
+    "hit": true
+  },
+  {
+    "text": "Śmietnik",
+    "accessible": "Śmietnik",
+    "fits": true,
+    "top": 744,
+    "bottom": 890,
+    "hit": true
+  },
+  {
+    "text": "Pomieszczenie techniczne",
+    "accessible": "Pomieszczenie techniczne",
+    "fits": true,
+    "top": 744,
+    "bottom": 890,
+    "hit": true
+  }
+]

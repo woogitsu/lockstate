@@ -1,5 +1,25 @@
 # Read-only source review before corrected native lease
 
+## Updated read-only audit after scroll repair, no browser/build
+
+Source1222 and the retained actual6d/1222 geometry/screens were inspected after lease release. No new DOM measurements, browser zoom, CI monitoring or production edit was made. The original source-only risk review below remains historical.
+
+| Surface | Existing100 data | Existing200 data | Remaining rule / evidence limit |
+| --- | --- | --- | --- |
+| Build header/action ancestry | Original6d q3 root top161, four44px actions fully hit/contained; no sticky rule at100 | Actual1222 sticky header389..478 stays inside real side after focus/wheel; list110 and four88px focused actions pass | Only FullHD200 object draft gets this local repair. Other tools/viewports are unmeasured. Sticky header may cover scrolled body rows; this is not a whole-panel visibility guarantee. |
+| Save | Original6d actual278px versus25% rail floor246.25 | Original6d saved-state233.65625PL versus floor205.25; actual1222 public saved-item Tab control fully exposes all four88px actions, retained per-action boxes | Save still scrolls its list/status and other content. Stable gutter spends width inside its own unchanged box, not rail height. No new allocation or simultaneous full-list promise. |
+| Camera controls | Existing source keeps actual World selector + pan, and Angled additionally displays pose; retained100 captures show current World controls | Retained200 q3 captures show World selector/zoom/pan; pose is absent because renderer=World | No Angled camera acceptance or hit/height probe was run here. KeyR camera semantics were asserted only in earlier full2G. These screenshots cannot prove all camera floors. |
+| Alerts/minimap | Original6d actual room-state captures preserve existing expanded minimap/alert composition | Original6d room-state q3 visibly ends the alert area near the bottom;1222 empty-prison capture uses collapsed minimap and displays the empty row | These are different real public states. Neither screenshot establishes full active-alert row capacity. Do not substitute the empty/collapsed state for original expanded/active-floor acceptance. |
+
+The concrete remaining reservations are unchanged:
+
+- #2019 owner question covers proposed public Rotate copy/control only. Even acceptance would not approve `min-content` Build allocation or a wider dialog. The current root instruction explicitly leaves global allocation unapproved.
+- The dialog1840px and content-sized Build/side allocation are separate proposed rules; their real scroll/map-cover costs are recorded in OWNER_REVIEW. Four action/card GREEN cannot release these decisions.
+- #1292's existing corner398px and clearances29.19/10.19/9.19px at its original1280 boundaries are still protected. Source `--hud-zoom-block` debits only zoom from minimap; `.hud-camera-pan` and `.hud-camera-pose` each retain their own scaled gap/margin. The source2 original diagnosis measured44px selector+52px pan at100, and another52px for Angled. At200 the authored extra consumers cannot be subtracted from110px minimap while retaining its own floor. This is a source bound, not a new actual allocation measurement. The owner's camera A/B choice remains separate; no surface-only option is proposed anew.
+- FullHD enlarged corner still has six-tap528px cap,110px expanded minimap surface and actual alert list `min-height:0;overflow-y:auto`. Detached empty rows can use270×scale width, while active alerts retain396×scale. These width rules do not establish one complete row's vertical allocation under every expanded/camera combination. Its original real row/floor remains required; none was debited by the scroll repair.
+
+The local CSS diff does not edit any camera/alert selector, token, copy or Save/list/tap minimum. This establishes disjoint source ownership, not native acceptance of untouched floors. A real repeated floor failure should be measured against the existing original case before another change or Issue; no new duplicate Issue or mockup was created.
+
 Subject: unapproved candidate `081315797cb047fab46cc7057fc9e01866578155`. No CI monitoring, new Issue, remote write, build, browser, server or release edit. Fresh GitHub reads of #2019 and #1292 are preserved in evidence.
 
 ## Decision scope

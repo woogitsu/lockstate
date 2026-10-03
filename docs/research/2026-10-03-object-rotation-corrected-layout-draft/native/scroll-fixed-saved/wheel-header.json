@@ -1,0 +1,355 @@
+{
+  "geometry": {
+    "viewport": {
+      "width": 1920,
+      "height": 1080,
+      "dpr": 1,
+      "visualScale": 1
+    },
+    "uiScale": "200",
+    "row": {
+      "x": 1242,
+      "y": 319,
+      "width": 629,
+      "height": 88
+    },
+    "panel": {
+      "x": 1217,
+      "y": -53,
+      "width": 679,
+      "height": 813.171875
+    },
+    "gap": 16,
+    "flexWrap": "nowrap",
+    "flowWidth": 629,
+    "flowButtonCount": 4,
+    "overflowWidth": 0,
+    "allocations": [
+      {
+        "selector": ".hud__rail",
+        "x": 1192,
+        "y": 259,
+        "width": 728,
+        "height": 821,
+        "minimumHeight": "0px",
+        "maximumHeight": "none",
+        "heightRule": "821px",
+        "position": "relative",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "hidden",
+        "clientHeight": 821,
+        "scrollHeight": 821,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      {
+        "selector": ".hud__side",
+        "x": 1193,
+        "y": 389,
+        "width": 727,
+        "height": 371.3125,
+        "minimumHeight": "0px",
+        "maximumHeight": "none",
+        "heightRule": "371.312px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "1",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 371,
+        "scrollHeight": 813,
+        "scrollTop": 442,
+        "insideViewport": true
+      },
+      {
+        "selector": ".hud-build",
+        "x": 1217,
+        "y": -53,
+        "width": 679,
+        "height": 813.171875,
+        "minimumHeight": "min-content",
+        "maximumHeight": "none",
+        "heightRule": "813.172px",
+        "position": "relative",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "0",
+        "overflowY": "visible",
+        "clientHeight": 811,
+        "scrollHeight": 811,
+        "scrollTop": 0,
+        "insideViewport": false
+      },
+      {
+        "selector": ".hud-build > .ui-panel__body",
+        "x": 1218,
+        "y": 37,
+        "width": 677,
+        "height": 722.171875,
+        "minimumHeight": "602.4px",
+        "maximumHeight": "none",
+        "heightRule": "690.172px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "visible",
+        "clientHeight": 722,
+        "scrollHeight": 722,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      {
+        "selector": ".hud-build__catalogue",
+        "x": 1234,
+        "y": 53,
+        "width": 645,
+        "height": 249,
+        "minimumHeight": "214px",
+        "maximumHeight": "none",
+        "heightRule": "249px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "visible",
+        "clientHeight": 249,
+        "scrollHeight": 249,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      {
+        "selector": ".hud-build__list",
+        "x": 1242,
+        "y": 176,
+        "width": 629,
+        "height": 110,
+        "minimumHeight": "110px",
+        "maximumHeight": "110px",
+        "heightRule": "110px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "0",
+        "overflowY": "scroll",
+        "clientHeight": 110,
+        "scrollHeight": 1936,
+        "scrollTop": 517,
+        "insideViewport": true
+      },
+      {
+        "selector": ".hud-build__map",
+        "x": 1234,
+        "y": 302,
+        "width": 645,
+        "height": 352.171875,
+        "minimumHeight": "auto",
+        "maximumHeight": "none",
+        "heightRule": "319.172px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "0",
+        "overflowY": "visible",
+        "clientHeight": 351,
+        "scrollHeight": 351,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      {
+        "selector": ".save-panel",
+        "x": 1217,
+        "y": 776.3125,
+        "width": 680,
+        "height": 279.6875,
+        "minimumHeight": "25%",
+        "maximumHeight": "none",
+        "heightRule": "279.688px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "scroll",
+        "clientHeight": 278,
+        "scrollHeight": 551,
+        "scrollTop": 0,
+        "insideViewport": true
+      }
+    ],
+    "buttons": [
+      {
+        "className": "ui-action hud-build__arm",
+        "text": "Przestań stawiać",
+        "x": 1242,
+        "y": 319,
+        "width": 210,
+        "height": 88,
+        "minimumHeight": 88,
+        "position": "static",
+        "minWidth": "88px",
+        "flexBasis": "auto",
+        "flexGrow": "1",
+        "flexShrink": "1",
+        "padding": [
+          "16px",
+          "16px"
+        ],
+        "labelStyle": {
+          "whiteSpace": "normal",
+          "overflowWrap": "break-word"
+        },
+        "ink": [
+          {
+            "x": 1322.625,
+            "y": 328,
+            "width": 96.75,
+            "height": 35
+          },
+          {
+            "x": 1329.296875,
+            "y": 363,
+            "width": 83.40625,
+            "height": 35
+          }
+        ],
+        "insideRow": true,
+        "insidePanel": true,
+        "insideViewport": true,
+        "labelInside": true,
+        "inkInside": true,
+        "labelFits": true,
+        "hit": false
+      },
+      {
+        "className": "ui-action hud-build__remove",
+        "text": "Usuń",
+        "x": 1468,
+        "y": 319,
+        "width": 92.328125,
+        "height": 88,
+        "minimumHeight": 88,
+        "position": "static",
+        "minWidth": "88px",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "0",
+        "padding": [
+          "16px",
+          "16px"
+        ],
+        "labelStyle": {
+          "whiteSpace": "normal",
+          "overflowWrap": "break-word"
+        },
+        "ink": [
+          {
+            "x": 1485,
+            "y": 345.5,
+            "width": 58.328125,
+            "height": 35
+          }
+        ],
+        "insideRow": true,
+        "insidePanel": true,
+        "insideViewport": true,
+        "labelInside": true,
+        "inkInside": true,
+        "labelFits": true,
+        "hit": false
+      },
+      {
+        "className": "ui-action hud-build__buy-toggle",
+        "text": "Kup",
+        "x": 1576.328125,
+        "y": 319,
+        "width": 88,
+        "height": 88,
+        "minimumHeight": 88,
+        "position": "static",
+        "minWidth": "88px",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "0",
+        "padding": [
+          "16px",
+          "16px"
+        ],
+        "labelStyle": {
+          "whiteSpace": "normal",
+          "overflowWrap": "break-word"
+        },
+        "ink": [
+          {
+            "x": 1597.78125,
+            "y": 345.5,
+            "width": 45.09375,
+            "height": 35
+          }
+        ],
+        "insideRow": true,
+        "insidePanel": true,
+        "insideViewport": true,
+        "labelInside": true,
+        "inkInside": true,
+        "labelFits": true,
+        "hit": false
+      },
+      {
+        "className": "ui-action hud-build__rotate-object",
+        "text": "Obróć obiekt 270°",
+        "x": 1680.328125,
+        "y": 319,
+        "width": 190.671875,
+        "height": 88,
+        "minimumHeight": 88,
+        "position": "static",
+        "minWidth": "88px",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "padding": [
+          "16px",
+          "16px"
+        ],
+        "labelStyle": {
+          "whiteSpace": "normal",
+          "overflowWrap": "break-word"
+        },
+        "ink": [
+          {
+            "x": 1700.4375,
+            "y": 328,
+            "width": 150.453125,
+            "height": 35
+          },
+          {
+            "x": 1749.734375,
+            "y": 363,
+            "width": 51.859375,
+            "height": 35
+          }
+        ],
+        "insideRow": true,
+        "insidePanel": true,
+        "insideViewport": true,
+        "labelInside": true,
+        "inkInside": true,
+        "labelFits": true,
+        "hit": false
+      }
+    ]
+  },
+  "header": {
+    "x": 1218,
+    "y": 389,
+    "width": 677,
+    "height": 89,
+    "sideTop": 389,
+    "sideBottom": 760.3125,
+    "contained": true,
+    "hit": true,
+    "position": "sticky"
+  }
+}

@@ -46,8 +46,13 @@ test('PL200: DRAFT Build header survives genuine focus and wheel; every Save act
   await page.mouse.wheel(0, 450);
   await expect.poll(() => page.locator('.hud__side').evaluate(element => element.scrollTop)).toBeGreaterThan(100);
   await measure('wheel-header');
-  // Establish the first public control as the keyboard starting point without
-  // invoking New/Import or rebuilding Save's buttons during an async save.
+  // Retain a real saved-prison list, as in the original measured screenshot.
+  // Await its real publication before establishing the keyboard start point;
+  // a save legitimately rebuilds buttons during its busy/status transitions.
+  await page.getByRole('button', { name: 'Zapisz teraz', exact: true }).click();
+  await expect(page.locator('.save-panel__status')).toContainText('Zapisano');
+  await expect(page.locator('.save-panel__item[data-prison]')).toHaveCount(1);
+  // Do not invoke New/Import just to test their genuine Tab reachability.
   await page.locator('.save-panel__actions').getByRole('button', { name: 'Nowe więzienie', exact: true }).focus();
   const saveReceipts: unknown[] = [];
   for (const name of ['Nowe więzienie', 'Zapisz teraz', 'Eksportuj', 'Importuj']) {
