@@ -1,0 +1,49 @@
+{
+  "controls": [
+    {
+      "label": "actual-source-mutation-written",
+      "exitCode": 0,
+      "expectedFailure": null
+    },
+    {
+      "label": "actual-disconnected-source-red",
+      "exitCode": 1,
+      "expectedFailure": "Staff Room padded chair actual contact disconnected"
+    },
+    {
+      "label": "exact-source-restore-green",
+      "exitCode": 0,
+      "expectedFailure": null
+    },
+    {
+      "label": "actual-producer-dispatch-red",
+      "exitCode": 1,
+      "expectedFailure": "Staff Room padded chair dedicated producer dispatch changed"
+    },
+    {
+      "label": "exact-dispatch-restore-green",
+      "exitCode": 0,
+      "expectedFailure": null
+    }
+  ],
+  "protectedBefore": {
+    "assets/source/blender/furniture.chair.wooden.angled-detail.blend": "acd0e9decb3bb451b44e8354e797fb5656825f4748bbed832bab61659f06cd88",
+    "assets/source/blender/furniture.staff-room.padded-chair.blend": "47004797588d92173e4140bc307ac3db73ed322ac2e1d2472f99c10475956109",
+    "assets/source/blender/furniture.staff-room.padded-chair.provenance.json": "613f02831b63321448403574631fb83587558da449226ad3b17432a675aacf0e",
+    "public/game-content/oblique-module-registry.v1.json": "978ce3494304dc8157982d3eca1ea34af6801a861e5543422ec7d15e8079d4c5",
+    "src/rendering/assets/oblique-object-mapping.ts": "2e19583d8ae7800415c02aed546f45897bc143bfdd08b5aea3347ec316db05da",
+    "tooling/blender/build-staff-room-padded-chair.py": "562bdbba79a17905d54cd3de6b1def1203114049245fc9c2f652dab8a30479a7",
+    "tooling/blender/render-staff-room-padded-chair-oblique.py": "8c4da17f6bc826198abbab574b68ade5779c50565556cc626f9c4a5f408a82cf"
+  },
+  "actualMutantSourceSha256": "9d94b3eb5de3d23e0acaa64195dd5d9f41b21cd7c9b6db9b408ccb329a8e4a84",
+  "protectedAfter": {
+    "assets/source/blender/furniture.chair.wooden.angled-detail.blend": "acd0e9decb3bb451b44e8354e797fb5656825f4748bbed832bab61659f06cd88",
+    "assets/source/blender/furniture.staff-room.padded-chair.blend": "47004797588d92173e4140bc307ac3db73ed322ac2e1d2472f99c10475956109",
+    "assets/source/blender/furniture.staff-room.padded-chair.provenance.json": "613f02831b63321448403574631fb83587558da449226ad3b17432a675aacf0e",
+    "public/game-content/oblique-module-registry.v1.json": "978ce3494304dc8157982d3eca1ea34af6801a861e5543422ec7d15e8079d4c5",
+    "src/rendering/assets/oblique-object-mapping.ts": "2e19583d8ae7800415c02aed546f45897bc143bfdd08b5aea3347ec316db05da",
+    "tooling/blender/build-staff-room-padded-chair.py": "562bdbba79a17905d54cd3de6b1def1203114049245fc9c2f652dab8a30479a7",
+    "tooling/blender/render-staff-room-padded-chair-oblique.py": "8c4da17f6bc826198abbab574b68ade5779c50565556cc626f9c4a5f408a82cf"
+  },
+  "exactRestoredFiles": 7
+}
