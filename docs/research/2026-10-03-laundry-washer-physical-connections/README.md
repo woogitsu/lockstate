@@ -2,7 +2,7 @@
 
 ## Current checkpoint
 
-Offline source/preparation only; canonical publication, repeat/production controls and TS/build remain next. No browser/server. Parent owns genuine Laundry Build/SaveLoad q0/q1 acceptance.
+Offline source/canonical export verified; TS/build remains next. First source checkpoint24154a89d7 was pushed before canonical integration. No browser/server. Parent owns genuine Laundry Build/SaveLoad q0/q1 acceptance.
 
 Actual `object.washing-machine` / `washing-machine-brick` / default `utility.washing-machine.variants`,2?1, `src/content/object-catalog.ts:102`, mappingline21; `laundry-basic` has two fixtures at local(1,1)/(3,1), `src/content/room-template-catalog.ts:89`. Source inventory and currently published histories were inspected before refinement: angledab467379f1f6614d3c81da1963d2f8335080c47f, washer-drum-cloth4166d614ee37210bc7ad701a37d3074827543188, issue18696fe76170fb674b204ced2682f63987d076a3c106/91d9e4d7221349f5379be1dbcc15d225261a0d02. Existing source already has80 parts/5 complete stored shader graphs with machined ring/gasket/hinge/door fasteners/feet/side vents/detergent drawer/control/display bezels/lid hatch. No duplicate of those details was added.
 
@@ -15,3 +15,13 @@ New dedicated source `assets/source/blender/utility.washing-machine.angled-detai
 Opened actual original/refined four-yaw source exports `original-versus-connected-grip-four-yaws.png`: frontyaw0/elevation40 changes24actual pixels, bounds[122,169,133,173]; yaw60 changes12, yaw300 changes18, occluded rearyaw180 changes0. This establishes source-pixel visibility, not native calibration. Initial preparation intentionally encountered canonical descriptor guard RED because draft wrapper named oblique-furniture.washing-machine.v1.json; corrected to existing oblique-utility.washing-machine.v1.json before any publication, no new registry alias.
 
 Native Blender5.2.1LTS upstream build9e2066aef7ef, executable SHA256284f4041f98e113f3dc10654a7193ffaaa9bfdfec8b87fa116620a48b5f6d4cb. Shared projection/camera/defaultcallbacks/Kitchen rows untouched. No schema/copy/palette/footprint/identity/save/layout decision.
+
+## Canonical export and meaningful controls
+
+Own standalone canonical angled wrapper and legacy washing wrapper route only this existing model to the strict dedicated-source guard. Shared Kitchen MODELS/functions/callbacks remain unchanged; no new registry or identity.
+
+All72 canonicalRGBA256px poses independently decoded; minimum transparent border54pixels. Dedicated first/repeat, canonical angled repeat and legacy wrapper repeat each compare all73descriptor+frame files byte-exact. Opened `all72-canonical-physical-poses.png`. Exactly27frames change;45 occluded frames are byte-identical and retained. Old changed frames were retired only after scanning all current game-content JSON references,27frames, never another asset.
+
+27actual controls RED?finallybyte-exact restoration GREEN:4 real source builder omission/reversed mount/short mount/disconnection;14 loaded source original/body/modifier/graph/material/torus winding/mount contact/fit/target/descriptor/actual camera gates;3 canonical angled and3 legacy dispatch oldsource/wrongfit/wrongtarget;2 decoded consumers including correct hash/name with a real opaque corner pixel and canonical target;1 saved-source missing-mount + canonical detail-guard consumer removal. The final control recomputes the actual altered.blend source hash to reach its real geometry guard: correct consumer rejects, removal alone makes expected-rejection assertion RED, restored consumer rejects, finally exact source/provenance/script bytes restored and actual72camera verification GREEN. This proves offline production-source consumer guards; genuine native gameplay consumer mutation remains parent's pending scope.
+
+Focused source/detail/registry/determinism4suites7PASS/1optionalBlender-on-PATH skip. Pinned directBlender72verify ran independentlyGREEN. All80originalparts/5fullgraphs/bounds/target/palette/identity preserved. No browser/server/nativefixture/matcher/workflow/schema/gameplay/copy changes. Root native should inspect the existing default model's actual service-panel grip in front/oblique view; the old blue-glass palette proves the washer consumer, not these new mounts.

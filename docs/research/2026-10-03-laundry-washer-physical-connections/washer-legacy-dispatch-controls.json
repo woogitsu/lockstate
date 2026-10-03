@@ -1,0 +1,21 @@
+{
+  "controls": [
+    {
+      "control": "original-washer-source-in-dispatch",
+      "exitCode": 1,
+      "error": "ValueError: Laundry washing machine retained/authored mesh set changed"
+    },
+    {
+      "control": "wrong-washer-Y-fit-in-dispatch",
+      "exitCode": 1,
+      "error": "ValueError: Laundry washing machine declared occupied rectangle/source fit/accepted target changed"
+    },
+    {
+      "control": "wrong-washer-target-in-dispatch",
+      "exitCode": 1,
+      "error": "ValueError: Laundry washing machine declared occupied rectangle/source fit/accepted target changed"
+    }
+  ],
+  "wrapperBytesExactlyRestored": true,
+  "exactRestoredNativeVerifyExitCode": 0
+}
