@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-classroom-teacher-desk-model-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  13:28:56
+   Duration  906ms (transform 70ms, setup 0ms, import 182ms, tests 514ms, environment 0ms)
+
+$ vitest run "tests/unit/oblique-classroom-teacher-desk-art.test.ts"
