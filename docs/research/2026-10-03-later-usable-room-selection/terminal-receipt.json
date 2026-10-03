@@ -1,0 +1,51 @@
+{
+    "baseline":  "590a85501d05f0aafe5571915f18cc07bd4d9dd4",
+    "sourceDiffAfterMutations":  0,
+    "date":  "2026-10-03",
+    "browserRun":  false,
+    "restored":  {
+                     "passed":  8,
+                     "files":  2
+                 },
+    "diagnosis":  "e94b1e6ba58d9838e52c5ccad1101a16f1d69f23",
+    "baselineTests":  {
+                          "passed":  2,
+                          "failed":  2
+                      },
+    "appTypecheckExitCode":  0,
+    "docs":  {
+                 "passed":  20,
+                 "files":  3
+             },
+    "neighbors":  {
+                      "passed":  94,
+                      "files":  8
+                  },
+    "indexRemovedRows":  0,
+    "issue":  2013,
+    "source":  "885c53630e0b3a9a5e6fe94888b076b410c1a066",
+    "actorEvidence":  {
+                          "fixedHygiene":  50440,
+                          "room":  "room.shower-room:6:15",
+                          "fixedShowerTicks":  1280,
+                          "ticks":  9000,
+                          "baselineHygiene":  14920,
+                          "liveAndV8":  true
+                      },
+    "toolsTypecheckExitCode":  0,
+    "negativePerProducer":  {
+                                "producers":  2,
+                                "failed":  4,
+                                "passed":  4
+                            },
+    "indexAddedRows":  1,
+    "limitations":  [
+                        "Current graph tile membership is local anchor eligibility, not a new global path policy",
+                        "No native acceptance run",
+                        "Existing own-accommodation and ephemeral use claim policy unchanged"
+                    ],
+    "fixed":  {
+                  "passed":  8,
+                  "files":  2
+              }
+}
