@@ -1,0 +1,8 @@
+﻿{
+    "producer":  "src/simulation/prisoners/room-instance-registry.ts",
+    "originalFixedSHA256":  "feca15de47b6806c7011cc468e11f4f686f0f4709e0c0423bd5b8352fb07d7ea",
+    "restoredFixedSHA256":  "feca15de47b6806c7011cc468e11f4f686f0f4709e0c0423bd5b8352fb07d7ea",
+    "mutation":  "only findAvailableForUse producer restored to committed unfixed c076d1f657",
+    "actualRestoredExit":  0,
+    "actualOmissionExit":  1
+}
