@@ -594,7 +594,7 @@ export type HudIntent =
    * swallowed -- so the refusal this can paint is about *this thread* (no worker,
    * no session), which is what `hud.refusal.cancel-build-order` says.
    */
-  | { readonly kind: 'cancel-build-order'; readonly orderId: string; readonly revision: number }
+  | { readonly kind: 'cancel-build-order'; readonly orderId: string; readonly revision: string }
   /**
    * The player asked for **one particular** purchase to be cancelled and its
    * money returned (#285).
