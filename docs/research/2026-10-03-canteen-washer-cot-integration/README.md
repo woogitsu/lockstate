@@ -2,7 +2,17 @@
 
 ## Current checkpoint
 
-The three retained Blender models and their dedicated source guards, descriptors and all72 physical camera poses are integrated on the published branch. Guard rear-band source integration shares this checkpoint; genuine hired-Guard native acceptance is separate. Full production release remains pending.
+The three retained Blender models and their dedicated source guards, descriptors and all72 physical camera poses are integrated on the published branch. The combined current native gate is15/15GREEN, including the genuine hired Guard, both history scenes and trusted two-touch ownership. Full production release remains pending exact hosted CI.
+
+### Current compiled consumer controls and complete restoration
+
+Frozen371bec12ce is tested through the real built-client wrapper, one browser worker and unchanged budgets/retries. Removing the three object mappings, Guard mapping, actual second-touch guard and main published-world-revision adapter produces7RED/4legalGREEN/1serialSKIP. The skipped Angled history is independently covered by the complementary q1 run: three rotated model consumers and Angled history produce4RED/4legalGREEN, no skip. There are no collection/setup errors; failures reach actual native palette, decoded source and stationary readiness assertions.
+
+Both controls detach before mutation. Their finally blocks restore all four source files byte-for-byte and rebuild the exact frozen client: worker-40c9mMyA.js441796B SHA524593e41358d423aa49a7caa6adb8ae25150e1e1eff1e889b6fcfc2c7f977d5 and index-DgLWULGF.js1932360B SHA08e1deea3dacfcdd0e120005fc7da0bb017e9400114cc276c42c0850d5fcc545. The named branch is restored with a clean source tree.
+
+The entire unchanged six-spec pack then passes15/15GREEN,0skip/0flaky/0errors,556.015s: q0/q1Canteen/Cot/Washer purchases, public Guard hire, whole paused Save/Load, both stationary completed Undo/pending Redo scenes and both trusted second-touch subjects. See [terminal summary](./actual-consumer-controls-and-restored-fifteen.json), `native/consumer-original-negative`, `native/consumer-q1-negative`, `native/consumer-restored-fifteen`, restoration receipts and inert executed control scripts. Capture aliases retain exact hashes; UTF16LE console conversion is explicit. Connection-only tiny hardware crops and private per-object texture binding remain unclaimed. PR2010 still requires full hosted success and serial main gates before release.
+
+## Earlier execution checkpoints
 
 Frozen built-client source: 4443da6c8888e44430e01c516fb971173270ce2c. Actual worker worker-DvdTnMXd.js, 441796 bytes, SHA256 9f49ff87dbf34697b927aff454b871d5dd9b1f601745220984fb703a42b75cc0. Build and strict native fixture types exit0; ten source suites52/52GREEN. See [machine receipt](./pre-native-receipt.json).
 

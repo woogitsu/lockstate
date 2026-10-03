@@ -1078,5 +1078,1132 @@
     "sourceSha256": "50103c34f88163b5cbdc604d1ba1e690246da6928eb51e790b09a10f9a5cb424",
     "archivedBytes": 291065,
     "archivedSha256": "50103c34f88163b5cbdc604d1ba1e690246da6928eb51e790b09a10f9a5cb424"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-negative-20261003.json",
+    "archived": "consumer-original-negative/report.json",
+    "sourceBytes": 63337,
+    "sourceSha256": "3b47f8a341883c97ff0a9bff79902778dbbf845845218034bcbd1f3a23fcae10",
+    "archivedBytes": 63337,
+    "archivedSha256": "3b47f8a341883c97ff0a9bff79902778dbbf845845218034bcbd1f3a23fcae10"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-negative-20261003.txt",
+    "archived": "consumer-original-negative/console.txt",
+    "sourceBytes": 55548,
+    "sourceSha256": "49b180deb6f8f96bb9cd9f88132a88b60bc775fb0dabefdcc3f97f036d2ae7d6",
+    "archivedBytes": 27853,
+    "archivedSha256": "894436a4b5b7d3089a7a2a7160e31bd2fe910890f7a95957786c31219fde418c",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-negative-20261003\\.last-run.json",
+    "archived": "consumer-original-negative/001-.last-run.json",
+    "sourceBytes": 390,
+    "sourceSha256": "e5ee0d44ab6c110c89768a53e564e72e38a82d829318576bad644e05e5e7adfe",
+    "archivedBytes": 390,
+    "archivedSha256": "e5ee0d44ab6c110c89768a53e564e72e38a82d829318576bad644e05e5e7adfe"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-negative-20261003\\canteen-dining-table-playe-34971-ored-plates-after-Save-Load\\dining-loaded-fullhd.png",
+    "archived": "consumer-original-negative/002-dining-loaded-fullhd.png",
+    "sourceBytes": 1441879,
+    "sourceSha256": "9cb93fc0d0d106b52253e5a540bcc4480ca274ad38b0108b52037f6643423e2e",
+    "archivedBytes": 1441879,
+    "archivedSha256": "9cb93fc0d0d106b52253e5a540bcc4480ca274ad38b0108b52037f6643423e2e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-negative-20261003\\canteen-dining-table-playe-34971-ored-plates-after-Save-Load\\dining-worker-completed-fullhd.png",
+    "archived": "consumer-original-negative/003-dining-worker-completed-fullhd.png",
+    "sourceBytes": 1477804,
+    "sourceSha256": "3b36ba898cbe87f4badbe96ffdc107dcdf335f129d8e66d288c9eec1e07bf519",
+    "archivedBytes": 1477804,
+    "archivedSha256": "3b36ba898cbe87f4badbe96ffdc107dcdf335f129d8e66d288c9eec1e07bf519"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-negative-20261003\\canteen-dining-table-playe-34971-ored-plates-after-Save-Load\\error-context.md",
+    "archived": "consumer-original-negative/004-error-context.md",
+    "sourceBytes": 9519,
+    "sourceSha256": "7c7fe01cc1896f8da243e5d53fa0829086a25f5164ae3a918cc6d8433ec05d8b",
+    "archivedBytes": 9519,
+    "archivedSha256": "7c7fe01cc1896f8da243e5d53fa0829086a25f5164ae3a918cc6d8433ec05d8b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-negative-20261003\\canteen-dining-table-playe-34971-ored-plates-after-Save-Load\\failed-construction-fullhd.png",
+    "archived": "consumer-original-negative/005-failed-construction-fullhd.png",
+    "sourceBytes": 1182851,
+    "sourceSha256": "34305a325e4f9e97a8495bb34893cc94a783e64d67af4105b52beaf443ea722a",
+    "archivedBytes": 1182851,
+    "archivedSha256": "34305a325e4f9e97a8495bb34893cc94a783e64d67af4105b52beaf443ea722a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-negative-20261003\\canteen-dining-table-playe-34971-ored-plates-after-Save-Load\\failed-construction-worker-snapshot.json",
+    "archived": "consumer-original-negative/006-failed-construction-worker-snapshot.json",
+    "sourceBytes": 86149,
+    "sourceSha256": "8e66d8f48b650130f94b2283067f8385efe437701874169176c66ba6f324dc79",
+    "archivedBytes": 86149,
+    "archivedSha256": "8e66d8f48b650130f94b2283067f8385efe437701874169176c66ba6f324dc79"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-negative-20261003\\canteen-dining-table-playe-34971-ored-plates-after-Save-Load\\worker-and-completed-pixel-evidence.json",
+    "archived": "consumer-original-negative/007-worker-and-completed-pixel-evidence.json",
+    "sourceBytes": 340,
+    "sourceSha256": "1b2a796caa7eef4a75079bd654401e9bbb917216b6f945683f842c24a6ad6b96",
+    "archivedBytes": 340,
+    "archivedSha256": "1b2a796caa7eef4a75079bd654401e9bbb917216b6f945683f842c24a6ad6b96"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-negative-20261003\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\cell-cot-worker-completed-fullhd.png",
+    "archived": "consumer-original-negative/008-cell-cot-worker-completed-fullhd.png",
+    "sourceBytes": 1445911,
+    "sourceSha256": "c29cc35a5572e1f145ac81eb1a7a2d0c5edc6fb1f9c32c2e2003c22771a44d23",
+    "archivedBytes": 1445911,
+    "archivedSha256": "c29cc35a5572e1f145ac81eb1a7a2d0c5edc6fb1f9c32c2e2003c22771a44d23"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-negative-20261003\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\error-context.md",
+    "archived": "consumer-original-negative/009-error-context.md",
+    "sourceBytes": 14374,
+    "sourceSha256": "0ffb70263d6758f7df743ad4cdf9eaedaa699b769a647c95baac2b9fb2b86a74",
+    "archivedBytes": 14374,
+    "archivedSha256": "0ffb70263d6758f7df743ad4cdf9eaedaa699b769a647c95baac2b9fb2b86a74"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-negative-20261003\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\failed-cot-fullhd.png",
+    "archived": "consumer-original-negative/010-failed-cot-fullhd.png",
+    "sourceBytes": 1445911,
+    "sourceSha256": "c29cc35a5572e1f145ac81eb1a7a2d0c5edc6fb1f9c32c2e2003c22771a44d23",
+    "archivedBytes": 1445911,
+    "archivedSha256": "c29cc35a5572e1f145ac81eb1a7a2d0c5edc6fb1f9c32c2e2003c22771a44d23"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-negative-20261003\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\failed-cot-worker-snapshot.json",
+    "archived": "consumer-original-negative/011-failed-cot-worker-snapshot.json",
+    "sourceBytes": 58750,
+    "sourceSha256": "66c298c2777230c5d3ffc1098a467c982b2f397eedf4876db05a0a8fe8b3afe6",
+    "archivedBytes": 58750,
+    "archivedSha256": "66c298c2777230c5d3ffc1098a467c982b2f397eedf4876db05a0a8fe8b3afe6"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-negative-20261003\\dedicated-laundry-washing--5d714-and-anchors-after-Save-Load\\completed-worker-snapshot.json",
+    "archived": "consumer-original-negative/012-completed-worker-snapshot.json",
+    "sourceBytes": 75851,
+    "sourceSha256": "ee9649420ee9cf44a4053c5d3e5c40b8b21add2ce6a9f3021b8756e1f1e89c81",
+    "archivedBytes": 75851,
+    "archivedSha256": "ee9649420ee9cf44a4053c5d3e5c40b8b21add2ce6a9f3021b8756e1f1e89c81"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-negative-20261003\\dedicated-laundry-washing--5d714-and-anchors-after-Save-Load\\dedicated-laundry-washing-machine-loaded-fullhd.png",
+    "archived": "consumer-original-negative/013-dedicated-laundry-washing-machine-loaded-fullhd.png",
+    "sourceBytes": 1383874,
+    "sourceSha256": "42eef5be37eb0910eac089497ffa0920d445b16aa4d7e031d443404166041910",
+    "archivedBytes": 1383874,
+    "archivedSha256": "42eef5be37eb0910eac089497ffa0920d445b16aa4d7e031d443404166041910"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-negative-20261003\\dedicated-laundry-washing--5d714-and-anchors-after-Save-Load\\dedicated-laundry-washing-machine-worker-completed-fullhd.png",
+    "archived": "consumer-original-negative/014-dedicated-laundry-washing-machine-worker-completed-fullhd.png",
+    "sourceBytes": 1414213,
+    "sourceSha256": "f96bdc6051b14e581da28ce53068d4de519a91ab76b53bd15ae419d3fe592472",
+    "archivedBytes": 1414213,
+    "archivedSha256": "f96bdc6051b14e581da28ce53068d4de519a91ab76b53bd15ae419d3fe592472"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-negative-20261003\\dedicated-laundry-washing--5d714-and-anchors-after-Save-Load\\error-context.md",
+    "archived": "consumer-original-negative/015-error-context.md",
+    "sourceBytes": 9519,
+    "sourceSha256": "fd3325a9094a087f06f25ba3750443cc967b59a745952337da7f5e265dd7ed07",
+    "archivedBytes": 9519,
+    "archivedSha256": "fd3325a9094a087f06f25ba3750443cc967b59a745952337da7f5e265dd7ed07"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-negative-20261003\\dedicated-laundry-washing--5d714-and-anchors-after-Save-Load\\failed-player-fullhd.png",
+    "archived": "consumer-original-negative/016-failed-player-fullhd.png",
+    "sourceBytes": 276753,
+    "sourceSha256": "27a2070eab9ef9dcd22185324a45fdaba14f817652d8a4fea71d8a8c8aa563fc",
+    "archivedBytes": 276753,
+    "archivedSha256": "27a2070eab9ef9dcd22185324a45fdaba14f817652d8a4fea71d8a8c8aa563fc"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-negative-20261003\\dedicated-laundry-washing--5d714-and-anchors-after-Save-Load\\failed-player-worker-snapshot.json",
+    "archived": "consumer-original-negative/017-failed-player-worker-snapshot.json",
+    "sourceBytes": 75851,
+    "sourceSha256": "828b0b6a38afa9bf7c4b841080ddac441f55830270a3dd66e59881184c82366f",
+    "archivedBytes": 75851,
+    "archivedSha256": "828b0b6a38afa9bf7c4b841080ddac441f55830270a3dd66e59881184c82366f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-negative-20261003\\dedicated-laundry-washing--5d714-and-anchors-after-Save-Load\\loaded-worker-snapshot.json",
+    "archived": "consumer-original-negative/018-loaded-worker-snapshot.json",
+    "sourceBytes": 75851,
+    "sourceSha256": "28918d721f00980ab938197d895860cd37787663fce1897e0028e6388b8d87dd",
+    "archivedBytes": 75851,
+    "archivedSha256": "28918d721f00980ab938197d895860cd37787663fce1897e0028e6388b8d87dd"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-negative-20261003\\dedicated-laundry-washing--5d714-and-anchors-after-Save-Load\\worker-and-completed-save-evidence.json",
+    "archived": "consumer-original-negative/019-worker-and-completed-save-evidence.json",
+    "sourceBytes": 346,
+    "sourceSha256": "6ef01c7996647ab06a2e475ac32218d00f93c3b8485bae718d634b225d39dbaa",
+    "archivedBytes": 346,
+    "archivedSha256": "6ef01c7996647ab06a2e475ac32218d00f93c3b8485bae718d634b225d39dbaa"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-negative-20261003\\hired-guard-player-build-a-ae7f6-dy-through-paused-Save-Load\\error-context.md",
+    "archived": "consumer-original-negative/020-error-context.md",
+    "sourceBytes": 9294,
+    "sourceSha256": "209becb1bf1f5014370185e205c3affde4abe9c3e6c8d1b33c919e580c875b8e",
+    "archivedBytes": 9294,
+    "archivedSha256": "209becb1bf1f5014370185e205c3affde4abe9c3e6c8d1b33c919e580c875b8e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-negative-20261003\\hired-guard-player-build-a-ae7f6-dy-through-paused-Save-Load\\guard-empty-world-control-canvas.png",
+    "archived": "consumer-original-negative/021-guard-empty-world-control-canvas.png",
+    "sourceBytes": 1517408,
+    "sourceSha256": "8e91015bbaddabea7889a136adbc3127c9f62e5f706baca361a7280b4032ce7d",
+    "archivedBytes": 1517408,
+    "archivedSha256": "8e91015bbaddabea7889a136adbc3127c9f62e5f706baca361a7280b4032ce7d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-negative-20261003\\hired-guard-player-build-a-ae7f6-dy-through-paused-Save-Load\\hired-guard-before-save-canvas.png",
+    "archived": "consumer-original-negative/022-hired-guard-before-save-canvas.png",
+    "sourceBytes": 1550962,
+    "sourceSha256": "2b21213e8b7c664c8d011a792afb0390f45e1830ea543b07dcb796298eaeeba1",
+    "archivedBytes": 1550962,
+    "archivedSha256": "2b21213e8b7c664c8d011a792afb0390f45e1830ea543b07dcb796298eaeeba1"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-negative-20261003\\hired-guard-player-build-a-ae7f6-dy-through-paused-Save-Load\\hired-guard-before-save-fullhd.png",
+    "archived": "consumer-original-negative/023-hired-guard-before-save-fullhd.png",
+    "sourceBytes": 1550962,
+    "sourceSha256": "2b21213e8b7c664c8d011a792afb0390f45e1830ea543b07dcb796298eaeeba1",
+    "archivedBytes": 1550962,
+    "archivedSha256": "2b21213e8b7c664c8d011a792afb0390f45e1830ea543b07dcb796298eaeeba1"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-negative-20261003\\hired-guard-player-build-a-ae7f6-dy-through-paused-Save-Load\\hired-guard-loaded-fullhd.png",
+    "archived": "consumer-original-negative/024-hired-guard-loaded-fullhd.png",
+    "sourceBytes": 1525316,
+    "sourceSha256": "4ca53c46818ac4c52cba3c7a64770caa31f18d7a596f0d2652128449eac9c5f9",
+    "archivedBytes": 1525316,
+    "archivedSha256": "4ca53c46818ac4c52cba3c7a64770caa31f18d7a596f0d2652128449eac9c5f9"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-negative-20261003\\room-template-history-verd-aa149-ationary-Cell-history-cases\\actual-saved-capacity-fullhd.png",
+    "archived": "consumer-original-negative/025-actual-saved-capacity-fullhd.png",
+    "sourceBytes": 1586256,
+    "sourceSha256": "7db97350f34398589a124af07d1cca0417c5cf394517cf15f2ec096a8a0f8745",
+    "archivedBytes": 1586256,
+    "archivedSha256": "7db97350f34398589a124af07d1cca0417c5cf394517cf15f2ec096a8a0f8745"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-negative-20261003\\room-template-history-verd-aa149-ationary-Cell-history-cases\\actual-saved-capacity-snapshot.json",
+    "archived": "consumer-original-negative/026-actual-saved-capacity-snapshot.json",
+    "sourceBytes": 42677,
+    "sourceSha256": "2d9df1c7281e9841dc81b33e524d4aed4b93bb27b127ac0e6e8aff6099d44d3a",
+    "archivedBytes": 42677,
+    "archivedSha256": "2d9df1c7281e9841dc81b33e524d4aed4b93bb27b127ac0e6e8aff6099d44d3a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-negative-20261003\\room-template-history-verd-f1488-leted-Undo-and-pending-Redo\\actual-completed-cell-snapshot.json",
+    "archived": "consumer-original-negative/027-actual-completed-cell-snapshot.json",
+    "sourceBytes": 57653,
+    "sourceSha256": "502f4d784d8f6fd0c01544327225946b278ec8a8c3c56ce0e8a6a30e907ee5ac",
+    "archivedBytes": 57653,
+    "archivedSha256": "502f4d784d8f6fd0c01544327225946b278ec8a8c3c56ce0e8a6a30e907ee5ac"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-negative-20261003\\room-template-history-verd-f1488-leted-Undo-and-pending-Redo\\error-context.md",
+    "archived": "consumer-original-negative/028-error-context.md",
+    "sourceBytes": 14445,
+    "sourceSha256": "bbb74c481cb5ddc618f613993cf8d002670111b61ea0266b2e3fa27ef8109da9",
+    "archivedBytes": 14445,
+    "archivedSha256": "bbb74c481cb5ddc618f613993cf8d002670111b61ea0266b2e3fa27ef8109da9"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-negative-20261003\\room-template-history-verd-f1488-leted-Undo-and-pending-Redo\\failed-actual-fullhd.png",
+    "archived": "consumer-original-negative/029-failed-actual-fullhd.png",
+    "sourceBytes": 292862,
+    "sourceSha256": "6e056f8506de7c96d1f790a242991a8a86944f6c6b589093255c01b5741524b9",
+    "archivedBytes": 292862,
+    "archivedSha256": "6e056f8506de7c96d1f790a242991a8a86944f6c6b589093255c01b5741524b9"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-negative-20261003\\room-template-history-verd-f1488-leted-Undo-and-pending-Redo\\failed-actual-worker-and-input.json",
+    "archived": "consumer-original-negative/030-failed-actual-worker-and-input.json",
+    "sourceBytes": 69725,
+    "sourceSha256": "ec531a4a19867f7c2063c6915844b535446bc7ba3967775f771713e29c206794",
+    "archivedBytes": 69725,
+    "archivedSha256": "ec531a4a19867f7c2063c6915844b535446bc7ba3967775f771713e29c206794"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-negative-20261003\\room-template-history-verd-f1488-leted-Undo-and-pending-Redo\\stationary-before-undo.json",
+    "archived": "consumer-original-negative/031-stationary-before-undo.json",
+    "sourceBytes": 6413,
+    "sourceSha256": "adfaca9ffd39008293fc93f639a9a7e687ea6978df736f358f2f97d87ab271ca",
+    "archivedBytes": 6413,
+    "archivedSha256": "adfaca9ffd39008293fc93f639a9a7e687ea6978df736f358f2f97d87ab271ca"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-negative-20261003\\room-template-history-verd-f1488-leted-Undo-and-pending-Redo\\stationary-completed-cell-blocked.png",
+    "archived": "consumer-original-negative/032-stationary-completed-cell-blocked.png",
+    "sourceBytes": 280474,
+    "sourceSha256": "21bcaaa56fce128d21f1b238b0f6068e16c1c044622d0d7454f53d1b9d3b8b96",
+    "archivedBytes": 280474,
+    "archivedSha256": "21bcaaa56fce128d21f1b238b0f6068e16c1c044622d0d7454f53d1b9d3b8b96"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-negative-20261003\\room-template-second-touch-9333f-h-primary-tap-remains-legal\\error-context.md",
+    "archived": "consumer-original-negative/033-error-context.md",
+    "sourceBytes": 13750,
+    "sourceSha256": "0f35c984fadfefb873e867218ded97b05522808701ab6d0451f5c81137d2afcd",
+    "archivedBytes": 13750,
+    "archivedSha256": "0f35c984fadfefb873e867218ded97b05522808701ab6d0451f5c81137d2afcd"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-negative-20261003\\room-template-second-touch-d5c57-h-primary-tap-remains-legal\\error-context.md",
+    "archived": "consumer-original-negative/034-error-context.md",
+    "sourceBytes": 13140,
+    "sourceSha256": "f9d1aff2c3070c47555e8d2b3c2424da1ee03b11aad4c49421ad29654b52ded6",
+    "archivedBytes": 13140,
+    "archivedSha256": "f9d1aff2c3070c47555e8d2b3c2424da1ee03b11aad4c49421ad29654b52ded6"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-q1-negative-20261003.json",
+    "archived": "consumer-q1-negative/report.json",
+    "sourceBytes": 44691,
+    "sourceSha256": "04b603c384e7582fd9bfa09e5e26cbaf4ee8173343ba8e7d89cf03a00416d9ca",
+    "archivedBytes": 44691,
+    "archivedSha256": "04b603c384e7582fd9bfa09e5e26cbaf4ee8173343ba8e7d89cf03a00416d9ca"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-q1-negative-20261003.txt",
+    "archived": "consumer-q1-negative/console.txt",
+    "sourceBytes": 41398,
+    "sourceSha256": "ff16f9853403dfaafbd7d219c1c8cd007cdd06b7066eacc0c17968c7f266e826",
+    "archivedBytes": 20755,
+    "archivedSha256": "b32dd913dbd2568882b21a8ac2b4fcf515f750ea248bc78afe244600941db977",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-q1-negative-20261003\\.last-run.json",
+    "archived": "consumer-q1-negative/001-.last-run.json",
+    "sourceBytes": 243,
+    "sourceSha256": "fcfe083961a244a33d921bff4154cf1baf9f9c3dd5618f318cc76d95fd99afbf",
+    "archivedBytes": 243,
+    "archivedSha256": "fcfe083961a244a33d921bff4154cf1baf9f9c3dd5618f318cc76d95fd99afbf"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-q1-negative-20261003\\canteen-dining-table-playe-d4997-ored-plates-after-Save-Load\\dining-loaded-fullhd.png",
+    "archived": "consumer-q1-negative/002-dining-loaded-fullhd.png",
+    "sourceBytes": 1435299,
+    "sourceSha256": "e49d1a42267f7ed65eeae37e12b51559d11ea470309e148fbe038d7baba668da",
+    "archivedBytes": 1435299,
+    "archivedSha256": "e49d1a42267f7ed65eeae37e12b51559d11ea470309e148fbe038d7baba668da"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-q1-negative-20261003\\canteen-dining-table-playe-d4997-ored-plates-after-Save-Load\\dining-worker-completed-fullhd.png",
+    "archived": "consumer-q1-negative/003-dining-worker-completed-fullhd.png",
+    "sourceBytes": 1469181,
+    "sourceSha256": "61cb74d6a6f71421c0d3f094404c78048be43a2475a29993545d06fc8442b20e",
+    "archivedBytes": 1469181,
+    "archivedSha256": "61cb74d6a6f71421c0d3f094404c78048be43a2475a29993545d06fc8442b20e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-q1-negative-20261003\\canteen-dining-table-playe-d4997-ored-plates-after-Save-Load\\error-context.md",
+    "archived": "consumer-q1-negative/004-error-context.md",
+    "sourceBytes": 9519,
+    "sourceSha256": "082ae85f4a698bd910445dd56b0054effcb356db1b0b4f8c7ed7c5d28b69275a",
+    "archivedBytes": 9519,
+    "archivedSha256": "082ae85f4a698bd910445dd56b0054effcb356db1b0b4f8c7ed7c5d28b69275a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-q1-negative-20261003\\canteen-dining-table-playe-d4997-ored-plates-after-Save-Load\\failed-construction-fullhd.png",
+    "archived": "consumer-q1-negative/005-failed-construction-fullhd.png",
+    "sourceBytes": 1214477,
+    "sourceSha256": "f43f167e5b0afb3c277a74711708bcc8f316bf9ed610931ef9c2de0e48ffe49e",
+    "archivedBytes": 1214477,
+    "archivedSha256": "f43f167e5b0afb3c277a74711708bcc8f316bf9ed610931ef9c2de0e48ffe49e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-q1-negative-20261003\\canteen-dining-table-playe-d4997-ored-plates-after-Save-Load\\failed-construction-worker-snapshot.json",
+    "archived": "consumer-q1-negative/006-failed-construction-worker-snapshot.json",
+    "sourceBytes": 86092,
+    "sourceSha256": "68816480b6f5e966cd44a995cc3ae5fa7b0f95ac1a42f081d021efda31e8f1c1",
+    "archivedBytes": 86092,
+    "archivedSha256": "68816480b6f5e966cd44a995cc3ae5fa7b0f95ac1a42f081d021efda31e8f1c1"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-q1-negative-20261003\\canteen-dining-table-playe-d4997-ored-plates-after-Save-Load\\worker-and-completed-pixel-evidence.json",
+    "archived": "consumer-q1-negative/007-worker-and-completed-pixel-evidence.json",
+    "sourceBytes": 365,
+    "sourceSha256": "f150c092fc565d08dc5aa7fb9152ad3080c153274d452ba86e1049e7eb4dfb6b",
+    "archivedBytes": 365,
+    "archivedSha256": "f150c092fc565d08dc5aa7fb9152ad3080c153274d452ba86e1049e7eb4dfb6b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-q1-negative-20261003\\cell-cot-player-build-play-30d8c--after-Save-Load-at-Full-HD\\cell-cot-loaded-fullhd.png",
+    "archived": "consumer-q1-negative/008-cell-cot-loaded-fullhd.png",
+    "sourceBytes": 1358956,
+    "sourceSha256": "2d80307e1d5bc525d7d2fe62eba70d10ceb3382fd9f1b343b58116b2fb0589db",
+    "archivedBytes": 1358956,
+    "archivedSha256": "2d80307e1d5bc525d7d2fe62eba70d10ceb3382fd9f1b343b58116b2fb0589db"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-q1-negative-20261003\\cell-cot-player-build-play-30d8c--after-Save-Load-at-Full-HD\\cell-cot-worker-completed-fullhd.png",
+    "archived": "consumer-q1-negative/009-cell-cot-worker-completed-fullhd.png",
+    "sourceBytes": 1389795,
+    "sourceSha256": "edc72f46b3249a2f78245feb0e88571fcda4971af7e6c5f6d05d0c71c618c575",
+    "archivedBytes": 1389795,
+    "archivedSha256": "edc72f46b3249a2f78245feb0e88571fcda4971af7e6c5f6d05d0c71c618c575"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-q1-negative-20261003\\cell-cot-player-build-play-30d8c--after-Save-Load-at-Full-HD\\error-context.md",
+    "archived": "consumer-q1-negative/010-error-context.md",
+    "sourceBytes": 9574,
+    "sourceSha256": "77005c096822d02bd773f93929c61cd84b505cfdd7fa88c005cb5f2c6a514561",
+    "archivedBytes": 9574,
+    "archivedSha256": "77005c096822d02bd773f93929c61cd84b505cfdd7fa88c005cb5f2c6a514561"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-q1-negative-20261003\\cell-cot-player-build-play-30d8c--after-Save-Load-at-Full-HD\\failed-cot-fullhd.png",
+    "archived": "consumer-q1-negative/011-failed-cot-fullhd.png",
+    "sourceBytes": 1485274,
+    "sourceSha256": "719f9921c36e6d3b7dbff13fa06739df2713ee08ddc346efa37eb71fb6ee3b57",
+    "archivedBytes": 1485274,
+    "archivedSha256": "719f9921c36e6d3b7dbff13fa06739df2713ee08ddc346efa37eb71fb6ee3b57"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-q1-negative-20261003\\cell-cot-player-build-play-30d8c--after-Save-Load-at-Full-HD\\failed-cot-worker-snapshot.json",
+    "archived": "consumer-q1-negative/012-failed-cot-worker-snapshot.json",
+    "sourceBytes": 57652,
+    "sourceSha256": "fb19ed869a7d0416091366e091338b10047c07103f31d52eec71e72213207735",
+    "archivedBytes": 57652,
+    "archivedSha256": "fb19ed869a7d0416091366e091338b10047c07103f31d52eec71e72213207735"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-q1-negative-20261003\\dedicated-laundry-washing--941dc-and-anchors-after-Save-Load\\completed-worker-snapshot.json",
+    "archived": "consumer-q1-negative/013-completed-worker-snapshot.json",
+    "sourceBytes": 75652,
+    "sourceSha256": "3b37bccaa4ea61f40062dda47631e3a4fb18cc9677e68ee2b69da199fa0e6164",
+    "archivedBytes": 75652,
+    "archivedSha256": "3b37bccaa4ea61f40062dda47631e3a4fb18cc9677e68ee2b69da199fa0e6164"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-q1-negative-20261003\\dedicated-laundry-washing--941dc-and-anchors-after-Save-Load\\dedicated-laundry-washing-machine-loaded-fullhd.png",
+    "archived": "consumer-q1-negative/014-dedicated-laundry-washing-machine-loaded-fullhd.png",
+    "sourceBytes": 1385314,
+    "sourceSha256": "664b97115a891281dbed506d42f232e51d3691a3dfbde6e42f021e9265888706",
+    "archivedBytes": 1385314,
+    "archivedSha256": "664b97115a891281dbed506d42f232e51d3691a3dfbde6e42f021e9265888706"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-q1-negative-20261003\\dedicated-laundry-washing--941dc-and-anchors-after-Save-Load\\dedicated-laundry-washing-machine-worker-completed-fullhd.png",
+    "archived": "consumer-q1-negative/015-dedicated-laundry-washing-machine-worker-completed-fullhd.png",
+    "sourceBytes": 1415050,
+    "sourceSha256": "0a8e655c89d467544528008e4008ce55d0d001207aec3b8c07cdcf182df9a172",
+    "archivedBytes": 1415050,
+    "archivedSha256": "0a8e655c89d467544528008e4008ce55d0d001207aec3b8c07cdcf182df9a172"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-q1-negative-20261003\\dedicated-laundry-washing--941dc-and-anchors-after-Save-Load\\error-context.md",
+    "archived": "consumer-q1-negative/016-error-context.md",
+    "sourceBytes": 9519,
+    "sourceSha256": "0fd7209f6028f2f591c375b6824d1dea7a018cbd8742c391191f1fde34949a90",
+    "archivedBytes": 9519,
+    "archivedSha256": "0fd7209f6028f2f591c375b6824d1dea7a018cbd8742c391191f1fde34949a90"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-q1-negative-20261003\\dedicated-laundry-washing--941dc-and-anchors-after-Save-Load\\failed-player-fullhd.png",
+    "archived": "consumer-q1-negative/017-failed-player-fullhd.png",
+    "sourceBytes": 300094,
+    "sourceSha256": "b1234f07b942244d0941b26ed6f46670ead33209b5a17070b985f6ed26527b1f",
+    "archivedBytes": 300094,
+    "archivedSha256": "b1234f07b942244d0941b26ed6f46670ead33209b5a17070b985f6ed26527b1f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-q1-negative-20261003\\dedicated-laundry-washing--941dc-and-anchors-after-Save-Load\\failed-player-worker-snapshot.json",
+    "archived": "consumer-q1-negative/018-failed-player-worker-snapshot.json",
+    "sourceBytes": 75652,
+    "sourceSha256": "bacfa9c6fd5402a14cfd5b55bcbb9ad28a14bb1c14c1a7f63c49ece7fd3daf95",
+    "archivedBytes": 75652,
+    "archivedSha256": "bacfa9c6fd5402a14cfd5b55bcbb9ad28a14bb1c14c1a7f63c49ece7fd3daf95"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-q1-negative-20261003\\dedicated-laundry-washing--941dc-and-anchors-after-Save-Load\\loaded-worker-snapshot.json",
+    "archived": "consumer-q1-negative/019-loaded-worker-snapshot.json",
+    "sourceBytes": 75652,
+    "sourceSha256": "d24f0de2529ddcbd9e10ac383e690d7ffa8750278fbbfb0d6d6bb920d5aba0a0",
+    "archivedBytes": 75652,
+    "archivedSha256": "d24f0de2529ddcbd9e10ac383e690d7ffa8750278fbbfb0d6d6bb920d5aba0a0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-q1-negative-20261003\\dedicated-laundry-washing--941dc-and-anchors-after-Save-Load\\worker-and-completed-save-evidence.json",
+    "archived": "consumer-q1-negative/020-worker-and-completed-save-evidence.json",
+    "sourceBytes": 371,
+    "sourceSha256": "3fd4b438dae8ab18b8b6aeaaf2447abf6f1394dfaa7b91356cf218b5f6ad9e9b",
+    "archivedBytes": 371,
+    "archivedSha256": "3fd4b438dae8ab18b8b6aeaaf2447abf6f1394dfaa7b91356cf218b5f6ad9e9b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-q1-negative-20261003\\room-template-history-verd-aa149-ationary-Cell-history-cases\\actual-saved-capacity-fullhd.png",
+    "archived": "consumer-q1-negative/021-actual-saved-capacity-fullhd.png",
+    "sourceBytes": 1586518,
+    "sourceSha256": "2b712888265962f941d86690f49fc5f6cf22ea1cb6f61ef8c58f7f3babf04884",
+    "archivedBytes": 1586518,
+    "archivedSha256": "2b712888265962f941d86690f49fc5f6cf22ea1cb6f61ef8c58f7f3babf04884"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-q1-negative-20261003\\room-template-history-verd-aa149-ationary-Cell-history-cases\\actual-saved-capacity-snapshot.json",
+    "archived": "consumer-q1-negative/022-actual-saved-capacity-snapshot.json",
+    "sourceBytes": 42680,
+    "sourceSha256": "50afe643e75b0d6a755cf12cd3c255ba08f7a1d9387d53fd11ed3dd195453b31",
+    "archivedBytes": 42680,
+    "archivedSha256": "50afe643e75b0d6a755cf12cd3c255ba08f7a1d9387d53fd11ed3dd195453b31"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-q1-negative-20261003\\room-template-history-verd-bda8f-leted-Undo-and-pending-Redo\\actual-completed-cell-snapshot.json",
+    "archived": "consumer-q1-negative/023-actual-completed-cell-snapshot.json",
+    "sourceBytes": 57656,
+    "sourceSha256": "207ef340ebad123b1536a0782fe1d83db8fe43f2036a5c3dfcbe7355951c8bce",
+    "archivedBytes": 57656,
+    "archivedSha256": "207ef340ebad123b1536a0782fe1d83db8fe43f2036a5c3dfcbe7355951c8bce"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-q1-negative-20261003\\room-template-history-verd-bda8f-leted-Undo-and-pending-Redo\\error-context.md",
+    "archived": "consumer-q1-negative/024-error-context.md",
+    "sourceBytes": 15055,
+    "sourceSha256": "3ebf188d684c4d948c3363ca5d899d0de9431459d019736974d017790a1b590e",
+    "archivedBytes": 15055,
+    "archivedSha256": "3ebf188d684c4d948c3363ca5d899d0de9431459d019736974d017790a1b590e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-q1-negative-20261003\\room-template-history-verd-bda8f-leted-Undo-and-pending-Redo\\failed-actual-fullhd.png",
+    "archived": "consumer-q1-negative/025-failed-actual-fullhd.png",
+    "sourceBytes": 1415842,
+    "sourceSha256": "ac57b7d3fe83e9624b0cf78bb5017327c6eb3127e043863265bc0fb64a903bb4",
+    "archivedBytes": 1415842,
+    "archivedSha256": "ac57b7d3fe83e9624b0cf78bb5017327c6eb3127e043863265bc0fb64a903bb4"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-q1-negative-20261003\\room-template-history-verd-bda8f-leted-Undo-and-pending-Redo\\failed-actual-worker-and-input.json",
+    "archived": "consumer-q1-negative/026-failed-actual-worker-and-input.json",
+    "sourceBytes": 69728,
+    "sourceSha256": "8e7c927ef86c152da15914772c29c29e579fa831d12214740aa700eed63f8bda",
+    "archivedBytes": 69728,
+    "archivedSha256": "8e7c927ef86c152da15914772c29c29e579fa831d12214740aa700eed63f8bda"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-q1-negative-20261003\\room-template-history-verd-bda8f-leted-Undo-and-pending-Redo\\stationary-before-undo.json",
+    "archived": "consumer-q1-negative/027-stationary-before-undo.json",
+    "sourceBytes": 6416,
+    "sourceSha256": "905b1a5d45a9b62a82cdcf420797aaddfd8e1c08e8dcd8053532e92f42e28877",
+    "archivedBytes": 6416,
+    "archivedSha256": "905b1a5d45a9b62a82cdcf420797aaddfd8e1c08e8dcd8053532e92f42e28877"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-q1-negative-20261003\\room-template-history-verd-bda8f-leted-Undo-and-pending-Redo\\stationary-completed-cell-blocked.png",
+    "archived": "consumer-q1-negative/028-stationary-completed-cell-blocked.png",
+    "sourceBytes": 1372015,
+    "sourceSha256": "afae20068fe7b723cb4fdae70dbde2978553f0fdeccbe1c98ad58ca3e126fd93",
+    "archivedBytes": 1372015,
+    "archivedSha256": "afae20068fe7b723cb4fdae70dbde2978553f0fdeccbe1c98ad58ca3e126fd93"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003.json",
+    "archived": "consumer-restored-fifteen/report.json",
+    "sourceBytes": 37126,
+    "sourceSha256": "a80b669cfaa4107f89d32d9f1bcbc0967eb20402cdc46ae45954b59afcabe3b9",
+    "archivedBytes": 37126,
+    "archivedSha256": "a80b669cfaa4107f89d32d9f1bcbc0967eb20402cdc46ae45954b59afcabe3b9"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003.txt",
+    "archived": "consumer-restored-fifteen/console.txt",
+    "sourceBytes": 29216,
+    "sourceSha256": "cf76107ae2bbbde69ac4a2f1d014dfb4ede6ba87264eea86bdf0452705e55e82",
+    "archivedBytes": 14647,
+    "archivedSha256": "82faad0c65f010945413c82447dc6924c72a1f5f15185adf58d0cce68dc1b028",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\.last-run.json",
+    "archived": "consumer-restored-fifteen/001-.last-run.json",
+    "sourceBytes": 45,
+    "sourceSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "archivedBytes": 45,
+    "archivedSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\canteen-dining-table-playe-34971-ored-plates-after-Save-Load\\attachments\\dining-worker-and-pixel-evidence-1e059c4c1d86e14ffa52580b1ac83ca8bd22aeda.json",
+    "archived": "consumer-restored-fifteen/002-dining-worker-and-pixel-evidence-1e059c4c1d86e14ffa52580b1ac83ca8bd22aeda.json",
+    "sourceBytes": 341004,
+    "sourceSha256": "5ced4c02a16c3f387d3c10d1ce588f1db1cb2adcbf4b85da351c2ea166e530f7",
+    "archivedBytes": 341004,
+    "archivedSha256": "5ced4c02a16c3f387d3c10d1ce588f1db1cb2adcbf4b85da351c2ea166e530f7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\canteen-dining-table-playe-34971-ored-plates-after-Save-Load\\dining-loaded-fullhd.png",
+    "archived": "consumer-restored-fifteen/003-dining-loaded-fullhd.png",
+    "sourceBytes": 1508069,
+    "sourceSha256": "72ed9983183fc4b26d0910c9f274c2cfcbc3936e6c57a084a25a0df27f5e964c",
+    "archivedBytes": 1508069,
+    "archivedSha256": "72ed9983183fc4b26d0910c9f274c2cfcbc3936e6c57a084a25a0df27f5e964c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\canteen-dining-table-playe-34971-ored-plates-after-Save-Load\\dining-support-angle-pending-calibration-fullhd.png",
+    "archived": "consumer-restored-fifteen/004-dining-support-angle-pending-calibration-fullhd.png",
+    "sourceBytes": 1222109,
+    "sourceSha256": "fed9c534d577e348a4de31fc4ffba3baf5a7dc5dc67ee81f611b1b1789806a76",
+    "archivedBytes": 1222109,
+    "archivedSha256": "fed9c534d577e348a4de31fc4ffba3baf5a7dc5dc67ee81f611b1b1789806a76"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\canteen-dining-table-playe-34971-ored-plates-after-Save-Load\\dining-worker-and-pixel-evidence.json",
+    "archived": "consumer-restored-fifteen/005-dining-worker-and-pixel-evidence.json",
+    "sourceBytes": 341004,
+    "sourceSha256": "5ced4c02a16c3f387d3c10d1ce588f1db1cb2adcbf4b85da351c2ea166e530f7",
+    "archivedBytes": 341004,
+    "archivedSha256": "5ced4c02a16c3f387d3c10d1ce588f1db1cb2adcbf4b85da351c2ea166e530f7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\canteen-dining-table-playe-34971-ored-plates-after-Save-Load\\dining-worker-completed-fullhd.png",
+    "archived": "consumer-restored-fifteen/006-dining-worker-completed-fullhd.png",
+    "sourceBytes": 1544950,
+    "sourceSha256": "7bfcaf4c507169a89a1f6bdf804711769132cbfb2ed517f3a7e98494996200bd",
+    "archivedBytes": 1544950,
+    "archivedSha256": "7bfcaf4c507169a89a1f6bdf804711769132cbfb2ed517f3a7e98494996200bd"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\canteen-dining-table-playe-34971-ored-plates-after-Save-Load\\worker-and-completed-pixel-evidence.json",
+    "archived": "consumer-restored-fifteen/007-worker-and-completed-pixel-evidence.json",
+    "sourceBytes": 344,
+    "sourceSha256": "80ea903db4af22bb6affc7996e7330e8bc65b5e0ed12c9c0343b9cbbc48e3d65",
+    "archivedBytes": 344,
+    "archivedSha256": "80ea903db4af22bb6affc7996e7330e8bc65b5e0ed12c9c0343b9cbbc48e3d65"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\canteen-dining-table-playe-d4997-ored-plates-after-Save-Load\\attachments\\dining-worker-and-pixel-evidence-4c7932d492651645c1c7f12cdc3ec2e00d6442b5.json",
+    "archived": "consumer-restored-fifteen/008-dining-worker-and-pixel-evidence-4c7932d492651645c1c7f12cdc3ec2e00d6442b5.json",
+    "sourceBytes": 333816,
+    "sourceSha256": "017b3f6ebaafd38f38b7f93b7561a97c99104328f96175f539c4bf4a7534b88e",
+    "archivedBytes": 333816,
+    "archivedSha256": "017b3f6ebaafd38f38b7f93b7561a97c99104328f96175f539c4bf4a7534b88e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\canteen-dining-table-playe-d4997-ored-plates-after-Save-Load\\dining-loaded-fullhd.png",
+    "archived": "consumer-restored-fifteen/009-dining-loaded-fullhd.png",
+    "sourceBytes": 1495593,
+    "sourceSha256": "db241b7f0a647698897af1f406e0803273f21d368733307ab0937ae9eb30c1da",
+    "archivedBytes": 1495593,
+    "archivedSha256": "db241b7f0a647698897af1f406e0803273f21d368733307ab0937ae9eb30c1da"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\canteen-dining-table-playe-d4997-ored-plates-after-Save-Load\\dining-support-angle-pending-calibration-fullhd.png",
+    "archived": "consumer-restored-fifteen/010-dining-support-angle-pending-calibration-fullhd.png",
+    "sourceBytes": 1253777,
+    "sourceSha256": "f0c6390f6a8b9abd25b5ef264a4bd5653cceea1d7183961175c69b6a556f4e97",
+    "archivedBytes": 1253777,
+    "archivedSha256": "f0c6390f6a8b9abd25b5ef264a4bd5653cceea1d7183961175c69b6a556f4e97"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\canteen-dining-table-playe-d4997-ored-plates-after-Save-Load\\dining-worker-and-pixel-evidence.json",
+    "archived": "consumer-restored-fifteen/011-dining-worker-and-pixel-evidence.json",
+    "sourceBytes": 333816,
+    "sourceSha256": "017b3f6ebaafd38f38b7f93b7561a97c99104328f96175f539c4bf4a7534b88e",
+    "archivedBytes": 333816,
+    "archivedSha256": "017b3f6ebaafd38f38b7f93b7561a97c99104328f96175f539c4bf4a7534b88e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\canteen-dining-table-playe-d4997-ored-plates-after-Save-Load\\dining-worker-completed-fullhd.png",
+    "archived": "consumer-restored-fifteen/012-dining-worker-completed-fullhd.png",
+    "sourceBytes": 1531372,
+    "sourceSha256": "9afff3707f3ac7009f59149931163a3e80ed967d7e934cc18eb99fae0cd43998",
+    "archivedBytes": 1531372,
+    "archivedSha256": "9afff3707f3ac7009f59149931163a3e80ed967d7e934cc18eb99fae0cd43998"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\canteen-dining-table-playe-d4997-ored-plates-after-Save-Load\\worker-and-completed-pixel-evidence.json",
+    "archived": "consumer-restored-fifteen/013-worker-and-completed-pixel-evidence.json",
+    "sourceBytes": 369,
+    "sourceSha256": "24f7fa088b4030a1e7b651aa57f0901fbf26a06b451e49d96db70689e38cad15",
+    "archivedBytes": 369,
+    "archivedSha256": "24f7fa088b4030a1e7b651aa57f0901fbf26a06b451e49d96db70689e38cad15"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\cell-cot-player-build-play-30d8c--after-Save-Load-at-Full-HD\\attachments\\cell-cot-owner-loader-save-evidence-4abd9e6c51ff19b8d0205355f60a6131f4f5647e.json",
+    "archived": "consumer-restored-fifteen/014-cell-cot-owner-loader-save-evidence-4abd9e6c51ff19b8d0205355f60a6131f4f5647e.jso",
+    "sourceBytes": 191253,
+    "sourceSha256": "cb2cf8a03a29ac6a2fd7f789b156fd7db1fff180d8d3a785a91cddd68951f106",
+    "archivedBytes": 191253,
+    "archivedSha256": "cb2cf8a03a29ac6a2fd7f789b156fd7db1fff180d8d3a785a91cddd68951f106"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\cell-cot-player-build-play-30d8c--after-Save-Load-at-Full-HD\\cell-cot-headboard-pending-calibration-fullhd.png",
+    "archived": "consumer-restored-fifteen/015-cell-cot-headboard-pending-calibration-fullhd.png",
+    "sourceBytes": 1499797,
+    "sourceSha256": "efcd11e8702eb7a992cc3e1c1d27a200ce37f7b8f7b3e0ffa8919d4c89a68257",
+    "archivedBytes": 1499797,
+    "archivedSha256": "efcd11e8702eb7a992cc3e1c1d27a200ce37f7b8f7b3e0ffa8919d4c89a68257"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\cell-cot-player-build-play-30d8c--after-Save-Load-at-Full-HD\\cell-cot-loaded-fullhd.png",
+    "archived": "consumer-restored-fifteen/016-cell-cot-loaded-fullhd.png",
+    "sourceBytes": 1374425,
+    "sourceSha256": "172e11bb56e39f4e1f6dce2ae90a00af8e98358e4998d81317a548e5e2658d9d",
+    "archivedBytes": 1374425,
+    "archivedSha256": "172e11bb56e39f4e1f6dce2ae90a00af8e98358e4998d81317a548e5e2658d9d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\cell-cot-player-build-play-30d8c--after-Save-Load-at-Full-HD\\cell-cot-owner-loader-save-evidence.json",
+    "archived": "consumer-restored-fifteen/017-cell-cot-owner-loader-save-evidence.json",
+    "sourceBytes": 191253,
+    "sourceSha256": "cb2cf8a03a29ac6a2fd7f789b156fd7db1fff180d8d3a785a91cddd68951f106",
+    "archivedBytes": 191253,
+    "archivedSha256": "cb2cf8a03a29ac6a2fd7f789b156fd7db1fff180d8d3a785a91cddd68951f106"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\cell-cot-player-build-play-30d8c--after-Save-Load-at-Full-HD\\cell-cot-worker-completed-fullhd.png",
+    "archived": "consumer-restored-fifteen/018-cell-cot-worker-completed-fullhd.png",
+    "sourceBytes": 1405904,
+    "sourceSha256": "2172871189edab0c8649013c9506852273fe221ef3a687f129a9199d52f16044",
+    "archivedBytes": 1405904,
+    "archivedSha256": "2172871189edab0c8649013c9506852273fe221ef3a687f129a9199d52f16044"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\attachments\\cell-cot-owner-loader-save-evidence-edb4bea4d3085d04f9c262e3c4dec9a152b08e81.json",
+    "archived": "consumer-restored-fifteen/019-cell-cot-owner-loader-save-evidence-edb4bea4d3085d04f9c262e3c4dec9a152b08e81.jso",
+    "sourceBytes": 203186,
+    "sourceSha256": "ca11b6a0c7fb8f84bc5196300afd5323f4a8a3960f556766d0b7ebeac56f7a6f",
+    "archivedBytes": 203186,
+    "archivedSha256": "ca11b6a0c7fb8f84bc5196300afd5323f4a8a3960f556766d0b7ebeac56f7a6f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\cell-cot-headboard-pending-calibration-fullhd.png",
+    "archived": "consumer-restored-fifteen/020-cell-cot-headboard-pending-calibration-fullhd.png",
+    "sourceBytes": 1598481,
+    "sourceSha256": "bd8a6e5632f7df059fcb8a0e776954e05f79f59b63b6665e406212a37b03f852",
+    "archivedBytes": 1598481,
+    "archivedSha256": "bd8a6e5632f7df059fcb8a0e776954e05f79f59b63b6665e406212a37b03f852"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\cell-cot-loaded-fullhd.png",
+    "archived": "consumer-restored-fifteen/021-cell-cot-loaded-fullhd.png",
+    "sourceBytes": 1430292,
+    "sourceSha256": "3f42b0f5c1c1f1397108db16f1a58f1246a093da0e366430a5178d7c24b1435f",
+    "archivedBytes": 1430292,
+    "archivedSha256": "3f42b0f5c1c1f1397108db16f1a58f1246a093da0e366430a5178d7c24b1435f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\cell-cot-owner-loader-save-evidence.json",
+    "archived": "consumer-restored-fifteen/022-cell-cot-owner-loader-save-evidence.json",
+    "sourceBytes": 203186,
+    "sourceSha256": "ca11b6a0c7fb8f84bc5196300afd5323f4a8a3960f556766d0b7ebeac56f7a6f",
+    "archivedBytes": 203186,
+    "archivedSha256": "ca11b6a0c7fb8f84bc5196300afd5323f4a8a3960f556766d0b7ebeac56f7a6f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\cell-cot-worker-completed-fullhd.png",
+    "archived": "consumer-restored-fifteen/023-cell-cot-worker-completed-fullhd.png",
+    "sourceBytes": 1460771,
+    "sourceSha256": "c450e14cd3d85ad1c4b31c61a031a0009071ee264e608ac19ff640de7257066a",
+    "archivedBytes": 1460771,
+    "archivedSha256": "c450e14cd3d85ad1c4b31c61a031a0009071ee264e608ac19ff640de7257066a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\dedicated-laundry-washing--5d714-and-anchors-after-Save-Load\\attachments\\dedicated-laundry-washing-machine-worker-and-save-evidence-26f8d2c8f578765b616292b26cc8559394da5921.json",
+    "archived": "consumer-restored-fifteen/024-dedicated-laundry-washing-machine-worker-and-save-evidence-26f8d2c8f578765b61629",
+    "sourceBytes": 321091,
+    "sourceSha256": "139a8697701b134c3c6a27f0adcb66e62c944b665f2684f3f37e9cff4303920c",
+    "archivedBytes": 321091,
+    "archivedSha256": "139a8697701b134c3c6a27f0adcb66e62c944b665f2684f3f37e9cff4303920c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\dedicated-laundry-washing--5d714-and-anchors-after-Save-Load\\completed-worker-snapshot.json",
+    "archived": "consumer-restored-fifteen/025-completed-worker-snapshot.json",
+    "sourceBytes": 75851,
+    "sourceSha256": "a6c14b1aac6e4d7bc4f212bb8f955363eabeda7f0e3443b2247028f4b426b83b",
+    "archivedBytes": 75851,
+    "archivedSha256": "a6c14b1aac6e4d7bc4f212bb8f955363eabeda7f0e3443b2247028f4b426b83b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\dedicated-laundry-washing--5d714-and-anchors-after-Save-Load\\dedicated-laundry-washing-machine-loaded-fullhd.png",
+    "archived": "consumer-restored-fifteen/026-dedicated-laundry-washing-machine-loaded-fullhd.png",
+    "sourceBytes": 1409842,
+    "sourceSha256": "da0337382260d4a744e39aa3122156e8950468519445430306e23d3aad986c70",
+    "archivedBytes": 1409842,
+    "archivedSha256": "da0337382260d4a744e39aa3122156e8950468519445430306e23d3aad986c70"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\dedicated-laundry-washing--5d714-and-anchors-after-Save-Load\\dedicated-laundry-washing-machine-worker-and-save-evidence.json",
+    "archived": "consumer-restored-fifteen/027-dedicated-laundry-washing-machine-worker-and-save-evidence.json",
+    "sourceBytes": 321091,
+    "sourceSha256": "139a8697701b134c3c6a27f0adcb66e62c944b665f2684f3f37e9cff4303920c",
+    "archivedBytes": 321091,
+    "archivedSha256": "139a8697701b134c3c6a27f0adcb66e62c944b665f2684f3f37e9cff4303920c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\dedicated-laundry-washing--5d714-and-anchors-after-Save-Load\\dedicated-laundry-washing-machine-worker-completed-fullhd.png",
+    "archived": "consumer-restored-fifteen/028-dedicated-laundry-washing-machine-worker-completed-fullhd.png",
+    "sourceBytes": 1441807,
+    "sourceSha256": "d08cd154c12b6edea4a17b97fbae790c7891ab9a92fc7035d451b360b3342be2",
+    "archivedBytes": 1441807,
+    "archivedSha256": "d08cd154c12b6edea4a17b97fbae790c7891ab9a92fc7035d451b360b3342be2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\dedicated-laundry-washing--5d714-and-anchors-after-Save-Load\\loaded-worker-snapshot.json",
+    "archived": "consumer-restored-fifteen/029-loaded-worker-snapshot.json",
+    "sourceBytes": 75851,
+    "sourceSha256": "09fcd6a58d346243bdf035433ac34662d9765482fa0c44978be43945ff8c6459",
+    "archivedBytes": 75851,
+    "archivedSha256": "09fcd6a58d346243bdf035433ac34662d9765482fa0c44978be43945ff8c6459"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\dedicated-laundry-washing--5d714-and-anchors-after-Save-Load\\washer-service-grip-pending-calibration-fullhd.png",
+    "archived": "consumer-restored-fifteen/030-washer-service-grip-pending-calibration-fullhd.png",
+    "sourceBytes": 288160,
+    "sourceSha256": "565357cf4c226fb6021a27ca3abb37d754051166d2a617d9c4036f51b3fbbad8",
+    "archivedBytes": 288160,
+    "archivedSha256": "565357cf4c226fb6021a27ca3abb37d754051166d2a617d9c4036f51b3fbbad8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\dedicated-laundry-washing--5d714-and-anchors-after-Save-Load\\worker-and-completed-save-evidence.json",
+    "archived": "consumer-restored-fifteen/031-worker-and-completed-save-evidence.json",
+    "sourceBytes": 350,
+    "sourceSha256": "122ed84b887f71b3be7a64e633524d4f17efbc09407b64444458d38f493ddcae",
+    "archivedBytes": 350,
+    "archivedSha256": "122ed84b887f71b3be7a64e633524d4f17efbc09407b64444458d38f493ddcae"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\dedicated-laundry-washing--941dc-and-anchors-after-Save-Load\\attachments\\dedicated-laundry-washing-machine-worker-and-save-evidence-07901ddac8996459eb5024e11e14b63982fb0002.json",
+    "archived": "consumer-restored-fifteen/032-dedicated-laundry-washing-machine-worker-and-save-evidence-07901ddac8996459eb502",
+    "sourceBytes": 321207,
+    "sourceSha256": "f3737ea479bf5a6faa405b1c5e9c3850d658ba765a6832413539ff5b4f42c661",
+    "archivedBytes": 321207,
+    "archivedSha256": "f3737ea479bf5a6faa405b1c5e9c3850d658ba765a6832413539ff5b4f42c661"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\dedicated-laundry-washing--941dc-and-anchors-after-Save-Load\\completed-worker-snapshot.json",
+    "archived": "consumer-restored-fifteen/033-completed-worker-snapshot.json",
+    "sourceBytes": 75650,
+    "sourceSha256": "35188a7c065921b1fc8cf1e0fb2f24a4acb272e0f36f28310a3d0314b6106fd0",
+    "archivedBytes": 75650,
+    "archivedSha256": "35188a7c065921b1fc8cf1e0fb2f24a4acb272e0f36f28310a3d0314b6106fd0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\dedicated-laundry-washing--941dc-and-anchors-after-Save-Load\\dedicated-laundry-washing-machine-loaded-fullhd.png",
+    "archived": "consumer-restored-fifteen/034-dedicated-laundry-washing-machine-loaded-fullhd.png",
+    "sourceBytes": 1407694,
+    "sourceSha256": "93cd5e5fd5bb8ce4fca535c6f919daf108975db32166f93888f5884e74feb691",
+    "archivedBytes": 1407694,
+    "archivedSha256": "93cd5e5fd5bb8ce4fca535c6f919daf108975db32166f93888f5884e74feb691"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\dedicated-laundry-washing--941dc-and-anchors-after-Save-Load\\dedicated-laundry-washing-machine-worker-and-save-evidence.json",
+    "archived": "consumer-restored-fifteen/035-dedicated-laundry-washing-machine-worker-and-save-evidence.json",
+    "sourceBytes": 321207,
+    "sourceSha256": "f3737ea479bf5a6faa405b1c5e9c3850d658ba765a6832413539ff5b4f42c661",
+    "archivedBytes": 321207,
+    "archivedSha256": "f3737ea479bf5a6faa405b1c5e9c3850d658ba765a6832413539ff5b4f42c661"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\dedicated-laundry-washing--941dc-and-anchors-after-Save-Load\\dedicated-laundry-washing-machine-worker-completed-fullhd.png",
+    "archived": "consumer-restored-fifteen/036-dedicated-laundry-washing-machine-worker-completed-fullhd.png",
+    "sourceBytes": 1438373,
+    "sourceSha256": "13c523c349ddb2c8c096544926705b1cbc983b479c2553b8e8239181c602701e",
+    "archivedBytes": 1438373,
+    "archivedSha256": "13c523c349ddb2c8c096544926705b1cbc983b479c2553b8e8239181c602701e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\dedicated-laundry-washing--941dc-and-anchors-after-Save-Load\\loaded-worker-snapshot.json",
+    "archived": "consumer-restored-fifteen/037-loaded-worker-snapshot.json",
+    "sourceBytes": 75650,
+    "sourceSha256": "9bf3262f6ea1be100c9f094eb6b232fee148da30409459b3ea6a46702da83b23",
+    "archivedBytes": 75650,
+    "archivedSha256": "9bf3262f6ea1be100c9f094eb6b232fee148da30409459b3ea6a46702da83b23"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\dedicated-laundry-washing--941dc-and-anchors-after-Save-Load\\washer-service-grip-pending-calibration-fullhd.png",
+    "archived": "consumer-restored-fifteen/038-washer-service-grip-pending-calibration-fullhd.png",
+    "sourceBytes": 311663,
+    "sourceSha256": "71bffd809d76309783a5b8ab6645394cc9472f02c6ca3b24d10873fe309a8569",
+    "archivedBytes": 311663,
+    "archivedSha256": "71bffd809d76309783a5b8ab6645394cc9472f02c6ca3b24d10873fe309a8569"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\dedicated-laundry-washing--941dc-and-anchors-after-Save-Load\\worker-and-completed-save-evidence.json",
+    "archived": "consumer-restored-fifteen/039-worker-and-completed-save-evidence.json",
+    "sourceBytes": 377,
+    "sourceSha256": "d0b5a22ee5e791d53c5ef3ade6931a83f10fd12dc0e4bcefae16908012a033f5",
+    "archivedBytes": 377,
+    "archivedSha256": "d0b5a22ee5e791d53c5ef3ade6931a83f10fd12dc0e4bcefae16908012a033f5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\hired-guard-player-build-a-ae7f6-dy-through-paused-Save-Load\\attachments\\actual-public-Guard-worker-and-loader-evidence-57da2b59ef2e197b623ab6857c60224e33255cd0.json",
+    "archived": "consumer-restored-fifteen/040-actual-public-Guard-worker-and-loader-evidence-57da2b59ef2e197b623ab6857c60224e3",
+    "sourceBytes": 169833,
+    "sourceSha256": "42eb053b52b5e499aa3a56ecb35a0f94109c4f8aee871ffa9a584cff33024dae",
+    "archivedBytes": 169833,
+    "archivedSha256": "42eb053b52b5e499aa3a56ecb35a0f94109c4f8aee871ffa9a584cff33024dae"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\hired-guard-player-build-a-ae7f6-dy-through-paused-Save-Load\\guard-empty-world-control-canvas.png",
+    "archived": "consumer-restored-fifteen/041-guard-empty-world-control-canvas.png",
+    "sourceBytes": 1517861,
+    "sourceSha256": "994d2958f667b50eb958b1aa251fd7cc0278b145b2d7ac269ba6a57d56e1c130",
+    "archivedBytes": 1517861,
+    "archivedSha256": "994d2958f667b50eb958b1aa251fd7cc0278b145b2d7ac269ba6a57d56e1c130"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\hired-guard-player-build-a-ae7f6-dy-through-paused-Save-Load\\hired-guard-before-save-canvas.png",
+    "archived": "consumer-restored-fifteen/042-hired-guard-before-save-canvas.png",
+    "sourceBytes": 1558593,
+    "sourceSha256": "3805198f2fa4defa2485d8f1060189e8a8ca7db8fb60d3a37d3dacd467f4614a",
+    "archivedBytes": 1558593,
+    "archivedSha256": "3805198f2fa4defa2485d8f1060189e8a8ca7db8fb60d3a37d3dacd467f4614a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\hired-guard-player-build-a-ae7f6-dy-through-paused-Save-Load\\hired-guard-before-save-fullhd.png",
+    "archived": "consumer-restored-fifteen/043-hired-guard-before-save-fullhd.png",
+    "sourceBytes": 1558593,
+    "sourceSha256": "3805198f2fa4defa2485d8f1060189e8a8ca7db8fb60d3a37d3dacd467f4614a",
+    "archivedBytes": 1558593,
+    "archivedSha256": "3805198f2fa4defa2485d8f1060189e8a8ca7db8fb60d3a37d3dacd467f4614a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\hired-guard-player-build-a-ae7f6-dy-through-paused-Save-Load\\hired-guard-loaded-fullhd.png",
+    "archived": "consumer-restored-fifteen/044-hired-guard-loaded-fullhd.png",
+    "sourceBytes": 1532710,
+    "sourceSha256": "365e5413adf0b251e28adc732097314a9cfce9623a4fcc0b813ac00a5ac75b67",
+    "archivedBytes": 1532710,
+    "archivedSha256": "365e5413adf0b251e28adc732097314a9cfce9623a4fcc0b813ac00a5ac75b67"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\hired-guard-player-build-a-ae7f6-dy-through-paused-Save-Load\\hired-guard-rear-band-pending-calibration-fullhd.png",
+    "archived": "consumer-restored-fifteen/045-hired-guard-rear-band-pending-calibration-fullhd.png",
+    "sourceBytes": 248816,
+    "sourceSha256": "9445b0a2a86cb31220011a00a4dd6563d33541170a8fd3eb868ebc3e73719610",
+    "archivedBytes": 248816,
+    "archivedSha256": "9445b0a2a86cb31220011a00a4dd6563d33541170a8fd3eb868ebc3e73719610"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\hired-guard-player-build-a-ae7f6-dy-through-paused-Save-Load\\hired-guard-worker-save-and-loader-evidence.json",
+    "archived": "consumer-restored-fifteen/046-hired-guard-worker-save-and-loader-evidence.json",
+    "sourceBytes": 169833,
+    "sourceSha256": "42eb053b52b5e499aa3a56ecb35a0f94109c4f8aee871ffa9a584cff33024dae",
+    "archivedBytes": 169833,
+    "archivedSha256": "42eb053b52b5e499aa3a56ecb35a0f94109c4f8aee871ffa9a584cff33024dae"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\room-template-history-verd-aa149-ationary-Cell-history-cases\\actual-saved-capacity-fullhd.png",
+    "archived": "consumer-restored-fifteen/047-actual-saved-capacity-fullhd.png",
+    "sourceBytes": 1586225,
+    "sourceSha256": "fb8c9e787ad26cbb430aa52d3ea5e65ffb1e29ffcbb9d13231a0d9ef146d51ca",
+    "archivedBytes": 1586225,
+    "archivedSha256": "fb8c9e787ad26cbb430aa52d3ea5e65ffb1e29ffcbb9d13231a0d9ef146d51ca"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\room-template-history-verd-aa149-ationary-Cell-history-cases\\actual-saved-capacity-snapshot.json",
+    "archived": "consumer-restored-fifteen/048-actual-saved-capacity-snapshot.json",
+    "sourceBytes": 42676,
+    "sourceSha256": "acc6a1e94dc4befbcabeabeed4ceb70ec008c8f6c8a8611f104b08528cf8542c",
+    "archivedBytes": 42676,
+    "archivedSha256": "acc6a1e94dc4befbcabeabeed4ceb70ec008c8f6c8a8611f104b08528cf8542c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\room-template-history-verd-bda8f-leted-Undo-and-pending-Redo\\actual-completed-cell-snapshot.json",
+    "archived": "consumer-restored-fifteen/049-actual-completed-cell-snapshot.json",
+    "sourceBytes": 57652,
+    "sourceSha256": "d46e0b26bbfa45aedba6901db65189108e014272413262c72dfa584d88e3ec1f",
+    "archivedBytes": 57652,
+    "archivedSha256": "d46e0b26bbfa45aedba6901db65189108e014272413262c72dfa584d88e3ec1f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\room-template-history-verd-bda8f-leted-Undo-and-pending-Redo\\actual-history-ghost-receipt.json",
+    "archived": "consumer-restored-fifteen/050-actual-history-ghost-receipt.json",
+    "sourceBytes": 186635,
+    "sourceSha256": "243f60ae8adee4f7f11ef0c1c2246e29bf0ccc65b6d7d5ad2eff11d0ccf57140",
+    "archivedBytes": 186635,
+    "archivedSha256": "243f60ae8adee4f7f11ef0c1c2246e29bf0ccc65b6d7d5ad2eff11d0ccf57140"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\room-template-history-verd-bda8f-leted-Undo-and-pending-Redo\\stationary-before-undo.json",
+    "archived": "consumer-restored-fifteen/051-stationary-before-undo.json",
+    "sourceBytes": 6416,
+    "sourceSha256": "fcfb76c4201f62a0dd9b3098a4871b4b2be4679453b1b0f68abecca896b3fab0",
+    "archivedBytes": 6416,
+    "archivedSha256": "fcfb76c4201f62a0dd9b3098a4871b4b2be4679453b1b0f68abecca896b3fab0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\room-template-history-verd-bda8f-leted-Undo-and-pending-Redo\\stationary-completed-cell-blocked.png",
+    "archived": "consumer-restored-fifteen/052-stationary-completed-cell-blocked.png",
+    "sourceBytes": 1384017,
+    "sourceSha256": "9f53e3a0ac81f5113d4e45f983c464152e266ef76a368b2ad50bdfc52ebb50ae",
+    "archivedBytes": 1384017,
+    "archivedSha256": "9f53e3a0ac81f5113d4e45f983c464152e266ef76a368b2ad50bdfc52ebb50ae"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\room-template-history-verd-bda8f-leted-Undo-and-pending-Redo\\stationary-redo-blocked.png",
+    "archived": "consumer-restored-fifteen/053-stationary-redo-blocked.png",
+    "sourceBytes": 1388138,
+    "sourceSha256": "ba69695bc0bb79182c670e3379a28ee6c14cd4cc3f720a519a20e4216348ddc1",
+    "archivedBytes": 1388138,
+    "archivedSha256": "ba69695bc0bb79182c670e3379a28ee6c14cd4cc3f720a519a20e4216348ddc1"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\room-template-history-verd-bda8f-leted-Undo-and-pending-Redo\\stationary-undo-clear.png",
+    "archived": "consumer-restored-fifteen/054-stationary-undo-clear.png",
+    "sourceBytes": 1394083,
+    "sourceSha256": "c393a884caa0f6981253c7a3165f579e2741f2f7d684d72299673cbb0bd4225d",
+    "archivedBytes": 1394083,
+    "archivedSha256": "c393a884caa0f6981253c7a3165f579e2741f2f7d684d72299673cbb0bd4225d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\room-template-history-verd-f1488-leted-Undo-and-pending-Redo\\actual-completed-cell-snapshot.json",
+    "archived": "consumer-restored-fifteen/055-actual-completed-cell-snapshot.json",
+    "sourceBytes": 57652,
+    "sourceSha256": "eecbca2da825202100b517e015247ba1072bcd5255427b0e677c834746c3e906",
+    "archivedBytes": 57652,
+    "archivedSha256": "eecbca2da825202100b517e015247ba1072bcd5255427b0e677c834746c3e906"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\room-template-history-verd-f1488-leted-Undo-and-pending-Redo\\actual-history-ghost-receipt.json",
+    "archived": "consumer-restored-fifteen/056-actual-history-ghost-receipt.json",
+    "sourceBytes": 186632,
+    "sourceSha256": "e5f254668a902fa8483a120e195ceebcc334c3521a786ab813415f18cd3f2fce",
+    "archivedBytes": 186632,
+    "archivedSha256": "e5f254668a902fa8483a120e195ceebcc334c3521a786ab813415f18cd3f2fce"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\room-template-history-verd-f1488-leted-Undo-and-pending-Redo\\stationary-before-undo.json",
+    "archived": "consumer-restored-fifteen/057-stationary-before-undo.json",
+    "sourceBytes": 6413,
+    "sourceSha256": "c99cd504d2a63456510a00a3b784fff350b405d20ba9d99f339d23ab150c94f2",
+    "archivedBytes": 6413,
+    "archivedSha256": "c99cd504d2a63456510a00a3b784fff350b405d20ba9d99f339d23ab150c94f2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\room-template-history-verd-f1488-leted-Undo-and-pending-Redo\\stationary-completed-cell-blocked.png",
+    "archived": "consumer-restored-fifteen/058-stationary-completed-cell-blocked.png",
+    "sourceBytes": 280474,
+    "sourceSha256": "21bcaaa56fce128d21f1b238b0f6068e16c1c044622d0d7454f53d1b9d3b8b96",
+    "archivedBytes": 280474,
+    "archivedSha256": "21bcaaa56fce128d21f1b238b0f6068e16c1c044622d0d7454f53d1b9d3b8b96"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\room-template-history-verd-f1488-leted-Undo-and-pending-Redo\\stationary-redo-blocked.png",
+    "archived": "consumer-restored-fifteen/059-stationary-redo-blocked.png",
+    "sourceBytes": 330337,
+    "sourceSha256": "ed44ba791fe4873ac1b9d798d1f1dfbda5fd125c9f45db45149a1d5b8b3306dc",
+    "archivedBytes": 330337,
+    "archivedSha256": "ed44ba791fe4873ac1b9d798d1f1dfbda5fd125c9f45db45149a1d5b8b3306dc"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\room-template-history-verd-f1488-leted-Undo-and-pending-Redo\\stationary-undo-clear.png",
+    "archived": "consumer-restored-fifteen/060-stationary-undo-clear.png",
+    "sourceBytes": 290926,
+    "sourceSha256": "01df92953ad88b43700c9e20ef9ce82f42c15a8772fab87bc8940f82f065f147",
+    "archivedBytes": 290926,
+    "archivedSha256": "01df92953ad88b43700c9e20ef9ce82f42c15a8772fab87bc8940f82f065f147"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\room-template-second-touch-9333f-h-primary-tap-remains-legal\\fresh-primary-one-actual-pending-plan.png",
+    "archived": "consumer-restored-fifteen/061-fresh-primary-one-actual-pending-plan.png",
+    "sourceBytes": 1716319,
+    "sourceSha256": "b2cc99b6e110b27d86201663e3e279a765b743b77591f0cfffb258dcb1535a58",
+    "archivedBytes": 1716319,
+    "archivedSha256": "b2cc99b6e110b27d86201663e3e279a765b743b77591f0cfffb258dcb1535a58"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\room-template-second-touch-9333f-h-primary-tap-remains-legal\\two-finger-release-plan-still-armed.png",
+    "archived": "consumer-restored-fifteen/062-two-finger-release-plan-still-armed.png",
+    "sourceBytes": 1698546,
+    "sourceSha256": "fa8d1e740f32c99f4d2b4b26f7d85573567692bd38bf92c8fb0e09c92d8c1a2e",
+    "archivedBytes": 1698546,
+    "archivedSha256": "fa8d1e740f32c99f4d2b4b26f7d85573567692bd38bf92c8fb0e09c92d8c1a2e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\room-template-second-touch-d5c57-h-primary-tap-remains-legal\\fresh-primary-one-actual-pending-plan.png",
+    "archived": "consumer-restored-fifteen/063-fresh-primary-one-actual-pending-plan.png",
+    "sourceBytes": 277029,
+    "sourceSha256": "6973c6c3abcb259003369a98e406bc01b32dfb10e3e15ace5804f2bb68acd1b2",
+    "archivedBytes": 277029,
+    "archivedSha256": "6973c6c3abcb259003369a98e406bc01b32dfb10e3e15ace5804f2bb68acd1b2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-restored-20261003\\room-template-second-touch-d5c57-h-primary-tap-remains-legal\\two-finger-release-plan-still-armed.png",
+    "archived": "consumer-restored-fifteen/064-two-finger-release-plan-still-armed.png",
+    "sourceBytes": 252776,
+    "sourceSha256": "03048189b719251fd0e92a0e7210b6d94734fa50c55cec9fa62b6a62e48a55e9",
+    "archivedBytes": 252776,
+    "archivedSha256": "03048189b719251fd0e92a0e7210b6d94734fa50c55cec9fa62b6a62e48a55e9"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-consumer-restoration-20261003.json",
+    "archived": "consumer-original-byte-restoration/report.json",
+    "sourceBytes": 2546,
+    "sourceSha256": "5eef7b86ce7db5af6f85d503ee761dd3eea21097114ac5b4828300f099f178c9",
+    "archivedBytes": 2546,
+    "archivedSha256": "5eef7b86ce7db5af6f85d503ee761dd3eea21097114ac5b4828300f099f178c9"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-consumer-q1-restoration-20261003.json",
+    "archived": "consumer-q1-byte-restoration/report.json",
+    "sourceBytes": 2546,
+    "sourceSha256": "5eef7b86ce7db5af6f85d503ee761dd3eea21097114ac5b4828300f099f178c9",
+    "archivedBytes": 2546,
+    "archivedSha256": "5eef7b86ce7db5af6f85d503ee761dd3eea21097114ac5b4828300f099f178c9"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-controls-20261003.ps1",
+    "archived": "consumer-controls/original-executed-control.ps1.txt",
+    "sourceBytes": 5570,
+    "sourceSha256": "61c32a03ad88c982eb84af0a4ac2a367b09ff260b487c25ee37b8e68f7ee097a",
+    "archivedBytes": 5570,
+    "archivedSha256": "61c32a03ad88c982eb84af0a4ac2a367b09ff260b487c25ee37b8e68f7ee097a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-q1-controls-20261003.ps1",
+    "archived": "consumer-controls/q1-executed-control.ps1.txt",
+    "sourceBytes": 5517,
+    "sourceSha256": "9d43a40faef8a0fca2798bbe1c00d81557449b621439a7d6ae0243cb813e6410",
+    "archivedBytes": 5517,
+    "archivedSha256": "9d43a40faef8a0fca2798bbe1c00d81557449b621439a7d6ae0243cb813e6410"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-consumer-negative-build-20261003.txt",
+    "archived": "consumer-controls/original-negative-build.txt",
+    "sourceBytes": 4672,
+    "sourceSha256": "c608e76cbf4e444b615b167587011a191f2f196484a3979d57b4094915484824",
+    "archivedBytes": 2359,
+    "archivedSha256": "4cac1679b84e08ae13c07bf900b28f0e6e4efbb2bc415c8bcdad8be1e6c0b759",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-consumer-restored-build-20261003.txt",
+    "archived": "consumer-controls/original-restored-build.txt",
+    "sourceBytes": 4672,
+    "sourceSha256": "53a13777a52d7352fd2008e9031cae171a1065d3b9b0143a82f4edbe8387adb2",
+    "archivedBytes": 2359,
+    "archivedSha256": "1dd40015024ae77a7f95c95beace6580e3d0bcc55d7a6d0d7485c200ba300a98",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-consumer-q1-negative-build-20261003.txt",
+    "archived": "consumer-controls/q1-negative-build.txt",
+    "sourceBytes": 4672,
+    "sourceSha256": "cb39e5e879b997d1b32181bf55e8203feac2bf550448af9fed2be0e5d34cfc3a",
+    "archivedBytes": 2359,
+    "archivedSha256": "f7b18ab57d8df6a2cc41aa22468f555b914afb710cea48aea446f70b38237504",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-consumer-q1-restored-build-20261003.txt",
+    "archived": "consumer-controls/q1-restored-build.txt",
+    "sourceBytes": 4672,
+    "sourceSha256": "9edfb0d64fafb42b9b81ea739ca23bf91eafd4baab82cbc784720be44b8f9ea6",
+    "archivedBytes": 2359,
+    "archivedSha256": "0345149bc3e21754b3a5f4e8453a692f72a1eb07caf9b0872a8dd6c8ececbb9b",
+    "conversion": "UTF16LE console to UTF8"
   }
 ]
