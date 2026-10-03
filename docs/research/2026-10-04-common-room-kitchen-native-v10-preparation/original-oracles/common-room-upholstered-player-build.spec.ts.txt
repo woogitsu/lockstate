@@ -3,10 +3,9 @@ import { openCameraControls } from './public-camera-controls';
 import { expect, test as base, type Page } from './network-changed-fixture';
 import { installTee, sentCommands, currentClock } from './playtest-harness';
 import { observeCommonRoomNetwork } from './common-room-upholstered-evidence';
-import { decodeModernFurnitureSnapshot } from './common-room-kitchen-modern-evidence';
 import type { SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
 
-interface Probe { snapshot(): Promise<unknown> }
+interface Probe { snapshot(): Promise<SessionSnapshotBundle> }
 async function observeWorker(page: Page): Promise<void> {
   await page.addInitScript(() => {
     const RealWorker = Worker;
@@ -33,11 +32,11 @@ async function observeWorker(page: Page): Promise<void> {
         latest!.postMessage({ protocolVersion: 1, messageId: id, kind: 'simulation/request-snapshot', payload: { reason: 'consistency-check' } });
       }) as { kind: string; payload: { snapshot: { schemaVersion: number; data: SessionSnapshotBundle } } };
       if (message.kind !== 'simulation/snapshot' || message.payload.snapshot.schemaVersion !== 4) throw Error('Actual snapshot absent or incompatible');
-      return message;
+      return message.payload.snapshot.data;
     } } satisfies Probe);
   });
 }
-const snapshot = async (page: Page): Promise<SessionSnapshotBundle> => decodeModernFurnitureSnapshot(await page.evaluate(() => (Reflect.get(window, 'commonRoomNativeProbe') as Probe).snapshot()));
+const snapshot = (page: Page) => page.evaluate(() => (Reflect.get(window, 'commonRoomNativeProbe') as Probe).snapshot());
 const placed = (data: SessionSnapshotBundle) => data.simulation?.objects?.placedObjects ?? [];
 const pending = (data: SessionSnapshotBundle) => data.simulation?.roomTemplates?.pending ?? [];
 const completed = (data: SessionSnapshotBundle) => data.simulation?.roomTemplates?.completed ?? [];
@@ -206,7 +205,6 @@ for (const turns of [0,1] as const) test(`Common Room quarterTurns${turns}: actu
   const built=await snapshot(page); assertCommonRoom(built,turns,true); await frameRoom(page);
   const painted=await page.screenshot({ path:info.outputPath('common-room-actual-completed-fullhd.png') });
   const beforePixels=await petrolPixels(page,painted,turns);
-  await writeFile(info.outputPath('common-room-original-material-before-assert.json'),JSON.stringify({turns,beforePixels,roiOracle:'unchanged historical petrol envelope',nativeCyclesCalibration:false},null,2));
   beforePixels.forEach(count=>expect(count,'each Common Room bench retains authored petrol/teal upholstery').toBeGreaterThan(1500));
   await page.getByRole('button', { name:'Overview',exact:true }).click(); await page.getByRole('button', { name:'Save now',exact:true }).click();
   await expect(page.locator('.save-panel__status')).toContainText('Saved'); await page.locator('.save-panel__item').first().getByRole('button', { name:'Load',exact:true }).click();
