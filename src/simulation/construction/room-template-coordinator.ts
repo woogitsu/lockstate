@@ -211,7 +211,8 @@ export class RoomTemplateCoordinator implements SystemRegistration {
   /** Furniture checks every footprint tile, including non-anchor squares. */
   public claimsRoomDoorApproachTile(tile: TilePosition): boolean {
     return this.claimsPendingDoorApproachTile(tile) || DOORWAY_INWARD_DIRECTIONS.some(([dx, dy]) =>
-      this.hasCompletedDoorApproach(tile.x, tile.y, dx, dy));
+      this.hasCompletedDoorApproach(tile.x, tile.y, dx, dy) ||
+      this.hasCompletedDoorApproach(tile.x - dx, tile.y - dy, dx, dy));
   }
 
   private hasCompletedDoorApproach(x: number, y: number, dx: number, dy: number): boolean {
