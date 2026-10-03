@@ -80,7 +80,7 @@ async function observe(page: Page): Promise<void> {
     }, true);
     window.addEventListener('click', event => {
       const button = (event.target as Element | null)?.closest('button, summary');
-      if (button !== null && button !== undefined) probe.clicks.push({ name: button.textContent?.trim() ?? '', trusted: event.isTrusted, detail: event.detail });
+      if (button !== null && button !== undefined) probe.clicks.push({ name: button.getAttribute('aria-label') ?? button.textContent?.trim() ?? '', trusted: event.isTrusted, detail: event.detail });
     }, true);
   });
 }
@@ -118,6 +118,15 @@ function assertSingleShell(data: SessionSnapshotBundle, sequence: number): void 
   expect(data.construction.undoStack).toEqual([]);
   expect(data.construction.redoStack).toEqual([]);
 }
+
+test.afterEach(async ({ page }, info) => {
+  if (info.status === info.expectedStatus) return;
+  const data = await snapshot(page).catch(error => ({ unavailable: String(error) }));
+  await info.attach('failed-actual-worker-and-trusted-input', {
+    body: JSON.stringify({ data, observed: await receipts(page), commands: await construction(page) }, null, 2), contentType: 'application/json',
+  });
+  await page.screenshot({ path: info.outputPath('failed-numeric-held-primary.png') });
+});
 
 for (const mode of ['world', 'oblique'] as const) test(`${mode} FullHD: numeric purchase consumes the originally held canvas primary without a second transaction (#1908)`, async ({ page }, info) => {
   await installTee(page); await observe(page);

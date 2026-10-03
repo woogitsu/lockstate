@@ -51,7 +51,14 @@ Application/browser TypeScript compilation passed locally using the existing
 shared runtime and dependency junction. `pnpm exec` first refused the shared
 dependency junction (`ERR_PNPM_UNSAFE_MODULES_DIR`); direct invocation of the
 already installed TypeScript executable succeeded without altering dependencies.
-Full tools types and research index checks are recorded in subsequent evidence.
+Application/browser and tools types both exit0. The research index contract
+passes5/5. First coherent browser/research preparation was committed and pushed
+as `dfbb1294146e3168f72c2723c4a0a2aa8bc420c8`; its preparation was then reviewed
+against actual public control text. The Room plans opener visibly says Plans
+and carries `aria-label=Room plans`, so the passive click receipt records that
+public accessible name. A failure hook retains actual snapshot/input/command
+diagnostics and a screenshot when a native assertion fails. No budget or
+production assertion was weakened.
 
 UNKNOWN: native runtime outcome. No browser or server has been launched for
 this preparation. The coordinator owns the serial built-client execution and
