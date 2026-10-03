@@ -1,0 +1,94 @@
+{
+  "actualSolidInteriorWitnesses": [
+    {
+      "shoe": "angled-shower-head.head outlet connecting stem",
+      "retainedTarget": "Bent brushed-steel arm",
+      "actualInteriorWitness": [
+        0.0,
+        -0.07500000298023224,
+        1.0209999084472656
+      ],
+      "overlappingDepth": 0.031999945640563965
+    }
+  ],
+  "actualSharedButtJointTriangleInteriors": [
+    {
+      "part": "angled-shower-head.head outlet connecting stem",
+      "actualTriangle": 284,
+      "surfacePoint": [
+        0.007000001147389412,
+        -0.07000000029802322,
+        0.9210000038146973
+      ],
+      "surfaceDistance": 9.313225746154785e-10,
+      "barycentricWeights": [
+        0.44752240299450413,
+        0.1912653294744555,
+        0.36121226753104035
+      ],
+      "geometricNormal": [
+        0.0,
+        0.0,
+        -1.0
+      ]
+    },
+    {
+      "part": "Head coupling bright sleeve",
+      "actualTriangle": 89,
+      "surfacePoint": [
+        0.007000003010034561,
+        -0.07000000774860382,
+        0.9210000038146973
+      ],
+      "surfaceDistance": 7.957223324694951e-09,
+      "barycentricWeights": [
+        0.4451280833819179,
+        0.042161617785294564,
+        0.5127102988327875
+      ],
+      "geometricNormal": [
+        0.0,
+        0.0,
+        1.0
+      ]
+    }
+  ],
+  "controls": [
+    {
+      "name": "actual connecting stem omitted",
+      "semanticRed": "Shower head retained/authored mesh set changed"
+    },
+    {
+      "name": "actual original arm displaced",
+      "semanticRed": "Shower head actual evaluated authored geometry changed"
+    },
+    {
+      "name": "actual stem winding reversed",
+      "semanticRed": "Evaluated wall-mounted shower geometric surfaces face inward: angled-shower-head.head outlet connecting stem"
+    },
+    {
+      "name": "actual full original shader graph changed",
+      "semanticRed": "Shower head retained ten material graphs changed"
+    },
+    {
+      "name": "actual camera span altered",
+      "semanticRed": "Shower head actual camera pitch differs from64pixels per tile"
+    },
+    {
+      "name": "actual production camera direction wrong",
+      "semanticRed": "Shower head actual camera ground basis differs from world projection"
+    }
+  ],
+  "allTrackedBytesExact": {
+    "assets/source/blender/fixture.shower.head.angled-detail.blend": "0a375563958f382d6b1d8dde1a6252ace7ed3883f4994a78d040361a65397ea1",
+    "assets/source/blender/fixture.shower.head.blend": "ac0cbe6a3673dd8db19c76375ddeb3d6f23d0cab6aa2e56b298ad8a8e70806fe",
+    "assets/source/blender/fixture.shower.head.angled-detail.provenance.json": "66a6825f2698661915d0fac1d0c20f74d04067fc9bc8e0eba00c2ee81d70380c",
+    "public/game-content/oblique-shower-head.v1.json": "691d2ec59b728bce493ab7ba130824e6c8d156f3e704d645fcf66b8c91369e1a",
+    "tooling/blender/render-shower-head-oblique.py": "e3d92d5de8bef7f9873302dcf4ab1145836a9406a26bec235023d55278e022de",
+    "tooling/blender/render-shower-head-detail-oblique.py": "d0bb073103a59cad3ba8e2d82e2d5930be4a486c9e5ed73c3a6d0a366f8cfcd5"
+  },
+  "finalExistingSourceCamera72Green": true,
+  "newMissingConnectionEstablished": false,
+  "browserStarted": false,
+  "serverStarted": false
+}
