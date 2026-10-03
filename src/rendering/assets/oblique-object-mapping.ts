@@ -1,4 +1,4 @@
-﻿import type { ObliqueModuleCatalog } from './oblique-module-catalog';
+import type { ObliqueModuleCatalog } from './oblique-module-catalog';
 
 import type { RenderRoom } from '../feed/render-feed';
 
@@ -10,12 +10,12 @@ export const OBLIQUE_OBJECT_ASSET_IDS: Readonly<Record<string, string>> = Object
   'object.dining-table': 'furniture.dining.table.wooden',
   'object.exercise-station': 'furniture.yard.exercise-station',
   'object.bench': 'furniture.corridor.bench.variants',
-  'object.medical-bed': 'furniture.medical-bed.variants',
+
   'object.medicine-cabinet': 'fixture.medicine-cabinet.variants',
   'object.storage-rack': 'furniture.storage.rack.wooden',
   'object.chair': 'furniture.chair.wooden',
   'object.prep-counter': 'furniture.kitchen.prep-counter.variants',
-  'object.security-console': 'utility.security-console.variants',
+
   'object.loading-dock-door': 'utility.loading-dock-door.variants',
   'object.utility-panel': 'utility.utility-panel.variants',
   'object.washing-machine': 'utility.washing-machine.variants',
