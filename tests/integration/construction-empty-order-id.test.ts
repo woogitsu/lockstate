@@ -2,7 +2,7 @@ import { expect, it } from 'vitest';
 import { computeSaveChecksum } from '../../src/persistence/checksum';
 import { createSaveEnvelope, decodeSaveEnvelope } from '../../src/persistence/save-schema';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
-import { captureSessionSnapshot, restoreSimulationRuntime } from '../../src/simulation/runtime/restore-session';
+import { captureSessionSnapshot, restoreSimulationRuntime, type SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
 import { packCommand, type SimulationCommand } from '../../src/simulation/protocol/commands';
 import type { VersionedPayload } from '../../src/simulation/protocol/types';
 import type { JsonValue } from '../../src/shared/json';
@@ -82,7 +82,7 @@ for (let version = 1; version <= 10; version++) {
     if (!decoded.ok) throw new Error(decoded.error.message);
     expect(JSON.stringify(input)).toBe(bytes);
     expect(decoded.value.payload.kernel.commands).toStrictEqual(current.payload.kernel.commands);
-    const restored = restoreSimulationRuntime(decoded.value.payload).runtime;
+    const restored = restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle).runtime;
     const before = captureSessionSnapshot(restored);
     expect(restored.kernel.dispatchDueCommands()).toBe(2);
     const after = captureSessionSnapshot(restored);
