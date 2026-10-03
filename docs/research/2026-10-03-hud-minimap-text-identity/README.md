@@ -18,6 +18,8 @@ The actual compiled production subject was `3d454c2872fb6b777cd9afc2cc13c286bf83
 
 No measured CPU/latency improvement, hosted CI cause, native hardware GPU claim, or unchanged-viewport optimization is inferred. Existing #2017 concerns physical pixel projection, not this DOM text replacement. Fresh open-Issue search and its full body were read before creating a distinct scoped report.
 
-## Narrow correction planned
+## Narrow correction
 
-Compare the current rendered text with the newly localized status before assigning `textContent`. Status/locale changes still replace text. Pixel/session invalidation, clipping/pose/UI-scale geometry, navigation, placeholders and ordinary viewport publication remain unchanged. Corrected native fixture will observe locale/UI-scale before the Load rebuild, retaining Load identity coverage and all original budgets.
+Compare the current rendered text with the newly localized status before assigning `textContent`. Status/locale changes still replace text. Pixel/session invalidation, clipping/pose/UI-scale geometry, navigation, placeholders and ordinary viewport publication remain unchanged. Corrected native fixture observes locale/UI-scale before the Load rebuild, retaining Load identity coverage and all original budgets. Every observation is now written immediately; final capture errors preserve the receipt rather than destroying prior evidence.
+
+The fixed actual-source port has 6 GREEN controls. Corrected native consumer execution and a detached exact-byte production negative/restoration are pending at this checkpoint. Fresh dedup read #2017 and the open minimap search; distinct confirmed Issue: [#2020](https://github.com/woogitsu/lockstate/issues/2020).

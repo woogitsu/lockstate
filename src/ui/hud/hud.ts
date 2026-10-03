@@ -2085,9 +2085,10 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     const visible = view !== undefined && hasActivePrison;
     minimapCanvas.hidden = !visible;
     minimapViewport.hidden = !visible;
-    minimapPlaceholder.textContent = t(!hasActivePrison
+    const placeholderText = t(!hasActivePrison
       ? HUD_MESSAGE_KEY.minimapNoPrison
       : visible ? HUD_MESSAGE_KEY.minimapMapReady : HUD_MESSAGE_KEY.minimapPlaceholder);
+    if (minimapPlaceholder.textContent !== placeholderText) minimapPlaceholder.textContent = placeholderText;
     minimapPlaceholder.classList.toggle('hud-minimap__placeholder--sr-only', visible);
     if (view === undefined || !hasActivePrison) {
       lastMinimapPixels = undefined;
