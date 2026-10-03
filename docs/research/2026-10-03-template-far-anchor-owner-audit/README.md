@@ -1,10 +1,10 @@
-﻿# Independent far-anchor object ownership audit
+# Independent far-anchor object ownership audit
 
 Date: 2026-10-03. Subject: exact published `f80088fc60dc2c1caa83dcc045fb2be2d879d4a2`. This is a bounded source and actual kernel audit, not a new product fix or native acceptance.
 
 ## Actual executed boundary
 
-The archived `executed-probe.test.ts.txt` contains the exact bytes executed as a temporary integration test. Four genuine packed-command cases passed: original Basic Cell q0/q1, each live and encoded V8 Load before cancellation. The original completed Bed is physically removed. An independent q1 Desk is bought, admitted and genuinely completed at a different anchor that overlaps only the old Bed's far footprint square. There is no seeded world, replacement verdict or injected object snapshot.
+The archived `executed-probe.test.ts.txt` preserves the actual executed temporary integration test content; Git normalizes its line endings, so the published blob is not byte-identical to the original local file. Four genuine packed-command cases passed: original Basic Cell q0/q1, each live and encoded V8 Load before cancellation. The original completed Bed is physically removed. An independent q1 Desk is bought, admitted and genuinely completed at a different anchor that overlaps only the old Bed's far footprint square. There is no seeded world, replacement verdict or injected object snapshot.
 
 Independently specified coordinates at Cell origin (10,10):
 
@@ -35,3 +35,5 @@ Actionable release boundary: this audit supplies no justified routine production
 - PowerShell-captured focused output SHA256: `f6e0e33d02e64d37d9e937ad87dd7947a5adaf7adf68efa204c904ee7443b947`.
 
 The first index check named a nonexistent `tests/unit/research-index-contract.test.ts` and exited 1 with no tests found. The actual existing `tests/foundation/research-index-contract.test.ts` then passed 5/5 in 1.73s. Its actual output is retained. The first index edit changed line endings broadly; before committing it was reconstructed from the exact HEAD Git blob with one added row, leaving the final index diff at one insertion. These are preparation mistakes, not product failures.
+
+Published inert probe Git-blob SHA256: `2f3909bb631713824ae4ededf6d706c209223e368919fd417e2442e487e400f1` (original local executed source hash above; line-ending normalization only). The raw focused output Git-blob hash remains exactly the recorded capture hash.
