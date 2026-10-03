@@ -1,0 +1,788 @@
+[
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003.json",
+    "archived": "original-modern/report.json",
+    "sourceBytes": 16682,
+    "sourceSha256": "ffa1d9678de8ffee667c324524175da7008d0cb5816ff30cd16c316e0b979f9e",
+    "archivedBytes": 16682,
+    "archivedSha256": "ffa1d9678de8ffee667c324524175da7008d0cb5816ff30cd16c316e0b979f9e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003.txt",
+    "archived": "original-modern/console.txt",
+    "sourceBytes": 13766,
+    "sourceSha256": "309f88b796cebefbb60fa7d681d1c04ec8ffa2e692c5d2b8f49b6e6e41c59b08",
+    "archivedBytes": 6898,
+    "archivedSha256": "dd494de734ff61f2e7b94af7799a360452bd4c5cb1eaf776052eba06a1445c72",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\.last-run.json",
+    "archived": "original-modern/001-.last-run.json",
+    "sourceBytes": 145,
+    "sourceSha256": "859dad27ae9edbea044624009132c978df03763564e5b91c521a4d6956b2dc5e",
+    "archivedBytes": 145,
+    "archivedSha256": "859dad27ae9edbea044624009132c978df03763564e5b91c521a4d6956b2dc5e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-actual-public-export-v9.json",
+    "archived": "original-modern/002-en-actual-public-export-v9.json",
+    "sourceBytes": 16376,
+    "sourceSha256": "59e0f4d6fe00f503429ae52fd449699293eef541b23749d1af337756d1dae3cc",
+    "archivedBytes": 16376,
+    "archivedSha256": "59e0f4d6fe00f503429ae52fd449699293eef541b23749d1af337756d1dae3cc"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-actual-all20-cards-fullhd.png",
+    "archived": "original-modern/003-en-ui100-actual-all20-cards-fullhd.png",
+    "sourceBytes": 243935,
+    "sourceSha256": "423fac8f13098da5e9f96a795ad1ba3e6ca3619249dee04d54241d8b0811ad90",
+    "archivedBytes": 243935,
+    "archivedSha256": "423fac8f13098da5e9f96a795ad1ba3e6ca3619249dee04d54241d8b0811ad90"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-actual-all20-cards.json",
+    "archived": "original-modern/004-en-ui100-actual-all20-cards.json",
+    "sourceBytes": 2812,
+    "sourceSha256": "b6ff8177eadc10aa9a95df09af1d3ed8284471df5d927f2bcd6ee3022644136b",
+    "archivedBytes": 2812,
+    "archivedSha256": "b6ff8177eadc10aa9a95df09af1d3ed8284471df5d927f2bcd6ee3022644136b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-actual-loaded-fullhd.png",
+    "archived": "original-modern/005-en-ui100-actual-loaded-fullhd.png",
+    "sourceBytes": 299136,
+    "sourceSha256": "236a9a0c9d8fdf6d51ea7945741b28ec1cf116ddf3a12d831862f3ed593c8b33",
+    "archivedBytes": 299136,
+    "archivedSha256": "236a9a0c9d8fdf6d51ea7945741b28ec1cf116ddf3a12d831862f3ed593c8b33"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-actual-loaded-whole-v9.json",
+    "archived": "original-modern/006-en-ui100-actual-loaded-whole-v9.json",
+    "sourceBytes": 19288,
+    "sourceSha256": "19519bc3b411209fd0c0df82f38677ed22f6a600476abbc32b9b43c2cd37de90",
+    "archivedBytes": 19288,
+    "archivedSha256": "19519bc3b411209fd0c0df82f38677ed22f6a600476abbc32b9b43c2cd37de90"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-actual-q0-q1-secondary-pixels.json",
+    "archived": "original-modern/007-en-ui100-actual-q0-q1-secondary-pixels.json",
+    "sourceBytes": 427,
+    "sourceSha256": "98e06d3db8a7cc8c7176b63942f7fb9257525d887cea6fefb5d32280a9d2960a",
+    "archivedBytes": 427,
+    "archivedSha256": "98e06d3db8a7cc8c7176b63942f7fb9257525d887cea6fefb5d32280a9d2960a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-actual-q1-original-primary-held.png",
+    "archived": "original-modern/008-en-ui100-actual-q1-original-primary-held.png",
+    "sourceBytes": 312710,
+    "sourceSha256": "99655599e9e25de92afcc780bd81adfc3c4d331f524ebeb4dd5e1d3c1129c95c",
+    "archivedBytes": 312710,
+    "archivedSha256": "99655599e9e25de92afcc780bd81adfc3c4d331f524ebeb4dd5e1d3c1129c95c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-actual-q1-q3-paid-whole-v9.json",
+    "archived": "original-modern/009-en-ui100-actual-q1-q3-paid-whole-v9.json",
+    "sourceBytes": 19288,
+    "sourceSha256": "6ed69e3d6c7fd24228c69c80956ef6b574a8134b7a8b7d2d8e1e45447814769e",
+    "archivedBytes": 19288,
+    "archivedSha256": "6ed69e3d6c7fd24228c69c80956ef6b574a8134b7a8b7d2d8e1e45447814769e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-actual-q1-whole.json",
+    "archived": "original-modern/010-en-ui100-actual-q1-whole.json",
+    "sourceBytes": 18460,
+    "sourceSha256": "2614188641f4c0c950be780069aac5a52b7c4807b8e4b7226dd82e2792f0efe5",
+    "archivedBytes": 18460,
+    "archivedSha256": "2614188641f4c0c950be780069aac5a52b7c4807b8e4b7226dd82e2792f0efe5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-actual-q3-blocked-q1-claim-fullhd.png",
+    "archived": "original-modern/011-en-ui100-actual-q3-blocked-q1-claim-fullhd.png",
+    "sourceBytes": 331206,
+    "sourceSha256": "543d5e93a70eeeb58e217b1d88293cb356aacc7ddc02ca1ea6ba03deffd842fc",
+    "archivedBytes": 331206,
+    "archivedSha256": "543d5e93a70eeeb58e217b1d88293cb356aacc7ddc02ca1ea6ba03deffd842fc"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-armed-q0-fullhd.png",
+    "archived": "original-modern/012-en-ui100-armed-q0-fullhd.png",
+    "sourceBytes": 291264,
+    "sourceSha256": "c35eb9885b973391df0c4d707e0797ac69f94ac5c1369cb6b694ab22c7cf94e4",
+    "archivedBytes": 291264,
+    "archivedSha256": "c35eb9885b973391df0c4d707e0797ac69f94ac5c1369cb6b694ab22c7cf94e4"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-armed-q0-geometry.json",
+    "archived": "original-modern/013-en-ui100-armed-q0-geometry.json",
+    "sourceBytes": 7546,
+    "sourceSha256": "15112f21c9acef749d46a321b8da8e0254b18a24e747bd6e4b66c176e1f9c3a2",
+    "archivedBytes": 7546,
+    "archivedSha256": "15112f21c9acef749d46a321b8da8e0254b18a24e747bd6e4b66c176e1f9c3a2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-armed-q1-fullhd.png",
+    "archived": "original-modern/014-en-ui100-armed-q1-fullhd.png",
+    "sourceBytes": 291581,
+    "sourceSha256": "fd3f39b82679eb65bd9d8fc25ec43f43fd25253b572f6c95ec74ff5e64e70a12",
+    "archivedBytes": 291581,
+    "archivedSha256": "fd3f39b82679eb65bd9d8fc25ec43f43fd25253b572f6c95ec74ff5e64e70a12"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-armed-q1-geometry.json",
+    "archived": "original-modern/015-en-ui100-armed-q1-geometry.json",
+    "sourceBytes": 7545,
+    "sourceSha256": "7c70dbfe9c1189800e261ac56d2564aa95645dd7bb8edecff5d3e049c6e24bb0",
+    "archivedBytes": 7545,
+    "archivedSha256": "7c70dbfe9c1189800e261ac56d2564aa95645dd7bb8edecff5d3e049c6e24bb0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-armed-q3-fullhd.png",
+    "archived": "original-modern/016-en-ui100-armed-q3-fullhd.png",
+    "sourceBytes": 312827,
+    "sourceSha256": "2367c3321597c19794957eda2c3053194e8f320d10885345dc337aa0cc70be4b",
+    "archivedBytes": 312827,
+    "archivedSha256": "2367c3321597c19794957eda2c3053194e8f320d10885345dc337aa0cc70be4b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-armed-q3-geometry.json",
+    "archived": "original-modern/017-en-ui100-armed-q3-geometry.json",
+    "sourceBytes": 7549,
+    "sourceSha256": "461e904b9a25d44ae8939557413500b9fc72fc08dc5940eca355c0e76bc75eee",
+    "archivedBytes": 7549,
+    "archivedSha256": "461e904b9a25d44ae8939557413500b9fc72fc08dc5940eca355c0e76bc75eee"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-q0-secondary0.png",
+    "archived": "original-modern/018-en-ui100-q0-secondary0.png",
+    "sourceBytes": 1536,
+    "sourceSha256": "7c07bba54902dd50dc108d2896c71559f0054a2ebf1bb3e6a797976371022ce2",
+    "archivedBytes": 1536,
+    "archivedSha256": "7c07bba54902dd50dc108d2896c71559f0054a2ebf1bb3e6a797976371022ce2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-q0-secondary1.png",
+    "archived": "original-modern/019-en-ui100-q0-secondary1.png",
+    "sourceBytes": 1639,
+    "sourceSha256": "9cf9fc042dac629b3b8f1377f0d9b230b2ed56229eafa28a5ea4df6acbbd20f0",
+    "archivedBytes": 1639,
+    "archivedSha256": "9cf9fc042dac629b3b8f1377f0d9b230b2ed56229eafa28a5ea4df6acbbd20f0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-q1-secondary0.png",
+    "archived": "original-modern/020-en-ui100-q1-secondary0.png",
+    "sourceBytes": 1639,
+    "sourceSha256": "9cf9fc042dac629b3b8f1377f0d9b230b2ed56229eafa28a5ea4df6acbbd20f0",
+    "archivedBytes": 1639,
+    "archivedSha256": "9cf9fc042dac629b3b8f1377f0d9b230b2ed56229eafa28a5ea4df6acbbd20f0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-q1-secondary1.png",
+    "archived": "original-modern/021-en-ui100-q1-secondary1.png",
+    "sourceBytes": 1536,
+    "sourceSha256": "7c07bba54902dd50dc108d2896c71559f0054a2ebf1bb3e6a797976371022ce2",
+    "archivedBytes": 1536,
+    "archivedSha256": "7c07bba54902dd50dc108d2896c71559f0054a2ebf1bb3e6a797976371022ce2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-selected-q0-fullhd.png",
+    "archived": "original-modern/022-en-ui100-selected-q0-fullhd.png",
+    "sourceBytes": 291012,
+    "sourceSha256": "ec3041d8979ae59616a992ee81e78535628e2044c3894dc395517bf990b6eb0a",
+    "archivedBytes": 291012,
+    "archivedSha256": "ec3041d8979ae59616a992ee81e78535628e2044c3894dc395517bf990b6eb0a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-selected-q0-geometry.json",
+    "archived": "original-modern/023-en-ui100-selected-q0-geometry.json",
+    "sourceBytes": 7543,
+    "sourceSha256": "f308b516038687be838ecca68e544e47d40c17e354ea8080fb965c7dc34c1381",
+    "archivedBytes": 7543,
+    "archivedSha256": "f308b516038687be838ecca68e544e47d40c17e354ea8080fb965c7dc34c1381"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\error-context.md",
+    "archived": "original-modern/024-error-context.md",
+    "sourceBytes": 8242,
+    "sourceSha256": "f082c2720eb1e768588ab01d92f760ac23a8b4d7df88e24066911bff9d475d59",
+    "archivedBytes": 8242,
+    "archivedSha256": "f082c2720eb1e768588ab01d92f760ac23a8b4d7df88e24066911bff9d475d59"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\error-context.md",
+    "archived": "original-modern/025-error-context.md",
+    "sourceBytes": 8574,
+    "sourceSha256": "b1b065f4630adbe99cd71ec097959786256a392ca6174152cafb64cf03912896",
+    "archivedBytes": 8574,
+    "archivedSha256": "b1b065f4630adbe99cd71ec097959786256a392ca6174152cafb64cf03912896"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-actual-public-export-v9.json",
+    "archived": "original-modern/026-pl-actual-public-export-v9.json",
+    "sourceBytes": 16377,
+    "sourceSha256": "53353cd5fe1971230d93aac48eb6e47daf9e5e5400a155fd3097e9228e41dbfa",
+    "archivedBytes": 16377,
+    "archivedSha256": "53353cd5fe1971230d93aac48eb6e47daf9e5e5400a155fd3097e9228e41dbfa"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-actual-all20-cards-fullhd.png",
+    "archived": "original-modern/027-pl-ui100-actual-all20-cards-fullhd.png",
+    "sourceBytes": 266641,
+    "sourceSha256": "28be50893c23ba5bf945c1e51d81809691e9c8c975c356e28e0b02902cb96df1",
+    "archivedBytes": 266641,
+    "archivedSha256": "28be50893c23ba5bf945c1e51d81809691e9c8c975c356e28e0b02902cb96df1"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-actual-all20-cards.json",
+    "archived": "original-modern/028-pl-ui100-actual-all20-cards.json",
+    "sourceBytes": 2834,
+    "sourceSha256": "54db7b23349f7fe72768c54ca16839e1e537c055881c5bb53f636de78dd74aa3",
+    "archivedBytes": 2834,
+    "archivedSha256": "54db7b23349f7fe72768c54ca16839e1e537c055881c5bb53f636de78dd74aa3"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-actual-loaded-fullhd.png",
+    "archived": "original-modern/029-pl-ui100-actual-loaded-fullhd.png",
+    "sourceBytes": 311465,
+    "sourceSha256": "9a351e03cf81eda5acabfd867ff4358063825964e16ba1761ec58faafaa9c803",
+    "archivedBytes": 311465,
+    "archivedSha256": "9a351e03cf81eda5acabfd867ff4358063825964e16ba1761ec58faafaa9c803"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-actual-loaded-whole-v9.json",
+    "archived": "original-modern/030-pl-ui100-actual-loaded-whole-v9.json",
+    "sourceBytes": 19289,
+    "sourceSha256": "1c24aa380da6b992203f0116eb30024cc2d99efb5281c297ea3e909d87433699",
+    "archivedBytes": 19289,
+    "archivedSha256": "1c24aa380da6b992203f0116eb30024cc2d99efb5281c297ea3e909d87433699"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-actual-q0-q1-secondary-pixels.json",
+    "archived": "original-modern/031-pl-ui100-actual-q0-q1-secondary-pixels.json",
+    "sourceBytes": 427,
+    "sourceSha256": "98e06d3db8a7cc8c7176b63942f7fb9257525d887cea6fefb5d32280a9d2960a",
+    "archivedBytes": 427,
+    "archivedSha256": "98e06d3db8a7cc8c7176b63942f7fb9257525d887cea6fefb5d32280a9d2960a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-actual-q1-original-primary-held.png",
+    "archived": "original-modern/032-pl-ui100-actual-q1-original-primary-held.png",
+    "sourceBytes": 326875,
+    "sourceSha256": "4236ec8b622daf1610a3262310bd07b3f4967e4d2d0988fdf2c4ccb68e65c4fb",
+    "archivedBytes": 326875,
+    "archivedSha256": "4236ec8b622daf1610a3262310bd07b3f4967e4d2d0988fdf2c4ccb68e65c4fb"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-actual-q1-q3-paid-whole-v9.json",
+    "archived": "original-modern/033-pl-ui100-actual-q1-q3-paid-whole-v9.json",
+    "sourceBytes": 19289,
+    "sourceSha256": "7851b32fe04e0356ef32d97e57d6df99699961e94419ddebc310cb08e9e018a3",
+    "archivedBytes": 19289,
+    "archivedSha256": "7851b32fe04e0356ef32d97e57d6df99699961e94419ddebc310cb08e9e018a3"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-actual-q1-whole.json",
+    "archived": "original-modern/034-pl-ui100-actual-q1-whole.json",
+    "sourceBytes": 18461,
+    "sourceSha256": "cffda7fda648b807dfda07d55110f036d7a778c5a98801045d141e6da410ae97",
+    "archivedBytes": 18461,
+    "archivedSha256": "cffda7fda648b807dfda07d55110f036d7a778c5a98801045d141e6da410ae97"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-actual-q3-blocked-q1-claim-fullhd.png",
+    "archived": "original-modern/035-pl-ui100-actual-q3-blocked-q1-claim-fullhd.png",
+    "sourceBytes": 341692,
+    "sourceSha256": "0145944b479d9c6ae3877bd142b5968ff9d33c8d6c48f2df38737ffa86edb50a",
+    "archivedBytes": 341692,
+    "archivedSha256": "0145944b479d9c6ae3877bd142b5968ff9d33c8d6c48f2df38737ffa86edb50a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-armed-q0-fullhd.png",
+    "archived": "original-modern/036-pl-ui100-armed-q0-fullhd.png",
+    "sourceBytes": 306289,
+    "sourceSha256": "aafb87c2d5c8a5e65a2bc60a803375d348a4e44258bf677cf3bfafd1440f62b9",
+    "archivedBytes": 306289,
+    "archivedSha256": "aafb87c2d5c8a5e65a2bc60a803375d348a4e44258bf677cf3bfafd1440f62b9"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-armed-q0-geometry.json",
+    "archived": "original-modern/037-pl-ui100-armed-q0-geometry.json",
+    "sourceBytes": 7542,
+    "sourceSha256": "2b9d0533c1fab22c4b0b6938952a2e73a9fa4d04aa9f1f5eb7b65fc4321dea67",
+    "archivedBytes": 7542,
+    "archivedSha256": "2b9d0533c1fab22c4b0b6938952a2e73a9fa4d04aa9f1f5eb7b65fc4321dea67"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-armed-q1-fullhd.png",
+    "archived": "original-modern/038-pl-ui100-armed-q1-fullhd.png",
+    "sourceBytes": 306604,
+    "sourceSha256": "7b1f32144d9c6bcdb6d1fb28bfa01952c1013a0371ea4d145293959123395057",
+    "archivedBytes": 306604,
+    "archivedSha256": "7b1f32144d9c6bcdb6d1fb28bfa01952c1013a0371ea4d145293959123395057"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-armed-q1-geometry.json",
+    "archived": "original-modern/039-pl-ui100-armed-q1-geometry.json",
+    "sourceBytes": 7552,
+    "sourceSha256": "a0276d58612e5e71a9710a9b316fced03f14d6b0d64e5865752d3da382d182ce",
+    "archivedBytes": 7552,
+    "archivedSha256": "a0276d58612e5e71a9710a9b316fced03f14d6b0d64e5865752d3da382d182ce"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-armed-q3-fullhd.png",
+    "archived": "original-modern/040-pl-ui100-armed-q3-fullhd.png",
+    "sourceBytes": 326907,
+    "sourceSha256": "9e9ec8784dbd4aaf3e611293f7e406fdb577a088d3b5877543460b4d976df816",
+    "archivedBytes": 326907,
+    "archivedSha256": "9e9ec8784dbd4aaf3e611293f7e406fdb577a088d3b5877543460b4d976df816"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-armed-q3-geometry.json",
+    "archived": "original-modern/041-pl-ui100-armed-q3-geometry.json",
+    "sourceBytes": 7557,
+    "sourceSha256": "4e33fef102abc7a81bc3f41f0cdaa4b9b6672c35a4be1ae540c1c5a5926f70aa",
+    "archivedBytes": 7557,
+    "archivedSha256": "4e33fef102abc7a81bc3f41f0cdaa4b9b6672c35a4be1ae540c1c5a5926f70aa"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-q0-secondary0.png",
+    "archived": "original-modern/042-pl-ui100-q0-secondary0.png",
+    "sourceBytes": 1536,
+    "sourceSha256": "7c07bba54902dd50dc108d2896c71559f0054a2ebf1bb3e6a797976371022ce2",
+    "archivedBytes": 1536,
+    "archivedSha256": "7c07bba54902dd50dc108d2896c71559f0054a2ebf1bb3e6a797976371022ce2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-q0-secondary1.png",
+    "archived": "original-modern/043-pl-ui100-q0-secondary1.png",
+    "sourceBytes": 1639,
+    "sourceSha256": "9cf9fc042dac629b3b8f1377f0d9b230b2ed56229eafa28a5ea4df6acbbd20f0",
+    "archivedBytes": 1639,
+    "archivedSha256": "9cf9fc042dac629b3b8f1377f0d9b230b2ed56229eafa28a5ea4df6acbbd20f0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-q1-secondary0.png",
+    "archived": "original-modern/044-pl-ui100-q1-secondary0.png",
+    "sourceBytes": 1639,
+    "sourceSha256": "9cf9fc042dac629b3b8f1377f0d9b230b2ed56229eafa28a5ea4df6acbbd20f0",
+    "archivedBytes": 1639,
+    "archivedSha256": "9cf9fc042dac629b3b8f1377f0d9b230b2ed56229eafa28a5ea4df6acbbd20f0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-q1-secondary1.png",
+    "archived": "original-modern/045-pl-ui100-q1-secondary1.png",
+    "sourceBytes": 1536,
+    "sourceSha256": "7c07bba54902dd50dc108d2896c71559f0054a2ebf1bb3e6a797976371022ce2",
+    "archivedBytes": 1536,
+    "archivedSha256": "7c07bba54902dd50dc108d2896c71559f0054a2ebf1bb3e6a797976371022ce2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-selected-q0-fullhd.png",
+    "archived": "original-modern/046-pl-ui100-selected-q0-fullhd.png",
+    "sourceBytes": 306130,
+    "sourceSha256": "fb3f6760bb09aec97aeb2b01c329a49c5bcaf2c653f0778213490bcea03a7bd0",
+    "archivedBytes": 306130,
+    "archivedSha256": "fb3f6760bb09aec97aeb2b01c329a49c5bcaf2c653f0778213490bcea03a7bd0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-selected-q0-geometry.json",
+    "archived": "original-modern/047-pl-ui100-selected-q0-geometry.json",
+    "sourceBytes": 7555,
+    "sourceSha256": "831219f0ddec7db9e8bdd360eff2290264f54358c4c250423f8cef7e768524ba",
+    "archivedBytes": 7555,
+    "archivedSha256": "831219f0ddec7db9e8bdd360eff2290264f54358c4c250423f8cef7e768524ba"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003.json",
+    "archived": "corrected-modern/report.json",
+    "sourceBytes": 4827,
+    "sourceSha256": "c52456272ba2ad8e1e8b34b393d9bb31f8b6ceae320adf0dca867681b26666a3",
+    "archivedBytes": 4827,
+    "archivedSha256": "c52456272ba2ad8e1e8b34b393d9bb31f8b6ceae320adf0dca867681b26666a3"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003.txt",
+    "archived": "corrected-modern/console.txt",
+    "sourceBytes": 4278,
+    "sourceSha256": "7d01c6620e4a05b7f7f5cc9a5974c824fa383603c01502ce3aeb510575a97c94",
+    "archivedBytes": 2144,
+    "archivedSha256": "f370686727045c5f4076ae1db4607cb32c50985b96c8a29eec7c1f4cd23dac48",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\.last-run.json",
+    "archived": "corrected-modern/001-.last-run.json",
+    "sourceBytes": 45,
+    "sourceSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "archivedBytes": 45,
+    "archivedSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-actual-public-export-v9.json",
+    "archived": "corrected-modern/002-en-actual-public-export-v9.json",
+    "sourceBytes": 16380,
+    "sourceSha256": "048dbb2bd723effd689995897112d32ac69e5b0cc0a39d5218cb57d2394bbb3d",
+    "archivedBytes": 16380,
+    "archivedSha256": "048dbb2bd723effd689995897112d32ac69e5b0cc0a39d5218cb57d2394bbb3d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-actual-review-receipt.json",
+    "archived": "corrected-modern/003-en-actual-review-receipt.json",
+    "sourceBytes": 76852,
+    "sourceSha256": "971c503cc8fa8a915fa6ad6448c3ed776a6b1f78be9bd230561cce032aaa1c14",
+    "archivedBytes": 76852,
+    "archivedSha256": "971c503cc8fa8a915fa6ad6448c3ed776a6b1f78be9bd230561cce032aaa1c14"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-actual-all20-cards-fullhd.png",
+    "archived": "corrected-modern/004-en-ui100-actual-all20-cards-fullhd.png",
+    "sourceBytes": 243964,
+    "sourceSha256": "3ee0b25d775108628eee64bf77082c265cf1258713b495956751924cf3cf4644",
+    "archivedBytes": 243964,
+    "archivedSha256": "3ee0b25d775108628eee64bf77082c265cf1258713b495956751924cf3cf4644"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-actual-all20-cards.json",
+    "archived": "corrected-modern/005-en-ui100-actual-all20-cards.json",
+    "sourceBytes": 2812,
+    "sourceSha256": "b6ff8177eadc10aa9a95df09af1d3ed8284471df5d927f2bcd6ee3022644136b",
+    "archivedBytes": 2812,
+    "archivedSha256": "b6ff8177eadc10aa9a95df09af1d3ed8284471df5d927f2bcd6ee3022644136b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-actual-loaded-fullhd.png",
+    "archived": "corrected-modern/006-en-ui100-actual-loaded-fullhd.png",
+    "sourceBytes": 299136,
+    "sourceSha256": "236a9a0c9d8fdf6d51ea7945741b28ec1cf116ddf3a12d831862f3ed593c8b33",
+    "archivedBytes": 299136,
+    "archivedSha256": "236a9a0c9d8fdf6d51ea7945741b28ec1cf116ddf3a12d831862f3ed593c8b33"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-actual-loaded-whole-v9.json",
+    "archived": "corrected-modern/007-en-ui100-actual-loaded-whole-v9.json",
+    "sourceBytes": 19292,
+    "sourceSha256": "124ab0cb262484a78c9e7662542476eb9fe82289d289440325b695cbcca44d07",
+    "archivedBytes": 19292,
+    "archivedSha256": "124ab0cb262484a78c9e7662542476eb9fe82289d289440325b695cbcca44d07"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-actual-q0-q1-secondary-pixels.json",
+    "archived": "corrected-modern/008-en-ui100-actual-q0-q1-secondary-pixels.json",
+    "sourceBytes": 427,
+    "sourceSha256": "98e06d3db8a7cc8c7176b63942f7fb9257525d887cea6fefb5d32280a9d2960a",
+    "archivedBytes": 427,
+    "archivedSha256": "98e06d3db8a7cc8c7176b63942f7fb9257525d887cea6fefb5d32280a9d2960a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-actual-q1-original-primary-held.png",
+    "archived": "corrected-modern/009-en-ui100-actual-q1-original-primary-held.png",
+    "sourceBytes": 313047,
+    "sourceSha256": "74fcc50a5dc774839db11d0617b169969bd66c9e0ba70645d189bbd0018569d7",
+    "archivedBytes": 313047,
+    "archivedSha256": "74fcc50a5dc774839db11d0617b169969bd66c9e0ba70645d189bbd0018569d7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-actual-q1-q3-paid-whole-v9.json",
+    "archived": "corrected-modern/010-en-ui100-actual-q1-q3-paid-whole-v9.json",
+    "sourceBytes": 19292,
+    "sourceSha256": "abe0218a152c40e564f6e4c1680fa78a89ba1a4741de9558840e00d3870ae716",
+    "archivedBytes": 19292,
+    "archivedSha256": "abe0218a152c40e564f6e4c1680fa78a89ba1a4741de9558840e00d3870ae716"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-actual-q1-whole.json",
+    "archived": "corrected-modern/011-en-ui100-actual-q1-whole.json",
+    "sourceBytes": 18464,
+    "sourceSha256": "7b29902b220f3eabf2e77c5f1516d805ac1d952f0069de6d9feea827fd6e7783",
+    "archivedBytes": 18464,
+    "archivedSha256": "7b29902b220f3eabf2e77c5f1516d805ac1d952f0069de6d9feea827fd6e7783"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-actual-q3-blocked-q1-claim-fullhd.png",
+    "archived": "corrected-modern/012-en-ui100-actual-q3-blocked-q1-claim-fullhd.png",
+    "sourceBytes": 331243,
+    "sourceSha256": "0004c64e9a7de8a32920fcf417dc9bd73734c297d803ddaa4c6ea4e414227e88",
+    "archivedBytes": 331243,
+    "archivedSha256": "0004c64e9a7de8a32920fcf417dc9bd73734c297d803ddaa4c6ea4e414227e88"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-armed-q0-fullhd.png",
+    "archived": "corrected-modern/013-en-ui100-armed-q0-fullhd.png",
+    "sourceBytes": 291598,
+    "sourceSha256": "de0591c94eef553052359d8e279632c54c056775cb918fed392664a61c7a17f5",
+    "archivedBytes": 291598,
+    "archivedSha256": "de0591c94eef553052359d8e279632c54c056775cb918fed392664a61c7a17f5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-armed-q0-geometry.json",
+    "archived": "corrected-modern/014-en-ui100-armed-q0-geometry.json",
+    "sourceBytes": 7546,
+    "sourceSha256": "15112f21c9acef749d46a321b8da8e0254b18a24e747bd6e4b66c176e1f9c3a2",
+    "archivedBytes": 7546,
+    "archivedSha256": "15112f21c9acef749d46a321b8da8e0254b18a24e747bd6e4b66c176e1f9c3a2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-armed-q1-fullhd.png",
+    "archived": "corrected-modern/015-en-ui100-armed-q1-fullhd.png",
+    "sourceBytes": 291930,
+    "sourceSha256": "de3e6d7b92ce14ed8705e05339029f52cf9098575b3ba72b8300977e460b02fc",
+    "archivedBytes": 291930,
+    "archivedSha256": "de3e6d7b92ce14ed8705e05339029f52cf9098575b3ba72b8300977e460b02fc"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-armed-q1-geometry.json",
+    "archived": "corrected-modern/016-en-ui100-armed-q1-geometry.json",
+    "sourceBytes": 7545,
+    "sourceSha256": "7c70dbfe9c1189800e261ac56d2564aa95645dd7bb8edecff5d3e049c6e24bb0",
+    "archivedBytes": 7545,
+    "archivedSha256": "7c70dbfe9c1189800e261ac56d2564aa95645dd7bb8edecff5d3e049c6e24bb0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-armed-q3-fullhd.png",
+    "archived": "corrected-modern/017-en-ui100-armed-q3-fullhd.png",
+    "sourceBytes": 313164,
+    "sourceSha256": "7692126a4e37724ca30f94319909718b821f0fcfa1af8d65246b8c928f63cf76",
+    "archivedBytes": 313164,
+    "archivedSha256": "7692126a4e37724ca30f94319909718b821f0fcfa1af8d65246b8c928f63cf76"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-armed-q3-geometry.json",
+    "archived": "corrected-modern/018-en-ui100-armed-q3-geometry.json",
+    "sourceBytes": 7549,
+    "sourceSha256": "461e904b9a25d44ae8939557413500b9fc72fc08dc5940eca355c0e76bc75eee",
+    "archivedBytes": 7549,
+    "archivedSha256": "461e904b9a25d44ae8939557413500b9fc72fc08dc5940eca355c0e76bc75eee"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-q0-secondary0.png",
+    "archived": "corrected-modern/019-en-ui100-q0-secondary0.png",
+    "sourceBytes": 1536,
+    "sourceSha256": "7c07bba54902dd50dc108d2896c71559f0054a2ebf1bb3e6a797976371022ce2",
+    "archivedBytes": 1536,
+    "archivedSha256": "7c07bba54902dd50dc108d2896c71559f0054a2ebf1bb3e6a797976371022ce2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-q0-secondary1.png",
+    "archived": "corrected-modern/020-en-ui100-q0-secondary1.png",
+    "sourceBytes": 1639,
+    "sourceSha256": "9cf9fc042dac629b3b8f1377f0d9b230b2ed56229eafa28a5ea4df6acbbd20f0",
+    "archivedBytes": 1639,
+    "archivedSha256": "9cf9fc042dac629b3b8f1377f0d9b230b2ed56229eafa28a5ea4df6acbbd20f0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-q1-secondary0.png",
+    "archived": "corrected-modern/021-en-ui100-q1-secondary0.png",
+    "sourceBytes": 1639,
+    "sourceSha256": "9cf9fc042dac629b3b8f1377f0d9b230b2ed56229eafa28a5ea4df6acbbd20f0",
+    "archivedBytes": 1639,
+    "archivedSha256": "9cf9fc042dac629b3b8f1377f0d9b230b2ed56229eafa28a5ea4df6acbbd20f0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-q1-secondary1.png",
+    "archived": "corrected-modern/022-en-ui100-q1-secondary1.png",
+    "sourceBytes": 1536,
+    "sourceSha256": "7c07bba54902dd50dc108d2896c71559f0054a2ebf1bb3e6a797976371022ce2",
+    "archivedBytes": 1536,
+    "archivedSha256": "7c07bba54902dd50dc108d2896c71559f0054a2ebf1bb3e6a797976371022ce2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-selected-q0-fullhd.png",
+    "archived": "corrected-modern/023-en-ui100-selected-q0-fullhd.png",
+    "sourceBytes": 291343,
+    "sourceSha256": "f9f47aef95b6d5c7df8a72dc9766d869d887e0039064748f1cb9093c347c579d",
+    "archivedBytes": 291343,
+    "archivedSha256": "f9f47aef95b6d5c7df8a72dc9766d869d887e0039064748f1cb9093c347c579d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\\en-ui100-selected-q0-geometry.json",
+    "archived": "corrected-modern/024-en-ui100-selected-q0-geometry.json",
+    "sourceBytes": 7543,
+    "sourceSha256": "f308b516038687be838ecca68e544e47d40c17e354ea8080fb965c7dc34c1381",
+    "archivedBytes": 7543,
+    "archivedSha256": "f308b516038687be838ecca68e544e47d40c17e354ea8080fb965c7dc34c1381"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-actual-public-export-v9.json",
+    "archived": "corrected-modern/025-pl-actual-public-export-v9.json",
+    "sourceBytes": 16380,
+    "sourceSha256": "f7d90f6893f102dbfc7ef3ec202ecc64905a7c8cf8d4d77b7260123a6943ae92",
+    "archivedBytes": 16380,
+    "archivedSha256": "f7d90f6893f102dbfc7ef3ec202ecc64905a7c8cf8d4d77b7260123a6943ae92"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-actual-review-receipt.json",
+    "archived": "corrected-modern/026-pl-actual-review-receipt.json",
+    "sourceBytes": 76875,
+    "sourceSha256": "f18a3e38575905734a62a6da3a451aa1258fdecf15bf7bb425b2c70e5d5457d7",
+    "archivedBytes": 76875,
+    "archivedSha256": "f18a3e38575905734a62a6da3a451aa1258fdecf15bf7bb425b2c70e5d5457d7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-actual-all20-cards-fullhd.png",
+    "archived": "corrected-modern/027-pl-ui100-actual-all20-cards-fullhd.png",
+    "sourceBytes": 266966,
+    "sourceSha256": "79df7bf396dfe66705e3630dc38e75ae9c06aad1320a08e68552636ce8036a82",
+    "archivedBytes": 266966,
+    "archivedSha256": "79df7bf396dfe66705e3630dc38e75ae9c06aad1320a08e68552636ce8036a82"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-actual-all20-cards.json",
+    "archived": "corrected-modern/028-pl-ui100-actual-all20-cards.json",
+    "sourceBytes": 2834,
+    "sourceSha256": "54db7b23349f7fe72768c54ca16839e1e537c055881c5bb53f636de78dd74aa3",
+    "archivedBytes": 2834,
+    "archivedSha256": "54db7b23349f7fe72768c54ca16839e1e537c055881c5bb53f636de78dd74aa3"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-actual-loaded-fullhd.png",
+    "archived": "corrected-modern/029-pl-ui100-actual-loaded-fullhd.png",
+    "sourceBytes": 311465,
+    "sourceSha256": "9a351e03cf81eda5acabfd867ff4358063825964e16ba1761ec58faafaa9c803",
+    "archivedBytes": 311465,
+    "archivedSha256": "9a351e03cf81eda5acabfd867ff4358063825964e16ba1761ec58faafaa9c803"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-actual-loaded-whole-v9.json",
+    "archived": "corrected-modern/030-pl-ui100-actual-loaded-whole-v9.json",
+    "sourceBytes": 19292,
+    "sourceSha256": "7e87765523174343dea5f92d067878e1f63a3cb1688f277eb7deee3767854925",
+    "archivedBytes": 19292,
+    "archivedSha256": "7e87765523174343dea5f92d067878e1f63a3cb1688f277eb7deee3767854925"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-actual-q0-q1-secondary-pixels.json",
+    "archived": "corrected-modern/031-pl-ui100-actual-q0-q1-secondary-pixels.json",
+    "sourceBytes": 427,
+    "sourceSha256": "98e06d3db8a7cc8c7176b63942f7fb9257525d887cea6fefb5d32280a9d2960a",
+    "archivedBytes": 427,
+    "archivedSha256": "98e06d3db8a7cc8c7176b63942f7fb9257525d887cea6fefb5d32280a9d2960a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-actual-q1-original-primary-held.png",
+    "archived": "corrected-modern/032-pl-ui100-actual-q1-original-primary-held.png",
+    "sourceBytes": 327329,
+    "sourceSha256": "9d653d120e1ee764d6b1a3a4563ca048602953c4a92c9d5ca5ebf96a8c071877",
+    "archivedBytes": 327329,
+    "archivedSha256": "9d653d120e1ee764d6b1a3a4563ca048602953c4a92c9d5ca5ebf96a8c071877"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-actual-q1-q3-paid-whole-v9.json",
+    "archived": "corrected-modern/033-pl-ui100-actual-q1-q3-paid-whole-v9.json",
+    "sourceBytes": 19292,
+    "sourceSha256": "5e7987b99afe3ebcc04c636abdca5029718bd6807e2cc82d624ad909fab9dce3",
+    "archivedBytes": 19292,
+    "archivedSha256": "5e7987b99afe3ebcc04c636abdca5029718bd6807e2cc82d624ad909fab9dce3"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-actual-q1-whole.json",
+    "archived": "corrected-modern/034-pl-ui100-actual-q1-whole.json",
+    "sourceBytes": 18464,
+    "sourceSha256": "1de5648244ddb98d266f5ce9e429de717498c7195ae7abab6d34ae1896239805",
+    "archivedBytes": 18464,
+    "archivedSha256": "1de5648244ddb98d266f5ce9e429de717498c7195ae7abab6d34ae1896239805"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-actual-q3-blocked-q1-claim-fullhd.png",
+    "archived": "corrected-modern/035-pl-ui100-actual-q3-blocked-q1-claim-fullhd.png",
+    "sourceBytes": 342024,
+    "sourceSha256": "06f01b302289aac2df04f6bbb75009726206864052f05cc58ed75fd6f9c3f1a5",
+    "archivedBytes": 342024,
+    "archivedSha256": "06f01b302289aac2df04f6bbb75009726206864052f05cc58ed75fd6f9c3f1a5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-armed-q0-fullhd.png",
+    "archived": "corrected-modern/036-pl-ui100-armed-q0-fullhd.png",
+    "sourceBytes": 306689,
+    "sourceSha256": "4ea3e53d7f490995bf0a1f55fb8d4ad7b2c656b3d1a1d91b16253ce4ac26ce72",
+    "archivedBytes": 306689,
+    "archivedSha256": "4ea3e53d7f490995bf0a1f55fb8d4ad7b2c656b3d1a1d91b16253ce4ac26ce72"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-armed-q0-geometry.json",
+    "archived": "corrected-modern/037-pl-ui100-armed-q0-geometry.json",
+    "sourceBytes": 7542,
+    "sourceSha256": "2b9d0533c1fab22c4b0b6938952a2e73a9fa4d04aa9f1f5eb7b65fc4321dea67",
+    "archivedBytes": 7542,
+    "archivedSha256": "2b9d0533c1fab22c4b0b6938952a2e73a9fa4d04aa9f1f5eb7b65fc4321dea67"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-armed-q1-fullhd.png",
+    "archived": "corrected-modern/038-pl-ui100-armed-q1-fullhd.png",
+    "sourceBytes": 307004,
+    "sourceSha256": "66ab10ee8c807a3d9feae5cd1e3605951c00bbbfce24450f250e01a0ab89e01b",
+    "archivedBytes": 307004,
+    "archivedSha256": "66ab10ee8c807a3d9feae5cd1e3605951c00bbbfce24450f250e01a0ab89e01b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-armed-q1-geometry.json",
+    "archived": "corrected-modern/039-pl-ui100-armed-q1-geometry.json",
+    "sourceBytes": 7552,
+    "sourceSha256": "a0276d58612e5e71a9710a9b316fced03f14d6b0d64e5865752d3da382d182ce",
+    "archivedBytes": 7552,
+    "archivedSha256": "a0276d58612e5e71a9710a9b316fced03f14d6b0d64e5865752d3da382d182ce"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-armed-q3-fullhd.png",
+    "archived": "corrected-modern/040-pl-ui100-armed-q3-fullhd.png",
+    "sourceBytes": 327361,
+    "sourceSha256": "d3e7cf7d5d76ee705b5db01c84293399df5b077915d1e15101d70f9c0749612a",
+    "archivedBytes": 327361,
+    "archivedSha256": "d3e7cf7d5d76ee705b5db01c84293399df5b077915d1e15101d70f9c0749612a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-armed-q3-geometry.json",
+    "archived": "corrected-modern/041-pl-ui100-armed-q3-geometry.json",
+    "sourceBytes": 7557,
+    "sourceSha256": "4e33fef102abc7a81bc3f41f0cdaa4b9b6672c35a4be1ae540c1c5a5926f70aa",
+    "archivedBytes": 7557,
+    "archivedSha256": "4e33fef102abc7a81bc3f41f0cdaa4b9b6672c35a4be1ae540c1c5a5926f70aa"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-q0-secondary0.png",
+    "archived": "corrected-modern/042-pl-ui100-q0-secondary0.png",
+    "sourceBytes": 1536,
+    "sourceSha256": "7c07bba54902dd50dc108d2896c71559f0054a2ebf1bb3e6a797976371022ce2",
+    "archivedBytes": 1536,
+    "archivedSha256": "7c07bba54902dd50dc108d2896c71559f0054a2ebf1bb3e6a797976371022ce2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-q0-secondary1.png",
+    "archived": "corrected-modern/043-pl-ui100-q0-secondary1.png",
+    "sourceBytes": 1639,
+    "sourceSha256": "9cf9fc042dac629b3b8f1377f0d9b230b2ed56229eafa28a5ea4df6acbbd20f0",
+    "archivedBytes": 1639,
+    "archivedSha256": "9cf9fc042dac629b3b8f1377f0d9b230b2ed56229eafa28a5ea4df6acbbd20f0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-q1-secondary0.png",
+    "archived": "corrected-modern/044-pl-ui100-q1-secondary0.png",
+    "sourceBytes": 1639,
+    "sourceSha256": "9cf9fc042dac629b3b8f1377f0d9b230b2ed56229eafa28a5ea4df6acbbd20f0",
+    "archivedBytes": 1639,
+    "archivedSha256": "9cf9fc042dac629b3b8f1377f0d9b230b2ed56229eafa28a5ea4df6acbbd20f0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-q1-secondary1.png",
+    "archived": "corrected-modern/045-pl-ui100-q1-secondary1.png",
+    "sourceBytes": 1536,
+    "sourceSha256": "7c07bba54902dd50dc108d2896c71559f0054a2ebf1bb3e6a797976371022ce2",
+    "archivedBytes": 1536,
+    "archivedSha256": "7c07bba54902dd50dc108d2896c71559f0054a2ebf1bb3e6a797976371022ce2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-selected-q0-fullhd.png",
+    "archived": "corrected-modern/046-pl-ui100-selected-q0-fullhd.png",
+    "sourceBytes": 306530,
+    "sourceSha256": "524dd55ac1b8d32ae14adb92c0174e11309ce24bf6020a172aa4d0236beba592",
+    "archivedBytes": 306530,
+    "archivedSha256": "524dd55ac1b8d32ae14adb92c0174e11309ce24bf6020a172aa4d0236beba592"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-approved-rotate-corrected-native-20261003\\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\\pl-ui100-selected-q0-geometry.json",
+    "archived": "corrected-modern/047-pl-ui100-selected-q0-geometry.json",
+    "sourceBytes": 7555,
+    "sourceSha256": "831219f0ddec7db9e8bdd360eff2290264f54358c4c250423f8cef7e768524ba",
+    "archivedBytes": 7555,
+    "archivedSha256": "831219f0ddec7db9e8bdd360eff2290264f54358c4c250423f8cef7e768524ba"
+  }
+]

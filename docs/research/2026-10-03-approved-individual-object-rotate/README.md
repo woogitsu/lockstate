@@ -84,3 +84,29 @@ No production source or wider UI200 allocation is imported. Strict app/tools
 types exited0; actual build, collection and native outcomes remain pending.
 The [preparation receipt](./native-preparation-receipt.json) and
 [raw typecheck](./evidence/native-prep-types.raw.txt) distinguish those facts.
+
+## Actual combined-game UI100 acceptance
+
+The genuine frozen Cloudflare client `c28d4815844af9081c4d16925bbf498eb3df2ff1`
+now completes both EN and PL cases: **2 GREEN, 38.777s, no skips or retries**.
+Root retained the original pair of RED runs: all purchase/collision/geometry
+and whole V9 public Export/Load checks completed, then the trace assertion
+incorrectly expected only one click. Native Enter and Space button activation
+also emit trusted clicks with detail0. The observer now requires the exact
+seven-event sequence `[1,0,0,0,0,0,0]`, all trusted, plus the unchanged five
+Enter/one Space/one KeyR expectations. It records the actual trace before
+asserting, so a subsequent failure cannot hide that evidence.
+
+The original physical click count remains one. All20 card geometry/name checks,
+four44px actions, independent ghost regions, genuine correlated preflight,
+130 quotes, paid q1/q3 owners, held-release refusal, fresh press, occupied claim,
+treasury24870/24740 and entire paused V9 snapshot equality remain unchanged.
+These are paid pending orders; the observer does not claim completed-object
+visual acceptance or broader UI200 Build allocation.
+
+[Original reports](./native/original-modern/report.json),
+[corrected reports and captures](./native/corrected-modern/report.json) and
+[compiled subject and exact trace source](./native/compiled-subject.json)
+preserve both outcomes. Existing producer omission/restoration proof above is
+separate from this genuine native-input observer correction. Production release
+and the owner-approved V10 migration still require their own final gates.

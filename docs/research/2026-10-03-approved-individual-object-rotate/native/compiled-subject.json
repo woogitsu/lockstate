@@ -1,0 +1,73 @@
+{
+  "compiledSource": "c28d4815844af9081c4d16925bbf498eb3df2ff1",
+  "saveVersion": 9,
+  "compiled": [
+    {
+      "path": "dist/client/assets/catalog-BmAUL2aa.js",
+      "bytes": 86421,
+      "sha256": "5bf7814b1b3d9594f14de199ee72c834e187ccbd039f34d9dbb318d7f826071a"
+    },
+    {
+      "path": "dist/client/assets/index-BesuyXLu.js",
+      "bytes": 1942173,
+      "sha256": "eb9c43853cb4ad63bf5c30dca57f0c36dd0c7a93c82f2ad5fc52bdc6796c8323"
+    },
+    {
+      "path": "dist/client/assets/index-DF-CVpEY.css",
+      "bytes": 87527,
+      "sha256": "3a4691084df33c0816ab91c54d52b4df02386910bb9fdc169f5a9e20b81f01a9"
+    },
+    {
+      "path": "dist/client/assets/pl-catalog-uiQLsxnQ.js",
+      "bytes": 51303,
+      "sha256": "38045b769adc3cb3fa48b007c42ac3be8204307fa6745ec3fe2060daf36b8e33"
+    },
+    {
+      "path": "dist/client/assets/worker-WcGkBU2M.js",
+      "bytes": 444899,
+      "sha256": "89e135f6d8a1de2f903ae33bbcbe88a7d32ba1519c0c8ba03df46371b13d6105"
+    },
+    {
+      "path": "dist/client/index.html",
+      "bytes": 1718,
+      "sha256": "3c3c7b46d50228e55ecf0473f24b89b062131cb5b65629ac489ead58394c5b33"
+    }
+  ],
+  "runs": [
+    {
+      "label": "original-modern",
+      "reportSHA256": "ffa1d9678de8ffee667c324524175da7008d0cb5816ff30cd16c316e0b979f9e",
+      "stats": {
+        "startTime": "2026-10-03T21:08:56.250Z",
+        "duration": 39308.183,
+        "expected": 0,
+        "skipped": 0,
+        "unexpected": 2,
+        "flaky": 0
+      }
+    },
+    {
+      "label": "corrected-modern",
+      "reportSHA256": "c52456272ba2ad8e1e8b34b393d9bb31f8b6ceae320adf0dca867681b26666a3",
+      "stats": {
+        "startTime": "2026-10-03T21:12:30.326Z",
+        "duration": 38777.22,
+        "expected": 2,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    }
+  ],
+  "observer": {
+    "path": "docs/research/2026-10-03-approved-individual-object-rotate/object-rotate.native.ts",
+    "sha256": "8c7f875b692084c4ccdcc3dd1ce4cba43350a18a2a34b7442ee43f864733090b"
+  },
+  "budgets": {
+    "timeoutMs": 60000,
+    "expectMs": 10000,
+    "workers": 1,
+    "retries": 0
+  },
+  "boundary": "UI100 only; two genuine paid pending orders and whole paused V9 Export/Load; no completed-object or V10 release claim."
+}

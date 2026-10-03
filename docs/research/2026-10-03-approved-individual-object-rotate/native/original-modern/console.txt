@@ -1,0 +1,89 @@
+
+node : [1A[2K[2m[WebServer] [22m(node:50044) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env be
+ing set.
+At line:2 char:391
++ ... 1003.json'; node node_modules/@playwright/test/cli.js test --config d ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([1A[2K[2m[We... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wra
+ngler.json configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 2 tests using 1 worker
+
+[1A[2K(node:32624) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K(node:32624) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K[1/2] docs\research\2026-10-03-approved-individual-object-rotate\object-rotate.native.ts:15:36 › en: #2019 approved Rotate control at FullHD UI100, actual oriented preflight, paid orders and whole V9 Save/Load
+[1A[2K  1) docs\research\2026-10-03-approved-individual-object-rotate\object-rotate.native.ts:15:36 › en: #2019 approved Rotate control at FullHD UI100, actual oriented preflight, paid orders and whole V9 Save/Load 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoHaveLength[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected length: [32m1[39m
+    Received length: [31m7[39m
+    Received array:  [31m[{"className": "ui-action hud-build__rotate-object", "detail": 1, "trusted": true}, {"className": "ui-action hud-build__rotate-object", "detail": 0, "trusted": true}, {"className": "ui-action hud-build__rotate-object", "detail": 0, "trusted": true}, {"className": "ui-action hud-build__rotate-object", "detail": 0, "trusted": true}, {"className": "ui-action hud-build__rotate-object", "detail": 0, "trusted": true}, {"className": "ui-action hud-build__rotate-object", "detail": 0, "trusted": true}, {"className": "ui-action hud-build__rotate-object", "detail": 0, "trusted": true}][39m
+
+      200 |   await showcaseSnapshot(page, info.outputPath(`${locale}-ui100-actual-loaded-whole-v9.json`));
+      201 |   const trace = await traceRotation(page); expect(trace.clicks.every(click => click.trusted)).toBe(true);
+    > 202 |   expect(trace.clicks).toHaveLength(1);
+          |                        ^
+      203 |   expect(trace.keys.every(key => key.trusted)).toBe(true);
+      204 |   expect(trace.keys.filter(key => key.code === 'Enter' && key.rotateFocused)).toHaveLength(5);
+      205 |   expect(trace.keys.filter(key => key.code === 'Space' && key.rotateFocused)).toHaveLength(1);
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\docs\research\2026-10-03-approved-individual-object-rotate\object-rotate.native.ts:202:24
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-modern-approved-rotate-native-20261003\object-rotate.native.ts-en-5471a-ders-and-whole-V9-Save-Load\error-context.md
+
+
+
+
+[1A[2K(node:60836) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K(node:60836) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K[2/2] docs\research\2026-10-03-approved-individual-object-rotate\object-rotate.native.ts:15:36 › pl: #2019 approved Rotate control at FullHD UI100, actual oriented preflight, paid orders and whole V9 Save/Load
+[1A[2K  2) docs\research\2026-10-03-approved-individual-object-rotate\object-rotate.native.ts:15:36 › pl: #2019 approved Rotate control at FullHD UI100, actual oriented preflight, paid orders and whole V9 Save/Load 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoHaveLength[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected length: [32m1[39m
+    Received length: [31m7[39m
+    Received array:  [31m[{"className": "ui-action hud-build__rotate-object", "detail": 1, "trusted": true}, {"className": "ui-action hud-build__rotate-object", "detail": 0, "trusted": true}, {"className": "ui-action hud-build__rotate-object", "detail": 0, "trusted": true}, {"className": "ui-action hud-build__rotate-object", "detail": 0, "trusted": true}, {"className": "ui-action hud-build__rotate-object", "detail": 0, "trusted": true}, {"className": "ui-action hud-build__rotate-object", "detail": 0, "trusted": true}, {"className": "ui-action hud-build__rotate-object", "detail": 0, "trusted": true}][39m
+
+      200 |   await showcaseSnapshot(page, info.outputPath(`${locale}-ui100-actual-loaded-whole-v9.json`));
+      201 |   const trace = await traceRotation(page); expect(trace.clicks.every(click => click.trusted)).toBe(true);
+    > 202 |   expect(trace.clicks).toHaveLength(1);
+          |                        ^
+      203 |   expect(trace.keys.every(key => key.trusted)).toBe(true);
+      204 |   expect(trace.keys.filter(key => key.code === 'Enter' && key.rotateFocused)).toHaveLength(5);
+      205 |   expect(trace.keys.filter(key => key.code === 'Space' && key.rotateFocused)).toHaveLength(1);
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\docs\research\2026-10-03-approved-individual-object-rotate\object-rotate.native.ts:202:24
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-modern-approved-rotate-native-20261003\object-rotate.native.ts-pl-cf87f-ders-and-whole-V9-Save-Load\error-context.md
+
+
+[1A[2K  2 failed
+    docs\research\2026-10-03-approved-individual-object-rotate\object-rotate.native.ts:15:36 › en: #2019 approved Rotate control at FullHD UI100, actual oriented preflight, paid orders and whole V9 Save/Load 
+    docs\research\2026-10-03-approved-individual-object-rotate\object-rotate.native.ts:15:36 › pl: #2019 approved Rotate control at FullHD UI100, actual oriented preflight, paid orders and whole V9 Save/Load 

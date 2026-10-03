@@ -1,0 +1,39 @@
+
+node : [1A[2K[2m[WebServer] [22m(node:33932) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env be
+ing set.
+At line:2 char:591
++ ... 1003.json'; node node_modules/@playwright/test/cli.js test --config d ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([1A[2K[2m[We... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wra
+ngler.json configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+
+Running 2 tests using 1 worker
+
+[1A[2K(node:26496) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K(node:26496) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K[1/2] docs\research\2026-10-03-approved-individual-object-rotate\object-rotate.native.ts:15:36 › en: #2019 approved Rotate control at FullHD UI100, actual oriented preflight, paid orders and whole V9 Save/Load
+[1A[2K[2/2] docs\research\2026-10-03-approved-individual-object-rotate\object-rotate.native.ts:15:36 › pl: #2019 approved Rotate control at FullHD UI100, actual oriented preflight, paid orders and whole V9 Save/Load
+[1A[2K  2 passed (38.8s)

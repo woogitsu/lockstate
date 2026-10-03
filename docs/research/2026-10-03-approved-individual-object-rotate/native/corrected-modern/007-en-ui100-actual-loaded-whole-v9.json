@@ -1,0 +1,711 @@
+{
+  "protocolVersion": 1,
+  "messageId": "9ff825dc-91ee-4e9d-80fd-21d58482309c",
+  "replyTo": "1729e1cb-c3bd-4ebc-8c5a-08e591dae5ef",
+  "kind": "simulation/snapshot",
+  "payload": {
+    "tick": 0,
+    "reason": "consistency-check",
+    "snapshot": {
+      "transport": "structured-clone",
+      "schemaId": "simulation-save-payload",
+      "schemaVersion": 3,
+      "data": {
+        "masterSeed": 3704821724,
+        "kernel": {
+          "tick": 0,
+          "expectedSequence": 3,
+          "rngStates": [
+            {
+              "name": "contraband.detection",
+              "state": {
+                "algorithm": "xoshiro128**",
+                "version": 1,
+                "words": [
+                  3228373428,
+                  2550018461,
+                  1420945892,
+                  4252715834
+                ]
+              }
+            },
+            {
+              "name": "contraband.intelligence",
+              "state": {
+                "algorithm": "xoshiro128**",
+                "version": 1,
+                "words": [
+                  1838581119,
+                  3769747837,
+                  1076665398,
+                  2134397097
+                ]
+              }
+            },
+            {
+              "name": "contraband.introduction",
+              "state": {
+                "algorithm": "xoshiro128**",
+                "version": 1,
+                "words": [
+                  92221873,
+                  2163969702,
+                  1247901110,
+                  3261263475
+                ]
+              }
+            },
+            {
+              "name": "identity.actor-name",
+              "state": {
+                "algorithm": "xoshiro128**",
+                "version": 1,
+                "words": [
+                  301134601,
+                  1013489814,
+                  2293297846,
+                  703630200
+                ]
+              }
+            },
+            {
+              "name": "prisoners.classification",
+              "state": {
+                "algorithm": "xoshiro128**",
+                "version": 1,
+                "words": [
+                  3084130809,
+                  3311025354,
+                  1687015573,
+                  2249778126
+                ]
+              }
+            },
+            {
+              "name": "prisoners.sentence",
+              "state": {
+                "algorithm": "xoshiro128**",
+                "version": 1,
+                "words": [
+                  3449175411,
+                  1776462939,
+                  3730341462,
+                  3180895220
+                ]
+              }
+            }
+          ],
+          "commands": []
+        },
+        "world": {
+          "version": 1,
+          "chunkSize": 32,
+          "ownedChunks": [
+            {
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "chunks": [
+            {
+              "x": 0,
+              "y": 0,
+              "lifecycle": "loaded",
+              "geometryRevision": 0,
+              "contentRevision": 64,
+              "dirty": true,
+              "terrain": [
+                [
+                  0,
+                  1024
+                ]
+              ],
+              "topEdge": [
+                [
+                  0,
+                  1024
+                ]
+              ],
+              "leftEdge": [
+                [
+                  0,
+                  1024
+                ]
+              ],
+              "zoning": [
+                [
+                  0,
+                  332
+                ],
+                [
+                  9,
+                  8
+                ],
+                [
+                  0,
+                  24
+                ],
+                [
+                  9,
+                  8
+                ],
+                [
+                  0,
+                  24
+                ],
+                [
+                  9,
+                  8
+                ],
+                [
+                  0,
+                  24
+                ],
+                [
+                  9,
+                  8
+                ],
+                [
+                  0,
+                  24
+                ],
+                [
+                  9,
+                  8
+                ],
+                [
+                  0,
+                  24
+                ],
+                [
+                  9,
+                  8
+                ],
+                [
+                  0,
+                  24
+                ],
+                [
+                  9,
+                  8
+                ],
+                [
+                  0,
+                  24
+                ],
+                [
+                  9,
+                  8
+                ],
+                [
+                  0,
+                  460
+                ]
+              ]
+            }
+          ]
+        },
+        "construction": {
+          "orders": [
+            {
+              "id": "object-0539b836-780a-4f13-8d62-e82fd51a16c9",
+              "definitionId": "desk-wooden",
+              "location": {
+                "x": 16,
+                "y": 14
+              },
+              "objectOrientation": 1,
+              "placementSequence": 1,
+              "state": "approved",
+              "progress": 0,
+              "materialsAllocated": []
+            },
+            {
+              "id": "object-c6cd1b85-ea62-45e7-825f-445a3ba06a1b",
+              "definitionId": "desk-wooden",
+              "location": {
+                "x": 18,
+                "y": 16
+              },
+              "objectOrientation": 3,
+              "placementSequence": 2,
+              "state": "approved",
+              "progress": 0,
+              "materialsAllocated": []
+            }
+          ],
+          "newerActionThanTheStackTop": false,
+          "orderRevisions": {
+            "object-0539b836-780a-4f13-8d62-e82fd51a16c9": 1,
+            "object-c6cd1b85-ea62-45e7-825f-445a3ba06a1b": 1
+          },
+          "undoStack": [
+            [
+              "object-0539b836-780a-4f13-8d62-e82fd51a16c9"
+            ]
+          ],
+          "redoStack": [],
+          "currentTransaction": [
+            "object-c6cd1b85-ea62-45e7-825f-445a3ba06a1b"
+          ],
+          "currentTransactionId": "object-c6cd1b85-ea62-45e7-825f-445a3ba06a1b"
+        },
+        "entities": {
+          "capacity": 5000,
+          "nextAvailableIndex": 0,
+          "maxActiveIndex": -1,
+          "generations": [
+            [
+              0,
+              5000
+            ]
+          ],
+          "freeIndices": [],
+          "alive": [
+            [
+              0,
+              5000
+            ]
+          ]
+        },
+        "simulation": {
+          "regimeSchedules": [
+            {
+              "classificationGroupId": "general-population",
+              "blocks": [
+                {
+                  "startTickOfDay": 0,
+                  "endTickOfDay": 400,
+                  "allowedCategories": [
+                    "sleep"
+                  ]
+                },
+                {
+                  "startTickOfDay": 400,
+                  "endTickOfDay": 500,
+                  "allowedCategories": [
+                    "meal",
+                    "hygiene"
+                  ]
+                },
+                {
+                  "startTickOfDay": 500,
+                  "endTickOfDay": 1000,
+                  "allowedCategories": [
+                    "work",
+                    "education",
+                    "free-association"
+                  ]
+                },
+                {
+                  "startTickOfDay": 1000,
+                  "endTickOfDay": 1200,
+                  "allowedCategories": [
+                    "recreation",
+                    "free-association"
+                  ]
+                },
+                {
+                  "startTickOfDay": 1200,
+                  "endTickOfDay": 1300,
+                  "allowedCategories": [
+                    "meal"
+                  ]
+                },
+                {
+                  "startTickOfDay": 1300,
+                  "endTickOfDay": 1800,
+                  "allowedCategories": [
+                    "work",
+                    "education",
+                    "free-association"
+                  ]
+                },
+                {
+                  "startTickOfDay": 1800,
+                  "endTickOfDay": 2000,
+                  "allowedCategories": [
+                    "recreation",
+                    "hygiene",
+                    "free-association"
+                  ]
+                },
+                {
+                  "startTickOfDay": 2000,
+                  "endTickOfDay": 2100,
+                  "allowedCategories": [
+                    "meal"
+                  ]
+                },
+                {
+                  "startTickOfDay": 2100,
+                  "endTickOfDay": 2300,
+                  "allowedCategories": [
+                    "recreation",
+                    "hygiene",
+                    "free-association"
+                  ]
+                },
+                {
+                  "startTickOfDay": 2300,
+                  "endTickOfDay": 2400,
+                  "allowedCategories": [
+                    "sleep"
+                  ]
+                }
+              ]
+            },
+            {
+              "classificationGroupId": "high-risk",
+              "blocks": [
+                {
+                  "startTickOfDay": 0,
+                  "endTickOfDay": 2000,
+                  "allowedCategories": [
+                    "sleep",
+                    "meal",
+                    "hygiene"
+                  ]
+                },
+                {
+                  "startTickOfDay": 2000,
+                  "endTickOfDay": 2200,
+                  "allowedCategories": [
+                    "recreation",
+                    "free-association"
+                  ]
+                },
+                {
+                  "startTickOfDay": 2200,
+                  "endTickOfDay": 2400,
+                  "allowedCategories": [
+                    "sleep",
+                    "meal",
+                    "hygiene"
+                  ]
+                }
+              ]
+            }
+          ],
+          "prisoners": {
+            "components": {
+              "activeLength": 0,
+              "sentenceLengthTicks": [],
+              "priorIncidentsAtIntake": [],
+              "sentenceEndTick": [],
+              "riskTier": [],
+              "classificationGroupIndex": [],
+              "intakeStage": [],
+              "solitarySanctionEndTick": [],
+              "injured": [],
+              "needs": {
+                "hunger": [],
+                "sleep": [],
+                "hygiene": [],
+                "bladder": [],
+                "safety": [],
+                "recreation": []
+              },
+              "actionIndex": [],
+              "actionPhase": [],
+              "phaseStartedAtTick": [],
+              "needFulfilledLastTick": [],
+              "tileX": [],
+              "tileY": []
+            },
+            "coldState": {
+              "accommodationInstanceId": [],
+              "currentActionTargetInstanceId": []
+            },
+            "roomInstanceDefinitions": [
+              {
+                "instanceId": "room.yard:12:10",
+                "roomCatalogId": "room.yard",
+                "anchorTile": {
+                  "x": 12,
+                  "y": 10
+                },
+                "width": 8,
+                "height": 8
+              }
+            ],
+            "roomInstanceOccupancy": [
+              [
+                "room.yard:12:10",
+                []
+              ]
+            ]
+          },
+          "operations": {
+            "containers": [
+              [
+                "construction-materials",
+                []
+              ]
+            ],
+            "jobs": [],
+            "jobWorkers": {
+              "workers": [],
+              "busy": []
+            },
+            "electricity": {
+              "type": "electricity",
+              "nodes": [],
+              "connections": [],
+              "failedNodeIds": []
+            },
+            "water": {
+              "type": "water",
+              "nodes": [],
+              "connections": [],
+              "failedNodeIds": []
+            }
+          },
+          "navigation": {
+            "doors": []
+          },
+          "security": {
+            "sectorDefinitions": [
+              {
+                "id": "security-sector.prison",
+                "gradeId": "grade.general",
+                "doorIds": [],
+                "postTile": {
+                  "x": 16,
+                  "y": 16
+                }
+              }
+            ],
+            "sectorControlStates": [
+              [
+                "security-sector.prison",
+                "normal"
+              ]
+            ],
+            "guards": {
+              "entityStore": {
+                "capacity": 500,
+                "nextAvailableIndex": 0,
+                "maxActiveIndex": -1,
+                "generations": [
+                  [
+                    0,
+                    500
+                  ]
+                ],
+                "freeIndices": [],
+                "alive": [
+                  [
+                    0,
+                    500
+                  ]
+                ]
+              },
+              "records": []
+            },
+            "schedules": [
+              {
+                "sectorId": "security-sector.prison",
+                "blocks": [
+                  {
+                    "startTickOfDay": 0,
+                    "endTickOfDay": 2400,
+                    "requiredGuardCount": 1
+                  }
+                ]
+              }
+            ],
+            "deployment": {
+              "metrics": {
+                "deploymentFailures": 0
+              }
+            },
+            "patrol": {
+              "metrics": {
+                "loopsCompletedOnTime": 0,
+                "loopsCompletedLate": 0,
+                "loopsMissed": 0
+              }
+            }
+          },
+          "contraband": {
+            "items": [],
+            "intelligence": [],
+            "intelligenceSequence": 0,
+            "informants": [],
+            "confiscations": [],
+            "searchPolicies": [
+              {
+                "scope": "cell",
+                "requiredGuardCount": 1,
+                "dwellTicksPerTarget": 40,
+                "baseDetectionProbability": 0.7,
+                "concealmentPenaltyPerPoint": 0.05,
+                "intelligenceConfidenceBonus": 0.2
+              },
+              {
+                "scope": "delivery",
+                "requiredGuardCount": 1,
+                "dwellTicksPerTarget": 25,
+                "baseDetectionProbability": 0.6,
+                "concealmentPenaltyPerPoint": 0.05,
+                "intelligenceConfidenceBonus": 0.15
+              },
+              {
+                "scope": "person",
+                "requiredGuardCount": 1,
+                "dwellTicksPerTarget": 20,
+                "baseDetectionProbability": 0.75,
+                "concealmentPenaltyPerPoint": 0.06,
+                "intelligenceConfidenceBonus": 0.2
+              },
+              {
+                "scope": "sector",
+                "requiredGuardCount": 1,
+                "dwellTicksPerTarget": 15,
+                "baseDetectionProbability": 0.5,
+                "concealmentPenaltyPerPoint": 0.05,
+                "intelligenceConfidenceBonus": 0.25
+              }
+            ],
+            "searchContainerLocations": [],
+            "search": {
+              "queue": [],
+              "active": [],
+              "metrics": {
+                "itemsDiscovered": 0,
+                "itemsMissed": 0,
+                "searchesCompleted": 0,
+                "searchesCancelled": 0
+              }
+            }
+          },
+          "economy": {
+            "treasury": {
+              "balanceMinorUnits": 24740
+            },
+            "procurement": {
+              "pending": [
+                {
+                  "orderId": "jit:0:item.wood-plank:0",
+                  "itemId": "item.wood-plank",
+                  "quantity": 2,
+                  "arrivesAtTick": 100,
+                  "paidMinorUnits": 130
+                },
+                {
+                  "orderId": "jit:0:item.wood-plank:2",
+                  "itemId": "item.wood-plank",
+                  "quantity": 2,
+                  "arrivesAtTick": 100,
+                  "paidMinorUnits": 130
+                }
+              ]
+            },
+            "payroll": {
+              "unpaidWagesMinorUnits": 0
+            }
+          },
+          "objects": {
+            "placedObjects": []
+          },
+          "alerts": {
+            "sequence": 1,
+            "records": [
+              {
+                "sequence": 1,
+                "tick": 0,
+                "type": "rooms.zoned",
+                "roomNameKey": "room.yard.name"
+              }
+            ],
+            "dismissed": []
+          },
+          "inFlight": {
+            "navigation": {
+              "pending": [],
+              "results": []
+            },
+            "prisoners": {
+              "locomotion": {
+                "walks": [],
+                "headings": []
+              },
+              "pathRequestIds": [],
+              "requestSequence": 0
+            },
+            "guards": {
+              "locomotion": {
+                "walks": [],
+                "headings": []
+              },
+              "deploymentRequestSequence": 0,
+              "patrolRequestSequence": 0
+            },
+            "search": {
+              "requestSequence": 0,
+              "jobs": []
+            }
+          },
+          "incidents": {
+            "log": [],
+            "sectorRisk": [],
+            "gangs": {
+              "definitions": [
+                {
+                  "id": "gang.alpha",
+                  "territorySectorIds": [
+                    "security-sector.prison"
+                  ]
+                },
+                {
+                  "id": "gang.beta",
+                  "territorySectorIds": [
+                    "security-sector.prison"
+                  ]
+                }
+              ],
+              "members": [],
+              "reputation": [
+                [
+                  "gang.alpha",
+                  0.5
+                ],
+                [
+                  "gang.beta",
+                  0.5
+                ]
+              ],
+              "grudges": []
+            },
+            "tunnels": [],
+            "watchedSectorIds": [
+              "security-sector.prison"
+            ],
+            "trigger": {
+              "metrics": {
+                "incidentsTriggered": 0,
+                "riotsTriggered": 0,
+                "retaliationsTriggered": 0
+              },
+              "sequence": 0
+            },
+            "response": {
+              "metrics": {
+                "incidentsResolved": 0,
+                "incidentsLapsed": 0,
+                "respondersDispatched": 0,
+                "routeFailures": 0
+              }
+            }
+          }
+        },
+        "identity": {
+          "version": 1,
+          "poolId": "placeholder.v1",
+          "entries": []
+        }
+      }
+    }
+  }
+}

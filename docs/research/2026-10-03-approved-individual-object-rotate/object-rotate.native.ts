@@ -198,11 +198,14 @@ for (const locale of ['en', 'pl'] as const) test(`${locale}: #2019 approved Rota
   expect(await showcaseSnapshot(page)).toEqual(whole);
   await page.screenshot({ path: info.outputPath(`${locale}-ui100-actual-loaded-fullhd.png`) });
   await showcaseSnapshot(page, info.outputPath(`${locale}-ui100-actual-loaded-whole-v9.json`));
-  const trace = await traceRotation(page); expect(trace.clicks.every(click => click.trusted)).toBe(true);
-  expect(trace.clicks).toHaveLength(1);
+  const trace = await traceRotation(page);
+  await writeFile(info.outputPath(`${locale}-actual-review-receipt.json`), JSON.stringify({ receipts, trace, commands: await sentCommands(page), whole }, null, 2));
+  expect(trace.clicks.every(click => click.trusted)).toBe(true);
+  // Native button activation emits trusted detail0 clicks for Enter/Space too.
+  // Keep the single physical click and all six keyboard activations explicit.
+  expect(trace.clicks.map(click => click.detail)).toEqual([1, 0, 0, 0, 0, 0, 0]);
   expect(trace.keys.every(key => key.trusted)).toBe(true);
   expect(trace.keys.filter(key => key.code === 'Enter' && key.rotateFocused)).toHaveLength(5);
   expect(trace.keys.filter(key => key.code === 'Space' && key.rotateFocused)).toHaveLength(1);
   expect(trace.keys.filter(key => key.code === 'KeyR' && key.rotateFocused)).toHaveLength(1);
-  await writeFile(info.outputPath(`${locale}-actual-review-receipt.json`), JSON.stringify({ receipts, trace, commands: await sentCommands(page), whole }, null, 2));
 });

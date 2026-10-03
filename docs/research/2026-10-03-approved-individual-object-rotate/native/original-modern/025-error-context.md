@@ -1,0 +1,195 @@
+# Page snapshot
+
+```yaml
+- main "Aplikacja gry Lockstate" [ref=e2]:
+  - generic:
+    - region "Stan więzienia" [ref=e5]:
+      - generic [ref=e6]:
+        - note "Kompilacja Lockstate":
+          - img
+          - generic: LockState.io
+          - generic: PRE-ALPHA
+          - generic: v0.0.839 · c28d481
+          - generic: Lockstate, kompilacja PRE-ALPHA, wersja 0.0.839, commit c28d481.
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - img [ref=e9]
+          - generic [ref=e12]:
+            - generic [ref=e13]: "0"
+            - generic [ref=e14]: Osadzeni
+        - generic [ref=e16]:
+          - img [ref=e17]
+          - generic [ref=e19]:
+            - generic [ref=e20]: "0"
+            - generic [ref=e21]: Podwyższone ryzyko
+        - generic [ref=e23]:
+          - img [ref=e24]
+          - generic [ref=e29]:
+            - generic [ref=e30]: "0"
+            - generic [ref=e31]: Personel
+        - generic [ref=e33]:
+          - img [ref=e34]
+          - generic [ref=e36]:
+            - generic [ref=e37]: "0"
+            - generic [ref=e38]: Obsada
+          - generic [ref=e41]: Obsadzone
+        - generic [ref=e43]:
+          - img [ref=e44]
+          - generic [ref=e46]:
+            - generic [ref=e47]: "1"
+            - generic [ref=e48]: Pomieszczenia
+        - generic [ref=e50]:
+          - img [ref=e51]
+          - generic [ref=e53]:
+            - generic [ref=e54]: "0"
+            - generic [ref=e55]: Incydenty
+          - generic [ref=e58]: Spokój
+        - generic [ref=e60]:
+          - img [ref=e61]
+          - generic [ref=e64]:
+            - generic [ref=e65]: "0"
+            - generic [ref=e66]: Kontrabanda
+        - generic [ref=e68]:
+          - img [ref=e69]
+          - generic [ref=e73]:
+            - generic [ref=e74]: 24 740
+            - generic [ref=e75]: Środki
+        - generic [ref=e77]:
+          - img [ref=e78]
+          - generic [ref=e81]:
+            - generic [ref=e82]: "0"
+            - generic [ref=e83]: Zarobione dziś
+      - generic [ref=e85]:
+        - img [ref=e86]
+        - generic [ref=e89]: Dzień
+        - generic [ref=e90]: "1"
+        - generic [ref=e91]: Postęp dnia
+        - generic [ref=e92]: 0%
+      - group "Sterowanie czasem" [ref=e93]:
+        - button "Pauza" [pressed] [ref=e94] [cursor=pointer]:
+          - img [ref=e95]
+          - generic [ref=e96]: Pauza
+        - button "Odtwarzaj z normalną prędkością" [ref=e97] [cursor=pointer]:
+          - img [ref=e98]
+          - generic [ref=e100]: Odtwarzaj z normalną prędkością
+        - button "Przyspiesz" [ref=e101] [cursor=pointer]:
+          - img [ref=e102]
+          - generic [ref=e105]: Przyspiesz
+        - generic [ref=e106]:
+          - generic [ref=e107]: Prędkość 1×
+          - generic [ref=e108]: PAUZA
+      - group "Cofanie i ponawianie" [ref=e109]:
+        - button "Cofnij ostatnie postawienie" [ref=e110] [cursor=pointer]:
+          - img [ref=e111]
+          - generic [ref=e114]: Cofnij ostatnie postawienie
+        - button "Ponów ostatnie cofnięte postawienie" [disabled] [ref=e115]:
+          - img [ref=e116]
+          - generic [ref=e119]: Ponów ostatnie cofnięte postawienie
+      - group "Ustawienia" [ref=e121]:
+        - button "Otwórz menu ustawień" [ref=e122] [cursor=pointer]:
+          - img [ref=e123]
+          - generic [ref=e128]: Otwórz menu ustawień
+    - generic:
+      - group "Powiększenie":
+        - generic: Powiększenie
+        - button "Oddal" [ref=e129] [cursor=pointer]:
+          - img [ref=e130]
+          - generic [ref=e133]: Oddal
+        - button "Przybliż" [ref=e134] [cursor=pointer]:
+          - img [ref=e135]
+          - generic [ref=e138]: Przybliż
+        - button "Widok" [ref=e139] [cursor=pointer]
+      - region "Minimapa":
+        - generic:
+          - img
+          - heading "Minimapa" [level=2]
+          - button "Zwiń" [expanded] [ref=e140] [cursor=pointer]:
+            - img [ref=e141]
+            - generic [ref=e143]: Zwiń
+        - generic:
+          - button "Mapa więzienia — naciśnij, aby przesunąć kamerę" [ref=e144] [cursor=pointer]:
+            - generic [ref=e145]: Mapa więzienia — naciśnij, aby przesunąć kamerę
+          - generic:
+            - button "Powiadomienia" [expanded] [ref=e146] [cursor=pointer]:
+              - img [ref=e147]
+              - generic [ref=e149]: Powiadomienia
+            - generic [ref=e151]:
+              - img [ref=e152]
+              - generic [ref=e154]: "Wyznaczono: Plac spacerowy. Dzień 1"
+              - generic [ref=e156]: Informacja
+              - button "Usuń to powiadomienie" [ref=e157] [cursor=pointer]:
+                - img [ref=e158]
+                - generic [ref=e161]: Usuń to powiadomienie
+    - generic:
+      - button "Ukryj panele" [expanded] [ref=e162] [cursor=pointer]:
+        - img [ref=e163]
+        - generic [ref=e165]: Ukryj panele
+      - generic:
+        - generic [ref=e166]:
+          - group "Skala interfejsu" [ref=e167]:
+            - generic: Skala interfejsu
+            - button "Zmień skalę interfejsu" [ref=e168] [cursor=pointer]:
+              - status [ref=e169]: 100%
+          - group "Motyw" [ref=e170]:
+            - generic: Motyw
+            - button "Zmień motyw interfejsu" [ref=e171] [cursor=pointer]:
+              - status [ref=e172]: Systemowy
+        - complementary "Zapisy więzień" [ref=e173]:
+          - heading "Więzienia" [level=2] [ref=e174]
+          - generic [ref=e175]:
+            - button "Nowe więzienie" [ref=e176] [cursor=pointer]
+            - button "Zapisz teraz" [ref=e177] [cursor=pointer]
+            - button "Eksportuj" [ref=e178] [cursor=pointer]
+            - button "Importuj" [ref=e179] [cursor=pointer]
+          - list [ref=e180]:
+            - listitem [ref=e181]:
+              - generic [ref=e182]: Nowe więzienie (2 gen.)
+              - button "Wczytaj" [active] [ref=e183] [cursor=pointer]
+              - button "Usuń" [ref=e184] [cursor=pointer]
+          - status [ref=e185]: Wczytano.
+          - paragraph [ref=e186]: "Przywrócone: takt jądra i kolejka poleceń, stany strumieni RNG, teren świata i własność gruntu, zlecenia budowy oraz cofanie i ponawianie, żywotność identyfikatorów bytów, osadzeni, potrzeby, czynności i przydziały cel, zadania, pojemniki i sieci instalacji, drzwi, sektory ochrony, strażnicy i patrole, kontrabanda, informacje i przeszukania, incydenty, gangi i tunele, imiona i nazwiska osadzonych oraz personelu. Nieprzeniesione przez tę wersję zapisu: pamięci podręczne pomieszczeń i topologii (przeliczane ze świata), pamięci podręczne nawigacji i trwające żądania tras (wysyłane ponownie w następnym takcie)."
+      - region "Finanse" [ref=e187]:
+        - generic [ref=e188]:
+          - img [ref=e189]
+          - heading "Finanse" [level=2] [ref=e194]
+          - button "Zwiń" [expanded] [ref=e195] [cursor=pointer]:
+            - img [ref=e196]
+            - generic [ref=e198]: Zwiń
+        - generic [ref=e199]:
+          - generic [ref=e200]:
+            - generic [ref=e201]:
+              - generic [ref=e202]: Środki
+              - generic [ref=e203]: 24 740
+            - generic [ref=e204]:
+              - generic [ref=e205]: Zarobione dziś
+              - generic [ref=e206]: "0"
+            - generic [ref=e207]:
+              - generic [ref=e208]: Pensje dziennie
+              - generic [ref=e209]: "0"
+          - generic [ref=e210]: Państwo płaci za zajęte miejsca na koniec każdego dnia.
+      - separator "Zmień rozmiar paneli" [ref=e211]
+    - navigation "Sekcje więzienia":
+      - button "Ukryj sekcje" [expanded] [ref=e212] [cursor=pointer]:
+        - img [ref=e213]
+        - generic [ref=e215]: Ukryj sekcje
+      - generic [ref=e216]:
+        - button "Przegląd" [ref=e217] [cursor=pointer]:
+          - img [ref=e218]
+          - generic [ref=e223]: Przegląd
+        - button "Buduj" [ref=e224] [cursor=pointer]:
+          - img [ref=e225]
+          - generic [ref=e229]: Buduj
+        - button "Strefy" [ref=e230] [cursor=pointer]:
+          - img [ref=e231]
+          - generic [ref=e233]: Strefy
+        - button "Zarządzaj" [ref=e234] [cursor=pointer]:
+          - img [ref=e235]
+          - generic [ref=e237]: Zarządzaj
+        - button "Plan dnia" [ref=e238] [cursor=pointer]:
+          - img [ref=e239]
+          - generic [ref=e241]: Plan dnia
+        - button "Ochrona" [ref=e242] [cursor=pointer]:
+          - img [ref=e243]
+          - generic [ref=e245]: Ochrona
+      - separator "Zmień rozmiar sekcji" [ref=e246]
+```

@@ -1,0 +1,342 @@
+{
+  "viewport": {
+    "width": 1920,
+    "height": 1080,
+    "dpr": 1,
+    "visualScale": 1
+  },
+  "uiScale": "100",
+  "row": {
+    "x": 1582,
+    "y": 557,
+    "width": 313,
+    "height": 44
+  },
+  "panel": {
+    "x": 1569,
+    "y": 161,
+    "width": 339,
+    "height": 617.5625
+  },
+  "gap": 8,
+  "flexWrap": "nowrap",
+  "flowWidth": 313,
+  "flowButtonCount": 4,
+  "overflowWidth": 0,
+  "allocations": [
+    {
+      "selector": ".hud__rail",
+      "x": 1556,
+      "y": 95,
+      "width": 364,
+      "height": 985,
+      "minimumHeight": "0px",
+      "maximumHeight": "none",
+      "heightRule": "985px",
+      "position": "relative",
+      "flexBasis": "auto",
+      "flexGrow": "0",
+      "flexShrink": "1",
+      "overflowY": "hidden",
+      "clientHeight": 985,
+      "scrollHeight": 985,
+      "scrollTop": 0,
+      "insideViewport": true
+    },
+    {
+      "selector": ".hud__side",
+      "x": 1557,
+      "y": 161,
+      "width": 363,
+      "height": 621,
+      "minimumHeight": "0px",
+      "maximumHeight": "none",
+      "heightRule": "621px",
+      "position": "static",
+      "flexBasis": "auto",
+      "flexGrow": "1",
+      "flexShrink": "1",
+      "overflowY": "auto",
+      "clientHeight": 621,
+      "scrollHeight": 621,
+      "scrollTop": 0,
+      "insideViewport": true
+    },
+    {
+      "selector": ".hud-build",
+      "x": 1569,
+      "y": 161,
+      "width": 339,
+      "height": 617.5625,
+      "minimumHeight": "auto",
+      "maximumHeight": "none",
+      "heightRule": "617.562px",
+      "position": "static",
+      "flexBasis": "auto",
+      "flexGrow": "0",
+      "flexShrink": "1",
+      "overflowY": "auto",
+      "clientHeight": 616,
+      "scrollHeight": 616,
+      "scrollTop": 0,
+      "insideViewport": true
+    },
+    {
+      "selector": ".hud-build > .ui-panel__body",
+      "x": 1570,
+      "y": 207,
+      "width": 337,
+      "height": 570.5625,
+      "minimumHeight": "335.2px",
+      "maximumHeight": "none",
+      "heightRule": "554.562px",
+      "position": "static",
+      "flexBasis": "auto",
+      "flexGrow": "0",
+      "flexShrink": "1",
+      "overflowY": "visible",
+      "clientHeight": 571,
+      "scrollHeight": 571,
+      "scrollTop": 0,
+      "insideViewport": true
+    },
+    {
+      "selector": ".hud-build__catalogue",
+      "x": 1578,
+      "y": 215,
+      "width": 321,
+      "height": 333,
+      "minimumHeight": "140px",
+      "maximumHeight": "none",
+      "heightRule": "333px",
+      "position": "static",
+      "flexBasis": "auto",
+      "flexGrow": "0",
+      "flexShrink": "1",
+      "overflowY": "visible",
+      "clientHeight": 333,
+      "scrollHeight": 333,
+      "scrollTop": 0,
+      "insideViewport": true
+    },
+    {
+      "selector": ".hud-build__list",
+      "x": 1582,
+      "y": 276,
+      "width": 313,
+      "height": 264,
+      "minimumHeight": "88px",
+      "maximumHeight": "264px",
+      "heightRule": "264px",
+      "position": "static",
+      "flexBasis": "auto",
+      "flexGrow": "0",
+      "flexShrink": "1",
+      "overflowY": "auto",
+      "clientHeight": 264,
+      "scrollHeight": 968,
+      "scrollTop": 154,
+      "insideViewport": true
+    },
+    {
+      "selector": ".hud-build__map",
+      "x": 1578,
+      "y": 548,
+      "width": 321,
+      "height": 176.5625,
+      "minimumHeight": "auto",
+      "maximumHeight": "none",
+      "heightRule": "159.562px",
+      "position": "static",
+      "flexBasis": "auto",
+      "flexGrow": "0",
+      "flexShrink": "0",
+      "overflowY": "visible",
+      "clientHeight": 176,
+      "scrollHeight": 176,
+      "scrollTop": 0,
+      "insideViewport": true
+    },
+    {
+      "selector": ".save-panel",
+      "x": 1569,
+      "y": 790,
+      "width": 340,
+      "height": 278,
+      "minimumHeight": "25%",
+      "maximumHeight": "none",
+      "heightRule": "278px",
+      "position": "static",
+      "flexBasis": "auto",
+      "flexGrow": "0",
+      "flexShrink": "1",
+      "overflowY": "auto",
+      "clientHeight": 276,
+      "scrollHeight": 276,
+      "scrollTop": 0,
+      "insideViewport": true
+    }
+  ],
+  "buttons": [
+    {
+      "className": "ui-action hud-build__arm",
+      "text": "Stop placing",
+      "x": 1582,
+      "y": 557,
+      "width": 91.796875,
+      "height": 44,
+      "minimumHeight": 44,
+      "position": "static",
+      "minWidth": "44px",
+      "flexBasis": "auto",
+      "flexGrow": "1",
+      "flexShrink": "1",
+      "padding": [
+        "8px",
+        "8px"
+      ],
+      "labelStyle": {
+        "whiteSpace": "normal",
+        "overflowWrap": "break-word"
+      },
+      "ink": [
+        {
+          "x": 1626.8125,
+          "y": 562,
+          "width": 26.15625,
+          "height": 17
+        },
+        {
+          "x": 1619.109375,
+          "y": 579,
+          "width": 41.578125,
+          "height": 17
+        }
+      ],
+      "insideRow": true,
+      "insidePanel": true,
+      "insideViewport": true,
+      "labelInside": true,
+      "inkInside": true,
+      "labelFits": true,
+      "hit": true
+    },
+    {
+      "className": "ui-action hud-build__remove",
+      "text": "Remove",
+      "x": 1681.796875,
+      "y": 557,
+      "width": 64.046875,
+      "height": 44,
+      "minimumHeight": 44,
+      "position": "static",
+      "minWidth": "44px",
+      "flexBasis": "auto",
+      "flexGrow": "0",
+      "flexShrink": "0",
+      "padding": [
+        "8px",
+        "8px"
+      ],
+      "labelStyle": {
+        "whiteSpace": "normal",
+        "overflowWrap": "break-word"
+      },
+      "ink": [
+        {
+          "x": 1690.796875,
+          "y": 570.5,
+          "width": 46.046875,
+          "height": 17
+        }
+      ],
+      "insideRow": true,
+      "insidePanel": true,
+      "insideViewport": true,
+      "labelInside": true,
+      "inkInside": true,
+      "labelFits": true,
+      "hit": true
+    },
+    {
+      "className": "ui-action hud-build__buy-toggle",
+      "text": "Buy",
+      "x": 1753.84375,
+      "y": 557,
+      "width": 44,
+      "height": 44,
+      "minimumHeight": 44,
+      "position": "static",
+      "minWidth": "44px",
+      "flexBasis": "auto",
+      "flexGrow": "0",
+      "flexShrink": "0",
+      "padding": [
+        "8px",
+        "8px"
+      ],
+      "labelStyle": {
+        "whiteSpace": "normal",
+        "overflowWrap": "break-word"
+      },
+      "ink": [
+        {
+          "x": 1765.28125,
+          "y": 570.5,
+          "width": 21.109375,
+          "height": 17
+        }
+      ],
+      "insideRow": true,
+      "insidePanel": true,
+      "insideViewport": true,
+      "labelInside": true,
+      "inkInside": true,
+      "labelFits": true,
+      "hit": true
+    },
+    {
+      "className": "ui-action hud-build__rotate-object",
+      "text": "Rotate object 0°",
+      "x": 1805.84375,
+      "y": 557,
+      "width": 89.15625,
+      "height": 44,
+      "minimumHeight": 44,
+      "position": "static",
+      "minWidth": "44px",
+      "flexBasis": "auto",
+      "flexGrow": "0",
+      "flexShrink": "1",
+      "padding": [
+        "8px",
+        "8px"
+      ],
+      "labelStyle": {
+        "whiteSpace": "normal",
+        "overflowWrap": "break-word"
+      },
+      "ink": [
+        {
+          "x": 1831.796875,
+          "y": 562,
+          "width": 37.25,
+          "height": 17
+        },
+        {
+          "x": 1824.875,
+          "y": 579,
+          "width": 51.09375,
+          "height": 17
+        }
+      ],
+      "insideRow": true,
+      "insidePanel": true,
+      "insideViewport": true,
+      "labelInside": true,
+      "inkInside": true,
+      "labelFits": true,
+      "hit": true
+    }
+  ]
+}
