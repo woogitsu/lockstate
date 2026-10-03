@@ -1,0 +1,41 @@
+{
+  "at": "2026-10-03T10:42:05.758Z",
+  "found": [
+    {
+      "search": "room quote visibility clipped label",
+      "results": [
+        {
+          "number": 604,
+          "state": "OPEN",
+          "title": "HANDOVER 2026-08-29 late — main red three times, five PRs became six, and the design search landed",
+          "url": "https://github.com/woogitsu/lockstate/issues/604"
+        }
+      ]
+    },
+    {
+      "search": "HUD corner camera 781",
+      "results": [
+        {
+          "number": 1054,
+          "state": "CLOSED",
+          "title": "A build press landing on `.hud-zoom`/`.hud-minimap` chrome is swallowed with no feedback — and the region is not a fixed band: it grows with the alerts list, ~396px to ~752px tall",
+          "url": "https://github.com/woogitsu/lockstate/issues/1054"
+        },
+        {
+          "number": 604,
+          "state": "OPEN",
+          "title": "HANDOVER 2026-08-29 late — main red three times, five PRs became six, and the design search landed",
+          "url": "https://github.com/woogitsu/lockstate/issues/604"
+        }
+      ]
+    },
+    {
+      "search": "FullHD minimap alerts clipped",
+      "results": []
+    },
+    {
+      "search": "room catalogue Polish Tab rotation",
+      "results": []
+    }
+  ]
+}
