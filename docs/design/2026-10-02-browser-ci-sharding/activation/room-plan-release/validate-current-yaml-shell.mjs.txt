@@ -1,0 +1,30 @@
+
+import { readFileSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { spawnSync } from 'node:child_process';
+import path from 'node:path';
+const req=createRequire(path.resolve('package.json'));
+const pw=createRequire(createRequire(req.resolve('@playwright/test/package.json')).resolve('playwright/package.json'));
+const {yaml}=pw(path.join(path.dirname(pw.resolve('playwright-core/package.json')),'lib/utilsBundle.js'));
+const active=yaml.parse(readFileSync('.github/workflows/ci.yml','utf8'));
+const bash='C:\\Program Files\\Git\\bin\\bash.exe';
+const checks=[];
+for(const [name,job] of Object.entries(active.jobs))for(const step of job.steps ?? [])if(step.run){
+ const run=step.run.replace(/\$\{\{[^}]+\}\}/g,'1');
+ const result=spawnSync(bash,['-n','-c',run],{encoding:'utf8'});
+ if(result.error || result.status!==0)throw result.error ?? Error(name+'/'+step.name+': '+result.stderr);
+ checks.push({job:name,step:step.name,bashSyntaxExit:result.status});
+}
+const head=spawnSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).stdout.trim();
+for(const name of ['browser-source','browser-artifact']){
+ const run=active.jobs[name].steps.find(step=>step.id==='subject').run;
+ for(const [label,sha] of [['matching',head],['mismatch','b'.repeat(40)]]){
+  const output=path.resolve('docs/design/2026-10-02-browser-ci-sharding/activation/room-plan-release/subject-'+name+'-'+label+'.txt');
+  const result=spawnSync(bash,['-e','-o','pipefail','-c',run],{encoding:'utf8',env:{...process.env,GITHUB_SHA:sha,GITHUB_OUTPUT:output}});
+  if(result.error)throw result.error;
+  if(label==='matching' ? result.status!==0 : result.status===0)throw Error(name+'/'+label+' wrong result');
+  checks.push({job:name,step:'actual checked-out subject guard',case:label,exit:result.status});
+ }
+}
+writeFileSync('docs/design/2026-10-02-browser-ci-sharding/activation/room-plan-release/yaml-shell-validation.json',JSON.stringify({parser:'installed Playwright YAML parser',jobs:Object.keys(active.jobs),actualShell:'Git Bash; syntax only for run blocks; real readonly subject guard uses runner -e/-o pipefail',checks},null,2)+'\n');
+console.log('Actual YAML parsed; '+checks.length+' Bash syntax/readonly subject checks passed. No job commands executed beyond git subject guards.');
