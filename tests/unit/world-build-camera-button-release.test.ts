@@ -9,6 +9,7 @@ import { EMPTY_RENDER_FRAME } from '../../src/rendering/feed/render-feed';
 import { BuildTool } from '../../src/ui/build-tool';
 import { ObjectTool } from '../../src/ui/object-tool';
 import { RoomTool } from '../../src/ui/room-tool';
+import type { HudRoomGesture } from '../../src/ui/hud';
 import { SimulationCommandSender } from '../../src/ui/simulation-commands';
 import { SimulationWorkerStateMachine } from '../../src/simulation/worker/state-machine';
 import type { MainToWorkerMessage, WorkerToMainMessage } from '../../src/simulation/protocol/types';
@@ -22,7 +23,7 @@ vi.mock('phaser', () => {
     readonly cameras = { main: { width: 1920, height: 1080, setBackgroundColor() {} } };
     readonly scale = { displayScale: { x: 1, y: 1 } };
     readonly add = { graphics: () => graphic };
-    readonly input = { mouse: { disableContextMenu() {} }, addPointer() {},
+    readonly input = { manager: { pointers: [] }, mouse: { disableContextMenu() {} }, addPointer() {},
       on: (name: string, handler: (...args: unknown[]) => void) => plumbing.handlers.set(name, handler) };
     readonly events = { once() {} };
     readonly game = { canvas: new EventTarget() };
@@ -40,7 +41,7 @@ try {
   Camera = require(resolve(phaserSource, 'cameras/2d/Camera.js')) as typeof Phaser.Cameras.Scene2D.Camera;
 } finally { if (cached === undefined) delete require.cache[components]; else require.cache[components] = cached; }
 vi.stubGlobal('window', new EventTarget());
-type NativePointer = Phaser.Input.Pointer & { down(event: MouseEvent): void; up(event: MouseEvent): void; move(event: MouseEvent): void };
+type NativePointer = Phaser.Input.Pointer & { down(event: MouseEvent): void; up(event: MouseEvent): void; move(event: MouseEvent): void; touchstart(touch: Touch, event: TouchEvent): void; touchend(touch: Touch, event: TouchEvent): void };
 const Pointer = require(resolve(phaserSource, 'input/Pointer.js')) as new (manager: Phaser.Input.InputManager, id: number) => NativePointer;
 const pluginSource = readFileSync(resolve(phaserSource, 'input/InputPlugin.js'), 'utf8');
 const upBody = pluginSource.match(/processUpEvents: function \(pointer\)\r?\n    (\{[\s\S]*?\r?\n    \}),/);
@@ -50,11 +51,9 @@ const actualUp = new Function('Events', `return function(pointer) ${upBody[1]}`)
 const source = readFileSync(new URL('../../src/main.ts', import.meta.url), 'utf8');
 const build = source.match(/case 'place-build-order': \{([\s\S]*?)\r?\n        \}\r?\n/);
 const object = source.match(/case 'place-object':([\s\S]*?)\r?\n          return;/);
-const room = source.match(/case 'zone-room':([\s\S]*?)\r?\n          return;/);
-if (build === null || object === null || room === null) throw Error('Actual main command producer absent');
+if (build === null || object === null) throw Error('Actual main command producer absent');
 const producers = { wall: new Function('intent', 'commands', 'requireSimulation', build[1]!),
-  object: new Function('intent', 'commands', 'requireSimulation', object[1]!),
-  room: new Function('intent', 'commands', 'requireSimulation', room[1]!) };
+  object: new Function('intent', 'commands', 'requireSimulation', object[1]!) };
 function worker() {
   const listeners: ((message: WorkerToMainMessage) => void)[] = [], sent: MainToWorkerMessage[] = [];
   const machine = new SimulationWorkerStateMachine({ postMessage: (message: WorkerToMainMessage) => listeners.forEach(listener => listener(message)) }, 'button-release', () => 0);
@@ -77,7 +76,10 @@ async function setup(mode: 'world' | 'oblique', selected: Tool) {
   const sender = (value: SimulationCommandSender) => value;
   wall.attachOrders(intent => producers.wall(intent, actors.commands, sender));
   object.attachGestures(intent => producers.object(intent, actors.commands, sender));
-  room.attachGestures(intent => producers.room(intent, actors.commands, sender));
+  // Rooms owns an explicit confirm step downstream. Observe the real report;
+  // do not bypass that UI and pretend the scene automatically sends ZoneRoom.
+  const roomReports: HudRoomGesture[] = [];
+  room.attachGestures(intent => roomReports.push(intent));
   const options = { feed: { readFrame: () => EMPTY_RENDER_FRAME }, keyValueStore: { getItem: () => null, setItem: () => undefined }, buildTool: wall, objectTool: object, roomTool: room };
   const actual = mode === 'world' ? new WorldScene(options) : new ObliqueWorldScene(options);
   Reflect.set(actual, 'loadActorAtlases', async () => undefined); Reflect.set(actual, 'loadEnvironmentArt', async () => undefined);
@@ -97,7 +99,7 @@ async function setup(mode: 'world' | 'oblique', selected: Tool) {
     else handler(pointer);
     if (actual instanceof WorldScene) actual.cameras.main.preRender(); return pointer;
   }
-  return { actors, actual, mouse, pointer, tools: { wall, object, room } };
+  return { actors, actual, mouse, pointer, roomReports, tools: { wall, object, room } };
 }
 for (const tool of ['wall', 'object', 'room'] as const) {
   for (const mode of ['world', 'oblique'] as const) {
@@ -107,10 +109,11 @@ for (const tool of ['wall', 'object', 'room'] as const) {
       h.mouse('down', 1, 5); h.mouse('move', 1, 5, 940);
       h.mouse('up', 1, 1, 940, outside);
       expect(h.pointer.primaryDown).toBe(true); expect(h.pointer.buttons).toBe(1);
-      console.log('ACTUAL_CHORD_RELEASE', JSON.stringify({ mode, tool, outside, primaryDown: h.pointer.primaryDown, buttons: h.pointer.buttons, commands: h.actors.submitted().map(message => message.payload.command.data) }));
+      console.log('ACTUAL_CHORD_RELEASE', JSON.stringify({ mode, tool, outside, primaryDown: h.pointer.primaryDown, buttons: h.pointer.buttons, commands: h.actors.submitted().map(message => message.payload.command.data), roomReports: h.roomReports }));
+      expect(h.roomReports, 'room completion must wait for its primary release before the HUD offers explicit confirmation').toHaveLength(0);
       expect(h.actors.submitted(), 'the real main/worker path must stay empty until the primary construction button is released').toHaveLength(0);
       h.mouse('up', 0, 0, 940);
-      expect(h.actors.submitted().length).toBeGreaterThan(0);
+      expect(tool === 'room' ? h.roomReports.length : h.actors.submitted().length).toBeGreaterThan(0);
       const finishedView = h.actual.captureCameraView(); h.mouse('move', 0, 0, 960);
       expect(h.actual.captureCameraView()).toEqual(finishedView); // released middle cannot leave a lingering pan
     });
@@ -119,7 +122,43 @@ for (const tool of ['wall', 'object', 'room'] as const) {
       h.mouse('down', 1, 4); h.mouse('move', 1, 4, 980); h.mouse('up', 1, 0, 980);
       expect(h.actual.captureCameraView()).not.toEqual(before); expect(h.actors.submitted()).toHaveLength(0);
       h.mouse('down', 0, 1); h.mouse('move', 0, 1, 920); h.mouse('up', 0, 0, 920);
-      expect(h.actors.submitted().length).toBeGreaterThan(0);
+      expect(tool === 'room' ? h.roomReports.length : h.actors.submitted().length).toBeGreaterThan(0);
     });
   }
+}
+
+for (const tool of ['wall', 'object', 'room'] as const) {
+  for (const cancel of ['Escape', 'blur']) it(`World/${tool}: ${cancel} cancels a held chord before either remaining release`, async () => {
+    const h = await setup('world', tool); h.mouse('down', 0, 1); h.mouse('down', 1, 5);
+    if (cancel === 'blur') window.dispatchEvent(new Event('blur'));
+    else {
+      window.dispatchEvent(Object.assign(new Event('keydown'), { key: 'Escape', code: 'Escape' }));
+      window.dispatchEvent(Object.assign(new Event('keyup'), { key: 'Escape', code: 'Escape' }));
+    }
+    h.mouse('up', 1, 1); h.mouse('up', 0, 0);
+    expect(h.actors.submitted()).toHaveLength(0); expect(h.roomReports).toHaveLength(0);
+  });
+  it(`World/${tool}: a genuine single touch still completes its owning gesture`, async () => {
+    const h = await setup('world', tool);
+    const touch = new Pointer(h.pointer.manager, 1);
+    Reflect.set(h.actual.input.manager, 'pointers', [h.pointer, touch]);
+    const contact = { identifier: 1, target: h.actual.game.canvas, pageX: 900, pageY: 460 } as unknown as Touch;
+    const event = { timeStamp: 1 } as TouchEvent;
+    touch.touchstart(contact, event); plumbing.handlers.get('pointerdown')!(touch);
+    touch.touchend(contact, event); plumbing.handlers.get('pointerup')!(touch);
+    expect(touch.wasTouch).toBe(true); expect(tool === 'room' ? h.roomReports : h.actors.submitted()).toHaveLength(1);
+  });
+  it(`World/${tool}: second real touch arrival cancels construction before either release`, async () => {
+    const h = await setup('world', tool);
+    const first = new Pointer(h.pointer.manager, 1), second = new Pointer(h.pointer.manager, 2);
+    Reflect.set(h.actual.input.manager, 'pointers', [h.pointer, first, second]);
+    const contact = { identifier: 1, target: h.actual.game.canvas, pageX: 900, pageY: 460 } as unknown as Touch;
+    const another = { ...contact, identifier: 2, pageX: 920 } as Touch;
+    const event = { timeStamp: 1 } as TouchEvent;
+    first.touchstart(contact, event); plumbing.handlers.get('pointerdown')!(first);
+    second.touchstart(another, event); plumbing.handlers.get('pointerdown')!(second);
+    first.touchend(contact, event); plumbing.handlers.get('pointerup')!(first);
+    second.touchend(another, event); plumbing.handlers.get('pointerup')!(second);
+    expect(h.actors.submitted()).toHaveLength(0); expect(h.roomReports).toHaveLength(0);
+  });
 }
