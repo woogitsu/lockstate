@@ -249,6 +249,10 @@
                     {
                         "assetId":  "furniture.classroom.teacher-desk",
                         "manifest":  "/game-content/oblique-furniture-classroom-teacher-desk.v1.json"
+                    },
+                    {
+                        "assetId":  "furniture.reception.waiting-armchair",
+                        "manifest":  "/game-content/oblique-furniture-reception-waiting-armchair.v1.json"
                     }
                 ]
 }
