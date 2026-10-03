@@ -1,0 +1,69 @@
+{
+  "controls": [
+    {
+      "control": "omit-real-rear-brace",
+      "exitCode": 1,
+      "error": "ValueError: Generic wooden rack retained/authored mesh set changed"
+    },
+    {
+      "control": "move-real-mount",
+      "exitCode": 1,
+      "error": "ValueError: Generic wooden rack actual evaluated authored geometry changed"
+    },
+    {
+      "control": "move-retained-post",
+      "exitCode": 1,
+      "error": "ValueError: Generic wooden rack actual evaluated authored geometry changed"
+    },
+    {
+      "control": "change-retained-bevel",
+      "exitCode": 1,
+      "error": "ValueError: Generic wooden rack actual authored topology/material assignment/modifier data changed"
+    },
+    {
+      "control": "change-retained-material-graph",
+      "exitCode": 1,
+      "error": "ValueError: Generic wooden rack retained twelve material graphs changed"
+    },
+    {
+      "control": "change-added-joint-material",
+      "exitCode": 1,
+      "error": "ValueError: Generic wooden rack actual authored topology/material assignment/modifier data changed"
+    },
+    {
+      "control": "actual-reversed-joint-winding",
+      "exitCode": 1,
+      "error": "ValueError: Evaluated generic wooden rack geometric surfaces face inward: angled-generic-rack.shelf triangular support 0 -0.399"
+    },
+    {
+      "control": "wrong-loaded-fit",
+      "exitCode": 1,
+      "error": "ValueError: Generic wooden rack declared occupied rectangle/source fit/accepted target changed"
+    },
+    {
+      "control": "wrong-accepted-target",
+      "exitCode": 1,
+      "error": "ValueError: Generic wooden rack declared occupied rectangle/source fit/accepted target changed"
+    },
+    {
+      "control": "wrong-canonical-descriptor",
+      "exitCode": 1,
+      "error": "ValueError: Generic wooden rack exporter targets the wrong canonical descriptor"
+    },
+    {
+      "control": "wrong-camera-span",
+      "exitCode": 1,
+      "error": "ValueError: Generic wooden rack actual camera pitch differs from64pixels per tile"
+    },
+    {
+      "control": "wrong-camera-vector",
+      "exitCode": 1,
+      "error": "ValueError: Generic wooden rack actual camera ground basis differs from world projection"
+    }
+  ],
+  "exactRestoredNativeVerifyExitCode": 0,
+  "sourceBytesUnchanged": true,
+  "wrapperSha256": "7744478eea69c4eb98956f54e0170305b0b5e65299bf02e1ddadd7486a2ce7a4",
+  "sourceSha256": "600d62b3b5708081445b6ba84b5f38fc8534922f6a128b448e1585c97e95c212",
+  "originalSourceSha256": "3806d996ce473e166aaa00bef379655aac2c41ef4d45f7f32b48a893ff4b4eed"
+}
