@@ -1,0 +1,38 @@
+[
+    {
+        "file":  "lockstate-object-preflight-channel-green-20261003.txt",
+        "sha256":  "E6980F7D51C7716DC79716627DFE6BE03790BF7AF7EB43CDA183BAFDEFCD1269"
+    },
+    {
+        "file":  "lockstate-object-preflight-channel-green2-20261003.txt",
+        "sha256":  "5D839C2CC83C0A9B8529993C3FAC7A8C6CE6DC79644F7295B6F812FFB5B7EE7D"
+    },
+    {
+        "file":  "lockstate-object-preflight-footprint-omission-red-20261003.txt",
+        "sha256":  "027BFF99FF66886B7EA5C8BCFC3A841140809F55B0D4F06288765078A71D1B3B"
+    },
+    {
+        "file":  "lockstate-object-preflight-original-red-20261003.txt",
+        "sha256":  "366A5586A2C4FD084AE56D73DBF477F96A0BE77BB4C85A6025284A5ACBB867ED"
+    },
+    {
+        "file":  "lockstate-object-preflight-restored-green-20261003.txt",
+        "sha256":  "D2BC4E86E371B449B07F94BFA2AB3DF2CFA37CD0731EB88AE37FA48FA4EC0A8C"
+    },
+    {
+        "file":  "lockstate-object-preflight-service-green-20261003.txt",
+        "sha256":  "3FCB12B19411392BDEA38EAC9F059C69F6E53FF0FDB891BB906AACE91AE83275"
+    },
+    {
+        "file":  "lockstate-object-preflight-types-20261003.txt",
+        "sha256":  "F254927CA151261E831922A0C083F9DC113B3B283DAD88338F48BCE9FA70BD54"
+    },
+    {
+        "file":  "lockstate-object-preflight-types-green-20261003.txt",
+        "sha256":  "36FA7E565C14B2673AA52912E9C66C639465949E8FC3D07C9D18674B5D220A41"
+    },
+    {
+        "file":  "lockstate-object-preflight-worker-facing-omission-red-20261003.txt",
+        "sha256":  "32828204C3ED9231BBAC939B54BC40FA5B39BC8967E1E0051A79EC92A7930DF9"
+    }
+]
