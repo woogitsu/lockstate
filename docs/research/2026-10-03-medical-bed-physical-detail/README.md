@@ -25,3 +25,15 @@ Two genuine winding controls reverse only the retained bed-base faces, preservin
 ## Remaining scoped work
 
 Canonical 72 pose export/repeat, only the approved medical-bed MODELS tuple/bed-only guard dispatch, actual producer/decoded-PNG controls, focused checks and a genuine q0/q1 Infirmary worker/SaveLoad fixture follow. Medicine Cabinet dispatch/source and all shared functions remain untouched. Native pixels and consumer-removal acceptance are queued for the parent; no hosted completion is claimed.
+
+## Canonical export and real negative controls
+
+All 72 poses and the descriptor repeat byte-for-byte (73/73 files). Descriptor SHA256 is `ba270bbadd9f4f821f7a0748c2bddc9c23b7e85d494935b3fb317ffc75dc265a`. Every 256 x 256 frame was independently decoded; minimum transparent margin is 53 pixels. The [all 72 pose sheet](all72-pose-contact-sheet.png) was opened at original resolution; the original linens/end panels remain readable, with visible caster and lifting detail at lower elevations. [export-repeat-and-borders.json](export-repeat-and-borders.json) records every actual frame hash/bounds. Only the previous 72 same-bed frame references were retired.
+
+Production integration changes only the medical-bed tuple and bed-only guard dispatch in `render-medical-oblique.py`. Medicine Cabinet tuple/dispatch, shared functions and default callbacks remain unchanged. `--verify-bed` uses the actual common production dispatch without opening or rendering the cabinet. Three actual dispatch controls (old source, wrong Y fit and wrong target) fail; byte-exact common-wrapper restoration returns native verify 0 ([medical-dispatch-controls.json](medical-dispatch-controls.json)).
+
+Eleven actual dedicated loaded-source/camera controls fail: omitted caster, moved safety rail, moved original control, changed original bevel/material graph, changed wheel material, wrong scale/target/canonical descriptor/camera span/camera vector. Script exact restoration returns native verify 0 and both original/dedicated blends stay byte-identical ([producer-controls.json](producer-controls.json)). Together with the two genuine reversed-winding controls this proves actual authored data and geometric normal enforcement.
+
+A real opaque pixel was placed on the image edge, with the actual referenced PNG SHA and filename updated consistently. Hash, filename, signature and dimensions passed; the independently decoded transparent border assertion failed. A separate canonical target mutation also fails. PNG/descriptor byte-exact restoration returns unit exit 0 ([decoded-consumer-controls.json](decoded-consumer-controls.json)). No border or hash assertion was weakened.
+
+Focused dedicated/medical/pipeline contracts pass 7 tests across 3 suites, with the generic live pipeline case skipped when Blender is absent from runner PATH. Direct pinned native source/camera/export checks above executed explicitly. App and tools TypeScript exit 0. Genuine q0/q1 worker Build/SaveLoad, native physical-detail inspection and mapping-negative acceptance remain queued; no browser was launched.
