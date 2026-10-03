@@ -1,0 +1,91 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-renderer-template-cursor-audit-20261003
+
+ ❯ tests/unit/ui-renderer-template-stationary-hover.test.ts (20 tests | 12 failed) 156ms
+   × world→replacement rotated plan retains physical map cursor despite old worker reply 32ms
+   × world→replacement rotated/mirrored plan retains physical map cursor despite old worker reply 11ms
+   × oblique→replacement rotated plan retains physical map cursor despite old worker reply 6ms
+   × oblique→replacement rotated/mirrored plan retains physical map cursor despite old worker reply 8ms
+   × world?replacement: old real refusal cannot hide or block the newly picked legal plan 10ms
+   × world?replacement: current canvas bounds convert retained physical coordinates anew 3ms
+   × world?replacement/mirrored: old real refusal cannot hide or block the newly picked legal plan 2ms
+   × world?replacement/mirrored: current canvas bounds convert retained physical coordinates anew 3ms
+   × oblique?replacement: old real refusal cannot hide or block the newly picked legal plan 5ms
+   × oblique?replacement: current canvas bounds convert retained physical coordinates anew 3ms
+   × oblique?replacement/mirrored: old real refusal cannot hide or block the newly picked legal plan 3ms
+   × oblique?replacement/mirrored: current canvas bounds convert retained physical coordinates anew 4ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 12 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-renderer-template-stationary-hover.test.ts > world→replacement rotated plan retains physical map cursor despite old worker reply
+ FAIL  tests/unit/ui-renderer-template-stationary-hover.test.ts > world→replacement rotated/mirrored plan retains physical map cursor despite old worker reply
+ FAIL  tests/unit/ui-renderer-template-stationary-hover.test.ts > oblique→replacement rotated plan retains physical map cursor despite old worker reply
+ FAIL  tests/unit/ui-renderer-template-stationary-hover.test.ts > oblique→replacement rotated/mirrored plan retains physical map cursor despite old worker reply
+AssertionError: current renderer must show the current armed whole-square plan without physical mouse movement: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/unit/ui-renderer-template-stationary-hover.test.ts:160:135
+    158|   it(`${initialMode}→replacement rotated${mirrored ? '/mirrored' : ''}…
+    159|     const h = await setup(initialMode, mirrored);
+    160|     expect(h.layers.at(-1)!.hidden, 'current renderer must show the cu…
+       |                                                                                                                                       ^
+    161|     expect(h.layers.at(-1)!.children[0]!.children).toHaveLength(28);
+    162|     expect(h.layers.at(-1)!.dataset.ready).toBe('clear');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/12]⎯
+
+ FAIL  tests/unit/ui-renderer-template-stationary-hover.test.ts > world?replacement: old real refusal cannot hide or block the newly picked legal plan
+ FAIL  tests/unit/ui-renderer-template-stationary-hover.test.ts > world?replacement/mirrored: old real refusal cannot hide or block the newly picked legal plan
+ FAIL  tests/unit/ui-renderer-template-stationary-hover.test.ts > oblique?replacement: old real refusal cannot hide or block the newly picked legal plan
+ FAIL  tests/unit/ui-renderer-template-stationary-hover.test.ts > oblique?replacement/mirrored: old real refusal cannot hide or block the newly picked legal plan
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/unit/ui-renderer-template-stationary-hover.test.ts:192:37
+    190|   it(`${initialMode}?replacement${mirrored ? '/mirrored' : ''}: old re…
+    191|     const h = await setup(initialMode, mirrored, { oldRefused: true });
+    192|     expect(h.layers.at(-1)!.hidden).toBe(false);
+       |                                     ^
+    193|     expect(h.layers.at(-1)!.dataset.ready).toBe('clear');
+    194|     expect(h.layers.at(-1)!.children[0]!.children).toHaveLength(28);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/12]⎯
+
+ FAIL  tests/unit/ui-renderer-template-stationary-hover.test.ts > world?replacement: current canvas bounds convert retained physical coordinates anew
+ FAIL  tests/unit/ui-renderer-template-stationary-hover.test.ts > world?replacement/mirrored: current canvas bounds convert retained physical coordinates anew
+ FAIL  tests/unit/ui-renderer-template-stationary-hover.test.ts > oblique?replacement: current canvas bounds convert retained physical coordinates anew
+ FAIL  tests/unit/ui-renderer-template-stationary-hover.test.ts > oblique?replacement/mirrored: current canvas bounds convert retained physical coordinates anew
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/unit/ui-renderer-template-stationary-hover.test.ts:207:37
+    205|   it(`${initialMode}?replacement${mirrored ? '/mirrored' : ''}: curren…
+    206|     const h = await setup(initialMode, mirrored, { changedBounds: true…
+    207|     expect(h.layers.at(-1)!.hidden).toBe(false); expect(h.layers.at(-1…
+       |                                     ^
+    208|     const requests = h.actors.sent.filter(message => message.kind === …
+    209|     expect(requests.at(-1)?.payload).toMatchObject({ target: { origin:…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/12]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  12 failed | 8 passed (20)
+   Start at  05:16:29
+   Duration  4.67s (transform 1.94s, setup 0ms, import 4.36s, tests 156ms, environment 0ms)
+
