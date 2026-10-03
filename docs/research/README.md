@@ -100,6 +100,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 
 | Record | Question it answered | Decision it fed |
 | --- | --- | --- |
+| [Individual object rotation command](./2026-10-03-individual-object-rotation-command/README.md) | Does optional individual facing reach actual purchases, full footprints and whole V8? | Approved #2019 command fields; public interaction/copy remains a separate review. |
 | [Stationary plan anchor audit](./2026-10-03-stationary-plan-anchor-audit/README.md) | Is there another reproducible stale fitted-origin/quote/session placement after camera adjustment? | Existing bounded 85 source cases GREEN, no new finding; proceed to approved existing #2019 individual-object rotation. |
 | [2026-10-03 integrated verification repairs](./2026-10-03-integrated-verification-repairs/README.md) | What did the full combined verification gate actually fail, and which source or environment causes were repaired? | Preserve the original 30 failures; numeric canonical seeds, truthful Blender build metadata and actual published tracking refs, with unchanged gate budgets. Full combined gate pending. |
 | [World held arrow and catalogue focus](./2026-10-03-world-roving-held-arrow/README.md) | Does World stop an already-held camera arrow when a grouped catalogue radio takes focus? | Source reproduction of missing #1943 World parity; preserve ordinary-button/WASD control without a new layout rule. |

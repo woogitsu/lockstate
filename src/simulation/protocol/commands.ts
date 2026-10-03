@@ -423,9 +423,9 @@ export const hireStaffSchema = z.object({
  * `x`/`y` are the anchor tile: the footprint's top-left corner, in the same
  * shape `ZoneRoom`, `PlaceBuildOrder` and `AdmitPrisoner` all carry a tile.
  *
- * ## No orientation, and no `transactionId`
+ * ## Optional facing, and no `transactionId`
  *
- * **No `orientation`, deliberately.** `PlacedObject` carries one and the save
+ * **The original phase 1 contract had no `orientation`, deliberately.** `PlacedObject` carries one and the save
  * carries it at full range, so a rotated bed needs no format change -- but
  * nothing in the application can *express* a rotation: the gesture is one press
  * (ADR 0028 decision 5) and the rotate half of that decision needs a new
@@ -433,7 +433,9 @@ export const hireStaffSchema = z.object({
  * phase 1 ships. A field on the wire that no producer sets and no consumer
  * varies would be exactly the dead vocabulary
  * `tests/foundation/unconsumed-command-contract.test.ts` exists to catch, one
- * level down. It arrives with the control.
+ * level down. That was the phase 1 rule. The owner-approved #2019 command
+ * extension now carries optional `quarterTurns` (0–3); omission retains the
+ * original facing 0. The separate public interaction/copy remains under review.
  *
  * **No `transactionId`.** An object placement *does* write a construction
  * order, so unlike `ZoneRoom` there is something for
@@ -452,6 +454,7 @@ export const placeObjectSchema = z.object({
   definitionId: z.string(),
   x: z.number().int(),
   y: z.number().int(),
+  quarterTurns: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]).optional(),
 }).strict();
 
 /**
@@ -895,6 +898,7 @@ function commandJson(command: SimulationCommand): JsonValue {
         definitionId: command.definitionId,
         x: command.x,
         y: command.y,
+        ...(command.quarterTurns === undefined ? {} : { quarterTurns: command.quarterTurns }),
       };
 
     case 'RemoveObject':

@@ -120,7 +120,7 @@ export interface PlaceObjectRequest {
   readonly transactionId?: string;
   /** Internal deferred-plan history membership; absent on player commands and saves. */
   readonly historyContinuationOrderIds?: readonly string[];
-  /** Authored template facing; ordinary object commands retain absent=0. */
+  /** Authored template or approved individual-command facing; absent retains 0. */
   readonly objectOrientation?: ObjectOrientation;
 }
 
