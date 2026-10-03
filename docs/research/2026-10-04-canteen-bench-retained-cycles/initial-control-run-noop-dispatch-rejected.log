@@ -1,0 +1,18 @@
+actual-saved-source-mutant-written GREEN 0
+actual-source-contact-RED RED 1
+exact-source-restore-GREEN GREEN 0
+python.exe : Traceback (most recent call last):
+At line:24 char:1
++ & 'C:\Users\matma\AppData\Local\Programs\Python\Python314\python.exe' ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-bench-cycles-20261004\tooling\verify-canteen-bench-cycle
+s-production.py", line 172, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-bench-cycles-20261004\tooling\verify-canteen-bench-cycle
+s-production.py", line 81, in main
+    raise AssertionError('Real producer dispatch did not mutate')
+AssertionError: Real producer dispatch did not mutate

@@ -1,0 +1,19 @@
+00:01.453  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-bench-cycles-20261004\assets\source\blender\furniture.corridor.bench.soft-light.blend"
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
+Traceback (most recent call last):
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-bench-cycles-20261004\tooling\blender\render-canteen-bench-cycles.py", line 117, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-bench-cycles-20261004\tooling\blender\render-canteen-bench-cycles.py", line 84, in main
+    verify_exports()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-bench-cycles-20261004\tooling\blender\render-canteen-bench-cycles.py", line 65, in verify_exports
+    png_decoder.validate_png(body)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-bench-cycles-20261004\tooling\blender\render-wooden-bench-ground-mounts-oblique.py", line 101, in validate_png
+    raise ValueError('Bench ground mount decoded silhouette clips frame border')
+ValueError: Bench ground mount decoded silhouette clips frame border
+
+Error: script failed, file: 'C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-bench-cycles-20261004\tooling\blender\render-canteen-bench-cycles.py', exiting.

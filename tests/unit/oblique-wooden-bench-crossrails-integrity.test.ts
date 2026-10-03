@@ -64,7 +64,10 @@ it('consumes the detailed default through the existing descriptor and decodes ev
   expect(catalog.assetId).toBe('furniture.corridor.bench.variants');
   const ground = JSON.parse(readFileSync(new URL('assets/source/blender/furniture.corridor.bench.grounded-detail.provenance.json', root), 'utf8')) as { source: string; sourceSha256: string; originalSource: string; originalSourceSha256: string };
   expect(ground.originalSource).toBe(provenance.source); expect(ground.originalSourceSha256).toBe(provenance.sourceSha256);
-  expect(catalog.source).toBe(ground.source); expect(catalog.sourceSha256).toBe(ground.sourceSha256);
+  const soft = JSON.parse(readFileSync(new URL('assets/source/blender/furniture.corridor.bench.soft-light.provenance.json', root), 'utf8')) as {source:string;sourceSha256:string;retainedSource:string;retainedSourceSha256:string};
+  expect(soft.retainedSource).toBe(ground.source); expect(soft.retainedSourceSha256).toBe(ground.sourceSha256);
+  expect(catalog.source).toBe(soft.source); expect(catalog.sourceSha256).toBe('b4e5ca9317c74e0f8182937658c0a3f7026f114fcb7e1661101628cbd75c4e94');
+  expect(hash(readFileSync(new URL(soft.source, root)))).toBe(catalog.sourceSha256); expect(soft.sourceSha256).toBe(catalog.sourceSha256);
   expect(catalog.resolutionPx).toEqual([256,256]); expect(catalog.pivotPx).toEqual([128,128]);
   expect(catalog.nominalPixelsPerTile).toBe(64); expect(catalog.cameraTargetTiles).toEqual([1,.5,.44325]);
   expect(catalog.frames).toHaveLength(72);

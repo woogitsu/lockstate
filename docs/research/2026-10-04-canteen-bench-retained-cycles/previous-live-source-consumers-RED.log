@@ -1,0 +1,83 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-canteen-bench-cycles-20261004
+
+·x·x·xxx·
+node :
+At line:9 char:1
++ node node_modules/vitest/vitest.mjs run tests/unit/oblique-wooden-ben ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-wooden-bench-crossrails-integrity.test.ts > consumes the detailed default through the existin
+g descriptor and decodes every canonical frame without clipping
+AssertionError: expected 'assets/source/blender/furniture.corri…' to be 'assets/source/blender/furniture.corri…' // Obj
+ect.is equality
+
+Expected: "assets/source/blender/furniture.corridor.bench.grounded-detail.blend"
+Received: "assets/source/blender/furniture.corridor.bench.soft-light.blend"
+
+ ❯ tests/unit/oblique-wooden-bench-crossrails-integrity.test.ts:67:26
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  tests/unit/oblique-wooden-bench-ground-mounts-consumer.test.ts > existing completed bench consumers select the g
+enuinely grounded retained assembly > selects both literal Holding Cell benches q0 at world60/-30 and elevation40
+ FAIL  tests/unit/oblique-wooden-bench-ground-mounts-consumer.test.ts > existing completed bench consumers select the g
+enuinely grounded retained assembly > selects both literal Holding Cell benches q1 at world60/-30 and elevation40
+AssertionError: expected 'assets/source/blender/furniture.corri…' to be 'assets/source/blender/furniture.corri…' // Obj
+ect.is equality
+
+Expected: "assets/source/blender/furniture.corridor.bench.grounded-detail.blend"
+Received: "assets/source/blender/furniture.corridor.bench.soft-light.blend"
+
+ ❯ registeredCatalog tests/unit/oblique-wooden-bench-ground-mounts-consumer.test.ts:25:26
+     23|   const entry = entries[0]!;
+     24|   const catalog = parseObliqueModuleCatalog(json(entry.manifest.slice(…
+     25|   expect(catalog.source).toBe('assets/source/blender/furniture.corrido…
+       |                          ^
+     26|   expect(catalog.sourceSha256).toBe('8518e5d755352f6511bcb4f2165674e1b…
+     27|   expect(obliqueCatalogForObject('object.bench', new Map([[catalog.ass…
+ ❯ tests/unit/oblique-wooden-bench-ground-mounts-consumer.test.ts:49:74
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  tests/unit/oblique-wooden-bench-ground-mounts-integrity.test.ts > selects the complete grounded source and decod
+es every genuine canonical body, retaining all previous 72 images
+AssertionError: expected 'assets/source/blender/furniture.corri…' to be 'assets/source/blender/furniture.corri…' // Obj
+ect.is equality
+
+Expected: "assets/source/blender/furniture.corridor.bench.grounded-detail.blend"
+Received: "assets/source/blender/furniture.corridor.bench.soft-light.blend"
+
+ ❯ tests/unit/oblique-wooden-bench-ground-mounts-integrity.test.ts:73:93
+     71| it('selects the complete grounded source and decodes every genuine can…
+     72|   const catalog = parseObliqueModuleCatalog(JSON.parse(readFileSync(ne…
+     73|   expect(catalog.assetId).toBe('furniture.corridor.bench.variants'); e…
+       |                                                                                             ^
+     74|   expect(catalog.resolutionPx).toEqual([256, 256]); expect(catalog.piv…
+     75|   expect(catalog.nominalPixelsPerTile).toBe(64); expect(catalog.camera…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  tests/unit/oblique-wooden-bench-integrity.test.ts > retains the original authored wooden bench mesh set and expo
+rts the authoritative 2x1 footprint
+AssertionError: expected 'assets/source/blender/furniture.corri…' to be 'assets/source/blender/furniture.corri…' // Obj
+ect.is equality
+
+Expected: "assets/source/blender/furniture.corridor.bench.grounded-detail.blend"
+Received: "assets/source/blender/furniture.corridor.bench.soft-light.blend"
+
+ ❯ tests/unit/oblique-wooden-bench-integrity.test.ts:45:26
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+
+ Test Files  4 failed (4)
+      Tests  5 failed | 4 passed (9)
+   Start at  01:08:22
+   Duration  596ms (transform 297ms, setup 0ms, import 958ms, tests 196ms, environment 0ms)
