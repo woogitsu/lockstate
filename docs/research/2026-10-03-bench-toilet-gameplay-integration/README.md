@@ -24,3 +24,6 @@ Frozen65e02bebc94272a16c62c7b242b82c6e7d6d4ee8 completes6/6GREEN, no skipped/fla
 
 The first native numeric observer fails2/2 because it compared the whole ghost label to only the material quote. Actual labels preserve the instruction and clear verdict before the unchanged35Brick/2Wood/1530 quote. The archived numeric-original report includes both complete failed worker/input attachments and captures. Only the literal label observation is corrected; runtime, whole-square geometry, prices and budgets stay unchanged.
 
+
+The next numeric observer2RED confirms the prepared bare-canvas coordinates were wrong with the real Build dock open. Opened original FullHD capture and real worker preflights pin the stationary900,460 cursor at15,14World /16,14Angled. Independent numeric origin20,5 remains unchanged and disjoint. Fresh empty worker snapshots omit optional roomTemplates; its absence is asserted explicitly. Stage2 raw results/fixture are preserved under native/numeric-label-corrected. No producer/quote/budget changes.
+

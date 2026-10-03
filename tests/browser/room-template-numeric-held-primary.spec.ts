@@ -155,11 +155,13 @@ for (const mode of ['world', 'oblique'] as const) test(`${mode} FullHD: numeric 
   await expect(ghost).toHaveAttribute('data-ready', 'clear');
   await expect(ghost.locator('polygon')).toHaveCount(28);
   await expect(ghost.getByRole('status')).toHaveText(`Click map to place; Esc cancels. | This footprint is clear. | ${quote}`);
-  const mapOrigin = mode === 'world' ? { x: 11, y: 11 } : { x: 10, y: 11 };
+  // Pinned against both opened actual FullHD captures and real preflight
+  // receipts with the public Build dock open; not a bare-canvas layout.
+  const mapOrigin = mode === 'world' ? { x: 15, y: 14 } : { x: 16, y: 14 };
   expect((await receipts(page)).replies.at(-1)).toMatchObject({ target: { templateId: 'cell-basic', origin: mapOrigin, quarterTurns: 1 }, verdict: { ok: true } });
   const before = await snapshot(page);
   expect(before.construction.orders).toEqual([]);
-  expect(before.simulation?.roomTemplates?.pending).toEqual([]);
+  expect(before.simulation?.roomTemplates, 'a fresh empty worker snapshot omits the optional template state').toBeUndefined();
   // Both disjoint7×4 footprints and numeric doorway approach19,6 are owned.
   expect(before.world.ownedChunks).toContainEqual({ x: 0, y: 0 });
   expect(before.world.chunkSize).toBe(32);

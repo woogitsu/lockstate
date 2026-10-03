@@ -1,0 +1,111 @@
+node : [2m[WebServer] [22m(node:51928) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:7 char:1
++ node --experimental-transform-types --disable-warning=ExperimentalWar ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 2 tests using 1 worker
+
+(node:40624) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:40624) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 tests\browser\room-template-numeric-held-primary.spec.ts:208:42 › world FullHD: numeric purchase consumes the originally held canvas primary without a second transaction (#1908) (4.7s)
+(node:5620) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:5620) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 tests\browser\room-template-numeric-held-primary.spec.ts:208:42 › oblique FullHD: numeric purchase consumes the originally held canvas primary without a second transaction (#1908) (5.8s)
+
+
+  1) tests\browser\room-template-numeric-held-primary.spec.ts:208:42 › world FullHD: numeric purchase consumes the originally held canvas primary without a second transaction (#1908) 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoMatchObject[2m([22m[32mexpected[39m[2m)[22m
+
+    [32m- Expected  - 2[39m
+    [31m+ Received  + 2[39m
+
+    [33m@@ -1,10 +1,10 @@[39m
+    [2m  Object {[22m
+    [2m    "target": Object {[22m
+    [2m      "origin": Object {[22m
+    [32m-       "x": 11,[39m
+    [32m-       "y": 11,[39m
+    [31m+       "x": 15,[39m
+    [31m+       "y": 14,[39m
+    [2m      },[22m
+    [2m      "quarterTurns": 1,[22m
+    [2m      "templateId": "cell-basic",[22m
+    [2m    },[22m
+    [2m    "verdict": Object {[22m
+
+      157 |   await expect(ghost.getByRole('status')).toHaveText(`Click map to place; Esc cancels. | This footprint is clear. | ${quote}`);
+      158 |   const mapOrigin = mode === 'world' ? { x: 11, y: 11 } : { x: 10, y: 11 };
+    > 159 |   expect((await receipts(page)).replies.at(-1)).toMatchObject({ target: { templateId: 'cell-basic', origin: mapOrigin, quarterTurns: 1 }, verdict: { ok: true } });
+          |                                                 ^
+      160 |   const before = await snapshot(page);
+      161 |   expect(before.construction.orders).toEqual([]);
+      162 |   expect(before.simulation?.roomTemplates, 'a fresh empty worker snapshot omits the optional template state').toBeUndefined();
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-bench-gameplay-integration-20261003\tests\browser\room-template-numeric-held-primary.spec.ts:159:49
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-numeric-native-label-corrected-20261003\room-template-numeric-held-82a3a--a-second-transaction-1908-\error-context.md
+
+  2) tests\browser\room-template-numeric-held-primary.spec.ts:208:42 › oblique FullHD: numeric purchase consumes the originally held canvas primary without a second transaction (#1908) 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoMatchObject[2m([22m[32mexpected[39m[2m)[22m
+
+    [32m- Expected  - 2[39m
+    [31m+ Received  + 2[39m
+
+    [33m@@ -1,10 +1,10 @@[39m
+    [2m  Object {[22m
+    [2m    "target": Object {[22m
+    [2m      "origin": Object {[22m
+    [32m-       "x": 10,[39m
+    [32m-       "y": 11,[39m
+    [31m+       "x": 16,[39m
+    [31m+       "y": 14,[39m
+    [2m      },[22m
+    [2m      "quarterTurns": 1,[22m
+    [2m      "templateId": "cell-basic",[22m
+    [2m    },[22m
+    [2m    "verdict": Object {[22m
+
+      157 |   await expect(ghost.getByRole('status')).toHaveText(`Click map to place; Esc cancels. | This footprint is clear. | ${quote}`);
+      158 |   const mapOrigin = mode === 'world' ? { x: 11, y: 11 } : { x: 10, y: 11 };
+    > 159 |   expect((await receipts(page)).replies.at(-1)).toMatchObject({ target: { templateId: 'cell-basic', origin: mapOrigin, quarterTurns: 1 }, verdict: { ok: true } });
+          |                                                 ^
+      160 |   const before = await snapshot(page);
+      161 |   expect(before.construction.orders).toEqual([]);
+      162 |   expect(before.simulation?.roomTemplates, 'a fresh empty worker snapshot omits the optional template state').toBeUndefined();
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-bench-gameplay-integration-20261003\tests\browser\room-template-numeric-held-primary.spec.ts:159:49
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-numeric-native-label-corrected-20261003\room-template-numeric-held-d52d4--a-second-transaction-1908-\error-context.md
+
+  2 failed
+    tests\browser\room-template-numeric-held-primary.spec.ts:208:42 › world FullHD: numeric purchase consumes the originally held canvas primary without a second transaction (#1908) 
+    tests\browser\room-template-numeric-held-primary.spec.ts:208:42 › oblique FullHD: numeric purchase consumes the originally held canvas primary without a second transaction (#1908) 
+
+==============================================================================
+LOCKSTATE_BROWSER_SUITE_NO_RETRY suite=artifact reason=no-last-run-file
+Playwright left no readable test-results/.last-run.json, so the run failed before it
+could record which tests failed. That is not net::ERR_NETWORK_CHANGED; not retrying.
+==============================================================================
+
