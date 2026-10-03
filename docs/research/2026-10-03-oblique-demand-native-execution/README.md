@@ -133,3 +133,19 @@ verified complete copy was made. The redundant partial copy was retained in own
 TEMP rather than removed after automatic removal review rejected deletion.
 No failed evidence was replaced. Corrected execution requires a new explicit
 bounded lease; it will be reported separately from this original 2 GREEN / 1 RED.
+
+## Terminal documentation boundary
+
+The exact-subject bounded documentation run was **22 GREEN / 1 RED**, index and
+links green. The sole failure is inherited Garbage source-record line 11's bare
+external Blender identifier (not a Git commit), already corrected on root's
+subsequent integration. [Original output](./documentation-gates.txt) remains.
+This isolated subject does not edit that other model record, its citation guard
+or budget. Root confirmed its later full verification separately; it is not
+claimed as this worktree's result.
+
+Issue #2018 was updated with the measured result and exact limitations:
+[published comment](https://github.com/woogitsu/lockstate/issues/2018#issuecomment-5969415822).
+The [actual readback](./issue-comment-readback.json) matches the posted body.
+An initial UTF-8 BOM input was definitively rejected with HTTP400 before a
+comment existed; that [posting error](./issue-comment-initial-error.txt) is retained.
