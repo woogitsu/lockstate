@@ -1,0 +1,361 @@
+{
+  "sourceOnlyMeasured": true,
+  "nativeScreenshotsMeasured": false,
+  "nativePixelThresholdChanged": false,
+  "newAcceptanceRGBSuggested": false,
+  "existingRule": "retain original RED and >40 native rule; require fresh actual delivered FullHD chair-specific calibration by root",
+  "samples": [
+    {
+      "stage": "before-workbench",
+      "yawDegrees": 60,
+      "elevationDegrees": 40,
+      "sourceFrame": "docs/research/2026-10-03-staff-chair-retained-cycles/before-workbench-yaw60-elev40.png",
+      "sourceSHA256": "3d0fd0a023174ec0a0fa897f33a57d1e07630a5201ec093f394a65634e399646",
+      "measurementRegion": "entire256x256sourceRGBA_not_nativeROI",
+      "originalNativeExactPadRGB": [
+        38,
+        41,
+        44
+      ],
+      "originalRGBFullyOpaqueSourceCount": 272,
+      "mostFrequentOpaqueColors": [
+        {
+          "rgba": [
+            38,
+            41,
+            44,
+            255
+          ],
+          "count": 272
+        },
+        {
+          "rgba": [
+            28,
+            30,
+            33,
+            255
+          ],
+          "count": 66
+        },
+        {
+          "rgba": [
+            97,
+            100,
+            102,
+            255
+          ],
+          "count": 65
+        },
+        {
+          "rgba": [
+            97,
+            101,
+            103,
+            255
+          ],
+          "count": 58
+        },
+        {
+          "rgba": [
+            86,
+            89,
+            91,
+            255
+          ],
+          "count": 53
+        },
+        {
+          "rgba": [
+            99,
+            102,
+            104,
+            255
+          ],
+          "count": 46
+        },
+        {
+          "rgba": [
+            93,
+            97,
+            99,
+            255
+          ],
+          "count": 42
+        },
+        {
+          "rgba": [
+            93,
+            96,
+            98,
+            255
+          ],
+          "count": 40
+        }
+      ]
+    },
+    {
+      "stage": "before-workbench",
+      "yawDegrees": 300,
+      "elevationDegrees": 40,
+      "sourceFrame": "docs/research/2026-10-03-staff-chair-retained-cycles/before-workbench-yaw300-elev40.png",
+      "sourceSHA256": "8c0493f6107d08f56da0f2af5552c653597421c330c68819a7c3940088a1a065",
+      "measurementRegion": "entire256x256sourceRGBA_not_nativeROI",
+      "originalNativeExactPadRGB": [
+        38,
+        41,
+        44
+      ],
+      "originalRGBFullyOpaqueSourceCount": 259,
+      "mostFrequentOpaqueColors": [
+        {
+          "rgba": [
+            38,
+            41,
+            44,
+            255
+          ],
+          "count": 259
+        },
+        {
+          "rgba": [
+            70,
+            73,
+            74,
+            255
+          ],
+          "count": 121
+        },
+        {
+          "rgba": [
+            69,
+            72,
+            73,
+            255
+          ],
+          "count": 101
+        },
+        {
+          "rgba": [
+            67,
+            70,
+            71,
+            255
+          ],
+          "count": 59
+        },
+        {
+          "rgba": [
+            28,
+            30,
+            33,
+            255
+          ],
+          "count": 58
+        },
+        {
+          "rgba": [
+            71,
+            74,
+            75,
+            255
+          ],
+          "count": 52
+        },
+        {
+          "rgba": [
+            19,
+            21,
+            23,
+            255
+          ],
+          "count": 24
+        },
+        {
+          "rgba": [
+            68,
+            71,
+            72,
+            255
+          ],
+          "count": 22
+        }
+      ]
+    },
+    {
+      "stage": "after-soft-materials",
+      "yawDegrees": 60,
+      "elevationDegrees": 40,
+      "sourceFrame": "docs/research/2026-10-03-staff-chair-retained-cycles/after-soft-materials-yaw60-elev40.png",
+      "sourceSHA256": "a200ce9518d232a2ef0f6bdac0343738042804f87fb3e57f67c9f648345682f8",
+      "measurementRegion": "entire256x256sourceRGBA_not_nativeROI",
+      "originalNativeExactPadRGB": [
+        38,
+        41,
+        44
+      ],
+      "originalRGBFullyOpaqueSourceCount": 0,
+      "mostFrequentOpaqueColors": [
+        {
+          "rgba": [
+            86,
+            89,
+            90,
+            255
+          ],
+          "count": 44
+        },
+        {
+          "rgba": [
+            85,
+            88,
+            89,
+            255
+          ],
+          "count": 38
+        },
+        {
+          "rgba": [
+            84,
+            87,
+            88,
+            255
+          ],
+          "count": 24
+        },
+        {
+          "rgba": [
+            81,
+            84,
+            85,
+            255
+          ],
+          "count": 22
+        },
+        {
+          "rgba": [
+            86,
+            88,
+            89,
+            255
+          ],
+          "count": 21
+        },
+        {
+          "rgba": [
+            82,
+            85,
+            86,
+            255
+          ],
+          "count": 21
+        },
+        {
+          "rgba": [
+            37,
+            36,
+            35,
+            255
+          ],
+          "count": 19
+        },
+        {
+          "rgba": [
+            36,
+            35,
+            34,
+            255
+          ],
+          "count": 18
+        }
+      ]
+    },
+    {
+      "stage": "after-soft-materials",
+      "yawDegrees": 300,
+      "elevationDegrees": 40,
+      "sourceFrame": "docs/research/2026-10-03-staff-chair-retained-cycles/after-soft-materials-yaw300-elev40.png",
+      "sourceSHA256": "c89847058d28a70c0852dd5f0f6af903b449b78388cc68ca8b46560eefac6bf0",
+      "measurementRegion": "entire256x256sourceRGBA_not_nativeROI",
+      "originalNativeExactPadRGB": [
+        38,
+        41,
+        44
+      ],
+      "originalRGBFullyOpaqueSourceCount": 0,
+      "mostFrequentOpaqueColors": [
+        {
+          "rgba": [
+            88,
+            90,
+            91,
+            255
+          ],
+          "count": 30
+        },
+        {
+          "rgba": [
+            89,
+            91,
+            92,
+            255
+          ],
+          "count": 27
+        },
+        {
+          "rgba": [
+            88,
+            91,
+            92,
+            255
+          ],
+          "count": 27
+        },
+        {
+          "rgba": [
+            90,
+            92,
+            93,
+            255
+          ],
+          "count": 26
+        },
+        {
+          "rgba": [
+            85,
+            88,
+            89,
+            255
+          ],
+          "count": 24
+        },
+        {
+          "rgba": [
+            87,
+            89,
+            90,
+            255
+          ],
+          "count": 23
+        },
+        {
+          "rgba": [
+            87,
+            90,
+            91,
+            255
+          ],
+          "count": 22
+        },
+        {
+          "rgba": [
+            18,
+            18,
+            17,
+            255
+          ],
+          "count": 21
+        }
+      ]
+    }
+  ]
+}

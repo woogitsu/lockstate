@@ -11,4 +11,11 @@ Actual playable RoomStaffRoom/ObjectChair uses furniture.staff-room.padded-chair
 
 Allfour PNGs opened. Actual before frames byte exact to old published bodies. After reveals authored warmer timber grain, subtle charcoal pad edge shading and steel response; frame/rail appears darker than flat display-grey under Workbench. Geometry remains identical, pads retain their existing shape, and no brighter material palette is substituted. This visible change requires future root game captures for independent per-chair calibration; do not reuse or reduce old exactRGB thresholds.
 
-Source-only checkpoint: actual saved54mesh/fourgraph/threecontact source, before/after samples and camera guard complete. No72 or native acceptance claimed yet. Old source and allold72 preserved; historical descriptor archived beside source. Current real producer is tooling/blender/render-staff-chair-cycles.py, Blender5.2.1 CPU/thread1/64samples/seed0/AgX/noadaptive/no denoising,256RGBA/ortho4/pivot128/target(.5,.5,.6600000262260437). No global renderer adoption, alias, gameplay, prices, copies or18-room palette changes.
+Source-only checkpoint: actual saved54mesh/fourgraph/threecontact source, before/after samples and camera guard complete. Actual genuine72 now complete; no native acceptance claimed. Old source and allold72 preserved; historical descriptor archived beside source. Current real producer is tooling/blender/render-staff-chair-cycles.py, Blender5.2.1 CPU/thread1/64samples/seed0/AgX/noadaptive/no denoising,256RGBA/ortho4/pivot128/target(.5,.5,.6600000262260437). No global renderer adoption, alias, gameplay, prices, copies or18-room palette changes.
+
+
+## Complete source delivery
+
+Genuine72 took67.8998829seconds; four real independent repeats byte exact. Six actual savedsource/dispatch/hashvalidPNG/consumer controls RED?exactrestoreGREEN;238 protected files unchanged including allroot-owned Staff native helpers/fixtures. Final19G/one optional generic Blender-on-PATH skip; both strict typechecks0. Existing q0/q1 typed Staff build/wholeV9 sourceprep2G.
+
+Root-owned old native source-pin unit deliberately remains1R/1G and is not modified: demands718fda... descriptor, current source isd5d4c3.... Whole sourcePNG oldpadRGB(38,41,44) counts272/259?0/0; this is not a nativeROI measurement and no new acceptance color/threshold is proposed. Fresh real FullHD scene calibration remains root work. [Exact source/hash/command/handoff](./INTEGRATION_HANDOFF.md).

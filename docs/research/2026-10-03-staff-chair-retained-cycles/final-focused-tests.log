@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-staff-chair-retained-cycles-production-20261003
+
+············-·······
+
+ Test Files  5 passed (5)
+      Tests  19 passed | 1 skipped (20)
+   Start at  21:23:35
+   Duration  4.38s (transform 2.13s, setup 0ms, import 4.40s, tests 1.81s, environment 0ms)
+

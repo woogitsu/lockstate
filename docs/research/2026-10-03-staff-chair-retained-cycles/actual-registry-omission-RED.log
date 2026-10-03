@@ -1,0 +1,37 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-staff-chair-retained-cycles-production-20261003
+
+·······x
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 7 passed (8)
+   Start at  21:21:44
+   Duration  651ms (transform 176ms, setup 0ms, import 510ms, tests 22ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-staff-room-padded-chair-context.test.ts > Staff Room ObjectChair context in the actual world projection > registers the selected asset once with its real source and complete descriptor
+AssertionError: actual runtime Staff Room registry entry: expected [] to deeply equal [ { …(2) } ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "assetId": "furniture.staff-room.padded-chair",
+-     "manifest": "/game-content/oblique-furniture-staff-room-padded-chair.v1.json",
+-   },
+- ]
++ []
+
+ ❯ tests/unit/oblique-staff-room-padded-chair-context.test.ts:113:65
+    111|     const registry = parseObliqueModuleRegistry(JSON.parse(readFileSyn…
+    112|     const entries = registry.entries.filter(entry => entry.assetId ===…
+    113|     expect(entries, 'actual runtime Staff Room registry entry').toEqua…
+       |                                                                 ^
+    114|       manifest: '/game-content/oblique-furniture-staff-room-padded-cha…
+    115|     const entry = entries[0];
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

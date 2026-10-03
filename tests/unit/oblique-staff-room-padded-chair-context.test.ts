@@ -53,6 +53,8 @@ describe('Staff Room ObjectChair context in the actual world projection', () => 
     const before = JSON.stringify({ structures: actualFrame.structures, rooms: actualFrame.rooms });
     const projected = projectObliqueWorldFrame(actualFrame, camera(turns));
     const catalog = parseObliqueModuleCatalog(JSON.parse(readFileSync(new URL('game-content/oblique-furniture-staff-room-padded-chair.v1.json', publicRoot), 'utf8')));
+    expect(catalog.source).toBe('assets/source/blender/furniture.staff-room.padded-chair.soft-light.blend');
+    expect(catalog.sourceSha256).toBe('2dde0a33689685fd067c124c82b7b88b31c606d6c950a0789903e1b0b4b0e934');
     for (const structure of structures) {
       const solid = projected.raised.find(item => item.id === structure.id);
       expect(solid?.assetId, 'actual Staff Room chair context selector').toBe(assetId);
@@ -60,8 +62,8 @@ describe('Staff Room ObjectChair context in the actual world projection', () => 
       const selected = selectObliqueModuleFrame(catalog, { yawRadians: solid.assetYawRadians ?? camera(turns).yawRadians,
         elevationRadians: camera(turns).elevationRadians });
       expect(selected).toEqual({ yawDegrees: 60, elevationDegrees: 40,
-        image: '/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+60-elev40.3d0fd0a02317.png',
-        sha256: '3d0fd0a023174ec0a0fa897f33a57d1e07630a5201ec093f394a65634e399646' });
+        image: '/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+60-elev40.a200ce9518d2.png',
+        sha256: 'a200ce9518d232a2ef0f6bdac0343738042804f87fb3e57f67c9f648345682f8' });
       expect(createHash('sha256').update(readFileSync(new URL(selected.image.slice(1), publicRoot))).digest('hex')).toBe(selected.sha256);
     }
     expect(JSON.stringify({ structures: actualFrame.structures, rooms: actualFrame.rooms }),
@@ -114,8 +116,8 @@ describe('Staff Room ObjectChair context in the actual world projection', () => 
     if (entry === undefined) throw new Error('Staff Room asset absent from runtime registry');
     const catalog = parseObliqueModuleCatalog(JSON.parse(readFileSync(new URL(entry.manifest.slice(1), publicRoot), 'utf8')));
     expect(catalog.assetId).toBe(assetId);
-    expect(catalog.source).toBe('assets/source/blender/furniture.staff-room.padded-chair.blend');
-    expect(catalog.sourceSha256).toBe('47004797588d92173e4140bc307ac3db73ed322ac2e1d2472f99c10475956109');
+    expect(catalog.source).toBe('assets/source/blender/furniture.staff-room.padded-chair.soft-light.blend');
+    expect(catalog.sourceSha256).toBe('2dde0a33689685fd067c124c82b7b88b31c606d6c950a0789903e1b0b4b0e934');
     expect(catalog.frames).toHaveLength(72);
   });
 });
