@@ -32,3 +32,5 @@ After preparing A, a bounded source review of actual main callback guards, rende
 ## Draft-specific notice overlap corrected
 
 The newly proposed camera panel originally followed only the strip, so a real visible refusal/event/unavailable band below it would share its map region. This is a defect in our unapproved source draft, not a claimed shipped305 bug. A deterministic producer test with supplied DOM band bounds was2RED before correction, then23G across4 focused files. The panel now follows the maximum actual visible band bottom and observes those existing band nodes; hidden bands spend no height. App/tools typecheck0. This routine overlap repair changes no text, action, notice floor or owner budget. Actual browser containment remains pending; a tall band can still make the total panel height infeasible and must be rejected rather than clipped.
+
+Notice read omission was actually executed on the corrected producer:2RED; exact restoration SHA256`fbc38d61e4940eb1aebfcaf7be74c8dfbcd6af99ac041a04333790d2c28cbcac` returned23G. Both variants share this correction. Source-only node/control proofs do not claim real pixels, public native pass or owner approval.

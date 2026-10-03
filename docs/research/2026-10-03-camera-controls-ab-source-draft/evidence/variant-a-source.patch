@@ -93,10 +93,10 @@ index 5d6fa6e302..f92b5e0bdb 100644
        gate.dispose();
        // Tearing the layout down is also what ends a drag that was still live:
 diff --git a/src/ui/hud/renderer-selection-control.ts b/src/ui/hud/renderer-selection-control.ts
-index 8cce7990e8..0927b874a9 100644
+index 8cce7990e8..2ce9e1a419 100644
 --- a/src/ui/hud/renderer-selection-control.ts
 +++ b/src/ui/hud/renderer-selection-control.ts
-@@ -1,4 +1,61 @@
+@@ -1,4 +1,68 @@
 -import { element } from '../primitives/dom';
 +import { element, nextUiId } from '../primitives/dom';
 +
@@ -143,11 +143,18 @@ index 8cce7990e8..0927b874a9 100644
 +    const scale = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ui-scale'));
 +    if (tabs === undefined || strip === undefined || rail === undefined || !Number.isFinite(scale)) return;
 +    const gap = 12 * scale, left = tabs.right + gap;
-+    panel.style.left = `${left}px`; panel.style.top = `${strip.bottom + gap}px`;
++    // Existing transient notices occupy rows below the strip. A camera panel
++    // must follow their actual bottom too, rather than covering a refusal.
++    let top = strip.bottom;
++    for (const selector of ['.hud__unavailable', '.hud__refusal', '.hud__event']) {
++      const band = options.hud.querySelector<HTMLElement>(selector);
++      if (band !== null && !band.hidden) top = Math.max(top, band.getBoundingClientRect().bottom);
++    }
++    panel.style.left = `${left}px`; panel.style.top = `${top + gap}px`;
 +    panel.style.width = `${Math.max(0, Math.min(396 * scale, rail.left - left - gap))}px`;
 +  }
 +  const observer = new ResizeObserver(position);
-+  for (const selector of ['.hud-strip', '.hud__tabs', '.hud__rail']) {
++  for (const selector of ['.hud-strip', '.hud__tabs', '.hud__rail', '.hud__unavailable', '.hud__refusal', '.hud__event']) {
 +    const bounds = options.hud.querySelector(selector); if (bounds !== null) observer.observe(bounds);
 +  }
 +  window.addEventListener('resize', position);
