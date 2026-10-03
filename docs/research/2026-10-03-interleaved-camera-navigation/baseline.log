@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-next-camera-menu-audit-20261003
+
+
+ Test Files  3 passed (3)
+      Tests  45 passed (45)
+   Start at  03:17:50
+   Duration  1.72s (transform 842ms, setup 0ms, import 2.21s, tests 16ms, environment 0ms)
+
