@@ -1,0 +1,50 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-template-numeric-submit-20261003
+
+ ❯ tests/unit/ui-template-numeric-submit-ownership.test.ts (6 tests | 2 failed) 157ms
+   × world/accepted: accepted numeric plan consumes an owning map press; legal untouched/refused map press still commits 84ms
+   × oblique/accepted: accepted numeric plan consumes an owning map press; legal untouched/refused map press still commits 13ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-template-numeric-submit-ownership.test.ts > world/accepted: accepted numeric plan consumes an owning map press; legal untouched/refused map press still commits
+ FAIL  tests/unit/ui-template-numeric-submit-ownership.test.ts > oblique/accepted: accepted numeric plan consumes an owning map press; legal untouched/refused map press still commits
+AssertionError: accepted numeric placement should consume same armed tool/old map press: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/unit/ui-template-numeric-submit-ownership.test.ts:204:131
+    202|   expect(beforeRelease).toHaveLength(numeric==='accepted'?1:0);
+    203|   h.close();await settle(h);
+    204|   if(numeric==='accepted')expect.soft(h.tool.isArmed(),'accepted numer…
+       |                                                                                                                                   ^
+    205|   dispatch(h.canvas,'pointerup',h.point,0,0);await settle(h);
+    206|   const actual=submitted(h).map(m=>m.payload.command.data),snapshot=h.…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tests/unit/ui-template-numeric-submit-ownership.test.ts > world/accepted: accepted numeric plan consumes an owning map press; legal untouched/refused map press still commits
+ FAIL  tests/unit/ui-template-numeric-submit-ownership.test.ts > oblique/accepted: accepted numeric plan consumes an owning map press; legal untouched/refused map press still commits
+AssertionError: old map release must not buy a second plan after numeric acceptance: expected [ { …(4) }, { …(4) } ] to have a length of 1 but got 2
+
+- Expected
++ Received
+
+- 1
++ 2
+
+ ❯ tests/unit/ui-template-numeric-submit-ownership.test.ts:208:88
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 4 passed (6)
+   Start at  09:21:08
+   Duration  7.20s (transform 4.47s, setup 0ms, import 6.90s, tests 157ms, environment 0ms)
+
