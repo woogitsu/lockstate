@@ -111,7 +111,10 @@ export function requireCanteenOwners(snapshot: SessionSnapshotBundle, quarterTur
   }));
   const owners = [...tables, ...benches];
   expect(snapshot.simulation?.objects?.placedObjects.filter(row => row.objectId === 'object.dining-table')).toEqual(tables);
-  expect(snapshot.simulation?.objects?.placedObjects.filter(row => row.objectId === 'object.bench')).toEqual(benches);
+  // Snapshot enumeration is y/x order; authored suffix order is different at q1.
+  // Keep the explicit owner association above, then compare canonical rows.
+  const orderedBenches = [...benches].sort((a, b) => a.anchorTile.y! - b.anchorTile.y! || a.anchorTile.x! - b.anchorTile.x!);
+  expect(snapshot.simulation?.objects?.placedObjects.filter(row => row.objectId === 'object.bench')).toEqual(orderedBenches);
   expect(new Set(owners.map(owner => owner.sourceOrderId)).size).toBe(6);
   for (const owner of owners) {
     const matchingOrders = snapshot.construction.orders.filter(order => order.id === owner.sourceOrderId);
