@@ -1,5 +1,5 @@
 import { appendFileSync } from 'node:fs';
-import { expect, it, vi } from 'vitest';
+import { afterEach, expect, it, vi } from 'vitest';
 import { buildCellBlockFixture } from '../../../tests/helpers/navigation-fixture';
 import { NavigationSystem } from '../../../src/simulation/navigation/navigation-system';
 import { packCommand, type SimulationCommand } from '../../../src/simulation/protocol/commands';
@@ -10,6 +10,7 @@ import { tileCoordinate } from '../../../src/simulation/world/coordinates';
 import { DEFAULT_ACTIONS } from '../../../src/simulation/prisoners/actions';
 
 function receipt(data:unknown) {const path=process.env['LOCKSTATE_CONNECTIVITY_REVIEW_RECEIPT'];if(path!==undefined)appendFileSync(path,JSON.stringify(data)+'\n');}
+afterEach(()=>vi.restoreAllMocks());
 const tile=(x:number,y:number)=>({x:tileCoordinate(x),y:tileCoordinate(y)});
 function send(runtime:SimulationRuntime,command:SimulationCommand) {
   const sequence=runtime.kernel.expectedSequence;
@@ -31,7 +32,7 @@ it.each([16,64,256])('warm query cost at %i cells preserves queued work and matc
   const chunks=vi.spyOn(fixture.world,'getChunk'),portals=vi.spyOn(graph.regionPortals,'get');
   for(let query=0;query<100;query++)expect(navigation.sharesPhysicalComponent(origin,destination)).toBe(true);
   const physicalReads=chunks.mock.calls.length;
-  expect(physicalReads).toBe(100*fixture.chunkPositions.length);expect(portals).not.toHaveBeenCalled();
+  expect(physicalReads).toBe(100*fixture.chunkPositions.length);expect(portals.mock.calls.length).toBe(0);
   chunks.mockClear();
   // #2013 used getGraph().tileToRegion.has(...) for every candidate. Compare
   // its exact public freshness route, without copied implementation or timing.
