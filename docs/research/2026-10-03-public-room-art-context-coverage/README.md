@@ -14,4 +14,8 @@ Own scope: an independent literal expectation table and integration coverage for
 
 ## Evidence status
 
-Catalogue/source inspection complete. Regression coverage, actual production mutations, exact restoration, type/build checks and final counts are pending. No native result is claimed.
+Actual regression: 183 GREEN = 160 completed-template projection cases (20 plans ? 4 turns ? 2 mirror states) plus 23 unique actually selected model source/descriptor/frame-body checks. All 1656 canonical PNG hashes, signatures and IHDR dimensions match their manifests; no pixel decoding or native visual calibration is claimed. Whole rotated occupied polygons, orientation-local frame selection and published owners/rooms are checked. Identity orientation legitimately omits optional metadata; the retained toilet uses its signed grid offset by15 degrees. Initial test-development expectations assumed optional identity metadata and a uniform yaw grid; these expectations were corrected from actual source contracts, without production edits.
+
+Two genuine production mutations were executed in the isolated copy. Removing ONLY Garbage's context entry makes the new test RED while the previous default-only fixture coverage remains20GREEN. Removing ONLY the student-chair registry entry also makes the new test RED. Exact byte restoration then yields183GREEN. The receipt fingerprints1708 protected source, descriptor, PNG, mapping/registry and gameplay catalogue files; all remain byte-identical. Helper preliminary inventory attempts included old unselected manifests with legacy bare source filenames and stopped before any mutation; scope was corrected to the actual23 template-selected assets.
+
+Type/build checks remain pending. No model changes, new renders, browser/server or native result.
