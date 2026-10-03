@@ -24,7 +24,8 @@ describe('existing toilet has a complete, square-aligned oblique model', () => {
   });
 
   it('loads the dedicated retained Blender source and exact-scale, square-aligned 72-frame export', () => {
-    expect(catalog.source).toBe('assets/source/blender/fixture.cell.toilet_sink.angled-connection.blend');
+    expect(catalog.source).toBe('assets/source/blender/fixture.cell.toilet_sink.soft-light.blend');
+    expect(catalog.sourceSha256).toBe('1aa9169f65ea498fd1bfe6a2ee600f058c41f1a76685a0109a17da92db398ad5');
     expect(catalog.sourceSha256).toBe(sha256(readFileSync(new URL(catalog.source, root))));
     expect(catalog.resolutionPx).toEqual([512, 512]);
     expect(catalog.nominalPixelsPerTile).toBe(64);

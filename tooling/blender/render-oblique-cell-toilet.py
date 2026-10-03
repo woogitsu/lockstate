@@ -231,6 +231,14 @@ def point_camera(scene, yaw, elevation):
 
 def main() -> None:
     pipeline_common.require_blender_version()
+    CYCLES_PRODUCER = 'render-cell-toilet-cycles.py'
+    if CYCLES_PRODUCER != 'render-cell-toilet-cycles.py':
+        raise ValueError('Toilet canonical Cycles producer dispatch changed')
+    spec = importlib.util.spec_from_file_location('toilet_actual_cycles_producer', SCRIPT_DIR / CYCLES_PRODUCER)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    module.main()
+    return
     scene = setup_scene()
     collection = append_collection()
     if '--verify' in sys.argv:
