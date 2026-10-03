@@ -116,3 +116,18 @@ own remote tracking ref for the already pushed parentdb745. An explicit
 bounded fetch of this own published branch restores that ref. No publication
 or citation guard change is proposed. Only measured live coordinates and own
 index row will be corrected in the next separate documentation checkpoint.
+## Terminal documentation checkpoint
+
+VERIFIED:62/62GREEN across the same8 documentation files, total12.02s.
+The granted corrections change only actual live System coordinates in WORLD,
+ADR0047 and its index. Old coordinates remain explicit historical amendments.
+System adds six lines; the single new-session binding is below the referenced
+live call sites, so no new-session documentation coordinate required a change.
+The own research index row preserves all inherited records. Budgets, tolerances,
+quotation/source/citation guards and historical claims remain unchanged.
+
+No further production edits or tests were introduced at this documentation
+checkpoint. The source tree is byte-identical to the terminal restored389-test
+run, both production files have zero diff against their committed source, and
+all source leases are released. Browser and hosted release gates belong to the
+parent's separate integration; this record makes no native acceptance claim.
