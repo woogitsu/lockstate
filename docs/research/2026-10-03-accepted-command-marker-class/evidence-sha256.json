@@ -1,0 +1,69 @@
+﻿{
+    "provenance":  "Retained recipes reproduce executed tool input; receipt content has only final trailing-newline normalization. No new execution.",
+    "files":  [
+                  {
+                      "file":  "accepted-controls.txt",
+                      "sha256":  "c0be0aed1182d23f8683b1025a1663fde0ca85cb2dcc913ad0c17c6baeaaf5b7"
+                  },
+                  {
+                      "file":  "baseline.txt",
+                      "sha256":  "c5bdbdb22b5577fc67f5c90c4ea0bcb2975a05fffb7c9be12163b817719d1630"
+                  },
+                  {
+                      "file":  "bounded-gates.cjs.txt",
+                      "sha256":  "479f8912e95031420f3ed20a2eedbe3e846792101fdd5ef3e54e2aa8a779b095"
+                  },
+                  {
+                      "file":  "canonical-reader-disconnected.txt",
+                      "sha256":  "a1d104134bfe3dec279381fd7e27a8ec0c16870befbfc03f00eed303a4bb2185"
+                  },
+                  {
+                      "file":  "docs.txt",
+                      "sha256":  "87d819cecdcd99b03bc207893c5ca0fb5abc28098cf99d22065d30b15754788b"
+                  },
+                  {
+                      "file":  "docs-before-index.txt",
+                      "sha256":  "9cb73649dcf73c107bf9285476a5363d156e2f802f94041eeae2f9c28d0fa607"
+                  },
+                  {
+                      "file":  "fixed.txt",
+                      "sha256":  "5c1760943d571e04c6d233665e92fba2ead89385991968a804644090542f1821"
+                  },
+                  {
+                      "file":  "fixture-error.txt",
+                      "sha256":  "2a21a65a8c70397044624ea65f13210364558df57dec5c3db456a842fc167fd8"
+                  },
+                  {
+                      "file":  "index-fixture-error.txt",
+                      "sha256":  "3752b596aed0cb51afbd6e66b46d94a2f1b4f0792d04d4707bfc35b08c36ba21"
+                  },
+                  {
+                      "file":  "missing-marker.txt",
+                      "sha256":  "362eb18f7826c5b560133f449ae9d7304c2f0ad96ced3c127423f04965e0f629"
+                  },
+                  {
+                      "file":  "neighbors.txt",
+                      "sha256":  "867e06a60b215053a126519ac754a06ca2b081f7cdaddecd2844db3f3cc36897"
+                  },
+                  {
+                      "file":  "premature-marker.txt",
+                      "sha256":  "1aa04f2b6fe9e8d33df795bea59f2b327218d84ede405a423bbaff0883253f63"
+                  },
+                  {
+                      "file":  "producer-mutations.cjs.txt",
+                      "sha256":  "495653fd4d08e16360473c2f80044e52d57ebcf872445ae9f21df0718d0d45ac"
+                  },
+                  {
+                      "file":  "restored.txt",
+                      "sha256":  "f11acdc039ce6010ed1ed1456b9e1927a393acb9b06dedcfe87dc0aebebe4be1"
+                  },
+                  {
+                      "file":  "success-fixture-error.txt",
+                      "sha256":  "423a38f0dba90720ae35bd2c45c9396020b2a0f9d505a0e296e34d629a288317"
+                  },
+                  {
+                      "file":  "zone-fixture-error.txt",
+                      "sha256":  "916a7bb4919b007f4e583bee03d8958bc66fcf762a66d0db7218876859f2e2e2"
+                  }
+              ]
+}

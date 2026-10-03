@@ -1,0 +1,38 @@
+const fs = require('fs'), cp = require('child_process'), crypto = require('crypto');
+const branch = 'codex/accepted-command-marker-class-audit-20261003';
+const file = 'src/simulation/runtime/session-commands.ts';
+const dir = 'docs/research/2026-10-03-accepted-command-marker-class';
+function git(...args) { const r = cp.spawnSync('git', args, { encoding: 'utf8' }); if (r.status !== 0) throw new Error(r.stdout + r.stderr); return r.stdout.trim(); }
+function run(name) {
+  const r = cp.spawnSync(process.execPath, ['node_modules/vitest/vitest.mjs', 'run', 'tests/integration/accepted-command-marker-class.test.ts', '--maxWorkers=2'], { encoding: 'utf8' });
+  fs.writeFileSync(`${dir}/${name}.txt`, r.stdout + r.stderr);
+  console.log(name, r.status, (r.stdout + r.stderr).match(/Tests\s+[^\n]+/)?.[0]);
+  return r.status;
+}
+git('switch', '--detach');
+const original = fs.readFileSync(file), source = original.toString('utf8');
+const hash = buffer => crypto.createHash('sha256').update(buffer).digest('hex');
+const mutations = [
+  ['premature-marker', "effect === 'changed' || effect === 'acknowledgement'", "effect === 'changed' || effect === 'acknowledgement' || effect === 'unchanged'"],
+  ['missing-marker', "if (effect === 'changed' || effect === 'acknowledgement')", 'if (false)'],
+  ['canonical-reader-disconnected', 'previous.every((category, index) => category === next[index])', 'false'],
+];
+const receipts = [];
+let failure;
+try {
+  for (const [name, from, to] of mutations) {
+    if (source.split(from).length !== 2) throw new Error(`Mutation must match exactly once: ${name}`);
+    fs.writeFileSync(file, source.replace(from, to));
+    try { const status = run(name); receipts.push({ name, status }); if (status !== 1) throw new Error(`Expected a real red producer: ${name}`); }
+    finally { fs.writeFileSync(file, original); if (!fs.readFileSync(file).equals(original)) throw new Error('Exact byte restore failed'); }
+  }
+  if (run('restored') !== 0) throw new Error('Restored source is not green');
+} catch (error) { failure = error; }
+finally {
+  fs.writeFileSync(file, original);
+  const diff = git('diff', '--', file);
+  git('switch', branch);
+  if (!fs.readFileSync(file).equals(original) || diff !== '' || git('diff', '--', file) !== '') throw new Error('Final restore/diff proof failed');
+  fs.writeFileSync(`${dir}/producer-restoration.json`, JSON.stringify({ branch, head: git('rev-parse', 'HEAD'), productionFiles: [file], beforeSha256: hash(original), afterSha256: hash(fs.readFileSync(file)), byteExact: true, productionDiff: '', receipts }, null, 2) + '\n');
+}
+if (failure) throw failure;

@@ -128,3 +128,7 @@ Parent granted only the own research row in the existing continuous table. The f
 | DismissAlert |explicit existing acknowledgement, including count0|No new refusal/no-op policy is introduced.|
 
 The source's final narrowed command switch uses `never`; the test's complete `Record` and action switch also require explicit coverage of a future command type. All nineteen accepted cases have live/V8 packed controls, including real claimed-guard release and real alert dismissal. The original absent-alert acknowledgement and canonical-same edit remain distinct, proven controls. No browser, remote CI, merge, release or V9 claim is made.
+
+### Retained inert recipes
+
+At the final handoff the parent requested the nonduplicated execution recipes as inert text. `producer-mutations.cjs.txt` and `bounded-gates.cjs.txt` are reconstructed from the executed tool-input content of the earlier temporary scripts, which had already been removed before this request. Original scratch bytes are unavailable; byte identity with those removed scripts is not claimed. They are retained for review, not newly executed; no active `.cjs` probe or temporary process remains. `evidence-sha256.json` identifies the currently retained recipe and terminal-log bytes. Terminal stdout/stderr receipt content is unchanged except the separately published final trailing-newline normalization. No extra test run or source change accompanies this evidence-only supplement.
