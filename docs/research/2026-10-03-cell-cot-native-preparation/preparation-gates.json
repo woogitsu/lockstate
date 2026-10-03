@@ -1,0 +1,33 @@
+{
+  "node": "v24.19.0",
+  "gates": [
+    {
+      "name": "strict-types",
+      "args": [
+        "node_modules/typescript/bin/tsc",
+        "-b",
+        "--pretty",
+        "false"
+      ],
+      "exitCode": 0,
+      "elapsedMs": 1302
+    },
+    {
+      "name": "source-collection",
+      "args": [
+        "node_modules/@playwright/test/cli.js",
+        "test",
+        "--config",
+        "tests/browser/playwright.config.ts",
+        "cell-cot-player-build.spec.ts",
+        "--list"
+      ],
+      "exitCode": 0,
+      "elapsedMs": 800
+    }
+  ],
+  "nativeExecuted": false,
+  "browserStarted": false,
+  "serverStarted": false,
+  "productionMutationPerformed": false
+}

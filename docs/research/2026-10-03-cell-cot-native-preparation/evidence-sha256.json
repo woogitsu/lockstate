@@ -1,0 +1,20 @@
+{
+  "docs/research/2026-10-03-cell-cot-native-preparation/executed-correction.cjs.txt": "0dcad9bb161929942d027aef4dfc23c161f19399292378f323d32cb773611cb6",
+  "docs/research/2026-10-03-cell-cot-native-preparation/executed-docs-gates.cjs.txt": "1061231ffa654e520536d0d24aeaa226ca6f3549a971a4271afa60f448ccf113",
+  "docs/research/2026-10-03-cell-cot-native-preparation/executed-finalize.cjs.txt": "b4e5c16c717dedc4b88c89522a131aff47333e6d05964446ed5a0bc681ef45b4",
+  "docs/research/2026-10-03-cell-cot-native-preparation/executed-gates.cjs.txt": "37a87081d8b09afd175823c1668c162aa736f74fdd93743e5b71c0eb173c7f63",
+  "docs/research/2026-10-03-cell-cot-native-preparation/executed-index.cjs.txt": "dac990c6c3fbf6619eaedacb3be895c1288b625511a61ebac5f9553a59a60cce",
+  "docs/research/2026-10-03-cell-cot-native-preparation/executed-preparation.cjs.txt": "e66cf1c02178cd638da7719ff3e354a875a1302495c392561b7a3f61944d4948",
+  "docs/research/2026-10-03-cell-cot-native-preparation/executed-record-fixed.cjs.txt": "885255d52e886403fea1a02cc495761c9526f0ac0856ad2a2366c78ed3966f02",
+  "docs/research/2026-10-03-cell-cot-native-preparation/executed-record.cjs.txt": "62eb4263d4846c5b00a3302e7281972325819656009c2ce71156fe40c14c69f2",
+  "docs/research/2026-10-03-cell-cot-native-preparation/offline-frame-provenance.json": "8f493aed2d6445e03a99942acc6dff02f3c5b25355c62fdd71d58680f2729743",
+  "docs/research/2026-10-03-cell-cot-native-preparation/preparation-gates.json": "24238f08017d79de32097d89f112a4ef1828f512f05e41fe7241090821609a36",
+  "docs/research/2026-10-03-cell-cot-native-preparation/README.md": "fbdb2b6ebf812341bb988eff0f6d1c893791809d564eb2bab9fdd3ffb2639539",
+  "docs/research/2026-10-03-cell-cot-native-preparation/receipt.json": "0a59d42aa06b382a41e57696314a50043cb8bef8a8ea383624e83b02cf6a13fb",
+  "docs/research/2026-10-03-cell-cot-native-preparation/scoped-docs-gate.json": "cf465d7d8b0a044c8b2450e3906986afbef0f4a3b4bc10f857b21f95e5cdefbf",
+  "docs/research/2026-10-03-cell-cot-native-preparation/scoped-docs.log": "21ba78d4fea8ffe504cfa19ebeb1745e308a96b4e72339508ed76b5f722ae1a6",
+  "docs/research/2026-10-03-cell-cot-native-preparation/source-collection.log": "b4ba85287788c81c77e8c2e3a44e91b730b2d7b000b4b57764216c8843b608ad",
+  "docs/research/2026-10-03-cell-cot-native-preparation/strict-types.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "tests/browser/cell-cot-player-build.spec.ts": "cf5fe678aaaf02be010f9057de9675200e5d3c1d44292a042bfb7c6240a764f5",
+  "tests/browser/cell-cot-evidence.ts": "d807e627c62b0a16e64fdac3212786636ca16f1acd691b3dcf4f973df631f619"
+}
