@@ -1,0 +1,268 @@
+{
+  "diagnosticOnly": true,
+  "nativeAcceptance": false,
+  "acceptanceThresholdInvented": false,
+  "note": "Same genuine center module top-cap centers projected independently at64px/tile; compares isolated shader illumination versus same geometry with real adjacent modules. Not a sprite-composition or native seam acceptance.",
+  "poses": [
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 45,
+      "samples": [
+        {
+          "actualSourcePointTiles": [
+            0.255,
+            0.255,
+            0.75
+          ],
+          "independentProjectedPixel": [
+            234,
+            222
+          ],
+          "diagnosticPatchPx": [
+            5,
+            5
+          ],
+          "isolatedMeanRGB": [
+            180.16,
+            177.52,
+            173.24
+          ],
+          "joinedCenterModuleMeanRGB": [
+            180.16,
+            177.52,
+            173.24
+          ],
+          "meanRGBDelta": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "allPixelsOpaque": true
+        },
+        {
+          "actualSourcePointTiles": [
+            0.255,
+            0.745,
+            0.75
+          ],
+          "independentProjectedPixel": [
+            256,
+            206
+          ],
+          "diagnosticPatchPx": [
+            5,
+            5
+          ],
+          "isolatedMeanRGB": [
+            178.0,
+            175.0,
+            170.84
+          ],
+          "joinedCenterModuleMeanRGB": [
+            178.0,
+            175.0,
+            170.84
+          ],
+          "meanRGBDelta": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "allPixelsOpaque": true
+        },
+        {
+          "actualSourcePointTiles": [
+            0.745,
+            0.255,
+            0.75
+          ],
+          "independentProjectedPixel": [
+            256,
+            238
+          ],
+          "diagnosticPatchPx": [
+            5,
+            5
+          ],
+          "isolatedMeanRGB": [
+            178.08,
+            175.08,
+            170.96
+          ],
+          "joinedCenterModuleMeanRGB": [
+            178.08,
+            175.08,
+            170.96
+          ],
+          "meanRGBDelta": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "allPixelsOpaque": true
+        },
+        {
+          "actualSourcePointTiles": [
+            0.745,
+            0.745,
+            0.75
+          ],
+          "independentProjectedPixel": [
+            278,
+            222
+          ],
+          "diagnosticPatchPx": [
+            5,
+            5
+          ],
+          "isolatedMeanRGB": [
+            180.4,
+            177.6,
+            173.48
+          ],
+          "joinedCenterModuleMeanRGB": [
+            180.4,
+            177.6,
+            173.48
+          ],
+          "meanRGBDelta": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "allPixelsOpaque": true
+        }
+      ]
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 45,
+      "samples": [
+        {
+          "actualSourcePointTiles": [
+            0.255,
+            0.255,
+            0.75
+          ],
+          "independentProjectedPixel": [
+            278,
+            222
+          ],
+          "diagnosticPatchPx": [
+            5,
+            5
+          ],
+          "isolatedMeanRGB": [
+            180.44,
+            177.84,
+            173.52
+          ],
+          "joinedCenterModuleMeanRGB": [
+            180.44,
+            177.84,
+            173.52
+          ],
+          "meanRGBDelta": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "allPixelsOpaque": true
+        },
+        {
+          "actualSourcePointTiles": [
+            0.255,
+            0.745,
+            0.75
+          ],
+          "independentProjectedPixel": [
+            256,
+            238
+          ],
+          "diagnosticPatchPx": [
+            5,
+            5
+          ],
+          "isolatedMeanRGB": [
+            178.12,
+            175.12,
+            170.96
+          ],
+          "joinedCenterModuleMeanRGB": [
+            178.12,
+            175.12,
+            170.96
+          ],
+          "meanRGBDelta": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "allPixelsOpaque": true
+        },
+        {
+          "actualSourcePointTiles": [
+            0.745,
+            0.255,
+            0.75
+          ],
+          "independentProjectedPixel": [
+            256,
+            206
+          ],
+          "diagnosticPatchPx": [
+            5,
+            5
+          ],
+          "isolatedMeanRGB": [
+            178.16,
+            175.16,
+            170.92
+          ],
+          "joinedCenterModuleMeanRGB": [
+            178.16,
+            175.16,
+            170.92
+          ],
+          "meanRGBDelta": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "allPixelsOpaque": true
+        },
+        {
+          "actualSourcePointTiles": [
+            0.745,
+            0.745,
+            0.75
+          ],
+          "independentProjectedPixel": [
+            234,
+            222
+          ],
+          "diagnosticPatchPx": [
+            5,
+            5
+          ],
+          "isolatedMeanRGB": [
+            180.2,
+            177.8,
+            173.24
+          ],
+          "joinedCenterModuleMeanRGB": [
+            180.2,
+            177.8,
+            173.24
+          ],
+          "meanRGBDelta": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "allPixelsOpaque": true
+        }
+      ]
+    }
+  ]
+}

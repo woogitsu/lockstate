@@ -93,3 +93,40 @@ the skip is not claimed as Blender proof. No native acceptance claim.
 No runtime source/descriptor/registry/context/alias,18room palette, floor art,
 world picking, gameplay, copy, save or UI change. No browser/server/build/native
 run. AI modern concept is direction only; none of its pixels enter these renders.
+
+## Approved material synchronization variant
+
+Root authorized exactly the original diffuseRGBA and roughness transfer into
+each same Principled material. [Actual variant](actual-approved-material-variant.json)
+records nine transfers. Every graph field outside Base Color/Roughness is exact;
+all59 raw/evaluated parts, modifiers, normals and bounds remain exact. All58
+retained contacts were independently measured on actual evaluated mesh BVH
+surfaces; these are touching witnesses, not invented interior overlap.
+
+Separate genuinely saved scene SHA256
+`53c35a0013a93ed662983a2888031c8377ba1965981e3ef98757e20547bd9cd8`:
+[approved-materials source](draft.wall.square.brick.full.approved-materials.blend).
+The unchanged directional profile renders the same two canonical poses:
+[−45/e45](after-cycles-approved-materials-yaw-45-elev45.png) and
+[135/e45](after-cycles-approved-materials-yaw+135-elev45.png).
+They restore the authored charcoal footing and masonry/cap color differentiation
+with softer directional face depth. Original source and literal grey-graph draft
+are retained. Only the two explicitly approved shader inputs differ.
+
+Three complete real translated modules were also rendered together at both
+poses: [Workbench−45](joined-before-workbench-yaw-45-elev45.png),
+[Cycles−45](joined-after-cycles-approved-materials-yaw-45-elev45.png),
+[Workbench135](joined-before-workbench-yaw+135-elev45.png),
+[Cycles135](joined-after-cycles-approved-materials-yaw+135-elev45.png).
+Those are177 actual meshes with original materials, not duplicated bitmap art.
+Original mortar/cap seams remain visible. Four independently projected top-cap
+center5×5 diagnostic patches at each yaw gave **zero mean RGB delta** between
+the single module and joined center module: [measured sensitivity](actual-joined-neighbor-sensitivity.json).
+This is bounded source illumination evidence, not full seam or native acceptance.
+
+[Actual saved shader control](actual-approved-material-controls.json): reverting
+the charcoal footing's shader to default grey was saved in Blender, rejected by
+the real producer (exit1), restored byte exactly and accepted (exit0). All2643
+protected source/frame/runtime files remained byte exact. Full72 integration
+remains next; low/cutaway source, floor and accepted aliases stay outside this
+specific full-module adoption.

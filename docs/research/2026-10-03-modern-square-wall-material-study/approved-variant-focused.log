@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-modern-ground-wall-material-study-20261003
+
+
+ Test Files  3 passed (3)
+      Tests  11 passed | 1 skipped (12)
+   Start at  22:02:20
+   Duration  407ms (transform 57ms, setup 0ms, import 235ms, tests 360ms, environment 0ms)
+
