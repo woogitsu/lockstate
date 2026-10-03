@@ -191,8 +191,12 @@ export function installRoomTemplateWorldBridge(canvas: HTMLCanvasElement, tool: 
       const footprint = [[0,0],[plan.width,0],[plan.width,plan.height],[0,plan.height]].map(([dx,dy]) => options.project({ x: (plan!.origin.x + dx!) * options.tileSize, y: (plan!.origin.y + dy!) * options.tileSize }));
       const canvasBounds = canvas.getBoundingClientRect();
       const scaleX = canvasBounds.width / width, scaleY = canvasBounds.height / height;
-      const labelBounds = label.getBoundingClientRect();
       const safe = options.labelSafeBounds?.() ?? { left: 8, top: 100, right: width - 8, bottom: height - 8 };
+      // hud.css authors a 340px content maximum, 24px horizontal padding and
+      // two 1px borders. Fit that same readout inside the actual exposed CSS
+      // width before measuring its newly wrapped height for positioning.
+      label.style.maxWidth = Math.min(340, Math.max(0, (safe.right - safe.left) * scaleX - 26)) + 'px';
+      const labelBounds = label.getBoundingClientRect();
       const position = positionRoomTemplateLabel(safe, footprint, { width: labelBounds.width / scaleX, height: labelBounds.height / scaleY }, anchor);
       label.style.left = position.x * scaleX + 'px';
       label.style.top = position.y * scaleY + 'px';

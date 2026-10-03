@@ -2,388 +2,175 @@
   {
     "start": 853913.229,
     "ms": 28.012999999918975,
-    "method": "newPage",
-    "params": {},
-    "result": {
-      "page": "<Page>"
-    }
+    "method": "newPage"
   },
   {
     "start": 853944.612,
     "ms": 2.8660000000381842,
-    "method": "setViewportSize",
-    "params": {
-      "viewportSize": {
-        "width": 1280,
-        "height": 781
-      }
-    }
+    "method": "setViewportSize"
   },
   {
     "start": 853949.764,
     "ms": 1437.878000000026,
-    "method": "goto",
-    "params": {
-      "url": "/",
-      "timeout": 0,
-      "waitUntil": "load"
-    },
-    "result": {
-      "response": "<Response>"
-    }
+    "method": "goto"
   },
   {
     "start": 855504.574,
     "ms": 193.00699999998324,
     "method": "waitForSelector",
-    "params": {
-      "selector": ".hud",
-      "strict": true,
-      "timeout": 0,
-      "omitReturnValue": true
-    },
-    "result": {}
+    "selector": ".hud"
   },
   {
     "start": 855737.206,
     "ms": 80.29000000003725,
     "method": "expect",
-    "params": {
-      "selector": ".hud[data-layout-navigation-placement]",
-      "expression": "to.have.count",
-      "expectedNumber": 1,
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "n": 1
-      }
-    }
+    "selector": ".hud[data-layout-navigation-placement]"
   },
   {
     "start": 855861.075,
     "ms": 736.3370000000577,
-    "method": "evaluateExpression",
-    "params": {
-      "expression": "() => {\n      var _hud$dataset$layoutNa3;\n      const hud = document.querySelector('.hud');\n      // `.hud__tabs` is `align-self: stretch` in the rail, so its box IS the\n      // middle row. `.hud-tabs__inner` is `flex: 0 1 auto` inside it, so its\n      // box is the tab column and nothing else.\n      const row = document.querySelector('.hud__tabs').getBoundingClientRect();\n      const column = document.querySelector('.hud-tabs__inner').getBoundingClientRect();\n      const corner = document.querySelector('.hud__corner').getBoundingClientRect();\n      const strip = document.querySelector('.hud-strip').getBoundingClientRect();\n      const tabs = Array.from(document.querySelectorAll('.hud-tabs__inner > .ui-tab'));\n      return {\n        placement: (_hud$dataset$layoutNa3 = hud.dataset['layoutNavigationPlacement']) !== null && _hud$dataset$layoutNa3 !== void 0 ? _hud$dataset$layoutNa3 : '',\n        sections: tabs.length,\n        rowHeight: row.height,\n        columnHeight: column.height,\n        columnBottom: column.bottom,\n        cornerTop: corner.top,\n        cornerHeight: corner.height,\n        cornerLeft: corner.left,\n        clearance: corner.top - column.bottom,\n        tallestTab: Math.max(...tabs.map(tab => tab.getBoundingClientRect().height)),\n        stripHeight: strip.height\n      };\n    }",
-      "isFunction": true,
-      "arg": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      }
-    },
-    "result": {
-      "value": {
-        "o": [
-          {
-            "k": "placement",
-            "v": {
-              "s": "rail"
-            }
-          },
-          {
-            "k": "sections",
-            "v": {
-              "n": 6
-            }
-          },
-          {
-            "k": "rowHeight",
-            "v": {
-              "n": 700.3125
-            }
-          },
-          {
-            "k": "columnHeight",
-            "v": {
-              "n": 280.125
-            }
-          },
-          {
-            "k": "columnBottom",
-            "v": {
-              "n": 372.8125
-            }
-          },
-          {
-            "k": "cornerTop",
-            "v": {
-              "n": 287
-            }
-          },
-          {
-            "k": "cornerHeight",
-            "v": {
-              "n": 494
-            }
-          },
-          {
-            "k": "cornerLeft",
-            "v": {
-              "n": 0
-            }
-          },
-          {
-            "k": "clearance",
-            "v": {
-              "n": -85.8125
-            }
-          },
-          {
-            "k": "tallestTab",
-            "v": {
-              "n": 47.1875
-            }
-          },
-          {
-            "k": "stripHeight",
-            "v": {
-              "n": 80.6875
-            }
-          }
-        ],
-        "id": 1
-      }
-    }
+    "method": "evaluateExpression"
   },
   {
     "start": 853833.56,
     "ms": 60.64799999992829,
-    "method": "pw:api",
-    "params": {
-      "handleSIGINT": "false",
-      "tracesDir": "/home/runner/work/lockstate/lockstate/test-results/.playwright-artifacts-2/traces",
-      "headless": "true",
-      "ignoreDefaultArgs": "undefined",
-      "ignoreAllDefaultArgs": "false",
-      "env": "undefined",
-      "timeout": "180000"
-    }
+    "method": "pw:api"
   },
   {
     "start": 853830.313,
     "ms": 64,
-    "method": "fixture",
-    "params": {}
+    "method": "fixture"
   },
   {
     "start": 853900.842,
     "ms": 5.597999999998137,
-    "method": "pw:api",
-    "params": {
-      "acceptDownloads": "accept",
-      "bypassCSP": "false",
-      "colorScheme": "light",
-      "hasTouch": "false",
-      "ignoreHTTPSErrors": "false",
-      "isMobile": "false",
-      "javaScriptEnabled": "true",
-      "locale": "en-US",
-      "offline": "false",
-      "viewport": "Object",
-      "baseURL": "http://127.0.0.1:42161",
-      "serviceWorkers": "allow",
-      "selectorEngines": "[]",
-      "testIdAttributeName": "data-testid",
-      "noDefaultViewport": "false",
-      "extraHTTPHeaders": "undefined",
-      "storageState": "undefined",
-      "reducedMotion": "undefined",
-      "forcedColors": "undefined",
-      "contrast": "undefined",
-      "clientCertificates": "undefined"
-    }
+    "method": "pw:api"
   },
   {
     "start": 853895.68,
     "ms": 14.041999999899417,
-    "method": "fixture",
-    "params": {}
+    "method": "fixture"
   },
   {
     "start": 853910.025,
     "ms": 1.3070000000298023,
-    "method": "fixture",
-    "params": {}
+    "method": "fixture"
   },
   {
     "start": 853912.688,
     "ms": 29.771999999997206,
-    "method": "pw:api",
-    "params": {}
+    "method": "pw:api"
   },
   {
     "start": 853911.577,
     "ms": 30.936999999918044,
-    "method": "fixture",
-    "params": {}
+    "method": "fixture"
   },
   {
     "start": 853820.042,
     "ms": 122.51500000001397,
-    "method": "hook",
-    "params": {}
+    "method": "hook"
   },
   {
     "start": 853944.205,
     "ms": 3.9390000000130385,
-    "method": "pw:api",
-    "params": {
-      "viewportSize": "Object"
-    }
+    "method": "pw:api"
   },
   {
     "start": 853949.565,
     "ms": 1548.0840000000317,
-    "method": "pw:api",
-    "params": {
-      "url": "/",
-      "waitUntil": "load",
-      "timeout": "0"
-    }
+    "method": "pw:api"
   },
   {
     "start": 855502.952,
     "ms": 224.21199999994133,
     "method": "pw:api",
-    "params": {
-      "selector": ".hud",
-      "strict": "true",
-      "omitReturnValue": "true",
-      "timeout": "0"
-    }
+    "selector": ".hud"
   },
   {
     "start": 855729.701,
     "ms": 129.99399999994785,
-    "method": "expect",
-    "params": {
-      "expected": "1"
-    }
+    "method": "expect"
   },
   {
     "start": 855860.824,
     "ms": 765.9610000000102,
-    "method": "pw:api",
-    "params": {
-      "expression": "() => {\n      var _hud$dataset$layoutNa3;\n      const hud = document.querySelector('.hud');\n      // `.hud__tabs` is `align-self: stretch` in the rail, so its box IS the\n      // middle row. `.hud-tabs__inner` is `flex: 0 1 auto` inside it, so its\n      // box is the tab column and nothing else.\n      const row = document.querySelector('.hud__tabs').getBoundingClientRect();\n      const column = document.querySelector('.hud-tabs__inner').getBoundingClientRect();\n      const corner = document.querySelector('.hud__corner').getBoundingClientRect();\n      const strip = document.querySelector('.hud-strip').getBoundingClientRect();\n      const tabs = Array.from(document.querySelectorAll('.hud-tabs__inner > .ui-tab'));\n      return {\n        placement: (_hud$dataset$layoutNa3 = hud.dataset['layoutNavigationPlacement']) !== null && _hud$dataset$layoutNa3 !== void 0 ? _hud$dataset$layoutNa3 : '',\n        sections: tabs.length,\n        rowHeight: row.height,\n        columnHeight: column.height,\n        columnBottom: column.bottom,\n        cornerTop: corner.top,\n        cornerHeight: corner.height,\n        cornerLeft: corner.left,\n        clearance: corner.top - column.bottom,\n        tallestTab: Math.max(...tabs.map(tab => tab.getBoundingClientRect().height)),\n        stripHeight: strip.height\n      };\n    }",
-      "isFunction": "true",
-      "arg": "Object"
-    }
+    "method": "pw:api"
   },
   {
     "start": 856627.802,
     "ms": 0.25,
-    "method": "expect",
-    "params": {
-      "expected": "rail"
-    }
+    "method": "expect"
   },
   {
     "start": 856628.605,
     "ms": 0.06700000003911555,
-    "method": "expect",
-    "params": {
-      "expected": "6"
-    }
+    "method": "expect"
   },
   {
     "start": 856629.39,
     "ms": 0.06299999996554106,
-    "method": "expect",
-    "params": {}
+    "method": "expect"
   },
   {
     "start": 856633.405,
     "ms": 0.2829999999376014,
-    "method": "expect",
-    "params": {
-      "expected": "80.69"
-    }
+    "method": "expect"
   },
   {
     "start": 856634.251,
     "ms": 1.3339999999152496,
     "method": "expect",
-    "params": {
-      "expected": "10.19"
-    },
-    "error": {
-      "name": "",
-      "message": "Error: the clearance at the stylesheet’s own threshold has moved\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeCloseTo\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m, \u001b[22mprecision\u001b[2m)\u001b[22m\n\nExpected: \u001b[32m10.19\u001b[39m\nReceived: \u001b[31m-85.8125\u001b[39m\n\nExpected precision:    1\nExpected difference: < \u001b[32m0.05\u001b[39m\nReceived difference:   \u001b[31m96.0025\u001b[39m",
-      "stack": "Error: the clearance at the stylesheet’s own threshold has moved\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeCloseTo\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m, \u001b[22mprecision\u001b[2m)\u001b[22m\n\nExpected: \u001b[32m10.19\u001b[39m\nReceived: \u001b[31m-85.8125\u001b[39m\n\nExpected precision:    1\nExpected difference: < \u001b[32m0.05\u001b[39m\nReceived difference:   \u001b[31m96.0025\u001b[39m\n    at /home/runner/work/lockstate/lockstate/tests/browser/hud-layout-shell.spec.ts:756:91"
-    }
+    "error": "Error: the clearance at the stylesheet’s own threshold has moved\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeCloseTo\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m, \u001b[22mprecision\u001b[2m)\u001b[22m\n\nExpected: \u001b[32m10.19\u001b[39m\nReceived: \u001b[31m-85.8125\u001b[39m\n\nExpected precision:    1\nExpected difference: < \u001b[32m0.05\u001b[39m\nReceived difference:   \u001b[31m96.0025\u001b[39m"
   },
   {
     "start": 856640.092,
     "ms": 0.106000000028871,
-    "method": "fixture",
-    "params": {}
+    "method": "fixture"
   },
   {
     "start": 856640.392,
     "ms": 1.0820000000530854,
-    "method": "fixture",
-    "params": {}
+    "method": "fixture"
   },
   {
     "start": 857307.238,
     "ms": 6.049999999930151,
-    "method": "pw:api",
-    "params": {
-      "reason": "Test ended."
-    }
+    "method": "pw:api"
   },
   {
     "start": 856641.672,
     "ms": 671.6689999999944,
-    "method": "fixture",
-    "params": {}
+    "method": "fixture"
   },
   {
     "start": 857314.636,
     "ms": 0.006999999983236194,
-    "method": "test.attach",
-    "params": {}
+    "method": "test.attach"
   },
   {
     "start": 857315.854,
     "ms": 0.014999999897554517,
-    "method": "fixture",
-    "params": {}
+    "method": "fixture"
   },
   {
     "start": 856639.134,
     "ms": 680.1720000000205,
-    "method": "hook",
-    "params": {}
+    "method": "hook"
   },
   {
     "start": 857320.186,
     "ms": 37.305999999982305,
-    "method": "fixture",
-    "params": {}
+    "method": "fixture"
   },
   {
     "start": 857358.166,
     "ms": 0.011999999987892807,
-    "method": "fixture",
-    "params": {}
+    "method": "fixture"
   },
   {
     "start": 857319.463,
     "ms": 39.569000000017695,
-    "method": "hook",
-    "params": {}
+    "method": "hook"
   }
 ]

@@ -13,3 +13,13 @@ Preserve approved FullHD style and all budgets/assertions. No gate GREEN or nati
 Offline trace confirms each cards boundingBox consumes~1.32–1.38s;60s expires after holding-cell, before solitary. One DOM evaluateAll now collects the same actual20 miniature/fixture rectangles. Every original exact count, min/max and containment assertion is retained; no timeout change. Polish focus now checks Tab into the actual rotation SELECT, then mirror checkbox, then the original map button. No production/focus policy changes. Native execution pending root lease.
 
 Initial log fragment extraction decoded a UTF16LE BOM log asUTF8; corrected encoding and actual raw-byte SHA recorded. Original failure log remains intact in TEMP.
+
+## Authorized quote producer correction
+
+Actual original bridge DOM producer1RED: outer366px exceeds measured338px area. Scoped bridge now caps authored content maximum340 to available CSS width minus its unchanged24px padding/two1px borders, before measuring wrapped height. Source/DOM worker fixture1GREEN: left846/right1184/outer338; no placement. Actual CSS raster/font rendering are not simulated or accepted from this surrogate. No CSS, palette, copy, format or camera changes. Root owns native focused quote/card/focus acceptance and meaningful temporary producer omission; no mutation lease taken during its native run. Current fixed producer hash recorded.
+
+App and fixture strict types exit0;26 bounded label-position/bridge/camera/index neighbors GREEN. Card/focus observer checkpointbe662b8930 retains all geometric bounds/counts and adds both real focus stops. Full trace resources stay outside Git in the downloaded artifact; only relevant call timings/selectors/errors are retained here.
+
+Minimap correction to the initial diagnosis: No active alerts is a row INSIDE alertList when rows=[]; hidden is only rowsundefined/No prison reporting. Current failure context has the empty row, so no list/sentinel expectation was changed. Parent was immediately notified before any edit. Zero geometry from the enlarged corner flex budget remains the causal candidate; native geometry required.
+
+Related quote bodies#1925/#1953 were read after expanded dedup. #1925 explicitly records fallback for geometry too narrow for its measured label; this prepared width adaptation is recorded against that existing repair context. No new Issue or accepted native pass claimed.
