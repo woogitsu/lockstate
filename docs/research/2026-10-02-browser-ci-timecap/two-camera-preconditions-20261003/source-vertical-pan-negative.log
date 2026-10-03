@@ -1,0 +1,39 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-first-ci-remaining-audit-20261003
+
+ ❯ tests/unit/oblique-camera-minimap-preconditions.test.ts (7 tests | 2 failed) 9ms
+   × actual registered world arrow publishes movement and radio focus stops it, delta16 5ms
+   × actual registered world arrow publishes movement and radio focus stops it, delta240 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-camera-minimap-preconditions.test.ts > actual registered world arrow publishes movement and radio focus stops it, delta16
+AssertionError: expected 0.023897457055044646 to be close to 0.020147457055044646, received difference is 0.00375, but expected 5e-11
+ ❯ tests/unit/oblique-camera-minimap-preconditions.test.ts:78:20
+     76|   // yaw-45/elevation45 has world x=-s/zoom, y=+s/zoom.
+     77|   const shift = 0.6 * delta / 1.25 / (32 * 64);
+     78|   expect(moving.x).toBeCloseTo(initial.x - shift, 10);
+       |                    ^
+     79|   expect(moving.y).toBeCloseTo(initial.y + shift, 10);
+     80|   expect(moving.width).toBeCloseTo(initial.width, 10); expect(moving.h…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/unit/oblique-camera-minimap-preconditions.test.ts > actual registered world arrow publishes movement and radio focus stops it, delta240
+AssertionError: expected 0.023897457055044646 to be close to -0.032352542944955355, received difference is 0.05625, but expected 5e-11
+ ❯ tests/unit/oblique-camera-minimap-preconditions.test.ts:78:20
+     76|   // yaw-45/elevation45 has world x=-s/zoom, y=+s/zoom.
+     77|   const shift = 0.6 * delta / 1.25 / (32 * 64);
+     78|   expect(moving.x).toBeCloseTo(initial.x - shift, 10);
+       |                    ^
+     79|   expect(moving.y).toBeCloseTo(initial.y + shift, 10);
+     80|   expect(moving.width).toBeCloseTo(initial.width, 10); expect(moving.h…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 5 passed (7)
+   Start at  02:48:31
+   Duration  806ms (transform 265ms, setup 0ms, import 672ms, tests 9ms, environment 0ms)
+

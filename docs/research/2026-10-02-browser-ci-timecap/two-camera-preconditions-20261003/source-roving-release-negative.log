@@ -1,0 +1,67 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-first-ci-remaining-audit-20261003
+
+ ❯ tests/unit/oblique-camera-minimap-preconditions.test.ts (7 tests | 2 failed) 12ms
+   × actual registered world arrow publishes movement and radio focus stops it, delta16 8ms
+   × actual registered world arrow publishes movement and radio focus stops it, delta240 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-camera-minimap-preconditions.test.ts > actual registered world arrow publishes movement and radio focus stops it, delta16
+AssertionError: expected { x: 0.016397457055044584, …(3) } to deeply equal { x: 0.020147457055044615, …(3) }
+
+- Expected
++ Received
+
+  {
+-   "height": 0.9522050858899107,
++   "height": 0.9522050858899106,
+    "width": 0.9522050858899107,
+-   "x": 0.020147457055044615,
+-   "y": 0.027647457055044705,
++   "x": 0.016397457055044584,
++   "y": 0.031397457055044736,
+  }
+
+ ❯ tests/unit/oblique-camera-minimap-preconditions.test.ts:85:44
+     83|   handlers.get('focusin')!({ target: radio } as unknown as FocusEvent);
+     84|   scene.update(2 * delta, delta);
+     85|   expect(sink.mock.lastCall![0]!.viewport).toEqual(moving);
+       |                                            ^
+     86|   key('keyup'); doc.activeElement = button;
+     87|   key('keydown'); scene.update(3 * delta, delta);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/unit/oblique-camera-minimap-preconditions.test.ts > actual registered world arrow publishes movement and radio focus stops it, delta240
+AssertionError: expected { x: -0.0886025429449554, …(3) } to deeply equal { x: -0.032352542944955376, …(3) }
+
+- Expected
++ Received
+
+  {
+-   "height": 0.9522050858899107,
++   "height": 0.9522050858899106,
+    "width": 0.9522050858899107,
+-   "x": -0.032352542944955376,
+-   "y": 0.0801474570550447,
++   "x": -0.0886025429449554,
++   "y": 0.13639745705504472,
+  }
+
+ ❯ tests/unit/oblique-camera-minimap-preconditions.test.ts:85:44
+     83|   handlers.get('focusin')!({ target: radio } as unknown as FocusEvent);
+     84|   scene.update(2 * delta, delta);
+     85|   expect(sink.mock.lastCall![0]!.viewport).toEqual(moving);
+       |                                            ^
+     86|   key('keyup'); doc.activeElement = button;
+     87|   key('keydown'); scene.update(3 * delta, delta);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 5 passed (7)
+   Start at  02:48:33
+   Duration  784ms (transform 256ms, setup 0ms, import 647ms, tests 12ms, environment 0ms)
+

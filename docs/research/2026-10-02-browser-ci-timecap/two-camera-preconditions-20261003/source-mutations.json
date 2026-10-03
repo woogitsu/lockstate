@@ -1,0 +1,27 @@
+{
+  "source": "src/rendering/scene/oblique-world-scene.ts",
+  "originalSha256": "93c22b2d5822aaa4e82c2f476496f2121968199648bc6591f03427f58aa27acb",
+  "baselineCases": 7,
+  "runs": [
+    {
+      "name": "source-vertical-pan-negative",
+      "negativeExit": 1,
+      "failed": 2,
+      "legalControlsPassed": 5,
+      "restoredExit": 0,
+      "restoredCases": 7,
+      "byteExact": true,
+      "restoredSha256": "93c22b2d5822aaa4e82c2f476496f2121968199648bc6591f03427f58aa27acb"
+    },
+    {
+      "name": "source-roving-release-negative",
+      "negativeExit": 1,
+      "failed": 2,
+      "legalControlsPassed": 5,
+      "restoredExit": 0,
+      "restoredCases": 7,
+      "byteExact": true,
+      "restoredSha256": "93c22b2d5822aaa4e82c2f476496f2121968199648bc6591f03427f58aa27acb"
+    }
+  ]
+}
