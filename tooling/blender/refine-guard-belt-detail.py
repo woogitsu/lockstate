@@ -91,6 +91,7 @@ def main():
     bpy.ops.object.transform_apply(location=False,rotation=False,scale=True)
     band.data.materials.append(bpy.data.materials['Guard duty belt']);band.parent=bpy.data.objects['SpriteRoot'];band.matrix_parent_inverse=band.parent.matrix_world.inverted()
     modifier=band.modifiers.new('Retained belt edge style','BEVEL');modifier.width=.012;modifier.segments=3
+    if bpy.data.objects.get(NAME) is None:raise ValueError('Real rear guard belt band omitted')
     raw_after=[raw_record(bpy.data.objects[name]) for name in names];poses_after=pose_record(scene,names);normals_after=normal_record(scene)
     if raw_before!=raw_after or poses_before!=poses_after:raise ValueError('Original guard raw geometry/modifiers/eight animation poses changed')
     if materials_record()!=materials_before or animation_record()!=animations_before:raise ValueError('Original complete guard graphs/actions changed')
@@ -108,13 +109,15 @@ def main():
         'originalSourceSha256':ORIGINAL_SHA256,'source':SOURCE.relative_to(ROOT).as_posix(),'sourceSha256':hashlib.sha256(SOURCE.read_bytes()).hexdigest(),
         'retainedMeshesBefore':raw_before,'retainedMeshesAfter':raw_after,'retainedMaterialValues':materials_before,
         'unusedOriginalGraphsRetainedForStorage':stored_unused,
-        'retainedAnimations':animations_before,'retainedEightAnimationPoses':poses_after,'originalGeometricNormalAudit':normals_before,
+        'retainedAnimations':animations_before,'retainedEightAnimationPoses':poses_after,
+        'authoredEightAnimationPoses':pose_record(scene,sorted(names+[NAME])),
+        'originalGeometricNormalAudit':normals_before,
         'evaluatedGeometricNormalAudit':normals_after,'sourceEvaluatedBounds':bounds_before,'addedMeshNames':[NAME],
         'allAuthoredRawMeshes':[raw_record(obj) for obj in sorted(scene.objects,key=lambda o:o.name) if obj.type=='MESH'],
         'actualContactTargets':TARGETS,'actualTriangleInteriorContacts':contacts,
         'acceptedCamera':{'resolutionPx':[512,512],'orthoScale':15.5,'target':[0,0,0],'pivotPx':[256,256],'nominalPixelsPerTile':64},
         'packedImages':[{'name':im.name,'size':list(im.size),'packedSha256':[hashlib.sha256(p.packed_file.data).hexdigest() for p in im.packed_files]} for im in bpy.data.images]}
-    SOURCE.with_suffix('.provenance.json').write_text(json.dumps(provenance,indent=2)+'\n')
+    pipeline_common.write_text(SOURCE.with_suffix('.provenance.json'),json.dumps(provenance,indent=2)+'\n')
     if ORIGINAL.read_bytes()!=original_bytes:raise ValueError('Original guard source was modified')
     print('GUARD_REAR_BELT69 meshes/11 complete graphs/retained8 animation poses/3 actual interior contacts',flush=True)
 

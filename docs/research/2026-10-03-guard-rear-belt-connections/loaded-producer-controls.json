@@ -1,0 +1,77 @@
+{
+  "controls": [
+    {
+      "control": "omit-real-rear-band",
+      "exitCode": 1,
+      "error": "ValueError: Guard original or authored mesh set changed"
+    },
+    {
+      "control": "move-real-rear-band",
+      "exitCode": 1,
+      "error": "ValueError: Guard actual authored assembly or eight-pose placement changed"
+    },
+    {
+      "control": "disconnect-rear-band-from-sidebands",
+      "exitCode": 1,
+      "error": "ValueError: Cot mounting shoe lacks real triangle-interior contact: physical-guard.rear duty belt band / Duty belt side.-1"
+    },
+    {
+      "control": "move-retained-sideband",
+      "exitCode": 1,
+      "error": "ValueError: Guard retained evaluated eight poses or parents changed"
+    },
+    {
+      "control": "change-retained-bevel",
+      "exitCode": 1,
+      "error": "ValueError: Guard actual raw geometry/material assignment/modifiers changed"
+    },
+    {
+      "control": "change-used-full-material-graph",
+      "exitCode": 1,
+      "error": "ValueError: Guard eleven complete stored shader graphs changed"
+    },
+    {
+      "control": "change-unused-full-Material-graph",
+      "exitCode": 1,
+      "error": "ValueError: Guard eleven complete stored shader graphs changed"
+    },
+    {
+      "control": "change-real-band-material",
+      "exitCode": 1,
+      "error": "ValueError: Guard actual raw geometry/material assignment/modifiers changed"
+    },
+    {
+      "control": "reverse-actual-band-topology",
+      "exitCode": 1,
+      "error": "ValueError: Guard actual raw geometry/material assignment/modifiers changed"
+    },
+    {
+      "control": "change-actual-original-action-keyframe",
+      "exitCode": 1,
+      "error": "ValueError: Guard retained evaluated eight poses or parents changed"
+    },
+    {
+      "control": "wrong-actual-camera-span",
+      "exitCode": 1,
+      "error": "ValueError: Guard accepted actual camera span changed"
+    },
+    {
+      "control": "wrong-actual-target",
+      "exitCode": 1,
+      "error": "ValueError: Guard target/resolution changed"
+    },
+    {
+      "control": "wrong-canonical-descriptor",
+      "exitCode": 1,
+      "error": "ValueError: Guard targets wrong canonical descriptor"
+    },
+    {
+      "control": "wrong-actual-camera-vector",
+      "exitCode": 1,
+      "error": "ValueError: Guard actual camera front-axis basis changed"
+    }
+  ],
+  "wrapperSourceOriginalBytesExactlyRestored": true,
+  "finalActual72CameraVerifyExitCode": 0,
+  "sourceSha256": "b1f402e1096c49e1ea65c2e7727df2b6c498a77d09fc485679f1dcf72c95b456"
+}

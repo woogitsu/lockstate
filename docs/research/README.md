@@ -100,7 +100,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 
 | Record | Question it answered | Decision it fed |
 | --- | --- | --- |
-| 2026-10-03 | [Guard rear duty-belt connection](2026-10-03-guard-rear-belt-connections/README.md) | Original68parts/11graphs/eight animation poses retained; one actual rear belt band/three interior contacts; source preparation, native pending. |
+| 2026-10-03 | [Guard rear duty-belt connection](2026-10-03-guard-rear-belt-connections/README.md) | Original68parts/11graphs/eight animation poses retained; one actual rear band/three contacts;72repeat/23actual controls GREEN, genuine hired-Guard native pending. |
 | 2026-10-03 | [Cell cot physical headboard connections](2026-10-03-cell-cot-headboard-connections/README.md) | Original23parts/9graphs retained; two real uprights/six triangle-interior contacts;72repeat/25actual controls/TS/build GREEN; native pending. |
 | 2026-10-03 | [Laundry washer physical service-grip connections](2026-10-03-laundry-washer-physical-connections/README.md) | Original80parts/5graphs retained; two real grip mounts/four triangle-interior witnesses;72repeat/27realcontrols GREEN; native pending. |
 | 2026-10-03 | [Canteen dining table physical rail connections](2026-10-03-canteen-dining-table-physical-joints/README.md) | Original62 parts/10 graphs retained; three real rail-to-post arms, six triangle-interior witnesses;72repeat/23realcontrols GREEN; native pending. |

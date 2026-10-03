@@ -1,0 +1,442 @@
+{
+  "physicallyChangedFrames": 72,
+  "pixelUnchangedFrames": 0,
+  "decodedPixelComparisons": [
+    {
+      "yawDegrees": -180,
+      "elevationDegrees": 25,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": -180,
+      "elevationDegrees": 45,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": -180,
+      "elevationDegrees": 65,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 25,
+      "changedPixels": 262143
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 45,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 65,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": -150,
+      "elevationDegrees": 25,
+      "changedPixels": 262143
+    },
+    {
+      "yawDegrees": -150,
+      "elevationDegrees": 45,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": -150,
+      "elevationDegrees": 65,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 25,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 45,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 65,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": -120,
+      "elevationDegrees": 25,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": -120,
+      "elevationDegrees": 45,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": -120,
+      "elevationDegrees": 65,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 25,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 45,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 65,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": -90,
+      "elevationDegrees": 25,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": -90,
+      "elevationDegrees": 45,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": -90,
+      "elevationDegrees": 65,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 25,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 45,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 65,
+      "changedPixels": 262143
+    },
+    {
+      "yawDegrees": -60,
+      "elevationDegrees": 25,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": -60,
+      "elevationDegrees": 45,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": -60,
+      "elevationDegrees": 65,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 25,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 45,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 65,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": -30,
+      "elevationDegrees": 25,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": -30,
+      "elevationDegrees": 45,
+      "changedPixels": 262142
+    },
+    {
+      "yawDegrees": -30,
+      "elevationDegrees": 65,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 25,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 45,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 65,
+      "changedPixels": 262143
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 25,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 45,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 65,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 25,
+      "changedPixels": 262143
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 45,
+      "changedPixels": 262142
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 65,
+      "changedPixels": 262143
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 25,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 45,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 65,
+      "changedPixels": 262143
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 25,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 45,
+      "changedPixels": 262142
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 65,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 25,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 45,
+      "changedPixels": 262143
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 65,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 25,
+      "changedPixels": 262142
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 45,
+      "changedPixels": 262143
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 65,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 25,
+      "changedPixels": 262143
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 45,
+      "changedPixels": 262143
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 65,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 25,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 45,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 65,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 25,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 45,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 65,
+      "changedPixels": 262143
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 25,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 45,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 65,
+      "changedPixels": 262141
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 25,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 45,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 65,
+      "changedPixels": 262142
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 25,
+      "changedPixels": 262144
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 45,
+      "changedPixels": 262143
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 65,
+      "changedPixels": 262143
+    }
+  ],
+  "originalComparisonCommit": "9cf6818ddccc96e379f888caacb77060a42c960d",
+  "retiredUnreferencedSameActorFrames": [
+    "public/assets/environment/oblique/actor-guard-yaw-180-elev25.66f668f73040.png",
+    "public/assets/environment/oblique/actor-guard-yaw-180-elev45.8763587f340c.png",
+    "public/assets/environment/oblique/actor-guard-yaw-180-elev65.88e17a4e2b1c.png",
+    "public/assets/environment/oblique/actor-guard-yaw-165-elev25.0f2d401e7fef.png",
+    "public/assets/environment/oblique/actor-guard-yaw-165-elev45.ae3a5b7d146f.png",
+    "public/assets/environment/oblique/actor-guard-yaw-165-elev65.ea3b0ef0adea.png",
+    "public/assets/environment/oblique/actor-guard-yaw-150-elev25.6ba2c66cd00c.png",
+    "public/assets/environment/oblique/actor-guard-yaw-150-elev45.02a0a65ed065.png",
+    "public/assets/environment/oblique/actor-guard-yaw-150-elev65.76dc824a0c8e.png",
+    "public/assets/environment/oblique/actor-guard-yaw-135-elev25.a48cf600fd81.png",
+    "public/assets/environment/oblique/actor-guard-yaw-135-elev45.83d398db70dd.png",
+    "public/assets/environment/oblique/actor-guard-yaw-135-elev65.d056beaf2f46.png",
+    "public/assets/environment/oblique/actor-guard-yaw-120-elev25.519b97acc955.png",
+    "public/assets/environment/oblique/actor-guard-yaw-120-elev45.e25a4b3972bc.png",
+    "public/assets/environment/oblique/actor-guard-yaw-120-elev65.47b5912d2e5b.png",
+    "public/assets/environment/oblique/actor-guard-yaw-105-elev25.20cf3818211f.png",
+    "public/assets/environment/oblique/actor-guard-yaw-105-elev45.c7fbd03be3bf.png",
+    "public/assets/environment/oblique/actor-guard-yaw-105-elev65.3aa4d27d184e.png",
+    "public/assets/environment/oblique/actor-guard-yaw-90-elev25.e74849b25595.png",
+    "public/assets/environment/oblique/actor-guard-yaw-90-elev45.be0a93a4e850.png",
+    "public/assets/environment/oblique/actor-guard-yaw-90-elev65.f5546570fd4a.png",
+    "public/assets/environment/oblique/actor-guard-yaw-75-elev25.fb5c7daf77b0.png",
+    "public/assets/environment/oblique/actor-guard-yaw-75-elev45.21dc5d3367cc.png",
+    "public/assets/environment/oblique/actor-guard-yaw-75-elev65.74aed330261b.png",
+    "public/assets/environment/oblique/actor-guard-yaw-60-elev25.4e7cd442eb22.png",
+    "public/assets/environment/oblique/actor-guard-yaw-60-elev45.e09bba50892c.png",
+    "public/assets/environment/oblique/actor-guard-yaw-60-elev65.afc8f10777ba.png",
+    "public/assets/environment/oblique/actor-guard-yaw-45-elev25.a25ce2699dd2.png",
+    "public/assets/environment/oblique/actor-guard-yaw-45-elev45.546da7a81d4b.png",
+    "public/assets/environment/oblique/actor-guard-yaw-45-elev65.f9c0ef52c2a4.png",
+    "public/assets/environment/oblique/actor-guard-yaw-30-elev25.0b923d267f11.png",
+    "public/assets/environment/oblique/actor-guard-yaw-30-elev45.0425bc31a3b0.png",
+    "public/assets/environment/oblique/actor-guard-yaw-30-elev65.f9da01785c5b.png",
+    "public/assets/environment/oblique/actor-guard-yaw-15-elev25.9045342b4b58.png",
+    "public/assets/environment/oblique/actor-guard-yaw-15-elev45.b1089adbd1e4.png",
+    "public/assets/environment/oblique/actor-guard-yaw-15-elev65.9ed12918384e.png",
+    "public/assets/environment/oblique/actor-guard-yaw+00-elev25.dd1c251ac382.png",
+    "public/assets/environment/oblique/actor-guard-yaw+00-elev45.e802e6f19ad1.png",
+    "public/assets/environment/oblique/actor-guard-yaw+00-elev65.2fc64fc22dce.png",
+    "public/assets/environment/oblique/actor-guard-yaw+15-elev25.3823ae7c0528.png",
+    "public/assets/environment/oblique/actor-guard-yaw+15-elev45.706b405b9444.png",
+    "public/assets/environment/oblique/actor-guard-yaw+15-elev65.c09c8f0c93b7.png",
+    "public/assets/environment/oblique/actor-guard-yaw+30-elev25.111bf33148f3.png",
+    "public/assets/environment/oblique/actor-guard-yaw+30-elev45.c114bcb9ba46.png",
+    "public/assets/environment/oblique/actor-guard-yaw+30-elev65.ca40ed719c36.png",
+    "public/assets/environment/oblique/actor-guard-yaw+45-elev25.04ff4ac27c02.png",
+    "public/assets/environment/oblique/actor-guard-yaw+45-elev45.1406ef8916a4.png",
+    "public/assets/environment/oblique/actor-guard-yaw+45-elev65.82a8a1de2ecd.png",
+    "public/assets/environment/oblique/actor-guard-yaw+60-elev25.e81673b45b07.png",
+    "public/assets/environment/oblique/actor-guard-yaw+60-elev45.5b19fe8ab9ff.png",
+    "public/assets/environment/oblique/actor-guard-yaw+60-elev65.9087d9df60de.png",
+    "public/assets/environment/oblique/actor-guard-yaw+75-elev25.f64c8a483efd.png",
+    "public/assets/environment/oblique/actor-guard-yaw+75-elev45.5f30b07b4fb0.png",
+    "public/assets/environment/oblique/actor-guard-yaw+75-elev65.7c7b2b28a825.png",
+    "public/assets/environment/oblique/actor-guard-yaw+90-elev25.0b43c3e2b149.png",
+    "public/assets/environment/oblique/actor-guard-yaw+90-elev45.f9349866825c.png",
+    "public/assets/environment/oblique/actor-guard-yaw+90-elev65.a6f5c806f164.png",
+    "public/assets/environment/oblique/actor-guard-yaw+105-elev25.6f010632207e.png",
+    "public/assets/environment/oblique/actor-guard-yaw+105-elev45.5d085722dc5f.png",
+    "public/assets/environment/oblique/actor-guard-yaw+105-elev65.4c477cbb2c79.png",
+    "public/assets/environment/oblique/actor-guard-yaw+120-elev25.612b7147c0b6.png",
+    "public/assets/environment/oblique/actor-guard-yaw+120-elev45.5153c77be750.png",
+    "public/assets/environment/oblique/actor-guard-yaw+120-elev65.c724a33ef77e.png",
+    "public/assets/environment/oblique/actor-guard-yaw+135-elev25.09ccd80fa61f.png",
+    "public/assets/environment/oblique/actor-guard-yaw+135-elev45.8facb6291c93.png",
+    "public/assets/environment/oblique/actor-guard-yaw+135-elev65.355dbccf626f.png",
+    "public/assets/environment/oblique/actor-guard-yaw+150-elev25.bc103920ef93.png",
+    "public/assets/environment/oblique/actor-guard-yaw+150-elev45.2447e7330295.png",
+    "public/assets/environment/oblique/actor-guard-yaw+150-elev65.99d72e0d5210.png",
+    "public/assets/environment/oblique/actor-guard-yaw+165-elev25.dfd92bad0335.png",
+    "public/assets/environment/oblique/actor-guard-yaw+165-elev45.eb05616617ea.png",
+    "public/assets/environment/oblique/actor-guard-yaw+165-elev65.d84f4d94ead7.png"
+  ],
+  "otherActorAndCurrentCatalogReferencesPreserved": true
+}

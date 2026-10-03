@@ -20,6 +20,7 @@ def load(name,file):
 audit=load('guard_structural_audit','refine-guard-belt-detail.py')
 retained=load('retained_role_actor_pipeline','render-role-actors-oblique.py')
 SOURCE=ROOT/'assets/source/blender/actor.guard.base.angled-detail.blend'
+PROVENANCE=ROOT/'assets/source/blender/actor.guard.base.angled-detail.provenance.json'
 MANIFEST=ROOT/'public/game-content/oblique-actor-guard.v1.json'
 YAWS=tuple(range(-180,180,15))
 ELEVATIONS=(25,45,65)
@@ -28,7 +29,7 @@ ORTHO_SCALE=15.5
 
 
 def verify_source(scene,camera):
-    receipt=json.loads(SOURCE.with_suffix('.provenance.json').read_text())
+    receipt=json.loads(PROVENANCE.read_text())
     for key,digest in [('source','sourceSha256'),('originalSource','originalSourceSha256')]:
         if hashlib.sha256((ROOT/receipt[key]).read_bytes()).hexdigest()!=receipt[digest]:raise ValueError('Guard original/dedicated source identity changed')
     if SOURCE.relative_to(ROOT).as_posix()!=receipt['source']:raise ValueError('Guard exporter dispatch loads wrong source')
@@ -41,6 +42,7 @@ def verify_source(scene,camera):
     if [audit.raw_record(bpy.data.objects[name]) for name in sorted(rows)]!=receipt['allAuthoredRawMeshes']:raise ValueError('Guard actual raw geometry/material assignment/modifiers changed')
     names=[row['name'] for row in receipt['retainedMeshesAfter']]
     if audit.pose_record(scene,names)!=receipt['retainedEightAnimationPoses']:raise ValueError('Guard retained evaluated eight poses or parents changed')
+    if audit.pose_record(scene,sorted(rows))!=receipt['authoredEightAnimationPoses']:raise ValueError('Guard actual authored assembly or eight-pose placement changed')
     if audit.materials_record()!=receipt['retainedMaterialValues']:raise ValueError('Guard eleven complete stored shader graphs changed')
     if audit.animation_record()!=receipt['retainedAnimations']:raise ValueError('Guard original action keyframes changed')
     if audit.normal_record(scene)!=receipt['evaluatedGeometricNormalAudit']:raise ValueError('Guard actual evaluated topology/winding changed')
