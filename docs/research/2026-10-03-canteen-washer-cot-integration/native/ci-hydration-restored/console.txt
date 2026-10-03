@@ -1,0 +1,10 @@
+pnpm : $ vitest run "tests/foundation/browser-ci-sharding-contract.test.ts" "tests/foundation/ci-configuration-contract
+.test.ts" "tests/foundation/research-index-contract.test.ts" "--maxWorkers=2" "--reporter=json" "--outputFile=C:\\Users
+\\matma\\AppData\\Local\\Temp\\lockstate-ci-hydration-preservation-restored-20261003.json"
+At C:\Users\matma\AppData\Local\Temp\lockstate-ci-hydration-preservation-control-20261003.ps1:26 char:2
++  pnpm --config.verify-deps-before-run=false test tests/foundation/bro ...
++  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...-20261003.json":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+JSON report written to C:/Users/matma/AppData/Local/Temp/lockstate-ci-hydration-preservation-restored-20261003.json
