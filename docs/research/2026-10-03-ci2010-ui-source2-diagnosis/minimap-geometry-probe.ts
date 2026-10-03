@@ -2,7 +2,8 @@
 export function readMinimapGeometry() {
   const selectors = [
     '.hud', '.hud__tabs', '.hud-tabs__inner', '.hud-tabs__inner > .ui-tab', '.hud-strip',
-    '.hud__corner', '.hud-camera-pan', '.hud-camera-pose', '.hud-zoom',
+    '.hud__corner', '.hud__corner > select.hud-build__category',
+    '.hud-camera-pan', '.hud-camera-pose', '.hud-zoom',
     '.hud__corner button', '.hud__corner select',
     '.hud-minimap', '.hud-minimap > .ui-panel__header',
     '.hud-minimap > .ui-panel__body', '.hud-minimap__surface',
@@ -24,9 +25,10 @@ export function readMinimapGeometry() {
       minHeight: style.minHeight, maxHeight: style.maxHeight, flex: style.flex,
       overflowY: style.overflowY, gap: style.gap, marginBottom: style.marginBottom,
       paddingTop: style.paddingTop, paddingBottom: style.paddingBottom,
+      borderTop: style.borderTopWidth, borderBottom: style.borderBottomWidth,
       centreHit: centreHit ? { tag: centreHit.tagName, classes: centreHit.className } : null,
       centreHitOwned: centreHit !== null && (centreHit === element || element.contains(centreHit)),
-      cameraBlockHeight: rect.height + Number.parseFloat(style.marginTop) + Number.parseFloat(style.marginBottom),
+      outerBlockHeight: rect.height + Number.parseFloat(style.marginTop) + Number.parseFloat(style.marginBottom),
     };
   }
   const list = document.querySelector('.hud-minimap .hud-alerts__list');
