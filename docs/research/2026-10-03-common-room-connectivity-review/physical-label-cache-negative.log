@@ -1,0 +1,83 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-common-room-connectivity-review-20261003
+
+ ❯ docs/research/2026-10-03-common-room-connectivity-review/integration.audit.ts (4 tests | 3 failed) 670ms
+   × warm query cost at 16 cells preserves queued work and matches prior graph freshness scans 9ms
+   × warm query cost at 64 cells preserves queued work and matches prior graph freshness scans 13ms
+   × warm query cost at 256 cells preserves queued work and matches prior graph freshness scans 24ms
+vitest.CMD : 
+At C:\Users\matma\Documents\Rozwój gier\lockstate-common-room-connectivity-review-20261003\docs\research\2026-10-03-com
+mon-room-connectivity-review\run-producer-controls.ps1:17 char:5
++     & node_modules/.bin/vitest.cmd run --config docs/research/2026-10 ...
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  docs/research/2026-10-03-common-room-connectivity-review/integration.audit.ts > warm query cost at 16 cells pres
+erves queued work and matches prior graph freshness scans
+AssertionError: expected 4000 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 4000
+
+ ❯ docs/research/2026-10-03-common-room-connectivity-review/integration.audit.ts:35:99
+     33|   for(let query=0;query<100;query++)expect(navigation.sharesPhysicalCo…
+     34|   const physicalReads=chunks.mock.calls.length;
+     35|   expect(physicalReads).toBe(100*fixture.chunkPositions.length);expect…
+       |                                                                                                   ^
+     36|   chunks.mockClear();
+     37|   // #2013 used getGraph().tileToRegion.has(...) for every candidate. …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  docs/research/2026-10-03-common-room-connectivity-review/integration.audit.ts > warm query cost at 64 cells pres
+erves queued work and matches prior graph freshness scans
+AssertionError: expected 13600 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 13600
+
+ ❯ docs/research/2026-10-03-common-room-connectivity-review/integration.audit.ts:35:99
+     33|   for(let query=0;query<100;query++)expect(navigation.sharesPhysicalCo…
+     34|   const physicalReads=chunks.mock.calls.length;
+     35|   expect(physicalReads).toBe(100*fixture.chunkPositions.length);expect…
+       |                                                                                                   ^
+     36|   chunks.mockClear();
+     37|   // #2013 used getGraph().tileToRegion.has(...) for every candidate. …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  docs/research/2026-10-03-common-room-connectivity-review/integration.audit.ts > warm query cost at 256 cells pre
+serves queued work and matches prior graph freshness scans
+AssertionError: expected 52000 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 52000
+
+ ❯ docs/research/2026-10-03-common-room-connectivity-review/integration.audit.ts:35:99
+     33|   for(let query=0;query<100;query++)expect(navigation.sharesPhysicalCo…
+     34|   const physicalReads=chunks.mock.calls.length;
+     35|   expect(physicalReads).toBe(100*fixture.chunkPositions.length);expect…
+       |                                                                                                   ^
+     36|   chunks.mockClear();
+     37|   // #2013 used getGraph().tileToRegion.has(...) for every candidate. …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 1 passed (4)
+   Start at  11:51:27
+   Duration  2.84s (transform 767ms, setup 0ms, import 2.06s, tests 670ms, environment 0ms)
+

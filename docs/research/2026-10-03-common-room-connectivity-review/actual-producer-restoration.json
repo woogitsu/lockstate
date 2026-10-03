@@ -1,0 +1,18 @@
+﻿[
+    {
+        "producer":  "src/simulation/prisoners/action-system.ts",
+        "restoredSHA256":  "4fbd3f21244405bd58bf33ac64a05b95ba318283e7cbf739d4a26c9329c48e01",
+        "originalSHA256":  "4fbd3f21244405bd58bf33ac64a05b95ba318283e7cbf739d4a26c9329c48e01",
+        "actualRestoredExit":  0,
+        "actualNegativeExit":  1,
+        "control":  "action-current-position"
+    },
+    {
+        "producer":  "src/simulation/navigation/navigation-system.ts",
+        "restoredSHA256":  "fe569a9d911a8e8f9b76deca9052d1bfbf331d71b96818ddae715d76217fccae",
+        "originalSHA256":  "fe569a9d911a8e8f9b76deca9052d1bfbf331d71b96818ddae715d76217fccae",
+        "actualRestoredExit":  0,
+        "actualNegativeExit":  1,
+        "control":  "physical-label-cache"
+    }
+]

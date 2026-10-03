@@ -54,16 +54,60 @@ as [`actual-first-run.log`](./actual-first-run.log) and
 [`initial-cost-receipts.jsonl`](./initial-cost-receipts.jsonl). These are observer
 errors, not product findings. Final measured audit is 4/4 GREEN at 11:46:27.
 
-## Current verdict and boundary
+## Confirmed unnecessary query cost for ordinary full rooms
 
-No material selection, determinism or save regression is confirmed by the
-source review and measured integrated fixture. No Issue is opened. These are
-actual source observations, not yet guarded regression claims: own controlled
-consumer-negative/exact-restoration evidence is pending at this checkpoint.
+The inherited O(loaded chunks) freshness cost becomes a new regression when
+the new registry predicate runs before capacity/occupancy rejection.
+`saturated-room-cost.audit.ts` actually builds two q1 Showers and uses the public
+typed concurrent-use claim fixture to occupy both two-seat capabilities. The
+previous availability-first gate finds no instance and reads zero chunks.
+The new callback-first route also finds no instance, but performs two genuine
+physical queries and two freshness chunk reads. Its independent zero-unnecessary-
+queries assertion is RED, with actual counts in
+[`actual-saturated-room-cost-red.log`](./actual-saturated-room-cost-red.log).
+This is a public registry/API fixture, not four fabricated actor actions or
+native browser evidence.
+
+For R ordinary full candidates and C loaded chunks, the new scan can add R×C
+freshness reads to a selection that returns no room. #2013 introduced the
+predicate order; #2014 makes each predicate consult physical connectivity.
+The review reported this to the coordinator before any fix. A narrow correction
+would reject insufficient capability capacity/occupied candidates before asking
+physical eligibility, preserving candidate order and the final eligibility
+condition. No producer fix or Issue is made by this review. The separate
+`vitest.saturation.config.ts` intentionally isolates this unresolved RED probe
+from the four GREEN review controls and normal CI discovery.
+
+## Own producer controls and final boundary
+
+The reproducible `run-producer-controls.ps1` has run both real producer
+negatives and restored complete source byte buffers after each. Replacing the
+actor's current-position endpoint with the room's own endpoint in the actual
+action consumer makes the integrated fixture RED (zero shower ticks), with all
+three cost controls GREEN. Exact restoration makes all four GREEN. Disabling
+physical-label reuse makes all three cost controls RED (4,000/13,600/52,000
+portal accesses instead of zero), while the integration control stays GREEN;
+exact restoration again makes all four GREEN at 11:51:30. Raw outputs and
+matching original/restored SHA256 appear in
+[`actual-producer-restoration.json`](./actual-producer-restoration.json),
+[`action-current-position-negative.log`](./action-current-position-negative.log),
+[`action-current-position-exact-restore.log`](./action-current-position-exact-restore.log),
+[`physical-label-cache-negative.log`](./physical-label-cache-negative.log) and
+[`physical-label-cache-exact-restore.log`](./physical-label-cache-exact-restore.log).
+The original full-spy failure dump caused output/worker-termination noise;
+its raw bytes are retained in `physical-label-cache-negative.log.original.gz`.
+The final assertion reports the same zero-call requirement as a scalar count,
+and restores spies after each case, without weakening the threshold or budget.
+
+Strict app/tools/audit typechecks exit zero. Four bounded inherited neighbor
+suites pass 11/11: later usable Shower, physical invalidation/permissions and
+Common Room source/descriptor integrity. No final production diff is added
+relative to the imported fixes. Selection and paired V8 correctness are GREEN
+in the measured fixture; the ordinary-full-room cost finding above is unresolved.
 The full catalogue audit is not rerun. Browser/server/native rendering are
 owned by the coordinator; raster screenshots and earlier exporter negatives
 cannot establish their integrated runtime correctness.
 
-Reproduce with `vitest run --config
-docs/research/2026-10-03-common-room-connectivity-review/vitest.audit.config.ts`.
+Reproduce with
+`vitest run --config docs/research/2026-10-03-common-room-connectivity-review/vitest.audit.config.ts`.
 Set `LOCKSTATE_CONNECTIVITY_REVIEW_RECEIPT` to a fresh file for receipts.

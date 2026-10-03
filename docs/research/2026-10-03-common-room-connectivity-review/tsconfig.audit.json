@@ -1,1 +1,1 @@
-{"extends":"../../../tsconfig.json","include":["integration.audit.ts","vitest.audit.config.ts"]}
+{"extends":"../../../tsconfig.json","include":["integration.audit.ts","saturated-room-cost.audit.ts","vitest.audit.config.ts","vitest.saturation.config.ts"]}
