@@ -15,7 +15,7 @@ const plans = [
   { templateId: 'staff-room-basic', origin: { x: 20, y: 5 }, orders: 23, cost: 1845, cumulativeOrders: 62, balance: 19980 },
 ] as const;
 
-it.each([0, 1] as const)('prepares the existing public Staff route q%s with paid owners and whole V8 roundtrip', turns => {
+it.each([0, 1] as const)('prepares the existing public Staff route q%s with paid owners and whole V9 roundtrip', turns => {
   const runtime = createNewSimulationRuntime(73);
   expect(runtime.treasury.balanceMinorUnits).toBe(25000);
   const receipt: { templateId: string; elapsedTicks: number; balance: number; completedOrders: number }[] = [];
@@ -47,16 +47,16 @@ it.each([0, 1] as const)('prepares the existing public Staff route q%s with paid
   const before = captureSessionSnapshot(runtime); assertStaffNativeOwners(before, turns);
   const envelope = createSaveEnvelope({ gameVersion: 'staff-chair-native-preparation', prisonId: `staff-chair-q${turns}`,
     revision: 1, createdAt: 0, updatedAt: 1, ...before });
-  expect(envelope.saveSchemaVersion).toBe(8);
+  expect(envelope.saveSchemaVersion).toBe(9);
   const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope)));
   expect(decoded.ok).toBe(true);
-  if (!decoded.ok) throw new Error('Actual completed Staff V8 save refused');
+  if (!decoded.ok) throw new Error('Actual completed Staff V9 save refused');
   const restored = restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle).runtime;
   const loaded = captureSessionSnapshot(restored);
-  expect(loaded, 'whole current V8 snapshot across every persisted subsystem').toEqual(before);
+  expect(loaded, 'whole current V9 snapshot across every persisted subsystem').toEqual(before);
   assertStaffNativeOwners(loaded, turns);
   mkdirSync('assets/intermediate/staff-room-padded-chair-native-preparation', { recursive: true });
-  writeFileSync(`assets/intermediate/staff-room-padded-chair-native-preparation/actual-typed-q${turns}-V8-roundtrip.json`,
+  writeFileSync(`assets/intermediate/staff-room-padded-chair-native-preparation/actual-typed-q${turns}-V9-roundtrip.json`,
     JSON.stringify({ quarterTurns: turns, receipt, wholeBefore: before, wholeAfter: loaded,
-      wholeV8RoundtripExact: true, nativeBrowserRun: false }, null, 2));
+      wholeV9RoundtripExact: true, nativeBrowserRun: false }, null, 2));
 });

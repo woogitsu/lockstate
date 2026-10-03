@@ -21,7 +21,7 @@ function finish(runtime: Runtime) {
 function load(runtime: Runtime) {
   const envelope = createSaveEnvelope({ gameVersion: 'test', prisonId: 'door-furniture', revision: 1,
     createdAt: 0, updatedAt: 1, ...captureSessionSnapshot(runtime) });
-  expect(envelope.saveSchemaVersion).toBe(8);
+  expect(envelope.saveSchemaVersion).toBe(9);
   const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope)));
   expect(decoded.ok).toBe(true);
   if (!decoded.ok) throw new Error('Actual completed template must decode');

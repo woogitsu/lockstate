@@ -1668,3 +1668,30 @@ These followups do not silently change the frozen graphics product. Three
 agents continue Staff native preparation/new models, actual corrected rotation
 UI measurements and the approved V9 implementation while root submits and
 integrates the actual game. Hosted exact-head and serial main gates still apply.
+
+### 2026-10-03 approved V9 and the next actual Staff product
+
+PR #2024 is open at exact `30568432f5`: its original V8 angled product has
+passed hosted verify and assets; both source shards and built-client gate are
+running. It remains separate from the next coherent branch
+`codex/staff-chair-v9-integration-20261003`. That branch integrates the genuine
+Staff chair, #2023 door-square refusal and the owner's expressly approved V9
+marker/revision fields with V1-V8 data retained. The raw runtime initialization
+path also validates entries before state mutation; its actual negative controls
+and exact restorations are published. No new copy or refund rule is introduced.
+
+The first actual Staff run on product `8e6c7bb502` passed bootstrap and reached
+whole V8 Save/Load, paid owners and decoded dedicated model bodies in q0, but
+failed the old exposed-timber pixel minimum: pads now cover that wood. Original
+RED is archived; both real Full HD screenshots were opened. Current source
+measures the visible charcoal pads in the same independent regions and original
+pixel floor, and retains timber counts/equality. A freshly built V9 subject,
+complete suite and all three actual Staff cases are next; no old native result
+is claimed as proof of V9. Three agents continue Laundry-context linen-rack art,
+queued-cancellation native preparation and reviewable camera A/B source work.
+
+Cleanup audit verified the old own generated `original-dist` backup (9383 files,
+151073234 bytes) had no active users and its source/proof commit
+`92cd1944afe4a2e0a020f2259085af3cb43eb3f5` is published and a PR2024 ancestor.
+Automatic approval review rejected its deletion as blocked by policy. The
+directory still exists; no deletion or completed cleanup is claimed.
