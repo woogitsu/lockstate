@@ -1,0 +1,13 @@
+# DRAFT: FullHD individual-object rotation review preparation
+
+This branch starts from unapproved interaction/copy draft `fa830d556e8e05934dc7dc5cc03609903ac7c8d5`. It is **not for import into root's production release** and no PR is opened. The proposed new copy remains EN `Rotate object`, PL `Obróć obiekt`; KeyR remains camera tilt. Owner approval of optional command orientation does not approve this control/copy/layout.
+
+Dependencies are the real preflight producer `8a8aa7a02b6ba98136bb628a9d403df40b4c1108`, consumer `0133444974a5d14dcf0884c7162f940cd09fbee8`, delivery diagnosis `a25f618efe616a65a6609a8e247970983e3725a9` and session-reset fix `83b2ce08dc240c6776c9822fef6c5f62e2487a95`. Cherry-pick conflict resolution retains both independent research records and combines the existing draft orientation with the preflight consumer. It preserves delivery's `resetPreview()` and public arming policy.
+
+Source audit: the draft rotation callback repaints the catalogue/target and reports the selected facing to the existing arming path. Both actual scene facing refreshes cancel a held outgoing press. The preflight consumer as originally combined still queries q0 and omits orientation from its response ownership; this is the concrete next repair in this draft, not a new claim about the approved q0 production consumer.
+
+Opened CSS: `.hud-build__actions` is a flex row with stretch alignment and `--space-2` gap, no flex wrapping. Arm has `flex:1 1 auto;min-width:0`; Remove/Buy retain `flex:0 0 auto`. Rotate inherits flex defaults and its min-content behavior. `.ui-action` keeps the existing tap-target minimum height; action-row padding remains `0 var(--space-2)`. Real label ink, min-content pressure and wrapping must be measured; source arithmetic alone cannot declare a four-button row fits. No CSS changes are made to force a result.
+
+The existing page-zoom navigation recipe in `docs/adr/drafts/fullhd-page-zoom-navigation-1333.md` distinguishes physical 1920×1080 at browser zoom200 from its 960×540 CSS layout viewport. This new review uses a real 1920×1080 CSS viewport and the supported public **UI scale** control at100/200; neither a smaller viewport, device scale factor nor pinch/CSS scaling will be represented as actual browser page zoom. The unchanged UI-scale sequence is four public +25 steps from100 to200.
+
+Checkpoint state: dependencies prepared; native preparation/source ownership proof in progress. No browser/server/build has run for this branch; no screenshots or native geometry result exist. Root holds the sole lease and is running full verification. This branch will use types/collection only during that lease, then root must build the exact review subject before executing it.
