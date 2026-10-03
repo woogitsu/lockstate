@@ -104,7 +104,8 @@ function saveAndLoad(runtime: SimulationRuntime): { restored: SimulationRuntime;
   // paragraphs below the version check are what actually enforce that.
   // V9's owner-approved construction history continuity (#1985/#2021) is
   // another independent reason; it adds no income state.
-  expect(SAVE_SCHEMA_VERSION, 'a bump needs its own reason; the income line is not one').toBe(9);
+  // V10's exact construction counters (#2025) likewise add no income state.
+  expect(SAVE_SCHEMA_VERSION, 'a bump needs its own reason; the income line is not one').toBe(10);
 
   const serialized = JSON.stringify(envelope);
   const decoded = decodeSaveEnvelope(JSON.parse(serialized) as unknown);

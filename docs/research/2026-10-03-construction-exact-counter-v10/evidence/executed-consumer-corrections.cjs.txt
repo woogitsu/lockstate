@@ -1,0 +1,18 @@
+const fs=require('node:fs');
+const summary=JSON.parse(fs.readFileSync('C:/Users/matma/AppData/Local/Temp/lockstate-v10-suite-failure-summary.json','utf8'));
+const files=[...new Set(summary.map(r=>r.file))].filter(f=>!f.includes('/foundation/')&&!f.endsWith('worker-telemetry-ingest.test.ts'));
+const changed=[];
+for(const file of files){
+ let before=fs.readFileSync(file,'utf8'),s=before;
+ // Only current writer/decoder pins in the measured failure files. Historical
+ // envelope values and direct migration targets remain untouched.
+ s=s.replace(/(expect\([^\r\n]*(?:saveSchemaVersion|SAVE_SCHEMA_VERSION)[^\r\n]*\)\.toBe\()9(\))/g,'$110$2');
+ s=s.replace(/(orderRevisions: [^\r\n]*)(?=\r?$)/gm,line=>line.replace(/: 1(?=[ },])/g,": '1'"));
+ if(file.endsWith('clock-transport.test.ts'))s=s.replace('captureSessionSnapshot, type SessionSnapshotBundle','captureSessionSnapshot, SESSION_SNAPSHOT_SCHEMA_VERSION, type SessionSnapshotBundle').replace('schemaVersion: 3,','schemaVersion: SESSION_SNAPSHOT_SCHEMA_VERSION,');
+ if(file.endsWith('save-v7-to-v8-object-ownership.test.ts'))s=s.replace('survives through V9 without guessing ownership','survives through V10 without guessing ownership');
+ if(file.endsWith('economy-payroll-save.test.ts'))s=s.replace("is 9, and no subsequent bump was payroll", "is 10, and no subsequent bump was payroll").replace('// V9 preserves the newer-action marker and revision counters (#1985/#2021).','// V9 preserves marker/counters; V10 exact decimal counters (#2025) still do not change payroll.');
+ if(file.endsWith('incident-injury-loop.test.ts')||file.endsWith('riot-regime-loop.test.ts'))s=s.replace('V9 construction history; none changes','V9 construction history, V10 exact counters; none changes');
+ if(file.endsWith('save-v4-to-v5.test.ts'))s=s.replace('// V9 preserves construction marker/counters (#1985/#2021).','// V9 preserves marker/counters; V10 makes counters exact (#2025).');
+ if(s!==before){fs.writeFileSync(file,s);changed.push(file);}
+}
+fs.writeFileSync('C:/Users/matma/AppData/Local/Temp/lockstate-v10-current-consumer-files.json',JSON.stringify(changed,null,2));process.stdout.write(JSON.stringify(changed,null,2));

@@ -64,7 +64,7 @@ it.each((['PlaceObject', 'PlaceBuildOrder'] as const).flatMap(type =>
       expect({ ...afterGameplay, construction: { ...afterGameplay.construction,
         orders: afterGameplay.construction.orders.filter(order => order.id !== 'later-bed') } }).toEqual({
           ...beforeGameplay, construction: { ...beforeGameplay.construction,
-            orderRevisions: { ...beforeGameplay.construction.orderRevisions, ...(type === 'PlaceBuildOrder' ? { 'later-bed': 1 } : {}) },
+            orderRevisions: { ...beforeGameplay.construction.orderRevisions, ...(type === 'PlaceBuildOrder' ? { 'later-bed': '1' } : {}) },
           },
         });
     } else {
@@ -92,7 +92,7 @@ it.each((['PlaceObject', 'PlaceBuildOrder'] as const).flatMap(type =>
       expect({ ...after, construction: { ...after.construction,
         orders: after.construction.orders.filter(order => order.id !== 'later-desk') } }).toEqual({
           ...before, construction: { ...before.construction,
-            orderRevisions: { ...before.construction.orderRevisions, ...(type === 'PlaceBuildOrder' ? { 'later-desk': 1 } : {}) },
+            orderRevisions: { ...before.construction.orderRevisions, ...(type === 'PlaceBuildOrder' ? { 'later-desk': '1' } : {}) },
           },
         });
     } else {
@@ -143,7 +143,7 @@ it.each((['PlaceObject', 'PlaceBuildOrder'] as const).flatMap(type => [false, tr
       expect({ ...after, construction: { ...after.construction,
         orders: after.construction.orders.filter(order => order.id !== 'partial-later-bed') } }).toEqual({
           ...before, construction: { ...before.construction,
-            orderRevisions: { ...before.construction.orderRevisions, ...(type === 'PlaceBuildOrder' ? { 'partial-later-bed': 1 } : {}) },
+            orderRevisions: { ...before.construction.orderRevisions, ...(type === 'PlaceBuildOrder' ? { 'partial-later-bed': '1' } : {}) },
           },
         });
       finish(runtime);

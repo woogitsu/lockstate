@@ -149,7 +149,7 @@ function saveAndLoad(
   // V7 relocates travel fields (#1459); V8 records object ownership (#1975),
   // likewise independent of this ordinal.
   // V9 adds construction history continuity (#1985/#2021), not a new ordinal.
-  expect(SAVE_SCHEMA_VERSION).toBe(9);
+  expect(SAVE_SCHEMA_VERSION).toBe(10);
 
   // Exactly what a stored save is by the time it is read back: a plain value
   // of unknown provenance, fully re-validated and checksum-verified.

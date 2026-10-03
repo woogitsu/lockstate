@@ -84,7 +84,7 @@ it.each([0, 1] as const)('buys a separate orientation0 rack inside actual public
   expect(selected).toEqual({ yawDegrees: 60, elevationDegrees: 40, image: '/assets/environment/oblique/furniture.laundry.linen-rack-yaw+60-elev40.65f80634dc02.png', sha256: '65f80634dc026fa83c95fcf81ee40e539f0f947ab8dc0b03f0c0eb377b883716' });
   expect(createHash('sha256').update(readFileSync(new URL(selected.image.slice(1), publicRoot))).digest('hex')).toBe(selected.sha256);
   const envelope = createSaveEnvelope({ gameVersion: 'laundry-linen-source-proof', prisonId: `laundry-q${turns}`, revision: 1, createdAt: 0, updatedAt: 1, ...whole });
-  expect(envelope.saveSchemaVersion).toBe(9);
+  expect(envelope.saveSchemaVersion).toBe(10);
   const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope))); expect(decoded.ok).toBe(true);
   if (!decoded.ok) throw new Error('Actual separately purchased Laundry linen rack V9 refused');
   const restored = captureSessionSnapshot(restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle).runtime);

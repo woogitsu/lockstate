@@ -47,7 +47,7 @@ it.each([0, 1] as const)('prepares the existing public Staff route q%s with paid
   const before = captureSessionSnapshot(runtime); assertStaffNativeOwners(before, turns);
   const envelope = createSaveEnvelope({ gameVersion: 'staff-chair-native-preparation', prisonId: `staff-chair-q${turns}`,
     revision: 1, createdAt: 0, updatedAt: 1, ...before });
-  expect(envelope.saveSchemaVersion).toBe(9);
+  expect(envelope.saveSchemaVersion).toBe(10);
   const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope)));
   expect(decoded.ok).toBe(true);
   if (!decoded.ok) throw new Error('Actual completed Staff V9 save refused');

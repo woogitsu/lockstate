@@ -33,7 +33,7 @@ function reload(runtime: Runtime, legacy = false): Runtime {
   }))));
   expect(decoded.ok).toBe(true);
   if (!decoded.ok) throw new Error('Genuine construction must survive encoded Load');
-  expect(decoded.value.saveSchemaVersion).toBe(9);
+  expect(decoded.value.saveSchemaVersion).toBe(10);
   return restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle).runtime;
 }
 function prepare(pose: typeof poses[number], pending: boolean, saved: boolean) {
@@ -157,7 +157,7 @@ it('protects the actual completed template door without optional completed gestu
   const { orders: _beforeOrders, ...beforeHistory } = before.construction;
   const { orders: _afterOrders, ...afterHistory } = runtime.construction.snapshot();
   expect(afterHistory).toEqual({ ...beforeHistory,
-    orderRevisions: { ...beforeHistory.orderRevisions, 'legacy-door-square': 1 },
+    orderRevisions: { ...beforeHistory.orderRevisions, 'legacy-door-square': '1' },
   });
   expect(captureSessionSnapshot(runtime).world).toEqual(before.world);
   access(runtime, door, 'legacy after refusal');

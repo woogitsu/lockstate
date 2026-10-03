@@ -88,7 +88,7 @@ it.each([0, 1] as const)('buys a separate public orientation0 desk inside litera
     materials.set(material.itemId, (materials.get(material.itemId) ?? 0) + material.quantity);
   expect(Object.fromEntries(materials)).toEqual({ 'item.brick': 114, 'item.wood-plank': 16 });
   const envelope = createSaveEnvelope({ gameVersion: 'classroom-desk-native-preparation', prisonId: `classroom-q${turns}`, revision: 1, createdAt: 0, updatedAt: 1, ...before });
-  expect(envelope.saveSchemaVersion).toBe(9);
+  expect(envelope.saveSchemaVersion).toBe(10);
   const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope))); expect(decoded.ok).toBe(true);
   if (!decoded.ok) throw new Error('Actual completed Classroom desk V8 refused');
   const loaded = captureSessionSnapshot(restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle).runtime);

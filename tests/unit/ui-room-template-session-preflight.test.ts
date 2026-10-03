@@ -64,7 +64,7 @@ async function setup() {
   expect(saved.simulation?.roomTemplates?.pending).toHaveLength(1);
   const envelope = createSaveEnvelope({ gameVersion: 'test', prisonId: 'preflight-session', revision: 1,
     createdAt: 0, updatedAt: 1, ...saved });
-  expect(envelope.saveSchemaVersion).toBe(9);
+  expect(envelope.saveSchemaVersion).toBe(10);
   const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope)));
   expect(decoded.ok).toBe(true);
   if (!decoded.ok) throw Error('Encoded V8 must decode');

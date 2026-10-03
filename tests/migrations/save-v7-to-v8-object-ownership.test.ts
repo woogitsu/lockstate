@@ -25,13 +25,13 @@ const yardV6 = migrateSaveEnvelopeV5ToV6(yardV5);
 historical.push(yard as unknown as SaveEnvelopeV4, yardV5, yardV6, migrateSaveEnvelopeV6ToV7(yardV6));
 
 it.each(historical.map((envelope, index) => ({ envelope, version: envelope.saveSchemaVersion, index })))
-  ('V$version historical data case $index survives through V9 without guessing ownership', ({ envelope }) => {
+  ('V$version historical data case $index survives through V10 without guessing ownership', ({ envelope }) => {
     const input = JSON.parse(JSON.stringify(envelope));
     const before = JSON.stringify(input);
     const result = decodeSaveEnvelope(input);
     expect(result.ok).toBe(true);
     if (!result.ok) throw new Error(result.error.message);
-    expect(result.value.saveSchemaVersion).toBe(9);
+    expect(result.value.saveSchemaVersion).toBe(10);
     expect(result.value.prisonId).toBe(envelope.prisonId);
     expect(result.value.payload.kernel).toEqual(envelope.payload.kernel);
     expect(result.value.payload.world).toEqual(envelope.payload.world);
