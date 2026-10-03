@@ -38,8 +38,12 @@ it('retains the original authored generic wooden rack mesh set and exports the a
   const footprint = defaultObjectRegistry.getById('object.storage-rack')!.footprint;
   expect(provenance.footprintTiles).toEqual([footprint.width, footprint.height]);
   expect(catalog.assetId).toBe('furniture.storage.rack.wooden');
-  expect(catalog.source).toBe(provenance.source);
-  expect(catalog.sourceSha256).toBe(provenance.sourceSha256);
+  const detail = JSON.parse(readFileSync(new URL('assets/source/blender/furniture.storage.rack.wooden.angled-detail.provenance.json', root), 'utf8')) as { originalSource: string; originalSourceSha256: string; source: string; sourceSha256: string };
+  expect(detail.originalSource).toBe(provenance.source);
+  expect(detail.originalSourceSha256).toBe(provenance.sourceSha256);
+  expect(hash(readFileSync(new URL(detail.source, root)))).toBe(detail.sourceSha256);
+  expect(catalog.source).toBe(detail.source);
+  expect(catalog.sourceSha256).toBe(detail.sourceSha256);
   expect(catalog.cameraTargetTiles).toEqual([footprint.width / 2, footprint.height / 2, 0.7039999961853027]);
   expect(catalog.nominalPixelsPerTile).toBe(64);
   expect(catalog.resolutionPx).toEqual([256, 256]);

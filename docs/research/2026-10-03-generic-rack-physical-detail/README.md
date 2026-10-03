@@ -21,3 +21,18 @@ Blender5.2.1LTS upstream build ID `9e2066aef7ef`; executable SHA256 `284f4041f98
 ## Acceptance boundary
 
 This first source checkpoint has actual .blend/provenance and four-yaw comparisons. Canonical export integration, repeat72, production negative controls and prepared client build follow separately. No browser/server/native player acceptance ran; root owns the browser queue. No hosted completion claim.
+
+## Canonical export and actual offline negative controls
+
+The original production entrypoint `tooling/blender/render-generic-wooden-rack-oblique.py` routes only its existing default rack model tuple through the dedicated authored guard. Original fallback guard remains; shared functions and every other source tuple/registry/context mapping are unchanged. Canonical `public/game-content/oblique-cell-storage-rack.v1.json` SHA256 `2463369e2bd785c2edee78a46d0e7cdcdbb9efac9b4de097e56af5bae4461e2f` consumes the new source.72 canonical256px RGBA poses retain64ppt, target/pivot and all4 occupied orientations. Dedicated full repeat and original production-entrypoint full repeat each verify73/73 descriptor+frame files byte-identical. Independent Pillow decode found minimum66px transparent border; the complete72-pose sheet was opened.72 old same-asset frames were retired only after scanning all current public/game-content JSON references; original source and other assets stay.
+
+Twenty actual production controls were RED, followed by byte-exact restoration and GREEN:
+
+- Three source-producer controls before saving: omitted real rear brace; actual reversed triangular support topology; wrong new brace cross-section escaping accepted fullbounds. All rejected before newsource/provenanceSave. Original/source/provenance/builder exact restored.
+- Twelve loaded producer controls: removed brace; moved physical plate; moved retained post; changed retained shelf bevel; changed material node Roughness; changed added brace material assignment; actual reversed support winding; wrong fit/target/canonical descriptor; wrong camera span/vector. Own wrapper and original/new source bytes exact restored; actual72-camera native verify GREEN.
+- Three original-entrypoint dispatch controls: selecting historical48-part source, wrongYfit and target. Actual semantic guard RED then byte-exact wrapper restore/nativeverifyGREEN.
+- Two decoded-consumer controls: a genuinely opaque corner with valid recomputed PNG hash/name/signature/dimensions fails decoded-border assertion; incorrect canonical target fails. Exact descriptor/PNG bytes restore and focused integrity GREEN.
+
+Focused existing/default-source detail integrity and art-pipeline determinism:7passed/1skipped. The generic optional liveBlender check is skipped because Blender is absent from PATH; explicit pinned native Blender5.2.1 checks above ran independently. Both app/tools TypeScript checks exit0. An initial contact-sheet harness used nonexistent frame field `yawDeg` and failed after both full repeat assertions had already passed; corrected actual `yawDegrees`/`elevationDegrees`, repeated exports/decoder and produced the opened sheet. No weakened production guards.
+
+Native individual PlaceObject q0/default and genuine rotated StorageRoom?Unzone q1 proof remains root queued; existing accepted contextual override is preserved. These offline controls are not native Build/SaveLoad or hosted acceptance.

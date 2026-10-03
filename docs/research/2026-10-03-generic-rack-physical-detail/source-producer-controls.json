@@ -1,0 +1,26 @@
+{
+  "controls": [
+    {
+      "control": "actual-source-producer-omits-rear-brace",
+      "exitCode": 1,
+      "error": "ValueError: Expected forty-eight retained/fifty-six structural rack parts",
+      "rejectedBeforeSourceSave": true
+    },
+    {
+      "control": "actual-source-producer-reverses-joints",
+      "exitCode": 1,
+      "error": "ValueError: Evaluated generic wooden rack geometric surfaces face inward: angled-generic-rack.shelf triangular support 0 -0.399",
+      "rejectedBeforeSourceSave": true
+    },
+    {
+      "control": "actual-source-producer-new-brace-escapes-bounds",
+      "exitCode": 1,
+      "error": "ValueError: Rack hardware changed accepted full bounds",
+      "rejectedBeforeSourceSave": true
+    }
+  ],
+  "sourceProvenanceBuilderExactlyRestored": true,
+  "originalSourceBytesUnchanged": true,
+  "exactRestoredProductionVerifyExitCode": 0,
+  "sourceSha256": "600d62b3b5708081445b6ba84b5f38fc8534922f6a128b448e1585c97e95c212"
+}
