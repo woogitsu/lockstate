@@ -1599,6 +1599,23 @@ export class ConstructionSystem implements SystemRegistration {
    * happened. `[]` when no sink is wired -- a bare `ConstructionSystem` buys
    * nothing, so nothing can have been cancelled on its behalf.
    */
+  /** Exact #687 newest-first withdrawals after one still-pending delivery is removed; no mutation. */
+  public previewMaterialWithdrawalOrderIds(itemId: string, cancelledQuantity: number): readonly string[] {
+    const sink = this.materialsProcurement;
+    if (sink === undefined) return [];
+    const remaining = [...this.orderedOrders()];
+    const held = Math.max(0, sink.heldOrInFlightOf(itemId) - cancelledQuantity);
+    const withdrawn: string[] = [];
+    for (;;) {
+      const demanded = this.pendingMaterialDemand(remaining).find(requirement => requirement.itemId === itemId)?.quantity ?? 0;
+      if (demanded <= held) return withdrawn;
+      const candidate = this.lastOrderAwaitingMaterial(itemId, remaining);
+      if (candidate === undefined) return withdrawn;
+      withdrawn.push(candidate.id);
+      remaining.splice(remaining.indexOf(candidate), 1);
+    }
+  }
+
   public withdrawOrdersAwaitingMaterial(itemId: string): readonly string[] {
     const sink = this.materialsProcurement;
     if (sink === undefined) return [];
@@ -1644,8 +1661,7 @@ export class ConstructionSystem implements SystemRegistration {
    * nothing to the demand would not move the figure the caller is driving to
    * zero, and the loop would then cancel the whole queue one order at a time.
    */
-  private lastOrderAwaitingMaterial(itemId: string): BuildOrder | undefined {
-    const ordered = this.orderedOrders();
+  private lastOrderAwaitingMaterial(itemId: string, ordered = this.orderedOrders()): BuildOrder | undefined {
     for (let index = ordered.length - 1; index >= 0; index -= 1) {
       const order = ordered[index]!;
       if (order.state !== 'approved' && order.state !== 'materials-pending') continue;

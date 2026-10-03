@@ -1,0 +1,59 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-noncell-template-playability-audit-20261003
+
+ ❯ tests/integration/room-template-occupied-material-cancel.test.ts (10 tests | 4 failed) 1845ms
+   × refuses JIT cancellation before refund or demolition of an occupied row, encodedLoad=false 204ms
+   × refuses JIT cancellation before refund or demolition of an occupied row, encodedLoad=true 167ms
+   × refuses a delivery affecting occupied and unoccupied gestures collectively, encodedLoad=false 331ms
+   × refuses a delivery affecting occupied and unoccupied gestures collectively, encodedLoad=true 324ms
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 6 passed (10)
+   Start at  03:18:24
+   Duration  4.16s (transform 810ms, setup 0ms, import 2.19s, tests 1.84s, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/room-template-occupied-material-cancel.test.ts > refuses JIT cancellation before refund or demolition of an occupied row, encodedLoad=false
+ FAIL  tests/integration/room-template-occupied-material-cancel.test.ts > refuses JIT cancellation before refund or demolition of an occupied row, encodedLoad=true
+AssertionError: expected -1185 to be -1250 // Object.is equality
+
+- Expected
++ Received
+
+- -1250
++ -1185
+
+ ❯ tests/integration/room-template-occupied-material-cancel.test.ts:63:46
+     61|   send(runtime, { type: 'CancelMaterialPurchase', orderId: deliveryId …
+     62|   // Funds is an independent, short assertion before the full atomic s…
+     63|   expect(runtime.treasury.balanceMinorUnits).toBe(-1250);
+       |                                              ^
+     64|   const { kernel: _afterKernel, ...after } = captureSessionSnapshot(ru…
+     65|   expect(after).toEqual(before);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tests/integration/room-template-occupied-material-cancel.test.ts > refuses a delivery affecting occupied and unoccupied gestures collectively, encodedLoad=false
+ FAIL  tests/integration/room-template-occupied-material-cancel.test.ts > refuses a delivery affecting occupied and unoccupied gestures collectively, encodedLoad=true
+AssertionError: expected +0 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 0
+
+ ❯ tests/integration/room-template-occupied-material-cancel.test.ts:124:93
+    122|   const ids = runtime.construction.previewMaterialWithdrawalOrderIds(d…
+    123|   expect(captureSessionSnapshot(runtime)).toEqual(beforePreview);
+    124|   expect(new Set(ids.map(id => runtime.construction.getOrder(id)!.plac…
+       |                                                                                             ^
+    125|   const { kernel: _beforeKernel, ...before } = captureSessionSnapshot(…
+    126|   send(runtime, { type: 'CancelMaterialPurchase', orderId: delivery.or…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+
+Exit code: 1

@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-noncell-template-playability-audit-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+   Start at  03:18:38
+   Duration  3.96s (transform 802ms, setup 0ms, import 2.12s, tests 1.73s, environment 0ms)
+
+
+Exit code: 0

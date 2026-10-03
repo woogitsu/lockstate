@@ -649,9 +649,19 @@ export function createSessionCommandHandler(
        * `not-pending` cancellation credited no money, so there is no refund for
        * a withdrawal to protect.
        */
-      const cancelledItemId = procurement.pendingDeliveries.find(
+      const cancelledDelivery = procurement.pendingDeliveries.find(
         (delivery) => delivery.orderId === simCommand.orderId,
-      )?.itemId;
+      );
+      const cancelledItemId = cancelledDelivery?.itemId;
+      const cancelKey = purchaseCancelSupersessionKey(simCommand.orderId);
+      if (cancelledDelivery !== undefined && isJustInTimePurchaseOrderId(simCommand.orderId)) {
+        const ids = construction.previewMaterialWithdrawalOrderIds(cancelledDelivery.itemId, cancelledDelivery.quantity);
+        const refusal = roomTemplates.prepareMaterialWithdrawal(ids, context.tick);
+        if (refusal !== undefined) {
+          refusals.record(ROOM_TEMPLATE_REVERSAL_REFUSAL_REASONS[refusal.reason], context.tick, cancelKey);
+          return;
+        }
+      }
       const outcome = procurement.cancel(simCommand.orderId);
       if (outcome.ok && cancelledItemId !== undefined && isJustInTimePurchaseOrderId(simCommand.orderId)) {
         // Read from `pendingDeliveries` *before* the cancel and used after it:
@@ -660,7 +670,6 @@ export function createSessionCommandHandler(
         construction.withdrawOrdersAwaitingMaterial(cancelledItemId);
         roomTemplates.reconcileCancelledShells();
       }
-      const cancelKey = purchaseCancelSupersessionKey(simCommand.orderId);
       if (!outcome.ok) {
         refusals.record(PURCHASE_CANCEL_REFUSAL_REASONS[outcome.reason], context.tick, cancelKey);
       } else {

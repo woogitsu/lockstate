@@ -1,0 +1,417 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-noncell-template-playability-audit-20261003
+
+ ❯ tests/integration/room-template-occupied-material-cancel.test.ts (10 tests | 2 failed) 1896ms
+   × refuses a delivery affecting occupied and unoccupied gestures collectively, encodedLoad=false 362ms
+   × refuses a delivery affecting occupied and unoccupied gestures collectively, encodedLoad=true 327ms
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 8 passed (10)
+   Start at  03:18:33
+   Duration  4.20s (transform 828ms, setup 0ms, import 2.18s, tests 1.90s, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/room-template-occupied-material-cancel.test.ts > refuses a delivery affecting occupied and unoccupied gestures collectively, encodedLoad=false
+ FAIL  tests/integration/room-template-occupied-material-cancel.test.ts > refuses a delivery affecting occupied and unoccupied gestures collectively, encodedLoad=true
+AssertionError: expected { masterSeed: 73, …(5) } to deeply equal { masterSeed: 73, …(5) }
+
+- Expected
++ Received
+
+@@ -3520,50 +3520,10 @@
+          ],
+        },
+        "roomInstanceDefinitions": [
+          {
+            "anchorTile": {
+-             "x": 13,
+-             "y": 12,
+-           },
+-           "height": 5,
+-           "instanceId": "room.cell:13:12",
+-           "roomCatalogId": "room.cell",
+-           "width": 2,
+-         },
+-         {
+-           "anchorTile": {
+-             "x": 13,
+-             "y": 3,
+-           },
+-           "height": 5,
+-           "instanceId": "room.cell:13:3",
+-           "roomCatalogId": "room.cell",
+-           "width": 2,
+-         },
+-         {
+-           "anchorTile": {
+-             "x": 16,
+-             "y": 12,
+-           },
+-           "height": 5,
+-           "instanceId": "room.cell:16:12",
+-           "roomCatalogId": "room.cell",
+-           "width": 2,
+-         },
+-         {
+-           "anchorTile": {
+-             "x": 16,
+-             "y": 3,
+-           },
+-           "height": 5,
+-           "instanceId": "room.cell:16:3",
+-           "roomCatalogId": "room.cell",
+-           "width": 2,
+-         },
+-         {
+-           "anchorTile": {
+              "x": 3,
+              "y": 12,
+            },
+            "height": 5,
+            "instanceId": "room.cell:3:12",
+@@ -3600,27 +3560,11 @@
+            "roomCatalogId": "room.cell",
+            "width": 2,
+          },
+        ],
+        "roomInstanceOccupancy": [
+-         [
+-           "room.cell:13:12",
+-           [],
+-         ],
+          [
+-           "room.cell:13:3",
+-           [],
+-         ],
+-         [
+-           "room.cell:16:12",
+-           [],
+-         ],
+-         [
+-           "room.cell:16:3",
+-           [],
+-         ],
+-         [
+            "room.cell:3:12",
+            [],
+          ],
+          [
+            "room.cell:3:3",
+@@ -3847,11 +3791,11 @@
+    },
+    "world": {
+      "chunkSize": 32,
+      "chunks": [
+        {
+-         "contentRevision": 80,
++         "contentRevision": 120,
+          "dirty": true,
+          "geometryRevision": 121,
+          "leftEdge": [
+            [
+              0,
+@@ -4568,43 +4512,11 @@
+              1,
+              2,
+            ],
+            [
+              0,
+-             5,
+-           ],
+-           [
+-             1,
+-             2,
+-           ],
+-           [
+-             0,
+-             1,
+-           ],
+-           [
+-             1,
+-             2,
+-           ],
+-           [
+-             0,
+-             17,
+-           ],
+-           [
+-             1,
+-             2,
+-           ],
+-           [
+-             0,
+-             1,
+-           ],
+-           [
+-             1,
+-             2,
+-           ],
+-           [
+-             0,
+-             5,
++             27,
+            ],
+            [
+              1,
+              2,
+            ],
+@@ -4616,11 +4528,11 @@
+              1,
+              2,
+            ],
+            [
+              0,
+-             17,
++             27,
+            ],
+            [
+              1,
+              2,
+            ],
+@@ -4632,11 +4544,11 @@
+              1,
+              2,
+            ],
+            [
+              0,
+-             5,
++             27,
+            ],
+            [
+              1,
+              2,
+            ],
+@@ -4648,11 +4560,11 @@
+              1,
+              2,
+            ],
+            [
+              0,
+-             17,
++             27,
+            ],
+            [
+              1,
+              2,
+            ],
+@@ -4664,11 +4576,11 @@
+              1,
+              2,
+            ],
+            [
+              0,
+-             5,
++             155,
+            ],
+            [
+              1,
+              2,
+            ],
+@@ -4680,11 +4592,11 @@
+              1,
+              2,
+            ],
+            [
+              0,
+-             17,
++             27,
+            ],
+            [
+              1,
+              2,
+            ],
+@@ -4696,11 +4608,11 @@
+              1,
+              2,
+            ],
+            [
+              0,
+-             5,
++             27,
+            ],
+            [
+              1,
+              2,
+            ],
+@@ -4712,11 +4624,11 @@
+              1,
+              2,
+            ],
+            [
+              0,
+-             145,
++             27,
+            ],
+            [
+              1,
+              2,
+            ],
+@@ -4728,11 +4640,11 @@
+              1,
+              2,
+            ],
+            [
+              0,
+-             5,
++             27,
+            ],
+            [
+              1,
+              2,
+            ],
+@@ -4744,139 +4656,11 @@
+              1,
+              2,
+            ],
+            [
+              0,
+-             17,
+-           ],
+-           [
+-             1,
+-             2,
+-           ],
+-           [
+-             0,
+-             1,
+-           ],
+-           [
+-             1,
+-             2,
+-           ],
+-           [
+-             0,
+-             5,
+-           ],
+-           [
+-             1,
+-             2,
+-           ],
+-           [
+-             0,
+-             1,
+-           ],
+-           [
+-             1,
+-             2,
+-           ],
+-           [
+-             0,
+-             17,
+-           ],
+-           [
+-             1,
+-             2,
+-           ],
+-           [
+-             0,
+-             1,
+-           ],
+-           [
+-             1,
+-             2,
+-           ],
+-           [
+-             0,
+-             5,
+-           ],
+-           [
+-             1,
+-             2,
+-           ],
+-           [
+-             0,
+-             1,
+-           ],
+-           [
+-             1,
+-             2,
+-           ],
+-           [
+-             0,
+-             17,
+-           ],
+-           [
+-             1,
+-             2,
+-           ],
+-           [
+-             0,
+-             1,
+-           ],
+-           [
+-             1,
+-             2,
+-           ],
+-           [
+-             0,
+-             5,
+-           ],
+-           [
+-             1,
+-             2,
+-           ],
+-           [
+-             0,
+-             1,
+-           ],
+-           [
+-             1,
+-             2,
+-           ],
+-           [
+-             0,
+-             17,
+-           ],
+-           [
+-             1,
+-             2,
+-           ],
+-           [
+-             0,
+-             1,
+-           ],
+-           [
+-             1,
+-             2,
+-           ],
+-           [
+-             0,
+-             5,
+-           ],
+-           [
+-             1,
+-             2,
+-           ],
+-           [
+-             0,
+-             1,
+-           ],
+-           [
+-             1,
+-             2,
+-           ],
+-           [
+-             0,
+-             494,
++             504,
+            ],
+          ],
+        },
+      ],
+      "ownedChunks": [
+
+ ❯ tests/integration/room-template-occupied-material-cancel.test.ts:128:17
+    126|   send(runtime, { type: 'CancelMaterialPurchase', orderId: delivery.or…
+    127|   const { kernel: _afterKernel, ...after } = captureSessionSnapshot(ru…
+    128|   expect(after).toEqual(before);
+       |                 ^
+    129|   expect(runtime.refusals.last).toMatchObject({ reason: 'unzone.room-o…
+    130| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+Exit code: 1
