@@ -84,6 +84,15 @@ are not native model-omission results.
   (`focused-modern-consumers.txt`). No new test mirrors version literals.
 - No own producer mutation, native result, Blob result or ROI calibration was
   obtained. Those assertions are prepared for the real root runtime.
+- Existing prep contracts originally produced two RED / thirty GREEN:
+  `original-prep-contracts.txt`. Research index and documentation claims passed.
+  The citation RED named only published commits absent from this checkout's
+  stale remote refs. Explicitly fetching the root and own published branches
+  restored all eight citation checks (`refreshed-citations.txt`) without a
+  prose exception or guard edit. The remaining inherited coverage failure is
+  `docs/research/2026-10-04-v10-max-native/playwright.native.config.ts`, already
+  tracked in the base but outside tools includes. That root-owned config was
+  not edited here; this new helper is fully included under `tests`.
 
 ## Root execution recipe
 
@@ -96,6 +105,13 @@ opt-in selectors for the three filenames below; do not edit global matchers.
 common-room-upholstered-player-build.spec.ts
 dedicated-kitchen-stove-player-build.spec.ts
 dedicated-kitchen-fridge-player-build.spec.ts
+```
+
+Concrete command after root's genuine combined build, with its verified free
+`LOCKSTATE_ARTIFACT_TEST_PORT` and native output directory configured normally:
+
+```powershell
+node node_modules/@playwright/test/cli.js test --config tests/browser/playwright.artifact.config.ts tests/browser/common-room-upholstered-player-build.spec.ts tests/browser/dedicated-kitchen-stove-player-build.spec.ts tests/browser/dedicated-kitchen-fridge-player-build.spec.ts --workers=1 --retries=0
 ```
 
 Each family's first serial capacity case must actually run before q0/q1; its
