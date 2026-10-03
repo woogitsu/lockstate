@@ -1,0 +1,9 @@
+Source-only follow-up: remaining ordinary missing/loading wall-pose branch, 2026-10-03.
+
+The existing loaded-PNG fix does not cover the fallback solid layer. In the actual ObliqueWorldScene create/update/painter and registered pointer/loader callbacks, a single full occupied wall at (5,5) has correct ground geometry and actor-before-wall sorted order. While its new pose texture is missing/loading, however, its fallback Graphics depth is1 and the rear actor PNG or fallback depth is2. The actor foot independently intersects the painted wall roof; ground picking still reaches the correct clear square. Reproduced at yaw0/elevation45 and yaw180/elevation65:4 RED /10 legal GREEN, without production mutation. This is Node display/loader observation, not a new native pixel claim.
+
+Published diagnosis before implementation: e83743bd2d1236b3c2714baaf6540606a65340ec. Scoped correction:893473a239b21e09b3c65ea21af54f6b37f51e66. Per-visible-solid Graphics now use the same sorted depth as images/actors, are reused while actors cross, and are destroyed on withdrawal, PNG replacement and shutdown. Both existing browser QA counters aggregate the real per-solid buffers, preserving original assertions.
+
+Fixed17/17; actual unique production depth1 negative5 RED /12 legal GREEN; byte-exact finally restore17/17. Bounded neighbouring99/99, strict consumer TypeScript and production build GREEN. Native FullHD loading-window pixels remain pending root acceptance; no browser/server or remote CI was launched in this task.
+
+[Exact source, controls, raw RED/restore logs and limits](https://github.com/woogitsu/lockstate/blob/893473a239b21e09b3c65ea21af54f6b37f51e66/docs/research/2026-10-03-angled-pending-wall-depth/README.md). The occupied square, cutaway projection, art source and gameplay/persistence are unchanged. Reusing this existing actor/wall display-depth Issue rather than creating a duplicate.
