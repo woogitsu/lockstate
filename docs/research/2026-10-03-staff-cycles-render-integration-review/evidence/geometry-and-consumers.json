@@ -1,0 +1,151 @@
+{
+  "base": "4118f5184f1a1d793b74badbbd37421e93b039b3",
+  "composedSubject": "a0d5d6ab3f026459fbe69f3307445dc33c21d38c",
+  "importedOriginalCommits": [
+    "eb844766610e7e3ba38a89ecdb035b0058f4a15b",
+    "afe451db2ccf8861b8c7205a7646470a2f54ed65",
+    "55ebd97ee2b04cf152e181fbb2405b2d6cec2515",
+    "32abd38f009a975713c1aa126384859eceb72bad",
+    "d5703d45672f9020322516c5355e32a9c8b3d830"
+  ],
+  "descriptorGeometryBefore": {
+    "schemaVersion": 1,
+    "assetId": "furniture.staff-room.padded-chair",
+    "resolutionPx": [
+      256,
+      256
+    ],
+    "nominalPixelsPerTile": 64,
+    "pivotPx": [
+      128,
+      128
+    ],
+    "cameraTargetTiles": [
+      0.5,
+      0.5,
+      0.6600000262260437
+    ],
+    "projection": "orthographic",
+    "yawDegrees": [
+      0,
+      30,
+      60,
+      90,
+      120,
+      150,
+      180,
+      210,
+      240,
+      270,
+      300,
+      330
+    ],
+    "elevationDegrees": [
+      20,
+      30,
+      40,
+      50,
+      60,
+      70
+    ]
+  },
+  "descriptorGeometryAfter": {
+    "schemaVersion": 1,
+    "assetId": "furniture.staff-room.padded-chair",
+    "resolutionPx": [
+      256,
+      256
+    ],
+    "nominalPixelsPerTile": 64,
+    "pivotPx": [
+      128,
+      128
+    ],
+    "cameraTargetTiles": [
+      0.5,
+      0.5,
+      0.6600000262260437
+    ],
+    "projection": "orthographic",
+    "yawDegrees": [
+      0,
+      30,
+      60,
+      90,
+      120,
+      150,
+      180,
+      210,
+      240,
+      270,
+      300,
+      330
+    ],
+    "elevationDegrees": [
+      20,
+      30,
+      40,
+      50,
+      60,
+      70
+    ]
+  },
+  "descriptorGeometryUnchanged": true,
+  "oldFrames": 72,
+  "newFrames": 72,
+  "framePoseInventoryUnchanged": true,
+  "descriptorBodyChanged": true,
+  "rendererSources": [
+    {
+      "path": "src/rendering/world/appearance.ts",
+      "beforeCanonicalSha256": "987ebb4d3a3cadaf1ca9896904e6225d4d4fda15063ec1f64e182f531dcb8843",
+      "afterCanonicalSha256": "987ebb4d3a3cadaf1ca9896904e6225d4d4fda15063ec1f64e182f531dcb8843",
+      "sameCanonicalText": true
+    },
+    {
+      "path": "src/rendering/world/structures.ts",
+      "beforeCanonicalSha256": "5ed434b5f7750bd4e9b34d70ee32ab05a3e17bbf9190c058aa5e574d4de925ba",
+      "afterCanonicalSha256": "5ed434b5f7750bd4e9b34d70ee32ab05a3e17bbf9190c058aa5e574d4de925ba",
+      "sameCanonicalText": true
+    },
+    {
+      "path": "src/rendering/world/object-art-orientation.ts",
+      "beforeCanonicalSha256": "e761d3e34bd0bf9b09952c75f84f14b11a2a31ac9c217de508140b61e42caa15",
+      "afterCanonicalSha256": "e761d3e34bd0bf9b09952c75f84f14b11a2a31ac9c217de508140b61e42caa15",
+      "sameCanonicalText": true
+    },
+    {
+      "path": "src/rendering/assets/oblique-object-mapping.ts",
+      "beforeCanonicalSha256": "1be3c951a8851e18d022721eef849cc585f258a0b160abab7a6c09b866107cc5",
+      "afterCanonicalSha256": "1be3c951a8851e18d022721eef849cc585f258a0b160abab7a6c09b866107cc5",
+      "sameCanonicalText": true
+    },
+    {
+      "path": "src/rendering/assets/oblique-module-catalog.ts",
+      "beforeCanonicalSha256": "4b5049f9cb46f40dd2c2d81d7ff47806675e70b0520ec8fb9d71c67d9eabb580",
+      "afterCanonicalSha256": "4b5049f9cb46f40dd2c2d81d7ff47806675e70b0520ec8fb9d71c67d9eabb580",
+      "sameCanonicalText": true
+    },
+    {
+      "path": "src/rendering/assets/oblique-module-registry.ts",
+      "beforeCanonicalSha256": "32674678299a10a91239c5ac0e111b551db36911253ffecfd68cd310ad8f6a32",
+      "afterCanonicalSha256": "32674678299a10a91239c5ac0e111b551db36911253ffecfd68cd310ad8f6a32",
+      "sameCanonicalText": true
+    },
+    {
+      "path": "src/rendering/scene/oblique-world-scene.ts",
+      "beforeCanonicalSha256": "f1a0e85639553de094bbb4b319e72221191c0b8fdf94027e0e482586134bd160",
+      "afterCanonicalSha256": "f1a0e85639553de094bbb4b319e72221191c0b8fdf94027e0e482586134bd160",
+      "sameCanonicalText": true
+    },
+    {
+      "path": "src/rendering/camera/oblique-world-projection.ts",
+      "beforeCanonicalSha256": "b87bdc33dbe137800a5d636b73376da1965e4587a471a56d12a4321ada6b371d",
+      "afterCanonicalSha256": "b87bdc33dbe137800a5d636b73376da1965e4587a471a56d12a4321ada6b371d",
+      "sameCanonicalText": true
+    }
+  ],
+  "registryEntry": true,
+  "native": false,
+  "build": false
+}

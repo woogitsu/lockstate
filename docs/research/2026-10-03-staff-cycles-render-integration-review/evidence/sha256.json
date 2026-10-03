@@ -1,0 +1,22 @@
+﻿[
+    {
+        "file":  "docs-gates.txt",
+        "Hash":  "AAEA90CFEC4B1DB3699487BCA396C726482D40BADE936A104A7310184F5516E9"
+    },
+    {
+        "file":  "focused-render-controls.txt",
+        "Hash":  "1168AB26F24BF4B6C864063EC20287743990AD0911C7C36559AD2EF0401395A2"
+    },
+    {
+        "file":  "geometry-and-consumers.json",
+        "Hash":  "5C2646308FC0BE689D56F368BE66624B07F1AB59CB77F87C3ABCEE3832179245"
+    },
+    {
+        "file":  "geometry-review.cjs.txt",
+        "Hash":  "65F9413F55E3D127F4B51F25448AD1BA159334C603E1F2A0B674909040D61654"
+    },
+    {
+        "file":  "selected-lfs-checkout.txt",
+        "Hash":  "47B7C945A13FC1214397A0B02C9DD5B496530A58597CE5ABC230F8D475AC93F2"
+    }
+]
