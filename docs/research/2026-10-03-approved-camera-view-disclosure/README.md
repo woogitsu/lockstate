@@ -55,3 +55,8 @@ clearly distinguished from browser zoom. Reuse the original public physical
 View/select/pan/pose route, real worker refusal/alert, exact whole paused state,
 original containment/44–88 hit floors and screenshots. Do not relax any
 existing geometry assertion or infer UI200 acceptance from unit arithmetic.
+
+The actual source fixture and public DOM reader are now prepared in this
+folder with an exact `tsconfig.tools.json` include. App/tools types passed.
+The real `--list` attempt is blocked by the unchanged missing-build guard;
+no collection/native pass is claimed. See [execution recipe](./NATIVE_RECIPE.md).
