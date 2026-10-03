@@ -1,0 +1,26 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-template-square-next-gameplay-20261003
+
+stdout | tests/integration/completed-template-door-furniture.test.ts > completed template door vs independent furniture: q=1 mirror=false saved=false legal=false
+{"testCase":{"quarterTurns":1,"mirrorX":false,"door":{"x":10,"y":11},"legalTile":{"x":8,"y":11},"saved":false,"legal":false},"order":{"id":"later-toilet","definitionId":"toilet-brick","location":{"x":10,"y":11},"placementSequence":1,"state":"completed","progress":30,"materialsAllocated":[{"itemId":"item.brick","quantity":1}],"assignedWorkerId":"mock-worker-1"},"fundsBefore":{"balanceMinorUnits":23470},"fundsAfter":{"balanceMinorUnits":23430},"doorOccupied":true,"objects":[{"placedObjectId":"object:10:11","objectId":"object.toilet","anchorTile":{"x":10,"y":11},"orientation":0,"sourceOrderId":"later-toilet"},{"placedObjectId":"object:14:11","objectId":"object.bed","anchorTile":{"x":14,"y":11},"orientation":1,"sourceOrderId":"room-template-000000000000-2-object-000"},{"placedObjectId":"object:12:12","objectId":"object.toilet","anchorTile":{"x":12,"y":12},"orientation":1,"sourceOrderId":"room-template-000000000000-2-object-001"}]}
+
+stdout | tests/integration/completed-template-door-furniture.test.ts > completed template door vs independent furniture: q=1 mirror=false saved=true legal=false
+{"testCase":{"quarterTurns":1,"mirrorX":false,"door":{"x":10,"y":11},"legalTile":{"x":8,"y":11},"saved":true,"legal":false},"order":{"id":"later-toilet","definitionId":"toilet-brick","location":{"x":10,"y":11},"placementSequence":1,"state":"completed","progress":30,"materialsAllocated":[{"itemId":"item.brick","quantity":1}],"assignedWorkerId":"mock-worker-1"},"fundsBefore":{"balanceMinorUnits":23470},"fundsAfter":{"balanceMinorUnits":23430},"doorOccupied":true,"objects":[{"placedObjectId":"object:10:11","objectId":"object.toilet","anchorTile":{"x":10,"y":11},"orientation":0,"sourceOrderId":"later-toilet"},{"placedObjectId":"object:14:11","objectId":"object.bed","anchorTile":{"x":14,"y":11},"orientation":1,"sourceOrderId":"room-template-000000000000-2-object-000"},{"placedObjectId":"object:12:12","objectId":"object.toilet","anchorTile":{"x":12,"y":12},"orientation":1,"sourceOrderId":"room-template-000000000000-2-object-001"}]}
+
+stdout | tests/integration/completed-template-door-furniture.test.ts > completed template door vs independent furniture: q=3 mirror=true saved=false legal=false
+{"testCase":{"quarterTurns":3,"mirrorX":true,"door":{"x":16,"y":11},"legalTile":{"x":18,"y":11},"saved":false,"legal":false},"order":{"id":"later-toilet","definitionId":"toilet-brick","location":{"x":16,"y":11},"placementSequence":1,"state":"completed","progress":30,"materialsAllocated":[{"itemId":"item.brick","quantity":1}],"assignedWorkerId":"mock-worker-1"},"fundsBefore":{"balanceMinorUnits":23470},"fundsAfter":{"balanceMinorUnits":23430},"doorOccupied":true,"objects":[{"placedObjectId":"object:11:11","objectId":"object.bed","anchorTile":{"x":11,"y":11},"orientation":3,"sourceOrderId":"room-template-000000000000-2-object-000"},{"placedObjectId":"object:16:11","objectId":"object.toilet","anchorTile":{"x":16,"y":11},"orientation":0,"sourceOrderId":"later-toilet"},{"placedObjectId":"object:14:12","objectId":"object.toilet","anchorTile":{"x":14,"y":12},"orientation":3,"sourceOrderId":"room-template-000000000000-2-object-001"}]}
+
+stdout | tests/integration/completed-template-door-furniture.test.ts > completed template door vs independent furniture: q=3 mirror=true saved=true legal=false
+{"testCase":{"quarterTurns":3,"mirrorX":true,"door":{"x":16,"y":11},"legalTile":{"x":18,"y":11},"saved":true,"legal":false},"order":{"id":"later-toilet","definitionId":"toilet-brick","location":{"x":16,"y":11},"placementSequence":1,"state":"completed","progress":30,"materialsAllocated":[{"itemId":"item.brick","quantity":1}],"assignedWorkerId":"mock-worker-1"},"fundsBefore":{"balanceMinorUnits":23470},"fundsAfter":{"balanceMinorUnits":23430},"doorOccupied":true,"objects":[{"placedObjectId":"object:11:11","objectId":"object.bed","anchorTile":{"x":11,"y":11},"orientation":3,"sourceOrderId":"room-template-000000000000-2-object-000"},{"placedObjectId":"object:16:11","objectId":"object.toilet","anchorTile":{"x":16,"y":11},"orientation":0,"sourceOrderId":"later-toilet"},{"placedObjectId":"object:14:12","objectId":"object.toilet","anchorTile":{"x":14,"y":12},"orientation":3,"sourceOrderId":"room-template-000000000000-2-object-001"}]}
+
+ ❯ tests/integration/completed-template-door-furniture.test.ts (10 tests | 4 failed) 1153ms
+   × completed template door vs independent furniture: q=1 mirror=false saved=false legal=false 161ms
+   × completed template door vs independent furniture: q=1 mirror=false saved=true legal=false 136ms
+   × completed template door vs independent furniture: q=3 mirror=true saved=false legal=false 86ms
+   × completed template door vs independent furniture: q=3 mirror=true saved=true legal=false 102ms
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 6 passed (10)
+   Start at  18:12:34
+   Duration  5.96s (transform 2.16s, setup 0ms, import 4.58s, tests 1.15s, environment 0ms)
+

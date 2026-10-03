@@ -1,0 +1,77 @@
+﻿[
+    {
+        "sha256":  "54564e3ec09140fea568c55702e238e3bae134ac87ece8af9948beb86dcd335b",
+        "file":  "baseline.txt",
+        "bytes":  13860
+    },
+    {
+        "sha256":  "2a50e6cea171740472e49dcb6277337871006b309fcb31d4ac7e04960e869fc8",
+        "file":  "docs.txt",
+        "bytes":  562
+    },
+    {
+        "sha256":  "4e80aec0faabcda7455fe258db54422ef520983eeeb81e3a7ce3182a9b55c1eb",
+        "file":  "executed-producer-negative.cjs.txt",
+        "bytes":  2466
+    },
+    {
+        "sha256":  "05cc4084ea40d692e2fac24201b32eb01d40dba76baab9354a78bc981db1b511",
+        "file":  "fixed.txt",
+        "bytes":  564
+    },
+    {
+        "sha256":  "8ec1d103c55c73ad0de42b92f01fdfa9742f1ebc628257ec5ee69e1d3632e52e",
+        "file":  "fresh-dedup.txt",
+        "bytes":  540
+    },
+    {
+        "sha256":  "282e83f3a363e3d46f79f6b9084a7e57454a0fd3caf5b9d0f1d9a7c47b5d2fbd",
+        "file":  "issue-2023-readback.json",
+        "bytes":  2922
+    },
+    {
+        "sha256":  "721bc24fb117f676550a1e43f1f2d65ff6dd1dcfcc1d9e1225eccd84b5f748f9",
+        "file":  "neighbors.txt",
+        "bytes":  572
+    },
+    {
+        "sha256":  "03c4f2443cfb74ad6ae725e9dd4aa43fa58f7fe11134a3f95735c62e2e58f3e9",
+        "file":  "producer-omission.stderr.txt",
+        "bytes":  1456
+    },
+    {
+        "sha256":  "8fc8c813bd806bc89bc423988edbcbe33436e35790e59d04151291b3023c5364",
+        "file":  "producer-omission.stdout.txt",
+        "bytes":  5194
+    },
+    {
+        "sha256":  "f578edec7262472e77c6cc17938491e10b289ae1617abcd0d5b895c5e198ad83",
+        "file":  "producer-restoration.json",
+        "bytes":  553
+    },
+    {
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "file":  "producer-restored.stderr.txt",
+        "bytes":  0
+    },
+    {
+        "sha256":  "0b601a30ddcdbdc747623523bdb914f07321123f2a7bacbb7c0a885f8a5f4106",
+        "file":  "producer-restored.stdout.txt",
+        "bytes":  273
+    },
+    {
+        "sha256":  "6deacf3c9fe153e8bbc554fc1e4504da8042fc68813fcfe76c9133e6d5552012",
+        "file":  "README.md",
+        "bytes":  5349
+    },
+    {
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "file":  "strict-types.txt",
+        "bytes":  0
+    },
+    {
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "file":  "terminal-receipt.json",
+        "bytes":  0
+    }
+]
