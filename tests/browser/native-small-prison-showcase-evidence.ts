@@ -111,14 +111,25 @@ export async function observeShowcaseArt(page: Page) {
   const readDecodedImages = await observeCotImages(page);
   const descriptors: { url: string; status: number; data: Descriptor }[] = [];
   const images: { path: string; status: number; sha256: string; width: number; height: number }[] = [];
+  const redirects: { url: string; status: number; location: string | undefined; path: string }[] = [];
   const errors: string[] = [];
   const pending: Promise<void>[] = [];
   page.on('response', response => {
     const path = decodeURIComponent(new URL(response.url()).pathname);
-    if (SHOWCASE_ASSETS.some(([file]) => path === `/game-content/${file}`)) {
+    const descriptorPath = SHOWCASE_ASSETS.some(([file]) => path === `/game-content/${file}`);
+    const imagePath = SHOWCASE_ASSETS.some(([, id]) => path.startsWith(`/assets/environment/oblique/${id}-`)) && path.endsWith('.png');
+    if (!descriptorPath && !imagePath) return;
+    // The real preview server redirects canonical decoded filenames to their
+    // URL-encoded spelling. A redirect has no readable body; retain it and
+    // require the same terminal canonical path/body below.
+    if (response.status() >= 300 && response.status() < 400) {
+      redirects.push({ url: response.url(), status: response.status(), location: response.headers().location, path });
+      return;
+    }
+    if (descriptorPath) {
       pending.push(response.json().then(data => { descriptors.push({ url: path, status: response.status(), data: data as Descriptor }); })
         .catch(error => { errors.push(String(error)); }));
-    } else if (SHOWCASE_ASSETS.some(([, id]) => path.startsWith(`/assets/environment/oblique/${id}-`)) && path.endsWith('.png')) {
+    } else if (imagePath) {
       pending.push((async () => {
         const bytes = await response.body();
         expect(response.status(), `terminal source PNG ${path}`).toBe(200);
@@ -134,6 +145,14 @@ export async function observeShowcaseArt(page: Page) {
     if (requireAll) {
       expect(errors).toEqual([]);
       expect(decoded.errors).toEqual([]);
+      for (const redirect of redirects) {
+        expect(redirect.location, `actual source redirect ${redirect.url}`).toBeDefined();
+        expect(decodeURIComponent(new URL(redirect.location!, redirect.url).pathname),
+          'redirect preserves the canonical source path').toBe(redirect.path);
+        expect(descriptors.some(row => row.url === redirect.path && row.status === 200) ||
+          images.some(row => row.path === redirect.path && row.status === 200),
+        `redirect reaches an observed terminal canonical response ${redirect.path}`).toBe(true);
+      }
       for (const [file, assetId, sourceSha256] of SHOWCASE_ASSETS) {
         const descriptor = descriptors.find(row => row.url === `/game-content/${file}`);
         expect(descriptor, `canonical descriptor for ${assetId}`).toMatchObject({ status: 200, data: { assetId, sourceSha256 } });
@@ -144,6 +163,6 @@ export async function observeShowcaseArt(page: Page) {
         `actual loader decoded ${assetId}`).toBe(true);
       }
     }
-    return { descriptors, images, decodedImages: decoded.images, errors };
+    return { descriptors, images, redirects, decodedImages: decoded.images, errors };
   };
 }
