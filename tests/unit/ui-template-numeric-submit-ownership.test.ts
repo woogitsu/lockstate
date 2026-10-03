@@ -123,7 +123,7 @@ function inverse(point: { x: number; y: number }, pose: ObliqueWorldScene['camer
 function originAt(point: { x: number; y: number }, pose: ObliqueWorldScene['cameraPose']) {
   const p = inverse(point, pose); return { x: Math.floor(p.x / 64), y: Math.floor(p.y / 64) };
 }
-async function setup(mode: 'world' | 'oblique', templateId: RoomTemplateId, initialTurn: 0 | 1, remapped = false) {
+async function setup(mode: 'world' | 'oblique', templateId: RoomTemplateId, initialTurn: 0 | 1, remapped = false, delayAcceptedCompletion = false) {
   const frames: FrameRequestCallback[] = [], elements: ElementStub[] = [];
   const canvas = new ElementStub(); canvas.parentElement = new ElementStub(); const layers = canvas.parentElement.children;
   vi.stubGlobal('window', new EventTarget());
@@ -146,8 +146,13 @@ async function setup(mode: 'world' | 'oblique', templateId: RoomTemplateId, init
   for (const name of ['tiles','roomLabels','roomConditions','actors','buildOverlay','areaOverlay','objectOverlay','homeIndicator']) Reflect.set(scene,name,undefined);
   Reflect.set(scene, 'repaint', () => undefined);
   const actors = worker();
+  let completeAcceptedPlace = () => {};
+  const acceptedCompletion = new Promise<void>(resolve => { completeAcceptedPlace = resolve; });
   const tool = new RoomTemplateTool({ preflight: createSimulationRoomTemplatePreflight(actors.channel), quote: createSimulationRoomTemplateQuote(actors.channel),
-    objectFootprint: footprint, place: async request => actors.commands.submit({ type: 'PlaceRoomTemplate', ...request }) });
+    objectFootprint: footprint, place: async request => {
+      actors.commands.submit({ type: 'PlaceRoomTemplate', ...request });
+      if (delayAcceptedCompletion) await acceptedCompletion;
+    } });
   const localizer = new Localizer({ locale: 'en', catalogs: [defaultMessageCatalogEn] });
   const preview = createRoomTemplatePreview(localizer, tool);
   const rotation = elements.find(e => e.className === 'hud-template__rotation')!;
@@ -174,7 +179,7 @@ async function setup(mode: 'world' | 'oblique', templateId: RoomTemplateId, init
   const paint = async () => { for (const frame of frames.splice(0)) frame(0); await new Promise<void>(resolve => setImmediate(resolve)); };
   dispatch(canvas, 'pointermove', point); await paint();
   await paint(); expect(layers.at(-1)!.dataset.ready).toBe('clear');
-  return { elements, canvas, scene, actors, tool, point, initialOrigin, paint, layer: () => layers.at(-1)!, setUiScale: () => { uiScale = 2; },
+  return { elements, canvas, scene, actors, tool, point, initialOrigin, paint, completeAcceptedPlace, layer: () => layers.at(-1)!, setUiScale: () => { uiScale = 2; },
     preview, rotation, mirror, dialogDiagram: elements.find(e => e.className === 'hud-template__diagram')!,
     dimensions: elements.find(e => e.className === 'hud-template__dimensions')!,
     dialogQuote: elements.find(e => e.className === 'hud-template__quote')!,
@@ -256,4 +261,23 @@ for(const mode of ['world','oblique'] as const) it(`${mode}/delayed-refusal: aut
   const snapshot=h.actors.snapshot();expect(snapshot.construction.orders).toHaveLength(36);
   expect(snapshot.simulation?.roomTemplates?.pending).toMatchObject([{origin:{x:20,y:5},quarterTurns:1},{origin:h.initialOrigin,quarterTurns:1}]);
  } finally {h.dispose();}
+});
+
+// Public placement ports return Promise<void>. Hold that completion, not a
+// fabricated worker acknowledgement: main currently publishes immediately.
+for(const mode of ['world','oblique'] as const) for(const next of ['new-selection','new-rearm'] as const) it(`${mode}/${next}/accepted-port-completion: a queued original command does not consume a newer arm`,async()=>{
+ const h=await setup(mode,'cell-basic',1,false,true);
+ try {
+  dispatch(h.canvas,'pointerdown',h.point,0,1);h.preview.openButton.dispatchEvent(new Event('click'));await settle(h);
+  const x=h.elements.find(e=>e.attributes.get('aria-label')==='Plan origin X')!,y=h.elements.find(e=>e.attributes.get('aria-label')==='Plan origin Y')!,place=h.elements.find(e=>e.textContent==='Place room plan')!;
+  x.value='20';x.dispatchEvent(new Event('input'));y.value='5';y.dispatchEvent(new Event('input'));await settle(h);expect(place.disabled).toBe(false);
+  place.dispatchEvent(new Event('click'));await settle(h);
+  expect(submitted(h)).toHaveLength(1);expect(h.actors.snapshot().construction.orders).toHaveLength(18);
+  if(next==='new-selection')h.elements.find(e=>e.attributes.get('data-template-id')==='yard-basic')!.dispatchEvent(new Event('click'));
+  h.elements.find(e=>e.textContent==='Place on map')!.dispatchEvent(new Event('click'));const currentRevision=h.tool.revision;
+  h.completeAcceptedPlace();await settle(h);
+  expect(h.tool.isArmed()).toBe(true);expect(h.tool.revision).toBe(currentRevision);expect(h.tool.planAt({x:0,y:0}).id).toBe(next==='new-selection'?'yard-basic':'cell-basic');
+  dispatch(h.canvas,'pointerup',h.point,0,0);await settle(h);expect(submitted(h)).toHaveLength(1);
+  expect(h.actors.snapshot().simulation?.roomTemplates?.pending).toMatchObject([{templateId:'cell-basic',origin:{x:20,y:5},quarterTurns:1}]);
+ } finally {h.completeAcceptedPlace();h.dispose();}
 });
