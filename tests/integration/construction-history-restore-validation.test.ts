@@ -15,7 +15,7 @@ function boughtBundle() {
     orderId: 'validation-wall', definitionId: 'wall-brick', x: 10, y: 10, footprint: 'square' }));
   expect(runtime.kernel.dispatchDueCommands()).toBe(1);
   runtime.kernel.step();
-  expect(runtime.construction.revisionOf('validation-wall')).toBeGreaterThan(0);
+  expect(BigInt(runtime.construction.revisionOf('validation-wall'))).toBeGreaterThan(0n);
   return { runtime, bundle: captureSessionSnapshot(runtime) };
 }
 
@@ -25,7 +25,7 @@ const invalid = [
   { name: 'unsafe', record: { order: Number.MAX_SAFE_INTEGER + 1 } },
   { name: 'NaN', record: { order: NaN } },
   { name: 'Infinity', record: { order: Infinity } },
-  { name: 'string', record: { order: '1' } },
+  { name: 'leading zero', record: { order: '01' } },
   { name: 'null value', record: { order: null } },
   { name: 'empty ID', record: { '': 0 } },
   { name: 'inherited object', record: Object.create({ inherited: 1 }) as unknown },
@@ -41,8 +41,8 @@ it.each(invalid)('direct runtime restore refuses $name ledger before any constru
 
 it.each([Object.prototype, null])('plain/null prototype with own unusual IDs is accepted consistently by codec and direct runtime', prototype => {
   const { bundle } = boughtBundle();
-  const record = Object.assign(Object.create(prototype) as Record<string, number>, { 'validation-wall': 2, terminal: 0 });
-  Object.defineProperty(record, '__proto__', { value: Number.MAX_SAFE_INTEGER, enumerable: true });
+  const record = Object.assign(Object.create(prototype) as Record<string, string>, { 'validation-wall': '2', terminal: '0' });
+  Object.defineProperty(record, '__proto__', { value: String(Number.MAX_SAFE_INTEGER), enumerable: true });
   const raw = { ...bundle, construction: { ...bundle.construction, newerActionThanTheStackTop: true, orderRevisions: record } };
   const saved = createSaveEnvelope({ gameVersion: 'test', prisonId: 'direct-ledger', revision: 1, createdAt: 0, updatedAt: 0, ...raw });
   const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(saved)));
@@ -51,8 +51,8 @@ it.each([Object.prototype, null])('plain/null prototype with own unusual IDs is 
   const direct = restoreSimulationRuntime(raw).runtime;
   const stored = restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle).runtime;
   expect(direct.construction.snapshot()).toStrictEqual(stored.construction.snapshot());
-  expect(direct.construction.revisionOf('__proto__')).toBe(Number.MAX_SAFE_INTEGER);
-  expect(direct.construction.revisionOf('terminal')).toBe(0);
+  expect(direct.construction.revisionOf('__proto__')).toBe(String(Number.MAX_SAFE_INTEGER));
+  expect(direct.construction.revisionOf('terminal')).toBe('0');
 });
 
 it('in-process host retains its live session when a raw malformed ledger is refused', async () => {
@@ -60,7 +60,7 @@ it('in-process host retains its live session when a raw malformed ledger is refu
   await host.startNew(73);
   const existing = host.getRuntime()!, before = captureSessionSnapshot(existing);
   const damaged = { ...before, construction: { ...before.construction, orderRevisions: { order: -1 } } };
-  await expect(host.startFromSnapshot(damaged)).rejects.toMatchObject({ reason: 'damaged-payload' });
+  await expect(host.startFromSnapshot(damaged as unknown as SessionSnapshotBundle)).rejects.toMatchObject({ reason: 'damaged-payload' });
   expect(host.getRuntime()).toBe(existing);
   expect(captureSessionSnapshot(existing)).toStrictEqual(before);
 });

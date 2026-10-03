@@ -188,7 +188,7 @@ describe('a build order that is cancelled says so, and says which of two things 
        * displayed anything at all -- exactly the "planned order, no control
        * can reach it" case the comment above this test already names.
        */
-      { type: 'CancelBuildOrder', orderId: 'order-a', expectedRevision: 1 },
+      { type: 'CancelBuildOrder', orderId: 'order-a', expectedRevision: '1' },
     ]);
 
     expect(session.stateOf('order-a')).toBe('cancelled');
@@ -286,7 +286,7 @@ describe('a build order that is cancelled says so, and says which of two things 
      * `AGENTS.md`'s fourth exclusion reserves.
      */
     const session = createSession();
-    session.send({ type: 'CancelBuildOrder', orderId: 'order-that-never-was', expectedRevision: 0 });
+    session.send({ type: 'CancelBuildOrder', orderId: 'order-that-never-was', expectedRevision: '0' });
     expect(session.types()).toEqual([]);
   });
 });

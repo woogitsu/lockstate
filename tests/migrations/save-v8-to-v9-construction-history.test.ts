@@ -1,7 +1,7 @@
 import { expect, it } from 'vitest';
 import { computeSaveChecksum } from '../../src/persistence/checksum';
 import { createSaveEnvelope, decodeSaveEnvelope, saveMigrationChain, type SaveEnvelopeV1, type SaveEnvelopeV4, type SaveEnvelopeV8 } from '../../src/persistence/save-schema';
-import { migrateSaveEnvelopeV1ToV2, migrateSaveEnvelopeV2ToV3, migrateSaveEnvelopeV3ToV4, migrateSaveEnvelopeV4ToV5, migrateSaveEnvelopeV5ToV6, migrateSaveEnvelopeV6ToV7, migrateSaveEnvelopeV7ToV8, migrateSaveEnvelopeV8ToV9 } from '../../src/persistence/save-migrations';
+import { migrateSaveEnvelopeV1ToV2, migrateSaveEnvelopeV2ToV3, migrateSaveEnvelopeV3ToV4, migrateSaveEnvelopeV4ToV5, migrateSaveEnvelopeV5ToV6, migrateSaveEnvelopeV6ToV7, migrateSaveEnvelopeV7ToV8, migrateSaveEnvelopeV8ToV9, migrateSaveEnvelopeV9ToV10 } from '../../src/persistence/save-migrations';
 import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { captureSessionSnapshot, restoreSimulationRuntime, type SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
 import { packCommand, type SimulationCommand } from '../../src/simulation/protocol/commands';
@@ -31,7 +31,7 @@ it.each(historical.map((row, index) => ({ ...row, index })))('V$envelope.saveSch
   const result = decodeSaveEnvelope(input);
   expect(result.ok).toBe(true);
   if (!result.ok) throw Error(result.error.message);
-  expect(result.value.saveSchemaVersion).toBe(9);
+  expect(result.value.saveSchemaVersion).toBe(10);
   expect(result.value.payload).toStrictEqual({ ...expected, construction: {
     ...expected.construction, newerActionThanTheStackTop: false, orderRevisions: {},
   } });
@@ -50,12 +50,16 @@ it.each(historical.slice(0, 8))('frozen V$envelope.saveSchemaVersion refuses bot
 
 function currentEnvelope() {
   const runtime = createNewSimulationRuntime(73), bundle = captureSessionSnapshot(runtime);
-  return createSaveEnvelope({ gameVersion: 'test', prisonId: 'history-v9', revision: 1, createdAt: 0, updatedAt: 1, ...bundle });
+  const input = JSON.parse(JSON.stringify(createSaveEnvelope({ gameVersion: 'test', prisonId: 'history-v9', revision: 1, createdAt: 0, updatedAt: 1, ...bundle })));
+  input.saveSchemaVersion = 9;
+  input.payload.construction.orderRevisions = Object.fromEntries(Object.entries(input.payload.construction.orderRevisions as Record<string, string>).map(([id, value]) => [id, Number(value)]));
+  input.checksum = computeSaveChecksum(input.payload);
+  return input;
 }
 
 it('preserves prototype-like, terminal, absent-order and explicit zero entries through real JSON, validator and Map restoration without aliasing', () => {
   const runtime = createNewSimulationRuntime(73);
-  const record = Object.fromEntries([['__proto__', 0], ['constructor', 7], ['terminal-order', 11], ['missing-order', Number.MAX_SAFE_INTEGER]]);
+  const record = Object.fromEntries([['__proto__', '0'], ['constructor', '7'], ['terminal-order', '11'], ['missing-order', String(Number.MAX_SAFE_INTEGER)]]);
   runtime.construction.restore({ ...runtime.construction.snapshot(), orderRevisions: record, newerActionThanTheStackTop: true });
   const bundle = captureSessionSnapshot(runtime);
   const saved = createSaveEnvelope({ gameVersion: 'test', prisonId: 'history-keys', revision: 1, createdAt: 0, updatedAt: 1, ...bundle });
@@ -69,8 +73,8 @@ it('preserves prototype-like, terminal, absent-order and explicit zero entries t
   const restored = restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle).runtime;
   expect(restored.construction.snapshot()).toStrictEqual(runtime.construction.snapshot());
   for (const [id, revision] of Object.entries(record)) expect(restored.construction.revisionOf(id)).toBe(revision);
-  record['constructor'] = 0;
-  expect(restored.construction.revisionOf('constructor')).toBe(7);
+  record['constructor'] = '0';
+  expect(restored.construction.revisionOf('constructor')).toBe('7');
   // Reusing the same instance for legacy input must clear old counters/marker.
   restored.construction.restore({ orders: [], undoStack: [], redoStack: [] });
   expect(restored.construction.snapshot()).toMatchObject({ newerActionThanTheStackTop: false, orderRevisions: {} });
@@ -101,11 +105,15 @@ it('V8→V9 clones an actual rich template payload without filtering owners/hist
   send({ type: 'Undo' });
   runtime.kernel.step();
   const pending = runtime.construction.allOrders().find(order => order.state !== 'completed' && order.state !== 'cancelled')!;
-  expect(runtime.construction.revisionOf(pending.id)).toBeGreaterThan(0);
+  expect(BigInt(runtime.construction.revisionOf(pending.id))).toBeGreaterThan(0n);
   runtime.kernel.submitCommand('saved-token', runtime.kernel.expectedSequence, runtime.kernel.tick,
     packCommand({ type: 'CancelBuildOrder', orderId: pending.id, expectedRevision: runtime.construction.revisionOf(pending.id) }));
   const input = JSON.parse(JSON.stringify(createSaveEnvelope({ gameVersion: 'test', prisonId: 'rich-v8', revision: 1, createdAt: 0, updatedAt: 1, ...captureSessionSnapshot(runtime) })));
   input.saveSchemaVersion = 8;
+  for (const command of input.payload.kernel.commands) if (command.payload.data?.type === 'CancelBuildOrder') {
+    command.payload.schemaVersion = 1;
+    command.payload.data.expectedRevision = Number(command.payload.data.expectedRevision);
+  }
   delete input.payload.construction.newerActionThanTheStackTop;
   delete input.payload.construction.orderRevisions;
   input.checksum = computeSaveChecksum(input.payload);
@@ -123,10 +131,10 @@ it('V8→V9 clones an actual rich template payload without filtering owners/hist
   const result = decodeSaveEnvelope(input);
   expect(result.ok).toBe(true);
   if (!result.ok) throw Error(result.error.message);
-  expect(result.value.payload).toStrictEqual(direct.payload);
+  expect(result.value.payload).toStrictEqual(migrateSaveEnvelopeV9ToV10(direct).payload);
   expect(JSON.stringify(input)).toBe(before);
   const loaded = restoreSimulationRuntime(result.value.payload as unknown as SessionSnapshotBundle).runtime;
-  expect(loaded.construction.revisionOf(pending.id)).toBe(0);
+  expect(loaded.construction.revisionOf(pending.id)).toBe('0');
   expect(loaded.kernel.dispatchDueCommands()).toBe(1);
   expect(loaded.refusals.last?.reason).toBe('cancel-build-order.stale-cancellation');
   expect(loaded.roomTemplates.snapshot().pending).toHaveLength(1);

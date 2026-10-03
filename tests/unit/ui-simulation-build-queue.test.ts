@@ -21,7 +21,7 @@ import type { ProjectionMessageChannel } from '../../src/ui/simulation-projectio
  */
 
 const projection = (overrides: Partial<BuildQueueViewModel> = {}): BuildQueueViewModel => ({
-  schemaVersion: 1,
+  schemaVersion: 2,
   started: 1,
   // A queue that is not short of money, which is what every case in this file
   // is about: the reader's job is the window and the ids, and #627's funding
@@ -36,9 +36,9 @@ const projection = (overrides: Partial<BuildQueueViewModel> = {}): BuildQueueVie
       // `revision` (ADR 0107): arbitrary but distinct, so a test that asserts
       // it survives unchanged (below) is not vacuously true of three rows
       // sharing one value.
-      { orderId: 'order-01', definitionId: 'wall-brick', tile: { x: 3, y: 3 }, edge: 'north', state: 'in-progress', cancelRefundMinorUnits: 0, revision: 4 },
-      { orderId: 'order-02', definitionId: 'wall-brick', tile: { x: 3, y: 4 }, edge: 'north', state: 'assigned', cancelRefundMinorUnits: 80, revision: 2 },
-      { orderId: 'order-03', definitionId: 'door-wooden', tile: { x: 3, y: 5 }, edge: 'west', state: 'materials-pending', cancelRefundMinorUnits: 65, revision: 1 },
+      { orderId: 'order-01', definitionId: 'wall-brick', tile: { x: 3, y: 3 }, edge: 'north', state: 'in-progress', cancelRefundMinorUnits: 0, revision: '4' },
+      { orderId: 'order-02', definitionId: 'wall-brick', tile: { x: 3, y: 4 }, edge: 'north', state: 'assigned', cancelRefundMinorUnits: 80, revision: '2' },
+      { orderId: 'order-03', definitionId: 'door-wooden', tile: { x: 3, y: 5 }, edge: 'west', state: 'materials-pending', cancelRefundMinorUnits: 65, revision: '1' },
     ],
   },
   ...overrides,
@@ -110,13 +110,13 @@ describe('what the Build panel is told about the queue', () => {
       edge: 'west',
       state: 'materials-pending',
       cancelRefundMinorUnits: 65,
-      revision: 1,
+      revision: '1',
     });
   });
 
   it('carries the revision through unchanged (ADR 0107), for a later CancelBuildOrder to name as expectedRevision', () => {
     const queue = buildQueueFromProjection(projection(), labelKeyOf);
-    expect(queue.orders.map((order) => order.revision)).toEqual([4, 2, 1]);
+    expect(queue.orders.map((order) => order.revision)).toEqual(['4', '2', '1']);
   });
 
   it('carries the refund figure through unchanged, which is the whole of what this layer does with it', () => {
@@ -256,9 +256,9 @@ describe('the reader that asks for the queue', () => {
       total: 12,
       started: 1,
       orders: [
-        { orderId: 'order-01', labelKey: 'hud.build.buildable.wall-brick', tile: { x: 3, y: 3 }, edge: 'north', state: 'in-progress', cancelRefundMinorUnits: 0, revision: 4 },
-        { orderId: 'order-02', labelKey: 'hud.build.buildable.wall-brick', tile: { x: 3, y: 4 }, edge: 'north', state: 'assigned', cancelRefundMinorUnits: 80, revision: 2 },
-        { orderId: 'order-03', labelKey: 'hud.build.buildable.door-wooden', tile: { x: 3, y: 5 }, edge: 'west', state: 'materials-pending', cancelRefundMinorUnits: 65, revision: 1 },
+        { orderId: 'order-01', labelKey: 'hud.build.buildable.wall-brick', tile: { x: 3, y: 3 }, edge: 'north', state: 'in-progress', cancelRefundMinorUnits: 0, revision: '4' },
+        { orderId: 'order-02', labelKey: 'hud.build.buildable.wall-brick', tile: { x: 3, y: 4 }, edge: 'north', state: 'assigned', cancelRefundMinorUnits: 80, revision: '2' },
+        { orderId: 'order-03', labelKey: 'hud.build.buildable.door-wooden', tile: { x: 3, y: 5 }, edge: 'west', state: 'materials-pending', cancelRefundMinorUnits: 65, revision: '1' },
       ],
       materialsFunding: { unfunded: false, shortfallMinorUnits: 0, nextOrderShortfallMinorUnits: 0 },
     });

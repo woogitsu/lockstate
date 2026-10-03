@@ -85,7 +85,7 @@ it.each([false, true].flatMap(saved => surfaces.map(surface => ({ saved, surface
       const { kernel: _beforeKernel, ...before } = captureSessionSnapshot(runtime);
       if (surface === 'queue' || surface === 'unknown-owner' || surface === 'stale') send(runtime, {
         type: 'CancelBuildOrder', orderId: bed.id,
-        expectedRevision: runtime.construction.revisionOf(bed.id)! + (surface === 'stale' ? 1 : 0),
+        expectedRevision: (BigInt(runtime.construction.revisionOf(bed.id)) + (surface === 'stale' ? 1n : 0n)).toString(),
       });
       if (surface === 'supply') {
         const delivery = runtime.procurement.pendingDeliveries.find(row => row.itemId === 'item.wood-plank')!;
