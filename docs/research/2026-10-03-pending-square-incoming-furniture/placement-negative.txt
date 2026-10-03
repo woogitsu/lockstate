@@ -1,0 +1,55 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-pending-square-wall-incoming-object-audit-20261003
+
+ ❯ tests/integration/pending-square-wall-incoming-object.test.ts (8 tests | 2 failed) 451ms
+   × paid pending square vs later Bed: type='PlaceObject' load=false conflict=true 53ms
+   × paid pending square vs later Bed: type='PlaceObject' load=true conflict=true 62ms
+node : 
+At line:25 char:2
++  node node_modules/vitest/vitest.mjs run --maxWorkers=2 tests/integra ...
++  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/pending-square-wall-incoming-object.test.ts > paid pending square vs later Bed: type='PlaceObj
+ect' load=false conflict=true
+ FAIL  tests/integration/pending-square-wall-incoming-object.test.ts > paid pending square vs later Bed: type='PlaceObj
+ect' load=true conflict=true
+AssertionError: expected { id: 'later-bed', …(7) } to be undefined
+
+- Expected:
+undefined
+
++ Received:
+{
+  "definitionId": "bed-wooden",
+  "failReason": "unbuildable",
+  "id": "later-bed",
+  "location": {
+    "x": 12,
+    "y": 12,
+  },
+  "materialsAllocated": [],
+  "placementSequence": 2,
+  "progress": 0,
+  "state": "failed",
+}
+
+ ❯ tests/integration/pending-square-wall-incoming-object.test.ts:60:86
+     58|     }
+     59|     if (conflict) {
+     60|       if (type === 'PlaceObject') expect(runtime.construction.getOrder…
+       |                                                                                      ^
+     61|       else expect(runtime.construction.getOrder('later-bed')).toMatchO…
+     62|       const { kernel: _beforeKernel, ...beforeGameplay } = before;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 6 passed (8)
+   Start at  01:59:41
+   Duration  2.68s (transform 802ms, setup 0ms, import 2.12s, tests 451ms, environment 0ms)
+

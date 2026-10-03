@@ -937,6 +937,10 @@ export class ObjectPlacementService {
    */
   private tilesClaimedByOrdersInFlight(): ReadonlySet<string> {
     const claimed = new Set<string>();
+    for (const order of this.orders.allOrders()) {
+      if (order.footprint === 'square' && order.state !== 'completed' &&
+          order.state !== 'cancelled' && order.state !== 'failed') claimed.add(tileKey(order.location));
+    }
     for (const entry of this.ordersBuildingObjects()) {
       for (const tile of entry.tiles) claimed.add(tileKey(tile));
     }
