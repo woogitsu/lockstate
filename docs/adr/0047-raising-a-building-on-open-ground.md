@@ -269,13 +269,13 @@ feature with a reader and no producer.
   `'wall'`; a door is an `'object'` row carrying `placesDoor`.
 - Cancelling a `completed` order reverses its geometry
   (`src/simulation/construction/system.ts:1141`, `revertConstruction`, defined at
-  `:2113`), rewriting the edge from any other completed order that still claims
+  `:2151`), rewriting the edge from any other completed order that still claims
   it rather than clearing it.
 - **2026-10-02 source amendment.** The earlier `system.ts:1044` through `:1046`
   and `:1966` coordinates are historical indications, retained here rather than
   erased. The current cancellation call is `revertConstruction` above; its
   implementation is `private revertConstruction` at
-  `src/simulation/construction/system.ts:2113`. The earlier numbered span had
+  `src/simulation/construction/system.ts:2151`. The earlier numbered span had
   already drifted into a comment, so the amended anchor names the actual call.
   **Occupied-template source amendment at checkpoint 322cb5e5a4:** the previous
   `system.ts:1120` and `:2092` coordinates remain historical indications before
@@ -286,6 +286,10 @@ feature with a reader and no producer.
   the square-only object-footprint reader. The live fragments above still name
   `revertConstruction` and `private revertConstruction`; this changes no
   cancellation or geometry-reversal rule.
+  **Coupled-refund checkpoint `91fd4e82b0`, 2026-10-02:** the preceding
+  `system.ts:2113`, `zoning.ts:554`, `:558` and `:555` indications remain
+  historical before the pure sequence/removal readers. The live fragments
+  retain the same reversal, bounds and ownership checks.
 - **The crew is one.** `ConstructionSystem.update` runs on
   `intervalTicks: 10` (`:347`), advances a single in-progress order by `+10` per
   scheduled update, and `crewBusy` lets exactly one order be in progress at a
@@ -424,7 +428,7 @@ was the alternative and is rejected because "indoors" is the conclusion, not the
 missing thing.
 
 **Where it runs: inside the existing per-tile loop**, after bounds and ownership
-and beside the overlap check (`src/simulation/rooms/zoning.ts:554`, `out-of-bounds`–`:558`). Not
+and beside the overlap check (`src/simulation/rooms/zoning.ts:558`, `out-of-bounds`–`:562`). Not
 as a fifth pass. Three reasons, and they agree:
 
 - It is one array read per tile, on tiles the loop already visits, so it is free
@@ -875,5 +879,5 @@ defect is caused by one asymmetric predicate and fixed by widening it. I did not
 enumerate every caller that could reproduce the asymmetry elsewhere:
 `ObjectPlacementService` and `RoomZoningService` also call `canBuildAt`
 (`src/simulation/objects/object-placement-service.ts:535`,
-`src/simulation/rooms/zoning.ts:555`), and neither is an edge order, so neither
+`src/simulation/rooms/zoning.ts:559`), and neither is an edge order, so neither
 should change — but "should not" is an argument and not a check.

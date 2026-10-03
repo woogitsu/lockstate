@@ -578,6 +578,13 @@ export class ObjectPlacementService {
     return { kind: 'ordered', orderId: request.orderId, objectId, anchorTile: anchor, roomInstanceId: room.instanceId };
   }
 
+  /** The pending removal target, with the same standing-object priority and footprint lookup as remove. */
+  public pendingRemovalOrderId(request: RemoveObjectRequest): string | undefined {
+    const tile: TilePosition = { x: tileCoordinate(request.x), y: tileCoordinate(request.y) };
+    if (this.placedObjects.objectAt(tile) !== undefined) return undefined;
+    return this.orderBuildingObjectAt(tile)?.order.id;
+  }
+
   /**
    * Takes away whatever object the player pressed, or refuses because there was
    * nothing there.

@@ -328,11 +328,15 @@ re-grepped rather than carried over.*
 > production call sites, and still these three modules — and all three line
 > numbers are history.** Opened rather than offset:
 > `src/simulation/construction/system.ts:587`,
-> `src/simulation/rooms/zoning.ts:555` and
+> `src/simulation/rooms/zoning.ts:559` and
 > `src/simulation/objects/object-placement-service.ts:535`, `canBuildAt` (previously `:530` before the pending entrance claim reader). The declaration is
 > the one anchor in this amendment that has not moved at all: `canBuildAt` is
 > still declared at `src/simulation/world/buildability.ts:16`, which is the
 > anchor issue #274's row 8 cited and got right.
+>
+> **Coupled-refund checkpoint `91fd4e82b0`, 2026-10-02.** The preceding
+> `zoning.ts:555` indication is historical; the live fragment above still names
+> the same `canBuildAt` ownership check.
 
 **The sentence was true when this ADR was accepted and stopped being true the
 same day.** `7db3127` accepted it on 2026-08-24 at 13:03 UTC (v0.0.2);

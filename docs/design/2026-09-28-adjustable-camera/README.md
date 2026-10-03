@@ -955,3 +955,103 @@ renders, including subsequent models in the approved directories. The next
 Kitchen stove, numeric coupled-refund preview and further native controls stay
 on independent branches while this integrated release candidate runs exact-head
 CI. Serial main CI and mergeability remain required before another merge.
+
+## Next delivery: collective Cancel refund preview — 2026-10-02
+
+The next branch integrates the actual coupled refund into the existing queue
+readout. It follows the selected-order-first cancellation sequence and recorded
+delivery payments, and checks collective resident relocation over private
+claims. Reading a quote does not mutate orders, money, history or residency.
+[Refund evidence](../../research/2026-10-02-template-cancel-refund-preview.md)
+retains the six root baseline failures, three distinct production mutations,
+ten restored command/projection cases and root's 224 combined checks. Both
+TypeScript targets and the hydrated production build pass. Prices, player
+copy and save format are unchanged.
+
+The current release candidate remains published as
+`3eeeddc2d276714fee6a7c8420270b78d2e49b3c` in PR1899 while this next delivery
+develops independently. Three agents continue new Kitchen stove native
+acceptance, existing View control mouse targeting, and the separately observed
+manual RemoveWall entrance into completed-template cancellation. Prototype or
+scoped local proof does not replace exact-head CI and actual release gates.
+
+## Next delivery: real stove model and manual cancellation — 2026-10-02
+
+The dedicated Kitchen stove retains its 29 authored assemblies and six material
+colors, with 51 new physical detail meshes. Its grounded 2x1 model follows all
+four occupied orientations and 72 repeatable shared-camera renders. Five native
+geometry/camera mutations and a PNG mutation fail, then exact restoration
+passes. Actual normal/rotated Kitchen construction and Save/Load pass three
+native cases; removing the stove consumer produces eight independent pixel
+failures. Root opened the loaded rotated Full HD image. The side wall occludes
+some oven/vent details, so visibility of those hidden details is not claimed.
+[Stove evidence](../../research/2026-10-02-kitchen-stove-angled/README.md)
+records the complete source/export/native chain and collector recovery.
+
+Manual removal of a completed template door now uses the existing collective
+preparation before touching geometry, retaining ordinary walls and finished
+individual object removal. The actual source-disconnection mutation produces
+12 failures and five legal controls; the 17 restored command cases include
+current/legacy saves, occupied refusal, spare relocation and Undo/Redo.
+[Manual removal evidence](../../research/2026-10-02-template-manual-door-removal.md)
+preserves the narrower command-level scope. Root passes 137 combined cases in
+nine files after integration with collective refund preview.
+
+The stove spec joins the complementary artifact/dev partition. Root's subsequent
+11-file art, transaction and documentation scope returns 66 passes and one
+citation failure: two PNG filename hash fragments were interpreted as commits.
+Replacing those fragments with their real full file paths restores the unchanged
+eight-case citation gate. Both TypeScript targets and the hydrated production
+build pass. Integrated native acceptance and remote release remain separate
+gates; the prior PR1899 candidate remains unchanged.
+
+## Integrated stove, View and square-drag acceptance — 2026-10-02
+
+Root's prepared production client at source
+`535b3ee102` (worker `worker-uDQlX8sj.js`, client `index-YCUrdKYO.js`,
+CSS `index-BtHvjcB7.css`) passed all 11 native browser cases in 3.0 minutes.
+The complementary artifact/dev routing commit `b390df7345` changes test routing,
+not the emitted production client. One worker and the original test budgets were
+used. The actual normal and rotated Kitchen retain the dedicated authored stove
+and authoritative placement after Save/Load (three cases). View receives native
+mouse acquisition in both renderer directions at Full HD 100% and 200%, changes
+the renderer by native keyboard choice, and sends no accidental map command
+(four cases). This does not claim native popup-row mouse selection.
+[View evidence](../../research/2026-10-02-native-view-mouse-target.md)
+records the source-only negative and exact restoration.
+
+Bed footprints and Yard area rectangles stay attached to their actual released
+square targets when a native canvas-origin drag crosses HUD controls at both
+scales (four cases). The existing wall fix supplies this shared capture; the
+new object/area tests do not change production behavior.
+[Object/area evidence](../../research/2026-10-02-native-object-area-hud-drag.md)
+retains the independent predicate mutation and exact source restoration.
+
+Serial main CI at the preceding merge is now terminal green. PR1899 stays frozen
+at its published candidate while its exact-head browser check runs. This next
+integration is PR1972, stacked onto PR1899; passing these scoped local cases is
+not approval to merge before all exact-head checks and clean mergeability.
+Three independent agents continue real fridge modeling and native acceptance,
+paused-template pending-object removal, and angled camera/footprint review.
+## Paused saved-template fixture removal integration — 2026-10-02
+
+On the current integrated client, the independent pending-fixture diagnostic
+reproduces four failures with two ordinary controls passing in 4.18 s. A command
+aimed at a rotated assigned bed's far square cancels only that fixture; occupied
+current and legacy saved rows change allocations and funds instead of refusing.
+The narrow fix prepares the existing collective cancellation before either
+object-entry command, then reconciles cancelled shells immediately while paused.
+The previous manual-door preparation remains present; standing object priority
+and ordinary single-object removal remain unchanged.
+[Pending fixture evidence](../../research/2026-10-02-template-pending-fixture-removal.md)
+keeps both production mutations (eight failures each) and exact restoration.
+
+Root's combined pending-fixture, manual-door, refund and four documentation/
+routing gates pass all 64 cases across seven files in 14.89 s. Both TypeScript
+targets pass. The initial follow-up documentation pass failed because this
+checkout had not fetched its own newly published commits; after fetching the
+exact remote branch, the unchanged citation contract passes in the combined run.
+Native Kitchen/View/drag acceptance above predates this worker-only removal fix,
+so those earlier client bytes are not presented as acceptance of the later fix.
+PR1972 remains the next delivery after the frozen PR1899 candidate; the fridge
+is still an independent model and native acceptance task.

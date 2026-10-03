@@ -1,0 +1,23 @@
+{
+  "base": "41998ff60f013c099a2337dcd64172aa0ab12c34",
+  "completeWorkflowPrefixThroughVerifyAssetsByteEqualAfterCheckoutLF": true,
+  "prefixSHA256": "d19122f6acefb91985955cd22a2c231276f1f818ae351e2b926e12687d60d686",
+  "releaseBaselineExactGitBlob": true,
+  "originalMainBaselineUnchanged": true,
+  "preservedFiles": [
+    "package.json",
+    "pnpm-lock.yaml",
+    "tests/browser/playwright.config.ts",
+    "tests/browser/playwright.artifact.config.ts",
+    "tests/browser/run-suite.ts",
+    "tests/browser/network-changed-signature.ts",
+    "tests/browser/network-changed-fixture.ts"
+  ],
+  "physicalSpecs": 194,
+  "sourceFiles": 169,
+  "artifactFiles": 25,
+  "physicalInventoryCoveredExactlyOnce": true,
+  "finalDocsTests": 18,
+  "finalDocsFiles": 2,
+  "noBrowserOrServer": true
+}

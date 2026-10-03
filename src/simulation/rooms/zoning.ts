@@ -381,6 +381,8 @@ export interface ResidentRelocationPort {
    * unseeded one.
    */
   relocateResidentsOutOf(instanceIds: readonly string[]): 'relocated' | 'no-vacancy';
+  /** Same resident selection over private claims, without live writes. */
+  canRelocateResidentsOutOf?(instanceIds: readonly string[]): boolean;
 }
 
 /**
@@ -801,8 +803,59 @@ export class RoomZoningService {
     return this.unzoneTogether([request], tick);
   }
 
+  /** Read the same removal/use-claim boundary without relocating or clearing. */
+  public previewUnzoneTogether(requests: readonly UnzoneRoomRequest[], tick: number): UnzoneRoomRefusal | undefined {
+    const prepared = this.prepareUnzoneTogether(requests, tick);
+    if (prepared.kind === 'refused') return prepared;
+    const { request, removed, occupiedInstanceIds } = prepared;
+    const excluded = removed.map(instance => instance.instanceId).sort();
+    if (occupiedInstanceIds.length > 0 && this.residentRelocation?.canRelocateResidentsOutOf?.(excluded) !== true)
+      return { kind: 'refused', reason: 'room-occupied', request: { ...request }, tick };
+    return undefined;
+  }
+
   /** A grouped room gesture must exclude every removed room from relocation. */
   public unzoneTogether(requests: readonly UnzoneRoomRequest[], tick: number): UnzoneRoomOutcome {
+    const prepared = this.prepareUnzoneTogether(requests, tick);
+    if (prepared.kind === 'refused') return prepared;
+    const { request, ordered, removed, occupiedInstanceIds, roomNameKeyByInstanceId } = prepared;
+    if (occupiedInstanceIds.length > 0) {
+      // Exclude every removed room, including empty ones: they are not valid
+      // relocation destinations. The existing port moves residents only from
+      // occupied members, but its exclusion set must cover the whole gesture.
+      const excludedInstanceIds = removed.map((instance) => instance.instanceId)
+        .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+      const outcome = this.residentRelocation?.relocateResidentsOutOf(excludedInstanceIds);
+      if (outcome !== 'relocated') {
+        // Either no port is wired (the original, unconditional refusal every
+        // existing fixture still gets) or it tried and found nowhere to put
+        // somebody. Either way nothing has been written yet -- `world.setZoning`
+        // and `roomInstances.unregister` are both still ahead of this line --
+        // so the refusal is exact: residency is exactly as it was.
+        return { kind: 'refused', reason: 'room-occupied', request: { ...request }, tick };
+      }
+      // Every named resident now lives elsewhere, so every instance in
+      // `removed` reads zero claims of both kinds and `unregister` below
+      // cannot throw.
+    }
+
+    for (const tile of ordered) this.world.setZoning(tile, 0);
+    for (const instance of removed) this.roomInstances.unregister(instance.instanceId);
+
+    const removedInstanceIds = removed.map((instance) => instance.instanceId).sort();
+    return {
+      kind: 'unzoned',
+      removedInstanceIds,
+      removedRoomNameKeys: removedInstanceIds.map((instanceId) => roomNameKeyByInstanceId.get(instanceId)!),
+      clearedTiles: ordered.length,
+    };
+  }
+
+  private prepareUnzoneTogether(requests: readonly UnzoneRoomRequest[], tick: number): UnzoneRoomRefusal | {
+    readonly kind: 'prepared'; readonly request: UnzoneRoomRequest; readonly ordered: readonly TilePosition[];
+    readonly removed: readonly RoomInstance[]; readonly occupiedInstanceIds: readonly string[];
+    readonly roomNameKeyByInstanceId: ReadonlyMap<string, string>;
+  } {
     const request = requests[0] ?? { x: 0, y: 0, width: 0, height: 0 };
     if (requests.length === 0) return { kind: 'refused', reason: 'invalid-area', request, tick };
     for (const area of requests) {
@@ -896,36 +949,7 @@ export class RoomZoningService {
       roomNameKeyByInstanceId.set(instance.instanceId, definition.nameKey);
     }
 
-    if (occupiedInstanceIds.length > 0) {
-      // Exclude every removed room, including empty ones: they are not valid
-      // relocation destinations. The existing port moves residents only from
-      // occupied members, but its exclusion set must cover the whole gesture.
-      const excludedInstanceIds = removed.map((instance) => instance.instanceId)
-        .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
-      const outcome = this.residentRelocation?.relocateResidentsOutOf(excludedInstanceIds);
-      if (outcome !== 'relocated') {
-        // Either no port is wired (the original, unconditional refusal every
-        // existing fixture still gets) or it tried and found nowhere to put
-        // somebody. Either way nothing has been written yet -- `world.setZoning`
-        // and `roomInstances.unregister` are both still ahead of this line --
-        // so the refusal is exact: residency is exactly as it was.
-        return { kind: 'refused', reason: 'room-occupied', request: { ...request }, tick };
-      }
-      // Every named resident now lives elsewhere, so every instance in
-      // `removed` reads zero claims of both kinds and `unregister` below
-      // cannot throw.
-    }
-
-    for (const tile of ordered) this.world.setZoning(tile, 0);
-    for (const instance of removed) this.roomInstances.unregister(instance.instanceId);
-
-    const removedInstanceIds = removed.map((instance) => instance.instanceId).sort();
-    return {
-      kind: 'unzoned',
-      removedInstanceIds,
-      removedRoomNameKeys: removedInstanceIds.map((instanceId) => roomNameKeyByInstanceId.get(instanceId)!),
-      clearedTiles: tiles.size,
-    };
+    return { kind: 'prepared', request, ordered, removed, occupiedInstanceIds, roomNameKeyByInstanceId };
   }
 
   /**

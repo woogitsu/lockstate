@@ -319,10 +319,31 @@ export class RoomTemplateCoordinator implements SystemRegistration {
 
   /** A queue cancellation removes the same coupled gesture as Undo (#1657/#1608). */
   public prepareCancellation(orderId: string, tick: number): UnzoneRoomRefusal | undefined {
+    const ids = this.cancellationGestureIds(orderId);
+    return ids === undefined ? undefined : this.prepareUndo(ids, tick);
+  }
+
+  /** undefined means an ordinary order; [] means the actual coupled press refuses. */
+  public previewCancellationOrderIds(orderId: string): readonly string[] | undefined {
+    const pending = this.pending.find(request => this.shellOrderIds(request).includes(orderId));
+    if (pending !== undefined) return [orderId, ...this.shellOrderIds(pending).filter(id => id !== orderId)];
+    const ids = this.cancellationGestureIds(orderId);
+    if (ids === undefined) return undefined;
+    const transaction = new Set(ids);
+    const request = this.completed.find(entry => this.shellOrderIds(entry).some(id => transaction.has(id)))
+      ?? this.recoverCompletedGesture(ids);
+    if (request === undefined) return undefined;
+    const built = createRoomTemplateBuildPlan(request.templateId, request.origin, request.mirrorX, request.sequence, request.quarterTurns ?? 0);
+    const refusal = this.roomZoning.previewUnzoneTogether(built.plan.zones, 0);
+    if (refusal !== undefined && refusal.reason !== 'nothing-to-remove') return [];
+    return [orderId, ...built.orders.map(order => order.id).filter(id => id !== orderId)];
+  }
+
+  private cancellationGestureIds(orderId: string): readonly string[] | undefined {
     for (const request of this.completed) {
       const ids = createRoomTemplateBuildPlan(request.templateId, request.origin, request.mirrorX, request.sequence, request.quarterTurns ?? 0)
         .orders.map((order) => order.id);
-      if (ids.includes(orderId)) return this.prepareUndo(ids, tick);
+      if (ids.includes(orderId)) return ids;
     }
     // Legacy recovery still requires the real gesture's history. A numeric
     // template producer prefix is only a prefilter, never an association.
@@ -332,7 +353,7 @@ export class RoomTemplateCoordinator implements SystemRegistration {
       .find((ids) => ids.includes(orderId));
     // Actual history membership permits the existing exact legacy recovery;
     // an ordinary order does not acquire template ownership by its location.
-    return transaction === undefined ? undefined : this.prepareUndo(transaction, tick);
+    return transaction;
   }
 
   /** Clear or refuse the completed gesture's zones before its shell is touched. */

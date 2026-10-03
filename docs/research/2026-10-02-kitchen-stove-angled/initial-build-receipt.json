@@ -1,0 +1,9 @@
+{
+  "sourceCommit": "9bd1f25607c9cb7eb7e33534da6038b4b0337fff",
+  "hydrationExit": 0,
+  "productionBuildExit": 0,
+  "workerFile": "worker-DYE1REQ6.js",
+  "workerBytes": 430906,
+  "workerSha256": "a46da3f67ce8c43829b72356674cfdedacaf72ed0d99659eb7a78ec4f9a81c89",
+  "nativeBrowserAcceptance": "pending; no browser launched"
+}

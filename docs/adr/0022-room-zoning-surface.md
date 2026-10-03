@@ -921,8 +921,8 @@ Left open deliberately, and none of them decided in code.
    **The second direction is no longer true, and the reason it was thought
    unfixable is the part that was wrong.** `dea529c` (#337, 2026-08-26 22:01
    UTC, on `main`) narrowed removal to the instance: `collectRemovableRegion`
-   (`src/simulation/rooms/zoning.ts:977`, `collectRemovableRegion`) resolves each covered tile through
-   `roomInstanceContaining` (`src/simulation/rooms/zoning.ts:980`;
+   (`src/simulation/rooms/zoning.ts:1001`, `collectRemovableRegion`) resolves each covered tile through
+   `roomInstanceContaining` (`src/simulation/rooms/zoning.ts:1004`;
    `src/simulation/objects/room-capacity.ts:90`; those three anchors read
    `:808`, `:811` and `:83`) and clears *that instance's*
    rectangle, so clipping one corner of one of two touching cells removes one
@@ -932,6 +932,9 @@ Left open deliberately, and none of them decided in code.
    `zoning.ts:965` and `:968` indications remain historical coordinates before
    grouped occupied-template removal; the amended fragments name the same
    instance-bounded implementation.
+   **Coupled-refund checkpoint `91fd4e82b0`, 2026-10-02:** the preceding
+   `zoning.ts:977` and `:980` indications remain historical before the shared
+   pure removal preparation; the live fragments above retain that same rule.
 
    The same-type fill survives only for paint no rectangle claims — a
    restored V4 row records no `width`/`height` — and it now stops at any tile an
