@@ -1,0 +1,1 @@
+﻿Original posting attempt: gh: Problems parsing JSON (HTTP 400). Definitive rejected POST; UTF-8 input BOM removed before the successful attempt.
