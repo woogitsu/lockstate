@@ -1,0 +1,23 @@
+00:01.109  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-cell-cot-retained-cycles-production-20261003\assets\source\blender\furniture.cell.cot.single.soft-light.blend"
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
+Traceback (most recent call last):
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-cell-cot-retained-cycles-production-20261003\tooling\blender\render-cell-cot-cycles.py", line 112, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-cell-cot-retained-cycles-production-20261003\tooling\blender\render-cell-cot-cycles.py", line 70, in main
+    scene,camera = configure()
+                   ~~~~~~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-cell-cot-retained-cycles-production-20261003\tooling\blender\render-cell-cot-cycles.py", line 34, in configure
+    prepare.verify_scene(scene, scene.camera, EXPECTED)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-cell-cot-retained-cycles-production-20261003\tooling\blender\prepare-cell-cot-cycles.py", line 67, in verify_scene
+    audit.actual_triangle_contacts(scene, ORIGINAL_RECEIPT['actualContactTargets'])
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-cell-cot-retained-cycles-production-20261003\tooling\blender\refine-cell-cot-detail.py", line 165, in actual_triangle_contacts
+    if zhigh-zlow<=1e-5 or not inside(shoe,point) or not inside(name,point):raise ValueError('Cot mounting shoe lacks real triangle-interior contact: '+shoe+' / '+name)
+                                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: Cot mounting shoe lacks real triangle-interior contact: physical-cell-cot.north headboard upright 0 / square steel leg
+
+Error: script failed, file: 'C:\Users\matma\Documents\Rozwój gier\lockstate-cell-cot-retained-cycles-production-20261003\tooling\blender\render-cell-cot-cycles.py', exiting.
