@@ -1,0 +1,12 @@
+﻿const fs=require('node:fs'),assert=require('node:assert/strict'),cp=require('node:child_process');const root='docs/research/2026-10-04-canteen-modern-native-observers';
+const files=['canteen-dining-table-player-build.spec.ts','wooden-bench-player-build.spec.ts','canteen-dining-table-evidence.ts','wooden-bench-crossrails-evidence.ts'];
+for(const file of files)fs.writeFileSync(root+'/raw/original-'+file+'.txt',cp.execFileSync('git',['show','e4d344a5a70326a41ea34492c9beb3ca862dc9ea:tests/browser/'+file]));
+const out=[];function check(name,fn){try{fn();out.push({name,ok:true})}catch(error){out.push({name,ok:false,error:String(error)})}}
+for(const [file,pixelFn,next] of [[files[0],'async function platePixels','let routeStorage'],[files[1],'async function timberPixels','let routeStorage']]){
+ const before=fs.readFileSync(root+'/raw/original-'+file+'.txt','utf8').replaceAll('\r\n','\n'); const after=fs.readFileSync('tests/browser/'+file,'utf8').replaceAll('\r\n','\n');
+ check(file+' exact original PNG decoder/ROIs/RGB retained',()=>assert.equal(after.slice(after.indexOf(pixelFn),after.indexOf(next)),before.slice(before.indexOf(pixelFn),before.indexOf(next))));
+ for(const guard of ['expect(afterPixels).toEqual(beforePixels)',...(file===files[0]?['expect(pausedAfter).toEqual(pausedBefore)','expect(lowPoseWorker).toEqual(pausedAfter)','toBeGreaterThan(200)']:['expect(loadedData).toEqual(completedData)','expect(detailData).toEqual(loadedData)','toBeGreaterThan(300)'])])check(file+' '+guard,()=>assert.ok(before.includes(guard)&&after.includes(guard)));
+ check(file+' unchanged20s worker reply guard',()=>assert.ok(before.includes('20_000')&&after.includes('20_000')));
+ check(file+' no retry/timeouts/skip change',()=>assert.deepEqual(after.match(/test\.(?:setTimeout|slow|skip)|retries:|timeout:/g),before.match(/test\.(?:setTimeout|slow|skip)|retries:|timeout:/g)));
+}
+console.log(JSON.stringify({checks:out,green:out.filter(x=>x.ok).length,red:out.filter(x=>!x.ok).length},null,2));process.exitCode=out.some(x=>!x.ok)?1:0;
