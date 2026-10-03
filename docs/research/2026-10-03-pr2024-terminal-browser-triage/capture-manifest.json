@@ -1,0 +1,47 @@
+﻿[
+    {
+        "sha256":  "0a61f9024942359f82af918b222735d22c33af62c518ecb6638b7437f877fa88",
+        "file":  "artifact.initial-fetch-error.txt",
+        "bytes":  878
+    },
+    {
+        "sha256":  "8e6dda8e68378b984d7cf79c68dd44a60bc0780370bcea855aa7995b2c7a589d",
+        "file":  "artifact.raw.txt",
+        "bytes":  405180
+    },
+    {
+        "sha256":  "fa10d4fb549753c78c9329897b24f4d8739f5d52cb6e28ff88afa3f268bbe7df",
+        "file":  "demand-source-control.txt",
+        "bytes":  560
+    },
+    {
+        "sha256":  "dd821c3c84f958f7d79835d73e8919b535240034edd2dcc5ff8eb914c2dc0b3b",
+        "file":  "executed-log-inventory.cjs.txt",
+        "bytes":  2431
+    },
+    {
+        "sha256":  "604801f32ce1460f78a304c9ef71f2013ace1a1712be6858f6bf965666843cc3",
+        "file":  "inventory.json",
+        "bytes":  172822
+    },
+    {
+        "sha256":  "0a61f9024942359f82af918b222735d22c33af62c518ecb6638b7437f877fa88",
+        "file":  "source1.initial-fetch-error.txt",
+        "bytes":  878
+    },
+    {
+        "sha256":  "da630cc1efa23805f86abd9eeee9838a69956c7fd5e8b290258b0680b1a7a2fe",
+        "file":  "source1.raw.txt",
+        "bytes":  403850
+    },
+    {
+        "sha256":  "0a61f9024942359f82af918b222735d22c33af62c518ecb6638b7437f877fa88",
+        "file":  "source2.initial-fetch-error.txt",
+        "bytes":  878
+    },
+    {
+        "sha256":  "84278f0257e909c98cf9d5fc0554619198ca5b31c38052ef8366ce4e0f6a22b9",
+        "file":  "source2.raw.txt",
+        "bytes":  491746
+    }
+]

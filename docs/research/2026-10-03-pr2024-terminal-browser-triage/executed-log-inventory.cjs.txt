@@ -1,0 +1,20 @@
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
+const root=__dirname; const jobs={source1:'111250456875',source2:'111250456870',artifact:'111250456883'};
+const summary={run:'37138459762',head:'30568432f5f4a681849002962a87bfa8134ddc4a',jobs:[]};
+for(const [name,id] of Object.entries(jobs)){
+ const raw=fs.readFileSync(path.join(root,name+'.txt'));
+ const clean=raw.toString(raw[0]===255&&raw[1]===254?'utf16le':'utf8').replace(/^\uFEFF/,'').replace(/\x1b\[[0-9;]*[A-Za-z]/g,'').replace(/^\d{4}-\d{2}-\d{2}T[^ ]+ /gm,'').replace(/\r/g,'');
+ const parts=clean.split(/(?=^  \d+\) tests\/browser\/)/m).slice(1);
+ const failures=parts.map(part=>{
+  const end=part.indexOf('\n  '+parts.length+' failed');const body=end<0?part:part.slice(0,end);const lines=body.split('\n');
+  const header=lines[0]; const error=lines.find(line=>/^    (?:Error:|Test timeout)/.test(line));
+  return {header:header.trim(),error:error?.trim(),expectation:lines.filter(line=>/^    (?:Expected:|Received:|Expected pattern:|Received string:|Locator:)/.test(line)).map(line=>line.trim()),assertion:lines.find(line=>/^    > /.test(line))?.trim(),stack:lines.filter(line=>/^        at /.test(line)).map(line=>line.trim()),bootstrap:/player (?:creates|furnishes|completes).*?(?:storage|delivery).*?(?:capacity|plans)/i.test(header),block:body};
+ });
+ const capture=n=>Number(clean.match(new RegExp('^  (\\d+) '+n+'(?: |$)','m'))?.[1]||0);
+ const job={name,id,rawSha256:crypto.createHash('sha256').update(raw).digest('hex'),rawBytes:raw.length,failed:capture('failed'),passed:capture('passed'),didNotRun:capture('did not run'),networkAbortSignatures:Number(clean.match(/withSignature=(\d+)/)?.[1]||0),failures};
+ if(job.failed===0||failures.length!==job.failed)throw new Error(name+' parsed '+failures.length+' expected '+job.failed);
+ summary.jobs.push(job);
+}
+summary.total=summary.jobs.reduce((a,j)=>({failed:a.failed+j.failed,passed:a.passed+j.passed,didNotRun:a.didNotRun+j.didNotRun,bootstrapFailures:a.bootstrapFailures+j.failures.filter(f=>f.bootstrap).length}),{failed:0,passed:0,didNotRun:0,bootstrapFailures:0});
+fs.writeFileSync(path.join(root,'inventory.json'),JSON.stringify(summary,null,2)+'\n');
+console.log(JSON.stringify({total:summary.total,jobs:summary.jobs.map(({name,failed,passed,didNotRun,failures})=>({name,failed,passed,didNotRun,bootstrapFailures:failures.filter(f=>f.bootstrap).length}))},null,2));

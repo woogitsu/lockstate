@@ -1,0 +1,977 @@
+{
+  "run": "37138459762",
+  "head": "30568432f5f4a681849002962a87bfa8134ddc4a",
+  "jobs": [
+    {
+      "name": "source1",
+      "id": "111250456875",
+      "rawSha256": "da630cc1efa23805f86abd9eeee9838a69956c7fd5e8b290258b0680b1a7a2fe",
+      "rawBytes": 403850,
+      "failed": 18,
+      "passed": 305,
+      "didNotRun": 2,
+      "networkAbortSignatures": 0,
+      "failures": [
+        {
+          "header": "1) tests/browser/app-shell.spec.ts:4762:5 › the assembled application › every control can actually be pressed, on every tab at 1280x720 (#88)",
+          "error": "Error: plans controls covered while open at 1280x720",
+          "expectation": [],
+          "assertion": "> 4121 |       ).toEqual([]);",
+          "stack": [
+            "at everyControlAt (/home/runner/work/lockstate/lockstate/tests/browser/app-shell.spec.ts:4121:9)",
+            "at /home/runner/work/lockstate/lockstate/tests/browser/app-shell.spec.ts:5174:7"
+          ],
+          "bootstrap": false,
+          "block": "  1) tests/browser/app-shell.spec.ts:4762:5 › the assembled application › every control can actually be pressed, on every tab at 1280x720 (#88) \n\n    Error: plans controls covered while open at 1280x720\n\n    expect(received).toEqual(expected) // deep equality\n\n    - Expected  -  1\n    + Received  + 14\n\n    - Array []\n    + Array [\n    +   Object {\n    +     \"control\": \"hud > hud__rail > hud__side > ui-panel hud-build > hud-template > hud-template__coordinates > hud-template__placement > input \\\"Plan origin X\\\"\",\n    +     \"hit\": \"dialog.hud-template \\\"Room plansClose plansChoose an o\\\"\",\n    +   },\n    +   Object {\n    +     \"control\": \"hud > hud__rail > hud__side > ui-panel hud-build > hud-template > hud-template__coordinates > hud-template__placement > input \\\"Plan origin Y\\\"\",\n    +     \"hit\": \"dialog.hud-template \\\"Room plansClose plansChoose an o\\\"\",\n    +   },\n    +   Object {\n    +     \"control\": \"hud > hud__rail > hud__side > ui-panel hud-build > hud-template > hud-template__coordinates > hud-template__placement > button \\\"Place room plan\\\"\",\n    +     \"hit\": \"(outside the viewport)\",\n    +   },\n    + ]\n\n      4119 |         plans.unreachable.filter((entry) => entry.control.includes('hud-template >')),\n      4120 |         `plans controls covered while open at ${width}x${height}`,\n    > 4121 |       ).toEqual([]);\n           |         ^\n      4122 |     }\n      4123 |     await roomPlans.locator('.hud-template__close').click();\n      4124 |     await expect(roomPlans).toBeHidden();\n        at everyControlAt (/home/runner/work/lockstate/lockstate/tests/browser/app-shell.spec.ts:4121:9)\n        at /home/runner/work/lockstate/lockstate/tests/browser/app-shell.spec.ts:5174:7\n\n    Error Context: test-results/app-shell-the-assembled-ap-d08cf-n-every-tab-at-1280x720-88-/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/app-shell-the-assembled-ap-d08cf-n-every-tab-at-1280x720-88-/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/app-shell-the-assembled-ap-d08cf-n-every-tab-at-1280x720-88-/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n"
+        },
+        {
+          "header": "2) tests/browser/app-shell.spec.ts:4762:5 › the assembled application › every control can actually be pressed, on every tab at 1440x900 (#88)",
+          "error": "Error: plans controls covered while open at 1440x900",
+          "expectation": [],
+          "assertion": "> 4121 |       ).toEqual([]);",
+          "stack": [
+            "at everyControlAt (/home/runner/work/lockstate/lockstate/tests/browser/app-shell.spec.ts:4121:9)",
+            "at /home/runner/work/lockstate/lockstate/tests/browser/app-shell.spec.ts:5174:7"
+          ],
+          "bootstrap": false,
+          "block": "  2) tests/browser/app-shell.spec.ts:4762:5 › the assembled application › every control can actually be pressed, on every tab at 1440x900 (#88) \n\n    Error: plans controls covered while open at 1440x900\n\n    expect(received).toEqual(expected) // deep equality\n\n    - Expected  -  1\n    + Received  + 14\n\n    - Array []\n    + Array [\n    +   Object {\n    +     \"control\": \"hud > hud__rail > hud__side > ui-panel hud-build > hud-template > hud-template__coordinates > hud-template__placement > input \\\"Plan origin X\\\"\",\n    +     \"hit\": \"dialog.hud-template \\\"Room plansClose plansChoose an o\\\"\",\n    +   },\n    +   Object {\n    +     \"control\": \"hud > hud__rail > hud__side > ui-panel hud-build > hud-template > hud-template__coordinates > hud-template__placement > input \\\"Plan origin Y\\\"\",\n    +     \"hit\": \"dialog.hud-template \\\"Room plansClose plansChoose an o\\\"\",\n    +   },\n    +   Object {\n    +     \"control\": \"hud > hud__rail > hud__side > ui-panel hud-build > hud-template > hud-template__coordinates > hud-template__placement > button \\\"Place room plan\\\"\",\n    +     \"hit\": \"(outside the viewport)\",\n    +   },\n    + ]\n\n      4119 |         plans.unreachable.filter((entry) => entry.control.includes('hud-template >')),\n      4120 |         `plans controls covered while open at ${width}x${height}`,\n    > 4121 |       ).toEqual([]);\n           |         ^\n      4122 |     }\n      4123 |     await roomPlans.locator('.hud-template__close').click();\n      4124 |     await expect(roomPlans).toBeHidden();\n        at everyControlAt (/home/runner/work/lockstate/lockstate/tests/browser/app-shell.spec.ts:4121:9)\n        at /home/runner/work/lockstate/lockstate/tests/browser/app-shell.spec.ts:5174:7\n\n    Error Context: test-results/app-shell-the-assembled-ap-747e3-n-every-tab-at-1440x900-88-/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/app-shell-the-assembled-ap-747e3-n-every-tab-at-1440x900-88-/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/app-shell-the-assembled-ap-747e3-n-every-tab-at-1440x900-88-/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n"
+        },
+        {
+          "header": "3) tests/browser/app-shell.spec.ts:4762:5 › the assembled application › every control can actually be pressed, on every tab at 1024x768 (#88)",
+          "error": "Error: plans controls covered while open at 1024x768",
+          "expectation": [],
+          "assertion": "> 4121 |       ).toEqual([]);",
+          "stack": [
+            "at everyControlAt (/home/runner/work/lockstate/lockstate/tests/browser/app-shell.spec.ts:4121:9)",
+            "at /home/runner/work/lockstate/lockstate/tests/browser/app-shell.spec.ts:5174:7"
+          ],
+          "bootstrap": false,
+          "block": "  3) tests/browser/app-shell.spec.ts:4762:5 › the assembled application › every control can actually be pressed, on every tab at 1024x768 (#88) \n\n    Error: plans controls covered while open at 1024x768\n\n    expect(received).toEqual(expected) // deep equality\n\n    - Expected  -  1\n    + Received  + 14\n\n    - Array []\n    + Array [\n    +   Object {\n    +     \"control\": \"hud > hud__rail > hud__side > ui-panel hud-build > hud-template > hud-template__coordinates > hud-template__placement > input \\\"Plan origin X\\\"\",\n    +     \"hit\": \"dialog.hud-template \\\"Room plansClose plansChoose an o\\\"\",\n    +   },\n    +   Object {\n    +     \"control\": \"hud > hud__rail > hud__side > ui-panel hud-build > hud-template > hud-template__coordinates > hud-template__placement > input \\\"Plan origin Y\\\"\",\n    +     \"hit\": \"dialog.hud-template \\\"Room plansClose plansChoose an o\\\"\",\n    +   },\n    +   Object {\n    +     \"control\": \"hud > hud__rail > hud__side > ui-panel hud-build > hud-template > hud-template__coordinates > hud-template__placement > button \\\"Place room plan\\\"\",\n    +     \"hit\": \"(outside the viewport)\",\n    +   },\n    + ]\n\n      4119 |         plans.unreachable.filter((entry) => entry.control.includes('hud-template >')),\n      4120 |         `plans controls covered while open at ${width}x${height}`,\n    > 4121 |       ).toEqual([]);\n           |         ^\n      4122 |     }\n      4123 |     await roomPlans.locator('.hud-template__close').click();\n      4124 |     await expect(roomPlans).toBeHidden();\n        at everyControlAt (/home/runner/work/lockstate/lockstate/tests/browser/app-shell.spec.ts:4121:9)\n        at /home/runner/work/lockstate/lockstate/tests/browser/app-shell.spec.ts:5174:7\n\n    Error Context: test-results/app-shell-the-assembled-ap-562c4-n-every-tab-at-1024x768-88-/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/app-shell-the-assembled-ap-562c4-n-every-tab-at-1024x768-88-/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/app-shell-the-assembled-ap-562c4-n-every-tab-at-1024x768-88-/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n"
+        },
+        {
+          "header": "4) tests/browser/app-shell.spec.ts:4762:5 › the assembled application › every control can actually be pressed, on every tab at 900x600 (#88)",
+          "error": "Error: plans controls covered while open at 900x600",
+          "expectation": [],
+          "assertion": "> 4121 |       ).toEqual([]);",
+          "stack": [
+            "at everyControlAt (/home/runner/work/lockstate/lockstate/tests/browser/app-shell.spec.ts:4121:9)",
+            "at /home/runner/work/lockstate/lockstate/tests/browser/app-shell.spec.ts:5174:7"
+          ],
+          "bootstrap": false,
+          "block": "  4) tests/browser/app-shell.spec.ts:4762:5 › the assembled application › every control can actually be pressed, on every tab at 900x600 (#88) \n\n    Error: plans controls covered while open at 900x600\n\n    expect(received).toEqual(expected) // deep equality\n\n    - Expected  -  1\n    + Received  + 14\n\n    - Array []\n    + Array [\n    +   Object {\n    +     \"control\": \"hud > hud__rail > hud__side > ui-panel hud-build > hud-template > hud-template__coordinates > hud-template__placement > input \\\"Plan origin X\\\"\",\n    +     \"hit\": \"dialog.hud-template \\\"Room plansClose plansChoose an o\\\"\",\n    +   },\n    +   Object {\n    +     \"control\": \"hud > hud__rail > hud__side > ui-panel hud-build > hud-template > hud-template__coordinates > hud-template__placement > input \\\"Plan origin Y\\\"\",\n    +     \"hit\": \"dialog.hud-template \\\"Room plansClose plansChoose an o\\\"\",\n    +   },\n    +   Object {\n    +     \"control\": \"hud > hud__rail > hud__side > ui-panel hud-build > hud-template > hud-template__coordinates > hud-template__placement > button \\\"Place room plan\\\"\",\n    +     \"hit\": \"(outside the viewport)\",\n    +   },\n    + ]\n\n      4119 |         plans.unreachable.filter((entry) => entry.control.includes('hud-template >')),\n      4120 |         `plans controls covered while open at ${width}x${height}`,\n    > 4121 |       ).toEqual([]);\n           |         ^\n      4122 |     }\n      4123 |     await roomPlans.locator('.hud-template__close').click();\n      4124 |     await expect(roomPlans).toBeHidden();\n        at everyControlAt (/home/runner/work/lockstate/lockstate/tests/browser/app-shell.spec.ts:4121:9)\n        at /home/runner/work/lockstate/lockstate/tests/browser/app-shell.spec.ts:5174:7\n\n    Error Context: test-results/app-shell-the-assembled-ap-334d0-on-every-tab-at-900x600-88-/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/app-shell-the-assembled-ap-334d0-on-every-tab-at-900x600-88-/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/app-shell-the-assembled-ap-334d0-on-every-tab-at-900x600-88-/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n"
+        },
+        {
+          "header": "5) tests/browser/app-shell.spec.ts:4762:5 › the assembled application › every control can actually be pressed, on every tab at 375x812 (#88)",
+          "error": "Error: plans controls covered while open at 375x812",
+          "expectation": [],
+          "assertion": "> 4121 |       ).toEqual([]);",
+          "stack": [
+            "at everyControlAt (/home/runner/work/lockstate/lockstate/tests/browser/app-shell.spec.ts:4121:9)",
+            "at /home/runner/work/lockstate/lockstate/tests/browser/app-shell.spec.ts:5174:7"
+          ],
+          "bootstrap": false,
+          "block": "  5) tests/browser/app-shell.spec.ts:4762:5 › the assembled application › every control can actually be pressed, on every tab at 375x812 (#88) \n\n    Error: plans controls covered while open at 375x812\n\n    expect(received).toEqual(expected) // deep equality\n\n    - Expected  -  1\n    + Received  + 14\n\n    - Array []\n    + Array [\n    +   Object {\n    +     \"control\": \"hud > hud__rail > hud__side > ui-panel hud-build > hud-template > hud-template__coordinates > hud-template__placement > input \\\"Plan origin X\\\"\",\n    +     \"hit\": \"dialog.hud-template \\\"Room plansClose plansChoose an o\\\"\",\n    +   },\n    +   Object {\n    +     \"control\": \"hud > hud__rail > hud__side > ui-panel hud-build > hud-template > hud-template__coordinates > hud-template__placement > input \\\"Plan origin Y\\\"\",\n    +     \"hit\": \"dialog.hud-template \\\"Room plansClose plansChoose an o\\\"\",\n    +   },\n    +   Object {\n    +     \"control\": \"hud > hud__rail > hud__side > ui-panel hud-build > hud-template > hud-template__coordinates > hud-template__placement > button \\\"Place room plan\\\"\",\n    +     \"hit\": \"(outside the viewport)\",\n    +   },\n    + ]\n\n      4119 |         plans.unreachable.filter((entry) => entry.control.includes('hud-template >')),\n      4120 |         `plans controls covered while open at ${width}x${height}`,\n    > 4121 |       ).toEqual([]);\n           |         ^\n      4122 |     }\n      4123 |     await roomPlans.locator('.hud-template__close').click();\n      4124 |     await expect(roomPlans).toBeHidden();\n        at everyControlAt (/home/runner/work/lockstate/lockstate/tests/browser/app-shell.spec.ts:4121:9)\n        at /home/runner/work/lockstate/lockstate/tests/browser/app-shell.spec.ts:5174:7\n\n    Error Context: test-results/app-shell-the-assembled-ap-64c56-on-every-tab-at-375x812-88-/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/app-shell-the-assembled-ap-64c56-on-every-tab-at-375x812-88-/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/app-shell-the-assembled-ap-64c56-on-every-tab-at-375x812-88-/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n"
+        },
+        {
+          "header": "6) tests/browser/app-shell.spec.ts:5517:3 › the assembled application › a pending delivery is on the panel with the fold shut, and costs it nothing while none is (#285, #703)",
+          "error": "Error: expect(received).toBe(expected) // Object.is equality",
+          "expectation": [
+            "Expected: 7.5",
+            "Received: 0.5"
+          ],
+          "assertion": "> 6157 |     expect(before?.foldSlack).toBe(7.5);",
+          "stack": [
+            "at /home/runner/work/lockstate/lockstate/tests/browser/app-shell.spec.ts:6157:31"
+          ],
+          "bootstrap": false,
+          "block": "  6) tests/browser/app-shell.spec.ts:5517:3 › the assembled application › a pending delivery is on the panel with the fold shut, and costs it nothing while none is (#285, #703) \n\n    Error: expect(received).toBe(expected) // Object.is equality\n\n    Expected: 7.5\n    Received: 0.5\n\n      6155 |      */\n      6156 |     expect(before?.bodyHeight).toBe(318.5);\n    > 6157 |     expect(before?.foldSlack).toBe(7.5);\n           |                               ^\n      6158 |     expect(before?.panelOverflow).toBe(0);\n      6159 |     expect(before?.listHeight).toBe(115.3);\n      6160 |     expect(before?.listContent).toBe(924);\n        at /home/runner/work/lockstate/lockstate/tests/browser/app-shell.spec.ts:6157:31\n\n    Error Context: test-results/app-shell-the-assembled-ap-341cc-hing-while-none-is-285-703-/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/app-shell-the-assembled-ap-341cc-hing-while-none-is-285-703-/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/app-shell-the-assembled-ap-341cc-hing-while-none-is-285-703-/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n"
+        },
+        {
+          "header": "7) tests/browser/build-target-readability.spec.ts:36:40 › 960 CSS-pixel actual square target and catalogue value stay readable without moving controls during a drag",
+          "error": "Error: expect(locator).toHaveText(expected) failed",
+          "expectation": [
+            "Locator: locator('.hud-build__target-value')",
+            "Expected pattern: /1 whole squares from -?\\d+, -?\\d+ \\| catalogue value 80/",
+            "Received string:  \"Point at the world\""
+          ],
+          "assertion": "> 20 |   await expect(target).toHaveText(/1 whole squares from -?\\d+, -?\\d+ \\| catalogue value 80/);",
+          "stack": [
+            "at /home/runner/work/lockstate/lockstate/tests/browser/build-target-readability.spec.ts:20:24"
+          ],
+          "bootstrap": false,
+          "block": "  7) tests/browser/build-target-readability.spec.ts:36:40 › 960 CSS-pixel actual square target and catalogue value stay readable without moving controls during a drag \n\n    Error: expect(locator).toHaveText(expected) failed\n\n    Locator: locator('.hud-build__target-value')\n    Expected pattern: /1 whole squares from -?\\d+, -?\\d+ \\| catalogue value 80/\n    Received string:  \"Point at the world\"\n    Timeout: 10000ms\n\n    Call log:\n      - Expect \"toHaveText\" with timeout 10000ms\n      - waiting for locator('.hud-build__target-value')\n        13 × locator resolved to <span class=\"ui-value hud-build__target-value\">Point at the world</span>\n           - unexpected value \"Point at the world\"\n\n\n      18 |   await page.getByRole('button',{name:'Build',exact:true}).click();await page.locator('.hud-build__arm').click();\n      19 |   await page.mouse.move(width===960?370:650,250);const target=page.locator('.hud-build__target-value');\n    > 20 |   await expect(target).toHaveText(/1 whole squares from -?\\d+, -?\\d+ \\| catalogue value 80/);\n         |                        ^\n      21 |   await assertReadable(target);\n      22 |   const fallback=page.locator('.hud-build__arm-hint');const before=await fallback.boundingBox();\n      23 |   await page.mouse.down();await page.mouse.move(width-460,width===960?430:730,{steps:10});\n        at /home/runner/work/lockstate/lockstate/tests/browser/build-target-readability.spec.ts:20:24\n\n    Error Context: test-results/build-target-readability-9-a1ef5-ving-controls-during-a-drag/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/build-target-readability-9-a1ef5-ving-controls-during-a-drag/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/build-target-readability-9-a1ef5-ving-controls-during-a-drag/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n"
+        },
+        {
+          "header": "8) tests/browser/classroom-chair-player-build.spec.ts:96:1 › player builds a Classroom with four existing chairs and keeps them through Save/Load at Full HD",
+          "error": "Error: Test timeout of 60000ms exceeded",
+          "expectation": [],
+          "assertion": ">  99 |   await expect.poll(async () => (await chairState(page)).simulation.objects?.placedObjects.filter(o => o.objectId === 'object.chair').length,",
+          "stack": [
+            "at /home/runner/work/lockstate/lockstate/tests/browser/classroom-chair-player-build.spec.ts:99:3"
+          ],
+          "bootstrap": false,
+          "block": "  8) tests/browser/classroom-chair-player-build.spec.ts:96:1 › player builds a Classroom with four existing chairs and keeps them through Save/Load at Full HD \n\n    Error: Test timeout of 60000ms exceeded\n\n       97 |   await page.getByRole('button', { name: 'Fast forward', exact: true }).click();\n       98 |   await finishQueuedConstruction(page);\n    >  99 |   await expect.poll(async () => (await chairState(page)).simulation.objects?.placedObjects.filter(o => o.objectId === 'object.chair').length,\n          |   ^\n      100 |     { message: 'all four authored chairs must be worker-completed' }).toBe(4);\n      101 |   await page.getByRole('button', { name: 'Pause', exact: true }).click();\n      102 |   const before = await chairState(page);\n        at /home/runner/work/lockstate/lockstate/tests/browser/classroom-chair-player-build.spec.ts:99:3\n\n    Error Context: test-results/classroom-chair-player-bui-26d30-hrough-Save-Load-at-Full-HD/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/classroom-chair-player-bui-26d30-hrough-Save-Load-at-Full-HD/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/classroom-chair-player-bui-26d30-hrough-Save-Load-at-Full-HD/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n"
+        },
+        {
+          "header": "9) tests/browser/exercise-station-player-build.spec.ts:70:1 › actual angled Build completes a two-square exercise station and preserves it through Save/Load",
+          "error": "Test timeout of 60000ms exceeded.",
+          "expectation": [],
+          "assertion": "> 111 |   const before=await canvas.screenshot();",
+          "stack": [
+            "at /home/runner/work/lockstate/lockstate/tests/browser/exercise-station-player-build.spec.ts:111:29"
+          ],
+          "bootstrap": false,
+          "block": "  9) tests/browser/exercise-station-player-build.spec.ts:70:1 › actual angled Build completes a two-square exercise station and preserves it through Save/Load \n\n    Test timeout of 60000ms exceeded.\n\n    Error: locator.screenshot: Test timeout of 60000ms exceeded.\n    Call log:\n      - waiting for locator('#game-root canvas')\n\n\n      109 |   const canvas=page.locator('#game-root canvas');\n      110 |   await page.mouse.move(1300,700);\n    > 111 |   const before=await canvas.screenshot();\n          |                             ^\n      112 |   await page.mouse.click(940,540);\n      113 |   await page.locator('.hud-build__arm').click();\n      114 |   await page.getByRole('button', {name:'Fast forward',exact:true}).click();\n        at /home/runner/work/lockstate/lockstate/tests/browser/exercise-station-player-build.spec.ts:111:29\n\n    Error Context: test-results/exercise-station-player-bu-026b9-serves-it-through-Save-Load/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/exercise-station-player-bu-026b9-serves-it-through-Save-Load/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/exercise-station-player-bu-026b9-serves-it-through-Save-Load/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n"
+        },
+        {
+          "header": "10) tests/browser/laundry-fixtures-player-build.spec.ts:136:1 › player creates storage and delivery capacity before Laundry",
+          "error": "Error: Test timeout of 60000ms exceeded",
+          "expectation": [],
+          "assertion": "> 89 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),",
+          "stack": [
+            "at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/laundry-fixtures-player-build.spec.ts:89:5)",
+            "at /home/runner/work/lockstate/lockstate/tests/browser/laundry-fixtures-player-build.spec.ts:106:3"
+          ],
+          "bootstrap": true,
+          "block": "  10) tests/browser/laundry-fixtures-player-build.spec.ts:136:1 › player creates storage and delivery capacity before Laundry \n\n    Error: Test timeout of 60000ms exceeded\n\n      87 |   let remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      88 |   while (remaining > 0) {\n    > 89 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),\n         |     ^\n      90 |       { message: `construction must advance from ${remaining} unfinished orders` }).toBeLessThan(remaining);\n      91 |     remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      92 |   }\n        at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/laundry-fixtures-player-build.spec.ts:89:5)\n        at /home/runner/work/lockstate/lockstate/tests/browser/laundry-fixtures-player-build.spec.ts:106:3\n\n    Error Context: test-results/laundry-fixtures-player-bu-bb886-ery-capacity-before-Laundry/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/laundry-fixtures-player-bu-bb886-ery-capacity-before-Laundry/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/laundry-fixtures-player-bu-bb886-ery-capacity-before-Laundry/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n"
+        },
+        {
+          "header": "11) tests/browser/oblique-camera-new-prison-frame.spec.ts:2:1 › angled camera returns to a newly created prison after panning beyond the old map",
+          "error": "Error: expect(locator).toBeHidden() failed",
+          "expectation": [
+            "Locator:  locator('.hud-minimap__viewport')",
+            "Expected: hidden",
+            "Received: visible"
+          ],
+          "assertion": "> 19 |     await expect(viewport).toBeHidden({ timeout: 10_000 });",
+          "stack": [
+            "at /home/runner/work/lockstate/lockstate/tests/browser/oblique-camera-new-prison-frame.spec.ts:19:28"
+          ],
+          "bootstrap": false,
+          "block": "  11) tests/browser/oblique-camera-new-prison-frame.spec.ts:2:1 › angled camera returns to a newly created prison after panning beyond the old map \n\n    Error: expect(locator).toBeHidden() failed\n\n    Locator:  locator('.hud-minimap__viewport')\n    Expected: hidden\n    Received: visible\n    Timeout:  10000ms\n\n    Call log:\n      - Expect \"toBeHidden\" with timeout 10000ms\n      - waiting for locator('.hud-minimap__viewport')\n        12 × locator resolved to <span aria-hidden=\"true\" class=\"hud-minimap__viewport\"></span>\n           - unexpected value \"visible\"\n\n\n      17 |   await page.keyboard.down('ArrowDown');\n      18 |   try {\n    > 19 |     await expect(viewport).toBeHidden({ timeout: 10_000 });\n         |                            ^\n      20 |   } finally {\n      21 |     await page.keyboard.up('ArrowDown');\n      22 |     await page.keyboard.up('ArrowRight');\n        at /home/runner/work/lockstate/lockstate/tests/browser/oblique-camera-new-prison-frame.spec.ts:19:28\n\n    Error Context: test-results/oblique-camera-new-prison--4a771--panning-beyond-the-old-map/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/oblique-camera-new-prison--4a771--panning-beyond-the-old-map/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/oblique-camera-new-prison--4a771--panning-beyond-the-old-map/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n"
+        },
+        {
+          "header": "12) tests/browser/oblique-room-template-picking.spec.ts:5:1 › angled room plan ghost and mouse placement agree through four yaw directions",
+          "error": "Test timeout of 120000ms exceeded.",
+          "expectation": [],
+          "assertion": "> 26 |     for (let step = previousYawStep; step < pose.yawSteps; step += 1) await turn.click();",
+          "stack": [
+            "at /home/runner/work/lockstate/lockstate/tests/browser/oblique-room-template-picking.spec.ts:26:82"
+          ],
+          "bootstrap": false,
+          "block": "  12) tests/browser/oblique-room-template-picking.spec.ts:5:1 › angled room plan ghost and mouse placement agree through four yaw directions \n\n    Test timeout of 120000ms exceeded.\n\n    Error: locator.click: Test timeout of 120000ms exceeded.\n    Call log:\n      - waiting for getByRole('button', { name: 'Rotate camera right', exact: true })\n\n\n      24 |   ]) {\n      25 |     const placedBefore = (await sentCommands(page)).filter(command => command.type === 'PlaceRoomTemplate').length;\n    > 26 |     for (let step = previousYawStep; step < pose.yawSteps; step += 1) await turn.click();\n         |                                                                                  ^\n      27 |     for (let step = previousElevationStep; step < pose.elevationSteps; step += 1) await raise.click();\n      28 |     for (let step = pose.elevationSteps; step < previousElevationStep; step += 1) await lower.click();\n      29 |     previousYawStep = pose.yawSteps;\n        at /home/runner/work/lockstate/lockstate/tests/browser/oblique-room-template-picking.spec.ts:26:82\n\n    Error Context: test-results/oblique-room-template-pick-a294a-through-four-yaw-directions/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/oblique-room-template-pick-a294a-through-four-yaw-directions/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/oblique-room-template-pick-a294a-through-four-yaw-directions/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n"
+        },
+        {
+          "header": "13) tests/browser/staff-room-desk-player-build.spec.ts:140:1 › player furnishes delivery and storage plans before the Staff Room desk test",
+          "error": "Test timeout of 60000ms exceeded.",
+          "expectation": [],
+          "assertion": "> 94 |     remaining = Number(await panel.getAttribute('data-queued') ?? 0);",
+          "stack": [
+            "at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/staff-room-desk-player-build.spec.ts:94:36)",
+            "at /home/runner/work/lockstate/lockstate/tests/browser/staff-room-desk-player-build.spec.ts:109:3"
+          ],
+          "bootstrap": true,
+          "block": "  13) tests/browser/staff-room-desk-player-build.spec.ts:140:1 › player furnishes delivery and storage plans before the Staff Room desk test \n\n    Test timeout of 60000ms exceeded.\n\n    Error: locator.getAttribute: Test timeout of 60000ms exceeded.\n    Call log:\n      - waiting for locator('.hud-build')\n\n\n      92 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),\n      93 |       { message: `construction must advance from ${remaining} unfinished orders` }).toBeLessThan(remaining);\n    > 94 |     remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n         |                                    ^\n      95 |   }\n      96 | }\n      97 |\n        at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/staff-room-desk-player-build.spec.ts:94:36)\n        at /home/runner/work/lockstate/lockstate/tests/browser/staff-room-desk-player-build.spec.ts:109:3\n\n    Error Context: test-results/staff-room-desk-player-bui-99e41-re-the-Staff-Room-desk-test/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/staff-room-desk-player-bui-99e41-re-the-Staff-Room-desk-test/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/staff-room-desk-player-bui-99e41-re-the-Staff-Room-desk-test/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n"
+        },
+        {
+          "header": "14) tests/browser/template-keyboard-rearm.spec.ts:3:28 › keyboard selection, mirror, quote and rearming keeps the map hover for plan half 0",
+          "error": "Test timeout of 60000ms exceeded.",
+          "expectation": [
+            "Locator:  getByRole('dialog', { name: 'Room plans' }).locator('[data-template-id=\"cell-row-four\"]')",
+            "Expected: \"true\"",
+            "Received: \"\""
+          ],
+          "assertion": "> 21 |     await expect(card).toHaveAttribute('aria-pressed', 'true');",
+          "stack": [
+            "at /home/runner/work/lockstate/lockstate/tests/browser/template-keyboard-rearm.spec.ts:21:24"
+          ],
+          "bootstrap": false,
+          "block": "  14) tests/browser/template-keyboard-rearm.spec.ts:3:28 › keyboard selection, mirror, quote and rearming keeps the map hover for plan half 0 \n\n    Test timeout of 60000ms exceeded.\n\n    Error: expect(locator).toHaveAttribute(expected) failed\n\n    Locator:  getByRole('dialog', { name: 'Room plans' }).locator('[data-template-id=\"cell-row-four\"]')\n    Expected: \"true\"\n    Received: \"\"\n\n    Call log:\n      - Expect \"toHaveAttribute\" with timeout 10000ms\n      - waiting for getByRole('dialog', { name: 'Room plans' }).locator('[data-template-id=\"cell-row-four\"]')\n\n\n      19 |     const card = dialog.locator(`[data-template-id=\"${id}\"]`);\n      20 |     await card.focus(); await page.keyboard.press('Enter');\n    > 21 |     await expect(card).toHaveAttribute('aria-pressed', 'true');\n         |                        ^\n      22 |     const mirror = dialog.getByRole('checkbox', { name: 'Mirror horizontally' });\n      23 |     await mirror.focus(); await page.keyboard.press('Space');\n      24 |     const mirrored = await mirror.isChecked();\n        at /home/runner/work/lockstate/lockstate/tests/browser/template-keyboard-rearm.spec.ts:21:24\n\n    Error Context: test-results/template-keyboard-rearm-ke-f3441-e-map-hover-for-plan-half-0/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/template-keyboard-rearm-ke-f3441-e-map-hover-for-plan-half-0/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/template-keyboard-rearm-ke-f3441-e-map-hover-for-plan-half-0/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n"
+        },
+        {
+          "header": "15) tests/browser/template-keyboard-rearm.spec.ts:3:28 › keyboard selection, mirror, quote and rearming keeps the map hover for plan half 1",
+          "error": "Test timeout of 60000ms exceeded.",
+          "expectation": [],
+          "assertion": "> 27 |     await map.focus(); await page.keyboard.press('Enter');",
+          "stack": [
+            "at /home/runner/work/lockstate/lockstate/tests/browser/template-keyboard-rearm.spec.ts:27:15"
+          ],
+          "bootstrap": false,
+          "block": "  15) tests/browser/template-keyboard-rearm.spec.ts:3:28 › keyboard selection, mirror, quote and rearming keeps the map hover for plan half 1 \n\n    Test timeout of 60000ms exceeded.\n\n    Error: locator.focus: Test timeout of 60000ms exceeded.\n    Call log:\n      - waiting for getByRole('dialog', { name: 'Room plans' }).getByRole('button', { name: 'Place on map', exact: true })\n\n\n      25 |     await expect(dialog.locator('.hud-template__quote')).not.toBeEmpty();\n      26 |     const map = dialog.getByRole('button', { name: 'Place on map', exact: true });\n    > 27 |     await map.focus(); await page.keyboard.press('Enter');\n         |               ^\n      28 |     const ghost = page.locator('.room-template-world-ghost');\n      29 |     await expect(ghost).toBeVisible();\n      30 |     await expect(ghost.locator('polygon').first()).toBeVisible();\n        at /home/runner/work/lockstate/lockstate/tests/browser/template-keyboard-rearm.spec.ts:27:15\n\n    Error Context: test-results/template-keyboard-rearm-ke-66ac6-e-map-hover-for-plan-half-1/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/template-keyboard-rearm-ke-66ac6-e-map-hover-for-plan-half-1/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/template-keyboard-rearm-ke-66ac6-e-map-hover-for-plan-half-1/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n"
+        },
+        {
+          "header": "16) tests/browser/ui-alert-row-presses-to-its-place.spec.ts:373:3 › a refusal row that carries a tile is the press (ADR 0122, the owner ruling of 2026-09-22) › the press is a real button, clears --tap-target and is reachable at 100 % page zoom, at every viewport page-zoom-sweep.ts measures",
+          "error": "Error: 900x600@100%: only 26px of the press is reachable, under --tap-target (44px) -- the middle of what is left belongs to span.ui-row__label",
+          "expectation": [
+            "Expected: >= 44",
+            "Received:    26"
+          ],
+          "assertion": "> 468 |       ).toBeGreaterThanOrEqual(reading.tapTarget);",
+          "stack": [
+            "at /home/runner/work/lockstate/lockstate/tests/browser/ui-alert-row-presses-to-its-place.spec.ts:468:9"
+          ],
+          "bootstrap": false,
+          "block": "  16) tests/browser/ui-alert-row-presses-to-its-place.spec.ts:373:3 › a refusal row that carries a tile is the press (ADR 0122, the owner ruling of 2026-09-22) › the press is a real button, clears --tap-target and is reachable at 100 % page zoom, at every viewport page-zoom-sweep.ts measures \n\n    Error: 900x600@100%: only 26px of the press is reachable, under --tap-target (44px) -- the middle of what is left belongs to span.ui-row__label\n\n    expect(received).toBeGreaterThanOrEqual(expected)\n\n    Expected: >= 44\n    Received:    26\n\n      466 |         `${label}: only ${reading.reachable.height}px of the press is reachable, under --tap-target (${reading.tapTarget}px) -- ` +\n      467 |           `the middle of what is left belongs to ${reading.reachableCentreBelongsTo}`,\n    > 468 |       ).toBeGreaterThanOrEqual(reading.tapTarget);\n          |         ^\n      469 |       expect(\n      470 |         reading.reachable.width,\n      471 |         `${label}: only ${reading.reachable.width}px of the press is reachable across, under --tap-target (${reading.tapTarget}px)`,\n        at /home/runner/work/lockstate/lockstate/tests/browser/ui-alert-row-presses-to-its-place.spec.ts:468:9\n\n    Error Context: test-results/ui-alert-row-presses-to-it-bc47e-page-zoom-sweep-ts-measures/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/ui-alert-row-presses-to-it-bc47e-page-zoom-sweep-ts-measures/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/ui-alert-row-presses-to-it-bc47e-page-zoom-sweep-ts-measures/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n"
+        },
+        {
+          "header": "17) tests/browser/yard-bench-player-build.spec.ts:74:1 › player completes an existing bench in Yard and keeps it through Save/Load at Full HD",
+          "error": "Error: expect(received).toBe(expected) // Object.is equality",
+          "expectation": [
+            "Expected: 1",
+            "Received: 0"
+          ],
+          "assertion": "> 95 |   await expect.poll(async () => (await benchState(page)).simulation.objects?.placedObjects.filter(o => o.objectId === 'object.bench').length,",
+          "stack": [
+            "at /home/runner/work/lockstate/lockstate/tests/browser/yard-bench-player-build.spec.ts:95:3"
+          ],
+          "bootstrap": false,
+          "block": "  17) tests/browser/yard-bench-player-build.spec.ts:74:1 › player completes an existing bench in Yard and keeps it through Save/Load at Full HD \n\n    Error: expect(received).toBe(expected) // Object.is equality\n\n    Expected: 1\n    Received: 0\n\n    Call Log:\n    - Test timeout of 60000ms exceeded\n\n      93 |   await page.locator('.hud-build__arm').click();\n      94 |   await page.getByRole('button', { name: 'Fast forward', exact: true }).click();\n    > 95 |   await expect.poll(async () => (await benchState(page)).simulation.objects?.placedObjects.filter(o => o.objectId === 'object.bench').length,\n         |   ^\n      96 |     { timeout: 15_000 }).toBe(1);\n      97 |   await page.getByRole('button', { name: 'Pause', exact: true }).click();\n      98 |   const before = await benchState(page);\n        at /home/runner/work/lockstate/lockstate/tests/browser/yard-bench-player-build.spec.ts:95:3\n\n    Error Context: test-results/yard-bench-player-build-pl-e93fb-hrough-Save-Load-at-Full-HD/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/yard-bench-player-build-pl-e93fb-hrough-Save-Load-at-Full-HD/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/yard-bench-player-build-pl-e93fb-hrough-Save-Load-at-Full-HD/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n"
+        },
+        {
+          "header": "18) tests/browser/yard-waste-bin-player-build.spec.ts:76:1 › player completes an existing waste bin in Yard and keeps it through Save/Load at Full HD",
+          "error": "Error: expect(received).toBe(expected) // Object.is equality",
+          "expectation": [
+            "Expected: 1",
+            "Received: 0"
+          ],
+          "assertion": ">  97 |   await expect.poll(async () => (await binState(page)).simulation.objects?.placedObjects.filter(o => o.objectId === 'object.waste-bin').length,",
+          "stack": [
+            "at /home/runner/work/lockstate/lockstate/tests/browser/yard-waste-bin-player-build.spec.ts:97:3"
+          ],
+          "bootstrap": false,
+          "block": "  18) tests/browser/yard-waste-bin-player-build.spec.ts:76:1 › player completes an existing waste bin in Yard and keeps it through Save/Load at Full HD \n\n    Error: expect(received).toBe(expected) // Object.is equality\n\n    Expected: 1\n    Received: 0\n\n    Call Log:\n    - Test timeout of 60000ms exceeded\n\n       95 |   await page.locator('.hud-build__arm').click();\n       96 |   await page.getByRole('button', { name: 'Fast forward', exact: true }).click();\n    >  97 |   await expect.poll(async () => (await binState(page)).simulation.objects?.placedObjects.filter(o => o.objectId === 'object.waste-bin').length,\n          |   ^\n       98 |     { timeout: 15_000 }).toBe(1);\n       99 |   await page.getByRole('button', { name: 'Pause', exact: true }).click();\n      100 |   const before = await binState(page);\n        at /home/runner/work/lockstate/lockstate/tests/browser/yard-waste-bin-player-build.spec.ts:97:3\n\n    Error Context: test-results/yard-waste-bin-player-buil-66618-hrough-Save-Load-at-Full-HD/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/yard-waste-bin-player-buil-66618-hrough-Save-Load-at-Full-HD/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/yard-waste-bin-player-buil-66618-hrough-Save-Load-at-Full-HD/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n"
+        }
+      ]
+    },
+    {
+      "name": "source2",
+      "id": "111250456870",
+      "rawSha256": "84278f0257e909c98cf9d5fc0554619198ca5b31c38052ef8366ce4e0f6a22b9",
+      "rawBytes": 491746,
+      "failed": 21,
+      "passed": 535,
+      "didNotRun": 6,
+      "networkAbortSignatures": 0,
+      "failures": [
+        {
+          "header": "1) tests/browser/compact-camera-pose-controls.spec.ts:2:1 › Full HD camera icon group keeps four labelled keyboard actions above the minimap",
+          "error": "Test timeout of 60000ms exceeded.",
+          "expectation": [],
+          "assertion": "> 27 |     await expect.poll(async()=>(await canvas.screenshot()).equals(before),{message:`${names[index]} must change the composed world image`}).toBe(false);",
+          "stack": [
+            "at Object.expect.poll.message (/home/runner/work/lockstate/lockstate/tests/browser/compact-camera-pose-controls.spec.ts:27:46)"
+          ],
+          "bootstrap": false,
+          "block": "  1) tests/browser/compact-camera-pose-controls.spec.ts:2:1 › Full HD camera icon group keeps four labelled keyboard actions above the minimap \n\n    Test timeout of 60000ms exceeded.\n\n    Error: locator.screenshot: Test timeout of 60000ms exceeded.\n    Call log:\n      - waiting for locator('#game-root canvas')\n\n\n      25 |     const before=await canvas.screenshot();\n      26 |     await page.keyboard.press('Enter');\n    > 27 |     await expect.poll(async()=>(await canvas.screenshot()).equals(before),{message:`${names[index]} must change the composed world image`}).toBe(false);\n         |                                              ^\n      28 |     if(index<names.length-1) await page.keyboard.press('Tab');\n      29 |   }\n      30 |   await page.screenshot({path:testInfo.outputPath('compact-camera-fullhd.png')});\n        at Object.expect.poll.message (/home/runner/work/lockstate/lockstate/tests/browser/compact-camera-pose-controls.spec.ts:27:46)\n\n    Error Context: test-results/compact-camera-pose-contro-23b34-d-actions-above-the-minimap/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/compact-camera-pose-contro-23b34-d-actions-above-the-minimap/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/compact-camera-pose-contro-23b34-d-actions-above-the-minimap/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n"
+        },
+        {
+          "header": "2) tests/browser/first-square-clock-hint.spec.ts:2:1 › Full HD first paused square order explains clock dependency and keyboard Play completes it",
+          "error": "Test timeout of 60000ms exceeded.",
+          "expectation": [],
+          "assertion": "> 23 |   for(let index=0;index<100;index++) {if(await play.evaluate(element=>element===document.activeElement))break;await page.keyboard.press('Tab');}",
+          "stack": [
+            "at /home/runner/work/lockstate/lockstate/tests/browser/first-square-clock-hint.spec.ts:23:53"
+          ],
+          "bootstrap": false,
+          "block": "  2) tests/browser/first-square-clock-hint.spec.ts:2:1 › Full HD first paused square order explains clock dependency and keyboard Play completes it \n\n    Test timeout of 60000ms exceeded.\n\n    Error: locator.evaluate: Test timeout of 60000ms exceeded.\n    Call log:\n      - waiting for getByRole('button', { name: 'Play at normal speed', exact: true })\n        - locator resolved to visible <button type=\"button\" aria-busy=\"false\" aria-pressed=\"false\" title=\"Play at normal speed\" class=\"ui-icon-button ui-icon-button--quiet\">…</button>\n\n\n      21 |   await page.screenshot({path:'test-results/first-square-clock-hint.png'});\n      22 |   await page.keyboard.press('Escape');const play=page.getByRole('button',{name:'Play at normal speed',exact:true});\n    > 23 |   for(let index=0;index<100;index++) {if(await play.evaluate(element=>element===document.activeElement))break;await page.keyboard.press('Tab');}\n         |                                                     ^\n      24 |   await expect(play).toBeFocused();await page.keyboard.press('Enter');await expect(rows).toHaveCount(0);\n      25 | });\n      26 |\n        at /home/runner/work/lockstate/lockstate/tests/browser/first-square-clock-hint.spec.ts:23:53\n\n    Error Context: test-results/first-square-clock-hint-Fu-59e6b--keyboard-Play-completes-it/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/first-square-clock-hint-Fu-59e6b--keyboard-Play-completes-it/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/first-square-clock-hint-Fu-59e6b--keyboard-Play-completes-it/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n"
+        },
+        {
+          "header": "3) tests/browser/hud-layout-shell.spec.ts:697:3 › the HUD layout shell › records the middle row’s budget with six sections in the rail, at 1280x800 (#1292)",
+          "error": "Error: the bottom-left corner is not the 398px the budget was recorded against",
+          "expectation": [
+            "Expected: 398",
+            "Received: 494"
+          ],
+          "assertion": "> 718 |     expect(budget.cornerHeight, 'the bottom-left corner is not the 398px the budget was recorded against').toBeCloseTo(",
+          "stack": [
+            "at /home/runner/work/lockstate/lockstate/tests/browser/hud-layout-shell.spec.ts:718:108"
+          ],
+          "bootstrap": false,
+          "block": "  3) tests/browser/hud-layout-shell.spec.ts:697:3 › the HUD layout shell › records the middle row’s budget with six sections in the rail, at 1280x800 (#1292) \n\n    Error: the bottom-left corner is not the 398px the budget was recorded against\n\n    expect(received).toBeCloseTo(expected, precision)\n\n    Expected: 398\n    Received: 494\n\n    Expected precision:    1\n    Expected difference: < 0.05\n    Received difference:   96\n\n      716 |       1,\n      717 |     );\n    > 718 |     expect(budget.cornerHeight, 'the bottom-left corner is not the 398px the budget was recorded against').toBeCloseTo(\n          |                                                                                                            ^\n      719 |       398,\n      720 |       1,\n      721 |     );\n        at /home/runner/work/lockstate/lockstate/tests/browser/hud-layout-shell.spec.ts:718:108\n\n    Error Context: test-results/hud-layout-shell-the-HUD-l-0f383--the-rail-at-1280x800-1292-/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/hud-layout-shell-the-HUD-l-0f383--the-rail-at-1280x800-1292-/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/hud-layout-shell-the-HUD-l-0f383--the-rail-at-1280x800-1292-/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n"
+        },
+        {
+          "header": "4) tests/browser/hud-layout-shell.spec.ts:720:3 › the HUD layout shell › spends that budget down to ten pixels at the 781px threshold the stylesheet names (#1292)",
+          "error": "Error: the clearance at the stylesheet’s own threshold has moved",
+          "expectation": [
+            "Expected: 10.19",
+            "Received: -85.8125"
+          ],
+          "assertion": "> 756 |     expect(budget.clearance, 'the clearance at the stylesheet’s own threshold has moved').toBeCloseTo(10.19, 1);",
+          "stack": [
+            "at /home/runner/work/lockstate/lockstate/tests/browser/hud-layout-shell.spec.ts:756:91"
+          ],
+          "bootstrap": false,
+          "block": "  4) tests/browser/hud-layout-shell.spec.ts:720:3 › the HUD layout shell › spends that budget down to ten pixels at the 781px threshold the stylesheet names (#1292) \n\n    Error: the clearance at the stylesheet’s own threshold has moved\n\n    expect(received).toBeCloseTo(expected, precision)\n\n    Expected: 10.19\n    Received: -85.8125\n\n    Expected precision:    1\n    Expected difference: < 0.05\n    Received difference:   96.0025\n\n      754 |      */\n      755 |     expect(budget.stripHeight, 'the dense strip is not the 80.69px the 781px arithmetic assumes').toBeCloseTo(80.69, 1);\n    > 756 |     expect(budget.clearance, 'the clearance at the stylesheet’s own threshold has moved').toBeCloseTo(10.19, 1);\n          |                                                                                           ^\n      757 |\n      758 |     expect(\n      759 |       budget.clearance,\n        at /home/runner/work/lockstate/lockstate/tests/browser/hud-layout-shell.spec.ts:756:91\n\n    Error Context: test-results/hud-layout-shell-the-HUD-l-6986e--the-stylesheet-names-1292-/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/hud-layout-shell-the-HUD-l-6986e--the-stylesheet-names-1292-/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/hud-layout-shell-the-HUD-l-6986e--the-stylesheet-names-1292-/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n"
+        },
+        {
+          "header": "5) tests/browser/hud-layout-shell.spec.ts:744:3 › the HUD layout shell › moves the corner out from under the column one pixel below that threshold (#1292)",
+          "error": "Error: the clearance one pixel below the threshold has moved",
+          "expectation": [
+            "Expected: 9.19",
+            "Received: -86.8125"
+          ],
+          "assertion": "> 773 |     expect(budget.clearance, 'the clearance one pixel below the threshold has moved').toBeCloseTo(9.19, 1);",
+          "stack": [
+            "at /home/runner/work/lockstate/lockstate/tests/browser/hud-layout-shell.spec.ts:773:87"
+          ],
+          "bootstrap": false,
+          "block": "  5) tests/browser/hud-layout-shell.spec.ts:744:3 › the HUD layout shell › moves the corner out from under the column one pixel below that threshold (#1292) \n\n    Error: the clearance one pixel below the threshold has moved\n\n    expect(received).toBeCloseTo(expected, precision)\n\n    Expected: 9.19\n    Received: -86.8125\n\n    Expected precision:    1\n    Expected difference: < 0.05\n    Received difference:   96.0025\n\n      771 |     // handled\" are two facts, and this is the second.\n      772 |     expect(budget.cornerLeft, 'the corner did not step aside below the 781px threshold').toBeCloseTo(192, 1);\n    > 773 |     expect(budget.clearance, 'the clearance one pixel below the threshold has moved').toBeCloseTo(9.19, 1);\n          |                                                                                       ^\n      774 |   });\n      775 |\n      776 | });\n        at /home/runner/work/lockstate/lockstate/tests/browser/hud-layout-shell.spec.ts:773:87\n\n    Error Context: test-results/hud-layout-shell-the-HUD-l-7820f--below-that-threshold-1292-/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/hud-layout-shell-the-HUD-l-7820f--below-that-threshold-1292-/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/hud-layout-shell-the-HUD-l-7820f--below-that-threshold-1292-/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n"
+        },
+        {
+          "header": "6) tests/browser/integrated-square-walls.spec.ts:63:3 › completed square walls remain painted after production Save/Load: oblique",
+          "error": "Test timeout of 60000ms exceeded.",
+          "expectation": [],
+          "assertion": "> 64 |       return page.evaluate(async base64 => {",
+          "stack": [
+            "at wallEvidence (/home/runner/work/lockstate/lockstate/tests/browser/integrated-square-walls.spec.ts:64:19)",
+            "at /home/runner/work/lockstate/lockstate/tests/browser/integrated-square-walls.spec.ts:109:20"
+          ],
+          "bootstrap": false,
+          "block": "  6) tests/browser/integrated-square-walls.spec.ts:63:3 › completed square walls remain painted after production Save/Load: oblique \n\n    Test timeout of 60000ms exceeded.\n\n    Error: page.evaluate: Test timeout of 60000ms exceeded.\n\n      62 |     const wallEvidence = async () => {\n      63 |       const shot = await page.locator('#game-root canvas').screenshot();\n    > 64 |       return page.evaluate(async base64 => {\n         |                   ^\n      65 |         const pixels = await createImageBitmap(await (await fetch('data:image/png;base64,' + base64)).blob());\n      66 |         const canvas = document.createElement('canvas'); canvas.width = pixels.width; canvas.height = pixels.height;\n      67 |         const context = canvas.getContext('2d')!; context.drawImage(pixels, 0, 0);\n        at wallEvidence (/home/runner/work/lockstate/lockstate/tests/browser/integrated-square-walls.spec.ts:64:19)\n        at /home/runner/work/lockstate/lockstate/tests/browser/integrated-square-walls.spec.ts:109:20\n\n    Error Context: test-results/integrated-square-walls-co-0db96-roduction-Save-Load-oblique/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/integrated-square-walls-co-0db96-roduction-Save-Load-oblique/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/integrated-square-walls-co-0db96-roduction-Save-Load-oblique/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n"
+        },
+        {
+          "header": "7) tests/browser/integrated-square-walls.spec.ts:236:1 › authored cell floor keeps its exact tile after production Save/Load in angled view",
+          "error": "Error: Timeout 10000ms exceeded while waiting on the predicate",
+          "expectation": [],
+          "assertion": "> 213 |   await expect.poll(async () => (await evidence()).inside.colors).toBeGreaterThan(12);",
+          "stack": [
+            "at /home/runner/work/lockstate/lockstate/tests/browser/integrated-square-walls.spec.ts:213:3"
+          ],
+          "bootstrap": false,
+          "block": "  7) tests/browser/integrated-square-walls.spec.ts:236:1 › authored cell floor keeps its exact tile after production Save/Load in angled view \n\n    Error: Timeout 10000ms exceeded while waiting on the predicate\n\n      211 |     }, shot.toString('base64'));\n      212 |   };\n    > 213 |   await expect.poll(async () => (await evidence()).inside.colors).toBeGreaterThan(12);\n          |   ^\n      214 |   const before = await evidence();\n      215 |   expect(before.inside.brightness - before.outside.brightness, 'Blender cell floor must occupy the saved room, not the adjacent terrain').toBeGreaterThan(45);\n      216 |   await page.screenshot({ path: testInfo.outputPath('authored-cell-floor-before-save.png') });\n        at /home/runner/work/lockstate/lockstate/tests/browser/integrated-square-walls.spec.ts:213:3\n\n    Error Context: test-results/integrated-square-walls-au-1a35b-on-Save-Load-in-angled-view/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/integrated-square-walls-au-1a35b-on-Save-Load-in-angled-view/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/integrated-square-walls-au-1a35b-on-Save-Load-in-angled-view/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n"
+        },
+        {
+          "header": "8) tests/browser/kitchen-fixtures-player-build.spec.ts:152:1 › player creates storage and delivery capacity before Kitchen",
+          "error": "Test timeout of 60000ms exceeded.",
+          "expectation": [],
+          "assertion": ">  98 |     remaining = Number(await panel.getAttribute('data-queued') ?? 0);",
+          "stack": [
+            "at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/kitchen-fixtures-player-build.spec.ts:98:36)",
+            "at /home/runner/work/lockstate/lockstate/tests/browser/kitchen-fixtures-player-build.spec.ts:113:3"
+          ],
+          "bootstrap": true,
+          "block": "  8) tests/browser/kitchen-fixtures-player-build.spec.ts:152:1 › player creates storage and delivery capacity before Kitchen \n\n    Test timeout of 60000ms exceeded.\n\n    Error: locator.getAttribute: Test timeout of 60000ms exceeded.\n    Call log:\n      - waiting for locator('.hud-build')\n\n\n       96 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),\n       97 |       { message: `construction must advance from ${remaining} unfinished orders` }).toBeLessThan(remaining);\n    >  98 |     remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n          |                                    ^\n       99 |   }\n      100 | }\n      101 |\n        at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/kitchen-fixtures-player-build.spec.ts:98:36)\n        at /home/runner/work/lockstate/lockstate/tests/browser/kitchen-fixtures-player-build.spec.ts:113:3\n\n    Error Context: test-results/kitchen-fixtures-player-bu-bef33-ery-capacity-before-Kitchen/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/kitchen-fixtures-player-bu-bef33-ery-capacity-before-Kitchen/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/kitchen-fixtures-player-bu-bef33-ery-capacity-before-Kitchen/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n"
+        },
+        {
+          "header": "9) tests/browser/loading-dock-door-player-build.spec.ts:138:1 › player creates bootstrap storage and delivery capacity",
+          "error": "Error: Test timeout of 60000ms exceeded",
+          "expectation": [],
+          "assertion": "> 91 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),",
+          "stack": [
+            "at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/loading-dock-door-player-build.spec.ts:91:5)",
+            "at /home/runner/work/lockstate/lockstate/tests/browser/loading-dock-door-player-build.spec.ts:108:3"
+          ],
+          "bootstrap": true,
+          "block": "  9) tests/browser/loading-dock-door-player-build.spec.ts:138:1 › player creates bootstrap storage and delivery capacity \n\n    Error: Test timeout of 60000ms exceeded\n\n      89 |   let remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      90 |   while (remaining > 0) {\n    > 91 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),\n         |     ^\n      92 |       { message: `construction must advance from ${remaining} unfinished orders` }).toBeLessThan(remaining);\n      93 |     remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      94 |   }\n        at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/loading-dock-door-player-build.spec.ts:91:5)\n        at /home/runner/work/lockstate/lockstate/tests/browser/loading-dock-door-player-build.spec.ts:108:3\n\n    Error Context: test-results/loading-dock-door-player-b-f250e-orage-and-delivery-capacity/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/loading-dock-door-player-b-f250e-orage-and-delivery-capacity/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/loading-dock-door-player-b-f250e-orage-and-delivery-capacity/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n"
+        },
+        {
+          "header": "10) tests/browser/oblique-room-preview-session-boundary.spec.ts:3:1 › Save/Load and a new prison release a fitted room-plan origin from the prior session",
+          "error": "Test timeout of 60000ms exceeded.",
+          "expectation": [],
+          "assertion": "> 48 |   await page.screenshot({ path: testInfo.outputPath('after-session-boundary-fullhd.png') });",
+          "stack": [
+            "at /home/runner/work/lockstate/lockstate/tests/browser/oblique-room-preview-session-boundary.spec.ts:48:14"
+          ],
+          "bootstrap": false,
+          "block": "  10) tests/browser/oblique-room-preview-session-boundary.spec.ts:3:1 › Save/Load and a new prison release a fitted room-plan origin from the prior session \n\n    Test timeout of 60000ms exceeded.\n\n    Error: page.screenshot: Test timeout of 60000ms exceeded.\n    Call log:\n      - taking page screenshot\n      - waiting for fonts to load...\n      - fonts loaded\n\n\n      46 |   await expect(ghost).toBeHidden();\n      47 |   expect((await sentCommands(page)).filter(command => command.type === 'PlaceRoomTemplate')).toHaveLength(0);\n    > 48 |   await page.screenshot({ path: testInfo.outputPath('after-session-boundary-fullhd.png') });\n         |              ^\n      49 | });\n      50 |\n        at /home/runner/work/lockstate/lockstate/tests/browser/oblique-room-preview-session-boundary.spec.ts:48:14\n\n    Error Context: test-results/oblique-room-preview-sessi-aa0be-igin-from-the-prior-session/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/oblique-room-preview-sessi-aa0be-igin-from-the-prior-session/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/oblique-room-preview-sessi-aa0be-igin-from-the-prior-session/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n"
+        },
+        {
+          "header": "11) tests/browser/room-plan-quote-visibility.spec.ts:95:3 › Full HD 100% complete room-plan quote stays visible beside the entire fitted footprint",
+          "error": "Test timeout of 60000ms exceeded.",
+          "expectation": [],
+          "stack": [],
+          "bootstrap": false,
+          "block": "  11) tests/browser/room-plan-quote-visibility.spec.ts:95:3 › Full HD 100% complete room-plan quote stays visible beside the entire fitted footprint \n\n    Test timeout of 60000ms exceeded.\n\n    Error Context: test-results/room-plan-quote-visibility-75a8e-the-entire-fitted-footprint/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/room-plan-quote-visibility-75a8e-the-entire-fitted-footprint/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/room-plan-quote-visibility-75a8e-the-entire-fitted-footprint/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n"
+        },
+        {
+          "header": "12) tests/browser/room-template-pending-reopen.spec.ts:3:1 › reopening an active large plan withdraws obsolete readiness and blocked squares until the real worker replies",
+          "error": "Test timeout of 60000ms exceeded.",
+          "expectation": [
+            "Locator:  getByRole('dialog', { name: 'Room plans' }).getByRole('status')",
+            "Expected: \"false\"",
+            "Received: \"\""
+          ],
+          "assertion": "> 64 |     await expect(status).toHaveAttribute('aria-busy','false');",
+          "stack": [
+            "at /home/runner/work/lockstate/lockstate/tests/browser/room-template-pending-reopen.spec.ts:64:26"
+          ],
+          "bootstrap": false,
+          "block": "  12) tests/browser/room-template-pending-reopen.spec.ts:3:1 › reopening an active large plan withdraws obsolete readiness and blocked squares until the real worker replies \n\n    Test timeout of 60000ms exceeded.\n\n    Error: expect(locator).toHaveAttribute(expected) failed\n\n    Locator:  getByRole('dialog', { name: 'Room plans' }).getByRole('status')\n    Expected: \"false\"\n    Received: \"\"\n\n    Call log:\n      - Expect \"toHaveAttribute\" with timeout 10000ms\n      - waiting for getByRole('dialog', { name: 'Room plans' }).getByRole('status')\n\n\n      62 |     await page.screenshot({path:testInfo.outputPath(`reopen-${previous}-pending.png`)});\n      63 |     await page.evaluate(()=>{(window as unknown as {reopenDelay:{release:()=>void}}).reopenDelay.release();});\n    > 64 |     await expect(status).toHaveAttribute('aria-busy','false');\n         |                          ^\n      65 |     if(previous==='ready') await expect(submit).toBeEnabled();\n      66 |     else {await expect(status).toContainText('This footprint is blocked.');await expect(submit).toBeDisabled();}\n      67 |   }\n        at /home/runner/work/lockstate/lockstate/tests/browser/room-template-pending-reopen.spec.ts:64:26\n\n    Error Context: test-results/room-template-pending-reop-3391f-til-the-real-worker-replies/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/room-template-pending-reop-3391f-til-the-real-worker-replies/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/room-template-pending-reop-3391f-til-the-real-worker-replies/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n"
+        },
+        {
+          "header": "13) tests/browser/room-template-polish-focus.spec.ts:3:1 › Polish Full HD room catalogue exposes all names and supports one roving keyboard stop",
+          "error": "Test timeout of 60000ms exceeded.",
+          "expectation": [],
+          "assertion": "> 40 |   await page.screenshot({path:testInfo.outputPath('polish-catalogue-focus.png')});",
+          "stack": [
+            "at /home/runner/work/lockstate/lockstate/tests/browser/room-template-polish-focus.spec.ts:40:14"
+          ],
+          "bootstrap": false,
+          "block": "  13) tests/browser/room-template-polish-focus.spec.ts:3:1 › Polish Full HD room catalogue exposes all names and supports one roving keyboard stop \n\n    Test timeout of 60000ms exceeded.\n\n    Error: page.screenshot: Test timeout of 60000ms exceeded.\n    Call log:\n      - taking page screenshot\n\n\n      38 |     await expect(first).toHaveAttribute('aria-pressed','true');\n      39 |   }\n    > 40 |   await page.screenshot({path:testInfo.outputPath('polish-catalogue-focus.png')});\n         |              ^\n      41 |   await page.keyboard.press('Enter'); await expect(last).toHaveAttribute('aria-pressed','true');\n      42 |   await expect(dialog.locator('.hud-template__quote')).not.toBeEmpty();\n      43 |   await page.keyboard.press('Tab');\n        at /home/runner/work/lockstate/lockstate/tests/browser/room-template-polish-focus.spec.ts:40:14\n\n    Error Context: test-results/room-template-polish-focus-39e72-ts-one-roving-keyboard-stop/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/room-template-polish-focus-39e72-ts-one-roving-keyboard-stop/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/room-template-polish-focus-39e72-ts-one-roving-keyboard-stop/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n"
+        },
+        {
+          "header": "14) tests/browser/room-template-rebuilt-render-identity.spec.ts:239:1 › player directly removes a completed rotated template Bed and saves only its independently rebuilt normal image at Full HD",
+          "error": "Test timeout of 60000ms exceeded.",
+          "expectation": [],
+          "assertion": "> 193 |     await dialog.getByText('Enter coordinates', { exact: true }).click();",
+          "stack": [
+            "at /home/runner/work/lockstate/lockstate/tests/browser/room-template-rebuilt-render-identity.spec.ts:193:66"
+          ],
+          "bootstrap": false,
+          "block": "  14) tests/browser/room-template-rebuilt-render-identity.spec.ts:239:1 › player directly removes a completed rotated template Bed and saves only its independently rebuilt normal image at Full HD \n\n    Test timeout of 60000ms exceeded.\n\n    Error: locator.click: Test timeout of 60000ms exceeded.\n    Call log:\n      - waiting for getByRole('dialog', { name: 'Room plans' }).getByText('Enter coordinates', { exact: true })\n        - locator resolved to <summary>Enter coordinates</summary>\n      - attempting click action\n        - waiting for element to be visible, enabled and stable\n        - element is visible, enabled and stable\n        - scrolling into view if needed\n        - done scrolling\n\n\n      191 |   await dialog.getByRole('button', { name: 'Basic cell', exact: true }).click();\n      192 |   if (!await dialog.getByRole('spinbutton', { name: 'Plan origin X' }).isVisible()) {\n    > 193 |     await dialog.getByText('Enter coordinates', { exact: true }).click();\n          |                                                                  ^\n      194 |   }\n      195 |   await dialog.getByRole('spinbutton', { name: 'Plan origin X' }).fill('20');\n      196 |   await dialog.getByRole('spinbutton', { name: 'Plan origin Y' }).fill('20');\n        at /home/runner/work/lockstate/lockstate/tests/browser/room-template-rebuilt-render-identity.spec.ts:193:66\n\n    Error Context: test-results/room-template-rebuilt-rend-9b336-ilt-normal-image-at-Full-HD/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/room-template-rebuilt-rend-9b336-ilt-normal-image-at-Full-HD/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/room-template-rebuilt-rend-9b336-ilt-normal-image-at-Full-HD/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n"
+        },
+        {
+          "header": "15) tests/browser/room-template-world-mouse.spec.ts:89:1 › Full HD angled catalogue exposes all twenty plans, full fixture footprints and open yard",
+          "error": "Test timeout of 60000ms exceeded.",
+          "expectation": [],
+          "assertion": "> 59 |     await choice.click();",
+          "stack": [
+            "at /home/runner/work/lockstate/lockstate/tests/browser/room-template-world-mouse.spec.ts:59:18"
+          ],
+          "bootstrap": false,
+          "block": "  15) tests/browser/room-template-world-mouse.spec.ts:89:1 › Full HD angled catalogue exposes all twenty plans, full fixture footprints and open yard \n\n    Test timeout of 60000ms exceeded.\n\n    Error: locator.click: Test timeout of 60000ms exceeded.\n    Call log:\n      - waiting for getByRole('dialog', { name: 'Room plans' }).locator('.hud-template__choices button').nth(4)\n\n\n      57 |     await page.getByRole('button', { name: 'Room plans', exact: true }).click();\n      58 |     const choice = dialog.locator('.hud-template__choices button').nth(index);\n    > 59 |     await choice.click();\n         |                  ^\n      60 |     const dimensions = await dialog.locator('.hud-template__dimensions').innerText();\n      61 |     const [width, height] = dimensions.split(/[^0-9]+/).map(Number);\n      62 |     if (index === 0) await expect(dialog.locator('.hud-template__diagram .hud-template__tile--object')).toHaveCount(3);\n        at /home/runner/work/lockstate/lockstate/tests/browser/room-template-world-mouse.spec.ts:59:18\n\n    Error Context: test-results/room-template-world-mouse--f37eb-re-footprints-and-open-yard/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/room-template-world-mouse--f37eb-re-footprints-and-open-yard/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/room-template-world-mouse--f37eb-re-footprints-and-open-yard/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n"
+        },
+        {
+          "header": "16) tests/browser/security-console-player-build.spec.ts:136:1 › player creates storage and delivery capacity before Security Office",
+          "error": "Test timeout of 60000ms exceeded.",
+          "expectation": [],
+          "assertion": "> 91 |     remaining = Number(await panel.getAttribute('data-queued') ?? 0);",
+          "stack": [
+            "at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/security-console-player-build.spec.ts:91:36)",
+            "at /home/runner/work/lockstate/lockstate/tests/browser/security-console-player-build.spec.ts:106:3"
+          ],
+          "bootstrap": true,
+          "block": "  16) tests/browser/security-console-player-build.spec.ts:136:1 › player creates storage and delivery capacity before Security Office \n\n    Test timeout of 60000ms exceeded.\n\n    Error: locator.getAttribute: Test timeout of 60000ms exceeded.\n    Call log:\n      - waiting for locator('.hud-build')\n\n\n      89 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),\n      90 |       { message: `construction must advance from ${remaining} unfinished orders` }).toBeLessThan(remaining);\n    > 91 |     remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n         |                                    ^\n      92 |   }\n      93 | }\n      94 |\n        at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/security-console-player-build.spec.ts:91:36)\n        at /home/runner/work/lockstate/lockstate/tests/browser/security-console-player-build.spec.ts:106:3\n\n    Error Context: test-results/security-console-player-bu-6ec10-city-before-Security-Office/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/security-console-player-bu-6ec10-city-before-Security-Office/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/security-console-player-bu-6ec10-city-before-Security-Office/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n"
+        },
+        {
+          "header": "17) tests/browser/storage-room-rack-player-build.spec.ts:95:1 › player builds a Storage Room with two existing racks and keeps them through Save/Load at Full HD",
+          "error": "Test timeout of 60000ms exceeded.",
+          "expectation": [],
+          "assertion": "> 108 |   await minimap.click({ position: { x: bounds.width * .24, y: bounds.height * .24 } });",
+          "stack": [
+            "at /home/runner/work/lockstate/lockstate/tests/browser/storage-room-rack-player-build.spec.ts:108:17"
+          ],
+          "bootstrap": false,
+          "block": "  17) tests/browser/storage-room-rack-player-build.spec.ts:95:1 › player builds a Storage Room with two existing racks and keeps them through Save/Load at Full HD \n\n    Test timeout of 60000ms exceeded.\n\n    Error: locator.click: Test timeout of 60000ms exceeded.\n    Call log:\n      - waiting for locator('.hud-minimap__surface')\n        - locator resolved to <button type=\"button\" class=\"hud-minimap__surface\">…</button>\n      - attempting click action\n        - waiting for element to be visible, enabled and stable\n        - element is visible, enabled and stable\n        - scrolling into view if needed\n        - done scrolling\n        - performing click action\n\n\n      106 |   const bounds = await minimap.boundingBox();\n      107 |   if (bounds === null) throw new Error('minimap absent');\n    > 108 |   await minimap.click({ position: { x: bounds.width * .24, y: bounds.height * .24 } });\n          |                 ^\n      109 |   await page.mouse.move(1300, 700);\n      110 |   const painted = await page.screenshot({ path: info.outputPath('storage-room-rack-completed.png') });\n      111 |   const beforePixels = await storageFramePixels(page, painted);\n        at /home/runner/work/lockstate/lockstate/tests/browser/storage-room-rack-player-build.spec.ts:108:17\n\n    Error Context: test-results/storage-room-rack-player-b-446f0-hrough-Save-Load-at-Full-HD/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/storage-room-rack-player-b-446f0-hrough-Save-Load-at-Full-HD/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/storage-room-rack-player-b-446f0-hrough-Save-Load-at-Full-HD/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n"
+        },
+        {
+          "header": "18) tests/browser/template-delivery-bootstrap-player.spec.ts:66:1 › player furnishes delivery and storage plans and saves with zero prisoners at Full HD",
+          "error": "Error: Test timeout of 60000ms exceeded",
+          "expectation": [],
+          "assertion": "> 30 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),",
+          "stack": [
+            "at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/template-delivery-bootstrap-player.spec.ts:30:5)",
+            "at /home/runner/work/lockstate/lockstate/tests/browser/template-delivery-bootstrap-player.spec.ts:47:3"
+          ],
+          "bootstrap": true,
+          "block": "  18) tests/browser/template-delivery-bootstrap-player.spec.ts:66:1 › player furnishes delivery and storage plans and saves with zero prisoners at Full HD \n\n    Error: Test timeout of 60000ms exceeded\n\n      28 |   let remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      29 |   while (remaining > 0) {\n    > 30 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),\n         |     ^\n      31 |       { message: `construction must advance from ${remaining} unfinished orders` }).toBeLessThan(remaining);\n      32 |     remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      33 |   }\n        at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/template-delivery-bootstrap-player.spec.ts:30:5)\n        at /home/runner/work/lockstate/lockstate/tests/browser/template-delivery-bootstrap-player.spec.ts:47:3\n\n    Error Context: test-results/template-delivery-bootstra-98911-h-zero-prisoners-at-Full-HD/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/template-delivery-bootstra-98911-h-zero-prisoners-at-Full-HD/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/template-delivery-bootstra-98911-h-zero-prisoners-at-Full-HD/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n"
+        },
+        {
+          "header": "19) tests/browser/toilet-dense-player-build.spec.ts:139:1 › player furnishes delivery and storage plans before the toilet test",
+          "error": "Test timeout of 60000ms exceeded.",
+          "expectation": [],
+          "assertion": "> 93 |     remaining = Number(await panel.getAttribute('data-queued') ?? 0);",
+          "stack": [
+            "at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/toilet-dense-player-build.spec.ts:93:36)",
+            "at /home/runner/work/lockstate/lockstate/tests/browser/toilet-dense-player-build.spec.ts:108:3"
+          ],
+          "bootstrap": true,
+          "block": "  19) tests/browser/toilet-dense-player-build.spec.ts:139:1 › player furnishes delivery and storage plans before the toilet test \n\n    Test timeout of 60000ms exceeded.\n\n    Error: locator.getAttribute: Test timeout of 60000ms exceeded.\n    Call log:\n      - waiting for locator('.hud-build')\n\n\n      91 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),\n      92 |       { message: `construction must advance from ${remaining} unfinished orders` }).toBeLessThan(remaining);\n    > 93 |     remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n         |                                    ^\n      94 |   }\n      95 | }\n      96 |\n        at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/toilet-dense-player-build.spec.ts:93:36)\n        at /home/runner/work/lockstate/lockstate/tests/browser/toilet-dense-player-build.spec.ts:108:3\n\n    Error Context: test-results/toilet-dense-player-build--0060b-lans-before-the-toilet-test/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/toilet-dense-player-build--0060b-lans-before-the-toilet-test/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/toilet-dense-player-build--0060b-lans-before-the-toilet-test/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n"
+        },
+        {
+          "header": "20) tests/browser/ui-hud-fullhd-build-minimap.spec.ts:29:3 › Full HD Build at 200% keeps alerts visible beside a player-controlled minimap",
+          "error": "Error: expect(locator).toBeVisible() failed",
+          "expectation": [
+            "Locator:  locator('.hud-minimap .hud-alerts__list')",
+            "Expected: visible",
+            "Received: hidden"
+          ],
+          "assertion": "> 47 |     await expect(page.locator('.hud-minimap .hud-alerts__list')).toBeVisible();",
+          "stack": [
+            "at /home/runner/work/lockstate/lockstate/tests/browser/ui-hud-fullhd-build-minimap.spec.ts:47:66"
+          ],
+          "bootstrap": false,
+          "block": "  20) tests/browser/ui-hud-fullhd-build-minimap.spec.ts:29:3 › Full HD Build at 200% keeps alerts visible beside a player-controlled minimap \n\n    Error: expect(locator).toBeVisible() failed\n\n    Locator:  locator('.hud-minimap .hud-alerts__list')\n    Expected: visible\n    Received: hidden\n    Timeout:  10000ms\n\n    Call log:\n      - Expect \"toBeVisible\" with timeout 10000ms\n      - waiting for locator('.hud-minimap .hud-alerts__list')\n        13 × locator resolved to <div class=\"hud-alerts__list\">…</div>\n           - unexpected value \"hidden\"\n\n\n      45 |\n      46 |     await page.locator('.ui-tab[data-tab=\"overview\"]').click();\n    > 47 |     await expect(page.locator('.hud-minimap .hud-alerts__list')).toBeVisible();\n         |                                                                  ^\n      48 |     await page.locator('.ui-tab[data-tab=\"build\"]').click();\n      49 |     await expect(toggle).toHaveAttribute('aria-expanded', 'true');\n      50 |     await expect(alerts.locator('.ui-section__body')).toBeVisible();\n        at /home/runner/work/lockstate/lockstate/tests/browser/ui-hud-fullhd-build-minimap.spec.ts:47:66\n\n    Error Context: test-results/ui-hud-fullhd-build-minima-31cc1-a-player-controlled-minimap/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/ui-hud-fullhd-build-minima-31cc1-a-player-controlled-minimap/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/ui-hud-fullhd-build-minima-31cc1-a-player-controlled-minimap/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n"
+        },
+        {
+          "header": "21) tests/browser/yard-mouse-history.spec.ts:3:1 › Full HD angled mouse Yard is a real reversible zone through Save/Load with no wall order",
+          "error": "Test timeout of 60000ms exceeded.",
+          "expectation": [],
+          "assertion": "> 46 |   await page.getByRole('button', { name: 'Play at normal speed', exact: true }).click();",
+          "stack": [
+            "at /home/runner/work/lockstate/lockstate/tests/browser/yard-mouse-history.spec.ts:46:81"
+          ],
+          "bootstrap": false,
+          "block": "  21) tests/browser/yard-mouse-history.spec.ts:3:1 › Full HD angled mouse Yard is a real reversible zone through Save/Load with no wall order \n\n    Test timeout of 60000ms exceeded.\n\n    Error: locator.click: Test timeout of 60000ms exceeded.\n    Call log:\n      - waiting for getByRole('button', { name: 'Play at normal speed', exact: true })\n        - locator resolved to <button type=\"button\" aria-busy=\"false\" aria-pressed=\"false\" title=\"Play at normal speed\" class=\"ui-icon-button ui-icon-button--quiet\">…</button>\n\n\n      44 |   await expect(roomCount).toHaveText('0');\n      45 |   await page.getByRole('button', { name: 'Redo the last undone placement', exact: true }).click();\n    > 46 |   await page.getByRole('button', { name: 'Play at normal speed', exact: true }).click();\n         |                                                                                 ^\n      47 |   await expect(roomCount).toHaveText('1');\n      48 |   await page.getByRole('button', { name: 'Pause', exact: true }).click();\n      49 |   await saveLoad();\n        at /home/runner/work/lockstate/lockstate/tests/browser/yard-mouse-history.spec.ts:46:81\n\n    Error Context: test-results/yard-mouse-history-Full-HD-c2087-ave-Load-with-no-wall-order/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/yard-mouse-history-Full-HD-c2087-ave-Load-with-no-wall-order/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/yard-mouse-history-Full-HD-c2087-ave-Load-with-no-wall-order/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n"
+        }
+      ]
+    },
+    {
+      "name": "artifact",
+      "id": "111250456883",
+      "rawSha256": "8e6dda8e68378b984d7cf79c68dd44a60bc0780370bcea855aa7995b2c7a589d",
+      "rawBytes": 405180,
+      "failed": 38,
+      "passed": 70,
+      "didNotRun": 47,
+      "networkAbortSignatures": 0,
+      "failures": [
+        {
+          "header": "1) tests/browser/bookshelf-player-build.spec.ts:159:1 › player creates storage and delivery capacity before Classroom",
+          "error": "Error: Test timeout of 60000ms exceeded",
+          "expectation": [],
+          "assertion": "> 100 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),",
+          "stack": [
+            "at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/bookshelf-player-build.spec.ts:100:5)",
+            "at /home/runner/work/lockstate/lockstate/tests/browser/bookshelf-player-build.spec.ts:117:3"
+          ],
+          "bootstrap": true,
+          "block": "  1) tests/browser/bookshelf-player-build.spec.ts:159:1 › player creates storage and delivery capacity before Classroom \n\n    Error: Test timeout of 60000ms exceeded\n\n       98 |   let remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n       99 |   while (remaining > 0) {\n    > 100 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),\n          |     ^\n      101 |       { message: `construction must advance from ${remaining} unfinished orders` }).toBeLessThan(remaining);\n      102 |     remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      103 |   }\n        at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/bookshelf-player-build.spec.ts:100:5)\n        at /home/runner/work/lockstate/lockstate/tests/browser/bookshelf-player-build.spec.ts:117:3\n\n    Error Context: test-results/bookshelf-player-build-pla-95c2c-y-capacity-before-Classroom/error-context.md\n\n"
+        },
+        {
+          "header": "2) tests/browser/camera-wheel-axis-native.spec.ts:5:3 › oblique horizontal native wheel preserves the view and armed square",
+          "error": "Error: Timeout 10000ms exceeded while waiting on the predicate",
+          "expectation": [],
+          "assertion": "> 36 |     await expect.poll(async () => (await painted()).equals(await painted())).toBe(true);",
+          "stack": [
+            "at /home/runner/work/lockstate/lockstate/tests/browser/camera-wheel-axis-native.spec.ts:36:5"
+          ],
+          "bootstrap": false,
+          "block": "  2) tests/browser/camera-wheel-axis-native.spec.ts:5:3 › oblique horizontal native wheel preserves the view and armed square \n\n    Error: Timeout 10000ms exceeded while waiting on the predicate\n\n      34 |       return canvas.screenshot();\n      35 |     };\n    > 36 |     await expect.poll(async () => (await painted()).equals(await painted())).toBe(true);\n         |     ^\n      37 |     const before = await painted();\n      38 |     await writeFile(testInfo.outputPath(`${mode}-before.png`), before);\n      39 |     const viewport = await minimap.getAttribute('style');\n        at /home/runner/work/lockstate/lockstate/tests/browser/camera-wheel-axis-native.spec.ts:36:5\n\n    Error Context: test-results/camera-wheel-axis-native-o-5031c-s-the-view-and-armed-square/error-context.md\n\n"
+        },
+        {
+          "header": "3) tests/browser/canteen-dining-table-player-build.spec.ts:167:1 › player creates storage and delivery capacity before Canteen",
+          "error": "Error: Test timeout of 60000ms exceeded",
+          "expectation": [],
+          "assertion": "> 111 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),",
+          "stack": [
+            "at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/canteen-dining-table-player-build.spec.ts:111:5)",
+            "at /home/runner/work/lockstate/lockstate/tests/browser/canteen-dining-table-player-build.spec.ts:129:3"
+          ],
+          "bootstrap": true,
+          "block": "  3) tests/browser/canteen-dining-table-player-build.spec.ts:167:1 › player creates storage and delivery capacity before Canteen \n\n    Error: Test timeout of 60000ms exceeded\n\n      109 |   let remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      110 |   while (remaining > 0) {\n    > 111 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),\n          |     ^\n      112 |       { message: `construction must advance from ${remaining} unfinished orders` }).toBeLessThan(remaining);\n      113 |     remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      114 |   }\n        at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/canteen-dining-table-player-build.spec.ts:111:5)\n        at /home/runner/work/lockstate/lockstate/tests/browser/canteen-dining-table-player-build.spec.ts:129:3\n\n    Error Context: test-results/canteen-dining-table-playe-d5601-ery-capacity-before-Canteen/error-context.md\n\n"
+        },
+        {
+          "header": "4) tests/browser/cell-cot-player-build.spec.ts:168:1 › player furnishes delivery and storage plans before the cot test",
+          "error": "Test timeout of 60000ms exceeded.",
+          "expectation": [],
+          "assertion": "> 113 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),",
+          "stack": [
+            "at Object.expect.poll.message (/home/runner/work/lockstate/lockstate/tests/browser/cell-cot-player-build.spec.ts:113:54)"
+          ],
+          "bootstrap": true,
+          "block": "  4) tests/browser/cell-cot-player-build.spec.ts:168:1 › player furnishes delivery and storage plans before the cot test \n\n    Test timeout of 60000ms exceeded.\n\n    Error: locator.getAttribute: Test timeout of 60000ms exceeded.\n    Call log:\n      - waiting for locator('.hud-build')\n\n\n      111 |   let remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      112 |   while (remaining > 0) {\n    > 113 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),\n          |                                                      ^\n      114 |       { message: `construction must advance from ${remaining} unfinished orders` }).toBeLessThan(remaining);\n      115 |     remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      116 |   }\n        at Object.expect.poll.message (/home/runner/work/lockstate/lockstate/tests/browser/cell-cot-player-build.spec.ts:113:54)\n\n    Error Context: test-results/cell-cot-player-build-play-6dac7-e-plans-before-the-cot-test/error-context.md\n\n"
+        },
+        {
+          "header": "5) tests/browser/common-room-upholstered-player-build.spec.ts:362:1 › player completes actual remote storage and delivery capacity before Common Room upholstery",
+          "error": "Test timeout of 60000ms exceeded.",
+          "expectation": [],
+          "assertion": "> 113 |     const value = await queue.getAttribute('data-queued');",
+          "stack": [
+            "at Object.count (/home/runner/work/lockstate/lockstate/tests/browser/common-room-upholstered-player-build.spec.ts:113:31)"
+          ],
+          "bootstrap": true,
+          "block": "  5) tests/browser/common-room-upholstered-player-build.spec.ts:362:1 › player completes actual remote storage and delivery capacity before Common Room upholstery \n\n    Test timeout of 60000ms exceeded.\n\n    Error: locator.getAttribute: Test timeout of 60000ms exceeded.\n    Call log:\n      - waiting for locator('.hud-build')\n\n\n      111 |   const queue = page.locator('.hud-build');\n      112 |   const count = async () => {\n    > 113 |     const value = await queue.getAttribute('data-queued');\n          |                               ^\n      114 |     if (value === null) {\n      115 |       // The genuine HUD removes this attribute at zero. Confirm actual worker\n      116 |       // completion rather than treating a missing observation as empty work.\n        at Object.count (/home/runner/work/lockstate/lockstate/tests/browser/common-room-upholstered-player-build.spec.ts:113:31)\n\n    Error Context: test-results/common-room-upholstered-pl-ba98c-fore-Common-Room-upholstery/error-context.md\n\n"
+        },
+        {
+          "header": "6) tests/browser/dedicated-cell-toilet-player-build.spec.ts:197:1 › player creates storage and delivery capacity before Basic cell",
+          "error": "Error: Test timeout of 60000ms exceeded",
+          "expectation": [],
+          "assertion": "> 143 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),",
+          "stack": [
+            "at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/dedicated-cell-toilet-player-build.spec.ts:143:5)",
+            "at /home/runner/work/lockstate/lockstate/tests/browser/dedicated-cell-toilet-player-build.spec.ts:161:3"
+          ],
+          "bootstrap": true,
+          "block": "  6) tests/browser/dedicated-cell-toilet-player-build.spec.ts:197:1 › player creates storage and delivery capacity before Basic cell \n\n    Error: Test timeout of 60000ms exceeded\n\n      141 |   let remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      142 |   while (remaining > 0) {\n    > 143 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),\n          |     ^\n      144 |       { message: `construction must advance from ${remaining} unfinished orders` }).toBeLessThan(remaining);\n      145 |     remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      146 |   }\n        at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/dedicated-cell-toilet-player-build.spec.ts:143:5)\n        at /home/runner/work/lockstate/lockstate/tests/browser/dedicated-cell-toilet-player-build.spec.ts:161:3\n\n    Error Context: test-results/dedicated-cell-toilet-play-d5a09--capacity-before-Basic-cell/error-context.md\n\n"
+        },
+        {
+          "header": "7) tests/browser/dedicated-kitchen-fridge-player-build.spec.ts:171:1 › player creates storage and delivery capacity before Kitchen",
+          "error": "Error: Test timeout of 60000ms exceeded",
+          "expectation": [],
+          "assertion": "> 116 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),",
+          "stack": [
+            "at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/dedicated-kitchen-fridge-player-build.spec.ts:116:5)",
+            "at /home/runner/work/lockstate/lockstate/tests/browser/dedicated-kitchen-fridge-player-build.spec.ts:133:3"
+          ],
+          "bootstrap": true,
+          "block": "  7) tests/browser/dedicated-kitchen-fridge-player-build.spec.ts:171:1 › player creates storage and delivery capacity before Kitchen \n\n    Error: Test timeout of 60000ms exceeded\n\n      114 |   let remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      115 |   while (remaining > 0) {\n    > 116 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),\n          |     ^\n      117 |       { message: `construction must advance from ${remaining} unfinished orders` }).toBeLessThan(remaining);\n      118 |     remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      119 |   }\n        at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/dedicated-kitchen-fridge-player-build.spec.ts:116:5)\n        at /home/runner/work/lockstate/lockstate/tests/browser/dedicated-kitchen-fridge-player-build.spec.ts:133:3\n\n    Error Context: test-results/dedicated-kitchen-fridge-p-aab23-ery-capacity-before-Kitchen/error-context.md\n\n"
+        },
+        {
+          "header": "8) tests/browser/dedicated-kitchen-prep-counter-player-build.spec.ts:188:1 › player creates storage and delivery capacity before Kitchen",
+          "error": "Test timeout of 60000ms exceeded.",
+          "expectation": [],
+          "assertion": "> 135 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),",
+          "stack": [
+            "at Object.expect.poll.message (/home/runner/work/lockstate/lockstate/tests/browser/dedicated-kitchen-prep-counter-player-build.spec.ts:135:54)"
+          ],
+          "bootstrap": true,
+          "block": "  8) tests/browser/dedicated-kitchen-prep-counter-player-build.spec.ts:188:1 › player creates storage and delivery capacity before Kitchen \n\n    Test timeout of 60000ms exceeded.\n\n    Error: locator.getAttribute: Test timeout of 60000ms exceeded.\n    Call log:\n      - waiting for locator('.hud-build')\n\n\n      133 |   let remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      134 |   while (remaining > 0) {\n    > 135 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),\n          |                                                      ^\n      136 |       { message: `construction must advance from ${remaining} unfinished orders` }).toBeLessThan(remaining);\n      137 |     remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      138 |   }\n        at Object.expect.poll.message (/home/runner/work/lockstate/lockstate/tests/browser/dedicated-kitchen-prep-counter-player-build.spec.ts:135:54)\n\n    Error Context: test-results/dedicated-kitchen-prep-cou-80e82-ery-capacity-before-Kitchen/error-context.md\n\n"
+        },
+        {
+          "header": "9) tests/browser/dedicated-kitchen-stove-player-build.spec.ts:216:1 › player creates storage and delivery capacity before Kitchen",
+          "error": "Error: Test timeout of 60000ms exceeded",
+          "expectation": [],
+          "assertion": "> 130 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),",
+          "stack": [
+            "at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/dedicated-kitchen-stove-player-build.spec.ts:130:5)",
+            "at /home/runner/work/lockstate/lockstate/tests/browser/dedicated-kitchen-stove-player-build.spec.ts:147:3"
+          ],
+          "bootstrap": true,
+          "block": "  9) tests/browser/dedicated-kitchen-stove-player-build.spec.ts:216:1 › player creates storage and delivery capacity before Kitchen \n\n    Error: Test timeout of 60000ms exceeded\n\n      128 |   let remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      129 |   while (remaining > 0) {\n    > 130 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),\n          |     ^\n      131 |       { message: `construction must advance from ${remaining} unfinished orders` }).toBeLessThan(remaining);\n      132 |     remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      133 |   }\n        at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/dedicated-kitchen-stove-player-build.spec.ts:130:5)\n        at /home/runner/work/lockstate/lockstate/tests/browser/dedicated-kitchen-stove-player-build.spec.ts:147:3\n\n    Error Context: test-results/dedicated-kitchen-stove-pl-31d60-ery-capacity-before-Kitchen/error-context.md\n\n"
+        },
+        {
+          "header": "10) tests/browser/dedicated-laundry-washing-machine-player-build.spec.ts:193:1 › player creates storage and delivery capacity before Laundry",
+          "error": "Error: Test timeout of 60000ms exceeded",
+          "expectation": [],
+          "assertion": "> 139 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),",
+          "stack": [
+            "at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/dedicated-laundry-washing-machine-player-build.spec.ts:139:5)",
+            "at /home/runner/work/lockstate/lockstate/tests/browser/dedicated-laundry-washing-machine-player-build.spec.ts:157:3"
+          ],
+          "bootstrap": true,
+          "block": "  10) tests/browser/dedicated-laundry-washing-machine-player-build.spec.ts:193:1 › player creates storage and delivery capacity before Laundry \n\n    Error: Test timeout of 60000ms exceeded\n\n      137 |   let remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      138 |   while (remaining > 0) {\n    > 139 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),\n          |     ^\n      140 |       { message: `construction must advance from ${remaining} unfinished orders` }).toBeLessThan(remaining);\n      141 |     remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      142 |   }\n        at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/dedicated-laundry-washing-machine-player-build.spec.ts:139:5)\n        at /home/runner/work/lockstate/lockstate/tests/browser/dedicated-laundry-washing-machine-player-build.spec.ts:157:3\n\n    Error Context: test-results/dedicated-laundry-washing--a5279-ery-capacity-before-Laundry/error-context.md\n\n"
+        },
+        {
+          "header": "11) tests/browser/dedicated-loading-dock-door-player-build.spec.ts:216:1 › player creates actual storage and delivery capacity before dedicated loading dock door Delivery Bay",
+          "error": "Error: Test timeout of 60000ms exceeded",
+          "expectation": [],
+          "assertion": "> 152 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),",
+          "stack": [
+            "at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/dedicated-loading-dock-door-player-build.spec.ts:152:5)",
+            "at /home/runner/work/lockstate/lockstate/tests/browser/dedicated-loading-dock-door-player-build.spec.ts:170:3"
+          ],
+          "bootstrap": true,
+          "block": "  11) tests/browser/dedicated-loading-dock-door-player-build.spec.ts:216:1 › player creates actual storage and delivery capacity before dedicated loading dock door Delivery Bay \n\n    Error: Test timeout of 60000ms exceeded\n\n      150 |   let remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      151 |   while (remaining > 0) {\n    > 152 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),\n          |     ^\n      153 |       { message: `construction must advance from ${remaining} unfinished orders` }).toBeLessThan(remaining);\n      154 |     remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      155 |   }\n        at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/dedicated-loading-dock-door-player-build.spec.ts:152:5)\n        at /home/runner/work/lockstate/lockstate/tests/browser/dedicated-loading-dock-door-player-build.spec.ts:170:3\n\n    Error Context: test-results/dedicated-loading-dock-doo-0fe13-ding-dock-door-Delivery-Bay/error-context.md\n\n"
+        },
+        {
+          "header": "12) tests/browser/dedicated-medical-bed-player-build.spec.ts:199:1 › player creates actual storage and delivery capacity before detailed medical bed Infirmary",
+          "error": "Error: Test timeout of 60000ms exceeded",
+          "expectation": [],
+          "assertion": "> 146 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),",
+          "stack": [
+            "at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/dedicated-medical-bed-player-build.spec.ts:146:5)",
+            "at /home/runner/work/lockstate/lockstate/tests/browser/dedicated-medical-bed-player-build.spec.ts:163:3"
+          ],
+          "bootstrap": true,
+          "block": "  12) tests/browser/dedicated-medical-bed-player-build.spec.ts:199:1 › player creates actual storage and delivery capacity before detailed medical bed Infirmary \n\n    Error: Test timeout of 60000ms exceeded\n\n      144 |   let remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      145 |   while (remaining > 0) {\n    > 146 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),\n          |     ^\n      147 |       { message: `construction must advance from ${remaining} unfinished orders` }).toBeLessThan(remaining);\n      148 |     remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      149 |   }\n        at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/dedicated-medical-bed-player-build.spec.ts:146:5)\n        at /home/runner/work/lockstate/lockstate/tests/browser/dedicated-medical-bed-player-build.spec.ts:163:3\n\n    Error Context: test-results/dedicated-medical-bed-play-a3f96-ailed-medical-bed-Infirmary/error-context.md\n\n"
+        },
+        {
+          "header": "13) tests/browser/dedicated-medicine-cabinet-player-build.spec.ts:198:1 › player creates actual storage and delivery capacity before detailed Infirmary",
+          "error": "Test timeout of 60000ms exceeded.",
+          "expectation": [],
+          "assertion": "> 147 |     remaining = Number(await panel.getAttribute('data-queued') ?? 0);",
+          "stack": [
+            "at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/dedicated-medicine-cabinet-player-build.spec.ts:147:36)",
+            "at /home/runner/work/lockstate/lockstate/tests/browser/dedicated-medicine-cabinet-player-build.spec.ts:162:3"
+          ],
+          "bootstrap": true,
+          "block": "  13) tests/browser/dedicated-medicine-cabinet-player-build.spec.ts:198:1 › player creates actual storage and delivery capacity before detailed Infirmary \n\n    Test timeout of 60000ms exceeded.\n\n    Error: locator.getAttribute: Test timeout of 60000ms exceeded.\n    Call log:\n      - waiting for locator('.hud-build')\n\n\n      145 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),\n      146 |       { message: `construction must advance from ${remaining} unfinished orders` }).toBeLessThan(remaining);\n    > 147 |     remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n          |                                    ^\n      148 |   }\n      149 | }\n      150 |\n        at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/dedicated-medicine-cabinet-player-build.spec.ts:147:36)\n        at /home/runner/work/lockstate/lockstate/tests/browser/dedicated-medicine-cabinet-player-build.spec.ts:162:3\n\n    Error Context: test-results/dedicated-medicine-cabinet-35027-y-before-detailed-Infirmary/error-context.md\n\n"
+        },
+        {
+          "header": "14) tests/browser/dedicated-office-desk-player-build.spec.ts:205:1 › player creates actual storage and delivery capacity before detailed Reception",
+          "error": "Error: Test timeout of 60000ms exceeded",
+          "expectation": [],
+          "assertion": "> 153 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),",
+          "stack": [
+            "at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/dedicated-office-desk-player-build.spec.ts:153:5)",
+            "at /home/runner/work/lockstate/lockstate/tests/browser/dedicated-office-desk-player-build.spec.ts:170:3"
+          ],
+          "bootstrap": true,
+          "block": "  14) tests/browser/dedicated-office-desk-player-build.spec.ts:205:1 › player creates actual storage and delivery capacity before detailed Reception \n\n    Error: Test timeout of 60000ms exceeded\n\n      151 |   let remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      152 |   while (remaining > 0) {\n    > 153 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),\n          |     ^\n      154 |       { message: `construction must advance from ${remaining} unfinished orders` }).toBeLessThan(remaining);\n      155 |     remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      156 |   }\n        at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/dedicated-office-desk-player-build.spec.ts:153:5)\n        at /home/runner/work/lockstate/lockstate/tests/browser/dedicated-office-desk-player-build.spec.ts:170:3\n\n    Error Context: test-results/dedicated-office-desk-play-ae357-y-before-detailed-Reception/error-context.md\n\n"
+        },
+        {
+          "header": "15) tests/browser/dedicated-security-console-player-build.spec.ts:197:1 › player creates actual storage and delivery capacity before detailed Security Office",
+          "error": "Error: Test timeout of 60000ms exceeded",
+          "expectation": [],
+          "assertion": "> 146 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),",
+          "stack": [
+            "at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/dedicated-security-console-player-build.spec.ts:146:5)",
+            "at /home/runner/work/lockstate/lockstate/tests/browser/dedicated-security-console-player-build.spec.ts:163:3"
+          ],
+          "bootstrap": true,
+          "block": "  15) tests/browser/dedicated-security-console-player-build.spec.ts:197:1 › player creates actual storage and delivery capacity before detailed Security Office \n\n    Error: Test timeout of 60000ms exceeded\n\n      144 |   let remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      145 |   while (remaining > 0) {\n    > 146 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),\n          |     ^\n      147 |       { message: `construction must advance from ${remaining} unfinished orders` }).toBeLessThan(remaining);\n      148 |     remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      149 |   }\n        at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/dedicated-security-console-player-build.spec.ts:146:5)\n        at /home/runner/work/lockstate/lockstate/tests/browser/dedicated-security-console-player-build.spec.ts:163:3\n\n    Error Context: test-results/dedicated-security-console-d3ad9-re-detailed-Security-Office/error-context.md\n\n"
+        },
+        {
+          "header": "16) tests/browser/dedicated-utility-panel-player-build.spec.ts:184:1 › player creates storage and delivery capacity before Utility Room",
+          "error": "Error: Test timeout of 60000ms exceeded",
+          "expectation": [],
+          "assertion": "> 129 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),",
+          "stack": [
+            "at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/dedicated-utility-panel-player-build.spec.ts:129:5)",
+            "at /home/runner/work/lockstate/lockstate/tests/browser/dedicated-utility-panel-player-build.spec.ts:146:3"
+          ],
+          "bootstrap": true,
+          "block": "  16) tests/browser/dedicated-utility-panel-player-build.spec.ts:184:1 › player creates storage and delivery capacity before Utility Room \n\n    Error: Test timeout of 60000ms exceeded\n\n      127 |   let remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      128 |   while (remaining > 0) {\n    > 129 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),\n          |     ^\n      130 |       { message: `construction must advance from ${remaining} unfinished orders` }).toBeLessThan(remaining);\n      131 |     remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      132 |   }\n        at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/dedicated-utility-panel-player-build.spec.ts:129:5)\n        at /home/runner/work/lockstate/lockstate/tests/browser/dedicated-utility-panel-player-build.spec.ts:146:3\n\n    Error Context: test-results/dedicated-utility-panel-pl-a72ca-apacity-before-Utility-Room/error-context.md\n\n"
+        },
+        {
+          "header": "17) tests/browser/default-waste-bin-player-build.spec.ts:184:1 › player creates storage and delivery capacity before Garbage Room",
+          "error": "Error: Test timeout of 60000ms exceeded",
+          "expectation": [],
+          "assertion": "> 129 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),",
+          "stack": [
+            "at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/default-waste-bin-player-build.spec.ts:129:5)",
+            "at /home/runner/work/lockstate/lockstate/tests/browser/default-waste-bin-player-build.spec.ts:146:3"
+          ],
+          "bootstrap": true,
+          "block": "  17) tests/browser/default-waste-bin-player-build.spec.ts:184:1 › player creates storage and delivery capacity before Garbage Room \n\n    Error: Test timeout of 60000ms exceeded\n\n      127 |   let remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      128 |   while (remaining > 0) {\n    > 129 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),\n          |     ^\n      130 |       { message: `construction must advance from ${remaining} unfinished orders` }).toBeLessThan(remaining);\n      131 |     remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      132 |   }\n        at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/default-waste-bin-player-build.spec.ts:129:5)\n        at /home/runner/work/lockstate/lockstate/tests/browser/default-waste-bin-player-build.spec.ts:146:3\n\n    Error Context: test-results/default-waste-bin-player-b-bf43b-apacity-before-Garbage-Room/error-context.md\n\n"
+        },
+        {
+          "header": "18) tests/browser/generic-office-desk-player-build.spec.ts:167:1 › player creates storage and delivery capacity before Reception",
+          "error": "Error: Test timeout of 60000ms exceeded",
+          "expectation": [],
+          "assertion": "> 114 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),",
+          "stack": [
+            "at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/generic-office-desk-player-build.spec.ts:114:5)",
+            "at /home/runner/work/lockstate/lockstate/tests/browser/generic-office-desk-player-build.spec.ts:131:3"
+          ],
+          "bootstrap": true,
+          "block": "  18) tests/browser/generic-office-desk-player-build.spec.ts:167:1 › player creates storage and delivery capacity before Reception \n\n    Error: Test timeout of 60000ms exceeded\n\n      112 |   let remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      113 |   while (remaining > 0) {\n    > 114 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),\n          |     ^\n      115 |       { message: `construction must advance from ${remaining} unfinished orders` }).toBeLessThan(remaining);\n      116 |     remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      117 |   }\n        at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/generic-office-desk-player-build.spec.ts:114:5)\n        at /home/runner/work/lockstate/lockstate/tests/browser/generic-office-desk-player-build.spec.ts:131:3\n\n    Error Context: test-results/generic-office-desk-player-a5a68-y-capacity-before-Reception/error-context.md\n\n"
+        },
+        {
+          "header": "19) tests/browser/generic-wooden-rack-player-build.spec.ts:218:1 › player creates storage and delivery capacity before generic rack",
+          "error": "Error: Test timeout of 60000ms exceeded",
+          "expectation": [],
+          "assertion": "> 145 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),",
+          "stack": [
+            "at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/generic-wooden-rack-player-build.spec.ts:145:5)",
+            "at /home/runner/work/lockstate/lockstate/tests/browser/generic-wooden-rack-player-build.spec.ts:162:3"
+          ],
+          "bootstrap": true,
+          "block": "  19) tests/browser/generic-wooden-rack-player-build.spec.ts:218:1 › player creates storage and delivery capacity before generic rack \n\n    Error: Test timeout of 60000ms exceeded\n\n      143 |   let remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      144 |   while (remaining > 0) {\n    > 145 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),\n          |     ^\n      146 |       { message: `construction must advance from ${remaining} unfinished orders` }).toBeLessThan(remaining);\n      147 |     remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      148 |   }\n        at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/generic-wooden-rack-player-build.spec.ts:145:5)\n        at /home/runner/work/lockstate/lockstate/tests/browser/generic-wooden-rack-player-build.spec.ts:162:3\n\n    Error Context: test-results/generic-wooden-rack-player-8489a-apacity-before-generic-rack/error-context.md\n\n"
+        },
+        {
+          "header": "20) tests/browser/hired-guard-player-build.spec.ts:15:1 › a publicly hired Guard keeps actual identity and visible authored body through paused Save/Load",
+          "error": "Error: expect(received).toBe(expected) // Object.is equality",
+          "expectation": [
+            "Expected: true",
+            "Received: false"
+          ],
+          "assertion": "> 25 |   await expect.poll(async () => (await loadedImages()).images.some(image =>",
+          "stack": [
+            "at /home/runner/work/lockstate/lockstate/tests/browser/hired-guard-player-build.spec.ts:25:3"
+          ],
+          "bootstrap": false,
+          "block": "  20) tests/browser/hired-guard-player-build.spec.ts:15:1 › a publicly hired Guard keeps actual identity and visible authored body through paused Save/Load \n\n    Error: expect(received).toBe(expected) // Object.is equality\n\n    Expected: true\n    Received: false\n\n    Call Log:\n    - Timeout 10000ms exceeded while waiting on the predicate\n\n      23 |   await expect(canvas).toBeVisible();\n      24 |   // The real catalog's initial pose has decoded before the empty-world control.\n    > 25 |   await expect.poll(async () => (await loadedImages()).images.some(image =>\n         |   ^\n      26 |     image.sha256 === GUARD_INITIAL_FRAME.sha256 && image.complete && !image.error && image.width === 512 && image.height === 512)).toBe(true);\n      27 |   const emptyCanvas = await canvas.screenshot({ path: info.outputPath('guard-empty-world-control-canvas.png') });\n      28 |\n        at /home/runner/work/lockstate/lockstate/tests/browser/hired-guard-player-build.spec.ts:25:3\n\n    Error Context: test-results/hired-guard-player-build-a-ae7f6-dy-through-paused-Save-Load/error-context.md\n\n"
+        },
+        {
+          "header": "21) tests/browser/infirmary-player-build.spec.ts:148:1 › player creates storage and delivery capacity before Infirmary",
+          "error": "Error: Test timeout of 60000ms exceeded",
+          "expectation": [],
+          "assertion": "> 95 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),",
+          "stack": [
+            "at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/infirmary-player-build.spec.ts:95:5)",
+            "at /home/runner/work/lockstate/lockstate/tests/browser/infirmary-player-build.spec.ts:112:3"
+          ],
+          "bootstrap": true,
+          "block": "  21) tests/browser/infirmary-player-build.spec.ts:148:1 › player creates storage and delivery capacity before Infirmary \n\n    Error: Test timeout of 60000ms exceeded\n\n      93 |   let remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      94 |   while (remaining > 0) {\n    > 95 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),\n         |     ^\n      96 |       { message: `construction must advance from ${remaining} unfinished orders` }).toBeLessThan(remaining);\n      97 |     remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      98 |   }\n        at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/infirmary-player-build.spec.ts:95:5)\n        at /home/runner/work/lockstate/lockstate/tests/browser/infirmary-player-build.spec.ts:112:3\n\n    Error Context: test-results/infirmary-player-build-pla-ea46b-y-capacity-before-Infirmary/error-context.md\n\n"
+        },
+        {
+          "header": "22) tests/browser/oblique-pending-wall-player.spec.ts:141:29 › actual loaded guard stays behind pending whole-square wall at yaw0",
+          "error": "Test timeout of 60000ms exceeded.",
+          "expectation": [],
+          "assertion": "> 127 |   await page.locator('.hud-build__arm').click();",
+          "stack": [
+            "at /home/runner/work/lockstate/lockstate/tests/browser/oblique-pending-wall-player.spec.ts:127:41"
+          ],
+          "bootstrap": false,
+          "block": "  22) tests/browser/oblique-pending-wall-player.spec.ts:141:29 › actual loaded guard stays behind pending whole-square wall at yaw0 \n\n    Test timeout of 60000ms exceeded.\n\n    Error: locator.click: Test timeout of 60000ms exceeded.\n    Call log:\n      - waiting for locator('.hud-build__arm')\n        - locator resolved to <button type=\"button\" data-armed=\"false\" data-tone=\"primary\" aria-pressed=\"false\" class=\"ui-action hud-build__arm\">…</button>\n      - attempting click action\n        - waiting for element to be visible, enabled and stable\n\n\n      125 |   await page.getByRole('button', { name: 'Build', exact: true }).click();\n      126 |   await page.locator('.hud-build__list [data-buildable=\"wall-brick\"]').click();\n    > 127 |   await page.locator('.hud-build__arm').click();\n          |                                         ^\n      128 |   const canvas = page.locator('#game-root canvas');\n      129 |   await expect(canvas).toBeVisible();\n      130 |   const box = await canvas.boundingBox();\n        at /home/runner/work/lockstate/lockstate/tests/browser/oblique-pending-wall-player.spec.ts:127:41\n\n    Error Context: test-results/oblique-pending-wall-playe-d9d22-g-whole-square-wall-at-yaw0/error-context.md\n\n"
+        },
+        {
+          "header": "23) tests/browser/oblique-pending-wall-player.spec.ts:141:29 › actual loaded guard stays behind pending whole-square wall at yaw180",
+          "error": "Test timeout of 60000ms exceeded.",
+          "expectation": [],
+          "assertion": "> 127 |   await page.locator('.hud-build__arm').click();",
+          "stack": [
+            "at /home/runner/work/lockstate/lockstate/tests/browser/oblique-pending-wall-player.spec.ts:127:41"
+          ],
+          "bootstrap": false,
+          "block": "  23) tests/browser/oblique-pending-wall-player.spec.ts:141:29 › actual loaded guard stays behind pending whole-square wall at yaw180 \n\n    Test timeout of 60000ms exceeded.\n\n    Error: locator.click: Test timeout of 60000ms exceeded.\n    Call log:\n      - waiting for locator('.hud-build__arm')\n        - locator resolved to <button type=\"button\" data-armed=\"false\" data-tone=\"primary\" aria-pressed=\"false\" class=\"ui-action hud-build__arm\">…</button>\n      - attempting click action\n        - waiting for element to be visible, enabled and stable\n        - element is visible, enabled and stable\n        - scrolling into view if needed\n        - done scrolling\n\n\n      125 |   await page.getByRole('button', { name: 'Build', exact: true }).click();\n      126 |   await page.locator('.hud-build__list [data-buildable=\"wall-brick\"]').click();\n    > 127 |   await page.locator('.hud-build__arm').click();\n          |                                         ^\n      128 |   const canvas = page.locator('#game-root canvas');\n      129 |   await expect(canvas).toBeVisible();\n      130 |   const box = await canvas.boundingBox();\n        at /home/runner/work/lockstate/lockstate/tests/browser/oblique-pending-wall-player.spec.ts:127:41\n\n    Error Context: test-results/oblique-pending-wall-playe-c21f3-whole-square-wall-at-yaw180/error-context.md\n\n"
+        },
+        {
+          "header": "24) tests/browser/oblique-square-wall-native-footprint.spec.ts:185:64 › native completed full Brick wall occupies its chosen whole square at -45/45",
+          "error": "Test timeout of 60000ms exceeded.",
+          "expectation": [],
+          "assertion": "> 136 |   const box = await canvas.boundingBox();",
+          "stack": [
+            "at /home/runner/work/lockstate/lockstate/tests/browser/oblique-square-wall-native-footprint.spec.ts:136:28"
+          ],
+          "bootstrap": false,
+          "block": "  24) tests/browser/oblique-square-wall-native-footprint.spec.ts:185:64 › native completed full Brick wall occupies its chosen whole square at -45/45 \n\n    Test timeout of 60000ms exceeded.\n\n    Error: locator.boundingBox: Target page, context or browser has been closed\n\n      134 |   await page.locator('.hud-build__arm').click();\n      135 |   const canvas = page.locator('#game-root canvas');\n    > 136 |   const box = await canvas.boundingBox();\n          |                            ^\n      137 |   if(!box)throw new Error('World canvas missing');\n      138 |   const point={x:box.x+box.width/2+9*Math.SQRT1_2*80,y:box.y+box.height/2};\n      139 |   expect(await page.evaluate(point => document.elementFromPoint(point.x,point.y)?.tagName,point)).toBe('CANVAS');\n        at /home/runner/work/lockstate/lockstate/tests/browser/oblique-square-wall-native-footprint.spec.ts:136:28\n\n    Error Context: test-results/oblique-square-wall-native-28939-osen-whole-square-at--45-45/error-context.md\n\n"
+        },
+        {
+          "header": "25) tests/browser/oblique-square-wall-native-footprint.spec.ts:185:64 › native completed full Brick wall occupies its chosen whole square at 45/65",
+          "error": "Test timeout of 60000ms exceeded.",
+          "expectation": [],
+          "assertion": "> 134 |   await page.locator('.hud-build__arm').click();",
+          "stack": [
+            "at /home/runner/work/lockstate/lockstate/tests/browser/oblique-square-wall-native-footprint.spec.ts:134:41"
+          ],
+          "bootstrap": false,
+          "block": "  25) tests/browser/oblique-square-wall-native-footprint.spec.ts:185:64 › native completed full Brick wall occupies its chosen whole square at 45/65 \n\n    Test timeout of 60000ms exceeded.\n\n    Error: locator.click: Test timeout of 60000ms exceeded.\n    Call log:\n      - waiting for locator('.hud-build__arm')\n        - locator resolved to <button type=\"button\" data-armed=\"false\" data-tone=\"primary\" aria-pressed=\"false\" class=\"ui-action hud-build__arm\">…</button>\n      - attempting click action\n        - waiting for element to be visible, enabled and stable\n        - element is visible, enabled and stable\n        - scrolling into view if needed\n        - done scrolling\n        - performing click action\n\n\n      132 |   await expect.poll(async()=>Number(await page.locator('.hud-build').getAttribute('data-queued') ?? 0)).toBe(0);\n      133 |   await page.locator('.hud-build__list [data-buildable=\"wall-brick\"]').click();\n    > 134 |   await page.locator('.hud-build__arm').click();\n          |                                         ^\n      135 |   const canvas = page.locator('#game-root canvas');\n      136 |   const box = await canvas.boundingBox();\n      137 |   if(!box)throw new Error('World canvas missing');\n        at /home/runner/work/lockstate/lockstate/tests/browser/oblique-square-wall-native-footprint.spec.ts:134:41\n\n    Error Context: test-results/oblique-square-wall-native-53ce2-hosen-whole-square-at-45-65/error-context.md\n\n"
+        },
+        {
+          "header": "26) tests/browser/oblique-square-wall-native-footprint.spec.ts:185:64 › native completed full Brick wall occupies its chosen whole square at 45/80",
+          "error": "Test timeout of 60000ms exceeded.",
+          "expectation": [],
+          "assertion": "> 134 |   await page.locator('.hud-build__arm').click();",
+          "stack": [
+            "at /home/runner/work/lockstate/lockstate/tests/browser/oblique-square-wall-native-footprint.spec.ts:134:41"
+          ],
+          "bootstrap": false,
+          "block": "  26) tests/browser/oblique-square-wall-native-footprint.spec.ts:185:64 › native completed full Brick wall occupies its chosen whole square at 45/80 \n\n    Test timeout of 60000ms exceeded.\n\n    Error: locator.click: Test timeout of 60000ms exceeded.\n    Call log:\n      - waiting for locator('.hud-build__arm')\n        - locator resolved to <button type=\"button\" data-armed=\"false\" data-tone=\"primary\" aria-pressed=\"false\" class=\"ui-action hud-build__arm\">…</button>\n      - attempting click action\n        - waiting for element to be visible, enabled and stable\n        - element is visible, enabled and stable\n        - scrolling into view if needed\n        - done scrolling\n\n\n      132 |   await expect.poll(async()=>Number(await page.locator('.hud-build').getAttribute('data-queued') ?? 0)).toBe(0);\n      133 |   await page.locator('.hud-build__list [data-buildable=\"wall-brick\"]').click();\n    > 134 |   await page.locator('.hud-build__arm').click();\n          |                                         ^\n      135 |   const canvas = page.locator('#game-root canvas');\n      136 |   const box = await canvas.boundingBox();\n      137 |   if(!box)throw new Error('World canvas missing');\n        at /home/runner/work/lockstate/lockstate/tests/browser/oblique-square-wall-native-footprint.spec.ts:134:41\n\n    Error Context: test-results/oblique-square-wall-native-330cc-hosen-whole-square-at-45-80/error-context.md\n\n"
+        },
+        {
+          "header": "27) tests/browser/oblique-square-wall-native-footprint.spec.ts:185:64 › native completed cutaway Brick wall occupies its chosen whole square at -45/45",
+          "error": "Test timeout of 60000ms exceeded.",
+          "expectation": [],
+          "assertion": "> 134 |   await page.locator('.hud-build__arm').click();",
+          "stack": [
+            "at /home/runner/work/lockstate/lockstate/tests/browser/oblique-square-wall-native-footprint.spec.ts:134:41"
+          ],
+          "bootstrap": false,
+          "block": "  27) tests/browser/oblique-square-wall-native-footprint.spec.ts:185:64 › native completed cutaway Brick wall occupies its chosen whole square at -45/45 \n\n    Test timeout of 60000ms exceeded.\n\n    Error: locator.click: Test timeout of 60000ms exceeded.\n    Call log:\n      - waiting for locator('.hud-build__arm')\n        - locator resolved to <button type=\"button\" data-armed=\"false\" data-tone=\"primary\" aria-pressed=\"false\" class=\"ui-action hud-build__arm\">…</button>\n      - attempting click action\n        - waiting for element to be visible, enabled and stable\n        - element is visible, enabled and stable\n        - scrolling into view if needed\n        - done scrolling\n        - performing click action\n\n\n      132 |   await expect.poll(async()=>Number(await page.locator('.hud-build').getAttribute('data-queued') ?? 0)).toBe(0);\n      133 |   await page.locator('.hud-build__list [data-buildable=\"wall-brick\"]').click();\n    > 134 |   await page.locator('.hud-build__arm').click();\n          |                                         ^\n      135 |   const canvas = page.locator('#game-root canvas');\n      136 |   const box = await canvas.boundingBox();\n      137 |   if(!box)throw new Error('World canvas missing');\n        at /home/runner/work/lockstate/lockstate/tests/browser/oblique-square-wall-native-footprint.spec.ts:134:41\n\n    Error Context: test-results/oblique-square-wall-native-da6a9-osen-whole-square-at--45-45/error-context.md\n\n"
+        },
+        {
+          "header": "28) tests/browser/oblique-square-wall-native-footprint.spec.ts:185:64 › native completed cutaway Brick wall occupies its chosen whole square at 45/65",
+          "error": "Test timeout of 60000ms exceeded.",
+          "expectation": [],
+          "assertion": "> 134 |   await page.locator('.hud-build__arm').click();",
+          "stack": [
+            "at /home/runner/work/lockstate/lockstate/tests/browser/oblique-square-wall-native-footprint.spec.ts:134:41"
+          ],
+          "bootstrap": false,
+          "block": "  28) tests/browser/oblique-square-wall-native-footprint.spec.ts:185:64 › native completed cutaway Brick wall occupies its chosen whole square at 45/65 \n\n    Test timeout of 60000ms exceeded.\n\n    Error: locator.click: Test timeout of 60000ms exceeded.\n    Call log:\n      - waiting for locator('.hud-build__arm')\n        - locator resolved to <button type=\"button\" data-armed=\"false\" data-tone=\"primary\" aria-pressed=\"false\" class=\"ui-action hud-build__arm\">…</button>\n      - attempting click action\n        - waiting for element to be visible, enabled and stable\n        - element is visible, enabled and stable\n        - scrolling into view if needed\n        - done scrolling\n        - performing click action\n\n\n      132 |   await expect.poll(async()=>Number(await page.locator('.hud-build').getAttribute('data-queued') ?? 0)).toBe(0);\n      133 |   await page.locator('.hud-build__list [data-buildable=\"wall-brick\"]').click();\n    > 134 |   await page.locator('.hud-build__arm').click();\n          |                                         ^\n      135 |   const canvas = page.locator('#game-root canvas');\n      136 |   const box = await canvas.boundingBox();\n      137 |   if(!box)throw new Error('World canvas missing');\n        at /home/runner/work/lockstate/lockstate/tests/browser/oblique-square-wall-native-footprint.spec.ts:134:41\n\n    Error Context: test-results/oblique-square-wall-native-a885b-hosen-whole-square-at-45-65/error-context.md\n\n"
+        },
+        {
+          "header": "29) tests/browser/oblique-square-wall-native-footprint.spec.ts:185:64 › native completed cutaway Brick wall occupies its chosen whole square at 45/80",
+          "error": "Test timeout of 60000ms exceeded.",
+          "expectation": [],
+          "assertion": "> 134 |   await page.locator('.hud-build__arm').click();",
+          "stack": [
+            "at /home/runner/work/lockstate/lockstate/tests/browser/oblique-square-wall-native-footprint.spec.ts:134:41"
+          ],
+          "bootstrap": false,
+          "block": "  29) tests/browser/oblique-square-wall-native-footprint.spec.ts:185:64 › native completed cutaway Brick wall occupies its chosen whole square at 45/80 \n\n    Test timeout of 60000ms exceeded.\n\n    Error: locator.click: Test timeout of 60000ms exceeded.\n    Call log:\n      - waiting for locator('.hud-build__arm')\n        - locator resolved to <button type=\"button\" data-armed=\"false\" data-tone=\"primary\" aria-pressed=\"false\" class=\"ui-action hud-build__arm\">…</button>\n      - attempting click action\n        - waiting for element to be visible, enabled and stable\n        - element is visible, enabled and stable\n        - scrolling into view if needed\n        - done scrolling\n\n\n      132 |   await expect.poll(async()=>Number(await page.locator('.hud-build').getAttribute('data-queued') ?? 0)).toBe(0);\n      133 |   await page.locator('.hud-build__list [data-buildable=\"wall-brick\"]').click();\n    > 134 |   await page.locator('.hud-build__arm').click();\n          |                                         ^\n      135 |   const canvas = page.locator('#game-root canvas');\n      136 |   const box = await canvas.boundingBox();\n      137 |   if(!box)throw new Error('World canvas missing');\n        at /home/runner/work/lockstate/lockstate/tests/browser/oblique-square-wall-native-footprint.spec.ts:134:41\n\n    Error Context: test-results/oblique-square-wall-native-d19fd-hosen-whole-square-at-45-80/error-context.md\n\n"
+        },
+        {
+          "header": "30) tests/browser/room-template-history-verdict-player.spec.ts:352:1 › player completes and saves actual Storage/Delivery capacity before stationary Cell history cases",
+          "error": "Error: actual construction advances from 17 queued orders",
+          "expectation": [
+            "Expected: < 17",
+            "Received:   17"
+          ],
+          "assertion": "> 126 |     await expect.poll(queued, { message: `actual construction advances from ${count} queued orders` }).toBeLessThan(count);",
+          "stack": [
+            "at finish (/home/runner/work/lockstate/lockstate/tests/browser/room-template-history-verdict-player.spec.ts:126:5)",
+            "at /home/runner/work/lockstate/lockstate/tests/browser/room-template-history-verdict-player.spec.ts:190:161"
+          ],
+          "bootstrap": true,
+          "block": "  30) tests/browser/room-template-history-verdict-player.spec.ts:352:1 › player completes and saves actual Storage/Delivery capacity before stationary Cell history cases \n\n    Error: actual construction advances from 17 queued orders\n\n    expect(received).toBeLessThan(expected)\n\n    Expected: < 17\n    Received:   17\n\n    Call Log:\n    - Test timeout of 60000ms exceeded\n\n      124 |   let count = await queued();\n      125 |   while (count > 0) {\n    > 126 |     await expect.poll(queued, { message: `actual construction advances from ${count} queued orders` }).toBeLessThan(count);\n          |     ^\n      127 |     count = await queued();\n      128 |   }\n      129 | }\n        at finish (/home/runner/work/lockstate/lockstate/tests/browser/room-template-history-verdict-player.spec.ts:126:5)\n        at /home/runner/work/lockstate/lockstate/tests/browser/room-template-history-verdict-player.spec.ts:190:161\n\n    Error Context: test-results/room-template-history-verd-aa149-ationary-Cell-history-cases/error-context.md\n\n"
+        },
+        {
+          "header": "31) tests/browser/room-template-numeric-held-primary.spec.ts:208:42 › oblique FullHD: numeric purchase consumes the originally held canvas primary without a second transaction (#1908)",
+          "error": "Test timeout of 60000ms exceeded.",
+          "expectation": [],
+          "assertion": "> 228 |   } finally { if (held) await page.mouse.up({ button: 'left' }); }",
+          "stack": [
+            "at /home/runner/work/lockstate/lockstate/tests/browser/room-template-numeric-held-primary.spec.ts:228:42"
+          ],
+          "bootstrap": false,
+          "block": "  31) tests/browser/room-template-numeric-held-primary.spec.ts:208:42 › oblique FullHD: numeric purchase consumes the originally held canvas primary without a second transaction (#1908) \n\n    Test timeout of 60000ms exceeded.\n\n    Error: mouse.up: Target page, context or browser has been closed\n\n      226 |     await page.screenshot({ path: info.outputPath('original-primary-released-one-pending-plan.png') });\n      227 |     await info.attach('actual-worker-and-trusted-input', { body: JSON.stringify({ mode, cursor, mapOrigin, numericOrigin, before, accepted, final, observed, commands: await construction(page) }, null, 2), contentType: 'application/json' });\n    > 228 |   } finally { if (held) await page.mouse.up({ button: 'left' }); }\n          |                                          ^\n      229 | });\n      230 |\n        at /home/runner/work/lockstate/lockstate/tests/browser/room-template-numeric-held-primary.spec.ts:228:42\n\n    Error Context: test-results/room-template-numeric-held-d52d4--a-second-transaction-1908-/error-context.md\n\n"
+        },
+        {
+          "header": "32) tests/browser/room-template-session-preflight.spec.ts:270:3 › Full HD: public New replaces a pending preflight and keeps 18 new orders through V8 Save/Load",
+          "error": "Test timeout of 60000ms exceeded.",
+          "expectation": [],
+          "assertion": "> 117 |   await page.getByRole('button', { name: 'Room plans', exact: true }).click();",
+          "stack": [
+            "at plan (/home/runner/work/lockstate/lockstate/tests/browser/room-template-session-preflight.spec.ts:117:71)",
+            "at /home/runner/work/lockstate/lockstate/tests/browser/room-template-session-preflight.spec.ts:210:19"
+          ],
+          "bootstrap": false,
+          "block": "  32) tests/browser/room-template-session-preflight.spec.ts:270:3 › Full HD: public New replaces a pending preflight and keeps 18 new orders through V8 Save/Load \n\n    Test timeout of 60000ms exceeded.\n\n    Error: locator.click: Test timeout of 60000ms exceeded.\n    Call log:\n      - waiting for getByRole('button', { name: 'Room plans', exact: true })\n        - locator resolved to <button type=\"button\" aria-label=\"Room plans\" class=\"hud-build__template-open\">Plans</button>\n      - attempting click action\n        - waiting for element to be visible, enabled and stable\n        - element is visible, enabled and stable\n        - scrolling into view if needed\n        - done scrolling\n\n\n      115 | async function plan(page: Page, origin: { x: number; y: number }) {\n      116 |   await page.getByRole('button', { name: 'Build', exact: true }).click();\n    > 117 |   await page.getByRole('button', { name: 'Room plans', exact: true }).click();\n          |                                                                       ^\n      118 |   const dialog = page.getByRole('dialog', { name: 'Room plans', exact: true });\n      119 |   await dialog.getByRole('button', { name: 'Basic cell', exact: true }).click();\n      120 |   if (!await dialog.getByRole('spinbutton', { name: 'Plan origin X', exact: true }).isVisible()) {\n        at plan (/home/runner/work/lockstate/lockstate/tests/browser/room-template-session-preflight.spec.ts:117:71)\n        at /home/runner/work/lockstate/lockstate/tests/browser/room-template-session-preflight.spec.ts:210:19\n\n    Error Context: test-results/room-template-session-pref-379f4-orders-through-V8-Save-Load/error-context.md\n\n"
+        },
+        {
+          "header": "33) tests/browser/room-template-session-preflight.spec.ts:270:3 › Full HD: public Load replaces a pending preflight and keeps 18 new orders through V8 Save/Load",
+          "error": "Test timeout of 60000ms exceeded.",
+          "expectation": [],
+          "assertion": "> 124 |   await dialog.getByRole('spinbutton', { name: 'Plan origin Y', exact: true }).fill(String(origin.y));",
+          "stack": [
+            "at plan (/home/runner/work/lockstate/lockstate/tests/browser/room-template-session-preflight.spec.ts:124:80)",
+            "at /home/runner/work/lockstate/lockstate/tests/browser/room-template-session-preflight.spec.ts:210:19"
+          ],
+          "bootstrap": false,
+          "block": "  33) tests/browser/room-template-session-preflight.spec.ts:270:3 › Full HD: public Load replaces a pending preflight and keeps 18 new orders through V8 Save/Load \n\n    Test timeout of 60000ms exceeded.\n\n    Error: locator.fill: Test timeout of 60000ms exceeded.\n    Call log:\n      - waiting for getByRole('dialog', { name: 'Room plans', exact: true }).getByRole('spinbutton', { name: 'Plan origin Y', exact: true })\n\n\n      122 |   }\n      123 |   await dialog.getByRole('spinbutton', { name: 'Plan origin X', exact: true }).fill(String(origin.x));\n    > 124 |   await dialog.getByRole('spinbutton', { name: 'Plan origin Y', exact: true }).fill(String(origin.y));\n          |                                                                                ^\n      125 |   await expect(dialog.locator('.hud-template__dimensions')).toHaveText('4 × 7');\n      126 |   await expect(dialog.locator('.hud-template__diagram .hud-template__tile')).toHaveCount(28);\n      127 |   await expect(dialog.getByRole('status')).toHaveText('This footprint is clear.');\n        at plan (/home/runner/work/lockstate/lockstate/tests/browser/room-template-session-preflight.spec.ts:124:80)\n        at /home/runner/work/lockstate/lockstate/tests/browser/room-template-session-preflight.spec.ts:210:19\n\n    Error Context: test-results/room-template-session-pref-0464a-orders-through-V8-Save-Load/error-context.md\n\n"
+        },
+        {
+          "header": "34) tests/browser/rotated-security-console-player-build.spec.ts:141:1 › player creates storage and delivery capacity before Security Office",
+          "error": "Test timeout of 60000ms exceeded.",
+          "expectation": [],
+          "assertion": "> 91 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),",
+          "stack": [
+            "at Object.expect.poll.message (/home/runner/work/lockstate/lockstate/tests/browser/rotated-security-console-player-build.spec.ts:91:54)"
+          ],
+          "bootstrap": true,
+          "block": "  34) tests/browser/rotated-security-console-player-build.spec.ts:141:1 › player creates storage and delivery capacity before Security Office \n\n    Test timeout of 60000ms exceeded.\n\n    Error: locator.getAttribute: Test timeout of 60000ms exceeded.\n    Call log:\n      - waiting for locator('.hud-build')\n\n\n      89 |   let remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      90 |   while (remaining > 0) {\n    > 91 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),\n         |                                                      ^\n      92 |       { message: `construction must advance from ${remaining} unfinished orders` }).toBeLessThan(remaining);\n      93 |     remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      94 |   }\n        at Object.expect.poll.message (/home/runner/work/lockstate/lockstate/tests/browser/rotated-security-console-player-build.spec.ts:91:54)\n\n    Error Context: test-results/rotated-security-console-p-cd7d4-city-before-Security-Office/error-context.md\n\n"
+        },
+        {
+          "header": "35) tests/browser/shower-head-player-build.spec.ts:163:1 › player creates storage and delivery capacity before Shower Room",
+          "error": "Error: Test timeout of 60000ms exceeded",
+          "expectation": [],
+          "assertion": "> 107 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),",
+          "stack": [
+            "at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/shower-head-player-build.spec.ts:107:5)",
+            "at /home/runner/work/lockstate/lockstate/tests/browser/shower-head-player-build.spec.ts:124:3"
+          ],
+          "bootstrap": true,
+          "block": "  35) tests/browser/shower-head-player-build.spec.ts:163:1 › player creates storage and delivery capacity before Shower Room \n\n    Error: Test timeout of 60000ms exceeded\n\n      105 |   let remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      106 |   while (remaining > 0) {\n    > 107 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),\n          |     ^\n      108 |       { message: `construction must advance from ${remaining} unfinished orders` }).toBeLessThan(remaining);\n      109 |     remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      110 |   }\n        at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/shower-head-player-build.spec.ts:107:5)\n        at /home/runner/work/lockstate/lockstate/tests/browser/shower-head-player-build.spec.ts:124:3\n\n    Error Context: test-results/shower-head-player-build-p-f575c-capacity-before-Shower-Room/error-context.md\n\n"
+        },
+        {
+          "header": "36) tests/browser/utility-panel-player-build.spec.ts:136:1 › player creates storage and delivery capacity before Utility Room",
+          "error": "Test timeout of 60000ms exceeded.",
+          "expectation": [],
+          "assertion": "> 89 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),",
+          "stack": [
+            "at Object.expect.poll.message (/home/runner/work/lockstate/lockstate/tests/browser/utility-panel-player-build.spec.ts:89:54)"
+          ],
+          "bootstrap": true,
+          "block": "  36) tests/browser/utility-panel-player-build.spec.ts:136:1 › player creates storage and delivery capacity before Utility Room \n\n    Test timeout of 60000ms exceeded.\n\n    Error: locator.getAttribute: Test timeout of 60000ms exceeded.\n    Call log:\n      - waiting for locator('.hud-build')\n\n\n      87 |   let remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      88 |   while (remaining > 0) {\n    > 89 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),\n         |                                                      ^\n      90 |       { message: `construction must advance from ${remaining} unfinished orders` }).toBeLessThan(remaining);\n      91 |     remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      92 |   }\n        at Object.expect.poll.message (/home/runner/work/lockstate/lockstate/tests/browser/utility-panel-player-build.spec.ts:89:54)\n\n    Error Context: test-results/utility-panel-player-build-400d3-apacity-before-Utility-Room/error-context.md\n\n"
+        },
+        {
+          "header": "37) tests/browser/wooden-bench-player-build.spec.ts:178:1 › player creates storage and delivery capacity before Holding Cell",
+          "error": "Error: construction must advance from 14 unfinished orders",
+          "expectation": [
+            "Expected: < 14",
+            "Received:   14"
+          ],
+          "assertion": "> 120 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),",
+          "stack": [
+            "at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/wooden-bench-player-build.spec.ts:120:5)",
+            "at /home/runner/work/lockstate/lockstate/tests/browser/wooden-bench-player-build.spec.ts:138:3"
+          ],
+          "bootstrap": true,
+          "block": "  37) tests/browser/wooden-bench-player-build.spec.ts:178:1 › player creates storage and delivery capacity before Holding Cell \n\n    Error: construction must advance from 14 unfinished orders\n\n    expect(received).toBeLessThan(expected)\n\n    Expected: < 14\n    Received:   14\n\n    Call Log:\n    - Test timeout of 60000ms exceeded\n\n      118 |   let remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      119 |   while (remaining > 0) {\n    > 120 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),\n          |     ^\n      121 |       { message: `construction must advance from ${remaining} unfinished orders` }).toBeLessThan(remaining);\n      122 |     remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      123 |   }\n        at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/wooden-bench-player-build.spec.ts:120:5)\n        at /home/runner/work/lockstate/lockstate/tests/browser/wooden-bench-player-build.spec.ts:138:3\n\n    Error Context: test-results/wooden-bench-player-build--9989a-apacity-before-Holding-Cell/error-context.md\n\n"
+        },
+        {
+          "header": "38) tests/browser/wooden-chair-player-build.spec.ts:166:1 › player creates storage and delivery capacity before Staff Room",
+          "error": "Error: Test timeout of 60000ms exceeded",
+          "expectation": [],
+          "assertion": "> 111 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),",
+          "stack": [
+            "at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/wooden-chair-player-build.spec.ts:111:5)",
+            "at /home/runner/work/lockstate/lockstate/tests/browser/wooden-chair-player-build.spec.ts:128:3"
+          ],
+          "bootstrap": true,
+          "block": "  38) tests/browser/wooden-chair-player-build.spec.ts:166:1 › player creates storage and delivery capacity before Staff Room \n\n    Error: Test timeout of 60000ms exceeded\n\n      109 |   let remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      110 |   while (remaining > 0) {\n    > 111 |     await expect.poll(async () => Number(await panel.getAttribute('data-queued') ?? 0),\n          |     ^\n      112 |       { message: `construction must advance from ${remaining} unfinished orders` }).toBeLessThan(remaining);\n      113 |     remaining = Number(await panel.getAttribute('data-queued') ?? 0);\n      114 |   }\n        at finishQueuedConstruction (/home/runner/work/lockstate/lockstate/tests/browser/wooden-chair-player-build.spec.ts:111:5)\n        at /home/runner/work/lockstate/lockstate/tests/browser/wooden-chair-player-build.spec.ts:128:3\n\n    Error Context: test-results/wooden-chair-player-build--66875--capacity-before-Staff-Room/error-context.md\n"
+        }
+      ]
+    }
+  ],
+  "total": {
+    "failed": 77,
+    "passed": 910,
+    "didNotRun": 55,
+    "bootstrapFailures": 32
+  }
+}
