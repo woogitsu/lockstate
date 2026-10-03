@@ -397,6 +397,7 @@ export class ConstructionSystem implements SystemRegistration {
   private pendingRoomTemplateClaims?: (tile: TilePosition, sequence: number | undefined) => boolean;
   private pendingRoomTemplateDoorApproachClaims?: (order: BuildOrder) => boolean;
   private objectFootprintClaims?: (tile: TilePosition) => boolean;
+  private roomDoorApproachTileClaims?: (tile: TilePosition) => boolean;
 
   /** The session supplies its live template reservations after both systems exist. */
   public setPendingRoomTemplateClaims(reader: (tile: TilePosition, sequence: number | undefined) => boolean): void {
@@ -410,6 +411,10 @@ export class ConstructionSystem implements SystemRegistration {
   /** A whole wall square cannot share a standing or in-flight object tile. */
   public setObjectFootprintClaims(reader: (tile: TilePosition) => boolean): void {
     this.objectFootprintClaims = reader;
+  }
+
+  public setRoomDoorApproachTileClaims(reader: (tile: TilePosition) => boolean): void {
+    this.roomDoorApproachTileClaims = reader;
   }
 
   public constructor(
@@ -687,6 +692,7 @@ export class ConstructionSystem implements SystemRegistration {
             return;
           }
           if (this.world.getSquareStructure(tile) !== 0 || this.hasPendingSquareStructureAt(tile) ||
+              this.roomDoorApproachTileClaims?.(tile) === true ||
               this.pendingRoomTemplateClaims?.(tile, order.placementSequence) === true) {
             this.setState(order, 'failed');
             order.failReason = 'unbuildable';
@@ -1593,6 +1599,23 @@ export class ConstructionSystem implements SystemRegistration {
    * happened. `[]` when no sink is wired -- a bare `ConstructionSystem` buys
    * nothing, so nothing can have been cancelled on its behalf.
    */
+  /** Exact #687 newest-first withdrawals after one still-pending delivery is removed; no mutation. */
+  public previewMaterialWithdrawalOrderIds(itemId: string, cancelledQuantity: number): readonly string[] {
+    const sink = this.materialsProcurement;
+    if (sink === undefined) return [];
+    const remaining = [...this.orderedOrders()];
+    const held = Math.max(0, sink.heldOrInFlightOf(itemId) - cancelledQuantity);
+    const withdrawn: string[] = [];
+    for (;;) {
+      const demanded = this.pendingMaterialDemand(remaining).find(requirement => requirement.itemId === itemId)?.quantity ?? 0;
+      if (demanded <= held) return withdrawn;
+      const candidate = this.lastOrderAwaitingMaterial(itemId, remaining);
+      if (candidate === undefined) return withdrawn;
+      withdrawn.push(candidate.id);
+      remaining.splice(remaining.indexOf(candidate), 1);
+    }
+  }
+
   public withdrawOrdersAwaitingMaterial(itemId: string): readonly string[] {
     const sink = this.materialsProcurement;
     if (sink === undefined) return [];
@@ -1638,8 +1661,7 @@ export class ConstructionSystem implements SystemRegistration {
    * nothing to the demand would not move the figure the caller is driving to
    * zero, and the loop would then cancel the whole queue one order at a time.
    */
-  private lastOrderAwaitingMaterial(itemId: string): BuildOrder | undefined {
-    const ordered = this.orderedOrders();
+  private lastOrderAwaitingMaterial(itemId: string, ordered = this.orderedOrders()): BuildOrder | undefined {
     for (let index = ordered.length - 1; index >= 0; index -= 1) {
       const order = ordered[index]!;
       if (order.state !== 'approved' && order.state !== 'materials-pending') continue;

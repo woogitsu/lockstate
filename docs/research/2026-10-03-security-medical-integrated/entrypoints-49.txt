@@ -1,0 +1,17 @@
+pnpm : $ vitest run "tests/integration/room-template-occupied-material-cancel.test.ts" "tests/integration/generic-objec
+t-template-approach.test.ts" "tests/unit/oblique-camera-minimap-preconditions.test.ts" "--maxWorkers=2"
+At line:3 char:1
++ pnpm --config.verify-deps-before-run=false test tests/integration/roo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...--maxWorkers=2":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-safe-restore-integration-20261003
+
+
+ Test Files  3 passed (3)
+      Tests  49 passed (49)
+   Start at  03:28:17
+   Duration  6.25s (transform 2.27s, setup 0ms, import 6.42s, tests 5.00s, environment 0ms)
+

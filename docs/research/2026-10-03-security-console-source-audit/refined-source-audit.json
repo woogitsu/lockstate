@@ -1,0 +1,4278 @@
+[
+  {
+    "assetId": "utility.security-console.variants",
+    "source": "assets/source/blender/utility.security-console.variants.blend",
+    "sourceSha256": "7b7c755e96cc460c6afa42d8a5e4a1f44480a21a6483cea122949290848db5d7",
+    "meshCount": 9,
+    "materials": [
+      "amber status",
+      "control panel",
+      "monitor glass",
+      "warm charcoal"
+    ],
+    "sourceBounds": {
+      "min": [
+        -0.8799999952316284,
+        -0.48499998450279236,
+        0.0
+      ],
+      "max": [
+        0.8799999952316284,
+        0.3799999952316284,
+        1.0099999904632568
+      ]
+    },
+    "acceptedFit": [
+      1,
+      0.9,
+      1
+    ],
+    "declaredTarget": [
+      1,
+      0.5,
+      0.65
+    ],
+    "preparedBounds": {
+      "min": [
+        0.12000000476837158,
+        0.06350001692771912,
+        0.0
+      ],
+      "max": [
+        1.8799999952316284,
+        0.8420000076293945,
+        1.0099999904632568
+      ]
+    },
+    "allFourFootprints": [
+      {
+        "quarterTurns": 0,
+        "footprint": [
+          2,
+          1
+        ],
+        "bounds": {
+          "min": [
+            0.12000000476837158,
+            0.06350001692771912,
+            0.0
+          ],
+          "max": [
+            1.8799999952316284,
+            0.8420000076293945,
+            1.0099999904632568
+          ]
+        }
+      },
+      {
+        "quarterTurns": 1,
+        "footprint": [
+          1,
+          2
+        ],
+        "bounds": {
+          "min": [
+            0.15799999237060547,
+            0.12000000476837158,
+            0.0
+          ],
+          "max": [
+            0.9364999532699585,
+            1.8799999952316284,
+            1.0099999904632568
+          ]
+        }
+      },
+      {
+        "quarterTurns": 2,
+        "footprint": [
+          2,
+          1
+        ],
+        "bounds": {
+          "min": [
+            0.12000000476837158,
+            0.15799999237060547,
+            0.0
+          ],
+          "max": [
+            1.8799999952316284,
+            0.9364999532699585,
+            1.0099999904632568
+          ]
+        }
+      },
+      {
+        "quarterTurns": 3,
+        "footprint": [
+          1,
+          2
+        ],
+        "bounds": {
+          "min": [
+            0.06350001692771912,
+            0.12000000476837158,
+            0.0
+          ],
+          "max": [
+            0.8420000076293945,
+            1.8799999952316284,
+            1.0099999904632568
+          ]
+        }
+      }
+    ],
+    "meshes": [
+      {
+        "name": "body",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 6,
+        "rawOutwardFaces": 0,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 54,
+        "evaluatedOutwardFaces": 0,
+        "minimumEvaluatedOutwardDistance": -0.9968771710991859,
+        "maximumEvaluatedOutwardDistance": -0.36000001430511475,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.47999998927116394
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "control",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 6,
+        "rawOutwardFaces": 0,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 54,
+        "evaluatedOutwardFaces": 0,
+        "minimumEvaluatedOutwardDistance": -0.6000000238418579,
+        "maximumEvaluatedOutwardDistance": -0.02499997615814209,
+        "materials": [
+          "control panel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.4300000071525574
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.2800000011920929
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "dial",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 6,
+        "rawOutwardFaces": 0,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 54,
+        "evaluatedOutwardFaces": 0,
+        "minimumEvaluatedOutwardDistance": -0.05958804674446583,
+        "maximumEvaluatedOutwardDistance": -0.014999866485595703,
+        "materials": [
+          "amber status"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.41999998688697815
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.4699999988079071
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.2800000011920929
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "foot",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 6,
+        "rawOutwardFaces": 0,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 54,
+        "evaluatedOutwardFaces": 0,
+        "minimumEvaluatedOutwardDistance": -0.06035399343818426,
+        "maximumEvaluatedOutwardDistance": -0.03999999910593033,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.30000001192092896
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.25
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.03999999910593033
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "foot.001",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 6,
+        "rawOutwardFaces": 0,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 54,
+        "evaluatedOutwardFaces": 0,
+        "minimumEvaluatedOutwardDistance": -0.06035399343818426,
+        "maximumEvaluatedOutwardDistance": -0.03999999910593033,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.30000001192092896
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.25
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.03999999910593033
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "front",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 6,
+        "rawOutwardFaces": 0,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 54,
+        "evaluatedOutwardFaces": 0,
+        "minimumEvaluatedOutwardDistance": -0.8765414357185364,
+        "maximumEvaluatedOutwardDistance": -0.02499997615814209,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.38999998569488525
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.47999998927116394
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "monitor",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 6,
+        "rawOutwardFaces": 0,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 54,
+        "evaluatedOutwardFaces": 0,
+        "minimumEvaluatedOutwardDistance": -0.5562976747751236,
+        "maximumEvaluatedOutwardDistance": -0.019999951124191284,
+        "materials": [
+          "monitor glass"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.4300000071525574
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.550000011920929
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "status",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 6,
+        "rawOutwardFaces": 0,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 54,
+        "evaluatedOutwardFaces": 0,
+        "minimumEvaluatedOutwardDistance": -0.05958804674446583,
+        "maximumEvaluatedOutwardDistance": -0.014999866485595703,
+        "materials": [
+          "amber status"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.41999998688697815
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.4699999988079071
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.2800000011920929
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "top",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 6,
+        "rawOutwardFaces": 0,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 54,
+        "evaluatedOutwardFaces": 0,
+        "minimumEvaluatedOutwardDistance": -0.9431264698506081,
+        "maximumEvaluatedOutwardDistance": -0.049999892711639404,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.9599999785423279
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      }
+    ],
+    "totalRawInwardFaces": 54,
+    "totalEvaluatedInwardFaces": 486,
+    "totalEvaluatedFaces": 486
+  },
+  {
+    "assetId": "furniture.yard.exercise-station",
+    "source": "assets/source/blender/furniture.yard.exercise-station.blend",
+    "sourceSha256": "b1b8c2b648f3e34bff4b03755e57ece30b37b557ffcbb1bb805de4c3de3e36b7",
+    "meshCount": 32,
+    "materials": [
+      "anti-slip inset",
+      "brushed stainless grip",
+      "powder-coated petrol steel",
+      "warm safety sleeve",
+      "weatherproof charcoal rubber"
+    ],
+    "sourceBounds": {
+      "min": [
+        0.05000002682209015,
+        0.0599999874830246,
+        0.0
+      ],
+      "max": [
+        1.9499999284744263,
+        0.9399999976158142,
+        1.6974999904632568
+      ]
+    },
+    "acceptedFit": [
+      1,
+      1,
+      1
+    ],
+    "declaredTarget": [
+      1,
+      0.5,
+      0.82
+    ],
+    "preparedBounds": {
+      "min": [
+        0.05000002682209015,
+        0.0599999874830246,
+        0.0
+      ],
+      "max": [
+        1.9499999284744263,
+        0.9399999976158142,
+        1.6974999904632568
+      ]
+    },
+    "allFourFootprints": [
+      {
+        "quarterTurns": 0,
+        "footprint": [
+          2,
+          1
+        ],
+        "bounds": {
+          "min": [
+            0.05000002682209015,
+            0.0599999874830246,
+            0.0
+          ],
+          "max": [
+            1.9499999284744263,
+            0.9399999976158142,
+            1.6974999904632568
+          ]
+        }
+      },
+      {
+        "quarterTurns": 1,
+        "footprint": [
+          1,
+          2
+        ],
+        "bounds": {
+          "min": [
+            0.06000000238418579,
+            0.05000002682209015,
+            0.0
+          ],
+          "max": [
+            0.9399999976158142,
+            1.9499999284744263,
+            1.6974999904632568
+          ]
+        }
+      },
+      {
+        "quarterTurns": 2,
+        "footprint": [
+          2,
+          1
+        ],
+        "bounds": {
+          "min": [
+            0.05000007152557373,
+            0.06000000238418579,
+            0.0
+          ],
+          "max": [
+            1.9499999284744263,
+            0.9399999976158142,
+            1.6974999904632568
+          ]
+        }
+      },
+      {
+        "quarterTurns": 3,
+        "footprint": [
+          1,
+          2
+        ],
+        "bounds": {
+          "min": [
+            0.0599999874830246,
+            0.05000007152557373,
+            0.0
+          ],
+          "max": [
+            0.9399999976158142,
+            1.9499999284744263,
+            1.6974999904632568
+          ]
+        }
+      }
+    ],
+    "meshes": [
+      {
+        "name": "anchored rubber foot",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.04500000178813934,
+        "maximumEvaluatedOutwardDistance": 0.21254867315292358,
+        "materials": [
+          "weatherproof charcoal rubber"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.2200000286102295
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.22999998927116394
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.04500000178813934
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded forged edge",
+            "type": "BEVEL"
+          },
+          {
+            "name": "weighted normals",
+            "type": "WEIGHTED_NORMAL"
+          }
+        ]
+      },
+      {
+        "name": "anchored rubber foot.001",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.04500000178813934,
+        "maximumEvaluatedOutwardDistance": 0.21254875883460045,
+        "materials": [
+          "weatherproof charcoal rubber"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.2200000286102295
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.7699999809265137
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.04500000178813934
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded forged edge",
+            "type": "BEVEL"
+          },
+          {
+            "name": "weighted normals",
+            "type": "WEIGHTED_NORMAL"
+          }
+        ]
+      },
+      {
+        "name": "anchored rubber foot.002",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.04500000178813934,
+        "maximumEvaluatedOutwardDistance": 0.2125488631427288,
+        "materials": [
+          "weatherproof charcoal rubber"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            1.7799999713897705
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.22999998927116394
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.04500000178813934
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded forged edge",
+            "type": "BEVEL"
+          },
+          {
+            "name": "weighted normals",
+            "type": "WEIGHTED_NORMAL"
+          }
+        ]
+      },
+      {
+        "name": "anchored rubber foot.003",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.04500000178813934,
+        "maximumEvaluatedOutwardDistance": 0.2125488929450512,
+        "materials": [
+          "weatherproof charcoal rubber"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            1.7799999713897705
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.7699999809265137
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.04500000178813934
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded forged edge",
+            "type": "BEVEL"
+          },
+          {
+            "name": "weighted normals",
+            "type": "WEIGHTED_NORMAL"
+          }
+        ]
+      },
+      {
+        "name": "anti-slip inset",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.0059999823570251465,
+        "maximumEvaluatedOutwardDistance": 0.15449165925383568,
+        "materials": [
+          "anti-slip inset"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.2200000286102295
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.22999998927116394
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.09099999815225601
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded forged edge",
+            "type": "BEVEL"
+          },
+          {
+            "name": "weighted normals",
+            "type": "WEIGHTED_NORMAL"
+          }
+        ]
+      },
+      {
+        "name": "anti-slip inset.001",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.0059999823570251465,
+        "maximumEvaluatedOutwardDistance": 0.15449173375964165,
+        "materials": [
+          "anti-slip inset"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.2200000286102295
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.7699999809265137
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.09099999815225601
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded forged edge",
+            "type": "BEVEL"
+          },
+          {
+            "name": "weighted normals",
+            "type": "WEIGHTED_NORMAL"
+          }
+        ]
+      },
+      {
+        "name": "anti-slip inset.002",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.0059999823570251465,
+        "maximumEvaluatedOutwardDistance": 0.15449218824505806,
+        "materials": [
+          "anti-slip inset"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            1.7799999713897705
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.22999998927116394
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.09099999815225601
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded forged edge",
+            "type": "BEVEL"
+          },
+          {
+            "name": "weighted normals",
+            "type": "WEIGHTED_NORMAL"
+          }
+        ]
+      },
+      {
+        "name": "anti-slip inset.003",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.0059999823570251465,
+        "maximumEvaluatedOutwardDistance": 0.15449221059679985,
+        "materials": [
+          "anti-slip inset"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            1.7799999713897705
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.7699999809265137
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.09099999815225601
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded forged edge",
+            "type": "BEVEL"
+          },
+          {
+            "name": "weighted normals",
+            "type": "WEIGHTED_NORMAL"
+          }
+        ]
+      },
+      {
+        "name": "captive foot bolt",
+        "rawVertices": 40,
+        "rawFaces": 22,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 22,
+        "evaluatedFaces": 102,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 102,
+        "minimumEvaluatedOutwardDistance": 0.005999989807604877,
+        "maximumEvaluatedOutwardDistance": 0.016790774650871754,
+        "materials": [
+          "brushed stainless grip"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.12000000476837158
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.22999998927116394
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0989999994635582
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "machined rim",
+            "type": "BEVEL"
+          },
+          {
+            "name": "weighted normals",
+            "type": "WEIGHTED_NORMAL"
+          }
+        ]
+      },
+      {
+        "name": "captive foot bolt.001",
+        "rawVertices": 40,
+        "rawFaces": 22,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 22,
+        "evaluatedFaces": 102,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 102,
+        "minimumEvaluatedOutwardDistance": 0.005999989807601121,
+        "maximumEvaluatedOutwardDistance": 0.016790830763056874,
+        "materials": [
+          "brushed stainless grip"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.3199999928474426
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.22999998927116394
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0989999994635582
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "machined rim",
+            "type": "BEVEL"
+          },
+          {
+            "name": "weighted normals",
+            "type": "WEIGHTED_NORMAL"
+          }
+        ]
+      },
+      {
+        "name": "captive foot bolt.002",
+        "rawVertices": 40,
+        "rawFaces": 22,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 22,
+        "evaluatedFaces": 102,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 102,
+        "minimumEvaluatedOutwardDistance": 0.005999989807604877,
+        "maximumEvaluatedOutwardDistance": 0.01679084077477455,
+        "materials": [
+          "brushed stainless grip"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.12000000476837158
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.7699999809265137
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0989999994635582
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "machined rim",
+            "type": "BEVEL"
+          },
+          {
+            "name": "weighted normals",
+            "type": "WEIGHTED_NORMAL"
+          }
+        ]
+      },
+      {
+        "name": "captive foot bolt.003",
+        "rawVertices": 40,
+        "rawFaces": 22,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 22,
+        "evaluatedFaces": 102,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 102,
+        "minimumEvaluatedOutwardDistance": 0.005999989807601121,
+        "maximumEvaluatedOutwardDistance": 0.016790883615612984,
+        "materials": [
+          "brushed stainless grip"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.3199999928474426
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.7699999809265137
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0989999994635582
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "machined rim",
+            "type": "BEVEL"
+          },
+          {
+            "name": "weighted normals",
+            "type": "WEIGHTED_NORMAL"
+          }
+        ]
+      },
+      {
+        "name": "captive foot bolt.004",
+        "rawVertices": 40,
+        "rawFaces": 22,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 22,
+        "evaluatedFaces": 102,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 102,
+        "minimumEvaluatedOutwardDistance": 0.005999989807596499,
+        "maximumEvaluatedOutwardDistance": 0.01679100387264043,
+        "materials": [
+          "brushed stainless grip"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            1.6800000667572021
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.22999998927116394
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0989999994635582
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "machined rim",
+            "type": "BEVEL"
+          },
+          {
+            "name": "weighted normals",
+            "type": "WEIGHTED_NORMAL"
+          }
+        ]
+      },
+      {
+        "name": "captive foot bolt.005",
+        "rawVertices": 40,
+        "rawFaces": 22,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 22,
+        "evaluatedFaces": 102,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 102,
+        "minimumEvaluatedOutwardDistance": 0.005999989807610366,
+        "maximumEvaluatedOutwardDistance": 0.01679088652599603,
+        "materials": [
+          "brushed stainless grip"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            1.8799999952316284
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.22999998927116394
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0989999994635582
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "machined rim",
+            "type": "BEVEL"
+          },
+          {
+            "name": "weighted normals",
+            "type": "WEIGHTED_NORMAL"
+          }
+        ]
+      },
+      {
+        "name": "captive foot bolt.006",
+        "rawVertices": 40,
+        "rawFaces": 22,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 22,
+        "evaluatedFaces": 102,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 102,
+        "minimumEvaluatedOutwardDistance": 0.005999989807596499,
+        "maximumEvaluatedOutwardDistance": 0.016791015514172614,
+        "materials": [
+          "brushed stainless grip"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            1.6800000667572021
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.7699999809265137
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0989999994635582
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "machined rim",
+            "type": "BEVEL"
+          },
+          {
+            "name": "weighted normals",
+            "type": "WEIGHTED_NORMAL"
+          }
+        ]
+      },
+      {
+        "name": "captive foot bolt.007",
+        "rawVertices": 40,
+        "rawFaces": 22,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 22,
+        "evaluatedFaces": 102,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 102,
+        "minimumEvaluatedOutwardDistance": 0.005999989807610366,
+        "maximumEvaluatedOutwardDistance": 0.016790898167528212,
+        "materials": [
+          "brushed stainless grip"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            1.8799999952316284
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.7699999809265137
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0989999994635582
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "machined rim",
+            "type": "BEVEL"
+          },
+          {
+            "name": "weighted normals",
+            "type": "WEIGHTED_NORMAL"
+          }
+        ]
+      },
+      {
+        "name": "closed post cap",
+        "rawVertices": 40,
+        "rawFaces": 22,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 22,
+        "evaluatedFaces": 102,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 102,
+        "minimumEvaluatedOutwardDistance": 0.01749968528747556,
+        "maximumEvaluatedOutwardDistance": 0.06716300453990698,
+        "materials": [
+          "warm safety sleeve"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.2200000286102295
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.7699999809265137
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            1.6799999475479126
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "machined rim",
+            "type": "BEVEL"
+          },
+          {
+            "name": "weighted normals",
+            "type": "WEIGHTED_NORMAL"
+          }
+        ]
+      },
+      {
+        "name": "closed post cap.001",
+        "rawVertices": 40,
+        "rawFaces": 22,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 22,
+        "evaluatedFaces": 102,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 102,
+        "minimumEvaluatedOutwardDistance": 0.017499685287477192,
+        "maximumEvaluatedOutwardDistance": 0.06716377509292215,
+        "materials": [
+          "warm safety sleeve"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            1.7799999713897705
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.7699999809265137
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            1.6799999475479126
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "machined rim",
+            "type": "BEVEL"
+          },
+          {
+            "name": "weighted normals",
+            "type": "WEIGHTED_NORMAL"
+          }
+        ]
+      },
+      {
+        "name": "grip sleeve",
+        "rawVertices": 40,
+        "rawFaces": 22,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 22,
+        "evaluatedFaces": 102,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 102,
+        "minimumEvaluatedOutwardDistance": 0.05135918222367996,
+        "maximumEvaluatedOutwardDistance": 0.11690370016731322,
+        "materials": [
+          "warm safety sleeve"
+        ],
+        "matrixWorld": [
+          [
+            -4.371138828673793e-08,
+            0.0,
+            1.0,
+            0.4399999976158142
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.7699999809265137
+          ],
+          [
+            -1.0,
+            0.0,
+            -4.371138828673793e-08,
+            1.559999942779541
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "machined rim",
+            "type": "BEVEL"
+          },
+          {
+            "name": "weighted normals",
+            "type": "WEIGHTED_NORMAL"
+          }
+        ]
+      },
+      {
+        "name": "grip sleeve.001",
+        "rawVertices": 40,
+        "rawFaces": 22,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 22,
+        "evaluatedFaces": 102,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 102,
+        "minimumEvaluatedOutwardDistance": 0.05135918222368692,
+        "maximumEvaluatedOutwardDistance": 0.11690387153066695,
+        "materials": [
+          "warm safety sleeve"
+        ],
+        "matrixWorld": [
+          [
+            -4.371138828673793e-08,
+            0.0,
+            1.0,
+            1.559999942779541
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.7699999809265137
+          ],
+          [
+            -1.0,
+            0.0,
+            -4.371138828673793e-08,
+            1.559999942779541
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "machined rim",
+            "type": "BEVEL"
+          },
+          {
+            "name": "weighted normals",
+            "type": "WEIGHTED_NORMAL"
+          }
+        ]
+      },
+      {
+        "name": "low joint",
+        "rawVertices": 40,
+        "rawFaces": 22,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 22,
+        "evaluatedFaces": 102,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 102,
+        "minimumEvaluatedOutwardDistance": 0.019999563694000334,
+        "maximumEvaluatedOutwardDistance": 0.06123675196431577,
+        "materials": [
+          "warm safety sleeve"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.2200000286102295
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.22999998927116394
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.8799999952316284
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "machined rim",
+            "type": "BEVEL"
+          },
+          {
+            "name": "weighted normals",
+            "type": "WEIGHTED_NORMAL"
+          }
+        ]
+      },
+      {
+        "name": "low joint.001",
+        "rawVertices": 40,
+        "rawFaces": 22,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 22,
+        "evaluatedFaces": 102,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 102,
+        "minimumEvaluatedOutwardDistance": 0.019999563694000487,
+        "maximumEvaluatedOutwardDistance": 0.06123684998601675,
+        "materials": [
+          "warm safety sleeve"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            1.7799999713897705
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.22999998927116394
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.8799999952316284
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "machined rim",
+            "type": "BEVEL"
+          },
+          {
+            "name": "weighted normals",
+            "type": "WEIGHTED_NORMAL"
+          }
+        ]
+      },
+      {
+        "name": "low support",
+        "rawVertices": 40,
+        "rawFaces": 22,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 22,
+        "evaluatedFaces": 102,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 102,
+        "minimumEvaluatedOutwardDistance": 0.046421256847679615,
+        "maximumEvaluatedOutwardDistance": 0.4150002002715913,
+        "materials": [
+          "powder-coated petrol steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.2200000286102295
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.22999998927116394
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.44999998807907104
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "machined rim",
+            "type": "BEVEL"
+          },
+          {
+            "name": "weighted normals",
+            "type": "WEIGHTED_NORMAL"
+          }
+        ]
+      },
+      {
+        "name": "low support.001",
+        "rawVertices": 40,
+        "rawFaces": 22,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 22,
+        "evaluatedFaces": 102,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 102,
+        "minimumEvaluatedOutwardDistance": 0.04642049898393452,
+        "maximumEvaluatedOutwardDistance": 0.4150002002714651,
+        "materials": [
+          "powder-coated petrol steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            1.7799999713897705
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.22999998927116394
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.44999998807907104
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "machined rim",
+            "type": "BEVEL"
+          },
+          {
+            "name": "weighted normals",
+            "type": "WEIGHTED_NORMAL"
+          }
+        ]
+      },
+      {
+        "name": "parallel grip",
+        "rawVertices": 40,
+        "rawFaces": 22,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 22,
+        "evaluatedFaces": 102,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 102,
+        "minimumEvaluatedOutwardDistance": 0.04049503058195114,
+        "maximumEvaluatedOutwardDistance": 0.8099998235703326,
+        "materials": [
+          "brushed stainless grip"
+        ],
+        "matrixWorld": [
+          [
+            -4.371138828673793e-08,
+            0.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.22999998927116394
+          ],
+          [
+            -1.0,
+            0.0,
+            -4.371138828673793e-08,
+            0.8700000047683716
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "machined rim",
+            "type": "BEVEL"
+          },
+          {
+            "name": "weighted normals",
+            "type": "WEIGHTED_NORMAL"
+          }
+        ]
+      },
+      {
+        "name": "parallel sleeve",
+        "rawVertices": 40,
+        "rawFaces": 22,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 22,
+        "evaluatedFaces": 102,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 102,
+        "minimumEvaluatedOutwardDistance": 0.050371909514074165,
+        "maximumEvaluatedOutwardDistance": 0.10275162011384964,
+        "materials": [
+          "warm safety sleeve"
+        ],
+        "matrixWorld": [
+          [
+            -4.371138828673793e-08,
+            0.0,
+            1.0,
+            0.48000001907348633
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.22999998927116394
+          ],
+          [
+            -1.0,
+            0.0,
+            -4.371138828673793e-08,
+            0.8700000047683716
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "machined rim",
+            "type": "BEVEL"
+          },
+          {
+            "name": "weighted normals",
+            "type": "WEIGHTED_NORMAL"
+          }
+        ]
+      },
+      {
+        "name": "parallel sleeve.001",
+        "rawVertices": 40,
+        "rawFaces": 22,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 22,
+        "evaluatedFaces": 102,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 102,
+        "minimumEvaluatedOutwardDistance": 0.05037190951406587,
+        "maximumEvaluatedOutwardDistance": 0.10275158914737403,
+        "materials": [
+          "warm safety sleeve"
+        ],
+        "matrixWorld": [
+          [
+            -4.371138828673793e-08,
+            0.0,
+            1.0,
+            1.5199999809265137
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.22999998927116394
+          ],
+          [
+            -1.0,
+            0.0,
+            -4.371138828673793e-08,
+            0.8700000047683716
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "machined rim",
+            "type": "BEVEL"
+          },
+          {
+            "name": "weighted normals",
+            "type": "WEIGHTED_NORMAL"
+          }
+        ]
+      },
+      {
+        "name": "pull-up bridge",
+        "rawVertices": 40,
+        "rawFaces": 22,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 22,
+        "evaluatedFaces": 102,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 102,
+        "minimumEvaluatedOutwardDistance": 0.0414827940985514,
+        "maximumEvaluatedOutwardDistance": 0.8099999427795274,
+        "materials": [
+          "brushed stainless grip"
+        ],
+        "matrixWorld": [
+          [
+            -4.371138828673793e-08,
+            0.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.7699999809265137
+          ],
+          [
+            -1.0,
+            0.0,
+            -4.371138828673793e-08,
+            1.559999942779541
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "machined rim",
+            "type": "BEVEL"
+          },
+          {
+            "name": "weighted normals",
+            "type": "WEIGHTED_NORMAL"
+          }
+        ]
+      },
+      {
+        "name": "side stabilizer",
+        "rawVertices": 40,
+        "rawFaces": 22,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 22,
+        "evaluatedFaces": 102,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 102,
+        "minimumEvaluatedOutwardDistance": 0.030618237797170877,
+        "maximumEvaluatedOutwardDistance": 0.2700000405311662,
+        "materials": [
+          "powder-coated petrol steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.2200000286102295
+          ],
+          [
+            0.0,
+            -4.371138828673793e-08,
+            -1.0,
+            0.5
+          ],
+          [
+            0.0,
+            1.0,
+            -4.371138828673793e-08,
+            0.27000001072883606
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "machined rim",
+            "type": "BEVEL"
+          },
+          {
+            "name": "weighted normals",
+            "type": "WEIGHTED_NORMAL"
+          }
+        ]
+      },
+      {
+        "name": "side stabilizer.001",
+        "rawVertices": 40,
+        "rawFaces": 22,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 22,
+        "evaluatedFaces": 102,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 102,
+        "minimumEvaluatedOutwardDistance": 0.030618237738963217,
+        "maximumEvaluatedOutwardDistance": 0.27000004053116233,
+        "materials": [
+          "powder-coated petrol steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            1.7799999713897705
+          ],
+          [
+            0.0,
+            -4.371138828673793e-08,
+            -1.0,
+            0.5
+          ],
+          [
+            0.0,
+            1.0,
+            -4.371138828673793e-08,
+            0.27000001072883606
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "machined rim",
+            "type": "BEVEL"
+          },
+          {
+            "name": "weighted normals",
+            "type": "WEIGHTED_NORMAL"
+          }
+        ]
+      },
+      {
+        "name": "tall uprights",
+        "rawVertices": 40,
+        "rawFaces": 22,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 22,
+        "evaluatedFaces": 102,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 102,
+        "minimumEvaluatedOutwardDistance": 0.054322672076523304,
+        "maximumEvaluatedOutwardDistance": 0.8099998831748999,
+        "materials": [
+          "powder-coated petrol steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.2200000286102295
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.7699999809265137
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.8600000143051147
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "machined rim",
+            "type": "BEVEL"
+          },
+          {
+            "name": "weighted normals",
+            "type": "WEIGHTED_NORMAL"
+          }
+        ]
+      },
+      {
+        "name": "tall uprights.001",
+        "rawVertices": 40,
+        "rawFaces": 22,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 22,
+        "evaluatedFaces": 102,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 102,
+        "minimumEvaluatedOutwardDistance": 0.054322373936884105,
+        "maximumEvaluatedOutwardDistance": 0.8099998831749355,
+        "materials": [
+          "powder-coated petrol steel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            1.7799999713897705
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.7699999809265137
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.8600000143051147
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "machined rim",
+            "type": "BEVEL"
+          },
+          {
+            "name": "weighted normals",
+            "type": "WEIGHTED_NORMAL"
+          }
+        ]
+      }
+    ],
+    "totalRawInwardFaces": 0,
+    "totalEvaluatedInwardFaces": 0,
+    "totalEvaluatedFaces": 2880
+  },
+  {
+    "assetId": "utility.security-console.angled",
+    "source": "assets/source/blender/utility.security-console.angled.blend",
+    "sourceSha256": "5b32b08dfed1b1dad0e79e4dc3f618937f7815f4208594c64b0d7b1c0d81207f",
+    "meshCount": 39,
+    "materials": [
+      "amber status",
+      "control panel",
+      "monitor glass",
+      "warm charcoal"
+    ],
+    "sourceBounds": {
+      "min": [
+        -0.8799999952316284,
+        -0.5244999527931213,
+        0.0
+      ],
+      "max": [
+        0.8799999952316284,
+        0.3799999952316284,
+        1.0099999904632568
+      ]
+    },
+    "acceptedFit": [
+      1,
+      0.9,
+      1
+    ],
+    "declaredTarget": [
+      1,
+      0.5,
+      0.65
+    ],
+    "preparedBounds": {
+      "min": [
+        0.12000000476837158,
+        0.027950048446655273,
+        0.0
+      ],
+      "max": [
+        1.8799999952316284,
+        0.8420000076293945,
+        1.0099999904632568
+      ]
+    },
+    "allFourFootprints": [
+      {
+        "quarterTurns": 0,
+        "footprint": [
+          2,
+          1
+        ],
+        "bounds": {
+          "min": [
+            0.12000000476837158,
+            0.027950048446655273,
+            0.0
+          ],
+          "max": [
+            1.8799999952316284,
+            0.8420000076293945,
+            1.0099999904632568
+          ]
+        }
+      },
+      {
+        "quarterTurns": 1,
+        "footprint": [
+          1,
+          2
+        ],
+        "bounds": {
+          "min": [
+            0.15799999237060547,
+            0.12000000476837158,
+            0.0
+          ],
+          "max": [
+            0.9720499515533447,
+            1.8799999952316284,
+            1.0099999904632568
+          ]
+        }
+      },
+      {
+        "quarterTurns": 2,
+        "footprint": [
+          2,
+          1
+        ],
+        "bounds": {
+          "min": [
+            0.12000000476837158,
+            0.15799999237060547,
+            0.0
+          ],
+          "max": [
+            1.8799999952316284,
+            0.9720499515533447,
+            1.0099999904632568
+          ]
+        }
+      },
+      {
+        "quarterTurns": 3,
+        "footprint": [
+          1,
+          2
+        ],
+        "bounds": {
+          "min": [
+            0.027950048446655273,
+            0.12000000476837158,
+            0.0
+          ],
+          "max": [
+            0.8420000076293945,
+            1.8799999952316284,
+            1.0099999904632568
+          ]
+        }
+      }
+    ],
+    "meshes": [
+      {
+        "name": "angled-security.control keycap row0 column0",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.010999977588653564,
+        "maximumEvaluatedOutwardDistance": 0.036546521820127964,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.25
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.4699999988079071
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.2549999952316284
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-security.control keycap row0 column1",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.010999977588653564,
+        "maximumEvaluatedOutwardDistance": 0.03654650133103132,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.15000000596046448
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.4699999988079071
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.2549999952316284
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-security.control keycap row0 column2",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.010999977588653564,
+        "maximumEvaluatedOutwardDistance": 0.03654647525399923,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.05000000074505806
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.4699999988079071
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.2549999952316284
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-security.control keycap row0 column3",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.010999977588653564,
+        "maximumEvaluatedOutwardDistance": 0.03654646221548319,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.05000000074505806
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.4699999988079071
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.2549999952316284
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-security.control keycap row0 column4",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.010999977588653564,
+        "maximumEvaluatedOutwardDistance": 0.036546467803418636,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.15000000596046448
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.4699999988079071
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.2549999952316284
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-security.control keycap row0 column5",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.010999977588653564,
+        "maximumEvaluatedOutwardDistance": 0.036546493880450726,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.25
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.4699999988079071
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.2549999952316284
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-security.control keycap row1 column0",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.010999977588653564,
+        "maximumEvaluatedOutwardDistance": 0.03654653113335371,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.25
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.4699999988079071
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.3050000071525574
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-security.control keycap row1 column1",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.010999977588653564,
+        "maximumEvaluatedOutwardDistance": 0.03654651064425707,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.15000000596046448
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.4699999988079071
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.3050000071525574
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-security.control keycap row1 column2",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.010999977588653564,
+        "maximumEvaluatedOutwardDistance": 0.03654648456722498,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.05000000074505806
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.4699999988079071
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.3050000071525574
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-security.control keycap row1 column3",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.010999977588653564,
+        "maximumEvaluatedOutwardDistance": 0.036546471528708935,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.05000000074505806
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.4699999988079071
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.3050000071525574
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-security.control keycap row1 column4",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.010999977588653564,
+        "maximumEvaluatedOutwardDistance": 0.03654647711664438,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.15000000596046448
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.4699999988079071
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.3050000071525574
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-security.control keycap row1 column5",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.010999977588653564,
+        "maximumEvaluatedOutwardDistance": 0.03654650319367647,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.25
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.4699999988079071
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.3050000071525574
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-security.control mount fastener -0.42 0.218",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.003999918699266745,
+        "maximumEvaluatedOutwardDistance": 0.006779628340154886,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.41999998688697815
+          ],
+          [
+            0.0,
+            -4.371138828673793e-08,
+            -1.0,
+            -0.47999998927116394
+          ],
+          [
+            0.0,
+            1.0,
+            -4.371138828673793e-08,
+            0.21799999475479126
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-security.control mount fastener -0.42 0.342",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.003999918699274561,
+        "maximumEvaluatedOutwardDistance": 0.006779740215279162,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.41999998688697815
+          ],
+          [
+            0.0,
+            -4.371138828673793e-08,
+            -1.0,
+            -0.47999998927116394
+          ],
+          [
+            0.0,
+            1.0,
+            -4.371138828673793e-08,
+            0.34200000762939453
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-security.control mount fastener 0.42 0.218",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.0039999186992669775,
+        "maximumEvaluatedOutwardDistance": 0.006779555696994066,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.41999998688697815
+          ],
+          [
+            0.0,
+            -4.371138828673793e-08,
+            -1.0,
+            -0.47999998927116394
+          ],
+          [
+            0.0,
+            1.0,
+            -4.371138828673793e-08,
+            0.21799999475479126
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-security.control mount fastener 0.42 0.342",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.003999918699274793,
+        "maximumEvaluatedOutwardDistance": 0.006779701332561672,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.41999998688697815
+          ],
+          [
+            0.0,
+            -4.371138828673793e-08,
+            -1.0,
+            -0.47999998927116394
+          ],
+          [
+            0.0,
+            1.0,
+            -4.371138828673793e-08,
+            0.34200000762939453
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-security.control panel stop 0.218",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.005999967455863953,
+        "maximumEvaluatedOutwardDistance": 0.6050000190734863,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.44699999690055847
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.21799999475479126
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-security.control panel stop 0.343",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.006000012159347534,
+        "maximumEvaluatedOutwardDistance": 0.6050000190734863,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.44699999690055847
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.34299999475479126
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-security.monitor bezel fastener -0.55 0.377",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.004499435424808746,
+        "maximumEvaluatedOutwardDistance": 0.007890903041698039,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.550000011920929
+          ],
+          [
+            0.0,
+            -4.371138828673793e-08,
+            -1.0,
+            -0.4699999988079071
+          ],
+          [
+            0.0,
+            1.0,
+            -4.371138828673793e-08,
+            0.37700000405311584
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-security.monitor bezel fastener -0.55 0.723",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.004499435424799627,
+        "maximumEvaluatedOutwardDistance": 0.007890838256571442,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.550000011920929
+          ],
+          [
+            0.0,
+            -4.371138828673793e-08,
+            -1.0,
+            -0.4699999988079071
+          ],
+          [
+            0.0,
+            1.0,
+            -4.371138828673793e-08,
+            0.7229999899864197
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-security.monitor bezel fastener 0.55 0.377",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.0044994354248142215,
+        "maximumEvaluatedOutwardDistance": 0.007890715729445219,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.550000011920929
+          ],
+          [
+            0.0,
+            -4.371138828673793e-08,
+            -1.0,
+            -0.4699999988079071
+          ],
+          [
+            0.0,
+            1.0,
+            -4.371138828673793e-08,
+            0.37700000405311584
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-security.monitor bezel fastener 0.55 0.723",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.004499435424805103,
+        "maximumEvaluatedOutwardDistance": 0.007890574692282826,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.550000011920929
+          ],
+          [
+            0.0,
+            -4.371138828673793e-08,
+            -1.0,
+            -0.4699999988079071
+          ],
+          [
+            0.0,
+            1.0,
+            -4.371138828673793e-08,
+            0.7229999899864197
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-security.monitor bezel horizontal 0.373",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.010999917984008789,
+        "maximumEvaluatedOutwardDistance": 0.5649999976158142,
+        "materials": [
+          "control panel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.45500001311302185
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.37299999594688416
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-security.monitor bezel horizontal 0.727",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.010999917984008789,
+        "maximumEvaluatedOutwardDistance": 0.5649999976158142,
+        "materials": [
+          "control panel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.45500001311302185
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.7269999980926514
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-security.monitor bezel vertical -1",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.010999917984008789,
+        "maximumEvaluatedOutwardDistance": 0.17900007963180542,
+        "materials": [
+          "control panel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.5519999861717224
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.45500001311302185
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.550000011920929
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-security.monitor bezel vertical 1",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.010999917984008789,
+        "maximumEvaluatedOutwardDistance": 0.17900007963180542,
+        "materials": [
+          "control panel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.5519999861717224
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.45500001311302185
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.550000011920929
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-security.rotary dial barrel",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.020999848842620936,
+        "maximumEvaluatedOutwardDistance": 0.05140379525255412,
+        "materials": [
+          "control panel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.41999998688697815
+          ],
+          [
+            0.0,
+            -4.371138828673793e-08,
+            -1.0,
+            -0.4970000088214874
+          ],
+          [
+            0.0,
+            1.0,
+            -4.371138828673793e-08,
+            0.2800000011920929
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-security.rotary dial collar",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.00799968838691806,
+        "maximumEvaluatedOutwardDistance": 0.07364377379418033,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.41999998688697815
+          ],
+          [
+            0.0,
+            -4.371138828673793e-08,
+            -1.0,
+            -0.4690000116825104
+          ],
+          [
+            0.0,
+            1.0,
+            -4.371138828673793e-08,
+            0.2800000011920929
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-security.rotary dial raised amber pointer",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.003999948501586914,
+        "maximumEvaluatedOutwardDistance": 0.01561845385003835,
+        "materials": [
+          "amber status"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.41999998688697815
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.5199999809265137
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.29600000381469727
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-security.status indicator collar",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.007999688386918537,
+        "maximumEvaluatedOutwardDistance": 0.07364372164011615,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.41999998688697815
+          ],
+          [
+            0.0,
+            -4.371138828673793e-08,
+            -1.0,
+            -0.4690000116825104
+          ],
+          [
+            0.0,
+            1.0,
+            -4.371138828673793e-08,
+            0.2800000011920929
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "body",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.36000001430511475,
+        "maximumEvaluatedOutwardDistance": 0.9968771710991859,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.47999998927116394
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "control",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.02499997615814209,
+        "maximumEvaluatedOutwardDistance": 0.6000000238418579,
+        "materials": [
+          "control panel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.4300000071525574
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.2800000011920929
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "dial",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.014999866485595703,
+        "maximumEvaluatedOutwardDistance": 0.05958804674446583,
+        "materials": [
+          "amber status"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.41999998688697815
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.4699999988079071
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.2800000011920929
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "foot",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.03999999910593033,
+        "maximumEvaluatedOutwardDistance": 0.06035399343818426,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.30000001192092896
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.25
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.03999999910593033
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "foot.001",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.03999999910593033,
+        "maximumEvaluatedOutwardDistance": 0.06035399343818426,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.30000001192092896
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.25
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.03999999910593033
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "front",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.02499997615814209,
+        "maximumEvaluatedOutwardDistance": 0.8765413761138916,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.38999998569488525
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.47999998927116394
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "monitor",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.019999951124191284,
+        "maximumEvaluatedOutwardDistance": 0.5562976524233818,
+        "materials": [
+          "monitor glass"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.4300000071525574
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.550000011920929
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "status",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.014999866485595703,
+        "maximumEvaluatedOutwardDistance": 0.05958804674446583,
+        "materials": [
+          "amber status"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.41999998688697815
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.4699999988079071
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.2800000011920929
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "top",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.049999892711639404,
+        "maximumEvaluatedOutwardDistance": 0.9431264698506081,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.9599999785423279
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      }
+    ],
+    "totalRawInwardFaces": 0,
+    "totalEvaluatedInwardFaces": 0,
+    "totalEvaluatedFaces": 3294
+  }
+]

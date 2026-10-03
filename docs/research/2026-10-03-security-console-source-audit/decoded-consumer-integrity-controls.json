@@ -1,0 +1,18 @@
+{
+  "controls": [
+    {
+      "control": "actual-opaque-PNG-edge-with-matching-digest-and-name",
+      "exitCode": 1,
+      "frameHashAndFilenameMatch": true,
+      "failure": "decoded transparency border"
+    },
+    {
+      "control": "actual-canonical-descriptor-target-change",
+      "exitCode": 1
+    }
+  ],
+  "exactRestoredUnitExitCode": 0,
+  "pngSha256": "2d2bfc6f386715945008837124f3877e7fefa1ca9f8b16e8a9684dfd452a12fa",
+  "descriptorSha256": "2eefd13f5b349d2ad95bd5bcd55aa8f71bc3a0d125b730b000d6ebeef2f9994a",
+  "bothFilesByteExactlyRestored": true
+}

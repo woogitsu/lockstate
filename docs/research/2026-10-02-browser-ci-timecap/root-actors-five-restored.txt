@@ -1,0 +1,27 @@
+node : [2m[WebServer] [22m(node:25644) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:4 char:1
++ node --experimental-transform-types --disable-warning=ExperimentalWar ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m
+[2m[WebServer] [22m  VITE v8.2.2  ready in 341 ms
+[2m[WebServer] [22m
+[2m[WebServer] [22m  ➜  Local:   http://127.0.0.1:5417/
+LOCKSTATE_BROWSER_PREWARM_READY elapsedMs=5331
+
+Running 5 tests using 1 worker
+
+(node:63884) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:63884) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\oblique-authored-actors.spec.ts:93:1 › canonical cook medic and staff frames produce visible Blender pixels (9.4s)
+  ok 2 tests\browser\oblique-authored-actors.spec.ts:131:1 › authored prisoner and guard pixels share wall depth at Full HD (6.0s)
+  ok 3 tests\browser\oblique-authored-actors.spec.ts:168:1 › moving and replaced visible actors reuse actual Phaser images (3.9s)
+  ok 4 tests\browser\oblique-authored-actors.spec.ts:222:1 › moving actors keep authored solid images while their depth order changes (6.3s)
+  ok 5 tests\browser\oblique-authored-actors.spec.ts:282:1 › same-role actor headings remain independent and update while standing still (7.1s)
+
+  5 passed (41.1s)

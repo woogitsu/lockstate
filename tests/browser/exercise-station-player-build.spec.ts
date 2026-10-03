@@ -94,7 +94,7 @@ test('actual angled Build completes a two-square exercise station and preserves 
   await page.locator('[data-buildable="exercise-station"]').click();
   await page.locator('.hud-build__arm').click();
   await page.mouse.move(940,540);
-  await expect(page.locator('.hud-build__target-value')).toHaveText('7, 7');
+  await expect(page.locator('.hud-build__target-value')).toHaveText('2 × 1 tiles at 7, 7');
   await expect(page.locator('[data-buildable="exercise-station"]')).toContainText('80');
   const ghostImage=await page.locator('#game-root canvas').screenshot();
   const ghostSamples=await page.evaluate(async base64=>{

@@ -1,0 +1,1240 @@
+{
+  "sourceSha256": "5b32b08dfed1b1dad0e79e4dc3f618937f7815f4208594c64b0d7b1c0d81207f",
+  "manifestSha256": "2eefd13f5b349d2ad95bd5bcd55aa8f71bc3a0d125b730b000d6ebeef2f9994a",
+  "repeatByteEqualCount": 73,
+  "repeatFileCount": 73,
+  "minimumTransparentBorderPixels": 59,
+  "frames": [
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 20,
+      "alphaBoundsPx": [
+        71,
+        99,
+        185,
+        174
+      ],
+      "transparentBorderPixels": 71,
+      "sha256": "2d2bfc6f386715945008837124f3877e7fefa1ca9f8b16e8a9684dfd452a12fa"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 30,
+      "alphaBoundsPx": [
+        71,
+        97,
+        185,
+        174
+      ],
+      "transparentBorderPixels": 71,
+      "sha256": "6b0696213e9a934f1ca7989b4e199fe9c9c9dc074e805a6326b005a34799dfb5"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 40,
+      "alphaBoundsPx": [
+        71,
+        96,
+        185,
+        173
+      ],
+      "transparentBorderPixels": 71,
+      "sha256": "5fcb3897082d2d14f513ebb66936a6e93c2bc40b4826de88643c0a87a9483674"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 50,
+      "alphaBoundsPx": [
+        71,
+        97,
+        185,
+        170
+      ],
+      "transparentBorderPixels": 71,
+      "sha256": "fb37d744e2acd937b6608f8787a3a6b10d50d992fc12854481a3876a6bc931c9"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 60,
+      "alphaBoundsPx": [
+        71,
+        98,
+        185,
+        168
+      ],
+      "transparentBorderPixels": 71,
+      "sha256": "51da9701d985ea1b4b36105d09278aaf05b7805e37d338ddee1beeabe8904b05"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 70,
+      "alphaBoundsPx": [
+        71,
+        100,
+        185,
+        166
+      ],
+      "transparentBorderPixels": 71,
+      "sha256": "e0e215575495990b5a8b31b66e0db666b97d11528c69cbbf2f1ca906d5ff599e"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 20,
+      "alphaBoundsPx": [
+        68,
+        91,
+        188,
+        182
+      ],
+      "transparentBorderPixels": 68,
+      "sha256": "899a31d160c2279259120eea07b56e822861dc7fbee887ba0359d4797233f4f2"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 30,
+      "alphaBoundsPx": [
+        68,
+        85,
+        188,
+        185
+      ],
+      "transparentBorderPixels": 68,
+      "sha256": "7725d4388e69c8f34ecfc23a3714dfdbfc214a1b53f9ea5b9b6b88e30898fe42"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 40,
+      "alphaBoundsPx": [
+        68,
+        81,
+        188,
+        187
+      ],
+      "transparentBorderPixels": 68,
+      "sha256": "c8867d214cf2879ebf2c1613e5f476d9cd23b6b5d0fdd790a936196cfd5943a2"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 50,
+      "alphaBoundsPx": [
+        68,
+        78,
+        188,
+        188
+      ],
+      "transparentBorderPixels": 68,
+      "sha256": "a55b3d5d7329db9f7ab0036d0271c218f316ed412e45d55022a764f13bf20c04"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 60,
+      "alphaBoundsPx": [
+        68,
+        77,
+        188,
+        186
+      ],
+      "transparentBorderPixels": 68,
+      "sha256": "2f8b1f34a1613618867ce0417ee06596549953eab4d8e06bac81c7c07d699331"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 70,
+      "alphaBoundsPx": [
+        68,
+        77,
+        188,
+        183
+      ],
+      "transparentBorderPixels": 68,
+      "sha256": "3ff51a7aca3eb7b2883875a7f132b64b18b292e0d985d6f6a973d0d4e8484a62"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 20,
+      "alphaBoundsPx": [
+        81,
+        86,
+        175,
+        186
+      ],
+      "transparentBorderPixels": 70,
+      "sha256": "877b395aca12efd3e324b1cd28531d1678c6bb60fba6c49e0c8e34a3e2fd0c5c"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 30,
+      "alphaBoundsPx": [
+        81,
+        79,
+        175,
+        192
+      ],
+      "transparentBorderPixels": 64,
+      "sha256": "8c5e602e523f7c1b9e0dba1a19311178deef4a11dd4c7fe37f9cb3de5c1d399f"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 40,
+      "alphaBoundsPx": [
+        81,
+        73,
+        175,
+        195
+      ],
+      "transparentBorderPixels": 61,
+      "sha256": "a5e019e1fbfbe58c6818b1fbe060d267cfb00742cd5c254b9a2733938d2f66d4"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 50,
+      "alphaBoundsPx": [
+        81,
+        68,
+        175,
+        197
+      ],
+      "transparentBorderPixels": 59,
+      "sha256": "1da8e69f589a95e96c9e4a6632a807fdf8423b539636591d6770adba63ccdd73"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 60,
+      "alphaBoundsPx": [
+        81,
+        66,
+        175,
+        197
+      ],
+      "transparentBorderPixels": 59,
+      "sha256": "abe5efaa34c6d62882c8f2fdb330d38d3fe7ed5cb9a4d13e64391fbae7995b68"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 70,
+      "alphaBoundsPx": [
+        81,
+        65,
+        175,
+        195
+      ],
+      "transparentBorderPixels": 61,
+      "sha256": "ea510125e02ee6af7cd8fa874460756533e446bc85cade13598350e6f30c60c2"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 20,
+      "alphaBoundsPx": [
+        97,
+        87,
+        151,
+        185
+      ],
+      "transparentBorderPixels": 71,
+      "sha256": "14ecce53226242977919a32d736a1e82f6ce68c2e5b07948831d17e3112b833b"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 30,
+      "alphaBoundsPx": [
+        97,
+        80,
+        151,
+        191
+      ],
+      "transparentBorderPixels": 65,
+      "sha256": "21b0d914cb56b0dbc108047626404fc7dc340bd2a207b8c96f311d3fdd304e04"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 40,
+      "alphaBoundsPx": [
+        97,
+        74,
+        151,
+        195
+      ],
+      "transparentBorderPixels": 61,
+      "sha256": "8d1b2504087ea9c9f5f7c2b45929c2aa976989ba488560ce049649ed5ef15aff"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 50,
+      "alphaBoundsPx": [
+        97,
+        70,
+        151,
+        196
+      ],
+      "transparentBorderPixels": 60,
+      "sha256": "b27ee605e8fac16a1729c46c82e35d9f6b4ef2f0c378b200de39a21ccfe7006b"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 60,
+      "alphaBoundsPx": [
+        97,
+        68,
+        151,
+        196
+      ],
+      "transparentBorderPixels": 60,
+      "sha256": "b90e369c50dbda5240ed5ff528fad19116a202e05a567c06cc5f52661bcdcc29"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 70,
+      "alphaBoundsPx": [
+        97,
+        67,
+        151,
+        194
+      ],
+      "transparentBorderPixels": 62,
+      "sha256": "7ba8f41d4bbc699db867457437771a9116c44a5341a665f19e6f34b912b0ce83"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 20,
+      "alphaBoundsPx": [
+        81,
+        86,
+        175,
+        186
+      ],
+      "transparentBorderPixels": 70,
+      "sha256": "88cb38ed6c92036681e569ccc245714630d7fb5a9baf7b17981c2c250fc8d549"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 30,
+      "alphaBoundsPx": [
+        81,
+        79,
+        175,
+        192
+      ],
+      "transparentBorderPixels": 64,
+      "sha256": "71cc7b1e2fe3a94a5697f5e8c218721e5d958da564ec2a3f3b72eb969c24d799"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 40,
+      "alphaBoundsPx": [
+        81,
+        73,
+        175,
+        195
+      ],
+      "transparentBorderPixels": 61,
+      "sha256": "86e3f92e7225a2a68e2f2cf0e95a11643c0d1cf493056db4db4b2403a58c993a"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 50,
+      "alphaBoundsPx": [
+        81,
+        68,
+        175,
+        197
+      ],
+      "transparentBorderPixels": 59,
+      "sha256": "58b100e299443a95b3a7736929d36c36460316f648a2f4784be75d0dc6b2564c"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 60,
+      "alphaBoundsPx": [
+        81,
+        66,
+        175,
+        197
+      ],
+      "transparentBorderPixels": 59,
+      "sha256": "15232e804ead3685682ff1256572295347d07a85822dea6709d347ed8c251aae"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 70,
+      "alphaBoundsPx": [
+        81,
+        65,
+        175,
+        195
+      ],
+      "transparentBorderPixels": 61,
+      "sha256": "0dc1982e3356eb0556035591e5d84443a305d008ad5b9dd025c6ee27c816083a"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 20,
+      "alphaBoundsPx": [
+        68,
+        91,
+        188,
+        182
+      ],
+      "transparentBorderPixels": 68,
+      "sha256": "f1408492657cfaa73bb7dc94e0ea2f9a9e75720199af788b58d752c569dc12f2"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 30,
+      "alphaBoundsPx": [
+        68,
+        85,
+        188,
+        185
+      ],
+      "transparentBorderPixels": 68,
+      "sha256": "ab71c1250876aceae62b943f9aea8e42a261c9753fe1db7081013c494af46efc"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 40,
+      "alphaBoundsPx": [
+        68,
+        81,
+        188,
+        187
+      ],
+      "transparentBorderPixels": 68,
+      "sha256": "063e6676af39760e487741c206199fd23e0e9098d1fc3be3653ab4632af35409"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 50,
+      "alphaBoundsPx": [
+        68,
+        78,
+        188,
+        188
+      ],
+      "transparentBorderPixels": 68,
+      "sha256": "ede002d509b32a638866a0677d4170e8d698300ff9118051a7e36d529ae5a4b6"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 60,
+      "alphaBoundsPx": [
+        68,
+        77,
+        188,
+        186
+      ],
+      "transparentBorderPixels": 68,
+      "sha256": "525d5708205ab950003103bd007ab02ca362a681068af94e4fbed1217153f9ab"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 70,
+      "alphaBoundsPx": [
+        68,
+        77,
+        188,
+        183
+      ],
+      "transparentBorderPixels": 68,
+      "sha256": "6bbf1fb71953e64ff90060f77524884418324278f46ec4c87b2190b523ff0750"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 20,
+      "alphaBoundsPx": [
+        71,
+        99,
+        185,
+        174
+      ],
+      "transparentBorderPixels": 71,
+      "sha256": "e9971c4694c4278436baffc2b02d445d673ce906355c398d6ce4af962e6a3136"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 30,
+      "alphaBoundsPx": [
+        71,
+        97,
+        185,
+        174
+      ],
+      "transparentBorderPixels": 71,
+      "sha256": "d748f17c97eb4f06face8d943f2e963e6950515c92a1fcceee59be3d03f3d5b9"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 40,
+      "alphaBoundsPx": [
+        71,
+        96,
+        185,
+        173
+      ],
+      "transparentBorderPixels": 71,
+      "sha256": "72341d09df45978cde93c93d877a23fdd4262464a380f7151cacf0167bdbf086"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 50,
+      "alphaBoundsPx": [
+        71,
+        97,
+        185,
+        170
+      ],
+      "transparentBorderPixels": 71,
+      "sha256": "bc330b90b317775da7e54bb2dd418414489a3f0b4514840b65205b4b06c47e69"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 60,
+      "alphaBoundsPx": [
+        71,
+        98,
+        185,
+        166
+      ],
+      "transparentBorderPixels": 71,
+      "sha256": "0efcacc29fcd82ec193fdd5ce948441b0a217d691e74f6a4bf48301fb49ee75a"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 70,
+      "alphaBoundsPx": [
+        71,
+        100,
+        185,
+        161
+      ],
+      "transparentBorderPixels": 71,
+      "sha256": "011bf2efaff857f62ce3a9ce004aa95bde5311f8a0d0ed2adb9863279997e569"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 20,
+      "alphaBoundsPx": [
+        68,
+        91,
+        188,
+        182
+      ],
+      "transparentBorderPixels": 68,
+      "sha256": "bccd204beb1e4d187f7c9ec939d0232334b6df0935b7cb0c8e750b1ce2754ce3"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 30,
+      "alphaBoundsPx": [
+        68,
+        85,
+        188,
+        185
+      ],
+      "transparentBorderPixels": 68,
+      "sha256": "53f15d35906ab6d4cb74cf3ae1c5d7317d1350bc2718517eb37ae9d4e8580b38"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 40,
+      "alphaBoundsPx": [
+        68,
+        81,
+        188,
+        187
+      ],
+      "transparentBorderPixels": 68,
+      "sha256": "0250d9a1b137d6d87d3677d8cb94fe650619b6c76a3a1d874ee36c29fcc34a13"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 50,
+      "alphaBoundsPx": [
+        68,
+        78,
+        188,
+        188
+      ],
+      "transparentBorderPixels": 68,
+      "sha256": "70b26e66055e8fcfe344a687afb97455745882430fd990838fe0e400b4084540"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 60,
+      "alphaBoundsPx": [
+        68,
+        77,
+        188,
+        186
+      ],
+      "transparentBorderPixels": 68,
+      "sha256": "23cdf8a1bb980d5b2a65c904074503dd351f34c01e2e8bb320c3fa5a314d27c6"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 70,
+      "alphaBoundsPx": [
+        68,
+        77,
+        188,
+        183
+      ],
+      "transparentBorderPixels": 68,
+      "sha256": "a913337ea92e0c4f7c3d6a64f8bf663ed253203fce3e28d6f05992b3d4439de6"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 20,
+      "alphaBoundsPx": [
+        81,
+        86,
+        175,
+        186
+      ],
+      "transparentBorderPixels": 70,
+      "sha256": "32ce0880737402ee8bee2229cc1c4864ecb841037ea5e53fb0e609e3ba6c9595"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 30,
+      "alphaBoundsPx": [
+        81,
+        79,
+        175,
+        192
+      ],
+      "transparentBorderPixels": 64,
+      "sha256": "07412c46f41748f61d75dbbabb97ba6eaf75bf1f5771f4f45f486d1385264ba8"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 40,
+      "alphaBoundsPx": [
+        81,
+        73,
+        175,
+        195
+      ],
+      "transparentBorderPixels": 61,
+      "sha256": "1bd240457bbecd99fe6165e782b445b25de536c3ebfcacae4fe198cee9961871"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 50,
+      "alphaBoundsPx": [
+        81,
+        68,
+        175,
+        197
+      ],
+      "transparentBorderPixels": 59,
+      "sha256": "5761c8e466a42d29b2c9f73a3f1ac020e6cf1b9b7730566d4f613b3ba1b3fcd7"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 60,
+      "alphaBoundsPx": [
+        81,
+        66,
+        175,
+        197
+      ],
+      "transparentBorderPixels": 59,
+      "sha256": "f8bc0cfb8344a384a50bd3e6a9211ca9de719c2a89eee9002c4f0549c4fa181d"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 70,
+      "alphaBoundsPx": [
+        81,
+        65,
+        175,
+        195
+      ],
+      "transparentBorderPixels": 61,
+      "sha256": "8b5307a789c4221141bd5cf0511a1c3d054423e6639e878264841e0bed9c3500"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 20,
+      "alphaBoundsPx": [
+        105,
+        87,
+        159,
+        185
+      ],
+      "transparentBorderPixels": 71,
+      "sha256": "105c6e401d198028fe5b4de9acabdb5e526f9139cbe252c86f81392f6013b787"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 30,
+      "alphaBoundsPx": [
+        105,
+        80,
+        159,
+        191
+      ],
+      "transparentBorderPixels": 65,
+      "sha256": "d3294c31b04cf4d66a84b8831c8756eead50a1d1c52daff495773e91d323e2d1"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 40,
+      "alphaBoundsPx": [
+        105,
+        74,
+        159,
+        195
+      ],
+      "transparentBorderPixels": 61,
+      "sha256": "50ace3c21e04cced963ecde3cb71ff9ed000345aa32372f66d458d382c79fdee"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 50,
+      "alphaBoundsPx": [
+        105,
+        70,
+        159,
+        196
+      ],
+      "transparentBorderPixels": 60,
+      "sha256": "e552dc10525e00692dae38ff1d23e02a94d458d353dbe753f2715a686ca94e99"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 60,
+      "alphaBoundsPx": [
+        105,
+        68,
+        159,
+        196
+      ],
+      "transparentBorderPixels": 60,
+      "sha256": "a748cd9c931851d4328d077c824ec6e912e71a7b7ffe3abede720a8ae73cda1b"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 70,
+      "alphaBoundsPx": [
+        105,
+        67,
+        159,
+        194
+      ],
+      "transparentBorderPixels": 62,
+      "sha256": "8f89efbb2a790322ae3fc94e3f4090523b901ac9cb0a2eecb42defa8b60cd1df"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 20,
+      "alphaBoundsPx": [
+        81,
+        86,
+        175,
+        186
+      ],
+      "transparentBorderPixels": 70,
+      "sha256": "9fc06acaac816e49dbf73dedac2c7b08ad9c09826989962d3f2b48106107c010"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 30,
+      "alphaBoundsPx": [
+        81,
+        79,
+        175,
+        192
+      ],
+      "transparentBorderPixels": 64,
+      "sha256": "829a9e0e6537e9c5041f1fc617561c31ec6d712793d3ef911a4781fadbeb6151"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 40,
+      "alphaBoundsPx": [
+        81,
+        73,
+        175,
+        195
+      ],
+      "transparentBorderPixels": 61,
+      "sha256": "9efe0d30115dcad9ec7a490a86c68eddc68604e7715f8c9f6eba6056e05eb59b"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 50,
+      "alphaBoundsPx": [
+        81,
+        68,
+        175,
+        197
+      ],
+      "transparentBorderPixels": 59,
+      "sha256": "4f895fbf674f9d47e7159562c53d2aea30dffec0f254b5effa4d70537c842636"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 60,
+      "alphaBoundsPx": [
+        81,
+        66,
+        175,
+        197
+      ],
+      "transparentBorderPixels": 59,
+      "sha256": "4189e0bf54bee423d9c9a2c94a364538ef23cbd9a50937e99053fa1f87f998d4"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 70,
+      "alphaBoundsPx": [
+        81,
+        65,
+        175,
+        195
+      ],
+      "transparentBorderPixels": 61,
+      "sha256": "18f3879e4326968f5b8a528eab56d0ec827da14ad60aac64690cf8ad6f76a937"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 20,
+      "alphaBoundsPx": [
+        68,
+        91,
+        188,
+        182
+      ],
+      "transparentBorderPixels": 68,
+      "sha256": "9c66c632102f953109114b5e8e3253fcf58c9abbb3aa0739dadda1c85e379709"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 30,
+      "alphaBoundsPx": [
+        68,
+        85,
+        188,
+        185
+      ],
+      "transparentBorderPixels": 68,
+      "sha256": "d4c881bceed97343bf922d3b1503e20c139545d6eeaf79db7103c3b3c260b10d"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 40,
+      "alphaBoundsPx": [
+        68,
+        81,
+        188,
+        187
+      ],
+      "transparentBorderPixels": 68,
+      "sha256": "720dabf5e2f9f94384d470cd2eb9983c09cbbadb9cba46b7b2650808fdfd5bee"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 50,
+      "alphaBoundsPx": [
+        68,
+        78,
+        188,
+        188
+      ],
+      "transparentBorderPixels": 68,
+      "sha256": "caa50b0e6fd41f469bedf8e40b7d613f935c5a260f0e5cc4832f1234fbeda15f"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 60,
+      "alphaBoundsPx": [
+        68,
+        77,
+        188,
+        186
+      ],
+      "transparentBorderPixels": 68,
+      "sha256": "6ed1fd1b2125848dad9724d5bda949af9e68a90eddff384eac74cb05aa0a3a09"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 70,
+      "alphaBoundsPx": [
+        68,
+        77,
+        188,
+        183
+      ],
+      "transparentBorderPixels": 68,
+      "sha256": "dd29918597f0dc918d721b95b744aa7751bcf2030ead9c54f45aec684f86904e"
+    }
+  ],
+  "repeatFiles": [
+    {
+      "path": "public/game-content/oblique-utility.security-console.v1.json",
+      "sha256": "2eefd13f5b349d2ad95bd5bcd55aa8f71bc3a0d125b730b000d6ebeef2f9994a",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+00-elev20.2d2bfc6f3867.png",
+      "sha256": "2d2bfc6f386715945008837124f3877e7fefa1ca9f8b16e8a9684dfd452a12fa",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+00-elev30.6b0696213e9a.png",
+      "sha256": "6b0696213e9a934f1ca7989b4e199fe9c9c9dc074e805a6326b005a34799dfb5",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+00-elev40.5fcb3897082d.png",
+      "sha256": "5fcb3897082d2d14f513ebb66936a6e93c2bc40b4826de88643c0a87a9483674",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+00-elev50.fb37d744e2ac.png",
+      "sha256": "fb37d744e2acd937b6608f8787a3a6b10d50d992fc12854481a3876a6bc931c9",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+00-elev60.51da9701d985.png",
+      "sha256": "51da9701d985ea1b4b36105d09278aaf05b7805e37d338ddee1beeabe8904b05",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+00-elev70.e0e215575495.png",
+      "sha256": "e0e215575495990b5a8b31b66e0db666b97d11528c69cbbf2f1ca906d5ff599e",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+30-elev20.899a31d160c2.png",
+      "sha256": "899a31d160c2279259120eea07b56e822861dc7fbee887ba0359d4797233f4f2",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+30-elev30.7725d4388e69.png",
+      "sha256": "7725d4388e69c8f34ecfc23a3714dfdbfc214a1b53f9ea5b9b6b88e30898fe42",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+30-elev40.c8867d214cf2.png",
+      "sha256": "c8867d214cf2879ebf2c1613e5f476d9cd23b6b5d0fdd790a936196cfd5943a2",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+30-elev50.a55b3d5d7329.png",
+      "sha256": "a55b3d5d7329db9f7ab0036d0271c218f316ed412e45d55022a764f13bf20c04",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+30-elev60.2f8b1f34a161.png",
+      "sha256": "2f8b1f34a1613618867ce0417ee06596549953eab4d8e06bac81c7c07d699331",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+30-elev70.3ff51a7aca3e.png",
+      "sha256": "3ff51a7aca3eb7b2883875a7f132b64b18b292e0d985d6f6a973d0d4e8484a62",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+60-elev20.877b395aca12.png",
+      "sha256": "877b395aca12efd3e324b1cd28531d1678c6bb60fba6c49e0c8e34a3e2fd0c5c",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+60-elev30.8c5e602e523f.png",
+      "sha256": "8c5e602e523f7c1b9e0dba1a19311178deef4a11dd4c7fe37f9cb3de5c1d399f",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+60-elev40.a5e019e1fbfb.png",
+      "sha256": "a5e019e1fbfbe58c6818b1fbe060d267cfb00742cd5c254b9a2733938d2f66d4",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+60-elev50.1da8e69f589a.png",
+      "sha256": "1da8e69f589a95e96c9e4a6632a807fdf8423b539636591d6770adba63ccdd73",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+60-elev60.abe5efaa34c6.png",
+      "sha256": "abe5efaa34c6d62882c8f2fdb330d38d3fe7ed5cb9a4d13e64391fbae7995b68",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+60-elev70.ea510125e02e.png",
+      "sha256": "ea510125e02ee6af7cd8fa874460756533e446bc85cade13598350e6f30c60c2",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+90-elev20.14ecce532262.png",
+      "sha256": "14ecce53226242977919a32d736a1e82f6ce68c2e5b07948831d17e3112b833b",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+90-elev30.21b0d914cb56.png",
+      "sha256": "21b0d914cb56b0dbc108047626404fc7dc340bd2a207b8c96f311d3fdd304e04",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+90-elev40.8d1b2504087e.png",
+      "sha256": "8d1b2504087ea9c9f5f7c2b45929c2aa976989ba488560ce049649ed5ef15aff",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+90-elev50.b27ee605e8fa.png",
+      "sha256": "b27ee605e8fac16a1729c46c82e35d9f6b4ef2f0c378b200de39a21ccfe7006b",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+90-elev60.b90e369c50db.png",
+      "sha256": "b90e369c50dbda5240ed5ff528fad19116a202e05a567c06cc5f52661bcdcc29",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+90-elev70.7ba8f41d4bbc.png",
+      "sha256": "7ba8f41d4bbc699db867457437771a9116c44a5341a665f19e6f34b912b0ce83",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+120-elev20.88cb38ed6c92.png",
+      "sha256": "88cb38ed6c92036681e569ccc245714630d7fb5a9baf7b17981c2c250fc8d549",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+120-elev30.71cc7b1e2fe3.png",
+      "sha256": "71cc7b1e2fe3a94a5697f5e8c218721e5d958da564ec2a3f3b72eb969c24d799",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+120-elev40.86e3f92e7225.png",
+      "sha256": "86e3f92e7225a2a68e2f2cf0e95a11643c0d1cf493056db4db4b2403a58c993a",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+120-elev50.58b100e29944.png",
+      "sha256": "58b100e299443a95b3a7736929d36c36460316f648a2f4784be75d0dc6b2564c",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+120-elev60.15232e804ead.png",
+      "sha256": "15232e804ead3685682ff1256572295347d07a85822dea6709d347ed8c251aae",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+120-elev70.0dc1982e3356.png",
+      "sha256": "0dc1982e3356eb0556035591e5d84443a305d008ad5b9dd025c6ee27c816083a",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+150-elev20.f1408492657c.png",
+      "sha256": "f1408492657cfaa73bb7dc94e0ea2f9a9e75720199af788b58d752c569dc12f2",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+150-elev30.ab71c1250876.png",
+      "sha256": "ab71c1250876aceae62b943f9aea8e42a261c9753fe1db7081013c494af46efc",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+150-elev40.063e6676af39.png",
+      "sha256": "063e6676af39760e487741c206199fd23e0e9098d1fc3be3653ab4632af35409",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+150-elev50.ede002d509b3.png",
+      "sha256": "ede002d509b32a638866a0677d4170e8d698300ff9118051a7e36d529ae5a4b6",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+150-elev60.525d5708205a.png",
+      "sha256": "525d5708205ab950003103bd007ab02ca362a681068af94e4fbed1217153f9ab",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+150-elev70.6bbf1fb71953.png",
+      "sha256": "6bbf1fb71953e64ff90060f77524884418324278f46ec4c87b2190b523ff0750",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+180-elev20.e9971c4694c4.png",
+      "sha256": "e9971c4694c4278436baffc2b02d445d673ce906355c398d6ce4af962e6a3136",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+180-elev30.d748f17c97eb.png",
+      "sha256": "d748f17c97eb4f06face8d943f2e963e6950515c92a1fcceee59be3d03f3d5b9",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+180-elev40.72341d09df45.png",
+      "sha256": "72341d09df45978cde93c93d877a23fdd4262464a380f7151cacf0167bdbf086",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+180-elev50.bc330b90b317.png",
+      "sha256": "bc330b90b317775da7e54bb2dd418414489a3f0b4514840b65205b4b06c47e69",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+180-elev60.0efcacc29fcd.png",
+      "sha256": "0efcacc29fcd82ec193fdd5ce948441b0a217d691e74f6a4bf48301fb49ee75a",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+180-elev70.011bf2efaff8.png",
+      "sha256": "011bf2efaff857f62ce3a9ce004aa95bde5311f8a0d0ed2adb9863279997e569",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+210-elev20.bccd204beb1e.png",
+      "sha256": "bccd204beb1e4d187f7c9ec939d0232334b6df0935b7cb0c8e750b1ce2754ce3",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+210-elev30.53f15d35906a.png",
+      "sha256": "53f15d35906ab6d4cb74cf3ae1c5d7317d1350bc2718517eb37ae9d4e8580b38",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+210-elev40.0250d9a1b137.png",
+      "sha256": "0250d9a1b137d6d87d3677d8cb94fe650619b6c76a3a1d874ee36c29fcc34a13",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+210-elev50.70b26e66055e.png",
+      "sha256": "70b26e66055e8fcfe344a687afb97455745882430fd990838fe0e400b4084540",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+210-elev60.23cdf8a1bb98.png",
+      "sha256": "23cdf8a1bb980d5b2a65c904074503dd351f34c01e2e8bb320c3fa5a314d27c6",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+210-elev70.a913337ea92e.png",
+      "sha256": "a913337ea92e0c4f7c3d6a64f8bf663ed253203fce3e28d6f05992b3d4439de6",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+240-elev20.32ce08807374.png",
+      "sha256": "32ce0880737402ee8bee2229cc1c4864ecb841037ea5e53fb0e609e3ba6c9595",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+240-elev30.07412c46f417.png",
+      "sha256": "07412c46f41748f61d75dbbabb97ba6eaf75bf1f5771f4f45f486d1385264ba8",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+240-elev40.1bd240457bbe.png",
+      "sha256": "1bd240457bbecd99fe6165e782b445b25de536c3ebfcacae4fe198cee9961871",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+240-elev50.5761c8e466a4.png",
+      "sha256": "5761c8e466a42d29b2c9f73a3f1ac020e6cf1b9b7730566d4f613b3ba1b3fcd7",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+240-elev60.f8bc0cfb8344.png",
+      "sha256": "f8bc0cfb8344a384a50bd3e6a9211ca9de719c2a89eee9002c4f0549c4fa181d",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+240-elev70.8b5307a789c4.png",
+      "sha256": "8b5307a789c4221141bd5cf0511a1c3d054423e6639e878264841e0bed9c3500",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+270-elev20.105c6e401d19.png",
+      "sha256": "105c6e401d198028fe5b4de9acabdb5e526f9139cbe252c86f81392f6013b787",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+270-elev30.d3294c31b04c.png",
+      "sha256": "d3294c31b04cf4d66a84b8831c8756eead50a1d1c52daff495773e91d323e2d1",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+270-elev40.50ace3c21e04.png",
+      "sha256": "50ace3c21e04cced963ecde3cb71ff9ed000345aa32372f66d458d382c79fdee",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+270-elev50.e552dc10525e.png",
+      "sha256": "e552dc10525e00692dae38ff1d23e02a94d458d353dbe753f2715a686ca94e99",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+270-elev60.a748cd9c9318.png",
+      "sha256": "a748cd9c931851d4328d077c824ec6e912e71a7b7ffe3abede720a8ae73cda1b",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+270-elev70.8f89efbb2a79.png",
+      "sha256": "8f89efbb2a790322ae3fc94e3f4090523b901ac9cb0a2eecb42defa8b60cd1df",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+300-elev20.9fc06acaac81.png",
+      "sha256": "9fc06acaac816e49dbf73dedac2c7b08ad9c09826989962d3f2b48106107c010",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+300-elev30.829a9e0e6537.png",
+      "sha256": "829a9e0e6537e9c5041f1fc617561c31ec6d712793d3ef911a4781fadbeb6151",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+300-elev40.9efe0d30115d.png",
+      "sha256": "9efe0d30115dcad9ec7a490a86c68eddc68604e7715f8c9f6eba6056e05eb59b",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+300-elev50.4f895fbf674f.png",
+      "sha256": "4f895fbf674f9d47e7159562c53d2aea30dffec0f254b5effa4d70537c842636",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+300-elev60.4189e0bf54be.png",
+      "sha256": "4189e0bf54bee423d9c9a2c94a364538ef23cbd9a50937e99053fa1f87f998d4",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+300-elev70.18f3879e4326.png",
+      "sha256": "18f3879e4326968f5b8a528eab56d0ec827da14ad60aac64690cf8ad6f76a937",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+330-elev20.9c66c632102f.png",
+      "sha256": "9c66c632102f953109114b5e8e3253fcf58c9abbb3aa0739dadda1c85e379709",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+330-elev30.d4c881bceed9.png",
+      "sha256": "d4c881bceed97343bf922d3b1503e20c139545d6eeaf79db7103c3b3c260b10d",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+330-elev40.720dabf5e2f9.png",
+      "sha256": "720dabf5e2f9f94384d470cd2eb9983c09cbbadb9cba46b7b2650808fdfd5bee",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+330-elev50.caa50b0e6fd4.png",
+      "sha256": "caa50b0e6fd41f469bedf8e40b7d613f935c5a260f0e5cc4832f1234fbeda15f",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+330-elev60.6ed1fd1b2125.png",
+      "sha256": "6ed1fd1b2125848dad9724d5bda949af9e68a90eddff384eac74cb05aa0a3a09",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/utility.security-console.variants-yaw+330-elev70.dd29918597f0.png",
+      "sha256": "dd29918597f0dc918d721b95b744aa7751bcf2030ead9c54f45aec684f86904e",
+      "byteEqual": true
+    }
+  ]
+}

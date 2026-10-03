@@ -1,0 +1,504 @@
+{
+  "traceFolder": "oblique-hud-roving-camera--397f2-es-into-a-Build-radio-group",
+  "traceSha256": "93c54da1001518c8b6ae5b94907be9a4ece4050df3243daa583d5f193bb298a2",
+  "apiOperations": [
+    {
+      "type": "before",
+      "callId": "call@222",
+      "startTime": 4130647.026,
+      "class": "BrowserContext",
+      "method": "newPage",
+      "params": {},
+      "stepId": "pw:api@31",
+      "beforeSnapshot": "before@call@222"
+    },
+    {
+      "type": "after",
+      "callId": "call@222",
+      "endTime": 4130822.172,
+      "result": {
+        "page": "<Page>"
+      },
+      "afterSnapshot": "after@call@222"
+    },
+    {
+      "type": "before",
+      "callId": "call@224",
+      "startTime": 4130824.029,
+      "class": "Page",
+      "method": "setViewportSize",
+      "params": {
+        "viewportSize": {
+          "width": 1920,
+          "height": 1080
+        }
+      },
+      "stepId": "pw:api@32",
+      "pageId": "page@2015896387cb9450ab8105dbfdff0836",
+      "beforeSnapshot": "before@call@224"
+    },
+    {
+      "type": "after",
+      "callId": "call@224",
+      "endTime": 4130826.67,
+      "afterSnapshot": "after@call@224"
+    },
+    {
+      "type": "before",
+      "callId": "call@226",
+      "startTime": 4130828.042,
+      "class": "Frame",
+      "method": "goto",
+      "params": {
+        "url": "/?renderer=oblique",
+        "timeout": 0,
+        "waitUntil": "load"
+      },
+      "stepId": "pw:api@33",
+      "pageId": "page@2015896387cb9450ab8105dbfdff0836",
+      "beforeSnapshot": "before@call@226"
+    },
+    {
+      "type": "after",
+      "callId": "call@226",
+      "endTime": 4132327.984,
+      "result": {
+        "response": "<Response>"
+      },
+      "afterSnapshot": "after@call@226"
+    },
+    {
+      "type": "before",
+      "callId": "call@228",
+      "startTime": 4132375.181,
+      "class": "Frame",
+      "method": "click",
+      "params": {
+        "selector": "internal:role=button[name=\"New prison\"s]",
+        "strict": true,
+        "timeout": 0
+      },
+      "stepId": "pw:api@34",
+      "pageId": "page@2015896387cb9450ab8105dbfdff0836",
+      "beforeSnapshot": "before@call@228"
+    },
+    {
+      "type": "after",
+      "callId": "call@228",
+      "endTime": 4135156.197,
+      "point": {
+        "x": 1659.25,
+        "y": 217
+      },
+      "afterSnapshot": "after@call@228"
+    },
+    {
+      "type": "before",
+      "callId": "call@230",
+      "startTime": 4135216.121,
+      "class": "Frame",
+      "method": "click",
+      "params": {
+        "selector": "internal:role=button[name=\"Pause\"s]",
+        "strict": true,
+        "timeout": 0
+      },
+      "stepId": "pw:api@35",
+      "pageId": "page@2015896387cb9450ab8105dbfdff0836",
+      "beforeSnapshot": "before@call@230"
+    },
+    {
+      "type": "after",
+      "callId": "call@230",
+      "endTime": 4137679.098,
+      "point": {
+        "x": 1579.98,
+        "y": 22
+      },
+      "afterSnapshot": "after@call@230"
+    },
+    {
+      "type": "before",
+      "callId": "call@232",
+      "startTime": 4137888.361,
+      "class": "Frame",
+      "method": "click",
+      "params": {
+        "selector": "internal:role=button[name=\"Build\"s]",
+        "strict": true,
+        "timeout": 0
+      },
+      "stepId": "pw:api@36",
+      "pageId": "page@2015896387cb9450ab8105dbfdff0836",
+      "beforeSnapshot": "before@call@232"
+    },
+    {
+      "type": "after",
+      "callId": "call@232",
+      "endTime": 4140546.672,
+      "point": {
+        "x": 65.5,
+        "y": 225
+      },
+      "afterSnapshot": "after@call@232"
+    },
+    {
+      "type": "before",
+      "callId": "call@234",
+      "startTime": 4140761.247,
+      "class": "Frame",
+      "method": "evaluateExpression",
+      "params": {
+        "expression": "() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())))",
+        "isFunction": true,
+        "arg": {
+          "value": {
+            "v": "undefined"
+          },
+          "handles": []
+        }
+      },
+      "stepId": "pw:api@37",
+      "pageId": "page@2015896387cb9450ab8105dbfdff0836",
+      "beforeSnapshot": "before@call@234"
+    },
+    {
+      "type": "after",
+      "callId": "call@234",
+      "endTime": 4141572.344,
+      "result": {
+        "value": {
+          "v": "undefined"
+        }
+      },
+      "afterSnapshot": "after@call@234"
+    },
+    {
+      "type": "before",
+      "callId": "call@236",
+      "startTime": 4141780.083,
+      "class": "Page",
+      "method": "screenshot",
+      "params": {
+        "timeout": 0,
+        "clip": {
+          "x": 560,
+          "y": 230,
+          "width": 560,
+          "height": 560
+        }
+      },
+      "stepId": "pw:api@38",
+      "pageId": "page@2015896387cb9450ab8105dbfdff0836",
+      "beforeSnapshot": "before@call@236"
+    },
+    {
+      "type": "after",
+      "callId": "call@236",
+      "endTime": 4143607.373,
+      "result": {
+        "binary": "<Buffer>"
+      },
+      "afterSnapshot": "after@call@236"
+    },
+    {
+      "type": "before",
+      "callId": "call@238",
+      "startTime": 4143816.886,
+      "class": "Frame",
+      "method": "focus",
+      "params": {
+        "selector": "internal:role=button[name=\"Build\"s]",
+        "strict": true,
+        "timeout": 0
+      },
+      "stepId": "pw:api@39",
+      "pageId": "page@2015896387cb9450ab8105dbfdff0836",
+      "beforeSnapshot": "before@call@238"
+    },
+    {
+      "type": "after",
+      "callId": "call@238",
+      "endTime": 4144843.649,
+      "afterSnapshot": "after@call@238"
+    },
+    {
+      "type": "before",
+      "callId": "call@240",
+      "startTime": 4145052.524,
+      "class": "Page",
+      "method": "keyboardDown",
+      "params": {
+        "key": "ArrowDown"
+      },
+      "stepId": "pw:api@40",
+      "pageId": "page@2015896387cb9450ab8105dbfdff0836",
+      "beforeSnapshot": "before@call@240"
+    },
+    {
+      "type": "after",
+      "callId": "call@240",
+      "endTime": 4145452.521,
+      "afterSnapshot": "after@call@240"
+    },
+    {
+      "type": "before",
+      "callId": "call@242",
+      "startTime": 4145663.824,
+      "class": "Frame",
+      "method": "waitForTimeout",
+      "params": {
+        "waitTimeout": 240
+      },
+      "stepId": "pw:api@41",
+      "pageId": "page@2015896387cb9450ab8105dbfdff0836",
+      "beforeSnapshot": "before@call@242"
+    },
+    {
+      "type": "after",
+      "callId": "call@242",
+      "endTime": 4146120.437,
+      "afterSnapshot": "after@call@242"
+    },
+    {
+      "type": "before",
+      "callId": "call@244",
+      "startTime": 4146300.225,
+      "class": "Frame",
+      "method": "evaluateExpression",
+      "params": {
+        "expression": "() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())))",
+        "isFunction": true,
+        "arg": {
+          "value": {
+            "v": "undefined"
+          },
+          "handles": []
+        }
+      },
+      "stepId": "pw:api@42",
+      "pageId": "page@2015896387cb9450ab8105dbfdff0836",
+      "beforeSnapshot": "before@call@244"
+    },
+    {
+      "type": "after",
+      "callId": "call@244",
+      "endTime": 4146928.138,
+      "result": {
+        "value": {
+          "v": "undefined"
+        }
+      },
+      "afterSnapshot": "after@call@244"
+    },
+    {
+      "type": "before",
+      "callId": "call@246",
+      "startTime": 4147134.383,
+      "class": "Page",
+      "method": "screenshot",
+      "params": {
+        "timeout": 0,
+        "clip": {
+          "x": 560,
+          "y": 230,
+          "width": 560,
+          "height": 560
+        }
+      },
+      "stepId": "pw:api@43",
+      "pageId": "page@2015896387cb9450ab8105dbfdff0836",
+      "beforeSnapshot": "before@call@246"
+    },
+    {
+      "type": "after",
+      "callId": "call@246",
+      "endTime": 4148979.085,
+      "result": {
+        "binary": "<Buffer>"
+      },
+      "afterSnapshot": "after@call@246"
+    }
+  ],
+  "nativeMinimapNodeSnapshots": [
+    {
+      "snapshotName": "input@call@228",
+      "timestamp": 4134964.483,
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "nativeNodesPresentInSnapshot": [
+        [
+          "SPAN",
+          {
+            "class": "hud-minimap__viewport",
+            "aria-hidden": "true",
+            "hidden": ""
+          }
+        ]
+      ]
+    },
+    {
+      "snapshotName": "after@call@230",
+      "timestamp": 4137886.633,
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "nativeNodesPresentInSnapshot": [
+        [
+          "SPAN",
+          {
+            "class": "hud-minimap__viewport",
+            "aria-hidden": "true",
+            "style": "left: 2.38975%; top: 2.38975%; width: 95.2205%; height: 95.2205%;"
+          }
+        ]
+      ]
+    },
+    {
+      "snapshotName": "after@call@240",
+      "timestamp": 4145662.309,
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "nativeNodesPresentInSnapshot": [
+        [
+          "SPAN",
+          {
+            "class": "hud-minimap__viewport",
+            "aria-hidden": "true",
+            "style": "left: 1.99912%; top: 2.78037%; width: 95.2205%; height: 95.2205%;"
+          }
+        ]
+      ]
+    },
+    {
+      "snapshotName": "before@call@242",
+      "timestamp": 4145879.248,
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "nativeNodesPresentInSnapshot": [
+        [
+          "SPAN",
+          {
+            "class": "hud-minimap__viewport",
+            "aria-hidden": "true",
+            "style": "left: 1.6085%; top: 3.171%; width: 95.2205%; height: 95.2205%;"
+          }
+        ]
+      ]
+    },
+    {
+      "snapshotName": "after@call@242",
+      "timestamp": 4146298.447,
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "nativeNodesPresentInSnapshot": [
+        [
+          "SPAN",
+          {
+            "class": "hud-minimap__viewport",
+            "aria-hidden": "true",
+            "style": "left: 0.827246%; top: 3.95225%; width: 95.2205%; height: 95.2205%;"
+          }
+        ]
+      ]
+    },
+    {
+      "snapshotName": "before@call@244",
+      "timestamp": 4146509.978,
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "nativeNodesPresentInSnapshot": [
+        [
+          "SPAN",
+          {
+            "class": "hud-minimap__viewport",
+            "aria-hidden": "true",
+            "style": "left: 0.436621%; top: 4.34287%; width: 95.2205%; height: 95.2205%;"
+          }
+        ]
+      ]
+    },
+    {
+      "snapshotName": "after@call@244",
+      "timestamp": 4147132.626,
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "nativeNodesPresentInSnapshot": [
+        [
+          "SPAN",
+          {
+            "class": "hud-minimap__viewport",
+            "aria-hidden": "true",
+            "style": "left: 0%; top: 5.51475%; width: 94.4853%; height: 94.4853%;"
+          }
+        ]
+      ]
+    },
+    {
+      "snapshotName": "before@call@246",
+      "timestamp": 4147340.272,
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "nativeNodesPresentInSnapshot": [
+        [
+          "SPAN",
+          {
+            "class": "hud-minimap__viewport",
+            "aria-hidden": "true",
+            "style": "left: 0%; top: 5.90537%; width: 94.0946%; height: 94.0946%;"
+          }
+        ]
+      ]
+    },
+    {
+      "snapshotName": "after@call@246",
+      "timestamp": 4149184.166,
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "nativeNodesPresentInSnapshot": [
+        [
+          "SPAN",
+          {
+            "class": "hud-minimap__viewport",
+            "aria-hidden": "true",
+            "style": "left: 0%; top: 9.421%; width: 90.579%; height: 90.579%;"
+          }
+        ]
+      ]
+    }
+  ],
+  "originalErrors": [
+    {
+      "type": "after",
+      "callId": "expect@44",
+      "endTime": 4149188.275,
+      "annotations": [],
+      "error": {
+        "name": "",
+        "message": "Error: the world arrow needs to move the camera before focus transfer\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+        "stack": "Error: the world arrow needs to move the camera before focus transfer\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n    at /home/runner/work/lockstate/lockstate/tests/browser/oblique-hud-roving-camera.spec.ts:64:117"
+      }
+    }
+  ],
+  "notes": [
+    "Native nodes are retained exactly as present in each snapshot; compressed references are not guessed.",
+    "Screenshot return values are recorded only as <Buffer>; neither failing test attached those ROI PNG bytes. No new image claim is made."
+  ]
+}

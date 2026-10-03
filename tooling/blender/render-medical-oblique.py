@@ -13,8 +13,8 @@ exporter = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(exporter)
 exporter.PREVIEW = exporter.ROOT / 'assets/intermediate/infirmary-fixtures-preview'
 exporter.MODELS = (
-    ('furniture.medical-bed.variants', 'furniture.medical-bed.variants.blend',
-     'oblique-furniture.medical-bed.v1.json', 1, 2, 1.0, 1.0, 0.675),
+    ('furniture.medical-bed.variants', 'furniture.medical-bed.angled-detail.blend',
+     'oblique-furniture.medical-bed.v1.json', 1, 2, 1.0, 1.0, .675000011920929),
     ('fixture.medicine-cabinet.variants', 'fixture.medicine-cabinet.angled-detail.blend',
      'oblique-fixture.medicine-cabinet.v1.json', 1, 1, 1.0, 1.0, .5899999737739563),
 )
@@ -52,6 +52,13 @@ def evaluated_points(scene):
 
 
 def prepare_source(scene, model):
+    if model[0] == 'furniture.medical-bed.variants':
+        bed_spec = importlib.util.spec_from_file_location(
+            'medical_bed_detail_guard', HERE / 'render-medical-bed-detail-oblique.py')
+        bed = importlib.util.module_from_spec(bed_spec)
+        bed_spec.loader.exec_module(bed)
+        bed.prepare_source(scene, model)
+        return
     if model[0] == 'fixture.medicine-cabinet.variants':
         dedicated_spec = importlib.util.spec_from_file_location(
             'medicine_cabinet_detail_guard', HERE / 'render-medicine-cabinet-detail-oblique.py')
@@ -128,8 +135,9 @@ def point_camera(camera, target, yaw, elevation):
 exporter.point_camera = point_camera
 
 if __name__ == '__main__':
-    if '--verify' in sys.argv:
-        for model in exporter.MODELS:
+    if '--verify' in sys.argv or '--verify-bed' in sys.argv:
+        models = tuple(model for model in exporter.MODELS if model[0] == 'furniture.medical-bed.variants') if '--verify-bed' in sys.argv else exporter.MODELS
+        for model in models:
             _, camera, target = configure(model)
             for yaw in exporter.YAW:
                 for elevation in exporter.ELEVATION:

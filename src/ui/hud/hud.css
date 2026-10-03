@@ -1592,7 +1592,7 @@
    */
   min-height: calc(
     var(--hud-build-catalogue-floor) + var(--tap-target) + var(--hud-build-catalogue-gutter) + var(--hairline) +
-      4 * var(--hud-build-map-gutter) + var(--tap-target) + var(--space-5) +
+      4 * var(--hud-build-map-gutter) + var(--tap-target) + 3 * var(--space-5) +
       var(--text-size-label) * var(--label-line-height) + var(--hairline) + var(--tap-target)
   );
 }
@@ -2806,7 +2806,9 @@
 
 /* Full-square counts and their catalogue value form a sentence, not a strip
    counter. Reserve its three-line slot before aiming so a drag cannot move
-   the controls below it, and let the flex item shrink within the rail. */
+   the controls below it, and let the flex item shrink within the rail.
+   The body floor above must count this same three-line reservation; its old
+   one-line term left the coordinate disclosure outside the panel at 900x600. */
 .hud-build__target {
   align-items: flex-start;
   min-height: calc(var(--space-5) * 3);
@@ -4186,6 +4188,9 @@
  * otherwise take it away.
  */
 @media (max-height: 700px) {
+  /* The catalogue and map retain their own gutters. The three-line target
+     needs its full floor; trim the body's redundant outer vertical padding. */
+  .hud-build > .ui-panel__body { padding-block: 0 var(--hairline); }
   :root {
     --hud-build-map-gutter: var(--space-1);
     --hud-build-catalogue-gutter: var(--space-1);

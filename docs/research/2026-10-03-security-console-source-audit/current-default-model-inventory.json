@@ -1,0 +1,344 @@
+{
+  "base": "3fabd094e086c3ab6836b50d995b755524cdd428",
+  "objectMappingCount": 21,
+  "allHaveDedicatedSource": true,
+  "note": "Registry/source coverage audit only. Native proofs are read historical evidence, not rerun here. Sink deliberately has no buildable. Generic environment source path is retained where applicable.",
+  "models": [
+    {
+      "objectId": "object.bed",
+      "buildableIds": [],
+      "footprintTiles": [
+        1,
+        2
+      ],
+      "assetId": "furniture.cell.cot.single",
+      "descriptor": "public/game-content/oblique-furniture.cell-cot.v1.json",
+      "source": "assets/source/blender/furniture.cell.cot.single.blend",
+      "sourceSha256": "9c4b72d8631c2d14c638df4d03a73b14d5a738aac55b642c7836ce2c398f76c7",
+      "sourceIdentityMatches": true,
+      "sourceBytesHydrated": false,
+      "frames": 72,
+      "nominalPixelsPerTile": 64
+    },
+    {
+      "objectId": "object.toilet",
+      "buildableIds": [],
+      "footprintTiles": [
+        1,
+        1
+      ],
+      "assetId": "fixture.cell.toilet_sink",
+      "descriptor": "public/game-content/oblique-cell-toilet.v1.json",
+      "source": "assets/source/blender/fixture.cell.toilet_sink.angled.blend",
+      "sourceSha256": "335544282e27ff01608f7f10987c054012d38ec3905340c24c142b7b794b1b2a",
+      "sourceIdentityMatches": true,
+      "sourceBytesHydrated": false,
+      "frames": 72,
+      "nominalPixelsPerTile": 64
+    },
+    {
+      "objectId": "object.shower-head",
+      "buildableIds": [],
+      "footprintTiles": [
+        1,
+        1
+      ],
+      "assetId": "fixture.shower.head",
+      "descriptor": "public/game-content/oblique-shower-head.v1.json",
+      "source": "assets/source/blender/fixture.shower.head.blend",
+      "sourceSha256": "ac0cbe6a3673dd8db19c76375ddeb3d6f23d0cab6aa2e56b298ad8a8e70806fe",
+      "sourceIdentityMatches": true,
+      "sourceBytesHydrated": false,
+      "frames": 72,
+      "nominalPixelsPerTile": 64
+    },
+    {
+      "objectId": "object.dining-table",
+      "buildableIds": [],
+      "footprintTiles": [
+        3,
+        2
+      ],
+      "assetId": "furniture.dining.table.wooden",
+      "descriptor": "public/game-content/oblique-furniture.canteen-dining-table.v1.json",
+      "source": "assets/source/blender/furniture.canteen.dining-table.blend",
+      "sourceSha256": "c1a1e8b0cfd2e47fe420ebbaa3eeb72c426d896d0a42b5a708c9bcbb83230fd1",
+      "sourceIdentityMatches": true,
+      "sourceBytesHydrated": false,
+      "frames": 72,
+      "nominalPixelsPerTile": 64
+    },
+    {
+      "objectId": "object.exercise-station",
+      "buildableIds": [],
+      "footprintTiles": [
+        2,
+        1
+      ],
+      "assetId": "furniture.yard.exercise-station",
+      "descriptor": "public/game-content/oblique-furniture.yard-exercise-station.v1.json",
+      "source": "assets/source/blender/furniture.yard.exercise-station.blend",
+      "sourceSha256": "b1b8c2b648f3e34bff4b03755e57ece30b37b557ffcbb1bb805de4c3de3e36b7",
+      "sourceIdentityMatches": true,
+      "sourceBytesHydrated": true,
+      "frames": 72,
+      "nominalPixelsPerTile": 64
+    },
+    {
+      "objectId": "object.bench",
+      "buildableIds": [],
+      "footprintTiles": [
+        2,
+        1
+      ],
+      "assetId": "furniture.corridor.bench.variants",
+      "descriptor": "public/game-content/oblique-canteen-bench.v1.json",
+      "source": "assets/source/blender/furniture.corridor.bench.blend",
+      "sourceSha256": "3c07ae8916f36090803b05e09addb26458a704a674431ba786ccddee5e78b867",
+      "sourceIdentityMatches": true,
+      "sourceBytesHydrated": false,
+      "frames": 72,
+      "nominalPixelsPerTile": 64
+    },
+    {
+      "objectId": "object.medical-bed",
+      "buildableIds": [],
+      "footprintTiles": [
+        1,
+        2
+      ],
+      "assetId": "furniture.medical-bed.variants",
+      "descriptor": "public/game-content/oblique-furniture.medical-bed.v1.json",
+      "source": "assets/source/blender/furniture.medical-bed.variants.blend",
+      "sourceSha256": "1737b03a3ee1342e813e7096e0aef189f05d714d5a69437a8fe490c026d232be",
+      "sourceIdentityMatches": true,
+      "sourceBytesHydrated": false,
+      "frames": 72,
+      "nominalPixelsPerTile": 64
+    },
+    {
+      "objectId": "object.medicine-cabinet",
+      "buildableIds": [],
+      "footprintTiles": [
+        1,
+        1
+      ],
+      "assetId": "fixture.medicine-cabinet.variants",
+      "descriptor": "public/game-content/oblique-fixture.medicine-cabinet.v1.json",
+      "source": "assets/source/blender/fixture.medicine-cabinet.variants.blend",
+      "sourceSha256": "17670457233caef94855cdaf64b2cf1bd3c8623318941cbd3ce2e5c50224ac75",
+      "sourceIdentityMatches": true,
+      "sourceBytesHydrated": false,
+      "frames": 72,
+      "nominalPixelsPerTile": 64
+    },
+    {
+      "objectId": "object.storage-rack",
+      "buildableIds": [],
+      "footprintTiles": [
+        1,
+        1
+      ],
+      "assetId": "furniture.storage.rack.wooden",
+      "descriptor": "public/game-content/oblique-cell-storage-rack.v1.json",
+      "source": "assets/source/blender/furniture.storage.rack.wooden.blend",
+      "sourceSha256": "3806d996ce473e166aaa00bef379655aac2c41ef4d45f7f32b48a893ff4b4eed",
+      "sourceIdentityMatches": true,
+      "sourceBytesHydrated": false,
+      "frames": 72,
+      "nominalPixelsPerTile": 64
+    },
+    {
+      "objectId": "object.chair",
+      "buildableIds": [],
+      "footprintTiles": [
+        1,
+        1
+      ],
+      "assetId": "furniture.chair.wooden",
+      "descriptor": "public/game-content/oblique-cell-chair.v1.json",
+      "source": "assets/source/blender/furniture.chair.wooden.blend",
+      "sourceSha256": "dab33079c7a42b2967950bab72048953270520383adbf3873a65aeb8e1b6687d",
+      "sourceIdentityMatches": true,
+      "sourceBytesHydrated": false,
+      "frames": 72,
+      "nominalPixelsPerTile": 64
+    },
+    {
+      "objectId": "object.prep-counter",
+      "buildableIds": [],
+      "footprintTiles": [
+        2,
+        1
+      ],
+      "assetId": "furniture.kitchen.prep-counter.variants",
+      "descriptor": "public/game-content/oblique-furniture.kitchen-prep-counter.v1.json",
+      "source": "assets/source/blender/furniture.kitchen.prep-counter.angled.blend",
+      "sourceSha256": "b20bffb79d6ffe66a6c741fc420bd163651faa4813ca4d77740eb3dd55914a8a",
+      "sourceIdentityMatches": true,
+      "sourceBytesHydrated": false,
+      "frames": 72,
+      "nominalPixelsPerTile": 64
+    },
+    {
+      "objectId": "object.security-console",
+      "buildableIds": [],
+      "footprintTiles": [
+        2,
+        1
+      ],
+      "assetId": "utility.security-console.variants",
+      "descriptor": "public/game-content/oblique-utility.security-console.v1.json",
+      "source": "assets/source/blender/utility.security-console.variants.blend",
+      "sourceSha256": "7b7c755e96cc460c6afa42d8a5e4a1f44480a21a6483cea122949290848db5d7",
+      "sourceIdentityMatches": true,
+      "sourceBytesHydrated": true,
+      "frames": 72,
+      "nominalPixelsPerTile": 64
+    },
+    {
+      "objectId": "object.loading-dock-door",
+      "buildableIds": [],
+      "footprintTiles": [
+        3,
+        1
+      ],
+      "assetId": "utility.loading-dock-door.variants",
+      "descriptor": "public/game-content/oblique-utility.loading-dock-door.v1.json",
+      "source": "assets/source/blender/utility.loading-dock-door.variants.blend",
+      "sourceSha256": "9a8b5cd29ed5809ec1c3f2c6f36f3d97d3a9a7f69551c0743e096591c26908c4",
+      "sourceIdentityMatches": true,
+      "sourceBytesHydrated": false,
+      "frames": 72,
+      "nominalPixelsPerTile": 64
+    },
+    {
+      "objectId": "object.utility-panel",
+      "buildableIds": [],
+      "footprintTiles": [
+        1,
+        1
+      ],
+      "assetId": "utility.utility-panel.variants",
+      "descriptor": "public/game-content/oblique-utility.utility-panel.v1.json",
+      "source": "assets/source/blender/utility.utility-panel.angled.blend",
+      "sourceSha256": "1bc780cc2e6ab7b25e932652e6e3f1c9e4ce07a63256b340af02bf310e3cf137",
+      "sourceIdentityMatches": true,
+      "sourceBytesHydrated": false,
+      "frames": 72,
+      "nominalPixelsPerTile": 64
+    },
+    {
+      "objectId": "object.washing-machine",
+      "buildableIds": [],
+      "footprintTiles": [
+        2,
+        1
+      ],
+      "assetId": "utility.washing-machine.variants",
+      "descriptor": "public/game-content/oblique-utility.washing-machine.v1.json",
+      "source": "assets/source/blender/utility.washing-machine.angled.blend",
+      "sourceSha256": "f2940130e2ec10ad814800bb15418441b48238881c3d038d69168d597f89e8ae",
+      "sourceIdentityMatches": true,
+      "sourceBytesHydrated": false,
+      "frames": 72,
+      "nominalPixelsPerTile": 64
+    },
+    {
+      "objectId": "object.stove",
+      "buildableIds": [],
+      "footprintTiles": [
+        2,
+        1
+      ],
+      "assetId": "furniture.kitchen.stove.variants",
+      "descriptor": "public/game-content/oblique-furniture.kitchen-stove.v1.json",
+      "source": "assets/source/blender/furniture.kitchen.stove.angled.blend",
+      "sourceSha256": "540c8b22be73848bb1520fae9ffeabfce7711bb0c629161e529b6d6ae33ca5fc",
+      "sourceIdentityMatches": true,
+      "sourceBytesHydrated": false,
+      "frames": 72,
+      "nominalPixelsPerTile": 64
+    },
+    {
+      "objectId": "object.fridge",
+      "buildableIds": [],
+      "footprintTiles": [
+        1,
+        1
+      ],
+      "assetId": "furniture.kitchen.fridge.variants",
+      "descriptor": "public/game-content/oblique-furniture.kitchen-fridge.v1.json",
+      "source": "assets/source/blender/furniture.kitchen.fridge.angled.blend",
+      "sourceSha256": "d85097c30f524948f3e3c9c82d0a15b11eea956a680227569c37d6e52a6a52bc",
+      "sourceIdentityMatches": true,
+      "sourceBytesHydrated": false,
+      "frames": 72,
+      "nominalPixelsPerTile": 64
+    },
+    {
+      "objectId": "object.bookshelf",
+      "buildableIds": [],
+      "footprintTiles": [
+        2,
+        1
+      ],
+      "assetId": "furniture.library.bookshelf.variants",
+      "descriptor": "public/game-content/oblique-furniture.library-bookshelf.v1.json",
+      "source": "assets/source/blender/furniture.library.bookshelf.variants.blend",
+      "sourceSha256": "64a18ea80a6b3f97d3b3b389f82c3f52b282cd6c29e343d4f971eab9c0b42c02",
+      "sourceIdentityMatches": true,
+      "sourceBytesHydrated": false,
+      "frames": 72,
+      "nominalPixelsPerTile": 64
+    },
+    {
+      "objectId": "object.waste-bin",
+      "buildableIds": [],
+      "footprintTiles": [
+        1,
+        1
+      ],
+      "assetId": "fixture.cell.waste_bin",
+      "descriptor": "public/game-content/oblique-fixture-cell-waste-bin.v1.json",
+      "source": "assets/source/blender/fixture.cell.waste_bin.angled.blend",
+      "sourceSha256": "ff8f91f62e67ad69293c0560849664524a5e7cd34824137171f5cb3d740376c3",
+      "sourceIdentityMatches": true,
+      "sourceBytesHydrated": false,
+      "frames": 72,
+      "nominalPixelsPerTile": 64
+    },
+    {
+      "objectId": "object.desk",
+      "buildableIds": [],
+      "footprintTiles": [
+        2,
+        1
+      ],
+      "assetId": "furniture.office.desk.generic",
+      "descriptor": "public/game-content/oblique-furniture-office-desk-generic.v1.json",
+      "source": "assets/source/blender/furniture.office.desk.generic.angled-detail.blend",
+      "sourceSha256": "486b83b5079698faeb1cd58e989d1a1dfe524996813474b04550dd4c82a2fd46",
+      "sourceIdentityMatches": true,
+      "sourceBytesHydrated": false,
+      "frames": 72,
+      "nominalPixelsPerTile": 64
+    },
+    {
+      "objectId": "object.sink",
+      "buildableIds": [],
+      "footprintTiles": [
+        1,
+        1
+      ],
+      "assetId": "fixture.cell.sink.handwash",
+      "descriptor": "public/game-content/oblique-fixture-cell-sink-handwash.v1.json",
+      "source": "assets/source/blender/fixture.cell.sink.handwash.blend",
+      "sourceSha256": "ffcf0973794e39e59b5ee65e259d7149daf616bd0518a1c78a1c5f5a9b502158",
+      "sourceIdentityMatches": true,
+      "sourceBytesHydrated": false,
+      "frames": 72,
+      "nominalPixelsPerTile": 64
+    }
+  ]
+}

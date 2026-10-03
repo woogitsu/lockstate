@@ -1,0 +1,602 @@
+{
+  "traceFolder": "oblique-camera-new-prison--4a771--panning-beyond-the-old-map",
+  "traceSha256": "4ea5fb14a9093cd9b16600c35fdc16ed007c9000922b18bbaccf5d28246042dc",
+  "apiOperations": [
+    {
+      "type": "before",
+      "callId": "call@244",
+      "startTime": 3974122.625,
+      "class": "BrowserContext",
+      "method": "newPage",
+      "params": {},
+      "stepId": "pw:api@31",
+      "beforeSnapshot": "before@call@244"
+    },
+    {
+      "type": "after",
+      "callId": "call@244",
+      "endTime": 3974304.517,
+      "result": {
+        "page": "<Page>"
+      },
+      "afterSnapshot": "after@call@244"
+    },
+    {
+      "type": "before",
+      "callId": "call@246",
+      "startTime": 3974306.824,
+      "class": "Page",
+      "method": "setViewportSize",
+      "params": {
+        "viewportSize": {
+          "width": 1920,
+          "height": 1080
+        }
+      },
+      "stepId": "pw:api@32",
+      "pageId": "page@cb9f34e0aa56042141b50a16dda3da17",
+      "beforeSnapshot": "before@call@246"
+    },
+    {
+      "type": "after",
+      "callId": "call@246",
+      "endTime": 3974310.149,
+      "afterSnapshot": "after@call@246"
+    },
+    {
+      "type": "before",
+      "callId": "call@248",
+      "startTime": 3974312.209,
+      "class": "Frame",
+      "method": "goto",
+      "params": {
+        "url": "/?renderer=oblique",
+        "timeout": 0,
+        "waitUntil": "load"
+      },
+      "stepId": "pw:api@33",
+      "pageId": "page@cb9f34e0aa56042141b50a16dda3da17",
+      "beforeSnapshot": "before@call@248"
+    },
+    {
+      "type": "after",
+      "callId": "call@248",
+      "endTime": 3975798.087,
+      "result": {
+        "response": "<Response>"
+      },
+      "afterSnapshot": "after@call@248"
+    },
+    {
+      "type": "before",
+      "callId": "call@250",
+      "startTime": 3975852.433,
+      "class": "Frame",
+      "method": "click",
+      "params": {
+        "selector": "internal:role=button[name=\"New prison\"s]",
+        "strict": true,
+        "timeout": 0
+      },
+      "stepId": "pw:api@34",
+      "pageId": "page@cb9f34e0aa56042141b50a16dda3da17",
+      "beforeSnapshot": "before@call@250"
+    },
+    {
+      "type": "after",
+      "callId": "call@250",
+      "endTime": 3978571.674,
+      "point": {
+        "x": 1659.25,
+        "y": 217
+      },
+      "afterSnapshot": "after@call@250"
+    },
+    {
+      "type": "before",
+      "callId": "call@252",
+      "startTime": 3978633.125,
+      "title": "Expect \"toHaveText\"",
+      "class": "Frame",
+      "method": "expect",
+      "params": {
+        "selector": ".hud-clock__day",
+        "expression": "to.have.text",
+        "expectedText": [
+          {
+            "string": "1",
+            "normalizeWhiteSpace": true
+          }
+        ],
+        "expectedValue": {
+          "value": {
+            "v": "undefined"
+          },
+          "handles": []
+        },
+        "isNot": false,
+        "timeout": 10000
+      },
+      "stepId": "expect@35",
+      "pageId": "page@cb9f34e0aa56042141b50a16dda3da17",
+      "beforeSnapshot": "before@call@252"
+    },
+    {
+      "type": "after",
+      "callId": "call@252",
+      "endTime": 3978750.205,
+      "result": {
+        "matches": true,
+        "received": {
+          "s": "1"
+        }
+      },
+      "afterSnapshot": "after@call@252"
+    },
+    {
+      "type": "before",
+      "callId": "call@254",
+      "startTime": 3979060.479,
+      "class": "Frame",
+      "method": "click",
+      "params": {
+        "selector": "internal:role=button[name=\"Pause\"s]",
+        "strict": true,
+        "timeout": 0
+      },
+      "stepId": "pw:api@36",
+      "pageId": "page@cb9f34e0aa56042141b50a16dda3da17",
+      "beforeSnapshot": "before@call@254"
+    },
+    {
+      "type": "after",
+      "callId": "call@254",
+      "endTime": 3981734.784,
+      "point": {
+        "x": 1579.98,
+        "y": 22
+      },
+      "afterSnapshot": "after@call@254"
+    },
+    {
+      "type": "before",
+      "callId": "call@256",
+      "startTime": 3981952.85,
+      "title": "Expect \"toBeVisible\"",
+      "class": "Frame",
+      "method": "expect",
+      "params": {
+        "selector": ".hud-minimap__viewport",
+        "expression": "to.be.visible",
+        "expectedValue": {
+          "value": {
+            "v": "undefined"
+          },
+          "handles": []
+        },
+        "isNot": false,
+        "timeout": 10000
+      },
+      "stepId": "expect@37",
+      "pageId": "page@cb9f34e0aa56042141b50a16dda3da17",
+      "beforeSnapshot": "before@call@256"
+    },
+    {
+      "type": "after",
+      "callId": "call@256",
+      "endTime": 3982369.462,
+      "result": {
+        "matches": true,
+        "received": {
+          "s": "visible"
+        }
+      },
+      "afterSnapshot": "after@call@256"
+    },
+    {
+      "type": "before",
+      "callId": "call@258",
+      "startTime": 3982578.981,
+      "class": "Page",
+      "method": "keyboardDown",
+      "params": {
+        "key": "ArrowRight"
+      },
+      "stepId": "pw:api@38",
+      "pageId": "page@cb9f34e0aa56042141b50a16dda3da17",
+      "beforeSnapshot": "before@call@258"
+    },
+    {
+      "type": "after",
+      "callId": "call@258",
+      "endTime": 3982985.301,
+      "afterSnapshot": "after@call@258"
+    },
+    {
+      "type": "before",
+      "callId": "call@260",
+      "startTime": 3983200.567,
+      "class": "Page",
+      "method": "keyboardDown",
+      "params": {
+        "key": "ArrowDown"
+      },
+      "stepId": "pw:api@39",
+      "pageId": "page@cb9f34e0aa56042141b50a16dda3da17",
+      "beforeSnapshot": "before@call@260"
+    },
+    {
+      "type": "after",
+      "callId": "call@260",
+      "endTime": 3983618.059,
+      "afterSnapshot": "after@call@260"
+    },
+    {
+      "type": "before",
+      "callId": "call@262",
+      "startTime": 3983831.544,
+      "class": "Frame",
+      "method": "waitForTimeout",
+      "params": {
+        "waitTimeout": 5500
+      },
+      "stepId": "pw:api@40",
+      "pageId": "page@cb9f34e0aa56042141b50a16dda3da17",
+      "beforeSnapshot": "before@call@262"
+    },
+    {
+      "type": "after",
+      "callId": "call@262",
+      "endTime": 3989540.689,
+      "afterSnapshot": "after@call@262"
+    },
+    {
+      "type": "before",
+      "callId": "call@264",
+      "startTime": 3989569.61,
+      "class": "Page",
+      "method": "keyboardUp",
+      "params": {
+        "key": "ArrowDown"
+      },
+      "stepId": "pw:api@41",
+      "pageId": "page@cb9f34e0aa56042141b50a16dda3da17",
+      "beforeSnapshot": "before@call@264"
+    },
+    {
+      "type": "after",
+      "callId": "call@264",
+      "endTime": 3989964.227,
+      "afterSnapshot": "after@call@264"
+    },
+    {
+      "type": "before",
+      "callId": "call@266",
+      "startTime": 3990166.023,
+      "class": "Page",
+      "method": "keyboardUp",
+      "params": {
+        "key": "ArrowRight"
+      },
+      "stepId": "pw:api@42",
+      "pageId": "page@cb9f34e0aa56042141b50a16dda3da17",
+      "beforeSnapshot": "before@call@266"
+    },
+    {
+      "type": "after",
+      "callId": "call@266",
+      "endTime": 3990552.661,
+      "afterSnapshot": "after@call@266"
+    },
+    {
+      "type": "before",
+      "callId": "call@268",
+      "startTime": 3990752.833,
+      "title": "Expect \"toBeHidden\"",
+      "class": "Frame",
+      "method": "expect",
+      "params": {
+        "selector": ".hud-minimap__viewport",
+        "expression": "to.be.hidden",
+        "expectedValue": {
+          "value": {
+            "v": "undefined"
+          },
+          "handles": []
+        },
+        "isNot": false,
+        "timeout": 10000
+      },
+      "stepId": "expect@43",
+      "pageId": "page@cb9f34e0aa56042141b50a16dda3da17",
+      "beforeSnapshot": "before@call@268"
+    },
+    {
+      "type": "after",
+      "callId": "call@268",
+      "endTime": 4000945.654,
+      "error": {
+        "name": "Expect",
+        "message": "Expect failed"
+      },
+      "result": {
+        "matches": false,
+        "log": [
+          "  - Expect \"toBeHidden\" with timeout 10000ms",
+          "  - waiting for locator('.hud-minimap__viewport')",
+          "    12 \u00d7 locator resolved to <span aria-hidden=\"true\" class=\"hud-minimap__viewport\"></span>",
+          "       - unexpected value \"visible\""
+        ],
+        "received": {
+          "s": "visible"
+        },
+        "timedOut": true
+      },
+      "afterSnapshot": "after@call@268"
+    }
+  ],
+  "nativeMinimapNodeSnapshots": [
+    {
+      "snapshotName": "input@call@250",
+      "timestamp": 3978382.385,
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "nativeNodesPresentInSnapshot": [
+        [
+          "SPAN",
+          {
+            "class": "hud-minimap__viewport",
+            "aria-hidden": "true",
+            "hidden": ""
+          }
+        ]
+      ]
+    },
+    {
+      "snapshotName": "input@call@254",
+      "timestamp": 3980922.278,
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "nativeNodesPresentInSnapshot": [
+        [
+          "SPAN",
+          {
+            "class": "hud-minimap__viewport",
+            "aria-hidden": "true",
+            "style": "left: 2.38975%; top: 2.38975%; width: 95.2205%; height: 95.2205%;"
+          }
+        ]
+      ]
+    },
+    {
+      "snapshotName": "after@call@256",
+      "timestamp": 3982577.388,
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "nativeNodesPresentInSnapshot": [
+        [
+          "SPAN",
+          {
+            "__playwright_target__": "call@256",
+            "class": "hud-minimap__viewport",
+            "aria-hidden": "true",
+            "style": "left: 2.38975%; top: 2.38975%; width: 95.2205%; height: 95.2205%;"
+          }
+        ]
+      ]
+    },
+    {
+      "snapshotName": "after@call@258",
+      "timestamp": 3983199.044,
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "nativeNodesPresentInSnapshot": [
+        [
+          "SPAN",
+          {
+            "__playwright_target__": "call@256",
+            "class": "hud-minimap__viewport",
+            "aria-hidden": "true",
+            "style": "left: 2.66596%; top: 2.66596%; width: 95.2205%; height: 95.2205%;"
+          }
+        ]
+      ]
+    },
+    {
+      "snapshotName": "before@call@260",
+      "timestamp": 3983414.046,
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "nativeNodesPresentInSnapshot": [
+        [
+          "SPAN",
+          {
+            "__playwright_target__": "call@256",
+            "class": "hud-minimap__viewport",
+            "aria-hidden": "true",
+            "style": "left: 2.94217%; top: 2.94217%; width: 95.2205%; height: 95.2205%;"
+          }
+        ]
+      ]
+    },
+    {
+      "snapshotName": "after@call@260",
+      "timestamp": 3983830.155,
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "nativeNodesPresentInSnapshot": [
+        [
+          "SPAN",
+          {
+            "__playwright_target__": "call@256",
+            "class": "hud-minimap__viewport",
+            "aria-hidden": "true",
+            "style": "left: 3.10398%; top: 3.88523%; width: 95.2205%; height: 95.2205%;"
+          }
+        ]
+      ]
+    },
+    {
+      "snapshotName": "before@call@262",
+      "timestamp": 3984040.885,
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "nativeNodesPresentInSnapshot": [
+        [
+          "SPAN",
+          {
+            "__playwright_target__": "call@256",
+            "class": "hud-minimap__viewport",
+            "aria-hidden": "true",
+            "style": "left: 2.98956%; top: 4.55206%; width: 95.2205%; height: 95.2205%;"
+          }
+        ]
+      ]
+    },
+    {
+      "snapshotName": "after@call@262",
+      "timestamp": 3989567.839,
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "nativeNodesPresentInSnapshot": [
+        [
+          "SPAN",
+          {
+            "__playwright_target__": "call@256",
+            "class": "hud-minimap__viewport",
+            "aria-hidden": "true",
+            "style": "left: 0%; top: 22.5567%; width: 95.121%; height: 77.4433%;"
+          }
+        ]
+      ]
+    },
+    {
+      "snapshotName": "before@call@264",
+      "timestamp": 3989774.003,
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "nativeNodesPresentInSnapshot": [
+        [
+          "SPAN",
+          {
+            "__playwright_target__": "call@256",
+            "class": "hud-minimap__viewport",
+            "aria-hidden": "true",
+            "style": "left: 0%; top: 23.2235%; width: 95.0066%; height: 76.7765%;"
+          }
+        ]
+      ]
+    },
+    {
+      "snapshotName": "after@call@264",
+      "timestamp": 3990164.361,
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "nativeNodesPresentInSnapshot": [
+        [
+          "SPAN",
+          {
+            "__playwright_target__": "call@256",
+            "class": "hud-minimap__viewport",
+            "aria-hidden": "true",
+            "style": "left: 0%; top: 24.1666%; width: 95.1684%; height: 75.8334%;"
+          }
+        ]
+      ]
+    },
+    {
+      "snapshotName": "before@call@266",
+      "timestamp": 3990362.049,
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "nativeNodesPresentInSnapshot": [
+        [
+          "SPAN",
+          {
+            "__playwright_target__": "call@256",
+            "class": "hud-minimap__viewport",
+            "aria-hidden": "true",
+            "style": "left: 0.22406%; top: 24.4428%; width: 95.2205%; height: 75.5572%;"
+          }
+        ]
+      ]
+    },
+    {
+      "snapshotName": "after@call@266",
+      "timestamp": 3990751.103,
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "nativeNodesPresentInSnapshot": [
+        [
+          "SPAN",
+          {
+            "__playwright_target__": "call@256",
+            "class": "hud-minimap__viewport",
+            "aria-hidden": "true",
+            "style": "left: 0.500273%; top: 24.719%; width: 95.2205%; height: 75.281%;"
+          }
+        ]
+      ]
+    },
+    {
+      "snapshotName": "after@call@268",
+      "timestamp": 4000992.733,
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "nativeNodesPresentInSnapshot": [
+        [
+          "SPAN",
+          {
+            "__playwright_target__": "call@268",
+            "class": "hud-minimap__viewport",
+            "aria-hidden": "true",
+            "style": "left: 0.500273%; top: 24.719%; width: 95.2205%; height: 75.281%;"
+          }
+        ]
+      ]
+    }
+  ],
+  "originalErrors": [
+    {
+      "type": "after",
+      "callId": "expect@43",
+      "endTime": 4000994.36,
+      "annotations": [],
+      "error": {
+        "name": "",
+        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeHidden\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.hud-minimap__viewport')\nExpected: hidden\nReceived: visible\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeHidden\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.hud-minimap__viewport')\u001b[22m\n\u001b[2m    12 \u00d7 locator resolved to <span aria-hidden=\"true\" class=\"hud-minimap__viewport\"></span>\u001b[22m\n\u001b[2m       - unexpected value \"visible\"\u001b[22m\n",
+        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeHidden\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.hud-minimap__viewport')\nExpected: hidden\nReceived: visible\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeHidden\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.hud-minimap__viewport')\u001b[22m\n\u001b[2m    12 \u00d7 locator resolved to <span aria-hidden=\"true\" class=\"hud-minimap__viewport\"></span>\u001b[22m\n\u001b[2m       - unexpected value \"visible\"\u001b[22m\n\n    at /home/runner/work/lockstate/lockstate/tests/browser/oblique-camera-new-prison-frame.spec.ts:20:26"
+      }
+    }
+  ],
+  "notes": [
+    "Native nodes are retained exactly as present in each snapshot; compressed references are not guessed.",
+    "Screenshot return values are recorded only as <Buffer>; neither failing test attached those ROI PNG bytes. No new image claim is made."
+  ]
+}

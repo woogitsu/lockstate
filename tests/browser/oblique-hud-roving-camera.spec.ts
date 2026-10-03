@@ -1,4 +1,5 @@
 import { expect, test } from './network-changed-fixture';
+import { readMinimapCameraObservation } from './minimap-camera-observation';
 
 test('Full HD oblique camera stays still while Build and Rooms radio groups consume arrows', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
@@ -47,7 +48,7 @@ test('Full HD oblique camera stays still while Build and Rooms radio groups cons
   await page.screenshot({ path: testInfo.outputPath('oblique-roving-focus-fullhd.png') });
 });
 
-test('a held world arrow stops panning when focus moves into a Build radio group', async ({ page }) => {
+test('a held world arrow stops panning when focus moves into a Build radio group', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/?renderer=oblique');
   await page.getByRole('button', { name: 'New prison', exact: true }).click();
@@ -58,15 +59,30 @@ test('a held world arrow stops panning when focus moves into a Build radio group
     return page.screenshot({ clip: { x: 560, y: 230, width: 560, height: 560 } });
   };
   const initial = await paintedCanvas();
+  const initialViewport = await readMinimapCameraObservation(page);
   await page.getByRole('button', { name: 'Build', exact: true }).focus();
   await page.keyboard.down('ArrowDown');
-  await page.waitForTimeout(240);
-  expect((await paintedCanvas()).equals(initial), 'the world arrow needs to move the camera before focus transfer').toBe(false);
-  const row = page.locator('.hud-build__list [data-buildable]').first();
-  await row.focus();
-  await expect(row).toBeFocused();
-  const atFocus = await paintedCanvas();
-  await page.waitForTimeout(300);
-  expect((await paintedCanvas()).equals(atFocus), 'camera kept panning after a Build radio took focus').toBe(true);
-  await page.keyboard.up('ArrowDown');
+  try {
+    // CI37039088544 published real camera movement while this bare-map PNG
+    // remained identical. Establish the held-key precondition independently;
+    // retain the strict PNG stop guard and require the outline to stop too.
+    await expect.poll(() => readMinimapCameraObservation(page), {
+      message: 'the world arrow needs to move the camera before focus transfer',
+      timeout: 10_000,
+    }).not.toEqual(initialViewport);
+    const moving = await paintedCanvas();
+    await testInfo.attach('held-arrow-observation', { contentType: 'application/json', body: Buffer.from(JSON.stringify({
+      initialViewport, movingViewport: await readMinimapCameraObservation(page), identicalMapPng: moving.equals(initial),
+    })) });
+    const row = page.locator('.hud-build__list [data-buildable]').first();
+    await row.focus();
+    await expect(row).toBeFocused();
+    const atFocus = await paintedCanvas();
+    const viewportAtFocus = await readMinimapCameraObservation(page);
+    await page.waitForTimeout(300);
+    expect((await paintedCanvas()).equals(atFocus), 'camera kept panning after a Build radio took focus').toBe(true);
+    expect(await readMinimapCameraObservation(page), 'camera outline kept panning after a Build radio took focus').toEqual(viewportAtFocus);
+  } finally {
+    await page.keyboard.up('ArrowDown');
+  }
 });

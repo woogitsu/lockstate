@@ -1,0 +1,376 @@
+{
+  "frozenBuiltCommit": "bb521c103e786a768fd2545c97ded5b7eedcff50",
+  "workerName": "worker-LbBfT8C3.js",
+  "workerBytes": 440107,
+  "workerSha256": "049f18670e47d54fccc8339f2a158e1ff5b927a0c2fae628eb2e36648811d751",
+  "initialStats": {
+    "startTime": "2026-10-03T01:27:33.102Z",
+    "duration": 230730.155,
+    "expected": 6,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "models": [
+    {
+      "alias": "medical-bed-q1",
+      "originalCase": "dedicated-medical-bed-play-55a65-and-anchors-after-Save-Load",
+      "snapshotDataEqual": true,
+      "object": {
+        "placedObjectId": "object:23:6",
+        "objectId": "object.medical-bed",
+        "anchorTile": {
+          "x": 23,
+          "y": 6
+        },
+        "orientation": 1,
+        "sourceOrderId": "room-template-000000000002-2-object-000"
+      },
+      "completedOwningOrder": {
+        "id": "room-template-000000000002-2-object-000",
+        "definitionId": "medical-bed-wooden",
+        "location": {
+          "x": 23,
+          "y": 6
+        },
+        "objectOrientation": 1,
+        "placementSequence": 2,
+        "state": "completed",
+        "progress": 30,
+        "materialsAllocated": [
+          {
+            "itemId": "item.wood-plank",
+            "quantity": 1
+          }
+        ],
+        "assignedWorkerId": "mock-worker-1"
+      },
+      "paletteAndCommands": {
+        "quarterTurns": 1,
+        "actualBefore": [
+          "object.medical-bed@23,6:orientation=1",
+          "object.medicine-cabinet@24,8:orientation=1"
+        ],
+        "actualAfter": [
+          "object.medical-bed@23,6:orientation=1",
+          "object.medicine-cabinet@24,8:orientation=1"
+        ],
+        "beforePixels": [
+          312
+        ],
+        "afterPixels": [
+          312
+        ],
+        "commands": [
+          {
+            "type": "PlaceRoomTemplate",
+            "templateId": "infirmary-basic",
+            "origin": {
+              "x": 20,
+              "y": 5
+            },
+            "quarterTurns": 1
+          }
+        ]
+      },
+      "files": {
+        "completed-snapshot.json": {
+          "originalOutput": "dedicated-medical-bed-completed-worker-snapshot.json",
+          "sha256": "86d2c616f981a510dc7e1286e69bc64a5afd3c6c1bed874f8c54e90136231d81"
+        },
+        "hardware-loaded.png": {
+          "originalOutput": "dedicated-medical-bed-hardware-loaded-fullhd.png",
+          "sha256": "42dc0193eea2d8bdd6318dab07c8aaba54959445c75cb5fbb064c3e9bc819dce"
+        },
+        "loaded.png": {
+          "originalOutput": "dedicated-medical-bed-loaded-fullhd.png",
+          "sha256": "cf7e5bd9126ba3c5ac61078873c721699c6e651dd7f95d394a1a682e70dd4aa5"
+        },
+        "loaded-snapshot.json": {
+          "originalOutput": "dedicated-medical-bed-loaded-worker-snapshot.json",
+          "sha256": "458c7b20513c9f9110189df7e4111eafec81ea69c934f48c4182639ed0671896"
+        },
+        "receipt.json": {
+          "originalOutput": "dedicated-medical-bed-worker-and-save-evidence.json",
+          "sha256": "3d839c72e3cca6e05489d44916305eb7b62ae76b95124ec9fea65d3375fd929f"
+        },
+        "completed.png": {
+          "originalOutput": "dedicated-medical-bed-worker-completed-fullhd.png",
+          "sha256": "edca3f5f69cdc17a8ebf2e604b7ff193ebc5a5ef8078225bf61a42390f057a27"
+        },
+        "worker-and-completed-save-evidence.json": {
+          "originalOutput": "worker-and-completed-save-evidence.json",
+          "sha256": "2cb080708d66ac7124716f9ce089c141d1ce53b9218332ecade776ea18610058"
+        }
+      }
+    },
+    {
+      "alias": "medical-bed-q0",
+      "originalCase": "dedicated-medical-bed-play-feda9-and-anchors-after-Save-Load",
+      "snapshotDataEqual": true,
+      "object": {
+        "placedObjectId": "object:21:6",
+        "objectId": "object.medical-bed",
+        "anchorTile": {
+          "x": 21,
+          "y": 6
+        },
+        "orientation": 0,
+        "sourceOrderId": "room-template-000000000002-2-object-000"
+      },
+      "completedOwningOrder": {
+        "id": "room-template-000000000002-2-object-000",
+        "definitionId": "medical-bed-wooden",
+        "location": {
+          "x": 21,
+          "y": 6
+        },
+        "placementSequence": 2,
+        "state": "completed",
+        "progress": 30,
+        "materialsAllocated": [
+          {
+            "itemId": "item.wood-plank",
+            "quantity": 1
+          }
+        ],
+        "assignedWorkerId": "mock-worker-1"
+      },
+      "paletteAndCommands": {
+        "quarterTurns": 0,
+        "actualBefore": [
+          "object.medical-bed@21,6:orientation=0",
+          "object.medicine-cabinet@23,6:orientation=0"
+        ],
+        "actualAfter": [
+          "object.medical-bed@21,6:orientation=0",
+          "object.medicine-cabinet@23,6:orientation=0"
+        ],
+        "beforePixels": [
+          866
+        ],
+        "afterPixels": [
+          866
+        ],
+        "commands": [
+          {
+            "type": "PlaceRoomTemplate",
+            "templateId": "infirmary-basic",
+            "origin": {
+              "x": 20,
+              "y": 5
+            }
+          }
+        ]
+      },
+      "files": {
+        "completed-snapshot.json": {
+          "originalOutput": "dedicated-medical-bed-completed-worker-snapshot.json",
+          "sha256": "710fe8f10c8b32b1530c91b3c28ccf309abedb02bf50304d488fdb5a8557dd40"
+        },
+        "hardware-loaded.png": {
+          "originalOutput": "dedicated-medical-bed-hardware-loaded-fullhd.png",
+          "sha256": "30686002d26c3d9a5f205822dc7de6cf32872e99c2f3310460d5cc3d2a40ae2a"
+        },
+        "loaded.png": {
+          "originalOutput": "dedicated-medical-bed-loaded-fullhd.png",
+          "sha256": "758509bb456d5445313a7ca5e926a2b8d45b72d7f75ee274c267cfcfab59f46f"
+        },
+        "loaded-snapshot.json": {
+          "originalOutput": "dedicated-medical-bed-loaded-worker-snapshot.json",
+          "sha256": "85b3a436e12ba0c873e180b5681d6d18bf715b3458801ae580323245d957d5a0"
+        },
+        "receipt.json": {
+          "originalOutput": "dedicated-medical-bed-worker-and-save-evidence.json",
+          "sha256": "cbd7a02488df86c58a1844a7b858a4b3ae88bf87f3e879b9b4f206729b73a2cb"
+        },
+        "completed.png": {
+          "originalOutput": "dedicated-medical-bed-worker-completed-fullhd.png",
+          "sha256": "78824160cb7f93025f09bd81b399038cbad5b405cf48ea66807da20dea7236c4"
+        },
+        "worker-and-completed-save-evidence.json": {
+          "originalOutput": "worker-and-completed-save-evidence.json",
+          "sha256": "ececa1e30fc6ebde5c68ae15528c6c0cdf1f429dc3e5b0a0226b5e27f612904d"
+        }
+      }
+    },
+    {
+      "alias": "security-console-q0",
+      "originalCase": "dedicated-security-console-80fe8-and-anchors-after-Save-Load",
+      "snapshotDataEqual": true,
+      "object": {
+        "placedObjectId": "object:21:6",
+        "objectId": "object.security-console",
+        "anchorTile": {
+          "x": 21,
+          "y": 6
+        },
+        "orientation": 0,
+        "sourceOrderId": "room-template-000000000002-2-object-000"
+      },
+      "completedOwningOrder": {
+        "id": "room-template-000000000002-2-object-000",
+        "definitionId": "security-console-brick",
+        "location": {
+          "x": 21,
+          "y": 6
+        },
+        "placementSequence": 2,
+        "state": "completed",
+        "progress": 60,
+        "materialsAllocated": [
+          {
+            "itemId": "item.brick",
+            "quantity": 2
+          }
+        ],
+        "assignedWorkerId": "mock-worker-1"
+      },
+      "paletteAndCommands": {
+        "quarterTurns": 0,
+        "actualBefore": [
+          "object.security-console@21,6:orientation=0"
+        ],
+        "actualAfter": [
+          "object.security-console@21,6:orientation=0"
+        ],
+        "beforePixels": [
+          506
+        ],
+        "afterPixels": [
+          506
+        ],
+        "commands": [
+          {
+            "type": "PlaceRoomTemplate",
+            "templateId": "security-office-basic",
+            "origin": {
+              "x": 20,
+              "y": 5
+            }
+          }
+        ]
+      },
+      "files": {
+        "completed-snapshot.json": {
+          "originalOutput": "dedicated-security-console-completed-worker-snapshot.json",
+          "sha256": "ced37dadaf47b6275e17f29ab24878b898e63f8a1eb8f0e696e0e84b5cc42944"
+        },
+        "hardware-loaded.png": {
+          "originalOutput": "dedicated-security-console-hardware-loaded-fullhd.png",
+          "sha256": "68a48c893a252909f890ca84af389fb34946ba60eec83a9a00a943237e5371c2"
+        },
+        "loaded.png": {
+          "originalOutput": "dedicated-security-console-loaded-fullhd.png",
+          "sha256": "3c6441e27f565b51cd18971c4230d04ba609eb2fbef966d53e95ec80b1e01434"
+        },
+        "loaded-snapshot.json": {
+          "originalOutput": "dedicated-security-console-loaded-worker-snapshot.json",
+          "sha256": "076f4030260138c3322cb2dc4a646c355cf936d23f9d22fd87494f1994001349"
+        },
+        "receipt.json": {
+          "originalOutput": "dedicated-security-console-worker-and-save-evidence.json",
+          "sha256": "b040880ae65e0eecf5cb9f060cbc8b949e2f6a0e1f91dc535ea1cc3fa5bc224d"
+        },
+        "completed.png": {
+          "originalOutput": "dedicated-security-console-worker-completed-fullhd.png",
+          "sha256": "8af3ea74ba74a9394649d74cd941d3b001eb5506248f8fbd8f14e3f3b8de31d4"
+        },
+        "worker-and-completed-save-evidence.json": {
+          "originalOutput": "worker-and-completed-save-evidence.json",
+          "sha256": "fd2b19f2bbc28b5ad4f31312cf477b844bef6d81457416ad7e6bf8ab644a6697"
+        }
+      }
+    },
+    {
+      "alias": "security-console-q1",
+      "originalCase": "dedicated-security-console-9e650-and-anchors-after-Save-Load",
+      "snapshotDataEqual": true,
+      "object": {
+        "placedObjectId": "object:23:6",
+        "objectId": "object.security-console",
+        "anchorTile": {
+          "x": 23,
+          "y": 6
+        },
+        "orientation": 1,
+        "sourceOrderId": "room-template-000000000002-2-object-000"
+      },
+      "completedOwningOrder": {
+        "id": "room-template-000000000002-2-object-000",
+        "definitionId": "security-console-brick",
+        "location": {
+          "x": 23,
+          "y": 6
+        },
+        "objectOrientation": 1,
+        "placementSequence": 2,
+        "state": "completed",
+        "progress": 60,
+        "materialsAllocated": [
+          {
+            "itemId": "item.brick",
+            "quantity": 2
+          }
+        ],
+        "assignedWorkerId": "mock-worker-1"
+      },
+      "paletteAndCommands": {
+        "quarterTurns": 1,
+        "actualBefore": [
+          "object.security-console@23,6:orientation=1"
+        ],
+        "actualAfter": [
+          "object.security-console@23,6:orientation=1"
+        ],
+        "beforePixels": [
+          1494
+        ],
+        "afterPixels": [
+          1494
+        ],
+        "commands": [
+          {
+            "type": "PlaceRoomTemplate",
+            "templateId": "security-office-basic",
+            "origin": {
+              "x": 20,
+              "y": 5
+            },
+            "quarterTurns": 1
+          }
+        ]
+      },
+      "files": {
+        "completed-snapshot.json": {
+          "originalOutput": "dedicated-security-console-completed-worker-snapshot.json",
+          "sha256": "47317bf86b7ce3596618ac7def73d23eb3403a3710a0d8ff016ab5122f06b724"
+        },
+        "hardware-loaded.png": {
+          "originalOutput": "dedicated-security-console-hardware-loaded-fullhd.png",
+          "sha256": "64beb2eab9211cdb48a1e37057b77b82a6ca4f4d489dabe7dbcccea98dc5a3b5"
+        },
+        "loaded.png": {
+          "originalOutput": "dedicated-security-console-loaded-fullhd.png",
+          "sha256": "849009a77d3ff4d950fc4f47ef5a0ecc054d05423e061635b6e45f0fd1a2e2dd"
+        },
+        "loaded-snapshot.json": {
+          "originalOutput": "dedicated-security-console-loaded-worker-snapshot.json",
+          "sha256": "e06f6aa26c831fd81a266203ddf31853d4dce36b371d1df4c99afeb4a84640f9"
+        },
+        "receipt.json": {
+          "originalOutput": "dedicated-security-console-worker-and-save-evidence.json",
+          "sha256": "ed2687df7e8aca45533ba76e33763ae77389e4fd50faf5a546646ff844d01ef2"
+        },
+        "completed.png": {
+          "originalOutput": "dedicated-security-console-worker-completed-fullhd.png",
+          "sha256": "3112bad2c78ac90857baff649740f2b37d00433a04b82edf17de126168b1e57f"
+        },
+        "worker-and-completed-save-evidence.json": {
+          "originalOutput": "worker-and-completed-save-evidence.json",
+          "sha256": "9d220e35c485b84bf66d8dc52ff1405afcdb44dbc23f9184b5f3c9a0ee8bb5d6"
+        }
+      }
+    }
+  ]
+}

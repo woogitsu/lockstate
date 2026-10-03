@@ -1,0 +1,55 @@
+node : [2m[WebServer] [22m(node:41092) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:2 char:687
++ ... w($false)); node --experimental-transform-types --disable-warning=Exp ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m
+[2m[WebServer] [22m  VITE v8.2.2  ready in 349 ms
+[2m[WebServer] [22m
+[2m[WebServer] [22m  ➜  Local:   http://127.0.0.1:5417/
+LOCKSTATE_BROWSER_PREWARM_READY elapsedMs=4582
+
+Running 1 test using 1 worker
+
+(node:31960) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:31960) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 tests\browser\oblique-authored-actors.spec.ts:93:1 › canonical cook medic and staff frames produce visible Blender pixels (5.2s)
+
+
+  1) tests\browser\oblique-authored-actors.spec.ts:93:1 › canonical cook medic and staff frames produce visible Blender pixels 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m100[39m
+    Received:   [31m0[39m
+
+      104 |     top: Math.floor(actor.foot.y) - 100, bottom: Math.floor(actor.foot.y) + 10,
+      105 |   })));
+    > 106 |   for (const changed of changes) expect(changed).toBeGreaterThan(100);
+          |                                                  ^
+      107 | });
+      108 |
+      109 | test('authored prisoner and guard pixels share wall depth at Full HD', async ({ page }, testInfo) => {
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-first-ci-integration-20261002\tests\browser\oblique-authored-actors.spec.ts:106:50
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\oblique-authored-actors-ca-b7535-duce-visible-Blender-pixels\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\oblique-authored-actors-ca-b7535-duce-visible-Blender-pixels\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    tests\browser\oblique-authored-actors.spec.ts:93:1 › canonical cook medic and staff frames produce visible Blender pixels 
+
+==============================================================================
+LOCKSTATE_BROWSER_SUITE_NO_RETRY suite=browser failures=1 withSignature=0
+1 of 1 failing test(s) carry no net::ERR_NETWORK_CHANGED evidence: "oblique-authored-actors.spec.ts > canonical cook medic and staff frames produce visible Blender pixels". A retry is permitted only when every failure is this host-level abort.
+==============================================================================
+

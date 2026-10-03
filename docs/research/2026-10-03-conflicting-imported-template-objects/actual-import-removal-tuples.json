@@ -1,0 +1,824 @@
+[
+    {
+        "file":  "object-type.json",
+        "rawSHA256":  "4A5FC55977C911DE0539BC68E21727FBBB8271730032444E1D07B388AD639A70",
+        "firstBeforeObjects":  {
+                                   "placedObjects":  [
+                                                         {
+                                                             "placedObjectId":  "object:11:11",
+                                                             "objectId":  "object.bed",
+                                                             "anchorTile":  {
+                                                                                "x":  11,
+                                                                                "y":  11
+                                                                            },
+                                                             "orientation":  0,
+                                                             "sourceOrderId":  "room-template-000000000000-2-object-000"
+                                                         }
+                                                     ]
+                               },
+        "reversedBeforeObjects":  {
+                                      "placedObjects":  [
+                                                            {
+                                                                "placedObjectId":  "object:11:11",
+                                                                "objectId":  "object.toilet",
+                                                                "anchorTile":  {
+                                                                                   "x":  11,
+                                                                                   "y":  11
+                                                                               },
+                                                                "orientation":  0,
+                                                                "sourceOrderId":  "room-template-000000000000-2-object-001"
+                                                            }
+                                                        ]
+                                  },
+        "firstAfterObjects":  {
+                                  "placedObjects":  [
+
+                                                    ]
+                              },
+        "reversedAfterObjects":  {
+                                     "placedObjects":  [
+                                                           {
+                                                               "placedObjectId":  "object:11:11",
+                                                               "objectId":  "object.toilet",
+                                                               "anchorTile":  {
+                                                                                  "x":  11,
+                                                                                  "y":  11
+                                                                              },
+                                                               "orientation":  0,
+                                                               "sourceOrderId":  "room-template-000000000000-2-object-001"
+                                                           }
+                                                       ]
+                                 },
+        "firstBeforeKernel":  {
+                                  "tick":  1371,
+                                  "expectedSequence":  1,
+                                  "rngStates":  [
+                                                    {
+                                                        "name":  "contraband.detection",
+                                                        "state":  {
+                                                                      "algorithm":  "xoshiro128**",
+                                                                      "version":  1,
+                                                                      "words":  [
+                                                                                    697665215,
+                                                                                    1719510596,
+                                                                                    3290681155,
+                                                                                    1078936477
+                                                                                ]
+                                                                  }
+                                                    },
+                                                    {
+                                                        "name":  "contraband.intelligence",
+                                                        "state":  {
+                                                                      "algorithm":  "xoshiro128**",
+                                                                      "version":  1,
+                                                                      "words":  [
+                                                                                    2579408288,
+                                                                                    2693190851,
+                                                                                    3919714911,
+                                                                                    1015181709
+                                                                                ]
+                                                                  }
+                                                    },
+                                                    {
+                                                        "name":  "contraband.introduction",
+                                                        "state":  {
+                                                                      "algorithm":  "xoshiro128**",
+                                                                      "version":  1,
+                                                                      "words":  [
+                                                                                    893521567,
+                                                                                    2775483950,
+                                                                                    4199098468,
+                                                                                    3040899221
+                                                                                ]
+                                                                  }
+                                                    },
+                                                    {
+                                                        "name":  "identity.actor-name",
+                                                        "state":  {
+                                                                      "algorithm":  "xoshiro128**",
+                                                                      "version":  1,
+                                                                      "words":  [
+                                                                                    3398341328,
+                                                                                    134740608,
+                                                                                    881420718,
+                                                                                    186745909
+                                                                                ]
+                                                                  }
+                                                    },
+                                                    {
+                                                        "name":  "prisoners.classification",
+                                                        "state":  {
+                                                                      "algorithm":  "xoshiro128**",
+                                                                      "version":  1,
+                                                                      "words":  [
+                                                                                    2805008513,
+                                                                                    3967167656,
+                                                                                    2553316513,
+                                                                                    621376844
+                                                                                ]
+                                                                  }
+                                                    },
+                                                    {
+                                                        "name":  "prisoners.sentence",
+                                                        "state":  {
+                                                                      "algorithm":  "xoshiro128**",
+                                                                      "version":  1,
+                                                                      "words":  [
+                                                                                    3674440120,
+                                                                                    80675048,
+                                                                                    1429123581,
+                                                                                    1409075729
+                                                                                ]
+                                                                  }
+                                                    }
+                                                ],
+                                  "commands":  [
+
+                                               ]
+                              },
+        "reversedBeforeKernel":  {
+                                     "tick":  1371,
+                                     "expectedSequence":  1,
+                                     "rngStates":  [
+                                                       {
+                                                           "name":  "contraband.detection",
+                                                           "state":  {
+                                                                         "algorithm":  "xoshiro128**",
+                                                                         "version":  1,
+                                                                         "words":  [
+                                                                                       697665215,
+                                                                                       1719510596,
+                                                                                       3290681155,
+                                                                                       1078936477
+                                                                                   ]
+                                                                     }
+                                                       },
+                                                       {
+                                                           "name":  "contraband.intelligence",
+                                                           "state":  {
+                                                                         "algorithm":  "xoshiro128**",
+                                                                         "version":  1,
+                                                                         "words":  [
+                                                                                       2579408288,
+                                                                                       2693190851,
+                                                                                       3919714911,
+                                                                                       1015181709
+                                                                                   ]
+                                                                     }
+                                                       },
+                                                       {
+                                                           "name":  "contraband.introduction",
+                                                           "state":  {
+                                                                         "algorithm":  "xoshiro128**",
+                                                                         "version":  1,
+                                                                         "words":  [
+                                                                                       893521567,
+                                                                                       2775483950,
+                                                                                       4199098468,
+                                                                                       3040899221
+                                                                                   ]
+                                                                     }
+                                                       },
+                                                       {
+                                                           "name":  "identity.actor-name",
+                                                           "state":  {
+                                                                         "algorithm":  "xoshiro128**",
+                                                                         "version":  1,
+                                                                         "words":  [
+                                                                                       3398341328,
+                                                                                       134740608,
+                                                                                       881420718,
+                                                                                       186745909
+                                                                                   ]
+                                                                     }
+                                                       },
+                                                       {
+                                                           "name":  "prisoners.classification",
+                                                           "state":  {
+                                                                         "algorithm":  "xoshiro128**",
+                                                                         "version":  1,
+                                                                         "words":  [
+                                                                                       2805008513,
+                                                                                       3967167656,
+                                                                                       2553316513,
+                                                                                       621376844
+                                                                                   ]
+                                                                     }
+                                                       },
+                                                       {
+                                                           "name":  "prisoners.sentence",
+                                                           "state":  {
+                                                                         "algorithm":  "xoshiro128**",
+                                                                         "version":  1,
+                                                                         "words":  [
+                                                                                       3674440120,
+                                                                                       80675048,
+                                                                                       1429123581,
+                                                                                       1409075729
+                                                                                   ]
+                                                                     }
+                                                       }
+                                                   ],
+                                     "commands":  [
+
+                                                  ]
+                                 },
+        "firstAfterKernel":  {
+                                 "tick":  1371,
+                                 "expectedSequence":  2,
+                                 "rngStates":  [
+                                                   {
+                                                       "name":  "contraband.detection",
+                                                       "state":  {
+                                                                     "algorithm":  "xoshiro128**",
+                                                                     "version":  1,
+                                                                     "words":  [
+                                                                                   697665215,
+                                                                                   1719510596,
+                                                                                   3290681155,
+                                                                                   1078936477
+                                                                               ]
+                                                                 }
+                                                   },
+                                                   {
+                                                       "name":  "contraband.intelligence",
+                                                       "state":  {
+                                                                     "algorithm":  "xoshiro128**",
+                                                                     "version":  1,
+                                                                     "words":  [
+                                                                                   2579408288,
+                                                                                   2693190851,
+                                                                                   3919714911,
+                                                                                   1015181709
+                                                                               ]
+                                                                 }
+                                                   },
+                                                   {
+                                                       "name":  "contraband.introduction",
+                                                       "state":  {
+                                                                     "algorithm":  "xoshiro128**",
+                                                                     "version":  1,
+                                                                     "words":  [
+                                                                                   893521567,
+                                                                                   2775483950,
+                                                                                   4199098468,
+                                                                                   3040899221
+                                                                               ]
+                                                                 }
+                                                   },
+                                                   {
+                                                       "name":  "identity.actor-name",
+                                                       "state":  {
+                                                                     "algorithm":  "xoshiro128**",
+                                                                     "version":  1,
+                                                                     "words":  [
+                                                                                   3398341328,
+                                                                                   134740608,
+                                                                                   881420718,
+                                                                                   186745909
+                                                                               ]
+                                                                 }
+                                                   },
+                                                   {
+                                                       "name":  "prisoners.classification",
+                                                       "state":  {
+                                                                     "algorithm":  "xoshiro128**",
+                                                                     "version":  1,
+                                                                     "words":  [
+                                                                                   2805008513,
+                                                                                   3967167656,
+                                                                                   2553316513,
+                                                                                   621376844
+                                                                               ]
+                                                                 }
+                                                   },
+                                                   {
+                                                       "name":  "prisoners.sentence",
+                                                       "state":  {
+                                                                     "algorithm":  "xoshiro128**",
+                                                                     "version":  1,
+                                                                     "words":  [
+                                                                                   3674440120,
+                                                                                   80675048,
+                                                                                   1429123581,
+                                                                                   1409075729
+                                                                               ]
+                                                                 }
+                                                   }
+                                               ],
+                                 "commands":  [
+
+                                              ]
+                             },
+        "reversedAfterKernel":  {
+                                    "tick":  1371,
+                                    "expectedSequence":  2,
+                                    "rngStates":  [
+                                                      {
+                                                          "name":  "contraband.detection",
+                                                          "state":  {
+                                                                        "algorithm":  "xoshiro128**",
+                                                                        "version":  1,
+                                                                        "words":  [
+                                                                                      697665215,
+                                                                                      1719510596,
+                                                                                      3290681155,
+                                                                                      1078936477
+                                                                                  ]
+                                                                    }
+                                                      },
+                                                      {
+                                                          "name":  "contraband.intelligence",
+                                                          "state":  {
+                                                                        "algorithm":  "xoshiro128**",
+                                                                        "version":  1,
+                                                                        "words":  [
+                                                                                      2579408288,
+                                                                                      2693190851,
+                                                                                      3919714911,
+                                                                                      1015181709
+                                                                                  ]
+                                                                    }
+                                                      },
+                                                      {
+                                                          "name":  "contraband.introduction",
+                                                          "state":  {
+                                                                        "algorithm":  "xoshiro128**",
+                                                                        "version":  1,
+                                                                        "words":  [
+                                                                                      893521567,
+                                                                                      2775483950,
+                                                                                      4199098468,
+                                                                                      3040899221
+                                                                                  ]
+                                                                    }
+                                                      },
+                                                      {
+                                                          "name":  "identity.actor-name",
+                                                          "state":  {
+                                                                        "algorithm":  "xoshiro128**",
+                                                                        "version":  1,
+                                                                        "words":  [
+                                                                                      3398341328,
+                                                                                      134740608,
+                                                                                      881420718,
+                                                                                      186745909
+                                                                                  ]
+                                                                    }
+                                                      },
+                                                      {
+                                                          "name":  "prisoners.classification",
+                                                          "state":  {
+                                                                        "algorithm":  "xoshiro128**",
+                                                                        "version":  1,
+                                                                        "words":  [
+                                                                                      2805008513,
+                                                                                      3967167656,
+                                                                                      2553316513,
+                                                                                      621376844
+                                                                                  ]
+                                                                    }
+                                                      },
+                                                      {
+                                                          "name":  "prisoners.sentence",
+                                                          "state":  {
+                                                                        "algorithm":  "xoshiro128**",
+                                                                        "version":  1,
+                                                                        "words":  [
+                                                                                      3674440120,
+                                                                                      80675048,
+                                                                                      1429123581,
+                                                                                      1409075729
+                                                                                  ]
+                                                                    }
+                                                      }
+                                                  ],
+                                    "commands":  [
+
+                                                 ]
+                                },
+        "firstBeforeFunds":  {
+                                 "balanceMinorUnits":  23470
+                             },
+        "reversedBeforeFunds":  {
+                                    "balanceMinorUnits":  23470
+                                },
+        "firstAfterFunds":  {
+                                "balanceMinorUnits":  23470
+                            },
+        "reversedAfterFunds":  {
+                                   "balanceMinorUnits":  23470
+                               }
+    },
+    {
+        "file":  "same-object-orientation.json",
+        "rawSHA256":  "6C85675CBB31BBA669DF420D23063A75D4F0A484EB51C9D34C5FB777B284BE45",
+        "firstBeforeObjects":  {
+                                   "placedObjects":  [
+                                                         {
+                                                             "placedObjectId":  "object:11:11",
+                                                             "objectId":  "object.bed",
+                                                             "anchorTile":  {
+                                                                                "x":  11,
+                                                                                "y":  11
+                                                                            },
+                                                             "orientation":  0,
+                                                             "sourceOrderId":  "room-template-000000000000-2-object-000"
+                                                         }
+                                                     ]
+                               },
+        "reversedBeforeObjects":  {
+                                      "placedObjects":  [
+                                                            {
+                                                                "placedObjectId":  "object:11:11",
+                                                                "objectId":  "object.bed",
+                                                                "anchorTile":  {
+                                                                                   "x":  11,
+                                                                                   "y":  11
+                                                                               },
+                                                                "orientation":  1,
+                                                                "sourceOrderId":  "room-template-000000000000-2-object-000"
+                                                            }
+                                                        ]
+                                  },
+        "firstAfterObjects":  {
+                                  "placedObjects":  [
+
+                                                    ]
+                              },
+        "reversedAfterObjects":  {
+                                     "placedObjects":  [
+                                                           {
+                                                               "placedObjectId":  "object:11:11",
+                                                               "objectId":  "object.bed",
+                                                               "anchorTile":  {
+                                                                                  "x":  11,
+                                                                                  "y":  11
+                                                                              },
+                                                               "orientation":  1,
+                                                               "sourceOrderId":  "room-template-000000000000-2-object-000"
+                                                           }
+                                                       ]
+                                 },
+        "firstBeforeKernel":  {
+                                  "tick":  1371,
+                                  "expectedSequence":  1,
+                                  "rngStates":  [
+                                                    {
+                                                        "name":  "contraband.detection",
+                                                        "state":  {
+                                                                      "algorithm":  "xoshiro128**",
+                                                                      "version":  1,
+                                                                      "words":  [
+                                                                                    697665215,
+                                                                                    1719510596,
+                                                                                    3290681155,
+                                                                                    1078936477
+                                                                                ]
+                                                                  }
+                                                    },
+                                                    {
+                                                        "name":  "contraband.intelligence",
+                                                        "state":  {
+                                                                      "algorithm":  "xoshiro128**",
+                                                                      "version":  1,
+                                                                      "words":  [
+                                                                                    2579408288,
+                                                                                    2693190851,
+                                                                                    3919714911,
+                                                                                    1015181709
+                                                                                ]
+                                                                  }
+                                                    },
+                                                    {
+                                                        "name":  "contraband.introduction",
+                                                        "state":  {
+                                                                      "algorithm":  "xoshiro128**",
+                                                                      "version":  1,
+                                                                      "words":  [
+                                                                                    893521567,
+                                                                                    2775483950,
+                                                                                    4199098468,
+                                                                                    3040899221
+                                                                                ]
+                                                                  }
+                                                    },
+                                                    {
+                                                        "name":  "identity.actor-name",
+                                                        "state":  {
+                                                                      "algorithm":  "xoshiro128**",
+                                                                      "version":  1,
+                                                                      "words":  [
+                                                                                    3398341328,
+                                                                                    134740608,
+                                                                                    881420718,
+                                                                                    186745909
+                                                                                ]
+                                                                  }
+                                                    },
+                                                    {
+                                                        "name":  "prisoners.classification",
+                                                        "state":  {
+                                                                      "algorithm":  "xoshiro128**",
+                                                                      "version":  1,
+                                                                      "words":  [
+                                                                                    2805008513,
+                                                                                    3967167656,
+                                                                                    2553316513,
+                                                                                    621376844
+                                                                                ]
+                                                                  }
+                                                    },
+                                                    {
+                                                        "name":  "prisoners.sentence",
+                                                        "state":  {
+                                                                      "algorithm":  "xoshiro128**",
+                                                                      "version":  1,
+                                                                      "words":  [
+                                                                                    3674440120,
+                                                                                    80675048,
+                                                                                    1429123581,
+                                                                                    1409075729
+                                                                                ]
+                                                                  }
+                                                    }
+                                                ],
+                                  "commands":  [
+
+                                               ]
+                              },
+        "reversedBeforeKernel":  {
+                                     "tick":  1371,
+                                     "expectedSequence":  1,
+                                     "rngStates":  [
+                                                       {
+                                                           "name":  "contraband.detection",
+                                                           "state":  {
+                                                                         "algorithm":  "xoshiro128**",
+                                                                         "version":  1,
+                                                                         "words":  [
+                                                                                       697665215,
+                                                                                       1719510596,
+                                                                                       3290681155,
+                                                                                       1078936477
+                                                                                   ]
+                                                                     }
+                                                       },
+                                                       {
+                                                           "name":  "contraband.intelligence",
+                                                           "state":  {
+                                                                         "algorithm":  "xoshiro128**",
+                                                                         "version":  1,
+                                                                         "words":  [
+                                                                                       2579408288,
+                                                                                       2693190851,
+                                                                                       3919714911,
+                                                                                       1015181709
+                                                                                   ]
+                                                                     }
+                                                       },
+                                                       {
+                                                           "name":  "contraband.introduction",
+                                                           "state":  {
+                                                                         "algorithm":  "xoshiro128**",
+                                                                         "version":  1,
+                                                                         "words":  [
+                                                                                       893521567,
+                                                                                       2775483950,
+                                                                                       4199098468,
+                                                                                       3040899221
+                                                                                   ]
+                                                                     }
+                                                       },
+                                                       {
+                                                           "name":  "identity.actor-name",
+                                                           "state":  {
+                                                                         "algorithm":  "xoshiro128**",
+                                                                         "version":  1,
+                                                                         "words":  [
+                                                                                       3398341328,
+                                                                                       134740608,
+                                                                                       881420718,
+                                                                                       186745909
+                                                                                   ]
+                                                                     }
+                                                       },
+                                                       {
+                                                           "name":  "prisoners.classification",
+                                                           "state":  {
+                                                                         "algorithm":  "xoshiro128**",
+                                                                         "version":  1,
+                                                                         "words":  [
+                                                                                       2805008513,
+                                                                                       3967167656,
+                                                                                       2553316513,
+                                                                                       621376844
+                                                                                   ]
+                                                                     }
+                                                       },
+                                                       {
+                                                           "name":  "prisoners.sentence",
+                                                           "state":  {
+                                                                         "algorithm":  "xoshiro128**",
+                                                                         "version":  1,
+                                                                         "words":  [
+                                                                                       3674440120,
+                                                                                       80675048,
+                                                                                       1429123581,
+                                                                                       1409075729
+                                                                                   ]
+                                                                     }
+                                                       }
+                                                   ],
+                                     "commands":  [
+
+                                                  ]
+                                 },
+        "firstAfterKernel":  {
+                                 "tick":  1371,
+                                 "expectedSequence":  2,
+                                 "rngStates":  [
+                                                   {
+                                                       "name":  "contraband.detection",
+                                                       "state":  {
+                                                                     "algorithm":  "xoshiro128**",
+                                                                     "version":  1,
+                                                                     "words":  [
+                                                                                   697665215,
+                                                                                   1719510596,
+                                                                                   3290681155,
+                                                                                   1078936477
+                                                                               ]
+                                                                 }
+                                                   },
+                                                   {
+                                                       "name":  "contraband.intelligence",
+                                                       "state":  {
+                                                                     "algorithm":  "xoshiro128**",
+                                                                     "version":  1,
+                                                                     "words":  [
+                                                                                   2579408288,
+                                                                                   2693190851,
+                                                                                   3919714911,
+                                                                                   1015181709
+                                                                               ]
+                                                                 }
+                                                   },
+                                                   {
+                                                       "name":  "contraband.introduction",
+                                                       "state":  {
+                                                                     "algorithm":  "xoshiro128**",
+                                                                     "version":  1,
+                                                                     "words":  [
+                                                                                   893521567,
+                                                                                   2775483950,
+                                                                                   4199098468,
+                                                                                   3040899221
+                                                                               ]
+                                                                 }
+                                                   },
+                                                   {
+                                                       "name":  "identity.actor-name",
+                                                       "state":  {
+                                                                     "algorithm":  "xoshiro128**",
+                                                                     "version":  1,
+                                                                     "words":  [
+                                                                                   3398341328,
+                                                                                   134740608,
+                                                                                   881420718,
+                                                                                   186745909
+                                                                               ]
+                                                                 }
+                                                   },
+                                                   {
+                                                       "name":  "prisoners.classification",
+                                                       "state":  {
+                                                                     "algorithm":  "xoshiro128**",
+                                                                     "version":  1,
+                                                                     "words":  [
+                                                                                   2805008513,
+                                                                                   3967167656,
+                                                                                   2553316513,
+                                                                                   621376844
+                                                                               ]
+                                                                 }
+                                                   },
+                                                   {
+                                                       "name":  "prisoners.sentence",
+                                                       "state":  {
+                                                                     "algorithm":  "xoshiro128**",
+                                                                     "version":  1,
+                                                                     "words":  [
+                                                                                   3674440120,
+                                                                                   80675048,
+                                                                                   1429123581,
+                                                                                   1409075729
+                                                                               ]
+                                                                 }
+                                                   }
+                                               ],
+                                 "commands":  [
+
+                                              ]
+                             },
+        "reversedAfterKernel":  {
+                                    "tick":  1371,
+                                    "expectedSequence":  2,
+                                    "rngStates":  [
+                                                      {
+                                                          "name":  "contraband.detection",
+                                                          "state":  {
+                                                                        "algorithm":  "xoshiro128**",
+                                                                        "version":  1,
+                                                                        "words":  [
+                                                                                      697665215,
+                                                                                      1719510596,
+                                                                                      3290681155,
+                                                                                      1078936477
+                                                                                  ]
+                                                                    }
+                                                      },
+                                                      {
+                                                          "name":  "contraband.intelligence",
+                                                          "state":  {
+                                                                        "algorithm":  "xoshiro128**",
+                                                                        "version":  1,
+                                                                        "words":  [
+                                                                                      2579408288,
+                                                                                      2693190851,
+                                                                                      3919714911,
+                                                                                      1015181709
+                                                                                  ]
+                                                                    }
+                                                      },
+                                                      {
+                                                          "name":  "contraband.introduction",
+                                                          "state":  {
+                                                                        "algorithm":  "xoshiro128**",
+                                                                        "version":  1,
+                                                                        "words":  [
+                                                                                      893521567,
+                                                                                      2775483950,
+                                                                                      4199098468,
+                                                                                      3040899221
+                                                                                  ]
+                                                                    }
+                                                      },
+                                                      {
+                                                          "name":  "identity.actor-name",
+                                                          "state":  {
+                                                                        "algorithm":  "xoshiro128**",
+                                                                        "version":  1,
+                                                                        "words":  [
+                                                                                      3398341328,
+                                                                                      134740608,
+                                                                                      881420718,
+                                                                                      186745909
+                                                                                  ]
+                                                                    }
+                                                      },
+                                                      {
+                                                          "name":  "prisoners.classification",
+                                                          "state":  {
+                                                                        "algorithm":  "xoshiro128**",
+                                                                        "version":  1,
+                                                                        "words":  [
+                                                                                      2805008513,
+                                                                                      3967167656,
+                                                                                      2553316513,
+                                                                                      621376844
+                                                                                  ]
+                                                                    }
+                                                      },
+                                                      {
+                                                          "name":  "prisoners.sentence",
+                                                          "state":  {
+                                                                        "algorithm":  "xoshiro128**",
+                                                                        "version":  1,
+                                                                        "words":  [
+                                                                                      3674440120,
+                                                                                      80675048,
+                                                                                      1429123581,
+                                                                                      1409075729
+                                                                                  ]
+                                                                    }
+                                                      }
+                                                  ],
+                                    "commands":  [
+
+                                                 ]
+                                },
+        "firstBeforeFunds":  {
+                                 "balanceMinorUnits":  23470
+                             },
+        "reversedBeforeFunds":  {
+                                    "balanceMinorUnits":  23470
+                                },
+        "firstAfterFunds":  {
+                                "balanceMinorUnits":  23470
+                            },
+        "reversedAfterFunds":  {
+                                   "balanceMinorUnits":  23470
+                               }
+    }
+]

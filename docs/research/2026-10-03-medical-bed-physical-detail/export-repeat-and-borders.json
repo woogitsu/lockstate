@@ -1,0 +1,945 @@
+{
+  "byteIdenticalRepeatFiles": 73,
+  "descriptorSha256": "ba270bbadd9f4f821f7a0748c2bddc9c23b7e85d494935b3fb317ffc75dc265a",
+  "minimumTransparentBorderPixels": 53,
+  "oldSameAssetFramesRetired": [
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+00-elev20.d8a8ad7d5286.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+00-elev30.50e5b70beec2.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+00-elev40.c4781124c7bb.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+00-elev50.2e4b22529bee.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+00-elev60.7486171132b3.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+00-elev70.6e661f4e3ece.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+30-elev20.f4bd98330ac8.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+30-elev30.b0cef68214a4.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+30-elev40.df10df540d7c.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+30-elev50.6712fefcf4b2.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+30-elev60.8cfd7219d7e9.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+30-elev70.3557728214a5.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+60-elev20.9fa1d30444b6.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+60-elev30.7055d3853f68.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+60-elev40.5dc7fbe7ff53.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+60-elev50.e75911ae993b.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+60-elev60.0bedb3cc5327.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+60-elev70.79d3880ca423.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+90-elev20.b933db5bae87.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+90-elev30.7f95f60e9866.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+90-elev40.663315aca371.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+90-elev50.0aff9e1cfb73.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+90-elev60.63286fb4d0db.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+90-elev70.98257e72d5fc.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+120-elev20.e3875621b481.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+120-elev30.d969c37d00d3.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+120-elev40.b1d4d0e5f058.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+120-elev50.27bd237428e1.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+120-elev60.2ffdc4b08713.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+120-elev70.7a72b213b2d1.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+150-elev20.81b12bfac857.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+150-elev30.5882e971906c.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+150-elev40.b706314edd9e.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+150-elev50.2333abbc2b64.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+150-elev60.a3db8c6f0d4a.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+150-elev70.938a5fb50711.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+180-elev20.f9cbe72da5df.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+180-elev30.6a1e976c1942.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+180-elev40.5dcdaa4c6fb4.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+180-elev50.41448718aea1.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+180-elev60.d3f13361fbbd.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+180-elev70.9bb0d39dca2e.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+210-elev20.99ca61ba4cc9.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+210-elev30.edf88beb052e.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+210-elev40.cdd9e27eaefc.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+210-elev50.31b4c88cb2c0.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+210-elev60.6d3533351912.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+210-elev70.9f0841c7220b.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+240-elev20.2df5b7601e9d.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+240-elev30.5b9aded40d89.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+240-elev40.c189670881e3.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+240-elev50.b41bc27ee020.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+240-elev60.392b2ba46cb1.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+240-elev70.8d37d824c723.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+270-elev20.8a0512a84f4a.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+270-elev30.7406ddfff4a6.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+270-elev40.744d1c6541c3.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+270-elev50.083ebe08abe1.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+270-elev60.380dbca90c87.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+270-elev70.addfc520e2f8.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+300-elev20.b5f4c3f09ba6.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+300-elev30.d4d879166085.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+300-elev40.12e4f713a578.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+300-elev50.86dc6305176b.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+300-elev60.cdf318db3c96.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+300-elev70.c1537cff79e8.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+330-elev20.d5e6bfbf0ef9.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+330-elev30.e1955dbbd6c8.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+330-elev40.ffd09da3c820.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+330-elev50.17cb3e511c82.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+330-elev60.f2b2241ddfe6.png",
+    "/assets/environment/oblique/furniture.medical-bed.variants-yaw+330-elev70.593f4002fd0c.png"
+  ],
+  "allDecodedFrames": [
+    {
+      "yaw": 0,
+      "elevation": 20,
+      "sha256": "a4ad0fb7b91ea685c7e01d8ecc9a1582d69c064a1d7076717b62a8190d383136",
+      "alphaBounds": [
+        96,
+        69,
+        160,
+        187
+      ],
+      "transparentMarginPixels": 69
+    },
+    {
+      "yaw": 0,
+      "elevation": 30,
+      "sha256": "ebe3c69e5d73dd0d623615eac1c71f8811770664879512d8a6835d91adc7b6a3",
+      "alphaBounds": [
+        96,
+        64,
+        160,
+        192
+      ],
+      "transparentMarginPixels": 64
+    },
+    {
+      "yaw": 0,
+      "elevation": 40,
+      "sha256": "0fe8b3b71e594b77723c924e218576bf8f87321940eafb948d3a7501d79683b6",
+      "alphaBounds": [
+        96,
+        61,
+        160,
+        196
+      ],
+      "transparentMarginPixels": 60
+    },
+    {
+      "yaw": 0,
+      "elevation": 50,
+      "sha256": "78622dd31317cc1308aefd7761c8db76410e1ba677f3fb0b8ed649b21e94f30e",
+      "alphaBounds": [
+        96,
+        60,
+        160,
+        197
+      ],
+      "transparentMarginPixels": 59
+    },
+    {
+      "yaw": 0,
+      "elevation": 60,
+      "sha256": "730a94fb8404ab51b21c62dfbd9babdf2a4993a805a851bb94850c367ee94c26",
+      "alphaBounds": [
+        96,
+        61,
+        160,
+        197
+      ],
+      "transparentMarginPixels": 59
+    },
+    {
+      "yaw": 0,
+      "elevation": 70,
+      "sha256": "0faf68244120e2c31c347fc945fa8199e6afd5e0d530238398ced3844f1da1d7",
+      "alphaBounds": [
+        96,
+        64,
+        160,
+        195
+      ],
+      "transparentMarginPixels": 61
+    },
+    {
+      "yaw": 30,
+      "elevation": 20,
+      "sha256": "33ca6bbec73d3e728d80120a414efd716b2b75bf7a8efa833eb4bbb20aea9956",
+      "alphaBounds": [
+        73,
+        68,
+        183,
+        189
+      ],
+      "transparentMarginPixels": 67
+    },
+    {
+      "yaw": 30,
+      "elevation": 30,
+      "sha256": "9e6131bb293eba97ad9d693f2200164b0c6e7b44add8a611db0580e79e0b70e1",
+      "alphaBounds": [
+        73,
+        62,
+        183,
+        196
+      ],
+      "transparentMarginPixels": 60
+    },
+    {
+      "yaw": 30,
+      "elevation": 40,
+      "sha256": "83af650639a5d29806bb0143cfea1b3a6e4885f0b8afdaa068ae4602f1be1c95",
+      "alphaBounds": [
+        73,
+        58,
+        183,
+        200
+      ],
+      "transparentMarginPixels": 56
+    },
+    {
+      "yaw": 30,
+      "elevation": 50,
+      "sha256": "d5c5ffd26868aa2e4f58e26111c553997073566233ef4ee8f7ccecc32b8819cc",
+      "alphaBounds": [
+        73,
+        56,
+        183,
+        203
+      ],
+      "transparentMarginPixels": 53
+    },
+    {
+      "yaw": 30,
+      "elevation": 60,
+      "sha256": "f7e21856368b82ec93f44847e392d142db7b9ffab5ffd2d603e85d9b30b2ef6c",
+      "alphaBounds": [
+        73,
+        56,
+        183,
+        203
+      ],
+      "transparentMarginPixels": 53
+    },
+    {
+      "yaw": 30,
+      "elevation": 70,
+      "sha256": "092f3a39fe652d50a08be242b3a5d0783ac77e76e87bc23873d249d1f7407d72",
+      "alphaBounds": [
+        73,
+        58,
+        183,
+        201
+      ],
+      "transparentMarginPixels": 55
+    },
+    {
+      "yaw": 60,
+      "elevation": 20,
+      "sha256": "e5d739883297bab7fec5473ab39994b873c88148d80c207bfdb39dd24cce1f69",
+      "alphaBounds": [
+        63,
+        71,
+        193,
+        187
+      ],
+      "transparentMarginPixels": 63
+    },
+    {
+      "yaw": 60,
+      "elevation": 30,
+      "sha256": "0b32e4cf8a8935a6fba889bf938ae281f4d33f07048fc23beca210d12a7787e4",
+      "alphaBounds": [
+        63,
+        66,
+        193,
+        191
+      ],
+      "transparentMarginPixels": 63
+    },
+    {
+      "yaw": 60,
+      "elevation": 40,
+      "sha256": "9fd1c6314ae719b0ae947af548486e07958250abdeca877cd82f83cf28d9e33b",
+      "alphaBounds": [
+        63,
+        64,
+        193,
+        194
+      ],
+      "transparentMarginPixels": 62
+    },
+    {
+      "yaw": 60,
+      "elevation": 50,
+      "sha256": "3510cec4031b163636c6fd921ac6c4af75fa656fe46302b3858393f4a8f08958",
+      "alphaBounds": [
+        63,
+        63,
+        193,
+        196
+      ],
+      "transparentMarginPixels": 60
+    },
+    {
+      "yaw": 60,
+      "elevation": 60,
+      "sha256": "abac9c43bfa6e2999177f78b784ca4eaa8552a5deef9b920f98aed7aebcac937",
+      "alphaBounds": [
+        63,
+        64,
+        193,
+        195
+      ],
+      "transparentMarginPixels": 61
+    },
+    {
+      "yaw": 60,
+      "elevation": 70,
+      "sha256": "c67e534c1c6a27a39ae8b280b65875d13679e7f7b84f1ea520b0ab78d3ae96f1",
+      "alphaBounds": [
+        63,
+        67,
+        193,
+        192
+      ],
+      "transparentMarginPixels": 63
+    },
+    {
+      "yaw": 90,
+      "elevation": 20,
+      "sha256": "4b0aa837313b50aedfe84d6c450573cde050d70c26f22344ec42007f15d881c2",
+      "alphaBounds": [
+        69,
+        78,
+        187,
+        179
+      ],
+      "transparentMarginPixels": 69
+    },
+    {
+      "yaw": 90,
+      "elevation": 30,
+      "sha256": "16ddfa3bacc90512c379e231b278e9ec6b7f95c39a16afb3e8d395db09057a6f",
+      "alphaBounds": [
+        69,
+        77,
+        187,
+        181
+      ],
+      "transparentMarginPixels": 69
+    },
+    {
+      "yaw": 90,
+      "elevation": 40,
+      "sha256": "d98a7670307112ee88a3c74eb797fbabfe68ecd26e9a5804a0ef872ef77c7191",
+      "alphaBounds": [
+        69,
+        77,
+        187,
+        181
+      ],
+      "transparentMarginPixels": 69
+    },
+    {
+      "yaw": 90,
+      "elevation": 50,
+      "sha256": "d1ad23d79d6fcf307df2648fb53d5a24fef5728d3c6e4fa364a92773bf638026",
+      "alphaBounds": [
+        69,
+        79,
+        187,
+        179
+      ],
+      "transparentMarginPixels": 69
+    },
+    {
+      "yaw": 90,
+      "elevation": 60,
+      "sha256": "b44c50d8caf44eecc20db8fb7f2ee21fc4ccc08ae193eb22fb7cacf451bfd5ca",
+      "alphaBounds": [
+        69,
+        82,
+        187,
+        177
+      ],
+      "transparentMarginPixels": 69
+    },
+    {
+      "yaw": 90,
+      "elevation": 70,
+      "sha256": "31abf0324db6b11b545088ae0bf3c38ada8a9beac20af137896d8e13b4c8f529",
+      "alphaBounds": [
+        69,
+        87,
+        187,
+        172
+      ],
+      "transparentMarginPixels": 69
+    },
+    {
+      "yaw": 120,
+      "elevation": 20,
+      "sha256": "d8e6ce9adaeac338cad02d95a4c179c12f36df9b05bd5a4fe9afb5c80b95b15c",
+      "alphaBounds": [
+        63,
+        88,
+        193,
+        187
+      ],
+      "transparentMarginPixels": 63
+    },
+    {
+      "yaw": 120,
+      "elevation": 30,
+      "sha256": "f3108d2bacdeafeffb05839b608513c33d2c7ef00f38d33ecf9166419d4b8e35",
+      "alphaBounds": [
+        63,
+        84,
+        193,
+        191
+      ],
+      "transparentMarginPixels": 63
+    },
+    {
+      "yaw": 120,
+      "elevation": 40,
+      "sha256": "ce86a9505fa5fc535f83b967f2e5159c150a3f4737dd396469d95722f8c1f474",
+      "alphaBounds": [
+        63,
+        80,
+        193,
+        194
+      ],
+      "transparentMarginPixels": 62
+    },
+    {
+      "yaw": 120,
+      "elevation": 50,
+      "sha256": "9693e757835a510dd5ad17afbe58f05a4ba81e6d04eaac9bc855b272d1a9274b",
+      "alphaBounds": [
+        63,
+        76,
+        193,
+        196
+      ],
+      "transparentMarginPixels": 60
+    },
+    {
+      "yaw": 120,
+      "elevation": 60,
+      "sha256": "ecac29936837a38d370912088f3d4526bc81cb380b4d02f5b6d1c359fd294c49",
+      "alphaBounds": [
+        63,
+        74,
+        193,
+        195
+      ],
+      "transparentMarginPixels": 61
+    },
+    {
+      "yaw": 120,
+      "elevation": 70,
+      "sha256": "da8b9eb360f88d38f811ff3c12c2c7cb511448df47cbee7d2c7533130676a34d",
+      "alphaBounds": [
+        63,
+        74,
+        193,
+        192
+      ],
+      "transparentMarginPixels": 63
+    },
+    {
+      "yaw": 150,
+      "elevation": 20,
+      "sha256": "b427cb0c2400ccedd6cbec65a9314b7de66c6acef27fa37bef887f418360f50c",
+      "alphaBounds": [
+        73,
+        87,
+        183,
+        189
+      ],
+      "transparentMarginPixels": 67
+    },
+    {
+      "yaw": 150,
+      "elevation": 30,
+      "sha256": "735f1847449ca950f9ae4f2578130639db3011db9ea36f0c2d2478f673ac9369",
+      "alphaBounds": [
+        73,
+        79,
+        183,
+        196
+      ],
+      "transparentMarginPixels": 60
+    },
+    {
+      "yaw": 150,
+      "elevation": 40,
+      "sha256": "c470278cde296a874bdb404a7ccbc66d10f9ce3237f287afcbe70f22f7bd48ce",
+      "alphaBounds": [
+        73,
+        73,
+        183,
+        200
+      ],
+      "transparentMarginPixels": 56
+    },
+    {
+      "yaw": 150,
+      "elevation": 50,
+      "sha256": "da18cf2afff24bfbd9cba0837f3b41d3a7626d7add82df7582b6e3dcd7b460fd",
+      "alphaBounds": [
+        73,
+        68,
+        183,
+        203
+      ],
+      "transparentMarginPixels": 53
+    },
+    {
+      "yaw": 150,
+      "elevation": 60,
+      "sha256": "023c8998add3140704fc6d892308c46ea6c1349f5264fc6f46411d59526c1026",
+      "alphaBounds": [
+        73,
+        65,
+        183,
+        203
+      ],
+      "transparentMarginPixels": 53
+    },
+    {
+      "yaw": 150,
+      "elevation": 70,
+      "sha256": "941e137a8ac1a630681c5454e29f7eddf301b0e1557aabba3627e2ec8e774286",
+      "alphaBounds": [
+        73,
+        64,
+        183,
+        201
+      ],
+      "transparentMarginPixels": 55
+    },
+    {
+      "yaw": 180,
+      "elevation": 20,
+      "sha256": "7ab7741f85af4535b2ed1d700a8856420d2c09cec5dbd1cfec3a50f4e6b193fb",
+      "alphaBounds": [
+        96,
+        88,
+        160,
+        187
+      ],
+      "transparentMarginPixels": 69
+    },
+    {
+      "yaw": 180,
+      "elevation": 30,
+      "sha256": "cb2fa60bfa9b22137ae9e4cc1d2df5aea251239930d9f988e34181c2cacd002d",
+      "alphaBounds": [
+        96,
+        82,
+        160,
+        192
+      ],
+      "transparentMarginPixels": 64
+    },
+    {
+      "yaw": 180,
+      "elevation": 40,
+      "sha256": "b2023a2bd1aba1736017362ee34b64ceae5d4b5c0b55c790bd4d13fa3c542a04",
+      "alphaBounds": [
+        96,
+        76,
+        160,
+        196
+      ],
+      "transparentMarginPixels": 60
+    },
+    {
+      "yaw": 180,
+      "elevation": 50,
+      "sha256": "2a2827533a28263985b9f65fcfcdc2e2e0fab0a6b325873689d19b4bf632c638",
+      "alphaBounds": [
+        96,
+        72,
+        160,
+        197
+      ],
+      "transparentMarginPixels": 59
+    },
+    {
+      "yaw": 180,
+      "elevation": 60,
+      "sha256": "2b40784021e2cf3d06099e47504c24afec225f254a380233a929741b7806c613",
+      "alphaBounds": [
+        96,
+        70,
+        160,
+        197
+      ],
+      "transparentMarginPixels": 59
+    },
+    {
+      "yaw": 180,
+      "elevation": 70,
+      "sha256": "48870cd3aaef16f4e67dd14b380d15a6f13842f7d327b64c3b6b9c6fa6e2f8e0",
+      "alphaBounds": [
+        96,
+        69,
+        160,
+        195
+      ],
+      "transparentMarginPixels": 61
+    },
+    {
+      "yaw": 210,
+      "elevation": 20,
+      "sha256": "df0a10d7ad80eb01ce52949ab4de7c32b433b5799faac27a340128a665b857c5",
+      "alphaBounds": [
+        73,
+        87,
+        183,
+        189
+      ],
+      "transparentMarginPixels": 67
+    },
+    {
+      "yaw": 210,
+      "elevation": 30,
+      "sha256": "c9e6d074bc943bcb1d4d56cf29e0d30f48bd418aebd39498affbbf3467846daf",
+      "alphaBounds": [
+        73,
+        79,
+        183,
+        196
+      ],
+      "transparentMarginPixels": 60
+    },
+    {
+      "yaw": 210,
+      "elevation": 40,
+      "sha256": "bd9bf4fa60f41487ebbefe7e0185f9ccf448b105f1b3a14263e4be64dafc91cb",
+      "alphaBounds": [
+        73,
+        73,
+        183,
+        200
+      ],
+      "transparentMarginPixels": 56
+    },
+    {
+      "yaw": 210,
+      "elevation": 50,
+      "sha256": "dd8710b31de7f8d6968f71f1247ae067216d869b2f2b92da23b540edc0abf68c",
+      "alphaBounds": [
+        73,
+        68,
+        183,
+        203
+      ],
+      "transparentMarginPixels": 53
+    },
+    {
+      "yaw": 210,
+      "elevation": 60,
+      "sha256": "b1dce8586c3631009e05e8d3fa320b3380f2bfb2f40fddfcbb8d5c0eeb1dea2e",
+      "alphaBounds": [
+        73,
+        65,
+        183,
+        203
+      ],
+      "transparentMarginPixels": 53
+    },
+    {
+      "yaw": 210,
+      "elevation": 70,
+      "sha256": "8fc31e22f169fcba5c187fd6ca136561f3abcdce71a4ede1f5b276a1f7559c6b",
+      "alphaBounds": [
+        73,
+        64,
+        183,
+        201
+      ],
+      "transparentMarginPixels": 55
+    },
+    {
+      "yaw": 240,
+      "elevation": 20,
+      "sha256": "f3710d2455284f612cf4047eb461f65e06ebe6a26a7defdebeb64ea6c9114237",
+      "alphaBounds": [
+        63,
+        88,
+        193,
+        187
+      ],
+      "transparentMarginPixels": 63
+    },
+    {
+      "yaw": 240,
+      "elevation": 30,
+      "sha256": "e4aae1485a178dd4806f8d3f75cfedd837a949f3939681c1514c14f5ffaeaa02",
+      "alphaBounds": [
+        63,
+        84,
+        193,
+        191
+      ],
+      "transparentMarginPixels": 63
+    },
+    {
+      "yaw": 240,
+      "elevation": 40,
+      "sha256": "e23892b6929e7453bcf0e22da0d90d1233ba7af12aaac5e466e0d430c962810f",
+      "alphaBounds": [
+        63,
+        80,
+        193,
+        194
+      ],
+      "transparentMarginPixels": 62
+    },
+    {
+      "yaw": 240,
+      "elevation": 50,
+      "sha256": "015edaae4a41e1bdf63bdc39efc1a181c91cba7d8d4ffad76d9f975ebd6121d1",
+      "alphaBounds": [
+        63,
+        76,
+        193,
+        196
+      ],
+      "transparentMarginPixels": 60
+    },
+    {
+      "yaw": 240,
+      "elevation": 60,
+      "sha256": "d0c9411c1518c59ab16a189f0d14388c82a5629202531919743d52ffd48a8613",
+      "alphaBounds": [
+        63,
+        74,
+        193,
+        195
+      ],
+      "transparentMarginPixels": 61
+    },
+    {
+      "yaw": 240,
+      "elevation": 70,
+      "sha256": "bd135e741277bd3ba610405c27adbbc578e7b34d169d3268148255257c2ce011",
+      "alphaBounds": [
+        63,
+        74,
+        193,
+        192
+      ],
+      "transparentMarginPixels": 63
+    },
+    {
+      "yaw": 270,
+      "elevation": 20,
+      "sha256": "6bc74904a52658cfee372951885aebb0d387509df2400ed97ea781f125ab538f",
+      "alphaBounds": [
+        69,
+        78,
+        187,
+        179
+      ],
+      "transparentMarginPixels": 69
+    },
+    {
+      "yaw": 270,
+      "elevation": 30,
+      "sha256": "2be57bd290a3e0787b2febe2d6810a1225fa1d2c65009f3e9022bdd476777313",
+      "alphaBounds": [
+        69,
+        77,
+        187,
+        181
+      ],
+      "transparentMarginPixels": 69
+    },
+    {
+      "yaw": 270,
+      "elevation": 40,
+      "sha256": "d05f57b23ebcfa4b18ef40bfbc4370eafad44ca4b3317e7c00fe6ccca1099066",
+      "alphaBounds": [
+        69,
+        77,
+        187,
+        181
+      ],
+      "transparentMarginPixels": 69
+    },
+    {
+      "yaw": 270,
+      "elevation": 50,
+      "sha256": "68cf9724598c652307a953eeac30a4b63aba787c91b68929783513797cdfecf6",
+      "alphaBounds": [
+        69,
+        79,
+        187,
+        179
+      ],
+      "transparentMarginPixels": 69
+    },
+    {
+      "yaw": 270,
+      "elevation": 60,
+      "sha256": "306d37b03eb9e2696f013da9cb51847dab28b847b08bede3cde624510c4ecb14",
+      "alphaBounds": [
+        69,
+        82,
+        187,
+        177
+      ],
+      "transparentMarginPixels": 69
+    },
+    {
+      "yaw": 270,
+      "elevation": 70,
+      "sha256": "8d9a2d8bf057e2b5a18648d6a44f7c3f2119b0d359d8bacb04d9caeda76a3245",
+      "alphaBounds": [
+        69,
+        87,
+        187,
+        172
+      ],
+      "transparentMarginPixels": 69
+    },
+    {
+      "yaw": 300,
+      "elevation": 20,
+      "sha256": "0a816e00be92ae60ff75c87c15c123fcdaf6ebb3d20840184c5efde74b995bb1",
+      "alphaBounds": [
+        63,
+        71,
+        193,
+        187
+      ],
+      "transparentMarginPixels": 63
+    },
+    {
+      "yaw": 300,
+      "elevation": 30,
+      "sha256": "549dd276885cc1ce3d3a8b15111b696316387ef589986166497f724416214227",
+      "alphaBounds": [
+        63,
+        66,
+        193,
+        191
+      ],
+      "transparentMarginPixels": 63
+    },
+    {
+      "yaw": 300,
+      "elevation": 40,
+      "sha256": "bd2db1e500072bc0fe8c26de9e07b32002def9aaf673e7938ecb6759ade992b3",
+      "alphaBounds": [
+        63,
+        64,
+        193,
+        194
+      ],
+      "transparentMarginPixels": 62
+    },
+    {
+      "yaw": 300,
+      "elevation": 50,
+      "sha256": "b7e3b2d7652d75ecf4e9d44e909decb2fad9d227cbcdca851f2dcf3e43680615",
+      "alphaBounds": [
+        63,
+        63,
+        193,
+        196
+      ],
+      "transparentMarginPixels": 60
+    },
+    {
+      "yaw": 300,
+      "elevation": 60,
+      "sha256": "cf3ba0b8b5164f66e633f98939f827a8b3a13b773908bf1dbcacf42baa653a75",
+      "alphaBounds": [
+        63,
+        64,
+        193,
+        195
+      ],
+      "transparentMarginPixels": 61
+    },
+    {
+      "yaw": 300,
+      "elevation": 70,
+      "sha256": "bfff21d80e3bd6091b004270cf6b1f72736c88513a3cf3dbbd848b8543ee495d",
+      "alphaBounds": [
+        63,
+        67,
+        193,
+        192
+      ],
+      "transparentMarginPixels": 63
+    },
+    {
+      "yaw": 330,
+      "elevation": 20,
+      "sha256": "607418154b7edab49e6e2295ae3fa9b2289451eb6df2c4be51866cdfc47a0b40",
+      "alphaBounds": [
+        73,
+        68,
+        183,
+        189
+      ],
+      "transparentMarginPixels": 67
+    },
+    {
+      "yaw": 330,
+      "elevation": 30,
+      "sha256": "04ff69577dd134557da87c0ea94a6de21c47374768406f9a30eeccab7f824ff2",
+      "alphaBounds": [
+        73,
+        62,
+        183,
+        196
+      ],
+      "transparentMarginPixels": 60
+    },
+    {
+      "yaw": 330,
+      "elevation": 40,
+      "sha256": "da2fd2e03415fceaf229d18615ad184bc611e731a9d92f8b2c362ec1af7bc66c",
+      "alphaBounds": [
+        73,
+        58,
+        183,
+        200
+      ],
+      "transparentMarginPixels": 56
+    },
+    {
+      "yaw": 330,
+      "elevation": 50,
+      "sha256": "66145fb9ca519fb09aee991b51173da8275a64774f02a03764797382ef6363ae",
+      "alphaBounds": [
+        73,
+        56,
+        183,
+        203
+      ],
+      "transparentMarginPixels": 53
+    },
+    {
+      "yaw": 330,
+      "elevation": 60,
+      "sha256": "c85f694cbf07d362d22e83e9683f4e438c6afbbc031a7af1d9160d7dfdc026ef",
+      "alphaBounds": [
+        73,
+        56,
+        183,
+        203
+      ],
+      "transparentMarginPixels": 53
+    },
+    {
+      "yaw": 330,
+      "elevation": 70,
+      "sha256": "d0149440c2e462105ce46ae7d66fda72e23f2175dc4792d48344e1352e806459",
+      "alphaBounds": [
+        73,
+        58,
+        183,
+        201
+      ],
+      "transparentMarginPixels": 55
+    }
+  ]
+}

@@ -328,6 +328,31 @@ export class RoomTemplateCoordinator implements SystemRegistration {
     return ids === undefined ? undefined : this.prepareUndo(ids, tick);
   }
 
+  /** One supply cancellation can reverse several exact gestures; validate/unzone their union before any refund. */
+  public prepareMaterialWithdrawal(orderIds: readonly string[], tick: number): RoomTemplateReversalRefusal | undefined {
+    const requests: PendingRoomTemplate[] = [];
+    for (const orderId of orderIds) {
+      const ids = this.cancellationGestureIds(orderId);
+      if (ids === undefined) continue;
+      const transaction = new Set(ids);
+      const request = this.completed.find(entry => this.shellOrderIds(entry).some(id => transaction.has(id)))
+        ?? this.recoverCompletedGesture(ids);
+      if (request !== undefined && !requests.some(entry => entry.sequence === request.sequence)) requests.push(request);
+    }
+    if (requests.length === 0) return undefined;
+    const built = requests.map(request => createRoomTemplateBuildPlan(request.templateId, request.origin, request.mirrorX,
+      request.sequence, request.quarterTurns ?? 0));
+    if (built.some(gesture => this.hasUnknownReversalOwnership(gesture.orders.map(order => order.id)))) {
+      return { kind: 'refused', reason: 'object-ownership-unknown' };
+    }
+    const outcome = this.roomZoning.unzoneTogether(built.flatMap(gesture => gesture.plan.zones), tick);
+    if (outcome.kind === 'refused' && outcome.reason !== 'nothing-to-remove') return outcome;
+    for (const request of requests) {
+      if (!this.completed.some(entry => entry.sequence === request.sequence)) this.completed.push(request);
+    }
+    return undefined;
+  }
+
   /** undefined means an ordinary order; [] means the actual coupled press refuses. */
   public previewCancellationOrderIds(orderId: string): readonly string[] | undefined {
     const pending = this.pending.find(request => this.shellOrderIds(request).includes(orderId));

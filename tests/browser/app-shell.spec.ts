@@ -1369,6 +1369,7 @@ async function roomWorldGeometry(page: Page): Promise<RoomWorldGeometry> {
 async function dragRectangleOnWorld(
   page: Page,
   options: {
+    readonly minX?: number;
     readonly minY?: number;
     readonly wholeSquare?: boolean;
     /** Sides to try, in order. Defaults to `ROOM_DRAG_DELTAS_PX`; see `SMALL_ROOM_DRAG_DELTAS_PX`. */
@@ -1389,7 +1390,7 @@ async function dragRectangleOnWorld(
   // the first point that is not canvas, so a candidate under an island is
   // rejected on its first or second sample.
   const aim = await page.evaluate(
-    ({ width, height, deltas, minY, wholeSquare, step }) => {
+    ({ width, height, deltas, minX, minY, wholeSquare, step }) => {
       const free = (x: number, y: number): boolean =>
         document.elementFromPoint(x, y)?.tagName.toLowerCase() === 'canvas';
       // Inclusive on both axes, and the last offset is the exact far edge rather
@@ -1413,7 +1414,7 @@ async function dragRectangleOnWorld(
       };
       for (const delta of deltas) {
         for (let y = Math.max(8, minY); y + delta < height - 8; y += 16) {
-          for (let x = 8; x + delta < width - 8; x += 16) {
+          for (let x = Math.max(8, minX); x + delta < width - 8; x += 16) {
             if (bare(x, y, delta)) {
               return { x, y, delta };
             }
@@ -1426,6 +1427,7 @@ async function dragRectangleOnWorld(
       width: viewport.width,
       height: viewport.height,
       deltas: [...(options.deltas ?? ROOM_DRAG_DELTAS_PX)],
+      minX: options.minX ?? 8,
       minY: options.minY ?? 8,
       wholeSquare: options.wholeSquare ?? false,
       step: BARE_SQUARE_SAMPLE_STEP_PX,
@@ -1506,7 +1508,8 @@ function tileSpanOfGesture(delta: number): number {
  * really are disjoint, in tiles, which is the space the refusal is in.
  */
 function belowGesture(gesture: WorldDragGesture): number {
-  return gesture.y + gesture.delta + TILE_SIZE_PX;
+  // A full wall needs a spare tile row between interiors, unlike a legacy edge.
+  return gesture.y + gesture.delta + 2 * TILE_SIZE_PX;
 }
 
 /**
@@ -1583,6 +1586,7 @@ async function drawRoomRectangle(
   what: string,
   options: {
     readonly roomCatalogId: string;
+    readonly minX?: number;
     readonly minY?: number;
     readonly clearOf?: readonly TileRectangle[];
     /** Sides to try, in order. Defaults to `ROOM_DRAG_DELTAS_PX`; see `SMALL_ROOM_DRAG_DELTAS_PX`. */
@@ -1599,6 +1603,7 @@ async function drawRoomRectangle(
     // island that grew in between from moving the second one -- see
     // `dragRectangleOnWorld`'s own note for the 3.8px this was measured at.
     wholeSquare: true,
+    ...(options.minX === undefined ? {} : { minX: options.minX }),
     ...(options.minY === undefined ? {} : { minY: options.minY }),
   });
   if (gesture === null) {
@@ -2050,11 +2055,10 @@ interface TileRectangle {
   readonly height: number;
 }
 
-/** One `wall-brick` order: the tile it is anchored to, and which of that tile's two edges it fills. */
+/** One whole-square `wall-brick` order, outside the room's interior. */
 interface WallSegment {
   readonly x: number;
   readonly y: number;
-  readonly edge: 'north' | 'west';
 }
 
 /**
@@ -2107,26 +2111,29 @@ function perimeterSegments(rectangles: readonly TileRectangle[]): readonly WallS
   const seen = new Set<string>();
   const segments: WallSegment[] = [];
   const add = (segment: WallSegment): void => {
-    const key = `${segment.x},${segment.y},${segment.edge}`;
+    const key = `${segment.x},${segment.y}`;
     if (seen.has(key)) return;
     seen.add(key);
     segments.push(segment);
   };
-  for (const edge of ['north', 'west'] as const) {
-    for (const rectangle of rectangles) {
-      if (edge === 'north') {
-        for (let x = rectangle.x; x < rectangle.x + rectangle.width; x += 1) {
-          add({ x, y: rectangle.y, edge });
-          add({ x, y: rectangle.y + rectangle.height, edge });
-        }
-      } else {
-        for (const x of [rectangle.x, rectangle.x + rectangle.width]) {
-          for (let y = rectangle.y; y < rectangle.y + rectangle.height; y += 1) add({ x, y, edge });
-        }
-      }
+  // The historical edge arithmetic above describes the old tool. Whole-square
+  // walls occupy the exterior face tiles; corners do not close a cardinal edge.
+  for (const rectangle of rectangles) {
+    for (let x = rectangle.x; x < rectangle.x + rectangle.width; x += 1) {
+      add({ x, y: rectangle.y - 1 });
+      add({ x, y: rectangle.y + rectangle.height });
+    }
+    for (let y = rectangle.y; y < rectangle.y + rectangle.height; y += 1) {
+      add({ x: rectangle.x - 1, y });
+      add({ x: rectangle.x + rectangle.width, y });
     }
   }
-  return segments;
+  for (const segment of segments) for (const rectangle of rectangles) {
+    expect(segment.x >= rectangle.x && segment.x < rectangle.x + rectangle.width &&
+      segment.y >= rectangle.y && segment.y < rectangle.y + rectangle.height,
+    'a full wall square must not consume either room interior').toBe(false);
+  }
+  return segments.sort((a, b) => a.x - b.x || a.y - b.y);
 }
 
 /**
@@ -2451,7 +2458,6 @@ async function orderWallRectangles(
     strides.set(name, await walkFocus(page, key, name, target));
   };
 
-  let chosenEdge: WallSegment['edge'] | undefined;
   let chosenColumn: number | undefined;
   let entered = false;
   for (const segment of segments) {
@@ -2482,22 +2488,10 @@ async function orderWallRectangles(
     }
     await page.keyboard.press('Control+a');
     await page.keyboard.type(String(segment.y));
-    if (chosenEdge !== segment.edge) {
-      await tabTo(page, `the ${segment.edge} edge option`, {
-        selector: `.hud-build__coordinates [data-choice="${segment.edge}"]`,
-      });
-      await page.keyboard.press('Enter');
-      chosenEdge = segment.edge;
-      // From the chooser rather than from the field: a different distance, so
-      // a different hop.
-      await tabTo(page, 'the Place order control', { selector: '.hud-build__coordinates .ui-action' });
-    } else {
-      // This hop is also what commits the Tile Y field, which reports on
-      // `change`, and `change` fires when focus leaves the input.
-      await hopTo('the Place order control, from the Tile Y field', 'Tab', {
-        selector: '.hud-build__coordinates .ui-action',
-      });
-    }
+    // Leaving Tile Y commits its change. A whole-square wall has no edge choice.
+    await hopTo('the Place order control, from the Tile Y field', 'Tab', {
+      selector: '.hud-build__coordinates .ui-action',
+    });
     await page.keyboard.press('Enter');
   }
 
@@ -5396,7 +5390,7 @@ test.describe('the assembled application', () => {
     await page.getByRole('button', { name: 'Build' }).click();
     await expect(page.locator('.hud-build')).toBeVisible();
 
-    const filter = page.locator('.hud-build__category');
+    const filter = page.getByRole('combobox', { name: localeText('hud.build.category'), exact: true });
     await expect(filter).toBeVisible();
     // The option a player reads, not the id behind it: ADR 0011 puts the key on
     // one side of that boundary and the text on the other, and driving the
@@ -5411,6 +5405,7 @@ test.describe('the assembled application', () => {
      */
     const catalogue = async (): Promise<{
       readonly laidOutRows: number;
+      readonly laidOutIds: readonly string[];
       readonly listBox: number;
       readonly listContent: number;
       readonly scrollToLast: number;
@@ -5428,7 +5423,7 @@ test.describe('the assembled application', () => {
         const panel = document.querySelector('.hud-build');
         const list = document.querySelector('.hud-build__list');
         const headerRow = document.querySelector('.hud-build__catalogue > .ui-section__header-row');
-        const control = document.querySelector<HTMLSelectElement>('.hud-build__category');
+        const control = document.querySelector<HTMLSelectElement>('.hud-build__catalogue .hud-build__category');
         if (panel === null || list === null || headerRow === null || control === null) return null;
 
         const rows = [...list.querySelectorAll<HTMLElement>('.ui-row')].filter(
@@ -5449,6 +5444,7 @@ test.describe('the assembled application', () => {
 
         return {
           laidOutRows: rows.length,
+          laidOutIds: rows.map(row => row.dataset['buildable'] ?? ''),
           listBox: Math.round(list.clientHeight * 10) / 10,
           listContent: Math.round(list.scrollHeight * 10) / 10,
           scrollToLast: Math.round((list.scrollHeight - list.clientHeight) * 10) / 10,
@@ -5577,18 +5573,19 @@ test.describe('the assembled application', () => {
         expect(filtered, `the Build panel has no catalogue once filtered at ${width}x${height}`).not.toBeNull();
         if (filtered === null) continue;
 
-        /*
-         * The largest group is six rows, and the selected row is kept on screen
-         * whatever group it is in, so a filtered list is seven rows at worst.
-         * Six is written out in
-         * `tests/foundation/buildable-category-contract.test.ts` as a table of
-         * every buildable and its group, so a content row that made a group
-         * larger than this fails there, naming the row, rather than here.
-         */
+        // The pinned content contract names seven furniture rows. The selected
+        // wall remains reachable, so this list must contain those exact eight
+        // choices. This updates content cardinality without changing any box,
+        // scroll, fold or overflow budget below.
+        const expectedFilteredIds = [
+          'bed-wooden', 'bench-wooden', 'bookshelf-wooden', 'chair-wooden',
+          'desk-wooden', 'dining-table-wooden', 'exercise-station', 'wall-brick',
+        ];
         expect(
-          filtered.laidOutRows,
-          `the largest filtered group is more than six rows plus the selection at ${width}x${height}, ${state}`,
-        ).toBeLessThanOrEqual(7);
+          filtered.laidOutIds.slice().sort(),
+          `the filtered choices differ from seven furniture rows plus the selected wall at ${width}x${height}, ${state}`,
+        ).toEqual(expectedFilteredIds.slice().sort());
+        expect(filtered.laidOutRows).toBe(expectedFilteredIds.length);
         expect(
           filtered.laidOutRows,
           `filtering to "${largestGroup}" left the whole catalogue on screen at ${width}x${height}, ${state}`,
@@ -5817,7 +5814,7 @@ test.describe('the assembled application', () => {
     // it (ADR 0035), so the filter is the hop between the two.
     await page.keyboard.press('Tab');
     expect(
-      await page.evaluate(() => document.activeElement?.classList.contains('hud-build__category') === true),
+      await page.getByRole('combobox', { name: localeText('hud.build.category'), exact: true }).evaluate(control => document.activeElement === control),
       'the control after the catalogue header is not the category filter',
     ).toBe(true);
     await page.keyboard.press('Tab');
@@ -5870,7 +5867,7 @@ test.describe('the assembled application', () => {
     expect(chosen.tabStops, 'the tab stop did not follow the new selection').toEqual([rows[last]]);
 
     // ---- and the filter, which is what this panel has and Rooms does not --
-    const filter = page.locator('.hud-build__category');
+    const filter = page.getByRole('combobox', { name: localeText('hud.build.category'), exact: true });
     await expect(filter).toBeVisible();
     // A group the chosen row is not in, so the two halves below are both real:
     // the selection is kept on screen by `visibleBuildableIds` whatever the
@@ -7340,8 +7337,16 @@ test.describe('the assembled application', () => {
     await page.locator('.ui-tab[data-tab="zones"]').click();
     await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
     await page.locator('.hud-rooms__arm').click();
+    // Keep both probe/replay gestures outside the minimap's WHOLE column.
+    // Zoning the first room adds an alert and grows that island upward; merely
+    // finding a bare square before the alert does not make its old aim stable.
+    // This measured horizontal boundary is held for all four gestures. Exact
+    // independent tile-span, enclosure, repeat-origin and worker guards remain.
+    const repeatedRoomMinX = await page.locator('.hud__corner').evaluate((node, step) =>
+      Math.ceil(node.getBoundingClientRect().right / step) * step, BARE_SQUARE_SAMPLE_STEP_PX);
     const firstProbe = await drawRoomRectangle(page, 'the probe drag for the first cell', {
       roomCatalogId: 'room.cell',
+      minX: repeatedRoomMinX,
       deltas: SMALL_ROOM_DRAG_DELTAS_PX,
     });
     const firstCell = firstProbe.rectangle;
@@ -7353,6 +7358,7 @@ test.describe('the assembled application', () => {
     const secondCell = (
       await drawRoomRectangle(page, 'the probe drag for the second cell', {
         roomCatalogId: 'room.cell',
+        minX: repeatedRoomMinX,
         minY: secondCellFloor,
         clearOf: [firstCell],
         deltas: SMALL_ROOM_DRAG_DELTAS_PX,
@@ -7388,6 +7394,7 @@ test.describe('the assembled application', () => {
       (
         await drawRoomRectangle(page, 'the drag for the first cell', {
           roomCatalogId: 'room.cell',
+          minX: repeatedRoomMinX,
           deltas: SMALL_ROOM_DRAG_DELTAS_PX,
         })
       ).rectangle,
@@ -7458,6 +7465,7 @@ test.describe('the assembled application', () => {
       (
         await drawRoomRectangle(page, 'the drag for the second cell', {
           roomCatalogId: 'room.cell',
+          minX: repeatedRoomMinX,
           minY: secondCellFloor,
           clearOf: [firstCell],
           deltas: SMALL_ROOM_DRAG_DELTAS_PX,

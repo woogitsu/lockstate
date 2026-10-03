@@ -1,0 +1,147 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-construction-next-collision-audit-20261003
+
+ ❯ tests/unit/objects-placed-object-registry.test.ts (14 tests | 2 failed) 9ms
+     × restores conflicting rows at one anchor independently of saved array order 4ms
+     × uses orientation to break a same-object anchor tie and ignores saved instance ids 1ms
+ ❯ tests/integration/conflicting-imported-template-objects.test.ts (3 tests | 2 failed) 217ms
+   × accepted conflicting imported 'object type' rows restore independently of array order 95ms
+   × accepted conflicting imported 'same object orientation' rows restore independently of array order 65ms
+node : 
+At line:12 char:2
++  node node_modules/vitest/vitest.mjs run --maxWorkers=2 tests/integra ...
++  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/conflicting-imported-template-objects.test.ts > accepted conflicting imported 'object type' ro
+ws restore independently of array order
+AssertionError: expected { placedObjects: [ { …(5) } ] } to deeply equal { placedObjects: [ { …(5) } ] }
+
+- Expected
++ Received
+
+@@ -3,12 +3,12 @@
+      {
+        "anchorTile": {
+          "x": 11,
+          "y": 11,
+        },
+-       "objectId": "object.bed",
++       "objectId": "object.toilet",
+        "orientation": 0,
+        "placedObjectId": "object:11:11",
+-       "sourceOrderId": "room-template-000000000000-2-object-000",
++       "sourceOrderId": "room-template-000000000000-2-object-001",
+      },
+    ],
+  }
+
+ ❯ tests/integration/conflicting-imported-template-objects.test.ts:60:48
+     58|       }, null, 2));
+     59|     }
+     60|     expect(reversedBefore.simulation?.objects).toEqual(firstBefore.sim…
+       |                                                ^
+     61|     expect(reversed.placedObjects.getSnapshot()).toEqual(first.placedO…
+     62|     expect(reversed.treasury.snapshot()).toEqual(first.treasury.snapsh…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tests/integration/conflicting-imported-template-objects.test.ts > accepted conflicting imported 'same object ori
+entation' rows restore independently of array order
+AssertionError: expected { placedObjects: [ { …(5) } ] } to deeply equal { placedObjects: [ { …(5) } ] }
+
+- Expected
++ Received
+
+@@ -4,11 +4,11 @@
+        "anchorTile": {
+          "x": 11,
+          "y": 11,
+        },
+        "objectId": "object.bed",
+-       "orientation": 0,
++       "orientation": 1,
+        "placedObjectId": "object:11:11",
+        "sourceOrderId": "room-template-000000000000-2-object-000",
+      },
+    ],
+  }
+
+ ❯ tests/integration/conflicting-imported-template-objects.test.ts:60:48
+     58|       }, null, 2));
+     59|     }
+     60|     expect(reversedBefore.simulation?.objects).toEqual(firstBefore.sim…
+       |                                                ^
+     61|     expect(reversed.placedObjects.getSnapshot()).toEqual(first.placedO…
+     62|     expect(reversed.treasury.snapshot()).toEqual(first.treasury.snapsh…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  tests/unit/objects-placed-object-registry.test.ts > every enumeration is in tile order > restores conflicting ro
+ws at one anchor independently of saved array order
+AssertionError: expected [ { …(4) } ] to deeply equal [ { …(4) } ]
+
+- Expected
++ Received
+
+@@ -2,10 +2,10 @@
+    {
+      "anchorTile": {
+        "x": 4,
+        "y": 6,
+      },
+-     "objectId": "object.toilet",
++     "objectId": "object.bed",
+      "orientation": 0,
+      "placedObjectId": "object:4:6",
+    },
+  ]
+
+ ❯ tests/unit/objects-placed-object-registry.test.ts:170:35
+    168|     expect(forward.loadSnapshot([bed, toilet])).toBe(1);
+    169|     expect(reversed.loadSnapshot([toilet, bed])).toBe(1);
+    170|     expect(forward.getSnapshot()).toEqual(reversed.getSnapshot());
+       |                                   ^
+    171|   });
+    172|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  tests/unit/objects-placed-object-registry.test.ts > every enumeration is in tile order > uses orientation to bre
+ak a same-object anchor tie and ignores saved instance ids
+AssertionError: expected [ { …(4) } ] to deeply equal [ { …(4) } ]
+
+- Expected
++ Received
+
+@@ -3,9 +3,9 @@
+      "anchorTile": {
+        "x": 4,
+        "y": 6,
+      },
+      "objectId": "object.bed",
+-     "orientation": 0,
++     "orientation": 1,
+      "placedObjectId": "object:4:6",
+    },
+  ]
+
+ ❯ tests/unit/objects-placed-object-registry.test.ts:181:35
+    179|     expect(forward.loadSnapshot([east, north])).toBe(1);
+    180|     expect(reversed.loadSnapshot([north, east])).toBe(1);
+    181|     expect(forward.getSnapshot()).toEqual(reversed.getSnapshot());
+       |                                   ^
+    182|     expect(forward.getSnapshot()[0]?.orientation).toBe(0);
+    183|     expect(forward.getSnapshot()[0]?.placedObjectId).toBe('object:4:6'…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  4 failed | 13 passed (17)
+   Start at  02:16:46
+   Duration  2.32s (transform 851ms, setup 0ms, import 2.24s, tests 226ms, environment 0ms)
+
