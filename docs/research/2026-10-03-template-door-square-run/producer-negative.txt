@@ -1,0 +1,118 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-square-run-audit-20261003
+
+stdout | tests/integration/room-template-door-square-run.test.ts > square gesture protects the authored door: turn=1 mirror=false saved=false pending=false adjacent=false
+{"testCase":{"mirrorX":false,"quarterTurns":1,"saved":false,"pending":false,"adjacent":false},"door":{"x":10,"y":11},"approach":{"x":9,"y":11},"outer":{"x":8,"y":11},"quotedMaximum":240,"accepted":["run-8","run-10"],"charged":160,"orders":[{"id":"run-8","state":"completed","materialsAllocated":[{"itemId":"item.brick","quantity":2}]},{"id":"run-9","state":"failed","failReason":"unbuildable","materialsAllocated":[]},{"id":"run-10","state":"completed","materialsAllocated":[{"itemId":"item.brick","quantity":2}]}],"history":["run-8","run-10"],"doorSquare":1}
+
+stdout | tests/integration/room-template-door-square-run.test.ts > square gesture protects the authored door: turn=1 mirror=false saved=true pending=false adjacent=false
+{"testCase":{"mirrorX":false,"quarterTurns":1,"saved":true,"pending":false,"adjacent":false},"door":{"x":10,"y":11},"approach":{"x":9,"y":11},"outer":{"x":8,"y":11},"quotedMaximum":240,"accepted":["run-8","run-10"],"charged":160,"orders":[{"id":"run-8","state":"completed","materialsAllocated":[{"itemId":"item.brick","quantity":2}]},{"id":"run-9","state":"failed","failReason":"unbuildable","materialsAllocated":[]},{"id":"run-10","state":"completed","materialsAllocated":[{"itemId":"item.brick","quantity":2}]}],"history":["run-8","run-10"],"doorSquare":1}
+
+stdout | tests/integration/room-template-door-square-run.test.ts > square gesture protects the authored door: turn=3 mirror=false saved=false pending=false adjacent=false
+{"testCase":{"mirrorX":false,"quarterTurns":3,"saved":false,"pending":false,"adjacent":false},"door":{"x":16,"y":12},"approach":{"x":17,"y":12},"outer":{"x":18,"y":12},"quotedMaximum":240,"accepted":["run-16","run-18"],"charged":160,"orders":[{"id":"run-16","state":"completed","materialsAllocated":[{"itemId":"item.brick","quantity":2}]},{"id":"run-17","state":"failed","failReason":"unbuildable","materialsAllocated":[]},{"id":"run-18","state":"completed","materialsAllocated":[{"itemId":"item.brick","quantity":2}]}],"history":["run-16","run-18"],"doorSquare":1}
+
+stdout | tests/integration/room-template-door-square-run.test.ts > square gesture protects the authored door: turn=3 mirror=false saved=true pending=false adjacent=false
+{"testCase":{"mirrorX":false,"quarterTurns":3,"saved":true,"pending":false,"adjacent":false},"door":{"x":16,"y":12},"approach":{"x":17,"y":12},"outer":{"x":18,"y":12},"quotedMaximum":240,"accepted":["run-16","run-18"],"charged":160,"orders":[{"id":"run-16","state":"completed","materialsAllocated":[{"itemId":"item.brick","quantity":2}]},{"id":"run-17","state":"failed","failReason":"unbuildable","materialsAllocated":[]},{"id":"run-18","state":"completed","materialsAllocated":[{"itemId":"item.brick","quantity":2}]}],"history":["run-16","run-18"],"doorSquare":1}
+
+stdout | tests/integration/room-template-door-square-run.test.ts > square gesture protects the authored door: turn=1 mirror=true saved=false pending=false adjacent=false
+{"testCase":{"mirrorX":true,"quarterTurns":1,"saved":false,"pending":false,"adjacent":false},"door":{"x":10,"y":12},"approach":{"x":9,"y":12},"outer":{"x":8,"y":12},"quotedMaximum":240,"accepted":["run-8","run-10"],"charged":160,"orders":[{"id":"run-8","state":"completed","materialsAllocated":[{"itemId":"item.brick","quantity":2}]},{"id":"run-9","state":"failed","failReason":"unbuildable","materialsAllocated":[]},{"id":"run-10","state":"completed","materialsAllocated":[{"itemId":"item.brick","quantity":2}]}],"history":["run-8","run-10"],"doorSquare":1}
+
+stdout | tests/integration/room-template-door-square-run.test.ts > square gesture protects the authored door: turn=1 mirror=true saved=true pending=false adjacent=false
+{"testCase":{"mirrorX":true,"quarterTurns":1,"saved":true,"pending":false,"adjacent":false},"door":{"x":10,"y":12},"approach":{"x":9,"y":12},"outer":{"x":8,"y":12},"quotedMaximum":240,"accepted":["run-8","run-10"],"charged":160,"orders":[{"id":"run-8","state":"completed","materialsAllocated":[{"itemId":"item.brick","quantity":2}]},{"id":"run-9","state":"failed","failReason":"unbuildable","materialsAllocated":[]},{"id":"run-10","state":"completed","materialsAllocated":[{"itemId":"item.brick","quantity":2}]}],"history":["run-8","run-10"],"doorSquare":1}
+
+stdout | tests/integration/room-template-door-square-run.test.ts > square gesture protects the authored door: turn=3 mirror=true saved=false pending=false adjacent=false
+{"testCase":{"mirrorX":true,"quarterTurns":3,"saved":false,"pending":false,"adjacent":false},"door":{"x":16,"y":11},"approach":{"x":17,"y":11},"outer":{"x":18,"y":11},"quotedMaximum":240,"accepted":["run-16","run-18"],"charged":160,"orders":[{"id":"run-16","state":"completed","materialsAllocated":[{"itemId":"item.brick","quantity":2}]},{"id":"run-17","state":"failed","failReason":"unbuildable","materialsAllocated":[]},{"id":"run-18","state":"completed","materialsAllocated":[{"itemId":"item.brick","quantity":2}]}],"history":["run-16","run-18"],"doorSquare":1}
+
+stdout | tests/integration/room-template-door-square-run.test.ts > square gesture protects the authored door: turn=3 mirror=true saved=true pending=false adjacent=false
+{"testCase":{"mirrorX":true,"quarterTurns":3,"saved":true,"pending":false,"adjacent":false},"door":{"x":16,"y":11},"approach":{"x":17,"y":11},"outer":{"x":18,"y":11},"quotedMaximum":240,"accepted":["run-16","run-18"],"charged":160,"orders":[{"id":"run-16","state":"completed","materialsAllocated":[{"itemId":"item.brick","quantity":2}]},{"id":"run-17","state":"failed","failReason":"unbuildable","materialsAllocated":[]},{"id":"run-18","state":"completed","materialsAllocated":[{"itemId":"item.brick","quantity":2}]}],"history":["run-16","run-18"],"doorSquare":1}
+
+ ❯ tests/integration/room-template-door-square-run.test.ts (14 tests | 9 failed) 2337ms
+   × square gesture protects the authored door: turn=1 mirror=false saved=false pending=false adjacent=false 206ms
+   × square gesture protects the authored door: turn=1 mirror=false saved=true pending=false adjacent=false 213ms
+   × square gesture protects the authored door: turn=3 mirror=false saved=false pending=false adjacent=false 176ms
+   × square gesture protects the authored door: turn=3 mirror=false saved=true pending=false adjacent=false 181ms
+   × square gesture protects the authored door: turn=1 mirror=true saved=false pending=false adjacent=false 164ms
+   × square gesture protects the authored door: turn=1 mirror=true saved=true pending=false adjacent=false 174ms
+   × square gesture protects the authored door: turn=3 mirror=true saved=false pending=false adjacent=false 161ms
+   × square gesture protects the authored door: turn=3 mirror=true saved=true pending=false adjacent=false 164ms
+   × protects the actual completed template door without optional completed gesture metadata 170ms
+
+ Test Files  1 failed (1)
+      Tests  9 failed | 5 passed (14)
+   Start at  09:59:06
+   Duration  5.09s (transform 929ms, setup 0ms, import 2.61s, tests 2.34s, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/room-template-door-square-run.test.ts > square gesture protects the authored door: turn=1 mirror=false saved=false pending=false adjacent=false
+ FAIL  tests/integration/room-template-door-square-run.test.ts > square gesture protects the authored door: turn=1 mirror=false saved=true pending=false adjacent=false
+ FAIL  tests/integration/room-template-door-square-run.test.ts > square gesture protects the authored door: turn=1 mirror=true saved=false pending=false adjacent=false
+ FAIL  tests/integration/room-template-door-square-run.test.ts > square gesture protects the authored door: turn=1 mirror=true saved=true pending=false adjacent=false
+AssertionError: expected [ 'run-8', 'run-10' ] to deeply equal [ 'run-8' ]
+
+- Expected
++ Received
+
+  [
+    "run-8",
++   "run-10",
+  ]
+
+ ❯ tests/integration/room-template-door-square-run.test.ts:110:22
+    108|       doorSquare: runtime.world.getSquareStructure(door) }));
+    109|     // Each accepted square consumes exactly two catalogue bricks at 4…
+    110|     expect(accepted).toEqual(expectedAccepted);
+       |                      ^
+    111|     expect(charged).toBe(expectedAccepted.length * 80);
+    112|     expect(runtime.construction.snapshot().currentTransaction).toEqual…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯
+
+ FAIL  tests/integration/room-template-door-square-run.test.ts > square gesture protects the authored door: turn=3 mirror=false saved=false pending=false adjacent=false
+ FAIL  tests/integration/room-template-door-square-run.test.ts > square gesture protects the authored door: turn=3 mirror=false saved=true pending=false adjacent=false
+ FAIL  tests/integration/room-template-door-square-run.test.ts > square gesture protects the authored door: turn=3 mirror=true saved=false pending=false adjacent=false
+ FAIL  tests/integration/room-template-door-square-run.test.ts > square gesture protects the authored door: turn=3 mirror=true saved=true pending=false adjacent=false
+AssertionError: expected [ 'run-16', 'run-18' ] to deeply equal [ 'run-18' ]
+
+- Expected
++ Received
+
+  [
++   "run-16",
+    "run-18",
+  ]
+
+ ❯ tests/integration/room-template-door-square-run.test.ts:110:22
+    108|       doorSquare: runtime.world.getSquareStructure(door) }));
+    109|     // Each accepted square consumes exactly two catalogue bricks at 4…
+    110|     expect(accepted).toEqual(expectedAccepted);
+       |                      ^
+    111|     expect(charged).toBe(expectedAccepted.length * 80);
+    112|     expect(runtime.construction.snapshot().currentTransaction).toEqual…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯
+
+ FAIL  tests/integration/room-template-door-square-run.test.ts > protects the actual completed template door without optional completed gesture metadata
+AssertionError: expected { id: 'legacy-door-square', …(7) } to match object { state: 'failed', …(2) }
+(8 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "failReason": "unbuildable",
+    "materialsAllocated": [],
+-   "state": "failed",
++   "state": "approved",
+  }
+
+ ❯ tests/integration/room-template-door-square-run.test.ts:153:63
+    151|   send(runtime, { type: 'PlaceBuildOrder', orderId: 'legacy-door-squar…
+    152|     x: door.x, y: door.y, footprint: 'square' });
+    153|   expect(runtime.construction.getOrder('legacy-door-square')).toMatchO…
+       |                                                               ^
+    154|     state: 'failed', failReason: 'unbuildable', materialsAllocated: [],
+    155|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/9]⎯
+

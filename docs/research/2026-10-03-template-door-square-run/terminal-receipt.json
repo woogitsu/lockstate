@@ -1,0 +1,33 @@
+{
+    "sourceCommit":  "c1f0244fe8b38600c0f516279f4ddbee56e6108c",
+    "typedFixed":  {
+                       "passed":  14,
+                       "testSeconds":  2.31
+                   },
+    "neighbors":  {
+                      "passed":  101,
+                      "files":  6
+                  },
+    "browserRun":  false,
+    "sourceQuotationIndexDocs":  {
+                                     "passed":  20,
+                                     "files":  3
+                                 },
+    "restored":  {
+                     "passed":  14,
+                     "testSeconds":  2.33
+                 },
+    "producerRestored":  true,
+    "negative":  {
+                     "testSeconds":  2.34,
+                     "failed":  9,
+                     "passed":  5
+                 },
+    "indexAddedRows":  1,
+    "appTypecheckExitCode":  0,
+    "indexRemovedRows":  0,
+    "sourceScope":  "3 lines in completed wall square admission; existing helper reused",
+    "toolsTypecheckExitCode":  0,
+    "date":  "2026-10-03",
+    "issue":  2011
+}

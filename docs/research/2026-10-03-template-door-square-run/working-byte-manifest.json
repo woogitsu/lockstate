@@ -1,5 +1,10 @@
 [
     {
+        "sha256":  "91c5ef01a9c8e6a1380659648e55440ce27cf3b3478dfdcd2e7b3a419a44268c",
+        "name":  ".gitattributes",
+        "bytes":  239
+    },
+    {
         "sha256":  "e9d9faf0087ad4489a21007fe941f862dbf3933552252b1eb85551bb2147088a",
         "name":  "baseline.txt",
         "bytes":  20358
@@ -15,6 +20,11 @@
         "bytes":  1109
     },
     {
+        "sha256":  "93ae34f86fb9dabd3bfc5d9b9fbbc0a1a5aba1f66b8d0f0dc87a3edf9c666966",
+        "name":  "exact-restored.txt",
+        "bytes":  260
+    },
+    {
         "sha256":  "dce1c62c29ea741602cbaa2e9f55ed1e66ca38033f23d9653e413fe9652fdf12",
         "name":  "executed-focused-probe.ts.txt",
         "bytes":  4286
@@ -28,6 +38,26 @@
         "sha256":  "a8e52477786f2e708712442848cef82d74b5b97fc2493bb1c7602cbe62c1b518",
         "name":  "expanded-baseline.txt",
         "bytes":  22472
+    },
+    {
+        "sha256":  "50ac2996d4f91e01fb81db40077a1725166854dfb55167ea43b71eed8a20e810",
+        "name":  "final-docs.txt",
+        "bytes":  536
+    },
+    {
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "name":  "final-tools-typecheck.txt",
+        "bytes":  0
+    },
+    {
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "name":  "final-typecheck.txt",
+        "bytes":  0
+    },
+    {
+        "sha256":  "0fc7a087095ce22a3be9a901580ac46952895b98bdc595eb3341ad0fffad0cfb",
+        "name":  "fixed.txt",
+        "bytes":  538
     },
     {
         "sha256":  "b7364986706891dd6bf6ce5f791c1900824fd17a1f25d7b813895b9e1a5c4528",
@@ -65,9 +95,24 @@
         "bytes":  3593
     },
     {
-        "sha256":  "80c6ce9e5a21f847920fb2d196afc1056a7fb797b71acd5d09f6a5400ffbd735",
+        "sha256":  "e0ac1562f0c375902d2b2058df3a865f323b98513425c7244c2f1acf60386a6d",
+        "name":  "mutation-restoration.json",
+        "bytes":  548
+    },
+    {
+        "sha256":  "077a51c93919bf99e80f94a09ca95ad876d36afe3bedbe0e4057db74a65386fc",
+        "name":  "neighbors.txt",
+        "bytes":  546
+    },
+    {
+        "sha256":  "1a7d4f393db05ff3144d32fa85adf47279312af232ca01cb9996d023fd676fe7",
+        "name":  "producer-negative.txt",
+        "bytes":  10998
+    },
+    {
+        "sha256":  "e9473093bbb4f09f80117576f57718b7360b4859291ea9ae71067bd49972353c",
         "name":  "README.md",
-        "bytes":  5156
+        "bytes":  8019
     },
     {
         "sha256":  "047fd02aa485674140afd45c285de51b6613584e23b6eed1a046513d279c4faf",
@@ -75,9 +120,19 @@
         "bytes":  576
     },
     {
+        "sha256":  "80342a8d3b3f7b894dbe606fefc3864756339005beea348796af284f503c3e77",
+        "name":  "run-mutation.cjs.txt",
+        "bytes":  2227
+    },
+    {
         "sha256":  "1d3b2253aadb703b97fc21d25a23ad512ed5ff7654428a4fe7a63450e7dcf374",
         "name":  "run-wide.cjs.txt",
         "bytes":  574
+    },
+    {
+        "sha256":  "df61d2e636013d572bcefd9a475d89c8fb84915a69b38a061532ce5ab5e95554",
+        "name":  "terminal-receipt.json",
+        "bytes":  1091
     },
     {
         "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
