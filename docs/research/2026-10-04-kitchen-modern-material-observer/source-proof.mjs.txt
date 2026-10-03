@@ -1,0 +1,38 @@
+﻿import {readFileSync,writeFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+import {stripTypeScriptTypes} from 'node:module';
+import {resolve} from 'node:path';
+import assert from 'node:assert/strict';
+const root=process.cwd();
+const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
+const source=readFileSync(resolve(root,'tests/browser/kitchen-modern-material-observer.ts'),'utf8');
+const decoder=readFileSync(resolve(root,'tests/browser/staff-room-padded-chair/material-observer.ts'),'utf8');
+const decoderUrl='data:text/javascript;base64,'+Buffer.from(stripTypeScriptTypes(decoder,{mode:'strip'})).toString('base64');
+const code=source.replace("'./staff-room-padded-chair/material-observer'",JSON.stringify(decoderUrl));
+const observer=await import('data:text/javascript;base64,'+Buffer.from(stripTypeScriptTypes(code,{mode:'strip'})).toString('base64'));
+const {decodeStaffMaterialPng}=await import(decoderUrl);
+assert.deepEqual(observer.KITCHEN_STOVE_MATERIAL_RECTS,{0:[[735,490,50,35],[790,390,45,30]],1:[[885,375,70,40],[905,320,50,35]]});
+assert.deepEqual(observer.KITCHEN_FRIDGE_MATERIAL_RECTS,{0:[[890,495,25,35],[843,606,33,27]],1:[[780,375,35,42],[843,474,17,23]]});
+const report={subject:'21dba6ee55823ff1283c0b47254ff8d01e2a6ca9',mode:'offline archived actual PNG; native corrected acceptance pending',helperSha256:sha(Buffer.from(source)),actual:[],negatives:[]};
+const native=process.argv[2];
+if(native)for(const name of ['dedicated-kitchen-stove-worker-completed-fullhd.png','dedicated-kitchen-stove-loaded-fullhd.png']) {
+ const bytes=readFileSync(resolve(native,name));const stove=observer.kitchenStoveMaterialPixels(bytes,0),fridge=observer.kitchenFridgeMaterialPixels(bytes,0);
+ report.actual.push({name,sha256:sha(bytes),stove,fridge});assert(stove[0]>500);assert(stove[1]>25);assert(fridge[0]>350);assert(fridge[1]>350);
+}
+if(report.actual.length===2){assert.deepEqual(report.actual[0].stove,report.actual[1].stove);assert.deepEqual(report.actual[0].fridge,report.actual[1].fridge);}
+const families=['oblique-cell-chair.v1.json','oblique-reception-employee-desk.v1.json','oblique-furniture-office-desk-generic.v1.json','oblique-furniture-classroom-teacher-desk.v1.json','oblique-square-brick-full-wall.v1.json','oblique-wall-cutaway.v1.json','oblique-wall-west.v1.json','oblique-wall-west-cutaway.v1.json','oblique-floor-cell.v1.json','oblique-floor-terrain-dirt.v1.json','oblique-furniture.kitchen-prep-counter.v1.json','oblique-furniture.kitchen-fridge.v1.json'];
+const enamel=new Set(observer.KITCHEN_ENAMEL_SOURCE_RGB_KEYS),freezer=new Set(observer.KITCHEN_FREEZER_SOURCE_RGB_KEYS);
+for(const name of families){
+ const manifestBytes=readFileSync(resolve(root,'public/game-content',name));const manifest=JSON.parse(manifestBytes);assert.equal(manifest.frames.length,72);
+ const maxima={enamel:0,iron:0,freezer:0,louvre:0};let total=0;
+ for(const frame of manifest.frames){
+  const bytes=readFileSync(resolve(root,'public'+frame.image));assert.equal(sha(bytes),frame.sha256);const b=decodeStaffMaterialPng(bytes),r=[0,0,b.width,b.height];
+  const values={enamel:observer.kitchenSourceGradientInterior(b,r,enamel),iron:observer.kitchenBurnerAssociatedIron(b,r),freezer:observer.kitchenSourceGradientInterior(b,r,freezer),louvre:observer.kitchenFridgeLouvrePixels(b,r)};
+  for(const k of Object.keys(maxima))maxima[k]=Math.max(maxima[k],values[k]);
+  assert(values.iron<=25,`${frame.image} cannot stand in for authored cast-iron burner hardware`);
+  if(name!=='oblique-furniture.kitchen-fridge.v1.json')assert(values.freezer<=350,`${frame.image} cannot stand in for a freezer gradient`);
+  assert(!(values.enamel>50&&values.iron>25),`${frame.image} cannot satisfy both independent stove regions`);total++;
+ }
+ report.negatives.push({name,descriptorSha256:sha(manifestBytes),source:manifest.source,sourceSha256:manifest.sourceSha256,images:total,maxima});console.log(name,JSON.stringify(maxima));
+}
+writeFileSync(process.argv[3]??resolve(root,'offline-proof.json'),JSON.stringify(report,null,2)+'\n');console.log('PASS',JSON.stringify(report.actual));

@@ -5,6 +5,7 @@ import { expect, test as base, type Page } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
 import { assertOwnedObjectOrders, type OwnedObjectSnapshotData } from './owned-object-worker-evidence';
 import { fridgePalettePixels } from './kitchen-fixture-palette-evidence';
+import { kitchenStoveMaterialPixels } from './kitchen-modern-material-observer';
 import { observeKitchenModernNetwork, frameKitchenModernSource, readKitchenWholeSnapshot } from './common-room-kitchen-modern-evidence';
 
 function assertKitchenOwners(data: OwnedObjectSnapshotData, quarterTurns: 0 | 1): void {
@@ -67,31 +68,8 @@ async function fixtureAnchors(page: Page): Promise<string[]> {
   });
 }
 
-async function stovePalettePixels(page: Page, png: Buffer, quarterTurns: 0 | 1): Promise<number[]> {
-  return page.evaluate(async ({ base64, quarterTurns }) => {
-    const bitmap = await createImageBitmap(new Blob([Uint8Array.from(atob(base64), c => c.charCodeAt(0))], { type: 'image/png' }));
-    const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
-    const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0);
-    // Calibrated from opened actual worker-built/loaded FullHD player images.
-    // Two disjoint regions on the stove: enamel body and new cast-iron grate.
-    // Actual before/after counts q0 832/35, q1 77/82. The q1 right wall
-    // hides the right oven/side vents; only visibly exposed regions count.
-    const rects = quarterTurns === 0
-      ? [[735, 490, 50, 35], [790, 390, 45, 30]]
-      : [[885, 375, 70, 40], [905, 320, 50, 35]];
-    const colours = quarterTurns === 0
-      ? [[125, 124, 121], [44, 50, 52]]
-      : [[148, 147, 145], [44, 50, 52]];
-    return rects.map((rect, regionIndex) => {
-      const colour = colours[regionIndex]!;
-      const pixels = context.getImageData(...rect as [number, number, number, number]).data;
-      let count = 0;
-      for (let i = 0; i < pixels.length; i += 4) {
-        if (pixels[i] === colour[0] && pixels[i + 1] === colour[1] && pixels[i + 2] === colour[2]) count++;
-      }
-      return count;
-    });
-  }, { base64: png.toString('base64'), quarterTurns });
+async function stovePalettePixels(_page: Page, png: Buffer, quarterTurns: 0 | 1): Promise<number[]> {
+  return kitchenStoveMaterialPixels(png,quarterTurns);
 }
 
 let routeStorage: Awaited<ReturnType<ReturnType<Page['context']>['storageState']>> | undefined;
