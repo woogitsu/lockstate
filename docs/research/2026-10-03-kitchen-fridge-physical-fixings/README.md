@@ -16,7 +16,7 @@ Original and new exact full bounds: `[-0.42500001192092896,-0.4845000207424164,0
 
 Fresh reopen checks all 97 actual raw parts, six full shader graphs, evaluated-position hashes, all 24 physical contacts and independently computed world-space geometric normals. Weighted shading normals do not substitute for topology evidence. Initial scratch audit reused a bookshelf-specific material-name filter and recorded only the shared steel graph; removed that filter in the independent scratch auditor, then verified all six actual stored graphs. Production own auditor enumerates every stored graph.
 
-Opened original/new four-yaw comparison shows subtle actual hinge retaining heads and gold handle collars, while the already authored doors, louvres, gaskets and back remain preserved. These are native Blender renders, not player screenshots. Pinned Blender 5.2.1 LTS upstream ID `9e2066aef7ef`; executable SHA256 `284f4041f98e113f3dc10654a7193ffaaa9bfdfec8b87fa116620a48b5f6d4cb`.
+Opened original/new four-yaw comparison shows subtle actual hinge retaining heads and gold handle collars, while the already authored doors, louvres, gaskets and back remain preserved. These are native Blender renders, not player screenshots. Pinned Blender 5.2.1 LTS upstream ID `build_hash=9e2066aef7ef`; executable SHA256 `284f4041f98e113f3dc10654a7193ffaaa9bfdfec8b87fa116620a48b5f6d4cb`.
 
 Source/refiner/guard checkpoint first. Canonical72 integration, repeat and real producer/decoded consumer negatives follow separately. No browser or server launched; parent owns subsequent real Build/SaveLoad acceptance. No context, palette, gameplay, save, copy, projection or matcher change.
 

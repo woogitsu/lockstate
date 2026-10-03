@@ -16,7 +16,7 @@ Actual contact is tested on evaluated triangles. For each new shoe, two genuine 
 
 Original/new exact full bounds: `[-0.9269999265670776,-0.45750001072883606,0]` to `[0.9269999265670776,0.3400000035762787,2.246000051498413]`. Unit fit, original2x1/1x2 occupied rotations, target `[1,.5,1.1230000257492065]` and shared64pixels/tile camera remain unchanged. Direct pinned Blender verifies allfour footprints and72 actual camera transforms. Opened original/new four-yaw comparison: small black shoes close actual grate/collar connections while existing colored cores/grates/carcass retain their appearance. These are native Blender source images, not gameplay screenshots; no enlargement/palette adjustment is used to make the detail prominent.
 
-Pinned Blender5.2.1LTS upstreamID `9e2066aef7ef`, executable SHA256 `284f4041f98e113f3dc10654a7193ffaaa9bfdfec8b87fa116620a48b5f6d4cb`. First coherent source/refiner/guard checkpoint; canonical72 repeats and actual producer/consumer negatives follow separately. No browser/server launched; parent owns genuine new-source Kitchen Build/SaveLoad. Fridge/Prep and shared projection/default functions remain outside this scope.
+Pinned Blender5.2.1LTS upstreamID `build_hash=9e2066aef7ef`, executable SHA256 `284f4041f98e113f3dc10654a7193ffaaa9bfdfec8b87fa116620a48b5f6d4cb`. First coherent source/refiner/guard checkpoint; canonical72 repeats and actual producer/consumer negatives follow separately. No browser/server launched; parent owns genuine new-source Kitchen Build/SaveLoad. Fridge/Prep and shared projection/default functions remain outside this scope.
 
 ## Canonical exports and actual production controls
 

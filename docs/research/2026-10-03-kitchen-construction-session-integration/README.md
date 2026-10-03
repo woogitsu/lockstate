@@ -42,3 +42,21 @@ pending. Existing ordinary push/PR authorisation does not approve either.
 Root integrated source run: 61 tests across five suites GREEN in 5.48 seconds.
 The three prepared native fixture modules pass strict TypeScript (exit0).
 These are source/fixture checks; actual native acceptance remains pending.
+
+## Integrated guard and documentation checks
+
+#2004 construction-only synchronous cancellation is now integrated: six original
+source failures and fifteen controls become21 GREEN; Build/Rooms guard omissions
+produce4/2 RED and exact restoration21 GREEN. It preserves camera and hover.
+
+First broader integration run retains102 GREEN/4 documentation failures. Two
+Blender build identifiers had been written as Git citations; the actual metadata
+is now explicitly `build_hash=9e2066aef7ef`. Named published Fridge/Stove refs
+were fetched explicitly to verify original commits. Two retired Stove pose paths
+now link to their verified historical source commit rather than implying that
+old render hashes remain current files. Both missing collection rows are added
+in the existing table shape. Corrected documentation23/23 GREEN in14.25s;
+the guards and their budgets are unchanged. Original failure output remains.
+
+Actual native acceptance for the combined subject is still pending. This section
+does not replace a successful built-client run or exact full hosted CI.
