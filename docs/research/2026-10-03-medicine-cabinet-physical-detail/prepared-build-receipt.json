@@ -1,0 +1,7 @@
+{
+  "buildExitCode": 0,
+  "worker": "dist/client/assets/worker-D3Wqs4_n.js",
+  "workerBytes": 437955,
+  "workerSha256": "5bbbb74a2a52e93b65449dc2b253c8165200cdb71d03c99518e73dcc42534912",
+  "nativeBrowserStarted": false
+}

@@ -1,0 +1,406 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-desk-camera-integration-20261003\\tests\\browser\\playwright.artifact.config.ts",
+    "rootDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-desk-camera-integration-20261003/tests/browser",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/matma/AppData/Local/Temp/lockstate-desk-cabinet-native-mutation-20261003/results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-desk-camera-integration-20261003/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "/(?:production-artifact|rotated-security-console-player-build|infirmary-player-build|room-template-live-orientation|room-plan-dialog-escape|canteen-dining-table-player-build|room-plan-native-picker|shower-head-player-build|live-view-held-native-arrow|wooden-bench-player-build|live-view-native-popup-held-key|hud-separator-held-arrow|wooden-chair-player-build|build-category-native-camera|generic-wooden-rack-player-build|build-category-native-popup-held-key|build-category-native-typeahead|bookshelf-player-build|utility-panel-player-build|hud-layout-menu-fullhd|generic-office-desk-player-build|oblique-build-drag-under-hud|dedicated-kitchen-stove-player-build|live-view-native-mouse-target|oblique-object-area-drag-under-hud|dedicated-kitchen-fridge-player-build|dedicated-kitchen-prep-counter-player-build|room-preview-retained-hover-fit|oblique-square-wall-native-footprint|dedicated-laundry-washing-machine-player-build|camera-wheel-axis-native|oblique-camera-gameout-native|default-waste-bin-player-build|navigation-drawer-escape-native|dedicated-cell-toilet-player-build|dedicated-utility-panel-player-build|room-template-world-camera-origin|dedicated-office-desk-player-build|room-template-renderer-preflight-receipt|dedicated-medicine-cabinet-player-build)\\.spec\\.ts$/"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 1,
+    "webServer": {
+      "command": "\"C:\\\\Users\\\\matma\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\node\\\\bin\\\\node.exe\" \"C:\\\\Users\\\\matma\\\\Documents\\\\Rozwój gier\\\\lockstate-1382-doc-anchor-2026-09-24\\\\node_modules\\\\.pnpm\\\\vite@8.2.2_@types+node@24.10.1_esbuild@0.28.1\\\\node_modules\\\\vite\\\\bin\\\\vite.js\" preview --port 5432 --strictPort --host 127.0.0.1",
+      "cwd": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-desk-camera-integration-20261003\\",
+      "env": {
+        "CLOUDFLARE_ENV": "production"
+      },
+      "url": "http://127.0.0.1:5432/",
+      "reuseExistingServer": false,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "dedicated-medicine-cabinet-player-build.spec.ts",
+      "file": "dedicated-medicine-cabinet-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player creates actual storage and delivery capacity before detailed Infirmary",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 43336,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T00:51:43.587Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e4c1461d8ed9878a9e84-93fcf0e2e32ba07b25b6",
+          "file": "dedicated-medicine-cabinet-player-build.spec.ts",
+          "line": 199,
+          "column": 1
+        },
+        {
+          "title": "player builds Infirmary at quarterTurns1 and retains the authored cabinet inset palette and anchors after Save/Load",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 45756,
+                  "error": {
+                    "message": "Error: cabinet dark inset 1 after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m100\u001b[39m\nReceived:   \u001b[31m0\u001b[39m",
+                    "stack": "Error: cabinet dark inset 1 after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m100\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-desk-camera-integration-20261003\\tests\\browser\\dedicated-medicine-cabinet-player-build.spec.ts:217:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-desk-camera-integration-20261003\\tests\\browser\\dedicated-medicine-cabinet-player-build.spec.ts:216:16",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-desk-camera-integration-20261003\\tests\\browser\\dedicated-medicine-cabinet-player-build.spec.ts",
+                      "column": 6,
+                      "line": 217
+                    },
+                    "snippet": "  215 |   }, null, 2));\n  216 |   beforePixels.forEach((count, index) => expect.soft(count, `cabinet dark inset ${index + 1} after construction`)\n> 217 |     .toBeGreaterThan(100));\n      |      ^\n  218 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n  219 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();\n  220 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-desk-camera-integration-20261003\\tests\\browser\\dedicated-medicine-cabinet-player-build.spec.ts",
+                        "column": 6,
+                        "line": 217
+                      },
+                      "message": "Error: cabinet dark inset 1 after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m100\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  215 |   }, null, 2));\n  216 |   beforePixels.forEach((count, index) => expect.soft(count, `cabinet dark inset ${index + 1} after construction`)\n> 217 |     .toBeGreaterThan(100));\n      |      ^\n  218 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n  219 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();\n  220 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-desk-camera-integration-20261003\\tests\\browser\\dedicated-medicine-cabinet-player-build.spec.ts:217:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-desk-camera-integration-20261003\\tests\\browser\\dedicated-medicine-cabinet-player-build.spec.ts:216:16"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-desk-camera-integration-20261003\\tests\\browser\\dedicated-medicine-cabinet-player-build.spec.ts",
+                        "column": 6,
+                        "line": 233
+                      },
+                      "message": "Error: cabinet dark inset 1 after Load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m100\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  231 |   const afterPixels = await cabinetPalettePixels(page, loaded, quarterTurns);\n  232 |   afterPixels.forEach((count, index) => expect.soft(count, `cabinet dark inset ${index + 1} after Load`)\n> 233 |     .toBeGreaterThan(100));\n      |      ^\n  234 |   expect(afterPixels).toEqual(beforePixels);\n  235 |   const evidencePath = info.outputPath('dedicated-medicine-cabinet-worker-and-save-evidence.json');\n  236 |   await writeFile(evidencePath, JSON.stringify({\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-desk-camera-integration-20261003\\tests\\browser\\dedicated-medicine-cabinet-player-build.spec.ts:233:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-desk-camera-integration-20261003\\tests\\browser\\dedicated-medicine-cabinet-player-build.spec.ts:232:15"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T00:52:26.993Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "dedicated-medicine-cabinet-worker-and-save-evidence",
+                      "contentType": "application/json",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-desk-cabinet-native-mutation-20261003\\results\\dedicated-medicine-cabinet-176ee-and-anchors-after-Save-Load\\attachments\\dedicated-medicine-cabinet-worker-and-save-evidence-605aab7bb76013c7e7ca3a9aede45dd4426405fe.json"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-desk-cabinet-native-mutation-20261003\\results\\dedicated-medicine-cabinet-176ee-and-anchors-after-Save-Load\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-desk-camera-integration-20261003\\tests\\browser\\dedicated-medicine-cabinet-player-build.spec.ts",
+                    "column": 6,
+                    "line": 217
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "e4c1461d8ed9878a9e84-5d80cfb44cfc1f056e41",
+          "file": "dedicated-medicine-cabinet-player-build.spec.ts",
+          "line": 262,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "room-template-renderer-preflight-receipt.spec.ts",
+      "file": "room-template-renderer-preflight-receipt.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "FullHD world: renderer replacement during genuine preflight stands down accepted cell",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 16706,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeHidden\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.room-template-world-ghost')\nExpected: hidden\nReceived: visible\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeHidden\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.room-template-world-ghost')\u001b[22m\n\u001b[2m    13 × locator resolved to <div data-ready=\"blocked\" class=\"room-template-world-ghost\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"visible\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeHidden\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.room-template-world-ghost')\nExpected: hidden\nReceived: visible\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeHidden\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.room-template-world-ghost')\u001b[22m\n\u001b[2m    13 × locator resolved to <div data-ready=\"blocked\" class=\"room-template-world-ghost\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"visible\"\u001b[22m\n\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-desk-camera-integration-20261003\\tests\\browser\\room-template-renderer-preflight-receipt.spec.ts:122:27",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-desk-camera-integration-20261003\\tests\\browser\\room-template-renderer-preflight-receipt.spec.ts",
+                      "column": 27,
+                      "line": 122
+                    },
+                    "snippet": "  120 |       await page.keyboard.press('Escape'); await expect(ghost).toBeHidden();\n  121 |     } else {\n> 122 |       await expect(ghost).toBeHidden(); // original disposed guard reveals a new armed preview here\n      |                           ^\n  123 |       expect((await sentCommands(page)).filter(command => /^(Place|Build|Remove)/u.test(String(command.type)))).toHaveLength(1);\n  124 |     }\n  125 |     await page.screenshot({ path: testInfo.outputPath('matching-receipt-or-new-tool.png') });"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-desk-camera-integration-20261003\\tests\\browser\\room-template-renderer-preflight-receipt.spec.ts",
+                        "column": 27,
+                        "line": 122
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeHidden\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.room-template-world-ghost')\nExpected: hidden\nReceived: visible\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeHidden\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.room-template-world-ghost')\u001b[22m\n\u001b[2m    13 × locator resolved to <div data-ready=\"blocked\" class=\"room-template-world-ghost\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"visible\"\u001b[22m\n\n\n  120 |       await page.keyboard.press('Escape'); await expect(ghost).toBeHidden();\n  121 |     } else {\n> 122 |       await expect(ghost).toBeHidden(); // original disposed guard reveals a new armed preview here\n      |                           ^\n  123 |       expect((await sentCommands(page)).filter(command => /^(Place|Build|Remove)/u.test(String(command.type)))).toHaveLength(1);\n  124 |     }\n  125 |     await page.screenshot({ path: testInfo.outputPath('matching-receipt-or-new-tool.png') });\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-desk-camera-integration-20261003\\tests\\browser\\room-template-renderer-preflight-receipt.spec.ts:122:27"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T00:53:13.289Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-desk-cabinet-native-mutation-20261003\\results\\room-template-renderer-pre-413f2-t-stands-down-accepted-cell\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-desk-camera-integration-20261003\\tests\\browser\\room-template-renderer-preflight-receipt.spec.ts",
+                    "column": 27,
+                    "line": 122
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2cd3af65229a8e7b0c20-e068c3653993827da205",
+          "file": "room-template-renderer-preflight-receipt.spec.ts",
+          "line": 66,
+          "column": 3
+        },
+        {
+          "title": "FullHD world: renderer replacement during genuine preflight protects rearmed Yard",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8447,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "RENDERER_PLAN_PREFLIGHT_RECEIPT {\"initialMode\":\"world\",\"rearm\":true,\"chosen\":{\"target\":{\"kind\":\"room-template\",\"templateId\":\"cell-basic\",\"origin\":{\"x\":14,\"y\":13}},\"ok\":true}}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T00:53:30.797Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2cd3af65229a8e7b0c20-381d7904d43062013fa4",
+          "file": "room-template-renderer-preflight-receipt.spec.ts",
+          "line": 66,
+          "column": 3
+        },
+        {
+          "title": "FullHD oblique: renderer replacement during genuine preflight stands down accepted cell",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 15882,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeHidden\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.room-template-world-ghost')\nExpected: hidden\nReceived: visible\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeHidden\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.room-template-world-ghost')\u001b[22m\n\u001b[2m    13 × locator resolved to <div data-ready=\"blocked\" class=\"room-template-world-ghost\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"visible\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeHidden\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.room-template-world-ghost')\nExpected: hidden\nReceived: visible\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeHidden\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.room-template-world-ghost')\u001b[22m\n\u001b[2m    13 × locator resolved to <div data-ready=\"blocked\" class=\"room-template-world-ghost\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"visible\"\u001b[22m\n\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-desk-camera-integration-20261003\\tests\\browser\\room-template-renderer-preflight-receipt.spec.ts:122:27",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-desk-camera-integration-20261003\\tests\\browser\\room-template-renderer-preflight-receipt.spec.ts",
+                      "column": 27,
+                      "line": 122
+                    },
+                    "snippet": "  120 |       await page.keyboard.press('Escape'); await expect(ghost).toBeHidden();\n  121 |     } else {\n> 122 |       await expect(ghost).toBeHidden(); // original disposed guard reveals a new armed preview here\n      |                           ^\n  123 |       expect((await sentCommands(page)).filter(command => /^(Place|Build|Remove)/u.test(String(command.type)))).toHaveLength(1);\n  124 |     }\n  125 |     await page.screenshot({ path: testInfo.outputPath('matching-receipt-or-new-tool.png') });"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-desk-camera-integration-20261003\\tests\\browser\\room-template-renderer-preflight-receipt.spec.ts",
+                        "column": 27,
+                        "line": 122
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeHidden\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.room-template-world-ghost')\nExpected: hidden\nReceived: visible\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeHidden\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.room-template-world-ghost')\u001b[22m\n\u001b[2m    13 × locator resolved to <div data-ready=\"blocked\" class=\"room-template-world-ghost\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"visible\"\u001b[22m\n\n\n  120 |       await page.keyboard.press('Escape'); await expect(ghost).toBeHidden();\n  121 |     } else {\n> 122 |       await expect(ghost).toBeHidden(); // original disposed guard reveals a new armed preview here\n      |                           ^\n  123 |       expect((await sentCommands(page)).filter(command => /^(Place|Build|Remove)/u.test(String(command.type)))).toHaveLength(1);\n  124 |     }\n  125 |     await page.screenshot({ path: testInfo.outputPath('matching-receipt-or-new-tool.png') });\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-desk-camera-integration-20261003\\tests\\browser\\room-template-renderer-preflight-receipt.spec.ts:122:27"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T00:53:39.320Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-desk-cabinet-native-mutation-20261003\\results\\room-template-renderer-pre-dea29-t-stands-down-accepted-cell\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-desk-camera-integration-20261003\\tests\\browser\\room-template-renderer-preflight-receipt.spec.ts",
+                    "column": 27,
+                    "line": 122
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2cd3af65229a8e7b0c20-9b1c6b3755e44a24775c",
+          "file": "room-template-renderer-preflight-receipt.spec.ts",
+          "line": 66,
+          "column": 3
+        },
+        {
+          "title": "FullHD oblique: renderer replacement during genuine preflight protects rearmed Yard",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6831,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "RENDERER_PLAN_PREFLIGHT_RECEIPT {\"initialMode\":\"oblique\",\"rearm\":true,\"chosen\":{\"target\":{\"kind\":\"room-template\",\"templateId\":\"cell-basic\",\"origin\":{\"x\":17,\"y\":13}},\"ok\":true}}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T00:53:55.737Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2cd3af65229a8e7b0c20-32a02a2d7d5328589b4e",
+          "file": "room-template-renderer-preflight-receipt.spec.ts",
+          "line": 66,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-03T00:51:41.133Z",
+    "duration": 142096.011,
+    "expected": 3,
+    "skipped": 0,
+    "unexpected": 3,
+    "flaky": 0
+  }
+}

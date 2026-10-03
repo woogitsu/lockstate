@@ -6,7 +6,7 @@ import { parseObliqueModuleCatalog } from '../../src/rendering/assets/oblique-mo
 import { parseObliqueModuleRegistry } from '../../src/rendering/assets/oblique-module-registry';
 
 const publicRoot = new URL('../../public/', import.meta.url);
-const source = new URL('../../assets/source/blender/furniture.office.desk.generic.blend', import.meta.url);
+const source = new URL('../../assets/source/blender/furniture.office.desk.generic.angled-detail.blend', import.meta.url);
 const manifestName = 'oblique-furniture-office-desk-generic.v1.json';
 const readJson = (name: string): unknown => JSON.parse(readFileSync(new URL(name, publicRoot), 'utf8').replace(/^\uFEFF/, ''));
 const hash = (bytes: Buffer): string => createHash('sha256').update(bytes).digest('hex');

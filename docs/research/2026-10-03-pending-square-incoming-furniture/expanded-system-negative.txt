@@ -1,0 +1,100 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-pending-square-wall-incoming-object-audit-20261003
+
+ ❯ tests/integration/pending-square-wall-incoming-object.test.ts (28 tests | 5 failed) 1440ms
+   × paid pending square vs later Bed: type='PlaceBuildOrder' load=false conflict=true 46ms
+   × paid pending square vs later Bed: type='PlaceBuildOrder' load=true conflict=true 49ms
+   × horizontal Desk far tile respects the paid square: type='PlaceBuildOrder' load=false conflict=true 43ms
+   × horizontal Desk far tile respects the paid square: type='PlaceBuildOrder' load=true conflict=true 47ms
+   × partly built square still owns its tile after encoded Load: type='PlaceBuildOrder' conflict=true 44ms
+node : 
+At line:14 char:2
++  node node_modules/vitest/vitest.mjs run --maxWorkers=2 tests/integra ...
++  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/pending-square-wall-incoming-object.test.ts > paid pending square vs later Bed: type='PlaceBui
+ldOrder' load=false conflict=true
+ FAIL  tests/integration/pending-square-wall-incoming-object.test.ts > paid pending square vs later Bed: type='PlaceBui
+ldOrder' load=true conflict=true
+AssertionError: expected { id: 'later-bed', …(6) } to match object { state: 'failed', …(1) }
+(8 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "failReason": "unbuildable",
+-   "state": "failed",
++   "state": "approved",
+  }
+
+ ❯ tests/integration/pending-square-wall-incoming-object.test.ts:61:63
+     59|     if (conflict) {
+     60|       if (type === 'PlaceObject') expect(runtime.construction.getOrder…
+     61|       else expect(runtime.construction.getOrder('later-bed')).toMatchO…
+       |                                                               ^
+     62|       const { kernel: _beforeKernel, ...beforeGameplay } = before;
+     63|       const { kernel: _afterKernel, ...afterGameplay } = after;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  tests/integration/pending-square-wall-incoming-object.test.ts > horizontal Desk far tile respects the paid squar
+e: type='PlaceBuildOrder' load=false conflict=true
+ FAIL  tests/integration/pending-square-wall-incoming-object.test.ts > horizontal Desk far tile respects the paid squar
+e: type='PlaceBuildOrder' load=true conflict=true
+AssertionError: expected { id: 'later-desk', …(6) } to match object { state: 'failed', …(1) }
+(8 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "failReason": "unbuildable",
+-   "state": "failed",
++   "state": "approved",
+  }
+
+ ❯ tests/integration/pending-square-wall-incoming-object.test.ts:86:64
+     84|     if (conflict) {
+     85|       if (type === 'PlaceObject') expect(runtime.construction.getOrder…
+     86|       else expect(runtime.construction.getOrder('later-desk')).toMatch…
+       |                                                                ^
+     87|       const { kernel: _afterKernel, ...after } = captureSessionSnapsho…
+     88|       expect({ ...after, construction: { ...after.construction,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  tests/integration/pending-square-wall-incoming-object.test.ts > partly built square still owns its tile after en
+coded Load: type='PlaceBuildOrder' conflict=true
+AssertionError: expected { id: 'partial-later-bed', …(6) } to match object { state: 'failed', …(1) }
+(8 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "failReason": "unbuildable",
+-   "state": "failed",
++   "state": "approved",
+  }
+
+ ❯ tests/integration/pending-square-wall-incoming-object.test.ts:133:71
+    131|     if (conflict) {
+    132|       if (type === 'PlaceObject') expect(runtime.construction.getOrder…
+    133|       else expect(runtime.construction.getOrder('partial-later-bed')).…
+       |                                                                       ^
+    134|       const { kernel: _afterKernel, ...after } = captureSessionSnapsho…
+    135|       expect({ ...after, construction: { ...after.construction,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 23 passed (28)
+   Start at  02:03:01
+   Duration  3.76s (transform 823ms, setup 0ms, import 2.19s, tests 1.44s, environment 0ms)
+

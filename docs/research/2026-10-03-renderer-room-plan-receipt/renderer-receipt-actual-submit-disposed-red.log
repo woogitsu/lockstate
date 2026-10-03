@@ -1,0 +1,59 @@
+$ vitest run "tests/unit/ui-room-plan-renderer-placement-receipt.test.ts" "--maxWorkers=2"
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-room-plan-renderer-receipt-audit-20261003
+
+ ❯ tests/unit/ui-room-plan-renderer-placement-receipt.test.ts (14 tests | 4 failed) 357ms
+   × world: accepted unchanged room-plan placement stands down after actual renderer replacement 59ms
+   × world: actual main submit callback stands down after renderer replacement during accepted preflight 1ms
+   × oblique: accepted unchanged room-plan placement stands down after actual renderer replacement 61ms
+   × oblique: actual main submit callback stands down after renderer replacement during accepted preflight 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-room-plan-renderer-placement-receipt.test.ts > world: accepted unchanged room-plan placement stands down after actual renderer replacement
+ FAIL  tests/unit/ui-room-plan-renderer-placement-receipt.test.ts > oblique: accepted unchanged room-plan placement stands down after actual renderer replacement
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/unit/ui-room-plan-renderer-placement-receipt.test.ts:89:32
+     87|       expect(Reflect.get(h.tool, 'busy')).toBe(false);
+     88|       expect(h.place).toHaveBeenCalledOnce();
+     89|       expect(h.tool.isArmed()).toBe(false);
+       |                                ^
+     90|     } finally { h.dispose(); }
+     91|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tests/unit/ui-room-plan-renderer-placement-receipt.test.ts > world: actual main submit callback stands down after renderer replacement during accepted preflight
+ FAIL  tests/unit/ui-room-plan-renderer-placement-receipt.test.ts > oblique: actual main submit callback stands down after renderer replacement during accepted preflight
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/unit/ui-room-plan-renderer-placement-receipt.test.ts:133:32
+    131|       expect(h.submit).toHaveBeenCalledExactlyOnceWith({ type: 'PlaceR…
+    132|       expect(Reflect.get(h.tool, 'busy')).toBe(false);
+    133|       expect(h.tool.isArmed()).toBe(false);
+       |                                ^
+    134|     } finally { h.dispose(); }
+    135|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 10 passed (14)
+   Start at  01:35:10
+   Duration  576ms (transform 54ms, setup 0ms, import 109ms, tests 357ms, environment 0ms)
+
+[ELIFECYCLE] Test failed. See above for more details.

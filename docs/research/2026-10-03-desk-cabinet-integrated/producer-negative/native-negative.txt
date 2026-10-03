@@ -1,0 +1,159 @@
+node : [2m[WebServer] [22m(node:62648) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:22 char:2
++  node --experimental-transform-types --disable-warning=ExperimentalWa ...
++  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 6 tests using 1 worker
+
+(node:19680) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:19680) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\dedicated-medicine-cabinet-player-build.spec.ts:199:1 › player creates actual storage and delivery capacity before detailed Infirmary (43.3s)
+  x  2 tests\browser\dedicated-medicine-cabinet-player-build.spec.ts:262:3 › player builds Infirmary at quarterTurns1 and retains the authored cabinet inset palette and anchors after Save/Load (45.8s)
+(node:6296) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:6296) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  3 tests\browser\room-template-renderer-preflight-receipt.spec.ts:66:3 › FullHD world: renderer replacement during genuine preflight stands down accepted cell (16.7s)
+(node:3884) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:3884) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+RENDERER_PLAN_PREFLIGHT_RECEIPT {"initialMode":"world","rearm":true,"chosen":{"target":{"kind":"room-template","templateId":"cell-basic","origin":{"x":14,"y":13}},"ok":true}}
+  ok 4 tests\browser\room-template-renderer-preflight-receipt.spec.ts:66:3 › FullHD world: renderer replacement during genuine preflight protects rearmed Yard (8.4s)
+  x  5 tests\browser\room-template-renderer-preflight-receipt.spec.ts:66:3 › FullHD oblique: renderer replacement during genuine preflight stands down accepted cell (15.9s)
+(node:14892) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:14892) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+RENDERER_PLAN_PREFLIGHT_RECEIPT {"initialMode":"oblique","rearm":true,"chosen":{"target":{"kind":"room-template","templateId":"cell-basic","origin":{"x":17,"y":13}},"ok":true}}
+  ok 6 tests\browser\room-template-renderer-preflight-receipt.spec.ts:66:3 › FullHD oblique: renderer replacement during genuine preflight protects rearmed Yard (6.8s)
+
+
+  1) tests\browser\dedicated-medicine-cabinet-player-build.spec.ts:262:3 › player builds Infirmary at quarterTurns1 and retains the authored cabinet inset palette and anchors after Save/Load 
+
+    Error: cabinet dark inset 1 after construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m100[39m
+    Received:   [31m0[39m
+
+      215 |   }, null, 2));
+      216 |   beforePixels.forEach((count, index) => expect.soft(count, `cabinet dark inset ${index + 1} after construction`)
+    > 217 |     .toBeGreaterThan(100));
+          |      ^
+      218 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+      219 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+      220 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-desk-camera-integration-20261003\tests\browser\dedicated-medicine-cabinet-player-build.spec.ts:217:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-desk-camera-integration-20261003\tests\browser\dedicated-medicine-cabinet-player-build.spec.ts:216:16
+
+    Error: cabinet dark inset 1 after Load
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m100[39m
+    Received:   [31m0[39m
+
+      231 |   const afterPixels = await cabinetPalettePixels(page, loaded, quarterTurns);
+      232 |   afterPixels.forEach((count, index) => expect.soft(count, `cabinet dark inset ${index + 1} after Load`)
+    > 233 |     .toBeGreaterThan(100));
+          |      ^
+      234 |   expect(afterPixels).toEqual(beforePixels);
+      235 |   const evidencePath = info.outputPath('dedicated-medicine-cabinet-worker-and-save-evidence.json');
+      236 |   await writeFile(evidencePath, JSON.stringify({
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-desk-camera-integration-20261003\tests\browser\dedicated-medicine-cabinet-player-build.spec.ts:233:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-desk-camera-integration-20261003\tests\browser\dedicated-medicine-cabinet-player-build.spec.ts:232:15
+
+    attachment #1: dedicated-medicine-cabinet-worker-and-save-evidence (application/json) ──────────
+    ..\..\..\AppData\Local\Temp\lockstate-desk-cabinet-native-mutation-20261003\results\dedicated-medicine-cabinet-176ee-and-anchors-after-Save-Load\attachments\dedicated-medicine-cabinet-worker-and-save-evidence-605aab7bb76013c7e7ca3a9aede45dd4426405fe.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-desk-cabinet-native-mutation-20261003\results\dedicated-medicine-cabinet-176ee-and-anchors-after-Save-Load\error-context.md
+
+  2) tests\browser\room-template-renderer-preflight-receipt.spec.ts:66:3 › FullHD world: renderer replacement during genuine preflight stands down accepted cell 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeHidden[2m([22m[2m)[22m failed
+
+    Locator:  locator('.room-template-world-ghost')
+    Expected: hidden
+    Received: visible
+    Timeout:  10000ms
+
+    Call log:
+    [2m  - Expect "toBeHidden" with timeout 10000ms[22m
+    [2m  - waiting for locator('.room-template-world-ghost')[22m
+    [2m    13 × locator resolved to <div data-ready="blocked" class="room-template-world-ghost">…</div>[22m
+    [2m       - unexpected value "visible"[22m
+
+
+      120 |       await page.keyboard.press('Escape'); await expect(ghost).toBeHidden();
+      121 |     } else {
+    > 122 |       await expect(ghost).toBeHidden(); // original disposed guard reveals a new armed preview here
+          |                           ^
+      123 |       expect((await sentCommands(page)).filter(command => /^(Place|Build|Remove)/u.test(String(command.type)))).toHaveLength(1);
+      124 |     }
+      125 |     await page.screenshot({ path: testInfo.outputPath('matching-receipt-or-new-tool.png') });
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-desk-camera-integration-20261003\tests\browser\room-template-renderer-preflight-receipt.spec.ts:122:27
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-desk-cabinet-native-mutation-20261003\results\room-template-renderer-pre-413f2-t-stands-down-accepted-cell\error-context.md
+
+  3) tests\browser\room-template-renderer-preflight-receipt.spec.ts:66:3 › FullHD oblique: renderer replacement during genuine preflight stands down accepted cell 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeHidden[2m([22m[2m)[22m failed
+
+    Locator:  locator('.room-template-world-ghost')
+    Expected: hidden
+    Received: visible
+    Timeout:  10000ms
+
+    Call log:
+    [2m  - Expect "toBeHidden" with timeout 10000ms[22m
+    [2m  - waiting for locator('.room-template-world-ghost')[22m
+    [2m    13 × locator resolved to <div data-ready="blocked" class="room-template-world-ghost">…</div>[22m
+    [2m       - unexpected value "visible"[22m
+
+
+      120 |       await page.keyboard.press('Escape'); await expect(ghost).toBeHidden();
+      121 |     } else {
+    > 122 |       await expect(ghost).toBeHidden(); // original disposed guard reveals a new armed preview here
+          |                           ^
+      123 |       expect((await sentCommands(page)).filter(command => /^(Place|Build|Remove)/u.test(String(command.type)))).toHaveLength(1);
+      124 |     }
+      125 |     await page.screenshot({ path: testInfo.outputPath('matching-receipt-or-new-tool.png') });
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-desk-camera-integration-20261003\tests\browser\room-template-renderer-preflight-receipt.spec.ts:122:27
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-desk-cabinet-native-mutation-20261003\results\room-template-renderer-pre-dea29-t-stands-down-accepted-cell\error-context.md
+
+  3 failed
+    tests\browser\dedicated-medicine-cabinet-player-build.spec.ts:262:3 › player builds Infirmary at quarterTurns1 and retains the authored cabinet inset palette and anchors after Save/Load 
+    tests\browser\room-template-renderer-preflight-receipt.spec.ts:66:3 › FullHD world: renderer replacement during genuine preflight stands down accepted cell 
+    tests\browser\room-template-renderer-preflight-receipt.spec.ts:66:3 › FullHD oblique: renderer replacement during genuine preflight stands down accepted cell 
+  3 passed (2.4m)
+
+==============================================================================
+LOCKSTATE_BROWSER_SUITE_NO_RETRY suite=artifact reason=no-last-run-file
+Playwright left no readable test-results/.last-run.json, so the run failed before it
+could record which tests failed. That is not net::ERR_NETWORK_CHANGED; not retrying.
+==============================================================================
+

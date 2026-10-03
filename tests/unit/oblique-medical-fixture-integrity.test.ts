@@ -7,7 +7,7 @@ import { parseObliqueModuleCatalog } from '../../src/rendering/assets/oblique-mo
 
 it.each([
   ['object.medical-bed', 'oblique-furniture.medical-bed.v1.json', 0.675],
-  ['object.medicine-cabinet', 'oblique-fixture.medicine-cabinet.v1.json', 0.59],
+  ['object.medicine-cabinet', 'oblique-fixture.medicine-cabinet.v1.json', .5899999737739563],
 ] as const)('exports %s around its occupied footprint with verified source and all pose bytes', (objectId, manifest, targetZ) => {
   const root = new URL('../../', import.meta.url);
   const catalog = parseObliqueModuleCatalog(JSON.parse(readFileSync(new URL(`public/game-content/${manifest}`, root), 'utf8')) as unknown);

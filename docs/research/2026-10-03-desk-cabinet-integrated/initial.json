@@ -1,0 +1,531 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-desk-camera-integration-20261003\\tests\\browser\\playwright.artifact.config.ts",
+    "rootDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-desk-camera-integration-20261003/tests/browser",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/matma/AppData/Local/Temp/lockstate-desk-cabinet-renderer-combined-results-20261003",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-desk-camera-integration-20261003/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "/(?:production-artifact|rotated-security-console-player-build|infirmary-player-build|room-template-live-orientation|room-plan-dialog-escape|canteen-dining-table-player-build|room-plan-native-picker|shower-head-player-build|live-view-held-native-arrow|wooden-bench-player-build|live-view-native-popup-held-key|hud-separator-held-arrow|wooden-chair-player-build|build-category-native-camera|generic-wooden-rack-player-build|build-category-native-popup-held-key|build-category-native-typeahead|bookshelf-player-build|utility-panel-player-build|hud-layout-menu-fullhd|generic-office-desk-player-build|oblique-build-drag-under-hud|dedicated-kitchen-stove-player-build|live-view-native-mouse-target|oblique-object-area-drag-under-hud|dedicated-kitchen-fridge-player-build|dedicated-kitchen-prep-counter-player-build|room-preview-retained-hover-fit|oblique-square-wall-native-footprint|dedicated-laundry-washing-machine-player-build|camera-wheel-axis-native|oblique-camera-gameout-native|default-waste-bin-player-build|navigation-drawer-escape-native|dedicated-cell-toilet-player-build|dedicated-utility-panel-player-build|room-template-world-camera-origin|dedicated-office-desk-player-build|room-template-renderer-preflight-receipt|dedicated-medicine-cabinet-player-build)\\.spec\\.ts$/"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 1,
+    "webServer": {
+      "command": "\"C:\\\\Users\\\\matma\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\node\\\\bin\\\\node.exe\" \"C:\\\\Users\\\\matma\\\\Documents\\\\Rozwój gier\\\\lockstate-1382-doc-anchor-2026-09-24\\\\node_modules\\\\.pnpm\\\\vite@8.2.2_@types+node@24.10.1_esbuild@0.28.1\\\\node_modules\\\\vite\\\\bin\\\\vite.js\" preview --port 5432 --strictPort --host 127.0.0.1",
+      "cwd": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-desk-camera-integration-20261003\\",
+      "env": {
+        "CLOUDFLARE_ENV": "production"
+      },
+      "url": "http://127.0.0.1:5432/",
+      "reuseExistingServer": false,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "dedicated-medicine-cabinet-player-build.spec.ts",
+      "file": "dedicated-medicine-cabinet-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player creates actual storage and delivery capacity before detailed Infirmary",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 43131,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T00:38:31.427Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e4c1461d8ed9878a9e84-93fcf0e2e32ba07b25b6",
+          "file": "dedicated-medicine-cabinet-player-build.spec.ts",
+          "line": 199,
+          "column": 1
+        },
+        {
+          "title": "player builds Infirmary at quarterTurns0 and retains the authored cabinet inset palette and anchors after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 44949,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T00:39:14.626Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "dedicated-medicine-cabinet-worker-and-save-evidence",
+                      "contentType": "application/json",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-desk-cabinet-renderer-combined-results-20261003\\dedicated-medicine-cabinet-cfdf5-and-anchors-after-Save-Load\\attachments\\dedicated-medicine-cabinet-worker-and-save-evidence-3d045fb6535bfe2cfd18a5926cb0784e59a8754e.json"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e4c1461d8ed9878a9e84-ac165d5b371499f22be9",
+          "file": "dedicated-medicine-cabinet-player-build.spec.ts",
+          "line": 262,
+          "column": 3
+        },
+        {
+          "title": "player builds Infirmary at quarterTurns1 and retains the authored cabinet inset palette and anchors after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 45720,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T00:39:59.584Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "dedicated-medicine-cabinet-worker-and-save-evidence",
+                      "contentType": "application/json",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-desk-cabinet-renderer-combined-results-20261003\\dedicated-medicine-cabinet-176ee-and-anchors-after-Save-Load\\attachments\\dedicated-medicine-cabinet-worker-and-save-evidence-9996efcedd28762b60721837bc49883593d6b863.json"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e4c1461d8ed9878a9e84-5d80cfb44cfc1f056e41",
+          "file": "dedicated-medicine-cabinet-player-build.spec.ts",
+          "line": 262,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "dedicated-office-desk-player-build.spec.ts",
+      "file": "dedicated-office-desk-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player creates actual storage and delivery capacity before detailed Reception",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 42990,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T00:40:45.334Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "bc0337bf2f74e03cec9a-142e90fe6257ee667ef0",
+          "file": "dedicated-office-desk-player-build.spec.ts",
+          "line": 205,
+          "column": 1
+        },
+        {
+          "title": "player builds Reception at quarterTurns0 and retains dedicated authored desktop and detail palettes and anchors after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 46181,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T00:41:28.330Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "dedicated-office-desk-worker-and-save-evidence",
+                      "contentType": "application/json",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-desk-cabinet-renderer-combined-results-20261003\\dedicated-office-desk-play-6e56a-and-anchors-after-Save-Load\\attachments\\dedicated-office-desk-worker-and-save-evidence-07a738182371dbb510e4c25a23cffedc1c8e7a9e.json"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "bc0337bf2f74e03cec9a-bda7219e149370f26833",
+          "file": "dedicated-office-desk-player-build.spec.ts",
+          "line": 268,
+          "column": 3
+        },
+        {
+          "title": "player builds Reception at quarterTurns1 and retains dedicated authored desktop and detail palettes and anchors after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 46092,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T00:42:14.517Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "dedicated-office-desk-worker-and-save-evidence",
+                      "contentType": "application/json",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-desk-cabinet-renderer-combined-results-20261003\\dedicated-office-desk-play-b6b6f-and-anchors-after-Save-Load\\attachments\\dedicated-office-desk-worker-and-save-evidence-2654e7e35a920042a2271b27f2f4397a245c593f.json"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "bc0337bf2f74e03cec9a-7426b62566d2175d4ae7",
+          "file": "dedicated-office-desk-player-build.spec.ts",
+          "line": 268,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "room-template-renderer-preflight-receipt.spec.ts",
+      "file": "room-template-renderer-preflight-receipt.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "FullHD world: renderer replacement during genuine preflight stands down accepted cell",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 15443,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 0\u001b[39m\n\n\u001b[33m@@ -1,8 +1,7 @@\u001b[39m\n\u001b[2m  Array [\u001b[22m\n\u001b[2m    Object {\u001b[22m\n\u001b[32m-     \"kind\": \"room-template\",\u001b[39m\n\u001b[2m      \"origin\": Object {\u001b[22m\n\u001b[2m        \"x\": 14,\u001b[22m\n\u001b[2m        \"y\": 13,\u001b[22m\n\u001b[2m      },\u001b[22m\n\u001b[2m      \"templateId\": \"cell-basic\",\u001b[22m\n\nCall Log:\n- Timeout 10000ms exceeded while waiting on the predicate",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 0\u001b[39m\n\n\u001b[33m@@ -1,8 +1,7 @@\u001b[39m\n\u001b[2m  Array [\u001b[22m\n\u001b[2m    Object {\u001b[22m\n\u001b[32m-     \"kind\": \"room-template\",\u001b[39m\n\u001b[2m      \"origin\": Object {\u001b[22m\n\u001b[2m        \"x\": 14,\u001b[22m\n\u001b[2m        \"y\": 13,\u001b[22m\n\u001b[2m      },\u001b[22m\n\u001b[2m      \"templateId\": \"cell-basic\",\u001b[22m\n\nCall Log:\n- Timeout 10000ms exceeded while waiting on the predicate\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-desk-camera-integration-20261003\\tests\\browser\\room-template-renderer-preflight-receipt.spec.ts:107:7",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-desk-camera-integration-20261003\\tests\\browser\\room-template-renderer-preflight-receipt.spec.ts",
+                      "column": 7,
+                      "line": 107
+                    },
+                    "snippet": "  105 |       reply.target.templateId === 'cell-basic' && reply.target.origin.x === target.origin.x && reply.target.origin.y === target.origin.y).length, chosen.target)).toBeGreaterThanOrEqual(2);\n  106 |     if (!rearm) {\n> 107 |       await expect.poll(async () => (await sentCommands(page)).filter(command => command.type === 'PlaceRoomTemplate')).toEqual([\n      |       ^\n  108 |         { type: 'PlaceRoomTemplate', ...chosen.target },\n  109 |       ]);\n  110 |       await expect.poll(() => page.evaluate(() => (Reflect.get(window, 'rendererPlanPreflight') as Probe).commandResults)).toEqual([{ status: 'queued' }]);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-desk-camera-integration-20261003\\tests\\browser\\room-template-renderer-preflight-receipt.spec.ts",
+                        "column": 7,
+                        "line": 107
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 0\u001b[39m\n\n\u001b[33m@@ -1,8 +1,7 @@\u001b[39m\n\u001b[2m  Array [\u001b[22m\n\u001b[2m    Object {\u001b[22m\n\u001b[32m-     \"kind\": \"room-template\",\u001b[39m\n\u001b[2m      \"origin\": Object {\u001b[22m\n\u001b[2m        \"x\": 14,\u001b[22m\n\u001b[2m        \"y\": 13,\u001b[22m\n\u001b[2m      },\u001b[22m\n\u001b[2m      \"templateId\": \"cell-basic\",\u001b[22m\n\nCall Log:\n- Timeout 10000ms exceeded while waiting on the predicate\n\n  105 |       reply.target.templateId === 'cell-basic' && reply.target.origin.x === target.origin.x && reply.target.origin.y === target.origin.y).length, chosen.target)).toBeGreaterThanOrEqual(2);\n  106 |     if (!rearm) {\n> 107 |       await expect.poll(async () => (await sentCommands(page)).filter(command => command.type === 'PlaceRoomTemplate')).toEqual([\n      |       ^\n  108 |         { type: 'PlaceRoomTemplate', ...chosen.target },\n  109 |       ]);\n  110 |       await expect.poll(() => page.evaluate(() => (Reflect.get(window, 'rendererPlanPreflight') as Probe).commandResults)).toEqual([{ status: 'queued' }]);\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-desk-camera-integration-20261003\\tests\\browser\\room-template-renderer-preflight-receipt.spec.ts:107:7"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T00:43:00.637Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-desk-cabinet-renderer-combined-results-20261003\\room-template-renderer-pre-413f2-t-stands-down-accepted-cell\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-desk-camera-integration-20261003\\tests\\browser\\room-template-renderer-preflight-receipt.spec.ts",
+                    "column": 7,
+                    "line": 107
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2cd3af65229a8e7b0c20-e068c3653993827da205",
+          "file": "room-template-renderer-preflight-receipt.spec.ts",
+          "line": 66,
+          "column": 3
+        },
+        {
+          "title": "FullHD world: renderer replacement during genuine preflight protects rearmed Yard",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7564,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "RENDERER_PLAN_PREFLIGHT_RECEIPT {\"initialMode\":\"world\",\"rearm\":true,\"chosen\":{\"target\":{\"kind\":\"room-template\",\"templateId\":\"cell-basic\",\"origin\":{\"x\":14,\"y\":13}},\"ok\":true}}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T00:43:16.654Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2cd3af65229a8e7b0c20-381d7904d43062013fa4",
+          "file": "room-template-renderer-preflight-receipt.spec.ts",
+          "line": 66,
+          "column": 3
+        },
+        {
+          "title": "FullHD oblique: renderer replacement during genuine preflight stands down accepted cell",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 14799,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 0\u001b[39m\n\n\u001b[33m@@ -1,8 +1,7 @@\u001b[39m\n\u001b[2m  Array [\u001b[22m\n\u001b[2m    Object {\u001b[22m\n\u001b[32m-     \"kind\": \"room-template\",\u001b[39m\n\u001b[2m      \"origin\": Object {\u001b[22m\n\u001b[2m        \"x\": 17,\u001b[22m\n\u001b[2m        \"y\": 13,\u001b[22m\n\u001b[2m      },\u001b[22m\n\u001b[2m      \"templateId\": \"cell-basic\",\u001b[22m\n\nCall Log:\n- Timeout 10000ms exceeded while waiting on the predicate",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 0\u001b[39m\n\n\u001b[33m@@ -1,8 +1,7 @@\u001b[39m\n\u001b[2m  Array [\u001b[22m\n\u001b[2m    Object {\u001b[22m\n\u001b[32m-     \"kind\": \"room-template\",\u001b[39m\n\u001b[2m      \"origin\": Object {\u001b[22m\n\u001b[2m        \"x\": 17,\u001b[22m\n\u001b[2m        \"y\": 13,\u001b[22m\n\u001b[2m      },\u001b[22m\n\u001b[2m      \"templateId\": \"cell-basic\",\u001b[22m\n\nCall Log:\n- Timeout 10000ms exceeded while waiting on the predicate\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-desk-camera-integration-20261003\\tests\\browser\\room-template-renderer-preflight-receipt.spec.ts:107:7",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-desk-camera-integration-20261003\\tests\\browser\\room-template-renderer-preflight-receipt.spec.ts",
+                      "column": 7,
+                      "line": 107
+                    },
+                    "snippet": "  105 |       reply.target.templateId === 'cell-basic' && reply.target.origin.x === target.origin.x && reply.target.origin.y === target.origin.y).length, chosen.target)).toBeGreaterThanOrEqual(2);\n  106 |     if (!rearm) {\n> 107 |       await expect.poll(async () => (await sentCommands(page)).filter(command => command.type === 'PlaceRoomTemplate')).toEqual([\n      |       ^\n  108 |         { type: 'PlaceRoomTemplate', ...chosen.target },\n  109 |       ]);\n  110 |       await expect.poll(() => page.evaluate(() => (Reflect.get(window, 'rendererPlanPreflight') as Probe).commandResults)).toEqual([{ status: 'queued' }]);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-desk-camera-integration-20261003\\tests\\browser\\room-template-renderer-preflight-receipt.spec.ts",
+                        "column": 7,
+                        "line": 107
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 0\u001b[39m\n\n\u001b[33m@@ -1,8 +1,7 @@\u001b[39m\n\u001b[2m  Array [\u001b[22m\n\u001b[2m    Object {\u001b[22m\n\u001b[32m-     \"kind\": \"room-template\",\u001b[39m\n\u001b[2m      \"origin\": Object {\u001b[22m\n\u001b[2m        \"x\": 17,\u001b[22m\n\u001b[2m        \"y\": 13,\u001b[22m\n\u001b[2m      },\u001b[22m\n\u001b[2m      \"templateId\": \"cell-basic\",\u001b[22m\n\nCall Log:\n- Timeout 10000ms exceeded while waiting on the predicate\n\n  105 |       reply.target.templateId === 'cell-basic' && reply.target.origin.x === target.origin.x && reply.target.origin.y === target.origin.y).length, chosen.target)).toBeGreaterThanOrEqual(2);\n  106 |     if (!rearm) {\n> 107 |       await expect.poll(async () => (await sentCommands(page)).filter(command => command.type === 'PlaceRoomTemplate')).toEqual([\n      |       ^\n  108 |         { type: 'PlaceRoomTemplate', ...chosen.target },\n  109 |       ]);\n  110 |       await expect.poll(() => page.evaluate(() => (Reflect.get(window, 'rendererPlanPreflight') as Probe).commandResults)).toEqual([{ status: 'queued' }]);\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-desk-camera-integration-20261003\\tests\\browser\\room-template-renderer-preflight-receipt.spec.ts:107:7"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T00:43:24.283Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-desk-cabinet-renderer-combined-results-20261003\\room-template-renderer-pre-dea29-t-stands-down-accepted-cell\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-desk-camera-integration-20261003\\tests\\browser\\room-template-renderer-preflight-receipt.spec.ts",
+                    "column": 7,
+                    "line": 107
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2cd3af65229a8e7b0c20-9b1c6b3755e44a24775c",
+          "file": "room-template-renderer-preflight-receipt.spec.ts",
+          "line": 66,
+          "column": 3
+        },
+        {
+          "title": "FullHD oblique: renderer replacement during genuine preflight protects rearmed Yard",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6634,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "RENDERER_PLAN_PREFLIGHT_RECEIPT {\"initialMode\":\"oblique\",\"rearm\":true,\"chosen\":{\"target\":{\"kind\":\"room-template\",\"templateId\":\"cell-basic\",\"origin\":{\"x\":17,\"y\":13}},\"ok\":true}}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T00:43:39.600Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2cd3af65229a8e7b0c20-32a02a2d7d5328589b4e",
+          "file": "room-template-renderer-preflight-receipt.spec.ts",
+          "line": 66,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-03T00:38:29.002Z",
+    "duration": 317829.846,
+    "expected": 8,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  }
+}

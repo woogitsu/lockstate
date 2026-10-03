@@ -15,8 +15,8 @@ exporter.PREVIEW = exporter.ROOT / 'assets/intermediate/infirmary-fixtures-previ
 exporter.MODELS = (
     ('furniture.medical-bed.variants', 'furniture.medical-bed.variants.blend',
      'oblique-furniture.medical-bed.v1.json', 1, 2, 1.0, 1.0, 0.675),
-    ('fixture.medicine-cabinet.variants', 'fixture.medicine-cabinet.variants.blend',
-     'oblique-fixture.medicine-cabinet.v1.json', 1, 1, 1.0, 1.0, 0.59),
+    ('fixture.medicine-cabinet.variants', 'fixture.medicine-cabinet.angled-detail.blend',
+     'oblique-fixture.medicine-cabinet.v1.json', 1, 1, 1.0, 1.0, .5899999737739563),
 )
 SOURCE_SHA256 = {
     'furniture.medical-bed.variants': '1737b03a3ee1342e813e7096e0aef189f05d714d5a69437a8fe490c026d232be',
@@ -52,6 +52,13 @@ def evaluated_points(scene):
 
 
 def prepare_source(scene, model):
+    if model[0] == 'fixture.medicine-cabinet.variants':
+        dedicated_spec = importlib.util.spec_from_file_location(
+            'medicine_cabinet_detail_guard', HERE / 'render-medicine-cabinet-detail-oblique.py')
+        dedicated = importlib.util.module_from_spec(dedicated_spec)
+        dedicated_spec.loader.exec_module(dedicated)
+        dedicated.prepare_source(scene, model)
+        return
     source = exporter.ROOT / 'assets/source/blender' / model[1]
     if exporter.hashlib.sha256(source.read_bytes()).hexdigest() != SOURCE_SHA256[model[0]]:
         raise ValueError(f'{model[0]} original source bytes changed; re-audit the selected authored mesh set')

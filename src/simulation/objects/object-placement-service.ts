@@ -537,7 +537,8 @@ export class ObjectPlacementService {
       if (!canBuildAt(this.world, tile, PLACEMENT_REQUIREMENT).buildable) {
         return this.refuse('unowned-land', request, tick, tile);
       }
-      if (this.placedObjects.isTileOccupied(tile) || claimed.has(tileKey(tile)) || this.pendingRoomDoorApproachClaim?.(tile) === true) {
+      if (this.world.getSquareStructure(tile) !== 0 || this.placedObjects.isTileOccupied(tile) ||
+          claimed.has(tileKey(tile)) || this.pendingRoomDoorApproachClaim?.(tile) === true) {
         return this.refuse('tile-occupied', request, tick, tile);
       }
     }
@@ -936,6 +937,10 @@ export class ObjectPlacementService {
    */
   private tilesClaimedByOrdersInFlight(): ReadonlySet<string> {
     const claimed = new Set<string>();
+    for (const order of this.orders.allOrders()) {
+      if (order.footprint === 'square' && order.state !== 'completed' &&
+          order.state !== 'cancelled' && order.state !== 'failed') claimed.add(tileKey(order.location));
+    }
     for (const entry of this.ordersBuildingObjects()) {
       for (const tile of entry.tiles) claimed.add(tileKey(tile));
     }

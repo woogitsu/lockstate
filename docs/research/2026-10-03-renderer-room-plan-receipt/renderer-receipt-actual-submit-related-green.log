@@ -1,0 +1,10 @@
+$ vitest run "tests/unit/ui-room-plan-renderer-placement-receipt.test.ts" "tests/unit/ui-room-template-world-bridge.test.ts" "tests/unit/ui-room-template-tool.test.ts" "tests/unit/live-renderer-selection.test.ts" "--maxWorkers=2"
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-room-plan-renderer-receipt-audit-20261003
+
+
+ Test Files  4 passed (4)
+      Tests  36 passed (36)
+   Start at  01:35:28
+   Duration  721ms (transform 99ms, setup 0ms, import 232ms, tests 719ms, environment 0ms)
+

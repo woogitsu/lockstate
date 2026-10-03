@@ -1,0 +1,535 @@
+{
+  "frozenBuiltCommit": "da685c52902e2a1318594017cf90a35b689005bc",
+  "workerSha256": "7b54d164588d67bec10f6d73618d8cbf062570f20bbf6a415b46f8919940338d",
+  "nativeRuns": {
+    "initial": {
+      "startTime": "2026-10-03T00:38:29.002Z",
+      "duration": 317829.846,
+      "expected": 8,
+      "skipped": 0,
+      "unexpected": 2,
+      "flaky": 0
+    },
+    "corrected-receipt": {
+      "startTime": "2026-10-03T00:47:32.247Z",
+      "duration": 31211.024,
+      "expected": 4,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "restored": {
+      "startTime": "2026-10-03T00:56:32.819Z",
+      "duration": 163137.737,
+      "expected": 7,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "producer-negative": {
+      "startTime": "2026-10-03T00:51:41.133Z",
+      "duration": 142096.011,
+      "expected": 3,
+      "skipped": 0,
+      "unexpected": 3,
+      "flaky": 0
+    }
+  },
+  "models": [
+    {
+      "run": "initial",
+      "case": "dedicated-medicine-cabinet-176ee-and-anchors-after-Save-Load",
+      "wholePausedDataEqualAfterLoad": true,
+      "object": {
+        "placedObjectId": "object:24:8",
+        "objectId": "object.medicine-cabinet",
+        "anchorTile": {
+          "x": 24,
+          "y": 8
+        },
+        "orientation": 1,
+        "sourceOrderId": "room-template-000000000002-2-object-001"
+      },
+      "owningCompletedOrder": {
+        "id": "room-template-000000000002-2-object-001",
+        "definitionId": "medicine-cabinet-wooden",
+        "location": {
+          "x": 24,
+          "y": 8
+        },
+        "objectOrientation": 1,
+        "placementSequence": 2,
+        "state": "completed",
+        "progress": 30,
+        "materialsAllocated": [
+          {
+            "itemId": "item.wood-plank",
+            "quantity": 1
+          }
+        ],
+        "assignedWorkerId": "mock-worker-1"
+      },
+      "nativePaletteReceipt": {
+        "quarterTurns": 1,
+        "actualBefore": [
+          "object.medical-bed@23,6:orientation=1",
+          "object.medicine-cabinet@24,8:orientation=1"
+        ],
+        "actualAfter": [
+          "object.medical-bed@23,6:orientation=1",
+          "object.medicine-cabinet@24,8:orientation=1"
+        ],
+        "beforePixels": [
+          2231
+        ],
+        "afterPixels": [
+          2231
+        ],
+        "commands": [
+          {
+            "type": "PlaceRoomTemplate",
+            "templateId": "infirmary-basic",
+            "origin": {
+              "x": 20,
+              "y": 5
+            },
+            "quarterTurns": 1
+          }
+        ]
+      }
+    },
+    {
+      "run": "initial",
+      "case": "dedicated-medicine-cabinet-cfdf5-and-anchors-after-Save-Load",
+      "wholePausedDataEqualAfterLoad": true,
+      "object": {
+        "placedObjectId": "object:23:6",
+        "objectId": "object.medicine-cabinet",
+        "anchorTile": {
+          "x": 23,
+          "y": 6
+        },
+        "orientation": 0,
+        "sourceOrderId": "room-template-000000000002-2-object-001"
+      },
+      "owningCompletedOrder": {
+        "id": "room-template-000000000002-2-object-001",
+        "definitionId": "medicine-cabinet-wooden",
+        "location": {
+          "x": 23,
+          "y": 6
+        },
+        "placementSequence": 2,
+        "state": "completed",
+        "progress": 30,
+        "materialsAllocated": [
+          {
+            "itemId": "item.wood-plank",
+            "quantity": 1
+          }
+        ],
+        "assignedWorkerId": "mock-worker-1"
+      },
+      "nativePaletteReceipt": {
+        "quarterTurns": 0,
+        "actualBefore": [
+          "object.medical-bed@21,6:orientation=0",
+          "object.medicine-cabinet@23,6:orientation=0"
+        ],
+        "actualAfter": [
+          "object.medical-bed@21,6:orientation=0",
+          "object.medicine-cabinet@23,6:orientation=0"
+        ],
+        "beforePixels": [
+          1151
+        ],
+        "afterPixels": [
+          1151
+        ],
+        "commands": [
+          {
+            "type": "PlaceRoomTemplate",
+            "templateId": "infirmary-basic",
+            "origin": {
+              "x": 20,
+              "y": 5
+            }
+          }
+        ]
+      }
+    },
+    {
+      "run": "initial",
+      "case": "dedicated-office-desk-play-6e56a-and-anchors-after-Save-Load",
+      "wholePausedDataEqualAfterLoad": true,
+      "object": {
+        "placedObjectId": "object:21:6",
+        "objectId": "object.desk",
+        "anchorTile": {
+          "x": 21,
+          "y": 6
+        },
+        "orientation": 0,
+        "sourceOrderId": "room-template-000000000002-2-object-000"
+      },
+      "owningCompletedOrder": {
+        "id": "room-template-000000000002-2-object-000",
+        "definitionId": "desk-wooden",
+        "location": {
+          "x": 21,
+          "y": 6
+        },
+        "placementSequence": 2,
+        "state": "completed",
+        "progress": 60,
+        "materialsAllocated": [
+          {
+            "itemId": "item.wood-plank",
+            "quantity": 2
+          }
+        ],
+        "assignedWorkerId": "mock-worker-1"
+      },
+      "nativePaletteReceipt": {
+        "quarterTurns": 0,
+        "actualBefore": [
+          "object.desk@21,6:orientation=0"
+        ],
+        "actualAfter": [
+          "object.desk@21,6:orientation=0"
+        ],
+        "ownerBefore": {
+          "object": {
+            "placedObjectId": "object:21:6",
+            "objectId": "object.desk",
+            "anchorTile": {
+              "x": 21,
+              "y": 6
+            },
+            "orientation": 0,
+            "sourceOrderId": "room-template-000000000002-2-object-000"
+          },
+          "order": {
+            "id": "room-template-000000000002-2-object-000",
+            "definitionId": "desk-wooden",
+            "location": {
+              "x": 21,
+              "y": 6
+            },
+            "placementSequence": 2,
+            "state": "completed",
+            "progress": 60,
+            "materialsAllocated": [
+              {
+                "itemId": "item.wood-plank",
+                "quantity": 2
+              }
+            ],
+            "assignedWorkerId": "mock-worker-1"
+          }
+        },
+        "ownerAfter": {
+          "object": {
+            "placedObjectId": "object:21:6",
+            "objectId": "object.desk",
+            "anchorTile": {
+              "x": 21,
+              "y": 6
+            },
+            "orientation": 0,
+            "sourceOrderId": "room-template-000000000002-2-object-000"
+          },
+          "order": {
+            "id": "room-template-000000000002-2-object-000",
+            "definitionId": "desk-wooden",
+            "location": {
+              "x": 21,
+              "y": 6
+            },
+            "placementSequence": 2,
+            "state": "completed",
+            "progress": 60,
+            "materialsAllocated": [
+              {
+                "itemId": "item.wood-plank",
+                "quantity": 2
+              }
+            ],
+            "assignedWorkerId": "mock-worker-1"
+          }
+        },
+        "beforePixels": [
+          281,
+          111
+        ],
+        "afterPixels": [
+          281,
+          111
+        ],
+        "commands": [
+          {
+            "type": "PlaceRoomTemplate",
+            "templateId": "reception-basic",
+            "origin": {
+              "x": 20,
+              "y": 5
+            }
+          }
+        ]
+      }
+    },
+    {
+      "run": "initial",
+      "case": "dedicated-office-desk-play-b6b6f-and-anchors-after-Save-Load",
+      "wholePausedDataEqualAfterLoad": true,
+      "object": {
+        "placedObjectId": "object:24:6",
+        "objectId": "object.desk",
+        "anchorTile": {
+          "x": 24,
+          "y": 6
+        },
+        "orientation": 1,
+        "sourceOrderId": "room-template-000000000002-2-object-000"
+      },
+      "owningCompletedOrder": {
+        "id": "room-template-000000000002-2-object-000",
+        "definitionId": "desk-wooden",
+        "location": {
+          "x": 24,
+          "y": 6
+        },
+        "objectOrientation": 1,
+        "placementSequence": 2,
+        "state": "completed",
+        "progress": 60,
+        "materialsAllocated": [
+          {
+            "itemId": "item.wood-plank",
+            "quantity": 2
+          }
+        ],
+        "assignedWorkerId": "mock-worker-1"
+      },
+      "nativePaletteReceipt": {
+        "quarterTurns": 1,
+        "actualBefore": [
+          "object.desk@24,6:orientation=1"
+        ],
+        "actualAfter": [
+          "object.desk@24,6:orientation=1"
+        ],
+        "ownerBefore": {
+          "object": {
+            "placedObjectId": "object:24:6",
+            "objectId": "object.desk",
+            "anchorTile": {
+              "x": 24,
+              "y": 6
+            },
+            "orientation": 1,
+            "sourceOrderId": "room-template-000000000002-2-object-000"
+          },
+          "order": {
+            "id": "room-template-000000000002-2-object-000",
+            "definitionId": "desk-wooden",
+            "location": {
+              "x": 24,
+              "y": 6
+            },
+            "objectOrientation": 1,
+            "placementSequence": 2,
+            "state": "completed",
+            "progress": 60,
+            "materialsAllocated": [
+              {
+                "itemId": "item.wood-plank",
+                "quantity": 2
+              }
+            ],
+            "assignedWorkerId": "mock-worker-1"
+          }
+        },
+        "ownerAfter": {
+          "object": {
+            "placedObjectId": "object:24:6",
+            "objectId": "object.desk",
+            "anchorTile": {
+              "x": 24,
+              "y": 6
+            },
+            "orientation": 1,
+            "sourceOrderId": "room-template-000000000002-2-object-000"
+          },
+          "order": {
+            "id": "room-template-000000000002-2-object-000",
+            "definitionId": "desk-wooden",
+            "location": {
+              "x": 24,
+              "y": 6
+            },
+            "objectOrientation": 1,
+            "placementSequence": 2,
+            "state": "completed",
+            "progress": 60,
+            "materialsAllocated": [
+              {
+                "itemId": "item.wood-plank",
+                "quantity": 2
+              }
+            ],
+            "assignedWorkerId": "mock-worker-1"
+          }
+        },
+        "beforePixels": [
+          497,
+          455
+        ],
+        "afterPixels": [
+          497,
+          455
+        ],
+        "commands": [
+          {
+            "type": "PlaceRoomTemplate",
+            "templateId": "reception-basic",
+            "origin": {
+              "x": 20,
+              "y": 5
+            },
+            "quarterTurns": 1
+          }
+        ]
+      }
+    },
+    {
+      "run": "restored",
+      "case": "dedicated-medicine-cabinet-176ee-and-anchors-after-Save-Load",
+      "wholePausedDataEqualAfterLoad": true,
+      "object": {
+        "placedObjectId": "object:24:8",
+        "objectId": "object.medicine-cabinet",
+        "anchorTile": {
+          "x": 24,
+          "y": 8
+        },
+        "orientation": 1,
+        "sourceOrderId": "room-template-000000000002-2-object-001"
+      },
+      "owningCompletedOrder": {
+        "id": "room-template-000000000002-2-object-001",
+        "definitionId": "medicine-cabinet-wooden",
+        "location": {
+          "x": 24,
+          "y": 8
+        },
+        "objectOrientation": 1,
+        "placementSequence": 2,
+        "state": "completed",
+        "progress": 30,
+        "materialsAllocated": [
+          {
+            "itemId": "item.wood-plank",
+            "quantity": 1
+          }
+        ],
+        "assignedWorkerId": "mock-worker-1"
+      },
+      "nativePaletteReceipt": {
+        "quarterTurns": 1,
+        "actualBefore": [
+          "object.medical-bed@23,6:orientation=1",
+          "object.medicine-cabinet@24,8:orientation=1"
+        ],
+        "actualAfter": [
+          "object.medical-bed@23,6:orientation=1",
+          "object.medicine-cabinet@24,8:orientation=1"
+        ],
+        "beforePixels": [
+          2231
+        ],
+        "afterPixels": [
+          2231
+        ],
+        "commands": [
+          {
+            "type": "PlaceRoomTemplate",
+            "templateId": "infirmary-basic",
+            "origin": {
+              "x": 20,
+              "y": 5
+            },
+            "quarterTurns": 1
+          }
+        ]
+      }
+    },
+    {
+      "run": "restored",
+      "case": "dedicated-medicine-cabinet-cfdf5-and-anchors-after-Save-Load",
+      "wholePausedDataEqualAfterLoad": true,
+      "object": {
+        "placedObjectId": "object:23:6",
+        "objectId": "object.medicine-cabinet",
+        "anchorTile": {
+          "x": 23,
+          "y": 6
+        },
+        "orientation": 0,
+        "sourceOrderId": "room-template-000000000002-2-object-001"
+      },
+      "owningCompletedOrder": {
+        "id": "room-template-000000000002-2-object-001",
+        "definitionId": "medicine-cabinet-wooden",
+        "location": {
+          "x": 23,
+          "y": 6
+        },
+        "placementSequence": 2,
+        "state": "completed",
+        "progress": 30,
+        "materialsAllocated": [
+          {
+            "itemId": "item.wood-plank",
+            "quantity": 1
+          }
+        ],
+        "assignedWorkerId": "mock-worker-1"
+      },
+      "nativePaletteReceipt": {
+        "quarterTurns": 0,
+        "actualBefore": [
+          "object.medical-bed@21,6:orientation=0",
+          "object.medicine-cabinet@23,6:orientation=0"
+        ],
+        "actualAfter": [
+          "object.medical-bed@21,6:orientation=0",
+          "object.medicine-cabinet@23,6:orientation=0"
+        ],
+        "beforePixels": [
+          1151
+        ],
+        "afterPixels": [
+          1151
+        ],
+        "commands": [
+          {
+            "type": "PlaceRoomTemplate",
+            "templateId": "infirmary-basic",
+            "origin": {
+              "x": 20,
+              "y": 5
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "negativeOutputAliases": {
+    "case-5973fd734a": "dedicated-medicine-cabinet-176ee-and-anchors-after-Save-Load",
+    "case-307d46a075": "room-template-renderer-pre-05e5a-light-protects-rearmed-Yard",
+    "case-91dff35fb1": "room-template-renderer-pre-413f2-t-stands-down-accepted-cell",
+    "case-941ec1d30a": "room-template-renderer-pre-849ed-light-protects-rearmed-Yard",
+    "case-64d77f9bfe": "room-template-renderer-pre-dea29-t-stands-down-accepted-cell"
+  }
+}

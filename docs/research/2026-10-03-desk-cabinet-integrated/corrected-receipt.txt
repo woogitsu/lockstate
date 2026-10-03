@@ -1,0 +1,39 @@
+node : [2m[WebServer] [22m(node:53864) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:2 char:310
++ ... 1003.json'; node --experimental-transform-types --disable-warning=Exp ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 4 tests using 1 worker
+
+(node:60268) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:60268) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+RENDERER_PLAN_PREFLIGHT_RECEIPT {"initialMode":"world","rearm":false,"chosen":{"target":{"kind":"room-template","templateId":"cell-basic","origin":{"x":14,"y":13}},"ok":true}}
+  ok 1 tests\browser\room-template-renderer-preflight-receipt.spec.ts:66:3 › FullHD world: renderer replacement during genuine preflight stands down accepted cell (7.1s)
+RENDERER_PLAN_PREFLIGHT_RECEIPT {"initialMode":"world","rearm":true,"chosen":{"target":{"kind":"room-template","templateId":"cell-basic","origin":{"x":14,"y":13}},"ok":true}}
+  ok 2 tests\browser\room-template-renderer-preflight-receipt.spec.ts:66:3 › FullHD world: renderer replacement during genuine preflight protects rearmed Yard (8.0s)
+RENDERER_PLAN_PREFLIGHT_RECEIPT {"initialMode":"oblique","rearm":false,"chosen":{"target":{"kind":"room-template","templateId":"cell-basic","origin":{"x":17,"y":13}},"ok":true}}
+  ok 3 tests\browser\room-template-renderer-preflight-receipt.spec.ts:66:3 › FullHD oblique: renderer replacement during genuine preflight stands down accepted cell (6.5s)
+RENDERER_PLAN_PREFLIGHT_RECEIPT {"initialMode":"oblique","rearm":true,"chosen":{"target":{"kind":"room-template","templateId":"cell-basic","origin":{"x":17,"y":13}},"ok":true}}
+  ok 4 tests\browser\room-template-renderer-preflight-receipt.spec.ts:66:3 › FullHD oblique: renderer replacement during genuine preflight protects rearmed Yard (6.5s)
+
+  4 passed (31.2s)

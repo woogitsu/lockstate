@@ -1,0 +1,455 @@
+{
+  "source": "assets/source/blender/furniture.office.desk.generic.blend",
+  "sourceSha256": "87ecf22ec7f4d82e5c2c47bb18870b8ef060a84759cb55d38b131fc34e72e11b",
+  "meshCount": 21,
+  "materials": [
+    "monitor display",
+    "paper",
+    "powder coated steel",
+    "teal drawer label",
+    "warm oak laminate",
+    "worktop edging"
+  ],
+  "actualMinimum": [
+    0.0899999737739563,
+    0.08000001311302185,
+    0.0
+  ],
+  "actualMaximum": [
+    1.9100000858306885,
+    0.92249995470047,
+    1.2699999809265137
+  ],
+  "resolution": [
+    256,
+    256
+  ],
+  "orthoSpan": 4.0,
+  "actualTarget": [
+    1.0,
+    0.5,
+    0.6349999904632568
+  ],
+  "meshes": [
+    {
+      "name": "dark desktop edge",
+      "rawVertices": 8,
+      "evaluatedVertices": 56,
+      "outwardRawFaces": 6,
+      "inwardRawFaces": 0,
+      "materials": [
+        "worktop edging"
+      ],
+      "actualMin": [
+        0.0899999737739563,
+        0.887499988079071,
+        0.6625000238418579
+      ],
+      "actualMax": [
+        1.9100000858306885,
+        0.92249995470047,
+        0.7174999713897705
+      ]
+    },
+    {
+      "name": "document stack",
+      "rawVertices": 8,
+      "evaluatedVertices": 56,
+      "outwardRawFaces": 6,
+      "inwardRawFaces": 0,
+      "materials": [
+        "paper"
+      ],
+      "actualMin": [
+        1.290000081062317,
+        0.4650000035762787,
+        0.7534999847412109
+      ],
+      "actualMax": [
+        1.5700000524520874,
+        0.7749999761581421,
+        0.778499960899353
+      ]
+    },
+    {
+      "name": "document top",
+      "rawVertices": 8,
+      "evaluatedVertices": 56,
+      "outwardRawFaces": 6,
+      "inwardRawFaces": 0,
+      "materials": [
+        "teal drawer label"
+      ],
+      "actualMin": [
+        1.3050000667572021,
+        0.48000001907348633,
+        0.7820000052452087
+      ],
+      "actualMax": [
+        1.5550000667572021,
+        0.7599999904632568,
+        0.7880000472068787
+      ]
+    },
+    {
+      "name": "drawer face 0.16",
+      "rawVertices": 8,
+      "evaluatedVertices": 56,
+      "outwardRawFaces": 6,
+      "inwardRawFaces": 0,
+      "materials": [
+        "warm oak laminate"
+      ],
+      "actualMin": [
+        1.4199999570846558,
+        0.7139999866485596,
+        0.07999999821186066
+      ],
+      "actualMax": [
+        1.7599998712539673,
+        0.7339999675750732,
+        0.23999999463558197
+      ]
+    },
+    {
+      "name": "drawer face 0.34",
+      "rawVertices": 8,
+      "evaluatedVertices": 56,
+      "outwardRawFaces": 6,
+      "inwardRawFaces": 0,
+      "materials": [
+        "warm oak laminate"
+      ],
+      "actualMin": [
+        1.4199999570846558,
+        0.7139999866485596,
+        0.25999999046325684
+      ],
+      "actualMax": [
+        1.7599998712539673,
+        0.7339999675750732,
+        0.42000001668930054
+      ]
+    },
+    {
+      "name": "drawer face 0.52",
+      "rawVertices": 8,
+      "evaluatedVertices": 56,
+      "outwardRawFaces": 6,
+      "inwardRawFaces": 0,
+      "materials": [
+        "warm oak laminate"
+      ],
+      "actualMin": [
+        1.4199999570846558,
+        0.7139999866485596,
+        0.4399999976158142
+      ],
+      "actualMax": [
+        1.7599998712539673,
+        0.7339999675750732,
+        0.5999999642372131
+      ]
+    },
+    {
+      "name": "drawer pull 0.16",
+      "rawVertices": 8,
+      "evaluatedVertices": 56,
+      "outwardRawFaces": 6,
+      "inwardRawFaces": 0,
+      "materials": [
+        "teal drawer label"
+      ],
+      "actualMin": [
+        1.5299999713897705,
+        0.7329999804496765,
+        0.1509999930858612
+      ],
+      "actualMax": [
+        1.6499998569488525,
+        0.7449999451637268,
+        0.16899999976158142
+      ]
+    },
+    {
+      "name": "drawer pull 0.34",
+      "rawVertices": 8,
+      "evaluatedVertices": 56,
+      "outwardRawFaces": 6,
+      "inwardRawFaces": 0,
+      "materials": [
+        "teal drawer label"
+      ],
+      "actualMin": [
+        1.5299999713897705,
+        0.7329999804496765,
+        0.3310000002384186
+      ],
+      "actualMax": [
+        1.6499998569488525,
+        0.7449999451637268,
+        0.3490000069141388
+      ]
+    },
+    {
+      "name": "drawer pull 0.52",
+      "rawVertices": 8,
+      "evaluatedVertices": 56,
+      "outwardRawFaces": 6,
+      "inwardRawFaces": 0,
+      "materials": [
+        "teal drawer label"
+      ],
+      "actualMin": [
+        1.5299999713897705,
+        0.7329999804496765,
+        0.5109999775886536
+      ],
+      "actualMax": [
+        1.6499998569488525,
+        0.7449999451637268,
+        0.5289999842643738
+      ]
+    },
+    {
+      "name": "front leg -0.78",
+      "rawVertices": 8,
+      "evaluatedVertices": 56,
+      "outwardRawFaces": 6,
+      "inwardRawFaces": 0,
+      "materials": [
+        "powder coated steel"
+      ],
+      "actualMin": [
+        0.18000003695487976,
+        0.7499999403953552,
+        0.0
+      ],
+      "actualMax": [
+        0.2600000202655792,
+        0.8299999833106995,
+        0.699999988079071
+      ]
+    },
+    {
+      "name": "front leg 0.78",
+      "rawVertices": 8,
+      "evaluatedVertices": 56,
+      "outwardRawFaces": 6,
+      "inwardRawFaces": 0,
+      "materials": [
+        "powder coated steel"
+      ],
+      "actualMin": [
+        1.7400000095367432,
+        0.7499999403953552,
+        0.0
+      ],
+      "actualMax": [
+        1.8199999332427979,
+        0.8299999833106995,
+        0.699999988079071
+      ]
+    },
+    {
+      "name": "keyboard",
+      "rawVertices": 8,
+      "evaluatedVertices": 56,
+      "outwardRawFaces": 6,
+      "inwardRawFaces": 0,
+      "materials": [
+        "powder coated steel"
+      ],
+      "actualMin": [
+        0.4950000047683716,
+        0.5800000429153442,
+        0.7524999976158142
+      ],
+      "actualMax": [
+        1.024999976158142,
+        0.7599999904632568,
+        0.7774999737739563
+      ]
+    },
+    {
+      "name": "laminate desktop",
+      "rawVertices": 8,
+      "evaluatedVertices": 56,
+      "outwardRawFaces": 6,
+      "inwardRawFaces": 0,
+      "materials": [
+        "warm oak laminate"
+      ],
+      "actualMin": [
+        0.0899999737739563,
+        0.08000001311302185,
+        0.6499999761581421
+      ],
+      "actualMax": [
+        1.9100000858306885,
+        0.9199999570846558,
+        0.75
+      ]
+    },
+    {
+      "name": "monitor base",
+      "rawVertices": 8,
+      "evaluatedVertices": 56,
+      "outwardRawFaces": 6,
+      "inwardRawFaces": 0,
+      "materials": [
+        "powder coated steel"
+      ],
+      "actualMin": [
+        0.5699999928474426,
+        0.24000000953674316,
+        0.75
+      ],
+      "actualMax": [
+        0.8299999833106995,
+        0.4399999976158142,
+        0.7899999618530273
+      ]
+    },
+    {
+      "name": "monitor casing",
+      "rawVertices": 8,
+      "evaluatedVertices": 56,
+      "outwardRawFaces": 6,
+      "inwardRawFaces": 0,
+      "materials": [
+        "powder coated steel"
+      ],
+      "actualMin": [
+        0.429999977350235,
+        0.27250000834465027,
+        0.9300000071525574
+      ],
+      "actualMax": [
+        0.9700000286102295,
+        0.32750001549720764,
+        1.2699999809265137
+      ]
+    },
+    {
+      "name": "monitor neck",
+      "rawVertices": 8,
+      "evaluatedVertices": 56,
+      "outwardRawFaces": 6,
+      "inwardRawFaces": 0,
+      "materials": [
+        "powder coated steel"
+      ],
+      "actualMin": [
+        0.675000011920929,
+        0.29499998688697815,
+        0.7750000357627869
+      ],
+      "actualMax": [
+        0.7249999642372131,
+        0.3449999988079071,
+        1.0450000762939453
+      ]
+    },
+    {
+      "name": "monitor screen",
+      "rawVertices": 8,
+      "evaluatedVertices": 56,
+      "outwardRawFaces": 6,
+      "inwardRawFaces": 0,
+      "materials": [
+        "monitor display"
+      ],
+      "actualMin": [
+        0.4599999785423279,
+        0.3269999921321869,
+        0.9600000381469727
+      ],
+      "actualMax": [
+        0.9399999976158142,
+        0.33900001645088196,
+        1.2400000095367432
+      ]
+    },
+    {
+      "name": "rear stretcher",
+      "rawVertices": 8,
+      "evaluatedVertices": 56,
+      "outwardRawFaces": 6,
+      "inwardRawFaces": 0,
+      "materials": [
+        "powder coated steel"
+      ],
+      "actualMin": [
+        0.23000001907348633,
+        0.20499998331069946,
+        0.16500000655651093
+      ],
+      "actualMax": [
+        1.7699999809265137,
+        0.2549999952316284,
+        0.23499999940395355
+      ]
+    },
+    {
+      "name": "steel leg -0.78",
+      "rawVertices": 8,
+      "evaluatedVertices": 56,
+      "outwardRawFaces": 6,
+      "inwardRawFaces": 0,
+      "materials": [
+        "powder coated steel"
+      ],
+      "actualMin": [
+        0.18000003695487976,
+        0.2199999988079071,
+        0.0
+      ],
+      "actualMax": [
+        0.2600000202655792,
+        0.29999998211860657,
+        0.699999988079071
+      ]
+    },
+    {
+      "name": "steel leg 0.78",
+      "rawVertices": 8,
+      "evaluatedVertices": 56,
+      "outwardRawFaces": 6,
+      "inwardRawFaces": 0,
+      "materials": [
+        "powder coated steel"
+      ],
+      "actualMin": [
+        1.7400000095367432,
+        0.2199999988079071,
+        0.0
+      ],
+      "actualMax": [
+        1.8199999332427979,
+        0.29999998211860657,
+        0.699999988079071
+      ]
+    },
+    {
+      "name": "three-drawer pedestal",
+      "rawVertices": 8,
+      "evaluatedVertices": 56,
+      "outwardRawFaces": 6,
+      "inwardRawFaces": 0,
+      "materials": [
+        "powder coated steel"
+      ],
+      "actualMin": [
+        1.3949999809265137,
+        0.1850000023841858,
+        0.02000001072883606
+      ],
+      "actualMax": [
+        1.7849998474121094,
+        0.7149999737739563,
+        0.6399999856948853
+      ]
+    }
+  ]
+}

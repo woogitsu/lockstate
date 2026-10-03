@@ -1,0 +1,2553 @@
+{
+  "originalSource": "assets/source/blender/fixture.medicine-cabinet.variants.blend",
+  "originalSourceSha256": "17670457233caef94855cdaf64b2cf1bd3c8623318941cbd3ce2e5c50224ac75",
+  "source": "assets/source/blender/fixture.medicine-cabinet.angled-detail.blend",
+  "sourceSha256": "f03b6fc2d33d83c069b181073616ae95031839e130d890b9f5374cfd947be5ea",
+  "footprintTiles": [
+    1,
+    1
+  ],
+  "originalSceneMeshCount": 20,
+  "foreignBedMeshNames": [
+    "bed_base",
+    "control",
+    "headboard",
+    "leg",
+    "leg.001",
+    "leg.002",
+    "leg.003",
+    "mattress",
+    "pillow",
+    "rail",
+    "rail.001"
+  ],
+  "retainedMeshesCount": 9,
+  "retainedSelectedNames": [
+    "cabinet_body",
+    "door",
+    "door.001",
+    "handle",
+    "handle.001",
+    "inner",
+    "shelf",
+    "shelf.001",
+    "shelf.002"
+  ],
+  "retainedMeshes": [
+    {
+      "name": "cabinet_body",
+      "rawVertexBytesSha256": "ebbb489e960bbb2aeb0b8832a87b3784836328384aa884c036e9696c941bffe5",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "cabinet warm white"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft_edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft_edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.05999999865889549,
+            "width_pct": 0.05999999865889549,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "door",
+      "rawVertexBytesSha256": "64177b836a34159bc9ffdeb7f74167721d05dafc88416ecad6177eaa8a7252ed",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "cabinet warm white"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft_edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft_edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.029999999329447746,
+            "width_pct": 0.029999999329447746,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "door.001",
+      "rawVertexBytesSha256": "64177b836a34159bc9ffdeb7f74167721d05dafc88416ecad6177eaa8a7252ed",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "cabinet warm white"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft_edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft_edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.029999999329447746,
+            "width_pct": 0.029999999329447746,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "handle",
+      "rawVertexBytesSha256": "9f82ead92013c8d3fba89003830b6bb83c2ca852e6c896e705622f55552a8bc3",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "brass handle"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft_edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft_edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.012000000104308128,
+            "width_pct": 0.012000000104308128,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "handle.001",
+      "rawVertexBytesSha256": "9f82ead92013c8d3fba89003830b6bb83c2ca852e6c896e705622f55552a8bc3",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "brass handle"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft_edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft_edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.012000000104308128,
+            "width_pct": 0.012000000104308128,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "inner",
+      "rawVertexBytesSha256": "4b825cb2a81a39abd484b3aebe0664bd5c25d713c16815121910efa3b0abcd36",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "cabinet inset"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft_edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft_edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.009999999776482582,
+            "width_pct": 0.009999999776482582,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "shelf",
+      "rawVertexBytesSha256": "60b0ca465d1f12a515e7c74fcb290e903cb0ffe3ee194789068de92ff11e860b",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "cabinet warm white"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft_edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft_edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.014999999664723873,
+            "width_pct": 0.014999999664723873,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "shelf.001",
+      "rawVertexBytesSha256": "60b0ca465d1f12a515e7c74fcb290e903cb0ffe3ee194789068de92ff11e860b",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "cabinet warm white"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft_edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft_edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.014999999664723873,
+            "width_pct": 0.014999999664723873,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "shelf.002",
+      "rawVertexBytesSha256": "60b0ca465d1f12a515e7c74fcb290e903cb0ffe3ee194789068de92ff11e860b",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "cabinet warm white"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft_edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft_edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.014999999664723873,
+            "width_pct": 0.014999999664723873,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    }
+  ],
+  "retainedMaterialGraphs": [
+    {
+      "name": "brass handle",
+      "diffuse": [
+        0.7200000286102295,
+        0.47999998927116394,
+        0.20000000298023224,
+        1.0
+      ],
+      "metallic": 0.6499999761581421,
+      "roughness": 0.25,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ]
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.800000011920929,
+                0.800000011920929,
+                0.800000011920929,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ]
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "c944d642b91154858b5a6bd4e6a7391c5b81fe28a3dc8d6b72800b8c9018fd9f"
+    },
+    {
+      "name": "cabinet inset",
+      "diffuse": [
+        0.18000000715255737,
+        0.25,
+        0.25,
+        1.0
+      ],
+      "metallic": 0.10000000149011612,
+      "roughness": 0.3499999940395355,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ]
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.800000011920929,
+                0.800000011920929,
+                0.800000011920929,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ]
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "e92d4ba0fd386ed7fdc0add9dbe71192f1211aa4a0940385a9e7fbe21baf52e4"
+    },
+    {
+      "name": "cabinet warm white",
+      "diffuse": [
+        0.699999988079071,
+        0.7200000286102295,
+        0.6600000262260437,
+        1.0
+      ],
+      "metallic": 0.05000000074505806,
+      "roughness": 0.44999998807907104,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ]
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.800000011920929,
+                0.800000011920929,
+                0.800000011920929,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ]
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "9763300085ba016e46dfaf820c97786d153f1542b016dcd0dfc3b75dedb819b8"
+    }
+  ],
+  "originalRetainedObjectMatrices": {
+    "cabinet_body": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.6200000047683716
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "door": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.20000000298023224
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.3799999952316284
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.6200000047683716
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "door.001": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.20000000298023224
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.3799999952316284
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.6200000047683716
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "handle": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.10999999940395355
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.41499999165534973
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.6200000047683716
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "handle.001": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.10999999940395355
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.41499999165534973
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.6200000047683716
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "inner": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.3700000047683716
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.6200000047683716
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "shelf": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.019999999552965164
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.2800000011920929
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "shelf.001": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.019999999552965164
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.6200000047683716
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "shelf.002": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.019999999552965164
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.9599999785423279
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ]
+  },
+  "preparedRetainedObjectMatrices": {
+    "cabinet_body": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.5899999737739563
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "door": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.20000000298023224
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.3799999952316284
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.5899999737739563
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "door.001": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.20000000298023224
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.3799999952316284
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.5899999737739563
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "handle": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.10999999940395355
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.41499999165534973
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.5899999737739563
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "handle.001": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.10999999940395355
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.41499999165534973
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.5899999737739563
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "inner": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.3700000047683716
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.5899999737739563
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "shelf": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.019999999552965164
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.2499999701976776
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "shelf.001": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.019999999552965164
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.5899999737739563
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "shelf.002": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.019999999552965164
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.9299999475479126
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ]
+  },
+  "groundTranslationTiles": [
+    0,
+    0,
+    -0.030000030994415283
+  ],
+  "retainedEvaluatedRigidTranslationMaximumError": 1.1920928955078125e-07,
+  "originalEvaluatedOutwardNormalAudit": [
+    {
+      "name": "cabinet_body",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.36000001430511475,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "door",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.019999951124191284,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "door.001",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.019999951124191284,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "handle",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.01749996840953827,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "handle.001",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.01749996840953827,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "inner",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.014999955892562866,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "shelf",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.019999980926513672,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "shelf.001",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.01999986171722412,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "shelf.002",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.019999921321868896,
+      "transformDeterminant": 1.0
+    }
+  ],
+  "evaluatedOutwardNormalAudit": [
+    {
+      "name": "angled-medicine-cabinet.left handle lower mount bolt -1",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "minimumOutwardNormalDistance": 0.0029999613761901855,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.left handle lower mount bolt 1",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "minimumOutwardNormalDistance": 0.002999961376190392,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.left handle lower mount plate",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.003999918699264526,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.left handle upper mount bolt -1",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "minimumOutwardNormalDistance": 0.0029999613761811854,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.left handle upper mount bolt 1",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "minimumOutwardNormalDistance": 0.002999961376181392,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.left handle upper mount plate",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.003999918699264526,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.left lower hinge cabinet leaf",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.0059999823570251465,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.left lower hinge door leaf",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.0059999823570251465,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.left lower hinge frame mount",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.011999905109405518,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.left lower hinge lower fixed knuckle",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "minimumOutwardNormalDistance": 0.011942171957343817,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.left lower hinge moving knuckle",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "minimumOutwardNormalDistance": 0.011942172888666391,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.left lower hinge pin head",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "minimumOutwardNormalDistance": 0.0029997229576097847,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.left lower hinge upper fixed knuckle",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "minimumOutwardNormalDistance": 0.011942171957343817,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.left upper hinge cabinet leaf",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.0059999823570251465,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.left upper hinge door leaf",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.0059999823570251465,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.left upper hinge frame mount",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.011999905109405518,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.left upper hinge lower fixed knuckle",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "minimumOutwardNormalDistance": 0.011942171957343817,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.left upper hinge moving knuckle",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "minimumOutwardNormalDistance": 0.011942172888666391,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.left upper hinge pin head",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "minimumOutwardNormalDistance": 0.0029999017715465403,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.left upper hinge upper fixed knuckle",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "minimumOutwardNormalDistance": 0.011942171957343817,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.lower toe service fastener -0.3",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "minimumOutwardNormalDistance": 0.0019998252391822007,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.lower toe service fastener 0.3",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "minimumOutwardNormalDistance": 0.0019998252391801538,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.lower toe service plate",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.003999918699264526,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.rear service bottom frame",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.0029999911785125732,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.rear service fastener -0.215 0.83",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "minimumOutwardNormalDistance": 0.001999974250802457,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.rear service fastener -0.215 1.0",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "minimumOutwardNormalDistance": 0.001999974250779957,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.rear service fastener 0.215 0.83",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "minimumOutwardNormalDistance": 0.001999974250802316,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.rear service fastener 0.215 1.0",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "minimumOutwardNormalDistance": 0.0019999742507798156,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.rear service left frame",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.0029999911785125732,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.rear service louver 0",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.001999974250793457,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.rear service louver 1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.001999974250793457,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.rear service louver 2",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.001999974250793457,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.rear service louver 3",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.001999974250793457,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.rear service louver 4",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.001999974250793457,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.rear service louver 5",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.001999974250793457,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.rear service right frame",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.0029999911785125732,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.rear service top frame",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.0029999911785125732,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.right handle lower mount bolt -1",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "minimumOutwardNormalDistance": 0.0029999613761895663,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.right handle lower mount bolt 1",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "minimumOutwardNormalDistance": 0.0029999613761893594,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.right handle lower mount plate",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.003999918699264526,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.right handle upper mount bolt -1",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "minimumOutwardNormalDistance": 0.002999961376180566,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.right handle upper mount bolt 1",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "minimumOutwardNormalDistance": 0.002999961376180359,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.right handle upper mount plate",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.003999918699264526,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.right lower hinge cabinet leaf",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.0059999823570251465,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.right lower hinge door leaf",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.0059999823570251465,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.right lower hinge frame mount",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.011999905109405518,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.right lower hinge lower fixed knuckle",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "minimumOutwardNormalDistance": 0.011942171957343817,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.right lower hinge moving knuckle",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "minimumOutwardNormalDistance": 0.011942172888666391,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.right lower hinge pin head",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "minimumOutwardNormalDistance": 0.0029997229576101095,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.right lower hinge upper fixed knuckle",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "minimumOutwardNormalDistance": 0.011942171957343817,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.right upper hinge cabinet leaf",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.0059999823570251465,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.right upper hinge door leaf",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.0059999823570251465,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.right upper hinge frame mount",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.011999905109405518,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.right upper hinge lower fixed knuckle",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "minimumOutwardNormalDistance": 0.011942171957343817,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.right upper hinge moving knuckle",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "minimumOutwardNormalDistance": 0.011942172888666391,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.right upper hinge pin head",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "minimumOutwardNormalDistance": 0.0029999017715462576,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-medicine-cabinet.right upper hinge upper fixed knuckle",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "minimumOutwardNormalDistance": 0.011942171957343817,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "cabinet_body",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.36000001430511475,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "door",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.019999951124191284,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "door.001",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.019999951124191284,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "handle",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.01749996840953827,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "handle.001",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.01749996840953827,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "inner",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.014999955892562866,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "shelf",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.019999951124191284,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "shelf.001",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.019999921321868896,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "shelf.002",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.01999986171722412,
+      "transformDeterminant": 1.0
+    }
+  ],
+  "sourceEvaluatedBounds": {
+    "min": [
+      -0.4099999964237213,
+      -0.38499999046325684,
+      0.0
+    ],
+    "max": [
+      0.4099999964237213,
+      0.4325000047683716,
+      1.1799999475479126
+    ]
+  },
+  "cameraTargetTiles": [
+    0.5,
+    0.5,
+    0.5899999737739563
+  ],
+  "addedMeshNames": [
+    "angled-medicine-cabinet.left handle lower mount bolt -1",
+    "angled-medicine-cabinet.left handle lower mount bolt 1",
+    "angled-medicine-cabinet.left handle lower mount plate",
+    "angled-medicine-cabinet.left handle upper mount bolt -1",
+    "angled-medicine-cabinet.left handle upper mount bolt 1",
+    "angled-medicine-cabinet.left handle upper mount plate",
+    "angled-medicine-cabinet.left lower hinge cabinet leaf",
+    "angled-medicine-cabinet.left lower hinge door leaf",
+    "angled-medicine-cabinet.left lower hinge frame mount",
+    "angled-medicine-cabinet.left lower hinge lower fixed knuckle",
+    "angled-medicine-cabinet.left lower hinge moving knuckle",
+    "angled-medicine-cabinet.left lower hinge pin head",
+    "angled-medicine-cabinet.left lower hinge upper fixed knuckle",
+    "angled-medicine-cabinet.left upper hinge cabinet leaf",
+    "angled-medicine-cabinet.left upper hinge door leaf",
+    "angled-medicine-cabinet.left upper hinge frame mount",
+    "angled-medicine-cabinet.left upper hinge lower fixed knuckle",
+    "angled-medicine-cabinet.left upper hinge moving knuckle",
+    "angled-medicine-cabinet.left upper hinge pin head",
+    "angled-medicine-cabinet.left upper hinge upper fixed knuckle",
+    "angled-medicine-cabinet.lower toe service fastener -0.3",
+    "angled-medicine-cabinet.lower toe service fastener 0.3",
+    "angled-medicine-cabinet.lower toe service plate",
+    "angled-medicine-cabinet.rear service bottom frame",
+    "angled-medicine-cabinet.rear service fastener -0.215 0.83",
+    "angled-medicine-cabinet.rear service fastener -0.215 1.0",
+    "angled-medicine-cabinet.rear service fastener 0.215 0.83",
+    "angled-medicine-cabinet.rear service fastener 0.215 1.0",
+    "angled-medicine-cabinet.rear service left frame",
+    "angled-medicine-cabinet.rear service louver 0",
+    "angled-medicine-cabinet.rear service louver 1",
+    "angled-medicine-cabinet.rear service louver 2",
+    "angled-medicine-cabinet.rear service louver 3",
+    "angled-medicine-cabinet.rear service louver 4",
+    "angled-medicine-cabinet.rear service louver 5",
+    "angled-medicine-cabinet.rear service right frame",
+    "angled-medicine-cabinet.rear service top frame",
+    "angled-medicine-cabinet.right handle lower mount bolt -1",
+    "angled-medicine-cabinet.right handle lower mount bolt 1",
+    "angled-medicine-cabinet.right handle lower mount plate",
+    "angled-medicine-cabinet.right handle upper mount bolt -1",
+    "angled-medicine-cabinet.right handle upper mount bolt 1",
+    "angled-medicine-cabinet.right handle upper mount plate",
+    "angled-medicine-cabinet.right lower hinge cabinet leaf",
+    "angled-medicine-cabinet.right lower hinge door leaf",
+    "angled-medicine-cabinet.right lower hinge frame mount",
+    "angled-medicine-cabinet.right lower hinge lower fixed knuckle",
+    "angled-medicine-cabinet.right lower hinge moving knuckle",
+    "angled-medicine-cabinet.right lower hinge pin head",
+    "angled-medicine-cabinet.right lower hinge upper fixed knuckle",
+    "angled-medicine-cabinet.right upper hinge cabinet leaf",
+    "angled-medicine-cabinet.right upper hinge door leaf",
+    "angled-medicine-cabinet.right upper hinge frame mount",
+    "angled-medicine-cabinet.right upper hinge lower fixed knuckle",
+    "angled-medicine-cabinet.right upper hinge moving knuckle",
+    "angled-medicine-cabinet.right upper hinge pin head",
+    "angled-medicine-cabinet.right upper hinge upper fixed knuckle"
+  ],
+  "meshes": [
+    {
+      "name": "angled-medicine-cabinet.left handle lower mount bolt -1",
+      "evaluatedVertices": 192,
+      "evaluatedPositionSha256": "a9953aadd1916fa910aa120deefc87f1cc3b2bc9133e452bdd0314b5deeed70d"
+    },
+    {
+      "name": "angled-medicine-cabinet.left handle lower mount bolt 1",
+      "evaluatedVertices": 192,
+      "evaluatedPositionSha256": "50566b9215b9621a660c3b50e71c07bb2381e69940d0e1ec7fd24094bc4e792f"
+    },
+    {
+      "name": "angled-medicine-cabinet.left handle lower mount plate",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "d6370a88311dc3996cd1d9b7b2d5951383ede9a33414192c908ead8ae18c7f86"
+    },
+    {
+      "name": "angled-medicine-cabinet.left handle upper mount bolt -1",
+      "evaluatedVertices": 192,
+      "evaluatedPositionSha256": "d116f5ccda727417a867b5e4035f3b23df7e3c7548bb1d11d82b5e254c122450"
+    },
+    {
+      "name": "angled-medicine-cabinet.left handle upper mount bolt 1",
+      "evaluatedVertices": 192,
+      "evaluatedPositionSha256": "20dca5ddb03911d279b23f66ebddcb653828c8ff0a8f9efaad9e6eac31b987bb"
+    },
+    {
+      "name": "angled-medicine-cabinet.left handle upper mount plate",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "8bd3fde8c6527b2bdf0ef2a577bc7acd6588b45bb768c0881258aaf909b8d389"
+    },
+    {
+      "name": "angled-medicine-cabinet.left lower hinge cabinet leaf",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "4b37ff0ee49b4686e072b5683deb19ad7910916a16bfbc46fbe07eba07e10be3"
+    },
+    {
+      "name": "angled-medicine-cabinet.left lower hinge door leaf",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "fd51efc997982d59c54dad2f43bbb3cc3d446a2287fbf907131690406b9afd9f"
+    },
+    {
+      "name": "angled-medicine-cabinet.left lower hinge frame mount",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "1af596066f9a851d7b0ca3d1b6433782f7d262397aa32f45ea2803e261a3fa6c"
+    },
+    {
+      "name": "angled-medicine-cabinet.left lower hinge lower fixed knuckle",
+      "evaluatedVertices": 192,
+      "evaluatedPositionSha256": "5e27751e38f45dd1a079512410138b799d676b3a4bc14f945b0ab59cb5db2fd1"
+    },
+    {
+      "name": "angled-medicine-cabinet.left lower hinge moving knuckle",
+      "evaluatedVertices": 192,
+      "evaluatedPositionSha256": "41d92c35c69aa63510ea8aee7629db14eea75215ede0ab75a46c797e351cdf27"
+    },
+    {
+      "name": "angled-medicine-cabinet.left lower hinge pin head",
+      "evaluatedVertices": 192,
+      "evaluatedPositionSha256": "2d0e32860dd4c686b3b8bb4776bcb96330e4c5ddb422c5f876c3b5e2fb876081"
+    },
+    {
+      "name": "angled-medicine-cabinet.left lower hinge upper fixed knuckle",
+      "evaluatedVertices": 192,
+      "evaluatedPositionSha256": "c2ad4e57fd66fad33ed07406880b912294e81163145aefeb8644f9451a27599a"
+    },
+    {
+      "name": "angled-medicine-cabinet.left upper hinge cabinet leaf",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "542b604615d60e669dfad30b6420cf9d05277c4cdcc71215ae306f6ae6b065a7"
+    },
+    {
+      "name": "angled-medicine-cabinet.left upper hinge door leaf",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "abf3490268e2ace4379260b304cd39b7e2bb530e211794e0bded8ff5305c7e1a"
+    },
+    {
+      "name": "angled-medicine-cabinet.left upper hinge frame mount",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "4249f050360d01261085ff4ed5c352f67a4df48178769b9e141d7b5c4e7bb488"
+    },
+    {
+      "name": "angled-medicine-cabinet.left upper hinge lower fixed knuckle",
+      "evaluatedVertices": 192,
+      "evaluatedPositionSha256": "7c8c16a8ab38e5ed01983c680b742ce4242a2aa329dcccb1387e5cd40047d2b6"
+    },
+    {
+      "name": "angled-medicine-cabinet.left upper hinge moving knuckle",
+      "evaluatedVertices": 192,
+      "evaluatedPositionSha256": "7501449a3c18c92a7d57cbfc2c7748f7cebbdde4f524c2ce68a1316a020ebd0b"
+    },
+    {
+      "name": "angled-medicine-cabinet.left upper hinge pin head",
+      "evaluatedVertices": 192,
+      "evaluatedPositionSha256": "6261790e6b9ff26423d8f1dee2805e870f18aecbe9f47badf2624dbc4b919735"
+    },
+    {
+      "name": "angled-medicine-cabinet.left upper hinge upper fixed knuckle",
+      "evaluatedVertices": 192,
+      "evaluatedPositionSha256": "1365697efcb75da1bd1a3ecbd7586ca83745976f3f0698f70c076addb71bafa0"
+    },
+    {
+      "name": "angled-medicine-cabinet.lower toe service fastener -0.3",
+      "evaluatedVertices": 192,
+      "evaluatedPositionSha256": "b67f363a93f41f4992c6ad98fe5ced96aa0888be61790d09bfaed87fa904ba55"
+    },
+    {
+      "name": "angled-medicine-cabinet.lower toe service fastener 0.3",
+      "evaluatedVertices": 192,
+      "evaluatedPositionSha256": "a25692ef1ce077478052e6cc69cf168948039543401163fbb93df9f74fe8628e"
+    },
+    {
+      "name": "angled-medicine-cabinet.lower toe service plate",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "5bbcec7535c85913e9e6a3d92cd86c58c3195c68d856765ad20eec5effbc8f48"
+    },
+    {
+      "name": "angled-medicine-cabinet.rear service bottom frame",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "7bed9df423b9cc8599f6d3fec9f3dcd7ecf302e9fb1c5d86fa3dcbe87b81bb91"
+    },
+    {
+      "name": "angled-medicine-cabinet.rear service fastener -0.215 0.83",
+      "evaluatedVertices": 192,
+      "evaluatedPositionSha256": "0036ac0cbcb79d4c8474c24727f005b86f210829dff71ac941fbcc479a706e85"
+    },
+    {
+      "name": "angled-medicine-cabinet.rear service fastener -0.215 1.0",
+      "evaluatedVertices": 192,
+      "evaluatedPositionSha256": "b07c914efb4e860120e5f2d6b0b0c60b116c2b594de28a8e9cc0e1ec6db661e1"
+    },
+    {
+      "name": "angled-medicine-cabinet.rear service fastener 0.215 0.83",
+      "evaluatedVertices": 192,
+      "evaluatedPositionSha256": "eeba63785fb619afe3cf728f12263412138da91718ec09188449a8269e63fe8a"
+    },
+    {
+      "name": "angled-medicine-cabinet.rear service fastener 0.215 1.0",
+      "evaluatedVertices": 192,
+      "evaluatedPositionSha256": "11b7c0a539acfd5cbdf9cae1e67cdce1725a6b725170bc983a6057997bfe1c51"
+    },
+    {
+      "name": "angled-medicine-cabinet.rear service left frame",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "e23f22e9e1f77572301b11b5c1c67b195eae1fd9d235e934d9d9b78795cb7bf6"
+    },
+    {
+      "name": "angled-medicine-cabinet.rear service louver 0",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "e7587409a44fb99d4330f2cddc346012459893844ae871af97e539c5b32cf489"
+    },
+    {
+      "name": "angled-medicine-cabinet.rear service louver 1",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "bdac9c4c42d3c964b57ba4b1bf26c75f02055ffb89642eae048ad47084392a46"
+    },
+    {
+      "name": "angled-medicine-cabinet.rear service louver 2",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "770b6ffc5adcf764254621c3f41d0d5162fec4a06744b891b50b78f6f3e1141c"
+    },
+    {
+      "name": "angled-medicine-cabinet.rear service louver 3",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "8ff9f28943b525fa595d7bcb725f9069d45f38d24e98ebcc74e1c1e096131473"
+    },
+    {
+      "name": "angled-medicine-cabinet.rear service louver 4",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "9f28db9ff69ed88f4afec6345b7af285d89b5ca9285bb911d488ab6634024848"
+    },
+    {
+      "name": "angled-medicine-cabinet.rear service louver 5",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "c37183ee991e95b5bfba9d87328ea5d719e07b8171060751ab55fcf6a983f2ef"
+    },
+    {
+      "name": "angled-medicine-cabinet.rear service right frame",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "7784fffe5f1317b7b65ce472d1086043f45c81f3d87e58765b3b6dd5de5ca16d"
+    },
+    {
+      "name": "angled-medicine-cabinet.rear service top frame",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "833881a699ae727483c8dfb58497cc0d66404cb01189a1022526fd7c92a6a7bc"
+    },
+    {
+      "name": "angled-medicine-cabinet.right handle lower mount bolt -1",
+      "evaluatedVertices": 192,
+      "evaluatedPositionSha256": "9ad0ac549aff037930410c4bb974f523744c928da9791b76d4991a70c92d72c1"
+    },
+    {
+      "name": "angled-medicine-cabinet.right handle lower mount bolt 1",
+      "evaluatedVertices": 192,
+      "evaluatedPositionSha256": "b26c42284995f45e8c811f06fff3b31b46582867655c0c89c7d65b0f5851adff"
+    },
+    {
+      "name": "angled-medicine-cabinet.right handle lower mount plate",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "2c4066e795ae2522263006cd5c761b1956c9285b9e87fee966f5de035acae4d0"
+    },
+    {
+      "name": "angled-medicine-cabinet.right handle upper mount bolt -1",
+      "evaluatedVertices": 192,
+      "evaluatedPositionSha256": "e450ffa6ef8e524b329606f684fc68e6943e9627d84887785e4d18440dc67185"
+    },
+    {
+      "name": "angled-medicine-cabinet.right handle upper mount bolt 1",
+      "evaluatedVertices": 192,
+      "evaluatedPositionSha256": "09fd022d5ffc2ebe78eef7bea2d1960106955fc9c39520bca68bc5f6208fee81"
+    },
+    {
+      "name": "angled-medicine-cabinet.right handle upper mount plate",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "fb309a9773f5d0cad4fdfbc8652c533219f2346f12009e194f3d579a9a4fd01b"
+    },
+    {
+      "name": "angled-medicine-cabinet.right lower hinge cabinet leaf",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "5d8614081ad563d4d6e9b685ab0af36cc8fa9c286ff45ff577b19bcb3cf5d516"
+    },
+    {
+      "name": "angled-medicine-cabinet.right lower hinge door leaf",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "82bf40de792bcddf0753bbd14281d9845ea6c447bbff97c9815b59a78b2c540e"
+    },
+    {
+      "name": "angled-medicine-cabinet.right lower hinge frame mount",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "5d45574d2aaa35739cbb03b7cfc39897c39acb122acbb77ce676f15f100bcc8b"
+    },
+    {
+      "name": "angled-medicine-cabinet.right lower hinge lower fixed knuckle",
+      "evaluatedVertices": 192,
+      "evaluatedPositionSha256": "c6aa9ad10997b4f70260dad12b62f2615aba6f63c2d839cbccd90c2901cbd0e3"
+    },
+    {
+      "name": "angled-medicine-cabinet.right lower hinge moving knuckle",
+      "evaluatedVertices": 192,
+      "evaluatedPositionSha256": "57242324f94a6326eb8228f2599a30783ca6fc30d1ff4a8a245a607cde38001d"
+    },
+    {
+      "name": "angled-medicine-cabinet.right lower hinge pin head",
+      "evaluatedVertices": 192,
+      "evaluatedPositionSha256": "1a606c8d2759f334c9ea1fe60ad4b9e36cae9dc478b33e90bf0d4e264fea4513"
+    },
+    {
+      "name": "angled-medicine-cabinet.right lower hinge upper fixed knuckle",
+      "evaluatedVertices": 192,
+      "evaluatedPositionSha256": "67f1f20432d955b49db3427d5b4df8596ac2c8ddbb21e32b69e1d67029677ee3"
+    },
+    {
+      "name": "angled-medicine-cabinet.right upper hinge cabinet leaf",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "eb06f180dbb0bbe6f7ea35223228623f224fef16208077a861bb3c5165e3dc7c"
+    },
+    {
+      "name": "angled-medicine-cabinet.right upper hinge door leaf",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "77c4ad4a56a4752167e52da7c1d1d0921220696847ef9b1ba539b260c3fdee3e"
+    },
+    {
+      "name": "angled-medicine-cabinet.right upper hinge frame mount",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "f21b673b6958d097c91f93c1912f92c5e93333b52ed48e86875794957fb637e8"
+    },
+    {
+      "name": "angled-medicine-cabinet.right upper hinge lower fixed knuckle",
+      "evaluatedVertices": 192,
+      "evaluatedPositionSha256": "7de0086bb6af3819366bde24adfa0ea340bd6e9f0ce2c0b5525185a4436e1e13"
+    },
+    {
+      "name": "angled-medicine-cabinet.right upper hinge moving knuckle",
+      "evaluatedVertices": 192,
+      "evaluatedPositionSha256": "5929a88275b0ee51ba19ccca7a2ea7ec6511f5850cf7d17ff3817f265e198be8"
+    },
+    {
+      "name": "angled-medicine-cabinet.right upper hinge pin head",
+      "evaluatedVertices": 192,
+      "evaluatedPositionSha256": "d281c6cc3e5378c86bec90fd8b1915472bd1e9a48aec68147eb4af12dd4d9209"
+    },
+    {
+      "name": "angled-medicine-cabinet.right upper hinge upper fixed knuckle",
+      "evaluatedVertices": 192,
+      "evaluatedPositionSha256": "ba20e4ffb391d8c1be51ba891b81eca09f4e1b117e61888c48540190592b94a0"
+    },
+    {
+      "name": "cabinet_body",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "02285694c65f4a2da57b345248b65808d69b07d00541d7df3ea57f64846bd126"
+    },
+    {
+      "name": "door",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "7e5464de5c404cc9954c6d1697f6538c201e6874f362edfc94fcbb967dd4580b"
+    },
+    {
+      "name": "door.001",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "bfd2a616707eb8f7c0c3ad2a77d15b4101ab13a13c9325187bb44ae4508a8a43"
+    },
+    {
+      "name": "handle",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "f4f20ec6a13b2c6067409b5befd54c41e0ca8377a93221e1965190a8b054eff5"
+    },
+    {
+      "name": "handle.001",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "4a97cbe8af8188fbb7fee38e78e20951e9bcf6ed8edd05f0790a4c90c867ded9"
+    },
+    {
+      "name": "inner",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "c8013e0a1ee12a35d04f26e9db6baffb8e76bc308dd78b2ef5c947d51fb8ef59"
+    },
+    {
+      "name": "shelf",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "5a61b1ef9437c9d28bee2930d8ff344944c5eea851615d9477979738981aca61"
+    },
+    {
+      "name": "shelf.001",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "33d7b5c2ab8b33b7b95414724c550bd48acb321ac10413b80140c4c3ff168092"
+    },
+    {
+      "name": "shelf.002",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "5ca79c5c987e51973222b545e4e9414807c1a37d4fae1d7d0db17ce5dd2e3cdf"
+    }
+  ]
+}

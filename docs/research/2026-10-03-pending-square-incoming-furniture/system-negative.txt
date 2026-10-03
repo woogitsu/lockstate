@@ -1,0 +1,47 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-pending-square-wall-incoming-object-audit-20261003
+
+ ❯ tests/integration/pending-square-wall-incoming-object.test.ts (8 tests | 2 failed) 430ms
+   × paid pending square vs later Bed: type='PlaceBuildOrder' load=false conflict=true 43ms
+   × paid pending square vs later Bed: type='PlaceBuildOrder' load=true conflict=true 42ms
+node : 
+At line:14 char:2
++  node node_modules/vitest/vitest.mjs run --maxWorkers=2 tests/integra ...
++  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/pending-square-wall-incoming-object.test.ts > paid pending square vs later Bed: type='PlaceBui
+ldOrder' load=false conflict=true
+ FAIL  tests/integration/pending-square-wall-incoming-object.test.ts > paid pending square vs later Bed: type='PlaceBui
+ldOrder' load=true conflict=true
+AssertionError: expected { id: 'later-bed', …(6) } to match object { state: 'failed', …(1) }
+(8 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "failReason": "unbuildable",
+-   "state": "failed",
++   "state": "approved",
+  }
+
+ ❯ tests/integration/pending-square-wall-incoming-object.test.ts:61:63
+     59|     if (conflict) {
+     60|       if (type === 'PlaceObject') expect(runtime.construction.getOrder…
+     61|       else expect(runtime.construction.getOrder('later-bed')).toMatchO…
+       |                                                               ^
+     62|       const { kernel: _beforeKernel, ...beforeGameplay } = before;
+     63|       const { kernel: _afterKernel, ...afterGameplay } = after;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 6 passed (8)
+   Start at  01:59:38
+   Duration  2.75s (transform 826ms, setup 0ms, import 2.20s, tests 430ms, environment 0ms)
+

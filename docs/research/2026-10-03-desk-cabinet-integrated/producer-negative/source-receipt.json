@@ -1,0 +1,14 @@
+[
+  {
+    "path": "src/rendering/assets/oblique-object-mapping.ts",
+    "backup": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-desk-cabinet-native-mutation-20261003\\oblique-object-mapping.ts",
+    "originalSha256": "a9eada806ff523bc9933da9b7a2e8a731c5a896286e33b0551119d8e389dd2d4",
+    "negativeSha256": "0054be1a511ffb6127dc1b365af82a4c6421a225249e57cd004a801a7b3c069f"
+  },
+  {
+    "path": "src/ui/room-template-world-bridge.ts",
+    "backup": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-desk-cabinet-native-mutation-20261003\\room-template-world-bridge.ts",
+    "originalSha256": "814fa06ae54dd6476c2d73bd341a0e761608ecc7e5731dedeee5ea7035ad280b",
+    "negativeSha256": "97f86f1ac04a92132715669d31d517ea4576742a9d54813729400c7593309c2f"
+  }
+]

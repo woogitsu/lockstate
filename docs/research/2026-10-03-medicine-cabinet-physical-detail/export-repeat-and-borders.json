@@ -1,0 +1,1240 @@
+{
+  "sourceSha256": "f03b6fc2d33d83c069b181073616ae95031839e130d890b9f5374cfd947be5ea",
+  "manifestSha256": "4b9f10c8ab4c0c1357da949462d2ed689e0e8a29d19fee0cb47d910e2d09ae10",
+  "repeatByteEqualCount": 73,
+  "repeatFileCount": 73,
+  "minimumTransparentBorderPixels": 79,
+  "frames": [
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 20,
+      "alphaBoundsPx": [
+        101,
+        85,
+        155,
+        171
+      ],
+      "transparentBorderPixels": 85,
+      "sha256": "b63ba39036bdb083b479c321a182cb966f72954b137d2b753ab27f914bf303fe"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 30,
+      "alphaBoundsPx": [
+        101,
+        84,
+        155,
+        172
+      ],
+      "transparentBorderPixels": 84,
+      "sha256": "03c477d6e9e7b4c89ad4461002cda4ae897a94e35b11613859b2410de907aef0"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 40,
+      "alphaBoundsPx": [
+        101,
+        85,
+        155,
+        171
+      ],
+      "transparentBorderPixels": 85,
+      "sha256": "2be1f1acedf9bb0e84631e3ed8379a020c6353305103ff56e25caeb102faf223"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 50,
+      "alphaBoundsPx": [
+        101,
+        87,
+        155,
+        169
+      ],
+      "transparentBorderPixels": 87,
+      "sha256": "28b79fde9ed18923016411b3d8332edbf2b2890c31a1242b84ab1c34d56bd821"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 60,
+      "alphaBoundsPx": [
+        101,
+        89,
+        155,
+        166
+      ],
+      "transparentBorderPixels": 89,
+      "sha256": "1918ac0b1977f42dcc39f072e97378c23b8f9aabccc91d3e4d5bd198721dcae5"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 70,
+      "alphaBoundsPx": [
+        101,
+        92,
+        155,
+        163
+      ],
+      "transparentBorderPixels": 92,
+      "sha256": "045555e3a44c7624ba3937c0654f75c06249312f9be49e9ac6973b4aadd32d41"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 20,
+      "alphaBoundsPx": [
+        94,
+        82,
+        164,
+        174
+      ],
+      "transparentBorderPixels": 82,
+      "sha256": "e9af4bed861d725223be2fedcc434ecc1c62100c035410fc5d85130fd6ecd22a"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 30,
+      "alphaBoundsPx": [
+        94,
+        80,
+        164,
+        176
+      ],
+      "transparentBorderPixels": 80,
+      "sha256": "254dd63d53ee0fb17feec25e8c3b815188f9dfb01f72073bf4d0f0f51bb90fee"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 40,
+      "alphaBoundsPx": [
+        94,
+        80,
+        164,
+        176
+      ],
+      "transparentBorderPixels": 80,
+      "sha256": "281e33a689edd5209fbbc42d621ef0b751303b46b3ad8ab7374aa10a32b40ad1"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 50,
+      "alphaBoundsPx": [
+        94,
+        80,
+        164,
+        176
+      ],
+      "transparentBorderPixels": 80,
+      "sha256": "4c2743aa738067ff1aa49b2c31b1c5175a4afd186a22e27c0c6cb61dd4dfd831"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 60,
+      "alphaBoundsPx": [
+        94,
+        82,
+        164,
+        174
+      ],
+      "transparentBorderPixels": 82,
+      "sha256": "4f6594efa97a166bc4de3ff2f1ecae2655b2207798ec3ca635dd6273bdbe1182"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 70,
+      "alphaBoundsPx": [
+        94,
+        84,
+        164,
+        170
+      ],
+      "transparentBorderPixels": 84,
+      "sha256": "e002ed54aaaf8fd2114e15d51c27afa2413506357f8a5f4a214530a8ed389b40"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 20,
+      "alphaBoundsPx": [
+        95,
+        82,
+        165,
+        174
+      ],
+      "transparentBorderPixels": 82,
+      "sha256": "beda93955e4193beaa2d06ebd88dc12df77dbb08e32f745515d560f1041c200f"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 30,
+      "alphaBoundsPx": [
+        95,
+        80,
+        165,
+        176
+      ],
+      "transparentBorderPixels": 80,
+      "sha256": "4eff26bd3f9f6fe7e6875f55a794aed673cc792ea9ecd0601d8f517c9afd9206"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 40,
+      "alphaBoundsPx": [
+        95,
+        79,
+        165,
+        177
+      ],
+      "transparentBorderPixels": 79,
+      "sha256": "0655c69bb785e1a60c4a442075826e60c9cc4c5f765cf05d2e260363282b21ed"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 50,
+      "alphaBoundsPx": [
+        95,
+        79,
+        165,
+        177
+      ],
+      "transparentBorderPixels": 79,
+      "sha256": "bf9916be02a206a48576c95b6c57a6d8890d020f3ad775735558e394272204a2"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 60,
+      "alphaBoundsPx": [
+        95,
+        81,
+        165,
+        175
+      ],
+      "transparentBorderPixels": 81,
+      "sha256": "7d65ee6b38366b00517a9245228ad5a461f576c03ad620dae2f984e99429d284"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 70,
+      "alphaBoundsPx": [
+        95,
+        85,
+        165,
+        171
+      ],
+      "transparentBorderPixels": 85,
+      "sha256": "691c56b7498125c996c6afed4827f0204bd2e5dd212b4fd0c137343b37cda0c5"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 20,
+      "alphaBoundsPx": [
+        102,
+        84,
+        157,
+        172
+      ],
+      "transparentBorderPixels": 84,
+      "sha256": "4f3f0d5bbd825878055f3316d7c21ad5a140103ac82f43f5938da4a6d7e6b66f"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 30,
+      "alphaBoundsPx": [
+        102,
+        83,
+        157,
+        173
+      ],
+      "transparentBorderPixels": 83,
+      "sha256": "4504c866bda84ee88452221240ff91e2571c9845033fbd453c5009bb44d6e0c9"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 40,
+      "alphaBoundsPx": [
+        102,
+        83,
+        157,
+        173
+      ],
+      "transparentBorderPixels": 83,
+      "sha256": "ca86d509379e0fb3e29edcbce6fe4ab1b578321634093f75de125fd15334560d"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 50,
+      "alphaBoundsPx": [
+        102,
+        84,
+        157,
+        172
+      ],
+      "transparentBorderPixels": 84,
+      "sha256": "38b053efa49211b98c07ca306b38c6eaefab43ddea6bad6cd56d9b869c3957da"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 60,
+      "alphaBoundsPx": [
+        102,
+        87,
+        157,
+        169
+      ],
+      "transparentBorderPixels": 87,
+      "sha256": "eed49512cfda5ca362ae4e044a884c973411b375ccedb0774617055d3e61e137"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 70,
+      "alphaBoundsPx": [
+        102,
+        91,
+        157,
+        165
+      ],
+      "transparentBorderPixels": 91,
+      "sha256": "1f3d32fa1b72148905ff6cfd9619ef596b025d1f53beb2168aaf1f0cd7653249"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 20,
+      "alphaBoundsPx": [
+        95,
+        82,
+        165,
+        174
+      ],
+      "transparentBorderPixels": 82,
+      "sha256": "bcd6a618c64c4b7f2ce9872a4bd3b81d8b09df90e0b5cbb562fa8ba4e7505680"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 30,
+      "alphaBoundsPx": [
+        95,
+        80,
+        165,
+        176
+      ],
+      "transparentBorderPixels": 80,
+      "sha256": "36750a12c9960a9f64eb6b0a633c802697018b314536f9b1f6eccc686fd461b0"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 40,
+      "alphaBoundsPx": [
+        95,
+        79,
+        165,
+        177
+      ],
+      "transparentBorderPixels": 79,
+      "sha256": "55d2cfba762d8e1acf923f8b4a2691f74ab51709795bd1627c597984525a455f"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 50,
+      "alphaBoundsPx": [
+        95,
+        79,
+        165,
+        177
+      ],
+      "transparentBorderPixels": 79,
+      "sha256": "046cc4d34a226970a59d726bb047cb0bce0745c807fe2bb174c56fe70550f164"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 60,
+      "alphaBoundsPx": [
+        95,
+        81,
+        165,
+        175
+      ],
+      "transparentBorderPixels": 81,
+      "sha256": "2c9c11d46839f0719d756513e4cf6f1dd97d37ce7e2be785e98d9aae1b7ea8d5"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 70,
+      "alphaBoundsPx": [
+        95,
+        85,
+        165,
+        171
+      ],
+      "transparentBorderPixels": 85,
+      "sha256": "876c87ace7554727890cdc52a4e6b8fe5e90620bdbb5e6bb7f245d6417e67031"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 20,
+      "alphaBoundsPx": [
+        94,
+        82,
+        164,
+        174
+      ],
+      "transparentBorderPixels": 82,
+      "sha256": "d97392ed8fee45fce757fd9008994b0d77457fc69502bbd3290bc3019abf5848"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 30,
+      "alphaBoundsPx": [
+        94,
+        80,
+        164,
+        176
+      ],
+      "transparentBorderPixels": 80,
+      "sha256": "475a13c0ed2b1a6455c88650d816b4f46ead928626dde8a199b9d970f0d823f5"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 40,
+      "alphaBoundsPx": [
+        94,
+        80,
+        164,
+        176
+      ],
+      "transparentBorderPixels": 80,
+      "sha256": "52b3a7f9575938e4df0c95ea69e3e7ef2a14e2b26d9e592c11fdee5906a22013"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 50,
+      "alphaBoundsPx": [
+        94,
+        80,
+        164,
+        176
+      ],
+      "transparentBorderPixels": 80,
+      "sha256": "e0011ee6e707711db3cb59e0ab5f590ea2fc40217e6a5903d4e550d28f6cf28f"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 60,
+      "alphaBoundsPx": [
+        94,
+        82,
+        164,
+        174
+      ],
+      "transparentBorderPixels": 82,
+      "sha256": "c91ab8543af1dfaa08dde1e7c2784e37565fdb230b4dba55b4cf236d18b8a4d9"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 70,
+      "alphaBoundsPx": [
+        94,
+        86,
+        164,
+        172
+      ],
+      "transparentBorderPixels": 84,
+      "sha256": "06d9baecac22123e2d4606f9a2958bf7a689cdedffef508d2a31ec265683ad18"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 20,
+      "alphaBoundsPx": [
+        101,
+        85,
+        155,
+        171
+      ],
+      "transparentBorderPixels": 85,
+      "sha256": "f939fe3c5b1beedc506159b28248df5799c230da216e55e17143c79a42b377e9"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 30,
+      "alphaBoundsPx": [
+        101,
+        84,
+        155,
+        172
+      ],
+      "transparentBorderPixels": 84,
+      "sha256": "70270a107dd1c3817a32cc96750020f34b34f0a18147518ccd1c9b217e571555"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 40,
+      "alphaBoundsPx": [
+        101,
+        85,
+        155,
+        172
+      ],
+      "transparentBorderPixels": 84,
+      "sha256": "b881a5c6199a2c1b479c99f620ca65f2b655b6959047f65f08553fba99d8c753"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 50,
+      "alphaBoundsPx": [
+        101,
+        87,
+        155,
+        170
+      ],
+      "transparentBorderPixels": 86,
+      "sha256": "9a3e60b842b07bcc611f20f00b1070d3f1ba58922759e5d97bc8ccb894e01131"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 60,
+      "alphaBoundsPx": [
+        101,
+        90,
+        155,
+        167
+      ],
+      "transparentBorderPixels": 89,
+      "sha256": "200f5f8110b46e09f980e87c7730ea4573b4c3ffeba571f777165425a26de000"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 70,
+      "alphaBoundsPx": [
+        101,
+        93,
+        155,
+        164
+      ],
+      "transparentBorderPixels": 92,
+      "sha256": "108bb5a84f9514c48bf2f778f61d80b87fa4ef3ceee0f1e5d26e07754c1fd0ac"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 20,
+      "alphaBoundsPx": [
+        92,
+        82,
+        162,
+        174
+      ],
+      "transparentBorderPixels": 82,
+      "sha256": "476b6fc5793117c3aef64f812f43744f0a465d1aba72ad6ad93d1e85ef830820"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 30,
+      "alphaBoundsPx": [
+        92,
+        80,
+        162,
+        176
+      ],
+      "transparentBorderPixels": 80,
+      "sha256": "89d3f2735036fb2113f52ac87356c1a134ae147cd28abc372f977b0c4e4d2c1f"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 40,
+      "alphaBoundsPx": [
+        92,
+        80,
+        162,
+        176
+      ],
+      "transparentBorderPixels": 80,
+      "sha256": "6340a0780eb3f8e53b6cceba6b21d357d0f674a4a38a3eeb0e2d92eb84e3b62b"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 50,
+      "alphaBoundsPx": [
+        92,
+        80,
+        162,
+        176
+      ],
+      "transparentBorderPixels": 80,
+      "sha256": "2076ea7f6726ac4303ddb947f8759f4f4fa575efa659ada8507e399d390cbd36"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 60,
+      "alphaBoundsPx": [
+        92,
+        82,
+        162,
+        174
+      ],
+      "transparentBorderPixels": 82,
+      "sha256": "6abd99312a91fa52effc6a7f0b15b70631460ea3b40ed3b214108193119f2646"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 70,
+      "alphaBoundsPx": [
+        92,
+        86,
+        162,
+        172
+      ],
+      "transparentBorderPixels": 84,
+      "sha256": "314f13301aeebba2fd40d93756ffe7771662e61aa6a130707d0deae3303e46ad"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 20,
+      "alphaBoundsPx": [
+        91,
+        82,
+        161,
+        174
+      ],
+      "transparentBorderPixels": 82,
+      "sha256": "a2eaf5e43c6961c30c9e9623e473df05dd61599d8dd09ca958d059607243badf"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 30,
+      "alphaBoundsPx": [
+        91,
+        80,
+        161,
+        176
+      ],
+      "transparentBorderPixels": 80,
+      "sha256": "037c5f6c87f7bf01429d9ca1f83314261cccb09b8321f2800994a56d23c583a5"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 40,
+      "alphaBoundsPx": [
+        91,
+        79,
+        161,
+        177
+      ],
+      "transparentBorderPixels": 79,
+      "sha256": "12767c0e212bd8d7b6f3b9441d3cf0e8ecc4b3bb0b5418874a8cdd1b9d96a49e"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 50,
+      "alphaBoundsPx": [
+        91,
+        79,
+        161,
+        177
+      ],
+      "transparentBorderPixels": 79,
+      "sha256": "fae90d1606a83f51bd1c6921730529da82dc9af2e170553fd32c0d0f8d637b09"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 60,
+      "alphaBoundsPx": [
+        91,
+        81,
+        161,
+        175
+      ],
+      "transparentBorderPixels": 81,
+      "sha256": "d390c91172f9002f98ba904553081b95dac287076c8318db19ecefb8e200d5b5"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 70,
+      "alphaBoundsPx": [
+        91,
+        85,
+        161,
+        171
+      ],
+      "transparentBorderPixels": 85,
+      "sha256": "00fa803d7c9d627e496aae959e07764ca4f493370d066e780451168814fe8175"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 20,
+      "alphaBoundsPx": [
+        99,
+        84,
+        154,
+        172
+      ],
+      "transparentBorderPixels": 84,
+      "sha256": "dae2da2190f61a5ddd8b8c9ea568ec83cb9d98940629c703cbb105244900548e"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 30,
+      "alphaBoundsPx": [
+        99,
+        83,
+        154,
+        173
+      ],
+      "transparentBorderPixels": 83,
+      "sha256": "171db8a8007d5fd1a523e32083e5821ac8ceb8419169a891523dbef6d84a5285"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 40,
+      "alphaBoundsPx": [
+        99,
+        83,
+        154,
+        173
+      ],
+      "transparentBorderPixels": 83,
+      "sha256": "4774082c3668c1f98473849b1b3ee78b6210efde02e92bb9c5e0240fceea35a1"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 50,
+      "alphaBoundsPx": [
+        99,
+        84,
+        154,
+        172
+      ],
+      "transparentBorderPixels": 84,
+      "sha256": "0cf81144980f313abded724d8374da1265694cba20d2f76b006cc88f71719c37"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 60,
+      "alphaBoundsPx": [
+        99,
+        87,
+        154,
+        169
+      ],
+      "transparentBorderPixels": 87,
+      "sha256": "bc1f30afe49f0dc72cb7fa2d43cdc7b8db6569571a8009cc6b62d41d9b3f3053"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 70,
+      "alphaBoundsPx": [
+        99,
+        91,
+        154,
+        165
+      ],
+      "transparentBorderPixels": 91,
+      "sha256": "082a928634caa4610d5f45c09cdc9cdb64e4b2f48c56ae35c36d350c12d31687"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 20,
+      "alphaBoundsPx": [
+        91,
+        82,
+        161,
+        174
+      ],
+      "transparentBorderPixels": 82,
+      "sha256": "7a6e022b3130bf324696db6facdaf826a90e6e8c9640aeb936bbb46dd277b518"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 30,
+      "alphaBoundsPx": [
+        91,
+        80,
+        161,
+        176
+      ],
+      "transparentBorderPixels": 80,
+      "sha256": "fb025f152e582d8db91644650a6fb80415be204411b7f0f966961aa1f39ca9f4"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 40,
+      "alphaBoundsPx": [
+        91,
+        79,
+        161,
+        177
+      ],
+      "transparentBorderPixels": 79,
+      "sha256": "717733ee6861ddc89bde35f6a054f402f27b5196f153f7c371b30a8a5354ea44"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 50,
+      "alphaBoundsPx": [
+        91,
+        79,
+        161,
+        177
+      ],
+      "transparentBorderPixels": 79,
+      "sha256": "6832998245faa5a6c0c2932c83aea50c9c2a965f6a9690337c62e1aa6b3c60df"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 60,
+      "alphaBoundsPx": [
+        91,
+        81,
+        161,
+        175
+      ],
+      "transparentBorderPixels": 81,
+      "sha256": "c99b4abbba6dcd752210d9099f020a948223140d2877a645feddae6c63d4a407"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 70,
+      "alphaBoundsPx": [
+        91,
+        85,
+        161,
+        171
+      ],
+      "transparentBorderPixels": 85,
+      "sha256": "bec15d26b63c3d4c987453d7fa598f968370dc60b4fc9b5480b4a6544b610b75"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 20,
+      "alphaBoundsPx": [
+        92,
+        82,
+        162,
+        174
+      ],
+      "transparentBorderPixels": 82,
+      "sha256": "b398f3239e697786f9f61c452aa2a2b48e20f6ad3bc2c15e91eb1f3ce2633704"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 30,
+      "alphaBoundsPx": [
+        92,
+        80,
+        162,
+        176
+      ],
+      "transparentBorderPixels": 80,
+      "sha256": "6b23a44211a33cff398c4c1f2360c6c9e0291ef62c51d2bb1d8e5dd1f1404ed0"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 40,
+      "alphaBoundsPx": [
+        92,
+        80,
+        162,
+        176
+      ],
+      "transparentBorderPixels": 80,
+      "sha256": "8137ab4e60c21fdb9a292663c2d68c6773889064a6655327ee30c95b690d0463"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 50,
+      "alphaBoundsPx": [
+        92,
+        80,
+        162,
+        176
+      ],
+      "transparentBorderPixels": 80,
+      "sha256": "a71b87487d4385ff0f38106a3107421258afbcdb3b04b8f298167b76c3a1a528"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 60,
+      "alphaBoundsPx": [
+        92,
+        82,
+        162,
+        174
+      ],
+      "transparentBorderPixels": 82,
+      "sha256": "94e65e9d9dd2471158b11051062ca621de40144c1a4246eebb28e2fef428db42"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 70,
+      "alphaBoundsPx": [
+        92,
+        85,
+        162,
+        170
+      ],
+      "transparentBorderPixels": 85,
+      "sha256": "a5442f4904a5840c8f040d62d28e3b08488278fe3378a28dd97b1f0f3131c30c"
+    }
+  ],
+  "repeatFiles": [
+    {
+      "path": "public/game-content/oblique-fixture.medicine-cabinet.v1.json",
+      "sha256": "4b9f10c8ab4c0c1357da949462d2ed689e0e8a29d19fee0cb47d910e2d09ae10",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+00-elev20.b63ba39036bd.png",
+      "sha256": "b63ba39036bdb083b479c321a182cb966f72954b137d2b753ab27f914bf303fe",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+00-elev30.03c477d6e9e7.png",
+      "sha256": "03c477d6e9e7b4c89ad4461002cda4ae897a94e35b11613859b2410de907aef0",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+00-elev40.2be1f1acedf9.png",
+      "sha256": "2be1f1acedf9bb0e84631e3ed8379a020c6353305103ff56e25caeb102faf223",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+00-elev50.28b79fde9ed1.png",
+      "sha256": "28b79fde9ed18923016411b3d8332edbf2b2890c31a1242b84ab1c34d56bd821",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+00-elev60.1918ac0b1977.png",
+      "sha256": "1918ac0b1977f42dcc39f072e97378c23b8f9aabccc91d3e4d5bd198721dcae5",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+00-elev70.045555e3a44c.png",
+      "sha256": "045555e3a44c7624ba3937c0654f75c06249312f9be49e9ac6973b4aadd32d41",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+30-elev20.e9af4bed861d.png",
+      "sha256": "e9af4bed861d725223be2fedcc434ecc1c62100c035410fc5d85130fd6ecd22a",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+30-elev30.254dd63d53ee.png",
+      "sha256": "254dd63d53ee0fb17feec25e8c3b815188f9dfb01f72073bf4d0f0f51bb90fee",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+30-elev40.281e33a689ed.png",
+      "sha256": "281e33a689edd5209fbbc42d621ef0b751303b46b3ad8ab7374aa10a32b40ad1",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+30-elev50.4c2743aa7380.png",
+      "sha256": "4c2743aa738067ff1aa49b2c31b1c5175a4afd186a22e27c0c6cb61dd4dfd831",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+30-elev60.4f6594efa97a.png",
+      "sha256": "4f6594efa97a166bc4de3ff2f1ecae2655b2207798ec3ca635dd6273bdbe1182",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+30-elev70.e002ed54aaaf.png",
+      "sha256": "e002ed54aaaf8fd2114e15d51c27afa2413506357f8a5f4a214530a8ed389b40",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+60-elev20.beda93955e41.png",
+      "sha256": "beda93955e4193beaa2d06ebd88dc12df77dbb08e32f745515d560f1041c200f",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+60-elev30.4eff26bd3f9f.png",
+      "sha256": "4eff26bd3f9f6fe7e6875f55a794aed673cc792ea9ecd0601d8f517c9afd9206",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+60-elev40.0655c69bb785.png",
+      "sha256": "0655c69bb785e1a60c4a442075826e60c9cc4c5f765cf05d2e260363282b21ed",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+60-elev50.bf9916be02a2.png",
+      "sha256": "bf9916be02a206a48576c95b6c57a6d8890d020f3ad775735558e394272204a2",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+60-elev60.7d65ee6b3836.png",
+      "sha256": "7d65ee6b38366b00517a9245228ad5a461f576c03ad620dae2f984e99429d284",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+60-elev70.691c56b74981.png",
+      "sha256": "691c56b7498125c996c6afed4827f0204bd2e5dd212b4fd0c137343b37cda0c5",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+90-elev20.4f3f0d5bbd82.png",
+      "sha256": "4f3f0d5bbd825878055f3316d7c21ad5a140103ac82f43f5938da4a6d7e6b66f",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+90-elev30.4504c866bda8.png",
+      "sha256": "4504c866bda84ee88452221240ff91e2571c9845033fbd453c5009bb44d6e0c9",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+90-elev40.ca86d509379e.png",
+      "sha256": "ca86d509379e0fb3e29edcbce6fe4ab1b578321634093f75de125fd15334560d",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+90-elev50.38b053efa492.png",
+      "sha256": "38b053efa49211b98c07ca306b38c6eaefab43ddea6bad6cd56d9b869c3957da",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+90-elev60.eed49512cfda.png",
+      "sha256": "eed49512cfda5ca362ae4e044a884c973411b375ccedb0774617055d3e61e137",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+90-elev70.1f3d32fa1b72.png",
+      "sha256": "1f3d32fa1b72148905ff6cfd9619ef596b025d1f53beb2168aaf1f0cd7653249",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+120-elev20.bcd6a618c64c.png",
+      "sha256": "bcd6a618c64c4b7f2ce9872a4bd3b81d8b09df90e0b5cbb562fa8ba4e7505680",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+120-elev30.36750a12c996.png",
+      "sha256": "36750a12c9960a9f64eb6b0a633c802697018b314536f9b1f6eccc686fd461b0",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+120-elev40.55d2cfba762d.png",
+      "sha256": "55d2cfba762d8e1acf923f8b4a2691f74ab51709795bd1627c597984525a455f",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+120-elev50.046cc4d34a22.png",
+      "sha256": "046cc4d34a226970a59d726bb047cb0bce0745c807fe2bb174c56fe70550f164",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+120-elev60.2c9c11d46839.png",
+      "sha256": "2c9c11d46839f0719d756513e4cf6f1dd97d37ce7e2be785e98d9aae1b7ea8d5",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+120-elev70.876c87ace755.png",
+      "sha256": "876c87ace7554727890cdc52a4e6b8fe5e90620bdbb5e6bb7f245d6417e67031",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+150-elev20.d97392ed8fee.png",
+      "sha256": "d97392ed8fee45fce757fd9008994b0d77457fc69502bbd3290bc3019abf5848",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+150-elev30.475a13c0ed2b.png",
+      "sha256": "475a13c0ed2b1a6455c88650d816b4f46ead928626dde8a199b9d970f0d823f5",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+150-elev40.52b3a7f95759.png",
+      "sha256": "52b3a7f9575938e4df0c95ea69e3e7ef2a14e2b26d9e592c11fdee5906a22013",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+150-elev50.e0011ee6e707.png",
+      "sha256": "e0011ee6e707711db3cb59e0ab5f590ea2fc40217e6a5903d4e550d28f6cf28f",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+150-elev60.c91ab8543af1.png",
+      "sha256": "c91ab8543af1dfaa08dde1e7c2784e37565fdb230b4dba55b4cf236d18b8a4d9",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+150-elev70.06d9baecac22.png",
+      "sha256": "06d9baecac22123e2d4606f9a2958bf7a689cdedffef508d2a31ec265683ad18",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+180-elev20.f939fe3c5b1b.png",
+      "sha256": "f939fe3c5b1beedc506159b28248df5799c230da216e55e17143c79a42b377e9",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+180-elev30.70270a107dd1.png",
+      "sha256": "70270a107dd1c3817a32cc96750020f34b34f0a18147518ccd1c9b217e571555",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+180-elev40.b881a5c6199a.png",
+      "sha256": "b881a5c6199a2c1b479c99f620ca65f2b655b6959047f65f08553fba99d8c753",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+180-elev50.9a3e60b842b0.png",
+      "sha256": "9a3e60b842b07bcc611f20f00b1070d3f1ba58922759e5d97bc8ccb894e01131",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+180-elev60.200f5f8110b4.png",
+      "sha256": "200f5f8110b46e09f980e87c7730ea4573b4c3ffeba571f777165425a26de000",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+180-elev70.108bb5a84f95.png",
+      "sha256": "108bb5a84f9514c48bf2f778f61d80b87fa4ef3ceee0f1e5d26e07754c1fd0ac",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+210-elev20.476b6fc57931.png",
+      "sha256": "476b6fc5793117c3aef64f812f43744f0a465d1aba72ad6ad93d1e85ef830820",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+210-elev30.89d3f2735036.png",
+      "sha256": "89d3f2735036fb2113f52ac87356c1a134ae147cd28abc372f977b0c4e4d2c1f",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+210-elev40.6340a0780eb3.png",
+      "sha256": "6340a0780eb3f8e53b6cceba6b21d357d0f674a4a38a3eeb0e2d92eb84e3b62b",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+210-elev50.2076ea7f6726.png",
+      "sha256": "2076ea7f6726ac4303ddb947f8759f4f4fa575efa659ada8507e399d390cbd36",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+210-elev60.6abd99312a91.png",
+      "sha256": "6abd99312a91fa52effc6a7f0b15b70631460ea3b40ed3b214108193119f2646",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+210-elev70.314f13301aee.png",
+      "sha256": "314f13301aeebba2fd40d93756ffe7771662e61aa6a130707d0deae3303e46ad",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+240-elev20.a2eaf5e43c69.png",
+      "sha256": "a2eaf5e43c6961c30c9e9623e473df05dd61599d8dd09ca958d059607243badf",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+240-elev30.037c5f6c87f7.png",
+      "sha256": "037c5f6c87f7bf01429d9ca1f83314261cccb09b8321f2800994a56d23c583a5",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+240-elev40.12767c0e212b.png",
+      "sha256": "12767c0e212bd8d7b6f3b9441d3cf0e8ecc4b3bb0b5418874a8cdd1b9d96a49e",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+240-elev50.fae90d1606a8.png",
+      "sha256": "fae90d1606a83f51bd1c6921730529da82dc9af2e170553fd32c0d0f8d637b09",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+240-elev60.d390c91172f9.png",
+      "sha256": "d390c91172f9002f98ba904553081b95dac287076c8318db19ecefb8e200d5b5",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+240-elev70.00fa803d7c9d.png",
+      "sha256": "00fa803d7c9d627e496aae959e07764ca4f493370d066e780451168814fe8175",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+270-elev20.dae2da2190f6.png",
+      "sha256": "dae2da2190f61a5ddd8b8c9ea568ec83cb9d98940629c703cbb105244900548e",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+270-elev30.171db8a8007d.png",
+      "sha256": "171db8a8007d5fd1a523e32083e5821ac8ceb8419169a891523dbef6d84a5285",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+270-elev40.4774082c3668.png",
+      "sha256": "4774082c3668c1f98473849b1b3ee78b6210efde02e92bb9c5e0240fceea35a1",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+270-elev50.0cf81144980f.png",
+      "sha256": "0cf81144980f313abded724d8374da1265694cba20d2f76b006cc88f71719c37",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+270-elev60.bc1f30afe49f.png",
+      "sha256": "bc1f30afe49f0dc72cb7fa2d43cdc7b8db6569571a8009cc6b62d41d9b3f3053",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+270-elev70.082a928634ca.png",
+      "sha256": "082a928634caa4610d5f45c09cdc9cdb64e4b2f48c56ae35c36d350c12d31687",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+300-elev20.7a6e022b3130.png",
+      "sha256": "7a6e022b3130bf324696db6facdaf826a90e6e8c9640aeb936bbb46dd277b518",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+300-elev30.fb025f152e58.png",
+      "sha256": "fb025f152e582d8db91644650a6fb80415be204411b7f0f966961aa1f39ca9f4",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+300-elev40.717733ee6861.png",
+      "sha256": "717733ee6861ddc89bde35f6a054f402f27b5196f153f7c371b30a8a5354ea44",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+300-elev50.6832998245fa.png",
+      "sha256": "6832998245faa5a6c0c2932c83aea50c9c2a965f6a9690337c62e1aa6b3c60df",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+300-elev60.c99b4abbba6d.png",
+      "sha256": "c99b4abbba6dcd752210d9099f020a948223140d2877a645feddae6c63d4a407",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+300-elev70.bec15d26b63c.png",
+      "sha256": "bec15d26b63c3d4c987453d7fa598f968370dc60b4fc9b5480b4a6544b610b75",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+330-elev20.b398f3239e69.png",
+      "sha256": "b398f3239e697786f9f61c452aa2a2b48e20f6ad3bc2c15e91eb1f3ce2633704",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+330-elev30.6b23a44211a3.png",
+      "sha256": "6b23a44211a33cff398c4c1f2360c6c9e0291ef62c51d2bb1d8e5dd1f1404ed0",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+330-elev40.8137ab4e60c2.png",
+      "sha256": "8137ab4e60c21fdb9a292663c2d68c6773889064a6655327ee30c95b690d0463",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+330-elev50.a71b87487d43.png",
+      "sha256": "a71b87487d4385ff0f38106a3107421258afbcdb3b04b8f298167b76c3a1a528",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+330-elev60.94e65e9d9dd2.png",
+      "sha256": "94e65e9d9dd2471158b11051062ca621de40144c1a4246eebb28e2fef428db42",
+      "byteEqual": true
+    },
+    {
+      "path": "public/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+330-elev70.a5442f4904a5.png",
+      "sha256": "a5442f4904a5840c8f040d62d28e3b08488278fe3378a28dd97b1f0f3131c30c",
+      "byteEqual": true
+    }
+  ]
+}

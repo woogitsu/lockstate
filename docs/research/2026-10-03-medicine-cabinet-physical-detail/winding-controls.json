@@ -1,0 +1,34 @@
+{
+  "controls": [
+    {
+      "control": "producer-only-reversed-hinge-winding",
+      "exitCode": 1,
+      "sourceFilesByteEqualBaseline": true,
+      "vertexBytesChangedByWinding": false
+    },
+    {
+      "control": "loaded-only-reversed-hinge-winding",
+      "exitCode": 1,
+      "sourceFilesByteEqualBaseline": true,
+      "vertexBytesChangedByWinding": false
+    },
+    {
+      "control": "exact-restored-winding-verify",
+      "exitCode": 0,
+      "sourceFilesByteEqualBaseline": true,
+      "vertexBytesChangedByWinding": null
+    }
+  ],
+  "builderBytesRestored": true,
+  "wrapperBytesRestored": true,
+  "sourceIdentities": [
+    {
+      "path": "assets\\source\\blender\\fixture.medicine-cabinet.variants.blend",
+      "sha256": "17670457233caef94855cdaf64b2cf1bd3c8623318941cbd3ce2e5c50224ac75"
+    },
+    {
+      "path": "assets\\source\\blender\\fixture.medicine-cabinet.angled-detail.blend",
+      "sha256": "f03b6fc2d33d83c069b181073616ae95031839e130d890b9f5374cfd947be5ea"
+    }
+  ]
+}

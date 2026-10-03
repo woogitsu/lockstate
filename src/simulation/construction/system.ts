@@ -686,7 +686,8 @@ export class ConstructionSystem implements SystemRegistration {
             this.orders.set(order.id, order);
             return;
           }
-          if (this.pendingRoomTemplateClaims?.(tile, order.placementSequence) === true) {
+          if (this.world.getSquareStructure(tile) !== 0 || this.hasPendingSquareStructureAt(tile) ||
+              this.pendingRoomTemplateClaims?.(tile, order.placementSequence) === true) {
             this.setState(order, 'failed');
             order.failReason = 'unbuildable';
             this.orders.set(order.id, order);
@@ -717,6 +718,15 @@ export class ConstructionSystem implements SystemRegistration {
     return SUBMISSION_FAIL_REASONS[buildability.reason] ?? 'unbuildable';
   }
 
+  /** A paid, unfinished square owns the same tile its completion will occupy. */
+  private hasPendingSquareStructureAt(tile: TilePosition): boolean {
+    for (const candidate of this.orders.values()) {
+      if (candidate.footprint === 'square' && candidate.state !== 'completed' &&
+          candidate.state !== 'cancelled' && candidate.state !== 'failed' &&
+          candidate.location.x === tile.x && candidate.location.y === tile.y) return true;
+    }
+    return false;
+  }
   /**
    * The other order this exact request duplicates, or `undefined` if none
    * claims the same ground (issue #514).
@@ -796,6 +806,7 @@ export class ConstructionSystem implements SystemRegistration {
    * one -- so the raw `Map` is walked directly rather than through
    * `orderedOrders()`, which would pay for a sort this method has no use for.
    */
+
   private duplicateClaim(order: BuildOrder, definition: BuildableDefinition): BuildOrder | undefined {
     const edge = resolveBuildEdge(order);
     const isObjectBuildable = definition.placesObjectId !== undefined;
