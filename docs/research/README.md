@@ -100,7 +100,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 
 | Record | Question it answered | Decision it fed |
 | --- | --- | --- |
-| [Object rotation FullHD review preparation](./2026-10-03-object-rotation-review-native-prep/README.md) | Does the fourth draft action fit at public UI scale100/200 and own actual oriented preflight? | Unapproved #2019 branch: real oriented source omission/restore proof,51 focused GREEN and2 native cases collected; geometry/screenshots still pending sole lease. |
+| [Object rotation FullHD review preparation](./2026-10-03-object-rotation-review-native-prep/README.md) | Does the fourth draft action fit at public UI scale100/200 and own actual oriented preflight? | Unapproved #2019: actual2 native layout RED; real q1 purchases/whole SaveLoad and ghost-only0→900 pixel omission/restore observed; corrected candidate pending. |
 | [Individual object rotation UI draft](./2026-10-03-individual-object-rotation-ui-draft/README.md) | Can both source input paths rotate one object and cancel a stale held release? | Separate #2019 interaction/copy review; geometry and preview collision verdict remain pending. |
 | [Individual object preflight](./2026-10-03-individual-object-preflight/CONSUMER.md) | Can an exact worker verdict share actual admission and stay current under a stationary ghost? | DRAFT query proposal; mounted source consumer, real publication/ownership/V8 and mutation proof; native pending |
 | [Individual object rotation command](./2026-10-03-individual-object-rotation-command/README.md) | Does optional individual facing reach actual purchases, full footprints and whole V8? | Approved #2019 command fields; public interaction/copy remains a separate review. |

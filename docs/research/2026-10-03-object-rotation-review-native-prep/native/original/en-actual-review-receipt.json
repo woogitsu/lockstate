@@ -1,0 +1,3023 @@
+{
+  "receipts": [
+    {
+      "scale": 100,
+      "state": "selected-q0",
+      "actual": {
+        "viewport": {
+          "width": 1920,
+          "height": 1080,
+          "dpr": 1,
+          "visualScale": 1
+        },
+        "uiScale": "100",
+        "row": {
+          "x": 1582,
+          "y": 557,
+          "width": 313,
+          "height": 44
+        },
+        "panel": {
+          "x": 1569,
+          "y": 161,
+          "width": 339,
+          "height": 617.5625
+        },
+        "gap": 8,
+        "flexWrap": "nowrap",
+        "flowWidth": 313,
+        "flowButtonCount": 4,
+        "overflowWidth": 0,
+        "buttons": [
+          {
+            "className": "ui-action hud-build__arm",
+            "text": "Place on map",
+            "x": 1582,
+            "y": 557,
+            "width": 96.609375,
+            "height": 44,
+            "minimumHeight": 44,
+            "position": "static",
+            "minWidth": "0px",
+            "flexBasis": "auto",
+            "flexGrow": "1",
+            "flexShrink": "1",
+            "padding": [
+              "8px",
+              "8px"
+            ],
+            "labelStyle": {
+              "whiteSpace": "normal",
+              "overflowWrap": "break-word"
+            },
+            "ink": [
+              {
+                "x": 1618.109375,
+                "y": 562,
+                "width": 48.390625,
+                "height": 17
+              },
+              {
+                "x": 1629.5625,
+                "y": 579,
+                "width": 25.46875,
+                "height": 17
+              }
+            ],
+            "insideRow": true,
+            "insidePanel": true,
+            "insideViewport": true,
+            "labelInside": true,
+            "inkInside": true,
+            "labelFits": true,
+            "hit": true
+          },
+          {
+            "className": "ui-action hud-build__remove",
+            "text": "Remove",
+            "x": 1686.609375,
+            "y": 557,
+            "width": 64.046875,
+            "height": 44,
+            "minimumHeight": 44,
+            "position": "static",
+            "minWidth": "auto",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "0",
+            "padding": [
+              "8px",
+              "8px"
+            ],
+            "labelStyle": {
+              "whiteSpace": "normal",
+              "overflowWrap": "break-word"
+            },
+            "ink": [
+              {
+                "x": 1695.609375,
+                "y": 570.5,
+                "width": 46.046875,
+                "height": 17
+              }
+            ],
+            "insideRow": true,
+            "insidePanel": true,
+            "insideViewport": true,
+            "labelInside": true,
+            "inkInside": true,
+            "labelFits": true,
+            "hit": true
+          },
+          {
+            "className": "ui-action hud-build__buy-toggle",
+            "text": "Buy",
+            "x": 1758.65625,
+            "y": 557,
+            "width": 39.109375,
+            "height": 44,
+            "minimumHeight": 44,
+            "position": "static",
+            "minWidth": "auto",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "0",
+            "padding": [
+              "8px",
+              "8px"
+            ],
+            "labelStyle": {
+              "whiteSpace": "normal",
+              "overflowWrap": "break-word"
+            },
+            "ink": [
+              {
+                "x": 1767.65625,
+                "y": 570.5,
+                "width": 21.109375,
+                "height": 17
+              }
+            ],
+            "insideRow": true,
+            "insidePanel": true,
+            "insideViewport": true,
+            "labelInside": true,
+            "inkInside": true,
+            "labelFits": true,
+            "hit": true
+          },
+          {
+            "className": "ui-action hud-build__rotate-object",
+            "text": "Rotate object 0°",
+            "x": 1805.765625,
+            "y": 557,
+            "width": 89.234375,
+            "height": 44,
+            "minimumHeight": 44,
+            "position": "static",
+            "minWidth": "auto",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "1",
+            "padding": [
+              "8px",
+              "8px"
+            ],
+            "labelStyle": {
+              "whiteSpace": "normal",
+              "overflowWrap": "break-word"
+            },
+            "ink": [
+              {
+                "x": 1831.75,
+                "y": 562,
+                "width": 37.25,
+                "height": 17
+              },
+              {
+                "x": 1824.828125,
+                "y": 579,
+                "width": 51.09375,
+                "height": 17
+              }
+            ],
+            "insideRow": true,
+            "insidePanel": true,
+            "insideViewport": true,
+            "labelInside": true,
+            "inkInside": true,
+            "labelFits": true,
+            "hit": true
+          }
+        ]
+      }
+    },
+    {
+      "scale": 100,
+      "state": "armed-q0",
+      "actual": {
+        "viewport": {
+          "width": 1920,
+          "height": 1080,
+          "dpr": 1,
+          "visualScale": 1
+        },
+        "uiScale": "100",
+        "row": {
+          "x": 1582,
+          "y": 557,
+          "width": 313,
+          "height": 44
+        },
+        "panel": {
+          "x": 1569,
+          "y": 161,
+          "width": 339,
+          "height": 617.5625
+        },
+        "gap": 8,
+        "flexWrap": "nowrap",
+        "flowWidth": 313,
+        "flowButtonCount": 4,
+        "overflowWidth": 0,
+        "buttons": [
+          {
+            "className": "ui-action hud-build__arm",
+            "text": "Stop placing",
+            "x": 1582,
+            "y": 557,
+            "width": 94.28125,
+            "height": 44,
+            "minimumHeight": 44,
+            "position": "static",
+            "minWidth": "0px",
+            "flexBasis": "auto",
+            "flexGrow": "1",
+            "flexShrink": "1",
+            "padding": [
+              "8px",
+              "8px"
+            ],
+            "labelStyle": {
+              "whiteSpace": "normal",
+              "overflowWrap": "break-word"
+            },
+            "ink": [
+              {
+                "x": 1628.0625,
+                "y": 562,
+                "width": 26.15625,
+                "height": 17
+              },
+              {
+                "x": 1620.34375,
+                "y": 579,
+                "width": 41.578125,
+                "height": 17
+              }
+            ],
+            "insideRow": true,
+            "insidePanel": true,
+            "insideViewport": true,
+            "labelInside": true,
+            "inkInside": true,
+            "labelFits": true,
+            "hit": true
+          },
+          {
+            "className": "ui-action hud-build__remove",
+            "text": "Remove",
+            "x": 1684.28125,
+            "y": 557,
+            "width": 64.046875,
+            "height": 44,
+            "minimumHeight": 44,
+            "position": "static",
+            "minWidth": "auto",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "0",
+            "padding": [
+              "8px",
+              "8px"
+            ],
+            "labelStyle": {
+              "whiteSpace": "normal",
+              "overflowWrap": "break-word"
+            },
+            "ink": [
+              {
+                "x": 1693.28125,
+                "y": 570.5,
+                "width": 46.046875,
+                "height": 17
+              }
+            ],
+            "insideRow": true,
+            "insidePanel": true,
+            "insideViewport": true,
+            "labelInside": true,
+            "inkInside": true,
+            "labelFits": true,
+            "hit": true
+          },
+          {
+            "className": "ui-action hud-build__buy-toggle",
+            "text": "Buy",
+            "x": 1756.328125,
+            "y": 557,
+            "width": 39.109375,
+            "height": 44,
+            "minimumHeight": 44,
+            "position": "static",
+            "minWidth": "auto",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "0",
+            "padding": [
+              "8px",
+              "8px"
+            ],
+            "labelStyle": {
+              "whiteSpace": "normal",
+              "overflowWrap": "break-word"
+            },
+            "ink": [
+              {
+                "x": 1765.328125,
+                "y": 570.5,
+                "width": 21.109375,
+                "height": 17
+              }
+            ],
+            "insideRow": true,
+            "insidePanel": true,
+            "insideViewport": true,
+            "labelInside": true,
+            "inkInside": true,
+            "labelFits": true,
+            "hit": true
+          },
+          {
+            "className": "ui-action hud-build__rotate-object",
+            "text": "Rotate object 0°",
+            "x": 1803.4375,
+            "y": 557,
+            "width": 91.5625,
+            "height": 44,
+            "minimumHeight": 44,
+            "position": "static",
+            "minWidth": "auto",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "1",
+            "padding": [
+              "8px",
+              "8px"
+            ],
+            "labelStyle": {
+              "whiteSpace": "normal",
+              "overflowWrap": "break-word"
+            },
+            "ink": [
+              {
+                "x": 1830.59375,
+                "y": 562,
+                "width": 37.25,
+                "height": 17
+              },
+              {
+                "x": 1823.671875,
+                "y": 579,
+                "width": 51.09375,
+                "height": 17
+              }
+            ],
+            "insideRow": true,
+            "insidePanel": true,
+            "insideViewport": true,
+            "labelInside": true,
+            "inkInside": true,
+            "labelFits": true,
+            "hit": true
+          }
+        ]
+      }
+    },
+    {
+      "scale": 100,
+      "state": "armed-q1",
+      "actual": {
+        "viewport": {
+          "width": 1920,
+          "height": 1080,
+          "dpr": 1,
+          "visualScale": 1
+        },
+        "uiScale": "100",
+        "row": {
+          "x": 1582,
+          "y": 557,
+          "width": 313,
+          "height": 44
+        },
+        "panel": {
+          "x": 1569,
+          "y": 161,
+          "width": 339,
+          "height": 617.5625
+        },
+        "gap": 8,
+        "flexWrap": "nowrap",
+        "flowWidth": 313,
+        "flowButtonCount": 4,
+        "overflowWidth": 0,
+        "buttons": [
+          {
+            "className": "ui-action hud-build__arm",
+            "text": "Stop placing",
+            "x": 1582,
+            "y": 557,
+            "width": 91.53125,
+            "height": 44,
+            "minimumHeight": 44,
+            "position": "static",
+            "minWidth": "0px",
+            "flexBasis": "auto",
+            "flexGrow": "1",
+            "flexShrink": "1",
+            "padding": [
+              "8px",
+              "8px"
+            ],
+            "labelStyle": {
+              "whiteSpace": "normal",
+              "overflowWrap": "break-word"
+            },
+            "ink": [
+              {
+                "x": 1626.6875,
+                "y": 562,
+                "width": 26.15625,
+                "height": 17
+              },
+              {
+                "x": 1618.96875,
+                "y": 579,
+                "width": 41.578125,
+                "height": 17
+              }
+            ],
+            "insideRow": true,
+            "insidePanel": true,
+            "insideViewport": true,
+            "labelInside": true,
+            "inkInside": true,
+            "labelFits": true,
+            "hit": true
+          },
+          {
+            "className": "ui-action hud-build__remove",
+            "text": "Remove",
+            "x": 1681.53125,
+            "y": 557,
+            "width": 64.046875,
+            "height": 44,
+            "minimumHeight": 44,
+            "position": "static",
+            "minWidth": "auto",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "0",
+            "padding": [
+              "8px",
+              "8px"
+            ],
+            "labelStyle": {
+              "whiteSpace": "normal",
+              "overflowWrap": "break-word"
+            },
+            "ink": [
+              {
+                "x": 1690.53125,
+                "y": 570.5,
+                "width": 46.046875,
+                "height": 17
+              }
+            ],
+            "insideRow": true,
+            "insidePanel": true,
+            "insideViewport": true,
+            "labelInside": true,
+            "inkInside": true,
+            "labelFits": true,
+            "hit": true
+          },
+          {
+            "className": "ui-action hud-build__buy-toggle",
+            "text": "Buy",
+            "x": 1753.578125,
+            "y": 557,
+            "width": 39.109375,
+            "height": 44,
+            "minimumHeight": 44,
+            "position": "static",
+            "minWidth": "auto",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "0",
+            "padding": [
+              "8px",
+              "8px"
+            ],
+            "labelStyle": {
+              "whiteSpace": "normal",
+              "overflowWrap": "break-word"
+            },
+            "ink": [
+              {
+                "x": 1762.578125,
+                "y": 570.5,
+                "width": 21.109375,
+                "height": 17
+              }
+            ],
+            "insideRow": true,
+            "insidePanel": true,
+            "insideViewport": true,
+            "labelInside": true,
+            "inkInside": true,
+            "labelFits": true,
+            "hit": true
+          },
+          {
+            "className": "ui-action hud-build__rotate-object",
+            "text": "Rotate object 90°",
+            "x": 1800.6875,
+            "y": 557,
+            "width": 94.3125,
+            "height": 44,
+            "minimumHeight": 44,
+            "position": "static",
+            "minWidth": "auto",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "1",
+            "padding": [
+              "8px",
+              "8px"
+            ],
+            "labelStyle": {
+              "whiteSpace": "normal",
+              "overflowWrap": "break-word"
+            },
+            "ink": [
+              {
+                "x": 1829.21875,
+                "y": 562,
+                "width": 37.25,
+                "height": 17
+              },
+              {
+                "x": 1818.796875,
+                "y": 579,
+                "width": 58.09375,
+                "height": 17
+              }
+            ],
+            "insideRow": true,
+            "insidePanel": true,
+            "insideViewport": true,
+            "labelInside": true,
+            "inkInside": true,
+            "labelFits": true,
+            "hit": true
+          }
+        ]
+      }
+    },
+    {
+      "scale": 200,
+      "state": "selected-q0",
+      "actual": {
+        "viewport": {
+          "width": 1920,
+          "height": 1080,
+          "dpr": 1,
+          "visualScale": 1
+        },
+        "uiScale": "200",
+        "row": {
+          "x": 1242,
+          "y": 726,
+          "width": 629,
+          "height": 88
+        },
+        "panel": {
+          "x": 1217,
+          "y": 389,
+          "width": 679,
+          "height": 414.15625
+        },
+        "gap": 16,
+        "flexWrap": "nowrap",
+        "flowWidth": 452.046875,
+        "flowButtonCount": 3,
+        "overflowWidth": 0,
+        "buttons": [
+          {
+            "className": "ui-action hud-build__arm",
+            "text": "Place on map",
+            "x": 1411.59375,
+            "y": 390,
+            "width": 371.40625,
+            "height": 88,
+            "minimumHeight": 88,
+            "position": "absolute",
+            "minWidth": "0px",
+            "flexBasis": "auto",
+            "flexGrow": "1",
+            "flexShrink": "1",
+            "padding": [
+              "16px",
+              "16px"
+            ],
+            "labelStyle": {
+              "whiteSpace": "normal",
+              "overflowWrap": "break-word"
+            },
+            "ink": [
+              {
+                "x": 1543.890625,
+                "y": 416.5,
+                "width": 154.796875,
+                "height": 35
+              }
+            ],
+            "insideRow": true,
+            "insidePanel": true,
+            "insideViewport": true,
+            "labelInside": true,
+            "inkInside": true,
+            "labelFits": true,
+            "hit": true
+          },
+          {
+            "className": "ui-action hud-build__remove",
+            "text": "Remove",
+            "x": 1242,
+            "y": 726,
+            "width": 126.078125,
+            "height": 88,
+            "minimumHeight": 88,
+            "position": "static",
+            "minWidth": "auto",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "0",
+            "padding": [
+              "16px",
+              "16px"
+            ],
+            "labelStyle": {
+              "whiteSpace": "normal",
+              "overflowWrap": "break-word"
+            },
+            "ink": [
+              {
+                "x": 1259,
+                "y": 752.5,
+                "width": 92.078125,
+                "height": 35
+              }
+            ],
+            "insideRow": true,
+            "insidePanel": false,
+            "insideViewport": true,
+            "labelInside": true,
+            "inkInside": true,
+            "labelFits": true,
+            "hit": true
+          },
+          {
+            "className": "ui-action hud-build__buy-toggle",
+            "text": "Buy",
+            "x": 1384.078125,
+            "y": 726,
+            "width": 76.203125,
+            "height": 88,
+            "minimumHeight": 88,
+            "position": "static",
+            "minWidth": "auto",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "0",
+            "padding": [
+              "16px",
+              "16px"
+            ],
+            "labelStyle": {
+              "whiteSpace": "normal",
+              "overflowWrap": "break-word"
+            },
+            "ink": [
+              {
+                "x": 1401.078125,
+                "y": 752.5,
+                "width": 42.203125,
+                "height": 35
+              }
+            ],
+            "insideRow": true,
+            "insidePanel": false,
+            "insideViewport": true,
+            "labelInside": true,
+            "inkInside": true,
+            "labelFits": true,
+            "hit": true
+          },
+          {
+            "className": "ui-action hud-build__rotate-object",
+            "text": "Rotate object 0°",
+            "x": 1476.28125,
+            "y": 726,
+            "width": 217.765625,
+            "height": 88,
+            "minimumHeight": 88,
+            "position": "static",
+            "minWidth": "auto",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "1",
+            "padding": [
+              "16px",
+              "16px"
+            ],
+            "labelStyle": {
+              "whiteSpace": "normal",
+              "overflowWrap": "break-word"
+            },
+            "ink": [
+              {
+                "x": 1493.28125,
+                "y": 752.5,
+                "width": 183.765625,
+                "height": 35
+              }
+            ],
+            "insideRow": true,
+            "insidePanel": false,
+            "insideViewport": true,
+            "labelInside": true,
+            "inkInside": true,
+            "labelFits": true,
+            "hit": true
+          }
+        ]
+      }
+    },
+    {
+      "scale": 200,
+      "state": "armed-q0",
+      "actual": {
+        "viewport": {
+          "width": 1920,
+          "height": 1080,
+          "dpr": 1,
+          "visualScale": 1
+        },
+        "uiScale": "200",
+        "row": {
+          "x": 1242,
+          "y": 726,
+          "width": 629,
+          "height": 88
+        },
+        "panel": {
+          "x": 1217,
+          "y": 389,
+          "width": 679,
+          "height": 414.15625
+        },
+        "gap": 16,
+        "flexWrap": "nowrap",
+        "flowWidth": 452.046875,
+        "flowButtonCount": 3,
+        "overflowWidth": 0,
+        "buttons": [
+          {
+            "className": "ui-action hud-build__arm",
+            "text": "Stop placing",
+            "x": 1411.59375,
+            "y": 390,
+            "width": 371.40625,
+            "height": 88,
+            "minimumHeight": 88,
+            "position": "absolute",
+            "minWidth": "0px",
+            "flexBasis": "auto",
+            "flexGrow": "1",
+            "flexShrink": "1",
+            "padding": [
+              "16px",
+              "16px"
+            ],
+            "labelStyle": {
+              "whiteSpace": "normal",
+              "overflowWrap": "break-word"
+            },
+            "ink": [
+              {
+                "x": 1550,
+                "y": 416.5,
+                "width": 142.578125,
+                "height": 35
+              }
+            ],
+            "insideRow": true,
+            "insidePanel": true,
+            "insideViewport": true,
+            "labelInside": true,
+            "inkInside": true,
+            "labelFits": true,
+            "hit": true
+          },
+          {
+            "className": "ui-action hud-build__remove",
+            "text": "Remove",
+            "x": 1242,
+            "y": 726,
+            "width": 126.078125,
+            "height": 88,
+            "minimumHeight": 88,
+            "position": "static",
+            "minWidth": "auto",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "0",
+            "padding": [
+              "16px",
+              "16px"
+            ],
+            "labelStyle": {
+              "whiteSpace": "normal",
+              "overflowWrap": "break-word"
+            },
+            "ink": [
+              {
+                "x": 1259,
+                "y": 752.5,
+                "width": 92.078125,
+                "height": 35
+              }
+            ],
+            "insideRow": true,
+            "insidePanel": false,
+            "insideViewport": true,
+            "labelInside": true,
+            "inkInside": true,
+            "labelFits": true,
+            "hit": true
+          },
+          {
+            "className": "ui-action hud-build__buy-toggle",
+            "text": "Buy",
+            "x": 1384.078125,
+            "y": 726,
+            "width": 76.203125,
+            "height": 88,
+            "minimumHeight": 88,
+            "position": "static",
+            "minWidth": "auto",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "0",
+            "padding": [
+              "16px",
+              "16px"
+            ],
+            "labelStyle": {
+              "whiteSpace": "normal",
+              "overflowWrap": "break-word"
+            },
+            "ink": [
+              {
+                "x": 1401.078125,
+                "y": 752.5,
+                "width": 42.203125,
+                "height": 35
+              }
+            ],
+            "insideRow": true,
+            "insidePanel": false,
+            "insideViewport": true,
+            "labelInside": true,
+            "inkInside": true,
+            "labelFits": true,
+            "hit": true
+          },
+          {
+            "className": "ui-action hud-build__rotate-object",
+            "text": "Rotate object 0°",
+            "x": 1476.28125,
+            "y": 726,
+            "width": 217.765625,
+            "height": 88,
+            "minimumHeight": 88,
+            "position": "static",
+            "minWidth": "auto",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "1",
+            "padding": [
+              "16px",
+              "16px"
+            ],
+            "labelStyle": {
+              "whiteSpace": "normal",
+              "overflowWrap": "break-word"
+            },
+            "ink": [
+              {
+                "x": 1493.28125,
+                "y": 752.5,
+                "width": 183.765625,
+                "height": 35
+              }
+            ],
+            "insideRow": true,
+            "insidePanel": false,
+            "insideViewport": true,
+            "labelInside": true,
+            "inkInside": true,
+            "labelFits": true,
+            "hit": true
+          }
+        ]
+      }
+    },
+    {
+      "scale": 200,
+      "state": "armed-q1",
+      "actual": {
+        "viewport": {
+          "width": 1920,
+          "height": 1080,
+          "dpr": 1,
+          "visualScale": 1
+        },
+        "uiScale": "200",
+        "row": {
+          "x": 1242,
+          "y": 714,
+          "width": 629,
+          "height": 88
+        },
+        "panel": {
+          "x": 1217,
+          "y": 389,
+          "width": 679,
+          "height": 414.15625
+        },
+        "gap": 16,
+        "flexWrap": "nowrap",
+        "flowWidth": 466.0625,
+        "flowButtonCount": 3,
+        "overflowWidth": 0,
+        "buttons": [
+          {
+            "className": "ui-action hud-build__arm",
+            "text": "Stop placing",
+            "x": 1411.59375,
+            "y": 378,
+            "width": 371.40625,
+            "height": 88,
+            "minimumHeight": 88,
+            "position": "absolute",
+            "minWidth": "0px",
+            "flexBasis": "auto",
+            "flexGrow": "1",
+            "flexShrink": "1",
+            "padding": [
+              "16px",
+              "16px"
+            ],
+            "labelStyle": {
+              "whiteSpace": "normal",
+              "overflowWrap": "break-word"
+            },
+            "ink": [
+              {
+                "x": 1550,
+                "y": 404.5,
+                "width": 142.578125,
+                "height": 35
+              }
+            ],
+            "insideRow": true,
+            "insidePanel": false,
+            "insideViewport": true,
+            "labelInside": true,
+            "inkInside": true,
+            "labelFits": true,
+            "hit": true
+          },
+          {
+            "className": "ui-action hud-build__remove",
+            "text": "Remove",
+            "x": 1242,
+            "y": 714,
+            "width": 126.078125,
+            "height": 88,
+            "minimumHeight": 88,
+            "position": "static",
+            "minWidth": "auto",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "0",
+            "padding": [
+              "16px",
+              "16px"
+            ],
+            "labelStyle": {
+              "whiteSpace": "normal",
+              "overflowWrap": "break-word"
+            },
+            "ink": [
+              {
+                "x": 1259,
+                "y": 740.5,
+                "width": 92.078125,
+                "height": 35
+              }
+            ],
+            "insideRow": true,
+            "insidePanel": true,
+            "insideViewport": true,
+            "labelInside": true,
+            "inkInside": true,
+            "labelFits": true,
+            "hit": true
+          },
+          {
+            "className": "ui-action hud-build__buy-toggle",
+            "text": "Buy",
+            "x": 1384.078125,
+            "y": 714,
+            "width": 76.203125,
+            "height": 88,
+            "minimumHeight": 88,
+            "position": "static",
+            "minWidth": "auto",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "0",
+            "padding": [
+              "16px",
+              "16px"
+            ],
+            "labelStyle": {
+              "whiteSpace": "normal",
+              "overflowWrap": "break-word"
+            },
+            "ink": [
+              {
+                "x": 1401.078125,
+                "y": 740.5,
+                "width": 42.203125,
+                "height": 35
+              }
+            ],
+            "insideRow": true,
+            "insidePanel": true,
+            "insideViewport": true,
+            "labelInside": true,
+            "inkInside": true,
+            "labelFits": true,
+            "hit": true
+          },
+          {
+            "className": "ui-action hud-build__rotate-object",
+            "text": "Rotate object 90°",
+            "x": 1476.28125,
+            "y": 714,
+            "width": 231.78125,
+            "height": 88,
+            "minimumHeight": 88,
+            "position": "static",
+            "minWidth": "auto",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "1",
+            "padding": [
+              "16px",
+              "16px"
+            ],
+            "labelStyle": {
+              "whiteSpace": "normal",
+              "overflowWrap": "break-word"
+            },
+            "ink": [
+              {
+                "x": 1493.28125,
+                "y": 740.5,
+                "width": 197.78125,
+                "height": 35
+              }
+            ],
+            "insideRow": true,
+            "insidePanel": true,
+            "insideViewport": true,
+            "labelInside": true,
+            "inkInside": true,
+            "labelFits": true,
+            "hit": true
+          }
+        ]
+      }
+    }
+  ],
+  "trace": {
+    "requests": [
+      {
+        "protocolVersion": 1,
+        "messageId": "11333d07-47d0-4cc0-8abd-5323a81267c9",
+        "kind": "simulation/request-projection",
+        "payload": {
+          "projectionId": "world/object-placement-preflight",
+          "target": {
+            "kind": "object-placement",
+            "definitionId": "desk-wooden",
+            "anchor": {
+              "x": 16,
+              "y": 14
+            },
+            "quarterTurns": 1
+          }
+        }
+      },
+      {
+        "protocolVersion": 1,
+        "messageId": "c538ec80-3fc3-4d5a-9858-d58dc6fde9cb",
+        "kind": "simulation/request-projection",
+        "payload": {
+          "projectionId": "world/object-placement-preflight",
+          "target": {
+            "kind": "object-placement",
+            "definitionId": "desk-wooden",
+            "anchor": {
+              "x": 16,
+              "y": 14
+            },
+            "quarterTurns": 2
+          }
+        }
+      },
+      {
+        "protocolVersion": 1,
+        "messageId": "b9857a69-657c-4051-a21d-d62327400967",
+        "kind": "simulation/request-projection",
+        "payload": {
+          "projectionId": "world/object-placement-preflight",
+          "target": {
+            "kind": "object-placement",
+            "definitionId": "desk-wooden",
+            "anchor": {
+              "x": 16,
+              "y": 14
+            },
+            "quarterTurns": 3
+          }
+        }
+      },
+      {
+        "protocolVersion": 1,
+        "messageId": "0d2df101-0619-457e-b306-6fb8b43f35c1",
+        "kind": "simulation/request-projection",
+        "payload": {
+          "projectionId": "world/object-placement-preflight",
+          "target": {
+            "kind": "object-placement",
+            "definitionId": "desk-wooden",
+            "anchor": {
+              "x": 16,
+              "y": 14
+            }
+          }
+        }
+      },
+      {
+        "protocolVersion": 1,
+        "messageId": "2279a656-2563-47a3-ab8c-f766228d4db8",
+        "kind": "simulation/request-projection",
+        "payload": {
+          "projectionId": "world/object-placement-preflight",
+          "target": {
+            "kind": "object-placement",
+            "definitionId": "desk-wooden",
+            "anchor": {
+              "x": 16,
+              "y": 14
+            },
+            "quarterTurns": 1
+          }
+        }
+      },
+      {
+        "protocolVersion": 1,
+        "messageId": "ddfec5a1-d370-4121-833d-5673509250a3",
+        "kind": "simulation/request-projection",
+        "payload": {
+          "projectionId": "world/object-placement-preflight",
+          "target": {
+            "kind": "object-placement",
+            "definitionId": "desk-wooden",
+            "anchor": {
+              "x": 16,
+              "y": 16
+            },
+            "quarterTurns": 1
+          }
+        }
+      },
+      {
+        "protocolVersion": 1,
+        "messageId": "2ae55ee8-d897-41f9-8f2b-3effb4bc9870",
+        "kind": "simulation/request-projection",
+        "payload": {
+          "projectionId": "world/object-placement-preflight",
+          "target": {
+            "kind": "object-placement",
+            "definitionId": "desk-wooden",
+            "anchor": {
+              "x": 16,
+              "y": 16
+            },
+            "quarterTurns": 2
+          }
+        }
+      },
+      {
+        "protocolVersion": 1,
+        "messageId": "f7d92e0d-152b-4a6f-a382-9af8556d4f72",
+        "kind": "simulation/request-projection",
+        "payload": {
+          "projectionId": "world/object-placement-preflight",
+          "target": {
+            "kind": "object-placement",
+            "definitionId": "desk-wooden",
+            "anchor": {
+              "x": 16,
+              "y": 16
+            },
+            "quarterTurns": 3
+          }
+        }
+      },
+      {
+        "protocolVersion": 1,
+        "messageId": "00086950-9dcf-479c-b964-339105ff3ecd",
+        "kind": "simulation/request-projection",
+        "payload": {
+          "projectionId": "world/object-placement-preflight",
+          "target": {
+            "kind": "object-placement",
+            "definitionId": "desk-wooden",
+            "anchor": {
+              "x": 16,
+              "y": 16
+            }
+          }
+        }
+      },
+      {
+        "protocolVersion": 1,
+        "messageId": "dae5f6d8-858c-4c2f-a7f2-3f11f6b8f087",
+        "kind": "simulation/request-projection",
+        "payload": {
+          "projectionId": "world/object-placement-preflight",
+          "target": {
+            "kind": "object-placement",
+            "definitionId": "desk-wooden",
+            "anchor": {
+              "x": 16,
+              "y": 16
+            },
+            "quarterTurns": 1
+          }
+        }
+      }
+    ],
+    "replies": [
+      {
+        "protocolVersion": 1,
+        "messageId": "af70a542-6f2a-46ed-a90c-a9e9203a12ff",
+        "replyTo": "11333d07-47d0-4cc0-8abd-5323a81267c9",
+        "kind": "simulation/projection",
+        "payload": {
+          "projectionId": "world/object-placement-preflight",
+          "tick": 0,
+          "view": {
+            "transport": "structured-clone",
+            "schemaId": "object-placement-preflight",
+            "schemaVersion": 1,
+            "data": {
+              "ok": true,
+              "footprint": [
+                {
+                  "x": 16,
+                  "y": 14
+                },
+                {
+                  "x": 16,
+                  "y": 15
+                }
+              ],
+              "catalogueCostMinorUnits": 130,
+              "roomInstanceId": "room.yard:12:10"
+            }
+          }
+        }
+      },
+      {
+        "protocolVersion": 1,
+        "messageId": "e86cc901-dcd4-4f76-a44e-f1153bb58dca",
+        "replyTo": "c538ec80-3fc3-4d5a-9858-d58dc6fde9cb",
+        "kind": "simulation/projection",
+        "payload": {
+          "projectionId": "world/object-placement-preflight",
+          "tick": 0,
+          "view": {
+            "transport": "structured-clone",
+            "schemaId": "object-placement-preflight",
+            "schemaVersion": 1,
+            "data": {
+              "ok": true,
+              "footprint": [
+                {
+                  "x": 16,
+                  "y": 14
+                },
+                {
+                  "x": 17,
+                  "y": 14
+                }
+              ],
+              "catalogueCostMinorUnits": 130,
+              "roomInstanceId": "room.yard:12:10"
+            }
+          }
+        }
+      },
+      {
+        "protocolVersion": 1,
+        "messageId": "76736020-e357-408b-b125-07aa2eb0161e",
+        "replyTo": "b9857a69-657c-4051-a21d-d62327400967",
+        "kind": "simulation/projection",
+        "payload": {
+          "projectionId": "world/object-placement-preflight",
+          "tick": 0,
+          "view": {
+            "transport": "structured-clone",
+            "schemaId": "object-placement-preflight",
+            "schemaVersion": 1,
+            "data": {
+              "ok": true,
+              "footprint": [
+                {
+                  "x": 16,
+                  "y": 14
+                },
+                {
+                  "x": 16,
+                  "y": 15
+                }
+              ],
+              "catalogueCostMinorUnits": 130,
+              "roomInstanceId": "room.yard:12:10"
+            }
+          }
+        }
+      },
+      {
+        "protocolVersion": 1,
+        "messageId": "11524192-fbfd-4a7e-a5fc-de89c9e470c1",
+        "replyTo": "0d2df101-0619-457e-b306-6fb8b43f35c1",
+        "kind": "simulation/projection",
+        "payload": {
+          "projectionId": "world/object-placement-preflight",
+          "tick": 0,
+          "view": {
+            "transport": "structured-clone",
+            "schemaId": "object-placement-preflight",
+            "schemaVersion": 1,
+            "data": {
+              "ok": true,
+              "footprint": [
+                {
+                  "x": 16,
+                  "y": 14
+                },
+                {
+                  "x": 17,
+                  "y": 14
+                }
+              ],
+              "catalogueCostMinorUnits": 130,
+              "roomInstanceId": "room.yard:12:10"
+            }
+          }
+        }
+      },
+      {
+        "protocolVersion": 1,
+        "messageId": "69e68ee6-48d6-42c4-98cd-5c6aae3f567f",
+        "replyTo": "2279a656-2563-47a3-ab8c-f766228d4db8",
+        "kind": "simulation/projection",
+        "payload": {
+          "projectionId": "world/object-placement-preflight",
+          "tick": 0,
+          "view": {
+            "transport": "structured-clone",
+            "schemaId": "object-placement-preflight",
+            "schemaVersion": 1,
+            "data": {
+              "ok": true,
+              "footprint": [
+                {
+                  "x": 16,
+                  "y": 14
+                },
+                {
+                  "x": 16,
+                  "y": 15
+                }
+              ],
+              "catalogueCostMinorUnits": 130,
+              "roomInstanceId": "room.yard:12:10"
+            }
+          }
+        }
+      },
+      {
+        "protocolVersion": 1,
+        "messageId": "040fa457-b07c-4654-80f3-745744a636db",
+        "replyTo": "ddfec5a1-d370-4121-833d-5673509250a3",
+        "kind": "simulation/projection",
+        "payload": {
+          "projectionId": "world/object-placement-preflight",
+          "tick": 0,
+          "view": {
+            "transport": "structured-clone",
+            "schemaId": "object-placement-preflight",
+            "schemaVersion": 1,
+            "data": {
+              "ok": true,
+              "footprint": [
+                {
+                  "x": 16,
+                  "y": 16
+                },
+                {
+                  "x": 16,
+                  "y": 17
+                }
+              ],
+              "catalogueCostMinorUnits": 130,
+              "roomInstanceId": "room.yard:12:10"
+            }
+          }
+        }
+      },
+      {
+        "protocolVersion": 1,
+        "messageId": "6b0158e8-ad50-42ab-9fa6-c40dac04bb3c",
+        "replyTo": "2ae55ee8-d897-41f9-8f2b-3effb4bc9870",
+        "kind": "simulation/projection",
+        "payload": {
+          "projectionId": "world/object-placement-preflight",
+          "tick": 0,
+          "view": {
+            "transport": "structured-clone",
+            "schemaId": "object-placement-preflight",
+            "schemaVersion": 1,
+            "data": {
+              "ok": true,
+              "footprint": [
+                {
+                  "x": 16,
+                  "y": 16
+                },
+                {
+                  "x": 17,
+                  "y": 16
+                }
+              ],
+              "catalogueCostMinorUnits": 130,
+              "roomInstanceId": "room.yard:12:10"
+            }
+          }
+        }
+      },
+      {
+        "protocolVersion": 1,
+        "messageId": "6b8da325-4b4d-4e43-bbee-399bf5cf31b5",
+        "replyTo": "f7d92e0d-152b-4a6f-a382-9af8556d4f72",
+        "kind": "simulation/projection",
+        "payload": {
+          "projectionId": "world/object-placement-preflight",
+          "tick": 0,
+          "view": {
+            "transport": "structured-clone",
+            "schemaId": "object-placement-preflight",
+            "schemaVersion": 1,
+            "data": {
+              "ok": true,
+              "footprint": [
+                {
+                  "x": 16,
+                  "y": 16
+                },
+                {
+                  "x": 16,
+                  "y": 17
+                }
+              ],
+              "catalogueCostMinorUnits": 130,
+              "roomInstanceId": "room.yard:12:10"
+            }
+          }
+        }
+      },
+      {
+        "protocolVersion": 1,
+        "messageId": "8c1562e9-ab60-491c-8315-9eb6cc64c946",
+        "replyTo": "00086950-9dcf-479c-b964-339105ff3ecd",
+        "kind": "simulation/projection",
+        "payload": {
+          "projectionId": "world/object-placement-preflight",
+          "tick": 0,
+          "view": {
+            "transport": "structured-clone",
+            "schemaId": "object-placement-preflight",
+            "schemaVersion": 1,
+            "data": {
+              "ok": true,
+              "footprint": [
+                {
+                  "x": 16,
+                  "y": 16
+                },
+                {
+                  "x": 17,
+                  "y": 16
+                }
+              ],
+              "catalogueCostMinorUnits": 130,
+              "roomInstanceId": "room.yard:12:10"
+            }
+          }
+        }
+      },
+      {
+        "protocolVersion": 1,
+        "messageId": "4c42b808-7a77-45d4-a46f-bf80f98a5e4e",
+        "replyTo": "dae5f6d8-858c-4c2f-a7f2-3f11f6b8f087",
+        "kind": "simulation/projection",
+        "payload": {
+          "projectionId": "world/object-placement-preflight",
+          "tick": 0,
+          "view": {
+            "transport": "structured-clone",
+            "schemaId": "object-placement-preflight",
+            "schemaVersion": 1,
+            "data": {
+              "ok": true,
+              "footprint": [
+                {
+                  "x": 16,
+                  "y": 16
+                },
+                {
+                  "x": 16,
+                  "y": 17
+                }
+              ],
+              "catalogueCostMinorUnits": 130,
+              "roomInstanceId": "room.yard:12:10"
+            }
+          }
+        }
+      }
+    ],
+    "clicks": [
+      {
+        "className": "ui-action hud-build__rotate-object",
+        "trusted": true,
+        "detail": 1
+      },
+      {
+        "className": "ui-action hud-build__rotate-object",
+        "trusted": true,
+        "detail": 0
+      },
+      {
+        "className": "ui-action hud-build__rotate-object",
+        "trusted": true,
+        "detail": 0
+      },
+      {
+        "className": "ui-action hud-build__rotate-object",
+        "trusted": true,
+        "detail": 0
+      },
+      {
+        "className": "ui-action hud-build__rotate-object",
+        "trusted": true,
+        "detail": 0
+      },
+      {
+        "className": "ui-action hud-build__rotate-object",
+        "trusted": true,
+        "detail": 0
+      },
+      {
+        "className": "ui-action hud-build__rotate-object",
+        "trusted": true,
+        "detail": 0
+      },
+      {
+        "className": "ui-action hud-build__rotate-object",
+        "trusted": true,
+        "detail": 0
+      },
+      {
+        "className": "ui-action hud-build__rotate-object",
+        "trusted": true,
+        "detail": 1
+      },
+      {
+        "className": "ui-action hud-build__rotate-object",
+        "trusted": true,
+        "detail": 0
+      },
+      {
+        "className": "ui-action hud-build__rotate-object",
+        "trusted": true,
+        "detail": 0
+      },
+      {
+        "className": "ui-action hud-build__rotate-object",
+        "trusted": true,
+        "detail": 0
+      },
+      {
+        "className": "ui-action hud-build__rotate-object",
+        "trusted": true,
+        "detail": 0
+      }
+    ],
+    "keys": [
+      {
+        "code": "Enter",
+        "trusted": true,
+        "rotateFocused": true
+      },
+      {
+        "code": "Space",
+        "trusted": true,
+        "rotateFocused": true
+      },
+      {
+        "code": "KeyR",
+        "trusted": true,
+        "rotateFocused": true
+      },
+      {
+        "code": "Enter",
+        "trusted": true,
+        "rotateFocused": true
+      },
+      {
+        "code": "Enter",
+        "trusted": true,
+        "rotateFocused": true
+      },
+      {
+        "code": "Enter",
+        "trusted": true,
+        "rotateFocused": true
+      },
+      {
+        "code": "Enter",
+        "trusted": true,
+        "rotateFocused": true
+      },
+      {
+        "code": "Enter",
+        "trusted": true,
+        "rotateFocused": true
+      },
+      {
+        "code": "Enter",
+        "trusted": true,
+        "rotateFocused": true
+      },
+      {
+        "code": "Space",
+        "trusted": true,
+        "rotateFocused": true
+      },
+      {
+        "code": "KeyR",
+        "trusted": true,
+        "rotateFocused": true
+      },
+      {
+        "code": "Enter",
+        "trusted": true,
+        "rotateFocused": true
+      },
+      {
+        "code": "Enter",
+        "trusted": true,
+        "rotateFocused": true
+      }
+    ],
+    "mouse": [
+      {
+        "type": "mousedown",
+        "x": 1659,
+        "y": 219,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1659,
+        "y": 219,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 1581,
+        "y": 22,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1581,
+        "y": 22,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 65,
+        "y": 277,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 65,
+        "y": 277,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 1738,
+        "y": 686,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1738,
+        "y": 686,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 1738,
+        "y": 877,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1738,
+        "y": 877,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 1644,
+        "y": 868,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1644,
+        "y": 868,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 1704,
+        "y": 910,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1704,
+        "y": 910,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 65,
+        "y": 225,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 65,
+        "y": 225,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 1738,
+        "y": 391,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1738,
+        "y": 391,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 1738,
+        "y": 408,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1738,
+        "y": 408,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 1630,
+        "y": 579,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1630,
+        "y": 579,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 1849,
+        "y": 579,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1849,
+        "y": 579,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 523,
+        "y": 926,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 523,
+        "y": 926,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 352,
+        "y": 892,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 352,
+        "y": 892,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 966,
+        "y": 544,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": true
+      },
+      {
+        "type": "mouseup",
+        "x": 966,
+        "y": 544,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": true
+      },
+      {
+        "type": "mousedown",
+        "x": 966,
+        "y": 544,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": true
+      },
+      {
+        "type": "mouseup",
+        "x": 966,
+        "y": 544,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": true
+      },
+      {
+        "type": "mousedown",
+        "x": 1867,
+        "y": 237,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1867,
+        "y": 237,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 1373,
+        "y": 116,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1373,
+        "y": 116,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 1654,
+        "y": 130,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1654,
+        "y": 130,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 1587,
+        "y": 151,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1587,
+        "y": 151,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 1520,
+        "y": 265,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1520,
+        "y": 265,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 1454,
+        "y": 287,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1454,
+        "y": 287,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 131,
+        "y": 519,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 131,
+        "y": 519,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 1556,
+        "y": 673,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1556,
+        "y": 673,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 1597,
+        "y": 434,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1597,
+        "y": 434,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 1556,
+        "y": 673,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1556,
+        "y": 673,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 1597,
+        "y": 434,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1597,
+        "y": 434,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 1585,
+        "y": 758,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1585,
+        "y": 758,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 560,
+        "y": 878,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 560,
+        "y": 878,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 971,
+        "y": 678,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": true
+      },
+      {
+        "type": "mouseup",
+        "x": 971,
+        "y": 678,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": true
+      },
+      {
+        "type": "mousedown",
+        "x": 971,
+        "y": 678,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": true
+      },
+      {
+        "type": "mouseup",
+        "x": 971,
+        "y": 678,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": true
+      },
+      {
+        "type": "mousedown",
+        "x": 1816,
+        "y": 527,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1816,
+        "y": 527,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 1309,
+        "y": 125,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1309,
+        "y": 125,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 131,
+        "y": 415,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 131,
+        "y": 415,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 1715,
+        "y": 504,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1715,
+        "y": 504,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 1397,
+        "y": 742,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1397,
+        "y": 742,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      }
+    ]
+  },
+  "commands": [
+    {
+      "type": "ZoneRoom",
+      "roomId": "room.yard",
+      "x": 12,
+      "y": 10,
+      "width": 8,
+      "height": 8
+    },
+    {
+      "type": "PlaceObject",
+      "orderId": "object-717d6a33-d624-4003-b54c-84e369b5668f",
+      "definitionId": "desk-wooden",
+      "x": 16,
+      "y": 14,
+      "quarterTurns": 1
+    },
+    {
+      "type": "PlaceObject",
+      "orderId": "object-124ef06d-08d1-426e-a033-858b9b918753",
+      "definitionId": "desk-wooden",
+      "x": 16,
+      "y": 16,
+      "quarterTurns": 1
+    }
+  ],
+  "whole": {
+    "masterSeed": 2750026813,
+    "kernel": {
+      "tick": 0,
+      "expectedSequence": 3,
+      "rngStates": [
+        {
+          "name": "contraband.detection",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              3287960738,
+              4075061393,
+              2149928280,
+              3687358709
+            ]
+          }
+        },
+        {
+          "name": "contraband.intelligence",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              478247477,
+              883953783,
+              3092696187,
+              2592545783
+            ]
+          }
+        },
+        {
+          "name": "contraband.introduction",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              2562854578,
+              671054041,
+              1643483007,
+              626075982
+            ]
+          }
+        },
+        {
+          "name": "identity.actor-name",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              174179400,
+              544476859,
+              452092721,
+              1754843039
+            ]
+          }
+        },
+        {
+          "name": "prisoners.classification",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              2238055009,
+              2369462024,
+              3701573187,
+              4216156672
+            ]
+          }
+        },
+        {
+          "name": "prisoners.sentence",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              4206300913,
+              2856199605,
+              4222507773,
+              2717139400
+            ]
+          }
+        }
+      ],
+      "commands": []
+    },
+    "world": {
+      "version": 1,
+      "chunkSize": 32,
+      "ownedChunks": [
+        {
+          "x": 0,
+          "y": 0
+        }
+      ],
+      "chunks": [
+        {
+          "x": 0,
+          "y": 0,
+          "lifecycle": "loaded",
+          "geometryRevision": 0,
+          "contentRevision": 64,
+          "dirty": true,
+          "terrain": [
+            [
+              0,
+              1024
+            ]
+          ],
+          "topEdge": [
+            [
+              0,
+              1024
+            ]
+          ],
+          "leftEdge": [
+            [
+              0,
+              1024
+            ]
+          ],
+          "zoning": [
+            [
+              0,
+              332
+            ],
+            [
+              9,
+              8
+            ],
+            [
+              0,
+              24
+            ],
+            [
+              9,
+              8
+            ],
+            [
+              0,
+              24
+            ],
+            [
+              9,
+              8
+            ],
+            [
+              0,
+              24
+            ],
+            [
+              9,
+              8
+            ],
+            [
+              0,
+              24
+            ],
+            [
+              9,
+              8
+            ],
+            [
+              0,
+              24
+            ],
+            [
+              9,
+              8
+            ],
+            [
+              0,
+              24
+            ],
+            [
+              9,
+              8
+            ],
+            [
+              0,
+              24
+            ],
+            [
+              9,
+              8
+            ],
+            [
+              0,
+              460
+            ]
+          ]
+        }
+      ]
+    },
+    "construction": {
+      "orders": [
+        {
+          "id": "object-717d6a33-d624-4003-b54c-84e369b5668f",
+          "definitionId": "desk-wooden",
+          "location": {
+            "x": 16,
+            "y": 14
+          },
+          "objectOrientation": 1,
+          "placementSequence": 1,
+          "state": "approved",
+          "progress": 0,
+          "materialsAllocated": []
+        },
+        {
+          "id": "object-124ef06d-08d1-426e-a033-858b9b918753",
+          "definitionId": "desk-wooden",
+          "location": {
+            "x": 16,
+            "y": 16
+          },
+          "objectOrientation": 1,
+          "placementSequence": 2,
+          "state": "approved",
+          "progress": 0,
+          "materialsAllocated": []
+        }
+      ],
+      "undoStack": [
+        [
+          "object-717d6a33-d624-4003-b54c-84e369b5668f"
+        ]
+      ],
+      "redoStack": [],
+      "currentTransaction": [
+        "object-124ef06d-08d1-426e-a033-858b9b918753"
+      ],
+      "currentTransactionId": "object-124ef06d-08d1-426e-a033-858b9b918753"
+    },
+    "entities": {
+      "capacity": 5000,
+      "nextAvailableIndex": 0,
+      "maxActiveIndex": -1,
+      "generations": [
+        [
+          0,
+          5000
+        ]
+      ],
+      "freeIndices": [],
+      "alive": [
+        [
+          0,
+          5000
+        ]
+      ]
+    },
+    "simulation": {
+      "regimeSchedules": [
+        {
+          "classificationGroupId": "general-population",
+          "blocks": [
+            {
+              "startTickOfDay": 0,
+              "endTickOfDay": 400,
+              "allowedCategories": [
+                "sleep"
+              ]
+            },
+            {
+              "startTickOfDay": 400,
+              "endTickOfDay": 500,
+              "allowedCategories": [
+                "meal",
+                "hygiene"
+              ]
+            },
+            {
+              "startTickOfDay": 500,
+              "endTickOfDay": 1000,
+              "allowedCategories": [
+                "work",
+                "education",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 1000,
+              "endTickOfDay": 1200,
+              "allowedCategories": [
+                "recreation",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 1200,
+              "endTickOfDay": 1300,
+              "allowedCategories": [
+                "meal"
+              ]
+            },
+            {
+              "startTickOfDay": 1300,
+              "endTickOfDay": 1800,
+              "allowedCategories": [
+                "work",
+                "education",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 1800,
+              "endTickOfDay": 2000,
+              "allowedCategories": [
+                "recreation",
+                "hygiene",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 2000,
+              "endTickOfDay": 2100,
+              "allowedCategories": [
+                "meal"
+              ]
+            },
+            {
+              "startTickOfDay": 2100,
+              "endTickOfDay": 2300,
+              "allowedCategories": [
+                "recreation",
+                "hygiene",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 2300,
+              "endTickOfDay": 2400,
+              "allowedCategories": [
+                "sleep"
+              ]
+            }
+          ]
+        },
+        {
+          "classificationGroupId": "high-risk",
+          "blocks": [
+            {
+              "startTickOfDay": 0,
+              "endTickOfDay": 2000,
+              "allowedCategories": [
+                "sleep",
+                "meal",
+                "hygiene"
+              ]
+            },
+            {
+              "startTickOfDay": 2000,
+              "endTickOfDay": 2200,
+              "allowedCategories": [
+                "recreation",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 2200,
+              "endTickOfDay": 2400,
+              "allowedCategories": [
+                "sleep",
+                "meal",
+                "hygiene"
+              ]
+            }
+          ]
+        }
+      ],
+      "prisoners": {
+        "components": {
+          "activeLength": 0,
+          "sentenceLengthTicks": [],
+          "priorIncidentsAtIntake": [],
+          "sentenceEndTick": [],
+          "riskTier": [],
+          "classificationGroupIndex": [],
+          "intakeStage": [],
+          "solitarySanctionEndTick": [],
+          "injured": [],
+          "needs": {
+            "hunger": [],
+            "sleep": [],
+            "hygiene": [],
+            "bladder": [],
+            "safety": [],
+            "recreation": []
+          },
+          "actionIndex": [],
+          "actionPhase": [],
+          "phaseStartedAtTick": [],
+          "needFulfilledLastTick": [],
+          "tileX": [],
+          "tileY": []
+        },
+        "coldState": {
+          "accommodationInstanceId": [],
+          "currentActionTargetInstanceId": []
+        },
+        "roomInstanceDefinitions": [
+          {
+            "instanceId": "room.yard:12:10",
+            "roomCatalogId": "room.yard",
+            "anchorTile": {
+              "x": 12,
+              "y": 10
+            },
+            "width": 8,
+            "height": 8
+          }
+        ],
+        "roomInstanceOccupancy": [
+          [
+            "room.yard:12:10",
+            []
+          ]
+        ]
+      },
+      "operations": {
+        "containers": [
+          [
+            "construction-materials",
+            []
+          ]
+        ],
+        "jobs": [],
+        "jobWorkers": {
+          "workers": [],
+          "busy": []
+        },
+        "electricity": {
+          "type": "electricity",
+          "nodes": [],
+          "connections": [],
+          "failedNodeIds": []
+        },
+        "water": {
+          "type": "water",
+          "nodes": [],
+          "connections": [],
+          "failedNodeIds": []
+        }
+      },
+      "navigation": {
+        "doors": []
+      },
+      "security": {
+        "sectorDefinitions": [
+          {
+            "id": "security-sector.prison",
+            "gradeId": "grade.general",
+            "doorIds": [],
+            "postTile": {
+              "x": 16,
+              "y": 16
+            }
+          }
+        ],
+        "sectorControlStates": [
+          [
+            "security-sector.prison",
+            "normal"
+          ]
+        ],
+        "guards": {
+          "entityStore": {
+            "capacity": 500,
+            "nextAvailableIndex": 0,
+            "maxActiveIndex": -1,
+            "generations": [
+              [
+                0,
+                500
+              ]
+            ],
+            "freeIndices": [],
+            "alive": [
+              [
+                0,
+                500
+              ]
+            ]
+          },
+          "records": []
+        },
+        "schedules": [
+          {
+            "sectorId": "security-sector.prison",
+            "blocks": [
+              {
+                "startTickOfDay": 0,
+                "endTickOfDay": 2400,
+                "requiredGuardCount": 1
+              }
+            ]
+          }
+        ],
+        "deployment": {
+          "metrics": {
+            "deploymentFailures": 0
+          }
+        },
+        "patrol": {
+          "metrics": {
+            "loopsCompletedOnTime": 0,
+            "loopsCompletedLate": 0,
+            "loopsMissed": 0
+          }
+        }
+      },
+      "contraband": {
+        "items": [],
+        "intelligence": [],
+        "intelligenceSequence": 0,
+        "informants": [],
+        "confiscations": [],
+        "searchPolicies": [
+          {
+            "scope": "cell",
+            "requiredGuardCount": 1,
+            "dwellTicksPerTarget": 40,
+            "baseDetectionProbability": 0.7,
+            "concealmentPenaltyPerPoint": 0.05,
+            "intelligenceConfidenceBonus": 0.2
+          },
+          {
+            "scope": "delivery",
+            "requiredGuardCount": 1,
+            "dwellTicksPerTarget": 25,
+            "baseDetectionProbability": 0.6,
+            "concealmentPenaltyPerPoint": 0.05,
+            "intelligenceConfidenceBonus": 0.15
+          },
+          {
+            "scope": "person",
+            "requiredGuardCount": 1,
+            "dwellTicksPerTarget": 20,
+            "baseDetectionProbability": 0.75,
+            "concealmentPenaltyPerPoint": 0.06,
+            "intelligenceConfidenceBonus": 0.2
+          },
+          {
+            "scope": "sector",
+            "requiredGuardCount": 1,
+            "dwellTicksPerTarget": 15,
+            "baseDetectionProbability": 0.5,
+            "concealmentPenaltyPerPoint": 0.05,
+            "intelligenceConfidenceBonus": 0.25
+          }
+        ],
+        "searchContainerLocations": [],
+        "search": {
+          "queue": [],
+          "active": [],
+          "metrics": {
+            "itemsDiscovered": 0,
+            "itemsMissed": 0,
+            "searchesCompleted": 0,
+            "searchesCancelled": 0
+          }
+        }
+      },
+      "economy": {
+        "treasury": {
+          "balanceMinorUnits": 24740
+        },
+        "procurement": {
+          "pending": [
+            {
+              "orderId": "jit:0:item.wood-plank:0",
+              "itemId": "item.wood-plank",
+              "quantity": 2,
+              "arrivesAtTick": 100,
+              "paidMinorUnits": 130
+            },
+            {
+              "orderId": "jit:0:item.wood-plank:2",
+              "itemId": "item.wood-plank",
+              "quantity": 2,
+              "arrivesAtTick": 100,
+              "paidMinorUnits": 130
+            }
+          ]
+        },
+        "payroll": {
+          "unpaidWagesMinorUnits": 0
+        }
+      },
+      "objects": {
+        "placedObjects": []
+      },
+      "alerts": {
+        "sequence": 1,
+        "records": [
+          {
+            "sequence": 1,
+            "tick": 0,
+            "type": "rooms.zoned",
+            "roomNameKey": "room.yard.name"
+          }
+        ],
+        "dismissed": []
+      },
+      "inFlight": {
+        "navigation": {
+          "pending": [],
+          "results": []
+        },
+        "prisoners": {
+          "locomotion": {
+            "walks": [],
+            "headings": []
+          },
+          "pathRequestIds": [],
+          "requestSequence": 0
+        },
+        "guards": {
+          "locomotion": {
+            "walks": [],
+            "headings": []
+          },
+          "deploymentRequestSequence": 0,
+          "patrolRequestSequence": 0
+        },
+        "search": {
+          "requestSequence": 0,
+          "jobs": []
+        }
+      },
+      "incidents": {
+        "log": [],
+        "sectorRisk": [],
+        "gangs": {
+          "definitions": [
+            {
+              "id": "gang.alpha",
+              "territorySectorIds": [
+                "security-sector.prison"
+              ]
+            },
+            {
+              "id": "gang.beta",
+              "territorySectorIds": [
+                "security-sector.prison"
+              ]
+            }
+          ],
+          "members": [],
+          "reputation": [
+            [
+              "gang.alpha",
+              0.5
+            ],
+            [
+              "gang.beta",
+              0.5
+            ]
+          ],
+          "grudges": []
+        },
+        "tunnels": [],
+        "watchedSectorIds": [
+          "security-sector.prison"
+        ],
+        "trigger": {
+          "metrics": {
+            "incidentsTriggered": 0,
+            "riotsTriggered": 0,
+            "retaliationsTriggered": 0
+          },
+          "sequence": 0
+        },
+        "response": {
+          "metrics": {
+            "incidentsResolved": 0,
+            "incidentsLapsed": 0,
+            "respondersDispatched": 0,
+            "routeFailures": 0
+          }
+        }
+      }
+    },
+    "identity": {
+      "version": 1,
+      "poolId": "placeholder.v1",
+      "entries": []
+    }
+  }
+}

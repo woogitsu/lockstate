@@ -1,0 +1,188 @@
+{
+  "viewport": {
+    "width": 1920,
+    "height": 1080,
+    "dpr": 1,
+    "visualScale": 1
+  },
+  "uiScale": "100",
+  "row": {
+    "x": 1582,
+    "y": 557,
+    "width": 313,
+    "height": 44
+  },
+  "panel": {
+    "x": 1569,
+    "y": 161,
+    "width": 339,
+    "height": 617.5625
+  },
+  "gap": 8,
+  "flexWrap": "nowrap",
+  "flowWidth": 313,
+  "flowButtonCount": 4,
+  "overflowWidth": 0,
+  "buttons": [
+    {
+      "className": "ui-action hud-build__arm",
+      "text": "Place on map",
+      "x": 1582,
+      "y": 557,
+      "width": 96.609375,
+      "height": 44,
+      "minimumHeight": 44,
+      "position": "static",
+      "minWidth": "0px",
+      "flexBasis": "auto",
+      "flexGrow": "1",
+      "flexShrink": "1",
+      "padding": [
+        "8px",
+        "8px"
+      ],
+      "labelStyle": {
+        "whiteSpace": "normal",
+        "overflowWrap": "break-word"
+      },
+      "ink": [
+        {
+          "x": 1618.109375,
+          "y": 562,
+          "width": 48.390625,
+          "height": 17
+        },
+        {
+          "x": 1629.5625,
+          "y": 579,
+          "width": 25.46875,
+          "height": 17
+        }
+      ],
+      "insideRow": true,
+      "insidePanel": true,
+      "insideViewport": true,
+      "labelInside": true,
+      "inkInside": true,
+      "labelFits": true,
+      "hit": true
+    },
+    {
+      "className": "ui-action hud-build__remove",
+      "text": "Remove",
+      "x": 1686.609375,
+      "y": 557,
+      "width": 64.046875,
+      "height": 44,
+      "minimumHeight": 44,
+      "position": "static",
+      "minWidth": "auto",
+      "flexBasis": "auto",
+      "flexGrow": "0",
+      "flexShrink": "0",
+      "padding": [
+        "8px",
+        "8px"
+      ],
+      "labelStyle": {
+        "whiteSpace": "normal",
+        "overflowWrap": "break-word"
+      },
+      "ink": [
+        {
+          "x": 1695.609375,
+          "y": 570.5,
+          "width": 46.046875,
+          "height": 17
+        }
+      ],
+      "insideRow": true,
+      "insidePanel": true,
+      "insideViewport": true,
+      "labelInside": true,
+      "inkInside": true,
+      "labelFits": true,
+      "hit": true
+    },
+    {
+      "className": "ui-action hud-build__buy-toggle",
+      "text": "Buy",
+      "x": 1758.65625,
+      "y": 557,
+      "width": 39.109375,
+      "height": 44,
+      "minimumHeight": 44,
+      "position": "static",
+      "minWidth": "auto",
+      "flexBasis": "auto",
+      "flexGrow": "0",
+      "flexShrink": "0",
+      "padding": [
+        "8px",
+        "8px"
+      ],
+      "labelStyle": {
+        "whiteSpace": "normal",
+        "overflowWrap": "break-word"
+      },
+      "ink": [
+        {
+          "x": 1767.65625,
+          "y": 570.5,
+          "width": 21.109375,
+          "height": 17
+        }
+      ],
+      "insideRow": true,
+      "insidePanel": true,
+      "insideViewport": true,
+      "labelInside": true,
+      "inkInside": true,
+      "labelFits": true,
+      "hit": true
+    },
+    {
+      "className": "ui-action hud-build__rotate-object",
+      "text": "Rotate object 0°",
+      "x": 1805.765625,
+      "y": 557,
+      "width": 89.234375,
+      "height": 44,
+      "minimumHeight": 44,
+      "position": "static",
+      "minWidth": "auto",
+      "flexBasis": "auto",
+      "flexGrow": "0",
+      "flexShrink": "1",
+      "padding": [
+        "8px",
+        "8px"
+      ],
+      "labelStyle": {
+        "whiteSpace": "normal",
+        "overflowWrap": "break-word"
+      },
+      "ink": [
+        {
+          "x": 1831.75,
+          "y": 562,
+          "width": 37.25,
+          "height": 17
+        },
+        {
+          "x": 1824.828125,
+          "y": 579,
+          "width": 51.09375,
+          "height": 17
+        }
+      ],
+      "insideRow": true,
+      "insidePanel": true,
+      "insideViewport": true,
+      "labelInside": true,
+      "inkInside": true,
+      "labelFits": true,
+      "hit": true
+    }
+  ]
+}

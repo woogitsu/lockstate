@@ -1,0 +1,188 @@
+{
+  "viewport": {
+    "width": 1920,
+    "height": 1080,
+    "dpr": 1,
+    "visualScale": 1
+  },
+  "uiScale": "100",
+  "row": {
+    "x": 1582,
+    "y": 557,
+    "width": 313,
+    "height": 44
+  },
+  "panel": {
+    "x": 1569,
+    "y": 161,
+    "width": 339,
+    "height": 617.5625
+  },
+  "gap": 8,
+  "flexWrap": "nowrap",
+  "flowWidth": 313,
+  "flowButtonCount": 4,
+  "overflowWidth": 0,
+  "buttons": [
+    {
+      "className": "ui-action hud-build__arm",
+      "text": "Przestań stawiać",
+      "x": 1582,
+      "y": 557,
+      "width": 111.328125,
+      "height": 44,
+      "minimumHeight": 44,
+      "position": "static",
+      "minWidth": "0px",
+      "flexBasis": "auto",
+      "flexGrow": "1",
+      "flexShrink": "1",
+      "padding": [
+        "8px",
+        "8px"
+      ],
+      "labelStyle": {
+        "whiteSpace": "normal",
+        "overflowWrap": "break-word"
+      },
+      "ink": [
+        {
+          "x": 1625.46875,
+          "y": 562,
+          "width": 48.375,
+          "height": 17
+        },
+        {
+          "x": 1628.8125,
+          "y": 579,
+          "width": 41.703125,
+          "height": 17
+        }
+      ],
+      "insideRow": true,
+      "insidePanel": true,
+      "insideViewport": true,
+      "labelInside": true,
+      "inkInside": true,
+      "labelFits": true,
+      "hit": true
+    },
+    {
+      "className": "ui-action hud-build__remove",
+      "text": "Usuń",
+      "x": 1701.328125,
+      "y": 557,
+      "width": 47.171875,
+      "height": 44,
+      "minimumHeight": 44,
+      "position": "static",
+      "minWidth": "auto",
+      "flexBasis": "auto",
+      "flexGrow": "0",
+      "flexShrink": "0",
+      "padding": [
+        "8px",
+        "8px"
+      ],
+      "labelStyle": {
+        "whiteSpace": "normal",
+        "overflowWrap": "break-word"
+      },
+      "ink": [
+        {
+          "x": 1710.328125,
+          "y": 570.5,
+          "width": 29.171875,
+          "height": 17
+        }
+      ],
+      "insideRow": true,
+      "insidePanel": true,
+      "insideViewport": true,
+      "labelInside": true,
+      "inkInside": true,
+      "labelFits": true,
+      "hit": true
+    },
+    {
+      "className": "ui-action hud-build__buy-toggle",
+      "text": "Kup",
+      "x": 1756.5,
+      "y": 557,
+      "width": 40.546875,
+      "height": 44,
+      "minimumHeight": 44,
+      "position": "static",
+      "minWidth": "auto",
+      "flexBasis": "auto",
+      "flexGrow": "0",
+      "flexShrink": "0",
+      "padding": [
+        "8px",
+        "8px"
+      ],
+      "labelStyle": {
+        "whiteSpace": "normal",
+        "overflowWrap": "break-word"
+      },
+      "ink": [
+        {
+          "x": 1765.5,
+          "y": 570.5,
+          "width": 22.546875,
+          "height": 17
+        }
+      ],
+      "insideRow": true,
+      "insidePanel": true,
+      "insideViewport": true,
+      "labelInside": true,
+      "inkInside": true,
+      "labelFits": true,
+      "hit": true
+    },
+    {
+      "className": "ui-action hud-build__rotate-object",
+      "text": "Obróć obiekt 0°",
+      "x": 1805.046875,
+      "y": 557,
+      "width": 89.953125,
+      "height": 44,
+      "minimumHeight": 44,
+      "position": "static",
+      "minWidth": "auto",
+      "flexBasis": "auto",
+      "flexGrow": "0",
+      "flexShrink": "1",
+      "padding": [
+        "8px",
+        "8px"
+      ],
+      "labelStyle": {
+        "whiteSpace": "normal",
+        "overflowWrap": "break-word"
+      },
+      "ink": [
+        {
+          "x": 1832.21875,
+          "y": 562,
+          "width": 35.59375,
+          "height": 17
+        },
+        {
+          "x": 1824.25,
+          "y": 579,
+          "width": 51.546875,
+          "height": 17
+        }
+      ],
+      "insideRow": true,
+      "insidePanel": true,
+      "insideViewport": true,
+      "labelInside": true,
+      "inkInside": true,
+      "labelFits": true,
+      "hit": true
+    }
+  ]
+}

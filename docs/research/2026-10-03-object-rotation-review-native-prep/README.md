@@ -53,3 +53,37 @@ Actual preparation receipts: app types0, tools types0, source-only collection2 c
 ### Owner review boundary
 
 The eventual choice is whether to add this single-object quarter-turn control and the exact new copy EN `Rotate object` / PL `Obróć obiekt` in the existing action area. Existing Build, Remove, Buy, coordinates, camera controls, scale labels and room-card copy are retained. KeyR remains camera tilt; native button click/Enter/Space activates this proposed control. Approved orientation fields do not approve new copy, interaction or layout. A clickable owner choice will be prepared only after actual geometry/screenshots establish what fits; this preparation is not a release proposal with fabricated fit evidence. If the original geometry assertions fail, keep that RED and prepare a measured separate layout proposal instead of loosening them.
+
+## Actual frozen native result: layout RED, oriented interaction observed
+
+The sole build/browser lease was granted for this separate draft and has now been **returned**. Runtime subject was detached/frozen `6edb4f21001d79c8e7adb69a87d746509f048c04`; actual production Cloudflare build exit0. Own port5371, reuse false,1920×1080 CSS viewport, public UI100/200, workers1/retries0/60s/expect10 were retained. The original two cases both completed and were RED on the unchanged geometry/card assertions. They were neither skipped nor timed out. Preserve that result: **this draft does not have native layout acceptance**.
+
+Both languages reached the final real worker/input receipt after q1 queries, exact two-tile130 quotes, original held release with no purchase/whole-state change, fresh actual q1 purchases at `(16,14)` and `(16,16)`, treasury24870 then24740, two approved `objectOrientation:1` orders, and whole actual public Save/Load equality. Trusted input records and exact actual commands/snapshots are retained. This proves those observations within a failing layout case; it does not turn the overall case GREEN.
+
+| Actual original observation | EN | PL |
+| --- | --- | --- |
+| UI100 Buy width, required≥44 |39.109375px|40.546875px|
+| UI100 action row |313×44px|313×44px|
+| UI200 normal-flow action row width/height |629×88px|629×88px|
+| UI200 selected/armed q0 row bottom |814px|814px|
+| UI200 Build panel bottom |803.15625px|806.34375px|
+| UI200 q0 lower actions beyond panel |10.84375px|7.65625px|
+| UI200 armed q1 pinned Arm top/panel top |381/389px|381/389px|
+| UI200 last four cards top/bottom |1059/1240px|1059/1275px|
+
+At100 the action labels fit and hit testing succeeds; Buy still violates the original44px width assertion. At200 the labels/hits also succeed, but panel containment fails in q0 and the pinned Arm is8px above the panel in the q1 capture. The last four cards are Storage/Delivery/Garbage/Utility (their PL counterparts are preserved); their labels/accessibility match and text fits, but their centres lie below the1080px viewport. No floor, assertion, card or control was removed to hide this.
+
+**Attribution limit:** this is an actual draft measurement, not an executed three-action baseline. The original `fa830` UI draft changed no `hud.css` or template-card producer; its q0 selected footprint already existed before that draft. Buy remains `flex:0 0 auto` with its existing word/padding and no44px minimum width. The FullHD absolute Arm/panel scrolling rule and four-column template CSS also predate the new Rotate button. These source facts make those existing rules concrete repair candidates; they do not justify blaming every200% stack failure on the new rotation control or claiming a baseline screenshot that was never taken. A corrected review candidate must retain all original checks and distinguish local Build changes from a broader reserved panel/card allocation choice.
+
+### Genuine visual omission and exact restoration
+
+One bounded EN negative changed only the actual World ghost consumer: `paintObjectPreview()` painted the retained rectangle as2×1 while leaving the actual q1 worker/query/command producer untouched. Its build exit0 and real q1 allowed vertical verdict was reached. Both independent secondary30×30 interiors changed **0/0** RGB pixels; the dedicated orientation observation became RED. In the original EN/PL100/200 cases the actual values were900/900 each. Restore returned World source byte-exact SHA256 `5a5258d14bee3de06185696c56fd6cfcdbb20001a11786328b432c475a8518eb`; all six original emitted index/client/worker/CSS/catalog files were byte-exact after rebuild. The two bounded restored cases again recorded900/900 at both scales/languages and completed the q1 purchases/whole Save/Load controls. They remained **2 RED on geometry/cards**. Visual-consumption restoration must not be reported as overall native GREEN.
+
+`native-observed-receipt.json` contains exact original/negative/restored compiled hashes, real measurements, RGB counts, commands, whole snapshots and file hashes. `native/original/` retains original JSON, actual screenshots and paired pixel crops; `native/negative/` retains the real omission; `native/restored/` retains restoration controls. Full traces remain in the named scratch directory with SHA256 references, not in Git. `collect-native-evidence.mjs` copies only those actual outputs and preserves raw logs. No runtime, CSS or binding change remains from the omission.
+
+Actual visible review screenshots:
+
+- [EN100](./native/original/en-ui100-armed-q1-fullhd.png), [EN200](./native/original/en-ui200-armed-q1-fullhd.png).
+- [PL100](./native/original/pl-ui100-armed-q1-fullhd.png), [PL200](./native/original/pl-ui200-armed-q1-fullhd.png).
+
+The next step is a separate unapproved corrected candidate, not owner approval of this RED layout. No further build/browser run is authorized until a new sole lease is granted.
