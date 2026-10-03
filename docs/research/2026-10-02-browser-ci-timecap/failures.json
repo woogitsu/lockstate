@@ -1,0 +1,774 @@
+{
+  "run": 37039088544,
+  "job": 110949744645,
+  "head": "3eeeddc2d276714fee6a7c8420270b78d2e49b3c",
+  "artifact": 11245699264,
+  "completedAt": "2026-10-02T18:56:59Z",
+  "browserStep": [
+    "2026-10-02T17:29:28Z",
+    "2026-10-02T18:56:33Z"
+  ],
+  "declaredTests": 887,
+  "workers": 1,
+  "completedReports": {
+    "passed": 330,
+    "failed": 38,
+    "didNotRun": 4
+  },
+  "annotation": "The job has exceeded the maximum execution time of 1h30m0s",
+  "lastCompleted": "372 tests/browser/playtest-harness-arm-buildable.spec.ts:245:3 at2026-10-02T18:56:22.7668052Z",
+  "mainComparison": {
+    "run": 37032274976,
+    "job": 110924601837,
+    "head": "48da4ac330b43b8e2a8612d8dff160f2d380f05d",
+    "sourcePassed": 766,
+    "sourceStep": [
+      "2026-10-02T16:20:57Z",
+      "2026-10-02T17:45:33Z"
+    ],
+    "artifactPassed": 2
+  },
+  "failures": [
+    {
+      "folder": "app-shell-the-assembled-ap-09ec5-ith-the-keyboard-alone-411-",
+      "errors": [
+        {
+          "message": "Error: 48 Tab presses never reached the north edge option (.hud-build__coordinates [data-choice=\"north\"]); focus ended on <input class=\"ui-number__input\">",
+          "stack": [
+            {
+              "file": "tests/browser/app-shell.spec.ts",
+              "line": 1941,
+              "column": 9,
+              "function": "walkFocus"
+            },
+            {
+              "file": "tests/browser/app-shell.spec.ts",
+              "line": 2486,
+              "column": 7,
+              "function": "orderWallRectangles"
+            },
+            {
+              "file": "tests/browser/app-shell.spec.ts",
+              "line": 7866,
+              "column": 5
+            }
+          ]
+        }
+      ],
+      "classification": "legacy edge Build setup incompatible with square controls (verified failure; fix not exercised)"
+    },
+    {
+      "folder": "app-shell-the-assembled-ap-19c86-e-same-confirm-control-411-",
+      "errors": [
+        {
+          "message": "Error: 48 Tab presses never reached the north edge option (.hud-build__coordinates [data-choice=\"north\"]); focus ended on <input class=\"ui-number__input\">",
+          "stack": [
+            {
+              "file": "tests/browser/app-shell.spec.ts",
+              "line": 1941,
+              "column": 9,
+              "function": "walkFocus"
+            },
+            {
+              "file": "tests/browser/app-shell.spec.ts",
+              "line": 2486,
+              "column": 7,
+              "function": "orderWallRectangles"
+            },
+            {
+              "file": "tests/browser/app-shell.spec.ts",
+              "line": 8147,
+              "column": 5
+            }
+          ]
+        }
+      ],
+      "classification": "legacy edge Build setup incompatible with square controls (verified failure; fix not exercised)"
+    },
+    {
+      "folder": "app-shell-the-assembled-ap-334d0-on-every-tab-at-900x600-88-",
+      "errors": [
+        {
+          "message": "Error: controls covered by something else on the overview tab at 900x600\n\nexpect(received).toEqual(expected) // deep equality\n\n- Expected  - 1\n+ Received  + 6\n\n- Array []\n+ Array [\n+   Object {\n+     \"control\": \"hud > hud__corner > select.hud-build__category \\\"View\\\"\",\n+     \"hit\": \"canvas\",\n+   },\n+ ]",
+          "stack": [
+            {
+              "file": "tests/browser/app-shell.spec.ts",
+              "line": 4043,
+              "column": 9,
+              "function": "everyControlAt"
+            },
+            {
+              "file": "tests/browser/app-shell.spec.ts",
+              "line": 5180,
+              "column": 7
+            }
+          ]
+        }
+      ],
+      "classification": "HUD hit-test obstruction (actual geometry failure; production cause not yet isolated)"
+    },
+    {
+      "folder": "app-shell-the-assembled-ap-341cc-hing-while-none-is-285-703-",
+      "errors": [
+        {
+          "message": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: 7.5\nReceived: -5.2",
+          "stack": [
+            {
+              "file": "tests/browser/app-shell.spec.ts",
+              "line": 6160,
+              "column": 31
+            }
+          ]
+        }
+      ],
+      "classification": "HUD exact geometry budget (actual measurement mismatch; source decision requires review)"
+    },
+    {
+      "folder": "app-shell-the-assembled-ap-40d88-er-never-takes-it-away-411-",
+      "errors": [
+        {
+          "message": "Error: expect(locator).toBeVisible() failed\n\nLocator: locator('.hud-build__category')\nExpected: visible\nError: strict mode violation: locator('.hud-build__category') resolved to 2 elements:\n    1) <select aria-label=\"View\" class=\"hud-build__category\">…</select> aka getByLabel('View')\n    2) <select aria-label=\"Category\" class=\"hud-build__category\">…</select> aka getByLabel('Category')\n\nCall log:\n  - Expect \"toBeVisible\" with timeout 10000ms\n  - waiting for locator('.hud-build__category')\n",
+          "stack": [
+            {
+              "file": "tests/browser/app-shell.spec.ts",
+              "line": 5874,
+              "column": 26
+            }
+          ]
+        }
+      ],
+      "classification": "stale Category selector (verified)"
+    },
+    {
+      "folder": "app-shell-the-assembled-ap-4ab0a--Regime-roster-by-tier-703-",
+      "errors": [
+        {
+          "message": "Error: 48 Tab presses never reached the north edge option (.hud-build__coordinates [data-choice=\"north\"]); focus ended on <input class=\"ui-number__input\">",
+          "stack": [
+            {
+              "file": "tests/browser/app-shell.spec.ts",
+              "line": 1941,
+              "column": 9,
+              "function": "walkFocus"
+            },
+            {
+              "file": "tests/browser/app-shell.spec.ts",
+              "line": 2486,
+              "column": 7,
+              "function": "orderWallRectangles"
+            },
+            {
+              "file": "tests/browser/app-shell.spec.ts",
+              "line": 12383,
+              "column": 5
+            }
+          ]
+        }
+      ],
+      "classification": "legacy edge Build setup incompatible with square controls (verified failure; fix not exercised)"
+    },
+    {
+      "folder": "app-shell-the-assembled-ap-562c4-n-every-tab-at-1024x768-88-",
+      "errors": [
+        {
+          "message": "Error: controls covered by something else on the overview tab at 1024x768\n\nexpect(received).toEqual(expected) // deep equality\n\n- Expected  - 1\n+ Received  + 6\n\n- Array []\n+ Array [\n+   Object {\n+     \"control\": \"hud > hud__corner > select.hud-build__category \\\"View\\\"\",\n+     \"hit\": \"canvas\",\n+   },\n+ ]",
+          "stack": [
+            {
+              "file": "tests/browser/app-shell.spec.ts",
+              "line": 4043,
+              "column": 9,
+              "function": "everyControlAt"
+            },
+            {
+              "file": "tests/browser/app-shell.spec.ts",
+              "line": 5180,
+              "column": 7
+            }
+          ]
+        }
+      ],
+      "classification": "HUD hit-test obstruction (actual geometry failure; production cause not yet isolated)"
+    },
+    {
+      "folder": "app-shell-the-assembled-ap-5ff3e-osts-the-panel-nothing-390-",
+      "errors": [
+        {
+          "message": "Error: expect(locator).toBeVisible() failed\n\nLocator: locator('.hud-build__category')\nExpected: visible\nError: strict mode violation: locator('.hud-build__category') resolved to 2 elements:\n    1) <select aria-label=\"View\" class=\"hud-build__category\">…</select> aka getByLabel('View')\n    2) <select aria-label=\"Category\" class=\"hud-build__category\">…</select> aka getByLabel('Category')\n\nCall log:\n  - Expect \"toBeVisible\" with timeout 10000ms\n  - waiting for locator('.hud-build__category')\n",
+          "stack": [
+            {
+              "file": "tests/browser/app-shell.spec.ts",
+              "line": 5400,
+              "column": 26
+            }
+          ]
+        }
+      ],
+      "classification": "stale Category selector (verified)"
+    },
+    {
+      "folder": "app-shell-the-assembled-ap-64c56-on-every-tab-at-375x812-88-",
+      "errors": [
+        {
+          "message": "Error: plans controls covered while open at 375x812\n\nexpect(received).toEqual(expected) // deep equality\n\n- Expected  -  1\n+ Received  + 14\n\n- Array []\n+ Array [\n+   Object {\n+     \"control\": \"hud > hud__rail > hud__side > ui-panel hud-build > hud-template > hud-template__coordinates > hud-template__placement > input \\\"Plan origin X\\\"\",\n+     \"hit\": \"dialog.hud-template \\\"Room plansClose plansChoose an o\\\"\",\n+   },\n+   Object {\n+     \"control\": \"hud > hud__rail > hud__side > ui-panel hud-build > hud-template > hud-template__coordinates > hud-template__placement > input \\\"Plan origin Y\\\"\",\n+     \"hit\": \"dialog.hud-template \\\"Room plansClose plansChoose an o\\\"\",\n+   },\n+   Object {\n+     \"control\": \"hud > hud__rail > hud__side > ui-panel hud-build > hud-template > hud-template__coordinates > hud-template__placement > button \\\"Place room plan\\\"\",\n+     \"hit\": \"(outside the viewport)\",\n+   },\n+ ]",
+          "stack": [
+            {
+              "file": "tests/browser/app-shell.spec.ts",
+              "line": 4127,
+              "column": 9,
+              "function": "everyControlAt"
+            },
+            {
+              "file": "tests/browser/app-shell.spec.ts",
+              "line": 5180,
+              "column": 7
+            }
+          ]
+        }
+      ],
+      "classification": "HUD hit-test obstruction (actual geometry failure; production cause not yet isolated)"
+    },
+    {
+      "folder": "app-shell-the-assembled-ap-6c9b2-ld-with-nothing-queued-174-",
+      "errors": [
+        {
+          "message": "Error: the Build panel arrives with more content than box at 900x600\n\nexpect(received).toBe(expected) // Object.is equality\n\nExpected: 0\nReceived: 5",
+          "stack": [
+            {
+              "file": "tests/browser/app-shell.spec.ts",
+              "line": 5311,
+              "column": 9
+            }
+          ]
+        }
+      ],
+      "classification": "HUD exact geometry budget (actual measurement mismatch; source decision requires review)"
+    },
+    {
+      "folder": "app-shell-the-assembled-ap-747e3-n-every-tab-at-1440x900-88-",
+      "errors": [
+        {
+          "message": "Error: controls covered by something else on the overview tab at 1440x900\n\nexpect(received).toEqual(expected) // deep equality\n\n- Expected  - 1\n+ Received  + 6\n\n- Array []\n+ Array [\n+   Object {\n+     \"control\": \"hud > hud__corner > select.hud-build__category \\\"View\\\"\",\n+     \"hit\": \"canvas\",\n+   },\n+ ]",
+          "stack": [
+            {
+              "file": "tests/browser/app-shell.spec.ts",
+              "line": 4043,
+              "column": 9,
+              "function": "everyControlAt"
+            },
+            {
+              "file": "tests/browser/app-shell.spec.ts",
+              "line": 5180,
+              "column": 7
+            }
+          ]
+        }
+      ],
+      "classification": "HUD hit-test obstruction (actual geometry failure; production cause not yet isolated)"
+    },
+    {
+      "folder": "app-shell-the-assembled-ap-d08cf-n-every-tab-at-1280x720-88-",
+      "errors": [
+        {
+          "message": "Error: controls covered by something else on the overview tab at 1280x720\n\nexpect(received).toEqual(expected) // deep equality\n\n- Expected  - 1\n+ Received  + 6\n\n- Array []\n+ Array [\n+   Object {\n+     \"control\": \"hud > hud__corner > select.hud-build__category \\\"View\\\"\",\n+     \"hit\": \"canvas\",\n+   },\n+ ]",
+          "stack": [
+            {
+              "file": "tests/browser/app-shell.spec.ts",
+              "line": 4043,
+              "column": 9,
+              "function": "everyControlAt"
+            },
+            {
+              "file": "tests/browser/app-shell.spec.ts",
+              "line": 5180,
+              "column": 7
+            }
+          ]
+        }
+      ],
+      "classification": "HUD hit-test obstruction (actual geometry failure; production cause not yet isolated)"
+    },
+    {
+      "folder": "app-shell-the-assembled-ap-d36bf-othing-when-nothing-is-331-",
+      "errors": [
+        {
+          "message": "Error: 48 Tab presses never reached the north edge option (.hud-build__coordinates [data-choice=\"north\"]); focus ended on <button class=\"ui-tab\">Manage",
+          "stack": [
+            {
+              "file": "tests/browser/app-shell.spec.ts",
+              "line": 1941,
+              "column": 9,
+              "function": "walkFocus"
+            },
+            {
+              "file": "tests/browser/app-shell.spec.ts",
+              "line": 2486,
+              "column": 7,
+              "function": "orderWallRectangles"
+            },
+            {
+              "file": "tests/browser/app-shell.spec.ts",
+              "line": 2281,
+              "column": 12,
+              "function": "wallRectanglesFromTheKeyboard"
+            },
+            {
+              "file": "tests/browser/app-shell.spec.ts",
+              "line": 7379,
+              "column": 5
+            }
+          ]
+        }
+      ],
+      "classification": "legacy edge Build setup incompatible with square controls (verified failure; fix not exercised)"
+    },
+    {
+      "folder": "app-shell-the-assembled-ap-e4b72-from-the-real-registry-531-",
+      "errors": [
+        {
+          "message": "Error: expect(locator).toBeVisible() failed\n\nLocator:  locator('.hud-build .ui-choice')\nExpected: visible\nReceived: hidden\nTimeout:  10000ms\n\nCall log:\n  - Expect \"toBeVisible\" with timeout 10000ms\n  - waiting for locator('.hud-build .ui-choice')\n    13 × locator resolved to <div hidden=\"\" class=\"ui-choice\">…</div>\n       - unexpected value \"hidden\"\n",
+          "stack": [
+            {
+              "file": "tests/browser/app-shell.spec.ts",
+              "line": 11009,
+              "column": 27
+            }
+          ]
+        }
+      ],
+      "classification": "legacy edge Build setup incompatible with square controls (verified failure; fix not exercised)"
+    },
+    {
+      "folder": "app-shell-the-assembled-ap-f218a--the-control-that-issued-it",
+      "errors": [
+        {
+          "message": "Error: 48 Tab presses never reached the north edge option (.hud-build__coordinates [data-choice=\"north\"]); focus ended on <input class=\"ui-number__input\">",
+          "stack": [
+            {
+              "file": "tests/browser/app-shell.spec.ts",
+              "line": 1941,
+              "column": 9,
+              "function": "walkFocus"
+            },
+            {
+              "file": "tests/browser/app-shell.spec.ts",
+              "line": 2486,
+              "column": 7,
+              "function": "orderWallRectangles"
+            },
+            {
+              "file": "tests/browser/app-shell.spec.ts",
+              "line": 8359,
+              "column": 5
+            }
+          ]
+        }
+      ],
+      "classification": "legacy edge Build setup incompatible with square controls (verified failure; fix not exercised)"
+    },
+    {
+      "folder": "build-object-thumbnails-Fu-4348a-cessible-keyboard-selection",
+      "errors": [
+        {
+          "message": "Test timeout of 60000ms exceeded.",
+          "stack": []
+        }
+      ],
+      "classification": "test timeout/pixel or screenshot work (trace operation observed; performance cause not proven)"
+    },
+    {
+      "folder": "cell-cot-player-build-play-6dac7-e-plans-before-the-cot-test",
+      "errors": [
+        {
+          "message": "Test timeout of 60000ms exceeded.",
+          "stack": []
+        },
+        {
+          "message": "Error: locator.getAttribute: Target page, context or browser has been closed",
+          "stack": [
+            {
+              "file": "tests/browser/cell-cot-player-build.spec.ts",
+              "line": 92,
+              "column": 54,
+              "function": "Object.expect.poll.message"
+            }
+          ]
+        }
+      ],
+      "classification": "construction bootstrap/completion timeout (progress observed; no permanent stall diagnosis)"
+    },
+    {
+      "folder": "classroom-chair-player-bui-26d30-hrough-Save-Load-at-Full-HD",
+      "errors": [
+        {
+          "message": "Test timeout of 60000ms exceeded.",
+          "stack": []
+        },
+        {
+          "message": "Error: locator.click: Test timeout of 60000ms exceeded.\nCall log:\n  - waiting for getByRole('button', { name: 'Pause', exact: true })\n    - locator resolved to <button type=\"button\" title=\"Pause\" aria-busy=\"false\" aria-pressed=\"false\" class=\"ui-icon-button ui-icon-button--quiet\">…</button>\n",
+          "stack": [
+            {
+              "file": "tests/browser/classroom-chair-player-build.spec.ts",
+              "line": 101,
+              "column": 66
+            }
+          ]
+        }
+      ],
+      "classification": "construction bootstrap/completion timeout (progress observed; no permanent stall diagnosis)"
+    },
+    {
+      "folder": "compact-camera-pose-contro-23b34-d-actions-above-the-minimap",
+      "errors": [
+        {
+          "message": "Test timeout of 60000ms exceeded.",
+          "stack": []
+        },
+        {
+          "message": "Error: locator.screenshot: Test timeout of 60000ms exceeded.\nCall log:\n  - taking element screenshot\n  - waiting for fonts to load...\n  - fonts loaded\n  - attempting scroll into view action\n    - waiting for element to be stable\n",
+          "stack": [
+            {
+              "file": "tests/browser/compact-camera-pose-controls.spec.ts",
+              "line": 25,
+              "column": 31
+            }
+          ]
+        }
+      ],
+      "classification": "test timeout/pixel or screenshot work (trace operation observed; performance cause not proven)"
+    },
+    {
+      "folder": "exercise-station-player-bu-026b9-serves-it-through-Save-Load",
+      "errors": [
+        {
+          "message": "Error: expect(locator).toHaveText(expected) failed\n\nLocator:  locator('.hud-build__target-value')\nExpected: \"7, 7\"\nReceived: \"2 × 1 tiles at 7, 7\"\nTimeout:  10000ms\n\nCall log:\n  - Expect \"toHaveText\" with timeout 10000ms\n  - waiting for locator('.hud-build__target-value')\n    12 × locator resolved to <span class=\"ui-value hud-build__target-value\">2 × 1 tiles at 7, 7</span>\n       - unexpected value \"2 × 1 tiles at 7, 7\"\n",
+          "stack": [
+            {
+              "file": "tests/browser/exercise-station-player-build.spec.ts",
+              "line": 97,
+              "column": 58
+            }
+          ]
+        }
+      ],
+      "classification": "stale exact target caption versus approved dimension caption (verified trace)"
+    },
+    {
+      "folder": "first-square-clock-hint-Fu-59e6b--keyboard-Play-completes-it",
+      "errors": [
+        {
+          "message": "Test timeout of 60000ms exceeded.",
+          "stack": []
+        },
+        {
+          "message": "Error: locator.evaluate: Test timeout of 60000ms exceeded.\nCall log:\n  - waiting for getByRole('button', { name: 'Play at normal speed', exact: true })\n    - locator resolved to visible <button type=\"button\" aria-busy=\"false\" aria-pressed=\"false\" title=\"Play at normal speed\" class=\"ui-icon-button ui-icon-button--quiet\">…</button>\n",
+          "stack": [
+            {
+              "file": "tests/browser/first-square-clock-hint.spec.ts",
+              "line": 23,
+              "column": 53
+            }
+          ]
+        }
+      ],
+      "classification": "test timeout/pixel or screenshot work (trace operation observed; performance cause not proven)"
+    },
+    {
+      "folder": "hud-camera-pose-controls-t-2504f-ot-offer-inert-pose-buttons",
+      "errors": [
+        {
+          "message": "Error: expect(locator).toHaveCount(expected) failed\n\nLocator:  locator('.hud-camera-pose')\nExpected: 0\nReceived: 1\nTimeout:  10000ms\n\nCall log:\n  - Expect \"toHaveCount\" with timeout 10000ms\n  - waiting for locator('.hud-camera-pose')\n    12 × locator resolved to 1 element\n       - unexpected value \"1\"\n",
+          "stack": [
+            {
+              "file": "tests/browser/hud-camera-pose-controls.spec.ts",
+              "line": 40,
+              "column": 50
+            }
+          ]
+        }
+      ],
+      "classification": "fixed renderer camera visibility assertion (actual mismatch; source decision requires review)"
+    },
+    {
+      "folder": "hud-layout-shell-the-HUD-l-0f383--the-rail-at-1280x800-1292-",
+      "errors": [
+        {
+          "message": "Error: the bottom-left corner is not the 398px the budget was recorded against\n\nexpect(received).toBeCloseTo(expected, precision)\n\nExpected: 398\nReceived: 442\n\nExpected precision:    1\nExpected difference: < 0.05\nReceived difference:   44",
+          "stack": [
+            {
+              "file": "tests/browser/hud-layout-shell.spec.ts",
+              "line": 718,
+              "column": 108
+            }
+          ]
+        }
+      ],
+      "classification": "HUD exact geometry budget (+44px; source cause not yet isolated)"
+    },
+    {
+      "folder": "hud-layout-shell-the-HUD-l-6986e--the-stylesheet-names-1292-",
+      "errors": [
+        {
+          "message": "Error: the clearance at the stylesheet’s own threshold has moved\n\nexpect(received).toBeCloseTo(expected, precision)\n\nExpected: 10.19\nReceived: -33.8125\n\nExpected precision:    1\nExpected difference: < 0.05\nReceived difference:   44.0025",
+          "stack": [
+            {
+              "file": "tests/browser/hud-layout-shell.spec.ts",
+              "line": 756,
+              "column": 91
+            }
+          ]
+        }
+      ],
+      "classification": "HUD exact geometry budget (+44px; source cause not yet isolated)"
+    },
+    {
+      "folder": "hud-layout-shell-the-HUD-l-7820f--below-that-threshold-1292-",
+      "errors": [
+        {
+          "message": "Error: the clearance one pixel below the threshold has moved\n\nexpect(received).toBeCloseTo(expected, precision)\n\nExpected: 9.19\nReceived: -34.8125\n\nExpected precision:    1\nExpected difference: < 0.05\nReceived difference:   44.0025",
+          "stack": [
+            {
+              "file": "tests/browser/hud-layout-shell.spec.ts",
+              "line": 773,
+              "column": 87
+            }
+          ]
+        }
+      ],
+      "classification": "HUD exact geometry budget (+44px; source cause not yet isolated)"
+    },
+    {
+      "folder": "integrated-square-walls-au-1a35b-on-Save-Load-in-angled-view",
+      "errors": [
+        {
+          "message": "Error: Timeout 10000ms exceeded while waiting on the predicate",
+          "stack": [
+            {
+              "file": "tests/browser/integrated-square-walls.spec.ts",
+              "line": 213,
+              "column": 3
+            }
+          ]
+        }
+      ],
+      "classification": "test timeout/pixel or screenshot work (trace operation observed; performance cause not proven)"
+    },
+    {
+      "folder": "integrated-square-walls-co-0db96-roduction-Save-Load-oblique",
+      "errors": [
+        {
+          "message": "Test timeout of 60000ms exceeded.",
+          "stack": []
+        },
+        {
+          "message": "Error: page.evaluate: Test timeout of 60000ms exceeded.",
+          "stack": [
+            {
+              "file": "tests/browser/integrated-square-walls.spec.ts",
+              "line": 64,
+              "column": 19,
+              "function": "wallEvidence"
+            },
+            {
+              "file": "tests/browser/integrated-square-walls.spec.ts",
+              "line": 109,
+              "column": 20
+            }
+          ]
+        }
+      ],
+      "classification": "test timeout/pixel or screenshot work (trace operation observed; performance cause not proven)"
+    },
+    {
+      "folder": "kitchen-fixtures-player-bu-bef33-ery-capacity-before-Kitchen",
+      "errors": [
+        {
+          "message": "Error: Test timeout of 60000ms exceeded",
+          "stack": [
+            {
+              "file": "tests/browser/kitchen-fixtures-player-build.spec.ts",
+              "line": 96,
+              "column": 5,
+              "function": "finishQueuedConstruction"
+            },
+            {
+              "file": "tests/browser/kitchen-fixtures-player-build.spec.ts",
+              "line": 113,
+              "column": 3
+            }
+          ]
+        }
+      ],
+      "classification": "construction bootstrap/completion timeout (progress observed; no permanent stall diagnosis)"
+    },
+    {
+      "folder": "laundry-fixtures-player-bu-bb886-ery-capacity-before-Laundry",
+      "errors": [
+        {
+          "message": "Error: Test timeout of 60000ms exceeded",
+          "stack": [
+            {
+              "file": "tests/browser/laundry-fixtures-player-build.spec.ts",
+              "line": 89,
+              "column": 5,
+              "function": "finishQueuedConstruction"
+            },
+            {
+              "file": "tests/browser/laundry-fixtures-player-build.spec.ts",
+              "line": 106,
+              "column": 3
+            }
+          ]
+        }
+      ],
+      "classification": "construction bootstrap/completion timeout (progress observed; no permanent stall diagnosis)"
+    },
+    {
+      "folder": "loading-dock-door-player-b-f250e-orage-and-delivery-capacity",
+      "errors": [
+        {
+          "message": "Error: Test timeout of 60000ms exceeded",
+          "stack": [
+            {
+              "file": "tests/browser/loading-dock-door-player-build.spec.ts",
+              "line": 91,
+              "column": 5,
+              "function": "finishQueuedConstruction"
+            },
+            {
+              "file": "tests/browser/loading-dock-door-player-build.spec.ts",
+              "line": 108,
+              "column": 3
+            }
+          ]
+        }
+      ],
+      "classification": "construction bootstrap/completion timeout (progress observed; no permanent stall diagnosis)"
+    },
+    {
+      "folder": "oblique-art-runtime-author-28ac4-he-angled-camera-at-Full-HD",
+      "errors": [
+        {
+          "message": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: \"oblique:furniture.medical-bed.variants:180:20\"\nReceived: undefined\n\nCall Log:\n- Timeout 10000ms exceeded while waiting on the predicate",
+          "stack": [
+            {
+              "file": "tests/browser/oblique-art-runtime.spec.ts",
+              "line": 10,
+              "column": 3
+            }
+          ]
+        }
+      ],
+      "classification": "stale harness private-map key (verified source cause; actual image texture key pending browser)"
+    },
+    {
+      "folder": "oblique-art-runtime-built--38cfa-r-frame-in-the-angled-scene",
+      "errors": [
+        {
+          "message": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: \"oblique:furniture.storage.rack.wooden:60:50\"\nReceived: undefined\n\nCall Log:\n- Timeout 10000ms exceeded while waiting on the predicate",
+          "stack": [
+            {
+              "file": "tests/browser/oblique-art-runtime.spec.ts",
+              "line": 25,
+              "column": 3
+            }
+          ]
+        }
+      ],
+      "classification": "stale harness private-map key (verified source cause; actual image texture key pending browser)"
+    },
+    {
+      "folder": "oblique-art-runtime-built--4a11a-r-frame-in-the-angled-scene",
+      "errors": [
+        {
+          "message": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: \"oblique:furniture.chair.wooden:60:50\"\nReceived: undefined\n\nCall Log:\n- Timeout 10000ms exceeded while waiting on the predicate",
+          "stack": [
+            {
+              "file": "tests/browser/oblique-art-runtime.spec.ts",
+              "line": 36,
+              "column": 3
+            }
+          ]
+        }
+      ],
+      "classification": "stale harness private-map key (verified source cause; actual image texture key pending browser)"
+    },
+    {
+      "folder": "oblique-authored-actors-mo-a78cf-e-their-depth-order-changes",
+      "errors": [
+        {
+          "message": "Test timeout of 60000ms exceeded.",
+          "stack": []
+        }
+      ],
+      "classification": "test timeout/pixel or screenshot work (trace operation observed; performance cause not proven)"
+    },
+    {
+      "folder": "oblique-camera-new-prison--4a771--panning-beyond-the-old-map",
+      "errors": [
+        {
+          "message": "Error: expect(locator).toBeHidden() failed\n\nLocator:  locator('.hud-minimap__viewport')\nExpected: hidden\nReceived: visible\nTimeout:  10000ms\n\nCall log:\n  - Expect \"toBeHidden\" with timeout 10000ms\n  - waiting for locator('.hud-minimap__viewport')\n    12 × locator resolved to <span aria-hidden=\"true\" class=\"hud-minimap__viewport\"></span>\n       - unexpected value \"visible\"\n",
+          "stack": [
+            {
+              "file": "tests/browser/oblique-camera-new-prison-frame.spec.ts",
+              "line": 20,
+              "column": 26
+            }
+          ]
+        }
+      ],
+      "classification": "minimap visibility invariant failure (cause not yet isolated)"
+    },
+    {
+      "folder": "oblique-hud-roving-camera--397f2-es-into-a-Build-radio-group",
+      "errors": [
+        {
+          "message": "Error: the world arrow needs to move the camera before focus transfer\n\nexpect(received).toBe(expected) // Object.is equality\n\nExpected: false\nReceived: true",
+          "stack": [
+            {
+              "file": "tests/browser/oblique-hud-roving-camera.spec.ts",
+              "line": 64,
+              "column": 117
+            }
+          ]
+        }
+      ],
+      "classification": "held-arrow precondition not observed (cause not yet isolated)"
+    },
+    {
+      "folder": "oblique-room-preview-sessi-aa0be-igin-from-the-prior-session",
+      "errors": [
+        {
+          "message": "Test timeout of 60000ms exceeded.",
+          "stack": []
+        },
+        {
+          "message": "Error: page.screenshot: Test timeout of 60000ms exceeded.\nCall log:\n  - taking page screenshot\n  - waiting for fonts to load...\n  - fonts loaded\n",
+          "stack": [
+            {
+              "file": "tests/browser/oblique-room-preview-session-boundary.spec.ts",
+              "line": 48,
+              "column": 14
+            }
+          ]
+        }
+      ],
+      "classification": "test timeout/pixel or screenshot work (trace operation observed; performance cause not proven)"
+    },
+    {
+      "folder": "oblique-room-template-pick-a294a-through-four-yaw-directions",
+      "errors": [
+        {
+          "message": "Error: Ghost missed the floor pick at yaw 90°, elevation 65°\n\nexpect(received).toBe(expected) // Object.is equality\n\nExpected: true\nReceived: false",
+          "stack": [
+            {
+              "file": "tests/browser/oblique-room-template-picking.spec.ts",
+              "line": 63,
+              "column": 127
+            }
+          ]
+        }
+      ],
+      "classification": "room ghost/floor-pick invariant failure (cause not yet isolated)"
+    }
+  ]
+}

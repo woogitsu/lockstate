@@ -1,0 +1,39 @@
+node : [2m[WebServer] [22m(node:63648) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:4 char:1
++ node --experimental-transform-types --disable-warning=ExperimentalWar ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 4 tests using 1 worker
+
+(node:37624) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:37624) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+NATIVE_VIEW_MOUSE {"renderer":"world","scale":1,"point":{"x":251.5,"y":854},"hit":{"tag":"SELECT","view":true},"events":[{"type":"pointerdown","tag":"SELECT","view":true,"value":"world"},{"type":"focus","tag":"SELECT","view":true,"value":"world"},{"type":"pointerup","tag":"SELECT","view":true,"value":"world"},{"type":"input","tag":"SELECT","view":true,"value":"oblique"},{"type":"change","tag":"SELECT","view":true,"value":"oblique"},{"type":"focus","tag":"SELECT","view":true,"value":"oblique"}],"commands":[]}
+  ok 1 tests\browser\live-view-native-mouse-target.spec.ts:8:5 › Full HD 100% world View keeps a native mouse press away from the armed map (5.9s)
+NATIVE_VIEW_MOUSE {"renderer":"world","scale":2,"point":{"x":423.5,"y":674},"hit":{"tag":"SELECT","view":true},"events":[{"type":"pointerdown","tag":"SELECT","view":true,"value":"world"},{"type":"focus","tag":"SELECT","view":true,"value":"world"},{"type":"pointerup","tag":"SELECT","view":true,"value":"world"},{"type":"input","tag":"SELECT","view":true,"value":"oblique"},{"type":"change","tag":"SELECT","view":true,"value":"oblique"},{"type":"focus","tag":"SELECT","view":true,"value":"oblique"}],"commands":[]}
+  ok 2 tests\browser\live-view-native-mouse-target.spec.ts:8:5 › Full HD 200% world View keeps a native mouse press away from the armed map (4.8s)
+NATIVE_VIEW_MOUSE {"renderer":"oblique","scale":1,"point":{"x":251.5,"y":802},"hit":{"tag":"SELECT","view":true},"events":[{"type":"pointerdown","tag":"SELECT","view":true,"value":"oblique"},{"type":"focus","tag":"SELECT","view":true,"value":"oblique"},{"type":"pointerup","tag":"SELECT","view":true,"value":"oblique"},{"type":"input","tag":"SELECT","view":true,"value":"world"},{"type":"change","tag":"SELECT","view":true,"value":"world"},{"type":"focus","tag":"SELECT","view":true,"value":"world"}],"commands":[]}
+  ok 3 tests\browser\live-view-native-mouse-target.spec.ts:8:5 › Full HD 100% oblique View keeps a native mouse press away from the armed map (6.0s)
+NATIVE_VIEW_MOUSE {"renderer":"oblique","scale":2,"point":{"x":423.5,"y":599.7734375},"hit":{"tag":"SELECT","view":true},"events":[{"type":"pointerdown","tag":"SELECT","view":true,"value":"oblique"},{"type":"focus","tag":"SELECT","view":true,"value":"oblique"},{"type":"pointerup","tag":"SELECT","view":true,"value":"oblique"},{"type":"input","tag":"SELECT","view":true,"value":"world"},{"type":"change","tag":"SELECT","view":true,"value":"world"},{"type":"focus","tag":"SELECT","view":true,"value":"world"}],"commands":[]}
+  ok 4 tests\browser\live-view-native-mouse-target.spec.ts:8:5 › Full HD 200% oblique View keeps a native mouse press away from the armed map (5.8s)
+
+  4 passed (25.6s)

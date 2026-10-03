@@ -1,0 +1,82 @@
+{
+  "date": "2026-10-02",
+  "base": "9251b18c60939f897c3d43594cccd930f7cd66fb",
+  "branch": "codex/authored-actor-png-consumer-20261002",
+  "scope": ["tests/browser/oblique-authored-actors.spec.ts", "this receipt"],
+  "archivedBaseline": {
+    "run": 37039088544,
+    "job": 110949744645,
+    "artifact": 11245699264,
+    "prHead": "3eeeddc2d276714fee6a7c8420270b78d2e49b3c",
+    "trace": "test-results/oblique-authored-actors-mo-a78cf-e-their-depth-order-changes/trace.zip",
+    "failure": "original 60000ms test timeout",
+    "browserOperation": "0-trace.trace call@188 evaluateExpression",
+    "browserDecodeAndSampleMs": 26608.639,
+    "testTraceStep": "test.trace pw:api@56",
+    "testTraceStepMs": 27016.678,
+    "returnedChangedPixels": 0,
+    "canvasScreenshotStepMs": [9374.429, 8478.443],
+    "pngPair": {
+      "width": 1920, "height": 1080, "bitDepth": 8, "colourType": 2,
+      "bytesEach": 1771780, "base64CharactersEach": 2362376,
+      "shownSha256": "47bbb6c65f3abac36349b13181437b2ff58222642072c4f4f65ef8e3d490b298",
+      "shownAndHiddenIdentical": true
+    }
+  },
+  "implementation": {
+    "decoder": "existing Playwright 1.56.1 bundled PNG.sync.read via exported playwright-core/lib/utilsBundle; resolved from declared @playwright/test with createRequire for pnpm isolated dependencies",
+    "boundary": "Canvas screenshots remain captured by Playwright. Only actor foot coordinates cross from the game page for normal sampling; screenshot Buffers are decoded in the Node test process.",
+    "preserved": [
+      "all five actor acceptance tests",
+      "same real shown/hidden canvas screenshot pairs and existing screenshot artifacts",
+      "cook/medic/staff 60x110 regions and each count >100",
+      "rear/foreground prisoner 8x7 regions, guard 50x97 region, counts 0/>10/>100",
+      "moving rear actor 8x7 region and count 0",
+      "RGB channels only, absolute difference >8, original exclusive loop endpoints",
+      "actual actor image texture keys",
+      "actor and solid image pool token identity assertions",
+      "changing solid depth and exact expected depth assertions",
+      "independent same-role headings and standing heading update assertions",
+      "original test budgets, one-worker configuration, retries and dependencies"
+    ],
+    "additionalChecks": "Decoded dimensions must agree, integer regions must be positive and inside the capture, and all screenshot pixels must be opaque to avoid different browser alpha-compositing RGB semantics.",
+    "nativeEquivalenceMode": "LOCKSTATE_ACTOR_PNG_EQUIVALENCE=1 executes the original createImageBitmap/canvas/getImageData decoder against exactly the SAME shown/hidden PNG Buffers and exact same regions, asserts equality with Node counts, and attaches both timing/count sets. Default acceptance skips that duplicate game-thread decoding.",
+    "attachments": "captured-actor-pixel-counts contains regions, counts and Node decode/sample timing; equivalence mode also includes browser counts/timing."
+  },
+  "offlineVerification": {
+    "applicationTypeScript": { "exitCode": 0, "includesEditedSpec": true },
+    "diffCheck": { "exitCode": 0 },
+    "actualHelperControls": {
+      "method": "Read PixelRegion/countCapturedChanges directly from the edited spec, strip TypeScript with Node24.19 stripTypeScriptTypes and execute that helper with the installed decoder; no duplicate implementation.",
+      "generatedPngControlsPassed": 11,
+      "controls": [
+        "identical generated PNGs ->0",
+        "red delta8 ->0",
+        "red delta9 ->1",
+        "green delta9 ->1",
+        "blue delta9 ->1",
+        "left/top inclusive and right/bottom exclusive ->2",
+        "independent multiple regions ->[2,4]",
+        "different dimensions rejected",
+        "outside region rejected",
+        "transparent screenshot rejected",
+        "invalid PNG rejected"
+      ]
+    },
+    "archivedGameCaptures": {
+      "actualActorFoot": { "x": 846.8629150101524, "y": 380 },
+      "region": { "left": 842, "right": 850, "top": 370, "bottom": 377 },
+      "sampleCount": 56,
+      "actualSpecHelperCounts": [0],
+      "sameResultAsArchivedBrowser": true,
+      "actualSpecHelperDecodeAndSampleMs": [75.6998, 67.9234, 76.7416, 69.6918, 75.1608, 77.2997, 65.5205],
+      "offlineAlteredOnePixelDelta9Counts": [1],
+      "boundary": "One archived pair with zero difference and an altered PNG control; not all three positive/zero real-game pairs and not a production source mutation. Local Node timing is not an end-to-end or same-runner speedup measurement."
+    }
+  },
+  "pending": {
+    "nativeEquivalence": "Await exclusive browser lease: execute all three actual PNG consumers with original browser and Node counts on the same captures, including positive visible actors and zero covered actor.",
+    "nativeOptimizedRun": "Then execute normal default acceptance under original budgets/one worker and record screenshot, pixel-analysis and total timing. No timeout-fix claim before this evidence.",
+    "productionNegativeAndExactRestore": "Await separate explicit mutation-only actor producer lease; no runtime source edited or mutated."
+  }
+}

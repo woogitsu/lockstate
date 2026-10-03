@@ -1,0 +1,103 @@
+﻿[
+    {
+        "title":  "canonical cook medic and staff frames produce visible Blender pixels",
+        "status":  "passed",
+        "duration":  8628,
+        "pixels":  {
+                       "regions":  [
+                                       {
+                                           "left":  816,
+                                           "right":  876,
+                                           "top":  800,
+                                           "bottom":  910
+                                       },
+                                       {
+                                           "left":  930,
+                                           "right":  990,
+                                           "top":  880,
+                                           "bottom":  990
+                                       },
+                                       {
+                                           "left":  1043,
+                                           "right":  1103,
+                                           "top":  960,
+                                           "bottom":  1070
+                                       }
+                                   ],
+                       "counts":  [
+                                      3731,
+                                      3557,
+                                      3685
+                                  ],
+                       "nodeDecodeAndSampleMs":  89.20430000000033,
+                       "browserCounts":  [
+                                             3731,
+                                             3557,
+                                             3685
+                                         ],
+                       "browserDecodeAndSampleMs":  3319.713100000001
+                   }
+    },
+    {
+        "title":  "authored prisoner and guard pixels share wall depth at Full HD",
+        "status":  "passed",
+        "duration":  8402,
+        "pixels":  {
+                       "regions":  [
+                                       {
+                                           "left":  842,
+                                           "right":  850,
+                                           "top":  370,
+                                           "bottom":  377
+                                       },
+                                       {
+                                           "left":  1069,
+                                           "right":  1077,
+                                           "top":  730,
+                                           "bottom":  737
+                                       },
+                                       {
+                                           "left":  991,
+                                           "right":  1041,
+                                           "top":  760,
+                                           "bottom":  857
+                                       }
+                                   ],
+                       "counts":  [
+                                      0,
+                                      56,
+                                      3177
+                                  ],
+                       "nodeDecodeAndSampleMs":  80.56600000000071,
+                       "browserCounts":  [
+                                             0,
+                                             56,
+                                             3177
+                                         ],
+                       "browserDecodeAndSampleMs":  3297.238900000002
+                   }
+    },
+    {
+        "title":  "moving actors keep authored solid images while their depth order changes",
+        "status":  "passed",
+        "duration":  8518,
+        "pixels":  {
+                       "regions":  [
+                                       {
+                                           "left":  842,
+                                           "right":  850,
+                                           "top":  370,
+                                           "bottom":  377
+                                       }
+                                   ],
+                       "counts":  [
+                                      0
+                                  ],
+                       "nodeDecodeAndSampleMs":  79.54100000000108,
+                       "browserCounts":  [
+                                             0
+                                         ],
+                       "browserDecodeAndSampleMs":  3230.0283000000018
+                   }
+    }
+]

@@ -1,0 +1,58 @@
+{
+  "date": "2026-10-02",
+  "base": "5fa4f365bb969b6ae9c93e935c8a03beffa8312b",
+  "branch": "codex/oblique-template-picking-consumer-20261002",
+  "consumer": "tests/browser/oblique-room-template-picking.spec.ts",
+  "originalFailure": {
+    "run": 37039088544,
+    "job": 110949744645,
+    "artifact": 11245699264,
+    "prHead": "3eeeddc2d276714fee6a7c8420270b78d2e49b3c",
+    "trace": "test-results/oblique-room-template-pick-a294a-through-four-yaw-directions/trace.zip",
+    "frozenLine": 63,
+    "pose": { "yawDegrees": 90, "elevationDegrees": 65 },
+    "assertion": "first ghost floor square contains the original cursor",
+    "cursor": { "x": 880, "y": 380 },
+    "all28PolygonBounds": {
+      "left": 779, "right": 1339.0000000000002,
+      "top": 442.4907540741359, "bottom": 732.5092459258642
+    },
+    "firstPolygonArea": 5800.369837034494,
+    "independentAreaAtZoom1_25": 5800.369837034559,
+    "firstPoseSubmittedOrigin": { "x": 15, "y": 13 },
+    "secondPoseCommandObserved": false,
+    "conclusion": "Approved pan-locked fit moves the projected footprint into the HUD-safe playfield. The trace falsifies the cursor-containment consumer assumption; it does not establish an incorrect second-pose command."
+  },
+  "correctedChecks": {
+    "independentOrigin": "Calculated before hover/fit from actual canvas client/backing dimensions and the pose inputs clicked by this test, with fresh 32x32 chunk centre (1024,1024) and initial zoom 1.25; no production transform, ghost, preflight or submitted-command value supplies the expectation.",
+    "fullHdExpectedOrigins": [
+      { "yawDegrees": 0, "elevationDegrees": 45, "origin": { "x": 15, "y": 13 } },
+      { "yawDegrees": 90, "elevationDegrees": 65, "origin": { "x": 13, "y": 17 } },
+      { "yawDegrees": 180, "elevationDegrees": 45, "origin": { "x": 17, "y": 18 } },
+      { "yawDegrees": 270, "elevationDegrees": 65, "origin": { "x": 18, "y": 15 } }
+    ],
+    "workerBoundary": "Real worker tee simulation/request-projection payload.target.origin for world/room-template-preflight equals the independent origin; actual PlaceRoomTemplate command equals that same origin.",
+    "geometry": "All 28 ghost polygons remain required; every vertex must be finite and within the actual unobscured HUD-safe canvas bounds (8 backing pixels inset, 0.01 tolerance). First-polygon area remains >1000.",
+    "retained": [
+      "clear preflight before placement",
+      "exactly one additional PlaceRoomTemplate",
+      "hidden ghost after accepted placement",
+      "blocked re-armed preflight",
+      "no second placement command",
+      "Escape and fresh New prison between poses",
+      "original 120000ms test budget"
+    ]
+  },
+  "verification": {
+    "applicationTypeScript": { "command": "node node_modules/typescript/bin/tsc -b --pretty false", "exitCode": 0, "includesBrowserSpec": true },
+    "supportingUnitContract": {
+      "command": "node node_modules/vitest/vitest.mjs run tests/unit/oblique-fit.test.ts tests/unit/ui-room-template-preview-fit.test.ts",
+      "filesPassed": 2, "testsPassed": 9, "durationMs": 190,
+      "boundary": "Supporting pan-locked fit and retained-origin behavior only; this is not execution of the modified browser consumer."
+    },
+    "diffCheck": { "exitCode": 0 },
+    "nativeCorrectedSpec": "pending exclusive browser lease; no browser launched",
+    "productionNegativeAndExactRestore": "pending explicit mutation/native scope; no production source edited or mutated"
+  },
+  "scope": "Browser consumer and this receipt only; no runtime, workflow, runner, retry, timeout or configuration change."
+}

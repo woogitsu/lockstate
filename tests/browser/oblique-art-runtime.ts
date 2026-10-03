@@ -61,7 +61,7 @@ window.lockstateObliqueArtRuntime = {
     scene.setPoseRadians(yawDegrees * Math.PI / 180, elevationDegrees * Math.PI / 180);
     await new Promise<void>((resolve) => game.events.once(Phaser.Core.Events.POST_RENDER, () => resolve()));
   },
-  key: () => (scene as unknown as { assetTextureKeys: Map<string, string> }).assetTextureKeys.get(catalog.assetId),
+  key: () => (scene as unknown as { assetImages: Phaser.GameObjects.Image[] }).assetImages[0]?.texture.key,
   imageCount: () => (scene as unknown as { assetImages: Phaser.GameObjects.Image[] }).assetImages.length,
   imageWidth: () => (scene as unknown as { assetImages: Phaser.GameObjects.Image[] }).assetImages[0]?.displayWidth,
   imageOriginY: () => (scene as unknown as { assetImages: Phaser.GameObjects.Image[] }).assetImages[0]?.originY,
