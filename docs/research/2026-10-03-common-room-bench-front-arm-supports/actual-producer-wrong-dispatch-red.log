@@ -1,0 +1,19 @@
+00:01.110  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-common-room-bench-arm-supports-20261003\assets\source\blender\furniture.common-room.upholstered-bench.blend"
+Traceback (most recent call last):
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-common-room-bench-arm-supports-20261003\tooling\blender\render-common-room-bench-oblique.py", line 529, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-common-room-bench-arm-supports-20261003\tooling\blender\render-common-room-bench-oblique.py", line 423, in main
+    scene, camera = configure()
+                    ~~~~~~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-common-room-bench-arm-supports-20261003\tooling\blender\render-common-room-bench-oblique.py", line 331, in configure
+    verify_source(scene)
+    ~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-common-room-bench-arm-supports-20261003\tooling\blender\render-common-room-bench-oblique.py", line 91, in verify_source
+    raise ValueError('Common Room producer dispatch source changed')
+ValueError: Common Room producer dispatch source changed
+
+Error: script failed, file: 'C:\Users\matma\Documents\Rozwój gier\lockstate-common-room-bench-arm-supports-20261003\tooling\blender\render-common-room-bench-oblique.py', exiting.
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
