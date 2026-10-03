@@ -1,9 +1,7 @@
-# Browser CI duration proposal — owner review draft
+# Browser CI duration proposal and approved activation
 
 Started: 2026-10-02; final offline receipt: 2026-10-03 (Europe/Warsaw).
-Subject: `eeec3e844f`, Laundry integration. No workflow,
-repository setting, browser test, timeout or retry policy is changed by this
-proposal. Activation remains an owner decision under AGENTS.md reservation 3.
+Historical proposal subject: `eeec3e844f`, Laundry integration. That review draft changed no workflow, repository setting, browser test, timeout or retry policy. The exact preferred design was subsequently approved by the owner on2026-10-03; activation from current main is recorded below.
 
 ## Decision offered
 
@@ -79,10 +77,10 @@ or 2× speedup is claimed before an approved exact-subject hosted run.
   retaining `always()`, seven days, traces/results, and suite output. Artifact
   execution no longer clears source results because it runs in another checkout.
 
-## Required activation work and pending proof
+## Historical activation prerequisites and proposal proof
 
-The production workflow is untouched. Activation needs the owner's explicit
-release, scoped updates to `ci-configuration-contract.test.ts` for the new job
+At proposal publication the production workflow was untouched. Activation required the owner's explicit
+release and scoped updates to `ci-configuration-contract.test.ts` for the new job
 shape/aggregate, and existing suite partition, retry, runner, and selection gates.
 Assertions must continue proving full coverage and the same budgets, not be
 removed to accommodate the draft. Main branch protection returned API404, so
@@ -147,3 +145,11 @@ No local browser/server or remote rerun/cancellation was launched. Draft PR and 
 Current subject45e3215edd76606dbe690e60eadc1702cc5e4cd5 collects **766 source cases/107 files**, split236/45 and530/62 using the unchanged approved historical weights; **two artifact cases/one file**, collected once. Four real-wrapper --list invocations prove exact case metadata union, no duplicate IDs, no split files and exact108-spec physical inventory. All retain fullyParallel:false, one worker,60s case timeout, zero retries and forbidOnly. These are collected cases, not executed browser passes. The older887/83 measurements above belong to the Laundry proposal only; artifact83 remains unmeasured.
 
 Current production build and app/tools types exit0;84 scoped foundation cases GREEN. Active YAML and every actual run block have syntax validation, plus readonly matching/mismatched checked-out subject guard executions under the runner's -e/-o pipefail semantics. The draft PR is [#2012](https://github.com/woogitsu/lockstate/pull/2012); hosted acceptance and parent serial main gate remain pending. Actual producer negatives and exact restoration follow the frozen preparation checkpoint, not an inferred green from collection.
+
+### Final activation producer evidence
+
+On frozen9bd35eda54, five independent unique omissions in actual active producers each yield **1RED/6legalGREEN**, with byte-exact finally restoration and **7/7GREEN** after each: partition app-shell file admission, source result guard, artifact result guard, source SHA guard and artifact SHA guard. Actual current real-wrapper recollection under the partition omission yields701cases instead of766, missing the original65app-shell cases; independent exact-union audit refuses. Exact producer restoration freshly recollects766 with no duplication. Artifact acceptance remains independently collected once; no artifact run is implied.
+
+The [producer receipt](activation/producer-restoration-receipt.json) preserves original/restored SHA256 for both .github/workflows/ci.yml and tests/browser/partition-source-files.ts. No mutant was committed/pushed. After all restorations, all84scoped source/foundation cases again GREEN, app/tools types0, current build0 and45actual YAML/Bash syntax/readonly subject checks pass. Original2adaptation failures (lost release comments and artifact evidence writer observer) remain recorded separately; all existing evidence guards remain present for both executable jobs.
+
+No local browser/server, CI cancellation, manual rerun, merge, repository protection setting or deploy was performed. PR2012 is a draft pending hosted exact-subject success and ROOT's serial main gate. Historical timings and weights remain scheduling evidence; no unmeasured speedup or artifact83 duration is asserted.
