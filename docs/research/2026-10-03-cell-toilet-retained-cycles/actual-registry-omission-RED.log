@@ -1,0 +1,38 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-cell-toilet-cycles-20261003
+
+xx
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  23:23:23
+   Duration  697ms (transform 195ms, setup 0ms, import 541ms, tests 16ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-cell-toilet-modern-consumer.test.ts > selects genuine modern toilet body in literal Basic Cell q0 over its whole paid occupied footprint
+ FAIL  tests/unit/oblique-cell-toilet-modern-consumer.test.ts > selects genuine modern toilet body in literal Basic Cell q1 over its whole paid occupied footprint
+AssertionError: expected [] to deeply equal [ { …(2) } ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "assetId": "fixture.cell.toilet_sink",
+-     "manifest": "/game-content/oblique-cell-toilet.v1.json",
+-   },
+- ]
++ []
+
+ ❯ tests/unit/oblique-cell-toilet-modern-consumer.test.ts:39:69
+     37|     64,64,1,camera).footprint);
+     38|   const registry=parseObliqueModuleRegistry(JSON.parse(readFileSync(ne…
+     39|   expect(registry.entries.filter(row=>row.assetId===solid.assetId)).to…
+       |                                                                     ^
+     40|   const catalog=parseObliqueModuleCatalog(JSON.parse(readFileSync(new …
+     41|   expect(catalog.source).toBe('assets/source/blender/fixture.cell.toil…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+

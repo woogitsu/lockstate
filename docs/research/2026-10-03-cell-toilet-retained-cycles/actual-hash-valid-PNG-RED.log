@@ -1,0 +1,19 @@
+00:01.187  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-cell-toilet-cycles-20261003\assets\source\blender\fixture.cell.toilet_sink.soft-light.blend"
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
+Traceback (most recent call last):
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-cell-toilet-cycles-20261003\tooling\blender\render-cell-toilet-cycles.py", line 108, in <module>
+    if __name__=='__main__':main()
+                            ~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-cell-toilet-cycles-20261003\tooling\blender\render-cell-toilet-cycles.py", line 71, in main
+    verify_exports()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-cell-toilet-cycles-20261003\tooling\blender\render-cell-toilet-cycles.py", line 57, in verify_exports
+    prepare.validate_png(body)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-cell-toilet-cycles-20261003\tooling\blender\prepare-cell-toilet-cycles.py", line 127, in validate_png
+    raise ValueError('Toilet decoded silhouette clips frame border')
+ValueError: Toilet decoded silhouette clips frame border
+
+Error: script failed, file: 'C:\Users\matma\Documents\Rozwój gier\lockstate-cell-toilet-cycles-20261003\tooling\blender\render-cell-toilet-cycles.py', exiting.
