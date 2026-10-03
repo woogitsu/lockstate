@@ -32,6 +32,9 @@
     "worldSurfaceCap": 74,
     "obliqueSurfaceCap": 22,
     "obliqueSurfaceBelowExistingPaddingBorderFloor": true,
+    "fullHd200WorldSurfaceAfterUniformDebit": -82,
+    "fullHd200ObliqueSurfaceAfterUniformDebit": -186,
+    "fullHd200SurfacePaddingBorderFloor": 50,
     "fullHd200ExactListAncestorGeometry": null,
     "nativeMeasurementsRequired": true
   },
