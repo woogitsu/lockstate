@@ -1,0 +1,60 @@
+{
+  "publishedViews": [
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 45,
+      "path": "public/assets/environment/oblique/actor-cook-yaw-135-elev45.abed5ad4990c.png",
+      "sha256": "abed5ad4990c3b4d5ac82b413ff581e60f615a8150ea03d7a76204f11f41cd08",
+      "alphaBoundsPx": [
+        239,
+        167,
+        276,
+        265
+      ]
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 45,
+      "path": "public/assets/environment/oblique/actor-cook-yaw-45-elev45.16b8abd3656c.png",
+      "sha256": "16b8abd3656c3395333538bb6dda8bf1c843c3e55e31565ea2bd3f9fa0462f45",
+      "alphaBoundsPx": [
+        239,
+        165,
+        276,
+        269
+      ]
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 45,
+      "path": "public/assets/environment/oblique/actor-cook-yaw+45-elev45.dc2f8b253bde.png",
+      "sha256": "dc2f8b253bdeee8aa8f81c26423336366c04b6d51131437c7d789964caa0535e",
+      "alphaBoundsPx": [
+        236,
+        165,
+        273,
+        269
+      ]
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 45,
+      "path": "public/assets/environment/oblique/actor-cook-yaw+135-elev45.c4145df19656.png",
+      "sha256": "c4145df19656e90650c5073e638739a9b5280614b83475c9737b8f7d96ccd53c",
+      "alphaBoundsPx": [
+        236,
+        167,
+        273,
+        265
+      ]
+    }
+  ],
+  "oneOriginalProducerReplay": {
+    "path": "assets/intermediate/cook-apron-cap-audit/actor-cook-yaw+45-elev45.png",
+    "sha256": "dc2f8b253bdeee8aa8f81c26423336366c04b6d51131437c7d789964caa0535e",
+    "byteExactPublishedReplay": true,
+    "changedRGBAPixels": 0
+  },
+  "sheet": "four-published-views-and-one-real-replay.png",
+  "sheetMethod": "actual RGBA alpha crops, nearest-neighbor x3; labels only"
+}

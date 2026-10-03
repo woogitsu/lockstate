@@ -1,0 +1,342 @@
+{
+  "source": "assets/source/blender/actor.cook.base.blend",
+  "sourceSHA256": "8ddb0c30fd183ec11574c386b7acfb0e8901307a21ebec357f1a51dcd6fa6a98",
+  "meshCount": 68,
+  "meshNames": [
+    "Apron back strap.-1",
+    "Apron back strap.1",
+    "Apron chest bib",
+    "Apron fold.-0.21",
+    "Apron fold.0.21",
+    "Apron pocket",
+    "Apron shoulder strap.-1",
+    "Apron shoulder strap.1",
+    "Apron side tie.-1",
+    "Apron side tie.1",
+    "Apron waistband",
+    "Back trouser pocket.-1",
+    "Back trouser pocket.1",
+    "Brow.-1",
+    "Brow.1",
+    "Button.2.08",
+    "Button.2.22",
+    "Button.2.36",
+    "Button.2.5",
+    "Chef cap folded band",
+    "Chef cap top ochre patch",
+    "Chef cap top teal stripe",
+    "Chest pocket.-1",
+    "Chest pocket.1",
+    "Compact chef cap crown",
+    "Double jacket button.-1",
+    "Double jacket button.1",
+    "Ear.-1",
+    "Ear.1",
+    "Eye.-1",
+    "Eye.1",
+    "Flared apron cloth",
+    "Folded kitchen towel",
+    "Folded lapel.-1",
+    "Folded lapel.1",
+    "Forearm.-1",
+    "Forearm.1",
+    "Front placket seam",
+    "Hand.-1",
+    "Hand.1",
+    "Head",
+    "Jumpsuit hips",
+    "Jumpsuit torso",
+    "Lower jacket button.-1",
+    "Lower jacket button.1",
+    "Neck",
+    "Nose",
+    "Pocket flap.-1",
+    "Pocket flap.1",
+    "Rolled hem.-1",
+    "Rolled hem.1",
+    "Rubber sole.-1",
+    "Rubber sole.1",
+    "Shirt collar opening",
+    "Short textured hair",
+    "Sideburn.-1",
+    "Sideburn.1",
+    "Sleeve cuff.-1",
+    "Sleeve cuff.1",
+    "Sleeve.-1",
+    "Sleeve.1",
+    "Trouser leg.-1",
+    "Trouser leg.1",
+    "Trouser seam.-1",
+    "Trouser seam.1",
+    "Waist seam",
+    "Work shoe upper.-1",
+    "Work shoe upper.1"
+  ],
+  "completeStoredMaterialGraphs": 10,
+  "fullStoredGraphSHA256": "4871c7f95ae9f749fd22b8e6240db1012036085b453620db37e6892735dfe250",
+  "rawMeshesModifiersParentsSHA256": "12a2e58a15c3c86eeb401c0e56253fef24fa97a0aef98b7c28a41113b66a21d2",
+  "actionCurvesSHA256": "ed3c11f7a4a2d3354f2e49b5137d73b45d0298f754c3be6ceafdf0fb9233b3df",
+  "allEightOriginalAnimationPosesSHA256": "1dbfecf43c858be0c90929ae92e1eadd2ee13e96c42517263bf5ec1c9c5f4265",
+  "sourceBounds": {
+    "min": [
+      -0.5929999947547913,
+      -0.4339999854564667,
+      0.02500000223517418
+    ],
+    "max": [
+      0.5929999947547913,
+      0.4150000214576721,
+      3.51200008392334
+    ]
+  },
+  "actualRoleContactsFrame1": [
+    {
+      "partA": "Apron chest bib",
+      "partB": "Jumpsuit torso",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        -0.2994999885559082,
+        2.109999895095825
+      ],
+      "aabbIntersectionDepth": [
+        0.5799999833106995,
+        0.020999997854232788,
+        0.7599998712539673
+      ]
+    },
+    {
+      "partA": "Apron waistband",
+      "partB": "Jumpsuit hips",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        -0.2645000219345093,
+        1.6800000667572021
+      ],
+      "aabbIntersectionDepth": [
+        0.800000011920929,
+        0.020999997854232788,
+        0.16000008583068848
+      ]
+    },
+    {
+      "partA": "Apron waistband",
+      "partB": "Flared apron cloth",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        -0.34862497448921204,
+        1.6749999523162842
+      ],
+      "aabbIntersectionDepth": [
+        0.7799999713897705,
+        0.07499998807907104,
+        0.039999961853027344
+      ]
+    },
+    {
+      "partA": "Chef cap folded band",
+      "partB": "Short textured hair",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        0.05500000715255737,
+        3.3550000190734863
+      ],
+      "aabbIntersectionDepth": [
+        0.5839999914169312,
+        0.5559999942779541,
+        0.05499982833862305
+      ]
+    },
+    {
+      "partA": "Chef cap folded band",
+      "partB": "Compact chef cap crown",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        0.037500008940696716,
+        3.372999906539917
+      ],
+      "aabbIntersectionDepth": [
+        0.6100000143051147,
+        0.5949999988079071,
+        0.01900005340576172
+      ]
+    },
+    {
+      "partA": "Compact chef cap crown",
+      "partB": "Head",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        0.003000006079673767,
+        3.3792500495910645
+      ],
+      "aabbIntersectionDepth": [
+        0.5699999928474426,
+        0.5259999930858612,
+        0.03150010108947754
+      ]
+    },
+    {
+      "partA": "Compact chef cap crown",
+      "partB": "Chef cap top teal stripe",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        0.04500001668930054,
+        3.4962501525878906
+      ],
+      "aabbIntersectionDepth": [
+        0.15000000596046448,
+        0.6100000143051147,
+        0.004500150680541992
+      ]
+    },
+    {
+      "partA": "Compact chef cap crown",
+      "partB": "Chef cap top ochre patch",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        0.04500000178813934,
+        3.4962501525878906
+      ],
+      "aabbIntersectionDepth": [
+        0.3799999952316284,
+        0.3199999928474426,
+        0.004500150680541992
+      ]
+    },
+    {
+      "partA": "Apron shoulder strap.-1",
+      "partB": "Apron chest bib",
+      "actualTriangleInteriorWitness": [
+        -0.1769094169139862,
+        -0.31700000166893005,
+        2.509310483932495
+      ],
+      "aabbIntersectionDepth": [
+        0.22618113458156586,
+        0.0559999942779541,
+        0.34137868881225586
+      ]
+    },
+    {
+      "partA": "Apron shoulder strap.-1",
+      "partB": "Jumpsuit torso",
+      "actualTriangleInteriorWitness": [
+        -0.12690941989421844,
+        -0.2462500035762787,
+        2.4389657974243164
+      ],
+      "aabbIntersectionDepth": [
+        0.2523622661828995,
+        0.08500000834465027,
+        0.4013791084289551
+      ]
+    },
+    {
+      "partA": "Apron back strap.-1",
+      "partB": "Jumpsuit torso",
+      "actualTriangleInteriorWitness": [
+        -0.2199999988079071,
+        0.2645000219345093,
+        2.1549999713897705
+      ],
+      "aabbIntersectionDepth": [
+        0.1040000170469284,
+        0.058000028133392334,
+        0.7800003290176392
+      ]
+    },
+    {
+      "partA": "Apron side tie.-1",
+      "partB": "Jumpsuit hips",
+      "actualTriangleInteriorWitness": [
+        -0.36000001430511475,
+        0.06999999284744263,
+        1.690000057220459
+      ],
+      "aabbIntersectionDepth": [
+        0.08000001311302185,
+        0.36000000685453415,
+        0.1099998950958252
+      ]
+    },
+    {
+      "partA": "Apron shoulder strap.1",
+      "partB": "Apron chest bib",
+      "actualTriangleInteriorWitness": [
+        0.1769094169139862,
+        -0.31700000166893005,
+        2.509310483932495
+      ],
+      "aabbIntersectionDepth": [
+        0.22618113458156586,
+        0.0559999942779541,
+        0.34137868881225586
+      ]
+    },
+    {
+      "partA": "Apron shoulder strap.1",
+      "partB": "Jumpsuit torso",
+      "actualTriangleInteriorWitness": [
+        0.12690941989421844,
+        -0.2462500035762787,
+        2.4389657974243164
+      ],
+      "aabbIntersectionDepth": [
+        0.2523622661828995,
+        0.08500000834465027,
+        0.4013791084289551
+      ]
+    },
+    {
+      "partA": "Apron back strap.1",
+      "partB": "Jumpsuit torso",
+      "actualTriangleInteriorWitness": [
+        0.2199999988079071,
+        0.2645000219345093,
+        2.1549999713897705
+      ],
+      "aabbIntersectionDepth": [
+        0.1040000170469284,
+        0.058000028133392334,
+        0.7800003290176392
+      ]
+    },
+    {
+      "partA": "Apron side tie.1",
+      "partB": "Jumpsuit hips",
+      "actualTriangleInteriorWitness": [
+        0.36000001430511475,
+        0.06999999284744263,
+        1.690000057220459
+      ],
+      "aabbIntersectionDepth": [
+        0.08000001311302185,
+        0.36000000685453415,
+        0.1099998950958252
+      ]
+    }
+  ],
+  "unchangedCookProducerFit": {
+    "resolutionPx": [
+      512,
+      512
+    ],
+    "nominalPixelsPerTile": 64,
+    "pivotPx": [
+      256,
+      256
+    ],
+    "cameraTargetTiles": [
+      0,
+      0,
+      0
+    ],
+    "SpriteRootScale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "orthoScale": 15.5,
+    "originalSourceLightsRetained": true
+  },
+  "sourceBytesUnchanged": true
+}
