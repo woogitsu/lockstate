@@ -6,11 +6,14 @@ Read-only diagnostic, 2026-10-03. Subject
 
 ## Verified existing backlog
 
-Fresh GitHub read of [Issue1590](https://github.com/woogitsu/lockstate/issues/1590)
+Fresh GitHub read of [PR1590](https://github.com/woogitsu/lockstate/pull/1590)
 records four on-screen pan buttons beside zoom, a fixed128CSS-pixel movement
 independent of zoom, and reuse of existing localized direction labels. The
 durable adjustable-camera plan names this issue in its Related work section.
-The issue describes historical native evidence, not current integration proof.
+The existing PR describes historical native evidence, not current integration
+proof. GitHub's issue-view command also resolves pull requests; a subsequent
+actual pull-request read and search confirmed this is an open PR, not a separate
+Issue. No duplicate Issue or PR was created for the already tracked slice.
 
 Git history confirms existing source work:
 `b04580171eeed707c32860120499281c28c257ab` added the World pan port and buttons;
@@ -31,7 +34,7 @@ needed to complete this previously named slice.
 
 This is a missing integration capability established by source consumers and
 history, **not a newly reproduced native input regression**. No new Issue is
-appropriate while1590 already tracks it. No browser was launched.
+appropriate while PR1590 already tracks it. No browser was launched.
 
 ## Bounded proposed completion at the initial diagnostic checkpoint
 
