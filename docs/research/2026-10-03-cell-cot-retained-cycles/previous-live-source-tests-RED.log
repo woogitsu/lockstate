@@ -1,0 +1,50 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-cell-cot-retained-cycles-production-20261003
+
+·xx
+node.exe : 
+At line:3 char:1
++ & node node_modules/vitest/vitest.mjs run tests/unit/oblique-cell-cot ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-cell-cot-art.test.ts > authored Cell cot variant catalog > preserves the two-square authored 
+source and all 72 supported camera poses
+AssertionError: expected 'assets/source/blender/furniture.cell.…' to be 'assets/source/blender/furniture.cell.…' // Obj
+ect.is equality
+
+Expected: "assets/source/blender/furniture.cell.cot.single.angled-detail.blend"
+Received: "assets/source/blender/furniture.cell.cot.single.soft-light.blend"
+
+ ❯ tests/unit/oblique-cell-cot-art.test.ts:28:28
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/unit/oblique-cell-cot-detail-integrity.test.ts > preserves original Cell cot geometry/materials/modifiers 
+and publishes connected north-leg/headbar/infill uprights
+AssertionError: expected 'assets/source/blender/furniture.cell.…' to be 'assets/source/blender/furniture.cell.…' // Obj
+ect.is equality
+
+Expected: "assets/source/blender/furniture.cell.cot.single.angled-detail.blend"
+Received: "assets/source/blender/furniture.cell.cot.single.soft-light.blend"
+
+ ❯ tests/unit/oblique-cell-cot-detail-integrity.test.ts:77:26
+     75|   const catalog = parseObliqueModuleCatalog(JSON.parse(readFileSync(ne…
+     76|   expect(catalog.assetId).toBe('furniture.cell.cot.single');
+     77|   expect(catalog.source).toBe(provenance.source);
+       |                          ^
+     78|   expect(catalog.sourceSha256).toBe(provenance.sourceSha256);
+     79|   expect(catalog.resolutionPx).toEqual([256, 256]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  2 failed | 1 passed (3)
+   Start at  22:41:32
+   Duration  307ms (transform 115ms, setup 0ms, import 333ms, tests 19ms, environment 0ms)
+

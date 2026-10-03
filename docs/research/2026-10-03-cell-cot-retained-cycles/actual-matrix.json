@@ -1,45 +1,21 @@
 {
-  "schemaVersion": 1,
-  "assetId": "furniture.cell.cot.single",
-  "source": "assets/source/blender/furniture.cell.cot.single.soft-light.blend",
+  "genuineBlenderVersion": [
+    5,
+    2,
+    1
+  ],
+  "engine": "CYCLES",
+  "device": "CPU",
+  "threads": 1,
+  "samples": 64,
+  "seed": 0,
+  "adaptiveSampling": false,
+  "denoising": false,
+  "viewTransform": "AgX",
+  "actualExportSeconds": 61.4936180000077,
+  "realRenderCount": 72,
   "sourceSha256": "1e3710b77601d6864f1de30d7b37a6220357320ae832354d3920b9fa95b17eba",
-  "resolutionPx": [
-    256,
-    256
-  ],
-  "nominalPixelsPerTile": 64,
-  "pivotPx": [
-    128,
-    128
-  ],
-  "cameraTargetTiles": [
-    0.5,
-    1.0,
-    0.35
-  ],
-  "projection": "orthographic",
-  "yawDegrees": [
-    0,
-    30,
-    60,
-    90,
-    120,
-    150,
-    180,
-    210,
-    240,
-    270,
-    300,
-    330
-  ],
-  "elevationDegrees": [
-    20,
-    30,
-    40,
-    50,
-    60,
-    70
-  ],
+  "descriptorSha256": "ddd214d5e5030e317a6f8516e43672790adc9cd2e62a44bacd2032bd2d28d42a",
   "frames": [
     {
       "yawDegrees": 0,
@@ -473,5 +449,7 @@
       "image": "/assets/environment/oblique/furniture.cell.cot.single-yaw+330-elev70.61a3ec5c0983.png",
       "sha256": "61a3ec5c0983880056d29cd018609a102c811e306c98e49744bc4f9b981aac8a"
     }
-  ]
+  ],
+  "groundPlaneAdded": false,
+  "nativeAcceptance": false
 }

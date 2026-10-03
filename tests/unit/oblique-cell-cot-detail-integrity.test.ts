@@ -74,8 +74,15 @@ it('preserves original Cell cot geometry/materials/modifiers and publishes conne
   expect(obliqueAssetIdForObject('object.bed')).toBe('furniture.cell.cot.single');
   const catalog = parseObliqueModuleCatalog(JSON.parse(readFileSync(new URL('public/game-content/oblique-furniture.cell-cot.v1.json', root), 'utf8')));
   expect(catalog.assetId).toBe('furniture.cell.cot.single');
-  expect(catalog.source).toBe(provenance.source);
-  expect(catalog.sourceSha256).toBe(provenance.sourceSha256);
+  const soft = JSON.parse(readFileSync(new URL('assets/source/blender/furniture.cell.cot.single.soft-light.provenance.json', root), 'utf8')) as { source:string;sourceSha256:string;retainedSource:string;retainedSourceSha256:string;physicalAssembly:{rawMeshes:unknown[];completeStoredMaterialGraphs:unknown[];actualInteriorContacts:unknown[]} };
+  expect(soft.retainedSource).toBe(provenance.source);
+  expect(soft.retainedSourceSha256).toBe(provenance.sourceSha256);
+  expect(soft.physicalAssembly.rawMeshes).toEqual(provenance.allAuthoredRawMeshes);
+  expect(soft.physicalAssembly.completeStoredMaterialGraphs).toEqual(provenance.retainedMaterialValues);
+  expect(soft.physicalAssembly.actualInteriorContacts).toEqual(provenance.actualTriangleInteriorContacts);
+  expect(catalog.source).toBe(soft.source);
+  expect(catalog.sourceSha256).toBe(soft.sourceSha256);
+  expect(catalog.sourceSha256).toBe('1e3710b77601d6864f1de30d7b37a6220357320ae832354d3920b9fa95b17eba');
   expect(catalog.resolutionPx).toEqual([256, 256]);
   expect(catalog.nominalPixelsPerTile).toBe(64);
   expect(catalog.cameraTargetTiles).toEqual([.5, 1, .35]);
