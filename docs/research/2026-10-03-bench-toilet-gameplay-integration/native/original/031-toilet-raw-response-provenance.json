@@ -1,0 +1,112 @@
+[
+  {
+    "url": "http://127.0.0.1:5184/assets/worker-CtiFkH2I.js",
+    "decodedPath": "/assets/worker-CtiFkH2I.js",
+    "status": 200,
+    "encodedPlusInUrl": false,
+    "literalPlusInDecodedPath": false,
+    "rawPlusInUrl": false,
+    "sha256": "5a1aa21affdba3bade723df88766f9c123cbcf6953789600d8b146ff87d60186",
+    "bytes": 442115
+  },
+  {
+    "url": "http://127.0.0.1:5184/game-content/oblique-cell-toilet.v1.json",
+    "decodedPath": "/game-content/oblique-cell-toilet.v1.json",
+    "status": 200,
+    "encodedPlusInUrl": false,
+    "literalPlusInDecodedPath": false,
+    "rawPlusInUrl": false,
+    "sha256": "b651cc3e7cfceb218d1fd7496a1325e4f0205397265e3fed34ac64026523c906",
+    "bytes": 18496
+  },
+  {
+    "url": "http://127.0.0.1:5184/assets/environment/oblique/cell-toilet-yaw-45-elev40.b3fe27fabbbf.png",
+    "decodedPath": "/assets/environment/oblique/cell-toilet-yaw-45-elev40.b3fe27fabbbf.png",
+    "status": 200,
+    "encodedPlusInUrl": false,
+    "literalPlusInDecodedPath": false,
+    "rawPlusInUrl": false,
+    "sha256": "b3fe27fabbbfcbb68426c616196e2b221f0b67107b6f1312c170b150ab710b49",
+    "bytes": 14324
+  },
+  {
+    "url": "http://127.0.0.1:5184/assets/environment/oblique/cell-toilet-yaw+45-elev40.fb4b086cfbce.png",
+    "decodedPath": "/assets/environment/oblique/cell-toilet-yaw+45-elev40.fb4b086cfbce.png",
+    "status": 307,
+    "encodedPlusInUrl": false,
+    "literalPlusInDecodedPath": true,
+    "rawPlusInUrl": true,
+    "location": "/assets/environment/oblique/cell-toilet-yaw%2B45-elev40.fb4b086cfbce.png",
+    "redirectLocationEncodedPlus": true
+  },
+  {
+    "url": "http://127.0.0.1:5184/assets/environment/oblique/cell-toilet-yaw%2B45-elev40.fb4b086cfbce.png",
+    "decodedPath": "/assets/environment/oblique/cell-toilet-yaw+45-elev40.fb4b086cfbce.png",
+    "status": 200,
+    "encodedPlusInUrl": true,
+    "literalPlusInDecodedPath": true,
+    "rawPlusInUrl": false,
+    "sha256": "fb4b086cfbce12ec1ae8a69b0414a70d8e9587e703d33b46e7dfc429f48c2932",
+    "bytes": 14043
+  },
+  {
+    "url": "http://127.0.0.1:5184/assets/environment/oblique/cell-toilet-yaw+45-elev40.fb4b086cfbce.png",
+    "decodedPath": "/assets/environment/oblique/cell-toilet-yaw+45-elev40.fb4b086cfbce.png",
+    "status": 307,
+    "encodedPlusInUrl": false,
+    "literalPlusInDecodedPath": true,
+    "rawPlusInUrl": true,
+    "location": "/assets/environment/oblique/cell-toilet-yaw%2B45-elev40.fb4b086cfbce.png",
+    "redirectLocationEncodedPlus": true
+  },
+  {
+    "url": "http://127.0.0.1:5184/assets/environment/oblique/cell-toilet-yaw%2B45-elev40.fb4b086cfbce.png",
+    "decodedPath": "/assets/environment/oblique/cell-toilet-yaw+45-elev40.fb4b086cfbce.png",
+    "status": 200,
+    "encodedPlusInUrl": true,
+    "literalPlusInDecodedPath": true,
+    "rawPlusInUrl": false,
+    "sha256": "fb4b086cfbce12ec1ae8a69b0414a70d8e9587e703d33b46e7dfc429f48c2932",
+    "bytes": 14043
+  },
+  {
+    "url": "http://127.0.0.1:5184/assets/environment/oblique/cell-toilet-yaw+15-elev40.4c25174a20fe.png",
+    "decodedPath": "/assets/environment/oblique/cell-toilet-yaw+15-elev40.4c25174a20fe.png",
+    "status": 307,
+    "encodedPlusInUrl": false,
+    "literalPlusInDecodedPath": true,
+    "rawPlusInUrl": true,
+    "location": "/assets/environment/oblique/cell-toilet-yaw%2B15-elev40.4c25174a20fe.png",
+    "redirectLocationEncodedPlus": true
+  },
+  {
+    "url": "http://127.0.0.1:5184/assets/environment/oblique/cell-toilet-yaw%2B15-elev40.4c25174a20fe.png",
+    "decodedPath": "/assets/environment/oblique/cell-toilet-yaw+15-elev40.4c25174a20fe.png",
+    "status": 200,
+    "encodedPlusInUrl": true,
+    "literalPlusInDecodedPath": true,
+    "rawPlusInUrl": false,
+    "sha256": "4c25174a20fe377731896d78083fcb7a35173890ec5b4b18fddd4e91ea647697",
+    "bytes": 12343
+  },
+  {
+    "url": "http://127.0.0.1:5184/assets/environment/oblique/cell-toilet-yaw-15-elev40.16b615e04332.png",
+    "decodedPath": "/assets/environment/oblique/cell-toilet-yaw-15-elev40.16b615e04332.png",
+    "status": 200,
+    "encodedPlusInUrl": false,
+    "literalPlusInDecodedPath": false,
+    "rawPlusInUrl": false,
+    "sha256": "16b615e04332b85033c449d7213b1532ba002a4c600b22f5a7d0648ea8ff2696",
+    "bytes": 12580
+  },
+  {
+    "url": "http://127.0.0.1:5184/assets/worker-CtiFkH2I.js",
+    "decodedPath": "/assets/worker-CtiFkH2I.js",
+    "status": 200,
+    "encodedPlusInUrl": false,
+    "literalPlusInDecodedPath": false,
+    "rawPlusInUrl": false,
+    "sha256": "5a1aa21affdba3bade723df88766f9c123cbcf6953789600d8b146ff87d60186",
+    "bytes": 442115
+  }
+]

@@ -1,0 +1,523 @@
+[
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003.json",
+    "archived": "original/report.json",
+    "sourceBytes": 12894,
+    "sourceSha256": "6a9dc20890f85d78819aa6c75cb3d298ce176a27e1f0581537545c1b17ddffc8",
+    "archivedBytes": 12894,
+    "archivedSha256": "6a9dc20890f85d78819aa6c75cb3d298ce176a27e1f0581537545c1b17ddffc8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003.txt",
+    "archived": "original/console.txt",
+    "sourceBytes": 5224,
+    "sourceSha256": "29d7a134160c31299c5bc3c3be91eacc09af77db0f772aa8b8be365b7cc49e16",
+    "archivedBytes": 2625,
+    "archivedSha256": "1963a9d9b9d254004bc0d47f566785e0c2af09db5da3989ab1154a3af64b1e4d",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\.last-run.json",
+    "archived": "original/001-.last-run.json",
+    "sourceBytes": 45,
+    "sourceSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "archivedBytes": 45,
+    "archivedSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\attachments\\dedicated-cell-toilet-worker-and-save-evidence-66f812bd08900aa5bb21c77431626b8bfd567190.json",
+    "archived": "original/002-dedicated-cell-toilet-worker-and-save-evidence-66f812bd08900aa5b.json",
+    "sourceBytes": 129657,
+    "sourceSha256": "5aa7e982b4d4aa35f4cc51d1468355e38e7713880f8252e9d6dc5a17906fc12b",
+    "archivedBytes": 129657,
+    "archivedSha256": "5aa7e982b4d4aa35f4cc51d1468355e38e7713880f8252e9d6dc5a17906fc12b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\capacity-loaded-worker-snapshot.json",
+    "archived": "original/003-capacity-loaded-worker-snapshot.json",
+    "sourceBytes": 54380,
+    "sourceSha256": "3558469950d25ce354c8db725d6943d65fb8fefcbdd260ddf6d35d93d1746b8a",
+    "archivedBytes": 54380,
+    "archivedSha256": "3558469950d25ce354c8db725d6943d65fb8fefcbdd260ddf6d35d93d1746b8a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\completed-worker-snapshot.json",
+    "archived": "original/004-completed-worker-snapshot.json",
+    "sourceBytes": 74696,
+    "sourceSha256": "088e6ae88ba8c222f0883373e548b13c3cfe7d8a09d3a09190009f4966581257",
+    "archivedBytes": 74696,
+    "archivedSha256": "088e6ae88ba8c222f0883373e548b13c3cfe7d8a09d3a09190009f4966581257"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\dedicated-cell-toilet-loaded-fullhd.png",
+    "archived": "original/005-dedicated-cell-toilet-loaded-fullhd.png",
+    "sourceBytes": 1561544,
+    "sourceSha256": "97ac4f73a2905abc3a5207348b1356b1ae297083fe470818403b7f2195190ae4",
+    "archivedBytes": 1561544,
+    "archivedSha256": "97ac4f73a2905abc3a5207348b1356b1ae297083fe470818403b7f2195190ae4"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\dedicated-cell-toilet-worker-and-save-evidence.json",
+    "archived": "original/006-dedicated-cell-toilet-worker-and-save-evidence.json",
+    "sourceBytes": 129657,
+    "sourceSha256": "5aa7e982b4d4aa35f4cc51d1468355e38e7713880f8252e9d6dc5a17906fc12b",
+    "archivedBytes": 129657,
+    "archivedSha256": "5aa7e982b4d4aa35f4cc51d1468355e38e7713880f8252e9d6dc5a17906fc12b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\dedicated-cell-toilet-worker-completed-fullhd.png",
+    "archived": "original/007-dedicated-cell-toilet-worker-completed-fullhd.png",
+    "sourceBytes": 1590266,
+    "sourceSha256": "bf9f1ebd55e0cb5766ea2f11aa4851e4edeb3dff99ab3c7d5c9696d7f71fbd3b",
+    "archivedBytes": 1590266,
+    "archivedSha256": "bf9f1ebd55e0cb5766ea2f11aa4851e4edeb3dff99ab3c7d5c9696d7f71fbd3b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\loaded-worker-snapshot.json",
+    "archived": "original/008-loaded-worker-snapshot.json",
+    "sourceBytes": 74696,
+    "sourceSha256": "565cd21c9d7c779ee975a43ad149efa6ad93501b04f7be2ea5c799c2eb39eaf2",
+    "archivedBytes": 74696,
+    "archivedSha256": "565cd21c9d7c779ee975a43ad149efa6ad93501b04f7be2ea5c799c2eb39eaf2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-actual-network-and-htmlimage-evidence.json",
+    "archived": "original/009-toilet-actual-network-and-htmlimage-evidence.json",
+    "sourceBytes": 24205,
+    "sourceSha256": "3942feccc5b63340f025ce1825f27fd3cc571ae84ed978059e72b6a3ab6eb248",
+    "archivedBytes": 24205,
+    "archivedSha256": "3942feccc5b63340f025ce1825f27fd3cc571ae84ed978059e72b6a3ab6eb248"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-actual200-exposed-frame.png",
+    "archived": "original/010-toilet-actual200-exposed-frame.png",
+    "sourceBytes": 14043,
+    "sourceSha256": "fb4b086cfbce12ec1ae8a69b0414a70d8e9587e703d33b46e7dfc429f48c2932",
+    "archivedBytes": 14043,
+    "archivedSha256": "fb4b086cfbce12ec1ae8a69b0414a70d8e9587e703d33b46e7dfc429f48c2932"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-completed-whole-paused-worker-snapshot.json",
+    "archived": "original/011-toilet-completed-whole-paused-worker-snapshot.json",
+    "sourceBytes": 74696,
+    "sourceSha256": "d0e209f95fe34cfcea039271164cd3d7ba5ccd87050d66cd5616334d7450e31b",
+    "archivedBytes": 74696,
+    "archivedSha256": "d0e209f95fe34cfcea039271164cd3d7ba5ccd87050d66cd5616334d7450e31b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-detail-pending-native-recipe.json",
+    "archived": "original/012-toilet-detail-pending-native-recipe.json",
+    "sourceBytes": 25933,
+    "sourceSha256": "eb3ac889ec12fbf1f93e2d447f4c4959ac40a76569e1ea906d839d6b918beb6c",
+    "archivedBytes": 25933,
+    "archivedSha256": "eb3ac889ec12fbf1f93e2d447f4c4959ac40a76569e1ea906d839d6b918beb6c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-detail-whole-paused-worker-snapshot.json",
+    "archived": "original/013-toilet-detail-whole-paused-worker-snapshot.json",
+    "sourceBytes": 74696,
+    "sourceSha256": "1d1cd5bd7e4a1991c90f5e445536f2fff11474be542d233e38f2717547257337",
+    "archivedBytes": 74696,
+    "archivedSha256": "1d1cd5bd7e4a1991c90f5e445536f2fff11474be542d233e38f2717547257337"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-loaded-whole-paused-worker-snapshot.json",
+    "archived": "original/014-toilet-loaded-whole-paused-worker-snapshot.json",
+    "sourceBytes": 74696,
+    "sourceSha256": "e70869815153b3b9bc32cb4f767cf6eb93895d627f3bbc4a69e351ac81e07132",
+    "archivedBytes": 74696,
+    "archivedSha256": "e70869815153b3b9bc32cb4f767cf6eb93895d627f3bbc4a69e351ac81e07132"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-raw-response-provenance.json",
+    "archived": "original/015-toilet-raw-response-provenance.json",
+    "sourceBytes": 4532,
+    "sourceSha256": "8efc328a6ab930e8342e8f5df32edaef6d00bccb20394641f157a5b083a702a6",
+    "archivedBytes": 4532,
+    "archivedSha256": "8efc328a6ab930e8342e8f5df32edaef6d00bccb20394641f157a5b083a702a6"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-transfer-neck-local45-elev40-loaded-fullhd.png",
+    "archived": "original/016-toilet-transfer-neck-local45-elev40-loaded-fullhd.png",
+    "sourceBytes": 1492076,
+    "sourceSha256": "22ab0b1571411e2365ee53a10ca145e69d624d85141b984b7d833cbc6a7413cc",
+    "archivedBytes": 1492076,
+    "archivedSha256": "22ab0b1571411e2365ee53a10ca145e69d624d85141b984b7d833cbc6a7413cc"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\worker-and-completed-save-evidence.json",
+    "archived": "original/017-worker-and-completed-save-evidence.json",
+    "sourceBytes": 289,
+    "sourceSha256": "51f638f07b2540ba96ba3a9641ef34ed7782c20078716f33323d9229c590cb59",
+    "archivedBytes": 289,
+    "archivedSha256": "51f638f07b2540ba96ba3a9641ef34ed7782c20078716f33323d9229c590cb59"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\attachments\\dedicated-cell-toilet-worker-and-save-evidence-c57fd2d3fcc2d61ee6403544acc69d30cd27d647.json",
+    "archived": "original/018-dedicated-cell-toilet-worker-and-save-evidence-c57fd2d3fcc2d61ee.json",
+    "sourceBytes": 127196,
+    "sourceSha256": "b8ec0f64d7b614d84bac9c05df80f0b20424a432d4a340c7a1952da1db32f234",
+    "archivedBytes": 127196,
+    "archivedSha256": "b8ec0f64d7b614d84bac9c05df80f0b20424a432d4a340c7a1952da1db32f234"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\capacity-loaded-worker-snapshot.json",
+    "archived": "original/019-capacity-loaded-worker-snapshot.json",
+    "sourceBytes": 54380,
+    "sourceSha256": "69bf4f7d26f5aac6e54234f887ffbf3378dfe732991caaff4abf5f12a68bce1d",
+    "archivedBytes": 54380,
+    "archivedSha256": "69bf4f7d26f5aac6e54234f887ffbf3378dfe732991caaff4abf5f12a68bce1d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\completed-worker-snapshot.json",
+    "archived": "original/020-completed-worker-snapshot.json",
+    "sourceBytes": 73082,
+    "sourceSha256": "a4c7c2e72c7ad74a609202e93212257f7daa728098a358bf8d82c4373d39749f",
+    "archivedBytes": 73082,
+    "archivedSha256": "a4c7c2e72c7ad74a609202e93212257f7daa728098a358bf8d82c4373d39749f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\dedicated-cell-toilet-loaded-fullhd.png",
+    "archived": "original/021-dedicated-cell-toilet-loaded-fullhd.png",
+    "sourceBytes": 1478828,
+    "sourceSha256": "f164eb6321de8220a25e2de76fd44c75fc49b3d76cc8d4d8e8d27e54c6720a6d",
+    "archivedBytes": 1478828,
+    "archivedSha256": "f164eb6321de8220a25e2de76fd44c75fc49b3d76cc8d4d8e8d27e54c6720a6d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\dedicated-cell-toilet-worker-and-save-evidence.json",
+    "archived": "original/022-dedicated-cell-toilet-worker-and-save-evidence.json",
+    "sourceBytes": 127196,
+    "sourceSha256": "b8ec0f64d7b614d84bac9c05df80f0b20424a432d4a340c7a1952da1db32f234",
+    "archivedBytes": 127196,
+    "archivedSha256": "b8ec0f64d7b614d84bac9c05df80f0b20424a432d4a340c7a1952da1db32f234"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\dedicated-cell-toilet-worker-completed-fullhd.png",
+    "archived": "original/023-dedicated-cell-toilet-worker-completed-fullhd.png",
+    "sourceBytes": 1506729,
+    "sourceSha256": "91e0d82c8a9e3f6e78b8993f52937cc7202369379e193510d0b5d1adc7482294",
+    "archivedBytes": 1506729,
+    "archivedSha256": "91e0d82c8a9e3f6e78b8993f52937cc7202369379e193510d0b5d1adc7482294"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\loaded-worker-snapshot.json",
+    "archived": "original/024-loaded-worker-snapshot.json",
+    "sourceBytes": 73082,
+    "sourceSha256": "d60a21e4b3840816a3a5517b6a0f018e1933021c3675730367d012af570e5603",
+    "archivedBytes": 73082,
+    "archivedSha256": "d60a21e4b3840816a3a5517b6a0f018e1933021c3675730367d012af570e5603"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\toilet-actual-network-and-htmlimage-evidence.json",
+    "archived": "original/025-toilet-actual-network-and-htmlimage-evidence.json",
+    "sourceBytes": 24205,
+    "sourceSha256": "0327301d6a147b7ab325aba71c116a2551fab4d9338c1836d6fccff1182d5e7c",
+    "archivedBytes": 24205,
+    "archivedSha256": "0327301d6a147b7ab325aba71c116a2551fab4d9338c1836d6fccff1182d5e7c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\toilet-actual200-exposed-frame.png",
+    "archived": "original/026-toilet-actual200-exposed-frame.png",
+    "sourceBytes": 14043,
+    "sourceSha256": "fb4b086cfbce12ec1ae8a69b0414a70d8e9587e703d33b46e7dfc429f48c2932",
+    "archivedBytes": 14043,
+    "archivedSha256": "fb4b086cfbce12ec1ae8a69b0414a70d8e9587e703d33b46e7dfc429f48c2932"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\toilet-completed-whole-paused-worker-snapshot.json",
+    "archived": "original/027-toilet-completed-whole-paused-worker-snapshot.json",
+    "sourceBytes": 73082,
+    "sourceSha256": "acc7786c6024baf5949f826293e432b685dafe142c61e52346cb5f73b11d9dfe",
+    "archivedBytes": 73082,
+    "archivedSha256": "acc7786c6024baf5949f826293e432b685dafe142c61e52346cb5f73b11d9dfe"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\toilet-detail-pending-native-recipe.json",
+    "archived": "original/028-toilet-detail-pending-native-recipe.json",
+    "sourceBytes": 25933,
+    "sourceSha256": "c6c675ff72e58f8d8692d87d73085f284dc78a12a38a0007c4c8f9c6e30ba1ca",
+    "archivedBytes": 25933,
+    "archivedSha256": "c6c675ff72e58f8d8692d87d73085f284dc78a12a38a0007c4c8f9c6e30ba1ca"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\toilet-detail-whole-paused-worker-snapshot.json",
+    "archived": "original/029-toilet-detail-whole-paused-worker-snapshot.json",
+    "sourceBytes": 73082,
+    "sourceSha256": "77b24fa2d565899e92b7934f1724cdbae8c06aecfaf0c86260b7e7a68a9a49c4",
+    "archivedBytes": 73082,
+    "archivedSha256": "77b24fa2d565899e92b7934f1724cdbae8c06aecfaf0c86260b7e7a68a9a49c4"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\toilet-loaded-whole-paused-worker-snapshot.json",
+    "archived": "original/030-toilet-loaded-whole-paused-worker-snapshot.json",
+    "sourceBytes": 73082,
+    "sourceSha256": "e92add942ca54e17511bfd9790d44c167d8626dd9a80c12abfdaf5cf28f9dc11",
+    "archivedBytes": 73082,
+    "archivedSha256": "e92add942ca54e17511bfd9790d44c167d8626dd9a80c12abfdaf5cf28f9dc11"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\toilet-raw-response-provenance.json",
+    "archived": "original/031-toilet-raw-response-provenance.json",
+    "sourceBytes": 4532,
+    "sourceSha256": "d722c3f3b0bc1747044614671ed40ac3ca10b0cc6b83505fa22f80fbcd992609",
+    "archivedBytes": 4532,
+    "archivedSha256": "d722c3f3b0bc1747044614671ed40ac3ca10b0cc6b83505fa22f80fbcd992609"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\toilet-transfer-neck-local45-elev40-loaded-fullhd.png",
+    "archived": "original/032-toilet-transfer-neck-local45-elev40-loaded-fullhd.png",
+    "sourceBytes": 1401991,
+    "sourceSha256": "d1a0c031f7cf4103119a61cb2faf6fbdf3dfbb215a20749d728568e17b3a7aa7",
+    "archivedBytes": 1401991,
+    "archivedSha256": "d1a0c031f7cf4103119a61cb2faf6fbdf3dfbb215a20749d728568e17b3a7aa7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\worker-and-completed-save-evidence.json",
+    "archived": "original/033-worker-and-completed-save-evidence.json",
+    "sourceBytes": 313,
+    "sourceSha256": "13bd0bc158b977bbce8b1394139960188b55a0b037e19b9fdbfcf6c7e01a8963",
+    "archivedBytes": 313,
+    "archivedSha256": "13bd0bc158b977bbce8b1394139960188b55a0b037e19b9fdbfcf6c7e01a8963"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-d5a09--capacity-before-Basic-cell\\capacity-completed-worker-snapshot.json",
+    "archived": "original/034-capacity-completed-worker-snapshot.json",
+    "sourceBytes": 54380,
+    "sourceSha256": "b0f300d4d319aade6a5cd2451dd5ed658a513624c58a8e46cb2724adc1d5d060",
+    "archivedBytes": 54380,
+    "archivedSha256": "b0f300d4d319aade6a5cd2451dd5ed658a513624c58a8e46cb2724adc1d5d060"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--9989a-apacity-before-Holding-Cell\\capacity-completed-worker-snapshot.json",
+    "archived": "original/035-capacity-completed-worker-snapshot.json",
+    "sourceBytes": 54388,
+    "sourceSha256": "c12e112f6cda09b9eec209f5ab22a317842058efd06c420e168a31e65f78dfa0",
+    "archivedBytes": 54388,
+    "archivedSha256": "c12e112f6cda09b9eec209f5ab22a317842058efd06c420e168a31e65f78dfa0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\attachments\\wooden-bench-worker-and-pixel-evidence-2b33ed8b7598adf78d1ca3a547f789f1c3ebb56e.json",
+    "archived": "original/036-wooden-bench-worker-and-pixel-evidence-2b33ed8b7598adf78d1ca3a54.json",
+    "sourceBytes": 130476,
+    "sourceSha256": "a5c1ed1e2506d98776f43cad21889a3c96fa3881530ac920626e64c7eaee6c0b",
+    "archivedBytes": 130476,
+    "archivedSha256": "a5c1ed1e2506d98776f43cad21889a3c96fa3881530ac920626e64c7eaee6c0b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\bench-actual-network-and-htmlimage-evidence.json",
+    "archived": "original/037-bench-actual-network-and-htmlimage-evidence.json",
+    "sourceBytes": 26973,
+    "sourceSha256": "e865213a2106219ed3db71ccf641bd18c775102aa2fab73e9537d691326945c1",
+    "archivedBytes": 26973,
+    "archivedSha256": "e865213a2106219ed3db71ccf641bd18c775102aa2fab73e9537d691326945c1"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\bench-actual200-exposed-frame.png",
+    "archived": "original/038-bench-actual200-exposed-frame.png",
+    "sourceBytes": 7973,
+    "sourceSha256": "845cd9e2698f21575a73b74f7087261bf9e303250b5ea90201441bc696b0e1da",
+    "archivedBytes": 7973,
+    "archivedSha256": "845cd9e2698f21575a73b74f7087261bf9e303250b5ea90201441bc696b0e1da"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\bench-completed-whole-paused-worker-snapshot.json",
+    "archived": "original/039-bench-completed-whole-paused-worker-snapshot.json",
+    "sourceBytes": 75845,
+    "sourceSha256": "267ab3c242880ea3fe62577c7e14749903d25a108a1e87da61bf7a336db35752",
+    "archivedBytes": 75845,
+    "archivedSha256": "267ab3c242880ea3fe62577c7e14749903d25a108a1e87da61bf7a336db35752"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\bench-connected-rails-local60-elev40-loaded-fullhd.png",
+    "archived": "original/040-bench-connected-rails-local60-elev40-loaded-fullhd.png",
+    "sourceBytes": 1597436,
+    "sourceSha256": "a27f8584d0981db72dad221af432212a7d3d1e55d38bae3be5328a338da78d27",
+    "archivedBytes": 1597436,
+    "archivedSha256": "a27f8584d0981db72dad221af432212a7d3d1e55d38bae3be5328a338da78d27"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\bench-detail-pending-native-recipe.json",
+    "archived": "original/041-bench-detail-pending-native-recipe.json",
+    "sourceBytes": 28609,
+    "sourceSha256": "ce0a4eb1bc6cfae88d86d458d0df9ce8f7fafc98d174ac5aa9b3fca0c9747100",
+    "archivedBytes": 28609,
+    "archivedSha256": "ce0a4eb1bc6cfae88d86d458d0df9ce8f7fafc98d174ac5aa9b3fca0c9747100"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\bench-detail-whole-paused-worker-snapshot.json",
+    "archived": "original/042-bench-detail-whole-paused-worker-snapshot.json",
+    "sourceBytes": 75845,
+    "sourceSha256": "a061d6b645329912c5343643de920cea628ce0098579270923d7c0f79f00a6e3",
+    "archivedBytes": 75845,
+    "archivedSha256": "a061d6b645329912c5343643de920cea628ce0098579270923d7c0f79f00a6e3"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\bench-loaded-whole-paused-worker-snapshot.json",
+    "archived": "original/043-bench-loaded-whole-paused-worker-snapshot.json",
+    "sourceBytes": 75845,
+    "sourceSha256": "7a18fe2681d94df5f4017931e70dfeb1cad746927e2c0e78a11413a49f8a0785",
+    "archivedBytes": 75845,
+    "archivedSha256": "7a18fe2681d94df5f4017931e70dfeb1cad746927e2c0e78a11413a49f8a0785"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\bench-raw-response-provenance.json",
+    "archived": "original/044-bench-raw-response-provenance.json",
+    "sourceBytes": 5769,
+    "sourceSha256": "54a37f0b4686db61e2bfb9736c209f572adaf205061e6dd057bb5a5312517aa5",
+    "archivedBytes": 5769,
+    "archivedSha256": "54a37f0b4686db61e2bfb9736c209f572adaf205061e6dd057bb5a5312517aa5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\capacity-loaded-worker-snapshot.json",
+    "archived": "original/045-capacity-loaded-worker-snapshot.json",
+    "sourceBytes": 54388,
+    "sourceSha256": "69577039498022d5c0e946e2668007b6351282c0583a76632a7dfbe73ef50f29",
+    "archivedBytes": 54388,
+    "archivedSha256": "69577039498022d5c0e946e2668007b6351282c0583a76632a7dfbe73ef50f29"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\wooden-bench-loaded-fullhd.png",
+    "archived": "original/046-wooden-bench-loaded-fullhd.png",
+    "sourceBytes": 1478611,
+    "sourceSha256": "4951f7e075a05782f337b02d03f0cb354b8f505b8695cdd5b29a987f0fdbb2d0",
+    "archivedBytes": 1478611,
+    "archivedSha256": "4951f7e075a05782f337b02d03f0cb354b8f505b8695cdd5b29a987f0fdbb2d0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\wooden-bench-worker-and-pixel-evidence.json",
+    "archived": "original/047-wooden-bench-worker-and-pixel-evidence.json",
+    "sourceBytes": 130476,
+    "sourceSha256": "a5c1ed1e2506d98776f43cad21889a3c96fa3881530ac920626e64c7eaee6c0b",
+    "archivedBytes": 130476,
+    "archivedSha256": "a5c1ed1e2506d98776f43cad21889a3c96fa3881530ac920626e64c7eaee6c0b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\wooden-bench-worker-completed-fullhd.png",
+    "archived": "original/048-wooden-bench-worker-completed-fullhd.png",
+    "sourceBytes": 1509831,
+    "sourceSha256": "aab24315457c0901fa1a34b2bbdcd6f2aec61889dd085b87f528951263c15e9c",
+    "archivedBytes": 1509831,
+    "archivedSha256": "aab24315457c0901fa1a34b2bbdcd6f2aec61889dd085b87f528951263c15e9c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\worker-and-completed-pixel-evidence.json",
+    "archived": "original/049-worker-and-completed-pixel-evidence.json",
+    "sourceBytes": 335,
+    "sourceSha256": "d98cbb3f3cacb5c3e59bff1fa79f36afba568598694f56e5a9b9fb10571d124d",
+    "archivedBytes": 335,
+    "archivedSha256": "d98cbb3f3cacb5c3e59bff1fa79f36afba568598694f56e5a9b9fb10571d124d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\attachments\\wooden-bench-worker-and-pixel-evidence-31c1985e670a921d0a16d6d053b6bba85d2fad46.json",
+    "archived": "original/050-wooden-bench-worker-and-pixel-evidence-31c1985e670a921d0a16d6d05.json",
+    "sourceBytes": 130203,
+    "sourceSha256": "91150c3b71b70bc2fe8f900b0a26c4208c216d2155ea7cb9ec105ffcb07bf869",
+    "archivedBytes": 130203,
+    "archivedSha256": "91150c3b71b70bc2fe8f900b0a26c4208c216d2155ea7cb9ec105ffcb07bf869"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\bench-actual-network-and-htmlimage-evidence.json",
+    "archived": "original/051-bench-actual-network-and-htmlimage-evidence.json",
+    "sourceBytes": 25272,
+    "sourceSha256": "d47499c7986fb4ddb3372f927d3e52e5274a30e954fabf8f5d6bd451bce81e4c",
+    "archivedBytes": 25272,
+    "archivedSha256": "d47499c7986fb4ddb3372f927d3e52e5274a30e954fabf8f5d6bd451bce81e4c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\bench-actual200-exposed-frame.png",
+    "archived": "original/052-bench-actual200-exposed-frame.png",
+    "sourceBytes": 7973,
+    "sourceSha256": "845cd9e2698f21575a73b74f7087261bf9e303250b5ea90201441bc696b0e1da",
+    "archivedBytes": 7973,
+    "archivedSha256": "845cd9e2698f21575a73b74f7087261bf9e303250b5ea90201441bc696b0e1da"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\bench-completed-whole-paused-worker-snapshot.json",
+    "archived": "original/053-bench-completed-whole-paused-worker-snapshot.json",
+    "sourceBytes": 75644,
+    "sourceSha256": "163d0fe704610ad249c339ad2ddfa1ed76a285df1d31e0f862f7cb2a12bd4645",
+    "archivedBytes": 75644,
+    "archivedSha256": "163d0fe704610ad249c339ad2ddfa1ed76a285df1d31e0f862f7cb2a12bd4645"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\bench-connected-rails-local60-elev40-loaded-fullhd.png",
+    "archived": "original/054-bench-connected-rails-local60-elev40-loaded-fullhd.png",
+    "sourceBytes": 1600578,
+    "sourceSha256": "312ce60d5860c8c798a27d6d6b272be4739b3eae33058fc096c98a75c1fd2a58",
+    "archivedBytes": 1600578,
+    "archivedSha256": "312ce60d5860c8c798a27d6d6b272be4739b3eae33058fc096c98a75c1fd2a58"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\bench-detail-pending-native-recipe.json",
+    "archived": "original/055-bench-detail-pending-native-recipe.json",
+    "sourceBytes": 26849,
+    "sourceSha256": "f9d1a94e3d9d79bd5b0631dc04c8135391d623cb145b9c6a831ca92df01dde73",
+    "archivedBytes": 26849,
+    "archivedSha256": "f9d1a94e3d9d79bd5b0631dc04c8135391d623cb145b9c6a831ca92df01dde73"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\bench-detail-whole-paused-worker-snapshot.json",
+    "archived": "original/056-bench-detail-whole-paused-worker-snapshot.json",
+    "sourceBytes": 75644,
+    "sourceSha256": "b202f505a38843cf94b9654fa110fd3d45a3e3677d50c81d43d605c4c712f470",
+    "archivedBytes": 75644,
+    "archivedSha256": "b202f505a38843cf94b9654fa110fd3d45a3e3677d50c81d43d605c4c712f470"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\bench-loaded-whole-paused-worker-snapshot.json",
+    "archived": "original/057-bench-loaded-whole-paused-worker-snapshot.json",
+    "sourceBytes": 75644,
+    "sourceSha256": "b91050acbdcc7463d29731716170600d2b6b871622476cac5fa606bac068eafb",
+    "archivedBytes": 75644,
+    "archivedSha256": "b91050acbdcc7463d29731716170600d2b6b871622476cac5fa606bac068eafb"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\bench-raw-response-provenance.json",
+    "archived": "original/058-bench-raw-response-provenance.json",
+    "sourceBytes": 4128,
+    "sourceSha256": "2117f1fbe426961c1ca87ef363b85e82010b2718c8d8ffc9caf63163192d3a16",
+    "archivedBytes": 4128,
+    "archivedSha256": "2117f1fbe426961c1ca87ef363b85e82010b2718c8d8ffc9caf63163192d3a16"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\capacity-loaded-worker-snapshot.json",
+    "archived": "original/059-capacity-loaded-worker-snapshot.json",
+    "sourceBytes": 54388,
+    "sourceSha256": "a9a06eec1dc640cd2392126a0984e1c15d38859d3e10438856a667d41b226e68",
+    "archivedBytes": 54388,
+    "archivedSha256": "a9a06eec1dc640cd2392126a0984e1c15d38859d3e10438856a667d41b226e68"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\wooden-bench-loaded-fullhd.png",
+    "archived": "original/060-wooden-bench-loaded-fullhd.png",
+    "sourceBytes": 1487095,
+    "sourceSha256": "090c78bcfc6fa0b85c67ab950b3a4035f45dded6d9f030ef2a039ca3e8b94972",
+    "archivedBytes": 1487095,
+    "archivedSha256": "090c78bcfc6fa0b85c67ab950b3a4035f45dded6d9f030ef2a039ca3e8b94972"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\wooden-bench-worker-and-pixel-evidence.json",
+    "archived": "original/061-wooden-bench-worker-and-pixel-evidence.json",
+    "sourceBytes": 130203,
+    "sourceSha256": "91150c3b71b70bc2fe8f900b0a26c4208c216d2155ea7cb9ec105ffcb07bf869",
+    "archivedBytes": 130203,
+    "archivedSha256": "91150c3b71b70bc2fe8f900b0a26c4208c216d2155ea7cb9ec105ffcb07bf869"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\wooden-bench-worker-completed-fullhd.png",
+    "archived": "original/062-wooden-bench-worker-completed-fullhd.png",
+    "sourceBytes": 1519540,
+    "sourceSha256": "ae853dc9163a4994c7dba4834407f035319d3078894a3a3a2985d43143f263ae",
+    "archivedBytes": 1519540,
+    "archivedSha256": "ae853dc9163a4994c7dba4834407f035319d3078894a3a3a2985d43143f263ae"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\worker-and-completed-pixel-evidence.json",
+    "archived": "original/063-worker-and-completed-pixel-evidence.json",
+    "sourceBytes": 360,
+    "sourceSha256": "544d1efb0b9274bd086f70860e6732098f980b2eed0e21f595d2b1aec2a6d9a1",
+    "archivedBytes": 360,
+    "archivedSha256": "544d1efb0b9274bd086f70860e6732098f980b2eed0e21f595d2b1aec2a6d9a1"
+  }
+]

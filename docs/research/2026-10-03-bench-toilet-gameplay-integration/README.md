@@ -17,3 +17,7 @@ The root's completed15-case Canteen/Washer/Cot/Guard/history/touch proof and exp
 - Exact full hosted CI, mergeability and serial main CI before production release.
 
 Tiny hardware-only native pixel crops and private per-object texture binding are not claimed. This checkpoint preserves the owner's full playable angled-view/full-square/all-template/model priority.
+
+## Original actual six-case native acceptance
+
+Frozen65e02bebc94272a16c62c7b242b82c6e7d6d4ee8 completes6/6GREEN, no skipped/flaky/unexpected/errors,253.884s. Real capacity and q0/q1 player builds for Bench and CellToilet preserve independently specified object owners/orientations, public camera changes, authored palette crops/minima, actual model loader provenance and whole paused Save/Load. Strict fixtures and production build exit0. The pre-run receipt preserves exact compiled client/worker bytes; original console, JSON, snapshots and FullHD captures are archived under native/original with byte hashes. Consumer omissions and exact restored acceptance remain pending.

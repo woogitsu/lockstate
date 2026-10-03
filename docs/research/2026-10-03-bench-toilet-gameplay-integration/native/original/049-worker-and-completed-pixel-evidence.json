@@ -1,0 +1,21 @@
+{
+  "quarterTurns": 0,
+  "actualBefore": [
+    "object.bench@21,6:orientation=0",
+    "object.bench@23,8:orientation=0"
+  ],
+  "beforePixels": [
+    917,
+    730
+  ],
+  "commands": [
+    {
+      "type": "PlaceRoomTemplate",
+      "templateId": "holding-cell-basic",
+      "origin": {
+        "x": 20,
+        "y": 5
+      }
+    }
+  ]
+}
