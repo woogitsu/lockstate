@@ -30,10 +30,14 @@ function reload(runtime: Runtime): Runtime {
   if (!decoded.ok) throw new Error('Completed template must decode');
   return restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle).runtime;
 }
-const poses = [
-  { quarterTurns: 0, mirrorX: false, definitionId: 'desk-wooden', x: 10, y: 17, approach: tile(11, 17) },
-  { quarterTurns: 1, mirrorX: true, definitionId: 'bed-wooden', x: 9, y: 11, approach: tile(9, 12) },
-] as const;
+const poses = [false, true].flatMap(mirrorX => ([0, 1, 2, 3] as const).map(quarterTurns => {
+  // Independent 4x7 Cell reference: mirror its south doorway x=1, then rotate.
+  const mx = mirrorX ? 2 : 1;
+  const approach = [tile(10 + mx, 17), tile(9, 10 + mx), tile(13 - mx, 9), tile(17, 13 - mx)][quarterTurns]!;
+  const odd = quarterTurns % 2 !== 0;
+  return { quarterTurns, mirrorX, definitionId: odd ? 'bed-wooden' as const : 'desk-wooden' as const,
+    x: approach.x - (odd ? 0 : 1), y: approach.y - (odd ? 1 : 0), approach };
+}));
 it.each(poses.flatMap(pose => [false, true].flatMap(saved => [false, true].map(legal => ({ ...pose, saved, legal })))))
 ('generic $definitionId cannot supersede a completed template approach, turn=$quarterTurns mirror=$mirrorX saved=$saved legal=$legal', testCase => {
   let runtime = createNewSimulationRuntime(73);
@@ -45,12 +49,23 @@ it.each(poses.flatMap(pose => [false, true].flatMap(saved => [false, true].map(l
   expect(runtime.roomTemplates.claimsRoomDoorApproachTile(testCase.approach)).toBe(true);
   const before = captureSessionSnapshot(runtime);
   const fundsBefore = runtime.treasury.snapshot();
-  const x = testCase.x - (testCase.legal ? 1 : 0);
+  const x = testCase.x + (testCase.legal ? (testCase.quarterTurns === 3 ? 1 : -1) : 0);
   send(runtime, { type: 'PlaceBuildOrder', definitionId: testCase.definitionId, orderId: 'independent-object', x, y: testCase.y });
   const order = runtime.construction.getOrder('independent-object')!;
   if (testCase.legal) {
     expect(order.state).not.toBe('failed');
     until(runtime, () => order.state === 'completed');
+    expect(runtime.placedObjects.objectAt(tile(x, testCase.y))?.sourceOrderId).toBe(order.id);
+    expect(runtime.placedObjects.isTileOccupied(testCase.approach)).toBe(false);
+    // A genuine independent gesture still owns its Undo/Redo after encoded Load.
+    runtime = reload(runtime);
+    send(runtime, { type: 'Undo' });
+    expect(runtime.construction.getOrder(order.id)?.state).toBe('cancelled');
+    expect(runtime.placedObjects.getSnapshot()).toHaveLength(2);
+    expect(runtime.roomTemplates.snapshot().completed).toHaveLength(1);
+    runtime = reload(runtime);
+    send(runtime, { type: 'Redo' });
+    until(runtime, () => runtime.construction.getOrder(order.id)?.state === 'completed');
     expect(runtime.placedObjects.objectAt(tile(x, testCase.y))?.sourceOrderId).toBe(order.id);
     expect(runtime.placedObjects.isTileOccupied(testCase.approach)).toBe(false);
     return;
