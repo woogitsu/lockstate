@@ -1,0 +1,4 @@
+Actual typecheck exitCode: 0
+Command: pnpm --config.verify-deps-before-run=false typecheck
+Both main and tooling TypeScript projects passed.
+No browser/server/build started.
