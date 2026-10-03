@@ -1,0 +1,58 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-occupied-row-history-next-audit-20261003
+
+ ❯ tests/integration/occupied-template-refusal-undo-selection.test.ts (24 tests | 14 failed) 5329ms
+   × latest independent purchase eligibility after a real reversal: saved=false surface='queue' 235ms
+   × latest independent purchase eligibility after a real reversal: saved=false surface='stale' 211ms
+   × latest independent purchase eligibility after a real reversal: saved=false surface='supply' 207ms
+   × latest independent purchase eligibility after a real reversal: saved=false surface='pending-object' 196ms
+   × latest independent purchase eligibility after a real reversal: saved=false surface='pending-wall' 201ms
+   × latest independent purchase eligibility after a real reversal: saved=false surface='completed-wall' 200ms
+   × latest independent purchase eligibility after a real reversal: saved=false surface='unknown-owner' 244ms
+   × latest independent purchase eligibility after a real reversal: saved=true surface='queue' 274ms
+   × latest independent purchase eligibility after a real reversal: saved=true surface='stale' 262ms
+   × latest independent purchase eligibility after a real reversal: saved=true surface='supply' 228ms
+   × latest independent purchase eligibility after a real reversal: saved=true surface='pending-object' 218ms
+   × latest independent purchase eligibility after a real reversal: saved=true surface='pending-wall' 220ms
+   × latest independent purchase eligibility after a real reversal: saved=true surface='completed-wall' 220ms
+   × latest independent purchase eligibility after a real reversal: saved=true surface='unknown-owner' 221ms
+
+ Test Files  1 failed (1)
+      Tests  14 failed | 10 passed (24)
+   Start at  03:42:09
+   Duration  8.16s (transform 1.04s, setup 0ms, import 2.68s, tests 5.33s, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 14 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/occupied-template-refusal-undo-selection.test.ts > latest independent purchase eligibility after a real reversal: saved=false surface='queue'
+ FAIL  tests/integration/occupied-template-refusal-undo-selection.test.ts > latest independent purchase eligibility after a real reversal: saved=false surface='stale'
+ FAIL  tests/integration/occupied-template-refusal-undo-selection.test.ts > latest independent purchase eligibility after a real reversal: saved=false surface='supply'
+ FAIL  tests/integration/occupied-template-refusal-undo-selection.test.ts > latest independent purchase eligibility after a real reversal: saved=false surface='pending-object'
+ FAIL  tests/integration/occupied-template-refusal-undo-selection.test.ts > latest independent purchase eligibility after a real reversal: saved=false surface='pending-wall'
+ FAIL  tests/integration/occupied-template-refusal-undo-selection.test.ts > latest independent purchase eligibility after a real reversal: saved=false surface='completed-wall'
+ FAIL  tests/integration/occupied-template-refusal-undo-selection.test.ts > latest independent purchase eligibility after a real reversal: saved=false surface='unknown-owner'
+ FAIL  tests/integration/occupied-template-refusal-undo-selection.test.ts > latest independent purchase eligibility after a real reversal: saved=true surface='queue'
+ FAIL  tests/integration/occupied-template-refusal-undo-selection.test.ts > latest independent purchase eligibility after a real reversal: saved=true surface='stale'
+ FAIL  tests/integration/occupied-template-refusal-undo-selection.test.ts > latest independent purchase eligibility after a real reversal: saved=true surface='supply'
+ FAIL  tests/integration/occupied-template-refusal-undo-selection.test.ts > latest independent purchase eligibility after a real reversal: saved=true surface='pending-object'
+ FAIL  tests/integration/occupied-template-refusal-undo-selection.test.ts > latest independent purchase eligibility after a real reversal: saved=true surface='pending-wall'
+ FAIL  tests/integration/occupied-template-refusal-undo-selection.test.ts > latest independent purchase eligibility after a real reversal: saved=true surface='completed-wall'
+ FAIL  tests/integration/occupied-template-refusal-undo-selection.test.ts > latest independent purchase eligibility after a real reversal: saved=true surface='unknown-owner'
+AssertionError: expected 'completed' to be 'cancelled' // Object.is equality
+
+Expected: "cancelled"
+Received: "completed"
+
+ ❯ tests/integration/occupied-template-refusal-undo-selection.test.ts:111:77
+    109|     }
+    110|     send(runtime, { type: 'Undo' });
+    111|     expect(runtime.construction.getOrder('latest-independent-wall')?.s…
+       |                                                                             ^
+    112|     expect(runtime.construction.getOrder(bed.id)?.state).toBe('complet…
+    113|     expect(runtime.placedObjects.getSnapshot()).toEqual(objects);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/14]⎯
+
+
+Exit code: 1

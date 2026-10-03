@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-occupied-row-history-next-audit-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  24 passed (24)
+   Start at  03:42:33
+   Duration  11.04s (transform 3.22s, setup 0ms, import 5.10s, tests 5.51s, environment 0ms)
+
+
+Exit code: 0
