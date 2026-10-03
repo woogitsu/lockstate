@@ -94,3 +94,25 @@ and no GREEN native outcome is asserted. The current camera disclosure itself
 also needs an explicit visited state if the integrated full-inventory sweep
 reports its default-closed controls; this checkpoint makes no measurement or
 geometry claim about that additional state.
+
+### Follow-up: explicit desktop View inventory
+
+**VERIFIED, source read and strict types:** the subsequent app-shell patch now
+visits View explicitly at the four existing desktop sweep widths. It asserts
+default-closed, publicly opens, remembers the actual SELECT value, selects
+Angled to expose its real pose buttons, records the complete panel inventory
+and applies the original full measurement and hit-test checks to that panel.
+It then restores the original renderer and publicly closes View before
+continuing the ordinary shell states. No original body line or floor is
+removed. Like the existing Layout-menu visit, the open-state covering claim is
+about the floating panel's own controls; the unchanged ordinary states still
+require the whole shell uncovered. [view-inventory-typecheck.txt](./view-inventory-typecheck.txt)
+records app/tools exit 0. There was no browser run.
+
+**UNKNOWN, remaining phone accounting:** the same accepted production CSS
+has `.hud-camera-panel { display: none; }` below 720px and hides its trigger's
+corner at that width. The 375px sweep cannot operate that disclosure publicly.
+This patch preserves the original exact mobile exemptions and final inventory
+assertions, so it does not manufacture phone reachability or a native pass.
+Any new never-laid-out phone entries must be examined against the real
+integrated DOM before deciding an observer update or a product-policy change.
