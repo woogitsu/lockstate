@@ -1,0 +1,16 @@
+pnpm : $ vitest run "tests/unit/oblique-interior-north-door-pose-completion.test.ts" "--reporter=dot"
+At line:2 char:150
++ ... +$env:PATH; pnpm --config.verify-deps-before-run=false test tests/uni ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...--reporter=dot":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-structural-component-art-audit-20261003
+
+······
+
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+   Start at  17:21:41
+   Duration  570ms (transform 153ms, setup 0ms, import 426ms, tests 29ms, environment 0ms)

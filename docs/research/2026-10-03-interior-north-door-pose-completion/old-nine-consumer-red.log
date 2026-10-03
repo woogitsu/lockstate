@@ -1,0 +1,107 @@
+pnpm : $ vitest run "tests/unit/oblique-interior-north-door-pose-completion.test.ts" "--reporter=dot"
+At line:2 char:150
++ ... +$env:PATH; pnpm --config.verify-deps-before-run=false test tests/uni ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...--reporter=dot":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-structural-component-art-audit-20261003
+
+x··xx·
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-interior-north-door-pose-completion.test.ts > retained interior door descriptor reaches actua
+l back-facing edge consumers > north preserves source, complete signed pose grid and all delivered PNG hashes
+AssertionError: expected [ -45, +0, 45 ] to deeply equal [ -180, -165, -150, -135, -120, …(19) ]
+
+- Expected
++ Received
+
+  [
+-   -180,
+-   -165,
+-   -150,
+-   -135,
+-   -120,
+-   -105,
+-   -90,
+-   -75,
+-   -60,
+    -45,
+-   -30,
+-   -15,
+    0,
+-   15,
+-   30,
+    45,
+-   60,
+-   75,
+-   90,
+-   105,
+-   120,
+-   135,
+-   150,
+-   165,
+  ]
+
+ ❯ tests/unit/oblique-interior-north-door-pose-completion.test.ts:31:32
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 3 passed (6)
+   Start at  17:05:36
+   Duration  815ms (transform 151ms, setup 0ms, import 479ms, tests 219ms, environment 0ms)
+
+     29|     expect(catalog.sourceDependencies).toEqual([{ source: 'wall.interi…
+     30|       sha256: '98b264c5b3ea15658d7d8996f403024928c660135a66025adccba1d…
+     31|     expect(catalog.yawDegrees).toEqual(Array.from({ length: 24 }, (_, …
+       |                                ^
+     32|     expect(catalog.elevationDegrees).toEqual([25, 45, 65]);
+     33|     expect(catalog.frames).toHaveLength(72);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  tests/unit/oblique-interior-north-door-pose-completion.test.ts > retained interior door descriptor reaches actua
+l back-facing edge consumers > camera 135 selects authored 135 for BOTH actual north/west doors without altering pickin
+g
+AssertionError: north back-facing camera 135: expected 45 to be 135 // Object.is equality
+
+- Expected
++ Received
+
+- 135
++ 45
+
+ ❯ tests/unit/oblique-interior-north-door-pose-completion.test.ts:72:75
+     70|       const catalog = parseObliqueModuleCatalog(json(`public${entry.ma…
+     71|       const selected = selectObliqueModuleFrame(catalog, pose);
+     72|       expect(selected.yawDegrees, `${edge} back-facing camera ${camera…
+       |                                                                           ^
+     73|       expect(selected.elevationDegrees).toBe(45);
+     74|       const [x, y, width, depth] = edge === 'north' ? [3, 4, 1, 0.22] …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  tests/unit/oblique-interior-north-door-pose-completion.test.ts > retained interior door descriptor reaches actua
+l back-facing edge consumers > camera 225 selects authored -135 for BOTH actual north/west doors without altering picki
+ng
+AssertionError: north back-facing camera 225: expected -45 to be -135 // Object.is equality
+
+- Expected
++ Received
+
+- -135
++ -45
+
+ ❯ tests/unit/oblique-interior-north-door-pose-completion.test.ts:72:75
+     70|       const catalog = parseObliqueModuleCatalog(json(`public${entry.ma…
+     71|       const selected = selectObliqueModuleFrame(catalog, pose);
+     72|       expect(selected.yawDegrees, `${edge} back-facing camera ${camera…
+       |                                                                           ^
+     73|       expect(selected.elevationDegrees).toBe(45);
+     74|       const [x, y, width, depth] = edge === 'north' ? [3, 4, 1, 0.22] …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+[ELIFECYCLE] Test failed. See above for more details.
