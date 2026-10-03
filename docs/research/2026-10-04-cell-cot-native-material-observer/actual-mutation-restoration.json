@@ -1,0 +1,21 @@
+{
+  "originalObserverSha256": "e7469c7d5480f5d3f97e3e336e25fff7b009aa8c8f5e7bebdded208b55a90b3f",
+  "restoredObserverSha256": "e7469c7d5480f5d3f97e3e336e25fff7b009aa8c8f5e7bebdded208b55a90b3f",
+  "byteExactRestore": true,
+  "mutations": [
+    {
+      "mutation": "actual-old-classifier-red.log",
+      "producer": "tests/browser/cell-cot-material-observer.ts",
+      "exitCode": 1,
+      "actualObserverModified": true
+    },
+    {
+      "mutation": "actual-color-omission-red.log",
+      "producer": "tests/browser/cell-cot-material-observer.ts",
+      "exitCode": 1,
+      "actualObserverModified": true
+    }
+  ],
+  "restoredNeighborsExitCode": 0,
+  "nativeExecutionPerformed": false
+}

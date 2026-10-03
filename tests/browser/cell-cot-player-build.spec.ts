@@ -1,6 +1,7 @@
 import { writeFile } from 'node:fs/promises';
 import type { SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
 import { HEADBOARD_FRAME, observeCotImages, publicHeadboardPose, requireCotOwner } from './cell-cot-evidence';
+import { cotBlanketMaterialEvidence } from './cell-cot-material-observer';
 import { expect, test as base, type Page } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
 import { capturePublicNorthDoorBacksides, observeInteriorNorthDoorImages } from './interior-north-door-evidence';
@@ -57,23 +58,6 @@ async function bedAnchors(page: Page): Promise<string[]> {
       .filter(o => o.objectId === 'object.bed')
       .map(o => `${o.anchorTile.x},${o.anchorTile.y}`).sort() ?? [];
   });
-}
-
-async function ochreBlanketPixels(page: Page, png: Buffer): Promise<number> {
-  return page.evaluate(async base64 => {
-    const bitmap = await createImageBitmap(new Blob([Uint8Array.from(atob(base64), c => c.charCodeAt(0))], { type: 'image/png' }));
-    const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
-    const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0);
-    // Fixed Full HD camera after centering the completed Basic cell. This
-    // isolates the authored blanket, unlike the old bed's plain red cover.
-    const pixels = context.getImageData(925, 490, 75, 50).data;
-    let count = 0;
-    for (let index = 0; index < pixels.length; index += 4) {
-      const r = pixels[index]!, g = pixels[index + 1]!, b = pixels[index + 2]!;
-      if (r >= 150 && r <= 215 && g >= 105 && g <= 165 && b >= 65 && b <= 135 && r - g > 20 && g - b > 10) count += 1;
-    }
-    return count;
-  }, png.toString('base64'));
 }
 
 let routeStorage: Awaited<ReturnType<ReturnType<Page['context']>['storageState']>> | undefined;
@@ -185,7 +169,8 @@ test(`player builds the existing bed in a Basic cell q${quarterTurns} and keeps 
   await minimap.click({ position: { x: bounds.width * (quarterTurns === 0 ? 21.5 : 24.5) / 32, y: bounds.height * 6.5 / 32 } });
   await page.mouse.move(1300, 700);
   const painted = await page.screenshot({ path: info.outputPath('cell-cot-worker-completed-fullhd.png') });
-  if (quarterTurns === 0) expect(await ochreBlanketPixels(page, painted), 'built bed must have the authored ochre blanket').toBeGreaterThan(700);
+  const blanketBefore = quarterTurns === 0 ? cotBlanketMaterialEvidence(painted) : undefined;
+  if (quarterTurns === 0) expect(blanketBefore!.authoredBlanketPixels, 'built bed must have the authored ochre blanket').toBeGreaterThan(700);
   await page.getByRole('button', { name: 'Overview', exact: true }).click();
   await page.getByRole('button', { name: 'Save now', exact: true }).click();
   await expect(page.locator('.save-panel__status')).toContainText('Saved');
@@ -199,7 +184,8 @@ test(`player builds the existing bed in a Basic cell q${quarterTurns} and keeps 
   await minimap.click({ position: { x: bounds.width * (quarterTurns === 0 ? 21.5 : 24.5) / 32, y: bounds.height * 6.5 / 32 } });
   await page.mouse.move(1300, 700);
   const restored = await page.screenshot({ path: info.outputPath('cell-cot-loaded-fullhd.png') });
-  if (quarterTurns === 0) expect(await ochreBlanketPixels(page, restored), 'loaded bed must retain the authored blanket').toBeGreaterThan(700);
+  const blanketAfter = quarterTurns === 0 ? cotBlanketMaterialEvidence(restored) : undefined;
+  if (quarterTurns === 0) expect(blanketAfter!.authoredBlanketPixels, 'loaded bed must retain the authored blanket').toBeGreaterThan(700);
   const loadElapsedMs = Date.now() - started;
   if (readDoorImages !== undefined) {
     await capturePublicNorthDoorBacksides(page, info, sequence, () => workerSnapshot(page), readDoorImages);
@@ -223,7 +209,7 @@ test(`player builds the existing bed in a Basic cell q${quarterTurns} and keeps 
   const evidencePath = info.outputPath('cell-cot-owner-loader-save-evidence.json');
   await writeFile(evidencePath, JSON.stringify({ quarterTurns, sequence, ownerBefore, ownerAfter, pausedBefore, pausedAfter,
     expectedPhysicalFootprint: quarterTurns === 0 ? { width: 1, height: 2 } : { width: 2, height: 1 },
-    originalBlanketPaletteChecked: quarterTurns === 0, publicPose, images,
+    originalBlanketPaletteChecked: quarterTurns === 0, blanketBefore, blanketAfter, publicPose, images,
     boundTextureObserved: false, hardwarePixelCalibrationPending: true,
     completionElapsedMs, loadElapsedMs, totalElapsedMs: Date.now() - started,
     commands: (await sentCommands(page)).filter(command => command.type === 'PlaceRoomTemplate'),

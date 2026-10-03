@@ -1,0 +1,10 @@
+node :
+At line:17 char:1
++ node node_modules/@playwright/test/cli.js test --config docs/research ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+Error: No tests found
+Listing tests:
+Total: 0 tests in 0 files
