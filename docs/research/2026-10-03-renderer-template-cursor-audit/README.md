@@ -1,8 +1,12 @@
 # Renderer replacement loses the armed plan's stationary map hover
 
-2026-10-03. Base `975520efc09accf8d2af4a6ceeb9d2f52c973669`. Diagnostic only;
-no production modification, browser, server or new UX rule. Scene/main sources
-remain owned by ROOT. Original production source still fails the new test.
+2026-10-03. Base `975520efc09accf8d2af4a6ceeb9d2f52c973669`. The scoped main/bridge
+physical-hover handoff is implemented and source-verified. Native keyboard View
+acceptance remains queued with ROOT; no browser or server was launched here.
+Scene/protocol/save/art and the accepted fit policy are unchanged.
+
+The original diagnostic below is retained: it preceded the granted production
+lease and was published in `9643890ef5bd476a3388cd86fc7d6cc58b78fa5f`.
 
 ## Actual source reproduction
 
@@ -87,3 +91,50 @@ proposal may retain only a genuine physical canvas point across bridge
 replacement, clear it on actual UI movement and recompute using the current
 camera; it must never copy old world origin, fit lock, verdict or cost. Source
 lease/implementation and production-negative/byte-restore proof are pending.
+
+## Implemented handoff and source acceptance
+
+`main.ts` observes genuine pointer movement in window capture phase, before the
+armed bridge consumes canvas events. It retains only physical clientX/clientY
+when the actual event target is the canvas. Movement over UI clears the memory,
+including the interval when neither old nor new bridge is installed. Window blur
+also clears that host memory. The callback is installed once with the main
+application, rather than once for each renderer replacement.
+
+The new bridge accepts this optional physical point only within the current
+nonempty canvas bounds, converts it using the current bounding rectangle and
+logical canvas dimensions, then uses its own actual picker/fit/tool/worker ports.
+It never copies old origin, fit lock, selection, verdict, quote or preflight.
+A stationary first click submits the freshly chosen current origin normally.
+
+The expanded actual-source suite has20 cases: the four original stationary
+cases now include fresh requests and exact command-origin checks; four physical
+movement controls; four genuine old out-of-bounds worker refusals followed by a
+new legal renderer preview; four UI-movement-during-withdrawal invalidations;
+and four changed-canvas-offset/CSS-ratio controls. Independent affine inversion
+or explicit yaw/elevation inversion checks the new ground origin before fitting.
+Changed CSS ratio is a canvas-transform control, **not a claim of UI200% coverage**.
+
+Obtained raw receipts, all with maxWorkers2:
+
+- Original exact production bytes, expanded suite:12 RED /8 controls GREEN.
+- Fixed production:20 GREEN.
+- Main producer `initialCanvasHover: canvasHover`?undefined:12 RED /8 GREEN.
+- Byte-exact restoration:20 GREEN.
+- Main producer UI branch retaining the old point instead of clearing it:
+  4 RED /16 GREEN, specifically all genuine UI-movement controls.
+- Final byte-exact restoration:20 GREEN; SHA256 receipts in
+  `producer-restoration.json` cover both production files.
+- Focused tool-bridge/fit/live-renderer neighbors plus the new suite:43 GREEN.
+- Strict standalone TypeScript:exit0.
+- App/tools TypeScript and complete production build:exit0.
+
+The old real read-only reply never revives removed DOM or stands down the
+still-armed tool. The source suite also obtains a real clear or refused worker
+reply rather than constructing the expected verdict in the harness.
+
+Native acceptance is pending. Source evidence establishes the missing handoff
+and guards its production implementation; it does not establish physical View
+keyboard selection, actual FullHD HUD safe-fit or browser pixels. ROOT will run
+a dedicated four-case fixture against the built client and preserve any setup
+or acceptance failure before attributing it to production.

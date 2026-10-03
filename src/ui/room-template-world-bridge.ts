@@ -5,6 +5,8 @@ import { roomTemplateMiniatureFixtures } from './hud/room-template-miniature';
 interface Point { readonly x: number; readonly y: number }
 export interface RoomTemplateWorldBridgeOptions {
   readonly tileSize: number;
+  /** Physical client coordinates only; no previous renderer state is retained. */
+  readonly initialCanvasHover?: { readonly clientX: number; readonly clientY: number } | undefined;
   readonly labelSafeBounds?: () => { left: number; top: number; right: number; bottom: number };
   readonly preparePreview?: (screen: Point, physicalMove: boolean) => void;
   readonly resetPreview?: () => void;
@@ -58,10 +60,18 @@ export function installRoomTemplateWorldBridge(canvas: HTMLCanvasElement, tool: 
       painted = '';
     }).catch(() => { if (current === requestRevision) verdict = undefined; });
   };
-  const screenOf = (event: PointerEvent): Point => {
+  const screenOf = (event: Pick<PointerEvent, 'clientX' | 'clientY'>): Point => {
     const bounds = canvas.getBoundingClientRect();
     return { x: (event.clientX - bounds.x) * canvas.width / bounds.width, y: (event.clientY - bounds.y) * canvas.height / bounds.height };
   };
+  const initial = options.initialCanvasHover;
+  if (initial !== undefined) {
+    const bounds = canvas.getBoundingClientRect();
+    if (Number.isFinite(initial.clientX) && Number.isFinite(initial.clientY) && bounds.width > 0 && bounds.height > 0
+      && initial.clientX >= bounds.left && initial.clientX < bounds.right && initial.clientY >= bounds.top && initial.clientY < bounds.bottom) {
+      mapHover = screenOf(initial);
+    }
+  }
   const capture = (event: PointerEvent): boolean => {
     if (!tool.isArmed() || (event.buttons & 6) !== 0 || (event.type !== 'pointermove' && event.button !== 0)) return false;
     event.preventDefault();
