@@ -1,0 +1,39 @@
+﻿{
+    "base":  "5e3c9d6bf71bd6e227947321fe34f2f42fc0c289",
+    "diagnosis":  "2fab2844a0a2abfaabd038dd5c69f33332be638c",
+    "source":  "12421a08f10ef49d9f7bb7e6f7640b1cc5f3d5dc",
+    "issue":  "https://github.com/woogitsu/lockstate/issues/2023",
+    "baseline":  {
+                     "green":  4,
+                     "red":  4
+                 },
+    "fixed":  {
+                  "green":  10
+              },
+    "producerOmission":  {
+                             "green":  6,
+                             "red":  4
+                         },
+    "restored":  {
+                     "green":  10
+                 },
+    "neighbors":  {
+                      "seconds":  10.24,
+                      "green":  266,
+                      "files":  5
+                  },
+    "strictTypesExit":  0,
+    "docs":  {
+                 "seconds":  4.06,
+                 "green":  20,
+                 "files":  3
+             },
+    "sourceFiles":  [
+                        "src/simulation/construction/room-template-coordinator.ts"
+                    ],
+    "browser":  false,
+    "server":  false,
+    "build":  false,
+    "fullVerify":  false,
+    "navigationFailureClaim":  false
+}
