@@ -95,7 +95,7 @@ const SHOWCASE_ASSETS = [
   ['oblique-furniture.storage-room-rack.v1.json', 'furniture.storage-room.timber-rack', '36c75d364d604ee666adf42b287a75f24e3a174bf7b0892a829aeb8a0dc9d435'],
   ['oblique-utility.loading-dock-door.v1.json', 'utility.loading-dock-door.variants', '7eeca158b9e5f92abb139ab8164f5dd7a2aa2f2ca47936e4b08e4ea6c79a3aac'],
   ['oblique-furniture.cell-cot.v1.json', 'furniture.cell.cot.single', '1e3710b77601d6864f1de30d7b37a6220357320ae832354d3920b9fa95b17eba'],
-  ['oblique-cell-toilet.v1.json', 'fixture.cell.toilet_sink', 'ebc1570274663d22315eed0adfafe8886120bdbf9901dfa744edcde540428ff8'],
+  ['oblique-cell-toilet.v1.json', 'fixture.cell.toilet_sink', '1aa9169f65ea498fd1bfe6a2ee600f058c41f1a76685a0109a17da92db398ad5'],
   ['oblique-furniture.kitchen-stove.v1.json', 'furniture.kitchen.stove.variants', '2a912331e9c20a35ea417c25d371cf89a5f80092c3f066504c7b792cb1a042a2'],
   ['oblique-furniture.kitchen-prep-counter.v1.json', 'furniture.kitchen.prep-counter.variants', 'b20bffb79d6ffe66a6c741fc420bd163651faa4813ca4d77740eb3dd55914a8a'],
   ['oblique-furniture.kitchen-fridge.v1.json', 'furniture.kitchen.fridge.variants', '0cb6861e636324cf4d1e6ad35c1739cbac6068f32eb702244f5ddb196715f3d5'],

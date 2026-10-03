@@ -91,9 +91,10 @@ export async function captureLaundryWholePaused(page: Page, path: string): Promi
     if (ask === undefined) throw new Error('existing real Laundry worker read observer absent');
     return ask('simulation/request-snapshot', { reason: 'consistency-check' });
   });
-  const envelope = reply as { kind: string; payload: { snapshot: { data: SessionSnapshotBundle } } };
-  expect(envelope.kind).toBe('simulation/snapshot'); expect(SAVE_SCHEMA_VERSION).toBe(9);
+  const envelope = reply as { kind: string; payload: { snapshot: { schemaVersion: number; data: SessionSnapshotBundle } } };
   await writeFile(path, JSON.stringify(reply, null, 2));
+  expect(envelope.kind).toBe('simulation/snapshot'); expect(SAVE_SCHEMA_VERSION).toBe(10);
+  expect(envelope.payload.snapshot.schemaVersion).toBe(4);
   return envelope.payload.snapshot.data;
 }
 
@@ -138,8 +139,8 @@ export async function recordLaundryCanonical(page: Page, info: TestInfo, turns: 
   await page.screenshot({ path: info.outputPath('laundry-linen-rack-canonical-source60-e40-fullhd.png') });
   await page.locator('#game-root canvas').screenshot({ path: info.outputPath('laundry-linen-rack-canonical-source60-e40-canvas.png') });
   const provenance = await observer.evidence(info, turns);
-  const afterCamera = await captureLaundryWholePaused(page, info.outputPath('laundry-whole-V9-paused-after-camera.json'));
-  expect(afterCamera, 'public camera/art observation preserves the WHOLE paused V9 state').toEqual(loaded);
+  const afterCamera = await captureLaundryWholePaused(page, info.outputPath('laundry-whole-V10-paused-after-camera.json'));
+  expect(afterCamera, 'public camera/art observation preserves the WHOLE paused V10 state').toEqual(loaded);
   await writeFile(info.outputPath('laundry-linen-rack-native-prepared-receipt.json'), JSON.stringify({
     turns, saveSchemaVersion: SAVE_SCHEMA_VERSION, loaded, afterCamera, paidOrderId, provenance,
     cameraWorldDegrees: { yaw: 60, elevation: 40 }, objectOrientation: 0,

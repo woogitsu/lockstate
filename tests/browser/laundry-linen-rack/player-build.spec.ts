@@ -114,7 +114,7 @@ test('player creates storage and delivery capacity before the paid Laundry rack'
 
 
 for (const turns of [0, 1] as const) {
-  test(`player builds Laundry q${turns}, independently buys linen rack and retains whole V9 after Save/Load`, async ({ page }, info) => {
+  test(`player builds Laundry q${turns}, independently buys linen rack and retains whole V10 after Save/Load`, async ({ page }, info) => {
     expect(routeStorage, 'actual prior public capacity save').toBeDefined();
     await installWorkerProbe(page); await installTee(page);
     const observer = await observeLaundryLinenNetwork(page);
@@ -123,7 +123,7 @@ for (const turns of [0, 1] as const) {
     expect(await page.evaluate(() => [innerWidth, innerHeight, devicePixelRatio])).toEqual([1920, 1080, 1]);
     await page.locator('.save-panel__item').first().getByRole('button', { name: 'Load', exact: true }).click();
     await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
-    const capacity = await captureLaundryWholePaused(page, info.outputPath('capacity-whole-V9-paused.json'));
+    const capacity = await captureLaundryWholePaused(page, info.outputPath('capacity-whole-V10-paused.json'));
     expect(capacity.simulation?.economy?.treasury.balanceMinorUnits).toBe(21825);
     await expect(page.locator('[data-metric="rooms"] .ui-stat__value')).toHaveText('2');
     await placePlan(page, 'Laundry', 20, turns);
@@ -157,7 +157,7 @@ for (const turns of [0, 1] as const) {
     await page.getByRole('button', { name: 'Fast forward', exact: true }).click();
     await finishQueuedConstruction(page);
     await page.getByRole('button', { name: 'Pause', exact: true }).click();
-    const built = await captureLaundryWholePaused(page, info.outputPath('laundry-whole-V9-paused-before-save.json'));
+    const built = await captureLaundryWholePaused(page, info.outputPath('laundry-whole-V10-paused-before-save.json'));
     expect(built.simulation?.economy?.treasury.balanceMinorUnits).toBe(20015);
     assertLaundryNativeOwners(built, turns, paidOrderId);
     expect(built.simulation?.objects?.placedObjects.filter(object => object.anchorTile.x < 20))
@@ -176,8 +176,8 @@ for (const turns of [0, 1] as const) {
     await expect(page.locator('.save-panel__status')).toContainText('Saved');
     await page.locator('.save-panel__item').first().getByRole('button', { name: 'Load', exact: true }).click();
     await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
-    const loaded = await captureLaundryWholePaused(page, info.outputPath('laundry-whole-V9-paused-after-load.json'));
-    expect(loaded, 'ALL V9 world, commands, history, owners, economy and systems survive public Save/Load').toEqual(built);
+    const loaded = await captureLaundryWholePaused(page, info.outputPath('laundry-whole-V10-paused-after-load.json'));
+    expect(loaded, 'ALL V10 world, commands, history, owners, economy and systems survive public Save/Load').toEqual(built);
     assertLaundryNativeOwners(loaded, turns, paidOrderId);
     await minimap.click({ position: { x: bounds.width * 22.5 / 32, y: bounds.height * 7.5 / 32 } });
     await page.mouse.move(1300, 700);

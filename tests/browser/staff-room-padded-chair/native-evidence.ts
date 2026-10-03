@@ -110,9 +110,10 @@ export async function captureStaffWholePaused(page: Page, path: string): Promise
     if (ask === undefined) throw new Error('existing real Staff worker read observer absent');
     return ask('simulation/request-snapshot', { reason: 'consistency-check' });
   });
-  const envelope = reply as { kind: string; payload: { snapshot: { data: SessionSnapshotBundle } } };
-  expect(envelope.kind).toBe('simulation/snapshot'); expect(SAVE_SCHEMA_VERSION).toBe(9);
+  const envelope = reply as { kind: string; payload: { snapshot: { schemaVersion: number; data: SessionSnapshotBundle } } };
   await writeFile(path, JSON.stringify(reply, null, 2));
+  expect(envelope.kind).toBe('simulation/snapshot'); expect(SAVE_SCHEMA_VERSION).toBe(10);
+  expect(envelope.payload.snapshot.schemaVersion).toBe(4);
   return envelope.payload.snapshot.data;
 }
 
@@ -121,7 +122,7 @@ export async function captureStaffWholePaused(page: Page, path: string): Promise
  * Public lower3 clamps20; raise2 gives40. No new ROI or guessed pixel threshold. */
 export async function recordStaffCanonicalAfterLoad(page: Page, info: TestInfo, turns: 0 | 1,
   observer: Awaited<ReturnType<typeof observeStaffChairNetwork>>, built: SessionSnapshotBundle, loaded: SessionSnapshotBundle) {
-  expect(loaded, 'ALL current V9 worker state survives public paused Save/Load').toEqual(built);
+  expect(loaded, 'ALL current V10 worker state survives public paused Save/Load').toEqual(built);
   assertStaffNativeOwners(loaded, turns);
   await openCameraControls(page);
   for (let step = 0; step < 4; step++) await page.getByRole('button', { name: 'Rotate camera right', exact: true }).click();

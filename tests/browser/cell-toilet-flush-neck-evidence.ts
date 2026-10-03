@@ -35,9 +35,12 @@ export function assertToiletProducer(data: ToiletSnapshotData, quarterTurns: 0 |
 }
 
 const descriptorPath = '/game-content/oblique-cell-toilet.v1.json';
-const sourceSha256 = 'ebc1570274663d22315eed0adfafe8886120bdbf9901dfa744edcde540428ff8';
-const exposedFrame = '/assets/environment/oblique/cell-toilet-yaw+45-elev40.fb4b086cfbce.png';
-const exposedSha256 = 'fb4b086cfbce12ec1ae8a69b0414a70d8e9587e703d33b46e7dfc429f48c2932';
+const sourceSha256 = '1aa9169f65ea498fd1bfe6a2ee600f058c41f1a76685a0109a17da92db398ad5';
+const descriptorCanonicalTextSha256 = 'a4c23422ef4c3225237ebf6669a042429256e9a0f333afeb4afe534b5111bb5c';
+const exposedFrame = '/assets/environment/oblique/cell-toilet-yaw+45-elev40.12522e96db7e.png';
+const exposedSha256 = '12522e96db7e5cd627928558800c25dda9a33f43643a999213443144a30df312';
+const rearFrame = '/assets/environment/oblique/cell-toilet-yaw-45-elev40.b6c822495349.png';
+const rearSha256 = 'b6c8224953490be75abe1be417c3b40a3bbdb95cda49746e2b09ecb75636a904';
 const sha = (body: Buffer): string => createHash('sha256').update(body).digest('hex');
 interface NetworkRow {
   url: string; decodedPath: string; status: number; location?: string; sha256?: string;
@@ -93,15 +96,20 @@ export function observeToiletNetwork(page: Page) {
         expect(row.sha256).toBeUndefined(); expect(row.bytes).toBeUndefined();
       }
       await Promise.all(pending);
-      const catalog = JSON.parse(bodies.get(descriptorPath)!.toString('utf8')) as ToiletCatalog;
+      const descriptor = bodies.get(descriptorPath)!;
+      expect(sha(Buffer.from(descriptor.toString('utf8').replace(/\r\n/g, '\n')))).toBe(descriptorCanonicalTextSha256);
+      const catalog = JSON.parse(descriptor.toString('utf8')) as ToiletCatalog;
       expect(catalog.assetId).toBe('fixture.cell.toilet_sink');
-      expect(catalog.source).toBe('assets/source/blender/fixture.cell.toilet_sink.angled-connection.blend');
+      expect(catalog.source).toBe('assets/source/blender/fixture.cell.toilet_sink.soft-light.blend');
       expect(catalog.sourceSha256).toBe(sourceSha256);
       expect(catalog.resolutionPx).toEqual([512,512]); expect(catalog.pivotPx).toEqual([256,256]);
       expect(catalog.cameraTargetTiles).toEqual([.5,.5,.5537500381469727]); expect(catalog.nominalPixelsPerTile).toBe(64);
       expect(catalog.frames).toHaveLength(72);
       expect(catalog.frames.filter(frame => frame.yawDegrees===45 && frame.elevationDegrees===40)).toEqual([
         {yawDegrees:45,elevationDegrees:40,image:exposedFrame,sha256:exposedSha256},
+      ]);
+      expect(catalog.frames.filter(frame => frame.yawDegrees===-45 && frame.elevationDegrees===40)).toEqual([
+        {yawDegrees:-45,elevationDegrees:40,image:rearFrame,sha256:rearSha256},
       ]);
       const png=bodies.get(exposedFrame)!; expect(sha(png)).toBe(exposedSha256);
       expect(png.subarray(0,8)).toEqual(Buffer.from([137,80,78,71,13,10,26,10]));

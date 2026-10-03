@@ -1,0 +1,11 @@
+const fs=require('node:fs'),cp=require('node:child_process'),crypto=require('node:crypto');
+const subject='c066ba66c223dca32a9944f75c25751125dd24a0',wt='C:/Users/matma/Documents/Rozwój gier/lockstate-cell-toilet-cycles-20261003';
+const hash=b=>crypto.createHash('sha256').update(b).digest('hex');
+const file='public/game-content/oblique-cell-toilet.v1.json',body=fs.readFileSync(wt+'/'+file),text=body.toString('utf8').replaceAll('\r\n','\n');
+const committed=cp.execFileSync('git',['show',subject+':'+file],{encoding:'utf8'}).replaceAll('\r\n','\n');if(text!==committed)throw Error('Not actual released descriptor');
+const c=JSON.parse(text),source=fs.readFileSync(wt+'/'+c.source);if(hash(source)!==c.sourceSha256)throw Error('Actual source binary mismatch');
+const rows=c.frames.map(f=>{const b=fs.readFileSync(wt+'/public'+f.image);if(hash(b)!==f.sha256)throw Error('Actual frame mismatch');return {...f,actualSha256:hash(b),dimensions:[b.readUInt32BE(16),b.readUInt32BE(20)]};});
+if(rows.length!==72)throw Error('Source72 incomplete');
+const receipt={subject,actualDecodedCheckout:wt,descriptorCanonicalTextSha256:hash(Buffer.from(text)),actualHTTPBodySha256:null,source:c.source,actualSourceSha256:hash(source),sourceBinaryBytes:source.length,rows,canonicalPosePins:rows.filter(r=>[-45,45].includes(r.yawDegrees)&&r.elevationDegrees===40),kind:'read-only released source/art byte check; no native material verdict',buildExecuted:false,browserExecuted:false,ownBaseStillOldToiletSource:true};
+fs.writeFileSync('docs/research/2026-10-03-furniture-v10-native-preparation/released-toilet-source-pins.json',JSON.stringify(receipt,null,2)+'\n');
+console.log({subject,descriptor:receipt.descriptorCanonicalTextSha256,source:receipt.actualSourceSha256,canonical:receipt.canonicalPosePins});
