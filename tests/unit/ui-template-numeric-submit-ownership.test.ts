@@ -210,3 +210,50 @@ for(const mode of ['world','oblique'] as const) for(const numeric of ['accepted'
   expect(snapshot.simulation?.roomTemplates?.pending).toMatchObject([{templateId:'cell-basic',origin:numeric==='accepted'?{x:20,y:5}:h.initialOrigin,quarterTurns:1}]);
  } finally {h.dispose();}
 });
+
+for(const mode of ['world','oblique'] as const) for(const next of ['edited-close','new-selection','new-rearm'] as const) it(`${mode}/${next}: delayed numeric result consumes only its original accepted armed selection`,async()=>{
+ const h=await setup(mode,'cell-basic',1);
+ try {
+  dispatch(h.canvas,'pointerdown',h.point,0,1);h.preview.openButton.dispatchEvent(new Event('click'));await settle(h);
+  const x=h.elements.find(e=>e.attributes.get('aria-label')==='Plan origin X')!,y=h.elements.find(e=>e.attributes.get('aria-label')==='Plan origin Y')!,place=h.elements.find(e=>e.textContent==='Place room plan')!;
+  x.value='20';x.dispatchEvent(new Event('input'));y.value='5';y.dispatchEvent(new Event('input'));await settle(h);expect(place.disabled).toBe(false);
+  h.actors.hold();place.dispatchEvent(new Event('click'));await settle(h);expect(h.actors.held).toHaveLength(1);expect(submitted(h)).toHaveLength(0);
+  if(next==='edited-close') {x.value='21';x.dispatchEvent(new Event('input'));h.close();}
+  else {
+   if(next==='new-selection')h.elements.find(e=>e.attributes.get('data-template-id')==='yard-basic')!.dispatchEvent(new Event('click'));
+   h.elements.find(e=>e.textContent==='Place on map')!.dispatchEvent(new Event('click'));
+  }
+  h.actors.release();await settle(h);
+  expect(h.tool.isArmed()).toBe(next!=='edited-close');
+  dispatch(h.canvas,'pointerup',h.point,0,0);await settle(h);expect(submitted(h)).toHaveLength(next==='edited-close'?1:0);
+  if(next==='edited-close') {
+   expect(submitted(h)[0]!.payload).toMatchObject({command:{data:{type:'PlaceRoomTemplate',origin:{x:20,y:5},quarterTurns:1}}});
+   expect(h.actors.snapshot().construction.orders).toHaveLength(18);
+   // Reopen proves the local edited origin received a new authoritative check,
+   // not submitted-status overwrite from the old accepted operation.
+   h.preview.openButton.dispatchEvent(new Event('click'));await settle(h);expect(place.disabled).toBe(true);expect(h.elements.find(e=>e.className==='hud-template__status')!.textContent).toContain('This footprint is blocked.');
+  } else {
+   expect(h.tool.planAt({x:0,y:0}).id).toBe(next==='new-selection'?'yard-basic':'cell-basic');
+   expect(h.actors.snapshot().construction.orders).toHaveLength(0);
+  }
+ } finally {h.dispose();}
+});
+
+for(const mode of ['world','oblique'] as const) it(`${mode}/delayed-refusal: authoritative numeric rejection after close preserves the rightful map press`,async()=>{
+ const h=await setup(mode,'cell-basic',1);
+ try {
+  dispatch(h.canvas,'pointerdown',h.point,0,1);h.preview.openButton.dispatchEvent(new Event('click'));await settle(h);
+  const x=h.elements.find(e=>e.attributes.get('aria-label')==='Plan origin X')!,y=h.elements.find(e=>e.attributes.get('aria-label')==='Plan origin Y')!,place=h.elements.find(e=>e.textContent==='Place room plan')!;
+  x.value='20';x.dispatchEvent(new Event('input'));y.value='5';y.dispatchEvent(new Event('input'));await settle(h);expect(place.disabled).toBe(false);
+  // A real authoritative order between the readiness query and activation:
+  // the button's old clear verdict does not authorize a second placement.
+  h.actors.commands.submit({type:'PlaceRoomTemplate',templateId:'cell-basic',origin:{x:20,y:5},quarterTurns:1});
+  expect(h.actors.snapshot().construction.orders).toHaveLength(18);
+  h.actors.hold();place.dispatchEvent(new Event('click'));await settle(h);expect(h.actors.held).toHaveLength(1);
+  const reply=h.actors.held[0]!;expect(reply).toMatchObject({kind:'simulation/projection',payload:{projectionId:'world/room-template-preflight'}});
+  h.close();h.actors.release();await settle(h);expect(h.tool.isArmed()).toBe(true);expect(submitted(h)).toHaveLength(1);
+  dispatch(h.canvas,'pointerup',h.point,0,0);await settle(h);expect(submitted(h)).toHaveLength(2);
+  const snapshot=h.actors.snapshot();expect(snapshot.construction.orders).toHaveLength(36);
+  expect(snapshot.simulation?.roomTemplates?.pending).toMatchObject([{origin:{x:20,y:5},quarterTurns:1},{origin:h.initialOrigin,quarterTurns:1}]);
+ } finally {h.dispose();}
+});
