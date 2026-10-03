@@ -1,0 +1,8 @@
+﻿const fs=require('node:fs'),cp=require('node:child_process'),crypto=require('node:crypto'),path=require('node:path');
+const file='src/ui/hud/renderer-selection-control.ts', original=fs.readFileSync(file), out='C:/Users/matma/AppData/Local/Temp/lockstate-camera200-height-review-20261003';
+const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
+const args=['node_modules/vitest/vitest.mjs','run','tests/unit/ui-camera-controls-presentation.test.ts','tests/unit/ui-renderer-selection-control.test.ts','tests/unit/ui-design-tokens.test.ts','--maxWorkers=4'];
+let negative;try {const text=original.toString();const marker="document.documentElement.dataset['uiScaleStep'] === '200'";if(!text.includes(marker))throw Error('exact producer missing');fs.writeFileSync(file,text.replace(marker,"false && document.documentElement.dataset['uiScaleStep'] === '200'"));negative=cp.spawnSync(process.execPath,args,{encoding:'utf8'});fs.writeFileSync(path.join(out,'draft-producer-negative.txt'),negative.stdout+negative.stderr);}finally{fs.writeFileSync(file,original);}
+const restored=cp.spawnSync(process.execPath,args,{encoding:'utf8'});fs.writeFileSync(path.join(out,'draft-source-restored.txt'),restored.stdout+restored.stderr);
+fs.writeFileSync(path.join(out,'draft-mutation.json'),JSON.stringify({head:cp.execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),negativeStatus:negative.status,restoredStatus:restored.status,beforeSha256:sha(original),afterSha256:sha(fs.readFileSync(file)),byteExact:original.equals(fs.readFileSync(file)),sourceDiff:cp.execFileSync('git',['diff','--',file],{encoding:'utf8'})},null,2));
+if(negative.status!==1||restored.status!==0)throw Error('expected real negative and restoration missing');

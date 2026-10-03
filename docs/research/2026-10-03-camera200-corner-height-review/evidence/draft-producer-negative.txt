@@ -1,0 +1,32 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-camera200-review-20261003
+
+ ❯ tests/unit/ui-camera-controls-presentation.test.ts (9 tests | 1 failed) 9ms
+   × review draft derives only the 200% corner budget from the real notice bottom and viewport 2ms
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  1 failed | 95 passed (96)
+   Start at  21:43:09
+   Duration  982ms (transform 134ms, setup 0ms, import 349ms, tests 685ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-camera-controls-presentation.test.ts > review draft derives only the 200% corner budget from the real notice bottom and viewport
+AssertionError: expected '' to be '724px' // Object.is equality
+
+- Expected
++ Received
+
+- 724px
+
+ ❯ tests/unit/ui-camera-controls-presentation.test.ts:110:36
+    108|   s.scale(2); s.strip.bounds.bottom = 259; s.notice.bounds.bottom = 33…
+    109|   ObserverStub.latest.callback();
+    110|   expect(s.corner.style.maxHeight).toBe('724px');
+       |                                    ^
+    111|   s.notice.bounds.bottom = 380; ObserverStub.latest.callback();
+    112|   expect(s.corner.style.maxHeight).toBe('676px');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

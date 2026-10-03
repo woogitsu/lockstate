@@ -1,0 +1,41 @@
+﻿diff --git a/src/ui/hud/renderer-selection-control.ts b/src/ui/hud/renderer-selection-control.ts
+index 97dba9e21c..7b1fb0ef70 100644
+--- a/src/ui/hud/renderer-selection-control.ts
++++ b/src/ui/hud/renderer-selection-control.ts
+@@ -55,7 +55,14 @@ export function createCameraControlsPresentation(options: {
+     // Expanded Angled controls can outgrow the space above the corner at
+     // enlarged UI scale. Use the free map corridor beside that same corner;
+     // its Zoom/View nodes and minimap/alert allocation remain where they are.
+-    const corner = options.hud.querySelector('.hud__corner')?.getBoundingClientRect();
++    const cornerElement = options.hud.querySelector<HTMLElement>('.hud__corner');
++    // REVIEW DRAFT: enlarged corner allocation needs a separate owner choice.
++    // Its maximum follows the actual available playfield below the notices;
++    // ordinary UI retains its existing allocation without an inline override.
++    if (cornerElement !== null) cornerElement.style.maxHeight =
++      document.documentElement.dataset['uiScaleStep'] === '200'
++        ? `${Math.max(0, window.innerHeight - top - gap)}px` : '';
++    const corner = cornerElement?.getBoundingClientRect();
+     if (!panel.hidden && corner !== undefined && top + gap + panel.getBoundingClientRect().height > corner.top) {
+       const sideLeft = corner.right + gap;
+       const sideWidth = rail.left - gap - sideLeft;
+diff --git a/tests/unit/ui-camera-controls-presentation.test.ts b/tests/unit/ui-camera-controls-presentation.test.ts
+index eff2d5fea9..84882348ec 100644
+--- a/tests/unit/ui-camera-controls-presentation.test.ts
++++ b/tests/unit/ui-camera-controls-presentation.test.ts
+@@ -100,3 +100,16 @@ it('keeps the ordinary above-corner fit and follows actual World/Angled height c
+   expect(s.panel.style).toMatchObject({ left: '280px', top: '356px', width: '792px' });
+   expect(s.zoom.children).toEqual([s.trigger]);
+ });
++
++it('review draft derives only the 200% corner budget from the real notice bottom and viewport', () => {
++  const s = setup('disclosure', true, true);
++  Object.defineProperty(window, 'innerHeight', { value: 1080, configurable: true });
++  document.documentElement.dataset['uiScaleStep'] = '200';
++  s.scale(2); s.strip.bounds.bottom = 259; s.notice.bounds.bottom = 332;
++  ObserverStub.latest.callback();
++  expect(s.corner.style.maxHeight).toBe('724px');
++  s.notice.bounds.bottom = 380; ObserverStub.latest.callback();
++  expect(s.corner.style.maxHeight).toBe('676px');
++  document.documentElement.dataset['uiScaleStep'] = '100'; s.scale(1);
++  ObserverStub.latest.callback(); expect(s.corner.style.maxHeight).toBe('');
++});

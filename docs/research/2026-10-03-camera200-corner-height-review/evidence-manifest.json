@@ -1,0 +1,107 @@
+﻿[
+    {
+        "path":  "evidence\\draft-build.txt",
+        "sha256":  "c27ccdd96bf9904a8c3b0e988b91bd9d214ceb893d6943edf754622c44751358",
+        "bytes":  4414
+    },
+    {
+        "path":  "evidence\\draft-compiled-manifest.json",
+        "sha256":  "628e84eee477c284c50bbebf85f887294d2137796774b792da92bb20fbfba8e9",
+        "bytes":  1232
+    },
+    {
+        "path":  "evidence\\draft-mutation.json",
+        "sha256":  "6ed0c9989e39a0ae589cdbea11e63bf140712f139b4a5da007c20240b730cff1",
+        "bytes":  314
+    },
+    {
+        "path":  "evidence\\draft-native.json",
+        "sha256":  "332212dcd5bd82de4ee5e2911bddddc1198b669c137207cf220f0bdb0ce533c9",
+        "bytes":  3586
+    },
+    {
+        "path":  "evidence\\draft-native.stderr.txt",
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes":  0
+    },
+    {
+        "path":  "evidence\\draft-negative.cjs.txt",
+        "sha256":  "62aad994a91e9db99ea0c19f493b5aea2ce8f95a97b817f1a51e505aa5591331",
+        "bytes":  1744
+    },
+    {
+        "path":  "evidence\\draft-producer-negative.txt",
+        "sha256":  "f4d271d279f9ba4c6498ce3faf6fe7ba75029438241bc17e9b51f4beef73754c",
+        "bytes":  1280
+    },
+    {
+        "path":  "evidence\\draft-source-restored.txt",
+        "sha256":  "4a302b1b6b812d24193f50a2fc7744ff903cac4991dca22a44165463b3a95532",
+        "bytes":  260
+    },
+    {
+        "path":  "evidence\\draft-source.txt",
+        "sha256":  "b0ffdb68684428cdb8cb7a5c74b818fc4024622cf1688df8a0fb42122fd2cda6",
+        "bytes":  538
+    },
+    {
+        "path":  "evidence\\draft-types-app.txt",
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes":  0
+    },
+    {
+        "path":  "evidence\\draft-types-tools.txt",
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes":  0
+    },
+    {
+        "path":  "evidence\\geometry-before-after.json",
+        "sha256":  "9adafebf33548b6f48ab1daa92e652c94c22cd8ae75d57cfbf586241932811c0",
+        "bytes":  25200
+    },
+    {
+        "path":  "evidence\\ui200\\actual-paused-after-camera-whole.json",
+        "sha256":  "ad4d98fb8e888802e33a11136a3f96edb964626c8e341022aad7c383a06747a7",
+        "bytes":  15872
+    },
+    {
+        "path":  "evidence\\ui200\\actual-paused-before-camera-whole.json",
+        "sha256":  "86e218c7fe5cb7ee73417057bdcd99ddf4c8b5b393774d013e16b7b3d7690601",
+        "bytes":  15872
+    },
+    {
+        "path":  "evidence\\ui200\\actual-public-camera-interactions.json",
+        "sha256":  "4e75d48bb10c0ac84c20de4534a21a0371a9fe3afb5310a37c69aa05e300e573",
+        "bytes":  2947
+    },
+    {
+        "path":  "evidence\\ui200\\actual-ui200-active-status-all-camera-geometry.json",
+        "sha256":  "7bea1606d79727da67f2335f5af64ff3af17c6a87fd8cd9729bfb516e89057fa",
+        "bytes":  7248
+    },
+    {
+        "path":  "evidence\\ui200\\actual-ui200-active-status-all-camera.png",
+        "sha256":  "6baf4ff2c36b009302cf39cc96ed08f7f0147ccc31ae1322b88468a44de7b270",
+        "bytes":  461731
+    },
+    {
+        "path":  "evidence\\ui200\\actual-ui200-disclosure-closed.png",
+        "sha256":  "b652e2b0768ee92dc0314d13410a97319fef6af1107d5a7676ba41c3beea1d76",
+        "bytes":  276833
+    },
+    {
+        "path":  "evidence\\ui200\\actual-ui200-returned-world-active-status.png",
+        "sha256":  "56deb25c367eeaa3cad30f50c8c8a0c7696b961de35fed2f239d961d3247db58",
+        "bytes":  295556
+    },
+    {
+        "path":  "evidence\\ui200\\diagnostic-before-angled-zoom-ui200.json",
+        "sha256":  "7bea1606d79727da67f2335f5af64ff3af17c6a87fd8cd9729bfb516e89057fa",
+        "bytes":  7248
+    },
+    {
+        "path":  "evidence\\ui200\\diagnostic-before-angled-zoom-ui200.png",
+        "sha256":  "78ed558d13dc2a3d74aaa6d3304be96fb7ddb0aa12f7ded2578053f8e6b8a0d4",
+        "bytes":  489917
+    }
+]

@@ -1,0 +1,510 @@
+﻿{
+    "approvedSource":  "55ebd97ee2b04cf152e181fbb2405b2d6cec2515",
+    "reviewDraftSource":  "7fc32c85f13c88d4756fa433639d7ef3c7391752",
+    "viewportBefore":  {
+                           "width":  1920,
+                           "height":  1080,
+                           "zoom":  1,
+                           "uiScale":  2
+                       },
+    "viewportAfter":  {
+                          "width":  1920,
+                          "height":  1080,
+                          "zoom":  1,
+                          "uiScale":  2
+                      },
+    "unchangedBounds":  {
+                            "tabs":  {
+                                         "before":  {
+                                                        "left":  0,
+                                                        "top":  332,
+                                                        "right":  256,
+                                                        "bottom":  1080,
+                                                        "width":  256,
+                                                        "height":  748
+                                                    },
+                                         "after":  {
+                                                       "left":  0,
+                                                       "top":  332,
+                                                       "right":  256,
+                                                       "bottom":  1080,
+                                                       "width":  256,
+                                                       "height":  748
+                                                   }
+                                     },
+                            "strip":  {
+                                          "before":  {
+                                                         "left":  0,
+                                                         "top":  0,
+                                                         "right":  1920,
+                                                         "bottom":  259,
+                                                         "width":  1920,
+                                                         "height":  259
+                                                     },
+                                          "after":  {
+                                                        "left":  0,
+                                                        "top":  0,
+                                                        "right":  1920,
+                                                        "bottom":  259,
+                                                        "width":  1920,
+                                                        "height":  259
+                                                    }
+                                      },
+                            "panel":  {
+                                          "before":  {
+                                                         "left":  871.34375,
+                                                         "top":  356,
+                                                         "right":  1168,
+                                                         "bottom":  926,
+                                                         "width":  296.65625,
+                                                         "height":  570
+                                                     },
+                                          "after":  {
+                                                        "left":  871.34375,
+                                                        "top":  356,
+                                                        "right":  1168,
+                                                        "bottom":  926,
+                                                        "width":  296.65625,
+                                                        "height":  570
+                                                    }
+                                      },
+                            "band":  {
+                                         "before":  {
+                                                        "left":  0,
+                                                        "top":  259,
+                                                        "right":  1920,
+                                                        "bottom":  332,
+                                                        "width":  1920,
+                                                        "height":  73
+                                                    },
+                                         "after":  {
+                                                       "left":  0,
+                                                       "top":  259,
+                                                       "right":  1920,
+                                                       "bottom":  332,
+                                                       "width":  1920,
+                                                       "height":  73
+                                                   }
+                                     },
+                            "rail":  {
+                                         "before":  {
+                                                        "left":  1192,
+                                                        "top":  332,
+                                                        "right":  1920,
+                                                        "bottom":  1080,
+                                                        "width":  728,
+                                                        "height":  748
+                                                    },
+                                         "after":  {
+                                                       "left":  1192,
+                                                       "top":  332,
+                                                       "right":  1920,
+                                                       "bottom":  1080,
+                                                       "width":  728,
+                                                       "height":  748
+                                                   }
+                                     }
+                        },
+    "cornerBefore":  {
+                         "left":  280,
+                         "top":  552,
+                         "right":  847.34375,
+                         "bottom":  1080,
+                         "width":  567.34375,
+                         "height":  528,
+                         "hidden":  false,
+                         "clientHeight":  528,
+                         "scrollHeight":  528,
+                         "text":  "POWIĘKSZENIE\nOddal\nPrzybliż\nWidok\nMinimapa\nZwiń\nMAPA WIĘZIENIA — NACIŚNIJ, ABY PRZESUNĄĆ KAMERĘ\nPOWIADOMIENIA\nNic nie usunięto — na tym polu nie ma obiektu, nic się tam nie buduje i nie ma tam gotowej ściany.\nOstrzeżenie",
+                         "display":  "flex",
+                         "overflowY":  "visible",
+                         "maxHeight":  "528px",
+                         "minHeight":  "0px"
+                     },
+    "cornerAfter":  {
+                        "left":  280,
+                        "top":  429,
+                        "right":  847.34375,
+                        "bottom":  1080,
+                        "width":  567.34375,
+                        "height":  651,
+                        "hidden":  false,
+                        "clientHeight":  651,
+                        "scrollHeight":  651,
+                        "text":  "POWIĘKSZENIE\nOddal\nPrzybliż\nWidok\nMinimapa\nZwiń\nMAPA WIĘZIENIA — NACIŚNIJ, ABY PRZESUNĄĆ KAMERĘ\nPOWIADOMIENIA\nNic nie usunięto — na tym polu nie ma obiektu, nic się tam nie buduje i nie ma tam gotowej ściany.\nOstrzeżenie",
+                        "display":  "flex",
+                        "overflowY":  "visible",
+                        "maxHeight":  "724px",
+                        "minHeight":  "0px"
+                    },
+    "alertListBefore":  {
+                            "left":  313,
+                            "top":  955,
+                            "right":  805,
+                            "bottom":  1039,
+                            "width":  492,
+                            "height":  84,
+                            "hidden":  false,
+                            "clientHeight":  84,
+                            "scrollHeight":  207,
+                            "text":  "Nic nie usunięto — na tym polu nie ma obiektu, nic się tam nie buduje i nie ma tam gotowej ściany.\nOstrzeżenie",
+                            "display":  "flex",
+                            "overflowY":  "auto",
+                            "maxHeight":  "none",
+                            "minHeight":  "0px"
+                        },
+    "alertListAfter":  {
+                           "left":  313,
+                           "top":  832,
+                           "right":  805,
+                           "bottom":  1039,
+                           "width":  492,
+                           "height":  207,
+                           "hidden":  false,
+                           "clientHeight":  207,
+                           "scrollHeight":  207,
+                           "text":  "Nic nie usunięto — na tym polu nie ma obiektu, nic się tam nie buduje i nie ma tam gotowej ściany.\nOstrzeżenie",
+                           "display":  "flex",
+                           "overflowY":  "auto",
+                           "maxHeight":  "none",
+                           "minHeight":  "0px"
+                       },
+    "rowBefore":  [
+                      {
+                          "left":  313,
+                          "top":  955,
+                          "right":  805,
+                          "bottom":  1162,
+                          "width":  492,
+                          "height":  207,
+                          "text":  "Nic nie usunięto — na tym polu nie ma obiektu, nic się tam nie buduje i nie ma tam gotowej ściany.\nOstrzeżenie"
+                      }
+                  ],
+    "rowAfter":  [
+                     {
+                         "left":  313,
+                         "top":  832,
+                         "right":  805,
+                         "bottom":  1039,
+                         "width":  492,
+                         "height":  207,
+                         "text":  "Nic nie usunięto — na tym polu nie ma obiektu, nic się tam nie buduje i nie ma tam gotowej ściany.\nOstrzeżenie"
+                     }
+                 ],
+    "controlsBefore":  [
+                           {
+                               "left":  510.890625,
+                               "top":  561,
+                               "right":  598.890625,
+                               "bottom":  649,
+                               "width":  88,
+                               "height":  88,
+                               "x":  554,
+                               "y":  605,
+                               "name":  "Oddal",
+                               "tap":  88,
+                               "reachable":  true
+                           },
+                           {
+                               "left":  614.890625,
+                               "top":  561,
+                               "right":  702.890625,
+                               "bottom":  649,
+                               "width":  88,
+                               "height":  88,
+                               "x":  658,
+                               "y":  605,
+                               "name":  "Przybliż",
+                               "tap":  88,
+                               "reachable":  true
+                           },
+                           {
+                               "left":  718.890625,
+                               "top":  561,
+                               "right":  822.34375,
+                               "bottom":  649,
+                               "width":  103.453125,
+                               "height":  88,
+                               "x":  770,
+                               "y":  605,
+                               "name":  "Widok",
+                               "tap":  88,
+                               "reachable":  true
+                           },
+                           {
+                               "left":  888.34375,
+                               "top":  373,
+                               "right":  1030.34375,
+                               "bottom":  461,
+                               "width":  142,
+                               "height":  88,
+                               "x":  959,
+                               "y":  417,
+                               "name":  "Widok",
+                               "tap":  88,
+                               "reachable":  true
+                           },
+                           {
+                               "left":  888.34375,
+                               "top":  477,
+                               "right":  976.34375,
+                               "bottom":  565,
+                               "width":  88,
+                               "height":  88,
+                               "x":  932,
+                               "y":  521,
+                               "name":  "Przesuń kamerę w lewo",
+                               "tap":  88,
+                               "reachable":  true
+                           },
+                           {
+                               "left":  992.34375,
+                               "top":  477,
+                               "right":  1080.34375,
+                               "bottom":  565,
+                               "width":  88,
+                               "height":  88,
+                               "x":  1036,
+                               "y":  521,
+                               "name":  "Przesuń kamerę w górę",
+                               "tap":  88,
+                               "reachable":  true
+                           },
+                           {
+                               "left":  888.34375,
+                               "top":  581,
+                               "right":  976.34375,
+                               "bottom":  669,
+                               "width":  88,
+                               "height":  88,
+                               "x":  932,
+                               "y":  625,
+                               "name":  "Przesuń kamerę w dół",
+                               "tap":  88,
+                               "reachable":  true
+                           },
+                           {
+                               "left":  992.34375,
+                               "top":  581,
+                               "right":  1080.34375,
+                               "bottom":  669,
+                               "width":  88,
+                               "height":  88,
+                               "x":  1036,
+                               "y":  625,
+                               "name":  "Przesuń kamerę w prawo",
+                               "tap":  88,
+                               "reachable":  true
+                           },
+                           {
+                               "left":  888.34375,
+                               "top":  701,
+                               "right":  976.34375,
+                               "bottom":  789,
+                               "width":  88,
+                               "height":  88,
+                               "x":  932,
+                               "y":  745,
+                               "name":  "Obróć kamerę w lewo",
+                               "tap":  88,
+                               "reachable":  true
+                           },
+                           {
+                               "left":  992.34375,
+                               "top":  701,
+                               "right":  1080.34375,
+                               "bottom":  789,
+                               "width":  88,
+                               "height":  88,
+                               "x":  1036,
+                               "y":  745,
+                               "name":  "Obróć kamerę w prawo",
+                               "tap":  88,
+                               "reachable":  true
+                           },
+                           {
+                               "left":  888.34375,
+                               "top":  805,
+                               "right":  976.34375,
+                               "bottom":  893,
+                               "width":  88,
+                               "height":  88,
+                               "x":  932,
+                               "y":  849,
+                               "name":  "Podnieś kąt kamery",
+                               "tap":  88,
+                               "reachable":  true
+                           },
+                           {
+                               "left":  992.34375,
+                               "top":  805,
+                               "right":  1080.34375,
+                               "bottom":  893,
+                               "width":  88,
+                               "height":  88,
+                               "x":  1036,
+                               "y":  849,
+                               "name":  "Obniż kąt kamery",
+                               "tap":  88,
+                               "reachable":  true
+                           }
+                       ],
+    "controlsAfter":  [
+                          {
+                              "left":  510.890625,
+                              "top":  438,
+                              "right":  598.890625,
+                              "bottom":  526,
+                              "width":  88,
+                              "height":  88,
+                              "x":  554,
+                              "y":  482,
+                              "name":  "Oddal",
+                              "tap":  88,
+                              "reachable":  true
+                          },
+                          {
+                              "left":  614.890625,
+                              "top":  438,
+                              "right":  702.890625,
+                              "bottom":  526,
+                              "width":  88,
+                              "height":  88,
+                              "x":  658,
+                              "y":  482,
+                              "name":  "Przybliż",
+                              "tap":  88,
+                              "reachable":  true
+                          },
+                          {
+                              "left":  718.890625,
+                              "top":  438,
+                              "right":  822.34375,
+                              "bottom":  526,
+                              "width":  103.453125,
+                              "height":  88,
+                              "x":  770,
+                              "y":  482,
+                              "name":  "Widok",
+                              "tap":  88,
+                              "reachable":  true
+                          },
+                          {
+                              "left":  888.34375,
+                              "top":  373,
+                              "right":  1030.34375,
+                              "bottom":  461,
+                              "width":  142,
+                              "height":  88,
+                              "x":  959,
+                              "y":  417,
+                              "name":  "Widok",
+                              "tap":  88,
+                              "reachable":  true
+                          },
+                          {
+                              "left":  888.34375,
+                              "top":  477,
+                              "right":  976.34375,
+                              "bottom":  565,
+                              "width":  88,
+                              "height":  88,
+                              "x":  932,
+                              "y":  521,
+                              "name":  "Przesuń kamerę w lewo",
+                              "tap":  88,
+                              "reachable":  true
+                          },
+                          {
+                              "left":  992.34375,
+                              "top":  477,
+                              "right":  1080.34375,
+                              "bottom":  565,
+                              "width":  88,
+                              "height":  88,
+                              "x":  1036,
+                              "y":  521,
+                              "name":  "Przesuń kamerę w górę",
+                              "tap":  88,
+                              "reachable":  true
+                          },
+                          {
+                              "left":  888.34375,
+                              "top":  581,
+                              "right":  976.34375,
+                              "bottom":  669,
+                              "width":  88,
+                              "height":  88,
+                              "x":  932,
+                              "y":  625,
+                              "name":  "Przesuń kamerę w dół",
+                              "tap":  88,
+                              "reachable":  true
+                          },
+                          {
+                              "left":  992.34375,
+                              "top":  581,
+                              "right":  1080.34375,
+                              "bottom":  669,
+                              "width":  88,
+                              "height":  88,
+                              "x":  1036,
+                              "y":  625,
+                              "name":  "Przesuń kamerę w prawo",
+                              "tap":  88,
+                              "reachable":  true
+                          },
+                          {
+                              "left":  888.34375,
+                              "top":  701,
+                              "right":  976.34375,
+                              "bottom":  789,
+                              "width":  88,
+                              "height":  88,
+                              "x":  932,
+                              "y":  745,
+                              "name":  "Obróć kamerę w lewo",
+                              "tap":  88,
+                              "reachable":  true
+                          },
+                          {
+                              "left":  992.34375,
+                              "top":  701,
+                              "right":  1080.34375,
+                              "bottom":  789,
+                              "width":  88,
+                              "height":  88,
+                              "x":  1036,
+                              "y":  745,
+                              "name":  "Obróć kamerę w prawo",
+                              "tap":  88,
+                              "reachable":  true
+                          },
+                          {
+                              "left":  888.34375,
+                              "top":  805,
+                              "right":  976.34375,
+                              "bottom":  893,
+                              "width":  88,
+                              "height":  88,
+                              "x":  932,
+                              "y":  849,
+                              "name":  "Podnieś kąt kamery",
+                              "tap":  88,
+                              "reachable":  true
+                          },
+                          {
+                              "left":  992.34375,
+                              "top":  805,
+                              "right":  1080.34375,
+                              "bottom":  893,
+                              "width":  88,
+                              "height":  88,
+                              "x":  1036,
+                              "y":  849,
+                              "name":  "Obniż kąt kamery",
+                              "tap":  88,
+                              "reachable":  true
+                          }
+                      ]
+}

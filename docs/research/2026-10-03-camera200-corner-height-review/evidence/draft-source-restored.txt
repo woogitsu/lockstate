@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-camera200-review-20261003
+
+
+ Test Files  3 passed (3)
+      Tests  96 passed (96)
+   Start at  21:43:11
+   Duration  927ms (transform 134ms, setup 0ms, import 321ms, tests 654ms, environment 0ms)
+
