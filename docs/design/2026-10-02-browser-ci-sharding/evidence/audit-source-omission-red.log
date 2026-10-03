@@ -1,0 +1,767 @@
+✖ real balanced whole-file collections exactly cover source and once-only artifact (63.501ms)
+✔ simpler real native shard collections have the same exact coverage (4.892ms)
+✔ committed producer and snapshot file sets agree with real collection; future files remain included (9.9125ms)
+✔ coverage guard refuses missing file, duplicate source, and omitted artifact test (533.4875ms)
+✔ all collection configurations retain serial workers and existing case/retry metadata (4.504ms)
+✔ balanced draft preserves gates/provisioning and selects all artifact files once (6.6763ms)
+✔ balanced actual aggregate shell rejects failure/cancellation/skips and mismatched/missing exact subjects (371.0437ms)
+✔ native draft preserves gates/provisioning and selects all artifact files once (3.5267ms)
+✔ native actual aggregate shell rejects failure/cancellation/skips and mismatched/missing exact subjects (406.3412ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 8
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1582.7809
+
+✖ failing tests:
+
+test at docs\design\2026-10-02-browser-ci-sharding\audit-proposal.test.mjs:30:1
+✖ real balanced whole-file collections exactly cover source and once-only artifact (63.501ms)
+  AssertionError [ERR_ASSERTION]: Missing/extra/modified test records
+  + actual - expected
+  ... Skipped lines
+  
+    [
+      {
+        annotations: [],
+        column: 1,
+        expectedStatus: 'passed',
+  ...
+        expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-0a6de009654491bd12ff:',
+  -     line: 11584,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'the first New prison works after one press on the security tab (#680)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-17f48f7781f7dddbd710:',
+  -     line: 7987,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'Manage lists local saves, confirms deletion, restores it, and states why cloud saves are unavailable (#1168)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-258c1c396f3846ef3b94:',
+  -     line: 10953,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'names the build it is, in the top-left corner, from a real injected define'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-27e043e498121f364e99:',
+  -     line: 10261,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'the Buy control charges the quantity its label was showing when it was pressed (#548)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-2a8b68b497af54d5b6b6:',
+  -     line: 8045,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'Manage keeps the built-in prison name localized after reload and deletion'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 5,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-2b2abbc8b2b96f612940:',
+  -     line: 4770,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'every control can actually be pressed, on every tab at 1440x900 (#88)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-2e85f67c8dd8b8d178df:',
+  -     line: 9282,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'one world drag is one transaction, however many edges it covered (#225)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-32ae223861ef40efce61:',
+  -     line: 8452,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'the HUD counts come from the worker rather than from zeros baked into the page'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-3317b8908f7d22f8dea3:',
+  -     line: 8617,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'a control the simulation refuses says so on screen, not to the console (#207)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-3ab6e230e60d8a5c3c04:',
+  -     line: 8354,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'answers an order given while the clock is paused, without the clock ever running'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-3b3c015728938885cdef:',
+  -     line: 10127,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'a fresh, unfurnished prison is refused a hire the starter rung cannot carry and a furnished one could (#771, #1257)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-3dc7e8e5d5d9e6d33644:',
+  -     line: 11231,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'a stored scale that is not a legal step is snapped, and one out of range is refused (#545)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-3ddf1efa2b1468bd015a:',
+  -     line: 9061,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'tells the player when a world press had no object to remove (ADR 0028 phase 3)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 5,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-40e530e24beeb4c9fc67:',
+  -     line: 4770,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'every control can actually be pressed, on every tab at 1280x720 (#88)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-4160019f096ff97e4393:',
+  -     line: 11130,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'the interface scale is applied, cycles through its six steps and survives a reload (#545)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-45a6b8e18cbd276039c8:',
+  -     line: 8146,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'a save file the game exported can be imported back, and the session comes back with it (#287)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-46b48606e32176ecb291:',
+  -     line: 9719,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'spends into the standing overdraft and shows the minus, with nothing else said (#703)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-489671eed9011861b888:',
+  -     line: 9822,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'a purchase this thread refuses reaches the refusal line, and raises no alert (#89, #261)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-4925b6a571b5ec25b328:',
+  -     line: 10371,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'the Build catalogue offers a door its edge chooser, from the real registry (#531)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-4aa469cdc614255a1976:',
+  -     line: 6058,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: "the Rooms panel's last block is inside its fold at every viewport (ADR 0022)"
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 5,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-4f2121455774fb7438e2:',
+  -     line: 11584,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'the first New prison works after one press on the zones tab (#680)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-4fa3e1654adb08a36b05:',
+  -     line: 9556,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'a second purchase inside one pause is refused before it is sent, and the list stays empty (#89, #261, #220)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-4fe716a7b6ae4d8cd541:',
+  -     line: 7899,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'every runtime atlas reaches the page over HTTP and decodes at its authored size'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 5,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-532f3cbdbb57cfb5f1d1:',
+  -     line: 11584,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'the first New prison works after one press on the overview tab (#680)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-53abf87f8f2a27f1af78:',
+  -     line: 8715,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'a wall refused after a world drag says so on screen (#225)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 5,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-54435635a1b983e6fb1b:',
+  -     line: 4770,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'every control can actually be pressed, on every tab at 1024x768 (#88)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-54767f5648ff26eaee4d:',
+  -     line: 8088,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'Manage refreshes an armed deletion age after returning to the tab (#1168)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 5,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-5d7d9728b3d647f07187:',
+  -     line: 4770,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'every control can actually be pressed, on every tab at 375x812 (#88)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-5e4c88ed62645a758d60:',
+  -     line: 11663,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'paints the high-risk chip and orders the Regime roster by tier (#703)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-5e538459847ee3a242fe:',
+  -     line: 8281,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'pressing play makes the HUD clock advance with the simulation'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-603c4373e5f37990e96b:',
+  -     line: 8783,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'a build order the simulation refuses reaches the alerts list (#261)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-677e01a739a31b072ad0:',
+  -     line: 9165,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'a world press with nothing to remove says so at 375x812, where the alerts list does not exist'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-713849540692dd856de7:',
+  -     line: 10841,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'Undo and Redo can be pressed on a phone, and a refusal is marked on the button pressed (#1356)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-79236bddaf038a79c24f:',
+  -     line: 5517,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'a pending delivery is on the panel with the fold shut, and costs it nothing while none is (#285, #703)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-79c208b178f38f9a895f:',
+  -     line: 10453,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'the interval autosave writes after play alone, with no lifecycle event (#146)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-7fbe2a853a214b8eb898:',
+  -     line: 5429,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'the Build catalogue arrow keys move the catalogue, not the world camera'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-8070fb2fc2c170ec990e:',
+  -     line: 6185,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'the Rooms panel opens on a cell, with its rule on screen and its row in view (#935)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-86ed1cdc11d5e7190d11:',
+  -     line: 6260,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'no room type in the catalogue pushes the Rooms panel past its fold (#529)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-8c90642d6c621941f2b6:',
+  -     line: 7958,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'a prison created in the running game is still listed after a real navigation'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-8f27a1ff154b48e146c2:',
+  -     line: 3098,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'the renderer canvas is the size of the window, and stays that way across resizes'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-995153b68701466bda63:',
+  -     line: 9373,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'the Build panel buys materials, and a real PurchaseMaterials reaches the worker (#89)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 5,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-9cc5b4fdd89e1b52d41b:',
+  -     line: 11584,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'the first New prison works after one press on the build tab (#680)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-a498beb49aad3cc47c9d:',
+  -     line: 3214,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'every HUD control the player can actually hit is a real tap target'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-a50d0e23727af090b307:',
+  -     line: 11053,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'still renders when the browser blocks site data, so localStorage throws (#199)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-a63a1c675a1944a962f5:',
+  -     line: 7410,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'takes a room back with the keyboard alone, through the same confirm control (#411)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-a64b5addf60c9298d15d:',
+  -     line: 5233,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'the Build catalogue is one tab stop, and the filter never takes it away (#411)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-aa16be7f2eee476e1717:',
+  -     line: 11454,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'shows every status chip the screen has room for, at every viewport (#634)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-ac771e1976263bdd328a:',
+  -     line: 3133,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'a click in the middle of the screen reaches the world, not the HUD'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-b13498531f3fabe066d2:',
+  -     line: 10688,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'still mounts the interface when the simulation worker cannot start (#82)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-b4f52ae9d440fb68b605:',
+  -     line: 4970,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'the catalogue can be filtered to one category, and the filter costs the panel nothing (#390)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-b561a1cce4be14fcf7a8:',
+  -     line: 6610,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'the Rooms panel says what a zoned room is missing, and says nothing when nothing is (#331)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-b7532f78d15e2fc5cbda:',
+  -     line: 7579,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'every command hands the keyboard back to the control that issued it'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-bb5c20a4e6006209399d:',
+  -     line: 7103,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'zones a room and admits a prisoner with the keyboard alone (#411)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-be90e5f3f4d83c51ac67:',
+  -     line: 8952,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'removes an object from a world press at 375x812, with no key ever pressed'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-c26dcc99741a19d3ac50:',
+  -     line: 10557,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'a second prison loads in the same tab, in a worker of its own (#149)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-c2a357a8a1ec417a5787:',
+  -     line: 6231,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'the selected room stays in view when the interface scale grows (#1648)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-c53b406eda63eb39ec06:',
+  -     line: 11268,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'every interface scale step keeps the HUD inside the viewport it is drawn in (#545)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-c73a0a97b6fb200e8876:',
+  -     line: 4829,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'the Build panel arrives inside its own fold, with nothing queued (#174)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-caba988cf627c622b7d9:',
+  -     line: 10007,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'a fresh, unfurnished prison is refused one brick past the starter rung that a furnished one would be sold (#771, #1257)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 5,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-d1ac606391896193b604:',
+  -     line: 11584,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'the first New prison works after one press on the manage tab (#680)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 5,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-d1d5c0fecf043a477254:',
+  -     line: 4770,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'every control can actually be pressed, on every tab at 900x600 (#88)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-ef4e9804fad8bb3c99ce:',
+  -     line: 10623,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'a worker that cannot be started for a later session is reported, not thrown (#82, #149)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-f9e31e5e48923b311190:',
+  -     line: 6442,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'the Rooms panel yields the world it is drawn on, and brings its confirm pair back'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 3,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-fc9d5f3ea19fa822ac68:',
+  -     line: 10899,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'Undo and Redo are marked unavailable exactly while the prison has nothing for them to do (#1370)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 5,
+  -     expectedStatus: 'passed',
+  -     file: 'app-shell.spec.ts',
+  -     id: 'de3ddf94bbc829c059ee-fd0de4a445af114babdf:',
+  -     line: 11584,
+  -     tags: [],
+  -     timeout: 60000,
+  -     title: 'the first New prison works after one press on the day-plan tab (#680)'
+  -   },
+  -   {
+  -     annotations: [],
+  -     column: 5,
+  -     expectedStatus: 'passed',
+        file: 'world-scene-drag-under-the-hud.spec.ts',
+        id: 'de8722901c6f5590c891-0f4afbecb7d2be06e520:',
+        line: 342,
+        tags: [],
+        timeout: 60000,
+  
+      at exactPartition (file:///C:/Users/matma/Documents/Rozw%C3%B3j%20gier/browser-ci-sharding-proposal-20261002/docs/design/2026-10-02-browser-ci-sharding/audit-proposal.test.mjs:26:10)
+      at TestContext.<anonymous> (file:///C:/Users/matma/Documents/Rozw%C3%B3j%20gier/browser-ci-sharding-proposal-20261002/docs/design/2026-10-02-browser-ci-sharding/audit-proposal.test.mjs:32:3)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.start (node:internal/test_runner/test:1242:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: [ { id: '0481f9d8b067300ff638-dc1e69a724da9637fba2:', file: 'storage-room-rack-player-build.spec.ts', title: 'player builds a Storage Room with two existing racks and keeps them through Save/Load at Full HD', line: 95, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '077355ecd5af94d9a4cd-136adeeea86c4883b9d9:', file: 'room-label.spec.ts', title: 'a name is drawn at a constant screen size at zoom 1, not a constant world size', line: 160, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '077355ecd5af94d9a4cd-15beeb84fb6a6b8c293c:', file: 'room-label.spec.ts', title: 'a name is drawn at a constant screen size at zoom 2, not a constant world size', line: 160, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '077355ecd5af94d9a4cd-2cf1e3a9d8f6c57044cb:', file: 'room-label.spec.ts', title: 'a name is drawn at a constant screen size at zoom 0.2, not a constant world size', line: 160, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '077355ecd5af94d9a4cd-4b992e11985f50b0ebab:', file: 'room-label.spec.ts', title: 'a name draws over a bed standing in its room, not under it, at zoom 3', line: 296, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '077355ecd5af94d9a4cd-763ba7e899ed7be1ee23:', file: 'room-label.spec.ts', title: 'a name is drawn at a constant screen size at zoom 0.5, not a constant world size', line: 160, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '077355ecd5af94d9a4cd-7720688f7aca66ae6a09:', file: 'room-label.spec.ts', title: 'a name draws over a bed standing in its room, not under it, at zoom 1', line: 296, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '077355ecd5af94d9a4cd-8c922a51635a62c011b9:', file: 'room-label.spec.ts', title: 'the words a player reads come from the catalogue nameKey through the locale', line: 184, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '077355ecd5af94d9a4cd-929a47c4e83e0471d21d:', file: 'room-label.spec.ts', title: 'omits a name wider than its room at zoom 0.2, and only that one', line: 203, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '077355ecd5af94d9a4cd-bec8c17e0bd34a63ea0a:', file: 'room-label.spec.ts', title: 'a name is drawn at a constant screen size at zoom 3, not a constant world size', line: 160, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '095c3809c78b9987f6be-878570d908c8fa682556:', file: 'security-console-player-build.spec.ts', title: 'player creates storage and delivery capacity before Security Office', line: 136, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '095c3809c78b9987f6be-9b35ec2d7abbaef5cdd5:', file: 'security-console-player-build.spec.ts', title: 'player builds the security console in Security Office and keeps it after Save/Load', line: 198, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '09b1b663531509e9e1a0-b057cf9f3d2ba09198ca:', file: 'local-save-errors.spec.ts', title: 'storage failures never leak an unhandled promise rejection', line: 131, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '09b1b663531509e9e1a0-c541e4882e091b7db340:', file: 'local-save-errors.spec.ts', title: 'every documented error name matches what the browser actually throws', line: 81, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '09b1b663531509e9e1a0-d0cb335e1f22445f9ef7:', file: 'local-save-errors.spec.ts', title: 'a throw inside work() aborts the real transaction, discarding staged writes', line: 123, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '09b1b663531509e9e1a0-de463fe9d3ea652f0a2f:', file: 'local-save-errors.spec.ts', title: 'a real DOMException is an Error instance, which every classification branch depends on', line: 96, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '09cc6d361df955564108-5ea3728cc9c77032add1:', file: 'ui-build-arm-label-fit.spec.ts', title: 'an unbreakable label is contained rather than painted over its neighbour (#926)', line: 220, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '09cc6d361df955564108-91fc5ccfe82027bb5f99:', file: 'ui-build-arm-label-fit.spec.ts', title: 'the arm label stays inside its own button at every viewport (#926)', line: 112, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '09cc6d361df955564108-91fe7c0665cd6604fd01:', file: 'ui-build-arm-label-fit.spec.ts', title: 'no label in the HUD paints outside its own control (#926)', line: 182, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '09d477c569b327454a31-66c74fa28620a3f7efca:', file: 'room-template-paused-cancel-retry.spec.ts', title: 'Full HD cancelled room plan can be placed again while paused through save and load', line: 2, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '0c87d12a1fc7e27a0903-7f4897c88e6645f64f3f:', file: 'fullhd-zoom-navigation-drawer.spec.ts', title: 'a collapsed navigation can be restored from the Full HD zoom drawer when loaded from settings', line: 177, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '0c87d12a1fc7e27a0903-8d63cdaac63e3ffb41ce:', file: 'fullhd-zoom-navigation-drawer.spec.ts', title: 'Full HD at 200% page zoom keeps six sections in a keyboard reachable drawer at 200% UI scale', line: 22, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '0c87d12a1fc7e27a0903-9575032c546472105829:', file: 'fullhd-zoom-navigation-drawer.spec.ts', title: 'Full HD at 200% page zoom keeps six sections in a keyboard reachable drawer at 175% UI scale', line: 22, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '0c87d12a1fc7e27a0903-e1e5acfcaa745cae2dc3:', file: 'fullhd-zoom-navigation-drawer.spec.ts', title: 'Polish status labels remain readable at Full HD 200% page zoom and 200% UI scale', line: 150, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '0c87d12a1fc7e27a0903-f261bc672badd3a8a773:', file: 'fullhd-zoom-navigation-drawer.spec.ts', title: 'Polish status labels remain readable at Full HD 200% page zoom and 175% UI scale', line: 150, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '0f8859b428a80a5e7533-0673bf0aee80e7cf4827:', file: 'oblique-camera-new-prison-frame.spec.ts', title: 'angled camera returns to a newly created prison after panning beyond the old map', line: 2, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1063f0330769b3de0e18-08dcf4aa193abf33984a:', file: 'first-square-clock-hint.spec.ts', title: 'Full HD first paused square order explains clock dependency and keyboard Play completes it', line: 2, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '117939e6a2b9ba19cdc6-6061b4635590d780c6bb:', file: 'actor-guard-rendering.spec.ts', title: 'places a sprite from the guard atlas, not the placeholder for missing art', line: 32, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '117939e6a2b9ba19cdc6-e5ed898f80144b65002e:', file: 'actor-guard-rendering.spec.ts', title: 'draws a guard beside a prisoner, each from its own atlas, on the same frame', line: 51, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '120a3e89aff948b22e26-718bb6191ef766f91d5c:', file: 'staff-room-desk-player-build.spec.ts', title: 'player builds the existing 2 x 1 desk in Staff Room and keeps it after Save/Load at Full HD', line: 204, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '120a3e89aff948b22e26-e8b2b1a8a332f4284e8a:', file: 'staff-room-desk-player-build.spec.ts', title: 'player furnishes delivery and storage plans before the Staff Room desk test', line: 140, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '122b1161d48ee6350b51-1bb83224e0eaff1e5d7f:', file: 'unplaced-surfaces.spec.ts', title: 'every unplaced surface is on the page at tablet (1024x768)', line: 144, column: 5, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '122b1161d48ee6350b51-60c18687bab381619d3f:', file: 'unplaced-surfaces.spec.ts', title: 'the Layout menu opens onto a reachable language picker at phone', line: 173, column: 5, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '122b1161d48ee6350b51-6bc5c548f60c0be36c3f:', file: 'unplaced-surfaces.spec.ts', title: 'the Layout menu opens onto a reachable language picker at desktop', line: 173, column: 5, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '122b1161d48ee6350b51-74c271f2012a9a08ed0b:', file: 'unplaced-surfaces.spec.ts', title: 'every unplaced surface is on the page at phone (375x812)', line: 144, column: 5, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '122b1161d48ee6350b51-9572e51f18f1b862f6fa:', file: 'unplaced-surfaces.spec.ts', title: 'the map corner drops at 720px and below, which is where three unplaced surfaces go', line: 204, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '122b1161d48ee6350b51-c78be674cc06e164d1d7:', file: 'unplaced-surfaces.spec.ts', title: 'the Layout menu opens onto a reachable language picker at tablet', line: 173, column: 5, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '122b1161d48ee6350b51-dc202804977d1e9e64a9:', file: 'unplaced-surfaces.spec.ts', title: 'every unplaced surface is on the page at desktop (1440x900)', line: 144, column: 5, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '138d66f9bf5507cb2922-1a1bb0f738855f9902a1:', file: 'oblique-art-runtime.spec.ts', title: 'authored furniture stays visible, turns, and scales with the angled camera at Full HD', line: 2, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '138d66f9bf5507cb2922-5a14c203c59e8491bba5:', file: 'oblique-art-runtime.spec.ts', title: 'built chair consumes its Blender frame in the angled scene', line: 35, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '138d66f9bf5507cb2922-f79b20aa653501395a63:', file: 'oblique-art-runtime.spec.ts', title: 'built storage rack consumes its Blender frame in the angled scene', line: 21, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '14c3022de824ab886bcc-b7e70f6766795d9eb5cd:', file: 'ui-refusal-shortfall.spec.ts', title: 'the Buy control says it before the press, keeps saying it through the refusal, and withdraws when it no longer applies', line: 123, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '14c3022de824ab886bcc-bc3658bce207d7f20090:', file: 'ui-refusal-shortfall.spec.ts', title: 'the Hire control says how much more is needed, and the figure is the fee rather than the wage', line: 335, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1518229501fe1a052d69-05119e258b6c54ad7aea:', file: 'ui-roster-guidance.spec.ts', title: 'first empty roster opens Build and focuses its catalogue by keyboard', line: 29, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1518229501fe1a052d69-13b9702f66bc3babd140:', file: 'ui-roster-guidance.spec.ts', title: 'discharged roster opens Manage and focuses Admit by keyboard', line: 46, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1518229501fe1a052d69-3a8a2faba542bca9d8c2:', file: 'ui-roster-guidance.spec.ts', title: 'discharged roster opens Manage and focuses Admit by pointer', line: 46, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1518229501fe1a052d69-4c7e9ae53ef084b834d4:', file: 'ui-roster-guidance.spec.ts', title: 'the empty roster opens Build from a touch press', line: 72, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1518229501fe1a052d69-646a07b00692ecc8cc09:', file: 'ui-roster-guidance.spec.ts', title: 'first empty roster opens Build and focuses its catalogue by pointer', line: 29, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '192105eb97c16b914f31-121976dbb33e7ace4ea6:', file: 'room-preview-fit-production.spec.ts', title: 'approved pan fit retains exact mirrored row origin and Escape cancellation at 2560', line: 13, column: 35, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '192105eb97c16b914f31-3fd19e60580adb310a7c:', file: 'room-preview-fit-production.spec.ts', title: 'approved pan fit retains exact mirrored row origin and Escape cancellation at 1920', line: 13, column: 35, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '19d0b0c646542c189954-7cdeaf4f5b440c990274:', file: 'ui-build-order-note.spec.ts', title: 'with orders queued the sentence is on screen, unfolded and unclipped, at every viewport (#920)', line: 264, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '19d0b0c646542c189954-968b339d345c6815a8d4:', file: 'ui-build-order-note.spec.ts', title: 'the sentence has no box until something is queued, and the arrival panel keeps its budget (#920)', line: 203, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1a325b288334f89d1f11-930d0f9a8e85b9061619:', file: 'ui-pooled-rows-aim.spec.ts', title: 'a press reaches the guard whose label was at that coordinate, not whoever the list moved there', line: 245, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1a325b288334f89d1f11-f17bf80a9bf1c3ec8862:', file: 'ui-pooled-rows-aim.spec.ts', title: 'a press reaches the purchase whose label was at that coordinate, not whatever landing moved there', line: 135, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1deba4cd0e4d5fb55355-97e8e0a5e38eb54fcc82:', file: 'room-template-pending-square-reservation.spec.ts', title: 'Full HD room plan keeps its empty future bed square reserved through Save and Load', line: 3, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1f1a7af6746c170670fc-21d0f03988b17ce78fb4:', file: 'classroom-chair-player-build.spec.ts', title: 'player builds a Classroom with four existing chairs and keeps them through Save/Load at Full HD', line: 96, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-11d95c0a3a36d1bb18bf:', file: 'world-scene-input.spec.ts', title: 'gives the gestures three touch pointers beside the mouse', line: 725, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-155aebe3d8ac0fd99f1a:', file: 'world-scene-input.spec.ts', title: 'reaches the same binding through Ctrl+Z, because a binding carries no modifier (#261)', line: 621, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-21179bde70210c5d5038:', file: 'world-scene-input.spec.ts', title: 'moves the camera with the arrow keys the Build panel promises (#200)', line: 121, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-28ce67b45a6eac858a93:', file: 'world-scene-input.spec.ts', title: 'zooms in on Equal and out on Minus (#200)', line: 258, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-334a6d7fe6b574454759:', file: 'world-scene-input.spec.ts', title: 'undoes again once the field is blurred, so the guard is not a permanent mute (#261, #201)', line: 672, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-391799802cd371320c40:', file: 'world-scene-input.spec.ts', title: 'takes the half-drawn run first and leaves the tool armed, so one press never does two things (#959)', line: 488, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-3ac4125ac6eb5361763d:', file: 'world-scene-input.spec.ts', title: 'puts the room tool down too, because one key puts down whatever the player is holding (#959)', line: 553, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-3ac5aecb784c710a9c6c:', file: 'world-scene-input.spec.ts', title: 'cancels a pending object placement when the window loses focus mid-drag (#516)', line: 922, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-3dee201355884dff0d37:', file: 'world-scene-input.spec.ts', title: 'clamps the keyboard zoom to the same bounds the wheel respects (#200)', line: 275, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-462d403bf2860d306a7f:', file: 'world-scene-input.spec.ts', title: 'cancels a pending wall run when the window loses focus mid-drag, and the run does not commit (#516)', line: 857, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-4ffac8ad574f751d073a:', file: 'world-scene-input.spec.ts', title: 'reports one undo per press of Z and one redo per press of Y (#261)', line: 596, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-55b4eb087200216b8a3d:', file: 'world-scene-input.spec.ts', title: 'leaves the camera still while a text field owns the keyboard (#201)', line: 165, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-58b87e8542418902afa9:', file: 'world-scene-input.spec.ts', title: 'pans again once the field is blurred, so the guard is not a permanent mute (#201)', line: 193, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-6b7c7f333bb3e4cb5aa1:', file: 'world-scene-input.spec.ts', title: 'cancels a pending room rectangle when the window loses focus mid-drag (#516)', line: 894, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-7b056415d4cbaa9e225d:', file: 'world-scene-input.spec.ts', title: 'stops mid-hold when focus moves into a text field (#201)', line: 211, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-8590a545e7dc0b89bb31:', file: 'world-scene-input.spec.ts', title: 'replaces a stale multi-segment wall run with a fresh single-edge hover ghost when a hover move reports no button held and no release was ever dispatched, and a fresh drag afterwards still places one wall (#516)', line: 953, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-8ad7bea9d1e9e3165191:', file: 'world-scene-input.spec.ts', title: "leaves the armed tool's hover ghost alone when the window loses focus, because there is no run to abandon (#200, #516)", line: 381, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-aabba3d5fbc7dde0a89d:', file: 'world-scene-input.spec.ts', title: 'undoes nothing while a text field owns the keyboard (#261, #201)', line: 647, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-af599399b2d190dc9d19:', file: 'world-scene-input.spec.ts', title: 'leaves the camera zoom alone while a text field owns the keyboard (#200, #201)', line: 688, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-c4cef3bd6482fd5a8ca0:', file: 'world-scene-input.spec.ts', title: 'cancels a pending wall run on Escape, and the run does not commit (#200)', line: 314, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-c5556243601bf8e4bbd1:', file: 'world-scene-input.spec.ts', title: 'puts the tool down on Escape when there is no run to abandon, so the next drag on the world is a look-around and not a wall (#959)', line: 420, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-c70a5d018441b3c8baac:', file: 'world-scene-input.spec.ts', title: 'accepts the same key again after focus returns, so the keyboard is not left dead (#202)', line: 101, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-c9a551556a76a8126ece:', file: 'world-scene-input.spec.ts', title: 'replaces a stale multi-tile room rectangle with a fresh single-tile hover mark when a hover move reports no button held and no release was ever dispatched (#516)', line: 1033, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-cf93222e6b0c7d22d8e1:', file: 'world-scene-input.spec.ts', title: 'clears a pending object placement so an unrelated later release commits nothing, when a hover move reports no button held and no release was ever dispatched (#516)', line: 1073, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-d422e1333da8237893ec:', file: 'world-scene-input.spec.ts', title: 'releases a key held when the window loses focus (#202)', line: 72, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-d4b0c679d2fe21f23493:', file: 'world-scene-input.spec.ts', title: 'acts on the press and not on the release (#200)', line: 287, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-d60826c3583918232546:', file: 'world-scene-input.spec.ts', title: 'still places a run that was not cancelled, so Escape is not a permanent mute (#200)', line: 353, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1fe64ea64dec467d82d8-1d327a7e0e4fc85ff5c0:', file: 'live-renderer-selection.spec.ts', title: 'partial scene activation failure restores the unsaved world without retaining native input handlers', line: 195, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1fe64ea64dec467d82d8-bbd8504642bcb9f0ec4e:', file: 'live-renderer-selection.spec.ts', title: 'actual HUD changes both renderers while retaining one unsaved worker world', line: 124, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1fe64ea64dec467d82d8-ef4ef9cd5f1a9ffec1e3:', file: 'live-renderer-selection.spec.ts', title: 'failed lazy angled catalogue keeps the existing unsaved world and offers a retry', line: 170, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '202496ae9356e5811bee-87f79d5ed7807130e07b:', file: 'pseudo-locale-sweep.spec.ts', title: 'with a prison: a populated save panel, every tab and a running clock', line: 266, column: 3, tags: [], timeout: 60000, annotations: [Array], expectedStatus: 'passed' }, { id: '202496ae9356e5811bee-9bff41f7e33d9fe8fc96:', file: 'pseudo-locale-sweep.spec.ts', title: 'with a populated prison: rosters, intake and alerts', line: 316, column: 3, tags: [], timeout: 60000, annotations: [Array], expectedStatus: 'passed' }, { id: '202496ae9356e5811bee-a4890e1811ed67d42cf7:', file: 'pseudo-locale-sweep.spec.ts', title: 'with no session: boot, the consent prompt, a refusal and every tab', line: 239, column: 3, tags: [], timeout: 60000, annotations: [Array], expectedStatus: 'passed' }, { id: '202496ae9356e5811bee-f521c00dc14a9ada8b21:', file: 'pseudo-locale-sweep.spec.ts', title: 'with work in progress: the build queue, a delivery and a pending room', line: 359, column: 3, tags: [], timeout: 60000, annotations: [Array], expectedStatus: 'passed' }, { id: '202496ae9356e5811bee-ff1a652b423b73f344e3:', file: 'pseudo-locale-sweep.spec.ts', title: 'with a failure: what a save-panel error line renders', line: 421, column: 3, tags: [], timeout: 60000, annotations: [Array], expectedStatus: 'passed' }, { id: '2066ec79ae7c0e2fb668-0a50c5c176e67f98dce8:', file: 'world-scene-room-condition-mark.spec.ts', title: 'marks the sealed cell, leaves its working neighbour alone, and clears the mark when it is fixed', line: 82, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '208154818445d9a7ce7f-b6881c1697b5752c0dc9:', file: 'build-object-occupied-dimensions.spec.ts', title: 'Full HD keyboard station and bench selection preserves exact occupied dimensions and Escape clears placement', line: 2, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '21a257c9a718068a8986-c2477985b6f94702ccc6:', file: 'oblique-spike.spec.ts', title: 'one visible square stays clickable in the real Phaser preview across adjustable poses', line: 2, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '221cc9ea95c2906211b4-c9337cebfe1f89cdaba5:', file: 'exercise-station-player-build.spec.ts', title: 'actual angled Build completes a two-square exercise station and preserves it through Save/Load', line: 70, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '2246fa174ce35553d00c-2b7520dbedb3e8572cb7:', file: 'build-selected-summary-fullhd.spec.ts', title: 'Full HD Build keeps the selected tool named after scrolling the catalogue (pl)', line: 11, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '2246fa174ce35553d00c-7fcbf1537da82229b39f:', file: 'build-selected-summary-fullhd.spec.ts', title: 'Full HD Build keeps the selected tool named after scrolling the catalogue (en)', line: 11, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '23667dd8f613d0f2cf73-52bc0d438ed3da509029:', file: 'ui-hire-button-affordability.spec.ts', title: 'says so on a balance that refuses the hire, not on one that does not, keeps the press either way, and never changes what it says', line: 176, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '2389051aae338b20f249-13adc129c303c1991ed4:', file: 'ui-staff-coverage-reserve.spec.ts', title: 'does not push the Staff panel into a scroll at any shipped viewport', line: 288, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '2389051aae338b20f249-13bba76ec5f5669b1df3:', file: 'ui-staff-coverage-reserve.spec.ts', title: 'renders the sentence whole at every shipped viewport, clamp included', line: 209, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, ... 722 more items ],
+    expected: [ { id: '0481f9d8b067300ff638-dc1e69a724da9637fba2:', file: 'storage-room-rack-player-build.spec.ts', title: 'player builds a Storage Room with two existing racks and keeps them through Save/Load at Full HD', line: 95, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '077355ecd5af94d9a4cd-136adeeea86c4883b9d9:', file: 'room-label.spec.ts', title: 'a name is drawn at a constant screen size at zoom 1, not a constant world size', line: 160, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '077355ecd5af94d9a4cd-15beeb84fb6a6b8c293c:', file: 'room-label.spec.ts', title: 'a name is drawn at a constant screen size at zoom 2, not a constant world size', line: 160, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '077355ecd5af94d9a4cd-2cf1e3a9d8f6c57044cb:', file: 'room-label.spec.ts', title: 'a name is drawn at a constant screen size at zoom 0.2, not a constant world size', line: 160, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '077355ecd5af94d9a4cd-4b992e11985f50b0ebab:', file: 'room-label.spec.ts', title: 'a name draws over a bed standing in its room, not under it, at zoom 3', line: 296, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '077355ecd5af94d9a4cd-763ba7e899ed7be1ee23:', file: 'room-label.spec.ts', title: 'a name is drawn at a constant screen size at zoom 0.5, not a constant world size', line: 160, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '077355ecd5af94d9a4cd-7720688f7aca66ae6a09:', file: 'room-label.spec.ts', title: 'a name draws over a bed standing in its room, not under it, at zoom 1', line: 296, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '077355ecd5af94d9a4cd-8c922a51635a62c011b9:', file: 'room-label.spec.ts', title: 'the words a player reads come from the catalogue nameKey through the locale', line: 184, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '077355ecd5af94d9a4cd-929a47c4e83e0471d21d:', file: 'room-label.spec.ts', title: 'omits a name wider than its room at zoom 0.2, and only that one', line: 203, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '077355ecd5af94d9a4cd-bec8c17e0bd34a63ea0a:', file: 'room-label.spec.ts', title: 'a name is drawn at a constant screen size at zoom 3, not a constant world size', line: 160, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '095c3809c78b9987f6be-878570d908c8fa682556:', file: 'security-console-player-build.spec.ts', title: 'player creates storage and delivery capacity before Security Office', line: 136, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '095c3809c78b9987f6be-9b35ec2d7abbaef5cdd5:', file: 'security-console-player-build.spec.ts', title: 'player builds the security console in Security Office and keeps it after Save/Load', line: 198, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '09b1b663531509e9e1a0-b057cf9f3d2ba09198ca:', file: 'local-save-errors.spec.ts', title: 'storage failures never leak an unhandled promise rejection', line: 131, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '09b1b663531509e9e1a0-c541e4882e091b7db340:', file: 'local-save-errors.spec.ts', title: 'every documented error name matches what the browser actually throws', line: 81, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '09b1b663531509e9e1a0-d0cb335e1f22445f9ef7:', file: 'local-save-errors.spec.ts', title: 'a throw inside work() aborts the real transaction, discarding staged writes', line: 123, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '09b1b663531509e9e1a0-de463fe9d3ea652f0a2f:', file: 'local-save-errors.spec.ts', title: 'a real DOMException is an Error instance, which every classification branch depends on', line: 96, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '09cc6d361df955564108-5ea3728cc9c77032add1:', file: 'ui-build-arm-label-fit.spec.ts', title: 'an unbreakable label is contained rather than painted over its neighbour (#926)', line: 220, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '09cc6d361df955564108-91fc5ccfe82027bb5f99:', file: 'ui-build-arm-label-fit.spec.ts', title: 'the arm label stays inside its own button at every viewport (#926)', line: 112, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '09cc6d361df955564108-91fe7c0665cd6604fd01:', file: 'ui-build-arm-label-fit.spec.ts', title: 'no label in the HUD paints outside its own control (#926)', line: 182, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '09d477c569b327454a31-66c74fa28620a3f7efca:', file: 'room-template-paused-cancel-retry.spec.ts', title: 'Full HD cancelled room plan can be placed again while paused through save and load', line: 2, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '0c87d12a1fc7e27a0903-7f4897c88e6645f64f3f:', file: 'fullhd-zoom-navigation-drawer.spec.ts', title: 'a collapsed navigation can be restored from the Full HD zoom drawer when loaded from settings', line: 177, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '0c87d12a1fc7e27a0903-8d63cdaac63e3ffb41ce:', file: 'fullhd-zoom-navigation-drawer.spec.ts', title: 'Full HD at 200% page zoom keeps six sections in a keyboard reachable drawer at 200% UI scale', line: 22, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '0c87d12a1fc7e27a0903-9575032c546472105829:', file: 'fullhd-zoom-navigation-drawer.spec.ts', title: 'Full HD at 200% page zoom keeps six sections in a keyboard reachable drawer at 175% UI scale', line: 22, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '0c87d12a1fc7e27a0903-e1e5acfcaa745cae2dc3:', file: 'fullhd-zoom-navigation-drawer.spec.ts', title: 'Polish status labels remain readable at Full HD 200% page zoom and 200% UI scale', line: 150, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '0c87d12a1fc7e27a0903-f261bc672badd3a8a773:', file: 'fullhd-zoom-navigation-drawer.spec.ts', title: 'Polish status labels remain readable at Full HD 200% page zoom and 175% UI scale', line: 150, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '0f8859b428a80a5e7533-0673bf0aee80e7cf4827:', file: 'oblique-camera-new-prison-frame.spec.ts', title: 'angled camera returns to a newly created prison after panning beyond the old map', line: 2, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1063f0330769b3de0e18-08dcf4aa193abf33984a:', file: 'first-square-clock-hint.spec.ts', title: 'Full HD first paused square order explains clock dependency and keyboard Play completes it', line: 2, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '117939e6a2b9ba19cdc6-6061b4635590d780c6bb:', file: 'actor-guard-rendering.spec.ts', title: 'places a sprite from the guard atlas, not the placeholder for missing art', line: 32, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '117939e6a2b9ba19cdc6-e5ed898f80144b65002e:', file: 'actor-guard-rendering.spec.ts', title: 'draws a guard beside a prisoner, each from its own atlas, on the same frame', line: 51, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '120a3e89aff948b22e26-718bb6191ef766f91d5c:', file: 'staff-room-desk-player-build.spec.ts', title: 'player builds the existing 2 x 1 desk in Staff Room and keeps it after Save/Load at Full HD', line: 204, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '120a3e89aff948b22e26-e8b2b1a8a332f4284e8a:', file: 'staff-room-desk-player-build.spec.ts', title: 'player furnishes delivery and storage plans before the Staff Room desk test', line: 140, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '122b1161d48ee6350b51-1bb83224e0eaff1e5d7f:', file: 'unplaced-surfaces.spec.ts', title: 'every unplaced surface is on the page at tablet (1024x768)', line: 144, column: 5, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '122b1161d48ee6350b51-60c18687bab381619d3f:', file: 'unplaced-surfaces.spec.ts', title: 'the Layout menu opens onto a reachable language picker at phone', line: 173, column: 5, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '122b1161d48ee6350b51-6bc5c548f60c0be36c3f:', file: 'unplaced-surfaces.spec.ts', title: 'the Layout menu opens onto a reachable language picker at desktop', line: 173, column: 5, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '122b1161d48ee6350b51-74c271f2012a9a08ed0b:', file: 'unplaced-surfaces.spec.ts', title: 'every unplaced surface is on the page at phone (375x812)', line: 144, column: 5, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '122b1161d48ee6350b51-9572e51f18f1b862f6fa:', file: 'unplaced-surfaces.spec.ts', title: 'the map corner drops at 720px and below, which is where three unplaced surfaces go', line: 204, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '122b1161d48ee6350b51-c78be674cc06e164d1d7:', file: 'unplaced-surfaces.spec.ts', title: 'the Layout menu opens onto a reachable language picker at tablet', line: 173, column: 5, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '122b1161d48ee6350b51-dc202804977d1e9e64a9:', file: 'unplaced-surfaces.spec.ts', title: 'every unplaced surface is on the page at desktop (1440x900)', line: 144, column: 5, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '138d66f9bf5507cb2922-1a1bb0f738855f9902a1:', file: 'oblique-art-runtime.spec.ts', title: 'authored furniture stays visible, turns, and scales with the angled camera at Full HD', line: 2, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '138d66f9bf5507cb2922-5a14c203c59e8491bba5:', file: 'oblique-art-runtime.spec.ts', title: 'built chair consumes its Blender frame in the angled scene', line: 35, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '138d66f9bf5507cb2922-f79b20aa653501395a63:', file: 'oblique-art-runtime.spec.ts', title: 'built storage rack consumes its Blender frame in the angled scene', line: 21, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '14c3022de824ab886bcc-b7e70f6766795d9eb5cd:', file: 'ui-refusal-shortfall.spec.ts', title: 'the Buy control says it before the press, keeps saying it through the refusal, and withdraws when it no longer applies', line: 123, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '14c3022de824ab886bcc-bc3658bce207d7f20090:', file: 'ui-refusal-shortfall.spec.ts', title: 'the Hire control says how much more is needed, and the figure is the fee rather than the wage', line: 335, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1518229501fe1a052d69-05119e258b6c54ad7aea:', file: 'ui-roster-guidance.spec.ts', title: 'first empty roster opens Build and focuses its catalogue by keyboard', line: 29, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1518229501fe1a052d69-13b9702f66bc3babd140:', file: 'ui-roster-guidance.spec.ts', title: 'discharged roster opens Manage and focuses Admit by keyboard', line: 46, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1518229501fe1a052d69-3a8a2faba542bca9d8c2:', file: 'ui-roster-guidance.spec.ts', title: 'discharged roster opens Manage and focuses Admit by pointer', line: 46, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1518229501fe1a052d69-4c7e9ae53ef084b834d4:', file: 'ui-roster-guidance.spec.ts', title: 'the empty roster opens Build from a touch press', line: 72, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1518229501fe1a052d69-646a07b00692ecc8cc09:', file: 'ui-roster-guidance.spec.ts', title: 'first empty roster opens Build and focuses its catalogue by pointer', line: 29, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '192105eb97c16b914f31-121976dbb33e7ace4ea6:', file: 'room-preview-fit-production.spec.ts', title: 'approved pan fit retains exact mirrored row origin and Escape cancellation at 2560', line: 13, column: 35, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '192105eb97c16b914f31-3fd19e60580adb310a7c:', file: 'room-preview-fit-production.spec.ts', title: 'approved pan fit retains exact mirrored row origin and Escape cancellation at 1920', line: 13, column: 35, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '19d0b0c646542c189954-7cdeaf4f5b440c990274:', file: 'ui-build-order-note.spec.ts', title: 'with orders queued the sentence is on screen, unfolded and unclipped, at every viewport (#920)', line: 264, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '19d0b0c646542c189954-968b339d345c6815a8d4:', file: 'ui-build-order-note.spec.ts', title: 'the sentence has no box until something is queued, and the arrival panel keeps its budget (#920)', line: 203, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1a325b288334f89d1f11-930d0f9a8e85b9061619:', file: 'ui-pooled-rows-aim.spec.ts', title: 'a press reaches the guard whose label was at that coordinate, not whoever the list moved there', line: 245, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1a325b288334f89d1f11-f17bf80a9bf1c3ec8862:', file: 'ui-pooled-rows-aim.spec.ts', title: 'a press reaches the purchase whose label was at that coordinate, not whatever landing moved there', line: 135, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1deba4cd0e4d5fb55355-97e8e0a5e38eb54fcc82:', file: 'room-template-pending-square-reservation.spec.ts', title: 'Full HD room plan keeps its empty future bed square reserved through Save and Load', line: 3, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1f1a7af6746c170670fc-21d0f03988b17ce78fb4:', file: 'classroom-chair-player-build.spec.ts', title: 'player builds a Classroom with four existing chairs and keeps them through Save/Load at Full HD', line: 96, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-11d95c0a3a36d1bb18bf:', file: 'world-scene-input.spec.ts', title: 'gives the gestures three touch pointers beside the mouse', line: 725, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-155aebe3d8ac0fd99f1a:', file: 'world-scene-input.spec.ts', title: 'reaches the same binding through Ctrl+Z, because a binding carries no modifier (#261)', line: 621, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-21179bde70210c5d5038:', file: 'world-scene-input.spec.ts', title: 'moves the camera with the arrow keys the Build panel promises (#200)', line: 121, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-28ce67b45a6eac858a93:', file: 'world-scene-input.spec.ts', title: 'zooms in on Equal and out on Minus (#200)', line: 258, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-334a6d7fe6b574454759:', file: 'world-scene-input.spec.ts', title: 'undoes again once the field is blurred, so the guard is not a permanent mute (#261, #201)', line: 672, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-391799802cd371320c40:', file: 'world-scene-input.spec.ts', title: 'takes the half-drawn run first and leaves the tool armed, so one press never does two things (#959)', line: 488, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-3ac4125ac6eb5361763d:', file: 'world-scene-input.spec.ts', title: 'puts the room tool down too, because one key puts down whatever the player is holding (#959)', line: 553, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-3ac5aecb784c710a9c6c:', file: 'world-scene-input.spec.ts', title: 'cancels a pending object placement when the window loses focus mid-drag (#516)', line: 922, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-3dee201355884dff0d37:', file: 'world-scene-input.spec.ts', title: 'clamps the keyboard zoom to the same bounds the wheel respects (#200)', line: 275, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-462d403bf2860d306a7f:', file: 'world-scene-input.spec.ts', title: 'cancels a pending wall run when the window loses focus mid-drag, and the run does not commit (#516)', line: 857, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-4ffac8ad574f751d073a:', file: 'world-scene-input.spec.ts', title: 'reports one undo per press of Z and one redo per press of Y (#261)', line: 596, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-55b4eb087200216b8a3d:', file: 'world-scene-input.spec.ts', title: 'leaves the camera still while a text field owns the keyboard (#201)', line: 165, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-58b87e8542418902afa9:', file: 'world-scene-input.spec.ts', title: 'pans again once the field is blurred, so the guard is not a permanent mute (#201)', line: 193, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-6b7c7f333bb3e4cb5aa1:', file: 'world-scene-input.spec.ts', title: 'cancels a pending room rectangle when the window loses focus mid-drag (#516)', line: 894, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-7b056415d4cbaa9e225d:', file: 'world-scene-input.spec.ts', title: 'stops mid-hold when focus moves into a text field (#201)', line: 211, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-8590a545e7dc0b89bb31:', file: 'world-scene-input.spec.ts', title: 'replaces a stale multi-segment wall run with a fresh single-edge hover ghost when a hover move reports no button held and no release was ever dispatched, and a fresh drag afterwards still places one wall (#516)', line: 953, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-8ad7bea9d1e9e3165191:', file: 'world-scene-input.spec.ts', title: "leaves the armed tool's hover ghost alone when the window loses focus, because there is no run to abandon (#200, #516)", line: 381, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-aabba3d5fbc7dde0a89d:', file: 'world-scene-input.spec.ts', title: 'undoes nothing while a text field owns the keyboard (#261, #201)', line: 647, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-af599399b2d190dc9d19:', file: 'world-scene-input.spec.ts', title: 'leaves the camera zoom alone while a text field owns the keyboard (#200, #201)', line: 688, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-c4cef3bd6482fd5a8ca0:', file: 'world-scene-input.spec.ts', title: 'cancels a pending wall run on Escape, and the run does not commit (#200)', line: 314, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-c5556243601bf8e4bbd1:', file: 'world-scene-input.spec.ts', title: 'puts the tool down on Escape when there is no run to abandon, so the next drag on the world is a look-around and not a wall (#959)', line: 420, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-c70a5d018441b3c8baac:', file: 'world-scene-input.spec.ts', title: 'accepts the same key again after focus returns, so the keyboard is not left dead (#202)', line: 101, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-c9a551556a76a8126ece:', file: 'world-scene-input.spec.ts', title: 'replaces a stale multi-tile room rectangle with a fresh single-tile hover mark when a hover move reports no button held and no release was ever dispatched (#516)', line: 1033, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-cf93222e6b0c7d22d8e1:', file: 'world-scene-input.spec.ts', title: 'clears a pending object placement so an unrelated later release commits nothing, when a hover move reports no button held and no release was ever dispatched (#516)', line: 1073, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-d422e1333da8237893ec:', file: 'world-scene-input.spec.ts', title: 'releases a key held when the window loses focus (#202)', line: 72, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-d4b0c679d2fe21f23493:', file: 'world-scene-input.spec.ts', title: 'acts on the press and not on the release (#200)', line: 287, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1faeb010c077c3f74dbb-d60826c3583918232546:', file: 'world-scene-input.spec.ts', title: 'still places a run that was not cancelled, so Escape is not a permanent mute (#200)', line: 353, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1fe64ea64dec467d82d8-1d327a7e0e4fc85ff5c0:', file: 'live-renderer-selection.spec.ts', title: 'partial scene activation failure restores the unsaved world without retaining native input handlers', line: 195, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1fe64ea64dec467d82d8-bbd8504642bcb9f0ec4e:', file: 'live-renderer-selection.spec.ts', title: 'actual HUD changes both renderers while retaining one unsaved worker world', line: 124, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '1fe64ea64dec467d82d8-ef4ef9cd5f1a9ffec1e3:', file: 'live-renderer-selection.spec.ts', title: 'failed lazy angled catalogue keeps the existing unsaved world and offers a retry', line: 170, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '202496ae9356e5811bee-87f79d5ed7807130e07b:', file: 'pseudo-locale-sweep.spec.ts', title: 'with a prison: a populated save panel, every tab and a running clock', line: 266, column: 3, tags: [], timeout: 60000, annotations: [Array], expectedStatus: 'passed' }, { id: '202496ae9356e5811bee-9bff41f7e33d9fe8fc96:', file: 'pseudo-locale-sweep.spec.ts', title: 'with a populated prison: rosters, intake and alerts', line: 316, column: 3, tags: [], timeout: 60000, annotations: [Array], expectedStatus: 'passed' }, { id: '202496ae9356e5811bee-a4890e1811ed67d42cf7:', file: 'pseudo-locale-sweep.spec.ts', title: 'with no session: boot, the consent prompt, a refusal and every tab', line: 239, column: 3, tags: [], timeout: 60000, annotations: [Array], expectedStatus: 'passed' }, { id: '202496ae9356e5811bee-f521c00dc14a9ada8b21:', file: 'pseudo-locale-sweep.spec.ts', title: 'with work in progress: the build queue, a delivery and a pending room', line: 359, column: 3, tags: [], timeout: 60000, annotations: [Array], expectedStatus: 'passed' }, { id: '202496ae9356e5811bee-ff1a652b423b73f344e3:', file: 'pseudo-locale-sweep.spec.ts', title: 'with a failure: what a save-panel error line renders', line: 421, column: 3, tags: [], timeout: 60000, annotations: [Array], expectedStatus: 'passed' }, { id: '2066ec79ae7c0e2fb668-0a50c5c176e67f98dce8:', file: 'world-scene-room-condition-mark.spec.ts', title: 'marks the sealed cell, leaves its working neighbour alone, and clears the mark when it is fixed', line: 82, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '208154818445d9a7ce7f-b6881c1697b5752c0dc9:', file: 'build-object-occupied-dimensions.spec.ts', title: 'Full HD keyboard station and bench selection preserves exact occupied dimensions and Escape clears placement', line: 2, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '21a257c9a718068a8986-c2477985b6f94702ccc6:', file: 'oblique-spike.spec.ts', title: 'one visible square stays clickable in the real Phaser preview across adjustable poses', line: 2, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '221cc9ea95c2906211b4-c9337cebfe1f89cdaba5:', file: 'exercise-station-player-build.spec.ts', title: 'actual angled Build completes a two-square exercise station and preserves it through Save/Load', line: 70, column: 1, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '2246fa174ce35553d00c-2b7520dbedb3e8572cb7:', file: 'build-selected-summary-fullhd.spec.ts', title: 'Full HD Build keeps the selected tool named after scrolling the catalogue (pl)', line: 11, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '2246fa174ce35553d00c-7fcbf1537da82229b39f:', file: 'build-selected-summary-fullhd.spec.ts', title: 'Full HD Build keeps the selected tool named after scrolling the catalogue (en)', line: 11, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '23667dd8f613d0f2cf73-52bc0d438ed3da509029:', file: 'ui-hire-button-affordability.spec.ts', title: 'says so on a balance that refuses the hire, not on one that does not, keeps the press either way, and never changes what it says', line: 176, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '2389051aae338b20f249-13adc129c303c1991ed4:', file: 'ui-staff-coverage-reserve.spec.ts', title: 'does not push the Staff panel into a scroll at any shipped viewport', line: 288, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, { id: '2389051aae338b20f249-13bba76ec5f5669b1df3:', file: 'ui-staff-coverage-reserve.spec.ts', title: 'renders the sentence whole at every shipped viewport, clamp included', line: 209, column: 3, tags: [], timeout: 60000, annotations: [], expectedStatus: 'passed' }, ... 787 more items ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
