@@ -1,0 +1,97 @@
+{
+  "startedDate": "2026-10-02",
+  "finalReceiptDateLocal": "2026-10-03",
+  "base": "eeec3e844f",
+  "issue": 1983,
+  "source": {
+    "cases": 887,
+    "files": 169
+  },
+  "artifact": {
+    "cases": 83,
+    "files": 32,
+    "duration": "UNMEASURED"
+  },
+  "variants": {
+    "balanced": [
+      {
+        "cases": 325,
+        "files": 79,
+        "planningWeightSeconds_NOT_FORECAST": 4285.545,
+        "weightProvenanceFileCounts": {
+          "main766 measured file total": 50,
+          "candidate887 complete passing file total": 9,
+          "unmeasured planning weight, 30 seconds/case, NOT duration forecast": 20
+        }
+      },
+      {
+        "cases": 562,
+        "files": 90,
+        "planningWeightSeconds_NOT_FORECAST": 4285.759,
+        "weightProvenanceFileCounts": {
+          "main766 measured file total": 57,
+          "unmeasured planning weight, 30 seconds/case, NOT duration forecast": 23,
+          "candidate887 complete passing file total": 10
+        }
+      }
+    ],
+    "shard": [
+      {
+        "cases": 446,
+        "files": 105,
+        "planningWeightSeconds_NOT_FORECAST": 7132.545,
+        "weightProvenanceFileCounts": {
+          "main766 measured file total": 46,
+          "unmeasured planning weight, 30 seconds/case, NOT duration forecast": 40,
+          "candidate887 complete passing file total": 19
+        }
+      },
+      {
+        "cases": 441,
+        "files": 64,
+        "planningWeightSeconds_NOT_FORECAST": 1438.759,
+        "weightProvenanceFileCounts": {
+          "main766 measured file total": 61,
+          "unmeasured planning weight, 30 seconds/case, NOT duration forecast": 3
+        }
+      }
+    ]
+  },
+  "baseline": {
+    "pass": 9,
+    "fail": 0
+  },
+  "draftOnlyProducerMutation": {
+    "omittedFile": "app-shell.spec.ts",
+    "collectedCases": 822,
+    "missingCases": 65,
+    "auditPass": 8,
+    "auditFail": 1,
+    "exitCode": 1
+  },
+  "byteExactPrototypeRestoreSHA256": "ede140cf75ae90dc2d7628710a3901fc35180ccd66d11ea71893dab9e489c279",
+  "restored": {
+    "pass": 9,
+    "fail": 0
+  },
+  "aggregateShell": {
+    "goodCasesPerVariant": 1,
+    "refusedCasesPerVariant": 12
+  },
+  "freshAllStateDuplicateQueries": [
+    "shard in:title",
+    "sharding",
+    "browser timeout",
+    "suite duration"
+  ],
+  "readIssueIds": [
+    1089,
+    1008,
+    1084,
+    604
+  ],
+  "productionWorkflowMutation": false,
+  "browserLaunch": false,
+  "remoteCIStartCancel": false,
+  "activation": "PENDING OWNER DECISION"
+}
