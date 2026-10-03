@@ -682,6 +682,20 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
     reason:
       'Type-only: `SimulationMessageChannel` names the worker channel accepted by this composition port; the port does not construct the worker or read simulation state directly.',
   },
+  {
+    file: 'src/ui/object-tool.ts',
+    tree: 'simulation',
+    kind: 'type-only',
+    reason:
+      'Type-only: `ObjectPlacementPreflight` from `src/simulation/objects/object-placement-service` types an already worker-produced reply accepted through the injected preflight callback. AGENTS.md boundary 3 permits this main-thread input orchestrator to own selection/aim/reply freshness and report the published footprint, cost and verdict to the HUD/renderer. It neither imports the service value nor performs admission, constructs a kernel or owns authoritative claims; actual placement still reaches the worker even when the last preview is blocked. A value import of the service would cross that measured boundary and must fail this type-only entry.',
+  },
+  {
+    file: 'src/ui/simulation-object-placement-port.ts',
+    tree: 'simulation',
+    kind: 'type-only',
+    reason:
+      'Type-only: (1) `ObjectPlacementPreflight` names the worker reply shape, never the admission service value; (2) `SimulationMessageChannel` names the injected channel/publication contract, never a worker constructor or runtime. With `object-tool.ts` owning input freshness, these are the other two measured orchestration contracts permitted by AGENTS.md boundary 3. The runtime import is only intra-UI `SimulationProjectionRequester`, matching `simulation-room-template-port.ts`: it correlates a read-only request with a real worker reply. The revision reader follows actual ready/stopped/status/clock publications and does not derive collision or economy state. Importing either simulation value would change this measured kind and must fail the manifest.',
+  },
 ];
 
 const dependencies = findCrossTreeDependencies(gatedFiles, OWN_TREE);
@@ -726,6 +740,7 @@ describe('UI orchestration boundaries', () => {
       'src/ui/simulation-held-guards.ts',
       'src/ui/simulation-incidents.ts',
       'src/ui/simulation-intake.ts',
+      'src/ui/simulation-object-placement-port.ts',
       'src/ui/simulation-pending-deliveries.ts',
       'src/ui/simulation-prisoner-detail.ts',
       'src/ui/simulation-prisoner-roster.ts',
