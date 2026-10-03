@@ -84,6 +84,22 @@ def validate_footprint(scene):
     return bounds
 
 
+def source_equipment_clearance(scene, retained_names):
+    """A disjoint evaluated AABB proves separation from retained workstation equipment."""
+    rows=audit.capture(scene)
+    equipment=[n for n in retained_names if n.startswith(('monitor','keyboard','document','angled-desk.keycap','angled-desk.keyboard','angled-desk.monitor','angled-desk.worktop cable'))]
+    witnesses=[]
+    for name in sorted(n for n in rows if n.startswith(PREFIX)):
+        points=rows[name]['points'];lo=[min(p[a] for p in points) for a in range(3)];hi=[max(p[a] for p in points) for a in range(3)]
+        for target in equipment:
+            points=rows[target]['points'];a=[min(p[i] for p in points) for i in range(3)];b=[max(p[i] for p in points) for i in range(3)]
+            gaps=[max(a[i]-hi[i],lo[i]-b[i]) for i in range(3)]
+            axis=max(range(3),key=lambda i:gaps[i])
+            if gaps[axis]<=1e-6: raise ValueError('Reception registration desk overlaps retained equipment: '+name+' / '+target)
+            witnesses.append({'newPart':name,'retainedEquipment':target,'separatingAxis':axis,'evaluatedGap':gaps[axis]})
+    return witnesses
+
+
 def verify_source(scene):
     receipt = json.loads(PROVENANCE.read_text(encoding='utf-8-sig'))
     if receipt['source'] != SOURCE.relative_to(ROOT).as_posix():
@@ -93,8 +109,12 @@ def verify_source(scene):
         raise ValueError('Reception registration desk retained or authored part omitted')
     # Meaningful physical guard runs before byte/evaluated-position guards.
     contacts = source_contacts(scene, receipt['actualContactPairs'])
+    clearances=source_equipment_clearance(scene, receipt['retainedOriginalMeshNames'])
+    print(f'RECEPTION_DESK_EQUIPMENT_CLEARANCE_GREEN {len(clearances)} actual evaluated separation witnesses',flush=True)
     if [audit.raw_record(bpy.data.objects[name]) for name in names] != receipt['allAuthoredRawMeshes']:
         raise ValueError('Reception registration desk raw vertices/topology/modifiers/material assignments changed')
+    if {name:[list(row) for row in bpy.data.objects[name].matrix_world] for name in receipt['retainedOriginalMeshNames']} != receipt['retainedObjectMatrices']:
+        raise ValueError('Reception registration desk original retained transforms changed')
     if audit.materials_record() != receipt['retainedStoredMaterialGraphs']:
         raise ValueError('Reception registration desk original complete stored material graphs changed')
     rows = audit.capture(scene)
