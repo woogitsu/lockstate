@@ -1,0 +1,1010 @@
+[
+  {
+    "yawDegrees": 0,
+    "elevationDegrees": 20,
+    "canonicalSha256": "bdcf852f238337b87cb549db748b7f3884b5912eb4f50e7ead1cc39e3b038015",
+    "actualReplaySha256": "bdcf852f238337b87cb549db748b7f3884b5912eb4f50e7ead1cc39e3b038015",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      104,
+      116,
+      152,
+      150
+    ]
+  },
+  {
+    "yawDegrees": 0,
+    "elevationDegrees": 30,
+    "canonicalSha256": "4039c0a3f01a487c75c51e36ed099d7202a68f674b584a5f986de7eaa5a2344e",
+    "actualReplaySha256": "4039c0a3f01a487c75c51e36ed099d7202a68f674b584a5f986de7eaa5a2344e",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      104,
+      112,
+      152,
+      154
+    ]
+  },
+  {
+    "yawDegrees": 0,
+    "elevationDegrees": 40,
+    "canonicalSha256": "e1b256a82db186eeab2c139192a1c7f249ee7d956477a761216d0d981e172216",
+    "actualReplaySha256": "e1b256a82db186eeab2c139192a1c7f249ee7d956477a761216d0d981e172216",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      104,
+      108,
+      152,
+      157
+    ]
+  },
+  {
+    "yawDegrees": 0,
+    "elevationDegrees": 50,
+    "canonicalSha256": "d5f96b2728ddc70d60e04f439eee2daab879b6874f36cb5cabd5625300279433",
+    "actualReplaySha256": "d5f96b2728ddc70d60e04f439eee2daab879b6874f36cb5cabd5625300279433",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      104,
+      104,
+      152,
+      160
+    ]
+  },
+  {
+    "yawDegrees": 0,
+    "elevationDegrees": 60,
+    "canonicalSha256": "6a1e8bb0e51eba91d88cc7def34b1f54eb2dd6f933fa6cbb62c3288715faec72",
+    "actualReplaySha256": "6a1e8bb0e51eba91d88cc7def34b1f54eb2dd6f933fa6cbb62c3288715faec72",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      104,
+      101,
+      152,
+      161
+    ]
+  },
+  {
+    "yawDegrees": 0,
+    "elevationDegrees": 70,
+    "canonicalSha256": "d111d089dd059f05230f3c3a59afa1325555a79392107ba711fe091cae1d870e",
+    "actualReplaySha256": "d111d089dd059f05230f3c3a59afa1325555a79392107ba711fe091cae1d870e",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      104,
+      99,
+      152,
+      162
+    ]
+  },
+  {
+    "yawDegrees": 30,
+    "elevationDegrees": 20,
+    "canonicalSha256": "94ba9f9d02251be9a0db69bfcb5712f0bc8b89801cb5176057ea1d64e1527fc9",
+    "actualReplaySha256": "94ba9f9d02251be9a0db69bfcb5712f0bc8b89801cb5176057ea1d64e1527fc9",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      92,
+      117,
+      154,
+      152
+    ]
+  },
+  {
+    "yawDegrees": 30,
+    "elevationDegrees": 30,
+    "canonicalSha256": "74b72604d071dd56b10ab7be9609e2287d2ce67d1df7de72adcb1674c3559341",
+    "actualReplaySha256": "74b72604d071dd56b10ab7be9609e2287d2ce67d1df7de72adcb1674c3559341",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      92,
+      112,
+      154,
+      157
+    ]
+  },
+  {
+    "yawDegrees": 30,
+    "elevationDegrees": 40,
+    "canonicalSha256": "7547ec7624ea9071698bd67251314cdb67ae89ec74e0085f658615ed66f5b33d",
+    "actualReplaySha256": "7547ec7624ea9071698bd67251314cdb67ae89ec74e0085f658615ed66f5b33d",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      92,
+      108,
+      154,
+      161
+    ]
+  },
+  {
+    "yawDegrees": 30,
+    "elevationDegrees": 50,
+    "canonicalSha256": "7cde167d549e1c502a28946e192504a12f2a5ff23f2984c7fb398a34cd9fa245",
+    "actualReplaySha256": "7cde167d549e1c502a28946e192504a12f2a5ff23f2984c7fb398a34cd9fa245",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      92,
+      105,
+      154,
+      164
+    ]
+  },
+  {
+    "yawDegrees": 30,
+    "elevationDegrees": 60,
+    "canonicalSha256": "35acecc9d82999b59f506c5fe478f854c3554666bf5e1fd548beaa29a7c024c1",
+    "actualReplaySha256": "35acecc9d82999b59f506c5fe478f854c3554666bf5e1fd548beaa29a7c024c1",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      92,
+      102,
+      154,
+      166
+    ]
+  },
+  {
+    "yawDegrees": 30,
+    "elevationDegrees": 70,
+    "canonicalSha256": "378519882b6c21d3ac24dee494d9ee6003f30580501df9967d35f5c8585f2f43",
+    "actualReplaySha256": "378519882b6c21d3ac24dee494d9ee6003f30580501df9967d35f5c8585f2f43",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      92,
+      100,
+      154,
+      167
+    ]
+  },
+  {
+    "yawDegrees": 60,
+    "elevationDegrees": 20,
+    "canonicalSha256": "3031ed44b7539a5315d3aa9694bbd19e271505b6af5477348d56535e056cd200",
+    "actualReplaySha256": "3031ed44b7539a5315d3aa9694bbd19e271505b6af5477348d56535e056cd200",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      89,
+      116,
+      158,
+      151
+    ]
+  },
+  {
+    "yawDegrees": 60,
+    "elevationDegrees": 30,
+    "canonicalSha256": "051d34a3454ff8c1769ede12058e9b8be390108913aca06ee4447f3b7667d103",
+    "actualReplaySha256": "051d34a3454ff8c1769ede12058e9b8be390108913aca06ee4447f3b7667d103",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      89,
+      114,
+      158,
+      155
+    ]
+  },
+  {
+    "yawDegrees": 60,
+    "elevationDegrees": 40,
+    "canonicalSha256": "6292ff9a67e5bfba2fe38849013e531ffd6eeee6c36de8ddcd4e61a8c2468e90",
+    "actualReplaySha256": "6292ff9a67e5bfba2fe38849013e531ffd6eeee6c36de8ddcd4e61a8c2468e90",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      89,
+      111,
+      158,
+      159
+    ]
+  },
+  {
+    "yawDegrees": 60,
+    "elevationDegrees": 50,
+    "canonicalSha256": "e5eef35e522162bee32751ea06cfacba6a473340a9dd4574fad17771b2f198c0",
+    "actualReplaySha256": "e5eef35e522162bee32751ea06cfacba6a473340a9dd4574fad17771b2f198c0",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      89,
+      108,
+      158,
+      162
+    ]
+  },
+  {
+    "yawDegrees": 60,
+    "elevationDegrees": 60,
+    "canonicalSha256": "e4ce3e643a42e8833f50a05c91de06913539be27d5396a732c689029160b4bcc",
+    "actualReplaySha256": "e4ce3e643a42e8833f50a05c91de06913539be27d5396a732c689029160b4bcc",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      88,
+      106,
+      158,
+      163
+    ]
+  },
+  {
+    "yawDegrees": 60,
+    "elevationDegrees": 70,
+    "canonicalSha256": "4b2c5a84ba0613fd98b8f0fa084b135a9ecd0014d65ce5a132fe9bd1915eeebc",
+    "actualReplaySha256": "4b2c5a84ba0613fd98b8f0fa084b135a9ecd0014d65ce5a132fe9bd1915eeebc",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      89,
+      104,
+      158,
+      164
+    ]
+  },
+  {
+    "yawDegrees": 90,
+    "elevationDegrees": 20,
+    "canonicalSha256": "6bb5dbe84067fc6eea3cd70787e22b00a77d76917351e6c36ea50d5a0b7f5fe5",
+    "actualReplaySha256": "6bb5dbe84067fc6eea3cd70787e22b00a77d76917351e6c36ea50d5a0b7f5fe5",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      95,
+      113,
+      159,
+      149
+    ]
+  },
+  {
+    "yawDegrees": 90,
+    "elevationDegrees": 30,
+    "canonicalSha256": "bfb645a840f7f239f3f3e9be10c134208c659da25348fe2d0071670889b1ed45",
+    "actualReplaySha256": "bfb645a840f7f239f3f3e9be10c134208c659da25348fe2d0071670889b1ed45",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      95,
+      111,
+      159,
+      151
+    ]
+  },
+  {
+    "yawDegrees": 90,
+    "elevationDegrees": 40,
+    "canonicalSha256": "ce2e16482ba9ffb3c9e21a752f756e1ae517bd94bc498d00a04e69ac2575ba28",
+    "actualReplaySha256": "ce2e16482ba9ffb3c9e21a752f756e1ae517bd94bc498d00a04e69ac2575ba28",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      95,
+      109,
+      159,
+      153
+    ]
+  },
+  {
+    "yawDegrees": 90,
+    "elevationDegrees": 50,
+    "canonicalSha256": "3396f508231b493112cd166a2067adeebb0b488fdee09bfe5006a2dded3209b4",
+    "actualReplaySha256": "3396f508231b493112cd166a2067adeebb0b488fdee09bfe5006a2dded3209b4",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      95,
+      107,
+      159,
+      153
+    ]
+  },
+  {
+    "yawDegrees": 90,
+    "elevationDegrees": 60,
+    "canonicalSha256": "d2efcbd6aec99eb09f3942417a0a55e2219251b3440905f0c68aedad6fbab51f",
+    "actualReplaySha256": "d2efcbd6aec99eb09f3942417a0a55e2219251b3440905f0c68aedad6fbab51f",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      95,
+      105,
+      159,
+      153
+    ]
+  },
+  {
+    "yawDegrees": 90,
+    "elevationDegrees": 70,
+    "canonicalSha256": "bf33af9e81246d3a0708933ee735c8a391fb1aedf47f2b7e49cc2a19b88ac01d",
+    "actualReplaySha256": "bf33af9e81246d3a0708933ee735c8a391fb1aedf47f2b7e49cc2a19b88ac01d",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      95,
+      104,
+      159,
+      153
+    ]
+  },
+  {
+    "yawDegrees": 120,
+    "elevationDegrees": 20,
+    "canonicalSha256": "e340bf695cd65211cebbabc1d1f2cae16cb79086c56cff9b471cc02f37f11d02",
+    "actualReplaySha256": "e340bf695cd65211cebbabc1d1f2cae16cb79086c56cff9b471cc02f37f11d02",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      88,
+      110,
+      158,
+      150
+    ]
+  },
+  {
+    "yawDegrees": 120,
+    "elevationDegrees": 30,
+    "canonicalSha256": "b2a09e5330c52695c84a8bced9afe213afc9c92a6aad9276d7734682204ad11d",
+    "actualReplaySha256": "b2a09e5330c52695c84a8bced9afe213afc9c92a6aad9276d7734682204ad11d",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      88,
+      105,
+      158,
+      153
+    ]
+  },
+  {
+    "yawDegrees": 120,
+    "elevationDegrees": 40,
+    "canonicalSha256": "9f136a4fd1539cf7d0f2d3f0847638e08ad62fdbf88f30df2f34b15ddfaa108a",
+    "actualReplaySha256": "9f136a4fd1539cf7d0f2d3f0847638e08ad62fdbf88f30df2f34b15ddfaa108a",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      88,
+      101,
+      158,
+      156
+    ]
+  },
+  {
+    "yawDegrees": 120,
+    "elevationDegrees": 50,
+    "canonicalSha256": "88709638c8e4ad983e6885ac7cb02e1e08d892159da9ed9f585fe275cb5ab717",
+    "actualReplaySha256": "88709638c8e4ad983e6885ac7cb02e1e08d892159da9ed9f585fe275cb5ab717",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      88,
+      97,
+      158,
+      157
+    ]
+  },
+  {
+    "yawDegrees": 120,
+    "elevationDegrees": 60,
+    "canonicalSha256": "4903801a35a6734f4f0ed554f5a68018cf69bb7aeb2646459968794ee543f588",
+    "actualReplaySha256": "4903801a35a6734f4f0ed554f5a68018cf69bb7aeb2646459968794ee543f588",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      88,
+      94,
+      158,
+      158
+    ]
+  },
+  {
+    "yawDegrees": 120,
+    "elevationDegrees": 70,
+    "canonicalSha256": "7ce7cb8f71466e288d93418f1aa50d365955292db48169950d737795d7d83df4",
+    "actualReplaySha256": "7ce7cb8f71466e288d93418f1aa50d365955292db48169950d737795d7d83df4",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      88,
+      92,
+      158,
+      157
+    ]
+  },
+  {
+    "yawDegrees": 150,
+    "elevationDegrees": 20,
+    "canonicalSha256": "5b9286e9da3209626cd9c57ec578685c6b72369e33ccb4353be9fcc37b603023",
+    "actualReplaySha256": "5b9286e9da3209626cd9c57ec578685c6b72369e33ccb4353be9fcc37b603023",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      92,
+      107,
+      154,
+      152
+    ]
+  },
+  {
+    "yawDegrees": 150,
+    "elevationDegrees": 30,
+    "canonicalSha256": "81e49c8bcc88f4e97a990d5f6ddd92ec8320ab52033cabb833b18fff39b28dfa",
+    "actualReplaySha256": "81e49c8bcc88f4e97a990d5f6ddd92ec8320ab52033cabb833b18fff39b28dfa",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      92,
+      103,
+      154,
+      155
+    ]
+  },
+  {
+    "yawDegrees": 150,
+    "elevationDegrees": 40,
+    "canonicalSha256": "fea89bd2fae19a7ca60ff13a19d1e2c6611bd69569d2aff1c11c5273cd6c1fe8",
+    "actualReplaySha256": "fea89bd2fae19a7ca60ff13a19d1e2c6611bd69569d2aff1c11c5273cd6c1fe8",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      92,
+      99,
+      154,
+      158
+    ]
+  },
+  {
+    "yawDegrees": 150,
+    "elevationDegrees": 50,
+    "canonicalSha256": "c254d452ba9984614aab580b62841251a3d27d8df4675385aa919fe6be771f2c",
+    "actualReplaySha256": "c254d452ba9984614aab580b62841251a3d27d8df4675385aa919fe6be771f2c",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      92,
+      94,
+      154,
+      160
+    ]
+  },
+  {
+    "yawDegrees": 150,
+    "elevationDegrees": 60,
+    "canonicalSha256": "84b4001c16342761752c62b170c36d998e796e118ffb9c050cbc7f8b6f663627",
+    "actualReplaySha256": "84b4001c16342761752c62b170c36d998e796e118ffb9c050cbc7f8b6f663627",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      92,
+      91,
+      154,
+      161
+    ]
+  },
+  {
+    "yawDegrees": 150,
+    "elevationDegrees": 70,
+    "canonicalSha256": "4c3ca093c43921935b6b2c0e891cfa4c57ccd1abb84b084bfe4e00dfe8abdfef",
+    "actualReplaySha256": "4c3ca093c43921935b6b2c0e891cfa4c57ccd1abb84b084bfe4e00dfe8abdfef",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      92,
+      89,
+      154,
+      161
+    ]
+  },
+  {
+    "yawDegrees": 180,
+    "elevationDegrees": 20,
+    "canonicalSha256": "7172cab87fe6b2632539998f511525ba2106626bd1db4b0192fe6f8b708a3452",
+    "actualReplaySha256": "7172cab87fe6b2632539998f511525ba2106626bd1db4b0192fe6f8b708a3452",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      104,
+      107,
+      152,
+      152
+    ]
+  },
+  {
+    "yawDegrees": 180,
+    "elevationDegrees": 30,
+    "canonicalSha256": "ae205ba520f62d3d837a754ffac863a21d5fcb57fb8f0f31e0ff8b27d1839cf0",
+    "actualReplaySha256": "ae205ba520f62d3d837a754ffac863a21d5fcb57fb8f0f31e0ff8b27d1839cf0",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      104,
+      104,
+      152,
+      156
+    ]
+  },
+  {
+    "yawDegrees": 180,
+    "elevationDegrees": 40,
+    "canonicalSha256": "8232eaf0ed81537ff0133e52e12145d5a9462e4b17a1b6a07ec1fea365b8ce5d",
+    "actualReplaySha256": "8232eaf0ed81537ff0133e52e12145d5a9462e4b17a1b6a07ec1fea365b8ce5d",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      104,
+      101,
+      152,
+      159
+    ]
+  },
+  {
+    "yawDegrees": 180,
+    "elevationDegrees": 50,
+    "canonicalSha256": "1f4ee105ffdd6a4f808620267452560c7aca3d3c208ef267054b3a67f286dd44",
+    "actualReplaySha256": "1f4ee105ffdd6a4f808620267452560c7aca3d3c208ef267054b3a67f286dd44",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      104,
+      99,
+      152,
+      161
+    ]
+  },
+  {
+    "yawDegrees": 180,
+    "elevationDegrees": 60,
+    "canonicalSha256": "5c105d2ce7f007427ce931464a77b6e3fda1ef924560a8c88942143ac1097111",
+    "actualReplaySha256": "5c105d2ce7f007427ce931464a77b6e3fda1ef924560a8c88942143ac1097111",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      104,
+      97,
+      152,
+      162
+    ]
+  },
+  {
+    "yawDegrees": 180,
+    "elevationDegrees": 70,
+    "canonicalSha256": "e7373e276a31a5c5b8d6ba89309010f0859a5406ce4167964b22e3864a59b099",
+    "actualReplaySha256": "e7373e276a31a5c5b8d6ba89309010f0859a5406ce4167964b22e3864a59b099",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      104,
+      96,
+      152,
+      162
+    ]
+  },
+  {
+    "yawDegrees": 210,
+    "elevationDegrees": 20,
+    "canonicalSha256": "dcc999d49efeb1b753b90c5db326fcf5debbb33b49aab2d340e49c99a68a6958",
+    "actualReplaySha256": "dcc999d49efeb1b753b90c5db326fcf5debbb33b49aab2d340e49c99a68a6958",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      102,
+      107,
+      164,
+      152
+    ]
+  },
+  {
+    "yawDegrees": 210,
+    "elevationDegrees": 30,
+    "canonicalSha256": "5683be03222f508e030d940648d4b6d20a93a239f635640c4526987d3580eab0",
+    "actualReplaySha256": "5683be03222f508e030d940648d4b6d20a93a239f635640c4526987d3580eab0",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      102,
+      103,
+      164,
+      155
+    ]
+  },
+  {
+    "yawDegrees": 210,
+    "elevationDegrees": 40,
+    "canonicalSha256": "a8fb944710d76bf9d24b191ab80bd5acd9f91a616f920bb75ef9deb9c2e46735",
+    "actualReplaySha256": "a8fb944710d76bf9d24b191ab80bd5acd9f91a616f920bb75ef9deb9c2e46735",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      102,
+      98,
+      164,
+      158
+    ]
+  },
+  {
+    "yawDegrees": 210,
+    "elevationDegrees": 50,
+    "canonicalSha256": "df00ac4aae3510d4070184727335d668f1b627d38f5d851cd18b7d7ccc6eb5fd",
+    "actualReplaySha256": "df00ac4aae3510d4070184727335d668f1b627d38f5d851cd18b7d7ccc6eb5fd",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      102,
+      94,
+      164,
+      160
+    ]
+  },
+  {
+    "yawDegrees": 210,
+    "elevationDegrees": 60,
+    "canonicalSha256": "9f1a2e9c55fea06d71836f2841c9b59f45fe7f7b3faa4853f74a54fa911ac934",
+    "actualReplaySha256": "9f1a2e9c55fea06d71836f2841c9b59f45fe7f7b3faa4853f74a54fa911ac934",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      102,
+      91,
+      164,
+      161
+    ]
+  },
+  {
+    "yawDegrees": 210,
+    "elevationDegrees": 70,
+    "canonicalSha256": "091ce6e7355b240da479cbac83418fdb163405dd5c5289d21749c06d480e75e7",
+    "actualReplaySha256": "091ce6e7355b240da479cbac83418fdb163405dd5c5289d21749c06d480e75e7",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      102,
+      89,
+      164,
+      161
+    ]
+  },
+  {
+    "yawDegrees": 240,
+    "elevationDegrees": 20,
+    "canonicalSha256": "f7eac0743580c547a176c909249e82ef0b956fdb7fc449b05b17e5211923c9d2",
+    "actualReplaySha256": "f7eac0743580c547a176c909249e82ef0b956fdb7fc449b05b17e5211923c9d2",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      98,
+      110,
+      168,
+      150
+    ]
+  },
+  {
+    "yawDegrees": 240,
+    "elevationDegrees": 30,
+    "canonicalSha256": "9d87d61d95f38b3ca0892b41d296a85cb88517c20486951031132e4a659a7258",
+    "actualReplaySha256": "9d87d61d95f38b3ca0892b41d296a85cb88517c20486951031132e4a659a7258",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      98,
+      105,
+      167,
+      153
+    ]
+  },
+  {
+    "yawDegrees": 240,
+    "elevationDegrees": 40,
+    "canonicalSha256": "75ecee7ea9684d66c49b55ed49a7957c1212a890ced27673159515f9564a1847",
+    "actualReplaySha256": "75ecee7ea9684d66c49b55ed49a7957c1212a890ced27673159515f9564a1847",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      98,
+      101,
+      167,
+      156
+    ]
+  },
+  {
+    "yawDegrees": 240,
+    "elevationDegrees": 50,
+    "canonicalSha256": "218a13c8833b522dfb8b302d2dcd15f22e90310e565d9984d4ff5b3e3620f455",
+    "actualReplaySha256": "218a13c8833b522dfb8b302d2dcd15f22e90310e565d9984d4ff5b3e3620f455",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      98,
+      97,
+      167,
+      157
+    ]
+  },
+  {
+    "yawDegrees": 240,
+    "elevationDegrees": 60,
+    "canonicalSha256": "ecacad6ea3abccbbc59f8e482e78d97a3c5598c4b62c47aa13c50e9c5f7bc1c7",
+    "actualReplaySha256": "ecacad6ea3abccbbc59f8e482e78d97a3c5598c4b62c47aa13c50e9c5f7bc1c7",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      98,
+      94,
+      167,
+      158
+    ]
+  },
+  {
+    "yawDegrees": 240,
+    "elevationDegrees": 70,
+    "canonicalSha256": "a8dbf472fd74e37a360966b104494c114bd371d54f5eeb093b6bf8891e5ed5bb",
+    "actualReplaySha256": "a8dbf472fd74e37a360966b104494c114bd371d54f5eeb093b6bf8891e5ed5bb",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      98,
+      92,
+      167,
+      157
+    ]
+  },
+  {
+    "yawDegrees": 270,
+    "elevationDegrees": 20,
+    "canonicalSha256": "0fe3f71993693b08cbac965b98a168d8def6484feb516c6d97e559e0355ab102",
+    "actualReplaySha256": "0fe3f71993693b08cbac965b98a168d8def6484feb516c6d97e559e0355ab102",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      97,
+      113,
+      161,
+      149
+    ]
+  },
+  {
+    "yawDegrees": 270,
+    "elevationDegrees": 30,
+    "canonicalSha256": "27dd2b5a6c6b84ecbe35a404fb36613c48365008a078f307d14ddf3b267f7e5f",
+    "actualReplaySha256": "27dd2b5a6c6b84ecbe35a404fb36613c48365008a078f307d14ddf3b267f7e5f",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      97,
+      111,
+      161,
+      151
+    ]
+  },
+  {
+    "yawDegrees": 270,
+    "elevationDegrees": 40,
+    "canonicalSha256": "939d49fde49edc2ce5f235ee7d51e8e54e851ea5110e58927f2a2f7e57d244a9",
+    "actualReplaySha256": "939d49fde49edc2ce5f235ee7d51e8e54e851ea5110e58927f2a2f7e57d244a9",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      97,
+      109,
+      161,
+      153
+    ]
+  },
+  {
+    "yawDegrees": 270,
+    "elevationDegrees": 50,
+    "canonicalSha256": "8c5bb8241059b4e471217e971f24f2fb02dc18f1f2875d73c4b12070692f38f4",
+    "actualReplaySha256": "8c5bb8241059b4e471217e971f24f2fb02dc18f1f2875d73c4b12070692f38f4",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      97,
+      107,
+      161,
+      153
+    ]
+  },
+  {
+    "yawDegrees": 270,
+    "elevationDegrees": 60,
+    "canonicalSha256": "e01e299ad0538e6e843a7d6a27f270f067123bb867da9bd0ddcb9f52d37ff6bc",
+    "actualReplaySha256": "e01e299ad0538e6e843a7d6a27f270f067123bb867da9bd0ddcb9f52d37ff6bc",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      97,
+      105,
+      161,
+      153
+    ]
+  },
+  {
+    "yawDegrees": 270,
+    "elevationDegrees": 70,
+    "canonicalSha256": "a9522de4421086b44dc84c1625ed5793ff80bd0399a945d4008ea48dcf683b43",
+    "actualReplaySha256": "a9522de4421086b44dc84c1625ed5793ff80bd0399a945d4008ea48dcf683b43",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      97,
+      104,
+      161,
+      153
+    ]
+  },
+  {
+    "yawDegrees": 300,
+    "elevationDegrees": 20,
+    "canonicalSha256": "d8977d380a888ec7d016b686038ef570449ed0e0b0de71f9031ccab9416d941a",
+    "actualReplaySha256": "d8977d380a888ec7d016b686038ef570449ed0e0b0de71f9031ccab9416d941a",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      98,
+      116,
+      167,
+      151
+    ]
+  },
+  {
+    "yawDegrees": 300,
+    "elevationDegrees": 30,
+    "canonicalSha256": "8014820846ec3e0dca8a9498871801230be84e0faadb22045aae7ca049ad0ea0",
+    "actualReplaySha256": "8014820846ec3e0dca8a9498871801230be84e0faadb22045aae7ca049ad0ea0",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      98,
+      114,
+      168,
+      155
+    ]
+  },
+  {
+    "yawDegrees": 300,
+    "elevationDegrees": 40,
+    "canonicalSha256": "84bd56fcf5f16dc981bfbb9f4db28c178c4c5262c7b39d75cb086e266a2d0a1a",
+    "actualReplaySha256": "84bd56fcf5f16dc981bfbb9f4db28c178c4c5262c7b39d75cb086e266a2d0a1a",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      98,
+      111,
+      168,
+      159
+    ]
+  },
+  {
+    "yawDegrees": 300,
+    "elevationDegrees": 50,
+    "canonicalSha256": "2c54018f9a6236bb6b5e36dea6a14a834ec5b2c43c554cd0fc89ea7ea8cf855f",
+    "actualReplaySha256": "2c54018f9a6236bb6b5e36dea6a14a834ec5b2c43c554cd0fc89ea7ea8cf855f",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      98,
+      108,
+      167,
+      162
+    ]
+  },
+  {
+    "yawDegrees": 300,
+    "elevationDegrees": 60,
+    "canonicalSha256": "bea1787b8064b3f90ff5dde96c749d8c64ab093b1036e7c4689693bd5bc75e87",
+    "actualReplaySha256": "bea1787b8064b3f90ff5dde96c749d8c64ab093b1036e7c4689693bd5bc75e87",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      98,
+      106,
+      168,
+      163
+    ]
+  },
+  {
+    "yawDegrees": 300,
+    "elevationDegrees": 70,
+    "canonicalSha256": "c8ffbd737f824e3b7b84e2668bf4e94de955613afb20d62868d42169f61e2982",
+    "actualReplaySha256": "c8ffbd737f824e3b7b84e2668bf4e94de955613afb20d62868d42169f61e2982",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      98,
+      104,
+      168,
+      164
+    ]
+  },
+  {
+    "yawDegrees": 330,
+    "elevationDegrees": 20,
+    "canonicalSha256": "cb603418a71d6664143f361b90c097ede95338c1b7d110049a00ad2951474723",
+    "actualReplaySha256": "cb603418a71d6664143f361b90c097ede95338c1b7d110049a00ad2951474723",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      102,
+      117,
+      164,
+      152
+    ]
+  },
+  {
+    "yawDegrees": 330,
+    "elevationDegrees": 30,
+    "canonicalSha256": "3e11fa9a129a387602839bb4dfe34e7d5250aca13c02da31cb8f78e0ebc94250",
+    "actualReplaySha256": "3e11fa9a129a387602839bb4dfe34e7d5250aca13c02da31cb8f78e0ebc94250",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      102,
+      112,
+      164,
+      157
+    ]
+  },
+  {
+    "yawDegrees": 330,
+    "elevationDegrees": 40,
+    "canonicalSha256": "a6f7733c18a1e1ccc102c487357dd0c7f8c7259cf00f22afd4f9a0915a6927ed",
+    "actualReplaySha256": "a6f7733c18a1e1ccc102c487357dd0c7f8c7259cf00f22afd4f9a0915a6927ed",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      102,
+      108,
+      164,
+      161
+    ]
+  },
+  {
+    "yawDegrees": 330,
+    "elevationDegrees": 50,
+    "canonicalSha256": "bd82c250e84ba4fece41aef70b3c39897ea3e2c7ccdfef041e53909774a8bc28",
+    "actualReplaySha256": "bd82c250e84ba4fece41aef70b3c39897ea3e2c7ccdfef041e53909774a8bc28",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      102,
+      105,
+      164,
+      164
+    ]
+  },
+  {
+    "yawDegrees": 330,
+    "elevationDegrees": 60,
+    "canonicalSha256": "967bffc2cce5e272d555064282d6ba0a4843b92ee4404d4d1293bfe23c502afd",
+    "actualReplaySha256": "967bffc2cce5e272d555064282d6ba0a4843b92ee4404d4d1293bfe23c502afd",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      102,
+      102,
+      164,
+      166
+    ]
+  },
+  {
+    "yawDegrees": 330,
+    "elevationDegrees": 70,
+    "canonicalSha256": "312c2a70901b84db1977812580ad9478a06690bdbc397622a29fe6d8d8d50f0d",
+    "actualReplaySha256": "312c2a70901b84db1977812580ad9478a06690bdbc397622a29fe6d8d8d50f0d",
+    "exactBytes": true,
+    "exactDecodedRgba": true,
+    "alphaBounds": [
+      102,
+      100,
+      164,
+      167
+    ]
+  }
+]
