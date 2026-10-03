@@ -1,0 +1,247 @@
+{
+  "parser": "installed Playwright YAML parser",
+  "jobs": [
+    "verify",
+    "assets",
+    "browser",
+    "browser-source",
+    "browser-artifact"
+  ],
+  "actualShell": "Git Bash; syntax only for run blocks; real readonly subject guard uses runner -e/-o pipefail",
+  "checks": [
+    {
+      "job": "verify",
+      "step": "Enable Corepack",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "verify",
+      "step": "Activate pnpm",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "verify",
+      "step": "Verify toolchain versions",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "verify",
+      "step": "Reject or clear a node_modules that is not a real install",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "verify",
+      "step": "Install dependencies",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "verify",
+      "step": "Hydrate Blender sources and angled frames for verification",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "verify",
+      "step": "Verify project",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "verify",
+      "step": "Verify measurement harness",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "verify",
+      "step": "Verify benchmark harness",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "verify",
+      "step": "Verify Cloudflare deployment packages",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "verify",
+      "step": "Provision PostgreSQL and pgTAP",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "verify",
+      "step": "Verify Supabase SQL (migrations + pgTAP)",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "verify",
+      "step": "Verify generated output did not modify tracked files",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "assets",
+      "step": "Provision Git LFS",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "assets",
+      "step": "Fetch runtime art from Git LFS",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "assets",
+      "step": "Confirm the runtime art is image data, not LFS pointers",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "assets",
+      "step": "Enable Corepack",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "assets",
+      "step": "Activate pnpm",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "assets",
+      "step": "Validate runtime atlases against the authored contract",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "browser",
+      "step": "Require both source shards and artifact success on the exact workflow subject",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "browser-source",
+      "step": "Provision Git LFS",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "browser-source",
+      "step": "Fetch runtime art from Git LFS",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "browser-source",
+      "step": "Assert the environment sheets decoded",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "browser-source",
+      "step": "Enable Corepack",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "browser-source",
+      "step": "Activate pnpm",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "browser-source",
+      "step": "Reject or clear a node_modules that is not a real install",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "browser-source",
+      "step": "Install dependencies",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "browser-source",
+      "step": "Provision Playwright's Chromium",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "browser-source",
+      "step": "Record exact checked-out subject",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "browser-source",
+      "step": "Collect and partition whole source files without launching a browser",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "browser-source",
+      "step": "Run the real-browser suite",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "browser-artifact",
+      "step": "Provision Git LFS",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "browser-artifact",
+      "step": "Fetch runtime art from Git LFS",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "browser-artifact",
+      "step": "Assert the environment sheets decoded",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "browser-artifact",
+      "step": "Enable Corepack",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "browser-artifact",
+      "step": "Activate pnpm",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "browser-artifact",
+      "step": "Reject or clear a node_modules that is not a real install",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "browser-artifact",
+      "step": "Install dependencies",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "browser-artifact",
+      "step": "Provision Playwright's Chromium",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "browser-artifact",
+      "step": "Record exact checked-out subject",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "browser-artifact",
+      "step": "Build the production client",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "browser-artifact",
+      "step": "Run the built client in a browser",
+      "bashSyntaxExit": 0
+    },
+    {
+      "job": "browser-source",
+      "step": "actual checked-out subject guard",
+      "case": "matching",
+      "exit": 0
+    },
+    {
+      "job": "browser-source",
+      "step": "actual checked-out subject guard",
+      "case": "mismatch",
+      "exit": 1
+    },
+    {
+      "job": "browser-artifact",
+      "step": "actual checked-out subject guard",
+      "case": "matching",
+      "exit": 0
+    },
+    {
+      "job": "browser-artifact",
+      "step": "actual checked-out subject guard",
+      "case": "mismatch",
+      "exit": 1
+    }
+  ]
+}

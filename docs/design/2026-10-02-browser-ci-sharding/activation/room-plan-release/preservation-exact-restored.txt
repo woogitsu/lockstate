@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-room-plan-release-ci-20261003
+
+
+ Test Files  3 passed (3)
+      Tests  59 passed (59)
+   Start at  12:03:26
+   Duration  659ms (transform 80ms, setup 0ms, import 227ms, tests 717ms, environment 0ms)
+

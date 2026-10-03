@@ -1,0 +1,44 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-room-plan-release-ci-20261003
+
+ ❯ tests/foundation/browser-ci-sharding-contract.test.ts (7 tests | 1 failed) 398ms
+     × actual promoted producer exactly matches both previously collected whole-file partitions 12ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 6 passed (7)
+   Start at  12:03:15
+   Duration  606ms (transform 20ms, setup 0ms, import 91ms, tests 398ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/foundation/browser-ci-sharding-contract.test.ts > owner-approved browser CI sharding contract (#1983) > actual promoted producer exactly matches both previously collected whole-file partitions
+AssertionError: expected [ 'actor-crowding.spec.ts', …(77) ] to deeply equal [ 'actor-crowding.spec.ts', …(78) ]
+
+- Expected
++ Received
+
+@@ -50,11 +50,10 @@
+    "ui-alert-row-presses-to-its-place.spec.ts",
+    "ui-build-arm-label-fit.spec.ts",
+    "ui-build-order-note.spec.ts",
+    "ui-build-queue-reach.spec.ts",
+    "ui-build-where-readout.spec.ts",
+-   "ui-clock-paused-readout.spec.ts",
+    "ui-earned-withheld.spec.ts",
+    "ui-escape-sentence-survival.spec.ts",
+    "ui-held-guards.spec.ts",
+    "ui-hud-chrome-under-page-zoom.spec.ts",
+    "ui-hud-fullhd-build-catalogue.spec.ts",
+
+ ❯ tests/foundation/browser-ci-sharding-contract.test.ts:117:52
+    115|     const all = report('source-all'); const bins = partition(all, weig…
+    116|     expect(bins).toHaveLength(2);
+    117|     bins.forEach((bin, index) => expect(bin.files).toEqual(files(repor…
+       |                                                    ^
+    118|     expect(bins.flatMap(bin => bin.files).sort()).toEqual(files(all));
+    119|     expect(new Set(bins.flatMap(bin => bin.files)).size).toBe(files(al…
+ ❯ tests/foundation/browser-ci-sharding-contract.test.ts:117:10
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

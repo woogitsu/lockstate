@@ -1,0 +1,57 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-room-plan-release-ci-20261003
+
+ ❯ tests/foundation/browser-ci-sharding-contract.test.ts (7 tests | 1 failed) 344ms
+     × preserves exact #1899 verification/assets/provisioning, fork and event/concurrency gates 11ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 6 passed (7)
+   Start at  12:03:12
+   Duration  553ms (transform 21ms, setup 0ms, import 93ms, tests 344ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/foundation/browser-ci-sharding-contract.test.ts > owner-approved browser CI sharding contract (#1983) > preserves exact #1899 verification/assets/provisioning, fork and event/concurrency gates
+AssertionError: expected { …(4) } to deeply equal { …(4) }
+
+- Expected
++ Received
+
+@@ -50,25 +50,10 @@
+      {
+        "name": "Install dependencies",
+        "run": "pnpm install --frozen-lockfile",
+      },
+      {
+-       "env": {
+-         "LFS_TOKEN": "${{ github.token }}",
+-       },
+-       "name": "Hydrate Blender sources and angled frames for verification",
+-       "run": "set -euo pipefail
+- cleanup() {
+-   git config --local --unset-all 'http.https://github.com/.extraheader' 2>/dev/null || true
+- }
+- trap cleanup EXIT
+- git config --local 'http.https://github.com/.extraheader' \\
+-   \"AUTHORIZATION: basic $(printf 'x-access-token:%s' \"$LFS_TOKEN\" | base64 -w0)\"
+- git lfs pull --include=\"assets/source/blender/*.blend,public/assets/environment/oblique/*.png\" --exclude=\"\"
+- ",
+-     },
+-     {
+        "name": "Verify project",
+        "run": "pnpm verify",
+      },
+      {
+        "name": "Verify measurement harness",
+
+ ❯ tests/foundation/browser-ci-sharding-contract.test.ts:52:72
+     50|     for (const key of ['on', 'env', 'concurrency', 'permissions'] as c…
+     51|     expect(Object.keys(active.jobs).sort()).toEqual(['assets', 'browse…
+     52|     for (const name of ['verify', 'assets']) expect(job(active, name))…
+       |                                                                        ^
+     53|     const original = job(before, 'browser');
+     54|     const common = original.steps.slice(0, original.steps.findIndex(en…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
