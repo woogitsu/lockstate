@@ -68,3 +68,27 @@ The fixed12-case quotation gate retains its limits and corrects only two live
 hud.ts anchors3048?3054 after the integrated6-line HUD insertion.
 Actual producer-negative controls and one complete restored seven-case run
 remain next. These local results do not establish hosted CI or deployment.
+
+## Actual production control and exact restoration
+
+Frozen control subject ef2aa4f4e17e45b9dbe14e5bed2c95b19d7ec4b4 was built,
+then only the actual main pan callback and actual Dock default mapping were
+disconnected. Four physical-pan cases and q0 Dock glazing fail:5 RED, with
+1 genuine capacity control GREEN and q1 not run after serial q0 failure.
+That skipped case is explicitly not a failure or a pass. Both source files and
+the frozen emitted worker were restored byte-exact; all7 real cases then pass.
+The q1 Dock mapping was tested separately with main callback unchanged:
+1 actual q1 RED/1 genuine capacity GREEN, finally exact source/worker restoration
+and2 GREEN. All original comparison thresholds and retries remain unchanged.
+[Combined producer receipt](native/producer-receipt.json),
+[negative report](native/negative-report.json),
+[restored seven-case report](native/restored-report.json),
+[q1 producer receipt](native/q1-producer-receipt.json),
+[q1 negative report](native/q1-negative-report.json),
+[q1 restored report](native/q1-restored-report.json). Each short alias manifest
+retains original file names and byte-exact PNG/JSON hashes for Windows safety.
+Original failed observer runs remain alongside the accepted corrected result.
+Full native images were inspected, including both loaded target orientations,
+actual physical hardware angle and unchanged full footprint. Whole paused worker
+data, completed matching V8 owners, palettes and anchors survive real Save/Load.
+Exact-head hosted CI, serial main and production deployment remain separate gates.

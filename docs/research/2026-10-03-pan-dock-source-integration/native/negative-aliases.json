@@ -1,0 +1,114 @@
+{
+  "stats": {
+    "startTime": "2026-10-03T02:37:54.991Z",
+    "duration": 141001.223,
+    "expected": 1,
+    "skipped": 1,
+    "unexpected": 5,
+    "flaky": 0
+  },
+  "files": [
+    {
+      "original": "dedicated-camera-pan-playe-333cd-rmed-room-plan-confirmation/error-context.md",
+      "published": "negative/c1/01.md",
+      "sha256": "825e8e66074da8aca65a468bc7c5e761d73e9e745264e192c3e16b8a161a11e4",
+      "bytes": 8187
+    },
+    {
+      "original": "dedicated-camera-pan-playe-68a5b-rmed-room-plan-confirmation/error-context.md",
+      "published": "negative/c2/01.md",
+      "sha256": "4430c6406e81b2061d9bee934b84bc6c9c2567d97c0351f8cb174b0140a92660",
+      "bytes": 8797
+    },
+    {
+      "original": "dedicated-camera-pan-playe-9d92a-rmed-room-plan-confirmation/error-context.md",
+      "published": "negative/c3/01.md",
+      "sha256": "5e152f0199a935d8694f861eb8ac6136126efd3d907aeb81830ee515585c53f5",
+      "bytes": 8187
+    },
+    {
+      "original": "dedicated-camera-pan-playe-d0dc2-rmed-room-plan-confirmation/error-context.md",
+      "published": "negative/c4/01.md",
+      "sha256": "c4580331f91bffb7c3e3389fc7a2d2e388475ad59a3e1fa5356474218599902c",
+      "bytes": 8797
+    },
+    {
+      "original": "dedicated-loading-dock-doo-0fe13-ding-dock-door-Delivery-Bay/capacity-completed-worker-snapshot.json",
+      "published": "negative/c5/01.json",
+      "sha256": "1024bb1a28d9a260398aeaef6453621c989fc0f554f7efcabac34cfb852699b0",
+      "bytes": 54384
+    },
+    {
+      "original": "dedicated-loading-dock-doo-76e24-and-anchors-after-Save-Load/attachments/dedicated-loading-dock-door-worker-and-save-evidence-99c8d7259d39af44a849913c76c3e21cbb6440fe.json",
+      "published": "negative/c6/01.json",
+      "sha256": "0b363802c2696235f074768deca569ac6c52085e0c9f2854ecdf59768c64b13c",
+      "bytes": 503
+    },
+    {
+      "original": "dedicated-loading-dock-doo-76e24-and-anchors-after-Save-Load/capacity-loaded-worker-snapshot.json",
+      "published": "negative/c6/02.json",
+      "sha256": "b34f41f46a9ef4c755522e7983cc65a0f90cf0c81e494cd8cb746843eeb8a315",
+      "bytes": 54384
+    },
+    {
+      "original": "dedicated-loading-dock-doo-76e24-and-anchors-after-Save-Load/dedicated-loading-dock-door-completed-worker-snapshot.json",
+      "published": "negative/c6/03.json",
+      "sha256": "727b8727b0b332e25e3aa51e7ed24b86b485b21d1cd5a04660eeaf70a542bbc8",
+      "bytes": 74771
+    },
+    {
+      "original": "dedicated-loading-dock-doo-76e24-and-anchors-after-Save-Load/dedicated-loading-dock-door-hardware-loaded-fullhd.png",
+      "published": "negative/c6/04.png",
+      "sha256": "333d3c8e8b6ed8477218819dc0edb834ec2c473d6d06b502191ead93a0b79cc4",
+      "bytes": 268094
+    },
+    {
+      "original": "dedicated-loading-dock-doo-76e24-and-anchors-after-Save-Load/dedicated-loading-dock-door-loaded-fullhd.png",
+      "published": "negative/c6/05.png",
+      "sha256": "25a770f9c70c39e950dc9ef8b9e31d88ad12360e4d4d5120e3fdd8caf5896e8d",
+      "bytes": 1380878
+    },
+    {
+      "original": "dedicated-loading-dock-doo-76e24-and-anchors-after-Save-Load/dedicated-loading-dock-door-loaded-worker-snapshot.json",
+      "published": "negative/c6/06.json",
+      "sha256": "b948020569d2e306083cfe4190eb30f990c835a42b371084ad0f46d7f7d6c1e9",
+      "bytes": 74771
+    },
+    {
+      "original": "dedicated-loading-dock-doo-76e24-and-anchors-after-Save-Load/dedicated-loading-dock-door-worker-and-save-evidence.json",
+      "published": "negative/c6/07.json",
+      "sha256": "0b363802c2696235f074768deca569ac6c52085e0c9f2854ecdf59768c64b13c",
+      "bytes": 503
+    },
+    {
+      "original": "dedicated-loading-dock-doo-76e24-and-anchors-after-Save-Load/dedicated-loading-dock-door-worker-completed-fullhd.png",
+      "published": "negative/c6/08.png",
+      "sha256": "a746590dc522039e88053894c88b57e651f9f199fea01e3dadd85a553edc76ab",
+      "bytes": 1412728
+    },
+    {
+      "original": "dedicated-loading-dock-doo-76e24-and-anchors-after-Save-Load/error-context.md",
+      "published": "negative/c6/09.md",
+      "sha256": "d5ad07e1a35fd3b72eac31dc250cf91ac03a00d946136935e4288b7d3da7cc34",
+      "bytes": 9519
+    },
+    {
+      "original": "dedicated-loading-dock-doo-76e24-and-anchors-after-Save-Load/failed-player-fullhd.png",
+      "published": "negative/c6/10.png",
+      "sha256": "333d3c8e8b6ed8477218819dc0edb834ec2c473d6d06b502191ead93a0b79cc4",
+      "bytes": 268094
+    },
+    {
+      "original": "dedicated-loading-dock-doo-76e24-and-anchors-after-Save-Load/failed-player-worker-snapshot.json",
+      "published": "negative/c6/11.json",
+      "sha256": "75caa812b5f6f0f04a2b8c31626f4f80503ed2e9d2d9fbe66990c0e599a6f779",
+      "bytes": 74771
+    },
+    {
+      "original": "dedicated-loading-dock-doo-76e24-and-anchors-after-Save-Load/worker-and-completed-save-evidence.json",
+      "published": "negative/c6/12.json",
+      "sha256": "8221bc8040e3c1669efcb66417a5de90b3c7c2ecb188352b25a57c75186fec20",
+      "bytes": 348
+    }
+  ]
+}
