@@ -85,3 +85,18 @@ remain pending. Protected CI sharding and V9 action-state decisions remain pendi
 Next isolated integration combines the actual Loading Dock model, four camera
 pan controls and refused-cancellation history correction. Preserve this frozen
 subject and its receipts; later runs must name their own built source.
+
+## Final compatibility/documentation follow-through
+
+The final occupied-material compatibility case is integrated from published
+39448e8956da264c1833a71cf9d4bb6faa30a689, with exact legacy-ownership refusal
+and direct ownerless removal preserved. Final10-file/75-test gate passes,
+including11 occupied-material cases and the original documentation/coverage/
+partition contracts. [Original gate output](final-documentation-original.txt)
+retains stale local origin-ref failures and the external Blender build ID being
+misread as a LockState commit. Explicit existing published refs were fetched;
+unchanged Blender metadata now uses its explicit build_hash field rather than
+a repo citation. No citation allowlist, assertion or fetch gate was weakened.
+[Restored terminal gate](final-documentation-restored-75.txt) passes with
+GIT_NO_LAZY_FETCH=1. This final follow-through changes docs/test compatibility;
+the frozen bb521 native production mapping/worker remains byte-identical.

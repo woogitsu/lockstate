@@ -79,7 +79,8 @@ private loaded-control hook refused to match because the wrapper used CRLF;
 normalizing the temporary mutation text fixed the hook, with byte-exact final
 restoration. No hook preflight is counted as an executed negative.
 
-Blender5.2.1LTS upstream build ID `9e2066aef7ef`, executable SHA256
+Blender5.2.1LTS external build metadata `build_hash=9e2066aef7ef` (not a
+LockState commit citation), executable SHA256
 `284f4041f98e113f3dc10654a7193ffaaa9bfdfec8b87fa116620a48b5f6d4cb`.
 This first source/preparation checkpoint has not switched the existing
 descriptor/export entry point. Full72pose repeat, additional native geometry
