@@ -1,0 +1,15 @@
+{
+  "controls": [
+    {
+      "label": "actual-chair-order-orientation-omission-red",
+      "exitCode": 1
+    },
+    {
+      "label": "exact-public-plan-producer-restore-green",
+      "exitCode": 0
+    }
+  ],
+  "exactRestore": true,
+  "producerBeforeAndAfterSHA256": "5d84b6fd3162023f4efe7dbbf36f1479db36cf23933c1dc8a49f4733fd855d73",
+  "nativeBrowserRun": false
+}

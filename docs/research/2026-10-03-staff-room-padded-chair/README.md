@@ -37,3 +37,7 @@ No browser/server/build/fullverify/native acceptance ran in this lane. Root will
 Actual new source60/e40 preview:
 
 ![Actual Blender Staff Room padded chair](../../../public/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+60-elev40.3d0fd0a02317.png)
+
+## Prepared opt-in native handoff
+
+[Existing three-case Staff native observer](./NATIVE_HANDOFF.md) is source-prepared: actual network bodies/loader Blob decoder, both paid owners, whole paused V8 equality and FullHD photos. Original60s/expect10s/w1/r0 and retained wood assertions unchanged. Genuine typed public kernel route q0/q1 and actual plan-producer omission RED?exact restoreGREEN completed; no native/browser/collection/build claim.
