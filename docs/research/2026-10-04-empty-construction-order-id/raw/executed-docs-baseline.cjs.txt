@@ -1,0 +1,4 @@
+﻿const fs=require('node:fs'),cp=require('node:child_process');
+const file='src/simulation/protocol/commands.ts',bytes=fs.readFileSync(file);
+cp.execFileSync('git',['switch','--detach','6e882a7f8e']);
+try{fs.writeFileSync(file,cp.execFileSync('git',['show','94a287202d:src/simulation/protocol/commands.ts']));const r=cp.spawnSync('C:/Users/matma/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe',['node_modules/vitest/vitest.mjs','run','tests/foundation/documentation-anchor-quotation-contract.test.ts','--maxWorkers=2'],{encoding:'utf8',env:{...process.env,GIT_NO_LAZY_FETCH:'1'}});fs.writeFileSync('C:/Users/matma/AppData/Local/Temp/lockstate-build-command-gameplay-fix-20261004/docs-original-source.txt',r.stdout+r.stderr);console.log('baseline docs exit='+r.status);}finally{fs.writeFileSync(file,bytes);cp.execFileSync('git',['switch','codex/build-command-gameplay-fix-20261004']);}

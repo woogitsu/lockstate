@@ -1,0 +1,18 @@
+{
+  "originalSha256": "593ce1ed2ec7791ef1252bbfe857dde824e1053dfa72cc2004c25e708b51004f",
+  "mutations": [
+    {
+      "type": "PlaceBuildOrder",
+      "exit": 1,
+      "mutatedSha256": "488814cf288669d2666ae6cdbb654e57e62844415f68a887ac6e6df1071f14bc"
+    },
+    {
+      "type": "PlaceObject",
+      "exit": 1,
+      "mutatedSha256": "6159915e918b46dc3443f33ff0fc45f40adc9ef02996cb1f12b5ffb4d1bd3afa"
+    }
+  ],
+  "restoredSha256": "593ce1ed2ec7791ef1252bbfe857dde824e1053dfa72cc2004c25e708b51004f",
+  "byteExactRestored": true,
+  "restoredExit": 0
+}

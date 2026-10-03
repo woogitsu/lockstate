@@ -1,0 +1,79 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/ls-build-command-gameplay-fix-20261004
+
+ ❯ tests/integration/construction-empty-order-id.test.ts (17 tests | 2 failed) 109ms
+   × PlaceObject refuses an empty live ID before funds, world, order, history or ledger mutation 17ms
+   × PlaceObject rejects an empty current producer ID 1ms
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 15 passed (17)
+   Start at  01:04:49
+   Duration  2.80s (transform 958ms, setup 0ms, import 2.54s, tests 109ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/construction-empty-order-id.test.ts > PlaceObject refuses an empty live ID before funds, world, order, history or ledger mutation
+AssertionError: expected { orders: [ { id: '', …(6) } ], …(6) } to strictly equal { orders: [], …(6) }
+
+- Expected
++ Received
+
+  {
+    "currentTransaction": [
+-     "room-zoning-0",
++     "",
+    ],
+-   "currentTransactionId": "room-zoning-0",
++   "currentTransactionId": "",
+    "newerActionThanTheStackTop": false,
+-   "orderRevisions": {},
+-   "orders": [],
++   "orderRevisions": {
++     "": "1",
++   },
++   "orders": [
++     {
++       "definitionId": "bench-wooden",
++       "id": "",
++       "location": {
++         "x": 7,
++         "y": 7,
++       },
++       "materialsAllocated": [],
++       "placementSequence": 1,
++       "progress": 0,
++       "state": "approved",
++     },
++   ],
+    "redoStack": [],
+-   "undoStack": [],
++   "undoStack": [
++     [
++       "room-zoning-0",
++     ],
++   ],
+  }
+
+ ❯ tests/integration/construction-empty-order-id.test.ts:43:32
+     41|     submit(runtime, raw(command));
+     42|     const after = captureSessionSnapshot(runtime);
+     43|     expect(after.construction).toStrictEqual(before.construction);
+       |                                ^
+     44|     expect(after.world).toStrictEqual(before.world);
+     45|     expect(after.simulation).toStrictEqual(before.simulation);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/integration/construction-empty-order-id.test.ts > PlaceObject rejects an empty current producer ID
+AssertionError: expected [Function] to throw an error
+ ❯ tests/integration/construction-empty-order-id.test.ts:60:40
+     58|   });
+     59|   it(`${command.type} rejects an empty current producer ID`, () => {
+     60|     expect(() => packCommand(command)).toThrow();
+       |                                        ^
+     61|   });
+     62| }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+

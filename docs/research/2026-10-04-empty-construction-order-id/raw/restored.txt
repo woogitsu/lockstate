@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/ls-build-command-gameplay-fix-20261004
+
+
+ Test Files  1 passed (1)
+      Tests  17 passed (17)
+   Start at  01:04:52
+   Duration  2.79s (transform 950ms, setup 0ms, import 2.54s, tests 109ms, environment 0ms)
+

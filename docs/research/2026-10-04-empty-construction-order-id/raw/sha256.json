@@ -1,0 +1,102 @@
+﻿[
+    {
+        "file":  "docs-final.txt",
+        "sha256":  "0dadbe63831a1557026c03a4c46b12364574bda9beb969107a5f24d679a8cda0",
+        "bytes":  3728
+    },
+    {
+        "file":  "docs-original-source.txt",
+        "sha256":  "5d2dae6bec4165116d4698671fc7399ed35bf2e7af60e3d474ca5ed08a513a91",
+        "bytes":  260
+    },
+    {
+        "file":  "docs-restored.txt",
+        "sha256":  "1ad3bef50052e23c37f92fd8ff8a3f1a5f73e6ecca0b16ba45a21d653e2f718e",
+        "bytes":  542
+    },
+    {
+        "file":  "executed-docs-baseline.cjs.txt",
+        "sha256":  "d1b07bd580a5c39e87401b0bddc5185eb47831060de3e164d1d63ad32984cc40",
+        "bytes":  916
+    },
+    {
+        "file":  "executed-mutation.cjs.txt",
+        "sha256":  "9060f07563fa5036830645fa322f3dac5deed4028870ac3aefd3fafbacf2614d",
+        "bytes":  1904
+    },
+    {
+        "file":  "executed-regression.test.ts.txt",
+        "sha256":  "e09e85f2cf64f07535282bb946bf52fa7c096f3b23ba4d5ef89695c6415ec31c",
+        "bytes":  6099
+    },
+    {
+        "file":  "fixed.txt",
+        "sha256":  "f86fb8900171ca40fc2fd0c3c690f6969a6c870367860bbdf605ec9286502865",
+        "bytes":  542
+    },
+    {
+        "file":  "fresh-duplicate-search.json",
+        "sha256":  "2f422fdc6d77cd90dc56e76e178670bae8bfb96d0290c03e2a8c8cd8ad5c6d72",
+        "bytes":  237543
+    },
+    {
+        "file":  "initial-regression-fixture-error.txt",
+        "sha256":  "55255bf4927bab3a5fa7646ebd95c080039e0f222477fca8e541b3caed65fb1c",
+        "bytes":  18642
+    },
+    {
+        "file":  "mutation-PlaceBuildOrder.txt",
+        "sha256":  "919f3661df16e114cecc42d0f01564cd385aafb248b62e5298330c6bcd4522ce",
+        "bytes":  6504
+    },
+    {
+        "file":  "mutation-PlaceObject.txt",
+        "sha256":  "ae3262356a18464ea2fa6b64237c5b5e68ecc820cb0921b42c45c299e9a65221",
+        "bytes":  2598
+    },
+    {
+        "file":  "mutation-receipt.json",
+        "sha256":  "063d6bbe58e2d7b25a4a1d8daae22123d74700c87312755d52b0e0385687ffb2",
+        "bytes":  552
+    },
+    {
+        "file":  "neighbors.txt",
+        "sha256":  "9b668dd64962c2403bc6cd7f56312eb8b8879cb2e988582fd9a398ed8e332d0b",
+        "bytes":  552
+    },
+    {
+        "file":  "original-corrected-fixture.txt",
+        "sha256":  "4b29109eeba23087b36ccf3d7e7756e178e87615f29cfbb73340afba4327ea1e",
+        "bytes":  17040
+    },
+    {
+        "file":  "original-kernel-probe.test.ts.txt",
+        "sha256":  "41b5b1100d198ba484ab0a998aa1f44d20f0baa5b96061880f5dba69cabda560",
+        "bytes":  1779
+    },
+    {
+        "file":  "original-kernel-probe.txt",
+        "sha256":  "171ab4f4b424bc714274088fdc23bf1d6638b8f703d3687b45c73148c44376e7",
+        "bytes":  9350
+    },
+    {
+        "file":  "restored.txt",
+        "sha256":  "da83c5137da1097fc0155713795350f5ad68108a6ba3a021f1e8e614d9ffd4c3",
+        "bytes":  263
+    },
+    {
+        "file":  "types-app.txt",
+        "sha256":  "76243ff809caff6b817a5267b9f65023e552dd831fbbd8793451971880be57a7",
+        "bytes":  1540
+    },
+    {
+        "file":  "types-app-final.txt",
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes":  0
+    },
+    {
+        "file":  "types-tools.txt",
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes":  0
+    }
+]

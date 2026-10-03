@@ -1,0 +1,30 @@
+﻿const fs=require('node:fs'), cp=require('node:child_process'), crypto=require('node:crypto');
+const source='src/simulation/protocol/commands.ts', bytes=fs.readFileSync(source);
+const node='C:/Users/matma/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe';
+const output='C:/Users/matma/AppData/Local/Temp/lockstate-build-command-gameplay-fix-20261004';
+const hash=b=>crypto.createHash('sha256').update(b).digest('hex');
+const receipt={originalSha256:hash(bytes),mutations:[]};
+const run=name=>{const r=cp.spawnSync(node,['node_modules/vitest/vitest.mjs','run','tests/integration/construction-empty-order-id.test.ts','--maxWorkers=2'],{encoding:'utf8'});fs.writeFileSync(output+'/'+name+'.txt',r.stdout+r.stderr);return r.status;};
+cp.execFileSync('git',['switch','--detach','6e882a7f8e']);
+try {
+ for(const type of ['PlaceBuildOrder','PlaceObject']) {
+  const original=bytes.toString('utf8');
+  const start=original.indexOf("type: z.literal('"+type+"')");
+  const target=original.indexOf('orderId: z.string().min(1)',start);
+  if(target<0)throw Error('missing exact producer');
+  const mutant=original.slice(0,target)+original.slice(target).replace('orderId: z.string().min(1)','orderId: z.string()');
+  fs.writeFileSync(source,mutant);
+  const status=run('mutation-'+type);
+  receipt.mutations.push({type,exit:status,mutatedSha256:hash(fs.readFileSync(source))});
+  if(status!==1)throw Error('negative did not fail');
+  fs.writeFileSync(source,bytes);
+ }
+} finally {
+ fs.writeFileSync(source,bytes);
+ receipt.restoredSha256=hash(fs.readFileSync(source));
+ receipt.byteExactRestored=fs.readFileSync(source).equals(bytes);
+ receipt.restoredExit=run('restored');
+ fs.writeFileSync(output+'/mutation-receipt.json',JSON.stringify(receipt,null,2)+'\n');
+ cp.execFileSync('git',['switch','codex/build-command-gameplay-fix-20261004']);
+}
+console.log(JSON.stringify(receipt,null,2));
