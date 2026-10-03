@@ -33,7 +33,8 @@ Both outputs are retained. No old test or threshold was changed.
 ## Obtained preservation and producer proof
 
 **VERIFIED, actual source at paint checkpoint
-`32abd38f009a975713c1aa126384859eceb72bad`:** `source-proof.mjs` reads the
+`32abd38f009a975713c1aa126384859eceb72bad`:** the retained historical
+`source-proof.mjs.txt` read the
 real PostCSS AST and compares it against the exact combined base. All2216
 nonpaint declaration records remain ordered and unchanged across the five
 actual CSS files (267 tokens,1445 HUD,254 primitives,26 brand,224 global).
@@ -65,10 +66,18 @@ normalize Git LF versus Windows CRLF. That was a proof-harness error, not a
 product RED, and its full stderr was not retained. The retained producer RED
 is the separate real heading omission above.
 
-Reproduce the read-only proof from the repository root:
+The proof is now an inert historical source attachment, not an executable
+module in the project. The foundation coverage gate exposed that its original
+`.mjs` name was outside tools typechecking. Its bytes are retained unchanged;
+no typecheck exclusion or assertion was added. For a deliberate manual replay
+from the repository root, copy it temporarily beside the attachment so module
+resolution still uses this checkout, then remove the temporary copy:
 
-```text
-node docs/research/2026-10-03-modern-hud-hierarchy-paint-draft/source-proof.mjs
+```powershell
+$proofAttachment = 'docs/research/2026-10-03-modern-hud-hierarchy-paint-draft/source-proof.mjs.txt'
+$proofReplay = 'docs/research/2026-10-03-modern-hud-hierarchy-paint-draft/.source-proof-replay.mjs'
+Copy-Item -LiteralPath $proofAttachment -Destination $proofReplay
+try { node $proofReplay } finally { Remove-Item -LiteralPath $proofReplay }
 ```
 
 **Weakest claim:** a source contrast calculation does not establish whether the
