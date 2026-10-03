@@ -1,0 +1,39 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-functional-angled-model-next-20261003
+
+x·
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  18:38:14
+   Duration  1.12s (transform 270ms, setup 0ms, import 990ms, tests 12ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/native-staff-room-padded-chair-evidence.test.ts > accepts independently pinned real source/descriptor/PNG using the native observer assertions
+Error: expect(received).toMatchObject(expected)
+
+- Expected  - 1
++ Received  + 1
+
+@@ -13,7 +13,7 @@
+    "resolutionPx": Array [
+      256,
+      256,
+    ],
+    "source": "assets/source/blender/furniture.staff-room.padded-chair.blend",
+-   "sourceSha256": "0000000000000000000000000000000000000000000000000000000000000000",
++   "sourceSha256": "47004797588d92173e4140bc307ac3db73ed322ac2e1d2472f99c10475956109",
+  }
+ ❯ Proxy.<anonymous> ../lockstate-1382-doc-anchor-2026-09-24/node_modules/.pnpm/playwright@1.56.1/node_modules/playwright/lib/matchers/expect.js:221:24
+ ❯ assertStaffDeliveredArt tests/browser/staff-room-padded-chair/native-evidence.ts:15:19
+     13|   expect(createHash('sha256').update(descriptor.toString('utf8').repla…
+     14|   const catalog = parseObliqueModuleCatalog(JSON.parse(descriptor.toSt…
+     15|   expect(catalog).toMatchObject({ assetId: art.assetId, source: art.so…
+       |                   ^
+     16|     resolutionPx: [256, 256], nominalPixelsPerTile: 64, pivotPx: [128,…
+     17|   expect(catalog.frames).toHaveLength(72);
+ ❯ tests/unit/native-staff-room-padded-chair-evidence.test.ts:13:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯

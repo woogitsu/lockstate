@@ -3,6 +3,7 @@ import { writeFile } from 'node:fs/promises';
 import { assertOwnedObjectOrders, recordOwnedObjectSnapshot, type ExpectedOwnedObject } from './owned-object-worker-evidence';
 import { expect, test as base, type Page } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
+import { observeStaffChairNetwork, captureStaffWholePaused, recordStaffCanonicalAfterLoad, recordStaffNetworkFailure } from './staff-room-padded-chair/native-evidence';
 
 interface ProbeWindow extends Window {
   askWorker?: (kind: string, payload: unknown) => Promise<unknown>;
@@ -81,6 +82,7 @@ test.describe.configure({ mode: 'serial' });
 
 test.afterEach(async ({ page }, info) => {
   if (info.status === info.expectedStatus) return;
+  await recordStaffNetworkFailure(page, info.outputPath('failed-staff-chair-network.json')).catch(() => undefined);
   const snapshot = await page.evaluate(async () => (window as ProbeWindow).askWorker
     ? (window as ProbeWindow).askWorker!('simulation/request-snapshot', { reason: 'consistency-check' })
     : null);
@@ -143,6 +145,7 @@ test(`player builds Staff Room at quarterTurns${quarterTurns} and retains both a
   expect(routeStorage, 'this case consumes the first stage actual IndexedDB save').toBeDefined();
   await installWorkerProbe(page);
   await installTee(page);
+  const staffNative = process.env['LOCKSTATE_STAFF_CHAIR_NATIVE'] === '1' ? await observeStaffChairNetwork(page) : undefined;
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/?renderer=oblique');
   await page.locator('.save-panel__item').first().getByRole('button', { name: 'Load', exact: true }).click();
@@ -183,6 +186,8 @@ test(`player builds Staff Room at quarterTurns${quarterTurns} and retains both a
   ];
   const completedData = await recordOwnedObjectSnapshot(page, info.outputPath('completed-worker-snapshot.json'));
   assertOwnedObjectOrders(completedData, 'object.chair', 'chair-wooden', owned);
+  const completedWhole = staffNative === undefined ? undefined : await captureStaffWholePaused(page, info.outputPath('staff-chair-whole-paused-completed.json'));
+  if (completedWhole !== undefined) expect(completedWhole).toEqual(completedData);
   const beforePixels = await timberPixels(page, completed, quarterTurns);
   await writeFile(info.outputPath('worker-and-completed-save-evidence.json'), JSON.stringify({
     quarterTurns, actualBefore, beforePixels, commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
@@ -202,6 +207,8 @@ test(`player builds Staff Room at quarterTurns${quarterTurns} and retains both a
   const loadedData = await recordOwnedObjectSnapshot(page, info.outputPath('loaded-worker-snapshot.json'));
   assertOwnedObjectOrders(loadedData, 'object.chair', 'chair-wooden', owned);
   expect(loadedData).toEqual(completedData);
+  const loadedWhole = staffNative === undefined ? undefined : await captureStaffWholePaused(page, info.outputPath('staff-chair-whole-paused-loaded.json'));
+  if (loadedWhole !== undefined) expect(loadedWhole).toEqual(completedWhole);
   const afterPixels = await timberPixels(page, loaded, quarterTurns);
   afterPixels.forEach((count, index) => expect.soft(count, `chair${index + 1} authored timber after Load`)
     .toBeGreaterThan(40));
@@ -217,6 +224,8 @@ test(`player builds Staff Room at quarterTurns${quarterTurns} and retains both a
   for (let step = 0; step < 3; step++) await page.getByRole('button', { name: quarterTurns === 0 ? 'Rotate camera right' : 'Rotate camera left', exact: true }).click();
   await page.mouse.move(1300, 700);
   await page.screenshot({ path: info.outputPath('physical-hardware-loaded-fullhd.png') });
+  if (staffNative !== undefined && completedWhole !== undefined && loadedWhole !== undefined)
+    await recordStaffCanonicalAfterLoad(page, info, quarterTurns, staffNative, completedWhole, loadedWhole);
 
 });
 }
