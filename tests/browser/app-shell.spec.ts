@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { expect, test, type Locator, type Page } from './network-changed-fixture';
+import { openCameraControls } from './public-camera-controls';
 import { DEFAULT_LOCALE } from '../../src/content/localization';
 import { procurableMaterial } from '../../src/content/procurement-catalog';
 import { defaultRoomContentRegistry } from '../../src/content/room-catalog';
@@ -4094,6 +4095,41 @@ test.describe('the assembled application', () => {
     ).toEqual([]);
     await page.locator('.hud-layout__button').click();
     await expect(page.locator('.hud-layout__body')).toBeHidden();
+
+    // Approved A is a public disclosure. Visit its desktop open state, as
+    // with Layout above, then restore the actual previous renderer and close.
+    // Angled makes the real pose controls visible; World legitimately hides
+    // them. The panel floats over the world, so require its own complete hit
+    // inventory here, then resume the ordinary uncovered-shell measurements.
+    // Below 720px the existing product CSS hides both trigger and panel;
+    // this visit does not invent a mobile route or add an exemption.
+    if (width > 720) {
+      const cameraPanel = page.locator('.hud-camera-panel');
+      const cameraTrigger = page.getByRole('button', { name: localeText('hud.camera.view'), exact: true });
+      await expect(cameraPanel).toBeHidden();
+      await expect(cameraTrigger).toHaveAttribute('aria-expanded', 'false');
+      await openCameraControls(page);
+      const view = cameraPanel.getByRole('combobox', { name: localeText('hud.camera.view'), exact: true });
+      const previousView = await view.inputValue();
+      expect(['world', 'oblique']).toContain(previousView);
+      await view.selectOption('oblique');
+      await expect(view).toBeEnabled();
+      await expect(view).toHaveValue('oblique');
+      await expect(cameraPanel.locator('.hud-camera-pose')).toBeVisible();
+      const camera = await controlReachability(page);
+      record(camera);
+      const cameraIndexes = camera.controls.flatMap((name, index) => name.includes('hud-camera-panel >') ? [index] : []);
+      expect(cameraIndexes.length, 'the open View panel has no inventoried controls').toBeGreaterThan(0);
+      expect(cameraIndexes.filter(index => !camera.measured.includes(index)), `View controls not laid out at ${width}x${height}`).toEqual([]);
+      expect(camera.unreachable.filter(entry => entry.control.includes('hud-camera-panel >')), `View controls covered while open at ${width}x${height}`).toEqual([]);
+      await view.selectOption(previousView);
+      await expect(view).toBeEnabled();
+      await expect(view).toHaveValue(previousView);
+      await cameraTrigger.click();
+      await expect(cameraPanel).toBeHidden();
+      await expect(cameraTrigger).toHaveAttribute('aria-expanded', 'false');
+      await expect(cameraTrigger).toBeFocused();
+    }
 
     // Plans live in a native modal, so visit it explicitly just as the Layout
     // disclosure above. The backdrop intentionally blocks the rest of the HUD;
