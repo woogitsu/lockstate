@@ -1011,6 +1011,25 @@
   --border-panel: var(--paper-300);
   --border-toolbar: var(--straw-100);
 
+  /* Source-only hierarchy draft: a navy command layer over the existing
+     paper readouts. These roles use the accepted ramps; no raw colour moves. */
+  --surface-commandbar: var(--slate-900);
+  --command-text-heading: var(--paper-100);
+  --command-text-body: var(--paper-200);
+  --command-text-subtle: var(--paper-400);
+  --command-text-muted: var(--paper-500);
+  --command-surface-control: var(--ink-600);
+  --command-surface-overlay: var(--ink-700);
+  --command-surface-active: var(--ink-500);
+  --command-border: var(--paper-alpha-22);
+  --command-border-hairline: var(--paper-alpha-07);
+  --command-accent: var(--teal-300);
+  --command-accent-deep: var(--teal-400);
+  --command-accent-soft: var(--teal-900);
+  --command-accent-contrast: var(--teal-950);
+  --command-badge-neutral-fg: var(--paper-400);
+  --command-badge-neutral-bg: var(--paper-alpha-13);
+
   /* Text, strongest first -- all four are delivered day values. Measured on
      `--surface-base`: 13.35, 12.01, 9.51 and 4.70:1. */
   --text-heading: var(--slate-900);
@@ -1079,6 +1098,22 @@
   --surface-control: var(--ink-600);
   --border-panel: var(--paper-alpha-07);
   --border-toolbar: var(--amber-900);
+  --surface-commandbar: var(--ink-900);
+  --command-text-heading: var(--paper-100);
+  --command-text-body: var(--paper-200);
+  --command-text-subtle: var(--paper-400);
+  --command-text-muted: var(--paper-500);
+  --command-surface-control: var(--ink-600);
+  --command-surface-overlay: var(--ink-700);
+  --command-surface-active: var(--ink-500);
+  --command-border: var(--paper-alpha-22);
+  --command-border-hairline: var(--paper-alpha-07);
+  --command-accent: var(--teal-300);
+  --command-accent-deep: var(--teal-400);
+  --command-accent-soft: var(--teal-900);
+  --command-accent-contrast: var(--teal-950);
+  --command-badge-neutral-fg: var(--paper-400);
+  --command-badge-neutral-bg: var(--paper-alpha-13);
 
   /* Measured on `--surface-base`: 14.34, 13.49, 8.74 and 5.87:1. */
   --text-heading: var(--paper-100);
