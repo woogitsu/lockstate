@@ -1,61 +1,8 @@
 {
-  "schemaVersion": 1,
-  "assetId": "door.interior.open.full",
-  "source": "door.interior.leaf.open.blend",
+  "descriptorSha256": "77054fd613d795e24754321a63b44b4fb1b93f39b437eaf706f6d90558895d63",
   "sourceSha256": "48a27d1b212e88121e6b55661452f70df1129e78f8825eebc3913db1d5aeaf5f",
-  "sourceDependencies": [
-    {
-      "source": "wall.interior.cutaway.blend",
-      "sha256": "98b264c5b3ea15658d7d8996f403024928c660135a66025adccba1d385927e6c"
-    }
-  ],
-  "resolutionPx": [
-    512,
-    512
-  ],
-  "nominalPixelsPerTile": 64,
-  "pivotPx": [
-    256,
-    256
-  ],
-  "cameraTargetTiles": [
-    0.0,
-    0.0,
-    0.0
-  ],
-  "projection": "orthographic",
-  "yawDegrees": [
-    -180,
-    -165,
-    -150,
-    -135,
-    -120,
-    -105,
-    -90,
-    -75,
-    -60,
-    -45,
-    -30,
-    -15,
-    0,
-    15,
-    30,
-    45,
-    60,
-    75,
-    90,
-    105,
-    120,
-    135,
-    150,
-    165
-  ],
-  "elevationDegrees": [
-    25,
-    45,
-    65
-  ],
-  "frames": [
+  "dependencySha256": "98b264c5b3ea15658d7d8996f403024928c660135a66025adccba1d385927e6c",
+  "actual72FrameHashes": [
     {
       "yawDegrees": -180,
       "elevationDegrees": 25,
@@ -487,6 +434,143 @@
       "elevationDegrees": 65,
       "image": "/assets/environment/oblique/cell-door-open-yaw+165-elev65.239447df873e.png",
       "sha256": "239447df873ea22b6ef767ee087b52ae9a06a2782ce5b3c9ef055d14e1c584c9"
+    }
+  ],
+  "historical9Comparison": [
+    {
+      "yaw": -45,
+      "elevation": 25,
+      "oldSha256": "4ac128b2e6a31bda3bc96d72f4a83cac1f2664cd83fe0c50eec40f484c4aad55",
+      "actualSha256": "4ac128b2e6a31bda3bc96d72f4a83cac1f2664cd83fe0c50eec40f484c4aad55",
+      "changedRGBApixels": 0,
+      "changedAlphaPixels": 0,
+      "changedVisibleRGBPixels": 0,
+      "maximumChannelDifference": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "yaw": -45,
+      "elevation": 45,
+      "oldSha256": "40921f9613417d04bd8ec9e842a93abf32982a48326bfecaf641153afbdfd2ec",
+      "actualSha256": "40921f9613417d04bd8ec9e842a93abf32982a48326bfecaf641153afbdfd2ec",
+      "changedRGBApixels": 0,
+      "changedAlphaPixels": 0,
+      "changedVisibleRGBPixels": 0,
+      "maximumChannelDifference": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "yaw": -45,
+      "elevation": 65,
+      "oldSha256": "5d6692a4009d3493bca79baf71ad800df61b679f743ada5dbc5ae044cd32ffdf",
+      "actualSha256": "5d6692a4009d3493bca79baf71ad800df61b679f743ada5dbc5ae044cd32ffdf",
+      "changedRGBApixels": 0,
+      "changedAlphaPixels": 0,
+      "changedVisibleRGBPixels": 0,
+      "maximumChannelDifference": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "yaw": 0,
+      "elevation": 25,
+      "oldSha256": "153433698e9a37d0afa5db08b9a2c99db29aa1004ec2c096fbff917f3ca5e61f",
+      "actualSha256": "153433698e9a37d0afa5db08b9a2c99db29aa1004ec2c096fbff917f3ca5e61f",
+      "changedRGBApixels": 0,
+      "changedAlphaPixels": 0,
+      "changedVisibleRGBPixels": 0,
+      "maximumChannelDifference": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "yaw": 0,
+      "elevation": 45,
+      "oldSha256": "66eaf497a3846d8295b98a47571e6bc236481a5b0cb1cb5194a8599ccabb48db",
+      "actualSha256": "66eaf497a3846d8295b98a47571e6bc236481a5b0cb1cb5194a8599ccabb48db",
+      "changedRGBApixels": 0,
+      "changedAlphaPixels": 0,
+      "changedVisibleRGBPixels": 0,
+      "maximumChannelDifference": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "yaw": 0,
+      "elevation": 65,
+      "oldSha256": "8f3bd1d0bbebfb8948395b5c0c42b8414f86f6c33f30c170aafbc1353ab02b80",
+      "actualSha256": "8f3bd1d0bbebfb8948395b5c0c42b8414f86f6c33f30c170aafbc1353ab02b80",
+      "changedRGBApixels": 0,
+      "changedAlphaPixels": 0,
+      "changedVisibleRGBPixels": 0,
+      "maximumChannelDifference": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "yaw": 45,
+      "elevation": 25,
+      "oldSha256": "a4fe47356131ce5743725fb7795d70ccfd56262b4caf3481888454f85b33cfcd",
+      "actualSha256": "a4fe47356131ce5743725fb7795d70ccfd56262b4caf3481888454f85b33cfcd",
+      "changedRGBApixels": 0,
+      "changedAlphaPixels": 0,
+      "changedVisibleRGBPixels": 0,
+      "maximumChannelDifference": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "yaw": 45,
+      "elevation": 45,
+      "oldSha256": "b4f70db7c66d29296479a34d38127045e13f55fb54d1dbac80e0c9d4e576187a",
+      "actualSha256": "b4f70db7c66d29296479a34d38127045e13f55fb54d1dbac80e0c9d4e576187a",
+      "changedRGBApixels": 0,
+      "changedAlphaPixels": 0,
+      "changedVisibleRGBPixels": 0,
+      "maximumChannelDifference": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "yaw": 45,
+      "elevation": 65,
+      "oldSha256": "ec8b9ef3677f49b0ab324a0dd65db54764ff2ff74a19eb832b69bd78c22f69cf",
+      "actualSha256": "ec8b9ef3677f49b0ab324a0dd65db54764ff2ff74a19eb832b69bd78c22f69cf",
+      "changedRGBApixels": 0,
+      "changedAlphaPixels": 0,
+      "changedVisibleRGBPixels": 0,
+      "maximumChannelDifference": [
+        0,
+        0,
+        0,
+        0
+      ]
     }
   ]
 }
