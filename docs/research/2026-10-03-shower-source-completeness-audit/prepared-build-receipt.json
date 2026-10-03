@@ -1,0 +1,19 @@
+{
+  "preparedCommit": "1919cd47aa2c8ca3daeba0c6c0b853eab4c75735",
+  "sourceSha256": "0a375563958f382d6b1d8dde1a6252ace7ed3883f4994a78d040361a65397ea1",
+  "canonicalDescriptorSha256": "691d2ec59b728bce493ab7ba130824e6c8d156f3e704d645fcf66b8c91369e1a",
+  "worker": "dist/client/assets/worker-DeFPH7t-.js",
+  "workerBytes": 438431,
+  "workerSha256": "e97d347426e28d7c498ac1ea0f73200336b472168b451cfc52af619946864f05",
+  "existingCanonical72ReplayExactBytes": true,
+  "productionFilesChanged": false,
+  "newPhysicalModelAuthored": false,
+  "appToolsTypeScriptExit": 0,
+  "productionBuildExit": 0,
+  "focusedPassed": 7,
+  "optionalBlenderPathSkipped": 1,
+  "directPinnedActualBlenderProofPassed": true,
+  "browserStarted": false,
+  "serverStarted": false,
+  "nativeAcceptancePerformed": false
+}
