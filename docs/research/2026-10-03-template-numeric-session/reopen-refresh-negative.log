@@ -1,0 +1,56 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-template-numeric-session-20261003
+
+ ❯ tests/unit/ui-template-numeric-session-readiness.test.ts (4 tests | 4 failed) 85ms
+   × world/new: legal close-session-reopen numeric verdict belongs to real replacement worker 61ms
+   × world/load: legal close-session-reopen numeric verdict belongs to real replacement worker 12ms
+   × oblique/new: legal close-session-reopen numeric verdict belongs to real replacement worker 6ms
+   × oblique/load: legal close-session-reopen numeric verdict belongs to real replacement worker 6ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-template-numeric-session-readiness.test.ts > world/new: legal close-session-reopen numeric verdict belongs to real replacement worker
+ FAIL  tests/unit/ui-template-numeric-session-readiness.test.ts > oblique/new: legal close-session-reopen numeric verdict belongs to real replacement worker
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/unit/ui-template-numeric-session-readiness.test.ts:116:27
+    114|   h.preview.openButton.dispatchEvent(new Event('click'));await h.flush…
+    115|   const currentStatus=h.status.textContent,currentDisabled=h.submit.di…
+    116|   expect(currentDisabled).toBe(replacement==='load');expect(currentSta…
+       |                           ^
+    117|   h.clients[0]!.release();await h.flush();expect(h.status.textContent)…
+    118|   await vi.advanceTimersByTimeAsync(15000);await h.flush(); // Origina…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tests/unit/ui-template-numeric-session-readiness.test.ts > world/load: legal close-session-reopen numeric verdict belongs to real replacement worker
+ FAIL  tests/unit/ui-template-numeric-session-readiness.test.ts > oblique/load: legal close-session-reopen numeric verdict belongs to real replacement worker
+AssertionError: expected '' to contain 'This footprint is blocked.'
+
+- Expected
++ Received
+
+- This footprint is blocked.
+
+ ❯ tests/unit/ui-template-numeric-session-readiness.test.ts:116:76
+    114|   h.preview.openButton.dispatchEvent(new Event('click'));await h.flush…
+    115|   const currentStatus=h.status.textContent,currentDisabled=h.submit.di…
+    116|   expect(currentDisabled).toBe(replacement==='load');expect(currentSta…
+       |                                                                            ^
+    117|   h.clients[0]!.release();await h.flush();expect(h.status.textContent)…
+    118|   await vi.advanceTimersByTimeAsync(15000);await h.flush(); // Origina…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed (4)
+   Start at  09:15:37
+   Duration  3.49s (transform 1.16s, setup 0ms, import 3.29s, tests 85ms, environment 0ms)
+

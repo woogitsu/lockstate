@@ -1,0 +1,10 @@
+{
+  "subject": "d53fb08c14ff49306efccd14766fd34074fb9d17",
+  "path": "src\\ui\\hud\\room-template-preview.ts",
+  "count": 1,
+  "originalSha256": "e90afb8a4af22ac787de82862cb030406a244ba4278ae461c311c6809158ce24",
+  "mutantSha256": "5e159210352036a5cd5eeaaa6970f6cf8b8b3f35000ec385c6c778b94764d9b6",
+  "negativeExit": 1,
+  "restoredSha256": "e90afb8a4af22ac787de82862cb030406a244ba4278ae461c311c6809158ce24",
+  "bytesExact": true
+}

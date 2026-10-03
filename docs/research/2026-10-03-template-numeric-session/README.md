@@ -18,7 +18,9 @@ Initial2RED/2GREEN accidentally passed the V8 envelope rather than its decoded p
 
 - Actual four-case source baseline4GREEN; rawbaseline.log and final-four-cases.jsonl.
 - Strict fixture TypeScript exit0.
-- Actual reopen-refresh producer negative pending scoped authorization/verification; initial green alone is not load-bearing acceptance.
+- Unique actual Room plans opener `void refreshPlacement()` omitted on detached frozensubjectd53fb08c14:4/4RED. New retains disabled pending submit rather than clear, Load retains empty status rather than blocked. The original real delayed query is initiated by the public X input, so this negative fails the genuine reopen readiness assertion rather than the initial setup.
+- Full room-template-preview.ts bytes restored in finally, original/restored SHA256 in producer-restoration.json; exact-restored4/4GREEN. Production diff empty; returned to original branch.
+- Canonical index5/5GREEN and final strict fixture TypeScript exit0.
 
 Exact source command: `node node_modules/vitest/vitest.mjs run tests/unit/ui-template-numeric-session-readiness.test.ts --maxWorkers=2`.
 
