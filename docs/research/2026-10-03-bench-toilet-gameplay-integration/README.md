@@ -27,3 +27,8 @@ The first native numeric observer fails2/2 because it compared the whole ghost l
 
 The next numeric observer2RED confirms the prepared bare-canvas coordinates were wrong with the real Build dock open. Opened original FullHD capture and real worker preflights pin the stationary900,460 cursor at15,14World /16,14Angled. Independent numeric origin20,5 remains unchanged and disjoint. Fresh empty worker snapshots omit optional roomTemplates; its absence is asserted explicitly. Stage2 raw results/fixture are preserved under native/numeric-label-corrected. No producer/quote/budget changes.
 
+
+## Actual held-primary numeric acceptance
+
+Corrected actual native2/2GREEN(World9.8s,Angled11.5s), zero skipped/flaky/errors. The real pointer stays held while trusted Tab/Enter types20,5 in the public dialog and buys exactly18approved shell orders with q1pendingsequence0; the authoritative workerquote remains20orders/35Brick/2Wood/1530. Closing the modal and releasing the original pointer preserves the ENTIRE worker snapshot and exactly one construction command. No synthetic verdict/command/pointer feed. Actual raw report, snapshots/inputattachments and captures are retained under native/numeric-corrected; frozen compiled423189bf remains unchanged by observer-only commits. Consumer omissions and final integrated pack remain required.
+

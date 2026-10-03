@@ -633,5 +633,62 @@
     "sourceSha256": "03c074cda6ba0641a9ac699e58e2255c1ce22501141856ea871cbc50f8b7eba9",
     "archivedBytes": 1699524,
     "archivedSha256": "03c074cda6ba0641a9ac699e58e2255c1ce22501141856ea871cbc50f8b7eba9"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-numeric-native-origin-corrected-20261003.json",
+    "archived": "numeric-corrected/report.json",
+    "sourceBytes": 191604,
+    "sourceSha256": "6446f07c3a358af8716c553a970e5738697693847bd42b7c894bbd4d07fb361e",
+    "archivedBytes": 191604,
+    "archivedSha256": "6446f07c3a358af8716c553a970e5738697693847bd42b7c894bbd4d07fb361e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-numeric-native-origin-corrected-20261003.txt",
+    "archived": "numeric-corrected/console.txt",
+    "sourceBytes": 4054,
+    "sourceSha256": "7da9fdc099198157782f9a8a12842ecc2d41638b80d272d59db703f8015c0a9f",
+    "archivedBytes": 2032,
+    "archivedSha256": "0dfd7f7fef6dea4b42db048e1dccdacad3bf772d3c5ea76cc5b6bdd52081639e",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-numeric-native-origin-corrected-20261003\\.last-run.json",
+    "archived": "numeric-corrected/001-.last-run.json",
+    "sourceBytes": 45,
+    "sourceSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "archivedBytes": 45,
+    "archivedSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-numeric-native-origin-corrected-20261003\\room-template-numeric-held-82a3a--a-second-transaction-1908-\\numeric-accepted-primary-still-held.png",
+    "archived": "numeric-corrected/002-numeric-accepted-primary-still-held.png",
+    "sourceBytes": 239550,
+    "sourceSha256": "4c0bc283553a5c2ca04e8da58581364b8ff4b45c122140ef53a03cc951caba2c",
+    "archivedBytes": 239550,
+    "archivedSha256": "4c0bc283553a5c2ca04e8da58581364b8ff4b45c122140ef53a03cc951caba2c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-numeric-native-origin-corrected-20261003\\room-template-numeric-held-82a3a--a-second-transaction-1908-\\original-primary-released-one-pending-plan.png",
+    "archived": "numeric-corrected/003-original-primary-released-one-pending-plan.png",
+    "sourceBytes": 226049,
+    "sourceSha256": "b475ec7b6d938b3e12b245f12cec4ec16eb39037a899235d29577a6e3779206f",
+    "archivedBytes": 226049,
+    "archivedSha256": "b475ec7b6d938b3e12b245f12cec4ec16eb39037a899235d29577a6e3779206f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-numeric-native-origin-corrected-20261003\\room-template-numeric-held-d52d4--a-second-transaction-1908-\\numeric-accepted-primary-still-held.png",
+    "archived": "numeric-corrected/004-numeric-accepted-primary-still-held.png",
+    "sourceBytes": 670456,
+    "sourceSha256": "3cd8a700e303fb8adae546567d5ee866c9f418526a29a946539bff14fe7b2752",
+    "archivedBytes": 670456,
+    "archivedSha256": "3cd8a700e303fb8adae546567d5ee866c9f418526a29a946539bff14fe7b2752"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-numeric-native-origin-corrected-20261003\\room-template-numeric-held-d52d4--a-second-transaction-1908-\\original-primary-released-one-pending-plan.png",
+    "archived": "numeric-corrected/005-original-primary-released-one-pending-plan.png",
+    "sourceBytes": 1663221,
+    "sourceSha256": "b6951e892123759a554d7d1e1dba33a5685078af350f0568a4dbaa8fab0295c3",
+    "archivedBytes": 1663221,
+    "archivedSha256": "b6951e892123759a554d7d1e1dba33a5685078af350f0568a4dbaa8fab0295c3"
   }
 ]
