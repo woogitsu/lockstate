@@ -71,3 +71,16 @@ stale held release then fresh press, and whole paused Save/Load. Keep all20 card
 Save/rail/list/camera-alert floors and original failures. Do not reuse the wider
 unapproved corrected-draft layout as the subject or relax the original geometry.
 Current source proof is not a built-client/native pass or deployment claim.
+
+### Follow-up: bounded approved-source native observer
+
+The new [native recipe](./NATIVE_RECIPE.md) prepares exactly two EN/PL UI100
+cases against a future actual frozen integrated Cloudflare build. It extracts
+the original physical rotation, independent paired ghost pixels, all20 cards,
+44px geometry, held-release and fresh-press controls from the reviewed recipe;
+it adds a second genuine paid q3 order, pending-claim preflight, exact V9 order
+ledger and a real public Export decoded and compared whole before Load.
+No production source or wider UI200 allocation is imported. Strict app/tools
+types exited0; actual build, collection and native outcomes remain pending.
+The [preparation receipt](./native-preparation-receipt.json) and
+[raw typecheck](./evidence/native-prep-types.raw.txt) distinguish those facts.
