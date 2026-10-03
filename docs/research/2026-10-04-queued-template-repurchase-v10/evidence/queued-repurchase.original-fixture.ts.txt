@@ -1,0 +1,44 @@
+﻿import {it,expect} from 'C:/Users/matma/Documents/Rozwój gier/ls-template-cancellation-v10-audit-20261004/node_modules/vitest/dist/index.js';
+import {createNewSimulationRuntime} from 'C:/Users/matma/Documents/Rozwój gier/ls-template-cancellation-v10-audit-20261004/src/simulation/runtime/new-session.ts';
+import {captureSessionSnapshot,restoreSimulationRuntime} from 'C:/Users/matma/Documents/Rozwój gier/ls-template-cancellation-v10-audit-20261004/src/simulation/runtime/restore-session.ts';
+import {packCommand} from 'C:/Users/matma/Documents/Rozwój gier/ls-template-cancellation-v10-audit-20261004/src/simulation/protocol/commands.ts';
+import {createSaveEnvelope,decodeSaveEnvelope} from 'C:/Users/matma/Documents/Rozwój gier/ls-template-cancellation-v10-audit-20261004/src/persistence/save-schema.ts';
+import {computeSaveChecksum} from 'C:/Users/matma/Documents/Rozwój gier/ls-template-cancellation-v10-audit-20261004/src/persistence/checksum.ts';
+import {CANCEL_BUILD_ORDER_LEAD_TICKS} from 'C:/Users/matma/Documents/Rozwój gier/ls-template-cancellation-v10-audit-20261004/src/ui/simulation-commands.ts';
+for(const mirrorX of [false,true])for(const load of ['live','V10','V9'] as const) it('old queued cancellation does not cancel repurchased q3 template '+mirrorX+' '+load,()=>{
+ let r=createNewSimulationRuntime(73);
+ const send=(cmd:any)=>{let seq=r.kernel.expectedSequence;r.kernel.submitCommand('handoff-'+seq,seq,r.kernel.tick,packCommand(cmd));expect(r.kernel.dispatchDueCommands()).toBe(1);};
+ send({type:'PlaceRoomTemplate',templateId:'cell-basic',origin:{x:10,y:10},quarterTurns:3,mirrorX});r.kernel.step();
+ const old=r.construction.allOrders()[0]!;expect(old.state).toBe('materials-pending');
+ const oldRevision=r.construction.revisionOf(old.id);
+ const executeAt=r.kernel.tick+CANCEL_BUILD_ORDER_LEAD_TICKS;
+ r.kernel.submitCommand('old-delayed-cancel',r.kernel.expectedSequence,executeAt,packCommand({type:'CancelBuildOrder',orderId:old.id,expectedRevision:oldRevision}));
+ send({type:'RemoveWall',x:old.location.x,y:old.location.y,edge:old.edge??'north'});
+ expect(r.roomTemplates.snapshot().pending).toHaveLength(0);expect(r.construction.allOrders().every(o=>o.state==='cancelled')).toBe(true);
+ send({type:'PlaceRoomTemplate',templateId:'cell-basic',origin:{x:10,y:10},quarterTurns:3,mirrorX});
+ const newer=r.construction.allOrders().filter(o=>o.state!=='cancelled').map(o=>o.id);expect(newer).toHaveLength(18);
+ while(r.kernel.tick<executeAt-1)r.kernel.step();
+ if(load!=='live'){
+  const save=JSON.parse(JSON.stringify(createSaveEnvelope({gameVersion:'test',prisonId:'same-pose-repurchase',revision:1,createdAt:0,updatedAt:1,...captureSessionSnapshot(r)})));
+  if(load==='V9'){
+   save.version=9;
+   save.payload.construction.orderRevisions=Object.fromEntries(Object.entries(save.payload.construction.orderRevisions).map(([id,value])=>[id,Number(value)]));
+   for(const command of save.payload.kernel.commands)if(command.payload.type==='CancelBuildOrder'){throw Error('unexpected unwrapped shape');}
+   for(const command of save.payload.kernel.commands)if(command.payload.data?.type==='CancelBuildOrder'){command.payload.schemaVersion=1;command.payload.data.expectedRevision=Number(command.payload.data.expectedRevision);}
+   save.checksum=computeSaveChecksum(save.payload);
+  }
+  const decoded=decodeSaveEnvelope(save);expect(decoded.ok).toBe(true);if(!decoded.ok)throw Error(JSON.stringify(decoded));
+  r=restoreSimulationRuntime(decoded.value.payload as any).runtime;
+ }
+ const before=captureSessionSnapshot(r);
+ r.kernel.step();expect(r.kernel.tick).toBe(executeAt);
+ const after=captureSessionSnapshot(r);
+ expect(after.construction).toEqual(before.construction);expect(after.simulation?.roomTemplates).toEqual(before.simulation?.roomTemplates);
+ expect(r.construction.allOrders().filter(o=>newer.includes(o.id)).every(o=>o.state!=='cancelled')).toBe(true);
+ for(let ticks=0;ticks<30000&&r.roomTemplates.snapshot().pending.length>0;ticks++)r.kernel.step();
+ for(let ticks=0;ticks<30000&&r.construction.allOrders().some(o=>o.state!=='cancelled'&&o.state!=='completed');ticks++)r.kernel.step();
+ expect(r.placedObjects.getSnapshot()).toHaveLength(2);expect(r.placedObjects.getSnapshot().every(o=>newer.includes(o.sourceOrderId!))).toBe(true);
+ const funds=r.treasury.balanceMinorUnits;
+ send({type:'Undo'});expect(r.placedObjects.size).toBe(0);expect(r.prisoners.roomInstances.getSnapshot()).toHaveLength(0);expect(r.treasury.balanceMinorUnits).toBe(funds);
+ console.log(JSON.stringify({mirrorX,load,oldRevision,executeAt,newerOrders:newer.length,funds,oldCancelled:r.construction.getOrder(old.id)?.state,ownersBeforeUndo:2,finalObjects:r.placedObjects.size,marker:r.construction.snapshot().newerActionThanTheStackTop}));
+});

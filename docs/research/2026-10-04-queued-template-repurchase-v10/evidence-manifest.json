@@ -1,0 +1,42 @@
+﻿[
+    {
+        "file":  "index-gate.txt",
+        "bytes":  546,
+        "sha256":  "c62702baa6ce2bfc83e69d8aeb9957bbbbc6bc93873f4a2a063b9ac62d8b760d"
+    },
+    {
+        "file":  "queued-repurchase.executed.ts.txt",
+        "bytes":  4847,
+        "sha256":  "222227138b5f19718c1838eaaca40f9de6fa6370323001bc8b362a6e5386a779"
+    },
+    {
+        "file":  "queued-repurchase.intermediate-fixture.ts.txt",
+        "bytes":  4755,
+        "sha256":  "4e586fa178b4d1bd356362dfcab5ebd957c7a5f88385d13c4c222439b9dfdc8f"
+    },
+    {
+        "file":  "queued-repurchase.original-fixture.ts.txt",
+        "bytes":  4765,
+        "sha256":  "732401f75b880d0fd4e0f7552d8d6441ebdd5409199de5b1a6727ae918f52367"
+    },
+    {
+        "file":  "queued-repurchase-corrected.txt",
+        "bytes":  9220,
+        "sha256":  "db3b692e1f8df81e2762e84ea0e19b40d9bd36b0f3d6d4fe7c5bb59f7b58fbf5"
+    },
+    {
+        "file":  "queued-repurchase-final.txt",
+        "bytes":  7240,
+        "sha256":  "e238ef460de6879a2c5b158e56ad2b319e0c27ace49a62dac55c8d6153fc128e"
+    },
+    {
+        "file":  "queued-repurchase-original.txt",
+        "bytes":  8358,
+        "sha256":  "c48382d7482650d36b90a9922dc0bce4b56b9eca9a040158948f3707570e4940"
+    },
+    {
+        "file":  "vitest.config.mjs.txt",
+        "bytes":  201,
+        "sha256":  "8f35f8099f4a390a2856880c932ecee405a799df19ba4085bb85dfec92612d07"
+    }
+]
