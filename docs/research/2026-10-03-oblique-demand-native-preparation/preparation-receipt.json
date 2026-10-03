@@ -1,9 +1,9 @@
 ﻿{
     "preparedSource":  "8727228d538bf2fb1a0644c1b09f3bc988008321",
     "prepCommit":  "d3fe5a8e2de5b0a06d4a4e67b2ee483f0451a310",
-    "productionDiff":  {
+    "productionDiff":  [
 
-                       },
+                       ],
     "browserLaunched":  false,
     "serverLaunched":  false,
     "nativeExecuted":  false,
