@@ -1,0 +1,866 @@
+[
+  {
+    "yawDegrees": -180,
+    "elevationDegrees": 25,
+    "physicalBandDeltaPixels": 177,
+    "correctedFrameSha256": "7d38d8f38dcc9bd6d852f52ec823f9546183fd560f14187ce8629425481d2ebc",
+    "correctedBounds": [
+      236,
+      149,
+      276,
+      258
+    ]
+  },
+  {
+    "yawDegrees": -180,
+    "elevationDegrees": 45,
+    "physicalBandDeltaPixels": 188,
+    "correctedFrameSha256": "0c4bb5ba00ebeb3deb5417dc69d3288bacd5bd7cf27549fc6609b739657f6a1e",
+    "correctedBounds": [
+      236,
+      170,
+      276,
+      260
+    ]
+  },
+  {
+    "yawDegrees": -180,
+    "elevationDegrees": 65,
+    "physicalBandDeltaPixels": 169,
+    "correctedFrameSha256": "756174b7a811c98cfe752a2d284708778bce48e7f8f60f6232e7e0a3ec0148e3",
+    "correctedBounds": [
+      236,
+      198,
+      276,
+      261
+    ]
+  },
+  {
+    "yawDegrees": -165,
+    "elevationDegrees": 25,
+    "physicalBandDeltaPixels": 178,
+    "correctedFrameSha256": "ceb67c84501ab5cf49e2027b15825dcffd04ac44274d203dbb5e0a18735c686d",
+    "correctedBounds": [
+      236,
+      149,
+      276,
+      260
+    ]
+  },
+  {
+    "yawDegrees": -165,
+    "elevationDegrees": 45,
+    "physicalBandDeltaPixels": 179,
+    "correctedFrameSha256": "9e47c478198c0c6df05b1e47c5157287a1b5d0ea879504977796e604ca2b576c",
+    "correctedBounds": [
+      236,
+      169,
+      276,
+      262
+    ]
+  },
+  {
+    "yawDegrees": -165,
+    "elevationDegrees": 65,
+    "physicalBandDeltaPixels": 156,
+    "correctedFrameSha256": "ed51e08fcde47580e91c4d9f21eb85142a753227b5fa5309a0ec2cb22fc78073",
+    "correctedBounds": [
+      236,
+      196,
+      276,
+      264
+    ]
+  },
+  {
+    "yawDegrees": -150,
+    "elevationDegrees": 25,
+    "physicalBandDeltaPixels": 186,
+    "correctedFrameSha256": "3a64f0f76e4c5f4cb35a69d04328e4fc81d2ef15ebe04d7e80437190e09e7a73",
+    "correctedBounds": [
+      238,
+      149,
+      275,
+      261
+    ]
+  },
+  {
+    "yawDegrees": -150,
+    "elevationDegrees": 45,
+    "physicalBandDeltaPixels": 174,
+    "correctedFrameSha256": "cc0b32f7521fbe2c7d6d5ef78b8aa773cc5ff045ae7c96d35c072291a3215faa",
+    "correctedBounds": [
+      238,
+      169,
+      275,
+      264
+    ]
+  },
+  {
+    "yawDegrees": -150,
+    "elevationDegrees": 65,
+    "physicalBandDeltaPixels": 162,
+    "correctedFrameSha256": "32aaf198e4ad930caa515756fe8f5db1418c6586aaf0a3197635f3a93b440276",
+    "correctedBounds": [
+      238,
+      196,
+      274,
+      266
+    ]
+  },
+  {
+    "yawDegrees": -135,
+    "elevationDegrees": 25,
+    "physicalBandDeltaPixels": 158,
+    "correctedFrameSha256": "3f946283a2ba2cfc58f6ac7f50f261d2faebbc8d170f8a3beadd2a61fc0d9aaf",
+    "correctedBounds": [
+      238,
+      150,
+      275,
+      261
+    ]
+  },
+  {
+    "yawDegrees": -135,
+    "elevationDegrees": 45,
+    "physicalBandDeltaPixels": 159,
+    "correctedFrameSha256": "882ef390240f95779f3691d4053c8656ea31fdf6f2ce435568822194aa20f75d",
+    "correctedBounds": [
+      238,
+      169,
+      275,
+      265
+    ]
+  },
+  {
+    "yawDegrees": -135,
+    "elevationDegrees": 65,
+    "physicalBandDeltaPixels": 151,
+    "correctedFrameSha256": "ef11292d1ce5247364440e7954d8252fc679cdd8930451caa13ce38feee0de1a",
+    "correctedBounds": [
+      238,
+      197,
+      275,
+      268
+    ]
+  },
+  {
+    "yawDegrees": -120,
+    "elevationDegrees": 25,
+    "physicalBandDeltaPixels": 128,
+    "correctedFrameSha256": "0a9712e0de9bdcc7d9e4ad00694eb8a18d72bc5467c33bdb66abf6df75b09dbd",
+    "correctedBounds": [
+      239,
+      150,
+      275,
+      262
+    ]
+  },
+  {
+    "yawDegrees": -120,
+    "elevationDegrees": 45,
+    "physicalBandDeltaPixels": 144,
+    "correctedFrameSha256": "27526070f60e3626ed420889ce3f3d14a7bd1655bdd4feb8afb2f5a9d20b70c0",
+    "correctedBounds": [
+      239,
+      170,
+      275,
+      266
+    ]
+  },
+  {
+    "yawDegrees": -120,
+    "elevationDegrees": 65,
+    "physicalBandDeltaPixels": 142,
+    "correctedFrameSha256": "7ec84e6c22e64da2d07e94c78feefb253197940894fb7f13f7ef33fe9a5df4ff",
+    "correctedBounds": [
+      239,
+      198,
+      275,
+      269
+    ]
+  },
+  {
+    "yawDegrees": -105,
+    "elevationDegrees": 25,
+    "physicalBandDeltaPixels": 96,
+    "correctedFrameSha256": "b987fdb3d84064fd32ab5a4676b29db0a3af1a6651fdb8637ba109a1860bae79",
+    "correctedBounds": [
+      241,
+      150,
+      273,
+      262
+    ]
+  },
+  {
+    "yawDegrees": -105,
+    "elevationDegrees": 45,
+    "physicalBandDeltaPixels": 128,
+    "correctedFrameSha256": "54ae516358971582a36b48f668d0d6064d377c7fe6f514ac43f0729a5472cdb0",
+    "correctedBounds": [
+      241,
+      170,
+      273,
+      266
+    ]
+  },
+  {
+    "yawDegrees": -105,
+    "elevationDegrees": 65,
+    "physicalBandDeltaPixels": 135,
+    "correctedFrameSha256": "9ef93e6e4df181d83593a43e125f3ea6d8ccc32473fc3ff2edd1b886a45aa1ab",
+    "correctedBounds": [
+      241,
+      200,
+      273,
+      269
+    ]
+  },
+  {
+    "yawDegrees": -90,
+    "elevationDegrees": 25,
+    "physicalBandDeltaPixels": 74,
+    "correctedFrameSha256": "5bf16483310a81581edfad744189cedcb99aadbddfef9034827ffafa083c9d96",
+    "correctedBounds": [
+      244,
+      150,
+      270,
+      262
+    ]
+  },
+  {
+    "yawDegrees": -90,
+    "elevationDegrees": 45,
+    "physicalBandDeltaPixels": 95,
+    "correctedFrameSha256": "9d652fb382624060b6dc0b4da85fed8c934d91c7af6d1b10435b4d0134183141",
+    "correctedBounds": [
+      244,
+      170,
+      270,
+      265
+    ]
+  },
+  {
+    "yawDegrees": -90,
+    "elevationDegrees": 65,
+    "physicalBandDeltaPixels": 110,
+    "correctedFrameSha256": "5e3403754ff56e3672f56306d87b87eebb34fdd94d0ed2101defa208b97677eb",
+    "correctedBounds": [
+      244,
+      199,
+      270,
+      268
+    ]
+  },
+  {
+    "yawDegrees": -75,
+    "elevationDegrees": 25,
+    "physicalBandDeltaPixels": 58,
+    "correctedFrameSha256": "82c26cc4e72686ed77fc17ad604446ec0ed73421909763c149a772d8cb1e1b04",
+    "correctedBounds": [
+      241,
+      150,
+      273,
+      263
+    ]
+  },
+  {
+    "yawDegrees": -75,
+    "elevationDegrees": 45,
+    "physicalBandDeltaPixels": 65,
+    "correctedFrameSha256": "30cb7cd5ad0fd7f212551227808f1d2d0bd975208761b652cbed9dcc672dd022",
+    "correctedBounds": [
+      241,
+      169,
+      273,
+      267
+    ]
+  },
+  {
+    "yawDegrees": -75,
+    "elevationDegrees": 65,
+    "physicalBandDeltaPixels": 65,
+    "correctedFrameSha256": "bec470cecb9df3735b4ecfd3abe52e24d28c56e81a49c5d5a98209549c93035e",
+    "correctedBounds": [
+      241,
+      199,
+      273,
+      271
+    ]
+  },
+  {
+    "yawDegrees": -60,
+    "elevationDegrees": 25,
+    "physicalBandDeltaPixels": 48,
+    "correctedFrameSha256": "758713800165dfb6c58234b5c3a8d30ff9871dfa8c811a5ab54fb603525b499c",
+    "correctedBounds": [
+      239,
+      150,
+      275,
+      263
+    ]
+  },
+  {
+    "yawDegrees": -60,
+    "elevationDegrees": 45,
+    "physicalBandDeltaPixels": 46,
+    "correctedFrameSha256": "8db7f6314de924f83bb0d552060d5fe7f5c9cf8ca24fc05280aebe99962ab2ef",
+    "correctedBounds": [
+      239,
+      169,
+      275,
+      268
+    ]
+  },
+  {
+    "yawDegrees": -60,
+    "elevationDegrees": 65,
+    "physicalBandDeltaPixels": 47,
+    "correctedFrameSha256": "652089cbaf59785d30347027e3cd23db2d0bdc7773104f49f62b36c9638e67f1",
+    "correctedBounds": [
+      239,
+      199,
+      275,
+      272
+    ]
+  },
+  {
+    "yawDegrees": -45,
+    "elevationDegrees": 25,
+    "physicalBandDeltaPixels": 30,
+    "correctedFrameSha256": "0c5abba5a804e4cdd9878eab01ba981ad15eccb8769b5b45349e68f59bc5beab",
+    "correctedBounds": [
+      238,
+      150,
+      275,
+      264
+    ]
+  },
+  {
+    "yawDegrees": -45,
+    "elevationDegrees": 45,
+    "physicalBandDeltaPixels": 34,
+    "correctedFrameSha256": "c7352a388ac2bb8075e924066c4abe39019d09272582ad2273a8dec5ffa55b17",
+    "correctedBounds": [
+      238,
+      169,
+      275,
+      269
+    ]
+  },
+  {
+    "yawDegrees": -45,
+    "elevationDegrees": 65,
+    "physicalBandDeltaPixels": 21,
+    "correctedFrameSha256": "74e5d20053e2ca09ecd2fad6ae82954fdc93a705760290df4f12d5b18ad54b71",
+    "correctedBounds": [
+      238,
+      199,
+      275,
+      273
+    ]
+  },
+  {
+    "yawDegrees": -30,
+    "elevationDegrees": 25,
+    "physicalBandDeltaPixels": 22,
+    "correctedFrameSha256": "dc5673e8a94bbce81a324973c82a143b2e5e4d97ac713a249ab8c38cd14f6819",
+    "correctedBounds": [
+      238,
+      150,
+      275,
+      263
+    ]
+  },
+  {
+    "yawDegrees": -30,
+    "elevationDegrees": 45,
+    "physicalBandDeltaPixels": 11,
+    "correctedFrameSha256": "6512baf80824085074ffd5910320b43c4dccda7b8dfd8f4f8098a10da2a6af17",
+    "correctedBounds": [
+      238,
+      169,
+      275,
+      268
+    ]
+  },
+  {
+    "yawDegrees": -30,
+    "elevationDegrees": 65,
+    "physicalBandDeltaPixels": 1,
+    "correctedFrameSha256": "c2e00ec136816eabb32cb400ac64066675f7b5c6b39f54ae9094f9d67e2f2a00",
+    "correctedBounds": [
+      238,
+      198,
+      274,
+      272
+    ]
+  },
+  {
+    "yawDegrees": -15,
+    "elevationDegrees": 25,
+    "physicalBandDeltaPixels": 1,
+    "correctedFrameSha256": "541967bc978b551747d61f587c497ba6e2fbcfd669ebdc341c28992796804ae8",
+    "correctedBounds": [
+      236,
+      150,
+      276,
+      263
+    ]
+  },
+  {
+    "yawDegrees": -15,
+    "elevationDegrees": 45,
+    "physicalBandDeltaPixels": 2,
+    "correctedFrameSha256": "8970da9a3d163f2d5b35f2ccd54c03c6670a8e53f9b6956b8d9530015e7a4412",
+    "correctedBounds": [
+      236,
+      169,
+      276,
+      267
+    ]
+  },
+  {
+    "yawDegrees": -15,
+    "elevationDegrees": 65,
+    "physicalBandDeltaPixels": 2,
+    "correctedFrameSha256": "950159d1658d79ff0039b8157f668502455501d14e218c76942bc663ec8ec289",
+    "correctedBounds": [
+      236,
+      199,
+      276,
+      271
+    ]
+  },
+  {
+    "yawDegrees": 0,
+    "elevationDegrees": 25,
+    "physicalBandDeltaPixels": 1,
+    "correctedFrameSha256": "572ac468464b4839571410bd50fc71523093e13a2ee3c1613086e6a4123f5092",
+    "correctedBounds": [
+      236,
+      150,
+      276,
+      262
+    ]
+  },
+  {
+    "yawDegrees": 0,
+    "elevationDegrees": 45,
+    "physicalBandDeltaPixels": 4,
+    "correctedFrameSha256": "27b27b26518f443edb43132a94ce7fcfbde22ca0cdab4c3f42019730df5a32ee",
+    "correctedBounds": [
+      236,
+      169,
+      276,
+      265
+    ]
+  },
+  {
+    "yawDegrees": 0,
+    "elevationDegrees": 65,
+    "physicalBandDeltaPixels": 0,
+    "correctedFrameSha256": "fed62813d88a7db3db9938d5f81bbf70b08a482e357656387e4154a6e38b62de",
+    "correctedBounds": [
+      236,
+      199,
+      276,
+      268
+    ]
+  },
+  {
+    "yawDegrees": 15,
+    "elevationDegrees": 25,
+    "physicalBandDeltaPixels": 5,
+    "correctedFrameSha256": "5802c158563eef6514b681f24c9cc98075f643677578009365d8717a10df93ba",
+    "correctedBounds": [
+      236,
+      150,
+      276,
+      263
+    ]
+  },
+  {
+    "yawDegrees": 15,
+    "elevationDegrees": 45,
+    "physicalBandDeltaPixels": 1,
+    "correctedFrameSha256": "78ae78a49e9ecfcb2367a3986a86042098503203b3be0a733771fcf50887eb3b",
+    "correctedBounds": [
+      236,
+      169,
+      276,
+      267
+    ]
+  },
+  {
+    "yawDegrees": 15,
+    "elevationDegrees": 65,
+    "physicalBandDeltaPixels": 5,
+    "correctedFrameSha256": "2cda6ce9684c48099b559b26bf85a55b101c6d9ae03907f4d0cfaaa31788602e",
+    "correctedBounds": [
+      236,
+      199,
+      276,
+      271
+    ]
+  },
+  {
+    "yawDegrees": 30,
+    "elevationDegrees": 25,
+    "physicalBandDeltaPixels": 21,
+    "correctedFrameSha256": "b50363e0f5cee1a296a65b29e6fe70628921bbcca273aef221b884c0684ed2bd",
+    "correctedBounds": [
+      237,
+      150,
+      274,
+      263
+    ]
+  },
+  {
+    "yawDegrees": 30,
+    "elevationDegrees": 45,
+    "physicalBandDeltaPixels": 10,
+    "correctedFrameSha256": "582e6658633fdbc9f957c02be32339fa5eef7ac25d6e70b115caeec019d2b8b8",
+    "correctedBounds": [
+      237,
+      169,
+      274,
+      268
+    ]
+  },
+  {
+    "yawDegrees": 30,
+    "elevationDegrees": 65,
+    "physicalBandDeltaPixels": 0,
+    "correctedFrameSha256": "b80f68bf0e1dd00084f341252c24ef7b371fcc664675b12a4fb680fe67bb05df",
+    "correctedBounds": [
+      238,
+      198,
+      274,
+      272
+    ]
+  },
+  {
+    "yawDegrees": 45,
+    "elevationDegrees": 25,
+    "physicalBandDeltaPixels": 36,
+    "correctedFrameSha256": "b42c08f69e81c464ba36caf9081b11667a1b23bf0955b40e6a6e52f63e9f154c",
+    "correctedBounds": [
+      237,
+      150,
+      274,
+      264
+    ]
+  },
+  {
+    "yawDegrees": 45,
+    "elevationDegrees": 45,
+    "physicalBandDeltaPixels": 26,
+    "correctedFrameSha256": "0ae0536a2ab94d5597196dc2243f3890ce8e1f9dc67daeec73367c1098e3b4a0",
+    "correctedBounds": [
+      237,
+      169,
+      274,
+      269
+    ]
+  },
+  {
+    "yawDegrees": 45,
+    "elevationDegrees": 65,
+    "physicalBandDeltaPixels": 22,
+    "correctedFrameSha256": "7a7dd202ba041bf6485c1122b4e6f0d3bbb195b464cb07be7284c9cb18ab780d",
+    "correctedBounds": [
+      237,
+      198,
+      274,
+      273
+    ]
+  },
+  {
+    "yawDegrees": 60,
+    "elevationDegrees": 25,
+    "physicalBandDeltaPixels": 50,
+    "correctedFrameSha256": "79aefc4fc948fed532749178a17431fce901556d53ee5b3597ec735c1beb1a94",
+    "correctedBounds": [
+      237,
+      150,
+      273,
+      263
+    ]
+  },
+  {
+    "yawDegrees": 60,
+    "elevationDegrees": 45,
+    "physicalBandDeltaPixels": 46,
+    "correctedFrameSha256": "580a5aab4e1dd9eab54c90629e2b38df910c176aefd913dfe3828cd870f5b17a",
+    "correctedBounds": [
+      237,
+      169,
+      273,
+      268
+    ]
+  },
+  {
+    "yawDegrees": 60,
+    "elevationDegrees": 65,
+    "physicalBandDeltaPixels": 46,
+    "correctedFrameSha256": "ea32ffb32d10a5dbd2c83aaa69ded8ca913a90f562e5aafa45757e2843c39fe5",
+    "correctedBounds": [
+      237,
+      199,
+      273,
+      272
+    ]
+  },
+  {
+    "yawDegrees": 75,
+    "elevationDegrees": 25,
+    "physicalBandDeltaPixels": 56,
+    "correctedFrameSha256": "3f7a7e7c77472e02b7b41cbdca2b5fb2822a8668bebf0312599268a117cb6c65",
+    "correctedBounds": [
+      239,
+      150,
+      271,
+      263
+    ]
+  },
+  {
+    "yawDegrees": 75,
+    "elevationDegrees": 45,
+    "physicalBandDeltaPixels": 64,
+    "correctedFrameSha256": "6d2dba69b52e022a4066c4b87b2e118d8d5076cc3b5106bf58bd00f5170bed69",
+    "correctedBounds": [
+      239,
+      169,
+      271,
+      267
+    ]
+  },
+  {
+    "yawDegrees": 75,
+    "elevationDegrees": 65,
+    "physicalBandDeltaPixels": 69,
+    "correctedFrameSha256": "18305730d4714773f6655dc0a604127917cbf9312f3a02a76923eee10f9f9561",
+    "correctedBounds": [
+      239,
+      199,
+      271,
+      271
+    ]
+  },
+  {
+    "yawDegrees": 90,
+    "elevationDegrees": 25,
+    "physicalBandDeltaPixels": 76,
+    "correctedFrameSha256": "02661e6751f5a5a6e6b712ec0f367cba4557345a927fb96f8b6ecb2da2c0f311",
+    "correctedBounds": [
+      242,
+      150,
+      268,
+      262
+    ]
+  },
+  {
+    "yawDegrees": 90,
+    "elevationDegrees": 45,
+    "physicalBandDeltaPixels": 94,
+    "correctedFrameSha256": "826949d0baeff959b041c5d9510751aca26e18c5415270ac0f29a1f84f0549ca",
+    "correctedBounds": [
+      242,
+      170,
+      268,
+      265
+    ]
+  },
+  {
+    "yawDegrees": 90,
+    "elevationDegrees": 65,
+    "physicalBandDeltaPixels": 115,
+    "correctedFrameSha256": "19f59a9942b8767a254774b7b9cdf77e3b33cce080e5576fd0ba2ffcfdaf6242",
+    "correctedBounds": [
+      242,
+      199,
+      268,
+      268
+    ]
+  },
+  {
+    "yawDegrees": 105,
+    "elevationDegrees": 25,
+    "physicalBandDeltaPixels": 101,
+    "correctedFrameSha256": "eaeaf9f349cdf10e84781b47e6d02f689950811f191a146df443780dab40d8e8",
+    "correctedBounds": [
+      239,
+      150,
+      271,
+      262
+    ]
+  },
+  {
+    "yawDegrees": 105,
+    "elevationDegrees": 45,
+    "physicalBandDeltaPixels": 133,
+    "correctedFrameSha256": "5619ec76344dcc5fd24c003bf8c8e515a220af0821aa22102144ea6c7d0ca298",
+    "correctedBounds": [
+      239,
+      170,
+      271,
+      266
+    ]
+  },
+  {
+    "yawDegrees": 105,
+    "elevationDegrees": 65,
+    "physicalBandDeltaPixels": 135,
+    "correctedFrameSha256": "d3fbf0352b49a28cce86571b9eb0d56c378c8fa47c04f68e613408648eeca192",
+    "correctedBounds": [
+      239,
+      200,
+      271,
+      269
+    ]
+  },
+  {
+    "yawDegrees": 120,
+    "elevationDegrees": 25,
+    "physicalBandDeltaPixels": 128,
+    "correctedFrameSha256": "3fbef9f94ab8ee07d2b52e9ad245a72de17328d9b965c846b21efabe6169486c",
+    "correctedBounds": [
+      237,
+      150,
+      273,
+      262
+    ]
+  },
+  {
+    "yawDegrees": 120,
+    "elevationDegrees": 45,
+    "physicalBandDeltaPixels": 144,
+    "correctedFrameSha256": "1c669be0e9266f18cf077a49e0c83ab35867a56e20f6790dfbe3414f0c9769b2",
+    "correctedBounds": [
+      237,
+      170,
+      273,
+      266
+    ]
+  },
+  {
+    "yawDegrees": 120,
+    "elevationDegrees": 65,
+    "physicalBandDeltaPixels": 147,
+    "correctedFrameSha256": "8c542ee80262df27fffe4fc302617432a00a10786af0bcd3c3f6084535e4fe51",
+    "correctedBounds": [
+      237,
+      198,
+      273,
+      269
+    ]
+  },
+  {
+    "yawDegrees": 135,
+    "elevationDegrees": 25,
+    "physicalBandDeltaPixels": 147,
+    "correctedFrameSha256": "391355d701195b78c324ed14a99e8209febe81596ef210b7fb71295ad2eaf771",
+    "correctedBounds": [
+      237,
+      150,
+      274,
+      261
+    ]
+  },
+  {
+    "yawDegrees": 135,
+    "elevationDegrees": 45,
+    "physicalBandDeltaPixels": 160,
+    "correctedFrameSha256": "48c8e171af14cd92bd5542e65c7fbdfb1be23644427ebd95ed8ab5a2877e7e95",
+    "correctedBounds": [
+      237,
+      169,
+      274,
+      265
+    ]
+  },
+  {
+    "yawDegrees": 135,
+    "elevationDegrees": 65,
+    "physicalBandDeltaPixels": 154,
+    "correctedFrameSha256": "10271f80ece01bb106d97f819032ebacb5261a154e1369a5962c6b5cdd0df1ee",
+    "correctedBounds": [
+      237,
+      197,
+      274,
+      268
+    ]
+  },
+  {
+    "yawDegrees": 150,
+    "elevationDegrees": 25,
+    "physicalBandDeltaPixels": 171,
+    "correctedFrameSha256": "c3e092fb7bdda27b96538125376eb41722d888d3884a798d426ea8b8ba193af1",
+    "correctedBounds": [
+      237,
+      149,
+      274,
+      261
+    ]
+  },
+  {
+    "yawDegrees": 150,
+    "elevationDegrees": 45,
+    "physicalBandDeltaPixels": 179,
+    "correctedFrameSha256": "18a466d5ef1782d66d1900fc6d6705622ea1308ad4eea987df4b99a9a0078e26",
+    "correctedBounds": [
+      237,
+      169,
+      274,
+      264
+    ]
+  },
+  {
+    "yawDegrees": 150,
+    "elevationDegrees": 65,
+    "physicalBandDeltaPixels": 157,
+    "correctedFrameSha256": "a5f8cf9d241b1340da60632d8f0ea41458324befe5dbfe271927cbf24665e83f",
+    "correctedBounds": [
+      238,
+      196,
+      274,
+      266
+    ]
+  },
+  {
+    "yawDegrees": 165,
+    "elevationDegrees": 25,
+    "physicalBandDeltaPixels": 182,
+    "correctedFrameSha256": "b46fa90eade7040abf97d0a530a47f63f122ff7325d4331a9eaa886ec679e4fc",
+    "correctedBounds": [
+      236,
+      149,
+      276,
+      260
+    ]
+  },
+  {
+    "yawDegrees": 165,
+    "elevationDegrees": 45,
+    "physicalBandDeltaPixels": 184,
+    "correctedFrameSha256": "77af41ff4ae8338b0c5f50da7c39e3e22273c7647f373d9c9417741f0882affb",
+    "correctedBounds": [
+      236,
+      169,
+      276,
+      262
+    ]
+  },
+  {
+    "yawDegrees": 165,
+    "elevationDegrees": 65,
+    "physicalBandDeltaPixels": 162,
+    "correctedFrameSha256": "2f846709d45205cfe1f6d4080a30656fa84fa5b4ded08a134c2f9734a7b53eca",
+    "correctedBounds": [
+      236,
+      196,
+      276,
+      264
+    ]
+  }
+]
