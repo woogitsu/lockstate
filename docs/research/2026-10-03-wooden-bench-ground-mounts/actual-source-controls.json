@@ -1,0 +1,49 @@
+{
+  "controls": [
+    {
+      "label": "actual-source-mutation-written",
+      "exitCode": 0,
+      "expectedFailure": null
+    },
+    {
+      "label": "actual-disconnected-source-red",
+      "exitCode": 1,
+      "expectedFailure": "Bench floor mounting shoe actual contact disconnected"
+    },
+    {
+      "label": "exact-source-restore-green",
+      "exitCode": 0,
+      "expectedFailure": null
+    },
+    {
+      "label": "actual-producer-dispatch-red",
+      "exitCode": 1,
+      "expectedFailure": "Bench ground mounting shoes dedicated producer dispatch changed"
+    },
+    {
+      "label": "exact-dispatch-restore-green",
+      "exitCode": 0,
+      "expectedFailure": null
+    }
+  ],
+  "protectedBefore": {
+    "assets/source/blender/furniture.corridor.bench.angled-detail.blend": "4b174ad498260ac3c736d2b4d78fb1f566cface5bab81d513fb2e00a4568ab81",
+    "assets/source/blender/furniture.corridor.bench.grounded-detail.blend": "8518e5d755352f6511bcb4f2165674e1bca44f918f945e7c5cfa09b60ba05986",
+    "assets/source/blender/furniture.corridor.bench.grounded-detail.provenance.json": "3d35da612fd94edda5e1bf5f34d1b75ae09321d33126fb576e2c2900f5949bdf",
+    "public/game-content/oblique-module-registry.v1.json": "04e2899d378bd546170da202a5fb1b558d89074a1126db1ef5b9b4f3c3aa3abe",
+    "src/rendering/assets/oblique-object-mapping.ts": "f4044495d916005451ef375977eaf417b4e1432d8513ff256a0da0721156b4fc",
+    "tooling/blender/build-wooden-bench-ground-mounts.py": "d8f9b45ceed02de1e5fd97f9843d4e9ab7e0840e8e88aae94cd83b7b20234fdc",
+    "tooling/blender/render-wooden-bench-ground-mounts-oblique.py": "68e9c9b3faf24ef5ad0bc438c9130a5b29e17e0d7dfd1744d41e73ab72cf841d"
+  },
+  "actualMutantSourceSha256": "601cb740dfafa6011a6fe07469cccf02b3e8824b2ca07f130280a78efaba7e26",
+  "protectedAfter": {
+    "assets/source/blender/furniture.corridor.bench.angled-detail.blend": "4b174ad498260ac3c736d2b4d78fb1f566cface5bab81d513fb2e00a4568ab81",
+    "assets/source/blender/furniture.corridor.bench.grounded-detail.blend": "8518e5d755352f6511bcb4f2165674e1bca44f918f945e7c5cfa09b60ba05986",
+    "assets/source/blender/furniture.corridor.bench.grounded-detail.provenance.json": "3d35da612fd94edda5e1bf5f34d1b75ae09321d33126fb576e2c2900f5949bdf",
+    "public/game-content/oblique-module-registry.v1.json": "04e2899d378bd546170da202a5fb1b558d89074a1126db1ef5b9b4f3c3aa3abe",
+    "src/rendering/assets/oblique-object-mapping.ts": "f4044495d916005451ef375977eaf417b4e1432d8513ff256a0da0721156b4fc",
+    "tooling/blender/build-wooden-bench-ground-mounts.py": "d8f9b45ceed02de1e5fd97f9843d4e9ab7e0840e8e88aae94cd83b7b20234fdc",
+    "tooling/blender/render-wooden-bench-ground-mounts-oblique.py": "68e9c9b3faf24ef5ad0bc438c9130a5b29e17e0d7dfd1744d41e73ab72cf841d"
+  },
+  "exactRestoredFiles": 7
+}
