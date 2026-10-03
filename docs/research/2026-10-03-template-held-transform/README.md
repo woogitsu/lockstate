@@ -61,6 +61,17 @@ only those independently authored expectations produces24 GREEN on unchanged
 production. Those initial errors are not product failures or producer negatives.
 Strict new fixture types:`strict.log`,exit0.
 
-Approved unique bridge revision-ownership omission and byte-exact restoration
-are pending next; current production is untouched. Native trust, actual modal
+Approved temporary producer proof ran on detached frozen5ed6efac4f, with no
+branch publication of mutant bytes. Removing only the unique bridge
+`downSelection === tool.revision` ownership clause gives18 RED/6 unchanged legal
+GREEN (`revision-ownership-omission.log`): the old held press improperly transmits
+the newly selected template. No expectation/count was forced to reach18.
+Finally the complete original source bytes are restored, SHA and exits recorded
+in `mutation-restoration.json`; `exact-restored.log` returns24/24 GREEN.
+The owned branch was then reattached with zero production diff.
+
+Current source correctly enforces this public interaction. No Issue or fix is
+needed; the source regression remains load-bearing against a real producer
+omission. Existing source tests/native receipts outside this bounded route are
+not represented as fresh all-green release proof. Native trust, actual modal
 inertness, physical held-pointer keyboard operation and pixels are not claimed.
