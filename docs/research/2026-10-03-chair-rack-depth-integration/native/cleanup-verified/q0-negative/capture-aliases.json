@@ -1,0 +1,17 @@
+[
+  {
+    "original": ".last-run.json",
+    "saved": "capture-001.json",
+    "sha256": "9a17175e3716c026d6899e1ad95d63cc5862000111c387d88862aa5e0a70ea83"
+  },
+  {
+    "original": "oblique-pending-wall-playe-c21f3-whole-square-wall-at-yaw180\\error-context.md",
+    "saved": "capture-002.md",
+    "sha256": "6e1c3ae4df95cd43252a499bf7de6160a73065d1a5e0573538ecfc4a9343cc90"
+  },
+  {
+    "original": "oblique-pending-wall-playe-d9d22-g-whole-square-wall-at-yaw0\\error-context.md",
+    "saved": "capture-003.md",
+    "sha256": "35b50badc697c9ba93c31ec897e4ae16f10483634dc9c346c6df488b593eb647"
+  }
+]
