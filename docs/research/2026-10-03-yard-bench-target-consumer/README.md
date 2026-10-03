@@ -15,3 +15,5 @@ Replace exactly one literal with `2 × 1 tiles at 7, 7`. This retains exact orig
 [Formatter and existing readout controls](./raw/formatter-controls.txt): **13 GREEN across2 files**. [Actual no-browser collection](./raw/collection.txt): **1 test/1 file**. Strict application and tools TypeScript exit0. `git diff` confirms the executable change is only the one expected-text literal.
 
 No producer-negative, native GREEN, observed timing improvement, or whole Yard lifecycle acceptance is claimed for this correction. The published hosted failure is a stale fixture observation, not a product defect. Root owns the browser lease and must execute the corrected specific native case separately; its existing budgets and all meaningful gameplay/pixel assertions remain the gate.
+
+Terminal [research index check](./raw/research-index.txt): 5 GREEN. [Explicit strict compiler receipt](./raw/types.txt): both exit0. Scope and native-pending status above remain unchanged.
