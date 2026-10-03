@@ -1,0 +1,15 @@
+const fs=require('node:fs'), vm=require('node:vm');
+const reader=fs.readFileSync('docs/research/2026-10-03-staff-room-padded-chair/native/executed-pad-pixel-reader.cjs.txt','utf8').split('const file=process.argv[2]')[0];
+const sandbox={require,Buffer};vm.createContext(sandbox);vm.runInContext(reader+';globalThis.readFrame=decode;',sandbox);
+const read=sandbox.readFrame;
+const catalog=JSON.parse(fs.readFileSync('public/game-content/oblique-furniture-staff-room-padded-chair.v1.json','utf8'));
+const defaultCatalog=JSON.parse(fs.readFileSync('public/game-content/oblique-cell-chair.v1.json','utf8'));
+const polygon=(yaw)=>{const a=yaw*Math.PI/180,e=40*Math.PI/180;return [[-.14,-.14],[.14,-.14],[.14,.14],[-.14,.14]].map(([dx,dy])=>{const x=dx,y=.09+dy,z=.694-.6600000262260437;return [128+64*(Math.cos(a)*x+Math.sin(a)*y),128-64*(-Math.sin(a)*Math.sin(e)*x+Math.cos(a)*Math.sin(e)*y+Math.cos(e)*z)];});};
+function inside(x,y,p){let result=false;for(let i=0,j=p.length-1;i<p.length;j=i++){const a=p[i],b=p[j];if((a[1]>y)!=(b[1]>y)&&x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0])result=!result;}return result;}
+const colors=new Set(), training=[];
+for(const yaw of [60,300]){const frame=catalog.frames.find(f=>f.yawDegrees===yaw&&f.elevationDegrees===40),d=read('public'+frame.image),p=polygon(yaw),samples=[];for(let y=0;y<256;y++)for(let x=0;x<256;x++){if(!inside(x+.5,y+.5,p))continue;const i=(y*256+x)*4;if(d.pixels[i+3]!==255)throw Error('Nonopaque author seat interior');const rgb=Array.from(d.pixels.subarray(i,i+3)),key=(rgb[0]<<16)|(rgb[1]<<8)|rgb[2];colors.add(key);samples.push(rgb);}training.push({yaw,frame:frame.image,sha256:frame.sha256,polygon:p,samples:samples.length});}
+function counts(frame){const d=read('public'+frame.image);let n=0;for(let i=0;i<d.pixels.length;i+=4){if(d.pixels[i+3]===255&&colors.has((d.pixels[i]<<16)|(d.pixels[i+1]<<8)|d.pixels[i+2]))n++;}return {yaw:frame.yawDegrees,elevation:frame.elevationDegrees,matched:n};}
+const negatives=defaultCatalog.frames.map(counts),positives=catalog.frames.map(counts);
+const result={training,palette:Array.from(colors).sort((a,b)=>a-b),defaultCounts:negatives,authoredCounts:positives};
+fs.writeFileSync(process.env.TEMP+'/lockstate-staff-chair-material-prototype.json',JSON.stringify(result,null,2)+'\n');
+console.log(JSON.stringify({training,paletteSize:colors.size,defaultMaximum:Math.max(...negatives.map(r=>r.matched)),defaultExposed:negatives.filter(r=>r.yaw===60||r.yaw===300),authoredMinimum:Math.min(...positives.map(r=>r.matched)),authoredExposed:positives.filter(r=>r.elevation===40)},null,2));
