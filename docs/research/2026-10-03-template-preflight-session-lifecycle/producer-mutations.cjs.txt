@@ -1,0 +1,46 @@
+const fs = require('node:fs');
+const cp = require('node:child_process');
+const crypto = require('node:crypto');
+const source = 'src/ui/room-template-tool.ts';
+const branch = 'codex/template-preflight-session-audit-20261003';
+const dir = 'docs/research/2026-10-03-template-preflight-session-lifecycle';
+function git(args) {
+  const r = cp.spawnSync('git', args, {encoding:'utf8'});
+  if(r.status !== 0) throw Error(r.stdout+r.stderr);
+  return r.stdout.trim();
+}
+function run(name) {
+  const r = cp.spawnSync(process.execPath,['node_modules/vitest/vitest.mjs','run','tests/unit/ui-room-template-session-preflight.test.ts','--maxWorkers=2'],{encoding:'utf8'});
+  const output = r.stdout+r.stderr;
+  fs.writeFileSync(`${dir}/${name}.txt`,output);
+  process.stdout.write(`${name}: exit=${r.status}\n`+output);
+  return {status:r.status,output};
+}
+git(['checkout','--detach']);
+const original = fs.readFileSync(source);
+const text = original.toString('utf8');
+const outcomes = [];
+try {
+  const mutants = [
+    ['negative-reset', text.replace('    this.busy = undefined;', '    // mutation: retain abandoned owner')],
+    ['negative-finally', text.replace('if (this.busy === placement) this.busy = undefined;', 'this.busy = undefined;')],
+    ['negative-revision', text.replace('    this.selectionRevision += 1;', '    if (this.armed) this.selectionRevision += 1;')],
+  ];
+  for(const [name,mutant] of mutants) {
+    if(mutant===text) throw Error('Mutation did not match');
+    fs.writeFileSync(source,mutant);
+    const result=run(name);
+    outcomes.push({name,status:result.status});
+    if(result.status===0 || !/Tests\s+\d+ failed/.test(result.output)) throw Error('Mutation did not demonstrate actual test failures');
+    fs.writeFileSync(source,original);
+  }
+} finally {
+  fs.writeFileSync(source,original);
+  if(!fs.readFileSync(source).equals(original)) throw Error('Byte restore failed');
+  git(['diff','--exit-code','--',source]);
+  git(['checkout',branch]);
+}
+const restored=run('restored');
+const metadata={source,branch,byteExactRestore:true,productionDiffEmpty:true,sha256:crypto.createHash('sha256').update(original).digest('hex'),outcomes,restoredStatus:restored.status};
+fs.writeFileSync(`${dir}/mutation-receipt.json`,JSON.stringify(metadata,null,2)+'\n');
+if(restored.status!==0) throw Error('Restored gate failed');

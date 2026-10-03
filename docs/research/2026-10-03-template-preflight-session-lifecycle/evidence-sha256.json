@@ -1,0 +1,99 @@
+{
+    "originalMutationSourceSha256":  "34d63c43892c698005fe93abde19cca2b7f8cd33ace93e283373dfde152d8317",
+    "files":  [
+                  {
+                      "sha256":  "0834dd58b0635e4cbd2f4f72bc92571625282fa087e9fa61ec3f2cbbce62dc09",
+                      "file":  "app-ts-fixture-errors.txt"
+                  },
+                  {
+                      "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                      "file":  "app-ts.txt"
+                  },
+                  {
+                      "sha256":  "b7c45ce50d8f83748a805bc60de4a8338b175112d3fdde754a10928ba8075044",
+                      "file":  "baseline.test.ts.txt"
+                  },
+                  {
+                      "sha256":  "612a7533de6e974622d1b108c877fa5c7f575cd055adcb4b8ddc2513de7b4501",
+                      "file":  "baseline.txt"
+                  },
+                  {
+                      "sha256":  "5c78e8120dcfb0a688c079a3ffd80e7bd33b6f6386e9e29c9032280978fd1d19",
+                      "file":  "bounded-gates.cjs.txt"
+                  },
+                  {
+                      "sha256":  "a67379c0d270a8ead1d0b9c00d37a3d6111829993aeab3d6cb1403ef991e7e83",
+                      "file":  "build.txt"
+                  },
+                  {
+                      "sha256":  "e8536efa7bbf6733055d81148665b143091312848562c9b403acc72d4ef33a15",
+                      "file":  "docs-after-first-metadata-ref-refresh.txt"
+                  },
+                  {
+                      "sha256":  "85a4669fcb258ae10e23f02f707d532e8e3e7acfede6f0ef48f9fb2afe5ce5b1",
+                      "file":  "docs-before-metadata-ref-refresh.txt"
+                  },
+                  {
+                      "sha256":  "f00cd6f808726fb506e04c328730b7365449fb1942071e128d9211b1133b1b0f",
+                      "file":  "docs.txt"
+                  },
+                  {
+                      "sha256":  "0512811f785ef08448a1c4610547b7032855ad266f819ab922f97de7b1337ba4",
+                      "file":  "expanded-baseline.txt"
+                  },
+                  {
+                      "sha256":  "8d7c2b3873b790d6e8792111e32dfda839c55f197316e79a151650e9fdf7185d",
+                      "file":  "final-run.cjs.txt"
+                  },
+                  {
+                      "sha256":  "f3c03b55561e28d1e044c8701f264307c30b54b99b474c1afc9fd08ab122f569",
+                      "file":  "final.txt"
+                  },
+                  {
+                      "sha256":  "5fc217f87f47aa374dc3ac9ceea25eedb1a0e9fc149dc68b51e87acf2dfade02",
+                      "file":  "fixed.txt"
+                  },
+                  {
+                      "sha256":  "5b71b503883cee86adcb99b060c052dcf095fca69cc6c6701430a3f961f9b8c7",
+                      "file":  "mutation-receipt.json"
+                  },
+                  {
+                      "sha256":  "cb9988abf6880d0741ecf72ab57dfb09f1fd2a97e44533e95f2dba5618a0741c",
+                      "file":  "negative-finally.txt"
+                  },
+                  {
+                      "sha256":  "b14110a6edc17dfe391df15bdeb30f5620158dd3111d283cec05302f85f27098",
+                      "file":  "negative-reset.txt"
+                  },
+                  {
+                      "sha256":  "f2a6e9a16727b8eca23541892bd312ab957e964ebb2f208159d724f13771ab31",
+                      "file":  "negative-revision.txt"
+                  },
+                  {
+                      "sha256":  "0d0d679b8110311dd1a1e0a8269988e46037aed1e2b33124a862e32a983a6351",
+                      "file":  "neighbors.txt"
+                  },
+                  {
+                      "sha256":  "d8260e7dfb64666c4da15dda72a0cbded5f1c4bff75776e43b36acff0ac047ca",
+                      "file":  "producer-mutations.cjs.txt"
+                  },
+                  {
+                      "sha256":  "99309a1da0597bafed9b5ecb99fdd6554d0cdee35513e326f4af4057bdf04a7f",
+                      "file":  "README.md"
+                  },
+                  {
+                      "sha256":  "2ec7d471fe995571d11423c854a11b3a1d0be57cb774df3652942889c23c66d1",
+                      "file":  "restored.txt"
+                  },
+                  {
+                      "sha256":  "80400396d0c07ef77b1c5aa2260af9ff2d83d3ce43f7f953fcace952c1c8a7fa",
+                      "file":  "run.cjs.txt"
+                  },
+                  {
+                      "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                      "file":  "tools-ts.txt"
+                  }
+              ],
+    "copyVerified":  true,
+    "producerNegativeVerified":  true
+}

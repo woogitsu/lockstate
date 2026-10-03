@@ -1,0 +1,129 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-preflight-session-20261003
+
+stdout | tests/unit/ui-room-template-session-preflight.test.ts > fresh 'new' session admits a new plan after outgoing preflight, armed=false
+{"operation":"new","result":{"ok":false,"reason":"busy"},"oldState":"shutting-down","newState":"paused","beforeOrders":0,"afterOrders":0,"beforeTreasury":{"balanceMinorUnits":25000},"afterTreasury":{"balanceMinorUnits":25000},"actualNewCommandMessages":0,"sameAuthoritativeSnapshot":true}
+
+stdout | tests/unit/ui-room-template-session-preflight.test.ts > fresh 'new' session admits a new plan after outgoing preflight, armed=false
+{"operation":"new","recoveredOrders":18,"recoveredPending":1,"recoveredTreasury":{"balanceMinorUnits":25000}}
+
+stdout | tests/unit/ui-room-template-session-preflight.test.ts > fresh 'new' session admits a new plan after outgoing preflight, armed=true
+{"operation":"new","result":{"ok":false,"reason":"busy"},"oldState":"shutting-down","newState":"paused","beforeOrders":0,"afterOrders":0,"beforeTreasury":{"balanceMinorUnits":25000},"afterTreasury":{"balanceMinorUnits":25000},"actualNewCommandMessages":0,"sameAuthoritativeSnapshot":true}
+
+stdout | tests/unit/ui-room-template-session-preflight.test.ts > fresh 'new' session admits a new plan after outgoing preflight, armed=true
+{"operation":"new","recoveredOrders":18,"recoveredPending":1,"recoveredTreasury":{"balanceMinorUnits":25000}}
+
+stdout | tests/unit/ui-room-template-session-preflight.test.ts > fresh 'load' session admits a new plan after outgoing preflight, armed=false
+{"operation":"load","result":{"ok":false,"reason":"busy"},"oldState":"shutting-down","newState":"paused","beforeOrders":18,"afterOrders":18,"beforeTreasury":{"balanceMinorUnits":25000},"afterTreasury":{"balanceMinorUnits":25000},"actualNewCommandMessages":0,"sameAuthoritativeSnapshot":true}
+
+stdout | tests/unit/ui-room-template-session-preflight.test.ts > fresh 'load' session admits a new plan after outgoing preflight, armed=false
+{"operation":"load","recoveredOrders":36,"recoveredPending":2,"recoveredTreasury":{"balanceMinorUnits":25000}}
+
+stdout | tests/unit/ui-room-template-session-preflight.test.ts > fresh 'load' session admits a new plan after outgoing preflight, armed=true
+{"operation":"load","result":{"ok":false,"reason":"busy"},"oldState":"shutting-down","newState":"paused","beforeOrders":18,"afterOrders":18,"beforeTreasury":{"balanceMinorUnits":25000},"afterTreasury":{"balanceMinorUnits":25000},"actualNewCommandMessages":0,"sameAuthoritativeSnapshot":true}
+
+stdout | tests/unit/ui-room-template-session-preflight.test.ts > fresh 'load' session admits a new plan after outgoing preflight, armed=true
+{"operation":"load","recoveredOrders":36,"recoveredPending":2,"recoveredTreasury":{"balanceMinorUnits":25000}}
+
+ ❯ tests/unit/ui-room-template-session-preflight.test.ts (9 tests | 7 failed) 92ms
+   × fresh 'new' session admits a new plan after outgoing preflight, armed=false 42ms
+   × fresh 'new' session admits a new plan after outgoing preflight, armed=true 7ms
+   × fresh 'load' session admits a new plan after outgoing preflight, armed=false 10ms
+   × fresh 'load' session admits a new plan after outgoing preflight, armed=true 7ms
+   × cancel/rearm keeps the newer pending owner when an older real preflight settles, armed=false 5ms
+   × cancel/rearm keeps the newer pending owner when an older real preflight settles, armed=true 4ms
+   × an abandoned old session requester timing out cannot release a newer generation busy token 5ms
+
+ Test Files  1 failed (1)
+      Tests  7 failed | 2 passed (9)
+   Start at  06:01:48
+   Duration  2.77s (transform 917ms, setup 0ms, import 2.56s, tests 92ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-room-template-session-preflight.test.ts > fresh 'new' session admits a new plan after outgoing preflight, armed=false
+AssertionError: expected { ok: false, reason: 'busy' } to deeply equal { ok: true }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
++   "ok": false,
++   "reason": "busy",
+  }
+
+ ❯ tests/unit/ui-room-template-session-preflight.test.ts:96:20
+     94|     sameAuthoritativeSnapshot: JSON.stringify(before) === JSON.stringi…
+     95|   try {
+     96|     expect(result).toEqual({ ok: true });
+       |                    ^
+     97|     expect(after.simulation.roomTemplates?.pending.length).toBe((befor…
+     98|     expect(after.construction.orders).toHaveLength(before.construction…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  tests/unit/ui-room-template-session-preflight.test.ts > fresh 'new' session admits a new plan after outgoing preflight, armed=true
+ FAIL  tests/unit/ui-room-template-session-preflight.test.ts > fresh 'load' session admits a new plan after outgoing preflight, armed=false
+ FAIL  tests/unit/ui-room-template-session-preflight.test.ts > fresh 'load' session admits a new plan after outgoing preflight, armed=true
+AssertionError: expected { ok: false, reason: 'busy' } to deeply equal { ok: true }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
++   "ok": false,
++   "reason": "busy",
+  }
+
+ ❯ tests/unit/ui-room-template-session-preflight.test.ts:96:20
+     94|     sameAuthoritativeSnapshot: JSON.stringify(before) === JSON.stringi…
+     95|   try {
+     96|     expect(result).toEqual({ ok: true });
+       |                    ^
+     97|     expect(after.simulation.roomTemplates?.pending.length).toBe((befor…
+     98|     expect(after.construction.orders).toHaveLength(before.construction…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  tests/unit/ui-room-template-session-preflight.test.ts > cancel/rearm keeps the newer pending owner when an older real preflight settles, armed=false
+ FAIL  tests/unit/ui-room-template-session-preflight.test.ts > cancel/rearm keeps the newer pending owner when an older real preflight settles, armed=true
+AssertionError: expected [ { protocolVersion: 1, …(4) } ] to have a length of 2 but got 1
+
+- Expected
++ Received
+
+- 2
++ 1
+
+ ❯ tests/unit/ui-room-template-session-preflight.test.ts:141:32
+    139|   const before = await h.host.capture();
+    140|   try {
+    141|     expect(h.clients[0]!.held).toHaveLength(2);
+       |                                ^
+    142|     h.clients[0]!.emit(h.clients[0]!.held.shift()!);
+    143|     expect(await old).toEqual({ ok: false, reason: 'busy' });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  tests/unit/ui-room-template-session-preflight.test.ts > an abandoned old session requester timing out cannot release a newer generation busy token
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ tests/unit/ui-room-template-session-preflight.test.ts:166:32
+    164|   const current = h.tool.placeAt({ x: 20, y: 10 });
+    165|   try {
+    166|     expect(h.clients[1]!.held).toHaveLength(1);
+       |                                ^
+    167|     const before = await h.host.capture();
+    168|     await vi.advanceTimersByTimeAsync(14_000);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
