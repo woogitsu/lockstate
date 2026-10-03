@@ -1,0 +1,22 @@
+{
+  "sourceCheckpoint": "32abd38f009a975713c1aa126384859eceb72bad",
+  "afterByteExactRestoration": true,
+  "checks": [
+    {
+      "command": "pnpm --config.verify-deps-before-run=false exec vitest run tests/unit/ui-design-tokens.test.ts tests/unit/ui-theme.test.ts --maxWorkers=4",
+      "exitCode": 0,
+      "filesPassed": 2,
+      "testsPassed": 91,
+      "raw": "style-gates-restored-green.txt"
+    },
+    {
+      "command": "pnpm --config.verify-deps-before-run=false typecheck",
+      "exitCode": 0,
+      "appAndTools": true,
+      "raw": "types-restored-green.txt"
+    }
+  ],
+  "browserExecuted": false,
+  "buildExecuted": false,
+  "visualAcceptance": "pending"
+}
