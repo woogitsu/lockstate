@@ -6,5 +6,5 @@
     "noImplicitAny": false,
     "noUncheckedIndexedAccess": false
   },
-  "include": ["benchmarks", "scripts", "tooling", "docs/research/2026-10-03-individual-object-rotation-ui-draft"]
+  "include": ["benchmarks", "scripts", "tooling", "docs/research/2026-10-03-individual-object-rotation-ui-draft", "docs/research/2026-10-03-object-rotation-review-native-prep"]
 }

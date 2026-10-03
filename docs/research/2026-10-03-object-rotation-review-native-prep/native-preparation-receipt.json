@@ -1,0 +1,124 @@
+{
+    "status":  "DRAFT_PREPARATION_ONLY_NATIVE_NOT_RUN",
+    "baseSource":  "6f562fdbb536112828b917f3503954afe9d98832",
+    "appTypesExit":  0,
+    "toolsTypesExit":  0,
+    "sourceCollectionExit":  0,
+    "sourceCollectedCases":  2,
+    "focusedTests":  51,
+    "focusedFiles":  11,
+    "collectionGuardExit":  0,
+    "browserRuns":  0,
+    "serverRuns":  0,
+    "buildRuns":  0,
+    "viewport":  {
+                     "width":  1920,
+                     "height":  1080,
+                     "kind":  "CSS pixels"
+                 },
+    "publicUIScales":  [
+                           100,
+                           200
+                       ],
+    "browserPageZoomAcceptance":  false,
+    "workers":  1,
+    "retries":  0,
+    "timeout":  60000,
+    "expectTimeout":  10000,
+    "files":  [
+                  {
+                      "path":  "src/ui/object-tool.ts",
+                      "sha256":  "999b0e93cfba274c8095e28fcb61b5f9633c92d4f08a538713937f7a3cf57999"
+                  },
+                  {
+                      "path":  "src/input/bindings.ts",
+                      "sha256":  "59a12bd3c08834d91557999d2afd7a87e8760f0af4be37b2e74f326726a34e0b"
+                  },
+                  {
+                      "path":  "src/ui/hud/hud.css",
+                      "sha256":  "3ff1a8a1d236ddadc439466c03933e33423b91db8c576a3d12e5ab56c4f060bc"
+                  },
+                  {
+                      "path":  "src/ui/hud/build-panel.ts",
+                      "sha256":  "71691fce211eeacd79db4e82ba14e839b4addf08458dcb606e35374f7aca4581"
+                  },
+                  {
+                      "path":  "src/ui/tokens.css",
+                      "sha256":  "1aa20fdd33340ecb4648b2302fa519b58b677d3163b8b8e7fe0e45da122ae5a4"
+                  },
+                  {
+                      "path":  "docs/research/2026-10-03-object-rotation-review-native-prep/native-evidence.ts",
+                      "sha256":  "29887c7424d0e87433340f94454f37e0e63133dbad3cdc5008bccc2495530a4a"
+                  },
+                  {
+                      "path":  "docs/research/2026-10-03-object-rotation-review-native-prep/object-rotation-fullhd.native.ts",
+                      "sha256":  "25bc474a639a0089c7bae2cdc67b748197aa760a7ae697b8a5b4185eb3f05a7f"
+                  },
+                  {
+                      "path":  "docs/research/2026-10-03-object-rotation-review-native-prep/playwright.native.config.ts",
+                      "sha256":  "91f3618a73efdd2b9fb7e344131c4d95abc16cc6b4bfb247cc076181551c466d"
+                  },
+                  {
+                      "path":  "docs/research/2026-10-03-object-rotation-review-native-prep/playwright.collection.config.ts",
+                      "sha256":  "8b955ee71281dd40b764a70b6cc2547ff4eca9f7f368dc437e7dc52f59e8e292"
+                  }
+              ],
+    "evidence":  [
+                     {
+                         "path":  "evidence/corrected-green.raw.txt",
+                         "sha256":  "fb198c1f19e9b854c75e46f4bcd5898836e46cd4c8e769d8887e6ebc8a821cda"
+                     },
+                     {
+                         "path":  "evidence/final-types.raw.txt",
+                         "sha256":  "62b2ba92b04be66f9f689d7277f9c7a0ed5a284452c6612786937ebac1e5842e"
+                     },
+                     {
+                         "path":  "evidence/first-green.raw.txt",
+                         "sha256":  "8817744fcafee1eadd357301c36234c9f0376476432331de652080823f9db744"
+                     },
+                     {
+                         "path":  "evidence/green.raw.txt",
+                         "sha256":  "da30e7e87b5ea3297c28dfac829731cbb38f3bca083bb5a231e23227efcd29f3"
+                     },
+                     {
+                         "path":  "evidence/native-app-types.raw.txt",
+                         "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                     },
+                     {
+                         "path":  "evidence/native-collection-guard.raw.txt",
+                         "sha256":  "36f62a45ae356d16dd8ffba405714109346da2162b667c57506504b60fc0aa81"
+                     },
+                     {
+                         "path":  "evidence/native-focused-neighbors.raw.txt",
+                         "sha256":  "c9cdf90727dedeffb24210a789f13d2f123d416eee89f12881b5b441773e54d4"
+                     },
+                     {
+                         "path":  "evidence/native-source-collection.raw.txt",
+                         "sha256":  "67d146c18a0e1d843f6d60e31b3895759b5731207dedb38c791fc5b656cba3d1"
+                     },
+                     {
+                         "path":  "evidence/native-tools-types.raw.txt",
+                         "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                     },
+                     {
+                         "path":  "evidence/native-types-array-red.raw.txt",
+                         "sha256":  "511123d071a44b9ba50e1baa50666c65d3aa03a0e93db124a48989362f893b5f"
+                     },
+                     {
+                         "path":  "evidence/original-red.raw.txt",
+                         "sha256":  "649d6e187c16cd207dc3148f244a88ac699b5b2d3c869a1d18fcb9adb37caafe"
+                     },
+                     {
+                         "path":  "evidence/query-omission-red.raw.txt",
+                         "sha256":  "d0023263a63e4c036631954e1205fd1f8e1d7e580494a8802598c74305cd3330"
+                     },
+                     {
+                         "path":  "evidence/restored-green.raw.txt",
+                         "sha256":  "1d8b4bf713fc41b7bec7f99a982447aa8bcbc84871a89745dd59e21ddcbdf752"
+                     },
+                     {
+                         "path":  "evidence/types.raw.txt",
+                         "sha256":  "7bd4a566f5c204d63dcf38931e790f9d658238811e4a1f96e2ae3e044c448d4e"
+                     }
+                 ]
+}
