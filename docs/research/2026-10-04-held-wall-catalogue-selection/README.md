@@ -17,3 +17,18 @@ Fresh all-state remote door/selection/gesture search and full open#1907/#2004 bo
 ## Authorized scope
 
 Parent granted only `src/main.ts` existing `arm-build-tool` callback. Cancel its construction gesture when an already armed BuildTool changes to a different selected definition, preserving same-selection gestures and independent camera ownership. No Fit, cursor, layout, copy, protocol, format, tariff or native changes. Fixed/negative/restored evidence follows after execution.
+
+## Terminal producer proof
+
+Issue: https://github.com/woogitsu/lockstate/issues/2028. Diagnostic `1a21f6001d`, source `2fe2c50fb52640f23c7c4097556ac2a1c3006be7`, branch `codex/build-input-command-audit-20261004`.
+
+- Original proper source suite2RED/25GREEN,3.26s; fixed27GREEN,3.65s.
+- Omit only the actual selected-definition condition, preserving existing explicit Stop cancellation:2RED/25GREEN. Finally byte-exact source restoration27GREEN. Source SHA256 `4b70efc4735d12d506f07d7857ebbc4d5142aa8360f695a2b77567b72c9de880`, zero production diff, branch restored after detached immutable source mutation.
+- Bounded neighbors132GREEN/10files,4.23s: cancel/rearm, ordinary session ownership, real object/build tools, HUD arming, approved individual rotation UI/scene, unchanged source-anchor/quotation/index gates. Application/tools strict types exit0.
+- Initial external scratch harness imports produced three environment/mocking collection errors before any tests executed. Those original outputs are retained as fixture errors, not production RED. The proper tracked regression uses the existing fixture's real imports and lexical catalogue/report callback closure.
+
+Only old stale submission is prevented. A same-row reselection retains the old valid gesture, and a fresh Door press retains its actual packet. Camera drag controls remain GREEN. No claim that the original stale Door was successfully completed, charged, or native input timing was measured. Root must run native acceptance separately; no browser/server/build/full suite/budget changes occurred here.
+
+## Evidence
+
+`raw/original-executed-regression.test.ts.txt` retains the actual executed proper original source. Raw original/fixed/negative/restored results, inert executed mutation recipe and `mutation-receipt.json` are retained. `sha256.json` hashes their stored bytes; raw attributes disable text normalization. Original initial collection failures remain retained.

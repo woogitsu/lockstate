@@ -1,0 +1,72 @@
+﻿[
+    {
+        "file":  "executed-mutation.cjs.txt",
+        "sha256":  "1ff5a98e0a73d6f5c0394c60534786c75292d0c54514be53e3e027fbd74b4c8d",
+        "bytes":  1864
+    },
+    {
+        "file":  "fixed.txt",
+        "sha256":  "81e3aa5ce09a532f2aec5a266f8a62a05d6be93784ca407bc64ead87695bb020",
+        "bytes":  540
+    },
+    {
+        "file":  "fresh-duplicate-search.json",
+        "sha256":  "aef25663b6ef5d744a68f9e15d6ece29e9d0468473bacdfb2af4733bce069dfa",
+        "bytes":  125263
+    },
+    {
+        "file":  "initial-harness-1.txt",
+        "sha256":  "d017c508db6bcf541055426712270679515cc761b1d444df498a58f79756fc35",
+        "bytes":  3306
+    },
+    {
+        "file":  "initial-harness-2.txt",
+        "sha256":  "28ab7675520560030160f54f66eb4490aaa5cf125b47443a051a6173e25969f4",
+        "bytes":  2294
+    },
+    {
+        "file":  "initial-harness-3.txt",
+        "sha256":  "60b7f6857c9c0ded46281b504969fa9dd29484dd6d8b5f3490d693c1e5211458",
+        "bytes":  5268
+    },
+    {
+        "file":  "mutation-receipt.json",
+        "sha256":  "df3e5430d3897049321ace741ed6dcd9dbda93297fa86a6ebac0c1d0bbbb939e",
+        "bytes":  399
+    },
+    {
+        "file":  "neighbors-docs.txt",
+        "sha256":  "96693636b234db31dd4cc25c76a4ba2b7a6e081f92d2965860508400d36654c7",
+        "bytes":  550
+    },
+    {
+        "file":  "original-executed-regression.test.ts.txt",
+        "sha256":  "1924fe47c846a98c736108c2f95dadfdf94d32c128d5f29cd4ea4b9d9d4b0009",
+        "bytes":  18364
+    },
+    {
+        "file":  "original-regression.txt",
+        "sha256":  "7a9123ceb6090fe81af40edf7776f410a117b5cfbe3b5e2bcf84d9c576838d7e",
+        "bytes":  6896
+    },
+    {
+        "file":  "producer-omission.txt",
+        "sha256":  "4a6cd7590963e6a6e359c539939a8a42635e6a63c59e81510a50a4d537896924",
+        "bytes":  3222
+    },
+    {
+        "file":  "restored.txt",
+        "sha256":  "210071598f9b5887df31b3c2ba14e9ac62200daa1ee8e95d99f1b8572043ad5d",
+        "bytes":  261
+    },
+    {
+        "file":  "types-app.txt",
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes":  0
+    },
+    {
+        "file":  "types-tools.txt",
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes":  0
+    }
+]
