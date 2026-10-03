@@ -1,0 +1,30 @@
+{
+  "records": [
+    {
+      "label": "negative-session-disarm",
+      "beforeSha": "99a8933f2a0b9d3af4c6e30b8d476aaab42a3943b7227d38711c424c21662321",
+      "status": 1,
+      "mutatedSha": "10c56d4df4878d591a8e7a6c6209718113bce892cdc37599e48ce878ea54efe0",
+      "restoredSha": "99a8933f2a0b9d3af4c6e30b8d476aaab42a3943b7227d38711c424c21662321"
+    },
+    {
+      "label": "negative-old-preview-owner",
+      "beforeSha": "8db7c239a2a376ae2d30e30841140536b90b93e108f4a83660d7531f5f39840c",
+      "mutatedSha": "1eb3bb7a415116e441b4006088c9749894bb264e13c0607f99bc4a288d4e7df1",
+      "status": 1,
+      "restoredSha": "8db7c239a2a376ae2d30e30841140536b90b93e108f4a83660d7531f5f39840c"
+    }
+  ],
+  "restored": [
+    {
+      "path": "src/main.ts",
+      "sha": "99a8933f2a0b9d3af4c6e30b8d476aaab42a3943b7227d38711c424c21662321",
+      "exact": true
+    },
+    {
+      "path": "src/ui/object-tool.ts",
+      "sha": "8db7c239a2a376ae2d30e30841140536b90b93e108f4a83660d7531f5f39840c",
+      "exact": true
+    }
+  ]
+}

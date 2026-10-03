@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-object-preflight-independent-review-20261003
+
+ ❯ tests/unit/ui-object-preflight-session-arm.test.ts (4 tests | 1 failed) 5ms
+   × availability preserves the publicly armed placement while invalidating old preview ownership 2ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 3 passed (4)
+   Start at  16:29:51
+   Duration  259ms (transform 51ms, setup 0ms, import 140ms, tests 5ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-object-preflight-session-arm.test.ts > availability preserves the publicly armed placement while invalidating old preview ownership
+AssertionError: expected 'blocked' to be undefined
+
+- Expected:
+undefined
+
++ Received:
+"blocked"
+
+ ❯ tests/unit/ui-object-preflight-session-arm.test.ts:46:35
+     44|     for (const settle of pending.splice(0)) settle({ ok: false, reason…
+     45|     await Promise.resolve(); await Promise.resolve();
+     46|     expect(tool.previewVerdict()).toBeUndefined(); // old verdict cann…
+       |                                   ^
+     47|     tool.target({ tileX: 9, tileY: 8, width: 1, height: removing ? 1 :…
+     48|     expect(pending).toHaveLength(removing ? 0 : 1); // fresh session a…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

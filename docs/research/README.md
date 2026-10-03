@@ -100,6 +100,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 
 | Record | Question it answered | Decision it fed |
 | --- | --- | --- |
+| [2026-10-03 Object preflight session-arm review](./2026-10-03-object-preflight-session-arm-review/README.md) | Do New/Load keep the public object tool armed while rejecting the outgoing aim? | Actual composition callbacks4RED, narrow reset-only fix, producer4RED/1RED3legal, byte restoration15GREEN plus28 neighbors; native pending. |
 | [Individual object preflight](./2026-10-03-individual-object-preflight/CONSUMER.md) | Can an exact worker verdict share actual admission and stay current under a stationary ghost? | DRAFT query proposal; mounted source consumer, real publication/ownership/V8 and mutation proof; native pending |
 | [Individual object rotation command](./2026-10-03-individual-object-rotation-command/README.md) | Does optional individual facing reach actual purchases, full footprints and whole V8? | Approved #2019 command fields; public interaction/copy remains a separate review. |
 | [Stationary plan anchor audit](./2026-10-03-stationary-plan-anchor-audit/README.md) | Is there another reproducible stale fitted-origin/quote/session placement after camera adjustment? | Existing bounded 85 source cases GREEN, no new finding; proceed to approved existing #2019 individual-object rotation. |
