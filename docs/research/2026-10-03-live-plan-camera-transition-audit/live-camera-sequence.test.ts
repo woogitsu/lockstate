@@ -1,4 +1,5 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { stripTypeScriptTypes } from 'node:module';
 import { afterEach, expect, it, vi } from 'vitest';
 import { WorldScene } from '../../../src/rendering/scene/world-scene';
@@ -11,15 +12,14 @@ import { computeObliqueFit } from '../../../src/rendering/camera/oblique-fit';
 import { createSimulationRoomTemplatePreflight, createSimulationRoomTemplateQuote } from '../../../src/ui/simulation-room-template-port';
 import { SimulationCommandSender } from '../../../src/ui/simulation-commands';
 import { SimulationWorkerStateMachine } from '../../../src/simulation/worker/state-machine';
-import type { MainToWorkerMessage, WorkerToMainMessage } from '../../../src/simulation/protocol/types';
-import { createNewSimulationRuntime } from '../../../src/simulation/runtime/new-session';
-import { captureSessionSnapshot, SESSION_SNAPSHOT_SCHEMA_ID, SESSION_SNAPSHOT_SCHEMA_VERSION } from '../../../src/simulation/runtime/restore-session';
+import type { MainToWorkerMessage } from '../../../src/simulation/protocol/types';
 import { SimulationSnapshotFeed } from '../../../src/rendering/feed/simulation-snapshot-feed';
 import { SimulationWorkerChannel } from '../../../src/simulation/worker/worker-channel';
 import { WorkerPerSessionHost } from '../../../src/persistence/session/worker-per-session-host';
 import type { SimulationClient, WorkerMessageHandler } from '../../../src/simulation/worker/client';
 import { createSaveEnvelope, decodeSaveEnvelope } from '../../../src/persistence/save-schema';
 import type { SessionSnapshotBundle } from '../../../src/simulation/runtime/restore-session';
+import { formatRoomTemplateQuote } from '../../../src/ui/hud/room-template-quote';
 import { createRoomTemplatePreview } from '../../../src/ui/hud/room-template-preview';
 import { Localizer, defaultMessageCatalogEn } from '../../../src/services/localization';
 import { EMPTY_RENDER_FRAME } from '../../../src/rendering/feed/render-feed';
@@ -125,7 +125,7 @@ async function setup(mirrored: boolean) {
     'screenToGround', 'groundToScreen', 'computeObliqueFit', 'renderFeed', 'TILE_SIZE_PX', 'objectFootprintOf', 'localizer', 'formatRoomTemplateQuote',
     `let reinstallPlanGhost = () => {}; let withdrawPlanGhost = () => {}; ${installBody} return { withdraw: () => withdrawPlanGhost() };`)
     (scene, tool, root, WorldScene, ObliqueWorldScene, RoomTemplatePreviewFitController, installRoomTemplateWorldBridge, screenToGround, groundToScreen, computeObliqueFit, actualFeed, 64, footprint,
-      { format: (key: string) => key }, (_localizer: unknown, quote: unknown) => JSON.stringify(quote)) as { withdraw: () => void };
+      localizer, formatRoomTemplateQuote) as { withdraw: () => void };
   const callback = (name: string) => {
     const begin = source.indexOf(name + ': ');
     if (begin < 0 || source.indexOf(name + ': ', begin + 1) !== -1) throw Error('Actual unique camera callback missing: ' + name);
@@ -174,6 +174,8 @@ it('oblique public q1+mirror held plan: actual pan/yaw/elevation/zoom, release, 
   await h.paint();await h.paint();
   expect(h.layer().dataset.ready).toBe('clear');
   const quote=await h.tool.quote();expect(quote).toEqual({orderCount:20,materials:[{itemId:'item.brick',quantity:35},{itemId:'item.wood-plank',quantity:2}],catalogueCostMinorUnits:1530});
+  expect(h.layer().children[1]!.textContent).toContain(formatRoomTemplateQuote(new Localizer({locale:'en',catalogs:[defaultMessageCatalogEn]}),quote));
+  expect(h.tool.planAt(expected).objects.map(o=>[o.x-expected.x,o.y-expected.y,o.width,o.height,o.quarterTurns])).toEqual([[4,2,2,1,1],[2,1,1,1,1]]);
   const polygons=h.layer().children[0]!.children;expect(polygons).toHaveLength(28);
   for(let i=0;i<polygons.length;i++){
    const corners=polygons[i]!.attributes.get('points')!.split(' ').map(p=>p.split(',').map(Number));
@@ -201,6 +203,6 @@ it('oblique public q1+mirror held plan: actual pan/yaw/elevation/zoom, release, 
   await h.actors.host.startFromSnapshot(decoded.value.payload as unknown as SessionSnapshotBundle);
   h.actors.channel.send({protocolVersion:1,messageId:'loaded-pause',kind:'simulation/set-clock',payload:{mode:'paused'}});
   const loaded=await h.actors.host.capture();expect(loaded).toEqual(redone);expect(h.actors.clients).toHaveLength(2);expect(h.actors.clients[0]!.terminated).toBe(true);
-  console.log('CAMERA_SEQUENCE_NO_FINDING',JSON.stringify({initial:h.initialOrigin,expected,poseBefore:startPose,poseAfter:h.scene.cameraPose,quote,polygons:polygons.length,acceptedOrders:accepted.construction.orders.length,undoStates:undone.construction.orders.map(o=>o.state),redoOrders:redone.construction.orders.length,loadedWholeSnapshotEqual:true,commands:h.actors.sent.filter(m=>m.kind==='simulation/submit-command').map(m=>m.payload.command.data)}));
+  writeFileSync(new URL('./observed-sequence.json',import.meta.url),JSON.stringify({initial:h.initialOrigin,expected,poseBefore:startPose,poseAfter:h.scene.cameraPose,quote,polygons:polygons.length,acceptedOrders:accepted.construction.orders.length,undoStates:undone.construction.orders.map(o=>o.state),redoOrders:redone.construction.orders.length,loadedWholeSnapshotEqual:true,wholeHashes:{before:createHash('sha256').update(JSON.stringify(before)).digest('hex'),accepted:createHash('sha256').update(JSON.stringify(accepted)).digest('hex'),undone:createHash('sha256').update(JSON.stringify(undone)).digest('hex'),redone:createHash('sha256').update(JSON.stringify(redone)).digest('hex'),loaded:createHash('sha256').update(JSON.stringify(loaded)).digest('hex')},commands:h.actors.sent.filter(m=>m.kind==='simulation/submit-command').map(m=>m.payload.command.data)},null,2)+'\n');
  }finally{h.dispose();await h.actors.host.stop();}
 });

@@ -1,0 +1,11 @@
+{
+  "base": "d0fab410772b551fa5caff3e0dfd5923cadf01e4",
+  "typechecks": {
+    "audit": 0,
+    "app": 0,
+    "tools": 0
+  },
+  "productionEdits": 0,
+  "producerMutation": false,
+  "nativeRun": false
+}

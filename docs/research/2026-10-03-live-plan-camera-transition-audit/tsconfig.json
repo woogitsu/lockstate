@@ -1,0 +1,10 @@
+{
+  "extends": "../../../tsconfig.json",
+  "compilerOptions": {
+    "incremental": false
+  },
+  "include": [
+    "./live-camera-sequence.test.ts",
+    "./vitest.config.ts"
+  ]
+}

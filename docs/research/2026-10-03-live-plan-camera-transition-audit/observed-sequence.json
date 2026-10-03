@@ -1,0 +1,99 @@
+{
+  "initial": {
+    "x": 10,
+    "y": 11
+  },
+  "expected": {
+    "x": 12,
+    "y": 11
+  },
+  "poseBefore": {
+    "target": {
+      "x": 768,
+      "y": 768
+    },
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "zoom": 1.4,
+    "yawRadians": 0.6108652381980153,
+    "elevationRadians": 1.1344640137963142
+  },
+  "poseAfter": {
+    "target": {
+      "x": 938.8998435224407,
+      "y": 824.7410294080034
+    },
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "zoom": 1.75,
+    "yawRadians": 0.8726646259971647,
+    "elevationRadians": 0.9599310885968813
+  },
+  "quote": {
+    "orderCount": 20,
+    "materials": [
+      {
+        "itemId": "item.brick",
+        "quantity": 35
+      },
+      {
+        "itemId": "item.wood-plank",
+        "quantity": 2
+      }
+    ],
+    "catalogueCostMinorUnits": 1530
+  },
+  "polygons": 28,
+  "acceptedOrders": 18,
+  "undoStates": [
+    "cancelled",
+    "cancelled",
+    "cancelled",
+    "cancelled",
+    "cancelled",
+    "cancelled",
+    "cancelled",
+    "cancelled",
+    "cancelled",
+    "cancelled",
+    "cancelled",
+    "cancelled",
+    "cancelled",
+    "cancelled",
+    "cancelled",
+    "cancelled",
+    "cancelled",
+    "cancelled"
+  ],
+  "redoOrders": 18,
+  "loadedWholeSnapshotEqual": true,
+  "wholeHashes": {
+    "before": "b89632050871640811290bddcf1ef27a578d441b09830a04c3295202d2af471e",
+    "accepted": "44e9bfc866f5e4cb6aafbc03563d172f0ac4ad380fb04dc0a9f31299bcb83e38",
+    "undone": "fabb93e6ddc4b55b794d6feffef459ba45e036493a7097d1fda6597a7cb758a5",
+    "redone": "f6dfe115a4b55ced8352d65e7ae66f30f5e2e57ae1bdf446fab2dd993d2f45cd",
+    "loaded": "f6dfe115a4b55ced8352d65e7ae66f30f5e2e57ae1bdf446fab2dd993d2f45cd"
+  },
+  "commands": [
+    {
+      "type": "PlaceRoomTemplate",
+      "templateId": "cell-basic",
+      "origin": {
+        "x": 12,
+        "y": 11
+      },
+      "mirrorX": true,
+      "quarterTurns": 1
+    },
+    {
+      "type": "Undo"
+    },
+    {
+      "type": "Redo"
+    }
+  ]
+}
