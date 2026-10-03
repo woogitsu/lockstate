@@ -1453,3 +1453,18 @@ live/V8 release and ordinary relocation controls are real kernel evidence, not
 an assertion that UI exposes the high-risk fixture inputs. Root will build this
 combined subject, run exact native controls once and preserve any original RED.
 Full exact-head hosted CI and serial release gates remain outstanding.
+
+## Pan and detailed Dock accepted locally - 2026-10-03
+
+Actual frozen ef2aa client passes7 real FullHD native cases: physical mouse and
+Enter camera controls at UI100/200 in World and Angled, independent ground-step
+math, unchanged quote/full footprint, genuine logistics capacity and Dockq0/q1
+construction/whole-data SaveLoad with exact completed owners. Actual callback
+and default-binding negatives yield5 RED/1 legal/1 serial not-run; separateq1
+yields1 RED/1 legal, with byte-exact source/worker restoration7+2 GREEN.
+[Actual raw receipts and opened images](../../research/2026-10-03-pan-dock-source-integration/README.md)
+are pushed. Next isolated integration includes detailed physical Chair/Rack,
+#1553 full-ID search-target departure and #1913 sorted loading-wall fallback.
+Art is modeling an actual connected ShowerHead, gameplay audits the remaining
+accepted/refused history class, HUD prepares a real native pending-wall test.
+One root browser at a time; full hosted CI and serial release still required.

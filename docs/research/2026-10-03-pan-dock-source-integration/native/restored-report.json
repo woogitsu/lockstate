@@ -29,7 +29,7 @@
     "quiet": false,
     "projects": [
       {
-        "outputDir": "C:/Users/matma/AppData/Local/Temp/lockstate-pan-dock-native-seven-results-20261003",
+        "outputDir": "C:/Users/matma/AppData/Local/Temp/lockstate-pan-dock-control-restored-results-20261003",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
@@ -84,12 +84,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 8715,
+                  "duration": 8575,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-03T02:16:30.230Z",
+                  "startTime": "2026-10-03T02:40:28.824Z",
                   "annotations": [],
                   "attachments": [
                     {
@@ -110,7 +110,7 @@
         },
         {
           "title": "world FullHD 200% four physical pan controls and armed room-plan confirmation",
-          "ok": false,
+          "ok": true,
           "tags": [],
           "tests": [
             {
@@ -123,48 +123,24 @@
                 {
                   "workerIndex": 0,
                   "parallelIndex": 0,
-                  "status": "failed",
-                  "duration": 5441,
-                  "error": {
-                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m",
-                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-pan-dock-integration-20261003\\tests\\browser\\dedicated-camera-pan-player.spec.ts:196:131",
-                    "location": {
-                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-pan-dock-integration-20261003\\tests\\browser\\dedicated-camera-pan-player.spec.ts",
-                      "column": 131,
-                      "line": 196
-                    },
-                    "snippet": "  194 |     const cursor = mode === 'world' ? { x: 700, y: 240 } : { x: 740, y: 420 };\n  195 |     const plan = mode === 'world' ? { name: 'Yard', id: 'yard-basic', count: 64 } : { name: 'Basic cell', id: 'cell-basic', count: 28 };\n> 196 |     expect(await page.evaluate(p => document.elementFromPoint(p.x, p.y) === document.querySelector('#game-root canvas'), cursor)).toBe(true);\n      |                                                                                                                                   ^\n  197 |     await page.mouse.move(cursor.x, cursor.y); await frames(page);\n  198 |     const marker = await page.evaluate(() => (Reflect.get(window, 'dedicatedPanPointers') as unknown[]).length);\n  199 |     const beforeArm = await view(page);"
-                  },
-                  "errors": [
-                    {
-                      "location": {
-                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-pan-dock-integration-20261003\\tests\\browser\\dedicated-camera-pan-player.spec.ts",
-                        "column": 131,
-                        "line": 196
-                      },
-                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\n  194 |     const cursor = mode === 'world' ? { x: 700, y: 240 } : { x: 740, y: 420 };\n  195 |     const plan = mode === 'world' ? { name: 'Yard', id: 'yard-basic', count: 64 } : { name: 'Basic cell', id: 'cell-basic', count: 28 };\n> 196 |     expect(await page.evaluate(p => document.elementFromPoint(p.x, p.y) === document.querySelector('#game-root canvas'), cursor)).toBe(true);\n      |                                                                                                                                   ^\n  197 |     await page.mouse.move(cursor.x, cursor.y); await frames(page);\n  198 |     const marker = await page.evaluate(() => (Reflect.get(window, 'dedicatedPanPointers') as unknown[]).length);\n  199 |     const beforeArm = await view(page);\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-pan-dock-integration-20261003\\tests\\browser\\dedicated-camera-pan-player.spec.ts:196:131"
-                    }
-                  ],
+                  "status": "passed",
+                  "duration": 9179,
+                  "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-03T02:16:39.014Z",
+                  "startTime": "2026-10-03T02:40:37.471Z",
                   "annotations": [],
                   "attachments": [
                     {
-                      "name": "error-context",
-                      "contentType": "text/markdown",
-                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-pan-dock-native-seven-results-20261003\\dedicated-camera-pan-playe-9d92a-rmed-room-plan-confirmation\\error-context.md"
+                      "name": "independent-pan-and-worker-evidence",
+                      "contentType": "application/json",
+                      "body": "ewogICJtb2RlIjogIndvcmxkIiwKICAidWlTY2FsZSI6IDIsCiAgIm1vdmVtZW50IjogWwogICAgewogICAgICAiZGlyZWN0aW9uIjogInJpZ2h0IiwKICAgICAgImhpdCI6IHsKICAgICAgICAieCI6IDY0NCwKICAgICAgICAieSI6IDc1MSwKICAgICAgICAibGVmdCI6IDYwMCwKICAgICAgICAidG9wIjogNzA3LjIxODc1LAogICAgICAgICJyaWdodCI6IDY4OCwKICAgICAgICAiYm90dG9tIjogNzk1LjIxODc1LAogICAgICAgICJ3aWR0aCI6IDg4LAogICAgICAgICJoZWlnaHQiOiA4OCwKICAgICAgICAicmVhY2hhYmxlIjogdHJ1ZSwKICAgICAgICAidGFwIjogODgKICAgICAgfSwKICAgICAgImJlZm9yZSI6IHsKICAgICAgICAicGVyY2VudCI6IHsKICAgICAgICAgICJsZWZ0IjogMjAsCiAgICAgICAgICAidG9wIjogMzMuMTI1LAogICAgICAgICAgIndpZHRoIjogNjAuMDAwMDAwMDAwMDAwMDEsCiAgICAgICAgICAiaGVpZ2h0IjogMzMuNzUKICAgICAgICB9LAogICAgICAgICJjc3MiOiB7CiAgICAgICAgICAibGVmdCI6IDIwLAogICAgICAgICAgInRvcCI6IDMzLjEyNSwKICAgICAgICAgICJ3aWR0aCI6IDYwLAogICAgICAgICAgImhlaWdodCI6IDMzLjc1CiAgICAgICAgfSwKICAgICAgICAiY2FudmFzIjogewogICAgICAgICAgIndpZHRoIjogMTkyMCwKICAgICAgICAgICJoZWlnaHQiOiAxMDgwLAogICAgICAgICAgImxlZnQiOiAwLAogICAgICAgICAgInRvcCI6IDAsCiAgICAgICAgICAid2lkdGhDc3MiOiAxOTIwLAogICAgICAgICAgImhlaWdodENzcyI6IDEwODAKICAgICAgICB9LAogICAgICAgICJtYXAiOiB7CiAgICAgICAgICAid2lkdGgiOiAzMiwKICAgICAgICAgICJoZWlnaHQiOiAzMgogICAgICAgIH0KICAgICAgfSwKICAgICAgImRlbHRhIjogewogICAgICAgICJ4IjogODEuOTIwMDAwMDAwMDAwMDIsCiAgICAgICAgInkiOiAwCiAgICAgIH0sCiAgICAgICJhZnRlciI6IHsKICAgICAgICAicGVyY2VudCI6IHsKICAgICAgICAgICJsZWZ0IjogMjQuMDAwMDAwMDAwMDAwMDA0LAogICAgICAgICAgInRvcCI6IDMzLjEyNSwKICAgICAgICAgICJ3aWR0aCI6IDYwLjAwMDAwMDAwMDAwMDAxLAogICAgICAgICAgImhlaWdodCI6IDMzLjc1CiAgICAgICAgfSwKICAgICAgICAiY3NzIjogewogICAgICAgICAgImxlZnQiOiAyNCwKICAgICAgICAgICJ0b3AiOiAzMy4xMjUsCiAgICAgICAgICAid2lkdGgiOiA2MCwKICAgICAgICAgICJoZWlnaHQiOiAzMy43NQogICAgICAgIH0sCiAgICAgICAgImNhbnZhcyI6IHsKICAgICAgICAgICJ3aWR0aCI6IDE5MjAsCiAgICAgICAgICAiaGVpZ2h0IjogMTA4MCwKICAgICAgICAgICJsZWZ0IjogMCwKICAgICAgICAgICJ0b3AiOiAwLAogICAgICAgICAgIndpZHRoQ3NzIjogMTkyMCwKICAgICAgICAgICJoZWlnaHRDc3MiOiAxMDgwCiAgICAgICAgfSwKICAgICAgICAibWFwIjogewogICAgICAgICAgIndpZHRoIjogMzIsCiAgICAgICAgICAiaGVpZ2h0IjogMzIKICAgICAgICB9CiAgICAgIH0sCiAgICAgICJldmVudCI6IHsKICAgICAgICAiZGlyZWN0aW9uIjogInJpZ2h0IiwKICAgICAgICAidHJ1c3RlZCI6IHRydWUsCiAgICAgICAgImRldGFpbCI6IDEsCiAgICAgICAgIngiOiA2NDQsCiAgICAgICAgInkiOiA3NTEKICAgICAgfQogICAgfSwKICAgIHsKICAgICAgImRpcmVjdGlvbiI6ICJsZWZ0IiwKICAgICAgImhpdCI6IHsKICAgICAgICAieCI6IDMzMiwKICAgICAgICAieSI6IDc1MSwKICAgICAgICAibGVmdCI6IDI4OCwKICAgICAgICAidG9wIjogNzA3LjIxODc1LAogICAgICAgICJyaWdodCI6IDM3NiwKICAgICAgICAiYm90dG9tIjogNzk1LjIxODc1LAogICAgICAgICJ3aWR0aCI6IDg4LAogICAgICAgICJoZWlnaHQiOiA4OCwKICAgICAgICAicmVhY2hhYmxlIjogdHJ1ZSwKICAgICAgICAidGFwIjogODgKICAgICAgfSwKICAgICAgImJlZm9yZSI6IHsKICAgICAgICAicGVyY2VudCI6IHsKICAgICAgICAgICJsZWZ0IjogMjQuMDAwMDAwMDAwMDAwMDA0LAogICAgICAgICAgInRvcCI6IDMzLjEyNSwKICAgICAgICAgICJ3aWR0aCI6IDYwLjAwMDAwMDAwMDAwMDAxLAogICAgICAgICAgImhlaWdodCI6IDMzLjc1CiAgICAgICAgfSwKICAgICAgICAiY3NzIjogewogICAgICAgICAgImxlZnQiOiAyNCwKICAgICAgICAgICJ0b3AiOiAzMy4xMjUsCiAgICAgICAgICAid2lkdGgiOiA2MCwKICAgICAgICAgICJoZWlnaHQiOiAzMy43NQogICAgICAgIH0sCiAgICAgICAgImNhbnZhcyI6IHsKICAgICAgICAgICJ3aWR0aCI6IDE5MjAsCiAgICAgICAgICAiaGVpZ2h0IjogMTA4MCwKICAgICAgICAgICJsZWZ0IjogMCwKICAgICAgICAgICJ0b3AiOiAwLAogICAgICAgICAgIndpZHRoQ3NzIjogMTkyMCwKICAgICAgICAgICJoZWlnaHRDc3MiOiAxMDgwCiAgICAgICAgfSwKICAgICAgICAibWFwIjogewogICAgICAgICAgIndpZHRoIjogMzIsCiAgICAgICAgICAiaGVpZ2h0IjogMzIKICAgICAgICB9CiAgICAgIH0sCiAgICAgICJkZWx0YSI6IHsKICAgICAgICAieCI6IC04MS45MjAwMDAwMDAwMDAwMiwKICAgICAgICAieSI6IDAKICAgICAgfSwKICAgICAgImFmdGVyIjogewogICAgICAgICJwZXJjZW50IjogewogICAgICAgICAgImxlZnQiOiAyMCwKICAgICAgICAgICJ0b3AiOiAzMy4xMjUsCiAgICAgICAgICAid2lkdGgiOiA2MC4wMDAwMDAwMDAwMDAwMSwKICAgICAgICAgICJoZWlnaHQiOiAzMy43NQogICAgICAgIH0sCiAgICAgICAgImNzcyI6IHsKICAgICAgICAgICJsZWZ0IjogMjAsCiAgICAgICAgICAidG9wIjogMzMuMTI1LAogICAgICAgICAgIndpZHRoIjogNjAsCiAgICAgICAgICAiaGVpZ2h0IjogMzMuNzUKICAgICAgICB9LAogICAgICAgICJjYW52YXMiOiB7CiAgICAgICAgICAid2lkdGgiOiAxOTIwLAogICAgICAgICAgImhlaWdodCI6IDEwODAsCiAgICAgICAgICAibGVmdCI6IDAsCiAgICAgICAgICAidG9wIjogMCwKICAgICAgICAgICJ3aWR0aENzcyI6IDE5MjAsCiAgICAgICAgICAiaGVpZ2h0Q3NzIjogMTA4MAogICAgICAgIH0sCiAgICAgICAgIm1hcCI6IHsKICAgICAgICAgICJ3aWR0aCI6IDMyLAogICAgICAgICAgImhlaWdodCI6IDMyCiAgICAgICAgfQogICAgICB9LAogICAgICAiZXZlbnQiOiB7CiAgICAgICAgImRpcmVjdGlvbiI6ICJsZWZ0IiwKICAgICAgICAidHJ1c3RlZCI6IHRydWUsCiAgICAgICAgImRldGFpbCI6IDEsCiAgICAgICAgIngiOiAzMzIsCiAgICAgICAgInkiOiA3NTEKICAgICAgfQogICAgfSwKICAgIHsKICAgICAgImRpcmVjdGlvbiI6ICJkb3duIiwKICAgICAgImhpdCI6IHsKICAgICAgICAieCI6IDU0MCwKICAgICAgICAieSI6IDc1MSwKICAgICAgICAibGVmdCI6IDQ5NiwKICAgICAgICAidG9wIjogNzA3LjIxODc1LAogICAgICAgICJyaWdodCI6IDU4NCwKICAgICAgICAiYm90dG9tIjogNzk1LjIxODc1LAogICAgICAgICJ3aWR0aCI6IDg4LAogICAgICAgICJoZWlnaHQiOiA4OCwKICAgICAgICAicmVhY2hhYmxlIjogdHJ1ZSwKICAgICAgICAidGFwIjogODgKICAgICAgfSwKICAgICAgImJlZm9yZSI6IHsKICAgICAgICAicGVyY2VudCI6IHsKICAgICAgICAgICJsZWZ0IjogMjAsCiAgICAgICAgICAidG9wIjogMzMuMTI1LAogICAgICAgICAgIndpZHRoIjogNjAuMDAwMDAwMDAwMDAwMDEsCiAgICAgICAgICAiaGVpZ2h0IjogMzMuNzUKICAgICAgICB9LAogICAgICAgICJjc3MiOiB7CiAgICAgICAgICAibGVmdCI6IDIwLAogICAgICAgICAgInRvcCI6IDMzLjEyNSwKICAgICAgICAgICJ3aWR0aCI6IDYwLAogICAgICAgICAgImhlaWdodCI6IDMzLjc1CiAgICAgICAgfSwKICAgICAgICAiY2FudmFzIjogewogICAgICAgICAgIndpZHRoIjogMTkyMCwKICAgICAgICAgICJoZWlnaHQiOiAxMDgwLAogICAgICAgICAgImxlZnQiOiAwLAogICAgICAgICAgInRvcCI6IDAsCiAgICAgICAgICAid2lkdGhDc3MiOiAxOTIwLAogICAgICAgICAgImhlaWdodENzcyI6IDEwODAKICAgICAgICB9LAogICAgICAgICJtYXAiOiB7CiAgICAgICAgICAid2lkdGgiOiAzMiwKICAgICAgICAgICJoZWlnaHQiOiAzMgogICAgICAgIH0KICAgICAgfSwKICAgICAgImRlbHRhIjogewogICAgICAgICJ4IjogMCwKICAgICAgICAieSI6IDgxLjkyCiAgICAgIH0sCiAgICAgICJhZnRlciI6IHsKICAgICAgICAicGVyY2VudCI6IHsKICAgICAgICAgICJsZWZ0IjogMjAsCiAgICAgICAgICAidG9wIjogMzcuMTI1LAogICAgICAgICAgIndpZHRoIjogNjAuMDAwMDAwMDAwMDAwMDEsCiAgICAgICAgICAiaGVpZ2h0IjogMzMuNzUKICAgICAgICB9LAogICAgICAgICJjc3MiOiB7CiAgICAgICAgICAibGVmdCI6IDIwLAogICAgICAgICAgInRvcCI6IDM3LjEyNSwKICAgICAgICAgICJ3aWR0aCI6IDYwLAogICAgICAgICAgImhlaWdodCI6IDMzLjc1CiAgICAgICAgfSwKICAgICAgICAiY2FudmFzIjogewogICAgICAgICAgIndpZHRoIjogMTkyMCwKICAgICAgICAgICJoZWlnaHQiOiAxMDgwLAogICAgICAgICAgImxlZnQiOiAwLAogICAgICAgICAgInRvcCI6IDAsCiAgICAgICAgICAid2lkdGhDc3MiOiAxOTIwLAogICAgICAgICAgImhlaWdodENzcyI6IDEwODAKICAgICAgICB9LAogICAgICAgICJtYXAiOiB7CiAgICAgICAgICAid2lkdGgiOiAzMiwKICAgICAgICAgICJoZWlnaHQiOiAzMgogICAgICAgIH0KICAgICAgfSwKICAgICAgImV2ZW50IjogewogICAgICAgICJkaXJlY3Rpb24iOiAiZG93biIsCiAgICAgICAgInRydXN0ZWQiOiB0cnVlLAogICAgICAgICJkZXRhaWwiOiAxLAogICAgICAgICJ4IjogNTQwLAogICAgICAgICJ5IjogNzUxCiAgICAgIH0KICAgIH0sCiAgICB7CiAgICAgICJkaXJlY3Rpb24iOiAidXAiLAogICAgICAiaGl0IjogewogICAgICAgICJ4IjogNDM2LAogICAgICAgICJ5IjogNzUxLAogICAgICAgICJsZWZ0IjogMzkyLAogICAgICAgICJ0b3AiOiA3MDcuMjE4NzUsCiAgICAgICAgInJpZ2h0IjogNDgwLAogICAgICAgICJib3R0b20iOiA3OTUuMjE4NzUsCiAgICAgICAgIndpZHRoIjogODgsCiAgICAgICAgImhlaWdodCI6IDg4LAogICAgICAgICJyZWFjaGFibGUiOiB0cnVlLAogICAgICAgICJ0YXAiOiA4OAogICAgICB9LAogICAgICAiYmVmb3JlIjogewogICAgICAgICJwZXJjZW50IjogewogICAgICAgICAgImxlZnQiOiAyMCwKICAgICAgICAgICJ0b3AiOiAzNy4xMjUsCiAgICAgICAgICAid2lkdGgiOiA2MC4wMDAwMDAwMDAwMDAwMSwKICAgICAgICAgICJoZWlnaHQiOiAzMy43NQogICAgICAgIH0sCiAgICAgICAgImNzcyI6IHsKICAgICAgICAgICJsZWZ0IjogMjAsCiAgICAgICAgICAidG9wIjogMzcuMTI1LAogICAgICAgICAgIndpZHRoIjogNjAsCiAgICAgICAgICAiaGVpZ2h0IjogMzMuNzUKICAgICAgICB9LAogICAgICAgICJjYW52YXMiOiB7CiAgICAgICAgICAid2lkdGgiOiAxOTIwLAogICAgICAgICAgImhlaWdodCI6IDEwODAsCiAgICAgICAgICAibGVmdCI6IDAsCiAgICAgICAgICAidG9wIjogMCwKICAgICAgICAgICJ3aWR0aENzcyI6IDE5MjAsCiAgICAgICAgICAiaGVpZ2h0Q3NzIjogMTA4MAogICAgICAgIH0sCiAgICAgICAgIm1hcCI6IHsKICAgICAgICAgICJ3aWR0aCI6IDMyLAogICAgICAgICAgImhlaWdodCI6IDMyCiAgICAgICAgfQogICAgICB9LAogICAgICAiZGVsdGEiOiB7CiAgICAgICAgIngiOiAwLAogICAgICAgICJ5IjogLTgxLjkyCiAgICAgIH0sCiAgICAgICJhZnRlciI6IHsKICAgICAgICAicGVyY2VudCI6IHsKICAgICAgICAgICJsZWZ0IjogMjAsCiAgICAgICAgICAidG9wIjogMzMuMTI1LAogICAgICAgICAgIndpZHRoIjogNjAuMDAwMDAwMDAwMDAwMDEsCiAgICAgICAgICAiaGVpZ2h0IjogMzMuNzUKICAgICAgICB9LAogICAgICAgICJjc3MiOiB7CiAgICAgICAgICAibGVmdCI6IDIwLAogICAgICAgICAgInRvcCI6IDMzLjEyNSwKICAgICAgICAgICJ3aWR0aCI6IDYwLAogICAgICAgICAgImhlaWdodCI6IDMzLjc1CiAgICAgICAgfSwKICAgICAgICAiY2FudmFzIjogewogICAgICAgICAgIndpZHRoIjogMTkyMCwKICAgICAgICAgICJoZWlnaHQiOiAxMDgwLAogICAgICAgICAgImxlZnQiOiAwLAogICAgICAgICAgInRvcCI6IDAsCiAgICAgICAgICAid2lkdGhDc3MiOiAxOTIwLAogICAgICAgICAgImhlaWdodENzcyI6IDEwODAKICAgICAgICB9LAogICAgICAgICJtYXAiOiB7CiAgICAgICAgICAid2lkdGgiOiAzMiwKICAgICAgICAgICJoZWlnaHQiOiAzMgogICAgICAgIH0KICAgICAgfSwKICAgICAgImV2ZW50IjogewogICAgICAgICJkaXJlY3Rpb24iOiAidXAiLAogICAgICAgICJ0cnVzdGVkIjogdHJ1ZSwKICAgICAgICAiZGV0YWlsIjogMSwKICAgICAgICAieCI6IDQzNiwKICAgICAgICAieSI6IDc1MQogICAgICB9CiAgICB9CiAgXSwKICAiY2hvc2VuIjogewogICAgInRhcmdldCI6IHsKICAgICAgImtpbmQiOiAicm9vbS10ZW1wbGF0ZSIsCiAgICAgICJ0ZW1wbGF0ZUlkIjogImNlbGwtYmFzaWMiLAogICAgICAib3JpZ2luIjogewogICAgICAgICJ4IjogMTUsCiAgICAgICAgInkiOiAxMwogICAgICB9CiAgICB9LAogICAgIm9rIjogdHJ1ZQogIH0sCiAgImFybWVkIjogWwogICAgewogICAgICAiZGlyZWN0aW9uIjogInJpZ2h0IiwKICAgICAgImFjdHVhbCI6IHsKICAgICAgICAidGFyZ2V0IjogewogICAgICAgICAgImtpbmQiOiAicm9vbS10ZW1wbGF0ZSIsCiAgICAgICAgICAidGVtcGxhdGVJZCI6ICJjZWxsLWJhc2ljIiwKICAgICAgICAgICJvcmlnaW4iOiB7CiAgICAgICAgICAgICJ4IjogMTYsCiAgICAgICAgICAgICJ5IjogMTMKICAgICAgICAgIH0KICAgICAgICB9LAogICAgICAgICJvayI6IHRydWUKICAgICAgfSwKICAgICAgInF1b3RlIjogIkNsaWNrIG1hcCB0byBwbGFjZTsgRXNjIGNhbmNlbHMuIHwgVGhpcyBmb290cHJpbnQgaXMgY2xlYXIuIHwgQnJpY2sgw5cgMzUgwrcgV29vZCBQbGFuayDDlyAyIMK3IE1hdGVyaWFscyBjYXRhbG9ndWUgdmFsdWU6IDEsNTMwIgogICAgfSwKICAgIHsKICAgICAgImRpcmVjdGlvbiI6ICJsZWZ0IiwKICAgICAgImFjdHVhbCI6IHsKICAgICAgICAidGFyZ2V0IjogewogICAgICAgICAgImtpbmQiOiAicm9vbS10ZW1wbGF0ZSIsCiAgICAgICAgICAidGVtcGxhdGVJZCI6ICJjZWxsLWJhc2ljIiwKICAgICAgICAgICJvcmlnaW4iOiB7CiAgICAgICAgICAgICJ4IjogMTUsCiAgICAgICAgICAgICJ5IjogMTMKICAgICAgICAgIH0KICAgICAgICB9LAogICAgICAgICJvayI6IHRydWUKICAgICAgfSwKICAgICAgInF1b3RlIjogIkNsaWNrIG1hcCB0byBwbGFjZTsgRXNjIGNhbmNlbHMuIHwgVGhpcyBmb290cHJpbnQgaXMgY2xlYXIuIHwgQnJpY2sgw5cgMzUgwrcgV29vZCBQbGFuayDDlyAyIMK3IE1hdGVyaWFscyBjYXRhbG9ndWUgdmFsdWU6IDEsNTMwIgogICAgfSwKICAgIHsKICAgICAgImRpcmVjdGlvbiI6ICJkb3duIiwKICAgICAgImFjdHVhbCI6IHsKICAgICAgICAidGFyZ2V0IjogewogICAgICAgICAgImtpbmQiOiAicm9vbS10ZW1wbGF0ZSIsCiAgICAgICAgICAidGVtcGxhdGVJZCI6ICJjZWxsLWJhc2ljIiwKICAgICAgICAgICJvcmlnaW4iOiB7CiAgICAgICAgICAgICJ4IjogMTUsCiAgICAgICAgICAgICJ5IjogMTUKICAgICAgICAgIH0KICAgICAgICB9LAogICAgICAgICJvayI6IHRydWUKICAgICAgfSwKICAgICAgInF1b3RlIjogIkNsaWNrIG1hcCB0byBwbGFjZTsgRXNjIGNhbmNlbHMuIHwgVGhpcyBmb290cHJpbnQgaXMgY2xlYXIuIHwgQnJpY2sgw5cgMzUgwrcgV29vZCBQbGFuayDDlyAyIMK3IE1hdGVyaWFscyBjYXRhbG9ndWUgdmFsdWU6IDEsNTMwIgogICAgfSwKICAgIHsKICAgICAgImRpcmVjdGlvbiI6ICJ1cCIsCiAgICAgICJhY3R1YWwiOiB7CiAgICAgICAgInRhcmdldCI6IHsKICAgICAgICAgICJraW5kIjogInJvb20tdGVtcGxhdGUiLAogICAgICAgICAgInRlbXBsYXRlSWQiOiAiY2VsbC1iYXNpYyIsCiAgICAgICAgICAib3JpZ2luIjogewogICAgICAgICAgICAieCI6IDE1LAogICAgICAgICAgICAieSI6IDEzCiAgICAgICAgICB9CiAgICAgICAgfSwKICAgICAgICAib2siOiB0cnVlCiAgICAgIH0sCiAgICAgICJxdW90ZSI6ICJDbGljayBtYXAgdG8gcGxhY2U7IEVzYyBjYW5jZWxzLiB8IFRoaXMgZm9vdHByaW50IGlzIGNsZWFyLiB8IEJyaWNrIMOXIDM1IMK3IFdvb2QgUGxhbmsgw5cgMiDCtyBNYXRlcmlhbHMgY2F0YWxvZ3VlIHZhbHVlOiAxLDUzMCIKICAgIH0KICBdLAogICJkaXNwbGF5ZWQiOiB7CiAgICAidGFyZ2V0IjogewogICAgICAia2luZCI6ICJyb29tLXRlbXBsYXRlIiwKICAgICAgInRlbXBsYXRlSWQiOiAiY2VsbC1iYXNpYyIsCiAgICAgICJvcmlnaW4iOiB7CiAgICAgICAgIngiOiAxNSwKICAgICAgICAieSI6IDEzCiAgICAgIH0KICAgIH0sCiAgICAib2siOiB0cnVlCiAgfSwKICAiY2xpY2tzIjogWwogICAgewogICAgICAiZGlyZWN0aW9uIjogInJpZ2h0IiwKICAgICAgInRydXN0ZWQiOiB0cnVlLAogICAgICAiZGV0YWlsIjogMSwKICAgICAgIngiOiA2NDQsCiAgICAgICJ5IjogNzUxCiAgICB9LAogICAgewogICAgICAiZGlyZWN0aW9uIjogImxlZnQiLAogICAgICAidHJ1c3RlZCI6IHRydWUsCiAgICAgICJkZXRhaWwiOiAxLAogICAgICAieCI6IDMzMiwKICAgICAgInkiOiA3NTEKICAgIH0sCiAgICB7CiAgICAgICJkaXJlY3Rpb24iOiAiZG93biIsCiAgICAgICJ0cnVzdGVkIjogdHJ1ZSwKICAgICAgImRldGFpbCI6IDEsCiAgICAgICJ4IjogNTQwLAogICAgICAieSI6IDc1MQogICAgfSwKICAgIHsKICAgICAgImRpcmVjdGlvbiI6ICJ1cCIsCiAgICAgICJ0cnVzdGVkIjogdHJ1ZSwKICAgICAgImRldGFpbCI6IDEsCiAgICAgICJ4IjogNDM2LAogICAgICAieSI6IDc1MQogICAgfSwKICAgIHsKICAgICAgImRpcmVjdGlvbiI6ICJyaWdodCIsCiAgICAgICJ0cnVzdGVkIjogdHJ1ZSwKICAgICAgImRldGFpbCI6IDAsCiAgICAgICJ4IjogMCwKICAgICAgInkiOiAwCiAgICB9LAogICAgewogICAgICAiZGlyZWN0aW9uIjogImxlZnQiLAogICAgICAidHJ1c3RlZCI6IHRydWUsCiAgICAgICJkZXRhaWwiOiAwLAogICAgICAieCI6IDAsCiAgICAgICJ5IjogMAogICAgfSwKICAgIHsKICAgICAgImRpcmVjdGlvbiI6ICJkb3duIiwKICAgICAgInRydXN0ZWQiOiB0cnVlLAogICAgICAiZGV0YWlsIjogMCwKICAgICAgIngiOiAwLAogICAgICAieSI6IDAKICAgIH0sCiAgICB7CiAgICAgICJkaXJlY3Rpb24iOiAidXAiLAogICAgICAidHJ1c3RlZCI6IHRydWUsCiAgICAgICJkZXRhaWwiOiAwLAogICAgICAieCI6IDAsCiAgICAgICJ5IjogMAogICAgfQogIF0sCiAgImV2ZW50cyI6IFsKICAgIHsKICAgICAgInR5cGUiOiAicG9pbnRlcmRvd24iLAogICAgICAieCI6IDg4NSwKICAgICAgInkiOiAzNTAsCiAgICAgICJ0cnVzdGVkIjogdHJ1ZSwKICAgICAgImNhbnZhcyI6IHRydWUKICAgIH0sCiAgICB7CiAgICAgICJ0eXBlIjogInBvaW50ZXJ1cCIsCiAgICAgICJ4IjogODg1LAogICAgICAieSI6IDM1MCwKICAgICAgInRydXN0ZWQiOiB0cnVlLAogICAgICAiY2FudmFzIjogdHJ1ZQogICAgfQogIF0sCiAgImNvbW1hbmRzIjogWwogICAgewogICAgICAidHlwZSI6ICJQbGFjZVJvb21UZW1wbGF0ZSIsCiAgICAgICJ0ZW1wbGF0ZUlkIjogImNlbGwtYmFzaWMiLAogICAgICAib3JpZ2luIjogewogICAgICAgICJ4IjogMTUsCiAgICAgICAgInkiOiAxMwogICAgICB9CiAgICB9CiAgXQp9"
                     }
-                  ],
-                  "errorLocation": {
-                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-pan-dock-integration-20261003\\tests\\browser\\dedicated-camera-pan-player.spec.ts",
-                    "column": 131,
-                    "line": 196
-                  }
+                  ]
                 }
               ],
-              "status": "unexpected"
+              "status": "expected"
             }
           ],
           "id": "457532a792b560d6d698-17f7e7b6f98eac9f7736",
@@ -185,15 +161,15 @@
               "projectName": "",
               "results": [
                 {
-                  "workerIndex": 1,
+                  "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 11289,
+                  "duration": 11092,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-03T02:16:45.065Z",
+                  "startTime": "2026-10-03T02:40:46.657Z",
                   "annotations": [],
                   "attachments": [
                     {
@@ -225,15 +201,15 @@
               "projectName": "",
               "results": [
                 {
-                  "workerIndex": 1,
+                  "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 10079,
+                  "duration": 9903,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-03T02:16:56.424Z",
+                  "startTime": "2026-10-03T02:40:57.755Z",
                   "annotations": [],
                   "attachments": [
                     {
@@ -273,15 +249,15 @@
               "projectName": "",
               "results": [
                 {
-                  "workerIndex": 1,
+                  "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 43146,
+                  "duration": 44045,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-03T02:17:06.534Z",
+                  "startTime": "2026-10-03T02:41:07.679Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -307,21 +283,21 @@
               "projectName": "",
               "results": [
                 {
-                  "workerIndex": 1,
+                  "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 39985,
+                  "duration": 41622,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-03T02:17:49.689Z",
+                  "startTime": "2026-10-03T02:41:51.732Z",
                   "annotations": [],
                   "attachments": [
                     {
                       "name": "dedicated-loading-dock-door-worker-and-save-evidence",
                       "contentType": "application/json",
-                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-pan-dock-native-seven-results-20261003\\dedicated-loading-dock-doo-76e24-and-anchors-after-Save-Load\\attachments\\dedicated-loading-dock-door-worker-and-save-evidence-705a12d0a25506ff71a7be331ad7ce93c28f35b2.json"
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-pan-dock-control-restored-results-20261003\\dedicated-loading-dock-doo-76e24-and-anchors-after-Save-Load\\attachments\\dedicated-loading-dock-door-worker-and-save-evidence-115b660f7c36ed166342c556c48526fe9e58c253.json"
                     }
                   ]
                 }
@@ -336,7 +312,7 @@
         },
         {
           "title": "player builds Delivery Bay at quarterTurns1 and retains the authored loading dock door glazing palette and anchors after Save/Load",
-          "ok": false,
+          "ok": true,
           "tags": [],
           "tests": [
             {
@@ -347,63 +323,26 @@
               "projectName": "",
               "results": [
                 {
-                  "workerIndex": 1,
+                  "workerIndex": 0,
                   "parallelIndex": 0,
-                  "status": "failed",
-                  "duration": 41224,
-                  "error": {
-                    "message": "Error: loading dock door retained glazing 1 after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m100\u001b[39m\nReceived:   \u001b[31m0\u001b[39m",
-                    "stack": "Error: loading dock door retained glazing 1 after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m100\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-pan-dock-integration-20261003\\tests\\browser\\dedicated-loading-dock-door-player-build.spec.ts:228:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-pan-dock-integration-20261003\\tests\\browser\\dedicated-loading-dock-door-player-build.spec.ts:227:16",
-                    "location": {
-                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-pan-dock-integration-20261003\\tests\\browser\\dedicated-loading-dock-door-player-build.spec.ts",
-                      "column": 6,
-                      "line": 228
-                    },
-                    "snippet": "  226 |   }, null, 2));\n  227 |   beforePixels.forEach((count, index) => expect.soft(count, `loading dock door retained glazing ${index + 1} after construction`)\n> 228 |     .toBeGreaterThan(100));\n      |      ^\n  229 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n  230 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();\n  231 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');"
-                  },
-                  "errors": [
-                    {
-                      "location": {
-                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-pan-dock-integration-20261003\\tests\\browser\\dedicated-loading-dock-door-player-build.spec.ts",
-                        "column": 6,
-                        "line": 228
-                      },
-                      "message": "Error: loading dock door retained glazing 1 after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m100\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  226 |   }, null, 2));\n  227 |   beforePixels.forEach((count, index) => expect.soft(count, `loading dock door retained glazing ${index + 1} after construction`)\n> 228 |     .toBeGreaterThan(100));\n      |      ^\n  229 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n  230 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();\n  231 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-pan-dock-integration-20261003\\tests\\browser\\dedicated-loading-dock-door-player-build.spec.ts:228:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-pan-dock-integration-20261003\\tests\\browser\\dedicated-loading-dock-door-player-build.spec.ts:227:16"
-                    },
-                    {
-                      "location": {
-                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-pan-dock-integration-20261003\\tests\\browser\\dedicated-loading-dock-door-player-build.spec.ts",
-                        "column": 6,
-                        "line": 244
-                      },
-                      "message": "Error: loading dock door retained glazing 1 after Load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m100\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  242 |   const afterPixels = await dockPalettePixels(page, loaded, quarterTurns);\n  243 |   afterPixels.forEach((count, index) => expect.soft(count, `loading dock door retained glazing ${index + 1} after Load`)\n> 244 |     .toBeGreaterThan(100));\n      |      ^\n  245 |   expect(afterPixels).toEqual(beforePixels);\n  246 |   const evidencePath = info.outputPath('dedicated-loading-dock-door-worker-and-save-evidence.json');\n  247 |   await writeFile(evidencePath, JSON.stringify({\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-pan-dock-integration-20261003\\tests\\browser\\dedicated-loading-dock-door-player-build.spec.ts:244:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-pan-dock-integration-20261003\\tests\\browser\\dedicated-loading-dock-door-player-build.spec.ts:243:15"
-                    }
-                  ],
+                  "status": "passed",
+                  "duration": 40970,
+                  "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-03T02:18:29.689Z",
+                  "startTime": "2026-10-03T02:42:33.362Z",
                   "annotations": [],
                   "attachments": [
                     {
                       "name": "dedicated-loading-dock-door-worker-and-save-evidence",
                       "contentType": "application/json",
-                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-pan-dock-native-seven-results-20261003\\dedicated-loading-dock-doo-8b1f9-and-anchors-after-Save-Load\\attachments\\dedicated-loading-dock-door-worker-and-save-evidence-e1113a813d667dd37b33189d33df35df8ab404ea.json"
-                    },
-                    {
-                      "name": "error-context",
-                      "contentType": "text/markdown",
-                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-pan-dock-native-seven-results-20261003\\dedicated-loading-dock-doo-8b1f9-and-anchors-after-Save-Load\\error-context.md"
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-pan-dock-control-restored-results-20261003\\dedicated-loading-dock-doo-8b1f9-and-anchors-after-Save-Load\\attachments\\dedicated-loading-dock-door-worker-and-save-evidence-03157b7aad1778f22af4501f5682774c8a4998db.json"
                     }
-                  ],
-                  "errorLocation": {
-                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-pan-dock-integration-20261003\\tests\\browser\\dedicated-loading-dock-door-player-build.spec.ts",
-                    "column": 6,
-                    "line": 228
-                  }
+                  ]
                 }
               ],
-              "status": "unexpected"
+              "status": "expected"
             }
           ],
           "id": "f85d5e252fb2ae086952-d5b1f192ff3858643ec4",
@@ -416,11 +355,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-10-03T02:16:27.654Z",
-    "duration": 163857.911,
-    "expected": 5,
+    "startTime": "2026-10-03T02:40:26.348Z",
+    "duration": 168584.764,
+    "expected": 7,
     "skipped": 0,
-    "unexpected": 2,
+    "unexpected": 0,
     "flaky": 0
   }
 }
