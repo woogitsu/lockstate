@@ -26,9 +26,11 @@ test('opt-in actual paused minimap DOM identity across New, viewport, locale and
   if (!buildRoot || !productionSha || process.env['LOCKSTATE_MINIMAP_IDENTITY_AUDIT'] !== '1') throw Error('Exact compiled subject and explicit audit opt-in required');
   const observer = await observeDemandRoute(page, buildRoot);
   const receipt: Record<string, unknown> = { productionSha, buildRoot, observations: {}, complete: false, boundary: 'Actual DOM identity; no CPU/latency conclusion, no injected game state or renderer hooks.' };
+  const flush = () => writeFileSync(info.outputPath('minimap-identity-receipt.json'), JSON.stringify(receipt, null, 2));
   const observations = receipt['observations'] as Record<string, Observation>;
   const check = async (name: string) => {
     const result = await observe(page); observations[name] = result;
+    flush();
     expect.soft(result.sameChild, name).toBe(true); expect.soft(result.replacements, name).toBe(0);
     return result;
   };
@@ -46,21 +48,25 @@ test('opt-in actual paused minimap DOM identity across New, viewport, locale and
     await page.getByRole('button', { name: 'Rotate camera right', exact: true }).click();
     await expect.poll(() => page.locator('.hud-minimap__viewport').getAttribute('style')).not.toBe(initial.viewport);
     await check('changed-viewport');
-    await page.getByRole('button', { name: 'Save now', exact: true }).click();
-    await expect(page.locator('.save-panel__status')).toContainText('Saved');
-    await page.locator('.save-panel__item').first().getByRole('button', { name: 'Load', exact: true }).click();
-    await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
-    await check('loaded-paused');
     await page.locator('.language-control__cycle').click();
     await page.locator('.language-control__cycle').click();
     await expect(page.locator('.language-control__cycle')).toHaveAttribute('data-locale', 'pl');
     await expect.poll(() => page.locator('.hud-minimap__placeholder').textContent()).not.toBe(initial.text);
     await check('polish');
+    await page.locator('.language-control__cycle').click();
+    await expect(page.locator('.language-control__cycle')).toHaveAttribute('data-locale', 'en');
+    await page.locator('.display-scale__cycle').click();
+    await check('public-ui-scale');
+    await page.getByRole('button', { name: 'Save now', exact: true }).click();
+    await expect(page.locator('.save-panel__status')).toContainText('Saved');
+    await page.locator('.save-panel__item').first().getByRole('button', { name: 'Load', exact: true }).click();
+    await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
+    await check('loaded-paused');
     receipt['servedScripts'] = await observer.scripts();
     receipt['complete'] = info.errors.length === 0;
   } finally {
-    receipt['assets'] = await observer.read();
-    await page.screenshot({ path: info.outputPath('minimap-dom.png') });
-    writeFileSync(info.outputPath('minimap-identity-receipt.json'), JSON.stringify(receipt, null, 2));
+    receipt['assets'] = await observer.read().catch(error => ({ captureError: String(error) }));
+    await page.screenshot({ path: info.outputPath('minimap-dom.png') }).catch(error => { receipt['screenshotError'] = String(error); });
+    flush();
   }
 });
