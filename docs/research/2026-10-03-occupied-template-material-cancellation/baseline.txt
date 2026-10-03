@@ -1,0 +1,37 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-noncell-template-playability-audit-20261003
+
+ ❯ tests/integration/room-template-occupied-material-cancel.test.ts (4 tests | 2 failed) 662ms
+   × refuses JIT cancellation before refund or demolition of an occupied row, encodedLoad=false 185ms
+   × refuses JIT cancellation before refund or demolition of an occupied row, encodedLoad=true 168ms
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 2 passed (4)
+   Start at  03:13:48
+   Duration  3.02s (transform 808ms, setup 0ms, import 2.24s, tests 662ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/room-template-occupied-material-cancel.test.ts > refuses JIT cancellation before refund or demolition of an occupied row, encodedLoad=false
+ FAIL  tests/integration/room-template-occupied-material-cancel.test.ts > refuses JIT cancellation before refund or demolition of an occupied row, encodedLoad=true
+AssertionError: expected -1185 to be -1250 // Object.is equality
+
+- Expected
++ Received
+
+- -1250
++ -1185
+
+ ❯ tests/integration/room-template-occupied-material-cancel.test.ts:59:46
+     57|   send(runtime, { type: 'CancelMaterialPurchase', orderId: deliveryId …
+     58|   // Funds is an independent, short assertion before the full atomic s…
+     59|   expect(runtime.treasury.balanceMinorUnits).toBe(-1250);
+       |                                              ^
+     60|   const { kernel: _afterKernel, ...after } = captureSessionSnapshot(ru…
+     61|   expect(after).toEqual(before);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+Exit code: 1
