@@ -1,0 +1,18 @@
+﻿const fs=require('node:fs'),cp=require('node:child_process'),crypto=require('node:crypto');
+const source='src/ui/room-template-tool.ts',bytes=fs.readFileSync(source),hash=b=>crypto.createHash('sha256').update(b).digest('hex');
+const node='C:/Users/matma/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe',output='C:/Users/matma/AppData/Local/Temp/lockstate-template-identity-next-audit-20261004';
+const receipt={sourceCommit:'a0e88a2600ed0a1f25f7876f32c2761f5b73ef8c',originalSha256:hash(bytes),mutations:[]};
+const run=name=>{const r=cp.spawnSync(node,['node_modules/vitest/vitest.mjs','run','tests/unit/ui-room-template-session-preflight.test.ts','--maxWorkers=2'],{encoding:'utf8'});fs.writeFileSync(output+'/'+name+'.txt',r.stdout+r.stderr);return r.status;};
+cp.execFileSync('git',['switch','--detach',receipt.sourceCommit]);
+try {
+ for(const method of ['select','arm']) {
+  const original=bytes.toString('utf8');
+  const start=original.indexOf('public '+method+'('),end=original.indexOf('\n  public ',start+1);
+  const block=original.slice(start,end),target=block.indexOf('this.busy = undefined;');
+  if(target<0)throw Error('scoped actual producer absent');
+  fs.writeFileSync(source,original.slice(0,start)+block.slice(0,target)+block.slice(target+'this.busy = undefined;'.length)+original.slice(end));
+  const exit=run('omission-'+method);receipt.mutations.push({method,exit,mutatedSha256:hash(fs.readFileSync(source))});
+  if(exit!==1)throw Error('negative did not fail');fs.writeFileSync(source,bytes);
+ }
+}finally{fs.writeFileSync(source,bytes);receipt.restoredSha256=hash(fs.readFileSync(source));receipt.byteExactRestored=fs.readFileSync(source).equals(bytes);receipt.restoredExit=run('restored');fs.writeFileSync(output+'/mutation-receipt.json',JSON.stringify(receipt,null,2)+'\n');cp.execFileSync('git',['switch','codex/template-identity-next-audit-20261004']);}
+console.log(JSON.stringify(receipt,null,2));
