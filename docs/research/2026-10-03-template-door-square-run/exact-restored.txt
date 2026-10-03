@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-square-run-audit-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  14 passed (14)
+   Start at  09:59:13
+   Duration  4.91s (transform 940ms, setup 0ms, import 2.44s, tests 2.33s, environment 0ms)
+
