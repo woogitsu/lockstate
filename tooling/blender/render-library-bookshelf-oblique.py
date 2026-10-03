@@ -55,4 +55,3 @@ if __name__ == '__main__':
         print('LIBRARY_BOOKSHELF_VERIFY72 actual cameras/four oriented rectangles/outward evaluated surfaces', flush=True)
     else:
         exporter.main()
-
