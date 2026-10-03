@@ -1,0 +1,19 @@
+00:09.844  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-modern-ground-wall-material-study-20261003\assets\source\blender\wall.square.brick.full.blend"
+00:10.281  render           | Saved: 'C:\Users\matma\Documents\Rozwój gier\lockstate-modern-ground-wall-material-study-20261003\docs\research\2026-10-03-modern-square-wall-material-study\before-workbench-yaw-45-elev45.png'
+00:10.328  render           | Saved: 'C:\Users\matma\Documents\Rozwój gier\lockstate-modern-ground-wall-material-study-20261003\docs\research\2026-10-03-modern-square-wall-material-study\before-workbench-yaw+135-elev45.png'
+blender.exe : C:\Users\matma\Documents\Rozwój gier\lockstate-modern-ground-wall-material-study-20261003\tooling\blender
+\render-modern-square-wall-study.py:86: DeprecationWarning: 'World.use_nodes' is expected to be removed in Blender 6.0
+At line:2 char:1
++ & 'C:\Program Files\Blender Foundation\Blender 5.2\blender.exe' --bac ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (C:\Users\matma\... in Blender 6.0:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  world.use_nodes = True
+00:12.719  render           | Saved: 'C:\Users\matma\Documents\Rozwój gier\lockstate-modern-ground-wall-material-study-20261003\docs\research\2026-10-03-modern-square-wall-material-study\after-cycles-literal-graphs-yaw-45-elev45.png'
+00:15.094  render           | Saved: 'C:\Users\matma\Documents\Rozwój gier\lockstate-modern-ground-wall-material-study-20261003\docs\research\2026-10-03-modern-square-wall-material-study\after-cycles-literal-graphs-yaw+135-elev45.png'
+Info: Saved as "draft.wall.square.brick.full.literal-graphs.blend"
+ACTUAL_WALL_WORKBENCH_CYCLES_TWO_POSES_COMPLETE [{"stage": "before-workbench", "yawDegrees": -45, "elevationDegrees": 45, "image": "docs/research/2026-10-03-modern-square-wall-material-study/before-workbench-yaw-45-elev45.png", "sha256": "b17091c17260d041d14d4594e60a670bc4e0465412855b101a9b97f54b34762f", "renderSeconds": 0.4142938999575563, "publishedSha256": "b17091c17260d041d14d4594e60a670bc4e0465412855b101a9b97f54b34762f", "byteExactPublishedWorkbench": true}, {"stage": "before-workbench", "yawDegrees": 135, "elevationDegrees": 45, "image": "docs/research/2026-10-03-modern-square-wall-material-study/before-workbench-yaw+135-elev45.png", "sha256": "b9c85e2402ae39ce93d6eb925e50ab81e342f8dc89ee2eb9613a674d89d88578", "renderSeconds": 0.06180349999340251, "publishedSha256": "b9c85e2402ae39ce93d6eb925e50ab81e342f8dc89ee2eb9613a674d89d88578", "byteExactPublishedWorkbench": true}, {"stage": "after-cycles-literal-graphs", "yawDegrees": -45, "elevationDegrees": 45, "image": "docs/research/2026-10-03-modern-square-wall-material-study/after-cycles-literal-graphs-yaw-45-elev45.png", "sha256": "fac59cbc0199ee080c6a2f3d99435d459a70d9be4f4e7cf795fd55194c037eea", "renderSeconds": 2.3683459000312723}, {"stage": "after-cycles-literal-graphs", "yawDegrees": 135, "elevationDegrees": 45, "image": "docs/research/2026-10-03-modern-square-wall-material-study/after-cycles-literal-graphs-yaw+135-elev45.png", "sha256": "62c8f381f879d0c72028181113f7fa195118f05bf5c5b42f8000ea05feffba82", "renderSeconds": 2.3680113000446}]
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
