@@ -1,0 +1,64 @@
+﻿{
+    "source":  "0c8623bb8a4c5c098a4123e72845b928a1901002",
+    "base":  "e93abddb62d1f8a35e5ef94de48abe0c5973c3d3",
+    "focusedPassed":  131,
+    "appExit":  0,
+    "toolsExit":  0,
+    "omissionFailed":  3,
+    "omissionPassed":  73,
+    "restoredPassed":  76,
+    "textContrastPairs":  32,
+    "focusContrastPairs":  8,
+    "nonPaintDeclarations":  2152,
+    "docsPassed":  26,
+    "docsInheritedFailed":  1,
+    "browserExecuted":  false,
+    "buildExecuted":  false,
+    "visualAcceptance":  "pending real matched FullHD captures",
+    "files":  [
+                  {
+                      "file":  "actual-token-omission.txt",
+                      "sha256":  "fa0bb233f81bbf2add67f4429cc4c52f81f2f8e6e6e93dcf9833590f194ca025"
+                  },
+                  {
+                      "file":  "docs-terminal.txt",
+                      "sha256":  "d8104a995cc1f2f9cf9bb2235b7c4ea1e0f181eacb9d50deb297591cdfce9cf0"
+                  },
+                  {
+                      "file":  "exact-restored.txt",
+                      "sha256":  "eb2b2ec79b0a5571a9f89877f234b5d4a6806b992af43d5c5faf428628b1d226"
+                  },
+                  {
+                      "file":  "executed-source-contract.cjs.txt",
+                      "sha256":  "bfab32f94bb934d70c9eccd3d1f59011a0d34df2c8b3adb168203c3f20659131"
+                  },
+                  {
+                      "file":  "executed-token-omission.cjs.txt",
+                      "sha256":  "c9996e26a9a48b6de560827892982afedbb72c1b136b495346165b425905241b"
+                  },
+                  {
+                      "file":  "initial-newline-comparator-error.txt",
+                      "sha256":  "3a4386fe46afda17f2636ed5b39ac28dac44af329d691db81b86db839ca114eb"
+                  },
+                  {
+                      "file":  "mutation-receipt.json",
+                      "sha256":  "931bf530eb1661c45e456ea3f6e75708cf1138d149d95976aadfe862043998d4"
+                  },
+                  {
+                      "file":  "source-contract.json",
+                      "sha256":  "0407b7231f3bfd43d838627a690bc62c26ca982313d5c8202267d4959daa68eb"
+                  },
+                  {
+                      "file":  "token-theme-layout-green.txt",
+                      "sha256":  "f3fa8eb7bffdc5db394181ebd8d1631e9e26c714d277b8962691aff1f67af849"
+                  },
+                  {
+                      "file":  "types-app.txt",
+                      "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                  },
+                  {
+                      "file":  "types-tools.txt",
+                      "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                  }
+              ]
+}
