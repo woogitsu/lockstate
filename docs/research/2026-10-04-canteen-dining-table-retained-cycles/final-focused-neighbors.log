@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-canteen-table-cycles-20261004
+
+··········································································-············
+
+ Test Files  12 passed (12)
+      Tests  86 passed | 1 skipped (87)
+   Start at  00:53:14
+   Duration  4.21s (transform 2.85s, setup 0ms, import 6.03s, tests 2.90s, environment 1ms)

@@ -76,8 +76,13 @@ it('preserves original Canteen dining table geometry/materials/modifiers and pub
   expect(obliqueAssetIdForObject('object.dining-table')).toBe('furniture.dining.table.wooden');
   const catalog = parseObliqueModuleCatalog(JSON.parse(readFileSync(new URL('public/game-content/oblique-furniture.canteen-dining-table.v1.json', root), 'utf8')));
   expect(catalog.assetId).toBe('furniture.dining.table.wooden');
-  expect(catalog.source).toBe(provenance.source);
-  expect(catalog.sourceSha256).toBe(provenance.sourceSha256);
+  const soft = JSON.parse(readFileSync(new URL('assets/source/blender/furniture.canteen.dining-table.soft-light.provenance.json', root), 'utf8')) as {source:string;sourceSha256:string;retainedSource:string;retainedSourceSha256:string};
+  expect(soft.retainedSource).toBe(provenance.source);
+  expect(soft.retainedSourceSha256).toBe(provenance.sourceSha256);
+  expect(catalog.source).toBe(soft.source);
+  expect(catalog.sourceSha256).toBe('4f92eb8cebdb7f5d343f5ca49869c317535867932f05ab805bbd33b60144728f');
+  expect(hash(readFileSync(new URL(soft.source, root)))).toBe(catalog.sourceSha256);
+  expect(soft.sourceSha256).toBe(catalog.sourceSha256);
   expect(catalog.resolutionPx).toEqual([256, 256]);
   expect(catalog.nominalPixelsPerTile).toBe(64);
   expect(catalog.cameraTargetTiles).toEqual([1.5, 1, .4725]);
