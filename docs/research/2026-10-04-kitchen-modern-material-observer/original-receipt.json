@@ -1,0 +1,54 @@
+{
+  "dedicated-kitchen-stove-worker-completed-fullhd.png": {
+    "sha256": "05bade087cc9dd3c946df62ec63429417eeee68520a4bc0951440384debbd28b",
+    "absolutePath": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-native-20261004\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\dedicated-kitchen-stove-worker-completed-fullhd.png"
+  },
+  "dedicated-kitchen-stove-loaded-fullhd.png": {
+    "sha256": "b3d03acb8bd7d9d9f82ff86a49c8df5b455ce14ac1f08c2c76e49fdbd8bcf202",
+    "absolutePath": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-native-20261004\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\dedicated-kitchen-stove-loaded-fullhd.png"
+  },
+  "kitchen-paused-before-save.json": {
+    "sha256": "eadf2fc87aeee9f77d2fce24ecdeda6e4de4cc5a93e85a4bab8a7982a800ad80",
+    "absolutePath": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-native-20261004\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\kitchen-paused-before-save.json"
+  },
+  "kitchen-paused-after-load.json": {
+    "sha256": "0de36b122413961615bc0787c66fccf89b3742115da1c6da9fc503c969e37bc1",
+    "absolutePath": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-native-20261004\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\kitchen-paused-after-load.json"
+  },
+  "kitchen-modern-actual-network-and-htmlimage-evidence.json": {
+    "sha256": "a10fb534cba35678b1053698bf0fba52a2297fabda903edfec6d607f22920caa",
+    "absolutePath": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-native-20261004\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\kitchen-modern-actual-network-and-htmlimage-evidence.json"
+  },
+  "oldNativeResult": {
+    "compiled": "21dba6ee55823ff1283c0b47254ff8d01e2a6ca9",
+    "capacity": "GREEN",
+    "q0": "RED only legacy RGB soft expectations",
+    "q1": "serial not run",
+    "stoveBeforeAndAfter": [
+      1,
+      0
+    ],
+    "fridgeBeforeAndAfter": [
+      0,
+      394
+    ],
+    "unchangedFloors": {
+      "stove0": [
+        500,
+        25
+      ],
+      "stove1": [
+        50,
+        50
+      ],
+      "fridge0": [
+        350,
+        350
+      ],
+      "fridge1": [
+        800,
+        100
+      ]
+    }
+  }
+}

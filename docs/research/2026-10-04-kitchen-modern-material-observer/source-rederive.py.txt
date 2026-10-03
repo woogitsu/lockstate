@@ -1,0 +1,78 @@
+from pathlib import Path
+from PIL import Image,ImageDraw
+import json,math,collections,hashlib,re
+ROOT=Path.cwd()
+inputs=[]
+def frame(kind,yaw):
+ d=json.loads((ROOT/f'public/game-content/oblique-furniture.kitchen-{kind}.v1.json').read_text())
+ f=next(x for x in d['frames'] if x['yawDegrees']==yaw and x['elevationDegrees']==40)
+ raw=(ROOT/('public'+f['image'])).read_bytes()
+ assert hashlib.sha256(raw).hexdigest()==f['sha256']
+ inputs.append({'image':f['image'],'sha256':f['sha256']})
+ return Image.open(ROOT/('public'+f['image'])).convert('RGBA')
+def proj(x,y,z,yaw,target):
+ a=math.radians(yaw);e=math.radians(40)
+ return (128+64*(math.cos(a)*x+math.sin(a)*y),128-64*(-math.sin(a)*math.sin(e)*x+math.cos(a)*math.sin(e)*y+math.cos(e)*(z-target)))
+def palettepoly(im,poly):
+ mask=Image.new('1',im.size);ImageDraw.Draw(mask).polygon(poly,fill=1)
+ colors=[]
+ for y in range(1,255):
+  for x in range(1,255):
+   if all(mask.getpixel((x+dx,y+dy)) for dx in [-1,0,1] for dy in [-1,0,1]):
+    rgb=im.getpixel((x,y))
+    if rgb[3]==255:colors.append(rgb[:3])
+ return set(colors),colors
+# Exact authored cross top planes, nominal non-bevel interior.
+pals={'enamel':set(),'iron':set(),'freezer':set(),'vent':set()}
+for yaw in [30,60,300,330]:
+ stove=frame('stove',yaw);fridge=frame('fridge',yaw)
+ # Retained body side plane and authored side vent/slat region. Polygon source points expose original neutral enamel.
+ side=-1 if yaw>=180 else 1
+ poly=[proj(side*.897,y,z,yaw,1.1230000257492065) for y,z in [(-.32,.20),(.32,.20),(.32,1.30),(-.32,1.30)]]
+ # Nonmetal gray material is frozen only from this visible source face; its vents are excluded by chromatic distinction.
+ p,c=palettepoly(stove,poly);p={rgb for rgb in p if 0<=rgb[0]-rgb[1]<=3 and 0<=rgb[1]-rgb[2]<=6}
+ pals['enamel']|=p
+ # Cross top polygons are too thin for the3x3 inset: sample actual nominal top polygon interior at pixel centres.
+ pts=[]
+ for cx,cy in [(-.45,-.165),(-.45,.15),(.45,-.165),(.45,.15)]:
+  for w,h,z in [(.374,.018,1.506),(.018,.294,1.508)]:
+   po=[proj(cx+dx,cy+dy,z,yaw,1.1230000257492065) for dx,dy in [(-w/2,-h/2),(w/2,-h/2),(w/2,h/2),(-w/2,h/2)]]
+   mask=Image.new('1',(256,256));ImageDraw.Draw(mask).polygon(po,fill=1)
+   for y in range(256):
+    for x in range(256):
+     if mask.getpixel((x,y)):
+      rgb=stove.getpixel((x,y))
+      if rgb[3]==255:pts.append(rgb[:3])
+ p=set(pts);p={rgb for rgb in p if rgb[0]<100 and rgb[0]<=rgb[1]<=rgb[2]}
+ pals['iron']|=p
+ # Freezer front inner surface strictly inside retained gasket perimeter.
+ poly=[proj(x,-.42,z,yaw,1.1999999284744263) for x,z in [(-.30,1.60),(.30,1.60),(.30,2.20),(-.30,2.20)]]
+ p,c=palettepoly(fridge,poly);p={rgb for rgb in p if rgb[1]>rgb[0] and rgb[2]>rgb[1]};pals['freezer']|=p
+ # Same authored side louvre whole assembly ROI, actualSource material steel gradient only.
+ poly=[proj(side*.417,y,z,yaw,1.1999999284744263) for y,z in [(-.20,.12),(.18,.12),(.18,.465),(-.20,.465)]]
+ p,c=palettepoly(fridge,poly);p={rgb for rgb in p if rgb[0]<160 and 0<rgb[1]-rgb[0]<=15 and 0<=rgb[2]-rgb[1]<=8};pals['vent']|=p
+ print(yaw,'palette',[(k,len(v)) for k,v in pals.items()])
+for kind,p in pals.items():
+ print(kind,'ranges',[(min(c[i] for c in p),max(c[i] for c in p)) for i in range(3)])
+rects={'enamel':(735,490,50,35),'iron':(790,390,45,30),'freezer':(890,495,25,35),'vent':(843,606,33,27)}
+
+hot=set()
+for yaw in [30,60,300,330]:
+ im=frame('stove',yaw)
+ for cx,cy in [(-.45,-.165),(-.45,.15),(.45,-.165),(.45,.15)]:
+  poly=[proj(cx+.11*math.cos(t*math.pi/16),cy+.09*math.sin(t*math.pi/16),1.44,yaw,1.1230000257492065) for t in range(32)]
+  mask=Image.new('1',(256,256));ImageDraw.Draw(mask).polygon(poly,fill=1)
+  for y in range(256):
+   for x in range(256):
+    if mask.getpixel((x,y)):
+     r,g,b,a=im.getpixel((x,y))
+     if a==255 and r>g>b:hot.add((r,g,b))
+pals['hot']=hot
+
+source=(ROOT/'tests/browser/kitchen-modern-material-observer.ts').read_text()
+for kind in ['enamel','iron','freezer','hot']:
+ actual=sorted(r*65536+g*256+b for r,g,b in pals[kind])
+ frozen=json.loads(re.search(r'KITCHEN_'+kind.upper()+r'_SOURCE_RGB_KEYS: readonly number\[\] = (\[[^;]+);',source).group(1))
+ assert actual==frozen,kind+' source palette differs'
+ print(kind,len(actual),'source keys byte-exactly rederived')
+print(json.dumps({'inputs':list({row['image']:row for row in inputs}.values())},indent=2))
