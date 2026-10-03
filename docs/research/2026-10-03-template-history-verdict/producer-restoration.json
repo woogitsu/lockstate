@@ -1,0 +1,20 @@
+[
+  {
+    "name": "bridge",
+    "path": "src/ui/room-template-world-bridge.ts",
+    "originalSha256": "c581ca1ac8016b2a58a5eac21ef544c8bfbb4f0d90d8716a2aa02d907c8d18a1",
+    "matches": 1,
+    "negativeExit": 1,
+    "restoredSha256": "c581ca1ac8016b2a58a5eac21ef544c8bfbb4f0d90d8716a2aa02d907c8d18a1",
+    "restoredExit": 0
+  },
+  {
+    "name": "main",
+    "path": "src/main.ts",
+    "originalSha256": "dd4eabcc7822ad31ca35adba9cdf25049c1f527b44fcd6e289e7e215b182887e",
+    "matches": 1,
+    "negativeExit": 1,
+    "restoredSha256": "dd4eabcc7822ad31ca35adba9cdf25049c1f527b44fcd6e289e7e215b182887e",
+    "restoredExit": 0
+  }
+]

@@ -79,4 +79,17 @@ commands, verdicts or budgets changed.
 application/tools typechecks and production client/worker build exit0. The first
 build had a Windows shim-path setup failure (`production-build-shim-path-error.log`);
 resolving its existing absolute path through the current directory fixed it.
-Producer omission/byte-exact restoration and ROOT native acceptance still pending.
+Two independent production omissions ran sequentially on detached frozen
+5c9f1019da (no mutant branch/WIP publication):
+
+- bridge same-origin `worldRevision` guard removed:4 RED/4 legal GREEN;
+  exact-restored8/8 GREEN (`bridge-producer-omission.log`, `bridge-exact-restored8.log`).
+- named main world-revision adapter omitted:4 RED/4 legal GREEN;
+  exact-restored8/8 GREEN (`main-producer-omission.log`, `main-exact-restored8.log`).
+
+Each mutation matched exactly one producer, restored entire original bytes in
+finally, and recorded identical before/after SHA256 in `producer-restoration.json`.
+Production diff against frozen checkpoint is empty. `final-exact-restored112.log`:
+112/112 GREEN; `strict-exact-restored.log`:exit0. The successful production build
+above consumed byte-identical final source; no browser/server/native run claimed.
+ROOT native acceptance remains pending.
