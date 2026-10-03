@@ -25,7 +25,10 @@ describe('authored Cell cot variant catalog', () => {
   it('preserves the two-square authored source and all 72 supported camera poses', () => {
     expect(defaultObjectRegistry.getById('object.bed')?.footprint).toEqual({ width: 1, height: 2 });
     expect(catalog.assetId).toBe('furniture.cell.cot.single');
-    expect(catalog.source).toBe('assets/source/blender/furniture.cell.cot.single.blend');
+    expect(catalog.source).toBe('assets/source/blender/furniture.cell.cot.single.angled-detail.blend');
+    const physical = JSON.parse(readFileSync(new URL('assets/source/blender/furniture.cell.cot.single.angled-detail.provenance.json', root), 'utf8')) as {originalSource:string;originalSourceSha256:string};
+    expect(physical.originalSource).toBe('assets/source/blender/furniture.cell.cot.single.blend');
+    expect(physical.originalSourceSha256).toBe(sha256(readFileSync(new URL(physical.originalSource, root))));
     expect(catalog.sourceSha256).toBe(sha256(readFileSync(new URL(catalog.source, root))));
     expect(catalog.resolutionPx).toEqual([256, 256]);
     expect(catalog.nominalPixelsPerTile).toBe(64);
