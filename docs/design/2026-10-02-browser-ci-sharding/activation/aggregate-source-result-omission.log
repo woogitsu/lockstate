@@ -1,0 +1,26 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/browser-ci-sharding-activation-20261003
+
+ ❯ tests/foundation/browser-ci-sharding-contract.test.ts (7 tests | 1 failed) 146ms
+     × actual aggregate shell accepts same-subject success and refuses every missing/failed/cancelled boundary 73ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/foundation/browser-ci-sharding-contract.test.ts > owner-approved browser CI sharding contract (#1983) > actual aggregate shell accepts same-subject success and refuses every missing/failed/cancelled boundary
+AssertionError: SOURCE_RESULT=failure: expected +0 not to be +0 // Object.is equality
+ ❯ tests/foundation/browser-ci-sharding-contract.test.ts:104:175
+    102|     };
+    103|     expect(run({})).toBe(0);
+    104|     for (const key of ['SOURCE_RESULT', 'ARTIFACT_RESULT']) for (const…
+       |                                                                                                                                                                               ^
+    105|     for (const key of ['SOURCE_SHA', 'ARTIFACT_SHA']) for (const value…
+    106|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 6 passed (7)
+   Start at  10:03:12
+   Duration  379ms (transform 21ms, setup 0ms, import 99ms, tests 146ms, environment 0ms)
+
