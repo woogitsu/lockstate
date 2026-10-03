@@ -100,6 +100,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 
 | Record | Question it answered | Decision it fed |
 | --- | --- | --- |
+| [2026-10-03 Reception waiting armchair](./2026-10-03-reception-waiting-armchair/README.md) | Does the existing Reception context retain original chair geometry while adding broad connected waiting-chair arms? | All52parts/four graphs retained,72poses and actual producer RED/exact restore; native pending. |
 | 2026-10-03 | [Reception context and Blender guards](./2026-10-03-reception-context-blender-guards/README.md) | Actual wrapper guard RED/source fix GREEN, unchanged source and144PNG; Reception context integration. |
 | [World held arrow and catalogue focus](./2026-10-03-world-roving-held-arrow/README.md) | Does World stop an already-held camera arrow when a grouped catalogue radio takes focus? | Source reproduction of missing #1943 World parity; preserve ordinary-button/WASD control without a new layout rule. |
 | [2026-10-03 empty Angled image demand](./2026-10-03-oblique-empty-asset-demand/README.md) | Does an empty Angled scene request unrelated model textures before any world frame? | Actual eager producer: 64 selected images; demand-only serialized loading: 8 GREEN, six real producer negatives and byte restoration, 56 neighboring controls. No native latency/GPU claim. |

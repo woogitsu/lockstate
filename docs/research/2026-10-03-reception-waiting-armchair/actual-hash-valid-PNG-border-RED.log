@@ -1,0 +1,35 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-visitation-fixture-model-20261003
+
+ ❯ tests/unit/oblique-reception-waiting-armchair-art.test.ts (2 tests | 1 failed) 145ms
+   × loads the dedicated descriptor and decodes 72 complete unclipped canonical PNG poses 15ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  14:04:51
+   Duration  508ms (transform 114ms, setup 0ms, import 229ms, tests 145ms, environment 0ms)
+
+[ELIFECYCLE] Test failed. See above for more details.
+$ vitest run "tests/unit/oblique-reception-waiting-armchair-art.test.ts"
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-reception-waiting-armchair-art.test.ts > loads the dedicated descriptor and decodes 72 complete unclipped canonical PNG poses
+AssertionError: Reception armchair PNG transparent border: /assets/environment/oblique/furniture.reception.waiting-armchair-yaw+00-elev20.1e576cb75764.png: expected 255 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 255
+
+ ❯ tests/unit/oblique-reception-waiting-armchair-art.test.ts:91:134
+     89|         const alpha = rows[y * stride + 1 + x * 4 + 3]!;
+     90|         if (alpha > 0) occupied++;
+     91|         if (x === 0 || x === 255 || y === 0 || y === 255) expect(alpha…
+       |                                                                                                                                      ^
+     92|       }
+     93|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

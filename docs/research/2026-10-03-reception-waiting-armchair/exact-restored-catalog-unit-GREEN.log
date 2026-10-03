@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-visitation-fixture-model-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  14:04:53
+   Duration  823ms (transform 62ms, setup 0ms, import 162ms, tests 538ms, environment 0ms)
+
+$ vitest run "tests/unit/oblique-reception-waiting-armchair-art.test.ts"
