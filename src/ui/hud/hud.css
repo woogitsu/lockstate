@@ -1754,6 +1754,10 @@
   cursor: pointer;
 }
 .hud-template button[aria-pressed='true'] { border-color: var(--accent); color: var(--accent); }
+.hud-template button.hud-template__card:not([aria-pressed='true']):not(:hover):not(:active):not(:focus-visible):not(:disabled):not([aria-disabled='true']) {
+  background: transparent;
+  border-color: var(--border-hairline);
+}
 .hud-template__diagram { display: grid; gap: 2px; width: max-content; margin: var(--space-3) auto 0; }
 .hud-template__tile { box-sizing: border-box; width: 1.5rem; aspect-ratio: 1; background: var(--surface-sunken); border: var(--hairline) solid var(--border); }
 .hud-template__tile--wall { background: var(--text-muted); }
