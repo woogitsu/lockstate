@@ -885,5 +885,14 @@
     "sourceSha256": "79182d524d5fd4d00fc4692b2860bc6a157a285e5f2b2370a7f129c1f7b7fc3c",
     "archivedBytes": 11572,
     "archivedSha256": "79182d524d5fd4d00fc4692b2860bc6a157a285e5f2b2370a7f129c1f7b7fc3c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-final-angled-proof-document-gates-20261003.txt",
+    "archived": "final-proof-document-gates-green/console.txt",
+    "sourceBytes": 580,
+    "sourceSha256": "2b8635dbf6c2e376855cf6039e210ef0bb79ef772252ae76f767bc728f1569ed",
+    "archivedBytes": 290,
+    "archivedSha256": "39586f4d69a8588036d6f0dd1bc8d3ecae2052e74fe2b10521e74386814e1b49",
+    "conversion": "UTF16LE console to UTF8"
   }
 ]
