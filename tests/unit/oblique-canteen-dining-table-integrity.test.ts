@@ -37,8 +37,11 @@ it('retains the original authored dining mesh set and exports the authoritative3
   const footprint = defaultObjectRegistry.getById('object.dining-table')!.footprint;
   expect(provenance.footprintTiles).toEqual([footprint.width, footprint.height]);
   expect(catalog.assetId).toBe('furniture.dining.table.wooden');
-  expect(catalog.source).toBe(provenance.source);
-  expect(catalog.sourceSha256).toBe(provenance.sourceSha256);
+  const physical = JSON.parse(readFileSync(new URL('assets/source/blender/furniture.canteen.dining-table.angled-detail.provenance.json', root), 'utf8')) as {originalSource:string;originalSourceSha256:string;source:string;sourceSha256:string};
+  expect(physical.originalSource).toBe(provenance.source);
+  expect(physical.originalSourceSha256).toBe(provenance.sourceSha256);
+  expect(catalog.source).toBe(physical.source);
+  expect(catalog.sourceSha256).toBe(physical.sourceSha256);
   expect(catalog.cameraTargetTiles).toEqual([footprint.width / 2, footprint.height / 2, 0.4725]);
   expect(catalog.nominalPixelsPerTile).toBe(64);
   expect(catalog.resolutionPx).toEqual([256, 256]);
