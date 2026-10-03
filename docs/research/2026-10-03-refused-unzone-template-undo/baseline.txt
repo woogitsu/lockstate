@@ -1,0 +1,32 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-template-next-construction-audit-20261003
+
+ ❯ tests/integration/refused-unzone-template-undo.test.ts (4 tests | 2 failed) 364ms
+   × occupied template refusal leaves independent Undo selected: saved=false refused=true 78ms
+   × occupied template refusal leaves independent Undo selected: saved=true refused=true 75ms
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 2 passed (4)
+   Start at  04:40:24
+   Duration  4.91s (transform 2.66s, setup 0ms, import 4.42s, tests 364ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/refused-unzone-template-undo.test.ts > occupied template refusal leaves independent Undo selected: saved=false refused=true
+ FAIL  tests/integration/refused-unzone-template-undo.test.ts > occupied template refusal leaves independent Undo selected: saved=true refused=true
+AssertionError: expected 'completed' to be 'cancelled' // Object.is equality
+
+Expected: "cancelled"
+Received: "completed"
+
+ ❯ tests/integration/refused-unzone-template-undo.test.ts:49:77
+     47|     }
+     48|     send(runtime, { type: 'Undo' });
+     49|     expect(runtime.construction.getOrder('latest-independent-wall')?.s…
+       |                                                                             ^
+     50|     expect(runtime.placedObjects.getSnapshot()).toEqual(owners);
+     51|     expect(runtime.roomTemplates.snapshot()).toEqual(templates);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
