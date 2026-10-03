@@ -1,0 +1,260 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\playwright.artifact.config.ts",
+    "rootDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-staff-chair-v9-integration-20261003/tests/browser",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "json"
+      ],
+      [
+        "line"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/matma/AppData/Local/Temp/lockstate-modern-integrated-21d-kitchen-native-20261004",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-staff-chair-v9-integration-20261003/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "/(?:production-artifact|rotated-security-console-player-build|infirmary-player-build|room-template-live-orientation|room-plan-dialog-escape|canteen-dining-table-player-build|room-plan-native-picker|shower-head-player-build|live-view-held-native-arrow|wooden-bench-player-build|live-view-native-popup-held-key|hud-separator-held-arrow|wooden-chair-player-build|build-category-native-camera|generic-wooden-rack-player-build|build-category-native-popup-held-key|build-category-native-typeahead|bookshelf-player-build|utility-panel-player-build|hud-layout-menu-fullhd|generic-office-desk-player-build|oblique-build-drag-under-hud|dedicated-kitchen-stove-player-build|live-view-native-mouse-target|oblique-object-area-drag-under-hud|dedicated-kitchen-fridge-player-build|dedicated-kitchen-prep-counter-player-build|room-preview-retained-hover-fit|oblique-square-wall-native-footprint|dedicated-laundry-washing-machine-player-build|camera-wheel-axis-native|oblique-camera-gameout-native|default-waste-bin-player-build|navigation-drawer-escape-native|dedicated-cell-toilet-player-build|dedicated-utility-panel-player-build|room-template-world-camera-origin|dedicated-office-desk-player-build|room-template-renderer-preflight-receipt|dedicated-medicine-cabinet-player-build|dedicated-security-console-player-build|dedicated-medical-bed-player-build|dedicated-loading-dock-door-player-build|dedicated-camera-pan-player|oblique-pending-wall-player|room-template-renderer-stationary-hover|world-construction-chord-release|room-template-session-preflight|world-build-session-ownership|cell-cot-player-build|room-template-second-touch-ownership|hired-guard-player-build|room-template-history-verdict-player|room-template-numeric-held-primary|common-room-upholstered-player-build)\\.spec\\.ts$/"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 1,
+    "webServer": {
+      "command": "\"C:\\\\Users\\\\matma\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\node\\\\bin\\\\node.exe\" \"C:\\\\Users\\\\matma\\\\Documents\\\\Rozwój gier\\\\lockstate-1382-doc-anchor-2026-09-24\\\\node_modules\\\\.pnpm\\\\vite@8.2.2_@types+node@24.10.1_esbuild@0.28.1\\\\node_modules\\\\vite\\\\bin\\\\vite.js\" preview --port 5386 --strictPort --host 127.0.0.1",
+      "cwd": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\",
+      "env": {
+        "CLOUDFLARE_ENV": "production"
+      },
+      "url": "http://127.0.0.1:5386/",
+      "reuseExistingServer": false,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "dedicated-kitchen-stove-player-build.spec.ts",
+      "file": "dedicated-kitchen-stove-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player creates storage and delivery capacity before Kitchen",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 42283,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T23:04:14.211Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3b02ef91fdd82912db31-9c4343400423743c56c9",
+          "file": "dedicated-kitchen-stove-player-build.spec.ts",
+          "line": 221,
+          "column": 1
+        },
+        {
+          "title": "player builds Kitchen at quarterTurns0 and retains stove and fridge detail palettes and all completed owners after Save/Load",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 48660,
+                  "error": {
+                    "message": "Error: stove enamel body after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m500\u001b[39m\nReceived:   \u001b[31m1\u001b[39m",
+                    "stack": "Error: stove enamel body after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m500\u001b[39m\nReceived:   \u001b[31m1\u001b[39m\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts:208:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts:207:16",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts",
+                      "column": 6,
+                      "line": 208
+                    },
+                    "snippet": "  206 |   }, null, 2));\n  207 |   beforePixels.forEach((count, index) => expect.soft(count, `stove ${index === 0 ? \"enamel body\" : \"cast-iron support\"} after construction`)\n> 208 |     .toBeGreaterThan(quarterTurns === 0 ? index === 0 ? 500 : 25 : 50));\n      |      ^\n  209 |   fridgeBefore.forEach((count, index) => expect.soft(count, `fridge ${index === 0 ? 'freezer panel' : 'side louvres'} after construction`)\n  210 |     .toBeGreaterThan(quarterTurns === 0 ? 350 : index === 0 ? 800 : 100));\n  211 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts",
+                        "column": 6,
+                        "line": 208
+                      },
+                      "message": "Error: stove enamel body after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m500\u001b[39m\nReceived:   \u001b[31m1\u001b[39m\n\n  206 |   }, null, 2));\n  207 |   beforePixels.forEach((count, index) => expect.soft(count, `stove ${index === 0 ? \"enamel body\" : \"cast-iron support\"} after construction`)\n> 208 |     .toBeGreaterThan(quarterTurns === 0 ? index === 0 ? 500 : 25 : 50));\n      |      ^\n  209 |   fridgeBefore.forEach((count, index) => expect.soft(count, `fridge ${index === 0 ? 'freezer panel' : 'side louvres'} after construction`)\n  210 |     .toBeGreaterThan(quarterTurns === 0 ? 350 : index === 0 ? 800 : 100));\n  211 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts:208:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts:207:16"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts",
+                        "column": 6,
+                        "line": 208
+                      },
+                      "message": "Error: stove cast-iron support after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m25\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  206 |   }, null, 2));\n  207 |   beforePixels.forEach((count, index) => expect.soft(count, `stove ${index === 0 ? \"enamel body\" : \"cast-iron support\"} after construction`)\n> 208 |     .toBeGreaterThan(quarterTurns === 0 ? index === 0 ? 500 : 25 : 50));\n      |      ^\n  209 |   fridgeBefore.forEach((count, index) => expect.soft(count, `fridge ${index === 0 ? 'freezer panel' : 'side louvres'} after construction`)\n  210 |     .toBeGreaterThan(quarterTurns === 0 ? 350 : index === 0 ? 800 : 100));\n  211 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts:208:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts:207:16"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts",
+                        "column": 6,
+                        "line": 210
+                      },
+                      "message": "Error: fridge freezer panel after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m350\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  208 |     .toBeGreaterThan(quarterTurns === 0 ? index === 0 ? 500 : 25 : 50));\n  209 |   fridgeBefore.forEach((count, index) => expect.soft(count, `fridge ${index === 0 ? 'freezer panel' : 'side louvres'} after construction`)\n> 210 |     .toBeGreaterThan(quarterTurns === 0 ? 350 : index === 0 ? 800 : 100));\n      |      ^\n  211 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n  212 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();\n  213 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts:210:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts:209:16"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts",
+                        "column": 6,
+                        "line": 227
+                      },
+                      "message": "Error: stove enamel body after Load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m500\u001b[39m\nReceived:   \u001b[31m1\u001b[39m\n\n  225 |   const fridgeAfter = await fridgePalettePixels(page, loaded, quarterTurns);\n  226 |   afterPixels.forEach((count, index) => expect.soft(count, `stove ${index === 0 ? \"enamel body\" : \"cast-iron support\"} after Load`)\n> 227 |     .toBeGreaterThan(quarterTurns === 0 ? index === 0 ? 500 : 25 : 50));\n      |      ^\n  228 |   expect(afterPixels).toEqual(beforePixels);\n  229 |   fridgeAfter.forEach((count, index) => expect.soft(count, `fridge ${index === 0 ? 'freezer panel' : 'side louvres'} after Load`)\n  230 |     .toBeGreaterThan(quarterTurns === 0 ? 350 : index === 0 ? 800 : 100));\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts:227:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts:226:15"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts",
+                        "column": 6,
+                        "line": 227
+                      },
+                      "message": "Error: stove cast-iron support after Load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m25\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  225 |   const fridgeAfter = await fridgePalettePixels(page, loaded, quarterTurns);\n  226 |   afterPixels.forEach((count, index) => expect.soft(count, `stove ${index === 0 ? \"enamel body\" : \"cast-iron support\"} after Load`)\n> 227 |     .toBeGreaterThan(quarterTurns === 0 ? index === 0 ? 500 : 25 : 50));\n      |      ^\n  228 |   expect(afterPixels).toEqual(beforePixels);\n  229 |   fridgeAfter.forEach((count, index) => expect.soft(count, `fridge ${index === 0 ? 'freezer panel' : 'side louvres'} after Load`)\n  230 |     .toBeGreaterThan(quarterTurns === 0 ? 350 : index === 0 ? 800 : 100));\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts:227:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts:226:15"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts",
+                        "column": 6,
+                        "line": 230
+                      },
+                      "message": "Error: fridge freezer panel after Load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m350\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  228 |   expect(afterPixels).toEqual(beforePixels);\n  229 |   fridgeAfter.forEach((count, index) => expect.soft(count, `fridge ${index === 0 ? 'freezer panel' : 'side louvres'} after Load`)\n> 230 |     .toBeGreaterThan(quarterTurns === 0 ? 350 : index === 0 ? 800 : 100));\n      |      ^\n  231 |   expect(fridgeAfter).toEqual(fridgeBefore);\n  232 |   const evidencePath = info.outputPath('dedicated-kitchen-stove-worker-and-save-evidence.json');\n  233 |   await writeFile(evidencePath, JSON.stringify({\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts:230:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts:229:15"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T23:04:56.558Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "dedicated-kitchen-stove-worker-and-save-evidence",
+                      "contentType": "application/json",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-native-20261004\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\attachments\\dedicated-kitchen-stove-worker-and-save-evidence-2afaf4342f5a233a7d5b0eefe42a6fc9f39cd08b.json"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-native-20261004\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts",
+                    "column": 6,
+                    "line": 208
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "3b02ef91fdd82912db31-612a2c2ca602b9d6b7de",
+          "file": "dedicated-kitchen-stove-player-build.spec.ts",
+          "line": 284,
+          "column": 3
+        },
+        {
+          "title": "player builds Kitchen at quarterTurns1 and retains stove and fridge detail palettes and all completed owners after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T23:05:45.273Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "3b02ef91fdd82912db31-aec8fb08711b2ac61587",
+          "file": "dedicated-kitchen-stove-player-build.spec.ts",
+          "line": 284,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-03T23:04:11.120Z",
+    "duration": 94547.678,
+    "expected": 1,
+    "skipped": 1,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

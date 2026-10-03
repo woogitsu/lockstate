@@ -88,3 +88,67 @@ published source branches resolves it without changing any citation or
 allowlist. Both original logs/reports remain in the archive; corrected strict
 types pass and those two existing contracts are12/12 GREEN. The next genuine
 combined build and native model/Fit results remain separate release evidence.
+
+## Genuine subsequent built subject21d and reached failures
+
+The next actual production client was built from
+`21dba6ee55823ff1283c0b47254ff8d01e2a6ca9`, with the Common Room upholstered
+bench, Kitchen stove/fridge and the#2026 producer correction. Its actual91
+emitted file hashes are in
+[the separate manifest](./native/integrated21d-compiled-subject.json), and its
+real terminal build log is [retained](./native/integrated21d-build.txt). The
+older85f manifest and positive native receipts remain unchanged. Later source
+imports, including the empty-order-ID fix for#2027, were not in this client.
+
+| Actual native route | Obtained result | Boundary reached |
+| --- | --- | --- |
+| Original CameraA Fit UI100/UI200 | 1 GREEN / 1 RED | UI100 whole28-square preview and exactly one trusted release pass; UI200's fixed cursor was covered before a ghost was armed. |
+| Corrected exposed-cursor CameraA Fit UI100/UI200 | 1 GREEN / 1 RED,39.4s | UI200 reaches the genuine accepted q1 mirrored Basic cell and1530 quote. Its actual floor0 crosses the visible right rail. This is a product geometry failure, not the original fixture failure. |
+| Kitchen capacity/q0/q1 | 1 GREEN / 1 RED / 1 not run | q0 completed owners, precise cost, actual stove HTTP/decoded Blob and whole paused V10 Save/Load pass. Original material ROIs return stove[1,0] and fridge[0,394], below unchanged original floors. Serial q1 does not run. |
+| Cot capacity/q0/q1 | 1 GREEN / 1 RED / 1 not run | q0 completes and displays the owned cot. The unchanged blanket ROI returns72 against the original700 floor and stops before Save/Load. No new cot persistence acceptance is claimed. |
+
+All four original runs, including failures, screenshots, worker receipts and
+terminal traces, are retained under the `integrated21d-*` entries in
+[the capture index](./native/capture-aliases.json). The original Kitchen and
+Cot FullHD screenshots were opened and show the delivered modern models.
+Material classifier calibration must distinguish their actual authored
+surfaces from floors, walls and unrelated objects without reducing a pixel
+floor. A visible model alone is not a passing material gate.
+
+The actual UI200 viewport has only88px of the current corner-to-rail corridor
+while CameraA and the complete refusal remain visible. Existing minimum zoom
+is preserved.
+
+### Owner review: UI200 placement space
+
+A separate genuine public UI200 route is **1 GREEN,22.8s** on the same frozen
+21d client. After the accepted preview, keyboard Enter activates the existing
+**Hide the panels** button. Its actual accepted origin, q1/mirror and1530 quote
+remain identical. All28 floor quads become exposed, the held yaw45 sequence
+retains whole paused state, and the original trusted release sends exactly one
+matching placement command. No lower zoom, fake bounds or automatic producer
+rule was introduced; this is an explicitly opted-in manual public route.
+
+| Current open rail | Existing public folded rail |
+| --- | --- |
+| ![Actual UI200 before folding](./native/integrated21d-fit-public-collapse/006-actual-ui200-before-public-rail-collapse.png) | ![Actual UI200 exposed whole preview](./native/integrated21d-fit-public-collapse/004-actual-open-camera-whole-q1-mirrored-preview.png) |
+
+The existing collapsed layout still exposes narrow clipped panel content at
+the right edge; the comparison does not endorse that appearance. Any completed
+implementation must conceal folded content and keep its reopening control
+reachable, instead of rendering Save/Build text in that narrow strip.
+
+**Proposed automatic policy, awaiting the owner's layout decision:** only when
+a room preview cannot fit within the currently exposed map at the existing
+minimum zoom, temporarily fold the right inspector using its existing layout
+control. Preserve the accepted build origin/rotation/mirror and quote. Return
+the previous inspector state after placement or cancellation, unless the player
+has explicitly chosen a different panel state. Keep all top readings and the
+camera controls available. Normal100% already fits and requires no automatic
+fold. This automatic policy is not yet implemented or native-tested.
+
+**Alternative:** retain manual **Hide the panels** as the player's action,
+repair its clipped folded content, and preserve the current allocation. This
+requires an extra action to reveal the complete UI200 template. Neither option
+permits an invalid placement. The source/native record remains a development
+checkpoint, not deployment or a completed redesign.

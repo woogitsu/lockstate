@@ -167,6 +167,15 @@ for (const uiScale of [1, 2] as const) test(`FullHD publicUI${uiScale * 100} ope
     await expect.poll(async () => (await verdict(page, 'world/room-template-cost'))?.data).toEqual({ orderCount: 20,
       materials: [{ itemId: 'item.brick', quantity: 35 }, { itemId: 'item.wood-plank', quantity: 2 }], catalogueCostMinorUnits: 1530 });
     const quote = await ghost.getByRole('status').textContent(); expect(quote).toContain('Materials catalogue value: 1,530');
+    if (uiScale === 2 && process.env['LOCKSTATE_TEMPLATE_FIT_PUBLIC_COLLAPSE'] === '1') {
+      receipt['beforePublicRailCollapse'] = await geometry(page);
+      await page.screenshot({ path: info.outputPath('actual-ui200-before-public-rail-collapse.png') });
+      const hidePanels = page.getByRole('button', { name: 'Hide the panels', exact: true });
+      await hidePanels.focus(); await page.keyboard.press('Enter'); await frames(page);
+      await expect(page.locator('.hud')).toHaveAttribute('data-layout-inspector', 'collapsed');
+      expect((await verdict(page, 'world/room-template-preflight'))!.target).toEqual(chosen);
+      expect(await ghost.getByRole('status').textContent()).toBe(quote);
+    }
     const initial = await geometry(page); receipt['chosen'] = chosen; receipt['initial'] = initial; receipt['initialPose'] = assertWholeExposed(initial, 30);
     await page.screenshot({ path: info.outputPath('actual-open-camera-whole-q1-mirrored-preview.png') });
     expect(await sentCommands(page)).toEqual(commandsBefore);

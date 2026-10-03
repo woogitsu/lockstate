@@ -1,0 +1,191 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\docs\\research\\2026-10-04-camera-a-template-safe-area\\playwright.native.config.ts",
+    "rootDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-staff-chair-v9-integration-20261003/tests/browser",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "json"
+      ],
+      [
+        "line"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/matma/AppData/Local/Temp/lockstate-modern-integrated-21d-fit-native-20261004",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-staff-chair-v9-integration-20261003/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "/camera-a-template-fit\\.native\\.ts$/"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 1,
+    "webServer": {
+      "command": "\"C:\\\\Users\\\\matma\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\node\\\\bin\\\\node.exe\" \"C:\\\\Users\\\\matma\\\\Documents\\\\Rozwój gier\\\\lockstate-1382-doc-anchor-2026-09-24\\\\node_modules\\\\.pnpm\\\\vite@8.2.2_@types+node@24.10.1_esbuild@0.28.1\\\\node_modules\\\\vite\\\\bin\\\\vite.js\" preview --port 5385 --strictPort --host 127.0.0.1",
+      "cwd": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\",
+      "env": {
+        "CLOUDFLARE_ENV": "production"
+      },
+      "url": "http://127.0.0.1:5385/",
+      "reuseExistingServer": false,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "camera-a-template-fit.native.ts",
+      "file": "camera-a-template-fit.native.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "FullHD publicUI100 open CameraA retains the whole q1 mirrored Basic cell on fit/disclosure/held release",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 18514,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T22:54:45.356Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "cefba45cb166dceec465-6fa520dc834330c8525e",
+          "file": "camera-a-template-fit.native.ts",
+          "line": 141,
+          "column": 31
+        },
+        {
+          "title": "FullHD publicUI200 open CameraA retains the whole q1 mirrored Basic cell on fit/disclosure/held release",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 11646,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\camera-a-template-fit.native.ts:136:131",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\camera-a-template-fit.native.ts",
+                      "column": 131,
+                      "line": 136
+                    },
+                    "snippet": "  134 |     const before = await readV10WholeSnapshot(page, info.outputPath('whole-before-preview.json'));\n  135 |     const commandsBefore = await sentCommands(page), cursor = { x: 1000, y: 1000 };\n> 136 |     expect(await page.evaluate(p => document.elementFromPoint(p.x, p.y) === document.querySelector('#game-root canvas'), cursor)).toBe(true);\n      |                                                                                                                                   ^\n  137 |     await page.mouse.move(cursor.x, cursor.y); await frames(page);\n  138 |     const open = page.getByRole('button', { name: 'Room plans', exact: true }); await open.focus(); await page.keyboard.press('Enter');\n  139 |     const dialog = page.getByRole('dialog', { name: 'Room plans', exact: true });"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\camera-a-template-fit.native.ts",
+                        "column": 131,
+                        "line": 136
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\n  134 |     const before = await readV10WholeSnapshot(page, info.outputPath('whole-before-preview.json'));\n  135 |     const commandsBefore = await sentCommands(page), cursor = { x: 1000, y: 1000 };\n> 136 |     expect(await page.evaluate(p => document.elementFromPoint(p.x, p.y) === document.querySelector('#game-root canvas'), cursor)).toBe(true);\n      |                                                                                                                                   ^\n  137 |     await page.mouse.move(cursor.x, cursor.y); await frames(page);\n  138 |     const open = page.getByRole('button', { name: 'Room plans', exact: true }); await open.focus(); await page.keyboard.press('Enter');\n  139 |     const dialog = page.getByRole('dialog', { name: 'Room plans', exact: true });\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\camera-a-template-fit.native.ts:136:131"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T22:55:04.034Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-native-20261004\\camera-a-template-fit.nati-54b54-fit-disclosure-held-release\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-native-20261004\\camera-a-template-fit.nati-54b54-fit-disclosure-held-release\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-native-20261004\\camera-a-template-fit.nati-54b54-fit-disclosure-held-release\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\camera-a-template-fit.native.ts",
+                    "column": 131,
+                    "line": 136
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "cefba45cb166dceec465-302ace8d50d2dd616017",
+          "file": "camera-a-template-fit.native.ts",
+          "line": 141,
+          "column": 31
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-03T22:54:39.719Z",
+    "duration": 37265.634999999995,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

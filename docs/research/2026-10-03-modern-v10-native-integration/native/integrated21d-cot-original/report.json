@@ -1,0 +1,215 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\playwright.artifact.config.ts",
+    "rootDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-staff-chair-v9-integration-20261003/tests/browser",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "json"
+      ],
+      [
+        "line"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/matma/AppData/Local/Temp/lockstate-modern-integrated-21d-cot-native-20261004",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-staff-chair-v9-integration-20261003/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "/(?:production-artifact|rotated-security-console-player-build|infirmary-player-build|room-template-live-orientation|room-plan-dialog-escape|canteen-dining-table-player-build|room-plan-native-picker|shower-head-player-build|live-view-held-native-arrow|wooden-bench-player-build|live-view-native-popup-held-key|hud-separator-held-arrow|wooden-chair-player-build|build-category-native-camera|generic-wooden-rack-player-build|build-category-native-popup-held-key|build-category-native-typeahead|bookshelf-player-build|utility-panel-player-build|hud-layout-menu-fullhd|generic-office-desk-player-build|oblique-build-drag-under-hud|dedicated-kitchen-stove-player-build|live-view-native-mouse-target|oblique-object-area-drag-under-hud|dedicated-kitchen-fridge-player-build|dedicated-kitchen-prep-counter-player-build|room-preview-retained-hover-fit|oblique-square-wall-native-footprint|dedicated-laundry-washing-machine-player-build|camera-wheel-axis-native|oblique-camera-gameout-native|default-waste-bin-player-build|navigation-drawer-escape-native|dedicated-cell-toilet-player-build|dedicated-utility-panel-player-build|room-template-world-camera-origin|dedicated-office-desk-player-build|room-template-renderer-preflight-receipt|dedicated-medicine-cabinet-player-build|dedicated-security-console-player-build|dedicated-medical-bed-player-build|dedicated-loading-dock-door-player-build|dedicated-camera-pan-player|oblique-pending-wall-player|room-template-renderer-stationary-hover|world-construction-chord-release|room-template-session-preflight|world-build-session-ownership|cell-cot-player-build|room-template-second-touch-ownership|hired-guard-player-build|room-template-history-verdict-player|room-template-numeric-held-primary|common-room-upholstered-player-build)\\.spec\\.ts$/"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 1,
+    "webServer": {
+      "command": "\"C:\\\\Users\\\\matma\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\node\\\\bin\\\\node.exe\" \"C:\\\\Users\\\\matma\\\\Documents\\\\Rozwój gier\\\\lockstate-1382-doc-anchor-2026-09-24\\\\node_modules\\\\.pnpm\\\\vite@8.2.2_@types+node@24.10.1_esbuild@0.28.1\\\\node_modules\\\\vite\\\\bin\\\\vite.js\" preview --port 5387 --strictPort --host 127.0.0.1",
+      "cwd": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\",
+      "env": {
+        "CLOUDFLARE_ENV": "production"
+      },
+      "url": "http://127.0.0.1:5387/",
+      "reuseExistingServer": false,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "cell-cot-player-build.spec.ts",
+      "file": "cell-cot-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player furnishes delivery and storage plans before the cot test",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 41187,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T23:09:24.402Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "aa9a0c8e618a314db016-382f61b31fea1074e287",
+          "file": "cell-cot-player-build.spec.ts",
+          "line": 168,
+          "column": 1
+        },
+        {
+          "title": "player builds the existing bed in a Basic cell q0 and keeps it after Save/Load at Full HD",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 28995,
+                  "error": {
+                    "message": "Error: built bed must have the authored ochre blanket\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m700\u001b[39m\nReceived:   \u001b[31m72\u001b[39m",
+                    "stack": "Error: built bed must have the authored ochre blanket\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m700\u001b[39m\nReceived:   \u001b[31m72\u001b[39m\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\cell-cot-player-build.spec.ts:188:125",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\cell-cot-player-build.spec.ts",
+                      "column": 125,
+                      "line": 188
+                    },
+                    "snippet": "  186 |   await page.mouse.move(1300, 700);\n  187 |   const painted = await page.screenshot({ path: info.outputPath('cell-cot-worker-completed-fullhd.png') });\n> 188 |   if (quarterTurns === 0) expect(await ochreBlanketPixels(page, painted), 'built bed must have the authored ochre blanket').toBeGreaterThan(700);\n      |                                                                                                                             ^\n  189 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n  190 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();\n  191 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\cell-cot-player-build.spec.ts",
+                        "column": 125,
+                        "line": 188
+                      },
+                      "message": "Error: built bed must have the authored ochre blanket\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m700\u001b[39m\nReceived:   \u001b[31m72\u001b[39m\n\n  186 |   await page.mouse.move(1300, 700);\n  187 |   const painted = await page.screenshot({ path: info.outputPath('cell-cot-worker-completed-fullhd.png') });\n> 188 |   if (quarterTurns === 0) expect(await ochreBlanketPixels(page, painted), 'built bed must have the authored ochre blanket').toBeGreaterThan(700);\n      |                                                                                                                             ^\n  189 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n  190 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();\n  191 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\cell-cot-player-build.spec.ts:188:125"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T23:10:05.653Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-cot-native-20261004\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\cell-cot-player-build.spec.ts",
+                    "column": 125,
+                    "line": 188
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "aa9a0c8e618a314db016-3a166a38e6c65b7c5f6d",
+          "file": "cell-cot-player-build.spec.ts",
+          "line": 233,
+          "column": 3
+        },
+        {
+          "title": "player builds the existing bed in a Basic cell q1 and keeps it after Save/Load at Full HD",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T23:10:34.701Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "aa9a0c8e618a314db016-66dd97464410eebf5057",
+          "file": "cell-cot-player-build.spec.ts",
+          "line": 233,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-03T23:09:21.652Z",
+    "duration": 73389.191,
+    "expected": 1,
+    "skipped": 1,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

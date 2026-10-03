@@ -1375,5 +1375,554 @@
     "archivedBytes": 559,
     "archivedSha256": "94f6a1750b601c142daa8542736355e082c2269b41f036f445fe9ac5cd0e2972",
     "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-native-20261004.json",
+    "archived": "integrated21d-fit-original/report.json",
+    "sourceBytes": 9634,
+    "sourceSha256": "f185368eb45e60ccb5614ba96e028325887ded0f73756e25eb45694cf25e7197",
+    "archivedBytes": 9634,
+    "archivedSha256": "f185368eb45e60ccb5614ba96e028325887ded0f73756e25eb45694cf25e7197"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-native-20261004.txt",
+    "archived": "integrated21d-fit-original/console.txt",
+    "sourceBytes": 9350,
+    "sourceSha256": "b4bc23097fffe816c382b3d355b102e7d826a99bfe80f64937a2cd7344b643db",
+    "archivedBytes": 5299,
+    "archivedSha256": "8204618f10749cfc87ebda6a0b979420a413df5ec43ab13e49ffa69ebe111d51",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-native-20261004\\.last-run.json",
+    "archived": "integrated21d-fit-original/001-.last-run.json",
+    "sourceBytes": 96,
+    "sourceSha256": "6d5831c9ed966fd06080e334879f0550e3ff40adeccb6d1072ea2436b30bf1a7",
+    "archivedBytes": 96,
+    "archivedSha256": "6d5831c9ed966fd06080e334879f0550e3ff40adeccb6d1072ea2436b30bf1a7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-native-20261004\\camera-a-template-fit.nati-1970e-fit-disclosure-held-release\\actual-camera-template-fit-receipt.json",
+    "archived": "integrated21d-fit-original/002-actual-camera-template-fit-receipt.json",
+    "sourceBytes": 119218,
+    "sourceSha256": "c7625325b4149889debcfdade5dbcace52278ab3b63b96bb72f03d1795a5f063",
+    "archivedBytes": 119218,
+    "archivedSha256": "c7625325b4149889debcfdade5dbcace52278ab3b63b96bb72f03d1795a5f063"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-native-20261004\\camera-a-template-fit.nati-1970e-fit-disclosure-held-release\\actual-held-open-camera-yaw45-whole-q1.png",
+    "archived": "integrated21d-fit-original/003-actual-held-open-camera-yaw45-whole-q1.png",
+    "sourceBytes": 1537777,
+    "sourceSha256": "3c0e5926c64e50f4c25fba9f7ad89102e2606a5906bec1484cb9bac32edd39b9",
+    "archivedBytes": 1537777,
+    "archivedSha256": "3c0e5926c64e50f4c25fba9f7ad89102e2606a5906bec1484cb9bac32edd39b9"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-native-20261004\\camera-a-template-fit.nati-1970e-fit-disclosure-held-release\\actual-open-camera-whole-q1-mirrored-preview.png",
+    "archived": "integrated21d-fit-original/004-actual-open-camera-whole-q1-mirrored-preview.png",
+    "sourceBytes": 1744689,
+    "sourceSha256": "04dc002a53301555021ce45a4d3ee3bf047cd4a69607a883bfe66d3f9ccee957",
+    "archivedBytes": 1744689,
+    "archivedSha256": "04dc002a53301555021ce45a4d3ee3bf047cd4a69607a883bfe66d3f9ccee957"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-native-20261004\\camera-a-template-fit.nati-1970e-fit-disclosure-held-release\\actual-original-release-confirmed.png",
+    "archived": "integrated21d-fit-original/005-actual-original-release-confirmed.png",
+    "sourceBytes": 1547979,
+    "sourceSha256": "f0e1391abdfad904e6606fe98196914ad3c83549a3dbb30660486e397b93e73a",
+    "archivedBytes": 1547979,
+    "archivedSha256": "f0e1391abdfad904e6606fe98196914ad3c83549a3dbb30660486e397b93e73a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-native-20261004\\camera-a-template-fit.nati-1970e-fit-disclosure-held-release\\whole-after-original-release.json",
+    "archived": "integrated21d-fit-original/006-whole-after-original-release.json",
+    "sourceBytes": 25676,
+    "sourceSha256": "3a1f09d4289ae722b1b40f84ab5a69f3a7951dee1c48ca8b51cba452ac11de04",
+    "archivedBytes": 25676,
+    "archivedSha256": "3a1f09d4289ae722b1b40f84ab5a69f3a7951dee1c48ca8b51cba452ac11de04"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-native-20261004\\camera-a-template-fit.nati-1970e-fit-disclosure-held-release\\whole-before-preview.json",
+    "archived": "integrated21d-fit-original/007-whole-before-preview.json",
+    "sourceBytes": 15876,
+    "sourceSha256": "0dd94c05e26b22a767fa0f13c8f8cf380aa5add060c41a873eb6fca8665ed612",
+    "archivedBytes": 15876,
+    "archivedSha256": "0dd94c05e26b22a767fa0f13c8f8cf380aa5add060c41a873eb6fca8665ed612"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-native-20261004\\camera-a-template-fit.nati-1970e-fit-disclosure-held-release\\whole-held-after-fit-disclosure.json",
+    "archived": "integrated21d-fit-original/008-whole-held-after-fit-disclosure.json",
+    "sourceBytes": 15876,
+    "sourceSha256": "9bbc7caa57c808dc319eb08e7b4ef84cf3377d33be922223685e5455fcffb8bc",
+    "archivedBytes": 15876,
+    "archivedSha256": "9bbc7caa57c808dc319eb08e7b4ef84cf3377d33be922223685e5455fcffb8bc"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-native-20261004\\camera-a-template-fit.nati-54b54-fit-disclosure-held-release\\actual-camera-template-fit-receipt.json",
+    "archived": "integrated21d-fit-original/009-actual-camera-template-fit-receipt.json",
+    "sourceBytes": 17553,
+    "sourceSha256": "c2048906e698b27e284778930c97345b688cd58670d9c3f9618f41e053755298",
+    "archivedBytes": 17553,
+    "archivedSha256": "c2048906e698b27e284778930c97345b688cd58670d9c3f9618f41e053755298"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-native-20261004\\camera-a-template-fit.nati-54b54-fit-disclosure-held-release\\error-context.md",
+    "archived": "integrated21d-fit-original/010-error-context.md",
+    "sourceBytes": 13993,
+    "sourceSha256": "a0e3deaf25f457edfd15bfc75fdc2ae30e7fb73e79bfcf7577ce89b593a5f483",
+    "archivedBytes": 13993,
+    "archivedSha256": "a0e3deaf25f457edfd15bfc75fdc2ae30e7fb73e79bfcf7577ce89b593a5f483"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-native-20261004\\camera-a-template-fit.nati-54b54-fit-disclosure-held-release\\test-failed-1.png",
+    "archived": "integrated21d-fit-original/011-test-failed-1.png",
+    "sourceBytes": 521832,
+    "sourceSha256": "71424f9eea2542f87c8b50f9cd8f29af06a8d5f3873d0e7ab50e962f654697d6",
+    "archivedBytes": 521832,
+    "archivedSha256": "71424f9eea2542f87c8b50f9cd8f29af06a8d5f3873d0e7ab50e962f654697d6"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-native-20261004\\camera-a-template-fit.nati-54b54-fit-disclosure-held-release\\trace.zip",
+    "archived": "integrated21d-fit-original/012-trace.zip",
+    "sourceBytes": 29973623,
+    "sourceSha256": "931330d5030f5b68d18556ee207773b9d59f6dbcc1912a5c010401a706130c78",
+    "archivedBytes": 29973623,
+    "archivedSha256": "931330d5030f5b68d18556ee207773b9d59f6dbcc1912a5c010401a706130c78"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-native-20261004\\camera-a-template-fit.nati-54b54-fit-disclosure-held-release\\whole-before-preview.json",
+    "archived": "integrated21d-fit-original/013-whole-before-preview.json",
+    "sourceBytes": 15873,
+    "sourceSha256": "ae1a7ea6d684e2b12814206dc5994969e9487c2d6b8c30cd86d57410991016d6",
+    "archivedBytes": 15873,
+    "archivedSha256": "ae1a7ea6d684e2b12814206dc5994969e9487c2d6b8c30cd86d57410991016d6"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-native-20261004.json",
+    "archived": "integrated21d-kitchen-original/report.json",
+    "sourceBytes": 20386,
+    "sourceSha256": "7834a82ae241e63618832a6b0529f21ff8b6a5fb5d9dd01c84cf0995ca01bfe6",
+    "archivedBytes": 20386,
+    "archivedSha256": "7834a82ae241e63618832a6b0529f21ff8b6a5fb5d9dd01c84cf0995ca01bfe6"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-native-20261004.txt",
+    "archived": "integrated21d-kitchen-original/console.txt",
+    "sourceBytes": 20574,
+    "sourceSha256": "9090aea7170fa80bf5b65da7a9be18109db1f4a52d781b595633c5717c722e6f",
+    "archivedBytes": 10528,
+    "archivedSha256": "07035c9a93841129781feaa3ba17511767c09e5510fad6fbec6a3fc29adbc8ae",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-native-20261004\\.last-run.json",
+    "archived": "integrated21d-kitchen-original/001-.last-run.json",
+    "sourceBytes": 96,
+    "sourceSha256": "8458c6f25cfbd17a57bf2671d8f8a9f2d5a87139a0d66f3ae0eb38bae16692a4",
+    "archivedBytes": 96,
+    "archivedSha256": "8458c6f25cfbd17a57bf2671d8f8a9f2d5a87139a0d66f3ae0eb38bae16692a4"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-native-20261004\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\attachments\\dedicated-kitchen-stove-worker-and-save-evidence-2afaf4342f5a233a7d5b0eefe42a6fc9f39cd08b.json",
+    "archived": "integrated21d-kitchen-original/002-dedicated-kitchen-stove-worker-and-save-evidence-2afaf4342f5a233.json",
+    "sourceBytes": 637,
+    "sourceSha256": "511e65d5348b4c073eae1c5da326a96622fe95356136ed2e018bf3da7e7e0b75",
+    "archivedBytes": 637,
+    "archivedSha256": "511e65d5348b4c073eae1c5da326a96622fe95356136ed2e018bf3da7e7e0b75"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-native-20261004\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\dedicated-kitchen-stove-loaded-fullhd.png",
+    "archived": "integrated21d-kitchen-original/003-dedicated-kitchen-stove-loaded-fullhd.png",
+    "sourceBytes": 1536157,
+    "sourceSha256": "b3d03acb8bd7d9d9f82ff86a49c8df5b455ce14ac1f08c2c76e49fdbd8bcf202",
+    "archivedBytes": 1536157,
+    "archivedSha256": "b3d03acb8bd7d9d9f82ff86a49c8df5b455ce14ac1f08c2c76e49fdbd8bcf202"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-native-20261004\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\dedicated-kitchen-stove-worker-and-save-evidence.json",
+    "archived": "integrated21d-kitchen-original/004-dedicated-kitchen-stove-worker-and-save-evidence.json",
+    "sourceBytes": 637,
+    "sourceSha256": "511e65d5348b4c073eae1c5da326a96622fe95356136ed2e018bf3da7e7e0b75",
+    "archivedBytes": 637,
+    "archivedSha256": "511e65d5348b4c073eae1c5da326a96622fe95356136ed2e018bf3da7e7e0b75"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-native-20261004\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\dedicated-kitchen-stove-worker-completed-fullhd.png",
+    "archived": "integrated21d-kitchen-original/005-dedicated-kitchen-stove-worker-completed-fullhd.png",
+    "sourceBytes": 1571001,
+    "sourceSha256": "05bade087cc9dd3c946df62ec63429417eeee68520a4bc0951440384debbd28b",
+    "archivedBytes": 1571001,
+    "archivedSha256": "05bade087cc9dd3c946df62ec63429417eeee68520a4bc0951440384debbd28b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-native-20261004\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\error-context.md",
+    "archived": "integrated21d-kitchen-original/006-error-context.md",
+    "sourceBytes": 9614,
+    "sourceSha256": "c0a56435c8ca3f33dbdae035bff83964f55dba83422d414693149835c78cf60a",
+    "archivedBytes": 9614,
+    "archivedSha256": "c0a56435c8ca3f33dbdae035bff83964f55dba83422d414693149835c78cf60a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-native-20261004\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\failed-kitchen-modern-network.json",
+    "archived": "integrated21d-kitchen-original/007-failed-kitchen-modern-network.json",
+    "sourceBytes": 6584,
+    "sourceSha256": "55ee04713cfa5a7539865e0776317923e4edfee41a045f55909b10162247e978",
+    "archivedBytes": 6584,
+    "archivedSha256": "55ee04713cfa5a7539865e0776317923e4edfee41a045f55909b10162247e978"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-native-20261004\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\failed-player-fullhd.png",
+    "archived": "integrated21d-kitchen-original/008-failed-player-fullhd.png",
+    "sourceBytes": 1558164,
+    "sourceSha256": "f69e4f2f86d687b8c12713f918f8815156cba0fb388e0274d55ca736195f3bff",
+    "archivedBytes": 1558164,
+    "archivedSha256": "f69e4f2f86d687b8c12713f918f8815156cba0fb388e0274d55ca736195f3bff"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-native-20261004\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\failed-player-worker-snapshot.json",
+    "archived": "integrated21d-kitchen-original/009-failed-player-worker-snapshot.json",
+    "sourceBytes": 80620,
+    "sourceSha256": "ebd7ff25c18b12f1fd88f4e595c911b703b9f9c4b9358cbe3839c3f75ba32baf",
+    "archivedBytes": 80620,
+    "archivedSha256": "ebd7ff25c18b12f1fd88f4e595c911b703b9f9c4b9358cbe3839c3f75ba32baf"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-native-20261004\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\kitchen-loaded-physical-fixings-fullhd.png",
+    "archived": "integrated21d-kitchen-original/010-kitchen-loaded-physical-fixings-fullhd.png",
+    "sourceBytes": 1509429,
+    "sourceSha256": "4551f71cf74a3b6dbbadf78579320ce34dfd53727980561184aa9eacbb709548",
+    "archivedBytes": 1509429,
+    "archivedSha256": "4551f71cf74a3b6dbbadf78579320ce34dfd53727980561184aa9eacbb709548"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-native-20261004\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\kitchen-modern-actual-network-and-htmlimage-evidence.json",
+    "archived": "integrated21d-kitchen-original/011-kitchen-modern-actual-network-and-htmlimage-evidence.json",
+    "sourceBytes": 27871,
+    "sourceSha256": "a10fb534cba35678b1053698bf0fba52a2297fabda903edfec6d607f22920caa",
+    "archivedBytes": 27871,
+    "archivedSha256": "a10fb534cba35678b1053698bf0fba52a2297fabda903edfec6d607f22920caa"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-native-20261004\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\kitchen-modern-actual200-exposed-frame.png",
+    "archived": "integrated21d-kitchen-original/012-kitchen-modern-actual200-exposed-frame.png",
+    "sourceBytes": 28430,
+    "sourceSha256": "2c45a7fe165699ebdf209ba6a092956d9e8097d3095bc5f09dd35b9344749d65",
+    "archivedBytes": 28430,
+    "archivedSha256": "2c45a7fe165699ebdf209ba6a092956d9e8097d3095bc5f09dd35b9344749d65"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-native-20261004\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\kitchen-modern-raw-response-provenance.json",
+    "archived": "integrated21d-kitchen-original/013-kitchen-modern-raw-response-provenance.json",
+    "sourceBytes": 6584,
+    "sourceSha256": "55ee04713cfa5a7539865e0776317923e4edfee41a045f55909b10162247e978",
+    "archivedBytes": 6584,
+    "archivedSha256": "55ee04713cfa5a7539865e0776317923e4edfee41a045f55909b10162247e978"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-native-20261004\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\kitchen-paused-after-load.json",
+    "archived": "integrated21d-kitchen-original/014-kitchen-paused-after-load.json",
+    "sourceBytes": 80620,
+    "sourceSha256": "0de36b122413961615bc0787c66fccf89b3742115da1c6da9fc503c969e37bc1",
+    "archivedBytes": 80620,
+    "archivedSha256": "0de36b122413961615bc0787c66fccf89b3742115da1c6da9fc503c969e37bc1"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-native-20261004\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\kitchen-paused-before-save.json",
+    "archived": "integrated21d-kitchen-original/015-kitchen-paused-before-save.json",
+    "sourceBytes": 80620,
+    "sourceSha256": "eadf2fc87aeee9f77d2fce24ecdeda6e4de4cc5a93e85a4bab8a7982a800ad80",
+    "archivedBytes": 80620,
+    "archivedSha256": "eadf2fc87aeee9f77d2fce24ecdeda6e4de4cc5a93e85a4bab8a7982a800ad80"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-native-20261004\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\kitchen-stove-canonical-source60-e40-fullhd.png",
+    "archived": "integrated21d-kitchen-original/016-kitchen-stove-canonical-source60-e40-fullhd.png",
+    "sourceBytes": 1558164,
+    "sourceSha256": "f69e4f2f86d687b8c12713f918f8815156cba0fb388e0274d55ca736195f3bff",
+    "archivedBytes": 1558164,
+    "archivedSha256": "f69e4f2f86d687b8c12713f918f8815156cba0fb388e0274d55ca736195f3bff"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-native-20261004\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\kitchen-stove-canonical-whole-state.json",
+    "archived": "integrated21d-kitchen-original/017-kitchen-stove-canonical-whole-state.json",
+    "sourceBytes": 80620,
+    "sourceSha256": "83660e43d5bb9c59ce13545594b84c0a330bae4efaf2ffba4215f8ca735f3f43",
+    "archivedBytes": 80620,
+    "archivedSha256": "83660e43d5bb9c59ce13545594b84c0a330bae4efaf2ffba4215f8ca735f3f43"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-native-20261004\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\worker-and-completed-save-evidence.json",
+    "archived": "integrated21d-kitchen-original/018-worker-and-completed-save-evidence.json",
+    "sourceBytes": 413,
+    "sourceSha256": "913048d57de0539ff945cd825c8738a91e37b245d02ecfe3f2b062350ca6461d",
+    "archivedBytes": 413,
+    "archivedSha256": "913048d57de0539ff945cd825c8738a91e37b245d02ecfe3f2b062350ca6461d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-cot-native-20261004.json",
+    "archived": "integrated21d-cot-original/report.json",
+    "sourceBytes": 11586,
+    "sourceSha256": "84352a801d39f4f32ca49cb6b32897c09997a0d843551e7e702a072b1924bebb",
+    "archivedBytes": 11586,
+    "archivedSha256": "84352a801d39f4f32ca49cb6b32897c09997a0d843551e7e702a072b1924bebb"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-cot-native-20261004.txt",
+    "archived": "integrated21d-cot-original/console.txt",
+    "sourceBytes": 7538,
+    "sourceSha256": "fedf22d9e8477e75040958e45cf001b0df6211dbbb32cbc68a9ad660e7a140ed",
+    "archivedBytes": 3781,
+    "archivedSha256": "64310afb42027d4d6af9f015617a372ef42629e285e4c99fc37e97467bacd3d9",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-cot-native-20261004\\.last-run.json",
+    "archived": "integrated21d-cot-original/001-.last-run.json",
+    "sourceBytes": 96,
+    "sourceSha256": "fc7ea3cab85c42130fe128d15b3afb11f008a9e860c703e024c7de41993b7545",
+    "archivedBytes": 96,
+    "archivedSha256": "fc7ea3cab85c42130fe128d15b3afb11f008a9e860c703e024c7de41993b7545"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-cot-native-20261004\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\cell-cot-worker-completed-fullhd.png",
+    "archived": "integrated21d-cot-original/002-cell-cot-worker-completed-fullhd.png",
+    "sourceBytes": 1504427,
+    "sourceSha256": "817eea096d0bd361607dc7f0e498f4b2a5eef9dd80d4f5624019116cc16f9273",
+    "archivedBytes": 1504427,
+    "archivedSha256": "817eea096d0bd361607dc7f0e498f4b2a5eef9dd80d4f5624019116cc16f9273"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-cot-native-20261004\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\error-context.md",
+    "archived": "integrated21d-cot-original/003-error-context.md",
+    "sourceBytes": 13111,
+    "sourceSha256": "4b7580fb50d5e7e47295b7de5f1489671dc1f8dfa2bb25dcc79935814f39f2a9",
+    "archivedBytes": 13111,
+    "archivedSha256": "4b7580fb50d5e7e47295b7de5f1489671dc1f8dfa2bb25dcc79935814f39f2a9"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-cot-native-20261004\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\failed-cot-fullhd.png",
+    "archived": "integrated21d-cot-original/004-failed-cot-fullhd.png",
+    "sourceBytes": 1504427,
+    "sourceSha256": "817eea096d0bd361607dc7f0e498f4b2a5eef9dd80d4f5624019116cc16f9273",
+    "archivedBytes": 1504427,
+    "archivedSha256": "817eea096d0bd361607dc7f0e498f4b2a5eef9dd80d4f5624019116cc16f9273"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-cot-native-20261004\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\failed-cot-worker-snapshot.json",
+    "archived": "integrated21d-cot-original/005-failed-cot-worker-snapshot.json",
+    "sourceBytes": 61908,
+    "sourceSha256": "39cc30e41d994420046997a10cbaa42aa64422a223b0d7f1b9320b412c884166",
+    "archivedBytes": 61908,
+    "archivedSha256": "39cc30e41d994420046997a10cbaa42aa64422a223b0d7f1b9320b412c884166"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-corrected-native-20261004.json",
+    "archived": "integrated21d-fit-corrected/report.json",
+    "sourceBytes": 9427,
+    "sourceSha256": "49d6189cc139d383bc710d66ece52f3bb5e22a8b3ece708b2839e5e39ec3e69a",
+    "archivedBytes": 9427,
+    "archivedSha256": "49d6189cc139d383bc710d66ece52f3bb5e22a8b3ece708b2839e5e39ec3e69a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-corrected-native-20261004.txt",
+    "archived": "integrated21d-fit-corrected/console.txt",
+    "sourceBytes": 9172,
+    "sourceSha256": "2f0019c05be05a6710c58d3ac75901072465d0c728db0d738ea801c9592ee0a5",
+    "archivedBytes": 5211,
+    "archivedSha256": "c3316d651074c8ce684970fdfe9af5738f9937055ddfb7df6b4a5f36414d1cb5",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-corrected-native-20261004\\.last-run.json",
+    "archived": "integrated21d-fit-corrected/001-.last-run.json",
+    "sourceBytes": 96,
+    "sourceSha256": "6d5831c9ed966fd06080e334879f0550e3ff40adeccb6d1072ea2436b30bf1a7",
+    "archivedBytes": 96,
+    "archivedSha256": "6d5831c9ed966fd06080e334879f0550e3ff40adeccb6d1072ea2436b30bf1a7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-corrected-native-20261004\\camera-a-template-fit.nati-1970e-fit-disclosure-held-release\\actual-camera-template-fit-receipt.json",
+    "archived": "integrated21d-fit-corrected/002-actual-camera-template-fit-receipt.json",
+    "sourceBytes": 119487,
+    "sourceSha256": "f524fca902ca43a538ebd2e867c7ddbdf5390f20fe1a4792193264927054bbbf",
+    "archivedBytes": 119487,
+    "archivedSha256": "f524fca902ca43a538ebd2e867c7ddbdf5390f20fe1a4792193264927054bbbf"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-corrected-native-20261004\\camera-a-template-fit.nati-1970e-fit-disclosure-held-release\\actual-held-open-camera-yaw45-whole-q1.png",
+    "archived": "integrated21d-fit-corrected/003-actual-held-open-camera-yaw45-whole-q1.png",
+    "sourceBytes": 1537597,
+    "sourceSha256": "5d7e8970e117f69599d4c8adfdab1cedcd37607e970ddeee898433a08f16a958",
+    "archivedBytes": 1537597,
+    "archivedSha256": "5d7e8970e117f69599d4c8adfdab1cedcd37607e970ddeee898433a08f16a958"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-corrected-native-20261004\\camera-a-template-fit.nati-1970e-fit-disclosure-held-release\\actual-open-camera-whole-q1-mirrored-preview.png",
+    "archived": "integrated21d-fit-corrected/004-actual-open-camera-whole-q1-mirrored-preview.png",
+    "sourceBytes": 1744602,
+    "sourceSha256": "12a7f1b925e8236e8702086a0261dd4f271c4bd16e2797fb41214fa623eabd02",
+    "archivedBytes": 1744602,
+    "archivedSha256": "12a7f1b925e8236e8702086a0261dd4f271c4bd16e2797fb41214fa623eabd02"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-corrected-native-20261004\\camera-a-template-fit.nati-1970e-fit-disclosure-held-release\\actual-original-release-confirmed.png",
+    "archived": "integrated21d-fit-corrected/005-actual-original-release-confirmed.png",
+    "sourceBytes": 1547955,
+    "sourceSha256": "d94bfc96b1c380136fb3c985ee4125c02cb5e492bfc88aabc8c38a8c990febcc",
+    "archivedBytes": 1547955,
+    "archivedSha256": "d94bfc96b1c380136fb3c985ee4125c02cb5e492bfc88aabc8c38a8c990febcc"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-corrected-native-20261004\\camera-a-template-fit.nati-1970e-fit-disclosure-held-release\\whole-after-original-release.json",
+    "archived": "integrated21d-fit-corrected/006-whole-after-original-release.json",
+    "sourceBytes": 25674,
+    "sourceSha256": "236b19b35e94e8ca4cef9f9b38e16ff67c0642855b9281cb48127a6cc1af45a3",
+    "archivedBytes": 25674,
+    "archivedSha256": "236b19b35e94e8ca4cef9f9b38e16ff67c0642855b9281cb48127a6cc1af45a3"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-corrected-native-20261004\\camera-a-template-fit.nati-1970e-fit-disclosure-held-release\\whole-before-preview.json",
+    "archived": "integrated21d-fit-corrected/007-whole-before-preview.json",
+    "sourceBytes": 15874,
+    "sourceSha256": "8af5ea144fa35f072bb591db5658a48bc5c0cbcdc825d9c18311ec4f7e93c9cd",
+    "archivedBytes": 15874,
+    "archivedSha256": "8af5ea144fa35f072bb591db5658a48bc5c0cbcdc825d9c18311ec4f7e93c9cd"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-corrected-native-20261004\\camera-a-template-fit.nati-1970e-fit-disclosure-held-release\\whole-held-after-fit-disclosure.json",
+    "archived": "integrated21d-fit-corrected/008-whole-held-after-fit-disclosure.json",
+    "sourceBytes": 15874,
+    "sourceSha256": "d3ab901225551fd0ccd48ee2aa6f090713e317cc34074ad708f45536874b9ac0",
+    "archivedBytes": 15874,
+    "archivedSha256": "d3ab901225551fd0ccd48ee2aa6f090713e317cc34074ad708f45536874b9ac0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-corrected-native-20261004\\camera-a-template-fit.nati-54b54-fit-disclosure-held-release\\actual-camera-template-fit-receipt.json",
+    "archived": "integrated21d-fit-corrected/009-actual-camera-template-fit-receipt.json",
+    "sourceBytes": 53487,
+    "sourceSha256": "6967d05f01d8c68bcc5736f06dd161047c9ea6585552a4db77a9e72e3a993229",
+    "archivedBytes": 53487,
+    "archivedSha256": "6967d05f01d8c68bcc5736f06dd161047c9ea6585552a4db77a9e72e3a993229"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-corrected-native-20261004\\camera-a-template-fit.nati-54b54-fit-disclosure-held-release\\error-context.md",
+    "archived": "integrated21d-fit-corrected/010-error-context.md",
+    "sourceBytes": 14189,
+    "sourceSha256": "b3cfa64e2fa89b0ac39498d9aec791942d8ee78cfe9e5d14f3283d1fd3c1fd59",
+    "archivedBytes": 14189,
+    "archivedSha256": "b3cfa64e2fa89b0ac39498d9aec791942d8ee78cfe9e5d14f3283d1fd3c1fd59"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-corrected-native-20261004\\camera-a-template-fit.nati-54b54-fit-disclosure-held-release\\test-failed-1.png",
+    "archived": "integrated21d-fit-corrected/011-test-failed-1.png",
+    "sourceBytes": 444860,
+    "sourceSha256": "363adf00b23beec0114b757a0540127190f2eea4438b112211b180ac59365827",
+    "archivedBytes": 444860,
+    "archivedSha256": "363adf00b23beec0114b757a0540127190f2eea4438b112211b180ac59365827"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-corrected-native-20261004\\camera-a-template-fit.nati-54b54-fit-disclosure-held-release\\trace.zip",
+    "archived": "integrated21d-fit-corrected/012-trace.zip",
+    "sourceBytes": 35606475,
+    "sourceSha256": "7fe8d20c563e8f05e308d439bf83f35f07a5056494d88be0be5b8642b709bceb",
+    "archivedBytes": 35606475,
+    "archivedSha256": "7fe8d20c563e8f05e308d439bf83f35f07a5056494d88be0be5b8642b709bceb"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-corrected-native-20261004\\camera-a-template-fit.nati-54b54-fit-disclosure-held-release\\whole-before-preview.json",
+    "archived": "integrated21d-fit-corrected/013-whole-before-preview.json",
+    "sourceBytes": 15872,
+    "sourceSha256": "64c61e9b75c9e0a27c3e901b7ab028c2fbc73f929264cec1791545a28a355753",
+    "archivedBytes": 15872,
+    "archivedSha256": "64c61e9b75c9e0a27c3e901b7ab028c2fbc73f929264cec1791545a28a355753"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-public-collapse-native-20261004.json",
+    "archived": "integrated21d-fit-public-collapse/report.json",
+    "sourceBytes": 3659,
+    "sourceSha256": "a8889ae6090ea0c2b0ffdaeaec108b6380dd78e84c71f30817bcb5342a5e1e34",
+    "archivedBytes": 3659,
+    "archivedSha256": "a8889ae6090ea0c2b0ffdaeaec108b6380dd78e84c71f30817bcb5342a5e1e34"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-public-collapse-native-20261004.txt",
+    "archived": "integrated21d-fit-public-collapse/console.txt",
+    "sourceBytes": 3748,
+    "sourceSha256": "c86f6b1590e80aaa5f64adfe8e4fd2becc078f99233eec0983a7aa333fd2feb0",
+    "archivedBytes": 1877,
+    "archivedSha256": "2b7e1bdaa802f23827af036fd8968c3a7522d9f0425f6a9cc274a0a155071bf0",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-public-collapse-native-20261004\\.last-run.json",
+    "archived": "integrated21d-fit-public-collapse/001-.last-run.json",
+    "sourceBytes": 45,
+    "sourceSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "archivedBytes": 45,
+    "archivedSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-public-collapse-native-20261004\\camera-a-template-fit.nati-54b54-fit-disclosure-held-release\\actual-camera-template-fit-receipt.json",
+    "archived": "integrated21d-fit-public-collapse/002-actual-camera-template-fit-receipt.json",
+    "sourceBytes": 146825,
+    "sourceSha256": "583b5e1491cb2911bd235a34ee036325dbfd5a83e875ccab56c7a4fc7778fc50",
+    "archivedBytes": 146825,
+    "archivedSha256": "583b5e1491cb2911bd235a34ee036325dbfd5a83e875ccab56c7a4fc7778fc50"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-public-collapse-native-20261004\\camera-a-template-fit.nati-54b54-fit-disclosure-held-release\\actual-held-open-camera-yaw45-whole-q1.png",
+    "archived": "integrated21d-fit-public-collapse/003-actual-held-open-camera-yaw45-whole-q1.png",
+    "sourceBytes": 1004547,
+    "sourceSha256": "8dc714102f7d53eb450905390f957f758371cafc43f13102fd60575d54151275",
+    "archivedBytes": 1004547,
+    "archivedSha256": "8dc714102f7d53eb450905390f957f758371cafc43f13102fd60575d54151275"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-public-collapse-native-20261004\\camera-a-template-fit.nati-54b54-fit-disclosure-held-release\\actual-open-camera-whole-q1-mirrored-preview.png",
+    "archived": "integrated21d-fit-public-collapse/004-actual-open-camera-whole-q1-mirrored-preview.png",
+    "sourceBytes": 1049236,
+    "sourceSha256": "c98d372ec12ac084222a82140e4ee0ddafaf2bbade627afebe170d8cb2ba3856",
+    "archivedBytes": 1049236,
+    "archivedSha256": "c98d372ec12ac084222a82140e4ee0ddafaf2bbade627afebe170d8cb2ba3856"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-public-collapse-native-20261004\\camera-a-template-fit.nati-54b54-fit-disclosure-held-release\\actual-original-release-confirmed.png",
+    "archived": "integrated21d-fit-public-collapse/005-actual-original-release-confirmed.png",
+    "sourceBytes": 1073323,
+    "sourceSha256": "9a9c3e67f043489396800d78e7ea32b7c5267485184d1dc90be2262ceff8d619",
+    "archivedBytes": 1073323,
+    "archivedSha256": "9a9c3e67f043489396800d78e7ea32b7c5267485184d1dc90be2262ceff8d619"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-public-collapse-native-20261004\\camera-a-template-fit.nati-54b54-fit-disclosure-held-release\\actual-ui200-before-public-rail-collapse.png",
+    "archived": "integrated21d-fit-public-collapse/006-actual-ui200-before-public-rail-collapse.png",
+    "sourceBytes": 444860,
+    "sourceSha256": "363adf00b23beec0114b757a0540127190f2eea4438b112211b180ac59365827",
+    "archivedBytes": 444860,
+    "archivedSha256": "363adf00b23beec0114b757a0540127190f2eea4438b112211b180ac59365827"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-public-collapse-native-20261004\\camera-a-template-fit.nati-54b54-fit-disclosure-held-release\\whole-after-original-release.json",
+    "archived": "integrated21d-fit-public-collapse/007-whole-after-original-release.json",
+    "sourceBytes": 25675,
+    "sourceSha256": "d58a3c3eb70fd491d9c9217e5d4d761ea38457aba7ab11752ce7422cc5ec42f1",
+    "archivedBytes": 25675,
+    "archivedSha256": "d58a3c3eb70fd491d9c9217e5d4d761ea38457aba7ab11752ce7422cc5ec42f1"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-public-collapse-native-20261004\\camera-a-template-fit.nati-54b54-fit-disclosure-held-release\\whole-before-preview.json",
+    "archived": "integrated21d-fit-public-collapse/008-whole-before-preview.json",
+    "sourceBytes": 15875,
+    "sourceSha256": "bce0e78ae92dc13c815aa763e879f6b19379961ea793c606ad94fec48a8be390",
+    "archivedBytes": 15875,
+    "archivedSha256": "bce0e78ae92dc13c815aa763e879f6b19379961ea793c606ad94fec48a8be390"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-fit-public-collapse-native-20261004\\camera-a-template-fit.nati-54b54-fit-disclosure-held-release\\whole-held-after-fit-disclosure.json",
+    "archived": "integrated21d-fit-public-collapse/009-whole-held-after-fit-disclosure.json",
+    "sourceBytes": 15875,
+    "sourceSha256": "4a40769199ec12a0b1dc68593697f65ac3093ca0e22f05e0527ef4f9d5581772",
+    "archivedBytes": 15875,
+    "archivedSha256": "4a40769199ec12a0b1dc68593697f65ac3093ca0e22f05e0527ef4f9d5581772"
   }
 ]
