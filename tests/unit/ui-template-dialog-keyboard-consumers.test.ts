@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { appendFileSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import type Phaser from 'phaser';
 import { createRequire, stripTypeScriptTypes } from 'node:module';
@@ -216,7 +216,9 @@ for (const mode of ['world','oblique'] as const) for (const remapped of [false,t
   expect(h.actors.snapshot()).toEqual(workerBefore);
   const canvas=h.canvas;canvas.focus();key(canvas,'ArrowDown');h.scene.update(1000,300);if(h.scene instanceof WorldScene) h.scene.cameras.main.preRender();key(canvas,'ArrowDown',false);
   expect(h.scene.captureCameraView(),'fresh world arrow remains functional').not.toEqual(before);
+  const afterFreshWorldArrow = h.scene.captureCameraView();
   key(canvas,'Escape');key(canvas,'Escape',false);expect(h.tool.isArmed()).toBe(false);expect(submitted(h)).toHaveLength(0);
+  if(process.env.TEMPLATE_DIALOG_AUDIT_RECEIPT!==undefined) appendFileSync(process.env.TEMPLATE_DIALOG_AUDIT_RECEIPT,JSON.stringify({mode,remapped,kind:'keyboard',before,afterFreshWorldArrow,testedControls:['X','Y','rotation'],keys:['ArrowUp','ArrowDown','Home','End','Enter'],cameraStableCases:15,commands:submitted(h).length,escaped})+'\n');
  } finally {h.dispose();}
 });
 for(const mode of ['world','oblique'] as const) it(`${mode}: real numeric input/rotation supersedes delayed verdict; one activation buys one current plan`,async()=>{
@@ -244,5 +246,6 @@ for(const mode of ['world','oblique'] as const) it(`${mode}: real numeric input/
   expect(await h.tool.quote()).toEqual({orderCount:20,materials:[{itemId:'item.brick',quantity:35},{itemId:'item.wood-plank',quantity:2}],catalogueCostMinorUnits:1530});
 
   expect(place.disabled).toBe(true);place.dispatchEvent(new Event('click'));await settle(h);expect(submitted(h)).toHaveLength(1);
+  if(process.env.TEMPLATE_DIALOG_AUDIT_RECEIPT!==undefined) appendFileSync(process.env.TEMPLATE_DIALOG_AUDIT_RECEIPT,JSON.stringify({mode,kind:'numeric-place',commands:submitted(h).map(m=>m.payload.command.data),orders:snapshot.construction.orders.map(o=>({definitionId:o.definitionId,location:o.location,edge:o.edge})),quote:await h.tool.quote()})+'\n');
  } finally {h.dispose();}
 });
