@@ -985,7 +985,7 @@ export interface HudBuildOrderViewModel {
    * `CancelBuildOrder` press can name it as `expectedRevision` -- the row's
    * own read of what it last saw, not a value this thread invents.
    */
-  readonly revision: number;
+  readonly revision: string;
 }
 
 /**

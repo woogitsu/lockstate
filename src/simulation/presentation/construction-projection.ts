@@ -128,7 +128,7 @@ export interface BuildOrderSource {
    * `ConstructionSystem.revisionOf`, which this is read from unchanged: never
    * throws, `0` for an id that names nothing.
    */
-  revisionOf(orderId: string): number;
+  revisionOf(orderId: string): string;
 }
 
 /**
@@ -265,7 +265,7 @@ export interface BuildQueueOrderViewModel {
    * exactly "the order has not been mutated since this row was published" --
    * the whole reason the counter exists.
    */
-  readonly revision: number;
+  readonly revision: string;
 }
 
 export interface BuildQueueViewModel {
