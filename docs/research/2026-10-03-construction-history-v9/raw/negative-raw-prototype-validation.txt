@@ -1,0 +1,28 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-construction-history-v9-20261003
+
+ ❯ tests/integration/construction-history-restore-validation.test.ts (15 tests | 2 failed) 86ms
+   × direct runtime restore refuses 'inherited object' ledger before any construction mutation 5ms
+   × direct runtime restore refuses 'Date' ledger before any construction mutation 3ms
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 13 passed (15)
+   Start at  19:19:55
+   Duration  2.44s (transform 828ms, setup 0ms, import 2.23s, tests 86ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/construction-history-restore-validation.test.ts > direct runtime restore refuses 'inherited object' ledger before any construction mutation
+ FAIL  tests/integration/construction-history-restore-validation.test.ts > direct runtime restore refuses 'Date' ledger before any construction mutation
+AssertionError: expected function to throw an error, but it didn't
+ ❯ tests/integration/construction-history-restore-validation.test.ts:37:68
+     35|   const { runtime, bundle } = boughtBundle();
+     36|   const damaged = { ...bundle, construction: { ...bundle.construction,…
+     37|   expect(() => runtime.construction.restore(damaged.construction)).toT…
+       |                                                                    ^
+     38|   expect(captureSessionSnapshot(runtime)).toStrictEqual(bundle);
+     39|   expect(() => restoreSimulationRuntime(damaged)).toThrowError(Snapsho…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+

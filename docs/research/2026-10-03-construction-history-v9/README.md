@@ -117,3 +117,18 @@ citations drifting; `raw/shifted-anchors.json` records the before/current scanne
 comparison. Exact current quotations were corrected in ADR0028/0047/0062, keeping
 the old coordinates explicitly historical. The restored gate20GREEN/3files
 keeps all pinned budgets and tolerances unchanged.
+
+Two additional real System guard omissions at
+`2a27081053de07384b515db6957bfb4e7317cb1e` independently remove entry validation
+(10RED5legalGREEN) and prototype validation (2RED13legalGREEN). The finally
+restoration returns15GREEN, production diff0, with exact before/after source
+SHA256 `9ceda8f098de34b0ba6493f2c453719fca5f5dcf185352dc53100d7b3b1d443c`.
+The raw logs, executed inert script and receipt are under `raw/raw-validation-*`
+and `raw/negative-raw-*`; the earlier four capture/restore loops were not rerun.
+
+Final bounded consumers are30GREEN/4files2.64s: individual object rotation,
+individual object preflight publication, room-template session preflight and
+restore refusal reasons. Both strict application/tools typechecks exit0 at the
+same checkpoint. The final documentation gate is20GREEN/3files568ms. These
+terminal logs supplement the explicitly earlier477-test run without claiming a
+second full verification, browser, server, build or native execution.

@@ -1,0 +1,19 @@
+{
+  "checkpoint": "2a27081053de07384b515db6957bfb4e7317cb1e",
+  "beforeSha256": "9ceda8f098de34b0ba6493f2c453719fca5f5dcf185352dc53100d7b3b1d443c",
+  "afterSha256": "9ceda8f098de34b0ba6493f2c453719fca5f5dcf185352dc53100d7b3b1d443c",
+  "rows": [
+    {
+      "name": "raw-entry-validation",
+      "expectedFailures": 10,
+      "exitCode": 1,
+      "mutatedSha256": "2bc4b82f3f5b5c531e1f198c98be59fe160722934a2858d04d823a3f8db5eead"
+    },
+    {
+      "name": "raw-prototype-validation",
+      "expectedFailures": 2,
+      "exitCode": 1,
+      "mutatedSha256": "1ba4ff8e846943befaa1ca6bb92ad6367ef436710a6e9a949a8a5b66f657ae82"
+    }
+  ]
+}
