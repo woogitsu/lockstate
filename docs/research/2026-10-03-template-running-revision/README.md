@@ -30,6 +30,10 @@ Source harness executes actual main installed callback, bridge and worker ports 
 
 - Exact fixture:4/4GREEN; raw `recorded-baseline.log`, machine receipts `actual-running-four-cases.jsonl`.
 - Strict fixture TypeScript: exit0.
-- Actual feed every-delta dirty producer negative and exact restoration: pending controlled verification; do not treat the initial green alone as load-bearing acceptance.
+- Unique actual `SimulationSnapshotFeed.applyDelta` world-marker guard changed temporarily to `if(true)`:4/4RED with20 assertion failures. Actual query deltas become277/286/562/572 at29/30/59/60seconds, versus0/1/1/2. Real1200tick, idle/patrol, unchanged world, literal quote, public Undo/Redo and their +1 refresh controls still execute and pass: counts use soft assertions solely so all independent legal controls finish before the suite reports RED.
+- Entire producer bytes restored in `finally`, SHA256 retained in `producer-exact-restoration.json`; detached frozen subject98e1e69af1 during mutation, then original branch resumed. Exact-restored fixture4/4GREEN.
+- Final strict fixture TypeScript and canonical research index results are retained alongside raw source outputs. No feed/main/bridge production diff survives.
 
 Command: `node node_modules/vitest/vitest.mjs run tests/unit/ui-template-running-world-revision.test.ts --maxWorkers=2`; optional TEMPLATE_RUNNING_AUDIT_RECEIPT writes measured JSON lines without changing the assertions.
+
+The first index command named a nonexistent unit file and exited1 without executing tests (`index-initial.log`); the real `tests/foundation/research-index-contract.test.ts` passed5/5. This command-selection error is separate from the guard-motion setup errors and producer RED.

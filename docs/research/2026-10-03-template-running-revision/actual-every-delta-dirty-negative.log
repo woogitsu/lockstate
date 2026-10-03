@@ -1,0 +1,127 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-template-running-revision-audit-20261003
+
+ ❯ tests/unit/ui-template-running-world-revision.test.ts (4 tests | 4 failed) 1163ms
+   × world/default idle guard: ticks do not spam stationary preflight; history refreshes 366ms
+   × world/real patrol: ticks do not spam stationary preflight; history refreshes 253ms
+   × oblique/default idle guard: ticks do not spam stationary preflight; history refreshes 247ms
+   × oblique/real patrol: ticks do not spam stationary preflight; history refreshes 297ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-template-running-world-revision.test.ts > world/default idle guard: ticks do not spam stationary preflight; history refreshes
+ FAIL  tests/unit/ui-template-running-world-revision.test.ts > world/real patrol: ticks do not spam stationary preflight; history refreshes
+ FAIL  tests/unit/ui-template-running-world-revision.test.ts > oblique/default idle guard: ticks do not spam stationary preflight; history refreshes
+ FAIL  tests/unit/ui-template-running-world-revision.test.ts > oblique/real patrol: ticks do not spam stationary preflight; history refreshes
+AssertionError: no geometry query for29seconds of actual ticks/motion: expected 277 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 277
+
+ ❯ tests/unit/ui-template-running-world-revision.test.ts:237:107
+    235|     if (moving) expect(positions.size,'real restored patrol must move …
+    236|     else expect(positions.size,'empty-prison default sector correctly …
+    237|     expect.soft(trace[1]!.queries-initialQueries,'no geometry query fo…
+       |                                                                                                           ^
+    238|     expect.soft(trace[2]!.queries-initialQueries,'one existing30s cons…
+    239|     expect.soft(trace[3]!.queries-initialQueries,'no extra query befor…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/20]⎯
+
+ FAIL  tests/unit/ui-template-running-world-revision.test.ts > world/default idle guard: ticks do not spam stationary preflight; history refreshes
+ FAIL  tests/unit/ui-template-running-world-revision.test.ts > world/real patrol: ticks do not spam stationary preflight; history refreshes
+ FAIL  tests/unit/ui-template-running-world-revision.test.ts > oblique/default idle guard: ticks do not spam stationary preflight; history refreshes
+ FAIL  tests/unit/ui-template-running-world-revision.test.ts > oblique/real patrol: ticks do not spam stationary preflight; history refreshes
+AssertionError: one existing30s consistency pull: expected 286 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 286
+
+ ❯ tests/unit/ui-template-running-world-revision.test.ts:238:86
+    236|     else expect(positions.size,'empty-prison default sector correctly …
+    237|     expect.soft(trace[1]!.queries-initialQueries,'no geometry query fo…
+    238|     expect.soft(trace[2]!.queries-initialQueries,'one existing30s cons…
+       |                                                                                      ^
+    239|     expect.soft(trace[3]!.queries-initialQueries,'no extra query befor…
+    240|     expect.soft(queries(h)-initialQueries,'two existing consistency sn…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/20]⎯
+
+ FAIL  tests/unit/ui-template-running-world-revision.test.ts > world/default idle guard: ticks do not spam stationary preflight; history refreshes
+ FAIL  tests/unit/ui-template-running-world-revision.test.ts > world/real patrol: ticks do not spam stationary preflight; history refreshes
+ FAIL  tests/unit/ui-template-running-world-revision.test.ts > oblique/default idle guard: ticks do not spam stationary preflight; history refreshes
+ FAIL  tests/unit/ui-template-running-world-revision.test.ts > oblique/real patrol: ticks do not spam stationary preflight; history refreshes
+AssertionError: no extra query before next consistency boundary: expected 562 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 562
+
+ ❯ tests/unit/ui-template-running-world-revision.test.ts:239:101
+    237|     expect.soft(trace[1]!.queries-initialQueries,'no geometry query fo…
+    238|     expect.soft(trace[2]!.queries-initialQueries,'one existing30s cons…
+    239|     expect.soft(trace[3]!.queries-initialQueries,'no extra query befor…
+       |                                                                                                     ^
+    240|     expect.soft(queries(h)-initialQueries,'two existing consistency sn…
+    241|     expect.soft(h.readFrame().revision-initialFrame.revision).toBe(2);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/20]⎯
+
+ FAIL  tests/unit/ui-template-running-world-revision.test.ts > world/default idle guard: ticks do not spam stationary preflight; history refreshes
+ FAIL  tests/unit/ui-template-running-world-revision.test.ts > world/real patrol: ticks do not spam stationary preflight; history refreshes
+ FAIL  tests/unit/ui-template-running-world-revision.test.ts > oblique/default idle guard: ticks do not spam stationary preflight; history refreshes
+ FAIL  tests/unit/ui-template-running-world-revision.test.ts > oblique/real patrol: ticks do not spam stationary preflight; history refreshes
+AssertionError: two existing consistency snapshots over60seconds, not each actor delta: expected 572 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 572
+
+ ❯ tests/unit/ui-template-running-world-revision.test.ts:240:117
+    238|     expect.soft(trace[2]!.queries-initialQueries,'one existing30s cons…
+    239|     expect.soft(trace[3]!.queries-initialQueries,'no extra query befor…
+    240|     expect.soft(queries(h)-initialQueries,'two existing consistency sn…
+       |                                                                                                                     ^
+    241|     expect.soft(h.readFrame().revision-initialFrame.revision).toBe(2);
+    242|     expect(h.layer().dataset.ready).toBe('blocked');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/20]⎯
+
+ FAIL  tests/unit/ui-template-running-world-revision.test.ts > world/default idle guard: ticks do not spam stationary preflight; history refreshes
+ FAIL  tests/unit/ui-template-running-world-revision.test.ts > world/real patrol: ticks do not spam stationary preflight; history refreshes
+ FAIL  tests/unit/ui-template-running-world-revision.test.ts > oblique/default idle guard: ticks do not spam stationary preflight; history refreshes
+ FAIL  tests/unit/ui-template-running-world-revision.test.ts > oblique/real patrol: ticks do not spam stationary preflight; history refreshes
+AssertionError: expected 572 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 572
+
+ ❯ tests/unit/ui-template-running-world-revision.test.ts:241:63
+    239|     expect.soft(trace[3]!.queries-initialQueries,'no extra query befor…
+    240|     expect.soft(queries(h)-initialQueries,'two existing consistency sn…
+    241|     expect.soft(h.readFrame().revision-initialFrame.revision).toBe(2);
+       |                                                               ^
+    242|     expect(h.layer().dataset.ready).toBe('blocked');
+    243|     expect(await h.tool.quote()).toEqual({orderCount:20,materials:[{it…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/20]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed (4)
+   Start at  08:48:11
+   Duration  4.89s (transform 1.23s, setup 0ms, import 3.59s, tests 1.16s, environment 0ms)
+

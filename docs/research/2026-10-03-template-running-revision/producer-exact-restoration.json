@@ -1,0 +1,10 @@
+{
+  "subject": "98e1e69af102883106a8cf76b8298321b6f23077",
+  "path": "src\\rendering\\feed\\simulation-snapshot-feed.ts",
+  "originalSha256": "537e5ba8823dd3e762b0a7d08afca825a28a440994a29d4ce0dd17eb59ee2dee",
+  "count": 1,
+  "mutantSha256": "5c9f0156f358a09849bfc4ee5f4d1d174f5d5a4570de84931db7b2cdea44288b",
+  "negativeExit": 1,
+  "restoredSha256": "537e5ba8823dd3e762b0a7d08afca825a28a440994a29d4ce0dd17eb59ee2dee",
+  "bytesExact": true
+}
