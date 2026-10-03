@@ -1,0 +1,98 @@
+import { expect, it } from 'vitest';
+import { createSaveEnvelope, decodeSaveEnvelope } from '../../src/persistence/save-schema';
+import { packCommand, unpackCommand, type SimulationCommand } from '../../src/simulation/protocol/commands';
+import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { captureSessionSnapshot, restoreSimulationRuntime, type SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
+
+type Runtime = ReturnType<typeof createNewSimulationRuntime>;
+const MAX = Number.MAX_SAFE_INTEGER;
+function send(runtime: Runtime, command: SimulationCommand) {
+  const sequence = runtime.kernel.expectedSequence;
+  runtime.kernel.submitCommand(`limit-${sequence}`, sequence, runtime.kernel.tick, packCommand(command));
+  expect(runtime.kernel.dispatchDueCommands()).toBe(1);
+}
+function envelope(bundle: SessionSnapshotBundle) {
+  return createSaveEnvelope({ gameVersion: 'test', prisonId: 'revision-limit', revision: 1, createdAt: 0, updatedAt: 1, ...bundle });
+}
+function load(bundle: SessionSnapshotBundle): Runtime {
+  const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope(bundle))));
+  expect(decoded.ok).toBe(true);
+  if (!decoded.ok) throw Error(decoded.error.message);
+  return restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle).runtime;
+}
+function bought() {
+  const runtime = createNewSimulationRuntime(73);
+  send(runtime, { type: 'PlaceBuildOrder', orderId: 'actual-wall', definitionId: 'wall-brick', x: 3, y: 3, footprint: 'square' });
+  runtime.kernel.step();
+  expect(runtime.construction.getOrder('actual-wall')?.state).toBe('materials-pending');
+  return runtime;
+}
+function maximal(runtime: Runtime, id: string) {
+  const bundle = captureSessionSnapshot(runtime);
+  const restored = load({ ...bundle, construction: { ...bundle.construction,
+    orderRevisions: { ...bundle.construction.orderRevisions, [id]: MAX } } });
+  expect(restored.construction.revisionOf(id)).toBe(MAX);
+  return restored;
+}
+function assertNormalSave(runtime: Runtime, stage: string) {
+  const bundle = captureSessionSnapshot(runtime);
+  let saveError: unknown;
+  try { envelope(bundle); } catch (error) { saveError = String(error); }
+  console.info('REVISION_LIMIT', JSON.stringify({ stage, tick: runtime.kernel.tick,
+    state: runtime.construction.getOrder('actual-wall')?.state,
+    revision: runtime.construction.revisionOf('actual-wall'), safe: Number.isSafeInteger(runtime.construction.revisionOf('actual-wall')),
+    balance: runtime.treasury.balanceMinorUnits, refusal: runtime.refusals.last?.reason ?? null, saveError: saveError ?? null }));
+  expect(saveError, 'a legal V9 import followed by an ordinary action must remain saveable').toBeUndefined();
+  expect(captureSessionSnapshot(load(bundle))).toEqual(bundle);
+}
+
+it('active MAX revision followed by genuine matching cancellation remains saveable', () => {
+  const runtime = maximal(bought(), 'actual-wall');
+  const funds = runtime.treasury.balanceMinorUnits;
+  send(runtime, { type: 'CancelBuildOrder', orderId: 'actual-wall', expectedRevision: MAX });
+  expect(runtime.construction.getOrder('actual-wall')?.state).toBe('cancelled');
+  expect(runtime.treasury.balanceMinorUnits).toBe(funds + 80);
+  assertNormalSave(runtime, 'active-cancel');
+});
+
+it('active MAX revision followed by genuine material/build ticks remains saveable', () => {
+  const runtime = maximal(bought(), 'actual-wall');
+  for (let tick = 0; tick < 1000 && runtime.construction.getOrder('actual-wall')?.state !== 'completed'; tick++) runtime.kernel.step();
+  expect(runtime.construction.getOrder('actual-wall')?.state).toBe('completed');
+  assertNormalSave(runtime, 'active-complete');
+});
+
+it('unused MAX key remains legal through ordinary completion', () => {
+  const runtime = maximal(bought(), 'unused-explicit-key');
+  for (let tick = 0; tick < 1000 && runtime.construction.getOrder('actual-wall')?.state !== 'completed'; tick++) runtime.kernel.step();
+  expect(runtime.construction.getOrder('actual-wall')?.state).toBe('completed');
+  expect(runtime.construction.revisionOf('unused-explicit-key')).toBe(MAX);
+  assertNormalSave(runtime, 'unused-max');
+});
+
+it('completed MAX key remains legal when no later action targets it', () => {
+  let runtime = bought();
+  for (let tick = 0; tick < 1000 && runtime.construction.getOrder('actual-wall')?.state !== 'completed'; tick++) runtime.kernel.step();
+  expect(runtime.construction.getOrder('actual-wall')?.state).toBe('completed');
+  runtime = maximal(runtime, 'actual-wall');
+  for (let tick = 0; tick < 20; tick++) runtime.kernel.step();
+  expect(runtime.construction.revisionOf('actual-wall')).toBe(MAX);
+  assertNormalSave(runtime, 'terminal-max');
+});
+
+it('protocol rejects the actual fresh overflow token without entering the cancellation handler', () => {
+  const runtime = maximal(bought(), 'actual-wall');
+  for (let tick = 0; tick < 1000 && runtime.construction.getOrder('actual-wall')?.state !== 'assigned'; tick++) runtime.kernel.step();
+  expect(runtime.construction.getOrder('actual-wall')?.state).toBe('assigned');
+  const expectedRevision = runtime.construction.revisionOf('actual-wall');
+  expect(expectedRevision).toBe(MAX + 1);
+  const command: SimulationCommand = { type: 'CancelBuildOrder', orderId: 'actual-wall', expectedRevision };
+  expect(unpackCommand(packCommand(command))).toBeNull();
+  const before = captureSessionSnapshot(runtime);
+  send(runtime, command);
+  expect(captureSessionSnapshot(runtime)).toEqual({ ...before,
+    kernel: { ...before.kernel, expectedSequence: before.kernel.expectedSequence + 1 } });
+  expect(runtime.refusals.last).toBeUndefined();
+  console.info('PROTOCOL_LIMIT', JSON.stringify({ expectedRevision, state: runtime.construction.getOrder('actual-wall')?.state,
+    funds: runtime.treasury.balanceMinorUnits, unpacked: null, domainRefusal: null, fullSnapshotUnchangedExceptSequence: true }));
+});
