@@ -1,0 +1,45 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-template-history-verdict-audit-20261003
+
+ ❯ tests/unit/ui-template-history-verdict.test.ts (4 tests | 4 failed) 284ms
+   × world: stationary blocked ghost must refresh after actual public Undo removes completed template 102ms
+   × world: actual pointer move to adjacent square and back refreshes ghost after completed Undo 79ms
+   × oblique: stationary blocked ghost must refresh after actual public Undo removes completed template 57ms
+   × oblique: actual pointer move to adjacent square and back refreshes ghost after completed Undo 45ms
+
+ Test Files  1 failed (1)
+      Tests  4 failed (4)
+   Start at  07:38:23
+   Duration  6.05s (transform 3.40s, setup 0ms, import 5.64s, tests 284ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-template-history-verdict.test.ts > world: stationary blocked ghost must refresh after actual public Undo removes completed template
+ FAIL  tests/unit/ui-template-history-verdict.test.ts > oblique: stationary blocked ghost must refresh after actual public Undo removes completed template
+SyntaxError: Return statement is not allowed here
+ ❯ history tests/unit/ui-template-history-verdict.test.ts:187:44
+    185|   const end=source.indexOf('return;',start)+'return;'.length;
+    186|   if(start<20||end<=start) throw Error('Actual public main history cal…
+    187|   new Function('commands',requireBody+'\n'+stripTypeScriptTypes(source…
+       |                                            ^
+    188| }
+    189| function queries(h:Awaited<ReturnType<typeof setup>>) {return h.actors…
+ ❯ tests/unit/ui-template-history-verdict.test.ts:195:35
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tests/unit/ui-template-history-verdict.test.ts > world: actual pointer move to adjacent square and back refreshes ghost after completed Undo
+ FAIL  tests/unit/ui-template-history-verdict.test.ts > oblique: actual pointer move to adjacent square and back refreshes ghost after completed Undo
+SyntaxError: Return statement is not allowed here
+ ❯ history tests/unit/ui-template-history-verdict.test.ts:187:44
+    185|   const end=source.indexOf('return;',start)+'return;'.length;
+    186|   if(start<20||end<=start) throw Error('Actual public main history cal…
+    187|   new Function('commands',requireBody+'\n'+stripTypeScriptTypes(source…
+       |                                            ^
+    188| }
+    189| function queries(h:Awaited<ReturnType<typeof setup>>) {return h.actors…
+ ❯ tests/unit/ui-template-history-verdict.test.ts:206:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
