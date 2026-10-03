@@ -1,0 +1,31 @@
+﻿{
+    "base":  "e0efd6eea5f65c08749c525bac5a4a1419b404ef",
+    "copyVerified":  true,
+    "producerNegativeVerified":  false,
+    "files":  [
+                  {
+                      "file":  "owned-edge.test.ts.txt",
+                      "sha256":  "102ba92d6a0e614ed46bfdda8e7a21791d4f67b06c4bc1b62e967b9e055d0b66"
+                  },
+                  {
+                      "file":  "owned-edge.txt",
+                      "sha256":  "0955639ff07561c1741d57a5b6b35f47e2e3427a71bea08906b4f329d9135b3b"
+                  },
+                  {
+                      "file":  "owned-edge-run.cjs.txt",
+                      "sha256":  "28e0c17149dcb0fe10e56050847f6ef9cc0a1a534cb1ac5983331d76b8fa5847"
+                  },
+                  {
+                      "file":  "two-gesture-redo.test.ts.txt",
+                      "sha256":  "486f535a17072922de4748deb3edadaa3aa708362b3b9f8d00daf6ed834be388"
+                  },
+                  {
+                      "file":  "two-gesture-redo.txt",
+                      "sha256":  "7a76da183e2f6ae65eda332126bee8243f8f70ea918198dca762a47c7ac237a4"
+                  },
+                  {
+                      "file":  "two-gesture-redo-run.cjs.txt",
+                      "sha256":  "194b4049725009a0f88c24bea15714e65bd6ae8129410489e9b63181934089ab"
+                  }
+              ]
+}

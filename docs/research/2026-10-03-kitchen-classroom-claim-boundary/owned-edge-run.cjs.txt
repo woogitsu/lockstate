@@ -1,0 +1,4 @@
+const fs = require('fs'), cp = require('child_process');
+const r = cp.spawnSync(process.execPath, ['node_modules/vitest/vitest.mjs', 'run', 'tests/integration/.local-kitchen-claim-boundary.test.ts', '--maxWorkers=2'], { encoding: 'utf8' });
+fs.writeFileSync('.local-kitchen-boundary-result.txt', r.stdout + r.stderr);
+console.log(r.stdout + r.stderr); process.exitCode = r.status;

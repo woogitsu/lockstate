@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-kitchen-template-claim-boundary-audit-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  05:38:40
+   Duration  3.53s (transform 933ms, setup 0ms, import 2.69s, tests 703ms, environment 0ms)
+

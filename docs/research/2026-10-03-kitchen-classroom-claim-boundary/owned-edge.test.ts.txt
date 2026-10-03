@@ -1,0 +1,111 @@
+import { expect, it } from 'vitest';
+import { createSaveEnvelope, decodeSaveEnvelope } from '../../src/persistence/save-schema';
+import { packCommand, type SimulationCommand } from '../../src/simulation/protocol/commands';
+import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { captureSessionSnapshot, restoreSimulationRuntime, type SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
+import { PROJECTION_CATALOG } from '../../src/simulation/worker/projection-catalog';
+import { tileCoordinate } from '../../src/simulation/world/coordinates';
+
+type Runtime = ReturnType<typeof createNewSimulationRuntime>;
+const tile = (x: number, y: number) => ({ x: tileCoordinate(x), y: tileCoordinate(y) });
+function send(runtime: Runtime, command: SimulationCommand) {
+  const sequence = runtime.kernel.expectedSequence;
+  runtime.kernel.submitCommand(`kitchen-boundary-${sequence}`, sequence, runtime.kernel.tick, packCommand(command));
+  expect(runtime.kernel.dispatchDueCommands()).toBe(1);
+  return sequence;
+}
+function until(runtime: Runtime, predicate: () => boolean) {
+  for (let ticks = 0; ticks < 30_000 && !predicate(); ticks++) runtime.kernel.step();
+  expect(predicate()).toBe(true);
+}
+function finish(runtime: Runtime) {
+  until(runtime, () => runtime.roomTemplates.snapshot().pending.length === 0 &&
+    runtime.construction.allOrders().every(order => order.state === 'completed'));
+}
+function reload(runtime: Runtime): Runtime {
+  const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(createSaveEnvelope({
+    gameVersion: 'test', prisonId: 'kitchen-boundary', revision: 1, createdAt: 0, updatedAt: 1,
+    ...captureSessionSnapshot(runtime),
+  }))));
+  expect(decoded.ok).toBe(true);
+  if (!decoded.ok) throw new Error('Genuine bought rooms, stock and physical ownership must decode');
+  return restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle).runtime;
+}
+function gameplay(runtime: Runtime) { const { kernel: _, ...data } = captureSessionSnapshot(runtime); return data; }
+const plans = [
+  { templateId: 'kitchen-basic' as const, roomId: 'room.kitchen', x: 26, orderCount: 23, cost: 1785,
+    materials: [{ itemId: 'item.brick', quantity: 43 }, { itemId: 'item.wood-plank', quantity: 1 }],
+    objects: [
+      { objectId: 'object.stove', anchorTile: tile(30, 13) },
+      { objectId: 'object.prep-counter', anchorTile: tile(30, 11) },
+      { objectId: 'object.fridge', anchorTile: tile(28, 14) },
+    ], far: [tile(30, 14), tile(30, 12)] },
+  { templateId: 'classroom-basic' as const, roomId: 'room.classroom', x: 25, orderCount: 29, cost: 2295,
+    materials: [{ itemId: 'item.brick', quantity: 46 }, { itemId: 'item.wood-plank', quantity: 7 }],
+    objects: [
+      { objectId: 'object.bookshelf', anchorTile: tile(30, 14) },
+      { objectId: 'object.chair', anchorTile: tile(28, 15) },
+      { objectId: 'object.chair', anchorTile: tile(28, 13) },
+      { objectId: 'object.chair', anchorTile: tile(27, 15) },
+      { objectId: 'object.chair', anchorTile: tile(27, 13) },
+    ], far: [tile(30, 15)] },
+];
+const cases = plans.flatMap(plan => [false, true].flatMap(saved => [false, true].map(blocked => ({ ...plan, saved, blocked }))));
+it.each(cases)('genuine edge build $templateId saved=$saved blocked=$blocked', testCase => {
+  let runtime = createNewSimulationRuntime(73);
+  for (const [templateId, x] of [['storage-room-basic', 5], ['delivery-bay-basic', 12]] as const)
+    send(runtime, { type: 'PlaceRoomTemplate', templateId, origin: { x, y: 5 } });
+  finish(runtime);
+  expect(runtime.prisoners.roomInstances.allByRoomCatalogId('room.storage-room')[0]!.objectCapabilities).toContain('item-storage');
+  expect(runtime.prisoners.roomInstances.allByRoomCatalogId('room.delivery-bay')[0]!.objectCapabilities).toContain('delivery-access');
+  // Mirror first, then clockwise90: the doorway is x,13 and its exterior
+  // approach x-1,13. x-1,14 is a genuine adjacent wall outside this approach.
+  const wall = tile(testCase.x - 1, testCase.blocked ? 13 : 14);
+  send(runtime, { type: 'PlaceBuildOrder', orderId: 'earlier-wall', definitionId: 'wall-brick', ...wall, footprint: 'square' });
+  finish(runtime);
+  if (testCase.saved) runtime = reload(runtime);
+  const request = { kind: 'room-template' as const, templateId: testCase.templateId, origin: { x: testCase.x, y: 10 }, mirrorX: true, quarterTurns: 1 as const };
+  const before = gameplay(runtime);
+  const quote = PROJECTION_CATALOG['world/room-template-cost'].project(runtime, runtime.kernel.tick, { target: request }).view;
+  expect(quote).toEqual({ orderCount: testCase.orderCount, materials: testCase.materials, catalogueCostMinorUnits: testCase.cost });
+  const preflight = PROJECTION_CATALOG['world/room-template-preflight'].project(runtime, runtime.kernel.tick, { target: request }).view;
+  expect(gameplay(runtime)).toEqual(before);
+  const funds = runtime.treasury.balanceMinorUnits;
+  const sequence = send(runtime, { type: 'PlaceRoomTemplate', templateId: request.templateId,
+    origin: request.origin, mirrorX: request.mirrorX, quarterTurns: request.quarterTurns });
+  if (testCase.blocked) {
+    expect(preflight).toEqual({ ok: false, reason: 'structure-occupied', tile: tile(testCase.x, 13) });
+    expect(runtime.refusals.last).toMatchObject({ reason: 'build.unbuildable', tile: tile(testCase.x, 13) });
+    expect(gameplay(runtime)).toEqual(before);
+    expect(runtime.treasury.balanceMinorUnits).toBe(funds);
+    console.log(JSON.stringify({ templateId: testCase.templateId, saved: testCase.saved, blocked: true, sequence, quote, preflight, funds }));
+    return;
+  }
+  expect(preflight).toEqual({ ok: true });
+  expect(runtime.refusals.count).toBe(0);
+  const prefix = `room-template-${sequence.toString().padStart(12, '0')}`;
+  until(runtime, () => runtime.roomTemplates.snapshot().pending.length === 0);
+  expect(runtime.construction.allOrders().some(order => order.id.startsWith(prefix) && order.state !== 'completed')).toBe(true);
+  if (testCase.saved) runtime = reload(runtime);
+  finish(runtime);
+  expect(runtime.prisoners.roomInstances.allByRoomCatalogId(testCase.roomId)).toHaveLength(1);
+  const orders = runtime.construction.allOrders().filter(order => order.id.startsWith(prefix));
+  expect(orders).toHaveLength(testCase.orderCount);
+  expect(runtime.treasury.balanceMinorUnits).toBe(funds - testCase.cost);
+  const quantities = new Map<string, number>();
+  for (const order of orders) for (const material of order.materialsAllocated)
+    quantities.set(material.itemId, (quantities.get(material.itemId) ?? 0) + material.quantity);
+  expect([...quantities].sort(([a], [b]) => a < b ? -1 : 1).map(([itemId, quantity]) => ({ itemId, quantity }))).toEqual(testCase.materials);
+  const sort = (a: { anchorTile: { x: number; y: number } }, b: { anchorTile: { x: number; y: number } }) => a.anchorTile.y - b.anchorTile.y || a.anchorTile.x - b.anchorTile.x;
+  const physical = runtime.placedObjects.getSnapshot().filter(object => object.anchorTile.x >= 25);
+  expect(physical.map(({ objectId, anchorTile, orientation }) => ({ objectId, anchorTile, orientation })).sort(sort))
+    .toEqual(testCase.objects.map(object => ({ ...object, orientation: 1 })).sort(sort));
+  for (const object of physical) expect(orders.find(order => order.id === object.sourceOrderId))
+    .toMatchObject({ state: 'completed', location: object.anchorTile, objectOrientation: 1 });
+  for (const far of testCase.far) expect(runtime.placedObjects.isTileOccupied(far)).toBe(true);
+  const complete = gameplay(runtime);
+  runtime = reload(runtime);
+  expect(gameplay(runtime)).toEqual(complete);
+  for (const far of testCase.far) expect(runtime.placedObjects.isTileOccupied(far)).toBe(true);
+  console.log(JSON.stringify({ templateId: testCase.templateId, saved: testCase.saved, blocked: false, sequence, quote, preflight, funds, after: runtime.treasury.balanceMinorUnits, tick: runtime.kernel.tick, objects: physical }));
+});

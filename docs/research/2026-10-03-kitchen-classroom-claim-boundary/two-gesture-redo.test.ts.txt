@@ -1,0 +1,58 @@
+import { expect, it } from 'vitest';
+import { createSaveEnvelope, decodeSaveEnvelope } from '../../src/persistence/save-schema';
+import { packCommand, type SimulationCommand } from '../../src/simulation/protocol/commands';
+import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { captureSessionSnapshot, restoreSimulationRuntime, type SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
+type Runtime = ReturnType<typeof createNewSimulationRuntime>;
+function send(runtime: Runtime, command: SimulationCommand) {
+  const sequence = runtime.kernel.expectedSequence;
+  runtime.kernel.submitCommand(`two-plans-${sequence}`, sequence, runtime.kernel.tick, packCommand(command));
+  expect(runtime.kernel.dispatchDueCommands()).toBe(1);
+}
+function finish(runtime: Runtime) {
+  const done = () => runtime.roomTemplates.snapshot().pending.length === 0 &&
+    runtime.construction.allOrders().every(order => ['completed', 'cancelled', 'failed'].includes(order.state));
+  for (let ticks = 0; ticks < 30_000 && !done(); ticks++) runtime.kernel.step();
+  expect(done()).toBe(true);
+}
+function reload(runtime: Runtime) {
+  const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(createSaveEnvelope({
+    gameVersion: 'test', prisonId: 'two-template-redo', revision: 1, createdAt: 0, updatedAt: 1,
+    ...captureSessionSnapshot(runtime),
+  }))));
+  expect(decoded.ok).toBe(true);
+  if (!decoded.ok) throw new Error('Actual two undone template gestures must decode');
+  return restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle).runtime;
+}
+it.each([false, true])('two genuinely pending furnished templates keep separate Undo/Redo obligations saved=%s', saved => {
+  let runtime = createNewSimulationRuntime(73);
+  for (const [templateId, x] of [['storage-room-basic', 5], ['delivery-bay-basic', 12]] as const)
+    send(runtime, { type: 'PlaceRoomTemplate', templateId, origin: { x, y: 5 } });
+  finish(runtime);
+  send(runtime, { type: 'PlaceRoomTemplate', templateId: 'kitchen-basic', origin: { x: 5, y: 14 }, mirrorX: true, quarterTurns: 2 });
+  send(runtime, { type: 'PlaceRoomTemplate', templateId: 'classroom-basic', origin: { x: 20, y: 14 }, mirrorX: true, quarterTurns: 1 });
+  for (let tick = 0; tick < 10; tick++) runtime.kernel.step();
+  expect(runtime.roomTemplates.snapshot().pending).toHaveLength(2);
+  expect(runtime.construction.allOrders().some(order => order.state !== 'completed')).toBe(true);
+  send(runtime, { type: 'Undo' });
+  expect(runtime.roomTemplates.snapshot().pending.map(plan => plan.templateId)).toEqual(['kitchen-basic']);
+  send(runtime, { type: 'Undo' });
+  expect(runtime.roomTemplates.snapshot().pending).toHaveLength(0);
+  expect(runtime.roomTemplates.snapshot().undone).toHaveLength(2);
+  if (saved) runtime = reload(runtime);
+  send(runtime, { type: 'Redo' });
+  expect(runtime.roomTemplates.snapshot().pending.map(plan => plan.templateId)).toEqual(['kitchen-basic']);
+  send(runtime, { type: 'Redo' });
+  expect(runtime.roomTemplates.snapshot().pending.map(plan => plan.templateId)).toEqual(['kitchen-basic', 'classroom-basic']);
+  if (saved) runtime = reload(runtime);
+  finish(runtime);
+  expect(runtime.prisoners.roomInstances.allByRoomCatalogId('room.kitchen')).toHaveLength(1);
+  expect(runtime.prisoners.roomInstances.allByRoomCatalogId('room.classroom')).toHaveLength(1);
+  expect(runtime.placedObjects.getSnapshot().filter(object => object.sourceOrderId?.includes('-2-object-') && object.anchorTile.y >= 14)).toHaveLength(8);
+  expect(runtime.refusals.count).toBe(0);
+  const kitchenObjects = runtime.placedObjects.getSnapshot().filter(object => object.anchorTile.x < 15 && object.anchorTile.y >= 14);
+  send(runtime, { type: 'Undo' });
+  expect(runtime.prisoners.roomInstances.allByRoomCatalogId('room.classroom')).toHaveLength(0);
+  expect(runtime.prisoners.roomInstances.allByRoomCatalogId('room.kitchen')).toHaveLength(1);
+  expect(runtime.placedObjects.getSnapshot().filter(object => object.anchorTile.x < 15 && object.anchorTile.y >= 14)).toEqual(kitchenObjects);
+});
