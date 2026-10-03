@@ -17,14 +17,19 @@ exporter.PREVIEW = exporter.ROOT / 'assets/intermediate/loading-dock-door-previe
 # Translation, exact 64px/tile scale and yaw convention come from the shared
 # exporter; its camera now actually targets the manifest's footprint centre.
 exporter.MODELS = (
-    ('utility.loading-dock-door.variants', 'utility.loading-dock-door.variants.blend',
+    ('utility.loading-dock-door.variants', 'utility.loading-dock-door.angled-detail.blend',
      'oblique-utility.loading-dock-door.v1.json', 3, 1, 1.5, 1.0, 0.89),
 )
 
 configure_fixture = exporter.configure
+detail_spec = importlib.util.spec_from_file_location('loading_dock_detail_guard', HERE / 'render-loading-dock-detail-oblique.py')
+dedicated = importlib.util.module_from_spec(detail_spec)
+detail_spec.loader.exec_module(dedicated)
 
 
 def configure(model):
+    if model[0] == 'utility.loading-dock-door.variants':
+        return dedicated.configure(model)
     scene, camera, target = configure_fixture(model)
     # Inspect evaluated mesh vertices, including every bevel/modifier, rather
     # than relying on the unmodified mesh or its object-space bounding box.
@@ -52,9 +57,14 @@ def configure(model):
 
 
 exporter.configure = configure
+exporter.point_camera = dedicated.point_camera
 
 if __name__ == '__main__':
     if '--verify' in sys.argv:
-        configure(exporter.MODELS[0])
+        _, camera, target = configure(exporter.MODELS[0])
+        for yaw in exporter.YAW:
+            for elevation in exporter.ELEVATION:
+                exporter.point_camera(camera, target, yaw, elevation)
+        print('DOCK_DETAIL_VERIFY72 actual guarded cameras and four occupied orientations', flush=True)
     else:
         exporter.main()
