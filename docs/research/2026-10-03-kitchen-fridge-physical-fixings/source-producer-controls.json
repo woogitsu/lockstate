@@ -1,0 +1,26 @@
+{
+  "controls": [
+    {
+      "control": "actual-source-producer-omits-retaining-heads",
+      "producerExitCode": 1,
+      "error": "ValueError: Expected seventy-three retained and twenty-four real fridge fixings",
+      "rejectedBeforeSourceSave": true
+    },
+    {
+      "control": "actual-source-producer-reverses-collar",
+      "producerExitCode": 1,
+      "error": "ValueError: Evaluated Kitchen fridge geometric surfaces face inward: physical-kitchen-fridge.handle fixing collar 0",
+      "rejectedBeforeSourceSave": true
+    },
+    {
+      "control": "actual-source-producer-disconnects-head-within-old-bounds",
+      "producerExitCode": 1,
+      "error": "ValueError: Fridge actual fixing is disconnected from its retained mount: physical-kitchen-fridge.handle retaining head 0",
+      "rejectedBeforeSourceSave": true
+    }
+  ],
+  "sourceProvenanceBuilderExactlyRestored": true,
+  "originalSourceBytesUnchanged": true,
+  "exactRestoredProductionVerifyExitCode": 0,
+  "sourceSha256": "0cb6861e636324cf4d1e6ad35c1739cbac6068f32eb702244f5ddb196715f3d5"
+}
