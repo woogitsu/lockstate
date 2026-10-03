@@ -1,0 +1,30 @@
+{
+  "checkpoint": "d367aa24d5e221e182a565f3cf0bf31ebe8865ad",
+  "branch": "codex/disconnected-room-selection-audit-20261003",
+  "detachedDuringMutations": true,
+  "negatives": [
+    {
+      "name": "physical-query-negative",
+      "exitCode": 1
+    },
+    {
+      "name": "action-consumer-negative",
+      "exitCode": 1
+    }
+  ],
+  "restoredExitCode": 0,
+  "sourceDiffExitCode": 0,
+  "source": [
+    {
+      "file": "src/simulation/navigation/navigation-system.ts",
+      "before": "fe569a9d911a8e8f9b76deca9052d1bfbf331d71b96818ddae715d76217fccae",
+      "after": "fe569a9d911a8e8f9b76deca9052d1bfbf331d71b96818ddae715d76217fccae"
+    },
+    {
+      "file": "src/simulation/prisoners/action-system.ts",
+      "before": "4fbd3f21244405bd58bf33ac64a05b95ba318283e7cbf739d4a26c9329c48e01",
+      "after": "4fbd3f21244405bd58bf33ac64a05b95ba318283e7cbf739d4a26c9329c48e01"
+    }
+  ],
+  "branchRestored": "codex/disconnected-room-selection-audit-20261003"
+}

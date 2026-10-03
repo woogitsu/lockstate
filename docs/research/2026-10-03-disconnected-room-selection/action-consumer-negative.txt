@@ -1,0 +1,34 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-disconnected-room-selection-audit-20261003
+
+stdout | tests/integration/disconnected-first-shower-selection.test.ts > uses a reachable later Shower instead of retrying a disconnected first room: blocked=true V8=false
+{"blocked":true,"load":false,"entityId":0,"showerTicks":0,"targets":[],"hygiene":14920,"metrics":{"unmetDemandCycles":206,"actionsStarted":223,"actionsCompleted":16,"routeFailures":206,"substitutionCycles":1,"contendedSubstitutionCycles":0,"substitutionsCountedSinceTick":0}}
+
+stdout | tests/integration/disconnected-first-shower-selection.test.ts > uses a reachable later Shower instead of retrying a disconnected first room: blocked=true V8=true
+{"blocked":true,"load":true,"entityId":0,"showerTicks":0,"targets":[],"hygiene":14920,"metrics":{"unmetDemandCycles":206,"actionsStarted":222,"actionsCompleted":16,"routeFailures":206,"substitutionCycles":0,"contendedSubstitutionCycles":0,"substitutionsCountedSinceTick":7761}}
+
+ ❯ tests/integration/disconnected-first-shower-selection.test.ts (4 tests | 2 failed) 2032ms
+   × uses a reachable later Shower instead of retrying a disconnected first room: blocked=true V8=false 470ms
+   × uses a reachable later Shower instead of retrying a disconnected first room: blocked=true V8=true 470ms
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  2 failed | 6 passed (8)
+   Start at  11:32:47
+   Duration  4.50s (transform 1.11s, setup 0ms, import 2.71s, tests 2.04s, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/disconnected-first-shower-selection.test.ts > uses a reachable later Shower instead of retrying a disconnected first room: blocked=true V8=false
+ FAIL  tests/integration/disconnected-first-shower-selection.test.ts > uses a reachable later Shower instead of retrying a disconnected first room: blocked=true V8=true
+AssertionError: expected 0 to be greater than 0
+ ❯ tests/integration/disconnected-first-shower-selection.test.ts:111:25
+    109|     console.log(JSON.stringify({ blocked, load, entityId, showerTicks,…
+    110|       hygiene: runtime.prisoners.needs.getScaled(0, 'hygiene'), metric…
+    111|     expect(showerTicks).toBeGreaterThan(0);
+       |                         ^
+    112|     expect([...targets]).toEqual([blocked ? 'room.shower-room:6:15' : …
+    113|     expect(runtime.prisoners.needs.getScaled(0, 'hygiene')).toBeGreate…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
