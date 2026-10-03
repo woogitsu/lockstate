@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-template-held-transform-audit-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  24 passed (24)
+   Start at  07:28:17
+   Duration  3.53s (transform 1.17s, setup 0ms, import 3.16s, tests 220ms, environment 0ms)
+
