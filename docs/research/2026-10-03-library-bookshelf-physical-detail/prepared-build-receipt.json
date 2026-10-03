@@ -1,0 +1,19 @@
+{
+  "sourceCommit": "acb443b24bbac076985f5ee28194e7b981b851dc",
+  "typecheckExitCode": 0,
+  "focusedFinalUnit": {
+    "filesPassed": 3,
+    "testsPassed": 6,
+    "testsSkipped": 1
+  },
+  "productionBuildExitCode": 0,
+  "worker": {
+    "path": "dist/client/assets/worker-C9_yrMEX.js",
+    "bytes": 438431,
+    "sha256": "95e31468e112800bd25c574a1bc31fea8aaddf75a68e944ff2a1fa6ae7b703b4"
+  },
+  "sourceSha256": "ac0dd8e1a3345c3e791934b534d13c2043e9a5a04f85ed7cc9fe965e6716e9b7",
+  "descriptorSha256": "f4462809d880681c193460d11c9398f5d928584c4c291053a911a941523ac168",
+  "nativeBrowserStarted": false,
+  "serverStarted": false
+}
