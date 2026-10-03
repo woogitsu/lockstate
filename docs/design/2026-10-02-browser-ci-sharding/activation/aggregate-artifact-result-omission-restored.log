@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/browser-ci-sharding-activation-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  10:03:15
+   Duration  699ms (transform 23ms, setup 0ms, import 109ms, tests 450ms, environment 0ms)
+
