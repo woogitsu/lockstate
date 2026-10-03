@@ -1,0 +1,50 @@
+import { completedWallLogisticsSave } from './completed-wall-logistics';
+import { captureSessionSnapshot, restoreSimulationRuntime, type SessionSnapshotBundle } from '../../../src/simulation/runtime/restore-session';
+import { packCommand, type SimulationCommand } from '../../../src/simulation/protocol/commands';
+import { computeSaveChecksum } from '../../../src/persistence/checksum';
+import { createSaveEnvelope, decodeSaveEnvelope, type SaveEnvelopeV9 } from '../../../src/persistence/save-schema';
+import type { JsonValue } from '../../../src/shared/json';
+
+export const MAX_NATIVE_ORDER_ID = 'max-native-ordinary-wall';
+
+/** Offline authorship only: real completed logistics/Cell and a real pending purchase. */
+export function authorHistoricalMaxSave(): SaveEnvelopeV9 {
+  const { runtime } = restoreSimulationRuntime(completedWallLogisticsSave().payload as SessionSnapshotBundle);
+  const send = (command: SimulationCommand) => {
+    const sequence = runtime.kernel.expectedSequence;
+    runtime.kernel.submitCommand(`max-native-author-${sequence}`, sequence, runtime.kernel.tick, packCommand(command));
+    if (runtime.kernel.dispatchDueCommands() !== 1) throw Error('Real fixture purchase did not dispatch');
+  };
+  send({ type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 20, y: 5 }, quarterTurns: 1 });
+  for (let step = 0; step < 30_000 && (runtime.roomTemplates.snapshot().pending.length !== 0 ||
+    runtime.construction.allOrders().some(order => order.state !== 'completed')); step++) runtime.kernel.step();
+  if (runtime.roomTemplates.snapshot().pending.length !== 0 || runtime.construction.allOrders().some(order => order.state !== 'completed'))
+    throw Error('Real purchased template did not complete');
+  send({ type: 'PlaceBuildOrder', orderId: MAX_NATIVE_ORDER_ID, definitionId: 'wall-brick', x: 3, y: 3, footprint: 'square' });
+  runtime.kernel.step();
+  if (runtime.construction.getOrder(MAX_NATIVE_ORDER_ID)?.state !== 'materials-pending')
+    throw Error('Purchased ordinary wall must genuinely be materials-pending');
+  const current = createSaveEnvelope({ gameVersion: 'lockstate-0.0.0', prisonId: 'v9-max-native-input',
+    revision: 1, createdAt: 1700000000000, updatedAt: 1700000000001, ...captureSessionSnapshot(runtime) });
+  const old = JSON.parse(JSON.stringify(current)) as SaveEnvelopeV9;
+  // Only the encoded input is edited. This is the precise approved legal V9
+  // boundary; there is no live worker, planted geometry/stock/owner or verdict.
+  const revisions = Object.fromEntries(Object.entries(current.payload.construction.orderRevisions ?? {})
+    .map(([id, token]) => [id, Number(token)]));
+  revisions[MAX_NATIVE_ORDER_ID] = Number.MAX_SAFE_INTEGER;
+  const payload = { ...old.payload, construction: { ...old.payload.construction, orderRevisions: revisions } };
+  const historical: SaveEnvelopeV9 = { ...old, saveSchemaVersion: 9, payload,
+    checksum: computeSaveChecksum(payload as unknown as JsonValue) };
+  const validated = decodeSaveEnvelope(JSON.parse(JSON.stringify(historical)));
+  if (!validated.ok) throw Error(validated.error.message);
+  return historical;
+}
+
+/** Independent expected migration: this fixture has no queued command wrappers. */
+export function expectedMaxImport(input: SaveEnvelopeV9): SessionSnapshotBundle {
+  if (input.payload.kernel.commands.length !== 0) throw Error('Fixture unexpectedly has queued wrappers');
+  const payload = structuredClone(input.payload);
+  return { ...payload, construction: { ...payload.construction,
+    orderRevisions: Object.fromEntries(Object.entries(payload.construction.orderRevisions ?? {}).map(([id, token]) => [id, String(token)])) },
+  } as SessionSnapshotBundle;
+}

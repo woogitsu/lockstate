@@ -1,0 +1,76 @@
+{
+  "sourceBase": "85f4471ebebc08f50400ee606c613197999be39a",
+  "fixtureSha256": "d4027ad4d781b92c3a23d0cd0eb01f17335e39386b01e2e85720d3bd1480c890",
+  "importJsonSha256": "610c68da281b90eb55c7bd2e118236de45348f1b3e2287edf768dbd2af454cea",
+  "checksum": "e42c4bb66fc4e908",
+  "version": 9,
+  "tick": 3911,
+  "treasury": 20215,
+  "order": {
+    "id": "max-native-ordinary-wall",
+    "definitionId": "wall-brick",
+    "location": {
+      "x": 3,
+      "y": 3
+    },
+    "footprint": "square",
+    "placementSequence": 3,
+    "state": "approved",
+    "progress": 0,
+    "materialsAllocated": []
+  },
+  "counter": 9007199254740991,
+  "owners": [
+    {
+      "placedObjectId": "object:6:6",
+      "objectId": "object.storage-rack",
+      "anchorTile": {
+        "x": 6,
+        "y": 6
+      },
+      "orientation": 0,
+      "sourceOrderId": "room-template-000000000000-2-object-000"
+    },
+    {
+      "placedObjectId": "object:8:6",
+      "objectId": "object.storage-rack",
+      "anchorTile": {
+        "x": 8,
+        "y": 6
+      },
+      "orientation": 0,
+      "sourceOrderId": "room-template-000000000000-2-object-001"
+    },
+    {
+      "placedObjectId": "object:13:6",
+      "objectId": "object.loading-dock-door",
+      "anchorTile": {
+        "x": 13,
+        "y": 6
+      },
+      "orientation": 0,
+      "sourceOrderId": "room-template-000000000001-2-object-000"
+    },
+    {
+      "placedObjectId": "object:24:6",
+      "objectId": "object.bed",
+      "anchorTile": {
+        "x": 24,
+        "y": 6
+      },
+      "orientation": 1,
+      "sourceOrderId": "room-template-000000000002-2-object-000"
+    },
+    {
+      "placedObjectId": "object:22:7",
+      "objectId": "object.toilet",
+      "anchorTile": {
+        "x": 22,
+        "y": 7
+      },
+      "orientation": 1,
+      "sourceOrderId": "room-template-000000000002-2-object-001"
+    }
+  ],
+  "nativeExecuted": false
+}
