@@ -2117,5 +2117,110 @@
     "sourceSha256": "beee0c10f123e1e674bcdbf10e4ddb153ad409f281c3abccb3b668d3c64f51cc",
     "archivedBytes": 56745,
     "archivedSha256": "beee0c10f123e1e674bcdbf10e4ddb153ad409f281c3abccb3b668d3c64f51cc"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-cot-material-native-20261004.json",
+    "archived": "integrated21d-cot-corrected/report.json",
+    "sourceBytes": 8447,
+    "sourceSha256": "b709838ba27f1d3f5ce97dfbf0c0d23f88faff4e5688a8407526c26794bcced6",
+    "archivedBytes": 8447,
+    "archivedSha256": "b709838ba27f1d3f5ce97dfbf0c0d23f88faff4e5688a8407526c26794bcced6"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-cot-material-native-20261004.txt",
+    "archived": "integrated21d-cot-corrected/console.txt",
+    "sourceBytes": 4290,
+    "sourceSha256": "48351fe3ed88973f281329ecd7102bbaed46b4efab136fe2e033f746f8dea824",
+    "archivedBytes": 2152,
+    "archivedSha256": "e079c5ad1923fe760ce8bdcd07e216c1f2c1aa431810bfa3e5ab36e10afee47c",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-cot-material-native-20261004\\.last-run.json",
+    "archived": "integrated21d-cot-corrected/001-.last-run.json",
+    "sourceBytes": 45,
+    "sourceSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "archivedBytes": 45,
+    "archivedSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-cot-material-native-20261004\\cell-cot-player-build-play-30d8c--after-Save-Load-at-Full-HD\\attachments\\cell-cot-owner-loader-save-evidence-2a2c5ff970f6d908b1e1daacac34934b83eaa248.json",
+    "archived": "integrated21d-cot-corrected/002-cell-cot-owner-loader-save-evidence-2a2c5ff970f6d908b1e1daacac34.json",
+    "sourceBytes": 175804,
+    "sourceSha256": "5c607bb75c1ed7a2997ce8c42e68b1110e6b4d81499ffdb844de4c478c2c7982",
+    "archivedBytes": 175804,
+    "archivedSha256": "5c607bb75c1ed7a2997ce8c42e68b1110e6b4d81499ffdb844de4c478c2c7982"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-cot-material-native-20261004\\cell-cot-player-build-play-30d8c--after-Save-Load-at-Full-HD\\cell-cot-headboard-pending-calibration-fullhd.png",
+    "archived": "integrated21d-cot-corrected/003-cell-cot-headboard-pending-calibration-fullhd.png",
+    "sourceBytes": 1535399,
+    "sourceSha256": "5b264cfc66f3188ed95c1da610ab79e41bd718fae606ed5ddf5017ac1a9e0af8",
+    "archivedBytes": 1535399,
+    "archivedSha256": "5b264cfc66f3188ed95c1da610ab79e41bd718fae606ed5ddf5017ac1a9e0af8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-cot-material-native-20261004\\cell-cot-player-build-play-30d8c--after-Save-Load-at-Full-HD\\cell-cot-loaded-fullhd.png",
+    "archived": "integrated21d-cot-corrected/004-cell-cot-loaded-fullhd.png",
+    "sourceBytes": 1408267,
+    "sourceSha256": "644d7e528d7d22c9374521611bb97bfc3cf70e47aaceec1f609764cc0598aab8",
+    "archivedBytes": 1408267,
+    "archivedSha256": "644d7e528d7d22c9374521611bb97bfc3cf70e47aaceec1f609764cc0598aab8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-cot-material-native-20261004\\cell-cot-player-build-play-30d8c--after-Save-Load-at-Full-HD\\cell-cot-owner-loader-save-evidence.json",
+    "archived": "integrated21d-cot-corrected/005-cell-cot-owner-loader-save-evidence.json",
+    "sourceBytes": 175804,
+    "sourceSha256": "5c607bb75c1ed7a2997ce8c42e68b1110e6b4d81499ffdb844de4c478c2c7982",
+    "archivedBytes": 175804,
+    "archivedSha256": "5c607bb75c1ed7a2997ce8c42e68b1110e6b4d81499ffdb844de4c478c2c7982"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-cot-material-native-20261004\\cell-cot-player-build-play-30d8c--after-Save-Load-at-Full-HD\\cell-cot-worker-completed-fullhd.png",
+    "archived": "integrated21d-cot-corrected/006-cell-cot-worker-completed-fullhd.png",
+    "sourceBytes": 1441150,
+    "sourceSha256": "dd4e027d6fb6a0ec88cc96cf9e7a49dffee65de3aa8c9b2305dbf8f9733d44db",
+    "archivedBytes": 1441150,
+    "archivedSha256": "dd4e027d6fb6a0ec88cc96cf9e7a49dffee65de3aa8c9b2305dbf8f9733d44db"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-cot-material-native-20261004\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\attachments\\cell-cot-owner-loader-save-evidence-2a5f195c1ff27959d960d3d14ad94210b230b949.json",
+    "archived": "integrated21d-cot-corrected/007-cell-cot-owner-loader-save-evidence-2a5f195c1ff27959d960d3d14ad9.json",
+    "sourceBytes": 191384,
+    "sourceSha256": "68bf854cee0eaa07f26f9eb48ad59c7d884a48a8de53a5a4de4072a21dc4cd08",
+    "archivedBytes": 191384,
+    "archivedSha256": "68bf854cee0eaa07f26f9eb48ad59c7d884a48a8de53a5a4de4072a21dc4cd08"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-cot-material-native-20261004\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\cell-cot-headboard-pending-calibration-fullhd.png",
+    "archived": "integrated21d-cot-corrected/008-cell-cot-headboard-pending-calibration-fullhd.png",
+    "sourceBytes": 1567884,
+    "sourceSha256": "743396e8578a5175c9123d1ed1978c1f03e26b0f11d543553f41ed505ca890a3",
+    "archivedBytes": 1567884,
+    "archivedSha256": "743396e8578a5175c9123d1ed1978c1f03e26b0f11d543553f41ed505ca890a3"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-cot-material-native-20261004\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\cell-cot-loaded-fullhd.png",
+    "archived": "integrated21d-cot-corrected/009-cell-cot-loaded-fullhd.png",
+    "sourceBytes": 1470601,
+    "sourceSha256": "ad169eb80131c39f744e4a719ce921bc17fd9d3ef78d7b4ce085d9beba672796",
+    "archivedBytes": 1470601,
+    "archivedSha256": "ad169eb80131c39f744e4a719ce921bc17fd9d3ef78d7b4ce085d9beba672796"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-cot-material-native-20261004\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\cell-cot-owner-loader-save-evidence.json",
+    "archived": "integrated21d-cot-corrected/010-cell-cot-owner-loader-save-evidence.json",
+    "sourceBytes": 191384,
+    "sourceSha256": "68bf854cee0eaa07f26f9eb48ad59c7d884a48a8de53a5a4de4072a21dc4cd08",
+    "archivedBytes": 191384,
+    "archivedSha256": "68bf854cee0eaa07f26f9eb48ad59c7d884a48a8de53a5a4de4072a21dc4cd08"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-cot-material-native-20261004\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\cell-cot-worker-completed-fullhd.png",
+    "archived": "integrated21d-cot-corrected/011-cell-cot-worker-completed-fullhd.png",
+    "sourceBytes": 1504356,
+    "sourceSha256": "4efbdf3766735069e4e9b27eb1d978d1fbc53e33c50ebc8acd99f3a516d99eb5",
+    "archivedBytes": 1504356,
+    "archivedSha256": "4efbdf3766735069e4e9b27eb1d978d1fbc53e33c50ebc8acd99f3a516d99eb5"
   }
 ]

@@ -1,0 +1,40 @@
+
+node : [1A[2K[2m[WebServer] [22m(node:44640) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env be
+ing set.
+At line:2 char:381
++ ... ix+'.json'; node node_modules/@playwright/test/cli.js test cell-cot-p ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([1A[2K[2m[We... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wra
+ngler.json configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+
+Running 3 tests using 1 worker
+
+[1A[2K(node:60764) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+
+
+[1A[2K(node:60764) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K[1/3] tests\browser\cell-cot-player-build.spec.ts:146:1 › player furnishes delivery and storage plans before the cot test
+[1A[2K[2/3] tests\browser\cell-cot-player-build.spec.ts:211:3 › player builds the existing bed in a Basic cell q0 and keeps it after Save/Load at Full HD
+[1A[2K[3/3] tests\browser\cell-cot-player-build.spec.ts:211:3 › player builds the existing bed in a Basic cell q1 and keeps it after Save/Load at Full HD
+[1A[2K  3 passed (2.1m)
