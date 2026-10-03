@@ -1,0 +1,34 @@
+[
+  {
+    "leg": "Angled support.-0.7.-0.41",
+    "actualTieSurfacePoint": [
+      0.299999475479126,
+      0.4724999964237213,
+      0.23999997973442078
+    ],
+    "actualTieFace": 50,
+    "actualLegClosestSurfacePoint": [
+      0.299999475479126,
+      0.3144998848438263,
+      0.23999999463558197
+    ],
+    "actualLegFace": 52,
+    "realNearestSurfaceGap": 0.15800011157989502
+  },
+  {
+    "leg": "Angled support.-0.7.0.41",
+    "actualTieSurfacePoint": [
+      0.299999475479126,
+      0.5274999737739563,
+      0.24000000953674316
+    ],
+    "actualTieFace": 52,
+    "actualLegClosestSurfacePoint": [
+      0.299999475479126,
+      0.6855000853538513,
+      0.23999999463558197
+    ],
+    "actualLegFace": 50,
+    "realNearestSurfaceGap": 0.15800011157989502
+  }
+]

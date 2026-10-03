@@ -1,0 +1,30 @@
+[
+  {
+    "yawDegrees": 0,
+    "elevationDegrees": 40,
+    "actualPhysicalSourceDeltaPixels": 0,
+    "originalSha256": "d82d334e14161eb34a9dea8a7037f5429449a2323447be46f2af6121c5ef28a5",
+    "connectedSha256": "d82d334e14161eb34a9dea8a7037f5429449a2323447be46f2af6121c5ef28a5"
+  },
+  {
+    "yawDegrees": 60,
+    "elevationDegrees": 40,
+    "actualPhysicalSourceDeltaPixels": 186,
+    "originalSha256": "f607a1519ce07b8c9a27e97ccfd13bdc58888a337e6336ef4dff67bc2828bd28",
+    "connectedSha256": "845cd9e2698f21575a73b74f7087261bf9e303250b5ea90201441bc696b0e1da"
+  },
+  {
+    "yawDegrees": 180,
+    "elevationDegrees": 40,
+    "actualPhysicalSourceDeltaPixels": 0,
+    "originalSha256": "a754f32ec319ce1224894b0bce0454e7cc11c02a8fd9cc7b2615b6d4f1559ab1",
+    "connectedSha256": "a754f32ec319ce1224894b0bce0454e7cc11c02a8fd9cc7b2615b6d4f1559ab1"
+  },
+  {
+    "yawDegrees": 300,
+    "elevationDegrees": 40,
+    "actualPhysicalSourceDeltaPixels": 197,
+    "originalSha256": "bc9186a5257c192d5f49c035a6f38d3386e1e84c0464858d1dde479fa89b73db",
+    "connectedSha256": "788a2ecb837d71162595e2b0b9701924fcb0f29fcf4a5c77d6c32dc21a7827e7"
+  }
+]
