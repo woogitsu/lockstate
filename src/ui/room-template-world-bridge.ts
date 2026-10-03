@@ -102,6 +102,8 @@ export function installRoomTemplateWorldBridge(canvas: HTMLCanvasElement, tool: 
   };
   const resetPress = (): void => { downPointer = undefined; downSelection = undefined; };
   const pointerDown = (event: PointerEvent): void => {
+    // A second touch abandons construction before either finger can commit.
+    if (event.pointerType === 'touch' && event.isPrimary === false) { resetPress(); return; }
     if (capture(event)) { downPointer = event.pointerId; downSelection = tool.revision; }
   };
   const pointerUp = (event: PointerEvent): void => {
