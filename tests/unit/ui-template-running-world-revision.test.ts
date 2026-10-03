@@ -234,11 +234,11 @@ for(const mode of ['world','oblique'] as const) for(const moving of [false,true]
 
     if (moving) expect(positions.size,'real restored patrol must move to prove motion immunity').toBeGreaterThan(1);
     else expect(positions.size,'empty-prison default sector correctly leaves its guard idle').toBe(1);
-    expect(trace[1]!.queries-initialQueries,'no geometry query for29seconds of actual ticks/motion').toBe(0);
-    expect(trace[2]!.queries-initialQueries,'one existing30s consistency pull').toBe(1);
-    expect(trace[3]!.queries-initialQueries,'no extra query before next consistency boundary').toBe(1);
-    expect(queries(h)-initialQueries,'two existing consistency snapshots over60seconds, not each actor delta').toBe(2);
-    expect(h.readFrame().revision-initialFrame.revision).toBe(2);
+    expect.soft(trace[1]!.queries-initialQueries,'no geometry query for29seconds of actual ticks/motion').toBe(0);
+    expect.soft(trace[2]!.queries-initialQueries,'one existing30s consistency pull').toBe(1);
+    expect.soft(trace[3]!.queries-initialQueries,'no extra query before next consistency boundary').toBe(1);
+    expect.soft(queries(h)-initialQueries,'two existing consistency snapshots over60seconds, not each actor delta').toBe(2);
+    expect.soft(h.readFrame().revision-initialFrame.revision).toBe(2);
     expect(h.layer().dataset.ready).toBe('blocked');
     expect(await h.tool.quote()).toEqual({orderCount:20,materials:[{itemId:'item.brick',quantity:35},{itemId:'item.wood-plank',quantity:2}],catalogueCostMinorUnits:1530});
     expect(h.actors.sent.filter(m=>m.kind==='simulation/submit-command')).toHaveLength(0);
