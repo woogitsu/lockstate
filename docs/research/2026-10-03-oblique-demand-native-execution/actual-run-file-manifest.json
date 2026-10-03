@@ -1,0 +1,62 @@
+[
+  {
+    "originalRelativePath": ".last-run.json",
+    "archivedRelativePath": "actual-run\\root\\.last-run.json",
+    "bytes": 96,
+    "sha256": "9132d07df808d7104d73bb2ed7e9dbbb5b760be59c4f7d9bbebc79f4902ef25b"
+  },
+  {
+    "originalRelativePath": "oblique-demand-loading.pro-4e682--and-stable-30s-CDP-profile\\actual-empty-paused-fullhd.png",
+    "archivedRelativePath": "actual-run\\empty\\actual-empty-paused-fullhd.png",
+    "bytes": 1596873,
+    "sha256": "2269723e41db8749feb5a9f5c4c89bcb8852434a18174b2e59b24be548544023"
+  },
+  {
+    "originalRelativePath": "oblique-demand-loading.pro-4e682--and-stable-30s-CDP-profile\\oblique-demand-native-receipt.json",
+    "archivedRelativePath": "actual-run\\empty\\oblique-demand-native-receipt.json",
+    "bytes": 735636,
+    "sha256": "ecf232fbc115dae291210769d821412e600a9e3331226104dfd526151fb298b1"
+  },
+  {
+    "originalRelativePath": "oblique-demand-loading.pro-829c7--and-whole-paused-Save-Load\\actual-loaded-original-cot-calibrated-fullhd.png",
+    "archivedRelativePath": "actual-run\\cot\\actual-loaded-original-cot-calibrated-fullhd.png",
+    "bytes": 1430389,
+    "sha256": "b5024a4b361a61369480629dc79c5e26b3ac95c38ff92c2b9713f2a496c4fd63"
+  },
+  {
+    "originalRelativePath": "oblique-demand-loading.pro-829c7--and-whole-paused-Save-Load\\actual-loaded-turned-cot-pending-root-calibration-fullhd.png",
+    "archivedRelativePath": "actual-run\\cot\\actual-loaded-turned-cot-pending-root-calibration-fullhd.png",
+    "bytes": 1467482,
+    "sha256": "d0d590471124862085619d0b9414d2224b6fb0e5bef36c91db96cb226188700c"
+  },
+  {
+    "originalRelativePath": "oblique-demand-loading.pro-829c7--and-whole-paused-Save-Load\\actual-q0-cot-original-calibrated-fullhd.png",
+    "archivedRelativePath": "actual-run\\cot\\actual-q0-cot-original-calibrated-fullhd.png",
+    "bytes": 1460884,
+    "sha256": "24c62cf22bd84bc51650e2182eb58d5ff7d22e7570a5bdf457889262d3e825d0"
+  },
+  {
+    "originalRelativePath": "oblique-demand-loading.pro-829c7--and-whole-paused-Save-Load\\actual-turned-cot-pending-root-calibration-fullhd.png",
+    "archivedRelativePath": "actual-run\\cot\\actual-turned-cot-pending-root-calibration-fullhd.png",
+    "bytes": 1495715,
+    "sha256": "5c5323618477eb231faf3ca02adb1ee092544a54c6cade60d763e353706c4224"
+  },
+  {
+    "originalRelativePath": "oblique-demand-loading.pro-829c7--and-whole-paused-Save-Load\\error-context.md",
+    "archivedRelativePath": "actual-run\\cot\\error-context.md",
+    "bytes": 9574,
+    "sha256": "8f037724d7d630ae71f1a9e284d8c9d3beedebf4e166a9c76e01415a597c85d4"
+  },
+  {
+    "originalRelativePath": "oblique-demand-loading.pro-829c7--and-whole-paused-Save-Load\\oblique-demand-native-receipt.json",
+    "archivedRelativePath": "actual-run\\cot\\oblique-demand-native-receipt.json",
+    "bytes": 267084,
+    "sha256": "a24dc0146ecc16a4a912fd6b08e1fa130571c1aed8460ccc99a9cae96e4a9f29"
+  },
+  {
+    "originalRelativePath": "oblique-demand-loading.pro-9973a-age-and-Delivery-completion\\oblique-demand-native-receipt.json",
+    "archivedRelativePath": "actual-run\\capacity\\oblique-demand-native-receipt.json",
+    "bytes": 161417,
+    "sha256": "22f265eb7c45cfc1134a66f6c6e0a3a15b38a101faf547060f667f90f425d766"
+  }
+]
