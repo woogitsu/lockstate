@@ -141,7 +141,7 @@ it.each([[0, false], [0, true], [2, false], [2, true]] as const)(
     const bay = runtime.prisoners.roomInstances.allByRoomCatalogId('room.delivery-bay')[0];
     expect(bay?.anchorTile).toEqual(tile(13, 6));
     expect(bay?.objectCapabilities).toContain('delivery-access');
-    expect(runtime.navigation.getGraph().tileToRegion.has('13,6')).toBe(offset !== 0);
+    expect(runtime.navigation.getGraph().tileToRegion.has(`${13}:${6}`)).toBe(offset !== 0);
     buyAndWait(runtime);
     if (offset === 0) expect(runtime.jobs.getSnapshot()).toEqual([]);
     else expect(runtime.jobs.getSnapshot()).toEqual([

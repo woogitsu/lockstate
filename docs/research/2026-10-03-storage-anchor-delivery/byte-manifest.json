@@ -15,6 +15,26 @@
         "sha256":  "06f63250855dbe3dcacc93983cc93a97ceebb6425a4d750ef4b1fbee1551d9f1"
     },
     {
+        "path":  "expanded-baseline.txt",
+        "bytes":  8628,
+        "sha256":  "fef4bcb2d041e5ea5ad4e18cc21e0b80eeb160037dea5a88283b0d7fad38335b"
+    },
+    {
+        "path":  "fixed.txt",
+        "bytes":  546,
+        "sha256":  "71dea9461e39150da183bb47a76edfbe6845b971ebd74353d62ea0acbcc12b39"
+    },
+    {
+        "path":  "initial-expanded-key-fixture.test.ts.txt",
+        "bytes":  9823,
+        "sha256":  "1829b3f68fc9e7bf5d531971230deabf5b6a8a293576a7356658aa5ce5325539"
+    },
+    {
+        "path":  "initial-expanded-key-fixture.txt",
+        "bytes":  10994,
+        "sha256":  "c2c2620ee678f8668d7c1f95bccc5b19100724e0967b1c1ea548e340c225b575"
+    },
+    {
         "path":  "initial-measurement.txt",
         "bytes":  2900,
         "sha256":  "0b996236371fbaddba853fc8abe4d7a3fc440a05ce67c602d63dd9d485c0cb8b"
@@ -46,8 +66,8 @@
     },
     {
         "path":  "README.md",
-        "bytes":  4156,
-        "sha256":  "c5344dbde7d944861eadbb285d1c20c8252f46e2684e2fce5a8ae1080cd97521"
+        "bytes":  5896,
+        "sha256":  "901d9754f938140edb7be65918e465c76a4de9cdbc80c904a126d2c00e9a3ff7"
     },
     {
         "path":  "run-probe.cjs.txt",
