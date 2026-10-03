@@ -1,0 +1,5 @@
+Listing tests:
+  world-construction-chord-release.spec.ts:41:45 › World FullHD wall: native middle release does not complete a held left build gesture
+  world-construction-chord-release.spec.ts:41:45 › World FullHD bed: native middle release does not complete a held left build gesture
+  world-construction-chord-release.spec.ts:41:45 › World FullHD yard: native middle release does not complete a held left build gesture
+Total: 3 tests in 1 file
