@@ -4,7 +4,7 @@ import { expect, test, type Page } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
 import { pendingWallGuardsSave } from './fixtures/pending-wall-guards';
 
-const requirePlaywright = createRequire(createRequire(import.meta.url).resolve('@playwright/test'));
+const requirePlaywright = createRequire(createRequire(import.meta.url).resolve('@playwright/test/package.json'));
 const { PNG } = requirePlaywright('playwright-core/lib/utilsBundle') as {
   PNG: { sync: { read(buffer: Buffer): { width: number; height: number; data: Buffer } } };
 };
