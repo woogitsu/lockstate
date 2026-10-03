@@ -1,13 +1,18 @@
 {
     "originalMutationSourceSha256":  "34d63c43892c698005fe93abde19cca2b7f8cd33ace93e283373dfde152d8317",
+    "nativePreparedSpec":  {
+                               "file":  "tests/browser/room-template-session-preflight.spec.ts",
+                               "sha256":  "ef3959600d20e35f86b5d26a6f0b15593fb0593e25089d1a6c6ff018385699da",
+                               "browserExecuted":  false
+                           },
     "files":  [
-                  {
-                      "sha256":  "0834dd58b0635e4cbd2f4f72bc92571625282fa087e9fa61ec3f2cbbce62dc09",
-                      "file":  "app-ts-fixture-errors.txt"
-                  },
                   {
                       "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
                       "file":  "app-ts.txt"
+                  },
+                  {
+                      "sha256":  "0834dd58b0635e4cbd2f4f72bc92571625282fa087e9fa61ec3f2cbbce62dc09",
+                      "file":  "app-ts-fixture-errors.txt"
                   },
                   {
                       "sha256":  "b7c45ce50d8f83748a805bc60de4a8338b175112d3fdde754a10928ba8075044",
@@ -26,6 +31,10 @@
                       "file":  "build.txt"
                   },
                   {
+                      "sha256":  "f00cd6f808726fb506e04c328730b7365449fb1942071e128d9211b1133b1b0f",
+                      "file":  "docs.txt"
+                  },
+                  {
                       "sha256":  "e8536efa7bbf6733055d81148665b143091312848562c9b403acc72d4ef33a15",
                       "file":  "docs-after-first-metadata-ref-refresh.txt"
                   },
@@ -34,20 +43,16 @@
                       "file":  "docs-before-metadata-ref-refresh.txt"
                   },
                   {
-                      "sha256":  "f00cd6f808726fb506e04c328730b7365449fb1942071e128d9211b1133b1b0f",
-                      "file":  "docs.txt"
-                  },
-                  {
                       "sha256":  "0512811f785ef08448a1c4610547b7032855ad266f819ab922f97de7b1337ba4",
                       "file":  "expanded-baseline.txt"
                   },
                   {
-                      "sha256":  "8d7c2b3873b790d6e8792111e32dfda839c55f197316e79a151650e9fdf7185d",
-                      "file":  "final-run.cjs.txt"
-                  },
-                  {
                       "sha256":  "f3c03b55561e28d1e044c8701f264307c30b54b99b474c1afc9fd08ab122f569",
                       "file":  "final.txt"
+                  },
+                  {
+                      "sha256":  "8d7c2b3873b790d6e8792111e32dfda839c55f197316e79a151650e9fdf7185d",
+                      "file":  "final-run.cjs.txt"
                   },
                   {
                       "sha256":  "5fc217f87f47aa374dc3ac9ceea25eedb1a0e9fc149dc68b51e87acf2dfade02",
@@ -56,6 +61,26 @@
                   {
                       "sha256":  "5b71b503883cee86adcb99b060c052dcf095fca69cc6c6701430a3f961f9b8c7",
                       "file":  "mutation-receipt.json"
+                  },
+                  {
+                      "sha256":  "634227e52eb10176914911c24d44d7c5e6c6044919f9fcdd3e1cc87a6e7c2091",
+                      "file":  "native-preparation-collection.txt"
+                  },
+                  {
+                      "sha256":  "3927fc30ad93023f629682baa7748703f251cc4a9585a9f93c2b1412f8543ac6",
+                      "file":  "native-preparation-docs.txt"
+                  },
+                  {
+                      "sha256":  "057d356a281c14191782249efcab146b17cba53302898d276f7b5305effdce24",
+                      "file":  "native-preparation-receipt.json"
+                  },
+                  {
+                      "sha256":  "e55c010c3c5a0a9227a77ca514d89d91bca90c6221b57b770e870e01684c0296",
+                      "file":  "native-preparation-run.cjs.txt"
+                  },
+                  {
+                      "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                      "file":  "native-preparation-types.txt"
                   },
                   {
                       "sha256":  "cb9988abf6880d0741ecf72ab57dfb09f1fd2a97e44533e95f2dba5618a0741c",
@@ -78,7 +103,7 @@
                       "file":  "producer-mutations.cjs.txt"
                   },
                   {
-                      "sha256":  "99309a1da0597bafed9b5ecb99fdd6554d0cdee35513e326f4af4057bdf04a7f",
+                      "sha256":  "5b30bbfc412f63c7a4f87dde23e1ef8fa7a831e5fd406c0f784d95385d0aa675",
                       "file":  "README.md"
                   },
                   {
@@ -93,7 +118,5 @@
                       "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
                       "file":  "tools-ts.txt"
                   }
-              ],
-    "copyVerified":  true,
-    "producerNegativeVerified":  true
+              ]
 }

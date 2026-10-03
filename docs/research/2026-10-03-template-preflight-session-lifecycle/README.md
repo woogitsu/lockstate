@@ -51,3 +51,17 @@ No browser/native/remote CI execution, merge, schema, tariff or copy claim. Root
 
 
 Final complete-record documentation confirmation after adding the published source citation:62GREEN/8files4.95s. Only the exact owned branch ref was refreshed to make9597520 publicly reachable locally; guards/budgets remain unchanged.
+
+## Native public lifecycle preparation — not executed
+
+Prepared after the terminal source chain, from clean `0d08f2b8ef0c9c26890bdefc7e4fa1dc044767b6`. Only `tests/browser/room-template-session-preflight.spec.ts`, own receipt and own existing index row are added/updated. Production remains byte-unchanged for this preparation. Root retains the sole browser and owns routing registration; no browser/server was started here.
+
+Exactly two independent cases use the public New or Load button at1920x1080, DPR1, on the angled app. The real player first submits a Basic Cell at10,10 while paused, saves and exports its actual V8 envelope. A second numeric20,10 placement's real preflight response is held only for the outgoing physical Worker generation. Public New/Load creates another actual worker/session. Fresh current-worker clear placement is clicked immediately; the original15s requester deadline is only an upper-bound validity assertion, never a sleep, timer override or retry.
+
+The prepared guards independently enumerate the Basic Cell's4x7 perimeter:17 square walls and one north-edge door, exactly18 additional IDs under the genuine kernel sequence. They retain earlier orders, exact current history membership and pending-template owner metadata. After fresh acceptance, the original captured MessageEvent data is replayed exactly once on the old worker; no extra submitted command or authoritative state change is allowed. Public Save/Export/Load then must retain the entire actual bundle, including owners, treasury, allocations, world and history. Exported bytes are decoded with the current V8 checksum/schema in Node, never replaced/imported as a synthetic fixture.
+
+The native observer stores the full actual response plus wire target, request time, physical generation/session and submitted commands. Only read-only snapshot requests are added. It neither replaces feeds nor rewrites verdict/command/data. Failure hook captures real current worker and observer state. Screenshots and full saved/worker records are prepared as runtime outputs; none exists or is claimed yet.
+
+Offline audit checked all current locale labels, paused initialization, preserved Save-panel active-slot selectors, strict command omission at default turn0, pending metadata shape, explicit authored perimeter/door coordinate and existing shell-ID/history order. Strict app TypeScript exit0. Playwright `--list` collects two cases and executes none; both exact outputs and execution-status JSON are retained. Native baseline/fix/producer-negative/restore remain pending root execution. No timeout/config/routing/source change or native success claim.
+
+Preparation-only documentation confirmation: research index and documentation links, 15 GREEN across 2 files in 1.48s. No browser/server or producer-negative execution.

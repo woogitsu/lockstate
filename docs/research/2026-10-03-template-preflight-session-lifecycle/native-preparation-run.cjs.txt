@@ -1,0 +1,20 @@
+const fs = require('node:fs');
+const cp = require('node:child_process');
+const dir = 'docs/research/2026-10-03-template-preflight-session-lifecycle';
+const commands = [
+  ['native-preparation-types', ['node_modules/typescript/bin/tsc', '-b', '--pretty', 'false']],
+  ['native-preparation-collection', ['node_modules/@playwright/test/cli.js', 'test', '--config', 'tests/browser/playwright.config.ts', 'tests/browser/room-template-session-preflight.spec.ts', '--list']],
+];
+const outcomes=[];
+for (const [name,args] of commands) {
+  const r = cp.spawnSync(process.execPath,args,{encoding:'utf8'});
+  fs.writeFileSync(`${dir}/${name}.txt`,r.stdout+r.stderr);
+  process.stdout.write(`${name}: exit=${r.status}\n`+r.stdout+r.stderr);
+  outcomes.push({name,status:r.status});
+  if (r.status!==0) throw Error('Preparation gate failed');
+}
+fs.writeFileSync(`${dir}/native-preparation-receipt.json`,JSON.stringify({
+  base:'0d08f2b8ef0c9c26890bdefc7e4fa1dc044767b6',
+  outcomes,browserExecuted:false,serverStarted:false,nativeProducerNegativeVerified:false,
+  productionChanged:false,routingOwner:'root',collectedCases:2,
+},null,2)+'\n');
