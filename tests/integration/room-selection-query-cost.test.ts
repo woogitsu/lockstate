@@ -37,4 +37,5 @@ it('ordinary full Shower rooms need no physical query when no capability seat is
   expect(chosen).toBeUndefined();
   console.log(JSON.stringify({kind:'ordinary-saturated-rooms',roomCount:2,seats:4,previousFreshnessChunkReads:previousReads,physicalQueries:physical.mock.calls.length,freshnessChunkReads:reads}));
   expect(physical.mock.calls.length).toBe(0);
+  expect(reads).toBe(0);
 });
