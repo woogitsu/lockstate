@@ -1,0 +1,11 @@
+﻿const fs=require('fs'),cp=require('child_process');
+function git(args,allow=false){const r=cp.spawnSync('git',['-c','core.longpaths=true',...args],{encoding:'utf8'});if(r.status!==0&&!allow)throw Error(args.join(' ')+'\n'+r.stdout+r.stderr);return r;}
+function canonical(row){row=row.replace(/\]\((2026-10-03-[^)]*)\)/g,'](./$1)');const cells=row.split('|');if(cells.length===6&&row.includes('2026-10-03-guard-rear-belt-connections'))row='|'+cells[1]+'|'+cells[2]+'|'+cells[3].trim()+' '+cells[4].trim()+'|';return row;}
+function resolve(keys){const p='docs/research/README.md';const files=git(['diff','--name-only','--diff-filter=U']).stdout.trim().split('\n');if(files.length!==1||files[0]!==p)throw Error('Unexpected conflicts '+files);const ours=git(['show',':2:'+p]).stdout.split('\n'),theirs=git(['show',':3:'+p]).stdout.split('\n'),base=git(['show',':1:'+p]).stdout.split('\n');for(let row of theirs.filter(x=>x.startsWith('|')&&!base.includes(x))){const match=row.match(/(2026-10-03-[\w-]+)\/README\.md/);if(!match||!keys.includes(match[1]))throw Error('Out-of-scope incoming index row '+row);row=canonical(row);let at=ours.findIndex(x=>x.startsWith('|')&&x.includes(match[1]));if(at>=0)ours[at]=row;else{at=ours.findIndex(x=>x.startsWith('| [2026-10-03')||x.startsWith('| ./2026-10-03'));if(at<0)throw Error('No current research table');ours.splice(at,0,row);}}fs.writeFileSync(p,ours.join('\n'));git(['add',p]);git(['cherry-pick','--continue']);}
+const picks=[
+['ea963a18fa5326a9d5323fd02fc0618c44aa7784',['2026-10-03-template-history-native','2026-10-03-template-history-verdict','2026-10-03-camera-build-gesture-audit','2026-10-03-ordinary-build-session-ownership','2026-10-03-template-camera-preflight-coherence','2026-10-03-template-chord-release','2026-10-03-template-held-transform']],
+['125903b07381d09a5eb259282d8c6bcf7953f0ab',['2026-10-03-template-history-native','2026-10-03-template-history-verdict','2026-10-03-camera-build-gesture-audit']],
+['c0e7c13466da09904787db9832b40afdb1bc0ba2',['2026-10-03-public-hired-guard-native-preparation']]];if(git(['status','--porcelain']).stdout.trim())throw Error('Root must be clean before sequential integration');
+for(const[sha,keys]of picks){const r=git(['cherry-pick',sha],true);if(r.status!==0)resolve(keys);process.stdout.write(git(['log','-1','--format=%h %s']).stdout);}
+
+
