@@ -44,7 +44,7 @@
                      "files":  2
                  },
     "baseline":  "abcb2276f02acc685eca9ecd00899c3390031fb7",
-    "finalIndexAndDocs":  "pending own row lease",
+    "finalIndexAndDocs":  "complete",
     "issue":  2014,
     "actionConsumerNegative":  {
                                    "passed":  6,
@@ -53,5 +53,11 @@
     "fixed":  {
                   "passed":  12,
                   "files":  3
-              }
+              },
+    "finalDocs":  {
+                      "passed":  20,
+                      "files":  3
+                  },
+    "indexAddedRows":  1,
+    "indexRemovedRows":  0
 }

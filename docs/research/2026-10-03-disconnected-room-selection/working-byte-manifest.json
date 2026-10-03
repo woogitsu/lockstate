@@ -1,0 +1,180 @@
+{
+  "kind": "actual current working bytes; self-excluded; not a reconstruction of original execution",
+  "entries": [
+    {
+      "file": ".gitattributes",
+      "bytes": 25,
+      "sha256": "73fe662883f1bfa72445ac400f366e8861feb9b832603931dd68a3eb025af351"
+    },
+    {
+      "file": "README.md",
+      "bytes": 9174,
+      "sha256": "4e5e11290e3b3b22769ded062f709502159e985cbded3f172ed6a79419fe1d33"
+    },
+    {
+      "file": "action-consumer-negative.txt",
+      "bytes": 2537,
+      "sha256": "007efebdcbc850db9019a0f2bf3f49d43204d30cd49cf851d7899db77d7c896c"
+    },
+    {
+      "file": "baseline.txt",
+      "bytes": 5580,
+      "sha256": "3ca00f079b03eb79727f3374ffcd19ce04b89f63ace0147b12ef807701cf7e0f"
+    },
+    {
+      "file": "bounded-executed-probe.ts.txt",
+      "bytes": 5419,
+      "sha256": "b05c5f43906aaad844dd03b0986d2f72d75c6ca7824d684b25e94401a9628bb8"
+    },
+    {
+      "file": "bounded-measured-results.json",
+      "bytes": 990758,
+      "sha256": "a7318c701cd17f9165827a3ab5e0e67be4fc2971806512dc8869509b290afa30"
+    },
+    {
+      "file": "bounded-probe.txt",
+      "bytes": 32134,
+      "sha256": "241ebb8fecd3a47b6ed1c60d8be39a5b06a854788bdf44764bc70ce4a22bdd1f"
+    },
+    {
+      "file": "diagnosis-typecheck.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "exact-restored.txt",
+      "bytes": 275,
+      "sha256": "80f7fa91e03553607c7d3670e6ecce2a77cf2b5c4033525e15917f654f937726"
+    },
+    {
+      "file": "executed-probe.ts.txt",
+      "bytes": 4970,
+      "sha256": "49c08201de0e6870f6733b55e97eeecd44c934ca140b687a4a2d90260795424e"
+    },
+    {
+      "file": "final-docs.txt",
+      "bytes": 570,
+      "sha256": "d0520f5aab39dba7f43b65b1d2ae3737aa177f9a52aeb45cf8f99be3876bcf74"
+    },
+    {
+      "file": "final-tools-typecheck.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "final-typecheck.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "fixed-measured-results.json",
+      "bytes": 995992,
+      "sha256": "d13ea63289a8c602de790b45cf9130091c616a7d7f814d121c6e70171c783892"
+    },
+    {
+      "file": "fixed-measurement.txt",
+      "bytes": 32298,
+      "sha256": "cd1b89b8b63771ecb9b3bb1fccc2237f13e735049ec399e21d0d0e854eb67558"
+    },
+    {
+      "file": "fixed-typecheck.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "fixed.txt",
+      "bytes": 572,
+      "sha256": "849c820d458cfa9df2c06bc6d805383fdc35406287ff7adca46fe576843d945c"
+    },
+    {
+      "file": "fresh-disconnected-search.json",
+      "bytes": 69332,
+      "sha256": "1af7267618b77f722ddf833fb7b24b16feedb9906dd4f01c21440eece84aa981"
+    },
+    {
+      "file": "fresh-sealed-search.json",
+      "bytes": 45457,
+      "sha256": "f3e7b1ac2199074e2f0a77138f250b3aefc36dabbd721079c9f48ee3ac541c70"
+    },
+    {
+      "file": "fresh-unreachable-search.json",
+      "bytes": 545754,
+      "sha256": "8d57f4f1d4b603eb4d042d5e6a1b150fdbab2879be6f3cd8047159b69fce221c"
+    },
+    {
+      "file": "implementation-proposal.md",
+      "bytes": 4493,
+      "sha256": "e28674ec67b27d6bc666053c537d34a8fa66b9381b30fa4800d5d1d9674d851e"
+    },
+    {
+      "file": "initial-docs.txt",
+      "bytes": 2820,
+      "sha256": "55ec0275401b3b93c986003cf42e7a54e11c5911383dc17dd5c70d365d645a28"
+    },
+    {
+      "file": "issue-1006.json",
+      "bytes": 11195,
+      "sha256": "4118f7e4884008a7941af09822e7ee587e30450bbeff71f8e839e5434ebe85df"
+    },
+    {
+      "file": "issue-2008.json",
+      "bytes": 5658,
+      "sha256": "2463f9b675ba479982e4ccc568b65d27a18bfc70c332f285522dd95b6b7a1e4e"
+    },
+    {
+      "file": "issue-2013.json",
+      "bytes": 5297,
+      "sha256": "af7a0575a63380cdeb37e31fbb13f8261a6694f4a06955240c584307a1819eb0"
+    },
+    {
+      "file": "issue-938.json",
+      "bytes": 14309,
+      "sha256": "18430abd3b687d239007c22e6de93837810f923590d4b756ab380d3a2a104265"
+    },
+    {
+      "file": "measured-results.json",
+      "bytes": 980898,
+      "sha256": "f1724179fcf445f2b20e4ca12df0c29b03a63f7616a3e1886cc0fd6440c0d737"
+    },
+    {
+      "file": "mutation-restoration.json",
+      "bytes": 954,
+      "sha256": "f259d1f97e93e18c7484f69932f7e796ac05c93dbe19a525bc7172bc0d44db01"
+    },
+    {
+      "file": "neighbors.txt",
+      "bytes": 580,
+      "sha256": "aa36d82072794268b6a8c70b43da2275cd0f07525b19395cb216efb6106fca3b"
+    },
+    {
+      "file": "physical-controls.txt",
+      "bytes": 564,
+      "sha256": "913a973ae85ef04f1e4be98c863d6182f2236a9be93d396d499a0576f2738368"
+    },
+    {
+      "file": "physical-query-negative.txt",
+      "bytes": 3470,
+      "sha256": "1655540593195ae4d654869dd72ffaae7c0a6a583fda1888197b40b77ba4185a"
+    },
+    {
+      "file": "probe.txt",
+      "bytes": 21526,
+      "sha256": "34188a2eb337bc8e2b76f45c02dca8c87511d2251c7ba4265bc4ae46b52d5b18"
+    },
+    {
+      "file": "run-mutations.cjs.txt",
+      "bytes": 2861,
+      "sha256": "b293363258d73c97d28bdc28402657bd9afa59676181ed8df4c2e568f930257f"
+    },
+    {
+      "file": "run-probe.cjs.txt",
+      "bytes": 583,
+      "sha256": "b530cf90194589500900bf717509f2170315bd171791ab62f55d8c5403573547"
+    },
+    {
+      "file": "terminal-receipt.json",
+      "bytes": 2353,
+      "sha256": "add1375f865d4f7ec6d4f6c2600e27bc8526e99bb1af2d1f9c8cb2c1ef5c5fd9"
+    }
+  ]
+}
