@@ -55,3 +55,7 @@ Only existing `/game-content/oblique-cell-door-open.v1.json` grows from9 to72 po
 North world camera135/e45 selects `cell-door-open-yaw+135-elev45.1c1f8e0b7cbe.png`; world225/e45 normalizes to?135 and selects `cell-door-open-yaw-135-elev45.cae1519010fd.png`. Both use the accepted512px/pivot256/target[0,0,0]/64ppU. All source72frame SHA256s appear in `actual72-source-frame-receipt.json`; current typed actual callback tests preserve full projected north1?0.22 and west0.22?1 picking footprints. No new geometry/state/copy/palette/schema/price/alias choice.
 
 Root cherry-pick conflict surface: `docs/research/README.md` only appends the own canonical `./2026-10-03-interior-north-door-pose-completion/README.md` three-column row in its first continuous table. Preserve all intervening root rows. All other documentation is inside the new own report directory. No root HUD/protocol/renderer/worker/source-doc surface is edited. Native actual displayed-model acceptance remains root-owned and pending.
+
+## Separate bounded native preparation
+
+[Exact root executable config, public135/225 observation and honest pending boundary](./NATIVE_HANDOFF.md). Three existing real cot cases collect; q0 gains optional actual north descriptor/body/Blob evidence and24public camera clicks returning?45/e45. Strict TS passes; literal q0 BuildOrder wrong-edge producer1RED/6controls?exactrestore7GREEN. Collection is not native acceptance. No new build/browser/server was run during this preparation.

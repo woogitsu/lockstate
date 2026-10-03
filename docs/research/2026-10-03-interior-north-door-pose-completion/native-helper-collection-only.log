@@ -1,0 +1,5 @@
+Listing tests:
+  cell-cot-player-build.spec.ts:168:1 › player furnishes delivery and storage plans before the cot test
+  cell-cot-player-build.spec.ts:233:3 › player builds the existing bed in a Basic cell q0 and keeps it after Save/Load at Full HD
+  cell-cot-player-build.spec.ts:233:3 › player builds the existing bed in a Basic cell q1 and keeps it after Save/Load at Full HD
+Total: 3 tests in 1 file

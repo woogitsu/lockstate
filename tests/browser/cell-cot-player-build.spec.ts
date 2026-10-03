@@ -3,6 +3,7 @@ import type { SessionSnapshotBundle } from '../../src/simulation/runtime/restore
 import { HEADBOARD_FRAME, observeCotImages, publicHeadboardPose, requireCotOwner } from './cell-cot-evidence';
 import { expect, test as base, type Page } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
+import { capturePublicNorthDoorBacksides, observeInteriorNorthDoorImages } from './interior-north-door-evidence';
 
 interface ProbeWindow extends Window {
   askWorker?: (kind: string, payload: unknown) => Promise<unknown>;
@@ -146,6 +147,8 @@ test(`player builds the existing bed in a Basic cell q${quarterTurns} and keeps 
   expect(routeStorage, 'this case consumes the first stage actual IndexedDB save').toBeDefined();
   const started = Date.now();
   const readImages = await observeCotImages(page);
+  const readDoorImages = process.env['LOCKSTATE_NORTH_DOOR_BACKSIDE_NATIVE'] === '1' && quarterTurns === 0
+    ? await observeInteriorNorthDoorImages(page) : undefined;
   await installWorkerProbe(page);
   await installTee(page);
   await page.setViewportSize({ width: 1920, height: 1080 });
@@ -198,6 +201,9 @@ test(`player builds the existing bed in a Basic cell q${quarterTurns} and keeps 
   const restored = await page.screenshot({ path: info.outputPath('cell-cot-loaded-fullhd.png') });
   if (quarterTurns === 0) expect(await ochreBlanketPixels(page, restored), 'loaded bed must retain the authored blanket').toBeGreaterThan(700);
   const loadElapsedMs = Date.now() - started;
+  if (readDoorImages !== undefined) {
+    await capturePublicNorthDoorBacksides(page, info, sequence, () => workerSnapshot(page), readDoorImages);
+  }
   const publicPose = await publicHeadboardPose(page, quarterTurns);
   await expect.poll(async () => (await readImages()).images.some(image =>
     image.sha256 === HEADBOARD_FRAME.sha256 && image.complete && !image.error && image.width === 256 && image.height === 256),
