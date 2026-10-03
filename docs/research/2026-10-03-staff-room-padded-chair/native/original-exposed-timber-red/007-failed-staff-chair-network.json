@@ -1,0 +1,114 @@
+[
+  {
+    "url": "http://127.0.0.1:5365/assets/worker-BUlyor2P.js",
+    "path": "/assets/worker-BUlyor2P.js",
+    "status": 200,
+    "sha256": "d2bb8a340763c3e497ba4dc45a6936ca61e1edee3b334294adead864ed854dfe",
+    "bytes": 443841
+  },
+  {
+    "url": "http://127.0.0.1:5365/game-content/oblique-furniture-staff-room-padded-chair.v1.json",
+    "path": "/game-content/oblique-furniture-staff-room-padded-chair.v1.json",
+    "status": 200,
+    "sha256": "009e999a55964652081e24b0dfc7f25f9850b100214b784dad5fa5ef5ba2d626",
+    "bytes": 20028
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+300-elev40.8c0493f6107d.png",
+    "path": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+300-elev40.8c0493f6107d.png",
+    "status": 307,
+    "location": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw%2B300-elev40.8c0493f6107d.png"
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.staff-room.padded-chair-yaw%2B300-elev40.8c0493f6107d.png",
+    "path": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+300-elev40.8c0493f6107d.png",
+    "status": 200,
+    "sha256": "8c0493f6107d08f56da0f2af5552c653597421c330c68819a7c3940088a1a065",
+    "bytes": 7983
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/worker-BUlyor2P.js",
+    "path": "/assets/worker-BUlyor2P.js",
+    "status": 200,
+    "sha256": "d2bb8a340763c3e497ba4dc45a6936ca61e1edee3b334294adead864ed854dfe",
+    "bytes": 443841
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+330-elev40.bf46de2c9530.png",
+    "path": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+330-elev40.bf46de2c9530.png",
+    "status": 307,
+    "location": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw%2B330-elev40.bf46de2c9530.png"
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.staff-room.padded-chair-yaw%2B330-elev40.bf46de2c9530.png",
+    "path": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+330-elev40.bf46de2c9530.png",
+    "status": 200,
+    "sha256": "bf46de2c953000e2c7e1458e321ca2601e3db747848cb1c781fac3d81b4da173",
+    "bytes": 8117
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+00-elev40.659bdb53ded2.png",
+    "path": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+00-elev40.659bdb53ded2.png",
+    "status": 307,
+    "location": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw%2B00-elev40.659bdb53ded2.png"
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.staff-room.padded-chair-yaw%2B00-elev40.659bdb53ded2.png",
+    "path": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+00-elev40.659bdb53ded2.png",
+    "status": 200,
+    "sha256": "659bdb53ded244e37b535552622590bcc4cf5fbf98464c5e2947d1156bcca8ab",
+    "bytes": 3941
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+30-elev40.1faee2847e64.png",
+    "path": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+30-elev40.1faee2847e64.png",
+    "status": 307,
+    "location": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw%2B30-elev40.1faee2847e64.png"
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.staff-room.padded-chair-yaw%2B30-elev40.1faee2847e64.png",
+    "path": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+30-elev40.1faee2847e64.png",
+    "status": 200,
+    "sha256": "1faee2847e64d7590313bb7a7838fc8e190f1e6870e9a5937d4d2fd2735396e9",
+    "bytes": 8113
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+60-elev40.3d0fd0a02317.png",
+    "path": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+60-elev40.3d0fd0a02317.png",
+    "status": 307,
+    "location": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw%2B60-elev40.3d0fd0a02317.png"
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.staff-room.padded-chair-yaw%2B60-elev40.3d0fd0a02317.png",
+    "path": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+60-elev40.3d0fd0a02317.png",
+    "status": 200,
+    "sha256": "3d0fd0a023174ec0a0fa897f33a57d1e07630a5201ec093f394a65634e399646",
+    "bytes": 8065
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+60-elev30.3121ba71bed3.png",
+    "path": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+60-elev30.3121ba71bed3.png",
+    "status": 307,
+    "location": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw%2B60-elev30.3121ba71bed3.png"
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.staff-room.padded-chair-yaw%2B60-elev30.3121ba71bed3.png",
+    "path": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+60-elev30.3121ba71bed3.png",
+    "status": 200,
+    "sha256": "3121ba71bed3755fb014d1a16eb228b4a117ff952a13e58cd70bd6bb90669501",
+    "bytes": 8098
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+60-elev20.1bdf0f9ce348.png",
+    "path": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+60-elev20.1bdf0f9ce348.png",
+    "status": 307,
+    "location": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw%2B60-elev20.1bdf0f9ce348.png"
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.staff-room.padded-chair-yaw%2B60-elev20.1bdf0f9ce348.png",
+    "path": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+60-elev20.1bdf0f9ce348.png",
+    "status": 200,
+    "sha256": "1bdf0f9ce348dfd4185bb4c7c85addf84d3837cbf56f1c6d65fd25d40971a114",
+    "bytes": 7887
+  }
+]

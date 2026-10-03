@@ -38,6 +38,30 @@ Actual new source60/e40 preview:
 
 ![Actual Blender Staff Room padded chair](../../../public/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+60-elev40.3d0fd0a02317.png)
 
+## Root integration: measured native calibration, not an accepted release yet
+
+The coherent root product `8e6c7bb502` includes the complete Staff model and
+the independent completed-template-door furniture refusal. Typecheck,
+production build and five focused suites (24 tests) passed. Its first actual
+native run preserved the original three serial cases, 60-second case budget,
+10-second expectations, one worker and zero retries: bootstrap passed,
+quarterTurns0 failed four exposed-timber checks, and quarterTurns1 was skipped
+by the existing serial group. [Original report](./native/original-exposed-timber-red/report.json)
+and exact original screenshots/whole snapshots remain archived.
+
+Both padded chairs are visibly present in the actual Full HD completed and
+canonical source60/e40 screenshots, opened independently by root. Actual
+network responses, the real loader's decoded Blob, literal paid owners and
+whole paused V8 Save/Load comparisons passed before the soft pixel failures.
+This does not turn that run GREEN. In the original unchanged isolated regions,
+the new charcoal pads expose RGB(38,41,44) counts374/359, while the covered
+original RGB(150,115,75) timber gives2/1. The next source keeps those regions,
+the original >40 pixel floor, both timber observations and their equality
+after Load; the visibility assertion now measures the actual Staff pads.
+The existing three built-client cases also always demand the dedicated
+descriptor/frame/real decoded body rather than leaving them opt-in. A complete
+corrected native run and quarterTurns1 calibration are still required.
+
 ## Prepared opt-in native handoff
 
 [Existing three-case Staff native observer](./NATIVE_HANDOFF.md) is source-prepared: actual network bodies/loader Blob decoder, both paid owners, whole paused V8 equality and FullHD photos. Original60s/expect10s/w1/r0 and retained wood assertions unchanged. Genuine typed public kernel route q0/q1 and actual plan-producer omission RED?exact restoreGREEN completed; no native/browser/collection/build claim.

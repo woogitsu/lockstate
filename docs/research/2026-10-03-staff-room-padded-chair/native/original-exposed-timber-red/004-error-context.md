@@ -1,0 +1,223 @@
+# Page snapshot
+
+```yaml
+- main "Lockstate game application" [ref=e2]:
+  - generic:
+    - region "Prison status" [ref=e5]:
+      - generic [ref=e6]:
+        - note "Lockstate build":
+          - img
+          - generic: LockState.io
+          - generic: PRE-ALPHA
+          - generic: v0.0.839 · 8e6c7bb
+          - generic: Lockstate, PRE-ALPHA build, version 0.0.839, commit 8e6c7bb.
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - img [ref=e9]
+          - generic [ref=e12]:
+            - generic [ref=e13]: "0"
+            - generic [ref=e14]: Prisoners
+        - generic [ref=e16]:
+          - img [ref=e17]
+          - generic [ref=e19]:
+            - generic [ref=e20]: "0"
+            - generic [ref=e21]: High Risk
+        - generic [ref=e23]:
+          - img [ref=e24]
+          - generic [ref=e29]:
+            - generic [ref=e30]: "0"
+            - generic [ref=e31]: Staff
+        - generic [ref=e33]:
+          - img [ref=e34]
+          - generic [ref=e36]:
+            - generic [ref=e37]: "0"
+            - generic [ref=e38]: Coverage
+          - generic [ref=e41]: Covered
+        - generic [ref=e43]:
+          - img [ref=e44]
+          - generic [ref=e46]:
+            - generic [ref=e47]: "3"
+            - generic [ref=e48]: Rooms
+        - generic [ref=e50]:
+          - img [ref=e51]
+          - generic [ref=e53]:
+            - generic [ref=e54]: "0"
+            - generic [ref=e55]: Incidents
+          - generic [ref=e58]: Clear
+        - generic [ref=e60]:
+          - img [ref=e61]
+          - generic [ref=e64]:
+            - generic [ref=e65]: "0"
+            - generic [ref=e66]: Contraband
+        - generic [ref=e68]:
+          - img [ref=e69]
+          - generic [ref=e73]:
+            - generic [ref=e74]: 19,980
+            - generic [ref=e75]: Funds
+        - generic [ref=e77]:
+          - img [ref=e78]
+          - generic [ref=e81]:
+            - generic [ref=e82]: "0"
+            - generic [ref=e83]: Earned today
+      - generic [ref=e85]:
+        - img [ref=e86]
+        - generic [ref=e89]: Day
+        - generic [ref=e90]: "2"
+        - generic [ref=e91]: Through the day
+        - generic [ref=e92]: 79%
+      - group "Time controls" [ref=e93]:
+        - button "Pause" [pressed] [ref=e94] [cursor=pointer]:
+          - img [ref=e95]
+          - generic [ref=e96]: Pause
+        - button "Play at normal speed" [ref=e97] [cursor=pointer]:
+          - img [ref=e98]
+          - generic [ref=e100]: Play at normal speed
+        - button "Fast forward" [ref=e101] [cursor=pointer]:
+          - img [ref=e102]
+          - generic [ref=e105]: Fast forward
+        - generic [ref=e106]:
+          - generic [ref=e107]: Speed 1×
+          - generic [ref=e108]: PAUSED
+      - group "Undo and redo" [ref=e109]:
+        - button "Undo the last placement" [ref=e110] [cursor=pointer]:
+          - img [ref=e111]
+          - generic [ref=e114]: Undo the last placement
+        - button "Redo the last undone placement" [disabled] [ref=e115]:
+          - img [ref=e116]
+          - generic [ref=e119]: Redo the last undone placement
+      - group "Settings" [ref=e121]:
+        - button "Open the settings menu" [ref=e122] [cursor=pointer]:
+          - img [ref=e123]
+          - generic [ref=e128]: Open the settings menu
+    - generic:
+      - combobox "View" [ref=e129] [cursor=pointer]:
+        - option "Top-down"
+        - option "Angled view" [selected]
+      - group "Zoom":
+        - generic: Zoom
+        - button "Zoom out" [ref=e130] [cursor=pointer]:
+          - img [ref=e131]
+          - generic [ref=e134]: Zoom out
+        - button "Zoom in" [ref=e135] [cursor=pointer]:
+          - img [ref=e136]
+          - generic [ref=e139]: Zoom in
+      - generic [ref=e140]:
+        - button "Pan camera left" [ref=e141] [cursor=pointer]:
+          - img [ref=e142]
+          - generic [ref=e144]: Pan camera left
+        - button "Pan camera up" [ref=e145] [cursor=pointer]:
+          - img [ref=e146]
+          - generic [ref=e148]: Pan camera up
+        - button "Pan camera down" [ref=e149] [cursor=pointer]:
+          - img [ref=e150]
+          - generic [ref=e152]: Pan camera down
+        - button "Pan camera right" [ref=e153] [cursor=pointer]:
+          - img [ref=e154]
+          - generic [ref=e156]: Pan camera right
+      - generic [ref=e157]:
+        - button "Rotate camera left" [ref=e158] [cursor=pointer]:
+          - img [ref=e159]
+          - generic [ref=e162]: Rotate camera left
+        - button "Rotate camera right" [ref=e163] [cursor=pointer]:
+          - img [ref=e164]
+          - generic [ref=e167]: Rotate camera right
+        - button "Raise camera angle" [active] [ref=e168] [cursor=pointer]:
+          - img [ref=e169]
+          - generic [ref=e171]: Raise camera angle
+        - button "Lower camera angle" [ref=e172] [cursor=pointer]:
+          - img [ref=e173]
+          - generic [ref=e175]: Lower camera angle
+      - region "Minimap":
+        - generic:
+          - img
+          - heading "Minimap" [level=2]
+          - button "Collapse" [expanded] [ref=e176] [cursor=pointer]:
+            - img [ref=e177]
+            - generic [ref=e179]: Collapse
+        - generic:
+          - button "Prison map — press to move the camera" [ref=e180] [cursor=pointer]:
+            - generic [ref=e181]: Prison map — press to move the camera
+          - generic:
+            - button "Alerts" [expanded] [ref=e182] [cursor=pointer]:
+              - img [ref=e183]
+              - generic [ref=e185]: Alerts
+            - generic [ref=e187]:
+              - img [ref=e188]
+              - generic [ref=e190]: The order was completed. 62× Day 2
+              - generic [ref=e192]: Info
+              - button "Clear this alert" [ref=e193] [cursor=pointer]:
+                - img [ref=e194]
+                - generic [ref=e197]: Clear this alert
+    - generic:
+      - button "Hide the panels" [expanded] [ref=e198] [cursor=pointer]:
+        - img [ref=e199]
+        - generic [ref=e201]: Hide the panels
+      - generic:
+        - generic [ref=e202]:
+          - group "Interface scale" [ref=e203]:
+            - generic: Interface scale
+            - button "Change the interface scale" [ref=e204] [cursor=pointer]:
+              - status [ref=e205]: 100%
+          - group "Theme" [ref=e206]:
+            - generic: Theme
+            - button "Change the interface theme" [ref=e207] [cursor=pointer]:
+              - status [ref=e208]: System
+        - complementary "Prison saves" [ref=e209]:
+          - heading "Prisons" [level=2] [ref=e210]
+          - generic [ref=e211]:
+            - button "New prison" [ref=e212] [cursor=pointer]
+            - button "Save now" [ref=e213] [cursor=pointer]
+            - button "Export" [ref=e214] [cursor=pointer]
+            - button "Import" [ref=e215] [cursor=pointer]
+          - list [ref=e216]:
+            - listitem [ref=e217]:
+              - generic [ref=e218]: New Prison (3 gen)
+              - button "Load" [ref=e219] [cursor=pointer]
+              - button "Delete" [ref=e220] [cursor=pointer]
+          - status [ref=e221]: Loaded.
+          - paragraph [ref=e222]: "Restored: kernel tick and command queue, RNG stream states, world terrain and ownership, construction orders and undo/redo, entity id liveness, prisoners, needs, actions and cell assignments, jobs, containers and utility networks, doors, security sectors, guards and patrols, contraband, intelligence and searches, incidents, gangs and tunnels, prisoner and staff names. Not carried by this save version: room and topology caches (recomputed from the world), navigation caches and in-flight path requests (re-issued on the next tick)."
+      - region "Finances" [ref=e223]:
+        - generic [ref=e224]:
+          - img [ref=e225]
+          - heading "Finances" [level=2] [ref=e230]
+          - button "Collapse" [expanded] [ref=e231] [cursor=pointer]:
+            - img [ref=e232]
+            - generic [ref=e234]: Collapse
+        - generic [ref=e235]:
+          - generic [ref=e236]:
+            - generic [ref=e237]:
+              - generic [ref=e238]: Funds
+              - generic [ref=e239]: 19,980
+            - generic [ref=e240]:
+              - generic [ref=e241]: Earned today
+              - generic [ref=e242]: "0"
+            - generic [ref=e243]:
+              - generic [ref=e244]: Wages a day
+              - generic [ref=e245]: "0"
+          - generic [ref=e246]: State income is paid for occupied places at the end of each day.
+      - separator "Resize the panels" [ref=e247]
+    - navigation "Prison sections":
+      - button "Hide the sections" [expanded] [ref=e248] [cursor=pointer]:
+        - img [ref=e249]
+        - generic [ref=e251]: Hide the sections
+      - generic [ref=e252]:
+        - button "Overview" [ref=e253] [cursor=pointer]:
+          - img [ref=e254]
+          - generic [ref=e259]: Overview
+        - button "Build" [ref=e260] [cursor=pointer]:
+          - img [ref=e261]
+          - generic [ref=e265]: Build
+        - button "Zones" [ref=e266] [cursor=pointer]:
+          - img [ref=e267]
+          - generic [ref=e269]: Zones
+        - button "Manage" [ref=e270] [cursor=pointer]:
+          - img [ref=e271]
+          - generic [ref=e273]: Manage
+        - button "Schedule" [ref=e274] [cursor=pointer]:
+          - img [ref=e275]
+          - generic [ref=e277]: Schedule
+        - button "Security" [ref=e278] [cursor=pointer]:
+          - img [ref=e279]
+          - generic [ref=e281]: Security
+      - separator "Resize the sections" [ref=e282]
+```

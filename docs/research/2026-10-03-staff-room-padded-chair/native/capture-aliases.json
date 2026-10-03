@@ -1,0 +1,194 @@
+[
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-staff-v9-original-native-20261003.json",
+    "archived": "original-exposed-timber-red/report.json",
+    "sourceBytes": 29744,
+    "sourceSha256": "5215e30b02c469d1ed9f14f8c3c5e4f39e18f16104afc4615e279be16da10bec",
+    "archivedBytes": 29744,
+    "archivedSha256": "5215e30b02c469d1ed9f14f8c3c5e4f39e18f16104afc4615e279be16da10bec"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-staff-v9-original-native-20261003.txt",
+    "archived": "original-exposed-timber-red/console.txt",
+    "sourceBytes": 0,
+    "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "archivedBytes": 0,
+    "archivedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-staff-v9-original-native-20261003\\.last-run.json",
+    "archived": "original-exposed-timber-red/001-.last-run.json",
+    "sourceBytes": 96,
+    "sourceSha256": "a9e1c39f0c2e2754602bc936f2a57a5444b922fd65440af77be40b3ca94b7dc7",
+    "archivedBytes": 96,
+    "archivedSha256": "a9e1c39f0c2e2754602bc936f2a57a5444b922fd65440af77be40b3ca94b7dc7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-staff-v9-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\attachments\\wooden-chair-worker-and-save-evidence-ca54a0a1e179d9267daaf9842b44a03bfd77a133.json",
+    "archived": "original-exposed-timber-red/002-wooden-chair-worker-and-save-evidence-ca54a0a1e179d9267daaf9842b.json",
+    "sourceBytes": 467,
+    "sourceSha256": "3712c6c7a05cc0f844a3975aa42e24c4e66f3a30f020e7ed5e191714c889ca6a",
+    "archivedBytes": 467,
+    "archivedSha256": "3712c6c7a05cc0f844a3975aa42e24c4e66f3a30f020e7ed5e191714c889ca6a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-staff-v9-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\completed-worker-snapshot.json",
+    "archived": "original-exposed-timber-red/003-completed-worker-snapshot.json",
+    "sourceBytes": 76935,
+    "sourceSha256": "2096bb6ce0c6fb2d688d7069d804584d63a293e6db695053bc72825494b4db77",
+    "archivedBytes": 76935,
+    "archivedSha256": "2096bb6ce0c6fb2d688d7069d804584d63a293e6db695053bc72825494b4db77"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-staff-v9-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\error-context.md",
+    "archived": "original-exposed-timber-red/004-error-context.md",
+    "sourceBytes": 9519,
+    "sourceSha256": "a9bd07494df5f7e6cfae5cadbcdbe16e31ada54f4af7a57488df7cab5092d836",
+    "archivedBytes": 9519,
+    "archivedSha256": "a9bd07494df5f7e6cfae5cadbcdbe16e31ada54f4af7a57488df7cab5092d836"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-staff-v9-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\failed-player-fullhd.png",
+    "archived": "original-exposed-timber-red/005-failed-player-fullhd.png",
+    "sourceBytes": 1635873,
+    "sourceSha256": "9f6779da8b7e8dfaebb08cd8858063d26ab6c4edbf1d25d054ac83c262ea19fb",
+    "archivedBytes": 1635873,
+    "archivedSha256": "9f6779da8b7e8dfaebb08cd8858063d26ab6c4edbf1d25d054ac83c262ea19fb"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-staff-v9-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\failed-player-worker-snapshot.json",
+    "archived": "original-exposed-timber-red/006-failed-player-worker-snapshot.json",
+    "sourceBytes": 76935,
+    "sourceSha256": "8ecc7682c43e8f13dc6c08fa7b36e9840fc39a93268b0aec457027b806611713",
+    "archivedBytes": 76935,
+    "archivedSha256": "8ecc7682c43e8f13dc6c08fa7b36e9840fc39a93268b0aec457027b806611713"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-staff-v9-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\failed-staff-chair-network.json",
+    "archived": "original-exposed-timber-red/007-failed-staff-chair-network.json",
+    "sourceBytes": 5988,
+    "sourceSha256": "5197f74e0d136327670697a0190867a0c5d9115eec4631e8e1fb47c9face5cc0",
+    "archivedBytes": 5988,
+    "archivedSha256": "5197f74e0d136327670697a0190867a0c5d9115eec4631e8e1fb47c9face5cc0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-staff-v9-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\loaded-worker-snapshot.json",
+    "archived": "original-exposed-timber-red/008-loaded-worker-snapshot.json",
+    "sourceBytes": 76935,
+    "sourceSha256": "45a91efe358af34f2d98475840916850427afc35c6284a35ac250f08ff320395",
+    "archivedBytes": 76935,
+    "archivedSha256": "45a91efe358af34f2d98475840916850427afc35c6284a35ac250f08ff320395"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-staff-v9-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\physical-hardware-loaded-fullhd.png",
+    "archived": "original-exposed-timber-red/009-physical-hardware-loaded-fullhd.png",
+    "sourceBytes": 323511,
+    "sourceSha256": "171e0fc9e3a1bd1cbaf2e7241b8bbec6fea84266e4aa9126a5ca9338d0bf11ce",
+    "archivedBytes": 323511,
+    "archivedSha256": "171e0fc9e3a1bd1cbaf2e7241b8bbec6fea84266e4aa9126a5ca9338d0bf11ce"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-staff-v9-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\staff-chair-actual-network-decoder-receipt.json",
+    "archived": "original-exposed-timber-red/010-staff-chair-actual-network-decoder-receipt.json",
+    "sourceBytes": 27592,
+    "sourceSha256": "c4e55e76d5c7f8d8fe9cbdb362ce0022c373027e2d0050ba7e89919d8a31e938",
+    "archivedBytes": 27592,
+    "archivedSha256": "c4e55e76d5c7f8d8fe9cbdb362ce0022c373027e2d0050ba7e89919d8a31e938"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-staff-v9-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\staff-chair-actual-network.json",
+    "archived": "original-exposed-timber-red/011-staff-chair-actual-network.json",
+    "sourceBytes": 5988,
+    "sourceSha256": "5197f74e0d136327670697a0190867a0c5d9115eec4631e8e1fb47c9face5cc0",
+    "archivedBytes": 5988,
+    "archivedSha256": "5197f74e0d136327670697a0190867a0c5d9115eec4631e8e1fb47c9face5cc0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-staff-v9-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\staff-chair-actual200-source60-e40.png",
+    "archived": "original-exposed-timber-red/012-staff-chair-actual200-source60-e40.png",
+    "sourceBytes": 8065,
+    "sourceSha256": "3d0fd0a023174ec0a0fa897f33a57d1e07630a5201ec093f394a65634e399646",
+    "archivedBytes": 8065,
+    "archivedSha256": "3d0fd0a023174ec0a0fa897f33a57d1e07630a5201ec093f394a65634e399646"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-staff-v9-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\staff-chair-canonical-source60-e40-canvas.png",
+    "archived": "original-exposed-timber-red/013-staff-chair-canonical-source60-e40-canvas.png",
+    "sourceBytes": 1635873,
+    "sourceSha256": "9f6779da8b7e8dfaebb08cd8858063d26ab6c4edbf1d25d054ac83c262ea19fb",
+    "archivedBytes": 1635873,
+    "archivedSha256": "9f6779da8b7e8dfaebb08cd8858063d26ab6c4edbf1d25d054ac83c262ea19fb"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-staff-v9-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\staff-chair-canonical-source60-e40-fullhd.png",
+    "archived": "original-exposed-timber-red/014-staff-chair-canonical-source60-e40-fullhd.png",
+    "sourceBytes": 1635873,
+    "sourceSha256": "9f6779da8b7e8dfaebb08cd8858063d26ab6c4edbf1d25d054ac83c262ea19fb",
+    "archivedBytes": 1635873,
+    "archivedSha256": "9f6779da8b7e8dfaebb08cd8858063d26ab6c4edbf1d25d054ac83c262ea19fb"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-staff-v9-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\staff-chair-native-prepared-route-receipt.json",
+    "archived": "original-exposed-timber-red/015-staff-chair-native-prepared-route-receipt.json",
+    "sourceBytes": 227497,
+    "sourceSha256": "e7f7f121c2a932edfe57e969b87f282f3d31f690bd9177fccfa4ba854f4bf00b",
+    "archivedBytes": 227497,
+    "archivedSha256": "e7f7f121c2a932edfe57e969b87f282f3d31f690bd9177fccfa4ba854f4bf00b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-staff-v9-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\staff-chair-whole-paused-after-camera.json",
+    "archived": "original-exposed-timber-red/016-staff-chair-whole-paused-after-camera.json",
+    "sourceBytes": 76935,
+    "sourceSha256": "9f342ec02bc627b91921286b8166ce82ef04e78321e2f36ed671fd8f956348c1",
+    "archivedBytes": 76935,
+    "archivedSha256": "9f342ec02bc627b91921286b8166ce82ef04e78321e2f36ed671fd8f956348c1"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-staff-v9-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\staff-chair-whole-paused-completed.json",
+    "archived": "original-exposed-timber-red/017-staff-chair-whole-paused-completed.json",
+    "sourceBytes": 76935,
+    "sourceSha256": "b207f8c5ff388d405b430e7623c6d18ad627689f501aa35d769c3e2aa1c2934f",
+    "archivedBytes": 76935,
+    "archivedSha256": "b207f8c5ff388d405b430e7623c6d18ad627689f501aa35d769c3e2aa1c2934f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-staff-v9-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\staff-chair-whole-paused-loaded.json",
+    "archived": "original-exposed-timber-red/018-staff-chair-whole-paused-loaded.json",
+    "sourceBytes": 76935,
+    "sourceSha256": "4b1acb7793df477b9e9feaf93eb11e3605b7c0100e5d9c2720b91d83f572a40d",
+    "archivedBytes": 76935,
+    "archivedSha256": "4b1acb7793df477b9e9feaf93eb11e3605b7c0100e5d9c2720b91d83f572a40d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-staff-v9-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\wooden-chair-loaded-fullhd.png",
+    "archived": "original-exposed-timber-red/019-wooden-chair-loaded-fullhd.png",
+    "sourceBytes": 1534844,
+    "sourceSha256": "3c2b3c4ed00874eca82b8972c8ff24444ff849c6bb7c9d6d0482828476b2ffaa",
+    "archivedBytes": 1534844,
+    "archivedSha256": "3c2b3c4ed00874eca82b8972c8ff24444ff849c6bb7c9d6d0482828476b2ffaa"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-staff-v9-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\wooden-chair-worker-and-save-evidence.json",
+    "archived": "original-exposed-timber-red/020-wooden-chair-worker-and-save-evidence.json",
+    "sourceBytes": 467,
+    "sourceSha256": "3712c6c7a05cc0f844a3975aa42e24c4e66f3a30f020e7ed5e191714c889ca6a",
+    "archivedBytes": 467,
+    "archivedSha256": "3712c6c7a05cc0f844a3975aa42e24c4e66f3a30f020e7ed5e191714c889ca6a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-staff-v9-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\wooden-chair-worker-completed-fullhd.png",
+    "archived": "original-exposed-timber-red/021-wooden-chair-worker-completed-fullhd.png",
+    "sourceBytes": 1566808,
+    "sourceSha256": "c007d6b337491731244c3036bce4ba135e49dc5e0a4a91c60e94345ecb5785ad",
+    "archivedBytes": 1566808,
+    "archivedSha256": "c007d6b337491731244c3036bce4ba135e49dc5e0a4a91c60e94345ecb5785ad"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-staff-v9-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\worker-and-completed-save-evidence.json",
+    "archived": "original-exposed-timber-red/022-worker-and-completed-save-evidence.json",
+    "sourceBytes": 329,
+    "sourceSha256": "5cabc3880f8397378b4bdb26a9c5713295afe90985eadb1c7e5014410c3e4b6a",
+    "archivedBytes": 329,
+    "archivedSha256": "5cabc3880f8397378b4bdb26a9c5713295afe90985eadb1c7e5014410c3e4b6a"
+  }
+]

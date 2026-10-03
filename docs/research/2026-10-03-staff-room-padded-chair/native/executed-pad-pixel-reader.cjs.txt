@@ -1,0 +1,13 @@
+const fs = require('node:fs'), zlib = require('node:zlib'), crypto = require('node:crypto');
+function decode(file) {
+ const b=fs.readFileSync(file), w=b.readUInt32BE(16), h=b.readUInt32BE(20), c=b[25]===6?4:b[25]===2?3:0;
+ if(b[24]!==8||!c||b[28]!==0) throw Error('Unexpected screenshot format');
+ const chunks=[]; for(let p=8;p<b.length;){const n=b.readUInt32BE(p);if(b.toString('ascii',p+4,p+8)==='IDAT')chunks.push(b.subarray(p+8,p+8+n));p+=12+n;}
+ const raw=zlib.inflateSync(Buffer.concat(chunks)), stride=w*c, pixels=Buffer.alloc(h*stride);
+ const paeth=(a,b,c)=>{const p=a+b-c,pa=Math.abs(p-a),pb=Math.abs(p-b),pc=Math.abs(p-c);return pa<=pb&&pa<=pc?a:pb<=pc?b:c;};
+ for(let y=0;y<h;y++){const f=raw[y*(stride+1)];for(let x=0;x<stride;x++){const a=x>=c?pixels[y*stride+x-c]:0,up=y?pixels[(y-1)*stride+x]:0,diag=y&&x>=c?pixels[(y-1)*stride+x-c]:0;const delta=f===0?0:f===1?a:f===2?up:f===3?Math.floor((a+up)/2):f===4?paeth(a,up,diag):NaN;if(!Number.isFinite(delta))throw Error('Invalid filter');pixels[y*stride+x]=(raw[y*(stride+1)+x+1]+delta)&255;}}
+ return {b,w,h,c,pixels};
+}
+const file=process.argv[2], rectangles=JSON.parse(process.argv[3]||'[]');const d=decode(file);
+const rows=rectangles.map(rect=>{const counts=new Map();for(let y=rect[1];y<rect[1]+rect[3];y++)for(let x=rect[0];x<rect[0]+rect[2];x++){const i=(y*d.w+x)*d.c;if(d.c===4&&d.pixels[i+3]===0)continue;const key=Array.from(d.pixels.subarray(i,i+3)).join(',');counts.set(key,(counts.get(key)||0)+1);}return {rect,top:[...counts].sort((a,b)=>b[1]-a[1]).slice(0,20),wood:counts.get('150,115,75')||0};});
+console.log(JSON.stringify({file,sha256:crypto.createHash('sha256').update(d.b).digest('hex'),width:d.w,height:d.h,rows},null,2));

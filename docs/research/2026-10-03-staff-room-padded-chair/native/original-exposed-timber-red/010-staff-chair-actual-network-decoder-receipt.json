@@ -1,0 +1,617 @@
+{
+  "quarterTurns": 0,
+  "catalog": {
+    "schemaVersion": 1,
+    "assetId": "furniture.staff-room.padded-chair",
+    "source": "assets/source/blender/furniture.staff-room.padded-chair.blend",
+    "sourceSha256": "47004797588d92173e4140bc307ac3db73ed322ac2e1d2472f99c10475956109",
+    "resolutionPx": [
+      256,
+      256
+    ],
+    "nominalPixelsPerTile": 64,
+    "pivotPx": [
+      128,
+      128
+    ],
+    "cameraTargetTiles": [
+      0.5,
+      0.5,
+      0.6600000262260437
+    ],
+    "projection": "orthographic",
+    "yawDegrees": [
+      0,
+      30,
+      60,
+      90,
+      120,
+      150,
+      180,
+      210,
+      240,
+      270,
+      300,
+      330
+    ],
+    "elevationDegrees": [
+      20,
+      30,
+      40,
+      50,
+      60,
+      70
+    ],
+    "frames": [
+      {
+        "yawDegrees": 0,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+00-elev20.06aabcf1ec36.png",
+        "sha256": "06aabcf1ec3607a0e639830ac258fe4f3b58ffa02aedf30815439e902e4c5ceb"
+      },
+      {
+        "yawDegrees": 0,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+00-elev30.93434a23c1a2.png",
+        "sha256": "93434a23c1a21ebbd1dea74ec014d6b7d99c69decae1ee801661a99d00af5657"
+      },
+      {
+        "yawDegrees": 0,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+00-elev40.659bdb53ded2.png",
+        "sha256": "659bdb53ded244e37b535552622590bcc4cf5fbf98464c5e2947d1156bcca8ab"
+      },
+      {
+        "yawDegrees": 0,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+00-elev50.1eb93ce603b7.png",
+        "sha256": "1eb93ce603b7e1b3a10df652849c4043cebcb41983587954d21baf40d726462c"
+      },
+      {
+        "yawDegrees": 0,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+00-elev60.c2c02681d1d0.png",
+        "sha256": "c2c02681d1d00212ef43272dc84e8b14b92666550f86a7c9089ccf651e3393b3"
+      },
+      {
+        "yawDegrees": 0,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+00-elev70.40182ab1d35b.png",
+        "sha256": "40182ab1d35b3c3b1818f8362f5b0277c3ba6cdcd8de7a7f23a044849c6137ed"
+      },
+      {
+        "yawDegrees": 30,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+30-elev20.74780bd2896a.png",
+        "sha256": "74780bd2896a703443fb09365d2c650f2ac5d694202b8c92a0e201af9d07eba5"
+      },
+      {
+        "yawDegrees": 30,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+30-elev30.09810c74b08e.png",
+        "sha256": "09810c74b08e8eea05046ff47b2f24f717ab0e6117ad3e2606f1c15b7008fa75"
+      },
+      {
+        "yawDegrees": 30,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+30-elev40.1faee2847e64.png",
+        "sha256": "1faee2847e64d7590313bb7a7838fc8e190f1e6870e9a5937d4d2fd2735396e9"
+      },
+      {
+        "yawDegrees": 30,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+30-elev50.402483cdea88.png",
+        "sha256": "402483cdea88573db80c254a5b6dfff773481ad831f3a3802aa3970576db0f4c"
+      },
+      {
+        "yawDegrees": 30,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+30-elev60.c1b98973b6ae.png",
+        "sha256": "c1b98973b6aed109f7466fe9b14b72a85ab9f755995b2a948a1819c9e77e73fd"
+      },
+      {
+        "yawDegrees": 30,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+30-elev70.81a5eefff96b.png",
+        "sha256": "81a5eefff96b6c1add68fdcf956c64f08447cc908dab428d89f7bea06a5319a2"
+      },
+      {
+        "yawDegrees": 60,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+60-elev20.1bdf0f9ce348.png",
+        "sha256": "1bdf0f9ce348dfd4185bb4c7c85addf84d3837cbf56f1c6d65fd25d40971a114"
+      },
+      {
+        "yawDegrees": 60,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+60-elev30.3121ba71bed3.png",
+        "sha256": "3121ba71bed3755fb014d1a16eb228b4a117ff952a13e58cd70bd6bb90669501"
+      },
+      {
+        "yawDegrees": 60,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+60-elev40.3d0fd0a02317.png",
+        "sha256": "3d0fd0a023174ec0a0fa897f33a57d1e07630a5201ec093f394a65634e399646"
+      },
+      {
+        "yawDegrees": 60,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+60-elev50.cb45685ff76d.png",
+        "sha256": "cb45685ff76de7647ad2a9e14a1cbcc2758d1ea02444bec52725dbfc57e5dc19"
+      },
+      {
+        "yawDegrees": 60,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+60-elev60.a095f31f5d52.png",
+        "sha256": "a095f31f5d52f2ffe1556a2f0b1265fc6c6af349e004813ef2035aa3f23efc0b"
+      },
+      {
+        "yawDegrees": 60,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+60-elev70.279f4a1b6d4d.png",
+        "sha256": "279f4a1b6d4db81b46e6c9ceec506fe3b7ef4af0f742c16ec5b7da8abcd87465"
+      },
+      {
+        "yawDegrees": 90,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+90-elev20.fa7ac2e80e97.png",
+        "sha256": "fa7ac2e80e972d5b801bb0ded2d5aeb8fd89cfc352d3d5a814d6939cc960ab6f"
+      },
+      {
+        "yawDegrees": 90,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+90-elev30.e0b51212e672.png",
+        "sha256": "e0b51212e672a2c20666babfcc492d851c886b133130480740143e1ad2b1538a"
+      },
+      {
+        "yawDegrees": 90,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+90-elev40.8409d728e01f.png",
+        "sha256": "8409d728e01fdd5debc65e1d302dcccf5998ec3e67ee7f04e35c37551de990e1"
+      },
+      {
+        "yawDegrees": 90,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+90-elev50.bdcb008283a1.png",
+        "sha256": "bdcb008283a1ba1e28f5dffaf224448fb66a7a0feb68e2a6f89eb11b1be0e360"
+      },
+      {
+        "yawDegrees": 90,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+90-elev60.fa9c9b0d0b2e.png",
+        "sha256": "fa9c9b0d0b2e3db08a4f2b1d67caca2a96185926f86768e95b99ea498ee02357"
+      },
+      {
+        "yawDegrees": 90,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+90-elev70.46a7bbc5bb36.png",
+        "sha256": "46a7bbc5bb362f2579b2f6815cebb8291da6fa1db198595c20bb7b2a30dc8f35"
+      },
+      {
+        "yawDegrees": 120,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+120-elev20.da5c5f8b066f.png",
+        "sha256": "da5c5f8b066f4285b5444f4029bfee8e96836a92668a4f07812c052326963a99"
+      },
+      {
+        "yawDegrees": 120,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+120-elev30.d2c51d35f5c7.png",
+        "sha256": "d2c51d35f5c7cad3e8c345b3d5ffc076b0b61fef3bd674b21bdc3ab73fdd9c7f"
+      },
+      {
+        "yawDegrees": 120,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+120-elev40.5927384c11c9.png",
+        "sha256": "5927384c11c9704ce4571e4bea9093aca5fe923a861d0953323bca787ec45270"
+      },
+      {
+        "yawDegrees": 120,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+120-elev50.ba105c6196ae.png",
+        "sha256": "ba105c6196ae617434721ea1057a406c17638e54b83a3814dc9f72d9e1e6c844"
+      },
+      {
+        "yawDegrees": 120,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+120-elev60.26354ad36d88.png",
+        "sha256": "26354ad36d88cf0c37f03a0a2df45d42f05d5b0a257c32f2340c4b1726aec10a"
+      },
+      {
+        "yawDegrees": 120,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+120-elev70.f081d4ecb6f0.png",
+        "sha256": "f081d4ecb6f0826e333a8ea5fb179577eafc1f0a6a25152a4b7a217cf0d2b483"
+      },
+      {
+        "yawDegrees": 150,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+150-elev20.83506eab0e0a.png",
+        "sha256": "83506eab0e0ae03d3b5010a316b89f28ac071d1075fb9ee17b795844faf05a1a"
+      },
+      {
+        "yawDegrees": 150,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+150-elev30.111042c9e46f.png",
+        "sha256": "111042c9e46f4fcc7619223e8cbd90667f43c52ab34c6d76b8ee5d68e8881d79"
+      },
+      {
+        "yawDegrees": 150,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+150-elev40.35b456fbfe7e.png",
+        "sha256": "35b456fbfe7e6a1e5ad67458ced9771da885df3508e158b7e25506f488afb7aa"
+      },
+      {
+        "yawDegrees": 150,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+150-elev50.6aaf7dd5ff4c.png",
+        "sha256": "6aaf7dd5ff4cbb3b77df9614a3e2e792c14e27dbd478d337d83259abaad28b7d"
+      },
+      {
+        "yawDegrees": 150,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+150-elev60.c0b9fd7be3a4.png",
+        "sha256": "c0b9fd7be3a417ee185265b17139f11fa5f402f6c4f7fb15c66d275ddc465c29"
+      },
+      {
+        "yawDegrees": 150,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+150-elev70.101d78ef006d.png",
+        "sha256": "101d78ef006d20c76cc3ad22e8df1e00786acf6e5c32d6db9b76d4a1b01825a6"
+      },
+      {
+        "yawDegrees": 180,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+180-elev20.99c246b60264.png",
+        "sha256": "99c246b60264ac28aa35ea93a40cb5b63101ab63cf4bcc6675f6c86e20db3bd6"
+      },
+      {
+        "yawDegrees": 180,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+180-elev30.3bde0dc368e1.png",
+        "sha256": "3bde0dc368e19de44189b750f0fd5f69ebb4694d8530a389925ab90bbcac47c8"
+      },
+      {
+        "yawDegrees": 180,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+180-elev40.1288b48fc286.png",
+        "sha256": "1288b48fc2868a27a5a75f594456ce1ca59ed7d6f4527ea1b73434cdef9de21b"
+      },
+      {
+        "yawDegrees": 180,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+180-elev50.645eb26f00b1.png",
+        "sha256": "645eb26f00b1ef87c06839a35b50ba7e27e47218702fc5bdcb58f5a232135d9c"
+      },
+      {
+        "yawDegrees": 180,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+180-elev60.dada648933e9.png",
+        "sha256": "dada648933e9affa6238561ad93c632375036977dafc75164aa160ab4122738a"
+      },
+      {
+        "yawDegrees": 180,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+180-elev70.97076af1a818.png",
+        "sha256": "97076af1a818d7a3f520446b451521523129adc1fe42c01ed4f59ccaf3b60d6c"
+      },
+      {
+        "yawDegrees": 210,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+210-elev20.1c14e7be9e23.png",
+        "sha256": "1c14e7be9e23daa37bcf811904496d09f68dde26d03bd76146f4385214cb4b3b"
+      },
+      {
+        "yawDegrees": 210,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+210-elev30.c1afe3a7e952.png",
+        "sha256": "c1afe3a7e952451cf41e072cf34c7f0111289ef6cec20bc8eb568ab08142a989"
+      },
+      {
+        "yawDegrees": 210,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+210-elev40.57e656456866.png",
+        "sha256": "57e65645686634ca26c115e47b380129a5d97e3680678f290af6dc9dd225dee8"
+      },
+      {
+        "yawDegrees": 210,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+210-elev50.c3b0f201f918.png",
+        "sha256": "c3b0f201f918701c52f2c01066cf9403db9fab36ff3c9b4ed18d137de499a7b9"
+      },
+      {
+        "yawDegrees": 210,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+210-elev60.78a29a67e364.png",
+        "sha256": "78a29a67e3649724cf9665ade94eae1c6ea9a62357fbb724dfddae941215bdcc"
+      },
+      {
+        "yawDegrees": 210,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+210-elev70.d9abe7dfb606.png",
+        "sha256": "d9abe7dfb6066db6f80cae3a177e586313f2df44674d4422e385e0615366eb38"
+      },
+      {
+        "yawDegrees": 240,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+240-elev20.8c630e233008.png",
+        "sha256": "8c630e23300832eec91bd89138e9c64349010a4a08763f64ca9e6fb83b164b51"
+      },
+      {
+        "yawDegrees": 240,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+240-elev30.5a576c94cf1e.png",
+        "sha256": "5a576c94cf1eae33f8117bc7501da46976cbe914908b97becf2ce08602487ee5"
+      },
+      {
+        "yawDegrees": 240,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+240-elev40.36a37396ed6a.png",
+        "sha256": "36a37396ed6a2a583b1e76339485bddf37e2d143deac0c5d9fd94475a5316e8d"
+      },
+      {
+        "yawDegrees": 240,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+240-elev50.e948a2fc0a2e.png",
+        "sha256": "e948a2fc0a2e048b3847367cf9864fbde1747f7bdd9b7a2c6bb372e5233c3fd2"
+      },
+      {
+        "yawDegrees": 240,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+240-elev60.eb831211058c.png",
+        "sha256": "eb831211058c8dafb368dd5e286f38ab17239627394f2c98b628c0cc35241f3d"
+      },
+      {
+        "yawDegrees": 240,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+240-elev70.03374d659582.png",
+        "sha256": "03374d65958298b9de7537b2d1f5ec105291a53ead190ea22a71632c6201b8b5"
+      },
+      {
+        "yawDegrees": 270,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+270-elev20.79901c095f9d.png",
+        "sha256": "79901c095f9dcff91b231c8a517f3abe0287d6a6ad7417dbf863f9fa72124dfe"
+      },
+      {
+        "yawDegrees": 270,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+270-elev30.6535f9c322b8.png",
+        "sha256": "6535f9c322b8f965c4293a1158332354b8e86b3b6901dc13f2443ec9058aa50a"
+      },
+      {
+        "yawDegrees": 270,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+270-elev40.46114abe5c43.png",
+        "sha256": "46114abe5c43ddf49eeecba7f27a4493703dcd2fad23b8f44371552cc5bfd43e"
+      },
+      {
+        "yawDegrees": 270,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+270-elev50.f4854c02a232.png",
+        "sha256": "f4854c02a232ac3feee8990b60504d59aa45307c60a67102cf41944c66ee6cb9"
+      },
+      {
+        "yawDegrees": 270,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+270-elev60.60e6e739ecd4.png",
+        "sha256": "60e6e739ecd4711fd04545d187ab230797ee9c20f9df7c749577919e9a671be3"
+      },
+      {
+        "yawDegrees": 270,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+270-elev70.70d3960c9e31.png",
+        "sha256": "70d3960c9e31d8e56299b389949ccf0ad8a99d09025a6758bc65cc834514ce7c"
+      },
+      {
+        "yawDegrees": 300,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+300-elev20.8c1e7c9d0589.png",
+        "sha256": "8c1e7c9d058979471c27abd77d44fea70cededb2fad70a58b4a065e200120ceb"
+      },
+      {
+        "yawDegrees": 300,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+300-elev30.ccf1ade1daa2.png",
+        "sha256": "ccf1ade1daa205e38336c569712ed66ae3b580a5624212ccb36a36436ecf768a"
+      },
+      {
+        "yawDegrees": 300,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+300-elev40.8c0493f6107d.png",
+        "sha256": "8c0493f6107d08f56da0f2af5552c653597421c330c68819a7c3940088a1a065"
+      },
+      {
+        "yawDegrees": 300,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+300-elev50.11fc8914e44c.png",
+        "sha256": "11fc8914e44c271431281499d8292ef4651622c9f221efe47b087f0bb2cfc938"
+      },
+      {
+        "yawDegrees": 300,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+300-elev60.9a4badcc787d.png",
+        "sha256": "9a4badcc787d05c8d450a4803afa2754b883067c34cf3019628b3723bcf4dfcb"
+      },
+      {
+        "yawDegrees": 300,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+300-elev70.55e73df8b327.png",
+        "sha256": "55e73df8b327b4874f445cc98d3d3d2060adeec507e6071d196ba57176f03d06"
+      },
+      {
+        "yawDegrees": 330,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+330-elev20.8b33561469a6.png",
+        "sha256": "8b33561469a6a141532f6b2fdeacf2a84437acac238b8a6abd5b56a23b0bd48d"
+      },
+      {
+        "yawDegrees": 330,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+330-elev30.d5793de98f5e.png",
+        "sha256": "d5793de98f5efa14f2158fb63a05ea1992badcc905ddee3861dcb2f2930bd508"
+      },
+      {
+        "yawDegrees": 330,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+330-elev40.bf46de2c9530.png",
+        "sha256": "bf46de2c953000e2c7e1458e321ca2601e3db747848cb1c781fac3d81b4da173"
+      },
+      {
+        "yawDegrees": 330,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+330-elev50.3783714ce2da.png",
+        "sha256": "3783714ce2da19003ac2bb236aa549ce4f9fdbdbfa5994fee4ea6c95be77f2f1"
+      },
+      {
+        "yawDegrees": 330,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+330-elev60.9d920525158b.png",
+        "sha256": "9d920525158b49240123f637251c8405ee2c4cb881f80f3fd46fb174a336c4c2"
+      },
+      {
+        "yawDegrees": 330,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+330-elev70.5c13e2852284.png",
+        "sha256": "5c13e2852284fc90fee7df85bc0659ab304c2f2cbd7209038803c55bc359f650"
+      }
+    ]
+  },
+  "descriptorBodySha256": "009e999a55964652081e24b0dfc7f25f9850b100214b784dad5fa5ef5ba2d626",
+  "pngBodySha256": "3d0fd0a023174ec0a0fa897f33a57d1e07630a5201ec093f394a65634e399646",
+  "network": [
+    {
+      "url": "http://127.0.0.1:5365/assets/worker-BUlyor2P.js",
+      "path": "/assets/worker-BUlyor2P.js",
+      "status": 200,
+      "sha256": "d2bb8a340763c3e497ba4dc45a6936ca61e1edee3b334294adead864ed854dfe",
+      "bytes": 443841
+    },
+    {
+      "url": "http://127.0.0.1:5365/game-content/oblique-furniture-staff-room-padded-chair.v1.json",
+      "path": "/game-content/oblique-furniture-staff-room-padded-chair.v1.json",
+      "status": 200,
+      "sha256": "009e999a55964652081e24b0dfc7f25f9850b100214b784dad5fa5ef5ba2d626",
+      "bytes": 20028
+    },
+    {
+      "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+300-elev40.8c0493f6107d.png",
+      "path": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+300-elev40.8c0493f6107d.png",
+      "status": 307,
+      "location": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw%2B300-elev40.8c0493f6107d.png"
+    },
+    {
+      "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.staff-room.padded-chair-yaw%2B300-elev40.8c0493f6107d.png",
+      "path": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+300-elev40.8c0493f6107d.png",
+      "status": 200,
+      "sha256": "8c0493f6107d08f56da0f2af5552c653597421c330c68819a7c3940088a1a065",
+      "bytes": 7983
+    },
+    {
+      "url": "http://127.0.0.1:5365/assets/worker-BUlyor2P.js",
+      "path": "/assets/worker-BUlyor2P.js",
+      "status": 200,
+      "sha256": "d2bb8a340763c3e497ba4dc45a6936ca61e1edee3b334294adead864ed854dfe",
+      "bytes": 443841
+    },
+    {
+      "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+330-elev40.bf46de2c9530.png",
+      "path": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+330-elev40.bf46de2c9530.png",
+      "status": 307,
+      "location": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw%2B330-elev40.bf46de2c9530.png"
+    },
+    {
+      "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.staff-room.padded-chair-yaw%2B330-elev40.bf46de2c9530.png",
+      "path": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+330-elev40.bf46de2c9530.png",
+      "status": 200,
+      "sha256": "bf46de2c953000e2c7e1458e321ca2601e3db747848cb1c781fac3d81b4da173",
+      "bytes": 8117
+    },
+    {
+      "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+00-elev40.659bdb53ded2.png",
+      "path": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+00-elev40.659bdb53ded2.png",
+      "status": 307,
+      "location": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw%2B00-elev40.659bdb53ded2.png"
+    },
+    {
+      "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.staff-room.padded-chair-yaw%2B00-elev40.659bdb53ded2.png",
+      "path": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+00-elev40.659bdb53ded2.png",
+      "status": 200,
+      "sha256": "659bdb53ded244e37b535552622590bcc4cf5fbf98464c5e2947d1156bcca8ab",
+      "bytes": 3941
+    },
+    {
+      "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+30-elev40.1faee2847e64.png",
+      "path": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+30-elev40.1faee2847e64.png",
+      "status": 307,
+      "location": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw%2B30-elev40.1faee2847e64.png"
+    },
+    {
+      "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.staff-room.padded-chair-yaw%2B30-elev40.1faee2847e64.png",
+      "path": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+30-elev40.1faee2847e64.png",
+      "status": 200,
+      "sha256": "1faee2847e64d7590313bb7a7838fc8e190f1e6870e9a5937d4d2fd2735396e9",
+      "bytes": 8113
+    },
+    {
+      "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+60-elev40.3d0fd0a02317.png",
+      "path": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+60-elev40.3d0fd0a02317.png",
+      "status": 307,
+      "location": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw%2B60-elev40.3d0fd0a02317.png"
+    },
+    {
+      "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.staff-room.padded-chair-yaw%2B60-elev40.3d0fd0a02317.png",
+      "path": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+60-elev40.3d0fd0a02317.png",
+      "status": 200,
+      "sha256": "3d0fd0a023174ec0a0fa897f33a57d1e07630a5201ec093f394a65634e399646",
+      "bytes": 8065
+    },
+    {
+      "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+60-elev30.3121ba71bed3.png",
+      "path": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+60-elev30.3121ba71bed3.png",
+      "status": 307,
+      "location": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw%2B60-elev30.3121ba71bed3.png"
+    },
+    {
+      "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.staff-room.padded-chair-yaw%2B60-elev30.3121ba71bed3.png",
+      "path": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+60-elev30.3121ba71bed3.png",
+      "status": 200,
+      "sha256": "3121ba71bed3755fb014d1a16eb228b4a117ff952a13e58cd70bd6bb90669501",
+      "bytes": 8098
+    },
+    {
+      "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+60-elev20.1bdf0f9ce348.png",
+      "path": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+60-elev20.1bdf0f9ce348.png",
+      "status": 307,
+      "location": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw%2B60-elev20.1bdf0f9ce348.png"
+    },
+    {
+      "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.staff-room.padded-chair-yaw%2B60-elev20.1bdf0f9ce348.png",
+      "path": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+60-elev20.1bdf0f9ce348.png",
+      "status": 200,
+      "sha256": "1bdf0f9ce348dfd4185bb4c7c85addf84d3837cbf56f1c6d65fd25d40971a114",
+      "bytes": 7887
+    }
+  ],
+  "actualDecodedImages": [
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/4d7cc4ac-0d4c-45f4-aa0d-a3fc676d264d",
+      "currentSrc": "blob:http://127.0.0.1:5365/4d7cc4ac-0d4c-45f4-aa0d-a3fc676d264d",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "3d0fd0a023174ec0a0fa897f33a57d1e07630a5201ec093f394a65634e399646"
+    }
+  ],
+  "sourcePose": [
+    60,
+    40
+  ],
+  "cameraWorldYawDegrees": 60,
+  "syntheticFetchUsed": false,
+  "replacementImageUsed": false,
+  "rendererTextureReadUsed": false,
+  "perChairPadVisualCalibrationComplete": false,
+  "visualAcceptancePending": true
+}

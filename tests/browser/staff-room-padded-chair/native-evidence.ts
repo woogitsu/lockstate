@@ -134,6 +134,7 @@ export async function recordStaffCanonicalAfterLoad(page: Page, info: TestInfo, 
   await writeFile(info.outputPath('staff-chair-native-prepared-route-receipt.json'), JSON.stringify({
     turns, saveSchemaVersion: SAVE_SCHEMA_VERSION, built, loaded, afterCamera, owners: STAFF_CHAIR_OWNERS[turns], provenance,
     publicAdditionalRightClicks: 4, publicLowerClicks: 3, publicRaiseClicks: 2,
-    retainedTimberChecksPreserved: true, perChairPadVisualCalibrationComplete: false, visualAcceptancePending: true,
+    retainedTimberCountsCompared: true, isolatedChairRegionsPreserved: true, originalPixelFloor: 40,
+    perChairPadVisualCalibrationComplete: false, visualAcceptancePending: true,
     rootMustReview: 'Open actual FullHD before/after Load and canonical photos; independently calibrate both paid chair pads and run consumer negatives. Existing timber checks only prove retained wood.' }, null, 2));
 }

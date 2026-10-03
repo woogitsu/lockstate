@@ -50,19 +50,20 @@ async function fixtureAnchors(page: Page): Promise<string[]> {
   });
 }
 
-async function timberPixels(page: Page, png: Buffer, quarterTurns: 0 | 1): Promise<number[]> {
-  return page.evaluate(async ({ base64, quarterTurns }) => {
+async function chairMaterialPixels(page: Page, png: Buffer, quarterTurns: 0 | 1,
+  colour: readonly number[]): Promise<number[]> {
+  return page.evaluate(async ({ base64, quarterTurns, colour }) => {
     const bitmap = await createImageBitmap(new Blob([Uint8Array.from(atob(base64), c => c.charCodeAt(0))], { type: 'image/png' }));
     const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
     const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0);
-    // Actual native FullHD calibration at e3eff8678c: timber RGB(150,115,75).
-    // Two isolated chair regions exclude the Staff Room desk. The normal rear
-    // chair is partly behind the door; its visible seat still supplies 106 pixels.
-    // Normal counts108/106; clockwise90 counts54/49, equal after actual Load.
+    // Preserve the independent isolated chair regions and the original pixel
+    // floor. Actual 8e6c7bb502 native q0 photos show both new pads in these
+    // regions: RGB(38,41,44) counts374/359 before and after whole Save/Load.
+    // Pads cover the former exposed timber: original RGB(150,115,75) counts2/1.
+    // Keep recording and comparing timber; it no longer measures padded seats.
     const rects = quarterTurns === 0
       ? [[770, 490, 100, 115], [940, 440, 100, 115]]
       : [[825, 390, 95, 100], [885, 500, 100, 105]];
-    const colour = [150, 115, 75];
     return rects.map(rect => {
       const pixels = context.getImageData(...rect as [number, number, number, number]).data;
       let count = 0;
@@ -71,7 +72,7 @@ async function timberPixels(page: Page, png: Buffer, quarterTurns: 0 | 1): Promi
       }
       return count;
     });
-  }, { base64: png.toString('base64'), quarterTurns });
+  }, { base64: png.toString('base64'), quarterTurns, colour });
 }
 
 let routeStorage: Awaited<ReturnType<ReturnType<Page['context']>['storageState']>> | undefined;
@@ -145,7 +146,7 @@ test(`player builds Staff Room at quarterTurns${quarterTurns} and retains both a
   expect(routeStorage, 'this case consumes the first stage actual IndexedDB save').toBeDefined();
   await installWorkerProbe(page);
   await installTee(page);
-  const staffNative = process.env['LOCKSTATE_STAFF_CHAIR_NATIVE'] === '1' ? await observeStaffChairNetwork(page) : undefined;
+    const staffNative = await observeStaffChairNetwork(page);
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/?renderer=oblique');
   await page.locator('.save-panel__item').first().getByRole('button', { name: 'Load', exact: true }).click();
@@ -188,11 +189,12 @@ test(`player builds Staff Room at quarterTurns${quarterTurns} and retains both a
   assertOwnedObjectOrders(completedData, 'object.chair', 'chair-wooden', owned);
   const completedWhole = staffNative === undefined ? undefined : await captureStaffWholePaused(page, info.outputPath('staff-chair-whole-paused-completed.json'));
   if (completedWhole !== undefined) expect(completedWhole).toEqual(completedData);
-  const beforePixels = await timberPixels(page, completed, quarterTurns);
+  const beforeTimberPixels = await chairMaterialPixels(page, completed, quarterTurns, [150, 115, 75]);
+  const beforePixels = await chairMaterialPixels(page, completed, quarterTurns, [38, 41, 44]);
   await writeFile(info.outputPath('worker-and-completed-save-evidence.json'), JSON.stringify({
-    quarterTurns, actualBefore, beforePixels, commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
+    quarterTurns, actualBefore, beforePixels, beforeTimberPixels, commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
   }, null, 2));
-  beforePixels.forEach((count, index) => expect.soft(count, `chair${index + 1} authored timber after construction`)
+  beforePixels.forEach((count, index) => expect.soft(count, `chair${index + 1} authored Staff pad after construction`)
     .toBeGreaterThan(40));
   await page.getByRole('button', { name: 'Overview', exact: true }).click();
   await page.getByRole('button', { name: 'Save now', exact: true }).click();
@@ -209,13 +211,15 @@ test(`player builds Staff Room at quarterTurns${quarterTurns} and retains both a
   expect(loadedData).toEqual(completedData);
   const loadedWhole = staffNative === undefined ? undefined : await captureStaffWholePaused(page, info.outputPath('staff-chair-whole-paused-loaded.json'));
   if (loadedWhole !== undefined) expect(loadedWhole).toEqual(completedWhole);
-  const afterPixels = await timberPixels(page, loaded, quarterTurns);
-  afterPixels.forEach((count, index) => expect.soft(count, `chair${index + 1} authored timber after Load`)
+  const afterTimberPixels = await chairMaterialPixels(page, loaded, quarterTurns, [150, 115, 75]);
+  const afterPixels = await chairMaterialPixels(page, loaded, quarterTurns, [38, 41, 44]);
+  afterPixels.forEach((count, index) => expect.soft(count, `chair${index + 1} authored Staff pad after Load`)
     .toBeGreaterThan(40));
   expect(afterPixels).toEqual(beforePixels);
+  expect(afterTimberPixels).toEqual(beforeTimberPixels);
   const evidencePath = info.outputPath('wooden-chair-worker-and-save-evidence.json');
   await writeFile(evidencePath, JSON.stringify({
-    quarterTurns, actualBefore, actualAfter, beforePixels, afterPixels,
+    quarterTurns, actualBefore, actualAfter, beforePixels, afterPixels, beforeTimberPixels, afterTimberPixels,
     commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
   }, null, 2));
   await info.attach('wooden-chair-worker-and-save-evidence', { path: evidencePath, contentType: 'application/json' });
