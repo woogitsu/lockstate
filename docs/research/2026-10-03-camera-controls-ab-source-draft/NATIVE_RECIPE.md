@@ -32,7 +32,9 @@ pnpm --config.verify-deps-before-run=false exec playwright test --config docs/re
 - Physical Zoom presses and all four pan buttons change the real public
   minimap outline; opposite pan steps return to the original outline.
 - Physically acquire the native View SELECT and choose Angled with real
-  End/Enter. Read every current camera control in one public DOM call:
+  End/Enter. Each renderer owns its zoom: repeat the established two Zoom
+  presses in Angled and require an unclipped outline before pose observations.
+  Read every current camera control in one public DOM call:
   SELECT,4pan,4pose,2zoom and A's View button all retain44px, physical centre
   hit ownership and viewport containment. The camera panel must clear the
   actual active refusal, navigation, rail and corner; the alert list must fit
@@ -64,3 +66,15 @@ native pass, actual geometry or owner approval. A future real band-anchor
 omission must go RED, then restore source and compiled bytes exactly and
 return GREEN before claiming that new native guard is proven. Preserve
 original failures; do not relax floors, assertions or the bounded budget.
+
+## Source preparation receipt
+
+First coherent B preparation`de00e25ddb` was pushed before validation.
+App/tools strict checks exit0. Actual Playwright`--list` collected1case1file,
+without launching the webServer or a browser. Its existing artifact config
+requires a retained index even for collection: only the actual previously
+built rotation draft's`dist/client/index.html` was temporarily copied for
+that check, hashed, and removed with its two empty directories immediately
+afterward. That index is **not an A/B subject build**, and no missing assets,
+old UI, server or browser was accepted using it. The actual A/B native run
+must build its own frozen source before invoking this config normally.

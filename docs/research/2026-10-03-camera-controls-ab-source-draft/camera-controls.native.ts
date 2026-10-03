@@ -81,6 +81,14 @@ test(`${variant}: FullHD UI100 existing View, pan and pose with a real worker re
   await pressCameraControl(page, view); await page.keyboard.press('End'); await page.keyboard.press('Enter');
   await expect(view).toHaveValue('oblique'); await expect(view).toBeEnabled();
   await expect(page.locator('.hud-camera-pose')).toBeVisible(); await frames();
+  // Each renderer owns its zoom. Reuse the existing native pan recipe in the
+  // newly created Angled scene too; a clipped full-map outline cannot prove
+  // that a pose button is inert or functional.
+  for (let i = 0; i < 2; i++) await pressCameraControl(page, page.getByRole('button', { name: 'Zoom in', exact: true }));
+  await frames();
+  const angledOutline = await readMinimapCameraObservation(page);
+  expect(angledOutline.left).toBeGreaterThan(0); expect(angledOutline.top).toBeGreaterThan(0);
+  expect(angledOutline.left + angledOutline.width).toBeLessThan(100); expect(angledOutline.top + angledOutline.height).toBeLessThan(100);
   const layout = await readCameraLayout(page);
   await writeFile(info.outputPath('actual-ui100-active-status-all-camera-geometry.json'), JSON.stringify(layout, null, 2));
   await page.screenshot({ path: info.outputPath('actual-ui100-active-status-all-camera.png') });
