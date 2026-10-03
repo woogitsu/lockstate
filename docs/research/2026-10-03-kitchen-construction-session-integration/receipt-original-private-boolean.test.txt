@@ -84,7 +84,7 @@ for (const initialMode of ['world', 'oblique'] as const) {
       expect(h.tool.isArmed()).toBe(true);
       h.settle();
       for (let i = 0; i < 8; i++) await Promise.resolve();
-      expect(Reflect.get(h.tool, 'busy')).toBeUndefined();
+      expect(Reflect.get(h.tool, 'busy')).toBe(false);
       expect(h.place).toHaveBeenCalledOnce();
       expect(h.tool.isArmed()).toBe(false);
     } finally { h.dispose(); }
@@ -115,7 +115,7 @@ for (const initialMode of ['world', 'oblique'] as const) {
       const revision = h.tool.revision;
       await h.controller.select(initialMode === 'world' ? 'oblique' : 'world');
       h.settle(); for (let i = 0; i < 8; i++) await Promise.resolve();
-      expect(Reflect.get(h.tool, 'busy')).toBeUndefined();
+      expect(Reflect.get(h.tool, 'busy')).toBe(false);
       expect(h.tool.isArmed()).toBe(true); expect(h.tool.revision).toBe(revision);
       expect(h.place).not.toHaveBeenCalled();
     } finally { h.dispose(); }
@@ -129,7 +129,7 @@ for (const initialMode of ['world', 'oblique'] as const) {
       expect(h.tool.revision).toBe(revision);
       h.settle(); for (let i = 0; i < 8; i++) await Promise.resolve();
       expect(h.submit).toHaveBeenCalledExactlyOnceWith({ type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 12, y: 6 } });
-      expect(Reflect.get(h.tool, 'busy')).toBeUndefined();
+      expect(Reflect.get(h.tool, 'busy')).toBe(false);
       expect(h.tool.isArmed()).toBe(false);
     } finally { h.dispose(); }
   });
