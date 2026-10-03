@@ -1,5 +1,34 @@
 # UNAPPROVED: corrected individual-object rotation layout candidate
 
+## Current actual result - frozen 6d23180229, still UNAPPROVED
+
+Real Cloudflare production build exited0; exactly the two original EN/PL cases passed in35.6s/39.3s (1.3m total), with workers1/retries0/60s/expect10 unchanged. Subject was clean detached HEAD `6d231802299badc6940b2f233a45a0c3206c5d3d`, own port5371,1920x1080 CSS viewport, deviceScaleFactor1. Public UI100/200 is **not browser zoom200**. No additional case, new source mutation or retry ran. Server/browser terminated and5371 had no LISTEN; sole lease explicitly returned to root before evidence work.
+
+Original corrected outputs are preserved in [native/corrected-original](./native/corrected-original/), plus UTF16LE raw build/native logs and all frozen input/compiled hashes under [evidence](./evidence/). [Receipt](./native-observed-receipt.json) records70 native artifacts with exact byte hashes. CSS Git blob `a44aa6b9bea1d412889bd6fb16fdd2e1546afc33`; working SHA256 `457a37c0310ece061ed92cba7daf26958f4cb467ffe2cf90f532c31bfe8e6971`. Built CSS `index-dMYtKQcR.css` SHA256 `5e2eeae728e9bc17b24d8bc56c58b5d64c355dca8fb25f85665048874470bc7f`; client `index-BmNt3fYq.js` SHA256 `d9ef548b399b5185a5666b9ef96fcf7e2be0e11b902d8bc3be0f7c368a24c75a`; worker `worker-DuHDXIz8.js` SHA256 `f85e7136f0f8f41cbf8bea60814886ccf4b90b7ef763fe78259c62a9a4fbe987`. Full manifest identifies the generated Wrangler config too.
+
+### Measured scope and costs
+
+| Actual observation | EN100 | PL100 | EN200 | PL200 |
+| --- | ---: | ---: | ---: | ---: |
+| Buy width / action height |44 /44|44 /44|88 /88|88 /88|
+| q3 Rotate width |94.296875|94.21875|191.34375|190.671875|
+| All20 cards top-to-bottom |171.5-492.5|163-501|236-855|236-890|
+| Build list height |264|264|110|110|
+| Save height |278|278|236.84375|233.65625|
+| Rail height /25% floor |985 /246.25|985 /246.25|821 /205.25|821 /205.25|
+
+All four actions met the original44/88px height, hit, ink, label and row/panel/viewport containment assertions at selectedq0, armedq0/q1/q3. Every one of20 cards met original accessible-name/text-fit/hit/viewport checks in both languages/scales. Observed list and Save floor comparisons passed across all16 geometry records; unchanged Save roots remained inside viewport.
+
+**The wider Build allocation has a real scrolling cost.** At200, EN Build height1114.984375 is inside a414.15625px side viewport; PL1142.984375 is inside417.34375px. Genuine Rotate focus scrolls side46px EN/43px PL, clipping part of its header above the side viewport. Build root/map are not wholly inside the screen; their lower content requires existing side scrolling. Save at200 has scrollHeight551/clientHeight235 EN or232 PL. The proposed rule does not mean every Build/Save row appears simultaneously. [PL q3 actual screenshot](./native/corrected-original/pl-ui200-armed-q3-fullhd.png) makes this cost visible. No claim of full #1292 alert/camera acceptance is made: those unchanged surfaces were visible in captures but their dedicated row budgets were not rerun. The pending camera decision remains separate.
+
+Each language actually queried q0/q1/q2/q3 in the real worker, kept genuine KeyR as camera tilt, cancelled the originally held primary release after rotation without a transaction/whole-snapshot change, then accepted fresh q1 purchases at16,14 and16,16. Both independent30x30 secondary interiors changed900 pixels at100 and200. Actual orders retain objectOrientation1/cost130; treasury24870 then24740. Full public Save/Load returned the exact whole snapshot. Trusted click/Enter/Space records and original snapshots are retained, including genuine keyboard q3 screenshot. This is acceptance of this measured draft, **not owner approval or release integration**.
+
+Original `6edb4f2100` was2RED on geometry; those original outputs remain separately preserved. Its genuine ghost-only omission wasRED0/0, exact source+compiled restoration returned900/900 (documented in the preceding record). No fresh omission was executed on6d; do not claim one. The corrected native geometry is genuine original-assertion RED-to-candidateGREEN across separate exact builds, not a weakened observer.
+
+Weakest claim: passing these two cases cannot prove unrelated layouts or browser page zoom. A screenshot showing unreadable labels, an actual saved-content/alert/control floor violation, or owner rejection of the explicit scroll/dialog cost would reject the broader proposal. No production layout/copy approval is inferred.
+
+## Earlier source-only preparation, retained as history
+
 This isolated branch starts from actual evidence head `4a7ed9ab48fe2f6b2df2ede6b305d057b2738b5b`. It must never be imported into production release as approval of #2019. New copy remains proposed EN `Rotate object` / PL `Obróć obiekt`; KeyR stays camera tilt. Root owns current build/browser/full verification. No build, browser or server has run for this candidate.
 
 Original frozen runtime `6edb4f2100` completed two actual native cases, both **RED on layout**. All q1 worker/held release/fresh purchase/whole SaveLoad observations completed. Ghost-only consumer omission changed measured disjoint30×30 interiors from900/900 to0/0; source and all compiled bytes restored, then900/900 observed again. See [actual preserved evidence](../2026-10-03-object-rotation-review-native-prep/README.md); no repeated audit or fictitious acceptance is added here.

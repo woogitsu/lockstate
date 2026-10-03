@@ -1,0 +1,2636 @@
+{
+  "subject": "6d231802299badc6940b2f233a45a0c3206c5d3d",
+  "buildExit": 0,
+  "nativeExit": 0,
+  "result": "2 passed",
+  "durationsSeconds": {
+    "en": 35.6,
+    "pl": 39.3
+  },
+  "viewport": {
+    "width": 1920,
+    "height": 1080,
+    "deviceScaleFactor": 1,
+    "browserZoom": "unchanged",
+    "uiScales": [
+      100,
+      200
+    ]
+  },
+  "workers": 1,
+  "retries": 0,
+  "caseTimeoutMs": 60000,
+  "expectTimeoutMs": 10000,
+  "sourceCleanAtRunEnd": true,
+  "port": 5371,
+  "portListeningAfterRun": false,
+  "newMutation": false,
+  "geometry": [
+    {
+      "file": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui100-armed-q0-geometry.json",
+      "row": {
+        "x": 1582,
+        "y": 557,
+        "width": 313,
+        "height": 44
+      },
+      "buttons": [
+        {
+          "text": "Przestań stawiać",
+          "width": 109.375,
+          "height": 44,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Usuń",
+          "width": 47.171875,
+          "height": 44,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Kup",
+          "width": 44,
+          "height": 44,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Obróć obiekt 0°",
+          "width": 88.453125,
+          "height": 44,
+          "hit": true,
+          "insidePanel": true
+        }
+      ],
+      "rail": {
+        "selector": ".hud__rail",
+        "x": 1556,
+        "y": 95,
+        "width": 364,
+        "height": 985,
+        "minimumHeight": "0px",
+        "maximumHeight": "none",
+        "heightRule": "985px",
+        "position": "relative",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "hidden",
+        "clientHeight": 985,
+        "scrollHeight": 985,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "save": {
+        "selector": ".save-panel",
+        "x": 1569,
+        "y": 790,
+        "width": 340,
+        "height": 278,
+        "minimumHeight": "25%",
+        "maximumHeight": "none",
+        "heightRule": "278px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 276,
+        "scrollHeight": 276,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "list": {
+        "selector": ".hud-build__list",
+        "x": 1582,
+        "y": 276,
+        "width": 313,
+        "height": 264,
+        "minimumHeight": "88px",
+        "maximumHeight": "264px",
+        "heightRule": "264px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 264,
+        "scrollHeight": 968,
+        "scrollTop": 154,
+        "insideViewport": true
+      },
+      "side": {
+        "selector": ".hud__side",
+        "x": 1557,
+        "y": 161,
+        "width": 363,
+        "height": 621,
+        "minimumHeight": "0px",
+        "maximumHeight": "none",
+        "heightRule": "621px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "1",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 621,
+        "scrollHeight": 621,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "build": {
+        "selector": ".hud-build",
+        "x": 1569,
+        "y": 161,
+        "width": 339,
+        "height": 617.5625,
+        "minimumHeight": "auto",
+        "maximumHeight": "none",
+        "heightRule": "617.562px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 616,
+        "scrollHeight": 616,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "computedFloorChecks": {
+        "list": true,
+        "savePercent": true,
+        "saveInsideViewport": true
+      }
+    },
+    {
+      "file": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui100-armed-q1-geometry.json",
+      "row": {
+        "x": 1582,
+        "y": 557,
+        "width": 313,
+        "height": 44
+      },
+      "buttons": [
+        {
+          "text": "Przestań stawiać",
+          "width": 106.40625,
+          "height": 44,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Usuń",
+          "width": 47.171875,
+          "height": 44,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Kup",
+          "width": 44,
+          "height": 44,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Obróć obiekt 90°",
+          "width": 91.421875,
+          "height": 44,
+          "hit": true,
+          "insidePanel": true
+        }
+      ],
+      "rail": {
+        "selector": ".hud__rail",
+        "x": 1556,
+        "y": 95,
+        "width": 364,
+        "height": 985,
+        "minimumHeight": "0px",
+        "maximumHeight": "none",
+        "heightRule": "985px",
+        "position": "relative",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "hidden",
+        "clientHeight": 985,
+        "scrollHeight": 985,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "save": {
+        "selector": ".save-panel",
+        "x": 1569,
+        "y": 790,
+        "width": 340,
+        "height": 278,
+        "minimumHeight": "25%",
+        "maximumHeight": "none",
+        "heightRule": "278px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 276,
+        "scrollHeight": 276,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "list": {
+        "selector": ".hud-build__list",
+        "x": 1582,
+        "y": 276,
+        "width": 313,
+        "height": 264,
+        "minimumHeight": "88px",
+        "maximumHeight": "264px",
+        "heightRule": "264px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 264,
+        "scrollHeight": 968,
+        "scrollTop": 154,
+        "insideViewport": true
+      },
+      "side": {
+        "selector": ".hud__side",
+        "x": 1557,
+        "y": 161,
+        "width": 363,
+        "height": 621,
+        "minimumHeight": "0px",
+        "maximumHeight": "none",
+        "heightRule": "621px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "1",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 621,
+        "scrollHeight": 621,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "build": {
+        "selector": ".hud-build",
+        "x": 1569,
+        "y": 161,
+        "width": 339,
+        "height": 617.5625,
+        "minimumHeight": "auto",
+        "maximumHeight": "none",
+        "heightRule": "617.562px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 616,
+        "scrollHeight": 616,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "computedFloorChecks": {
+        "list": true,
+        "savePercent": true,
+        "saveInsideViewport": true
+      }
+    },
+    {
+      "file": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui100-armed-q3-geometry.json",
+      "row": {
+        "x": 1582,
+        "y": 557,
+        "width": 313,
+        "height": 44
+      },
+      "buttons": [
+        {
+          "text": "Przestań stawiać",
+          "width": 103.609375,
+          "height": 44,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Usuń",
+          "width": 47.171875,
+          "height": 44,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Kup",
+          "width": 44,
+          "height": 44,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Obróć obiekt 270°",
+          "width": 94.21875,
+          "height": 44,
+          "hit": true,
+          "insidePanel": true
+        }
+      ],
+      "rail": {
+        "selector": ".hud__rail",
+        "x": 1556,
+        "y": 95,
+        "width": 364,
+        "height": 985,
+        "minimumHeight": "0px",
+        "maximumHeight": "none",
+        "heightRule": "985px",
+        "position": "relative",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "hidden",
+        "clientHeight": 985,
+        "scrollHeight": 985,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "save": {
+        "selector": ".save-panel",
+        "x": 1569,
+        "y": 790,
+        "width": 340,
+        "height": 278,
+        "minimumHeight": "25%",
+        "maximumHeight": "none",
+        "heightRule": "278px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 276,
+        "scrollHeight": 276,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "list": {
+        "selector": ".hud-build__list",
+        "x": 1582,
+        "y": 276,
+        "width": 313,
+        "height": 264,
+        "minimumHeight": "88px",
+        "maximumHeight": "264px",
+        "heightRule": "264px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 264,
+        "scrollHeight": 968,
+        "scrollTop": 154,
+        "insideViewport": true
+      },
+      "side": {
+        "selector": ".hud__side",
+        "x": 1557,
+        "y": 161,
+        "width": 363,
+        "height": 621,
+        "minimumHeight": "0px",
+        "maximumHeight": "none",
+        "heightRule": "621px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "1",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 621,
+        "scrollHeight": 621,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "build": {
+        "selector": ".hud-build",
+        "x": 1569,
+        "y": 161,
+        "width": 339,
+        "height": 617.5625,
+        "minimumHeight": "auto",
+        "maximumHeight": "none",
+        "heightRule": "617.562px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 616,
+        "scrollHeight": 616,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "computedFloorChecks": {
+        "list": true,
+        "savePercent": true,
+        "saveInsideViewport": true
+      }
+    },
+    {
+      "file": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui100-selected-q0-geometry.json",
+      "row": {
+        "x": 1582,
+        "y": 557,
+        "width": 313,
+        "height": 44
+      },
+      "buttons": [
+        {
+          "text": "Stawiaj na mapie",
+          "width": 110.265625,
+          "height": 44,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Usuń",
+          "width": 47.171875,
+          "height": 44,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Kup",
+          "width": 44,
+          "height": 44,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Obróć obiekt 0°",
+          "width": 87.5625,
+          "height": 44,
+          "hit": true,
+          "insidePanel": true
+        }
+      ],
+      "rail": {
+        "selector": ".hud__rail",
+        "x": 1556,
+        "y": 95,
+        "width": 364,
+        "height": 985,
+        "minimumHeight": "0px",
+        "maximumHeight": "none",
+        "heightRule": "985px",
+        "position": "relative",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "hidden",
+        "clientHeight": 985,
+        "scrollHeight": 985,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "save": {
+        "selector": ".save-panel",
+        "x": 1569,
+        "y": 790,
+        "width": 340,
+        "height": 278,
+        "minimumHeight": "25%",
+        "maximumHeight": "none",
+        "heightRule": "278px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 276,
+        "scrollHeight": 276,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "list": {
+        "selector": ".hud-build__list",
+        "x": 1582,
+        "y": 276,
+        "width": 313,
+        "height": 264,
+        "minimumHeight": "88px",
+        "maximumHeight": "264px",
+        "heightRule": "264px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 264,
+        "scrollHeight": 968,
+        "scrollTop": 154,
+        "insideViewport": true
+      },
+      "side": {
+        "selector": ".hud__side",
+        "x": 1557,
+        "y": 161,
+        "width": 363,
+        "height": 621,
+        "minimumHeight": "0px",
+        "maximumHeight": "none",
+        "heightRule": "621px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "1",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 621,
+        "scrollHeight": 621,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "build": {
+        "selector": ".hud-build",
+        "x": 1569,
+        "y": 161,
+        "width": 339,
+        "height": 617.5625,
+        "minimumHeight": "auto",
+        "maximumHeight": "none",
+        "heightRule": "617.562px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 616,
+        "scrollHeight": 616,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "computedFloorChecks": {
+        "list": true,
+        "savePercent": true,
+        "saveInsideViewport": true
+      }
+    },
+    {
+      "file": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui200-armed-q0-geometry.json",
+      "row": {
+        "x": 1242,
+        "y": 718,
+        "width": 629,
+        "height": 88
+      },
+      "buttons": [
+        {
+          "text": "Przestań stawiać",
+          "width": 221.84375,
+          "height": 88,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Usuń",
+          "width": 92.328125,
+          "height": 88,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Kup",
+          "width": 88,
+          "height": 88,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Obróć obiekt 0°",
+          "width": 178.828125,
+          "height": 88,
+          "hit": true,
+          "insidePanel": true
+        }
+      ],
+      "rail": {
+        "selector": ".hud__rail",
+        "x": 1192,
+        "y": 259,
+        "width": 728,
+        "height": 821,
+        "minimumHeight": "0px",
+        "maximumHeight": "none",
+        "heightRule": "821px",
+        "position": "relative",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "hidden",
+        "clientHeight": 821,
+        "scrollHeight": 821,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "save": {
+        "selector": ".save-panel",
+        "x": 1217,
+        "y": 822.34375,
+        "width": 680,
+        "height": 233.65625,
+        "minimumHeight": "25%",
+        "maximumHeight": "none",
+        "heightRule": "233.656px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 232,
+        "scrollHeight": 551,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "list": {
+        "selector": ".hud-build__list",
+        "x": 1242,
+        "y": 575,
+        "width": 629,
+        "height": 110,
+        "minimumHeight": "110px",
+        "maximumHeight": "110px",
+        "heightRule": "110px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "0",
+        "overflowY": "scroll",
+        "clientHeight": 110,
+        "scrollHeight": 1936,
+        "scrollTop": 517,
+        "insideViewport": true
+      },
+      "side": {
+        "selector": ".hud__side",
+        "x": 1193,
+        "y": 389,
+        "width": 727,
+        "height": 417.34375,
+        "minimumHeight": "0px",
+        "maximumHeight": "none",
+        "heightRule": "417.344px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "1",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 417,
+        "scrollHeight": 1143,
+        "scrollTop": 43,
+        "insideViewport": true
+      },
+      "build": {
+        "selector": ".hud-build",
+        "x": 1217,
+        "y": 346,
+        "width": 679,
+        "height": 1142.984375,
+        "minimumHeight": "min-content",
+        "maximumHeight": "none",
+        "heightRule": "1142.98px",
+        "position": "relative",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "0",
+        "overflowY": "auto",
+        "clientHeight": 1141,
+        "scrollHeight": 1141,
+        "scrollTop": 0,
+        "insideViewport": false
+      },
+      "computedFloorChecks": {
+        "list": true,
+        "savePercent": true,
+        "saveInsideViewport": true
+      }
+    },
+    {
+      "file": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui200-armed-q1-geometry.json",
+      "row": {
+        "x": 1242,
+        "y": 718,
+        "width": 629,
+        "height": 88
+      },
+      "buttons": [
+        {
+          "text": "Przestań stawiać",
+          "width": 215.734375,
+          "height": 88,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Usuń",
+          "width": 92.328125,
+          "height": 88,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Kup",
+          "width": 88,
+          "height": 88,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Obróć obiekt 90°",
+          "width": 184.9375,
+          "height": 88,
+          "hit": true,
+          "insidePanel": true
+        }
+      ],
+      "rail": {
+        "selector": ".hud__rail",
+        "x": 1192,
+        "y": 259,
+        "width": 728,
+        "height": 821,
+        "minimumHeight": "0px",
+        "maximumHeight": "none",
+        "heightRule": "821px",
+        "position": "relative",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "hidden",
+        "clientHeight": 821,
+        "scrollHeight": 821,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "save": {
+        "selector": ".save-panel",
+        "x": 1217,
+        "y": 822.34375,
+        "width": 680,
+        "height": 233.65625,
+        "minimumHeight": "25%",
+        "maximumHeight": "none",
+        "heightRule": "233.656px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 232,
+        "scrollHeight": 551,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "list": {
+        "selector": ".hud-build__list",
+        "x": 1242,
+        "y": 575,
+        "width": 629,
+        "height": 110,
+        "minimumHeight": "110px",
+        "maximumHeight": "110px",
+        "heightRule": "110px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "0",
+        "overflowY": "scroll",
+        "clientHeight": 110,
+        "scrollHeight": 1936,
+        "scrollTop": 517,
+        "insideViewport": true
+      },
+      "side": {
+        "selector": ".hud__side",
+        "x": 1193,
+        "y": 389,
+        "width": 727,
+        "height": 417.34375,
+        "minimumHeight": "0px",
+        "maximumHeight": "none",
+        "heightRule": "417.344px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "1",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 417,
+        "scrollHeight": 1143,
+        "scrollTop": 43,
+        "insideViewport": true
+      },
+      "build": {
+        "selector": ".hud-build",
+        "x": 1217,
+        "y": 346,
+        "width": 679,
+        "height": 1142.984375,
+        "minimumHeight": "min-content",
+        "maximumHeight": "none",
+        "heightRule": "1142.98px",
+        "position": "relative",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "0",
+        "overflowY": "auto",
+        "clientHeight": 1141,
+        "scrollHeight": 1141,
+        "scrollTop": 0,
+        "insideViewport": false
+      },
+      "computedFloorChecks": {
+        "list": true,
+        "savePercent": true,
+        "saveInsideViewport": true
+      }
+    },
+    {
+      "file": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui200-armed-q3-geometry.json",
+      "row": {
+        "x": 1242,
+        "y": 718,
+        "width": 629,
+        "height": 88
+      },
+      "buttons": [
+        {
+          "text": "Przestań stawiać",
+          "width": 210,
+          "height": 88,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Usuń",
+          "width": 92.328125,
+          "height": 88,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Kup",
+          "width": 88,
+          "height": 88,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Obróć obiekt 270°",
+          "width": 190.671875,
+          "height": 88,
+          "hit": true,
+          "insidePanel": true
+        }
+      ],
+      "rail": {
+        "selector": ".hud__rail",
+        "x": 1192,
+        "y": 259,
+        "width": 728,
+        "height": 821,
+        "minimumHeight": "0px",
+        "maximumHeight": "none",
+        "heightRule": "821px",
+        "position": "relative",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "hidden",
+        "clientHeight": 821,
+        "scrollHeight": 821,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "save": {
+        "selector": ".save-panel",
+        "x": 1217,
+        "y": 822.34375,
+        "width": 680,
+        "height": 233.65625,
+        "minimumHeight": "25%",
+        "maximumHeight": "none",
+        "heightRule": "233.656px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 232,
+        "scrollHeight": 551,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "list": {
+        "selector": ".hud-build__list",
+        "x": 1242,
+        "y": 575,
+        "width": 629,
+        "height": 110,
+        "minimumHeight": "110px",
+        "maximumHeight": "110px",
+        "heightRule": "110px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "0",
+        "overflowY": "scroll",
+        "clientHeight": 110,
+        "scrollHeight": 1936,
+        "scrollTop": 517,
+        "insideViewport": true
+      },
+      "side": {
+        "selector": ".hud__side",
+        "x": 1193,
+        "y": 389,
+        "width": 727,
+        "height": 417.34375,
+        "minimumHeight": "0px",
+        "maximumHeight": "none",
+        "heightRule": "417.344px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "1",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 417,
+        "scrollHeight": 1143,
+        "scrollTop": 43,
+        "insideViewport": true
+      },
+      "build": {
+        "selector": ".hud-build",
+        "x": 1217,
+        "y": 346,
+        "width": 679,
+        "height": 1142.984375,
+        "minimumHeight": "min-content",
+        "maximumHeight": "none",
+        "heightRule": "1142.98px",
+        "position": "relative",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "0",
+        "overflowY": "auto",
+        "clientHeight": 1141,
+        "scrollHeight": 1141,
+        "scrollTop": 0,
+        "insideViewport": false
+      },
+      "computedFloorChecks": {
+        "list": true,
+        "savePercent": true,
+        "saveInsideViewport": true
+      }
+    },
+    {
+      "file": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui200-selected-q0-geometry.json",
+      "row": {
+        "x": 1242,
+        "y": 718,
+        "width": 629,
+        "height": 88
+      },
+      "buttons": [
+        {
+          "text": "Stawiaj na mapie",
+          "width": 223.6875,
+          "height": 88,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Usuń",
+          "width": 92.328125,
+          "height": 88,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Kup",
+          "width": 88,
+          "height": 88,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Obróć obiekt 0°",
+          "width": 176.984375,
+          "height": 88,
+          "hit": true,
+          "insidePanel": true
+        }
+      ],
+      "rail": {
+        "selector": ".hud__rail",
+        "x": 1192,
+        "y": 259,
+        "width": 728,
+        "height": 821,
+        "minimumHeight": "0px",
+        "maximumHeight": "none",
+        "heightRule": "821px",
+        "position": "relative",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "hidden",
+        "clientHeight": 821,
+        "scrollHeight": 821,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "save": {
+        "selector": ".save-panel",
+        "x": 1217,
+        "y": 822.34375,
+        "width": 680,
+        "height": 233.65625,
+        "minimumHeight": "25%",
+        "maximumHeight": "none",
+        "heightRule": "233.656px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 232,
+        "scrollHeight": 551,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "list": {
+        "selector": ".hud-build__list",
+        "x": 1242,
+        "y": 575,
+        "width": 629,
+        "height": 110,
+        "minimumHeight": "110px",
+        "maximumHeight": "110px",
+        "heightRule": "110px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "0",
+        "overflowY": "scroll",
+        "clientHeight": 110,
+        "scrollHeight": 1936,
+        "scrollTop": 517,
+        "insideViewport": true
+      },
+      "side": {
+        "selector": ".hud__side",
+        "x": 1193,
+        "y": 389,
+        "width": 727,
+        "height": 417.34375,
+        "minimumHeight": "0px",
+        "maximumHeight": "none",
+        "heightRule": "417.344px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "1",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 417,
+        "scrollHeight": 1143,
+        "scrollTop": 43,
+        "insideViewport": true
+      },
+      "build": {
+        "selector": ".hud-build",
+        "x": 1217,
+        "y": 346,
+        "width": 679,
+        "height": 1142.984375,
+        "minimumHeight": "min-content",
+        "maximumHeight": "none",
+        "heightRule": "1142.98px",
+        "position": "relative",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "0",
+        "overflowY": "auto",
+        "clientHeight": 1141,
+        "scrollHeight": 1141,
+        "scrollTop": 0,
+        "insideViewport": false
+      },
+      "computedFloorChecks": {
+        "list": true,
+        "savePercent": true,
+        "saveInsideViewport": true
+      }
+    },
+    {
+      "file": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui100-armed-q0-geometry.json",
+      "row": {
+        "x": 1582,
+        "y": 557,
+        "width": 313,
+        "height": 44
+      },
+      "buttons": [
+        {
+          "text": "Stop placing",
+          "width": 91.796875,
+          "height": 44,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Remove",
+          "width": 64.046875,
+          "height": 44,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Buy",
+          "width": 44,
+          "height": 44,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Rotate object 0°",
+          "width": 89.15625,
+          "height": 44,
+          "hit": true,
+          "insidePanel": true
+        }
+      ],
+      "rail": {
+        "selector": ".hud__rail",
+        "x": 1556,
+        "y": 95,
+        "width": 364,
+        "height": 985,
+        "minimumHeight": "0px",
+        "maximumHeight": "none",
+        "heightRule": "985px",
+        "position": "relative",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "hidden",
+        "clientHeight": 985,
+        "scrollHeight": 985,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "save": {
+        "selector": ".save-panel",
+        "x": 1569,
+        "y": 790,
+        "width": 340,
+        "height": 278,
+        "minimumHeight": "25%",
+        "maximumHeight": "none",
+        "heightRule": "278px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 276,
+        "scrollHeight": 276,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "list": {
+        "selector": ".hud-build__list",
+        "x": 1582,
+        "y": 276,
+        "width": 313,
+        "height": 264,
+        "minimumHeight": "88px",
+        "maximumHeight": "264px",
+        "heightRule": "264px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 264,
+        "scrollHeight": 968,
+        "scrollTop": 154,
+        "insideViewport": true
+      },
+      "side": {
+        "selector": ".hud__side",
+        "x": 1557,
+        "y": 161,
+        "width": 363,
+        "height": 621,
+        "minimumHeight": "0px",
+        "maximumHeight": "none",
+        "heightRule": "621px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "1",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 621,
+        "scrollHeight": 621,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "build": {
+        "selector": ".hud-build",
+        "x": 1569,
+        "y": 161,
+        "width": 339,
+        "height": 617.5625,
+        "minimumHeight": "auto",
+        "maximumHeight": "none",
+        "heightRule": "617.562px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 616,
+        "scrollHeight": 616,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "computedFloorChecks": {
+        "list": true,
+        "savePercent": true,
+        "saveInsideViewport": true
+      }
+    },
+    {
+      "file": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui100-armed-q1-geometry.json",
+      "row": {
+        "x": 1582,
+        "y": 557,
+        "width": 313,
+        "height": 44
+      },
+      "buttons": [
+        {
+          "text": "Stop placing",
+          "width": 89.140625,
+          "height": 44,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Remove",
+          "width": 64.046875,
+          "height": 44,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Buy",
+          "width": 44,
+          "height": 44,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Rotate object 90°",
+          "width": 91.8125,
+          "height": 44,
+          "hit": true,
+          "insidePanel": true
+        }
+      ],
+      "rail": {
+        "selector": ".hud__rail",
+        "x": 1556,
+        "y": 95,
+        "width": 364,
+        "height": 985,
+        "minimumHeight": "0px",
+        "maximumHeight": "none",
+        "heightRule": "985px",
+        "position": "relative",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "hidden",
+        "clientHeight": 985,
+        "scrollHeight": 985,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "save": {
+        "selector": ".save-panel",
+        "x": 1569,
+        "y": 790,
+        "width": 340,
+        "height": 278,
+        "minimumHeight": "25%",
+        "maximumHeight": "none",
+        "heightRule": "278px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 276,
+        "scrollHeight": 276,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "list": {
+        "selector": ".hud-build__list",
+        "x": 1582,
+        "y": 276,
+        "width": 313,
+        "height": 264,
+        "minimumHeight": "88px",
+        "maximumHeight": "264px",
+        "heightRule": "264px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 264,
+        "scrollHeight": 968,
+        "scrollTop": 154,
+        "insideViewport": true
+      },
+      "side": {
+        "selector": ".hud__side",
+        "x": 1557,
+        "y": 161,
+        "width": 363,
+        "height": 621,
+        "minimumHeight": "0px",
+        "maximumHeight": "none",
+        "heightRule": "621px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "1",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 621,
+        "scrollHeight": 621,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "build": {
+        "selector": ".hud-build",
+        "x": 1569,
+        "y": 161,
+        "width": 339,
+        "height": 617.5625,
+        "minimumHeight": "auto",
+        "maximumHeight": "none",
+        "heightRule": "617.562px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 616,
+        "scrollHeight": 616,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "computedFloorChecks": {
+        "list": true,
+        "savePercent": true,
+        "saveInsideViewport": true
+      }
+    },
+    {
+      "file": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui100-armed-q3-geometry.json",
+      "row": {
+        "x": 1582,
+        "y": 557,
+        "width": 313,
+        "height": 44
+      },
+      "buttons": [
+        {
+          "text": "Stop placing",
+          "width": 86.65625,
+          "height": 44,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Remove",
+          "width": 64.046875,
+          "height": 44,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Buy",
+          "width": 44,
+          "height": 44,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Rotate object 270°",
+          "width": 94.296875,
+          "height": 44,
+          "hit": true,
+          "insidePanel": true
+        }
+      ],
+      "rail": {
+        "selector": ".hud__rail",
+        "x": 1556,
+        "y": 95,
+        "width": 364,
+        "height": 985,
+        "minimumHeight": "0px",
+        "maximumHeight": "none",
+        "heightRule": "985px",
+        "position": "relative",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "hidden",
+        "clientHeight": 985,
+        "scrollHeight": 985,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "save": {
+        "selector": ".save-panel",
+        "x": 1569,
+        "y": 790,
+        "width": 340,
+        "height": 278,
+        "minimumHeight": "25%",
+        "maximumHeight": "none",
+        "heightRule": "278px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 276,
+        "scrollHeight": 276,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "list": {
+        "selector": ".hud-build__list",
+        "x": 1582,
+        "y": 276,
+        "width": 313,
+        "height": 264,
+        "minimumHeight": "88px",
+        "maximumHeight": "264px",
+        "heightRule": "264px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 264,
+        "scrollHeight": 968,
+        "scrollTop": 154,
+        "insideViewport": true
+      },
+      "side": {
+        "selector": ".hud__side",
+        "x": 1557,
+        "y": 161,
+        "width": 363,
+        "height": 621,
+        "minimumHeight": "0px",
+        "maximumHeight": "none",
+        "heightRule": "621px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "1",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 621,
+        "scrollHeight": 621,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "build": {
+        "selector": ".hud-build",
+        "x": 1569,
+        "y": 161,
+        "width": 339,
+        "height": 617.5625,
+        "minimumHeight": "auto",
+        "maximumHeight": "none",
+        "heightRule": "617.562px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 616,
+        "scrollHeight": 616,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "computedFloorChecks": {
+        "list": true,
+        "savePercent": true,
+        "saveInsideViewport": true
+      }
+    },
+    {
+      "file": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui100-selected-q0-geometry.json",
+      "row": {
+        "x": 1582,
+        "y": 557,
+        "width": 313,
+        "height": 44
+      },
+      "buttons": [
+        {
+          "text": "Place on map",
+          "width": 94.046875,
+          "height": 44,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Remove",
+          "width": 64.046875,
+          "height": 44,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Buy",
+          "width": 44,
+          "height": 44,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Rotate object 0°",
+          "width": 86.90625,
+          "height": 44,
+          "hit": true,
+          "insidePanel": true
+        }
+      ],
+      "rail": {
+        "selector": ".hud__rail",
+        "x": 1556,
+        "y": 95,
+        "width": 364,
+        "height": 985,
+        "minimumHeight": "0px",
+        "maximumHeight": "none",
+        "heightRule": "985px",
+        "position": "relative",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "hidden",
+        "clientHeight": 985,
+        "scrollHeight": 985,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "save": {
+        "selector": ".save-panel",
+        "x": 1569,
+        "y": 790,
+        "width": 340,
+        "height": 278,
+        "minimumHeight": "25%",
+        "maximumHeight": "none",
+        "heightRule": "278px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 276,
+        "scrollHeight": 276,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "list": {
+        "selector": ".hud-build__list",
+        "x": 1582,
+        "y": 276,
+        "width": 313,
+        "height": 264,
+        "minimumHeight": "88px",
+        "maximumHeight": "264px",
+        "heightRule": "264px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 264,
+        "scrollHeight": 968,
+        "scrollTop": 154,
+        "insideViewport": true
+      },
+      "side": {
+        "selector": ".hud__side",
+        "x": 1557,
+        "y": 161,
+        "width": 363,
+        "height": 621,
+        "minimumHeight": "0px",
+        "maximumHeight": "none",
+        "heightRule": "621px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "1",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 621,
+        "scrollHeight": 621,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "build": {
+        "selector": ".hud-build",
+        "x": 1569,
+        "y": 161,
+        "width": 339,
+        "height": 617.5625,
+        "minimumHeight": "auto",
+        "maximumHeight": "none",
+        "heightRule": "617.562px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 616,
+        "scrollHeight": 616,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "computedFloorChecks": {
+        "list": true,
+        "savePercent": true,
+        "saveInsideViewport": true
+      }
+    },
+    {
+      "file": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui200-armed-q0-geometry.json",
+      "row": {
+        "x": 1242,
+        "y": 715,
+        "width": 629,
+        "height": 88
+      },
+      "buttons": [
+        {
+          "text": "Stop placing",
+          "width": 186.1875,
+          "height": 88,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Remove",
+          "width": 126.078125,
+          "height": 88,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Buy",
+          "width": 88,
+          "height": 88,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Rotate object 0°",
+          "width": 180.734375,
+          "height": 88,
+          "hit": true,
+          "insidePanel": true
+        }
+      ],
+      "rail": {
+        "selector": ".hud__rail",
+        "x": 1192,
+        "y": 259,
+        "width": 728,
+        "height": 821,
+        "minimumHeight": "0px",
+        "maximumHeight": "none",
+        "heightRule": "821px",
+        "position": "relative",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "hidden",
+        "clientHeight": 821,
+        "scrollHeight": 821,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "save": {
+        "selector": ".save-panel",
+        "x": 1217,
+        "y": 819.15625,
+        "width": 680,
+        "height": 236.84375,
+        "minimumHeight": "25%",
+        "maximumHeight": "none",
+        "heightRule": "236.844px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 235,
+        "scrollHeight": 551,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "list": {
+        "selector": ".hud-build__list",
+        "x": 1242,
+        "y": 572,
+        "width": 629,
+        "height": 110,
+        "minimumHeight": "110px",
+        "maximumHeight": "110px",
+        "heightRule": "110px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "0",
+        "overflowY": "scroll",
+        "clientHeight": 110,
+        "scrollHeight": 1936,
+        "scrollTop": 517,
+        "insideViewport": true
+      },
+      "side": {
+        "selector": ".hud__side",
+        "x": 1193,
+        "y": 389,
+        "width": 727,
+        "height": 414.15625,
+        "minimumHeight": "0px",
+        "maximumHeight": "none",
+        "heightRule": "414.156px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "1",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 414,
+        "scrollHeight": 1115,
+        "scrollTop": 46,
+        "insideViewport": true
+      },
+      "build": {
+        "selector": ".hud-build",
+        "x": 1217,
+        "y": 343,
+        "width": 679,
+        "height": 1114.984375,
+        "minimumHeight": "min-content",
+        "maximumHeight": "none",
+        "heightRule": "1114.98px",
+        "position": "relative",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "0",
+        "overflowY": "auto",
+        "clientHeight": 1113,
+        "scrollHeight": 1113,
+        "scrollTop": 0,
+        "insideViewport": false
+      },
+      "computedFloorChecks": {
+        "list": true,
+        "savePercent": true,
+        "saveInsideViewport": true
+      }
+    },
+    {
+      "file": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui200-armed-q1-geometry.json",
+      "row": {
+        "x": 1242,
+        "y": 715,
+        "width": 629,
+        "height": 88
+      },
+      "buttons": [
+        {
+          "text": "Stop placing",
+          "width": 180.6875,
+          "height": 88,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Remove",
+          "width": 126.078125,
+          "height": 88,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Buy",
+          "width": 88,
+          "height": 88,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Rotate object 90°",
+          "width": 186.234375,
+          "height": 88,
+          "hit": true,
+          "insidePanel": true
+        }
+      ],
+      "rail": {
+        "selector": ".hud__rail",
+        "x": 1192,
+        "y": 259,
+        "width": 728,
+        "height": 821,
+        "minimumHeight": "0px",
+        "maximumHeight": "none",
+        "heightRule": "821px",
+        "position": "relative",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "hidden",
+        "clientHeight": 821,
+        "scrollHeight": 821,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "save": {
+        "selector": ".save-panel",
+        "x": 1217,
+        "y": 819.15625,
+        "width": 680,
+        "height": 236.84375,
+        "minimumHeight": "25%",
+        "maximumHeight": "none",
+        "heightRule": "236.844px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 235,
+        "scrollHeight": 551,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "list": {
+        "selector": ".hud-build__list",
+        "x": 1242,
+        "y": 572,
+        "width": 629,
+        "height": 110,
+        "minimumHeight": "110px",
+        "maximumHeight": "110px",
+        "heightRule": "110px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "0",
+        "overflowY": "scroll",
+        "clientHeight": 110,
+        "scrollHeight": 1936,
+        "scrollTop": 517,
+        "insideViewport": true
+      },
+      "side": {
+        "selector": ".hud__side",
+        "x": 1193,
+        "y": 389,
+        "width": 727,
+        "height": 414.15625,
+        "minimumHeight": "0px",
+        "maximumHeight": "none",
+        "heightRule": "414.156px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "1",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 414,
+        "scrollHeight": 1115,
+        "scrollTop": 46,
+        "insideViewport": true
+      },
+      "build": {
+        "selector": ".hud-build",
+        "x": 1217,
+        "y": 343,
+        "width": 679,
+        "height": 1114.984375,
+        "minimumHeight": "min-content",
+        "maximumHeight": "none",
+        "heightRule": "1114.98px",
+        "position": "relative",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "0",
+        "overflowY": "auto",
+        "clientHeight": 1113,
+        "scrollHeight": 1113,
+        "scrollTop": 0,
+        "insideViewport": false
+      },
+      "computedFloorChecks": {
+        "list": true,
+        "savePercent": true,
+        "saveInsideViewport": true
+      }
+    },
+    {
+      "file": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui200-armed-q3-geometry.json",
+      "row": {
+        "x": 1242,
+        "y": 715,
+        "width": 629,
+        "height": 88
+      },
+      "buttons": [
+        {
+          "text": "Stop placing",
+          "width": 175.578125,
+          "height": 88,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Remove",
+          "width": 126.078125,
+          "height": 88,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Buy",
+          "width": 88,
+          "height": 88,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Rotate object 270°",
+          "width": 191.34375,
+          "height": 88,
+          "hit": true,
+          "insidePanel": true
+        }
+      ],
+      "rail": {
+        "selector": ".hud__rail",
+        "x": 1192,
+        "y": 259,
+        "width": 728,
+        "height": 821,
+        "minimumHeight": "0px",
+        "maximumHeight": "none",
+        "heightRule": "821px",
+        "position": "relative",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "hidden",
+        "clientHeight": 821,
+        "scrollHeight": 821,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "save": {
+        "selector": ".save-panel",
+        "x": 1217,
+        "y": 819.15625,
+        "width": 680,
+        "height": 236.84375,
+        "minimumHeight": "25%",
+        "maximumHeight": "none",
+        "heightRule": "236.844px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 235,
+        "scrollHeight": 551,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "list": {
+        "selector": ".hud-build__list",
+        "x": 1242,
+        "y": 572,
+        "width": 629,
+        "height": 110,
+        "minimumHeight": "110px",
+        "maximumHeight": "110px",
+        "heightRule": "110px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "0",
+        "overflowY": "scroll",
+        "clientHeight": 110,
+        "scrollHeight": 1936,
+        "scrollTop": 517,
+        "insideViewport": true
+      },
+      "side": {
+        "selector": ".hud__side",
+        "x": 1193,
+        "y": 389,
+        "width": 727,
+        "height": 414.15625,
+        "minimumHeight": "0px",
+        "maximumHeight": "none",
+        "heightRule": "414.156px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "1",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 414,
+        "scrollHeight": 1115,
+        "scrollTop": 46,
+        "insideViewport": true
+      },
+      "build": {
+        "selector": ".hud-build",
+        "x": 1217,
+        "y": 343,
+        "width": 679,
+        "height": 1114.984375,
+        "minimumHeight": "min-content",
+        "maximumHeight": "none",
+        "heightRule": "1114.98px",
+        "position": "relative",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "0",
+        "overflowY": "auto",
+        "clientHeight": 1113,
+        "scrollHeight": 1113,
+        "scrollTop": 0,
+        "insideViewport": false
+      },
+      "computedFloorChecks": {
+        "list": true,
+        "savePercent": true,
+        "saveInsideViewport": true
+      }
+    },
+    {
+      "file": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui200-selected-q0-geometry.json",
+      "row": {
+        "x": 1242,
+        "y": 715,
+        "width": 629,
+        "height": 88
+      },
+      "buttons": [
+        {
+          "text": "Place on map",
+          "width": 190.8125,
+          "height": 88,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Remove",
+          "width": 126.078125,
+          "height": 88,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Buy",
+          "width": 88,
+          "height": 88,
+          "hit": true,
+          "insidePanel": true
+        },
+        {
+          "text": "Rotate object 0°",
+          "width": 176.109375,
+          "height": 88,
+          "hit": true,
+          "insidePanel": true
+        }
+      ],
+      "rail": {
+        "selector": ".hud__rail",
+        "x": 1192,
+        "y": 259,
+        "width": 728,
+        "height": 821,
+        "minimumHeight": "0px",
+        "maximumHeight": "none",
+        "heightRule": "821px",
+        "position": "relative",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "hidden",
+        "clientHeight": 821,
+        "scrollHeight": 821,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "save": {
+        "selector": ".save-panel",
+        "x": 1217,
+        "y": 819.15625,
+        "width": 680,
+        "height": 236.84375,
+        "minimumHeight": "25%",
+        "maximumHeight": "none",
+        "heightRule": "236.844px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 235,
+        "scrollHeight": 551,
+        "scrollTop": 0,
+        "insideViewport": true
+      },
+      "list": {
+        "selector": ".hud-build__list",
+        "x": 1242,
+        "y": 572,
+        "width": 629,
+        "height": 110,
+        "minimumHeight": "110px",
+        "maximumHeight": "110px",
+        "heightRule": "110px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "0",
+        "overflowY": "scroll",
+        "clientHeight": 110,
+        "scrollHeight": 1936,
+        "scrollTop": 517,
+        "insideViewport": true
+      },
+      "side": {
+        "selector": ".hud__side",
+        "x": 1193,
+        "y": 389,
+        "width": 727,
+        "height": 414.15625,
+        "minimumHeight": "0px",
+        "maximumHeight": "none",
+        "heightRule": "414.156px",
+        "position": "static",
+        "flexBasis": "auto",
+        "flexGrow": "1",
+        "flexShrink": "1",
+        "overflowY": "auto",
+        "clientHeight": 414,
+        "scrollHeight": 1115,
+        "scrollTop": 46,
+        "insideViewport": true
+      },
+      "build": {
+        "selector": ".hud-build",
+        "x": 1217,
+        "y": 343,
+        "width": 679,
+        "height": 1114.984375,
+        "minimumHeight": "min-content",
+        "maximumHeight": "none",
+        "heightRule": "1114.98px",
+        "position": "relative",
+        "flexBasis": "auto",
+        "flexGrow": "0",
+        "flexShrink": "0",
+        "overflowY": "auto",
+        "clientHeight": 1113,
+        "scrollHeight": 1113,
+        "scrollTop": 0,
+        "insideViewport": false
+      },
+      "computedFloorChecks": {
+        "list": true,
+        "savePercent": true,
+        "saveInsideViewport": true
+      }
+    }
+  ],
+  "all20": [
+    {
+      "file": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui100-actual-all20-cards.json",
+      "count": 20,
+      "allOriginalAssertions": true,
+      "top": 163,
+      "bottom": 501
+    },
+    {
+      "file": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui200-actual-all20-cards.json",
+      "count": 20,
+      "allOriginalAssertions": true,
+      "top": 236,
+      "bottom": 890
+    },
+    {
+      "file": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui100-actual-all20-cards.json",
+      "count": 20,
+      "allOriginalAssertions": true,
+      "top": 171.5,
+      "bottom": 492.5
+    },
+    {
+      "file": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui200-actual-all20-cards.json",
+      "count": 20,
+      "allOriginalAssertions": true,
+      "top": 236,
+      "bottom": 855
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-actual-review-receipt.json",
+      "bytes": 121551,
+      "sha256": "99586e98be04d409c57f2d7e8f2037f3060d3e2d4a802a5fa56b2b47e03c530a"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui100-actual-all20-cards-fullhd.png",
+      "bytes": 269813,
+      "sha256": "0ea0b6f4c32706374f2374b54039b8a114a152dbcb67b5c415f1f7c8d8e5bf38"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui100-actual-all20-cards.json",
+      "bytes": 2834,
+      "sha256": "54db7b23349f7fe72768c54ca16839e1e537c055881c5bb53f636de78dd74aa3"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui100-actual-q0-q1-secondary-pixels.json",
+      "bytes": 427,
+      "sha256": "98e06d3db8a7cc8c7176b63942f7fb9257525d887cea6fefb5d32280a9d2960a"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui100-actual-q1-original-primary-held.png",
+      "bytes": 329592,
+      "sha256": "ae112925d7e6377975cf21b66dab1b7eee3b3b6a83a075e8446e62d445f759fe"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui100-actual-q1-whole.json",
+      "bytes": 18309,
+      "sha256": "d9161fdfc6a26bd6a11ef426399e4f328f381e875a413652bdf046085b9a6aca"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui100-armed-q0-fullhd.png",
+      "bytes": 308977,
+      "sha256": "de2b279af436237f211e7cc84756471db210822c48a814ab3c4440c47b0b9927"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui100-armed-q0-geometry.json",
+      "bytes": 7542,
+      "sha256": "2b9d0533c1fab22c4b0b6938952a2e73a9fa4d04aa9f1f5eb7b65fc4321dea67"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui100-armed-q1-fullhd.png",
+      "bytes": 309273,
+      "sha256": "b2a39445b23a653c1e645d1769cc4fd7ba2dbecd65252c0f154b2f62c9f8c983"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui100-armed-q1-geometry.json",
+      "bytes": 7552,
+      "sha256": "a0276d58612e5e71a9710a9b316fced03f14d6b0d64e5865752d3da382d182ce"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui100-armed-q3-fullhd.png",
+      "bytes": 329546,
+      "sha256": "0518129eacc5daef09368b23257c8b4062b806a57d99f489f2cd9737a3ec32f1"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui100-armed-q3-geometry.json",
+      "bytes": 7557,
+      "sha256": "4e33fef102abc7a81bc3f41f0cdaa4b9b6672c35a4be1ae540c1c5a5926f70aa"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui100-q0-secondary0.png",
+      "bytes": 1536,
+      "sha256": "7c07bba54902dd50dc108d2896c71559f0054a2ebf1bb3e6a797976371022ce2"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui100-q0-secondary1.png",
+      "bytes": 1639,
+      "sha256": "9cf9fc042dac629b3b8f1377f0d9b230b2ed56229eafa28a5ea4df6acbbd20f0"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui100-q1-secondary0.png",
+      "bytes": 1639,
+      "sha256": "9cf9fc042dac629b3b8f1377f0d9b230b2ed56229eafa28a5ea4df6acbbd20f0"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui100-q1-secondary1.png",
+      "bytes": 1536,
+      "sha256": "7c07bba54902dd50dc108d2896c71559f0054a2ebf1bb3e6a797976371022ce2"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui100-selected-q0-fullhd.png",
+      "bytes": 308811,
+      "sha256": "d90b22e1cd22658746fbdc2a9f4d706a0b0801d09e742d9405742cfad8139c2c"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui100-selected-q0-geometry.json",
+      "bytes": 7555,
+      "sha256": "831219f0ddec7db9e8bdd360eff2290264f54358c4c250423f8cef7e768524ba"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui200-actual-all20-cards-fullhd.png",
+      "bytes": 166399,
+      "sha256": "b4ff25c2923f3430057dacaa69f9e8930242726243eb1af3c86d67644c32373b"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui200-actual-all20-cards.json",
+      "bytes": 2834,
+      "sha256": "7ed4a456ab3e347937068c45491c2ea5ca7796c0bee90732039fca60380d6866"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui200-actual-q0-q1-secondary-pixels.json",
+      "bytes": 421,
+      "sha256": "819c44f0bcb3ffa819476d4ee4d8b33b76c6b7024bf70cb82cb9a62269da19b1"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui200-actual-q1-original-primary-held.png",
+      "bytes": 367898,
+      "sha256": "8c18c32161a81f3f97eaace5d622ad48cfbcbfbf984d42a383dd8701b298dd2e"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui200-actual-q1-whole.json",
+      "bytes": 19075,
+      "sha256": "9e99ba773f7ae9035102267d20e82fbeb2ec7a1dd95cdb5638376ec991d3bfea"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui200-armed-q0-fullhd.png",
+      "bytes": 351897,
+      "sha256": "ef923f7b5fd4f996e54fa425aac753f1fe1e9f5797b115cb8d37fe0a5d3fadd3"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui200-armed-q0-geometry.json",
+      "bytes": 7617,
+      "sha256": "6a32b6500eb985396724351545597b5e2088bb9372f0f9b888c04e48e66696bb"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui200-armed-q1-fullhd.png",
+      "bytes": 352507,
+      "sha256": "cfb3869e10c54f6f99386069491904b16e5d206a9bd0dc11998c47160b299aa1"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui200-armed-q1-geometry.json",
+      "bytes": 7626,
+      "sha256": "9394277960d176ad4ff349f231c16938f117e57471c2c437b736684a33ce008f"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui200-armed-q3-fullhd.png",
+      "bytes": 367836,
+      "sha256": "20711c413bb7e28bb45a696e3e8da45d48f051e42be734b44701515310189880"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui200-armed-q3-geometry.json",
+      "bytes": 7608,
+      "sha256": "b7d08207edd3914d2a09f69559448044fa29f68119462653dcae7c5a69d2fa43"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui200-q0-secondary0.png",
+      "bytes": 1541,
+      "sha256": "c2ebd2714f528459127c93dca95a9f59059e95d6fc6f741b7bd95a78b83269f1"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui200-q0-secondary1.png",
+      "bytes": 1660,
+      "sha256": "b202ec0325e0d158a2999d9d01012567759b58af12962c61452a821aec6fb4b5"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui200-q1-secondary0.png",
+      "bytes": 1660,
+      "sha256": "b202ec0325e0d158a2999d9d01012567759b58af12962c61452a821aec6fb4b5"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui200-q1-secondary1.png",
+      "bytes": 1541,
+      "sha256": "c2ebd2714f528459127c93dca95a9f59059e95d6fc6f741b7bd95a78b83269f1"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui200-selected-q0-fullhd.png",
+      "bytes": 351586,
+      "sha256": "c332ac7c4329e249a1f3db227a0b096208ffecfcac5cc6557de713d57b0581bd"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/pl-ui200-selected-q0-geometry.json",
+      "bytes": 7625,
+      "sha256": "d848823f5b1226ef7c75e5410803da66e99e9b18781c0fe3d6ebd87904ddf0e7"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-actual-review-receipt.json",
+      "bytes": 121548,
+      "sha256": "74189be61b3e71bc49db2dd82a099749e5e0553d9b5e5e7c9d357859a6667e8d"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui100-actual-all20-cards-fullhd.png",
+      "bytes": 246983,
+      "sha256": "b68aeaf79286c8361d1c4e74ef29824d680b3ad3da853af49df13f649f1c2acf"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui100-actual-all20-cards.json",
+      "bytes": 2812,
+      "sha256": "b6ff8177eadc10aa9a95df09af1d3ed8284471df5d927f2bcd6ee3022644136b"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui100-actual-q0-q1-secondary-pixels.json",
+      "bytes": 427,
+      "sha256": "98e06d3db8a7cc8c7176b63942f7fb9257525d887cea6fefb5d32280a9d2960a"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui100-actual-q1-original-primary-held.png",
+      "bytes": 315657,
+      "sha256": "946627b9ea591d7e2d1c3235d1538f7c40a438fd5ba75bca4f5d18cf1a0d3599"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui100-actual-q1-whole.json",
+      "bytes": 18312,
+      "sha256": "b5a9ded4cf9bc14557ed06e62340ff9c6de32a81339856b0a5453a5214d6cf4c"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui100-armed-q0-fullhd.png",
+      "bytes": 294265,
+      "sha256": "080eed04967727dcb15d7f90297f4a3bb09569a338179fc92544ac8bd5924585"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui100-armed-q0-geometry.json",
+      "bytes": 7546,
+      "sha256": "15112f21c9acef749d46a321b8da8e0254b18a24e747bd6e4b66c176e1f9c3a2"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui100-armed-q1-fullhd.png",
+      "bytes": 294560,
+      "sha256": "10a7907634a21a5d89bcbc80add11ffee6f5ea92f3472193243e028db8851980"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui100-armed-q1-geometry.json",
+      "bytes": 7545,
+      "sha256": "7c70dbfe9c1189800e261ac56d2564aa95645dd7bb8edecff5d3e049c6e24bb0"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui100-armed-q3-fullhd.png",
+      "bytes": 315735,
+      "sha256": "a8ffb6d6b05eff979c7da4594879bed2a1354885631f56c67cf95069f6889bd7"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui100-armed-q3-geometry.json",
+      "bytes": 7549,
+      "sha256": "461e904b9a25d44ae8939557413500b9fc72fc08dc5940eca355c0e76bc75eee"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui100-q0-secondary0.png",
+      "bytes": 1536,
+      "sha256": "7c07bba54902dd50dc108d2896c71559f0054a2ebf1bb3e6a797976371022ce2"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui100-q0-secondary1.png",
+      "bytes": 1639,
+      "sha256": "9cf9fc042dac629b3b8f1377f0d9b230b2ed56229eafa28a5ea4df6acbbd20f0"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui100-q1-secondary0.png",
+      "bytes": 1639,
+      "sha256": "9cf9fc042dac629b3b8f1377f0d9b230b2ed56229eafa28a5ea4df6acbbd20f0"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui100-q1-secondary1.png",
+      "bytes": 1536,
+      "sha256": "7c07bba54902dd50dc108d2896c71559f0054a2ebf1bb3e6a797976371022ce2"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui100-selected-q0-fullhd.png",
+      "bytes": 294010,
+      "sha256": "d141f91d331325940cc6ef57bbfeb3e8c811239ddaab7fb6e44a3a113ae1a844"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui100-selected-q0-geometry.json",
+      "bytes": 7543,
+      "sha256": "f308b516038687be838ecca68e544e47d40c17e354ea8080fb965c7dc34c1381"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui200-actual-all20-cards-fullhd.png",
+      "bytes": 121833,
+      "sha256": "25579418794e3d94576cdba49b0663e17535f5ea6a313aa80ef6ba58a1c1a23d"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui200-actual-all20-cards.json",
+      "bytes": 2732,
+      "sha256": "17025a922b0db1a4dc76523e4547b40d40fbed53c3997d3122cdc25c9e9707b0"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui200-actual-q0-q1-secondary-pixels.json",
+      "bytes": 421,
+      "sha256": "819c44f0bcb3ffa819476d4ee4d8b33b76c6b7024bf70cb82cb9a62269da19b1"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui200-actual-q1-original-primary-held.png",
+      "bytes": 348454,
+      "sha256": "b318120d10eb313218493d8a447853c2eea77026c4f1c9971ac56196a00334a2"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui200-actual-q1-whole.json",
+      "bytes": 19078,
+      "sha256": "5bfdac5dae00cb11447e06dfed9590aea6ffcd0d090f8b4259a40264deceb181"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui200-armed-q0-fullhd.png",
+      "bytes": 332491,
+      "sha256": "caca60804914b36c2599dc0799629770e9f006548ac44fb2b2d520f6b9b2e720"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui200-armed-q0-geometry.json",
+      "bytes": 7622,
+      "sha256": "4c1343af087b8444c70fb0f7c24a6c2c2c59f4385a173661aa5782a1c2dd6ada"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui200-armed-q1-fullhd.png",
+      "bytes": 333169,
+      "sha256": "847849e117c1d7ab615e637e8c25282800d79ab79ab0e93bb8fd785ef05f6a35"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui200-armed-q1-geometry.json",
+      "bytes": 7620,
+      "sha256": "6a95923ac458a4f505458b6781d9bce4e3f18cf4a6d0774c07f16dd90117b39f"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui200-armed-q3-fullhd.png",
+      "bytes": 348385,
+      "sha256": "600792cbe0ca574375880d3aae574c2e4866820aaad4263d434044db706b981f"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui200-armed-q3-geometry.json",
+      "bytes": 7626,
+      "sha256": "79bd55c2a922784b2f6452226babe12dabc9c1525cda81da8be02a2cb968876e"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui200-q0-secondary0.png",
+      "bytes": 1541,
+      "sha256": "c2ebd2714f528459127c93dca95a9f59059e95d6fc6f741b7bd95a78b83269f1"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui200-q0-secondary1.png",
+      "bytes": 1660,
+      "sha256": "b202ec0325e0d158a2999d9d01012567759b58af12962c61452a821aec6fb4b5"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui200-q1-secondary0.png",
+      "bytes": 1660,
+      "sha256": "b202ec0325e0d158a2999d9d01012567759b58af12962c61452a821aec6fb4b5"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui200-q1-secondary1.png",
+      "bytes": 1541,
+      "sha256": "c2ebd2714f528459127c93dca95a9f59059e95d6fc6f741b7bd95a78b83269f1"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui200-selected-q0-fullhd.png",
+      "bytes": 332016,
+      "sha256": "2c19885bb834af989dac3e51b736b3c6b4ddf4270ba9bcee4ca0248c1a9eb3be"
+    },
+    {
+      "path": "docs/research/2026-10-03-object-rotation-corrected-layout-draft/native/corrected-original/en-ui200-selected-q0-geometry.json",
+      "bytes": 7625,
+      "sha256": "9989d3c87f054371e2fde70e9c3207a79e9f13d44892deda218a821eceb0db5d"
+    }
+  ]
+}

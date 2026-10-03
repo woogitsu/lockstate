@@ -1,0 +1,162 @@
+[
+  {
+    "text": "Basic cell",
+    "accessible": "Basic cell",
+    "fits": true,
+    "top": 236,
+    "bottom": 347,
+    "hit": true
+  },
+  {
+    "text": "Large cell",
+    "accessible": "Large cell",
+    "fits": true,
+    "top": 236,
+    "bottom": 347,
+    "hit": true
+  },
+  {
+    "text": "Shower room",
+    "accessible": "Shower room",
+    "fits": true,
+    "top": 236,
+    "bottom": 347,
+    "hit": true
+  },
+  {
+    "text": "Four-cell row",
+    "accessible": "Four-cell row",
+    "fits": true,
+    "top": 236,
+    "bottom": 347,
+    "hit": true
+  },
+  {
+    "text": "Canteen",
+    "accessible": "Canteen",
+    "fits": true,
+    "top": 363,
+    "bottom": 474,
+    "hit": true
+  },
+  {
+    "text": "Kitchen",
+    "accessible": "Kitchen",
+    "fits": true,
+    "top": 363,
+    "bottom": 474,
+    "hit": true
+  },
+  {
+    "text": "Holding Cell",
+    "accessible": "Holding Cell",
+    "fits": true,
+    "top": 363,
+    "bottom": 474,
+    "hit": true
+  },
+  {
+    "text": "Solitary Cell",
+    "accessible": "Solitary Cell",
+    "fits": true,
+    "top": 363,
+    "bottom": 474,
+    "hit": true
+  },
+  {
+    "text": "Reception",
+    "accessible": "Reception",
+    "fits": true,
+    "top": 490,
+    "bottom": 601,
+    "hit": true
+  },
+  {
+    "text": "Laundry",
+    "accessible": "Laundry",
+    "fits": true,
+    "top": 490,
+    "bottom": 601,
+    "hit": true
+  },
+  {
+    "text": "Yard",
+    "accessible": "Yard",
+    "fits": true,
+    "top": 490,
+    "bottom": 601,
+    "hit": true
+  },
+  {
+    "text": "Common Room",
+    "accessible": "Common Room",
+    "fits": true,
+    "top": 490,
+    "bottom": 601,
+    "hit": true
+  },
+  {
+    "text": "Classroom",
+    "accessible": "Classroom",
+    "fits": true,
+    "top": 617,
+    "bottom": 728,
+    "hit": true
+  },
+  {
+    "text": "Infirmary",
+    "accessible": "Infirmary",
+    "fits": true,
+    "top": 617,
+    "bottom": 728,
+    "hit": true
+  },
+  {
+    "text": "Security Office",
+    "accessible": "Security Office",
+    "fits": true,
+    "top": 617,
+    "bottom": 728,
+    "hit": true
+  },
+  {
+    "text": "Staff Room",
+    "accessible": "Staff Room",
+    "fits": true,
+    "top": 617,
+    "bottom": 728,
+    "hit": true
+  },
+  {
+    "text": "Storage Room",
+    "accessible": "Storage Room",
+    "fits": true,
+    "top": 744,
+    "bottom": 855,
+    "hit": true
+  },
+  {
+    "text": "Delivery Bay",
+    "accessible": "Delivery Bay",
+    "fits": true,
+    "top": 744,
+    "bottom": 855,
+    "hit": true
+  },
+  {
+    "text": "Garbage Room",
+    "accessible": "Garbage Room",
+    "fits": true,
+    "top": 744,
+    "bottom": 855,
+    "hit": true
+  },
+  {
+    "text": "Utility Room",
+    "accessible": "Utility Room",
+    "fits": true,
+    "top": 744,
+    "bottom": 855,
+    "hit": true
+  }
+]
