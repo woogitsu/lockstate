@@ -1314,5 +1314,66 @@
     "sourceSha256": "9cf96513659c4a9f3b2ab6ba57476961e6cca2c4afeac0fdf34b668cf910e663",
     "archivedBytes": 273073,
     "archivedSha256": "9cf96513659c4a9f3b2ab6ba57476961e6cca2c4afeac0fdf34b668cf910e663"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-94a-whole-20261004.json",
+    "archived": "source-whole-original/report.json",
+    "sourceBytes": 3363691,
+    "sourceSha256": "c8794de8a58cce1ce2c9bbb87db64e9199231446eabe2274799715ff8ba97b2a",
+    "archivedBytes": 3363691,
+    "archivedSha256": "c8794de8a58cce1ce2c9bbb87db64e9199231446eabe2274799715ff8ba97b2a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-94a-whole-20261004.txt",
+    "archived": "source-whole-original/console.txt",
+    "sourceBytes": 264818,
+    "sourceSha256": "9208b391133ae1a51254f79432939357eee3f5c9c458ab6d4589e83b066ead9a",
+    "archivedBytes": 134291,
+    "archivedSha256": "5813d85f486d4cdb61a2cfe83f8ea3b0d67325cff9244d4b0a14b3790273bd15",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-94a-types-20261004.txt",
+    "archived": "source-types-original/console.txt",
+    "sourceBytes": 822,
+    "sourceSha256": "6793d576232afd598aca66ded1968904a625b643f5a4c62bfc18ce5cd0a4dbfe",
+    "archivedBytes": 410,
+    "archivedSha256": "461583b00ee14209b841f3903fca08f34bc95efb3fc5de09c9fae6e4448669d2",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-94a-assets-20261004.txt",
+    "archived": "source-assets/console.txt",
+    "sourceBytes": 358,
+    "sourceSha256": "2123109d4d8b7b09ca6358535134cdf1bcf5e21a70e9a6769b717fa67e056d3c",
+    "archivedBytes": 179,
+    "archivedSha256": "97365a3efb6414ccfb27f08b4ae349ba0db2739135a68fbc11efcc0b94cd0cb2",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-94a-corrected-types-20261004.txt",
+    "archived": "source-types-corrected/console.txt",
+    "sourceBytes": 822,
+    "sourceSha256": "fdd9f17954afbe6fdf0b69122a359b3d394bd8fcf8a2faeb4da28c9fd1a456a8",
+    "archivedBytes": 410,
+    "archivedSha256": "5096fd122a3e090f3648b6b33b1de3cc6969ac1f94f7a4e69dc2180a95859b05",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-94a-corrected-guards-20261004.json",
+    "archived": "source-guards-corrected/report.json",
+    "sourceBytes": 5482,
+    "sourceSha256": "c697db8d09092d634e2fa00785c685ef94a4f6245ee5b4ef83582fc8a749f3ce",
+    "archivedBytes": 5482,
+    "archivedSha256": "c697db8d09092d634e2fa00785c685ef94a4f6245ee5b4ef83582fc8a749f3ce"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-94a-corrected-guards-20261004.txt",
+    "archived": "source-guards-corrected/console.txt",
+    "sourceBytes": 1110,
+    "sourceSha256": "986b09bead9f132715dd6025a44a46a21f759602e9efb9410528b35352c410bd",
+    "archivedBytes": 559,
+    "archivedSha256": "94f6a1750b601c142daa8542736355e082c2269b41f036f445fe9ac5cd0e2972",
+    "conversion": "UTF16LE console to UTF8"
   }
 ]

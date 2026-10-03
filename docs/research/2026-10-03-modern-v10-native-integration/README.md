@@ -68,3 +68,23 @@ are archived with the other original runs.
 Cot/Toilet/full-wall native acceptance is still being checked. The complete combined source
 gate and exact-head hosted CI remain required before release. This record does
 not claim deployment or a finished visual redesign.
+
+## Subsequent combined source checkpoint
+
+Root source`94a287202d53a3feb292f9d9753bcb4892a5b7f9` integrates the separately
+published Common Room bench and Kitchen stove/fridge retained Cycles matrices,
+the open-View safe-area producer fix for#2026, its genuine public native recipe,
+and the existing Build readout View-closure consumer. This is later source,
+not a silent change to the frozen85f client or its completed native evidence.
+
+Its actual complete unit gate is8666 GREEN/2 RED/2 inherited skips across749
+files,119.64s; strict app/tools types and10 actor/40 rendered catalog checks
+pass. One RED is the exact new MAX native config absent from the permanent
+tools type project, despite its separate strict preparation check. Root adds
+only that named folder to the existing tools include, preserving the coverage
+guard. The other RED lists ten genuine already-published citations absent from
+the local remote refs, whose fetchspec is main-only. Fetching the four actual
+published source branches resolves it without changing any citation or
+allowlist. Both original logs/reports remain in the archive; corrected strict
+types pass and those two existing contracts are12/12 GREEN. The next genuine
+combined build and native model/Fit results remain separate release evidence.

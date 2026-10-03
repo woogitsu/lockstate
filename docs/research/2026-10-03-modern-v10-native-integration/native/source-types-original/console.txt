@@ -1,0 +1,7 @@
+pnpm.cmd : $ tsc -b --pretty false && tsc -b tsconfig.tools.json --pretty false
+At line:3 char:1
++ pnpm.cmd --config.verify-deps-before-run=false typecheck *> (Join-Pat ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ tsc -b --pret... --pretty false:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 

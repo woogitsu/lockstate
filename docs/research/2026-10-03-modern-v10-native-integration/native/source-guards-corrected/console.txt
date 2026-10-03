@@ -1,0 +1,12 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-staff-chair-v9-integration-20261003
+
+ ✓ tests/foundation/typecheck-coverage-contract.test.ts (4 tests) 39ms
+ ✓ tests/foundation/documentation-commit-citation-contract.test.ts (8 tests) 19ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed (12)
+   Start at  00:50:55
+   Duration  13.02s (transform 47ms, setup 0ms, import 12.92s, tests 58ms, environment 0ms)
+
+JSON report written to C:/Users/matma/AppData/Local/Temp/lockstate-modern-integrated-94a-corrected-guards-20261004.json
