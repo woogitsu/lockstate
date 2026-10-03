@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-camera-a-scale-fit-20261003
+
+
+ Test Files  3 passed (3)
+      Tests  95 passed (95)
+   Start at  21:28:15
+   Duration  959ms (transform 166ms, setup 0ms, import 346ms, tests 674ms, environment 0ms)
+

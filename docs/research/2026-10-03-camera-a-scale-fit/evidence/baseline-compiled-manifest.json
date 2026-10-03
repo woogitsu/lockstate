@@ -1,0 +1,27 @@
+﻿[
+    {
+        "sha256":  "5bf7814b1b3d9594f14de199ee72c834e187ccbd039f34d9dbb318d7f826071a",
+        "file":  "catalog-BmAUL2aa.js",
+        "bytes":  86421
+    },
+    {
+        "sha256":  "1dc629d8003ca35daa46937bd432d5f7cbd5bb794d07fec0c4387c8dbfea89c1",
+        "file":  "index-8RHXYh4S.js",
+        "bytes":  1941767
+    },
+    {
+        "sha256":  "15b50cb6b2455793a9857bc2768df8590576e40a9c6a96d5e26e4d39d9786908",
+        "file":  "index-ZgobWJn1.css",
+        "bytes":  84800
+    },
+    {
+        "sha256":  "38045b769adc3cb3fa48b007c42ac3be8204307fa6745ec3fe2060daf36b8e33",
+        "file":  "pl-catalog-uiQLsxnQ.js",
+        "bytes":  51303
+    },
+    {
+        "sha256":  "89942e026ec0670e4aa4d4d7e1fd2229d5ab0f0356238d0d7d1cfd8f9f608a31",
+        "file":  "worker-CUINauZe.js",
+        "bytes":  444899
+    }
+]

@@ -1,0 +1,224 @@
+# Page snapshot
+
+```yaml
+- main "Aplikacja gry Lockstate" [ref=e2]:
+  - generic:
+    - region "Stan więzienia" [ref=e5]:
+      - generic [ref=e6]:
+        - note "Kompilacja Lockstate":
+          - img
+          - generic: LockState.io
+          - generic: PRE-ALPHA
+          - generic: v0.0.839 · 55ebd97
+          - generic: Lockstate, kompilacja PRE-ALPHA, wersja 0.0.839, commit 55ebd97.
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - img [ref=e9]
+          - generic [ref=e12]:
+            - generic [ref=e13]: "0"
+            - generic [ref=e14]: Osadzeni
+        - generic [ref=e16]:
+          - img [ref=e17]
+          - generic [ref=e19]:
+            - generic [ref=e20]: "0"
+            - generic [ref=e21]: Podwyższone ryzyko
+        - generic [ref=e23]:
+          - img [ref=e24]
+          - generic [ref=e29]:
+            - generic [ref=e30]: "0"
+            - generic [ref=e31]: Personel
+        - generic [ref=e33]:
+          - img [ref=e34]
+          - generic [ref=e36]:
+            - generic [ref=e37]: "0"
+            - generic [ref=e38]: Obsada
+          - generic [ref=e41]: Obsadzone
+        - generic [ref=e43]:
+          - img [ref=e44]
+          - generic [ref=e46]:
+            - generic [ref=e47]: "0"
+            - generic [ref=e48]: Pomieszczenia
+        - generic [ref=e50]:
+          - img [ref=e51]
+          - generic [ref=e53]:
+            - generic [ref=e54]: "0"
+            - generic [ref=e55]: Incydenty
+          - generic [ref=e58]: Spokój
+        - generic [ref=e60]:
+          - img [ref=e61]
+          - generic [ref=e64]:
+            - generic [ref=e65]: "0"
+            - generic [ref=e66]: Kontrabanda
+        - generic [ref=e68]:
+          - img [ref=e69]
+          - generic [ref=e73]:
+            - generic [ref=e74]: 25 000
+            - generic [ref=e75]: Środki
+        - generic [ref=e77]:
+          - img [ref=e78]
+          - generic [ref=e81]:
+            - generic [ref=e82]: "0"
+            - generic [ref=e83]: Zarobione dziś
+      - generic [ref=e85]:
+        - img [ref=e86]
+        - generic [ref=e89]: Dzień
+        - generic [ref=e90]: "1"
+        - generic [ref=e91]: Postęp dnia
+        - generic [ref=e92]: 0%
+      - group "Sterowanie czasem" [ref=e93]:
+        - button "Pauza" [pressed] [ref=e94] [cursor=pointer]:
+          - img [ref=e95]
+          - generic [ref=e96]: Pauza
+        - button "Odtwarzaj z normalną prędkością" [ref=e97] [cursor=pointer]:
+          - img [ref=e98]
+          - generic [ref=e100]: Odtwarzaj z normalną prędkością
+        - button "Przyspiesz" [ref=e101] [cursor=pointer]:
+          - img [ref=e102]
+          - generic [ref=e105]: Przyspiesz
+        - generic [ref=e106]:
+          - generic [ref=e107]: Prędkość 1×
+          - generic [ref=e108]: PAUZA
+      - group "Cofanie i ponawianie" [ref=e109]:
+        - button "Cofnij ostatnie postawienie" [disabled] [ref=e110]:
+          - img [ref=e111]
+          - generic [ref=e114]: Cofnij ostatnie postawienie
+        - button "Ponów ostatnie cofnięte postawienie" [disabled] [ref=e115]:
+          - img [ref=e116]
+          - generic [ref=e119]: Ponów ostatnie cofnięte postawienie
+      - group "Ustawienia" [ref=e121]:
+        - button "Otwórz menu ustawień" [ref=e122] [cursor=pointer]:
+          - img [ref=e123]
+          - generic [ref=e128]: Otwórz menu ustawień
+    - status:
+      - generic: Nic nie usunięto — na tym polu nie ma obiektu, nic się tam nie buduje i nie ma tam gotowej ściany.
+    - generic:
+      - group "Powiększenie":
+        - generic: Powiększenie
+        - button "Oddal" [ref=e129] [cursor=pointer]:
+          - img [ref=e130]
+          - generic [ref=e133]: Oddal
+        - button "Przybliż" [active] [ref=e134] [cursor=pointer]:
+          - img [ref=e135]
+          - generic [ref=e138]: Przybliż
+        - button "Widok" [expanded] [ref=e139] [cursor=pointer]
+      - region "Minimapa":
+        - generic:
+          - img
+          - heading "Minimapa" [level=2]
+          - button "Zwiń" [expanded] [ref=e140] [cursor=pointer]:
+            - img [ref=e141]
+            - generic [ref=e143]: Zwiń
+        - generic:
+          - button "Mapa więzienia — naciśnij, aby przesunąć kamerę" [ref=e144] [cursor=pointer]:
+            - generic [ref=e145]: Mapa więzienia — naciśnij, aby przesunąć kamerę
+          - generic:
+            - button "Powiadomienia" [expanded] [ref=e146] [cursor=pointer]:
+              - img [ref=e147]
+              - generic [ref=e149]: Powiadomienia
+            - button "Nic nie usunięto — na tym polu nie ma obiektu, nic się tam nie buduje i nie ma tam gotowej ściany. Ostrzeżenie" [ref=e151] [cursor=pointer]:
+              - img [ref=e152]
+              - generic [ref=e154]: Nic nie usunięto — na tym polu nie ma obiektu, nic się tam nie buduje i nie ma tam gotowej ściany.
+              - generic [ref=e156]: Ostrzeżenie
+    - generic:
+      - button "Ukryj panele" [expanded] [ref=e157] [cursor=pointer]:
+        - img [ref=e158]
+        - generic [ref=e160]: Ukryj panele
+      - generic:
+        - generic [ref=e161]:
+          - group "Skala interfejsu" [ref=e162]:
+            - generic: Skala interfejsu
+            - button "Zmień skalę interfejsu" [ref=e163] [cursor=pointer]:
+              - status [ref=e164]: 200%
+          - group "Motyw" [ref=e165]:
+            - generic: Motyw
+            - button "Zmień motyw interfejsu" [ref=e166] [cursor=pointer]:
+              - status [ref=e167]: Systemowy
+        - complementary "Zapisy więzień" [ref=e168]:
+          - heading "Więzienia" [level=2] [ref=e169]
+          - generic [ref=e170]:
+            - button "Nowe więzienie" [ref=e171] [cursor=pointer]
+            - button "Zapisz teraz" [ref=e172] [cursor=pointer]
+            - button "Eksportuj" [ref=e173] [cursor=pointer]
+            - button "Importuj" [ref=e174] [cursor=pointer]
+          - list [ref=e175]:
+            - listitem [ref=e176]:
+              - generic [ref=e177]: Nowe więzienie (1 gen.)
+              - button "Wczytaj" [ref=e178] [cursor=pointer]
+              - button "Usuń" [ref=e179] [cursor=pointer]
+          - status [ref=e180]: Zapisano (generacja gen-856ad75a-3f8d-4b9d-ab81-aceda3b495a2).
+          - paragraph
+      - region "Finanse" [ref=e181]:
+        - generic [ref=e182]:
+          - img [ref=e183]
+          - heading "Finanse" [level=2] [ref=e188]
+          - button "Zwiń" [expanded] [ref=e189] [cursor=pointer]:
+            - img [ref=e190]
+            - generic [ref=e192]: Zwiń
+        - generic [ref=e193]:
+          - generic [ref=e194]:
+            - generic [ref=e195]:
+              - generic [ref=e196]: Środki
+              - generic [ref=e197]: 25 000
+            - generic [ref=e198]:
+              - generic [ref=e199]: Zarobione dziś
+              - generic [ref=e200]: "0"
+            - generic [ref=e201]:
+              - generic [ref=e202]: Pensje dziennie
+              - generic [ref=e203]: "0"
+          - generic [ref=e204]: Państwo płaci za zajęte miejsca na koniec każdego dnia.
+      - separator "Zmień rozmiar paneli" [ref=e205]
+    - navigation "Sekcje więzienia":
+      - button "Ukryj sekcje" [expanded] [ref=e206] [cursor=pointer]:
+        - img [ref=e207]
+        - generic [ref=e209]: Ukryj sekcje
+      - generic [ref=e210]:
+        - button "Przegląd" [ref=e211] [cursor=pointer]:
+          - img [ref=e212]
+          - generic [ref=e217]: Przegląd
+        - button "Buduj" [ref=e218] [cursor=pointer]:
+          - img [ref=e219]
+          - generic [ref=e223]: Buduj
+        - button "Strefy" [ref=e224] [cursor=pointer]:
+          - img [ref=e225]
+          - generic [ref=e227]: Strefy
+        - button "Zarządzaj" [ref=e228] [cursor=pointer]:
+          - img [ref=e229]
+          - generic [ref=e231]: Zarządzaj
+        - button "Plan dnia" [ref=e232] [cursor=pointer]:
+          - img [ref=e233]
+          - generic [ref=e235]: Plan dnia
+        - button "Ochrona" [ref=e236] [cursor=pointer]:
+          - img [ref=e237]
+          - generic [ref=e239]: Ochrona
+      - separator "Zmień rozmiar sekcji" [ref=e240]
+    - region "Widok" [ref=e241]:
+      - combobox "Widok" [ref=e242] [cursor=pointer]:
+        - option "Z góry"
+        - option "Pod kątem" [selected]
+      - generic [ref=e243]:
+        - button "Przesuń kamerę w lewo" [ref=e244] [cursor=pointer]:
+          - img [ref=e245]
+          - generic [ref=e247]: Przesuń kamerę w lewo
+        - button "Przesuń kamerę w górę" [ref=e248] [cursor=pointer]:
+          - img [ref=e249]
+          - generic [ref=e251]: Przesuń kamerę w górę
+        - button "Przesuń kamerę w dół" [ref=e252] [cursor=pointer]:
+          - img [ref=e253]
+          - generic [ref=e255]: Przesuń kamerę w dół
+        - button "Przesuń kamerę w prawo" [ref=e256] [cursor=pointer]:
+          - img [ref=e257]
+          - generic [ref=e259]: Przesuń kamerę w prawo
+      - generic [ref=e260]:
+        - button "Obróć kamerę w lewo" [ref=e261] [cursor=pointer]:
+          - img [ref=e262]
+          - generic [ref=e265]: Obróć kamerę w lewo
+        - button "Obróć kamerę w prawo" [ref=e266] [cursor=pointer]:
+          - img [ref=e267]
+          - generic [ref=e270]: Obróć kamerę w prawo
+        - button "Podnieś kąt kamery" [ref=e271] [cursor=pointer]:
+          - img [ref=e272]
+          - generic [ref=e274]: Podnieś kąt kamery
+        - button "Obniż kąt kamery" [ref=e275] [cursor=pointer]:
+          - img [ref=e276]
+          - generic [ref=e278]: Obniż kąt kamery
+```
