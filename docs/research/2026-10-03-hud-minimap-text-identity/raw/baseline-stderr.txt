@@ -1,0 +1,17 @@
+[2m[WebServer] [22m(node:24452) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22merror when starting preview server:
+[2m[WebServer] [22mError: ENOENT: no such file or directory, open 'C:\Users\matma\Documents\Rozwój gier\lockstate-oblique-steady-projection-audit-20261003\.wrangler\deploy\config.json'
+[2m[WebServer] [22m    at Module.readFileSync (node:fs:484:20)
+[2m[WebServer] [22m    at getWorkerConfigs (file:///C:/Users/matma/Documents/Rozw%C3%B3j%20gier/lockstate-1382-doc-anchor-2026-09-24/node_modules/.pnpm/@cloudflare+vite-plugin@1.5_b7d3c6c3fb283e9f798dcb0330f48192/node_modules/@cloudflare/vite-plugin/dist/index.mjs:102659:39)
+[2m[WebServer] [22m    at resolvePluginConfig (file:///C:/Users/matma/Documents/Rozw%C3%B3j%20gier/lockstate-1382-doc-anchor-2026-09-24/node_modules/.pnpm/@cloudflare+vite-plugin@1.5_b7d3c6c3fb283e9f798dcb0330f48192/node_modules/@cloudflare/vite-plugin/dist/index.mjs:109626:91)
+[2m[WebServer] [22m    at BasicMinimalPluginContext.config (file:///C:/Users/matma/Documents/Rozw%C3%B3j%20gier/lockstate-1382-doc-anchor-2026-09-24/node_modules/.pnpm/@cloudflare+vite-plugin@1.5_b7d3c6c3fb283e9f798dcb0330f48192/node_modules/@cloudflare/vite-plugin/dist/index.mjs:129140:39)
+[2m[WebServer] [22m    at runConfigHook (file:///C:/Users/matma/Documents/Rozw%C3%B3j%20gier/lockstate-1382-doc-anchor-2026-09-24/node_modules/.pnpm/vite@8.2.2_@types+node@24.10.1_esbuild@0.28.1/node_modules/vite/dist/node/chunks/node.js:37193:42)
+[2m[WebServer] [22m    at async resolveConfig (file:///C:/Users/matma/Documents/Rozw%C3%B3j%20gier/lockstate-1382-doc-anchor-2026-09-24/node_modules/.pnpm/vite@8.2.2_@types+node@24.10.1_esbuild@0.28.1/node_modules/vite/dist/node/chunks/node.js:36606:11)
+[2m[WebServer] [22m    at async preview (file:///C:/Users/matma/Documents/Rozw%C3%B3j%20gier/lockstate-1382-doc-anchor-2026-09-24/node_modules/.pnpm/vite@8.2.2_@types+node@24.10.1_esbuild@0.28.1/node_modules/vite/dist/node/chunks/node.js:35791:17)
+[2m[WebServer] [22m    at async CAC.<anonymous> (file:///C:/Users/matma/Documents/Rozw%C3%B3j%20gier/lockstate-1382-doc-anchor-2026-09-24/node_modules/.pnpm/vite@8.2.2_@types+node@24.10.1_esbuild@0.28.1/node_modules/vite/dist/node/cli.js:807:18) {
+[2m[WebServer] [22m  errno: -4058,
+[2m[WebServer] [22m  code: 'ENOENT',
+[2m[WebServer] [22m  syscall: 'open',
+[2m[WebServer] [22m  path: 'C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-oblique-steady-projection-audit-20261003\\.wrangler\\deploy\\config.json'
+[2m[WebServer] [22m}
