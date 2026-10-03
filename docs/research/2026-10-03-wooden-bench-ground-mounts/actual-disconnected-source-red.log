@@ -1,0 +1,35 @@
+00:01.109  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-wooden-bench-ground-mounts-20261003\assets\source\blender\furniture.corridor.bench.grounded-detail.blend"
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
+Traceback (most recent call last):
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-wooden-bench-ground-mounts-20261003\tooling\blender\build-wooden-bench-ground-mounts.py", line 32, in contacts
+    return contact_reader.source_contacts(scene, pairs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-wooden-bench-ground-mounts-20261003\tooling\blender\build-staff-room-padded-chair.py", line 64, in source_contacts
+    raise ValueError(f'Staff Room padded chair actual contact disconnected: {first} / {second}')
+ValueError: Staff Room padded chair actual contact disconnected: physical-bench.ground mounting shoe 0 / Angled support.-0.7.-0.41
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-wooden-bench-ground-mounts-20261003\tooling\blender\render-wooden-bench-ground-mounts-oblique.py", line 129, in <module>
+    scene, camera, target = configure(MODEL)
+                            ~~~~~~~~~^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-wooden-bench-ground-mounts-20261003\tooling\blender\render-wooden-bench-ground-mounts-oblique.py", line 52, in configure
+    scene, camera, target = shared_configure(model, prepare_source)
+                            ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-wooden-bench-ground-mounts-20261003\tooling\blender\render-kitchen-fixtures-oblique.py", line 132, in configure
+    prepare_source(scene, model)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-wooden-bench-ground-mounts-20261003\tooling\blender\render-wooden-bench-ground-mounts-oblique.py", line 48, in prepare_source
+    builder.verify_source(scene)
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-wooden-bench-ground-mounts-20261003\tooling\blender\build-wooden-bench-ground-mounts.py", line 55, in verify_source
+    contacts(scene, p['actualContactPairs'])
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-wooden-bench-ground-mounts-20261003\tooling\blender\build-wooden-bench-ground-mounts.py", line 34, in contacts
+    raise ValueError('Bench floor mounting shoe actual contact disconnected: ' + str(error)) from error
+ValueError: Bench floor mounting shoe actual contact disconnected: Staff Room padded chair actual contact disconnected: physical-bench.ground mounting shoe 0 / Angled support.-0.7.-0.41
+
+Error: script failed, file: 'C:\Users\matma\Documents\Rozwój gier\lockstate-wooden-bench-ground-mounts-20261003\tooling\blender\render-wooden-bench-ground-mounts-oblique.py', exiting.
