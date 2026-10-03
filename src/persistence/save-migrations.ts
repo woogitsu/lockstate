@@ -1,6 +1,6 @@
 import { computeSaveChecksum } from './checksum';
 import { encodeEntityStoreSnapshot, type EncodedEntityStoreSnapshot } from './entity-codec';
-import type { JsonValue } from '../shared/json';
+import type { JsonObject, JsonValue } from '../shared/json';
 import { NEED_IDS, NEED_MAX_SCALED, NEED_SCALE } from '../simulation/prisoners/needs';
 import { DEFAULT_REGIME_SCHEDULES } from '../simulation/prisoners/regime';
 import { RegimeScheduleRegistry, type EncodedRegimeSchedule } from '../simulation/prisoners/regime-registry';
@@ -634,14 +634,17 @@ export function migrateSaveEnvelopeV8ToV9(input: SaveEnvelopeV8): SaveEnvelopeV9
 export function migrateSaveEnvelopeV9ToV10(input: SaveEnvelopeV9): SaveEnvelopeV10 {
   const payload = structuredClone(input.payload);
   const commands = payload.kernel.commands.map(command => {
-    const wrapper = command.payload as JsonValue;
-    if (typeof wrapper !== 'object' || wrapper === null || Array.isArray(wrapper) ||
-        wrapper.schemaId !== 'lockstate.simulation.command') return command;
-    const data = wrapper.data;
-    if (typeof data !== 'object' || data === null || Array.isArray(data) ||
-        data.type !== 'CancelBuildOrder' || typeof data.expectedRevision !== 'number' ||
+    const rawWrapper = command.payload;
+    if (typeof rawWrapper !== 'object' || rawWrapper === null || Array.isArray(rawWrapper)) return command;
+    const wrapper = rawWrapper as JsonObject;
+    if (wrapper.schemaId !== 'lockstate.simulation.command' || wrapper.schemaVersion !== 1) return command;
+    const rawData = wrapper.data;
+    if (typeof rawData !== 'object' || rawData === null || Array.isArray(rawData)) return command;
+    const data = rawData as JsonObject;
+    if (data.type !== 'CancelBuildOrder' || typeof data.expectedRevision !== 'number' ||
         !Number.isSafeInteger(data.expectedRevision) || data.expectedRevision < 0) return command;
-    return { ...command, payload: { ...wrapper, data: { ...data, expectedRevision: String(data.expectedRevision) } } };
+    return { ...command, payload: { ...wrapper, schemaVersion: 2,
+      data: { ...data, expectedRevision: String(data.expectedRevision) } } };
   });
   const migratedPayload = {
     ...payload,
