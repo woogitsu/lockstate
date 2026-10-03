@@ -1,0 +1,75 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-classroom-student-chair-integration-20261003
+
+ ❯ tests/unit/oblique-classroom-student-chair-context.test.ts (7 tests | 4 failed) 21ms
+     × selects ALL FOUR literal completed Classroom chairs q0 with their canonical source60/e40 frame 12ms
+     × selects ALL FOUR literal completed Classroom chairs q1 with their canonical source60/e40 frame 2ms
+     × preserves default/Reception/other-room chairs and the entire Classroom footprint boundary 3ms
+     × registers the selected asset once with its real source and complete descriptor 2ms
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 3 passed (7)
+   Start at  15:14:21
+   Duration  714ms (transform 233ms, setup 0ms, import 568ms, tests 21ms, environment 0ms)
+
+[ELIFECYCLE] Test failed. See above for more details.
+$ vitest run "tests/unit/oblique-classroom-student-chair-context.test.ts"
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-classroom-student-chair-context.test.ts > Classroom student ObjectChair context in the actual world projection > selects ALL FOUR literal completed Classroom chairs q0 with their canonical source60/e40 frame
+ FAIL  tests/unit/oblique-classroom-student-chair-context.test.ts > Classroom student ObjectChair context in the actual world projection > selects ALL FOUR literal completed Classroom chairs q1 with their canonical source60/e40 frame
+AssertionError: actual Classroom student chair context selector: expected 'furniture.classroom.school-chair' to be 'furniture.classroom.student-chair' // Object.is equality
+
+Expected: "furniture.classroom.student-chair"
+Received: "furniture.classroom.school-chair"
+
+ ❯ tests/unit/oblique-classroom-student-chair-context.test.ts:55:81
+     53|       expect(structure.tileY + 1).toBeLessThanOrEqual(10);
+     54|       const solid = projected.raised.find(item => item.id === structur…
+     55|       expect(solid?.assetId, 'actual Classroom student chair context s…
+       |                                                                                 ^
+     56|       if (solid === undefined) throw new Error('Literal template-purch…
+     57|       const selected = selectObliqueModuleFrame(catalog, { yawRadians:…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tests/unit/oblique-classroom-student-chair-context.test.ts > Classroom student ObjectChair context in the actual world projection > preserves default/Reception/other-room chairs and the entire Classroom footprint boundary
+AssertionError: expected 'furniture.classroom.school-chair' to be 'furniture.classroom.student-chair' // Object.is equality
+
+Expected: "furniture.classroom.student-chair"
+Received: "furniture.classroom.school-chair"
+
+ ❯ tests/unit/oblique-classroom-student-chair-context.test.ts:86:132
+     84|       [[{ ...classroom, width: 1, height: 1 }, { ...classroom, roomCat…
+     85|     ] satisfies [readonly RenderRoom[], RenderStructure, string][]) {
+     86|       expect(projectObliqueWorldFrame(frame([structure], rooms), camer…
+       |                                                                                                                                    ^
+     87|     }
+     88|     // An anchor alone is insufficient: check the public selector's fu…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  tests/unit/oblique-classroom-student-chair-context.test.ts > Classroom student ObjectChair context in the actual world projection > registers the selected asset once with its real source and complete descriptor
+AssertionError: actual runtime Classroom student registry entry: expected [] to deeply equal [ { …(2) } ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "assetId": "furniture.classroom.student-chair",
+-     "manifest": "/game-content/oblique-furniture-classroom-student-chair.v1.json",
+-   },
+- ]
++ []
+
+ ❯ tests/unit/oblique-classroom-student-chair-context.test.ts:106:72
+    104|     const registry = parseObliqueModuleRegistry(JSON.parse(readFileSyn…
+    105|     const entries = registry.entries.filter(entry => entry.assetId ===…
+    106|     expect(entries, 'actual runtime Classroom student registry entry')…
+       |                                                                        ^
+    107|       manifest: '/game-content/oblique-furniture-classroom-student-cha…
+    108|     const entry = entries[0];
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯

@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-classroom-student-chair-integration-20261003
+
+
+ Test Files  7 passed (7)
+      Tests  42 passed (42)
+   Start at  15:14:51
+   Duration  991ms (transform 819ms, setup 0ms, import 2.29s, tests 922ms, environment 0ms)
+
+$ vitest run "tests/unit/oblique-classroom-student-chair-context.test.ts" "tests/unit/oblique-classroom-chair-context.test.ts" "tests/unit/oblique-demand-texture-lifecycle.test.ts" "tests/unit/oblique-garbage-classroom-context.test.ts" "tests/unit/oblique-reception-chair-context.test.ts" "tests/unit/oblique-classroom-student-chair-art.test.ts" "tests/unit/oblique-classroom-chair-art.test.ts"
