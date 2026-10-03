@@ -204,11 +204,11 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    if '--verify' in sys.argv:
-        _, camera = configure()
-        for yaw in YAW:
-            for elevation in ELEVATION:
-                point_camera(camera, yaw, elevation)
-        print('CANONICAL_CELL_COT_DETAIL_VERIFY72 cameras/four occupied orientations', flush=True)
-    else:
-        main()
+    CYCLES_PRODUCER = "render-cell-cot-cycles.py"
+    if CYCLES_PRODUCER != "render-cell-cot-cycles.py":
+        raise ValueError("Cot canonical Cycles producer dispatch changed")
+    spec = importlib.util.spec_from_file_location("cot_actual_cycles_producer", Path(__file__).with_name(CYCLES_PRODUCER))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    module.main()
+    raise SystemExit(0)

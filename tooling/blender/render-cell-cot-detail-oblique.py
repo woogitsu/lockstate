@@ -71,9 +71,8 @@ def point_camera(camera,yaw,elevation):
 exporter.configure=configure
 exporter.point_camera=point_camera
 if __name__=='__main__':
-    if '--verify' in sys.argv:
-        _,camera=configure()
-        for yaw in exporter.YAW:
-            for elevation in exporter.ELEVATION:point_camera(camera,yaw,elevation)
-        print('CELL_COT_DETAIL_VERIFY72 cameras/four occupied orientations/outward actual geometry',flush=True)
-    else:exporter.main()
+    CYCLES_PRODUCER = 'render-cell-cot-cycles.py'
+    if CYCLES_PRODUCER != 'render-cell-cot-cycles.py':
+        raise ValueError('Cot detail canonical Cycles producer dispatch changed')
+    load_module('cot_detail_actual_cycles_producer', HERE / CYCLES_PRODUCER).main()
+    raise SystemExit(0)

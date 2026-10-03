@@ -29,4 +29,4 @@ blender --background --threads 1 --python tooling/blender/prepare-cell-cot-cycle
 
 ## Boundary
 
-This checkpoint contains two authentic before/after poses and saved source only. Full72, production descriptor switch and genuine RED/restore controls follow separately. No native acceptance, browser, server, build, UI, native fixture, copy, gameplay, palette or camera changes. Actual scene acceptance belongs to root after integration.
+The second checkpoint contains genuine72 production exports in 61.493618 seconds, selected through both existing cot producer entry points. Existing strict source tests first returned two real REDs for the historical source expectation, then all six focused cot tests returned GREEN after pinning the new source while retaining full historical geometry/material/contact checks. Four repeats and genuine production mutations follow separately. No native acceptance, browser, server, build, UI, native fixture, copy, gameplay, palette or camera changes. Actual scene acceptance belongs to root after integration.
