@@ -1,5 +1,5 @@
-// Pending new-source native acceptance: actual Reception construction and Save/Load.
-// Historical desk crops/colours remain provisional until fresh physical-detail PNG inspection.
+// Fresh combined-source acceptance uses actual Reception construction and Save/Load.
+// Isolated detail-source controls are retained; this run records the combined worker owner.
 import { writeFile } from 'node:fs/promises';
 import { expect, test as base, type Page } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
@@ -56,19 +56,24 @@ async function recordWorkerSnapshot(page: Page, path: string): Promise<DeskSnaps
   return (reply as { payload: { snapshot: { data: DeskSnapshotData } } }).payload.snapshot.data;
 }
 
-function assertDeskProducer(data: DeskSnapshotData, quarterTurns: 0 | 1): void {
-  const desk = data.simulation.objects.placedObjects.find(object => object.objectId === 'object.desk');
+function assertDeskProducer(data: DeskSnapshotData, quarterTurns: 0 | 1) {
+  const desks = data.simulation.objects.placedObjects.filter(object => object.objectId === 'object.desk');
+  expect(desks).toHaveLength(1);
+  const desk = desks[0]!;
   expect(desk).toMatchObject({
     placedObjectId: quarterTurns === 0 ? 'object:21:6' : 'object:24:6',
     objectId: 'object.desk', anchorTile: { x: quarterTurns === 0 ? 21 : 24, y: 6 },
     orientation: quarterTurns, sourceOrderId: 'room-template-000000000002-2-object-000',
   });
-  const order = data.construction.orders.find(candidate => candidate.id === desk!.sourceOrderId);
+  const orders = data.construction.orders.filter(candidate => candidate.id === desk.sourceOrderId);
+  expect(orders).toHaveLength(1);
+  const order = orders[0]!;
   expect(order).toMatchObject({
     id: desk!.sourceOrderId, definitionId: 'desk-wooden', state: 'completed',
     location: desk!.anchorTile,
   });
   expect(order!.objectOrientation ?? 0).toBe(quarterTurns);
+  return { object: desk, order };
 }
 
 async function fixtureAnchors(page: Page): Promise<string[]> {
@@ -210,7 +215,7 @@ test(`player builds Reception at quarterTurns${quarterTurns} and retains dedicat
   await page.mouse.move(1300, 700);
   const completed = await page.screenshot({ path: info.outputPath('dedicated-office-desk-worker-completed-fullhd.png') });
   const completedData = await recordWorkerSnapshot(page, info.outputPath('dedicated-office-desk-completed-worker-snapshot.json'));
-  assertDeskProducer(completedData, quarterTurns);
+  const ownerBefore = assertDeskProducer(completedData, quarterTurns);
   const beforePixels = await deskPalettePixels(page, completed, quarterTurns);
   await writeFile(info.outputPath('worker-and-completed-save-evidence.json'), JSON.stringify({
     quarterTurns, actualBefore, beforePixels, commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
@@ -228,7 +233,8 @@ test(`player builds Reception at quarterTurns${quarterTurns} and retains dedicat
   await page.mouse.move(1300, 700);
   const loaded = await page.screenshot({ path: info.outputPath('dedicated-office-desk-loaded-fullhd.png') });
   const loadedData = await recordWorkerSnapshot(page, info.outputPath('dedicated-office-desk-loaded-worker-snapshot.json'));
-  assertDeskProducer(loadedData, quarterTurns);
+  const ownerAfter = assertDeskProducer(loadedData, quarterTurns);
+  expect(ownerAfter).toEqual(ownerBefore);
   expect(loadedData).toEqual(completedData);
   const afterPixels = await deskPalettePixels(page, loaded, quarterTurns);
   afterPixels.forEach((count, index) => expect.soft(count, `desk ${index === 0 ? "oak desktop" : quarterTurns === 0 ? "teal document" : "steel monitor"} after Load`)
@@ -236,7 +242,7 @@ test(`player builds Reception at quarterTurns${quarterTurns} and retains dedicat
   expect(afterPixels).toEqual(beforePixels);
   const evidencePath = info.outputPath('dedicated-office-desk-worker-and-save-evidence.json');
   await writeFile(evidencePath, JSON.stringify({
-    quarterTurns, actualBefore, actualAfter, beforePixels, afterPixels,
+    quarterTurns, actualBefore, actualAfter, ownerBefore, ownerAfter, beforePixels, afterPixels,
     commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
   }, null, 2));
   await info.attach('dedicated-office-desk-worker-and-save-evidence', { path: evidencePath, contentType: 'application/json' });
