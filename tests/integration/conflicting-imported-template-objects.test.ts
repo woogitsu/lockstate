@@ -75,6 +75,54 @@ it('normal completed imported rows keep real ownership and far-tile removal in e
   expect(reversed.treasury.snapshot()).toEqual(first.treasury.snapshot());
 });
 
+it.each([false, true])('nonconflicting actual rebuild keeps existing owner policy, unknown=$0', unknown => {
+  const original = completed();
+  send(original, { type: 'RemoveObject', x: 11, y: 12 });
+  send(original, { type: 'PlaceObject', orderId: 'real-independent-bed', definitionId: 'bed-wooden', x: 11, y: 11 });
+  for (let tick = 0; tick < 3000 && original.construction.getOrder('real-independent-bed')?.state !== 'completed'; tick++) original.kernel.step();
+  expect(original.construction.getOrder('real-independent-bed')?.state).toBe('completed');
+  const objects = original.placedObjects.getSnapshot().map(object => {
+    if (!unknown || object.objectId !== 'object.bed') return object;
+    const { sourceOrderId: _source, ...legacy } = object;
+    return legacy;
+  });
+  for (const rows of [objects, [...objects].reverse()]) {
+    const runtime = importRows(original, rows);
+    const { kernel: _beforeKernel, ...before } = captureSessionSnapshot(runtime);
+    const wall = runtime.construction.allOrders().find(order => order.definitionId === 'wall-brick')!;
+    send(runtime, { type: 'CancelBuildOrder', orderId: wall.id, expectedRevision: runtime.construction.revisionOf(wall.id)! });
+    if (unknown) {
+      expect(runtime.refusals.last?.reason).toBe('construction.object-ownership-unknown');
+      const { kernel: _afterKernel, ...after } = captureSessionSnapshot(runtime);
+      expect(after).toEqual(before);
+      send(runtime, { type: 'RemoveObject', x: 11, y: 12 });
+      expect(runtime.placedObjects.getSnapshot().some(object => object.objectId === 'object.bed')).toBe(false);
+    } else {
+      expect(runtime.placedObjects.getSnapshot()).toHaveLength(1);
+      expect(runtime.placedObjects.getSnapshot()[0]).toMatchObject({ sourceOrderId: 'real-independent-bed' });
+      expect(runtime.treasury.snapshot()).toEqual(before.simulation?.economy?.treasury);
+    }
+  }
+});
+
+it('equal legacy/exact-owner imported rows retain atomic unknown refusal in both permutations', () => {
+  const original = completed();
+  const [bed, toilet] = original.placedObjects.getSnapshot();
+  const { sourceOrderId: _source, ...legacyBed } = bed!;
+  for (const rows of [[bed!, legacyBed, toilet!], [legacyBed, bed!, toilet!]]) {
+    const runtime = importRows(original, rows);
+    expect(runtime.placedObjects.getSnapshot().find(object => object.objectId === 'object.bed')?.sourceOrderId).toBeUndefined();
+    const { kernel: _beforeKernel, ...before } = captureSessionSnapshot(runtime);
+    const wall = runtime.construction.allOrders().find(order => order.definitionId === 'wall-brick')!;
+    send(runtime, { type: 'CancelBuildOrder', orderId: wall.id, expectedRevision: runtime.construction.revisionOf(wall.id)! });
+    expect(runtime.refusals.last?.reason).toBe('construction.object-ownership-unknown');
+    const { kernel: _afterKernel, ...after } = captureSessionSnapshot(runtime);
+    expect(after).toEqual(before);
+    send(runtime, { type: 'RemoveObject', x: 11, y: 12 });
+    expect(runtime.placedObjects.getSnapshot().some(object => object.objectId === 'object.bed')).toBe(false);
+  }
+});
+
 it('equal type and orientation imported owners retain deterministic old-template cancellation', () => {
   const original = completed();
   const oldBed = original.placedObjects.getSnapshot().find(object => object.objectId === 'object.bed')!;
