@@ -76,7 +76,7 @@ it('pins genuine saved draft and every retained mesh/full graph/contact with unc
 
 it('compares actual canonical before bodies with published output and genuine shader-light after bodies', () => {
   expect(proof.frames).toHaveLength(4);
-  const descriptor = JSON.parse(read('public/game-content/oblique-furniture-laundry-linen-rack.v1.json').toString('utf8')) as {
+  const descriptor = JSON.parse(read('assets/source/blender/furniture.laundry.linen-rack.workbench-descriptor.v1.json').toString('utf8')) as {
     frames: { yawDegrees: number; elevationDegrees: number; image: string; sha256: string }[];
   };
   for (const frame of proof.frames) { expect(sha(read(frame.image))).toBe(frame.sha256); decodeCanonicalRGBA(frame.image); }
