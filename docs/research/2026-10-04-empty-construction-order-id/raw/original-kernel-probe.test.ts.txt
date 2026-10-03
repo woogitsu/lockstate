@@ -1,0 +1,13 @@
+﻿import {it,expect} from 'C:/Users/matma/Documents/Rozwój gier/ls-build-command-gameplay-fix-20261004/node_modules/vitest/dist/index.js';
+import {createNewSimulationRuntime} from 'C:/Users/matma/Documents/Rozwój gier/ls-build-command-gameplay-fix-20261004/src/simulation/runtime/new-session.ts';
+import {captureSessionSnapshot} from 'C:/Users/matma/Documents/Rozwój gier/ls-build-command-gameplay-fix-20261004/src/simulation/runtime/restore-session.ts';
+import {packCommand} from 'C:/Users/matma/Documents/Rozwój gier/ls-build-command-gameplay-fix-20261004/src/simulation/protocol/commands.ts';
+import {createSaveEnvelope} from 'C:/Users/matma/Documents/Rozwój gier/ls-build-command-gameplay-fix-20261004/src/persistence/save-schema.ts';
+for(const type of ['PlaceBuildOrder','PlaceObject'] as const)for(const orderId of ['','legal-build-id'])it(type+' '+JSON.stringify(orderId)+' remains saveable after real dispatch',()=>{
+ const r=createNewSimulationRuntime(73); const send=(data:any)=>{const seq=r.kernel.expectedSequence;r.kernel.submitCommand('input-'+seq,seq,r.kernel.tick,packCommand(data));r.kernel.dispatchDueCommands();};
+ if(type==='PlaceObject'){send({type:'PlaceRoomTemplate',templateId:'yard-basic',origin:{x:4,y:4}});r.kernel.step();}
+ const command=type==='PlaceBuildOrder'?{type,orderId,definitionId:'wall-brick',x:3,y:3,footprint:'square'}:{type,orderId,definitionId:'bench-wooden',x:7,y:7};
+ send(command);const snapshot=captureSessionSnapshot(r);
+ console.log(JSON.stringify({type,orderId,order:r.construction.getOrder(orderId),ledger:snapshot.construction.orderRevisions,funds:r.treasury.balanceMinorUnits}));
+ expect(()=>createSaveEnvelope({gameVersion:'test',prisonId:'id-shape',revision:1,createdAt:0,updatedAt:1,...snapshot})).not.toThrow();
+});
