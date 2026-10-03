@@ -1,0 +1,24 @@
+{
+    "typedBaseline":  {
+                          "testSeconds":  2.24,
+                          "failed":  9,
+                          "passed":  5
+                      },
+    "baseline":  "37ecfe2acda762871a64724b575911ba66687ffd",
+    "requestedScope":  "square arm in claimsRoomDoorApproach only; reuse existing completed template door-order plus zoning eligibility",
+    "browserRun":  false,
+    "appTypecheckExitCode":  0,
+    "productionChanged":  false,
+    "sourceMutationPerformed":  false,
+    "expandedDiagnosis":  "bf05ef51d4abaf0550193b30d616453bffd15a16",
+    "toolsTypecheckExitCode":  0,
+    "diagnosis":  "ed772d1a6c515a30729374e3bd41350427fb8233",
+    "sourceQuotationDocs":  {
+                                "passed":  15,
+                                "files":  2
+                            },
+    "date":  "2026-10-03",
+    "limitation":  "No native drag/affordability acceptance or production-negative claim; source lease pending",
+    "coordinatorWorkingSHA256":  "e8768eb50ccc91416cee56f426980be11c1edbd25b98daa17c611fb586a170b3",
+    "issue":  2011
+}
