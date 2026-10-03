@@ -1,0 +1,9 @@
+﻿{
+    "freeze":  "022ea942a13b5d07ab5dae6a8b7bf4f7bb0cf721",
+    "source":  "src/ui/room-template-tool.ts",
+    "producerSha256":  "34d63c43892c698005fe93abde19cca2b7f8cd33ace93e283373dfde152d8317",
+    "restoredSha256":  "34d63c43892c698005fe93abde19cca2b7f8cd33ace93e283373dfde152d8317",
+    "negativeExit":  1,
+    "restoredExit":  0,
+    "control":  "unique actual placement token clearance omitted; all14renderer lifecycle cases retained"
+}

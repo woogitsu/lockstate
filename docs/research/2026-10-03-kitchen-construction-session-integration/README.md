@@ -107,3 +107,5 @@ After exact scoped row move and published-ref fetch, the same three documentatio
 ## Exact hosted532577eb6f verify failure and inherited observer correction
 
 Terminal hosted CI37100711713/job111139526171 stops on6tests in ui-room-plan-renderer-placement-receipt, with7983GREEN/8SKIP/657otherfilesGREEN. A local exact532577eb6f reproduction is6RED/8legalcontrols. The actual current RoomTemplateTool owns an optional unique placement symbol and clears it to undefined; the inherited test expected the superseded booleanfalse. Only three busy-clear observations are corrected to undefined. All actual main lifecycle callbacks, arm/revision/submission/refusal guards remain. Original fixture, full hosted logs and local failure are retained. Corrected behavior/real producer omission and exact restoration remain to be recorded.
+
+Corrected fixture14GREEN; actual unique placement-token clearance omission2RED/12legalcontrols, then finally byte-exact producer restoration14GREEN. The existing refused-receipt cases detect uncleared busy tokens; no lifecycle assertions or runtime behavior were removed. Full hosted new-head CI is separate.
