@@ -1,4 +1,5 @@
 import { openCameraControls } from './public-camera-controls';
+import { toiletMaterialEvidence } from './cell-toilet-material-observer';
 // Pending native transfer-neck acceptance; original opened palette/detail controls retained.
 import { writeFile } from 'node:fs/promises';
 import { expect, test as base, type Page } from './network-changed-fixture';
@@ -75,33 +76,6 @@ async function fixtureOwnership(page: Page) {
         order: data.construction.orders.find(order => order.id === object.sourceOrderId),
       })).sort((a, b) => a.anchorTile.x - b.anchorTile.x || a.anchorTile.y - b.anchorTile.y);
   });
-}
-
-async function toiletPalettePixels(page: Page, png: Buffer, quarterTurns: 0 | 1): Promise<number[]> {
-  return page.evaluate(async ({ base64, quarterTurns }) => {
-    const bitmap = await createImageBitmap(new Blob([Uint8Array.from(atob(base64), c => c.charCodeAt(0))], { type: 'image/png' }));
-    const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
-    const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0);
-    // Opened native completed/loaded frames calibrate separate front-panel
-    // and physical valve-wheel regions. The narrower blue-steel predicate
-    // excludes neutral/brown walls while preserving the original >8 guard.
-    const rects = quarterTurns === 0
-      ? [[936, 678, 53, 29], [983, 707, 16, 17]]
-      : [[993, 440, 44, 26], [1040, 458, 17, 18]];
-    const colour = quarterTurns === 0 ? [49, 128, 135] : [48, 127, 135];
-    return rects.map((rect, regionIndex) => {
-      const pixels = context.getImageData(...rect as [number, number, number, number]).data;
-      let count = 0;
-      for (let i = 0; i < pixels.length; i += 4) {
-        const r = pixels[i]!, g = pixels[i + 1]!, b = pixels[i + 2]!;
-        const matches = regionIndex === 0
-          ? r === colour[0] && g === colour[1] && b === colour[2]
-          : r >= 90 && r <= 180 && g > r && g - r <= 12 && b >= g && b - g <= 12;
-        if (matches) count++;
-      }
-      return count;
-    });
-  }, { base64: png.toString('base64'), quarterTurns });
 }
 
 let routeStorage: Awaited<ReturnType<ReturnType<Page['context']>['storageState']>> | undefined;
@@ -231,9 +205,10 @@ test(`player builds Basic cell at quarterTurns${quarterTurns} and retains toilet
   await expect.poll(()=>currentClock(page)).toMatchObject({mode:'paused'});
   const completedData=await recordToiletSnapshot(page,info.outputPath('toilet-completed-whole-paused-worker-snapshot.json'));
   assertToiletProducer(completedData,quarterTurns);
-  const beforePixels = await toiletPalettePixels(page, completed, quarterTurns);
+  const beforeMaterial = toiletMaterialEvidence(completed, quarterTurns);
+  const beforePixels = beforeMaterial.pixels;
   await writeFile(info.outputPath('worker-and-completed-save-evidence.json'), JSON.stringify({
-    quarterTurns, actualBefore, beforePixels, commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
+    quarterTurns, actualBefore, beforePixels, beforeMaterial, commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
   }, null, 2));
   beforePixels.forEach((count, index) => expect.soft(count, `toilet ${index + 1} authored palette after construction`)
     .toBeGreaterThan(index === 0 ? 100 : 8));
@@ -255,13 +230,14 @@ test(`player builds Basic cell at quarterTurns${quarterTurns} and retains toilet
   const loadedData=await recordToiletSnapshot(page,info.outputPath('toilet-loaded-whole-paused-worker-snapshot.json'));
   assertToiletProducer(loadedData,quarterTurns);
   expect(loadedData).toEqual(completedData);
-  const afterPixels = await toiletPalettePixels(page, loaded, quarterTurns);
+  const afterMaterial = toiletMaterialEvidence(loaded, quarterTurns);
+  const afterPixels = afterMaterial.pixels;
   afterPixels.forEach((count, index) => expect.soft(count, `toilet ${index + 1} authored palette after Load`)
     .toBeGreaterThan(index === 0 ? 100 : 8));
   expect(afterPixels).toEqual(beforePixels);
   const evidencePath = info.outputPath('dedicated-cell-toilet-worker-and-save-evidence.json');
   await writeFile(evidencePath, JSON.stringify({
-    quarterTurns, actualBefore, actualAfter, ownershipBefore, ownershipAfter, beforePixels, afterPixels, completedData, loadedData,
+    quarterTurns, actualBefore, actualAfter, ownershipBefore, ownershipAfter, beforePixels, afterPixels, beforeMaterial, afterMaterial, completedData, loadedData,
     commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
   }, null, 2));
   await info.attach('dedicated-cell-toilet-worker-and-save-evidence', { path: evidencePath, contentType: 'application/json' });

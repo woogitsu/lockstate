@@ -1,0 +1,23 @@
+{
+  "observerOriginalSha256": "095615dbbfd02ff5756c8519427aa584a4c52b4a262043ee7260e7c32ab8dd9d",
+  "observerRestoredSha256": "095615dbbfd02ff5756c8519427aa584a4c52b4a262043ee7260e7c32ab8dd9d",
+  "byteExactRestore": true,
+  "mutations": [
+    {
+      "mutation": "actual-legacy-helper-red.log",
+      "actualObserverModified": true,
+      "producer": "tests/browser/cell-toilet-material-observer.ts",
+      "exitCode": 1,
+      "originalIndependentSteelPredicateModified": false
+    },
+    {
+      "mutation": "actual-material-predicate-omission-red.log",
+      "actualObserverModified": true,
+      "producer": "tests/browser/cell-toilet-material-observer.ts",
+      "exitCode": 1,
+      "originalIndependentSteelPredicateModified": false
+    }
+  ],
+  "focusedNeighborExitCode": 0,
+  "nativeRerunPerformed": false
+}

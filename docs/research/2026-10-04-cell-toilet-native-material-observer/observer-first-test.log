@@ -1,0 +1,42 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-cell-toilet-material-observer-20261004
+
+ ❯ tests/unit/cell-toilet-material-observer.test.ts (14 tests | 2 failed) 3302ms
+     × rederives actual q0 band colors from evaluated rays and source PNG, not native colors 15ms
+     × rederives actual q1 band colors from evaluated rays and source PNG, not native colors 9ms
+node :
+At line:114 char:1
++ node node_modules/vitest/vitest.mjs run tests/unit/cell-toilet-materi ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/cell-toilet-material-observer.test.ts > Cell toilet observer: real authored teal, unchanged independe
+nt steel and floors > rederives actual q0 band colors from evaluated rays and source PNG, not native colors
+ FAIL  tests/unit/cell-toilet-material-observer.test.ts > Cell toilet observer: real authored teal, unchanged independe
+nt steel and floors > rederives actual q1 band colors from evaluated rays and source PNG, not native colors
+AssertionError: expected 251 to be 255 // Object.is equality
+
+- Expected
++ Received
+
+- 255
++ 251
+
+ ❯ tests/unit/cell-toilet-material-observer.test.ts:56:56
+     54|     const colors=new Set<number>();
+     55|     for(const pixel of mesh.opaqueInsetPixelIndices){
+     56|       const index=pixel*4;expect(bitmap.rgba[index+3]).toBe(255);
+       |                                                        ^
+     57|       colors.add((bitmap.rgba[index]!<<16)|(bitmap.rgba[index+1]!<<8)|…
+     58|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 12 passed (14)
+   Start at  01:51:44
+   Duration  3.56s (transform 65ms, setup 0ms, import 148ms, tests 3.30s, environment 0ms)
