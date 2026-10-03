@@ -7,7 +7,7 @@ from mathutils.bvhtree import BVHTree
 ROOT=Path(__file__).resolve().parents[2];HERE=ROOT/'tooling/blender';sys.path.insert(0,str(HERE))
 def load(name,file):
  s=importlib.util.spec_from_file_location(name,HERE/file);m=importlib.util.module_from_spec(s);s.loader.exec_module(m);return m
-old=load('original_bench_pipeline','render-wooden-bench-oblique.py');new=load('physical_bench_pipeline','render-wooden-bench-crossrails-oblique.py');scratch=ROOT/'assets/intermediate/bench-contact-audit';scratch.mkdir(parents=True,exist_ok=True)
+old=load('original_bench_pipeline','render-wooden-bench-oblique.py');old.exporter.MODELS=(('furniture.corridor.bench.variants','furniture.corridor.bench.blend','oblique-canteen-bench.v1.json',2,1,1.,1.,.44325),);new=load('physical_bench_pipeline','render-wooden-bench-crossrails-oblique.py');scratch=ROOT/'assets/intermediate/bench-contact-audit';scratch.mkdir(parents=True,exist_ok=True)
 s,c,t=old.configure(old.exporter.MODELS[0]);graph=bpy.context.evaluated_depsgraph_get();names=['Lower steel tie','Angled support.-0.7.-0.41','Angled support.-0.7.0.41'];trees={};bounds={}
 for name in names:
  value=bpy.data.objects[name].evaluated_get(graph);mesh=value.to_mesh()

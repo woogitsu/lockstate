@@ -14,9 +14,22 @@ exporter = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(exporter)
 exporter.pipeline_common.require_blender_version()
 ASSET_ID = 'furniture.corridor.bench.variants'
-exporter.MODELS = ((ASSET_ID, 'furniture.corridor.bench.blend',
+exporter.MODELS = ((ASSET_ID, 'furniture.corridor.bench.angled-detail.blend',
                     'oblique-canteen-bench.v1.json', 2, 1, 1.0, 1.0, 0.44325),)
 exporter.PREVIEW = exporter.ROOT / 'assets/intermediate/wooden-bench-preview'
+
+
+_detail_module = None
+
+
+def bench_crossrail_exporter():
+    global _detail_module
+    if _detail_module is None:
+        detail_spec = importlib.util.spec_from_file_location('wooden_bench_crossrail_detail', SCRIPT.with_name('render-wooden-bench-crossrails-oblique.py'))
+        assert detail_spec and detail_spec.loader
+        _detail_module = importlib.util.module_from_spec(detail_spec)
+        detail_spec.loader.exec_module(_detail_module)
+    return _detail_module
 
 
 def evaluated_points(scene):
@@ -49,6 +62,8 @@ configure_shared = exporter.configure
 
 
 def configure(model):
+    if model[0] == ASSET_ID and model[1] == 'furniture.corridor.bench.angled-detail.blend':
+        return bench_crossrail_exporter().configure(model)
     scene, camera, target = configure_shared(model, prepare_source)
     points = evaluated_points(scene)
     minimum = [min(point[axis] for point in points) for axis in range(3)]
