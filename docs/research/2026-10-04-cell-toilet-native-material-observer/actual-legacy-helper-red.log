@@ -1,0 +1,37 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-cell-toilet-material-observer-20261004
+
+ ❯ tests/unit/cell-toilet-material-observer.test.ts (14 tests | 2 failed) 3327ms
+     × preserves actual21d original[0,22] and recognizes[327,22] in immutable21d-q0-completed-fullhd.png 52ms
+     × preserves actual21d original[0,22] and recognizes[327,22] in immutable21d-q0-loaded-fullhd.png 49ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/cell-toilet-material-observer.test.ts > Cell toilet observer: real authored teal, unchanged independent steel and floors > preserves actual21d original[0,22] and recognizes[327,22] in immutable21d-q0-completed-fullhd.png
+ FAIL  tests/unit/cell-toilet-material-observer.test.ts > Cell toilet observer: real authored teal, unchanged independent steel and floors > preserves actual21d original[0,22] and recognizes[327,22] in immutable21d-q0-loaded-fullhd.png
+AssertionError: expected [ +0, 22 ] to deeply equal [ 327, 22 ]
+
+- Expected
++ Received
+
+  [
+-   327,
++   0,
+    22,
+  ]
+
+ ❯ tests/unit/cell-toilet-material-observer.test.ts:68:77
+     66|     const png=bytes(`${record}${name}`);expect(sha(png)).toBe(expected…
+     67|     const evidence=toiletMaterialEvidence(png,0);
+     68|     expect(evidence.originalPixels).toEqual([0,22]);expect(evidence.pi…
+       |                                                                             ^
+     69|     expect(evidence.pixels[0]).toBeGreaterThan(100);expect(evidence.pi…
+     70|     expect(evidence.hardwareUniqueSourceIsolationClaimed).toBe(false);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 12 passed (14)
+   Start at  01:53:34
+   Duration  3.57s (transform 38ms, setup 0ms, import 126ms, tests 3.33s, environment 0ms)

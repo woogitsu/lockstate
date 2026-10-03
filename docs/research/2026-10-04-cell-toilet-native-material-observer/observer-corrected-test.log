@@ -1,0 +1,60 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-cell-toilet-material-observer-20261004
+
+ ❯ tests/unit/cell-toilet-material-observer.test.ts (14 tests | 2 failed) 3630ms
+     × rederives actual q0 band colors from evaluated rays and source PNG, not native colors 16ms
+     × rederives actual q1 band colors from evaluated rays and source PNG, not native colors 8ms
+node :
+At line:12 char:1
++ node node_modules/vitest/vitest.mjs run tests/unit/cell-toilet-materi ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/cell-toilet-material-observer.test.ts > Cell toilet observer: real authored teal, unchanged independe
+nt steel and floors > rederives actual q0 band colors from evaluated rays and source PNG, not native colors
+AssertionError: expected 264 to be 263 // Object.is equality
+
+- Expected
++ Received
+
+- 263
++ 264
+
+ ❯ tests/unit/cell-toilet-material-observer.test.ts:59:27
+     57|       colors.add((bitmap.rgba[index]!<<16)|(bitmap.rgba[index+1]!<<8)|…
+     58|     }
+     59|     expect(opaqueSamples).toBe(turns===0?263:266);
+       |                           ^
+     60|     expect(colors.size).toBe(turns===0?66:64);expect([...colors].sort(…
+     61|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/unit/cell-toilet-material-observer.test.ts > Cell toilet observer: real authored teal, unchanged independe
+nt steel and floors > rederives actual q1 band colors from evaluated rays and source PNG, not native colors
+AssertionError: expected 267 to be 266 // Object.is equality
+
+- Expected
++ Received
+
+- 266
++ 267
+
+ ❯ tests/unit/cell-toilet-material-observer.test.ts:59:27
+     57|       colors.add((bitmap.rgba[index]!<<16)|(bitmap.rgba[index+1]!<<8)|…
+     58|     }
+     59|     expect(opaqueSamples).toBe(turns===0?263:266);
+       |                           ^
+     60|     expect(colors.size).toBe(turns===0?66:64);expect([...colors].sort(…
+     61|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 12 passed (14)
+   Start at  01:52:21
+   Duration  3.91s (transform 38ms, setup 0ms, import 126ms, tests 3.63s, environment 0ms)

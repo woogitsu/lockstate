@@ -1,0 +1,184 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-cell-toilet-material-observer-20261004
+
+ ❯ tests/unit/cell-toilet-material-observer.test.ts (14 tests | 9 failed) 197ms
+     × preserves actual21d original[0,22] and recognizes[327,22] in immutable21d-q0-completed-fullhd.png 49ms
+     × preserves actual21d original[0,22] and recognizes[327,22] in immutable21d-q0-loaded-fullhd.png 47ms
+     × rejects all72 real whole-body frames in oblique-floor-cell.v1.json at the same compound100/8 floors 2ms
+     × rejects all72 real whole-body frames in oblique-square-brick-full-wall.v1.json at the same compound100/8 floors 7ms
+     × rejects all72 real whole-body frames in oblique-wall-cutaway.v1.json at the same compound100/8 floors 6ms
+     × rejects all72 real whole-body frames in oblique-reception-employee-desk.v1.json at the same compound100/8 floors 6ms
+     × rejects all72 real whole-body frames in oblique-furniture-office-desk-generic.v1.json at the same compound100/8 floors 2ms
+     × rejects all72 real whole-body frames in oblique-furniture.cell-cot.v1.json at the same compound100/8 floors 2ms
+     × rejects all three genuine retained default/historical toilet source bodies and original floor 48ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/cell-toilet-material-observer.test.ts > Cell toilet observer: real authored teal, unchanged independent steel and floors > preserves actual21d original[0,22] and recognizes[327,22] in immutable21d-q0-completed-fullhd.png
+ FAIL  tests/unit/cell-toilet-material-observer.test.ts > Cell toilet observer: real authored teal, unchanged independent steel and floors > preserves actual21d original[0,22] and recognizes[327,22] in immutable21d-q0-loaded-fullhd.png
+AssertionError: expected [ 1537, 22 ] to deeply equal [ 327, 22 ]
+
+- Expected
++ Received
+
+  [
+-   327,
++   1537,
+    22,
+  ]
+
+ ❯ tests/unit/cell-toilet-material-observer.test.ts:68:77
+     66|     const png=bytes(`${record}${name}`);expect(sha(png)).toBe(expected…
+     67|     const evidence=toiletMaterialEvidence(png,0);
+     68|     expect(evidence.originalPixels).toEqual([0,22]);expect(evidence.pi…
+       |                                                                             ^
+     69|     expect(evidence.pixels[0]).toBeGreaterThan(100);expect(evidence.pi…
+     70|     expect(evidence.hardwareUniqueSourceIsolationClaimed).toBe(false);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯
+
+ FAIL  tests/unit/cell-toilet-material-observer.test.ts > Cell toilet observer: real authored teal, unchanged independent steel and floors > rejects all72 real whole-body frames in oblique-floor-cell.v1.json at the same compound100/8 floors
+AssertionError: public/assets/environment/oblique/floor-cell-yaw-180-elev25.e245f2214cd6.png: not the authored teal band: expected 1860 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1860
+
+ ❯ negativeScore tests/unit/cell-toilet-material-observer.test.ts:25:55
+     23|   const bitmap=decodeStaffMaterialPng(bytes(path)),rect=[0,0,bitmap.wi…
+     24|   const first=toiletAuthoredTealPixels(bitmap,rect,turns),second=toile…
+     25|   expect(first,`${path}: not the authored teal band`).toBe(0);
+       |                                                       ^
+     26|   // Original independent hardware colors can occur on other furniture…
+     27|   // untouched100/8 gates must pass; hardware alone is not model ident…
+ ❯ tests/unit/cell-toilet-material-observer.test.ts:91:9
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯
+
+ FAIL  tests/unit/cell-toilet-material-observer.test.ts > Cell toilet observer: real authored teal, unchanged independent steel and floors > rejects all72 real whole-body frames in oblique-square-brick-full-wall.v1.json at the same compound100/8 floors
+AssertionError: public/assets/environment/oblique/square-brick-full-wall-yaw-180-elev25.08bee01f8f1d.png: not the authored teal band: expected 4204 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 4204
+
+ ❯ negativeScore tests/unit/cell-toilet-material-observer.test.ts:25:55
+     23|   const bitmap=decodeStaffMaterialPng(bytes(path)),rect=[0,0,bitmap.wi…
+     24|   const first=toiletAuthoredTealPixels(bitmap,rect,turns),second=toile…
+     25|   expect(first,`${path}: not the authored teal band`).toBe(0);
+       |                                                       ^
+     26|   // Original independent hardware colors can occur on other furniture…
+     27|   // untouched100/8 gates must pass; hardware alone is not model ident…
+ ❯ tests/unit/cell-toilet-material-observer.test.ts:91:9
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/9]⎯
+
+ FAIL  tests/unit/cell-toilet-material-observer.test.ts > Cell toilet observer: real authored teal, unchanged independent steel and floors > rejects all72 real whole-body frames in oblique-wall-cutaway.v1.json at the same compound100/8 floors
+AssertionError: public/assets/environment/oblique/wall-module-cutaway-yaw-180-elev25.8a18ac3a4965.png: not the authored teal band: expected 2480 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2480
+
+ ❯ negativeScore tests/unit/cell-toilet-material-observer.test.ts:25:55
+     23|   const bitmap=decodeStaffMaterialPng(bytes(path)),rect=[0,0,bitmap.wi…
+     24|   const first=toiletAuthoredTealPixels(bitmap,rect,turns),second=toile…
+     25|   expect(first,`${path}: not the authored teal band`).toBe(0);
+       |                                                       ^
+     26|   // Original independent hardware colors can occur on other furniture…
+     27|   // untouched100/8 gates must pass; hardware alone is not model ident…
+ ❯ tests/unit/cell-toilet-material-observer.test.ts:91:9
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/9]⎯
+
+ FAIL  tests/unit/cell-toilet-material-observer.test.ts > Cell toilet observer: real authored teal, unchanged independent steel and floors > rejects all72 real whole-body frames in oblique-reception-employee-desk.v1.json at the same compound100/8 floors
+AssertionError: public/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+00-elev20.14b7d133262a.png: not the authored teal band: expected 3946 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 3946
+
+ ❯ negativeScore tests/unit/cell-toilet-material-observer.test.ts:25:55
+     23|   const bitmap=decodeStaffMaterialPng(bytes(path)),rect=[0,0,bitmap.wi…
+     24|   const first=toiletAuthoredTealPixels(bitmap,rect,turns),second=toile…
+     25|   expect(first,`${path}: not the authored teal band`).toBe(0);
+       |                                                       ^
+     26|   // Original independent hardware colors can occur on other furniture…
+     27|   // untouched100/8 gates must pass; hardware alone is not model ident…
+ ❯ tests/unit/cell-toilet-material-observer.test.ts:91:9
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/9]⎯
+
+ FAIL  tests/unit/cell-toilet-material-observer.test.ts > Cell toilet observer: real authored teal, unchanged independent steel and floors > rejects all72 real whole-body frames in oblique-furniture-office-desk-generic.v1.json at the same compound100/8 floors
+AssertionError: public/assets/environment/oblique/furniture.office.desk.generic-yaw+00-elev20.8114f2826c80.png: not the authored teal band: expected 4309 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 4309
+
+ ❯ negativeScore tests/unit/cell-toilet-material-observer.test.ts:25:55
+     23|   const bitmap=decodeStaffMaterialPng(bytes(path)),rect=[0,0,bitmap.wi…
+     24|   const first=toiletAuthoredTealPixels(bitmap,rect,turns),second=toile…
+     25|   expect(first,`${path}: not the authored teal band`).toBe(0);
+       |                                                       ^
+     26|   // Original independent hardware colors can occur on other furniture…
+     27|   // untouched100/8 gates must pass; hardware alone is not model ident…
+ ❯ tests/unit/cell-toilet-material-observer.test.ts:91:9
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/9]⎯
+
+ FAIL  tests/unit/cell-toilet-material-observer.test.ts > Cell toilet observer: real authored teal, unchanged independent steel and floors > rejects all72 real whole-body frames in oblique-furniture.cell-cot.v1.json at the same compound100/8 floors
+AssertionError: public/assets/environment/oblique/furniture.cell.cot.single-yaw+00-elev20.2d480493692d.png: not the authored teal band: expected 2078 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2078
+
+ ❯ negativeScore tests/unit/cell-toilet-material-observer.test.ts:25:55
+     23|   const bitmap=decodeStaffMaterialPng(bytes(path)),rect=[0,0,bitmap.wi…
+     24|   const first=toiletAuthoredTealPixels(bitmap,rect,turns),second=toile…
+     25|   expect(first,`${path}: not the authored teal band`).toBe(0);
+       |                                                       ^
+     26|   // Original independent hardware colors can occur on other furniture…
+     27|   // untouched100/8 gates must pass; hardware alone is not model ident…
+ ❯ tests/unit/cell-toilet-material-observer.test.ts:91:9
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/9]⎯
+
+ FAIL  tests/unit/cell-toilet-material-observer.test.ts > Cell toilet observer: real authored teal, unchanged independent steel and floors > rejects all three genuine retained default/historical toilet source bodies and original floor
+AssertionError: public/game-content/source-art/fixture.cell.toilet_sink.18b4c51aa610.png: not the authored teal band: expected 1718 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1718
+
+ ❯ negativeScore tests/unit/cell-toilet-material-observer.test.ts:25:55
+     23|   const bitmap=decodeStaffMaterialPng(bytes(path)),rect=[0,0,bitmap.wi…
+     24|   const first=toiletAuthoredTealPixels(bitmap,rect,turns),second=toile…
+     25|   expect(first,`${path}: not the authored teal band`).toBe(0);
+       |                                                       ^
+     26|   // Original independent hardware colors can occur on other furniture…
+     27|   // untouched100/8 gates must pass; hardware alone is not model ident…
+ ❯ tests/unit/cell-toilet-material-observer.test.ts:98:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/9]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  9 failed | 5 passed (14)
+   Start at  01:53:38
+   Duration  446ms (transform 41ms, setup 0ms, import 126ms, tests 197ms, environment 0ms)

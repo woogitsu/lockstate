@@ -18,4 +18,14 @@ The original separate wheel/service ROI(983,707,16,17) already has22 pixels unde
 
 ## Pending
 
-Dedicated source negatives, actual observer mutation/restoration and strict checks follow. Root must rerun the genuine artifact; these measurements do not turn the retained q0 native RED into GREEN or claim q1 acceptance.
+All432 genuine whole-body Cell floor, full/cutaway wall, two desk families and Cot frames produce zero teal matches in both source palettes. Three real retained default/historical toilet bodies and original Cell floor also reject. The compound100/8 gates reject these bodies; hardware alone is explicitly not unique. Actual legacy-helper mutation gives two RED tests; material-predicate omission gives nine RED tests. Byte-exact restoration passes31 tests across four focused/neighbor suites, and both strict app/tools type checks exit0. Root must rerun the genuine artifact; these measurements do not turn the retained q0 native RED into GREEN or claim q1 acceptance.
+
+## Actual source sampling correction retained
+
+The geometric3?3 inset contains265/268 pixels. One pixel in each pose has actual PNG alpha251, so source palette derivation uses only264/267 opaque samples. Two initial source-unit expectation failures (assuming every inset pixel opaque, then miscounting the excluded sample) are retained in terminal logs; corrected literal counts match actual bytes. No source, screenshot or acceptance threshold was changed to correct those test expectations.
+
+## Narrow browser integration
+
+Only the first-region matching logic changes. `toiletMaterialEvidence` decodes the real screenshot and records both the new source-identified teal count and the legacy count. The original second-region r90..180, g>r, g-r?12, b?g, b-g?12 predicate is retained exactly. Both before/after Load gates remain strict >100 and >8, and exact before/after counts still must agree. Public purchase actions, owner/order/cost assertions, whole paused worker equality, actual HTTP/body/realBlob decoder and later public hardware camera actions are untouched.
+
+No additional config or collection claim. Root alone executes the genuine artifact route.
