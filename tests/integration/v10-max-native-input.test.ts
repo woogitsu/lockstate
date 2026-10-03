@@ -1,0 +1,36 @@
+import { writeFile } from 'node:fs/promises';
+import { expect, it } from 'vitest';
+import { authorHistoricalMaxSave, expectedMaxImport, MAX_NATIVE_ORDER_ID } from '../browser/fixtures/v9-max-active-order';
+import { decodeSaveEnvelope } from '../../src/persistence/save-schema';
+import { captureSessionSnapshot, restoreSimulationRuntime, type SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
+import { packCommand } from '../../src/simulation/protocol/commands';
+import archivedInput from '../browser/fixtures/v9-max-active-order.json';
+
+it('authors a real completed Cell owner plus legal frozen V9 MAX pending wall for public Import', async () => {
+  const input = authorHistoricalMaxSave();
+  expect(input, 'Archived public Import bytes must be the genuinely authored deterministic input').toEqual(archivedInput);
+  const expected = expectedMaxImport(input);
+  expect(input.saveSchemaVersion).toBe(9);
+  expect(input.payload.construction.orderRevisions?.[MAX_NATIVE_ORDER_ID]).toBe(Number.MAX_SAFE_INTEGER);
+  expect(expected.simulation?.objects?.placedObjects).toContainEqual(expect.objectContaining({
+    objectId: 'object.bed', anchorTile: { x: 24, y: 6 }, orientation: 1, sourceOrderId: expect.any(String),
+  }));
+  const owners = expected.simulation?.objects?.placedObjects;
+  expect(owners).toHaveLength(5);
+  expect(owners?.every(object => typeof object.sourceOrderId === 'string')).toBe(true);
+  const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(input)));
+  if (!decoded.ok) throw Error(decoded.error.message);
+  expect(decoded.value.payload).toEqual(expected);
+  const { runtime } = restoreSimulationRuntime(decoded.value.payload as SessionSnapshotBundle);
+  expect(captureSessionSnapshot(runtime)).toEqual(expected);
+  const before = runtime.treasury.balanceMinorUnits;
+  const sequence = runtime.kernel.expectedSequence;
+  runtime.kernel.submitCommand('offline-max-control', sequence, runtime.kernel.tick,
+    packCommand({ type: 'CancelBuildOrder', orderId: MAX_NATIVE_ORDER_ID, expectedRevision: '9007199254740991' }));
+  expect(runtime.kernel.dispatchDueCommands()).toBe(1);
+  expect(runtime.construction.revisionOf(MAX_NATIVE_ORDER_ID)).toBe('9007199254740992');
+  expect(runtime.treasury.balanceMinorUnits).toBe(before + 80);
+  expect(captureSessionSnapshot(runtime).simulation?.objects?.placedObjects).toEqual(owners);
+  const output = process.env['LOCKSTATE_MAX_INPUT_OUTPUT'];
+  if (output !== undefined) await writeFile(output, JSON.stringify(input, null, 2) + '\n');
+});
