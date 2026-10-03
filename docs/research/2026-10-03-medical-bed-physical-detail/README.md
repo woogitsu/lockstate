@@ -1,0 +1,27 @@
+# Dedicated medical bed physical detail
+
+2026-10-03. Isolated base `da685c52902e2a1318594017cf90a35b689005bc`, branch `codex/medical-bed-angled-detail-20261003`. No browser started.
+
+## Existing source and genuine consumer
+
+Existing `medical-bed-wooden` builds `object.medical-bed` (numeric 2), authoritative footprint 1 x 2, sleep-surface/medical-treatment capabilities. Its default consumer is `furniture.medical-bed.variants`; the actual Infirmary plan places it at local (1,1) beside the medicine cabinet. No gameplay identity, material palette or template changes belong here. The cabinet and Office Desk already integrated in this base stay untouched.
+
+Original `assets/source/blender/furniture.medical-bed.variants.blend`, SHA256 `1737b03a3ee1342e813e7096e0aef189f05d714d5a69437a8fe490c026d232be`, has eleven selected meshes and four materials. All 594 evaluated faces are outward. Independent actual Blender audit includes bevel modifiers, object matrices and inverse-transpose normal transforms ([source-audit.json](source-audit.json)). Its source bounds are `[-.460000008,-.910000026,-.090000004]` to `[.460000008,.910000026,1.259999990]`. Existing rigid grounding +.090000004 and min-corner anchor produce `[.039999992,.089999974,0]` to `[.960000038,1.910000086,1.350000024]`. All four orientations fit and the existing 64 pixels per tile camera target `[.5,1,.675]` is valid. This is physical refinement of a correct source, not an alignment or inward-normal repair.
+
+Earlier branches `codex/medical-bed-top-refine-2026-09-25` (764e5407b6e988f552ea93062cd33b88af78f5ab) and `codex/medical-bed-mark-2026-09-26` (dd9c951367312937cbb81d69ae0cc10855622790) contain the historical environment catalogue, not a competing dedicated standalone eleven-part source. The original source's current authorship commit is `7b7ecd26e371c8037981aede112c815de36aabb1`.
+
+## Actual dedicated source
+
+New `assets/source/blender/furniture.medical-bed.angled-detail.blend`, SHA256 `d18a702e585d6e69f15602d9e9f294bc0c539da3f78bf4f48fe1330da286c4fe`, retains all eleven original parts. Raw vertex/topology/polygon material-index bytes, material slots, all four complete material values/graphs and writable scalar-array modifier values are unchanged. Only the previously accepted uniform rigid grounding translation is baked into the new source; relative assembly positions stay intact. Original blend bytes are unchanged. Retained evaluated geometry maximum rigid-translation error is `1.1920928955078125e-07`.
+
+Sixty-five additional real meshes model four caster wheels/hub caps/forks/brake treads/linkages, two side safety rails with washable grips/posts/pivot mounts, twin scissor links and bearing tracks, cross shafts and a lift actuator, plus a control backing plate/fasteners/raised buttons. All use only the original four materials. There are 76 meshes and 7776 evaluated polygons, all outward. Full retained and added raw geometry/material/modifier identities are recorded in the dedicated provenance; a separate auditor reopens both actual sources without importing the model guard.
+
+The added side hardware expands XY only, still within the authoritative 1 x 2 rectangle: centered grounded bounds `[-.489000022,-.910000026,0]` to `[.489000022,.910000026,1.350000024]`; min-corner loaded bounds `[.010999978,.089999974,0]` to `[.989000022,1.910000086,1.350000024]`. Unit fit and measured target `[.5,1,.675000011920929]` retain the accepted silhouette height and 64 pixels per tile. All four rotations fit.
+
+[Actual original/refined source comparison](medical-bed-source-detail-comparison.png) was opened at original resolution at four real camera yaws. The wheels, side rails and scissor mechanism are visible alongside the retained linen/end panels. This is authored source inspection, not native player acceptance.
+
+Two genuine winding controls reverse only the retained bed-base faces, preserving raw vertex bytes: one producer control before saving, one loaded-source control after hash preflight. Both fail actual evaluated outward normals; byte-exact script restoration passes native verification. Neither original nor dedicated source file changes ([winding-controls.json](winding-controls.json)). The wrapper already verifies actual source/material/raw identities, grounded four-orientation geometry and all 72 camera vectors/span.
+
+## Remaining scoped work
+
+Canonical 72 pose export/repeat, only the approved medical-bed MODELS tuple/bed-only guard dispatch, actual producer/decoded-PNG controls, focused checks and a genuine q0/q1 Infirmary worker/SaveLoad fixture follow. Medicine Cabinet dispatch/source and all shared functions remain untouched. Native pixels and consumer-removal acceptance are queued for the parent; no hosted completion is claimed.
