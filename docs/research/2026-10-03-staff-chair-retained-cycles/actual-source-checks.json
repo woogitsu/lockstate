@@ -1,0 +1,25 @@
+{
+  "focusedSuites": 5,
+  "passed": 19,
+  "skipped": 1,
+  "optionalSkip": "generic live Blender on PATH; actual pinnedBlender5.2.1 source/savedsource/matrix/controls/fourrepeats executed GREEN",
+  "strictSourceTypecheckExitCode": 0,
+  "strictToolingTypecheckExitCode": 0,
+  "genuine72Seconds": 67.89988290000474,
+  "genuineFourRepeatSeconds": 3.8690844000084326,
+  "exactRepeatBodies": true,
+  "actualSourceDispatchPNGConsumerControlsRedRestoreGreen": true,
+  "protectedExactRestoredFiles": 238,
+  "rootOwnedOldNativeLiteralContract": {
+    "exitCode": 1,
+    "failed": 1,
+    "passed": 1,
+    "reason": "old expected descriptor canonical SHA718fda... vs actual newd5d4c3...; source fixture/helper/oldnative acceptance assertions preserved byteexact per rootlease"
+  },
+  "nativeRun": false,
+  "browserRun": false,
+  "buildRun": false,
+  "serverRun": false,
+  "fullVerifyRun": false,
+  "nativeCalibrationPendingRoot": true
+}

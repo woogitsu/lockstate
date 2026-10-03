@@ -1,0 +1,38 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-staff-chair-retained-cycles-production-20261003
+
+x·
+node : 
+At line:2 char:974
++ ... EXITCODE }; node node_modules/vitest/vitest.mjs run tests/unit/native ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/native-staff-room-padded-chair-evidence.test.ts > accepts independently pinned real source/descriptor
+/PNG using the native observer assertions
+Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: "718fda5f4874146a71622a4db9814950acd845fa79aad85c8f935d56f42814c0"
+Received: "d5d4c3a0db3a371aee7cddadaa7f5ef8f7ea9be86bc251b4947be3cf992d9bd9"
+ ❯ Proxy.<anonymous> ../lockstate-1382-doc-anchor-2026-09-24/node_modules/.pnpm/playwright@1.56.1/node_modules/playwrig
+ht/lib/matchers/expect.js:221:24
+ ❯ assertStaffDeliveredArt tests/browser/staff-room-padded-chair/native-evidence.ts:14:105
+     12| export function assertStaffDeliveredArt(descriptor: Buffer, png: Buffe…
+     13|   const art = STAFF_CHAIR_ART;
+     14|   expect(createHash('sha256').update(descriptor.toString('utf8').repla…
+       |                                                                                                         ^
+     15|   const catalog = parseObliqueModuleCatalog(JSON.parse(descriptor.toSt…
+     16|   expect(catalog).toMatchObject({ assetId: art.assetId, source: art.so…
+ ❯ tests/unit/native-staff-room-padded-chair-evidence.test.ts:13:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  21:23:42
+   Duration  1.13s (transform 268ms, setup 0ms, import 998ms, tests 10ms, environment 0ms)
+
