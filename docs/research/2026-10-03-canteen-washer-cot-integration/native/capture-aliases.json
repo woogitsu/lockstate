@@ -2205,5 +2205,14 @@
     "archivedBytes": 2359,
     "archivedSha256": "0345149bc3e21754b3a5f4e8453a692f72a1eb07caf9b0872a8dd6c8ececbb9b",
     "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-approved-ci-integrated-foundation-20261003.txt",
+    "archived": "ci-integration-initial/console.txt",
+    "sourceBytes": 5706,
+    "sourceSha256": "ebdebae40c9e7b435f014f56c13477c2870964fae63d13d7ad30a8a5cc7719db",
+    "archivedBytes": 2948,
+    "archivedSha256": "43b015cd1ea3a43b5d9875d20ac7b01ee0f87faad89f1cce88bbf5e26b52e4db",
+    "conversion": "UTF16LE console to UTF8"
   }
 ]

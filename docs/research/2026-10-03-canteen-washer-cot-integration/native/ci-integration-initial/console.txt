@@ -1,0 +1,67 @@
+pnpm : $ vitest run "tests/foundation/browser-ci-sharding-contract.test.ts" "tests/foundation/ci-configuration-contract
+.test.ts" "tests/foundation/research-index-contract.test.ts" "--maxWorkers=2"
+At line:3 char:1
++ pnpm --config.verify-deps-before-run=false test tests/foundation/brow ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...--maxWorkers=2":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-canteen-washer-cot-integration-20261003
+
+ ❯ tests/foundation/browser-ci-sharding-contract.test.ts (7 tests | 1 failed) 510ms
+     × preserves main verification/assets/provisioning, fork and event/concurrency gates 22ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/foundation/browser-ci-sharding-contract.test.ts > owner-approved browser CI sharding contract (#1983) > pr
+eserves main verification/assets/provisioning, fork and event/concurrency gates
+AssertionError: expected { …(4) } to deeply equal { …(4) }
+
+- Expected
++ Received
+
+@@ -50,10 +50,25 @@
+      {
+        "name": "Install dependencies",
+        "run": "pnpm install --frozen-lockfile",
+      },
+      {
++       "env": {
++         "LFS_TOKEN": "${{ github.token }}",
++       },
++       "name": "Hydrate Blender sources and angled frames for verification",
++       "run": "set -euo pipefail
++ cleanup() {
++   git config --local --unset-all 'http.https://github.com/.extraheader' 2>/dev/null || true
++ }
++ trap cleanup EXIT
++ git config --local 'http.https://github.com/.extraheader' \\
++   \"AUTHORIZATION: basic $(printf 'x-access-token:%s' \"$LFS_TOKEN\" | base64 -w0)\"
++ git lfs pull --include=\"assets/source/blender/*.blend,public/assets/environment/oblique/*.png\" --exclude=\"\"
++ ",
++     },
++     {
+        "name": "Verify project",
+        "run": "pnpm verify",
+      },
+      {
+        "name": "Verify measurement harness",
+
+ ❯ tests/foundation/browser-ci-sharding-contract.test.ts:46:72
+     44|     for (const key of ['on', 'env', 'concurrency', 'permissions'] as c…
+     45|     expect(Object.keys(active.jobs).sort()).toEqual(['assets', 'browse…
+     46|     for (const name of ['verify', 'assets']) expect(job(active, name))…
+       |                                                                        ^
+     47|     const original = job(before, 'browser');
+     48|     const common = original.steps.slice(0, original.steps.findIndex(en…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  1 failed | 61 passed (62)
+   Start at  10:23:36
+   Duration  2.78s (transform 70ms, setup 0ms, import 226ms, tests 3.64s, environment 0ms)
+
+[ELIFECYCLE] Test failed. See above for more details.
