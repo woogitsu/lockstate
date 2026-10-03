@@ -73,3 +73,14 @@ ownership assertion relaxation. Actual Chair q1 must still be rerun.
 [Original full report](initial-native/report.json), [original console](initial-native/console.txt),
 [byte-exact capture aliases](initial-native/capture-aliases.json),
 [independent native palette measurement](initial-native/rack-retained-palette-measurement.json).
+
+
+## Terminal native model acceptance and actual consumer controls
+
+Frozen subject b8fab14a10d72ceeed14d1c5a77f090d484a6c0f. The corrected Rack/Chair run obtained6/6 GREEN268.75s. Removing exactly the three default Chair/Rack/Shower bindings and changing only actual per-solid loading depth to1 then obtained5 RED/3 legal GREEN in q0 and3 RED/3 legal GREEN in q1; each disconnected model palette measured0 before and after Load. Both wall cases failed the real rear-guard-body assertion. The original q0 report also preserves a secondary request-cleanup error: unroute auto-continued the just-released request while its handler was still continuing it. The fixture now awaits that same handler before unroute; its isolated negative/restored check is queued, not claimed completed.
+
+Exact mapping/scene bytes and the entire simulation worker were restored before rebuilding: worker-B-ERJAIW.js441336bytes SHA256cd2903cef2f7ef1993582dcdbc773fd21e34ef7f3d574f64a2220da1017b790b unchanged in baseline, negative and restore. **All11 restored native cases GREEN428.81s**, no retries/skips/flaky results. Both orientations retain exact independently derived completed-object owners and the whole paused worker snapshot across real Save/Load.
+
+Root opened all6 actual post-load hardware captures. Rack structural joins, Chair metal/timber frame and Shower nozzle/connector are visible in the actual built client. Pending-wall receipts at yaw0/180 show rear body0, visible front body56 and held masonry0; after actual image completion rear0/front blue12 or13/masonry1382 or845. This distinguishes a covered real actor from a missing actor and a genuinely pending texture from a cached loaded frame.
+
+[Terminal report summary](native/terminal-summary.json), [corrected6-case report](native/observer-corrected/report.json), [q0 consumer negatives](native/q0-negative/report.json), [q1 consumer negatives](native/q1-negative/report.json), [exact restored11-case report](native/exact-restored/report.json), [byte-exact source/worker receipt](native/lockstate-crs-depth-control-receipt-20261003.json). Original failures and exact capture aliases remain available in each collection. No hosted full CI or release claim is made.
