@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-functional-angled-model-next-20261003
+
+········
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+   Start at  18:20:02
+   Duration  620ms (transform 169ms, setup 0ms, import 493ms, tests 13ms, environment 0ms)

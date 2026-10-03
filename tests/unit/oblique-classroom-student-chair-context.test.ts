@@ -75,13 +75,13 @@ describe('Classroom student ObjectChair context in the actual world projection',
     for (const [rooms, structure, expected] of [
       [[], chair(), 'furniture.chair.wooden'],
       [[{ ...classroom, instanceId: 'room.reception:5:5', roomCatalogId: 'room.reception' }], chair(), 'furniture.reception.waiting-armchair'],
-      [[{ ...classroom, instanceId: 'room.staff-room:5:5', roomCatalogId: 'room.staff-room' }], chair(), 'furniture.chair.wooden'],
+      [[{ ...classroom, instanceId: 'room.staff-room:5:5', roomCatalogId: 'room.staff-room' }], chair(), 'furniture.staff-room.padded-chair'],
       [[classroom], chair(4, 6), 'furniture.chair.wooden'],
       [[classroom], chair(10, 6), 'furniture.chair.wooden'],
       [[classroom], chair(5, 4), 'furniture.chair.wooden'],
       [[classroom], chair(5, 10), 'furniture.chair.wooden'],
       [[classroom], chair(9, 9), assetId],
-      [[{ ...classroom, width: 1, height: 1 }, { ...classroom, roomCatalogId: 'room.staff-room', anchorTileX: 6 }], chair(6, 5), 'furniture.chair.wooden'],
+      [[{ ...classroom, width: 1, height: 1 }, { ...classroom, roomCatalogId: 'room.staff-room', anchorTileX: 6 }], chair(6, 5), 'furniture.staff-room.padded-chair'],
     ] satisfies [readonly RenderRoom[], RenderStructure, string][]) {
       expect(projectObliqueWorldFrame(frame([structure], rooms), camera()).raised.find(item => item.id === structure.id)?.assetId).toBe(expected);
     }

@@ -1,0 +1,36 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-functional-angled-model-next-20261003
+
+·······x
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 7 passed (8)
+   Start at  18:20:03
+   Duration  641ms (transform 174ms, setup 0ms, import 498ms, tests 21ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-staff-room-padded-chair-context.test.ts > Staff Room ObjectChair context in the actual world projection > registers the selected asset once with its real source and complete descriptor
+AssertionError: actual runtime Staff Room registry entry: expected [] to deeply equal [ { …(2) } ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "assetId": "furniture.staff-room.padded-chair",
+-     "manifest": "/game-content/oblique-furniture-staff-room-padded-chair.v1.json",
+-   },
+- ]
++ []
+
+ ❯ tests/unit/oblique-staff-room-padded-chair-context.test.ts:111:65
+    109|     const registry = parseObliqueModuleRegistry(JSON.parse(readFileSyn…
+    110|     const entries = registry.entries.filter(entry => entry.assetId ===…
+    111|     expect(entries, 'actual runtime Staff Room registry entry').toEqua…
+       |                                                                 ^
+    112|       manifest: '/game-content/oblique-furniture-staff-room-padded-cha…
+    113|     const entry = entries[0];
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯

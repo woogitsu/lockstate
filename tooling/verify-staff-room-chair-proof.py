@@ -14,7 +14,7 @@ sha=lambda b:hashlib.sha256(b).hexdigest()
 def run(label,script=PRODUCER,args=(),error=None):
  r=subprocess.run(CLI+['--python',str(script),'--',*args],cwd=ROOT,capture_output=True,timeout=60)
  out=(r.stdout+r.stderr).decode('utf-8',errors='replace')
- (REPORT/(label+'.log')).write_text(out,encoding='utf-8',newline='\n')
+ (REPORT/(label+'.log')).write_text('\n'.join(line.rstrip() for line in out.splitlines()).rstrip()+'\n',encoding='utf-8',newline='\n')
  if (error and (r.returncode==0 or error not in out)) or (not error and r.returncode):raise AssertionError(label+'\n'+out)
  print(label,'RED' if error else 'GREEN',r.returncode,flush=True)
  return {'label':label,'exitCode':r.returncode,'expectedFailure':error}
