@@ -1255,7 +1255,17 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     return location;
   };
 
-  const searchSystem = new SearchSystem(securityGuards, navigation, contraband, intelligence, confiscations, searchPolicies, categoryConcealment, categoryNameKey, locateSearchTarget, events);
+  const searchTargetExists = (target: SearchTarget): boolean => {
+    if (target.holderKind === 'prisoner' || target.holderKind === 'staff') {
+      const id = Number(target.holderId);
+      // isAlive checks the full generation, not just the reused slot index.
+      if (!Number.isInteger(id) || id < 0 || id > 0xffff_ffff) return false;
+      return (target.holderKind === 'prisoner' ? prisoners.entityStore : securityGuards.entityStore).isAlive(id);
+    }
+    if (target.holderKind === 'cell') return prisoners.roomInstances.getById(target.holderId) !== undefined;
+    return containers.getById(target.holderId) !== undefined && searchContainerLocations.has(target.holderId);
+  };
+  const searchSystem = new SearchSystem(securityGuards, navigation, contraband, intelligence, confiscations, searchPolicies, categoryConcealment, categoryNameKey, locateSearchTarget, events, undefined, searchTargetExists);
 
   // Issue #28's incident pipeline: no gangs, no tunnels and no incidents until
   // a session/scenario registers them -- same "no fabricated default content"
