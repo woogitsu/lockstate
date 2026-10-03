@@ -7481,3 +7481,36 @@
     width: calc(100vw - 2 * var(--space-5));
   }
 }
+
+/* UNAPPROVED local scroll repair. This content-sized Build has no internal
+ * scrolling; its actual scrolling ancestor is the side. Do not trap sticky
+ * positioning in a second, non-scrolling overflow ancestor. Preserve the
+ * existing header height and opaque surface while the side scrolls. */
+@media (min-width: 1920px) and (min-height: 1080px) {
+  :root[data-ui-scale-step='200'] .hud[data-active-tab='build']
+    .hud-build:has(.hud-build__rotate-object:not([hidden])) {
+    overflow: visible;
+  }
+
+  :root[data-ui-scale-step='200'] .hud[data-active-tab='build']
+    .hud-build:has(.hud-build__rotate-object:not([hidden])) > .ui-panel__header {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+  }
+
+  /* Existing Save scroll is necessary at this scale. Expose its continuation
+   * rather than allocating another row or shrinking any action/list floor.
+   * Focus scroll leaves the full button border inside the scroll viewport. */
+  :root[data-ui-scale-step='200'] .hud__rail:has(.hud-build__rotate-object:not([hidden])) .save-panel {
+    overflow-y: scroll;
+    scrollbar-gutter: stable;
+    scrollbar-width: auto;
+    scrollbar-color: var(--border-strong) var(--surface-sunken);
+    scroll-padding-block: var(--space-1);
+  }
+
+  :root[data-ui-scale-step='200'] .hud__rail:has(.hud-build__rotate-object:not([hidden])) .save-panel__button {
+    scroll-margin-block: var(--space-1);
+  }
+}
