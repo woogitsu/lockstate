@@ -63,3 +63,7 @@ Root granted only three invalid purchase setup poses to use legal unmirrored90°
 - tests/determinism/canonical-iteration-contract.test.ts
 
 Both application/tools TypeScript pass. [Production client build](./build.txt) passes5.50s with existing plugin/chunk warnings. Initial documentation gate61GREEN/1missing own research-rowRED,20.20s; [original retained](./docs-initial.txt). Granted own row alone gives [62GREEN/eightfiles](./docs-terminal.txt),13.40s. No existing registry citation fails or requires correction; no historical anchor/budget/guard changes. Final index receipt closure follows. No native/hosted CI claim; ordinary current legal commands still do not create duplicate physical saved rows. Source leases released with committed production diff0.
+
+## Final own-index receipt closure
+
+Final index names the existing1487 record, measured inherited fixture errors and exact correction without erasing those original results. [Final62GREEN/eightfiles](./docs-final.txt),15.01s, with unchanged quote/citation budgets and tolerances. No current registry line citation required amendment. Source hash remainsB2270802354EBD39E519DD333AB9D1506F05F23BE85A8D166CB679C28815AE4D, committed production diff0; source/test/docs leases released. No new duplicate Issue, foreign branch mutation, browser/native/CI claim or save/copy/tariff change. No native fixture proposed for legally minted duplicates because this surface is explicitly damaged/imported saved data; actual strict codec/restored-kernel commands provide the measured boundary.
