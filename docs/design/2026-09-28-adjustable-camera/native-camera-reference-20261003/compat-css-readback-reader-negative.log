@@ -1,0 +1,85 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-camera-native-reference-20261003
+
+ ❯ tests/unit/minimap-unrounded-reference.test.ts (13 tests | 5 failed) 11ms
+   × original HUD assignment reference matches real Camera four corners at zoom1.25, CSS ratio1, offset0 2ms
+   × original HUD assignment reference matches real Camera four corners at zoom1.25, CSS ratio1, offset140 0ms
+   × original HUD assignment reference matches real Camera four corners at zoom1.25, CSS ratio2, offset0 0ms
+   × original HUD assignment reference matches real Camera four corners at zoom1.25, CSS ratio2, offset140 0ms
+   × preserves the original percentage and demonstrates the exact observed 0.00128px quantization error 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/minimap-unrounded-reference.test.ts > original HUD assignment reference matches real Camera four corners at zoom1.25, CSS ratio1, offset0
+AssertionError: expected 380.00128000000007 to be close to 380, received difference is 0.001280000000065229, but expected 0.0005
+ ❯ tests/unit/minimap-unrounded-reference.test.ts:71:69
+     69|       const expected = { x: offset + point.x / cssRatio, y: offset + p…
+     70|       const actual = reference.screen(x!, y!);
+     71|       expect(actual.x).toBeCloseTo(expected.x, 3); expect(actual.y).to…
+       |                                                                     ^
+     72|       // Bad old raw-scroll forward reader is rejected at the same pre…
+     73|       // zoom1 remains a legal control where both formulas agree.
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  tests/unit/minimap-unrounded-reference.test.ts > original HUD assignment reference matches real Camera four corners at zoom1.25, CSS ratio1, offset140
+AssertionError: expected 520.0012800000001 to be close to 520, received difference is 0.001280000000065229, but expected 0.0005
+ ❯ tests/unit/minimap-unrounded-reference.test.ts:71:69
+     69|       const expected = { x: offset + point.x / cssRatio, y: offset + p…
+     70|       const actual = reference.screen(x!, y!);
+     71|       expect(actual.x).toBeCloseTo(expected.x, 3); expect(actual.y).to…
+       |                                                                     ^
+     72|       // Bad old raw-scroll forward reader is rejected at the same pre…
+     73|       // zoom1 remains a legal control where both formulas agree.
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  tests/unit/minimap-unrounded-reference.test.ts > original HUD assignment reference matches real Camera four corners at zoom1.25, CSS ratio2, offset0
+AssertionError: expected 190.00064000000003 to be close to 190, received difference is 0.0006400000000326145, but expected 0.0005
+ ❯ tests/unit/minimap-unrounded-reference.test.ts:71:69
+     69|       const expected = { x: offset + point.x / cssRatio, y: offset + p…
+     70|       const actual = reference.screen(x!, y!);
+     71|       expect(actual.x).toBeCloseTo(expected.x, 3); expect(actual.y).to…
+       |                                                                     ^
+     72|       // Bad old raw-scroll forward reader is rejected at the same pre…
+     73|       // zoom1 remains a legal control where both formulas agree.
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  tests/unit/minimap-unrounded-reference.test.ts > original HUD assignment reference matches real Camera four corners at zoom1.25, CSS ratio2, offset140
+AssertionError: expected 330.00064000000003 to be close to 330, received difference is 0.0006400000000326145, but expected 0.0005
+ ❯ tests/unit/minimap-unrounded-reference.test.ts:71:69
+     69|       const expected = { x: offset + point.x / cssRatio, y: offset + p…
+     70|       const actual = reference.screen(x!, y!);
+     71|       expect(actual.x).toBeCloseTo(expected.x, 3); expect(actual.y).to…
+       |                                                                     ^
+     72|       // Bad old raw-scroll forward reader is rejected at the same pre…
+     73|       // zoom1 remains a legal control where both formulas agree.
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  tests/unit/minimap-unrounded-reference.test.ts > preserves the original percentage and demonstrates the exact observed 0.00128px quantization error
+AssertionError: expected 10.1562 to be 10.15625 // Object.is equality
+
+- Expected
++ Received
+
+- 10.15625
++ 10.1562
+
+ ❯ tests/unit/minimap-unrounded-reference.test.ts:85:24
+     83|   expect(h.style.writes[1]).toBe('top:10.15625%');
+     84|   expect(Reflect.get(h.style, 'top')).toBe('10.1562%');
+     85|   expect(h.read().top).toBe(10.15625);
+       |                        ^
+     86|   const canvas = { width: 1920, height: 1080, left: 0, top: 0, widthCs…
+     87|   const reference = minimapGroundReference(canvas, { width: 32, height…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 8 passed (13)
+   Start at  02:15:42
+   Duration  219ms (transform 31ms, setup 0ms, import 86ms, tests 11ms, environment 0ms)
+
