@@ -77,3 +77,27 @@ it.each(poses.flatMap(pose => [false, true].flatMap(saved => [false, true].map(l
     expect({ ...afterState, construction: { ...afterState.construction,
       orders: afterState.construction.orders.filter(row => row.id !== order.id) } }).toEqual(beforeState);
   });
+
+it.each([false, true])('ordinary separately built doorway retains its existing furniture policy, saved=%s', saved => {
+  let runtime = createNewSimulationRuntime(73);
+  // Genuine enclosed 2x3 Cell, no template gesture or template order IDs.
+  // The south perimeter tile(20,23) is open and carries a north-facing door.
+  const walls = [tile(20, 19), tile(21, 19), tile(21, 23),
+    ...[20, 21, 22].flatMap(y => [tile(19, y), tile(22, y)])];
+  walls.forEach((at, index) => send(runtime, { type: 'PlaceBuildOrder', orderId: `ordinary-wall-${index}`,
+    definitionId: 'wall-brick', footprint: 'square', ...at }));
+  send(runtime, { type: 'PlaceBuildOrder', orderId: 'ordinary-door', definitionId: 'door-wooden',
+    x: 20, y: 23, edge: 'north' });
+  finish(runtime);
+  expect(runtime.construction.allOrders().every(order => order.state === 'completed')).toBe(true);
+  send(runtime, { type: 'ZoneRoom', roomId: 'room.cell', x: 20, y: 20, width: 2, height: 3 });
+  expect(runtime.prisoners.roomInstances.getById('room.cell:20:20')).toBeDefined();
+  if (saved) runtime = load(runtime);
+  expect(runtime.world.getTopEdge(tile(20, 23))).not.toBe(0);
+  expect(runtime.world.getSquareStructure(tile(20, 23))).toBe(0);
+  send(runtime, { type: 'PlaceBuildOrder', orderId: 'ordinary-toilet', definitionId: 'toilet-brick', x: 20, y: 23 });
+  expect(runtime.construction.getOrder('ordinary-toilet')?.state).not.toBe('failed');
+  finish(runtime);
+  expect(runtime.placedObjects.objectAt(tile(20, 23))?.sourceOrderId).toBe('ordinary-toilet');
+  expect(runtime.roomTemplates.snapshot().completed ?? []).toEqual([]);
+});
