@@ -3,6 +3,7 @@ import { createSaveEnvelope, decodeSaveEnvelope } from '../../src/persistence/sa
 import { packCommand, type SimulationCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { captureSessionSnapshot, restoreSimulationRuntime, type SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
+import { tileCoordinate } from '../../src/simulation/world/coordinates';
 
 type Runtime = ReturnType<typeof createNewSimulationRuntime>;
 function send(runtime: Runtime, command: SimulationCommand) {
@@ -123,7 +124,7 @@ it.each(['room', 'staff', 'container'].flatMap(kind => [false, true].map(missing
     } else {
       target = { holderKind: 'container', holderId: missing ? 'absent-domain-container' : 'construction-materials' };
       scope = 'delivery';
-      runtime.searchContainerLocations.set(target.holderId, { x: 23, y: 23 });
+      runtime.searchContainerLocations.set(target.holderId, { x: tileCoordinate(23), y: tileCoordinate(23) });
       runtime.searchSystem.submitOrder({ id: 'domain-target', scope, targets: [target] });
     }
     const before = runtime.searchSystem.getMetrics();
