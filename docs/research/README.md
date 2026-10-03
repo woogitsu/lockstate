@@ -100,6 +100,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 
 | Record | Question it answered | Decision it fed |
 | --- | --- | --- |
+| [2026-10-03 Classroom student writing chair](./2026-10-03-classroom-student-writing-chair/README.md) | Can the complete authored school-chair gain a physically connected writing tablet within its original bounds? | Actual retained25parts/eight stored graphs, eight new parts/13contacts; canonical export and controls in progress. |
 | [Integrated verify: three scoped repairs](./2026-10-03-integrated-verify-scoped-repair/README.md) | Which reported verify failures are an uncovered research directory, stale generated inventory and superseded no-door route expectation? | Include the exact tracked directory, regenerate accepted strings and assert filtered routes zero while unmet demand stays positive. |
 | [2026-10-03 integrated verification repairs](./2026-10-03-integrated-verification-repairs/README.md) | What did the full combined verification gate actually fail, and which source or environment causes were repaired? | Preserve the original 30 failures; numeric canonical seeds, truthful Blender build metadata and actual published tracking refs, with unchanged gate budgets. Full combined gate pending. |
 | [World held arrow and catalogue focus](./2026-10-03-world-roving-held-arrow/README.md) | Does World stop an already-held camera arrow when a grouped catalogue radio takes focus? | Source reproduction of missing #1943 World parity; preserve ordinary-button/WASD control without a new layout rule. |
