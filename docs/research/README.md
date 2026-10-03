@@ -416,6 +416,8 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 | [2026-10-03 HUD cancel/re-arm ownership](./2026-10-03-oblique-hud-cancel-rearm/README.md) | Can a cancelled primary press revive when HUD re-arms before the next frame? |Original both-renderer6 RED/15 controls, scoped construction-only cancellation21 GREEN; Build/Rooms producer negatives4/2 RED and exact restoration. Native timing pending root. |
 | [2026-10-03 World camera/build gesture ownership](./2026-10-03-camera-build-gesture-audit/README.md) | Can a native middle-button release complete construction while the physical primary button remains held? | Actual Phaser source6RED/24controls, primary-owned release30GREEN, guard omission6RED/exactrestore30GREEN; three native cases prepared. |
 
+| [2026-10-03 public hired Guard native preparation](./2026-10-03-public-hired-guard-native-preparation/README.md) | Does genuine Staff hiring retain exact Guard identity, whole paused Save/Load and real decoded authored body? | Packed command/transport restore and10existing source controls GREEN; public FullHD fixture1case collected, no browser run. Rear hardware calibration HOLD pending corrected historical raster; private bound texture unobserved. |
+
 ### Findings from the first four records that changed a decision
 
 Recorded here because each contradicted something the project believed, and a
