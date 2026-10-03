@@ -50,8 +50,8 @@
     },
     {
       "file": "docs\\research\\2026-10-03-public-hired-guard-native-preparation\\README.md",
-      "bytes": 7511,
-      "sha256": "1156c6b9597d4d132ce954bf32b35ea88d35f14553b8a7303c10a649bd543e25"
+      "bytes": 7973,
+      "sha256": "038a59b89507b49acbee1b216e50ac7afda160d00dd570c2ea94b924f79a9213"
     },
     {
       "file": "docs\\research\\2026-10-03-public-hired-guard-native-preparation\\run-genuine-guard.cjs.txt",
@@ -80,8 +80,8 @@
     },
     {
       "file": "tests/browser/hired-guard-player-build.spec.ts",
-      "bytes": 7236,
-      "sha256": "f77e194b7f43256cd59411b4af0a9bae6e944650a1faedbed55f1597c5ec6a3b"
+      "bytes": 7189,
+      "sha256": "9feb452e09b69c47d800779e5a7df09c2edb59211527c3cdc18c3eb092493840"
     },
     {
       "file": "docs/research/README.md",

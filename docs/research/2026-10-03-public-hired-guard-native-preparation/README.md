@@ -40,3 +40,6 @@ Final strict TypeScript exit0 and source collection1case/1file. Guard structural
 The observer now records genuine3xx URLs/status/Location without decoding them as PNGs; only HTTP200 bodies are decoded. Exact raw URLs remain in receipts, while frame-path matching decodes percent encoding so Cloudflare's raw+→%2B normalization is not mistaken for a changed asset. No fallback image, synthesized Blob or private texture probe was added.
 
 The local evidence-only `.gitattributes` preserves text receipts' actual bytes; it does not change root/model/workflow attributes. The manifest records exact archived recipe/log/fixture bytes. Initial module-resolution and index amendment errors remain explicitly classified. No public browser run or hardware crop calibration has taken place.
+### Rear-image preparation correction
+
+Parent review found the original 96e384 rear loader poll required both different initial and rear PNG hashes on the same image. This could never pass. The correction removes only the initial-frame hash from the rear poll; the earlier independent initial loader poll and HTTP200 response assertion remain. The original published preparation error is retained in Git history. No native run or production change is claimed.
