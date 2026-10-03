@@ -1,0 +1,500 @@
+# OWNER REVIEW DRAFT: not activated; no workflow or protection change.
+name: CI
+on:
+  push:
+    branches:
+      - main
+  pull_request: null
+  workflow_dispatch: null
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+env:
+  CI: true
+  COREPACK_ENABLE_DOWNLOAD_PROMPT: 0
+jobs:
+  verify:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version-file: .node-version
+          package-manager-cache: false
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Activate pnpm
+        run: corepack prepare pnpm@11.22.0 --activate
+      - name: Verify toolchain versions
+        run: |
+          test "$(node --version)" = "v$(cat .node-version)"
+          test "$(pnpm --version)" = "11.22.0"
+      - name: Reject or clear a node_modules that is not a real install
+        run: |
+          set -uo pipefail
+          if git ls-files --error-unmatch node_modules >/dev/null 2>&1; then
+            echo "::error::node_modules is committed to git on this ref. It must not be: see .gitignore."
+            git ls-files -s node_modules
+            exit 1
+          fi
+          if [ -L node_modules ] || { [ -e node_modules ] && [ ! -d node_modules ]; }; then
+            echo "node_modules is not a plain directory; removing it:"
+            ls -ld node_modules
+            rm -rf node_modules
+          fi
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Hydrate Blender sources and angled frames for verification
+        env:
+          LFS_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cleanup() {
+            git config --local --unset-all 'http.https://github.com/.extraheader' 2>/dev/null || true
+          }
+          trap cleanup EXIT
+          git config --local 'http.https://github.com/.extraheader' \
+            "AUTHORIZATION: basic $(printf 'x-access-token:%s' "$LFS_TOKEN" | base64 -w0)"
+          git lfs pull --include="assets/source/blender/*.blend,public/assets/environment/oblique/*.png" --exclude=""
+      - name: Verify project
+        run: pnpm verify
+      - name: Verify measurement harness
+        run: pnpm test:perf
+      - name: Verify benchmark harness
+        run: pnpm verify:benchmark
+      - name: Verify Cloudflare deployment packages
+        run: pnpm verify:deployment
+      - name: Provision PostgreSQL and pgTAP
+        run: bash scripts/provision-postgres.sh
+      - name: Verify Supabase SQL (migrations + pgTAP)
+        run: pnpm verify:sql
+      - name: Verify generated output did not modify tracked files
+        run: |
+          set -uo pipefail
+          changed="$(git status --porcelain)"
+          if [ -z "$changed" ]; then
+            echo "Working tree is clean."
+            exit 0
+          fi
+          echo "::error::Verification modified tracked files, or the workspace was not clean to begin with."
+          echo "--- git status --porcelain ---"
+          echo "$changed"
+          echo "--- git diff --stat ---"
+          git diff --stat || true
+          echo "--- is git-lfs available in this job? ---"
+          git lfs version || echo "git-lfs is NOT installed for this job"
+          echo "--- what filter do the runtime atlases declare? ---"
+          git check-attr filter -- public/assets/actors/actor.cook.base.idle.png || true
+          exit 1
+  assets:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - name: Provision Git LFS
+        run: bash scripts/provision-git-lfs.sh
+      - name: Fetch runtime art from Git LFS
+        env:
+          LFS_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cleanup() {
+            git config --local --unset-all 'http.https://github.com/.extraheader' 2>/dev/null || true
+          }
+          trap cleanup EXIT
+          git config --local 'http.https://github.com/.extraheader' \
+            "AUTHORIZATION: basic $(printf 'x-access-token:%s' "$LFS_TOKEN" | base64 -w0)"
+          git lfs pull --include="public/assets/actors,public/assets/environment/oblique/*.png"
+      - name: Confirm the runtime art is image data, not LFS pointers
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          count=0
+          total=0
+          for file in public/assets/actors/*.png; do
+            count=$((count + 1))
+            if head -c 64 "$file" | grep -q 'git-lfs.github.com'; then
+              echo "::error::$file is still a Git LFS pointer; LFS content did not materialise"
+              exit 1
+            fi
+            signature="$(head -c 8 "$file" | od -An -tx1 | tr -d ' \n')"
+            if [ "$signature" != "89504e470d0a1a0a" ]; then
+              echo "::error::$file does not start with the PNG signature (got $signature)"
+              exit 1
+            fi
+            size="$(stat -c%s "$file")"
+            # An LFS pointer is ~130 bytes. Any real atlas is orders of magnitude
+            # larger; this is a floor, not a pinned size, so re-rendered art does
+            # not have to update CI.
+            if [ "$size" -lt 4096 ]; then
+              echo "::error::$file is only $size bytes, too small to be a real atlas"
+              exit 1
+            fi
+            total=$((total + size))
+            printf '%10s bytes  %s\n' "$size" "$file"
+          done
+          if [ "$count" -eq 0 ]; then
+            echo "::error::no runtime atlases were found to validate"
+            exit 1
+          fi
+          echo "OK: $count atlases, $total bytes of real image data"
+      - name: Setup Node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version-file: .node-version
+          package-manager-cache: false
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Activate pnpm
+        run: corepack prepare pnpm@11.22.0 --activate
+      - name: Validate runtime atlases against the authored contract
+        run: pnpm verify:assets
+  browser:
+    name: browser
+    if: always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+    needs:
+      - browser-source
+      - browser-artifact
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Require both source shards and artifact success on the exact workflow subject
+        env:
+          SOURCE_RESULT: ${{ needs.browser-source.result }}
+          ARTIFACT_RESULT: ${{ needs.browser-artifact.result }}
+          SOURCE_SHA: ${{ needs.browser-source.outputs.tested_sha }}
+          ARTIFACT_SHA: ${{ needs.browser-artifact.outputs.tested_sha }}
+        run: |
+          set -euo pipefail
+          test "$SOURCE_RESULT" = success
+          test "$ARTIFACT_RESULT" = success
+          test "$SOURCE_SHA" = "$GITHUB_SHA"
+          test "$ARTIFACT_SHA" = "$GITHUB_SHA"
+  browser-source:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    needs: assets
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        shard:
+          - 1
+          - 2
+    outputs:
+      tested_sha: ${{ steps.subject.outputs.sha }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - name: Provision Git LFS
+        run: bash scripts/provision-git-lfs.sh
+      - name: Fetch runtime art from Git LFS
+        env:
+          LFS_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cleanup() {
+            git config --local --unset-all 'http.https://github.com/.extraheader' 2>/dev/null || true
+          }
+          trap cleanup EXIT
+          git config --local 'http.https://github.com/.extraheader' \
+            "AUTHORIZATION: basic $(printf 'x-access-token:%s' "$LFS_TOKEN" | base64 -w0)"
+          git lfs pull --include="public/assets/actors,public/assets/environment/oblique/*.png"
+          git lfs pull --include="public/game-content/source-art/floor.linoleum.institutional.*.png,public/game-content/source-art/wall.interior.modules.*.png,public/game-content/source-art/door.interior.variants.*.png,public/game-content/source-art/furniture.cell.bed.single.variants.*.png,public/game-content/source-art/rendered.door.interior.variants.*.png,public/game-content/source-art/rendered.door.interior.face.*.png,public/game-content/source-art/rendered.wall.interior.cap.overhead.*.png,public/game-content/source-art/rendered.wall.interior.face.*.png,public/game-content/source-art/rendered.floor.linoleum.institutional.*.png,public/game-content/source-art/rendered.terrain.dirt.compacted.*.png,public/game-content/source-art/rendered.terrain.grass.mown.*.png,public/game-content/source-art/rendered.terrain.concrete.paving.*.png,public/game-content/source-art/rendered.terrain.gravel.service_path.*.png,public/game-content/source-art/rendered.terrain.rock.bedrock.*.png,public/game-content/source-art/rendered.fixture.cell.toilet_sink.*.png,public/game-content/source-art/rendered.furniture.corridor.bench.variants.*.png,public/game-content/source-art/rendered.furniture.office.desk.employee.variants.*.png,public/game-content/source-art/rendered.furniture.cell.locker.variants.*.png,public/game-content/source-art/rendered.fixture.shower.head.*.png,public/game-content/source-art/rendered.fixture.cell.waste_bin.*.png,public/game-content/source-art/rendered.furniture.storage.rack.wooden.*.png,public/game-content/source-art/rendered.furniture.chair.wooden.*.png,public/game-content/source-art/rendered.furniture.dining.table.wooden.*.png,public/game-content/source-art/rendered.furniture.cell.bed.single.variants.*.png,public/game-content/source-art/rendered.furniture.medical.bed.single.*.png,public/game-content/source-art/rendered.furniture.medical.cabinet.*.png,public/game-content/source-art/rendered.furniture.kitchen.stove.*.png,public/game-content/source-art/rendered.furniture.laundry.washing_machine.twin.*.png,public/game-content/source-art/rendered.furniture.kitchen.prep_counter.*.png,public/game-content/source-art/rendered.furniture.library.bookshelf.*.png,public/game-content/source-art/rendered.furniture.security.surveillance_console.*.png,public/game-content/source-art/rendered.furniture.utility.control_panel.*.png,public/game-content/source-art/rendered.furniture.delivery.dock_gate.closed.*.png,public/game-content/source-art/rendered.furniture.kitchen.fridge.*.png,public/game-content/source-art/rendered.floor.kitchen.nonslip.*.png,public/game-content/source-art/rendered.floor.canteen.terrazzo.*.png,public/game-content/source-art/rendered.floor.yard.compacted-earth.*.png,public/game-content/source-art/rendered.floor.shower.ceramic.*.png,public/game-content/source-art/rendered.floor.laundry.nonslip.*.png,public/game-content/source-art/rendered.floor.infirmary.vinyl.*.png,public/game-content/source-art/rendered.floor.common-room.cork-rubber.*.png,public/game-content/source-art/rendered.floor.classroom.oak-laminate.*.png,public/game-content/source-art/rendered.floor.security-office.antistatic.*.png,public/game-content/source-art/rendered.floor.cell.sealed-concrete.*.png,public/game-content/source-art/rendered.floor.staff-room.woven-vinyl.*.png"
+      - name: Assert the environment sheets decoded
+        run: |
+          set -euo pipefail
+          # The per-file checks are a function because there are now two id
+          # lists to run them over, and two copies of a fails-closed check are
+          # how one copy quietly stops matching the other.
+          assert_decoded() {
+            file="$1"; id="$2"
+            if head -c 64 "$file" | grep -q 'git-lfs.github.com'; then
+              echo "::error::$file is still a Git LFS pointer; add '$id' to the --include filter above"
+              exit 1
+            fi
+            signature="$(head -c 8 "$file" | od -An -tx1 | tr -d ' \n')"
+            if [ "$signature" != "89504e470d0a1a0a" ]; then
+              echo "::error::$file does not start with the PNG signature (got $signature)"
+              exit 1
+            fi
+            echo "$file: $(stat -c%s "$file") bytes"
+          }
+
+          # The legacy lane is empty once every mapped sprite uses a Blender
+          # render. Keep the rendered lane below mandatory in that case.
+          ids="$( { grep -oE "assetId: '[^']+'" src/rendering/assets/environment-sprites.ts || true; } \
+                 | sed "s/assetId: '//; s/'//" | sort -u)"
+          for id in $ids; do
+            file="$(ls public/game-content/source-art/"$id".*.png 2>/dev/null | head -1 || true)"
+            if [ -z "$file" ]; then
+              echo "::error::environment-sprites.ts names source-art asset '$id' and no such sheet is on disk"
+              exit 1
+            fi
+            assert_decoded "$file" "$id"
+          done
+
+          # ADR 0100's second publishing lane. The owner authorised this one
+          # change to this file on 2026-09-06 -- the --include filter above and
+          # this assertion -- and nothing else in it; `AGENTS.md` records the
+          # release and its limits.
+          #
+          # A rendered sprite carries `renderedArtId`, not `assetId`. That is
+          # deliberate rather than incidental: it keeps the manifest's own
+          # sentence "The catalog names the file; this never does" literally
+          # true of `assetId`, which still resolves only against
+          # `source-art.v1.json`. The grep above therefore cannot see a
+          # rendered id, which is why this is a second list and not a wider
+          # pattern.
+          #
+          # THE `rendered.` PREFIX IN THE GLOB IS LOAD-BEARING. Both files sit
+          # in this directory today under the same id:
+          # `fixture.cell.toilet_sink.<hash>.png` is the owner's sheet, which
+          # nothing loads, and `rendered.fixture.cell.toilet_sink.<hash>.png`
+          # is the render the game draws. Globbing `"$id".*.png` here would
+          # find the owner's sheet, decode it happily, and let the render ship
+          # as an unpulled pointer -- exactly the failure this step exists to
+          # make impossible. An empty list is not an error: until a second
+          # object is drawn from a render there is one id, and a tree with none
+          # is a legitimate state.
+          rendered_ids="$( { grep -oE "renderedArtId: '[^']+'" src/rendering/assets/environment-sprites.ts || true; } \
+                 | sed "s/renderedArtId: '//; s/'//" | sort -u)"
+          [ -n "$ids$rendered_ids" ] || { echo "::error::no assetId or renderedArtId found in environment-sprites.ts; the grep needs updating"; exit 1; }
+          for id in $rendered_ids; do
+            file="$(ls public/game-content/source-art/rendered."$id".*.png 2>/dev/null | head -1 || true)"
+            if [ -z "$file" ]; then
+              echo "::error::environment-sprites.ts names rendered asset '$id' and no published render is on disk"
+              exit 1
+            fi
+            assert_decoded "$file" "rendered.$id"
+          done
+      - name: Setup Node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version-file: .node-version
+          package-manager-cache: false
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Activate pnpm
+        run: corepack prepare pnpm@11.22.0 --activate
+      - name: Reject or clear a node_modules that is not a real install
+        run: |
+          set -uo pipefail
+          if git ls-files --error-unmatch node_modules >/dev/null 2>&1; then
+            echo "::error::node_modules is committed to git on this ref. It must not be: see .gitignore."
+            git ls-files -s node_modules
+            exit 1
+          fi
+          if [ -L node_modules ] || { [ -e node_modules ] && [ ! -d node_modules ]; }; then
+            echo "node_modules is not a plain directory; removing it:"
+            ls -ld node_modules
+            rm -rf node_modules
+          fi
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Provision Playwright's Chromium
+        run: bash scripts/provision-playwright-browsers.sh
+      - &a1
+        name: Record exact checked-out subject
+        id: subject
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          printf "sha=%s\n" "$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - name: Collect and partition whole source files without launching a browser
+        run: |
+          node --experimental-transform-types --disable-warning=ExperimentalWarning tests/browser/run-suite.ts --suite browser --list --reporter=json --workers=1 > source-all.json
+          node docs/design/2026-10-02-browser-ci-sharding/partition-source-files.mjs source-all.json source-files
+      - name: Run the real-browser suite
+        run: |
+          set -euo pipefail
+          mapfile -t source_filters < source-files-filters-${{ matrix.shard }}.txt
+          test "${#source_filters[@]}" -gt 0
+          port="$(node -e 'const s = require("net").createServer(); s.listen(0, "127.0.0.1", () => { process.stdout.write(String(s.address().port)); s.close(); });')"
+          echo "harness dev server port: $port"
+          LOCKSTATE_BROWSER_TEST_PORT="$port" pnpm test:browser --workers=1 "${source_filters[@]}" 2>&1 | tee browser-suite.log
+          if ! grep -qE '[0-9]+ passed' browser-suite.log; then
+            echo "::error::the browser suite reported no passing tests"
+            exit 1
+          fi
+          if grep -qE '[0-9]+ (skipped|did not run)' browser-suite.log; then
+            echo "::error::the browser suite skipped tests; running them is the entire point of this job"
+            exit 1
+          fi
+      - name: Upload the browser suite's failure evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: browser-source-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            test-results/
+            browser-suite.log
+          retention-days: 7
+          if-no-files-found: ignore
+  browser-artifact:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    needs: assets
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    outputs:
+      tested_sha: ${{ steps.subject.outputs.sha }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - name: Provision Git LFS
+        run: bash scripts/provision-git-lfs.sh
+      - name: Fetch runtime art from Git LFS
+        env:
+          LFS_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cleanup() {
+            git config --local --unset-all 'http.https://github.com/.extraheader' 2>/dev/null || true
+          }
+          trap cleanup EXIT
+          git config --local 'http.https://github.com/.extraheader' \
+            "AUTHORIZATION: basic $(printf 'x-access-token:%s' "$LFS_TOKEN" | base64 -w0)"
+          git lfs pull --include="public/assets/actors,public/assets/environment/oblique/*.png"
+          git lfs pull --include="public/game-content/source-art/floor.linoleum.institutional.*.png,public/game-content/source-art/wall.interior.modules.*.png,public/game-content/source-art/door.interior.variants.*.png,public/game-content/source-art/furniture.cell.bed.single.variants.*.png,public/game-content/source-art/rendered.door.interior.variants.*.png,public/game-content/source-art/rendered.door.interior.face.*.png,public/game-content/source-art/rendered.wall.interior.cap.overhead.*.png,public/game-content/source-art/rendered.wall.interior.face.*.png,public/game-content/source-art/rendered.floor.linoleum.institutional.*.png,public/game-content/source-art/rendered.terrain.dirt.compacted.*.png,public/game-content/source-art/rendered.terrain.grass.mown.*.png,public/game-content/source-art/rendered.terrain.concrete.paving.*.png,public/game-content/source-art/rendered.terrain.gravel.service_path.*.png,public/game-content/source-art/rendered.terrain.rock.bedrock.*.png,public/game-content/source-art/rendered.fixture.cell.toilet_sink.*.png,public/game-content/source-art/rendered.furniture.corridor.bench.variants.*.png,public/game-content/source-art/rendered.furniture.office.desk.employee.variants.*.png,public/game-content/source-art/rendered.furniture.cell.locker.variants.*.png,public/game-content/source-art/rendered.fixture.shower.head.*.png,public/game-content/source-art/rendered.fixture.cell.waste_bin.*.png,public/game-content/source-art/rendered.furniture.storage.rack.wooden.*.png,public/game-content/source-art/rendered.furniture.chair.wooden.*.png,public/game-content/source-art/rendered.furniture.dining.table.wooden.*.png,public/game-content/source-art/rendered.furniture.cell.bed.single.variants.*.png,public/game-content/source-art/rendered.furniture.medical.bed.single.*.png,public/game-content/source-art/rendered.furniture.medical.cabinet.*.png,public/game-content/source-art/rendered.furniture.kitchen.stove.*.png,public/game-content/source-art/rendered.furniture.laundry.washing_machine.twin.*.png,public/game-content/source-art/rendered.furniture.kitchen.prep_counter.*.png,public/game-content/source-art/rendered.furniture.library.bookshelf.*.png,public/game-content/source-art/rendered.furniture.security.surveillance_console.*.png,public/game-content/source-art/rendered.furniture.utility.control_panel.*.png,public/game-content/source-art/rendered.furniture.delivery.dock_gate.closed.*.png,public/game-content/source-art/rendered.furniture.kitchen.fridge.*.png,public/game-content/source-art/rendered.floor.kitchen.nonslip.*.png,public/game-content/source-art/rendered.floor.canteen.terrazzo.*.png,public/game-content/source-art/rendered.floor.yard.compacted-earth.*.png,public/game-content/source-art/rendered.floor.shower.ceramic.*.png,public/game-content/source-art/rendered.floor.laundry.nonslip.*.png,public/game-content/source-art/rendered.floor.infirmary.vinyl.*.png,public/game-content/source-art/rendered.floor.common-room.cork-rubber.*.png,public/game-content/source-art/rendered.floor.classroom.oak-laminate.*.png,public/game-content/source-art/rendered.floor.security-office.antistatic.*.png,public/game-content/source-art/rendered.floor.cell.sealed-concrete.*.png,public/game-content/source-art/rendered.floor.staff-room.woven-vinyl.*.png"
+      - name: Assert the environment sheets decoded
+        run: |
+          set -euo pipefail
+          # The per-file checks are a function because there are now two id
+          # lists to run them over, and two copies of a fails-closed check are
+          # how one copy quietly stops matching the other.
+          assert_decoded() {
+            file="$1"; id="$2"
+            if head -c 64 "$file" | grep -q 'git-lfs.github.com'; then
+              echo "::error::$file is still a Git LFS pointer; add '$id' to the --include filter above"
+              exit 1
+            fi
+            signature="$(head -c 8 "$file" | od -An -tx1 | tr -d ' \n')"
+            if [ "$signature" != "89504e470d0a1a0a" ]; then
+              echo "::error::$file does not start with the PNG signature (got $signature)"
+              exit 1
+            fi
+            echo "$file: $(stat -c%s "$file") bytes"
+          }
+
+          # The legacy lane is empty once every mapped sprite uses a Blender
+          # render. Keep the rendered lane below mandatory in that case.
+          ids="$( { grep -oE "assetId: '[^']+'" src/rendering/assets/environment-sprites.ts || true; } \
+                 | sed "s/assetId: '//; s/'//" | sort -u)"
+          for id in $ids; do
+            file="$(ls public/game-content/source-art/"$id".*.png 2>/dev/null | head -1 || true)"
+            if [ -z "$file" ]; then
+              echo "::error::environment-sprites.ts names source-art asset '$id' and no such sheet is on disk"
+              exit 1
+            fi
+            assert_decoded "$file" "$id"
+          done
+
+          # ADR 0100's second publishing lane. The owner authorised this one
+          # change to this file on 2026-09-06 -- the --include filter above and
+          # this assertion -- and nothing else in it; `AGENTS.md` records the
+          # release and its limits.
+          #
+          # A rendered sprite carries `renderedArtId`, not `assetId`. That is
+          # deliberate rather than incidental: it keeps the manifest's own
+          # sentence "The catalog names the file; this never does" literally
+          # true of `assetId`, which still resolves only against
+          # `source-art.v1.json`. The grep above therefore cannot see a
+          # rendered id, which is why this is a second list and not a wider
+          # pattern.
+          #
+          # THE `rendered.` PREFIX IN THE GLOB IS LOAD-BEARING. Both files sit
+          # in this directory today under the same id:
+          # `fixture.cell.toilet_sink.<hash>.png` is the owner's sheet, which
+          # nothing loads, and `rendered.fixture.cell.toilet_sink.<hash>.png`
+          # is the render the game draws. Globbing `"$id".*.png` here would
+          # find the owner's sheet, decode it happily, and let the render ship
+          # as an unpulled pointer -- exactly the failure this step exists to
+          # make impossible. An empty list is not an error: until a second
+          # object is drawn from a render there is one id, and a tree with none
+          # is a legitimate state.
+          rendered_ids="$( { grep -oE "renderedArtId: '[^']+'" src/rendering/assets/environment-sprites.ts || true; } \
+                 | sed "s/renderedArtId: '//; s/'//" | sort -u)"
+          [ -n "$ids$rendered_ids" ] || { echo "::error::no assetId or renderedArtId found in environment-sprites.ts; the grep needs updating"; exit 1; }
+          for id in $rendered_ids; do
+            file="$(ls public/game-content/source-art/rendered."$id".*.png 2>/dev/null | head -1 || true)"
+            if [ -z "$file" ]; then
+              echo "::error::environment-sprites.ts names rendered asset '$id' and no published render is on disk"
+              exit 1
+            fi
+            assert_decoded "$file" "rendered.$id"
+          done
+      - name: Setup Node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version-file: .node-version
+          package-manager-cache: false
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Activate pnpm
+        run: corepack prepare pnpm@11.22.0 --activate
+      - name: Reject or clear a node_modules that is not a real install
+        run: |
+          set -uo pipefail
+          if git ls-files --error-unmatch node_modules >/dev/null 2>&1; then
+            echo "::error::node_modules is committed to git on this ref. It must not be: see .gitignore."
+            git ls-files -s node_modules
+            exit 1
+          fi
+          if [ -L node_modules ] || { [ -e node_modules ] && [ ! -d node_modules ]; }; then
+            echo "node_modules is not a plain directory; removing it:"
+            ls -ld node_modules
+            rm -rf node_modules
+          fi
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Provision Playwright's Chromium
+        run: bash scripts/provision-playwright-browsers.sh
+      - *a1
+      - name: Build the production client
+        run: node scripts/cloudflare-task.mjs build production
+      - name: Run the built client in a browser
+        run: |
+          set -uo pipefail
+          port="$(node -e 'const s = require("net").createServer(); s.listen(0, "127.0.0.1", () => { process.stdout.write(String(s.address().port)); s.close(); });')"
+          echo "artefact preview server port: $port"
+          output="$(LOCKSTATE_ARTIFACT_TEST_PORT="$port" pnpm test:artifact --workers=1 2>&1)" && status=0 || status=$?
+          printf '%s\n' "$output"
+          printf '%s\n' "$output" > browser-suite.log
+          if [ "$status" -ne 0 ]; then
+            exit "$status"
+          fi
+          if ! printf '%s' "$output" | grep -qE '[0-9]+ passed'; then
+            echo "::error::the production-artefact suite reported no passing tests"
+            exit 1
+          fi
+          if printf '%s' "$output" | grep -qE '[0-9]+ (skipped|did not run)'; then
+            echo "::error::the production-artefact suite skipped tests; running the built client is the entire point of it"
+            exit 1
+          fi
+      - name: Upload the browser suite's failure evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: browser-artifact-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            test-results/
+            browser-suite.log
+          retention-days: 7
+          if-no-files-found: ignore

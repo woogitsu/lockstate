@@ -1,0 +1,372 @@
+node : [2m[WebServer] [22m(node:55232) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:45 char:2
++  node --experimental-transform-types --disable-warning=ExperimentalWa ...
++  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 12 tests using 1 worker
+
+(node:61628) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:61628) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 tests\browser\canteen-dining-table-player-build.spec.ts:167:1 › player creates storage and delivery capacity before Canteen (45.0s)
+  x   2 tests\browser\canteen-dining-table-player-build.spec.ts:231:3 › player builds Canteen at quarterTurns0 and retains authored plates after Save/Load (1.0m)
+(node:35444) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:35444) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  3 tests\browser\cell-cot-player-build.spec.ts:167:1 › player furnishes delivery and storage plans before the cot test (43.3s)
+  x   4 tests\browser\cell-cot-player-build.spec.ts:232:3 › player builds the existing bed in a Basic cell q0 and keeps it after Save/Load at Full HD (30.2s)
+(node:32968) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:32968) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  5 tests\browser\dedicated-laundry-washing-machine-player-build.spec.ts:193:1 › player creates storage and delivery capacity before Laundry (43.7s)
+  x   6 tests\browser\dedicated-laundry-washing-machine-player-build.spec.ts:257:3 › player builds Laundry at quarterTurns0 and retains washing machine palettes and anchors after Save/Load (56.4s)
+(node:54356) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:54356) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x   7 tests\browser\hired-guard-player-build.spec.ts:15:1 › a publicly hired Guard keeps actual identity and visible authored body through paused Save/Load (26.6s)
+(node:58260) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:58260) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  8 tests\browser\room-template-history-verdict-player.spec.ts:352:1 › player completes and saves actual Storage/Delivery capacity before stationary Cell history cases (43.6s)
+  x   9 tests\browser\room-template-history-verdict-player.spec.ts:450:42 › world FullHD: stationary q1 Cell ghost follows actual completed Undo and pending Redo (36.9s)
+  -  10 tests\browser\room-template-history-verdict-player.spec.ts:450:42 › oblique FullHD: stationary q1 Cell ghost follows actual completed Undo and pending Redo
+(node:5088) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:5088) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  11 tests\browser\room-template-second-touch-ownership.spec.ts:104:42 › world FullHD: second touch release abandons room-template press; fresh primary tap remains legal (3.9s)
+(node:51208) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:51208) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  12 tests\browser\room-template-second-touch-ownership.spec.ts:104:42 › oblique FullHD: second touch release abandons room-template press; fresh primary tap remains legal (5.0s)
+
+
+  1) tests\browser\canteen-dining-table-player-build.spec.ts:231:3 › player builds Canteen at quarterTurns0 and retains authored plates after Save/Load 
+
+    Error: table1 authored plate rims after construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m200[39m
+    Received:   [31m0[39m
+
+      189 |     quarterTurns, actualBefore, beforePixels, commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
+      190 |   }, null, 2));
+    > 191 |   beforePixels.forEach((count, index) => expect.soft(count, `table${index + 1} authored plate rims after construction`).toBeGreaterThan(200));
+          |                                                                                                                         ^
+      192 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+      193 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+      194 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-washer-cot-integration-20261003\tests\browser\canteen-dining-table-player-build.spec.ts:191:121)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-washer-cot-integration-20261003\tests\browser\canteen-dining-table-player-build.spec.ts:191:16
+
+    Error: table2 authored plate rims after construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m200[39m
+    Received:   [31m0[39m
+
+      189 |     quarterTurns, actualBefore, beforePixels, commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
+      190 |   }, null, 2));
+    > 191 |   beforePixels.forEach((count, index) => expect.soft(count, `table${index + 1} authored plate rims after construction`).toBeGreaterThan(200));
+          |                                                                                                                         ^
+      192 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+      193 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+      194 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-washer-cot-integration-20261003\tests\browser\canteen-dining-table-player-build.spec.ts:191:121)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-washer-cot-integration-20261003\tests\browser\canteen-dining-table-player-build.spec.ts:191:16
+
+    Error: table1 authored plate rims after Load
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m200[39m
+    Received:   [31m0[39m
+
+      205 |   const loaded = await page.screenshot({ path: info.outputPath('dining-loaded-fullhd.png') });
+      206 |   const afterPixels = await platePixels(page, loaded, quarterTurns);
+    > 207 |   afterPixels.forEach((count, index) => expect.soft(count, `table${index + 1} authored plate rims after Load`).toBeGreaterThan(200));
+          |                                                                                                                ^
+      208 |   expect(afterPixels).toEqual(beforePixels);
+      209 |   // Keep the historical plate crop/palette/threshold above unchanged. This new
+      210 |   // low camera capture is pending native support-pixel calibration by root.
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-washer-cot-integration-20261003\tests\browser\canteen-dining-table-player-build.spec.ts:207:112)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-washer-cot-integration-20261003\tests\browser\canteen-dining-table-player-build.spec.ts:207:15
+
+    Error: table2 authored plate rims after Load
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m200[39m
+    Received:   [31m0[39m
+
+      205 |   const loaded = await page.screenshot({ path: info.outputPath('dining-loaded-fullhd.png') });
+      206 |   const afterPixels = await platePixels(page, loaded, quarterTurns);
+    > 207 |   afterPixels.forEach((count, index) => expect.soft(count, `table${index + 1} authored plate rims after Load`).toBeGreaterThan(200));
+          |                                                                                                                ^
+      208 |   expect(afterPixels).toEqual(beforePixels);
+      209 |   // Keep the historical plate crop/palette/threshold above unchanged. This new
+      210 |   // low camera capture is pending native support-pixel calibration by root.
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-washer-cot-integration-20261003\tests\browser\canteen-dining-table-player-build.spec.ts:207:112)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-washer-cot-integration-20261003\tests\browser\canteen-dining-table-player-build.spec.ts:207:15
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32mtrue[39m
+    Received: [31mfalse[39m
+
+    Call Log:
+    - Test timeout of 60000ms exceeded
+
+      210 |   // low camera capture is pending native support-pixel calibration by root.
+      211 |   const cameraControls = await publicSupportPose(page, quarterTurns);
+    > 212 |   await expect.poll(async () => (await loadedImages()).responses.some(response =>
+          |   ^
+      213 |     decodeURIComponent(new URL(response.url).pathname) === SUPPORT_FRAME.url && response.sha256 === SUPPORT_FRAME.sha256)).toBe(true);
+      214 |   await expect.poll(async () => (await loadedImages()).images.some(image =>
+      215 |     image.sha256 === SUPPORT_FRAME.sha256 && image.complete && !image.error && image.width === 256 && image.height === 256)).toBe(true);
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-washer-cot-integration-20261003\tests\browser\canteen-dining-table-player-build.spec.ts:212:3
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-current-consumer-negative-20261003\canteen-dining-table-playe-34971-ored-plates-after-Save-Load\error-context.md
+
+  2) tests\browser\cell-cot-player-build.spec.ts:232:3 › player builds the existing bed in a Basic cell q0 and keeps it after Save/Load at Full HD 
+
+    Error: built bed must have the authored ochre blanket
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m700[39m
+    Received:   [31m0[39m
+
+      183 |   await page.mouse.move(1300, 700);
+      184 |   const painted = await page.screenshot({ path: info.outputPath('cell-cot-worker-completed-fullhd.png') });
+    > 185 |   if (quarterTurns === 0) expect(await ochreBlanketPixels(page, painted), 'built bed must have the authored ochre blanket').toBeGreaterThan(700);
+          |                                                                                                                             ^
+      186 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+      187 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+      188 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-washer-cot-integration-20261003\tests\browser\cell-cot-player-build.spec.ts:185:125
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-current-consumer-negative-20261003\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\error-context.md
+
+  3) tests\browser\dedicated-laundry-washing-machine-player-build.spec.ts:257:3 › player builds Laundry at quarterTurns0 and retains washing machine palettes and anchors after Save/Load 
+
+    Error: washing machine 1 authored palette after construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m100[39m
+    Received:   [31m0[39m
+
+      230 |   }, null, 2));
+      231 |   beforePixels.forEach((count, index) => expect.soft(count, `washing machine ${index + 1} authored palette after construction`)
+    > 232 |     .toBeGreaterThan(100));
+          |      ^
+      233 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+      234 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+      235 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-washer-cot-integration-20261003\tests\browser\dedicated-laundry-washing-machine-player-build.spec.ts:232:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-washer-cot-integration-20261003\tests\browser\dedicated-laundry-washing-machine-player-build.spec.ts:231:16
+
+    Error: washing machine 2 authored palette after construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m100[39m
+    Received:   [31m0[39m
+
+      230 |   }, null, 2));
+      231 |   beforePixels.forEach((count, index) => expect.soft(count, `washing machine ${index + 1} authored palette after construction`)
+    > 232 |     .toBeGreaterThan(100));
+          |      ^
+      233 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+      234 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+      235 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-washer-cot-integration-20261003\tests\browser\dedicated-laundry-washing-machine-player-build.spec.ts:232:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-washer-cot-integration-20261003\tests\browser\dedicated-laundry-washing-machine-player-build.spec.ts:231:16
+
+    Error: washing machine 1 authored palette after Load
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m100[39m
+    Received:   [31m0[39m
+
+      251 |   const afterPixels = await washerPalettePixels(page, loaded, quarterTurns);
+      252 |   afterPixels.forEach((count, index) => expect.soft(count, `washing machine ${index + 1} authored palette after Load`)
+    > 253 |     .toBeGreaterThan(100));
+          |      ^
+      254 |   expect(afterPixels).toEqual(beforePixels);
+      255 |   // Preserve all original native glass crops/colours/minima above. These new
+      256 |   // service-grip pixels must be calibrated from the actual screenshot by root.
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-washer-cot-integration-20261003\tests\browser\dedicated-laundry-washing-machine-player-build.spec.ts:253:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-washer-cot-integration-20261003\tests\browser\dedicated-laundry-washing-machine-player-build.spec.ts:252:15
+
+    Error: washing machine 2 authored palette after Load
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m100[39m
+    Received:   [31m0[39m
+
+      251 |   const afterPixels = await washerPalettePixels(page, loaded, quarterTurns);
+      252 |   afterPixels.forEach((count, index) => expect.soft(count, `washing machine ${index + 1} authored palette after Load`)
+    > 253 |     .toBeGreaterThan(100));
+          |      ^
+      254 |   expect(afterPixels).toEqual(beforePixels);
+      255 |   // Preserve all original native glass crops/colours/minima above. These new
+      256 |   // service-grip pixels must be calibrated from the actual screenshot by root.
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-washer-cot-integration-20261003\tests\browser\dedicated-laundry-washing-machine-player-build.spec.ts:253:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-washer-cot-integration-20261003\tests\browser\dedicated-laundry-washing-machine-player-build.spec.ts:252:15
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32mtrue[39m
+    Received: [31mfalse[39m
+
+    Call Log:
+    - Timeout 10000ms exceeded while waiting on the predicate
+
+      256 |   // service-grip pixels must be calibrated from the actual screenshot by root.
+      257 |   const cameraControls = await publicGripPose(page, quarterTurns);
+    > 258 |   await expect.poll(async () => (await loadedImages()).responses.some(response =>
+          |   ^
+      259 |     decodeURIComponent(new URL(response.url).pathname) === GRIP_FRAME.url && response.sha256 === GRIP_FRAME.sha256)).toBe(true);
+      260 |   await expect.poll(async () => (await loadedImages()).images.some(image =>
+      261 |     image.sha256 === GRIP_FRAME.sha256 && image.complete && !image.error && image.width === 256 && image.height === 256)).toBe(true);
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-washer-cot-integration-20261003\tests\browser\dedicated-laundry-washing-machine-player-build.spec.ts:258:3
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-current-consumer-negative-20261003\dedicated-laundry-washing--5d714-and-anchors-after-Save-Load\error-context.md
+
+  4) tests\browser\hired-guard-player-build.spec.ts:15:1 › a publicly hired Guard keeps actual identity and visible authored body through paused Save/Load 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32mtrue[39m
+    Received: [31mfalse[39m
+
+    Call Log:
+    - Timeout 10000ms exceeded while waiting on the predicate
+
+      76 |     await page.getByRole('button', { name: 'Rotate camera left', exact: true }).click();
+      77 |   }
+    > 78 |   await expect.poll(async () => (await loadedImages()).responses.some(response =>
+         |   ^
+      79 |     decodeURIComponent(new URL(response.url).pathname) === GUARD_REAR_FRAME.url && response.sha256 === GUARD_REAR_FRAME.sha256)).toBe(true);
+      80 |   await expect.poll(async () => (await loadedImages()).images.some(image =>
+      81 |     image.sha256 === GUARD_REAR_FRAME.sha256 && image.complete && !image.error && image.width === 512 && image.height === 512)).toBe(true);
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-washer-cot-integration-20261003\tests\browser\hired-guard-player-build.spec.ts:78:3
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-current-consumer-negative-20261003\hired-guard-player-build-a-ae7f6-dy-through-paused-Save-Load\error-context.md
+
+  5) tests\browser\room-template-history-verdict-player.spec.ts:450:42 › world FullHD: stationary q1 Cell ghost follows actual completed Undo and pending Redo 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveAttribute[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  locator('.room-template-world-ghost')
+    Expected: [32m"clear"[39m
+    Received: [31m"blocked"[39m
+    Timeout:  10000ms
+
+    Call log:
+    [2m  - Expect "toHaveAttribute" with timeout 10000ms[22m
+    [2m  - waiting for locator('.room-template-world-ghost')[22m
+    [2m    13 × locator resolved to <div data-ready="blocked" class="room-template-world-ghost">…</div>[22m
+    [2m       - unexpected value "blocked"[22m
+
+
+      274 |   for (let y=5;y<9;y++) for(let x=20;x<27;x++) { expect(plane(undone,x,y,'squareStructure')).toBe(0); expect(plane(undone,x,y,'zoning')).toBe(0); }
+      275 |   expect(undone.simulation?.roomTemplates?.undone).toEqual(expect.arrayContaining([expect.objectContaining({templateId:'cell-basic',origin,quarterTurns:1})]));
+    > 276 |   await expect(ghost).toHaveAttribute('data-ready','clear');
+          |                       ^
+      277 |   const undoQueries = (await replies(page)).slice(queryCount);
+      278 |   expect(undoQueries.some(q => q.target.templateId === 'cell-basic' && q.target.quarterTurns === 1 && q.target.origin.x === 20 && q.target.origin.y === 5 && q.verdict.ok)).toBe(true);
+      279 |   expect(await viewIdentity(page)).toEqual(identity); await assertNoPointerSince(page,eventCount);
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-washer-cot-integration-20261003\tests\browser\room-template-history-verdict-player.spec.ts:276:23
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-current-consumer-negative-20261003\room-template-history-verd-f1488-leted-Undo-and-pending-Redo\error-context.md
+
+  6) tests\browser\room-template-second-touch-ownership.spec.ts:104:42 › world FullHD: second touch release abandons room-template press; fresh primary tap remains legal 
+
+    Error: neither release from the abandoned two-finger gesture may transmit construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoHaveLength[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected length: [32m0[39m
+    Received length: [31m1[39m
+    Received array:  [31m[{"origin": {"x": 15, "y": 14}, "quarterTurns": 1, "templateId": "cell-basic", "type": "PlaceRoomTemplate"}][39m
+
+      124 |     expect(ups[1]).toEqual({ type: 'pointerup', id: downs[0]!.id, primary: true, trusted: true, canvas: true, active: [] });
+      125 |     await settle(page);
+    > 126 |     expect(await construction(page), 'neither release from the abandoned two-finger gesture may transmit construction').toHaveLength(0);
+          |                                                                                                                         ^
+      127 |     const after = await snapshot(page); expect(after).toEqual(before);
+      128 |     await expect(ghost).toBeVisible(); await expect(ghost).toHaveAttribute('data-ready', 'clear');
+      129 |     await expect(ghost.locator('polygon')).toHaveCount(28); await expect(ghost.getByRole('status')).toHaveText(quote);
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-washer-cot-integration-20261003\tests\browser\room-template-second-touch-ownership.spec.ts:126:121
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-current-consumer-negative-20261003\room-template-second-touch-d5c57-h-primary-tap-remains-legal\error-context.md
+
+  7) tests\browser\room-template-second-touch-ownership.spec.ts:104:42 › oblique FullHD: second touch release abandons room-template press; fresh primary tap remains legal 
+
+    Error: neither release from the abandoned two-finger gesture may transmit construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoHaveLength[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected length: [32m0[39m
+    Received length: [31m1[39m
+    Received array:  [31m[{"origin": {"x": 16, "y": 14}, "quarterTurns": 1, "templateId": "cell-basic", "type": "PlaceRoomTemplate"}][39m
+
+      124 |     expect(ups[1]).toEqual({ type: 'pointerup', id: downs[0]!.id, primary: true, trusted: true, canvas: true, active: [] });
+      125 |     await settle(page);
+    > 126 |     expect(await construction(page), 'neither release from the abandoned two-finger gesture may transmit construction').toHaveLength(0);
+          |                                                                                                                         ^
+      127 |     const after = await snapshot(page); expect(after).toEqual(before);
+      128 |     await expect(ghost).toBeVisible(); await expect(ghost).toHaveAttribute('data-ready', 'clear');
+      129 |     await expect(ghost.locator('polygon')).toHaveCount(28); await expect(ghost.getByRole('status')).toHaveText(quote);
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-washer-cot-integration-20261003\tests\browser\room-template-second-touch-ownership.spec.ts:126:121
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-current-consumer-negative-20261003\room-template-second-touch-9333f-h-primary-tap-remains-legal\error-context.md
+
+  7 failed
+    tests\browser\canteen-dining-table-player-build.spec.ts:231:3 › player builds Canteen at quarterTurns0 and retains authored plates after Save/Load 
+    tests\browser\cell-cot-player-build.spec.ts:232:3 › player builds the existing bed in a Basic cell q0 and keeps it after Save/Load at Full HD 
+    tests\browser\dedicated-laundry-washing-machine-player-build.spec.ts:257:3 › player builds Laundry at quarterTurns0 and retains washing machine palettes and anchors after Save/Load 
+    tests\browser\hired-guard-player-build.spec.ts:15:1 › a publicly hired Guard keeps actual identity and visible authored body through paused Save/Load 
+    tests\browser\room-template-history-verdict-player.spec.ts:450:42 › world FullHD: stationary q1 Cell ghost follows actual completed Undo and pending Redo 
+    tests\browser\room-template-second-touch-ownership.spec.ts:104:42 › world FullHD: second touch release abandons room-template press; fresh primary tap remains legal 
+    tests\browser\room-template-second-touch-ownership.spec.ts:104:42 › oblique FullHD: second touch release abandons room-template press; fresh primary tap remains legal 
+  1 did not run
+  4 passed (6.7m)
+
+==============================================================================
+LOCKSTATE_BROWSER_SUITE_NO_RETRY suite=artifact reason=no-last-run-file
+Playwright left no readable test-results/.last-run.json, so the run failed before it
+could record which tests failed. That is not net::ERR_NETWORK_CHANGED; not retrying.
+==============================================================================
+
