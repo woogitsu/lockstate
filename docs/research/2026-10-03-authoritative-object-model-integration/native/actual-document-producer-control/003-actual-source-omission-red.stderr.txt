@@ -1,0 +1,29 @@
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/foundation/documented-wire-schema-membership-contract.test.ts > documented wire schema membership > reaches every wire field this contract names, so an unwrap that stops working fails by name
+AssertionError: expected [ [ 'reason', 'sequence', …(2) ] ] to deeply equal [ [ 'reason', …(4) ] ]
+
+- Expected
++ Received
+
+  [
+    [
+      "reason",
+-     "routeDecidedSince",
+      "sequence",
+      "tick",
+      "tile",
+    ],
+  ]
+
+ ❯ tests/foundation/documented-wire-schema-membership-contract.test.ts:307:35
+    305|     // by presence: this is the positive control for the walk itself, …
+    306|     // what goes red first if `.optional()` stops being unwrapped.
+    307|     expect(shapes.get('refusal')).toEqual([['reason', 'routeDecidedSin…
+       |                                   ^
+    308|     // And the shape `tile` itself declares, asserted for the reason `…
+    309|     // is: it is the first nested object this record has ever carried,…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

@@ -615,5 +615,71 @@
     "archivedBytes": 3433,
     "archivedSha256": "94d4efbefe12542360d21d22ce986a007644a32c3dff4fa828b4789229df28fe",
     "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-complete-angled-integration-final-verify-restored-20261003.txt",
+    "archived": "original-final-document-scan-timeout/console.txt",
+    "sourceBytes": 3870,
+    "sourceSha256": "2e7355238ebb921e2b8e67b055063f802d3b1734828ce5b4707b950c21c57e09",
+    "archivedBytes": 2022,
+    "archivedSha256": "3b914aca5ae5dcafa782bb9b691302a21cb962e0d589560806a4e93c8a2a307e",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-document-scan-single-measurement-20261003.txt",
+    "archived": "single-document-measurement/console.txt",
+    "sourceBytes": 578,
+    "sourceSha256": "c59ab757ab74cf3edc878c223384c900a6ae2750936ba8790400ec47e464c889",
+    "archivedBytes": 289,
+    "archivedSha256": "3e1ee9cf4ed77a5826c746073c8e856f3b4837acaff84096c7b2891a3edbbe29",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-document-scan-producer-control-20261003\\actual-source-exact-restoration-green.stderr.txt",
+    "archived": "actual-document-producer-control/001-actual-source-exact-restoration-green.stderr.txt",
+    "sourceBytes": 0,
+    "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "archivedBytes": 0,
+    "archivedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-document-scan-producer-control-20261003\\actual-source-exact-restoration-green.stdout.txt",
+    "archived": "actual-document-producer-control/002-actual-source-exact-restoration-green.stdout.txt",
+    "sourceBytes": 276,
+    "sourceSha256": "976d269919c95642a23b87bc2f163d0222edbf220ee51efd80c25b8f8ef891e8",
+    "archivedBytes": 276,
+    "archivedSha256": "976d269919c95642a23b87bc2f163d0222edbf220ee51efd80c25b8f8ef891e8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-document-scan-producer-control-20261003\\actual-source-omission-red.stderr.txt",
+    "archived": "actual-document-producer-control/003-actual-source-omission-red.stderr.txt",
+    "sourceBytes": 1120,
+    "sourceSha256": "f14bb66be364a1b954775157b480d9df80a4567bc6a658d8d8a04f37dc39a3c9",
+    "archivedBytes": 1120,
+    "archivedSha256": "f14bb66be364a1b954775157b480d9df80a4567bc6a658d8d8a04f37dc39a3c9"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-document-scan-producer-control-20261003\\actual-source-omission-red.stdout.txt",
+    "archived": "actual-document-producer-control/004-actual-source-omission-red.stdout.txt",
+    "sourceBytes": 490,
+    "sourceSha256": "1ffbcc183902568a867d9b5938b4970d58f24d491b7c8db4813a5b54ec3f6707",
+    "archivedBytes": 490,
+    "archivedSha256": "1ffbcc183902568a867d9b5938b4970d58f24d491b7c8db4813a5b54ec3f6707"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-document-scan-producer-control-20261003\\control-receipt.json",
+    "archived": "actual-document-producer-control/005-control-receipt.json",
+    "sourceBytes": 671,
+    "sourceSha256": "4687016a10e3d02961e2d7d40b48046deb556735883b69af3bd0d6fee15c655e",
+    "archivedBytes": 671,
+    "archivedSha256": "4687016a10e3d02961e2d7d40b48046deb556735883b69af3bd0d6fee15c655e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-document-scan-producer-control-20261003\\executed-producer-control.cjs.txt",
+    "archived": "actual-document-producer-control/006-executed-producer-control.cjs.txt",
+    "sourceBytes": 2244,
+    "sourceSha256": "94035cba4389a853da2abb70a857ab9064156c8f07a95402909526b31f745a8b",
+    "archivedBytes": 2244,
+    "archivedSha256": "94035cba4389a853da2abb70a857ab9064156c8f07a95402909526b31f745a8b"
   }
 ]

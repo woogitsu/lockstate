@@ -1,0 +1,24 @@
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),cp=require('node:child_process');
+const root=path.resolve(process.argv[2]);
+const out=path.join(process.env.TEMP,'lockstate-document-scan-producer-control-20261003');
+fs.mkdirSync(out,{recursive:true});
+const source=path.join(root,'src/simulation/protocol/types.ts');
+const original=fs.readFileSync(source);const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
+const text=original.toString('utf8'),line='    routeDecidedSince: z.literal(true).optional(),';
+if(text.split(line).length!==2)throw Error('producer anchor not unique');
+const mutant=Buffer.from(text.replace(line,''));
+function run(label){
+ const started=Date.now();
+ const r=cp.spawnSync(process.execPath,[path.join(root,'node_modules/vitest/vitest.mjs'),'run','tests/foundation/documented-wire-schema-membership-contract.test.ts'],{cwd:root,encoding:'utf8',maxBuffer:16*1024*1024,timeout:120000});
+ fs.writeFileSync(path.join(out,label+'.stdout.txt'),r.stdout||'');fs.writeFileSync(path.join(out,label+'.stderr.txt'),r.stderr||'');
+ if(r.error||r.signal)throw r.error||Error(r.signal);
+ return {exit:r.status,elapsedMs:Date.now()-started,sourceSha256:sha(fs.readFileSync(source))};
+}
+let negative;
+try {fs.writeFileSync(source,mutant);negative=run('actual-source-omission-red');if(negative.exit!==1)throw Error('actual source omission must fail');}
+finally {fs.writeFileSync(source,original);if(sha(fs.readFileSync(source))!==sha(original))throw Error('exact source restoration failed');}
+const restored=run('actual-source-exact-restoration-green');if(restored.exit!==0)throw Error('restored producer must pass');
+const result={source:'src/simulation/protocol/types.ts',mutation:'remove actual refusalSchema routeDecidedSince optional member',originalSha256:sha(original),negative,restored,exactRestoration:restored.sourceSha256===sha(original),thresholds:'original 5000ms cases, same required fields, enumeration floor, exact resolution rows and all membership assertions'};
+fs.writeFileSync(path.join(out,'control-receipt.json'),JSON.stringify(result,null,2)+'\n');
+fs.copyFileSync(__filename,path.join(out,'executed-producer-control.cjs.txt'));
+console.log(JSON.stringify(result));

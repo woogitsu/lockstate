@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-common-room-connectivity-integration-20261003
+
+
+ Test Files  2 passed (2)
+      Tests  12 passed (12)
+   Start at  18:08:52
+   Duration  21.20s (transform 77ms, setup 0ms, import 21.36s, tests 29ms, environment 0ms)
+

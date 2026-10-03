@@ -290,6 +290,13 @@ async function collectResolutions(): Promise<{
   return { resolutions, ambiguous, enumerationsSeen };
 }
 
+// The immutable repository documents and real wire schemas are measured once,
+// at collection, as the commit-citation contract does with published history.
+// Rewalking every nested evidence directory and rereading every Markdown file
+// in each of three cases duplicates filesystem work without observing a new
+// subject. Keep the complete scan and all assertions; no case budget changes.
+const measuredResolutions = await collectResolutions();
+
 describe('documented wire schema membership', () => {
   it('reaches every wire field this contract names, so an unwrap that stops working fails by name', () => {
     const shapes = collectWireShapes();
@@ -305,13 +312,13 @@ describe('documented wire schema membership', () => {
     expect(shapes.get('tile')).toEqual([['x', 'y']]);
   });
 
-  it('still sees brace enumerations in the documents, so a regex that stops matching fails', async () => {
-    const { enumerationsSeen } = await collectResolutions();
+  it('still sees brace enumerations in the documents, so a regex that stops matching fails', () => {
+    const { enumerationsSeen } = measuredResolutions;
     expect(enumerationsSeen).toBeGreaterThanOrEqual(MINIMUM_DOCUMENT_ENUMERATIONS);
   });
 
-  it('resolves exactly the enumerations it is pinned to resolve', async () => {
-    const { resolutions, ambiguous } = await collectResolutions();
+  it('resolves exactly the enumerations it is pinned to resolve', () => {
+    const { resolutions, ambiguous } = measuredResolutions;
     expect(ambiguous).toEqual([]);
     expect(
       resolutions
@@ -321,7 +328,7 @@ describe('documented wire schema membership', () => {
   });
 
   it('finds every member of a documented wire shape named in the document that enumerates it', async () => {
-    const { resolutions } = await collectResolutions();
+    const { resolutions } = measuredResolutions;
     const violations: string[] = [];
     for (const resolution of resolutions) {
       const text = await readFile(path.join(repositoryRoot, resolution.file), 'utf8');

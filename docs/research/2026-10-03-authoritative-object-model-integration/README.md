@@ -155,3 +155,21 @@ reversions are retained in the
 [consumer evidence](../2026-10-03-held-guard-category-consumer-repairs/README.md).
 The fresh complete verification of this combined subject remains pending until
 its actual result and built-client backside screenshots are archived.
+
+The final combined attempt on5d98ef629e retained two documentation-citation
+failures and8446passing cases; its raw output is preserved. The source image is
+now cited by its complete SHA256, the actual published old PR head was fetched,
+and the transient PR merge ref is explicitly named as raw CI provenance rather
+than an ordinary branch/tag citation. The next unchanged full attempt on351a8d2c77
+retained one5000ms documentation-scan timeout and8447passing cases; build was
+not reached in either attempt.
+
+The wire-membership contract was unnecessarily rescanning every evidence
+directory and rereading the same immutable Markdown corpus in three cases. It
+now collects that complete measurement once, retaining every required wire
+field, original enumeration floor, exact resolving rows, membership assertion
+and5000ms case budget. Actual refusalSchema member omission still produces
+1RED/3controls; byte-exact source restoration produces4GREEN. The corrected
+citation and wire contracts together pass12cases. This is a scoped filesystem
+work repair, not a relaxed schema or gameplay check. Original timeout, executed
+producer control and exact-restoration hashes are preserved alongside it.
