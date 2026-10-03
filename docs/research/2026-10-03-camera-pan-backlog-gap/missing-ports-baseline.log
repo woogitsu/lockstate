@@ -1,0 +1,141 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-build-input-gap-20261003
+
+ ❯ tests/unit/camera-pan-ports.test.ts (48 tests | 48 failed) 19ms
+   × World pan 'up' moves exactly128CSSpx at zoom0.5 CSSratio1 6ms
+   × World pan 'down' moves exactly128CSSpx at zoom0.5 CSSratio1 1ms
+   × World pan 'left' moves exactly128CSSpx at zoom0.5 CSSratio1 0ms
+   × World pan 'right' moves exactly128CSSpx at zoom0.5 CSSratio1 0ms
+   × World pan 'up' moves exactly128CSSpx at zoom0.5 CSSratio2 0ms
+   × World pan 'down' moves exactly128CSSpx at zoom0.5 CSSratio2 0ms
+   × World pan 'left' moves exactly128CSSpx at zoom0.5 CSSratio2 0ms
+   × World pan 'right' moves exactly128CSSpx at zoom0.5 CSSratio2 0ms
+   × World pan 'up' moves exactly128CSSpx at zoom1.25 CSSratio1 0ms
+   × World pan 'down' moves exactly128CSSpx at zoom1.25 CSSratio1 0ms
+   × World pan 'left' moves exactly128CSSpx at zoom1.25 CSSratio1 0ms
+   × World pan 'right' moves exactly128CSSpx at zoom1.25 CSSratio1 0ms
+   × World pan 'up' moves exactly128CSSpx at zoom1.25 CSSratio2 0ms
+   × World pan 'down' moves exactly128CSSpx at zoom1.25 CSSratio2 0ms
+   × World pan 'left' moves exactly128CSSpx at zoom1.25 CSSratio2 0ms
+   × World pan 'right' moves exactly128CSSpx at zoom1.25 CSSratio2 0ms
+   × World pan 'up' moves exactly128CSSpx at zoom3 CSSratio1 0ms
+   × World pan 'down' moves exactly128CSSpx at zoom3 CSSratio1 0ms
+   × World pan 'left' moves exactly128CSSpx at zoom3 CSSratio1 0ms
+   × World pan 'right' moves exactly128CSSpx at zoom3 CSSratio1 0ms
+   × World pan 'up' moves exactly128CSSpx at zoom3 CSSratio2 0ms
+   × World pan 'down' moves exactly128CSSpx at zoom3 CSSratio2 0ms
+   × World pan 'left' moves exactly128CSSpx at zoom3 CSSratio2 0ms
+   × World pan 'right' moves exactly128CSSpx at zoom3 CSSratio2 0ms
+   × Angled pan 'up' moves exactly128CSSpx at yaw-75 CSSratio1 1ms
+   × Angled pan 'down' moves exactly128CSSpx at yaw-75 CSSratio1 0ms
+   × Angled pan 'left' moves exactly128CSSpx at yaw-75 CSSratio1 0ms
+   × Angled pan 'right' moves exactly128CSSpx at yaw-75 CSSratio1 0ms
+   × Angled pan 'up' moves exactly128CSSpx at yaw-75 CSSratio2 0ms
+   × Angled pan 'down' moves exactly128CSSpx at yaw-75 CSSratio2 0ms
+   × Angled pan 'left' moves exactly128CSSpx at yaw-75 CSSratio2 0ms
+   × Angled pan 'right' moves exactly128CSSpx at yaw-75 CSSratio2 0ms
+   × Angled pan 'up' moves exactly128CSSpx at yaw30 CSSratio1 0ms
+   × Angled pan 'down' moves exactly128CSSpx at yaw30 CSSratio1 0ms
+   × Angled pan 'left' moves exactly128CSSpx at yaw30 CSSratio1 0ms
+   × Angled pan 'right' moves exactly128CSSpx at yaw30 CSSratio1 0ms
+   × Angled pan 'up' moves exactly128CSSpx at yaw30 CSSratio2 0ms
+   × Angled pan 'down' moves exactly128CSSpx at yaw30 CSSratio2 0ms
+   × Angled pan 'left' moves exactly128CSSpx at yaw30 CSSratio2 0ms
+   × Angled pan 'right' moves exactly128CSSpx at yaw30 CSSratio2 0ms
+   × Angled pan 'up' moves exactly128CSSpx at yaw125 CSSratio1 0ms
+   × Angled pan 'down' moves exactly128CSSpx at yaw125 CSSratio1 0ms
+   × Angled pan 'left' moves exactly128CSSpx at yaw125 CSSratio1 0ms
+   × Angled pan 'right' moves exactly128CSSpx at yaw125 CSSratio1 0ms
+   × Angled pan 'up' moves exactly128CSSpx at yaw125 CSSratio2 0ms
+   × Angled pan 'down' moves exactly128CSSpx at yaw125 CSSratio2 0ms
+   × Angled pan 'left' moves exactly128CSSpx at yaw125 CSSratio2 0ms
+   × Angled pan 'right' moves exactly128CSSpx at yaw125 CSSratio2 0ms
+
+ Test Files  1 failed (1)
+      Tests  48 failed (48)
+   Start at  03:29:12
+   Duration  3.00s (transform 602ms, setup 0ms, import 2.82s, tests 19ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 48 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'up' moves exactly128CSSpx at zoom0.5 CSSratio1
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'down' moves exactly128CSSpx at zoom0.5 CSSratio1
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'left' moves exactly128CSSpx at zoom0.5 CSSratio1
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'right' moves exactly128CSSpx at zoom0.5 CSSratio1
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'up' moves exactly128CSSpx at zoom0.5 CSSratio2
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'down' moves exactly128CSSpx at zoom0.5 CSSratio2
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'left' moves exactly128CSSpx at zoom0.5 CSSratio2
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'right' moves exactly128CSSpx at zoom0.5 CSSratio2
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'up' moves exactly128CSSpx at zoom1.25 CSSratio1
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'down' moves exactly128CSSpx at zoom1.25 CSSratio1
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'left' moves exactly128CSSpx at zoom1.25 CSSratio1
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'right' moves exactly128CSSpx at zoom1.25 CSSratio1
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'up' moves exactly128CSSpx at zoom1.25 CSSratio2
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'down' moves exactly128CSSpx at zoom1.25 CSSratio2
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'left' moves exactly128CSSpx at zoom1.25 CSSratio2
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'right' moves exactly128CSSpx at zoom1.25 CSSratio2
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'up' moves exactly128CSSpx at zoom3 CSSratio1
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'down' moves exactly128CSSpx at zoom3 CSSratio1
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'left' moves exactly128CSSpx at zoom3 CSSratio1
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'right' moves exactly128CSSpx at zoom3 CSSratio1
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'up' moves exactly128CSSpx at zoom3 CSSratio2
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'down' moves exactly128CSSpx at zoom3 CSSratio2
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'left' moves exactly128CSSpx at zoom3 CSSratio2
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'right' moves exactly128CSSpx at zoom3 CSSratio2
+AssertionError: the current scene must expose the approved HUD pan port: expected 'undefined' to be 'function' // Object.is equality
+
+Expected: "function"
+Received: "undefined"
+
+ ❯ pan tests/unit/camera-pan-ports.test.ts:42:84
+     40| function pan(scene: WorldScene | ObliqueWorldScene, direction: Directi…
+     41|   const method = Reflect.get(scene, 'stepCameraPan') as ((direction: D…
+     42|   expect(typeof method, 'the current scene must expose the approved HU…
+       |                                                                                    ^
+     43|   method!.call(scene, direction);
+     44| }
+ ❯ tests/unit/camera-pan-ports.test.ts:59:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/48]⎯
+
+ FAIL  tests/unit/camera-pan-ports.test.ts > Angled pan 'up' moves exactly128CSSpx at yaw-75 CSSratio1
+ FAIL  tests/unit/camera-pan-ports.test.ts > Angled pan 'down' moves exactly128CSSpx at yaw-75 CSSratio1
+ FAIL  tests/unit/camera-pan-ports.test.ts > Angled pan 'left' moves exactly128CSSpx at yaw-75 CSSratio1
+ FAIL  tests/unit/camera-pan-ports.test.ts > Angled pan 'right' moves exactly128CSSpx at yaw-75 CSSratio1
+ FAIL  tests/unit/camera-pan-ports.test.ts > Angled pan 'up' moves exactly128CSSpx at yaw-75 CSSratio2
+ FAIL  tests/unit/camera-pan-ports.test.ts > Angled pan 'down' moves exactly128CSSpx at yaw-75 CSSratio2
+ FAIL  tests/unit/camera-pan-ports.test.ts > Angled pan 'left' moves exactly128CSSpx at yaw-75 CSSratio2
+ FAIL  tests/unit/camera-pan-ports.test.ts > Angled pan 'right' moves exactly128CSSpx at yaw-75 CSSratio2
+ FAIL  tests/unit/camera-pan-ports.test.ts > Angled pan 'up' moves exactly128CSSpx at yaw30 CSSratio1
+ FAIL  tests/unit/camera-pan-ports.test.ts > Angled pan 'down' moves exactly128CSSpx at yaw30 CSSratio1
+ FAIL  tests/unit/camera-pan-ports.test.ts > Angled pan 'left' moves exactly128CSSpx at yaw30 CSSratio1
+ FAIL  tests/unit/camera-pan-ports.test.ts > Angled pan 'right' moves exactly128CSSpx at yaw30 CSSratio1
+ FAIL  tests/unit/camera-pan-ports.test.ts > Angled pan 'up' moves exactly128CSSpx at yaw30 CSSratio2
+ FAIL  tests/unit/camera-pan-ports.test.ts > Angled pan 'down' moves exactly128CSSpx at yaw30 CSSratio2
+ FAIL  tests/unit/camera-pan-ports.test.ts > Angled pan 'left' moves exactly128CSSpx at yaw30 CSSratio2
+ FAIL  tests/unit/camera-pan-ports.test.ts > Angled pan 'right' moves exactly128CSSpx at yaw30 CSSratio2
+ FAIL  tests/unit/camera-pan-ports.test.ts > Angled pan 'up' moves exactly128CSSpx at yaw125 CSSratio1
+ FAIL  tests/unit/camera-pan-ports.test.ts > Angled pan 'down' moves exactly128CSSpx at yaw125 CSSratio1
+ FAIL  tests/unit/camera-pan-ports.test.ts > Angled pan 'left' moves exactly128CSSpx at yaw125 CSSratio1
+ FAIL  tests/unit/camera-pan-ports.test.ts > Angled pan 'right' moves exactly128CSSpx at yaw125 CSSratio1
+ FAIL  tests/unit/camera-pan-ports.test.ts > Angled pan 'up' moves exactly128CSSpx at yaw125 CSSratio2
+ FAIL  tests/unit/camera-pan-ports.test.ts > Angled pan 'down' moves exactly128CSSpx at yaw125 CSSratio2
+ FAIL  tests/unit/camera-pan-ports.test.ts > Angled pan 'left' moves exactly128CSSpx at yaw125 CSSratio2
+ FAIL  tests/unit/camera-pan-ports.test.ts > Angled pan 'right' moves exactly128CSSpx at yaw125 CSSratio2
+AssertionError: the current scene must expose the approved HUD pan port: expected 'undefined' to be 'function' // Object.is equality
+
+Expected: "function"
+Received: "undefined"
+
+ ❯ pan tests/unit/camera-pan-ports.test.ts:42:84
+     40| function pan(scene: WorldScene | ObliqueWorldScene, direction: Directi…
+     41|   const method = Reflect.get(scene, 'stepCameraPan') as ((direction: D…
+     42|   expect(typeof method, 'the current scene must expose the approved HU…
+       |                                                                                    ^
+     43|   method!.call(scene, direction);
+     44| }
+ ❯ tests/unit/camera-pan-ports.test.ts:92:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/48]⎯
+

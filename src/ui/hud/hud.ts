@@ -1,5 +1,6 @@
 import { createRendererSelectionControl, type HudRendererMode } from './renderer-selection-control';
 import { createCameraPoseControl, type CameraPoseStep } from './camera-pose-control';
+import { createCameraPanControl, type CameraPanStep } from './camera-pan-control';
 import type { LocalizationKey } from '../../content/localization';
 import type { MinimapView } from '../../shared/minimap-view';
 import type { RoomTemplateTool } from '../room-template-tool';
@@ -1077,6 +1078,8 @@ export interface MountHudOptions {
    * every harness in `tests/browser/` that does not pass it.
    */
   readonly onCameraZoom?: (direction: 'in' | 'out') => void;
+  /** Four existing direction actions, supplied only with a live camera host. */
+  readonly onCameraPan?: CameraPanStep;
   /** Renderer-only pose controls; omitted for the fixed top-down renderer. */
   readonly onCameraPoseStep?: CameraPoseStep;
   /** Live renderer port; preserves the current simulation session. */
@@ -2303,11 +2306,12 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   });
 
   const poseControl = options.onCameraPoseStep === undefined ? undefined : createCameraPoseControl(localizer, options.onCameraPoseStep);
+  const panControl = options.onCameraPan === undefined ? undefined : createCameraPanControl(localizer, options.onCameraPan);
   if (poseControl !== undefined && options.rendererSelection?.mode === 'world') poseControl.hidden = true;
   const rendererControl = options.rendererSelection === undefined ? undefined : createRendererSelectionControl({
     region: t(HUD_MESSAGE_KEY.cameraView), world: t(HUD_MESSAGE_KEY.cameraViewWorld), oblique: t(HUD_MESSAGE_KEY.cameraViewOblique), failure: t(HUD_MESSAGE_KEY.cameraViewFailed),
   }, options.rendererSelection.mode, options.rendererSelection.select, error => console.warn('Renderer selection failed', error), options.rendererSelection.focus);
-  corner = element('div', { className: 'hud__corner', children: [...(rendererControl === undefined ? [] : [rendererControl.element]), zoomControl, ...(poseControl === undefined ? [] : [poseControl]), minimapPanel.element] });
+  corner = element('div', { className: 'hud__corner', children: [...(rendererControl === undefined ? [] : [rendererControl.element]), zoomControl, ...(panControl === undefined ? [] : [panControl]), ...(poseControl === undefined ? [] : [poseControl]), minimapPanel.element] });
 
   // ---- bottom-right build panel ------------------------------------
   // Placing an order is a *command*: it asks the host to change the
