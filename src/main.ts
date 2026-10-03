@@ -4714,6 +4714,14 @@ const mountedHud =
       });
 mountedHud?.setMinimapSessionActive(false);
 if (roomTemplateTool !== undefined) {
+  // Keep physical canvas hover across renderer replacement, including the gap
+  // between bridges. Each new bridge derives its own ground origin and quote.
+  let canvasHover: { clientX: number; clientY: number } | undefined;
+  window.addEventListener('pointermove', event => {
+    const canvas = appRoot?.querySelector('canvas');
+    canvasHover = event.target === canvas ? { clientX: event.clientX, clientY: event.clientY } : undefined;
+  }, true);
+  window.addEventListener('blur', () => { canvasHover = undefined; });
   let disposePlanGhost: (() => void) | undefined;
   withdrawPlanGhost = () => { disposePlanGhost?.(); disposePlanGhost = undefined; };
   const installPlanGhost = (): void => {
@@ -4757,6 +4765,7 @@ if (roomTemplateTool !== undefined) {
       },
     }) : undefined;
     disposePlanGhost = installRoomTemplateWorldBridge(canvas, roomTemplateTool, {
+      initialCanvasHover: canvasHover,
       tileSize: TILE_SIZE_PX,
       labelSafeBounds: () => {
         const rect = canvas.getBoundingClientRect();

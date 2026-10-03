@@ -1,5 +1,7 @@
 import { expect, test as base, type Page } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
+import { writeFile } from 'node:fs/promises';
+import { assertOwnedObjectOrders, recordOwnedObjectSnapshot, type ExpectedOwnedObject } from './owned-object-worker-evidence';
 
 interface ProbeWindow extends Window {
   askWorker?: (kind: string, payload: unknown) => Promise<unknown>;
@@ -46,31 +48,41 @@ async function fixtureAnchors(page: Page): Promise<string[]> {
   });
 }
 
-async function authoredBookPixels(page: Page, png: Buffer): Promise<number> {
-  return page.evaluate(async base64 => {
+async function authoredBookPixels(page: Page, png: Buffer, quarterTurns: 0 | 1): Promise<number> {
+  return page.evaluate(async ({ base64, quarterTurns }) => {
     const bitmap = await createImageBitmap(new Blob([Uint8Array.from(atob(base64), c => c.charCodeAt(0))], { type: 'image/png' }));
     const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
     const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0);
-    const pixels = context.getImageData(790, 350, 77, 150).data;
+    // Retain the original precise front-face region. The rotated plan is
+    // viewed through actual camera buttons; its isolated classroom occupies
+    // this central playfield region, with no other bookshelf in the save.
+    const pixels = quarterTurns === 0 ? context.getImageData(790, 350, 77, 150).data
+      : context.getImageData(500, 180, 900, 670).data;
     let count = 0;
     for (let i = 0; i < pixels.length; i += 4) {
       if ((pixels[i] === 37 && pixels[i + 1] === 90 && pixels[i + 2] === 95)
           || (pixels[i] === 43 && pixels[i + 1] === 75 && pixels[i + 2] === 110)) count++;
     }
     return count;
-  }, png.toString('base64'));
+  }, { base64: png.toString('base64'), quarterTurns });
 }
 let routeStorage: Awaited<ReturnType<ReturnType<Page['context']>['storageState']>> | undefined;
 const test = base.extend({
   storageState: async ({}, use) => { await use(routeStorage ?? { cookies: [], origins: [] }); },
 });
 test.describe.configure({ mode: 'serial' });
+test.afterEach(async ({ page }, info) => {
+  if (info.status === info.expectedStatus) return;
+  try { await recordOwnedObjectSnapshot(page, info.outputPath('failed-worker-snapshot.json')); } catch { /* the original failure is retained */ }
+  await page.screenshot({ path: info.outputPath('failed-fullhd.png') });
+});
 
-async function placePlan(page: Page, name: string, x: number): Promise<void> {
+async function placePlan(page: Page, name: string, x: number, quarterTurns: 0 | 1 = 0): Promise<void> {
   await page.getByRole('button', { name: 'Build', exact: true }).click();
   await page.getByRole('button', { name: 'Room plans', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'Room plans' });
   await dialog.getByRole('button', { name, exact: true }).click();
+  await dialog.getByRole('combobox', { name: 'Room plan rotation (clockwise)' }).selectOption(String(quarterTurns));
   const input = dialog.getByRole('spinbutton', { name: 'Plan origin X' });
   if (!await input.isVisible()) await dialog.getByText('Enter coordinates', { exact: true }).click();
   await input.fill(String(x));
@@ -115,7 +127,8 @@ test('player creates storage and delivery capacity before Classroom', async ({ p
   routeStorage = await page.context().storageState({ indexedDB: true });
 });
 
-test('player builds the bookshelf in Classroom and keeps it after Save/Load', async ({ page }, info) => {
+for (const quarterTurns of [0, 1] as const) {
+test(`player builds the bookshelf in Classroom at quarterTurns${quarterTurns} and keeps it after Save/Load`, async ({ page }, info) => {
   expect(routeStorage, 'this case consumes the first stage actual IndexedDB save').toBeDefined();
   await installWorkerProbe(page);
   await installTee(page);
@@ -124,15 +137,15 @@ test('player builds the bookshelf in Classroom and keeps it after Save/Load', as
   await page.locator('.save-panel__item').first().getByRole('button', { name: 'Load', exact: true }).click();
   await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
   await expect(page.locator('[data-metric="rooms"] .ui-stat__value')).toHaveText('2');
-  await placePlan(page, 'Classroom', 20);
+  await placePlan(page, 'Classroom', 20, quarterTurns);
   await page.getByRole('button', { name: 'Fast forward', exact: true }).click();
   await page.getByRole('button', { name: 'Fast forward', exact: true }).click();
   await finishQueuedConstruction(page);
   await expect(page.locator('[data-metric="rooms"] .ui-stat__value')).toHaveText('3');
-  const expected = ['object.bookshelf@21,6'];
+  const expected = [quarterTurns === 0 ? 'object.bookshelf@21,6' : 'object.bookshelf@25,6'];
   expect(await fixtureAnchors(page)).toEqual(expected);
   await expect.poll(async () => (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate')).toEqual([
-    { type: 'PlaceRoomTemplate', templateId: 'classroom-basic', origin: { x: 20, y: 5 } },
+    { type: 'PlaceRoomTemplate', templateId: 'classroom-basic', origin: { x: 20, y: 5 }, ...(quarterTurns === 0 ? {} : { quarterTurns }) },
   ]);
   await page.getByRole('button', { name: 'Pause', exact: true }).click();
   const minimapRegion = page.getByRole('region', { name: 'Minimap', exact: true });
@@ -143,10 +156,20 @@ test('player builds the bookshelf in Classroom and keeps it after Save/Load', as
   const bounds = await minimap.boundingBox();
   if (bounds === null) throw new Error('minimap absent');
   await minimap.click({ position: { x: bounds.width * 22.5 / 32, y: bounds.height * 8.5 / 32 } });
+  // A quarter-turned 2x1 bookshelf is measured from the same authored face:
+  // rotate the actual camera -90 degrees: assetYaw = cameraYaw +90.
+  // This retains the original -45-degree authored book face, not its rear.
+  if (quarterTurns === 1) for (let step = 0; step < 6; step++) await page.getByRole('button', { name: 'Rotate camera left', exact: true }).click();
   await page.mouse.move(1300, 700);
   const completed = await page.screenshot({ path: info.outputPath('bookshelf-worker-completed-fullhd.png') });
-  const beforePixels = await authoredBookPixels(page, completed);
-  expect(beforePixels, 'authored book spines after construction').toBeGreaterThan(100);
+  // Authored object000 at local(1,1), size2x1, becomes local(5,1)
+  // under one clockwise turn of the 7x7 classroom.
+  const owned: readonly ExpectedOwnedObject[] = [{ anchorTile: { x: quarterTurns === 0 ? 21 : 25, y: 6 }, orientation: quarterTurns,
+    sourceOrderId: 'room-template-000000000002-2-object-000' }];
+  const completedData = await recordOwnedObjectSnapshot(page, info.outputPath('completed-worker-snapshot.json'));
+  assertOwnedObjectOrders(completedData, 'object.bookshelf', 'bookshelf-wooden', owned);
+  const beforePixels = await authoredBookPixels(page, completed, quarterTurns);
+  expect.soft(beforePixels, 'authored book spines after construction').toBeGreaterThan(100);
   await page.getByRole('button', { name: 'Overview', exact: true }).click();
   await page.getByRole('button', { name: 'Save now', exact: true }).click();
   await expect(page.locator('.save-panel__status')).toContainText('Saved');
@@ -156,8 +179,16 @@ test('player builds the bookshelf in Classroom and keeps it after Save/Load', as
   await minimap.click({ position: { x: bounds.width * 22.5 / 32, y: bounds.height * 8.5 / 32 } });
   await page.mouse.move(1300, 700);
   const loaded = await page.screenshot({ path: info.outputPath('bookshelf-loaded-fullhd.png') });
-  const afterPixels = await authoredBookPixels(page, loaded);
-  expect(afterPixels, 'authored book spines after Load').toBeGreaterThan(100);
+  const loadedData = await recordOwnedObjectSnapshot(page, info.outputPath('loaded-worker-snapshot.json'));
+  assertOwnedObjectOrders(loadedData, 'object.bookshelf', 'bookshelf-wooden', owned);
+  expect(loadedData).toEqual(completedData);
+  const afterPixels = await authoredBookPixels(page, loaded, quarterTurns);
+  expect.soft(afterPixels, 'authored book spines after Load').toBeGreaterThan(100);
   expect(afterPixels).toBe(beforePixels);
-
+  await writeFile(info.outputPath('bookshelf-worker-and-save-evidence.json'), JSON.stringify({ quarterTurns, owned, beforePixels, afterPixels,
+    commands: (await sentCommands(page)).filter(command => command.type === 'PlaceRoomTemplate') }, null, 2));
+  for (let step = 0; step < 3; step++) await page.getByRole('button', { name: 'Rotate camera left', exact: true }).click();
+  await page.mouse.move(1300, 700);
+  await page.screenshot({ path: info.outputPath('physical-hardware-loaded-fullhd.png') });
 });
+}

@@ -2,7 +2,7 @@ import { createConstructionCommandHandler, reportMaterialsFunding } from '../con
 import { isJustInTimePurchaseOrderId, type ProcurementSystem } from '../economy';
 import type { SimulationEventLog } from '../events';
 import type { CommandHandler } from '../kernel/kernel';
-import { type SimulationCommand, unpackCommand } from '../protocol/commands';
+import { unpackCommand } from '../protocol/commands';
 import {
   ADMIT_REFUSAL_REASONS,
   DISMISS_STAFF_REFUSAL_REASONS,
@@ -66,10 +66,9 @@ import { tileCoordinate } from '../world/coordinates';
  * `PrisonerOperationsRuntime` for the same reason: an admission is not a
  * construction order either.
  *
- * **The delegation is total, not a fallback.** Every command this does not
- * handle is passed through unchanged, including ones neither layer handles --
- * `unpackCommand` returning `null` is the decoder's business and is left to
- * the handler that owns it.
+ * **The delegation is explicit, not a fallback.** The remaining construction
+ * variants are passed through unchanged. The final `never` check requires a
+ * future variant to choose an effect; a malformed payload changes nothing.
  *
  * `PlaceObject` is the sixth, and it is the one command here that *turns into*
  * a construction order rather than avoiding being one: `ObjectPlacementService`
@@ -185,19 +184,20 @@ import { tileCoordinate } from '../world/coordinates';
  * the same wall today, which is the positive control ADR 0106 §2 records.
  */
 /**
- * The command types after which `ConstructionSystem`'s undo history still
- * describes the player's latest action.
+ * A dispatched command's effect on the current construction history.
  *
- * Two of them **write** it -- `PlaceBuildOrder` and `PlaceObject` are the only
+ * Construction producers **write** it -- `PlaceBuildOrder` and `PlaceObject` are the only
  * two producers `ConstructionSystem.registerTransactionOrder` has, checked
  * rather than assumed: `src/simulation/construction/handler.ts` and
  * `src/simulation/objects/object-placement-service.ts` are its only callers in
- * `src/`. The other two **are** the history controls, and counting `Undo` or
+ * `src/`. Room templates also own their grouped obligation. `Undo` and `Redo`
+ * **are** the history controls, and counting `Undo` or
  * `Redo` as "something else the player did" would make the second press of a
  * multi-step undo refuse the transaction the first press exposed.
  *
- * Everything else is in the complement on purpose, including the two that look
- * like near misses. `CancelBuildOrder` touches the build queue and writes no
+ * The earlier implementation marked the entire complement upfront. Existing
+ * #1996 now derives the effect from each actual domain outcome instead. The
+ * two deliberate near misses retain their accepted meaning: `CancelBuildOrder` touches the build queue and writes no
  * transaction, so a cancel followed by `Z` is exactly the shape
  * [#956](https://github.com/woogitsu/lockstate/issues/956) measured. And
  * `DismissAlert` is housekeeping rather than a change to the prison -- the
@@ -209,19 +209,7 @@ import { tileCoordinate } from '../world/coordinates';
  * [ADR 0104](../../../docs/adr/0104-what-undo-takes-back.md) option 2, accepted
  * by the owner on 2026-09-09.
  */
-const LEAVES_THE_UNDO_HISTORY_CURRENT: ReadonlySet<SimulationCommand['type']> = new Set([
-  'PlaceBuildOrder',
-  'PlaceRoomTemplate',
-  'PlaceObject',
-  'Undo',
-  'Redo',
-]);
-
-// These reversals may refuse atomically. Their actual success branches mark
-// the newer action; an attempted cancellation is not an accepted change.
-const MARKS_UNDO_ELIGIBILITY_ON_SUCCESS: ReadonlySet<SimulationCommand['type']> = new Set([
-  'CancelBuildOrder', 'CancelMaterialPurchase', 'RemoveObject', 'RemoveWall', 'UnzoneRoom',
-]);
+type SessionCommandEffect = 'unchanged' | 'changed' | 'history-owned' | 'acknowledgement';
 
 export function createSessionCommandHandler(
   construction: ConstructionSystem,
@@ -238,13 +226,12 @@ export function createSessionCommandHandler(
 ): CommandHandler {
   const constructionCommands = createConstructionCommandHandler(construction, refusals, events);
 
-  return (command, context) => {
+  const dispatchCommand = (
+    command: Parameters<CommandHandler>[0], context: Parameters<CommandHandler>[1],
+  ): SessionCommandEffect => {
     const simCommand = unpackCommand(command.payload as never);
-    if (simCommand !== null && !LEAVES_THE_UNDO_HISTORY_CURRENT.has(simCommand.type) &&
-        !MARKS_UNDO_ELIGIBILITY_ON_SUCCESS.has(simCommand.type)) {
-      construction.noteActionThatDoesNotWriteTheUndoStack();
-    }
-    if (simCommand !== null && simCommand.type === 'PlaceRoomTemplate') {
+    if (simCommand === null) return 'unchanged';
+    if (simCommand.type === 'PlaceRoomTemplate') {
       const key = `room-template:${simCommand.templateId}:${simCommand.origin.x}:${simCommand.origin.y}:${simCommand.mirrorX ?? false}:${simCommand.quarterTurns ?? 0}`;
       const verdict = roomTemplates.place({
         templateId: simCommand.templateId,
@@ -267,9 +254,9 @@ export function createSessionCommandHandler(
       } else {
         refusals.supersede(key);
       }
-      return;
+      return 'history-owned';
     }
-    if (simCommand !== null && simCommand.type === 'ZoneRoom') {
+    if (simCommand.type === 'ZoneRoom') {
       // The outcome is not dropped and it now reaches the player. It used to
       // reach only `RoomZoningService.recentRefusals`, a bounded window kept
       // "so the route, when it is built, reads a reason instead of guessing
@@ -355,10 +342,10 @@ export function createSessionCommandHandler(
         // the enclosure reading -- is deliberately not carried.
         events.recordRoomZoned(outcome.roomNameKey, context.tick);
       }
-      return;
+      return outcome.kind === 'refused' ? 'unchanged' : 'changed';
     }
 
-    if (simCommand !== null && simCommand.type === 'UnzoneRoom') {
+    if (simCommand.type === 'UnzoneRoom') {
       // The other half of designating a room, and the reason it is a command
       // rather than a use of `Undo`: zoning writes no construction order, so
       // `ConstructionSystem` has no transaction to reverse and `Undo` cannot
@@ -406,7 +393,6 @@ export function createSessionCommandHandler(
         // retry once something was zoned there, `room-occupied` once the
         // occupants have gone -- is withdrawn rather than left to answer a
         // request that has since succeeded.
-        construction.noteActionThatDoesNotWriteTheUndoStack();
         refusals.supersede(unzoneKey);
         // Issue #1006 finding 5: the other half of `rooms.zoned`'s
         // acknowledgement, on the command that undoes it. Before this line a
@@ -424,10 +410,10 @@ export function createSessionCommandHandler(
           events.recordRoomUnzoned(roomNameKey, context.tick);
         }
       }
-      return;
+      return outcome.kind === 'refused' ? 'unchanged' : 'changed';
     }
 
-    if (simCommand !== null && simCommand.type === 'AdmitPrisoner') {
+    if (simCommand.type === 'AdmitPrisoner') {
       // The fourth command that is not a construction order, routed here for
       // the reason `ZoneRoom`, `UnzoneRoom` and `PurchaseMaterials` are
       // (#261 step 4).
@@ -504,10 +490,10 @@ export function createSessionCommandHandler(
         // false, not a proxy for it.
         refusals.supersede(admitSupersessionKey());
       }
-      return;
+      return outcome.kind === 'refused' ? 'unchanged' : 'changed';
     }
 
-    if (simCommand !== null && simCommand.type === 'PurchaseMaterials') {
+    if (simCommand.type === 'PurchaseMaterials') {
       // The outcome reaches the player, and this is where it is put on the
       // route out. It used to be dropped here, under a comment saying that a
       // refusal -- `insufficient-funds`, `unknown-material` -- had "nowhere to
@@ -593,10 +579,10 @@ export function createSessionCommandHandler(
         // quantity still counts as the same request landing.
         refusals.supersede(purchaseKey);
       }
-      return;
+      return outcome.ok ? 'changed' : 'unchanged';
     }
 
-    if (simCommand !== null && simCommand.type === 'CancelMaterialPurchase') {
+    if (simCommand.type === 'CancelMaterialPurchase') {
       /*
        * The other half of a purchase, and the producer `ProcurementSystem.cancel`
        * never had (#285).
@@ -667,7 +653,7 @@ export function createSessionCommandHandler(
         const refusal = roomTemplates.prepareMaterialWithdrawal(ids, context.tick);
         if (refusal !== undefined) {
           refusals.record(ROOM_TEMPLATE_REVERSAL_REFUSAL_REASONS[refusal.reason], context.tick, cancelKey);
-          return;
+          return 'unchanged';
         }
       }
       const outcome = procurement.cancel(simCommand.orderId);
@@ -681,7 +667,6 @@ export function createSessionCommandHandler(
       if (!outcome.ok) {
         refusals.record(PURCHASE_CANCEL_REFUSAL_REASONS[outcome.reason], context.tick, cancelKey);
       } else {
-        construction.noteActionThatDoesNotWriteTheUndoStack();
         // Issue #492: the one id `CancelMaterialPurchase` carries. A refund
         // of a different order must not silence a standing `not-pending`
         // about this one.
@@ -711,10 +696,10 @@ export function createSessionCommandHandler(
          */
         events.recordDeliveryCancelled(outcome.refundedMinorUnits, context.tick);
       }
-      return;
+      return outcome.ok ? 'changed' : 'unchanged';
     }
 
-    if (simCommand !== null && simCommand.type === 'SellMaterials') {
+    if (simCommand.type === 'SellMaterials') {
       /*
        * `SellMaterials`, the command `ProcurementSystem.sellStock` had been
        * waiting for since #1127 (ADR 0075 decision 3, invoked by ADR 0096
@@ -746,10 +731,10 @@ export function createSessionCommandHandler(
       } else {
         refusals.supersede(sellKey);
       }
-      return;
+      return outcome.ok ? 'changed' : 'unchanged';
     }
 
-    if (simCommand !== null && simCommand.type === 'HireStaff') {
+    if (simCommand.type === 'HireStaff') {
       // The `GuardRoster.hire` producer (ADR 0025). Until this branch
       // existed, `hire` had zero callers anywhere in `src/` and every call in
       // the repository was in a test -- so `DeploymentSystem`, `PatrolSystem`,
@@ -796,10 +781,10 @@ export function createSessionCommandHandler(
         // for the trade-off this makes against `roster-full`.
         refusals.supersede(hireKey);
       }
-      return;
+      return outcome.kind === 'refused' ? 'unchanged' : 'changed';
     }
 
-    if (simCommand !== null && simCommand.type === 'PlaceObject') {
+    if (simCommand.type === 'PlaceObject') {
       /*
        * The sixth command that is not a construction order -- and the one that
        * *becomes* one (ADR 0028 decision 4).
@@ -873,10 +858,10 @@ export function createSessionCommandHandler(
          */
         reportMaterialsFunding(construction.procureQueuedMaterials(context.tick), refusals, context.tick);
       }
-      return;
+      return 'history-owned';
     }
 
-    if (simCommand !== null && simCommand.type === 'RemoveObject') {
+    if (simCommand.type === 'RemoveObject') {
       /*
        * The seventh command routed here, and the other half of the gesture the
        * sixth one is (ADR 0028 phase 3).
@@ -907,7 +892,7 @@ export function createSessionCommandHandler(
           refusals.record(ROOM_TEMPLATE_REVERSAL_REFUSAL_REASONS[refusal.reason], context.tick, removeObjectSupersessionKey(simCommand.x, simCommand.y), {
             x: simCommand.x, y: simCommand.y,
           });
-          return;
+          return 'unchanged';
         }
       }
       const outcome = objectPlacement.remove({ x: simCommand.x, y: simCommand.y }, context.tick);
@@ -981,16 +966,15 @@ export function createSessionCommandHandler(
          * notice port: the state travels out on the outcome, which is a fact
          * about what happened rather than a dependency on the events channel.
          */
-        construction.noteActionThatDoesNotWriteTheUndoStack();
         if (outcome.kind === 'order-cancelled') {
           roomTemplates.reconcileCancelledShells();
           events.recordBuildOrderCancelled(outcome.stateAtCancellation, context.tick);
         }
       }
-      return;
+      return outcome.kind === 'refused' ? 'unchanged' : 'changed';
     }
 
-    if (simCommand !== null && simCommand.type === 'RemoveWall') {
+    if (simCommand.type === 'RemoveWall') {
       /*
        * The demolition gesture's other arm
        * ([ADR 0106](../../../docs/adr/0106-how-a-finished-wall-comes-down-without-a-keyboard.md)):
@@ -1020,12 +1004,11 @@ export function createSessionCommandHandler(
           refusals.record(ROOM_TEMPLATE_REVERSAL_REFUSAL_REASONS[refusal.reason], context.tick, removeObjectSupersessionKey(simCommand.x, simCommand.y), {
             x: simCommand.x, y: simCommand.y,
           });
-          return;
+          return 'unchanged';
         }
       }
       const outcome = objectPlacement.remove({ x: simCommand.x, y: simCommand.y }, context.tick);
       if (outcome.kind !== 'refused') {
-        construction.noteActionThatDoesNotWriteTheUndoStack();
         // The object arm won. Handled exactly as `RemoveObject`'s own branch
         // handles the same two outcomes above -- same supersession key
         // (issue #492: the tile, which is the fact this press changed),
@@ -1036,7 +1019,7 @@ export function createSessionCommandHandler(
           roomTemplates.reconcileCancelledShells();
           events.recordBuildOrderCancelled(outcome.stateAtCancellation, context.tick);
         }
-        return;
+        return 'changed';
       }
 
       /*
@@ -1061,7 +1044,7 @@ export function createSessionCommandHandler(
           x: simCommand.x,
           y: simCommand.y,
         });
-        return;
+        return 'unchanged';
       }
 
       // Read before cancelling, for `RemoveObjectOrderCancelled
@@ -1074,11 +1057,10 @@ export function createSessionCommandHandler(
         refusals.record(ROOM_TEMPLATE_REVERSAL_REFUSAL_REASONS[refusal.reason], context.tick, wallKey, {
           x: simCommand.x, y: simCommand.y,
         });
-        return;
+        return 'unchanged';
       }
       const stateAtCancellation = wallOrder.state;
       construction.cancelOrder(wallOrder.id);
-      construction.noteActionThatDoesNotWriteTheUndoStack();
       roomTemplates.reconcileCancelledShells();
       refusals.supersede(wallKey);
       // The same event `CancelBuildOrder` and `RemoveObject`'s pending-order
@@ -1089,10 +1071,10 @@ export function createSessionCommandHandler(
       // the same "stays spent" sentence `Undo` already produces for the same
       // wall today (§2's positive control).
       events.recordBuildOrderCancelled(stateAtCancellation, context.tick);
-      return;
+      return 'changed';
     }
 
-    if (simCommand !== null && simCommand.type === 'ReleaseGuardAssignment') {
+    if (simCommand.type === 'ReleaseGuardAssignment') {
       /*
        * The producer `GuardRoster.unassign` never had for a claimed guard (ADR
        * 0034, answering ADR 0033 open question 3).
@@ -1133,10 +1115,10 @@ export function createSessionCommandHandler(
         // silence a standing refusal about this one.
         refusals.supersede(releaseKey);
       }
-      return;
+      return outcome.kind === 'refused' ? 'unchanged' : 'changed';
     }
 
-    if (simCommand !== null && simCommand.type === 'DismissStaff') {
+    if (simCommand.type === 'DismissStaff') {
       /*
        * The way out of the roster (issue #533, the owner's decision on issue
        * #535 decision 4).
@@ -1179,10 +1161,10 @@ export function createSessionCommandHandler(
         // standing refusal about this one.
         refusals.supersede(dismissKey);
       }
-      return;
+      return outcome.kind === 'refused' ? 'unchanged' : 'changed';
     }
 
-    if (simCommand !== null && simCommand.type === 'DismissAlert') {
+    if (simCommand.type === 'DismissAlert') {
       /*
        * The eleventh route, and the first one that changes nothing about the
        * prison (the owner's decision 3 of 2026-09-01 on
@@ -1211,10 +1193,10 @@ export function createSessionCommandHandler(
        * the prison's history and has no tick of its own.
        */
       events.dismiss(simCommand.fromSequence, simCommand.throughSequence);
-      return;
+      return 'acknowledgement';
     }
 
-    if (simCommand !== null && simCommand.type === 'EditRegimeBlock') {
+    if (simCommand.type === 'EditRegimeBlock') {
       /*
        * The twelfth route, and the first that edits the prison's *rules*
        * rather than its contents
@@ -1242,6 +1224,10 @@ export function createSessionCommandHandler(
        * so nothing is stamped. A refusal is stamped, because `RefusalLog`
        * records when the player was told.
        */
+      // Compare only this canonical block, never a session snapshot or hash.
+      const previous = runtimePrisoners.regimes.all()
+        .find(schedule => schedule.classificationGroupId === simCommand.classificationGroupId)
+        ?.blocks.find(candidate => candidate.startTickOfDay === simCommand.startTickOfDay)?.allowedCategories;
       const outcome = runtimePrisoners.regimes.editBlock(
         simCommand.classificationGroupId,
         simCommand.startTickOfDay,
@@ -1255,41 +1241,66 @@ export function createSessionCommandHandler(
         // in the day must not silence a standing refusal about this boundary.
         refusals.supersede(regimeKey);
       }
-      return;
+      if (outcome.kind === 'refused') return 'unchanged';
+      const next = outcome.schedule.blocks.find(candidate => candidate.startTickOfDay === simCommand.startTickOfDay)!.allowedCategories;
+      return previous !== undefined && previous.length === next.length &&
+        previous.every((category, index) => category === next[index]) ? 'unchanged' : 'changed';
     }
 
-    if (simCommand?.type === 'CancelBuildOrder') {
-      const order = construction.getOrder(simCommand.orderId);
-      // Unknown, terminal and stale presses retain the construction handler's
-      // existing result. In particular, stale cancellation cannot relocate.
-      if (order !== undefined && isCancellable(order.state) &&
-          construction.revisionOf(order.id) === simCommand.expectedRevision) {
-        const key = `room-template-cancel:${order.id}`;
-        const refusal = roomTemplates.prepareCancellation(order.id, context.tick);
-        if (refusal !== undefined) {
-          refusals.record(ROOM_TEMPLATE_REVERSAL_REFUSAL_REASONS[refusal.reason], context.tick, key);
-          return;
+    // All remaining protocol variants must explicitly choose their effect.
+    // Adding a command without handling it makes the never assignment fail.
+    switch (simCommand.type) {
+      case 'CancelBuildOrder': {
+        const order = construction.getOrder(simCommand.orderId);
+        let changed = false;
+        // Unknown, terminal or stale cancellation cannot prepare relocation.
+        if (order !== undefined && isCancellable(order.state) &&
+            construction.revisionOf(order.id) === simCommand.expectedRevision) {
+          const key = `room-template-cancel:${order.id}`;
+          const refusal = roomTemplates.prepareCancellation(order.id, context.tick);
+          if (refusal !== undefined) {
+            refusals.record(ROOM_TEMPLATE_REVERSAL_REFUSAL_REASONS[refusal.reason], context.tick, key);
+            return 'unchanged';
+          }
+          refusals.supersede(key);
+          changed = true;
         }
-        refusals.supersede(key);
-        construction.noteActionThatDoesNotWriteTheUndoStack();
+        constructionCommands(command, context);
+        roomTemplates.reconcileCancelledShells();
+        return changed ? 'changed' : 'unchanged';
+      }
+      case 'Redo': {
+        const verdict = roomTemplates.preflightRedo();
+        if (!verdict.ok) {
+          refusals.record(
+            verdict.reason === 'unowned-land' ? 'build.unowned-land' : 'build.unbuildable',
+            context.tick, 'room-template-redo', verdict.tile,
+          );
+          return 'unchanged';
+        }
+        refusals.supersede('room-template-redo');
+        constructionCommands(command, context);
+        roomTemplates.reconcileRedoneShells();
+        return 'history-owned';
+      }
+      case 'Undo':
+        constructionCommands(command, context);
+        roomTemplates.reconcileCancelledShells();
+        return 'history-owned';
+      case 'PlaceBuildOrder':
+        constructionCommands(command, context);
+        return 'history-owned';
+      default: {
+        const unhandled: never = simCommand;
+        return unhandled;
       }
     }
-    if (simCommand?.type === 'Redo') {
-      const verdict = roomTemplates.preflightRedo();
-      if (!verdict.ok) {
-        refusals.record(
-          verdict.reason === 'unowned-land' ? 'build.unowned-land' : 'build.unbuildable',
-          context.tick, 'room-template-redo', verdict.tile,
-        );
-        return;
-      }
-      refusals.supersede('room-template-redo');
-    }
-    constructionCommands(command, context);
-    if (simCommand?.type === 'CancelBuildOrder' || simCommand?.type === 'Undo') {
-      roomTemplates.reconcileCancelledShells();
-    } else if (simCommand?.type === 'Redo') {
-      roomTemplates.reconcileRedoneShells();
+  };
+
+  return (command, context) => {
+    const effect = dispatchCommand(command, context);
+    if (effect === 'changed' || effect === 'acknowledgement') {
+      construction.noteActionThatDoesNotWriteTheUndoStack();
     }
   };
 }

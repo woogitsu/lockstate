@@ -1,0 +1,37 @@
+{
+  "base": "3c0e528d76b6cdebd4654017cfadb2ea906c4e18",
+  "parent": "2a4ca454b819d3b17bd3f6020373dbbd332e3dc2",
+  "mergeAttempted": false,
+  "freshPR": {
+    "number": 2003,
+    "mergeable": true,
+    "mergeableState": "unstable",
+    "draft": true
+  },
+  "terminalCI": {
+    "runId": 37096988854,
+    "jobId": 111129035445,
+    "failed": 1,
+    "passed": 7896,
+    "skipped": 8,
+    "files": 652
+  },
+  "local": {
+    "baselineFailed": 1,
+    "baselinePassed": 6,
+    "fixedPassed": 7,
+    "resolverNegativeFailed": 1,
+    "resolverNegativePassed": 6,
+    "byteRestoredPassed": 7,
+    "neighborsPassed": 42,
+    "docsPassed": 15,
+    "strictTypeExitCode": 0
+  },
+  "nativeRerun": false,
+  "sourceModelConfigurationAttributeDiff": "",
+  "fixtureExportsAlreadyPresent": [
+    "CDPSession",
+    "Page",
+    "TestInfo"
+  ]
+}

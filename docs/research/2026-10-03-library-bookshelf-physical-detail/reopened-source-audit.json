@@ -1,0 +1,614 @@
+{
+  "kind": "independent-fresh-reopened-scenes",
+  "original": {
+    "file": "assets/source/blender/furniture.library.bookshelf.variants.blend",
+    "sha256": "64a18ea80a6b3f97d3b3b389f82c3f52b282cd6c29e343d4f971eab9c0b42c02",
+    "meshCount": 27,
+    "minimum": [
+      -0.9750000238418579,
+      -0.5600000023841858,
+      0.0
+    ],
+    "maximum": [
+      0.9750000238418579,
+      0.4099999964237213,
+      2.0999999046325684
+    ]
+  },
+  "refined": {
+    "file": "assets/source/blender/furniture.library.bookshelf.angled-detail.blend",
+    "sha256": "ac0dd8e1a3345c3e791934b534d13c2043e9a5a04f85ed7cc9fe965e6716e9b7",
+    "meshCount": 63,
+    "minimum": [
+      -0.9750000238418579,
+      -0.5600000023841858,
+      0.0
+    ],
+    "maximum": [
+      0.9750000238418579,
+      0.4099999964237213,
+      2.0999999046325684
+    ]
+  },
+  "retainedComparisons": [
+    {
+      "name": "back-panel",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "book",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "book.001",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "book.002",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "book.003",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "book.004",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "book.005",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "book.006",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "book.007",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "book.008",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "book.009",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "book.010",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "book.011",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "book.012",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "book.013",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "carcass",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "catalogue",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "foot",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "foot.001",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "shelf",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "shelf.001",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "shelf.002",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "side-frame",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "side-frame.001",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "steel-divider",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "steel-divider.001",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "steel-divider.002",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    }
+  ],
+  "geometricNormals": [
+    {
+      "name": "angled-library-bookshelf.rear corner joining plate -0.795 0.245",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0005435490307685125
+    },
+    {
+      "name": "angled-library-bookshelf.rear corner joining plate -0.795 1.84",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0005435491707691161
+    },
+    {
+      "name": "angled-library-bookshelf.rear corner joining plate 0.795 0.245",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0005435490101248774
+    },
+    {
+      "name": "angled-library-bookshelf.rear corner joining plate 0.795 1.84",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0005435491777442774
+    },
+    {
+      "name": "angled-library-bookshelf.rear corner retaining screw -0.795 0.245 -0.742",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 1.1202406923281292e-05
+    },
+    {
+      "name": "angled-library-bookshelf.rear corner retaining screw -0.795 0.245 -0.855",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 1.120240045097434e-05
+    },
+    {
+      "name": "angled-library-bookshelf.rear corner retaining screw -0.795 1.84 -0.742",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 1.1202404874847494e-05
+    },
+    {
+      "name": "angled-library-bookshelf.rear corner retaining screw -0.795 1.84 -0.855",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 1.1202404824363537e-05
+    },
+    {
+      "name": "angled-library-bookshelf.rear corner retaining screw 0.795 0.245 0.742",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 1.1202407016833118e-05
+    },
+    {
+      "name": "angled-library-bookshelf.rear corner retaining screw 0.795 0.245 0.855",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 1.1202400537499305e-05
+    },
+    {
+      "name": "angled-library-bookshelf.rear corner retaining screw 0.795 1.84 0.742",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 1.120240490311984e-05
+    },
+    {
+      "name": "angled-library-bookshelf.rear corner retaining screw 0.795 1.84 0.855",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 1.120240490763453e-05
+    },
+    {
+      "name": "angled-library-bookshelf.shelf bearing fixing 0 -0.875 0.05500000000000001",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 6.7145943866650155e-06
+    },
+    {
+      "name": "angled-library-bookshelf.shelf bearing fixing 0 -0.875 0.115",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 6.71459490157332e-06
+    },
+    {
+      "name": "angled-library-bookshelf.shelf bearing fixing 0 0.875 0.05500000000000001",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 6.7145944406908886e-06
+    },
+    {
+      "name": "angled-library-bookshelf.shelf bearing fixing 0 0.875 0.115",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 6.714594884525279e-06
+    },
+    {
+      "name": "angled-library-bookshelf.shelf bearing fixing 1 -0.875 0.915",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 6.714595588356177e-06
+    },
+    {
+      "name": "angled-library-bookshelf.shelf bearing fixing 1 -0.875 0.975",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 6.7145955987188925e-06
+    },
+    {
+      "name": "angled-library-bookshelf.shelf bearing fixing 1 0.875 0.915",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 6.714595636466335e-06
+    },
+    {
+      "name": "angled-library-bookshelf.shelf bearing fixing 1 0.875 0.975",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 6.714595570189397e-06
+    },
+    {
+      "name": "angled-library-bookshelf.shelf bearing fixing 2 -0.875 1.795",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 6.714593122329757e-06
+    },
+    {
+      "name": "angled-library-bookshelf.shelf bearing fixing 2 -0.875 1.855",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 6.7145930744044406e-06
+    },
+    {
+      "name": "angled-library-bookshelf.shelf bearing fixing 2 0.875 1.795",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 6.714593055458585e-06
+    },
+    {
+      "name": "angled-library-bookshelf.shelf bearing fixing 2 0.875 1.855",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 6.7145931420148374e-06
+    },
+    {
+      "name": "angled-library-bookshelf.shelf end horizontal bearing 0 -0.875",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00019174461488683886
+    },
+    {
+      "name": "angled-library-bookshelf.shelf end horizontal bearing 0 0.875",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00019174461808428117
+    },
+    {
+      "name": "angled-library-bookshelf.shelf end horizontal bearing 1 -0.875",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00019174447102917233
+    },
+    {
+      "name": "angled-library-bookshelf.shelf end horizontal bearing 1 0.875",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00019174447554111868
+    },
+    {
+      "name": "angled-library-bookshelf.shelf end horizontal bearing 2 -0.875",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00019174446746343204
+    },
+    {
+      "name": "angled-library-bookshelf.shelf end horizontal bearing 2 0.875",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00019174447032691927
+    },
+    {
+      "name": "angled-library-bookshelf.shelf end vertical bearing 0 -0.875",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00019174445375350993
+    },
+    {
+      "name": "angled-library-bookshelf.shelf end vertical bearing 0 0.875",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.000191744456680946
+    },
+    {
+      "name": "angled-library-bookshelf.shelf end vertical bearing 1 -0.875",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0001917444744042503
+    },
+    {
+      "name": "angled-library-bookshelf.shelf end vertical bearing 1 0.875",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00019174447199787895
+    },
+    {
+      "name": "angled-library-bookshelf.shelf end vertical bearing 2 -0.875",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0001917443065598453
+    },
+    {
+      "name": "angled-library-bookshelf.shelf end vertical bearing 2 0.875",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00019174430359925054
+    },
+    {
+      "name": "back-panel",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.22465046667154334
+    },
+    {
+      "name": "book",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.003716300647738535
+    },
+    {
+      "name": "book.001",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.004287895423355319
+    },
+    {
+      "name": "book.002",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00485949174299094
+    },
+    {
+      "name": "book.003",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0037163012254192536
+    },
+    {
+      "name": "book.004",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00428789619733531
+    },
+    {
+      "name": "book.005",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0048594931599836855
+    },
+    {
+      "name": "book.006",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0037163006782066077
+    },
+    {
+      "name": "book.007",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.004287893897526374
+    },
+    {
+      "name": "book.008",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.004859490655690023
+    },
+    {
+      "name": "book.009",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0037163007449028855
+    },
+    {
+      "name": "book.010",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0042878945687334635
+    },
+    {
+      "name": "book.011",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0048594915430536885
+    },
+    {
+      "name": "book.012",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.003716301802038894
+    },
+    {
+      "name": "book.013",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.004287893866603555
+    },
+    {
+      "name": "carcass",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 3.0796106163940054
+    },
+    {
+      "name": "catalogue",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.004462742459528602
+    },
+    {
+      "name": "foot",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.011771554143121954
+    },
+    {
+      "name": "foot.001",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.011771553778414578
+    },
+    {
+      "name": "shelf",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.16250886805816359
+    },
+    {
+      "name": "shelf.001",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.16250879154298067
+    },
+    {
+      "name": "shelf.002",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.16250870176251433
+    },
+    {
+      "name": "side-frame",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.2258891879731284
+    },
+    {
+      "name": "side-frame.001",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.225889184269666
+    },
+    {
+      "name": "steel-divider",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.004184383914097756
+    },
+    {
+      "name": "steel-divider.001",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.004184383252071122
+    },
+    {
+      "name": "steel-divider.002",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.004184383841555311
+    }
+  ],
+  "normalMethod": "Independent polygon edge-vector area and signed-volume triangulation on actual evaluated world-space surfaces; shading normals ignored."
+}

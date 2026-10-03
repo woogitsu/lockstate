@@ -1,0 +1,39 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-renderer-template-cursor-audit-20261003
+
+ ❯ tests/unit/ui-renderer-template-stationary-hover.test.ts (8 tests | 4 failed) 51ms
+   × world→replacement rotated plan retains physical map cursor despite old worker reply 21ms
+   × world→replacement rotated/mirrored plan retains physical map cursor despite old worker reply 2ms
+   × oblique→replacement rotated plan retains physical map cursor despite old worker reply 3ms
+   × oblique→replacement rotated/mirrored plan retains physical map cursor despite old worker reply 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-renderer-template-stationary-hover.test.ts > world→replacement rotated plan retains physical map cursor despite old worker reply
+ FAIL  tests/unit/ui-renderer-template-stationary-hover.test.ts > world→replacement rotated/mirrored plan retains physical map cursor despite old worker reply
+ FAIL  tests/unit/ui-renderer-template-stationary-hover.test.ts > oblique→replacement rotated plan retains physical map cursor despite old worker reply
+ FAIL  tests/unit/ui-renderer-template-stationary-hover.test.ts > oblique→replacement rotated/mirrored plan retains physical map cursor despite old worker reply
+AssertionError: current renderer must show the current armed whole-square plan without physical mouse movement: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/unit/ui-renderer-template-stationary-hover.test.ts:128:135
+    126|   it(`${initialMode}→replacement rotated${mirrored ? '/mirrored' : ''}…
+    127|     const h = await setup(initialMode, mirrored);
+    128|     expect(h.layers.at(-1)!.hidden, 'current renderer must show the cu…
+       |                                                                                                                                       ^
+    129|     expect(h.layers.at(-1)!.children[0]!.children).toHaveLength(28);
+    130|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 4 passed (8)
+   Start at  05:04:05
+   Duration  3.28s (transform 1.13s, setup 0ms, import 3.10s, tests 51ms, environment 0ms)
+

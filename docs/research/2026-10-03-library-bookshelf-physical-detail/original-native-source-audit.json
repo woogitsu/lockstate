@@ -1,0 +1,975 @@
+{
+  "source": "assets/source/blender/furniture.library.bookshelf.variants.blend",
+  "sourceSha256": "64a18ea80a6b3f97d3b3b389f82c3f52b282cd6c29e343d4f971eab9c0b42c02",
+  "meshesCount": 27,
+  "bounds": [
+    [
+      -0.9750000238418579,
+      -0.5600000023841858,
+      0.0
+    ],
+    [
+      0.9750000238418579,
+      0.4099999964237213,
+      2.0999999046325684
+    ]
+  ],
+  "materials": [
+    "blue book",
+    "edge oak",
+    "green book",
+    "Material",
+    "paper",
+    "red book",
+    "steel",
+    "teal book",
+    "warm oak"
+  ],
+  "meshes": [
+    {
+      "name": "back-panel",
+      "center": [
+        0.0,
+        0.36000001430511475,
+        1.0499999523162842
+      ],
+      "dimensions": [
+        1.7200000286102295,
+        0.07000000029802322,
+        1.8799999952316284
+      ],
+      "materials": [
+        "edge oak"
+      ],
+      "modifiers": [
+        "BEVEL"
+      ],
+      "evaluatedPolygons": 54,
+      "geometricInwardPolygons": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.22465046667154334,
+      "bounds": [
+        [
+          -0.8600000143051147,
+          0.32500001788139343,
+          0.10999995470046997
+        ],
+        [
+          0.8600000143051147,
+          0.39500001072883606,
+          1.9900000095367432
+        ]
+      ]
+    },
+    {
+      "name": "book",
+      "center": [
+        -0.7300000190734863,
+        -0.4399999976158142,
+        0.5550000071525574
+      ],
+      "dimensions": [
+        0.15000000596046448,
+        0.10999999940395355,
+        0.23000000417232513
+      ],
+      "materials": [
+        "red book"
+      ],
+      "modifiers": [
+        "BEVEL"
+      ],
+      "evaluatedPolygons": 54,
+      "geometricInwardPolygons": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.003716300647738535,
+      "bounds": [
+        [
+          -0.8050000071525574,
+          -0.4950000047683716,
+          0.4399999976158142
+        ],
+        [
+          -0.6550000309944153,
+          -0.38499999046325684,
+          0.6700000166893005
+        ]
+      ]
+    },
+    {
+      "name": "book.001",
+      "center": [
+        -0.49000000953674316,
+        -0.4399999976158142,
+        0.5724999904632568
+      ],
+      "dimensions": [
+        0.15000000596046448,
+        0.10999999940395355,
+        0.26499998569488525
+      ],
+      "materials": [
+        "teal book"
+      ],
+      "modifiers": [
+        "BEVEL"
+      ],
+      "evaluatedPolygons": 54,
+      "geometricInwardPolygons": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.004287895423355319,
+      "bounds": [
+        [
+          -0.5649999976158142,
+          -0.4950000047683716,
+          0.4399999976158142
+        ],
+        [
+          -0.4150000214576721,
+          -0.38499999046325684,
+          0.7049999833106995
+        ]
+      ]
+    },
+    {
+      "name": "book.002",
+      "center": [
+        -0.25,
+        -0.4399999976158142,
+        0.5899999737739563
+      ],
+      "dimensions": [
+        0.15000000596046448,
+        0.10999999940395355,
+        0.30000001192092896
+      ],
+      "materials": [
+        "blue book"
+      ],
+      "modifiers": [
+        "BEVEL"
+      ],
+      "evaluatedPolygons": 54,
+      "geometricInwardPolygons": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00485949174299094,
+      "bounds": [
+        [
+          -0.32499998807907104,
+          -0.4950000047683716,
+          0.4399999678134918
+        ],
+        [
+          -0.17499999701976776,
+          -0.38499999046325684,
+          0.7400000095367432
+        ]
+      ]
+    },
+    {
+      "name": "book.003",
+      "center": [
+        -0.009999999776482582,
+        -0.4399999976158142,
+        0.5550000071525574
+      ],
+      "dimensions": [
+        0.15000000596046448,
+        0.10999999940395355,
+        0.23000000417232513
+      ],
+      "materials": [
+        "green book"
+      ],
+      "modifiers": [
+        "BEVEL"
+      ],
+      "evaluatedPolygons": 54,
+      "geometricInwardPolygons": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0037163012254192536,
+      "bounds": [
+        [
+          -0.08500000089406967,
+          -0.4950000047683716,
+          0.4399999976158142
+        ],
+        [
+          0.0650000050663948,
+          -0.38499999046325684,
+          0.6700000166893005
+        ]
+      ]
+    },
+    {
+      "name": "book.004",
+      "center": [
+        0.23000000417232513,
+        -0.4399999976158142,
+        0.5724999904632568
+      ],
+      "dimensions": [
+        0.15000000596046448,
+        0.10999999940395355,
+        0.26499998569488525
+      ],
+      "materials": [
+        "paper"
+      ],
+      "modifiers": [
+        "BEVEL"
+      ],
+      "evaluatedPolygons": 54,
+      "geometricInwardPolygons": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00428789619733531,
+      "bounds": [
+        [
+          0.1550000011920929,
+          -0.4950000047683716,
+          0.4399999976158142
+        ],
+        [
+          0.3050000071525574,
+          -0.38499999046325684,
+          0.7049999833106995
+        ]
+      ]
+    },
+    {
+      "name": "book.005",
+      "center": [
+        0.4699999988079071,
+        -0.4399999976158142,
+        0.5899999737739563
+      ],
+      "dimensions": [
+        0.15000000596046448,
+        0.10999999940395355,
+        0.30000001192092896
+      ],
+      "materials": [
+        "red book"
+      ],
+      "modifiers": [
+        "BEVEL"
+      ],
+      "evaluatedPolygons": 54,
+      "geometricInwardPolygons": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0048594931599836855,
+      "bounds": [
+        [
+          0.39499998092651367,
+          -0.4950000047683716,
+          0.4399999678134918
+        ],
+        [
+          0.5450000166893005,
+          -0.38499999046325684,
+          0.7400000095367432
+        ]
+      ]
+    },
+    {
+      "name": "book.006",
+      "center": [
+        0.7099999785423279,
+        -0.4399999976158142,
+        0.5550000071525574
+      ],
+      "dimensions": [
+        0.15000000596046448,
+        0.10999999940395355,
+        0.23000000417232513
+      ],
+      "materials": [
+        "teal book"
+      ],
+      "modifiers": [
+        "BEVEL"
+      ],
+      "evaluatedPolygons": 54,
+      "geometricInwardPolygons": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0037163006782066077,
+      "bounds": [
+        [
+          0.6349999904632568,
+          -0.4950000047683716,
+          0.4399999976158142
+        ],
+        [
+          0.7849999666213989,
+          -0.38499999046325684,
+          0.6700000166893005
+        ]
+      ]
+    },
+    {
+      "name": "book.007",
+      "center": [
+        -0.7300000190734863,
+        -0.4399999976158142,
+        1.5225000381469727
+      ],
+      "dimensions": [
+        0.15000000596046448,
+        0.10999999940395355,
+        0.26499998569488525
+      ],
+      "materials": [
+        "teal book"
+      ],
+      "modifiers": [
+        "BEVEL"
+      ],
+      "evaluatedPolygons": 54,
+      "geometricInwardPolygons": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.004287893897526374,
+      "bounds": [
+        [
+          -0.8050000071525574,
+          -0.4950000047683716,
+          1.3900001049041748
+        ],
+        [
+          -0.6550000309944153,
+          -0.38499999046325684,
+          1.6549999713897705
+        ]
+      ]
+    },
+    {
+      "name": "book.008",
+      "center": [
+        -0.49000000953674316,
+        -0.4399999976158142,
+        1.5399999618530273
+      ],
+      "dimensions": [
+        0.15000000596046448,
+        0.10999999940395355,
+        0.30000001192092896
+      ],
+      "materials": [
+        "blue book"
+      ],
+      "modifiers": [
+        "BEVEL"
+      ],
+      "evaluatedPolygons": 54,
+      "geometricInwardPolygons": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.004859490655690023,
+      "bounds": [
+        [
+          -0.5649999976158142,
+          -0.4950000047683716,
+          1.3899999856948853
+        ],
+        [
+          -0.4150000214576721,
+          -0.38499999046325684,
+          1.6899999380111694
+        ]
+      ]
+    },
+    {
+      "name": "book.009",
+      "center": [
+        -0.25,
+        -0.4399999976158142,
+        1.5049999952316284
+      ],
+      "dimensions": [
+        0.15000000596046448,
+        0.10999999940395355,
+        0.23000000417232513
+      ],
+      "materials": [
+        "green book"
+      ],
+      "modifiers": [
+        "BEVEL"
+      ],
+      "evaluatedPolygons": 54,
+      "geometricInwardPolygons": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0037163007449028855,
+      "bounds": [
+        [
+          -0.32499998807907104,
+          -0.4950000047683716,
+          1.3899999856948853
+        ],
+        [
+          -0.17499999701976776,
+          -0.38499999046325684,
+          1.6200000047683716
+        ]
+      ]
+    },
+    {
+      "name": "book.010",
+      "center": [
+        -0.009999999776482582,
+        -0.4399999976158142,
+        1.5225000381469727
+      ],
+      "dimensions": [
+        0.15000000596046448,
+        0.10999999940395355,
+        0.26499998569488525
+      ],
+      "materials": [
+        "paper"
+      ],
+      "modifiers": [
+        "BEVEL"
+      ],
+      "evaluatedPolygons": 54,
+      "geometricInwardPolygons": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0042878945687334635,
+      "bounds": [
+        [
+          -0.08500000089406967,
+          -0.4950000047683716,
+          1.3900001049041748
+        ],
+        [
+          0.0650000050663948,
+          -0.38499999046325684,
+          1.6549999713897705
+        ]
+      ]
+    },
+    {
+      "name": "book.011",
+      "center": [
+        0.23000000417232513,
+        -0.4399999976158142,
+        1.5399999618530273
+      ],
+      "dimensions": [
+        0.15000000596046448,
+        0.10999999940395355,
+        0.30000001192092896
+      ],
+      "materials": [
+        "red book"
+      ],
+      "modifiers": [
+        "BEVEL"
+      ],
+      "evaluatedPolygons": 54,
+      "geometricInwardPolygons": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0048594915430536885,
+      "bounds": [
+        [
+          0.1550000011920929,
+          -0.4950000047683716,
+          1.3899999856948853
+        ],
+        [
+          0.3050000071525574,
+          -0.38499999046325684,
+          1.6899999380111694
+        ]
+      ]
+    },
+    {
+      "name": "book.012",
+      "center": [
+        0.4699999988079071,
+        -0.4399999976158142,
+        1.5049999952316284
+      ],
+      "dimensions": [
+        0.15000000596046448,
+        0.10999999940395355,
+        0.23000000417232513
+      ],
+      "materials": [
+        "teal book"
+      ],
+      "modifiers": [
+        "BEVEL"
+      ],
+      "evaluatedPolygons": 54,
+      "geometricInwardPolygons": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.003716301802038894,
+      "bounds": [
+        [
+          0.39499998092651367,
+          -0.4950000047683716,
+          1.3899999856948853
+        ],
+        [
+          0.5450000166893005,
+          -0.38499999046325684,
+          1.6200000047683716
+        ]
+      ]
+    },
+    {
+      "name": "book.013",
+      "center": [
+        0.7099999785423279,
+        -0.4399999976158142,
+        1.5225000381469727
+      ],
+      "dimensions": [
+        0.15000000596046448,
+        0.10999999940395355,
+        0.26499998569488525
+      ],
+      "materials": [
+        "blue book"
+      ],
+      "modifiers": [
+        "BEVEL"
+      ],
+      "evaluatedPolygons": 54,
+      "geometricInwardPolygons": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.004287893866603555,
+      "bounds": [
+        [
+          0.6349999904632568,
+          -0.4950000047683716,
+          1.3900001049041748
+        ],
+        [
+          0.7849999666213989,
+          -0.38499999046325684,
+          1.6549999713897705
+        ]
+      ]
+    },
+    {
+      "name": "carcass",
+      "center": [
+        0.0,
+        0.0,
+        1.0499999523162842
+      ],
+      "dimensions": [
+        1.940000057220459,
+        0.7599999904632568,
+        2.0999999046325684
+      ],
+      "materials": [
+        "warm oak"
+      ],
+      "modifiers": [
+        "BEVEL"
+      ],
+      "evaluatedPolygons": 54,
+      "geometricInwardPolygons": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 3.0796106163940054,
+      "bounds": [
+        [
+          -0.9700000286102295,
+          -0.3799999952316284,
+          0.0
+        ],
+        [
+          0.9700000286102295,
+          0.3799999952316284,
+          2.0999999046325684
+        ]
+      ]
+    },
+    {
+      "name": "catalogue",
+      "center": [
+        0.0,
+        -0.5,
+        0.23000000417232513
+      ],
+      "dimensions": [
+        0.3799999952316284,
+        0.11999999731779099,
+        0.10000000149011612
+      ],
+      "materials": [
+        "paper"
+      ],
+      "modifiers": [
+        "BEVEL"
+      ],
+      "evaluatedPolygons": 54,
+      "geometricInwardPolygons": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.004462742459528602,
+      "bounds": [
+        [
+          -0.1899999976158142,
+          -0.5600000023841858,
+          0.18000000715255737
+        ],
+        [
+          0.1899999976158142,
+          -0.4399999976158142,
+          0.2800000011920929
+        ]
+      ]
+    },
+    {
+      "name": "foot",
+      "center": [
+        -0.7200000286102295,
+        -0.05000000074505806,
+        0.04500000178813934
+      ],
+      "dimensions": [
+        0.23999999463558197,
+        0.5600000023841858,
+        0.09000000357627869
+      ],
+      "materials": [
+        "steel"
+      ],
+      "modifiers": [
+        "BEVEL"
+      ],
+      "evaluatedPolygons": 54,
+      "geometricInwardPolygons": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.011771554143121954,
+      "bounds": [
+        [
+          -0.8400000333786011,
+          -0.33000001311302185,
+          0.0
+        ],
+        [
+          -0.6000000238418579,
+          0.23000000417232513,
+          0.09000000357627869
+        ]
+      ]
+    },
+    {
+      "name": "foot.001",
+      "center": [
+        0.7200000286102295,
+        -0.05000000074505806,
+        0.04500000178813934
+      ],
+      "dimensions": [
+        0.23999999463558197,
+        0.5600000023841858,
+        0.09000000357627869
+      ],
+      "materials": [
+        "steel"
+      ],
+      "modifiers": [
+        "BEVEL"
+      ],
+      "evaluatedPolygons": 54,
+      "geometricInwardPolygons": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.011771553778414578,
+      "bounds": [
+        [
+          0.6000000238418579,
+          -0.33000001311302185,
+          0.0
+        ],
+        [
+          0.8400000333786011,
+          0.23000000417232513,
+          0.09000000357627869
+        ]
+      ]
+    },
+    {
+      "name": "shelf",
+      "center": [
+        0.0,
+        -0.029999999329447746,
+        0.1599999964237213
+      ],
+      "dimensions": [
+        1.7799999713897705,
+        0.8399999737739563,
+        0.10999999940395355
+      ],
+      "materials": [
+        "edge oak"
+      ],
+      "modifiers": [
+        "BEVEL"
+      ],
+      "evaluatedPolygons": 54,
+      "geometricInwardPolygons": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.16250886805816359,
+      "bounds": [
+        [
+          -0.8899999856948853,
+          -0.44999998807907104,
+          0.10499999672174454
+        ],
+        [
+          0.8899999856948853,
+          0.38999998569488525,
+          0.2150000035762787
+        ]
+      ]
+    },
+    {
+      "name": "shelf.001",
+      "center": [
+        0.0,
+        -0.029999999329447746,
+        1.0199999809265137
+      ],
+      "dimensions": [
+        1.7799999713897705,
+        0.8399999737739563,
+        0.10999999940395355
+      ],
+      "materials": [
+        "edge oak"
+      ],
+      "modifiers": [
+        "BEVEL"
+      ],
+      "evaluatedPolygons": 54,
+      "geometricInwardPolygons": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.16250879154298067,
+      "bounds": [
+        [
+          -0.8899999856948853,
+          -0.44999998807907104,
+          0.9649999737739563
+        ],
+        [
+          0.8899999856948853,
+          0.38999998569488525,
+          1.0749999284744263
+        ]
+      ]
+    },
+    {
+      "name": "shelf.002",
+      "center": [
+        0.0,
+        -0.029999999329447746,
+        1.899999976158142
+      ],
+      "dimensions": [
+        1.7799999713897705,
+        0.8399999737739563,
+        0.10999999940395355
+      ],
+      "materials": [
+        "edge oak"
+      ],
+      "modifiers": [
+        "BEVEL"
+      ],
+      "evaluatedPolygons": 54,
+      "geometricInwardPolygons": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.16250870176251433,
+      "bounds": [
+        [
+          -0.8899999856948853,
+          -0.44999998807907104,
+          1.8450000286102295
+        ],
+        [
+          0.8899999856948853,
+          0.38999998569488525,
+          1.9549999237060547
+        ]
+      ]
+    },
+    {
+      "name": "side-frame",
+      "center": [
+        -0.9100000262260437,
+        -0.019999999552965164,
+        1.0499999523162842
+      ],
+      "dimensions": [
+        0.12999999523162842,
+        0.8600000143051147,
+        2.0399999618530273
+      ],
+      "materials": [
+        "edge oak"
+      ],
+      "modifiers": [
+        "BEVEL"
+      ],
+      "evaluatedPolygons": 54,
+      "geometricInwardPolygons": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.2258891879731284,
+      "bounds": [
+        [
+          -0.9750000238418579,
+          -0.45000001788139343,
+          0.029999971389770508
+        ],
+        [
+          -0.8450000286102295,
+          0.4099999964237213,
+          2.069999933242798
+        ]
+      ]
+    },
+    {
+      "name": "side-frame.001",
+      "center": [
+        0.9100000262260437,
+        -0.019999999552965164,
+        1.0499999523162842
+      ],
+      "dimensions": [
+        0.12999999523162842,
+        0.8600000143051147,
+        2.0399999618530273
+      ],
+      "materials": [
+        "edge oak"
+      ],
+      "modifiers": [
+        "BEVEL"
+      ],
+      "evaluatedPolygons": 54,
+      "geometricInwardPolygons": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.225889184269666,
+      "bounds": [
+        [
+          0.8450000286102295,
+          -0.45000001788139343,
+          0.029999971389770508
+        ],
+        [
+          0.9750000238418579,
+          0.4099999964237213,
+          2.069999933242798
+        ]
+      ]
+    },
+    {
+      "name": "steel-divider",
+      "center": [
+        -0.4699999988079071,
+        -0.4300000071525574,
+        1.0800000429153442
+      ],
+      "dimensions": [
+        0.05000000074505806,
+        0.05000000074505806,
+        1.7599999904632568
+      ],
+      "materials": [
+        "steel"
+      ],
+      "modifiers": [
+        "BEVEL"
+      ],
+      "evaluatedPolygons": 54,
+      "geometricInwardPolygons": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.004184383914097756,
+      "bounds": [
+        [
+          -0.4950000047683716,
+          -0.45500001311302185,
+          0.20000004768371582
+        ],
+        [
+          -0.4449999928474426,
+          -0.4050000011920929,
+          1.9600000381469727
+        ]
+      ]
+    },
+    {
+      "name": "steel-divider.001",
+      "center": [
+        0.0,
+        -0.4300000071525574,
+        1.0800000429153442
+      ],
+      "dimensions": [
+        0.05000000074505806,
+        0.05000000074505806,
+        1.7599999904632568
+      ],
+      "materials": [
+        "steel"
+      ],
+      "modifiers": [
+        "BEVEL"
+      ],
+      "evaluatedPolygons": 54,
+      "geometricInwardPolygons": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.004184383252071122,
+      "bounds": [
+        [
+          -0.02500000037252903,
+          -0.45500001311302185,
+          0.20000004768371582
+        ],
+        [
+          0.02500000037252903,
+          -0.4050000011920929,
+          1.9600000381469727
+        ]
+      ]
+    },
+    {
+      "name": "steel-divider.002",
+      "center": [
+        0.4699999988079071,
+        -0.4300000071525574,
+        1.0800000429153442
+      ],
+      "dimensions": [
+        0.05000000074505806,
+        0.05000000074505806,
+        1.7599999904632568
+      ],
+      "materials": [
+        "steel"
+      ],
+      "modifiers": [
+        "BEVEL"
+      ],
+      "evaluatedPolygons": 54,
+      "geometricInwardPolygons": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.004184383841555311,
+      "bounds": [
+        [
+          0.4449999928474426,
+          -0.45500001311302185,
+          0.20000004768371582
+        ],
+        [
+          0.4950000047683716,
+          -0.4050000011920929,
+          1.9600000381469727
+        ]
+      ]
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+$ErrorActionPreference='Continue'
+$env:PATH=(Join-Path $env:TEMP 'lockstate-pnpm-11-22-20261002')+';C:/Users/matma/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin;'+$env:PATH
+$controlSubject=(git rev-parse HEAD).Trim()
+if ((git status --porcelain).Length -gt 0) { throw 'Control requires own clean worktree' }
+$controlBranch=(git branch --show-current).Trim()
+if ($controlBranch -ne 'codex/integrate-bookshelf-hover-20261003') { throw 'Unexpected control worktree branch' }
+git switch --detach $controlSubject
+if ($LASTEXITCODE -ne 0) { throw 'Could not detach control from WIP sweep' }
+$mappingPath=Join-Path (Get-Location) 'src/rendering/assets/oblique-object-mapping.ts'
+$scenePath=Join-Path (Get-Location) 'src/main.ts'
+$mappingBytes=[IO.File]::ReadAllBytes($mappingPath)
+$sceneBytes=[IO.File]::ReadAllBytes($scenePath)
+$controlUtf8=New-Object System.Text.UTF8Encoding($false)
+$receipt=[ordered]@{subject=$controlSubject;branch=$controlBranch;mappingSha=(Get-FileHash -LiteralPath $mappingPath -Algorithm SHA256).Hash;sceneSha=(Get-FileHash -LiteralPath $scenePath -Algorithm SHA256).Hash}
+$q0Exit=-1; $q1Exit=-1; $restoredExit=-1
+function Build-Control($label) {
+ pnpm --config.verify-deps-before-run=false build 2>&1 | Tee-Object -FilePath (Join-Path $env:TEMP ('lockstate-bookshelf-hover-control-'+$label+'-build-20261003.txt'))
+ if ($LASTEXITCODE -ne 0) { throw ('Production '+$label+' build failed') }
+}
+function Observe-Worker {
+ $worker=Get-ChildItem -LiteralPath dist/client/assets -Filter 'worker-*.js' -File
+ if ($worker.Count -ne 1) { throw 'Expected one real production worker' }
+ return @{file=$worker.Name;bytes=$worker.Length;sha=(Get-FileHash -LiteralPath $worker.FullName -Algorithm SHA256).Hash}
+}
+try {
+ Build-Control 'baseline'
+ $receipt.baselineWorker=Observe-Worker
+ $mapping=$controlUtf8.GetString($mappingBytes)
+ foreach ($line in @("  'object.bookshelf': 'furniture.library.bookshelf',")) {
+  if (($mapping.Split(@($line),[StringSplitOptions]::None)).Count -ne 2) { throw 'Actual model mapping mutation is not unique' }
+  $mapping=$mapping.Replace($line,'')
+ }
+ $scene=$controlUtf8.GetString($sceneBytes)
+ $needle='    initialCanvasHover: canvasHover,'
+ if (($scene.Split(@($needle),[StringSplitOptions]::None)).Count -ne 2) { throw 'Actual pending fallback depth mutation is not unique' }
+ [IO.File]::WriteAllText($mappingPath,$mapping,$controlUtf8)
+ [IO.File]::WriteAllText($scenePath,$scene.Replace($needle,'    initialCanvasHover: undefined,'),$controlUtf8)
+ git diff -- src/rendering/assets/oblique-object-mapping.ts src/main.ts | Out-File -Encoding utf8 -FilePath (Join-Path $env:TEMP 'lockstate-bookshelf-hover-control-mutation-20261003.txt')
+ Build-Control 'negative'
+ $receipt.negativeWorker=Observe-Worker
+ $env:PLAYWRIGHT_JSON_OUTPUT_NAME=Join-Path $env:TEMP 'lockstate-bookshelf-hover-control-q0-negative-20261003.json'
+ node --experimental-transform-types --disable-warning=ExperimentalWarning tests/browser/run-suite.ts --suite artifact tests/browser/bookshelf-player-build.spec.ts tests/browser/room-template-renderer-stationary-hover.spec.ts --grep 'player creates|quarterTurns0|FullHD' --workers=1 --reporter=list,json --output (Join-Path $env:TEMP 'lockstate-bookshelf-hover-control-q0-negative-20261003') 2>&1 | Tee-Object -FilePath (Join-Path $env:TEMP 'lockstate-bookshelf-hover-control-q0-negative-20261003.txt')
+ $q0Exit=$LASTEXITCODE; $receipt.q0NegativeExit=$q0Exit
+ # Run q1 explicitly with its real capacity setup; q0 failure in a serial file
+ # must not be mistaken for a q1 producer-negative observation.
+ $env:PLAYWRIGHT_JSON_OUTPUT_NAME=Join-Path $env:TEMP 'lockstate-bookshelf-hover-control-q1-negative-20261003.json'
+ node --experimental-transform-types --disable-warning=ExperimentalWarning tests/browser/run-suite.ts --suite artifact tests/browser/bookshelf-player-build.spec.ts --grep 'player creates|quarterTurns1' --workers=1 --reporter=list,json --output (Join-Path $env:TEMP 'lockstate-bookshelf-hover-control-q1-negative-20261003') 2>&1 | Tee-Object -FilePath (Join-Path $env:TEMP 'lockstate-bookshelf-hover-control-q1-negative-20261003.txt')
+ $q1Exit=$LASTEXITCODE; $receipt.q1NegativeExit=$q1Exit
+} finally {
+ [IO.File]::WriteAllBytes($mappingPath,$mappingBytes)
+ [IO.File]::WriteAllBytes($scenePath,$sceneBytes)
+ $receipt.restoredMappingSha=(Get-FileHash -LiteralPath $mappingPath -Algorithm SHA256).Hash
+ $receipt.restoredSceneSha=(Get-FileHash -LiteralPath $scenePath -Algorithm SHA256).Hash
+ if ($receipt.mappingSha -ne $receipt.restoredMappingSha -or $receipt.sceneSha -ne $receipt.restoredSceneSha) { throw 'Source restoration mismatch' }
+ Build-Control 'restored'
+ $receipt.restoredWorker=Observe-Worker
+ if ($receipt.baselineWorker.sha -ne $receipt.restoredWorker.sha) { throw 'Restored frozen worker differs from baseline' }
+ $env:PLAYWRIGHT_JSON_OUTPUT_NAME=Join-Path $env:TEMP 'lockstate-bookshelf-hover-control-restored-20261003.json'
+ node --experimental-transform-types --disable-warning=ExperimentalWarning tests/browser/run-suite.ts --suite artifact tests/browser/bookshelf-player-build.spec.ts tests/browser/room-template-renderer-stationary-hover.spec.ts --workers=1 --reporter=list,json --output (Join-Path $env:TEMP 'lockstate-bookshelf-hover-control-restored-20261003') 2>&1 | Tee-Object -FilePath (Join-Path $env:TEMP 'lockstate-bookshelf-hover-control-restored-20261003.txt')
+ $restoredExit=$LASTEXITCODE; $receipt.restoredExit=$restoredExit
+ $receipt | ConvertTo-Json -Depth 8 | Out-File -Encoding utf8 -FilePath (Join-Path $env:TEMP 'lockstate-bookshelf-hover-control-receipt-20261003.json')
+ git switch $controlBranch
+ if ($LASTEXITCODE -ne 0) { throw 'Could not return restored named worktree' }
+}
+if ($q0Exit -ne 1 -or $q1Exit -ne 1 -or $restoredExit -ne 0) { throw "Unexpected control exits q0=$q0Exit q1=$q1Exit restored=$restoredExit" }

@@ -1,0 +1,39 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-renderer-template-cursor-audit-20261003
+
+ ❯ tests/unit/ui-renderer-template-stationary-hover.test.ts (20 tests | 4 failed) 105ms
+   × world?replacement: real UI movement while bridges are withdrawn invalidates physical hover 7ms
+   × world?replacement/mirrored: real UI movement while bridges are withdrawn invalidates physical hover 2ms
+   × oblique?replacement: real UI movement while bridges are withdrawn invalidates physical hover 7ms
+   × oblique?replacement/mirrored: real UI movement while bridges are withdrawn invalidates physical hover 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-renderer-template-stationary-hover.test.ts > world?replacement: real UI movement while bridges are withdrawn invalidates physical hover
+ FAIL  tests/unit/ui-renderer-template-stationary-hover.test.ts > world?replacement/mirrored: real UI movement while bridges are withdrawn invalidates physical hover
+ FAIL  tests/unit/ui-renderer-template-stationary-hover.test.ts > oblique?replacement: real UI movement while bridges are withdrawn invalidates physical hover
+ FAIL  tests/unit/ui-renderer-template-stationary-hover.test.ts > oblique?replacement/mirrored: real UI movement while bridges are withdrawn invalidates physical hover
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/ui-renderer-template-stationary-hover.test.ts:199:37
+    197|   it(`${initialMode}?replacement${mirrored ? '/mirrored' : ''}: real U…
+    198|     const h = await setup(initialMode, mirrored, { uiDuringGap: true }…
+    199|     expect(h.layers.at(-1)!.hidden).toBe(true);
+       |                                     ^
+    200|     expect(h.actors.sent.filter(message => message.kind === 'simulatio…
+    201|     expect(h.actors.sent.filter(message => message.kind === 'simulatio…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 16 passed (20)
+   Start at  05:16:48
+   Duration  3.83s (transform 1.38s, setup 0ms, import 3.53s, tests 105ms, environment 0ms)
+

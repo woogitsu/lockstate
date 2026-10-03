@@ -1,0 +1,79 @@
+node : [2m[WebServer] [22m(node:38432) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:51 char:2
++  node --experimental-transform-types --disable-warning=ExperimentalWa ...
++  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 2 tests using 1 worker
+
+(node:29908) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:29908) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\bookshelf-player-build.spec.ts:159:1 › player creates storage and delivery capacity before Classroom (43.5s)
+  x  2 tests\browser\bookshelf-player-build.spec.ts:222:3 › player builds the bookshelf in Classroom at quarterTurns1 and keeps it after Save/Load (49.5s)
+
+
+  1) tests\browser\bookshelf-player-build.spec.ts:222:3 › player builds the bookshelf in Classroom at quarterTurns1 and keeps it after Save/Load 
+
+    Error: authored book spines after construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m100[39m
+    Received:   [31m0[39m
+
+      170 |   assertOwnedObjectOrders(completedData, 'object.bookshelf', 'bookshelf-wooden', owned);
+      171 |   const beforePixels = await authoredBookPixels(page, completed, quarterTurns);
+    > 172 |   expect.soft(beforePixels, 'authored book spines after construction').toBeGreaterThan(100);
+          |                                                                        ^
+      173 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+      174 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+      175 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-bookshelf-hover-integration-20261003\tests\browser\bookshelf-player-build.spec.ts:172:72
+
+    Error: authored book spines after Load
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m100[39m
+    Received:   [31m0[39m
+
+      184 |   expect(loadedData).toEqual(completedData);
+      185 |   const afterPixels = await authoredBookPixels(page, loaded, quarterTurns);
+    > 186 |   expect.soft(afterPixels, 'authored book spines after Load').toBeGreaterThan(100);
+          |                                                               ^
+      187 |   expect(afterPixels).toBe(beforePixels);
+      188 |   await writeFile(info.outputPath('bookshelf-worker-and-save-evidence.json'), JSON.stringify({ quarterTurns, owned, beforePixels, afterPixels,
+      189 |     commands: (await sentCommands(page)).filter(command => command.type === 'PlaceRoomTemplate') }, null, 2));
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-bookshelf-hover-integration-20261003\tests\browser\bookshelf-player-build.spec.ts:186:63
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-bookshelf-hover-verified-control-q1-negative-20261003\bookshelf-player-build-pla-4b936-nd-keeps-it-after-Save-Load\error-context.md
+
+  1 failed
+    tests\browser\bookshelf-player-build.spec.ts:222:3 › player builds the bookshelf in Classroom at quarterTurns1 and keeps it after Save/Load 
+  1 passed (1.6m)
+
+==============================================================================
+LOCKSTATE_BROWSER_SUITE_NO_RETRY suite=artifact reason=no-last-run-file
+Playwright left no readable test-results/.last-run.json, so the run failed before it
+could record which tests failed. That is not net::ERR_NETWORK_CHANGED; not retrying.
+==============================================================================
+

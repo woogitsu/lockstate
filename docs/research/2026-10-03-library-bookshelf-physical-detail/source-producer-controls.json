@@ -1,0 +1,33 @@
+{
+  "controls": [
+    {
+      "control": "actual-source-producer-omits-L-bearers",
+      "producerExitCode": 1,
+      "error": "ValueError: Expected twenty-seven retained and thirty-six physical bookshelf connections",
+      "rejectedBeforeSourceSave": true
+    },
+    {
+      "control": "actual-source-producer-reverses-bearing",
+      "producerExitCode": 1,
+      "error": "ValueError: Evaluated library bookshelf geometric surfaces face inward: angled-library-bookshelf.shelf end vertical bearing 0 -0.875",
+      "rejectedBeforeSourceSave": true
+    },
+    {
+      "control": "actual-source-producer-bearing-escapes-bounds",
+      "producerExitCode": 1,
+      "error": "ValueError: Bookshelf hardware changed accepted full source bounds",
+      "rejectedBeforeSourceSave": true
+    },
+    {
+      "control": "actual-source-producer-drops-unused-material-on-save",
+      "producerExitCode": 0,
+      "loadedVerifyExitCode": 1,
+      "error": "ValueError: Retained unused bookshelf material graph is not pinned for source persistence",
+      "rejectedBeforeSourceSave": false
+    }
+  ],
+  "sourceProvenanceBuilderExactlyRestored": true,
+  "originalSourceBytesUnchanged": true,
+  "exactRestoredProductionVerifyExitCode": 0,
+  "sourceSha256": "ac0dd8e1a3345c3e791934b534d13c2043e9a5a04f85ed7cc9fe965e6716e9b7"
+}

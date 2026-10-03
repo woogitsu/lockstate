@@ -1,0 +1,758 @@
+[
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-expanded-native-20261003.json",
+    "archived": "expanded/report.json",
+    "sourceBytes": 32056,
+    "sourceSha256": "8f52a772f5df70101634a25729b2aa89a8b92cfc4c7d82fb0318fbbcfa1b6697",
+    "archivedBytes": 32056,
+    "archivedSha256": "8f52a772f5df70101634a25729b2aa89a8b92cfc4c7d82fb0318fbbcfa1b6697"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-expanded-native-20261003.txt",
+    "archived": "expanded/console.txt",
+    "sourceBytes": 33510,
+    "sourceSha256": "6b023ebb486c56fa912a8aab380f0ef1daa5822c3133bdda350ab4f2ce2ae8e0",
+    "archivedBytes": 16810,
+    "archivedSha256": "5d9424aab67da26937b5055b314f9e4990bfb2ffe02badad4ef4c7c32e416270",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-expanded-native-20261003\\.last-run.json",
+    "archived": "expanded/001-.last-run.json",
+    "sourceBytes": 45,
+    "sourceSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "archivedBytes": 45,
+    "archivedSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-expanded-native-20261003\\bookshelf-player-build-pla-4b936-nd-keeps-it-after-Save-Load\\bookshelf-loaded-fullhd.png",
+    "archived": "expanded/002-bookshelf-loaded-fullhd.png",
+    "sourceBytes": 1454895,
+    "sourceSha256": "5dfd1ba083860c344525da10c0011002502d08f8675a694a5fae197b6f614f1d",
+    "archivedBytes": 1454895,
+    "archivedSha256": "5dfd1ba083860c344525da10c0011002502d08f8675a694a5fae197b6f614f1d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-expanded-native-20261003\\bookshelf-player-build-pla-4b936-nd-keeps-it-after-Save-Load\\bookshelf-worker-and-save-evidence.json",
+    "archived": "expanded/003-bookshelf-worker-and-save-evidence.json",
+    "sourceBytes": 440,
+    "sourceSha256": "3b0d94b8587f4e25bacff0c0517e9e20faa3b1e131756d88973f0e2c7e32ab51",
+    "archivedBytes": 440,
+    "archivedSha256": "3b0d94b8587f4e25bacff0c0517e9e20faa3b1e131756d88973f0e2c7e32ab51"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-expanded-native-20261003\\bookshelf-player-build-pla-4b936-nd-keeps-it-after-Save-Load\\bookshelf-worker-completed-fullhd.png",
+    "archived": "expanded/004-bookshelf-worker-completed-fullhd.png",
+    "sourceBytes": 1485153,
+    "sourceSha256": "cc95563d1e05a1a70a51eeb977264c42954bad0f5cf7689caace6277dd3e3ea6",
+    "archivedBytes": 1485153,
+    "archivedSha256": "cc95563d1e05a1a70a51eeb977264c42954bad0f5cf7689caace6277dd3e3ea6"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-expanded-native-20261003\\bookshelf-player-build-pla-4b936-nd-keeps-it-after-Save-Load\\completed-worker-snapshot.json",
+    "archived": "expanded/005-completed-worker-snapshot.json",
+    "sourceBytes": 82076,
+    "sourceSha256": "5a380cf55369d50548b678f3f2019022701096cb55d0bbb9eb36f34c2700ff1e",
+    "archivedBytes": 82076,
+    "archivedSha256": "5a380cf55369d50548b678f3f2019022701096cb55d0bbb9eb36f34c2700ff1e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-expanded-native-20261003\\bookshelf-player-build-pla-4b936-nd-keeps-it-after-Save-Load\\loaded-worker-snapshot.json",
+    "archived": "expanded/006-loaded-worker-snapshot.json",
+    "sourceBytes": 82076,
+    "sourceSha256": "4d13cf0d8c1ed4e7c8569684c91529e0a0b55411b5426b2db7ec8b05cfd27e90",
+    "archivedBytes": 82076,
+    "archivedSha256": "4d13cf0d8c1ed4e7c8569684c91529e0a0b55411b5426b2db7ec8b05cfd27e90"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-expanded-native-20261003\\bookshelf-player-build-pla-4b936-nd-keeps-it-after-Save-Load\\physical-hardware-loaded-fullhd.png",
+    "archived": "expanded/007-physical-hardware-loaded-fullhd.png",
+    "sourceBytes": 279885,
+    "sourceSha256": "e2153429ff0aaedf8058099ce996a7c11acfcaf0dde8d210eccc16a3ffe8a84d",
+    "archivedBytes": 279885,
+    "archivedSha256": "e2153429ff0aaedf8058099ce996a7c11acfcaf0dde8d210eccc16a3ffe8a84d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-expanded-native-20261003\\bookshelf-player-build-pla-f0356-nd-keeps-it-after-Save-Load\\bookshelf-loaded-fullhd.png",
+    "archived": "expanded/008-bookshelf-loaded-fullhd.png",
+    "sourceBytes": 1473788,
+    "sourceSha256": "6a5fa1401911e79ff7216888c474a4629ad4c92277db71509191f58fcbad56f3",
+    "archivedBytes": 1473788,
+    "archivedSha256": "6a5fa1401911e79ff7216888c474a4629ad4c92277db71509191f58fcbad56f3"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-expanded-native-20261003\\bookshelf-player-build-pla-f0356-nd-keeps-it-after-Save-Load\\bookshelf-worker-and-save-evidence.json",
+    "archived": "expanded/009-bookshelf-worker-and-save-evidence.json",
+    "sourceBytes": 415,
+    "sourceSha256": "4d88f13bdd0a2cef12f78f8ef7afaba284f744bcb8e2bd2020b192adf54b08d6",
+    "archivedBytes": 415,
+    "archivedSha256": "4d88f13bdd0a2cef12f78f8ef7afaba284f744bcb8e2bd2020b192adf54b08d6"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-expanded-native-20261003\\bookshelf-player-build-pla-f0356-nd-keeps-it-after-Save-Load\\bookshelf-worker-completed-fullhd.png",
+    "archived": "expanded/010-bookshelf-worker-completed-fullhd.png",
+    "sourceBytes": 1507687,
+    "sourceSha256": "66e0f86889a350acb43d07b6e64058320c07bd7ae682706628e2e200c08a9b3b",
+    "archivedBytes": 1507687,
+    "archivedSha256": "66e0f86889a350acb43d07b6e64058320c07bd7ae682706628e2e200c08a9b3b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-expanded-native-20261003\\bookshelf-player-build-pla-f0356-nd-keeps-it-after-Save-Load\\completed-worker-snapshot.json",
+    "archived": "expanded/011-completed-worker-snapshot.json",
+    "sourceBytes": 82164,
+    "sourceSha256": "c103a3795d1a10f2fe32fb8ec6578c93e9745abcf20193d0e12f8f03f56c662d",
+    "archivedBytes": 82164,
+    "archivedSha256": "c103a3795d1a10f2fe32fb8ec6578c93e9745abcf20193d0e12f8f03f56c662d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-expanded-native-20261003\\bookshelf-player-build-pla-f0356-nd-keeps-it-after-Save-Load\\loaded-worker-snapshot.json",
+    "archived": "expanded/012-loaded-worker-snapshot.json",
+    "sourceBytes": 82164,
+    "sourceSha256": "f77d094b751ffc792fd6e7588040392336501c752c32b7aeeeee590f6ecab5e7",
+    "archivedBytes": 82164,
+    "archivedSha256": "f77d094b751ffc792fd6e7588040392336501c752c32b7aeeeee590f6ecab5e7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-expanded-native-20261003\\bookshelf-player-build-pla-f0356-nd-keeps-it-after-Save-Load\\physical-hardware-loaded-fullhd.png",
+    "archived": "expanded/013-physical-hardware-loaded-fullhd.png",
+    "sourceBytes": 315725,
+    "sourceSha256": "c857c0178a6bcbca80d566e86079420a17d3376485fc9144b8bc55e23dff0c53",
+    "archivedBytes": 315725,
+    "archivedSha256": "c857c0178a6bcbca80d566e86079420a17d3376485fc9144b8bc55e23dff0c53"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-expanded-native-20261003\\room-template-renderer-sta-04dc9-plan-after-old-worker-reply\\stationary-current-preview-after-old-reply.png",
+    "archived": "expanded/014-stationary-current-preview-after-old-reply.png",
+    "sourceBytes": 257717,
+    "sourceSha256": "9184e3ec04177b4b56dbbdac9fa5569bb90565c77fa35f728f108734e0a851eb",
+    "archivedBytes": 257717,
+    "archivedSha256": "9184e3ec04177b4b56dbbdac9fa5569bb90565c77fa35f728f108734e0a851eb"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-expanded-native-20261003\\room-template-renderer-sta-04dc9-plan-after-old-worker-reply\\stationary-first-click-submitted-current-origin.png",
+    "archived": "expanded/015-stationary-first-click-submitted-current-origin.png",
+    "sourceBytes": 282122,
+    "sourceSha256": "1b408cb57e6081b15687d380c0c2fc055ab6eae6abec2ccdfb296fbb4ee867aa",
+    "archivedBytes": 282122,
+    "archivedSha256": "1b408cb57e6081b15687d380c0c2fc055ab6eae6abec2ccdfb296fbb4ee867aa"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-expanded-native-20261003\\room-template-renderer-sta-35acb-plan-after-old-worker-reply\\stationary-current-preview-after-old-reply.png",
+    "archived": "expanded/016-stationary-current-preview-after-old-reply.png",
+    "sourceBytes": 288423,
+    "sourceSha256": "82776ee8e2f3debe72a008de98cb146f468e77b675f334847cc2ef4b9dd478a5",
+    "archivedBytes": 288423,
+    "archivedSha256": "82776ee8e2f3debe72a008de98cb146f468e77b675f334847cc2ef4b9dd478a5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-expanded-native-20261003\\room-template-renderer-sta-35acb-plan-after-old-worker-reply\\stationary-first-click-submitted-current-origin.png",
+    "archived": "expanded/017-stationary-first-click-submitted-current-origin.png",
+    "sourceBytes": 293755,
+    "sourceSha256": "c47f58f8190045bc9bbf728849271c18e74bf4af90deab3cb3acc31a95b72b4e",
+    "archivedBytes": 293755,
+    "archivedSha256": "c47f58f8190045bc9bbf728849271c18e74bf4af90deab3cb3acc31a95b72b4e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-expanded-native-20261003\\room-template-renderer-sta-53bea-plan-after-old-worker-reply\\stationary-current-preview-after-old-reply.png",
+    "archived": "expanded/018-stationary-current-preview-after-old-reply.png",
+    "sourceBytes": 880403,
+    "sourceSha256": "a3a4c09e7ef3b807bcafe7eab62f41f849288588c2743ae53d7d35e3f0432db8",
+    "archivedBytes": 880403,
+    "archivedSha256": "a3a4c09e7ef3b807bcafe7eab62f41f849288588c2743ae53d7d35e3f0432db8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-expanded-native-20261003\\room-template-renderer-sta-53bea-plan-after-old-worker-reply\\stationary-first-click-submitted-current-origin.png",
+    "archived": "expanded/019-stationary-first-click-submitted-current-origin.png",
+    "sourceBytes": 951964,
+    "sourceSha256": "077aecf0754f5ca744700862d25ac9011b08fb9648f41f484cc87331c86854f6",
+    "archivedBytes": 951964,
+    "archivedSha256": "077aecf0754f5ca744700862d25ac9011b08fb9648f41f484cc87331c86854f6"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-expanded-native-20261003\\room-template-renderer-sta-67f41-plan-after-old-worker-reply\\stationary-current-preview-after-old-reply.png",
+    "archived": "expanded/020-stationary-current-preview-after-old-reply.png",
+    "sourceBytes": 257787,
+    "sourceSha256": "66d68dcc0fb8a60dfb5f39d3426dadc079b96bff229abe0ffffbb4ecbb6a36f5",
+    "archivedBytes": 257787,
+    "archivedSha256": "66d68dcc0fb8a60dfb5f39d3426dadc079b96bff229abe0ffffbb4ecbb6a36f5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-expanded-native-20261003\\room-template-renderer-sta-67f41-plan-after-old-worker-reply\\stationary-first-click-submitted-current-origin.png",
+    "archived": "expanded/021-stationary-first-click-submitted-current-origin.png",
+    "sourceBytes": 281849,
+    "sourceSha256": "727c353a7a39324b70a79a9fbabb82fa0dd4cde12e1cb7dd60f5138040fada84",
+    "archivedBytes": 281849,
+    "archivedSha256": "727c353a7a39324b70a79a9fbabb82fa0dd4cde12e1cb7dd60f5138040fada84"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-expanded-native-20261003\\room-template-renderer-sta-6d37d-plan-after-old-worker-reply\\stationary-current-preview-after-old-reply.png",
+    "archived": "expanded/022-stationary-current-preview-after-old-reply.png",
+    "sourceBytes": 1689077,
+    "sourceSha256": "e4e84209c4a1e483b8d61460bc80c00f487881ca3cb2598fb054afba9a0f2d2e",
+    "archivedBytes": 1689077,
+    "archivedSha256": "e4e84209c4a1e483b8d61460bc80c00f487881ca3cb2598fb054afba9a0f2d2e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-expanded-native-20261003\\room-template-renderer-sta-6d37d-plan-after-old-worker-reply\\stationary-first-click-submitted-current-origin.png",
+    "archived": "expanded/023-stationary-first-click-submitted-current-origin.png",
+    "sourceBytes": 1705887,
+    "sourceSha256": "7a85868be9f004210cc556b2eef23483d5b8c2a01a2eba59a06670a1f659a714",
+    "archivedBytes": 1705887,
+    "archivedSha256": "7a85868be9f004210cc556b2eef23483d5b8c2a01a2eba59a06670a1f659a714"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-expanded-native-20261003\\room-template-renderer-sta-77a54-plan-after-old-worker-reply\\stationary-current-preview-after-old-reply.png",
+    "archived": "expanded/024-stationary-current-preview-after-old-reply.png",
+    "sourceBytes": 1688660,
+    "sourceSha256": "4a742e5494a06c12ca8c2e77eeaac7370e725902fb1842b1566d4be02a277e4c",
+    "archivedBytes": 1688660,
+    "archivedSha256": "4a742e5494a06c12ca8c2e77eeaac7370e725902fb1842b1566d4be02a277e4c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-expanded-native-20261003\\room-template-renderer-sta-77a54-plan-after-old-worker-reply\\stationary-first-click-submitted-current-origin.png",
+    "archived": "expanded/025-stationary-first-click-submitted-current-origin.png",
+    "sourceBytes": 1705172,
+    "sourceSha256": "d5d384a78a4863abf3b103650a9d82f14b4d585ddd34836495b68543f1fbb022",
+    "archivedBytes": 1705172,
+    "archivedSha256": "d5d384a78a4863abf3b103650a9d82f14b4d585ddd34836495b68543f1fbb022"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-expanded-native-20261003\\room-template-renderer-sta-b779b-plan-after-old-worker-reply\\stationary-current-preview-after-old-reply.png",
+    "archived": "expanded/026-stationary-current-preview-after-old-reply.png",
+    "sourceBytes": 880417,
+    "sourceSha256": "c31b3bb68728f57bf021ca201a938130c414168d80b613a73ded3e26d4af9524",
+    "archivedBytes": 880417,
+    "archivedSha256": "c31b3bb68728f57bf021ca201a938130c414168d80b613a73ded3e26d4af9524"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-expanded-native-20261003\\room-template-renderer-sta-b779b-plan-after-old-worker-reply\\stationary-first-click-submitted-current-origin.png",
+    "archived": "expanded/027-stationary-first-click-submitted-current-origin.png",
+    "sourceBytes": 953210,
+    "sourceSha256": "737077772a7180f8075033a2550237049ca3dac68d5be82511674f95fe10760f",
+    "archivedBytes": 953210,
+    "archivedSha256": "737077772a7180f8075033a2550237049ca3dac68d5be82511674f95fe10760f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-expanded-native-20261003\\room-template-renderer-sta-db3df-plan-after-old-worker-reply\\stationary-current-preview-after-old-reply.png",
+    "archived": "expanded/028-stationary-current-preview-after-old-reply.png",
+    "sourceBytes": 288417,
+    "sourceSha256": "7e96da0e48adc4335eaa5039fed77b95528e9b7209c4135dade2a93929a80b1d",
+    "archivedBytes": 288417,
+    "archivedSha256": "7e96da0e48adc4335eaa5039fed77b95528e9b7209c4135dade2a93929a80b1d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-expanded-native-20261003\\room-template-renderer-sta-db3df-plan-after-old-worker-reply\\stationary-first-click-submitted-current-origin.png",
+    "archived": "expanded/029-stationary-first-click-submitted-current-origin.png",
+    "sourceBytes": 293723,
+    "sourceSha256": "34fb5bbaf60eae4193f436754d5f1aef758f6e68375b28692ea7d58a1333f924",
+    "archivedBytes": 293723,
+    "archivedSha256": "34fb5bbaf60eae4193f436754d5f1aef758f6e68375b28692ea7d58a1333f924"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q0-negative-20261003.json",
+    "archived": "q0-negative/report.json",
+    "sourceBytes": 60304,
+    "sourceSha256": "e994f086722967fda1b8a128637a98f8248146d60bb4c6d09b7bd277a8a55a6a",
+    "archivedBytes": 60304,
+    "archivedSha256": "e994f086722967fda1b8a128637a98f8248146d60bb4c6d09b7bd277a8a55a6a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q0-negative-20261003.txt",
+    "archived": "q0-negative/console.txt",
+    "sourceBytes": 48294,
+    "sourceSha256": "68927027a3dc180cd9f10774b642490520f8c2825b01b3ae0f42d43ced225da3",
+    "archivedBytes": 24238,
+    "archivedSha256": "019ca73c1229b1ffb6f47f92aeeb3fa71772d2e5b0c7c933bb04da7d0be880c6",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q0-negative-20261003\\.last-run.json",
+    "archived": "q0-negative/001-.last-run.json",
+    "sourceBytes": 488,
+    "sourceSha256": "df61cdf2f41b8d7e2453785884c7cc25605c1a83eb2ebc8744eaa9fe22e981ef",
+    "archivedBytes": 488,
+    "archivedSha256": "df61cdf2f41b8d7e2453785884c7cc25605c1a83eb2ebc8744eaa9fe22e981ef"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q0-negative-20261003\\bookshelf-player-build-pla-f0356-nd-keeps-it-after-Save-Load\\bookshelf-loaded-fullhd.png",
+    "archived": "q0-negative/002-bookshelf-loaded-fullhd.png",
+    "sourceBytes": 1458372,
+    "sourceSha256": "0b90058b7aa8560fa047d2bf5b5ef8dee1a3cc55be0bd9755756e52453a3ca72",
+    "archivedBytes": 1458372,
+    "archivedSha256": "0b90058b7aa8560fa047d2bf5b5ef8dee1a3cc55be0bd9755756e52453a3ca72"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q0-negative-20261003\\bookshelf-player-build-pla-f0356-nd-keeps-it-after-Save-Load\\bookshelf-worker-and-save-evidence.json",
+    "archived": "q0-negative/003-bookshelf-worker-and-save-evidence.json",
+    "sourceBytes": 411,
+    "sourceSha256": "944bc0c90a72607fae4671837a8c67cabccf1741314f3a630109764b21c8efbb",
+    "archivedBytes": 411,
+    "archivedSha256": "944bc0c90a72607fae4671837a8c67cabccf1741314f3a630109764b21c8efbb"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q0-negative-20261003\\bookshelf-player-build-pla-f0356-nd-keeps-it-after-Save-Load\\bookshelf-worker-completed-fullhd.png",
+    "archived": "q0-negative/004-bookshelf-worker-completed-fullhd.png",
+    "sourceBytes": 1490740,
+    "sourceSha256": "e78ecd4e37b1f501f8cd146898759498766bff952c4e899f18a66fd81d2efd40",
+    "archivedBytes": 1490740,
+    "archivedSha256": "e78ecd4e37b1f501f8cd146898759498766bff952c4e899f18a66fd81d2efd40"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q0-negative-20261003\\bookshelf-player-build-pla-f0356-nd-keeps-it-after-Save-Load\\completed-worker-snapshot.json",
+    "archived": "q0-negative/005-completed-worker-snapshot.json",
+    "sourceBytes": 82167,
+    "sourceSha256": "cec64ae3dcf74da74be69c2635a1eb74838063ee73bd3bb6cd0efa2db087200e",
+    "archivedBytes": 82167,
+    "archivedSha256": "cec64ae3dcf74da74be69c2635a1eb74838063ee73bd3bb6cd0efa2db087200e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q0-negative-20261003\\bookshelf-player-build-pla-f0356-nd-keeps-it-after-Save-Load\\error-context.md",
+    "archived": "q0-negative/006-error-context.md",
+    "sourceBytes": 9519,
+    "sourceSha256": "2972aba14053fe334284d5b3824c8b57976c7967f337062ed14331bec1ad3571",
+    "archivedBytes": 9519,
+    "archivedSha256": "2972aba14053fe334284d5b3824c8b57976c7967f337062ed14331bec1ad3571"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q0-negative-20261003\\bookshelf-player-build-pla-f0356-nd-keeps-it-after-Save-Load\\failed-fullhd.png",
+    "archived": "q0-negative/007-failed-fullhd.png",
+    "sourceBytes": 311891,
+    "sourceSha256": "8aadf854ecc9c89efaae370f0647d822520d6a2f6be23794cc305b94a082db6e",
+    "archivedBytes": 311891,
+    "archivedSha256": "8aadf854ecc9c89efaae370f0647d822520d6a2f6be23794cc305b94a082db6e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q0-negative-20261003\\bookshelf-player-build-pla-f0356-nd-keeps-it-after-Save-Load\\failed-worker-snapshot.json",
+    "archived": "q0-negative/008-failed-worker-snapshot.json",
+    "sourceBytes": 82167,
+    "sourceSha256": "0b4ab467bfcadc5bd98b53730576f586028e39be55e7d3aa0385595001046036",
+    "archivedBytes": 82167,
+    "archivedSha256": "0b4ab467bfcadc5bd98b53730576f586028e39be55e7d3aa0385595001046036"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q0-negative-20261003\\bookshelf-player-build-pla-f0356-nd-keeps-it-after-Save-Load\\loaded-worker-snapshot.json",
+    "archived": "q0-negative/009-loaded-worker-snapshot.json",
+    "sourceBytes": 82167,
+    "sourceSha256": "4604c6af17cec5338171c18594b179580840802b4472439c99522d14ac1f4be5",
+    "archivedBytes": 82167,
+    "archivedSha256": "4604c6af17cec5338171c18594b179580840802b4472439c99522d14ac1f4be5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q0-negative-20261003\\bookshelf-player-build-pla-f0356-nd-keeps-it-after-Save-Load\\physical-hardware-loaded-fullhd.png",
+    "archived": "q0-negative/010-physical-hardware-loaded-fullhd.png",
+    "sourceBytes": 311891,
+    "sourceSha256": "8aadf854ecc9c89efaae370f0647d822520d6a2f6be23794cc305b94a082db6e",
+    "archivedBytes": 311891,
+    "archivedSha256": "8aadf854ecc9c89efaae370f0647d822520d6a2f6be23794cc305b94a082db6e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q0-negative-20261003\\room-template-renderer-sta-04dc9-plan-after-old-worker-reply\\error-context.md",
+    "archived": "q0-negative/011-error-context.md",
+    "sourceBytes": 12828,
+    "sourceSha256": "529f50d2a2812d9bed1bd83a68949534d927eb060859921bf167159a9a162904",
+    "archivedBytes": 12828,
+    "archivedSha256": "529f50d2a2812d9bed1bd83a68949534d927eb060859921bf167159a9a162904"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q0-negative-20261003\\room-template-renderer-sta-35acb-plan-after-old-worker-reply\\error-context.md",
+    "archived": "q0-negative/012-error-context.md",
+    "sourceBytes": 12860,
+    "sourceSha256": "ffa7feee87e4c7976912625250a8aeb55fc5770758bb186b658621de779634bf",
+    "archivedBytes": 12860,
+    "archivedSha256": "ffa7feee87e4c7976912625250a8aeb55fc5770758bb186b658621de779634bf"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q0-negative-20261003\\room-template-renderer-sta-53bea-plan-after-old-worker-reply\\error-context.md",
+    "archived": "q0-negative/013-error-context.md",
+    "sourceBytes": 13470,
+    "sourceSha256": "7525cfe1a040f07e278ba19f595232e31f5bfdc924062155119bc82ebdefe079",
+    "archivedBytes": 13470,
+    "archivedSha256": "7525cfe1a040f07e278ba19f595232e31f5bfdc924062155119bc82ebdefe079"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q0-negative-20261003\\room-template-renderer-sta-67f41-plan-after-old-worker-reply\\error-context.md",
+    "archived": "q0-negative/014-error-context.md",
+    "sourceBytes": 12828,
+    "sourceSha256": "2c83520de0bea1d3c0130608e335e48aa2ebedc48c95038ce587ab9050f1d5a6",
+    "archivedBytes": 12828,
+    "archivedSha256": "2c83520de0bea1d3c0130608e335e48aa2ebedc48c95038ce587ab9050f1d5a6"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q0-negative-20261003\\room-template-renderer-sta-6d37d-plan-after-old-worker-reply\\error-context.md",
+    "archived": "q0-negative/015-error-context.md",
+    "sourceBytes": 13438,
+    "sourceSha256": "8f25ae80519cd440aa1fb3b58ed3eb2c8e2b70ca921b2aac20f37ab18435609b",
+    "archivedBytes": 13438,
+    "archivedSha256": "8f25ae80519cd440aa1fb3b58ed3eb2c8e2b70ca921b2aac20f37ab18435609b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q0-negative-20261003\\room-template-renderer-sta-77a54-plan-after-old-worker-reply\\error-context.md",
+    "archived": "q0-negative/016-error-context.md",
+    "sourceBytes": 13438,
+    "sourceSha256": "1fbe11344275bd2fd615ca9c7deaba940ef794908e7850865809502881614f31",
+    "archivedBytes": 13438,
+    "archivedSha256": "1fbe11344275bd2fd615ca9c7deaba940ef794908e7850865809502881614f31"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q0-negative-20261003\\room-template-renderer-sta-b779b-plan-after-old-worker-reply\\error-context.md",
+    "archived": "q0-negative/017-error-context.md",
+    "sourceBytes": 13470,
+    "sourceSha256": "60b0e29ea00fa666354a8fc24b327089dd6c68503a86ef29975afc29d39b129f",
+    "archivedBytes": 13470,
+    "archivedSha256": "60b0e29ea00fa666354a8fc24b327089dd6c68503a86ef29975afc29d39b129f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q0-negative-20261003\\room-template-renderer-sta-db3df-plan-after-old-worker-reply\\error-context.md",
+    "archived": "q0-negative/018-error-context.md",
+    "sourceBytes": 12860,
+    "sourceSha256": "12df8d023c686e9981d1d8f272f6e8b89b1b01b8269f1ebd28cc09ab349e2cf9",
+    "archivedBytes": 12860,
+    "archivedSha256": "12df8d023c686e9981d1d8f272f6e8b89b1b01b8269f1ebd28cc09ab349e2cf9"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q1-negative-20261003.json",
+    "archived": "q1-negative/report.json",
+    "sourceBytes": 11502,
+    "sourceSha256": "1c31edb0d02889fab22e6ceb50c5dce750783dba2f387aac79f8bb14f0f48b45",
+    "archivedBytes": 11502,
+    "archivedSha256": "1c31edb0d02889fab22e6ceb50c5dce750783dba2f387aac79f8bb14f0f48b45"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q1-negative-20261003.txt",
+    "archived": "q1-negative/console.txt",
+    "sourceBytes": 9768,
+    "sourceSha256": "be2ecff05c861bf11a5fd85568bb03becc8a0a357ef8ccd9edf2bed4d957aaba",
+    "archivedBytes": 4895,
+    "archivedSha256": "266b3c1f71b3d31283029fca7a8ee6f41afbc14918e7fcd30f5f4a473f8c1bb2",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q1-negative-20261003\\.last-run.json",
+    "archived": "q1-negative/001-.last-run.json",
+    "sourceBytes": 96,
+    "sourceSha256": "d8074dd2fede3d594f66bd5302450872a6bfe67da4bf51ef77f95ccb4825ccc1",
+    "archivedBytes": 96,
+    "archivedSha256": "d8074dd2fede3d594f66bd5302450872a6bfe67da4bf51ef77f95ccb4825ccc1"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q1-negative-20261003\\bookshelf-player-build-pla-4b936-nd-keeps-it-after-Save-Load\\bookshelf-loaded-fullhd.png",
+    "archived": "q1-negative/002-bookshelf-loaded-fullhd.png",
+    "sourceBytes": 1439736,
+    "sourceSha256": "2211a95d3c37eb67297c7c03300352efb8a77f80c1d8634eea360a006cfef529",
+    "archivedBytes": 1439736,
+    "archivedSha256": "2211a95d3c37eb67297c7c03300352efb8a77f80c1d8634eea360a006cfef529"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q1-negative-20261003\\bookshelf-player-build-pla-4b936-nd-keeps-it-after-Save-Load\\bookshelf-worker-and-save-evidence.json",
+    "archived": "q1-negative/003-bookshelf-worker-and-save-evidence.json",
+    "sourceBytes": 436,
+    "sourceSha256": "20cb7a93d18fb66648f33c46b1c5e5921d47cc210d2948c183b5a181905345e5",
+    "archivedBytes": 436,
+    "archivedSha256": "20cb7a93d18fb66648f33c46b1c5e5921d47cc210d2948c183b5a181905345e5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q1-negative-20261003\\bookshelf-player-build-pla-4b936-nd-keeps-it-after-Save-Load\\bookshelf-worker-completed-fullhd.png",
+    "archived": "q1-negative/004-bookshelf-worker-completed-fullhd.png",
+    "sourceBytes": 1469506,
+    "sourceSha256": "cc254191b8ce5654ddddf7446de58c5f9e14e732ac97537d1efdfba7c7b08ede",
+    "archivedBytes": 1469506,
+    "archivedSha256": "cc254191b8ce5654ddddf7446de58c5f9e14e732ac97537d1efdfba7c7b08ede"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q1-negative-20261003\\bookshelf-player-build-pla-4b936-nd-keeps-it-after-Save-Load\\completed-worker-snapshot.json",
+    "archived": "q1-negative/005-completed-worker-snapshot.json",
+    "sourceBytes": 82077,
+    "sourceSha256": "7a95984fda071dd1e4bbcd8d268e2d11076c752ba00ced72004be406870cca05",
+    "archivedBytes": 82077,
+    "archivedSha256": "7a95984fda071dd1e4bbcd8d268e2d11076c752ba00ced72004be406870cca05"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q1-negative-20261003\\bookshelf-player-build-pla-4b936-nd-keeps-it-after-Save-Load\\error-context.md",
+    "archived": "q1-negative/006-error-context.md",
+    "sourceBytes": 9519,
+    "sourceSha256": "1ad0190e19071b5081608c54f4107e2548e4fd78655e3f8d226d49b8af39d994",
+    "archivedBytes": 9519,
+    "archivedSha256": "1ad0190e19071b5081608c54f4107e2548e4fd78655e3f8d226d49b8af39d994"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q1-negative-20261003\\bookshelf-player-build-pla-4b936-nd-keeps-it-after-Save-Load\\failed-fullhd.png",
+    "archived": "q1-negative/007-failed-fullhd.png",
+    "sourceBytes": 276256,
+    "sourceSha256": "c7a4233c2aaca0766889f4738e276b57db3f78658ca50914bfc9edb233da5b03",
+    "archivedBytes": 276256,
+    "archivedSha256": "c7a4233c2aaca0766889f4738e276b57db3f78658ca50914bfc9edb233da5b03"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q1-negative-20261003\\bookshelf-player-build-pla-4b936-nd-keeps-it-after-Save-Load\\failed-worker-snapshot.json",
+    "archived": "q1-negative/008-failed-worker-snapshot.json",
+    "sourceBytes": 82077,
+    "sourceSha256": "098fd2f760a544870a6d69e9fb63c0b6e84885f0db736189b2cb40985698cf06",
+    "archivedBytes": 82077,
+    "archivedSha256": "098fd2f760a544870a6d69e9fb63c0b6e84885f0db736189b2cb40985698cf06"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q1-negative-20261003\\bookshelf-player-build-pla-4b936-nd-keeps-it-after-Save-Load\\loaded-worker-snapshot.json",
+    "archived": "q1-negative/009-loaded-worker-snapshot.json",
+    "sourceBytes": 82077,
+    "sourceSha256": "c86df1263ee535798b9861aed356d7d357e6eed9afc23429aa8ef9701c338cea",
+    "archivedBytes": 82077,
+    "archivedSha256": "c86df1263ee535798b9861aed356d7d357e6eed9afc23429aa8ef9701c338cea"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q1-negative-20261003\\bookshelf-player-build-pla-4b936-nd-keeps-it-after-Save-Load\\physical-hardware-loaded-fullhd.png",
+    "archived": "q1-negative/010-physical-hardware-loaded-fullhd.png",
+    "sourceBytes": 276256,
+    "sourceSha256": "c7a4233c2aaca0766889f4738e276b57db3f78658ca50914bfc9edb233da5b03",
+    "archivedBytes": 276256,
+    "archivedSha256": "c7a4233c2aaca0766889f4738e276b57db3f78658ca50914bfc9edb233da5b03"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-restored-20261003.json",
+    "archived": "restored/report.json",
+    "sourceBytes": 32066,
+    "sourceSha256": "e69513c8df75e7856e21604b1d2fe50c86f5ac7cea4511c925942f71acdad282",
+    "archivedBytes": 32066,
+    "archivedSha256": "e69513c8df75e7856e21604b1d2fe50c86f5ac7cea4511c925942f71acdad282"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-restored-20261003.txt",
+    "archived": "restored/console.txt",
+    "sourceBytes": 33510,
+    "sourceSha256": "e6781791fa80032a45b4ab13780ae3a9e8cb8b2320d2a6c32e27564629208e28",
+    "archivedBytes": 16810,
+    "archivedSha256": "2079124097c8b50b329aaf6c39f6eae70968f67ff0940c891b9c2f8430ab0010",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-restored-20261003\\.last-run.json",
+    "archived": "restored/001-.last-run.json",
+    "sourceBytes": 45,
+    "sourceSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "archivedBytes": 45,
+    "archivedSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-restored-20261003\\bookshelf-player-build-pla-4b936-nd-keeps-it-after-Save-Load\\bookshelf-loaded-fullhd.png",
+    "archived": "restored/002-bookshelf-loaded-fullhd.png",
+    "sourceBytes": 1454901,
+    "sourceSha256": "f28acbfa06d854ce5e546af9259a55e83adc8377b1a8e65e053029349bee2553",
+    "archivedBytes": 1454901,
+    "archivedSha256": "f28acbfa06d854ce5e546af9259a55e83adc8377b1a8e65e053029349bee2553"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-restored-20261003\\bookshelf-player-build-pla-4b936-nd-keeps-it-after-Save-Load\\bookshelf-worker-and-save-evidence.json",
+    "archived": "restored/003-bookshelf-worker-and-save-evidence.json",
+    "sourceBytes": 440,
+    "sourceSha256": "3b0d94b8587f4e25bacff0c0517e9e20faa3b1e131756d88973f0e2c7e32ab51",
+    "archivedBytes": 440,
+    "archivedSha256": "3b0d94b8587f4e25bacff0c0517e9e20faa3b1e131756d88973f0e2c7e32ab51"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-restored-20261003\\bookshelf-player-build-pla-4b936-nd-keeps-it-after-Save-Load\\bookshelf-worker-completed-fullhd.png",
+    "archived": "restored/004-bookshelf-worker-completed-fullhd.png",
+    "sourceBytes": 1485987,
+    "sourceSha256": "21ba9168f41eee899a8ec3bd9949240b2e52c783dc0d80d2d14f9b6e7438e90a",
+    "archivedBytes": 1485987,
+    "archivedSha256": "21ba9168f41eee899a8ec3bd9949240b2e52c783dc0d80d2d14f9b6e7438e90a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-restored-20261003\\bookshelf-player-build-pla-4b936-nd-keeps-it-after-Save-Load\\completed-worker-snapshot.json",
+    "archived": "restored/005-completed-worker-snapshot.json",
+    "sourceBytes": 82077,
+    "sourceSha256": "229d287b8771ae6ef39b727f91f8da945b1ae26021caeae7d007263b97fbf245",
+    "archivedBytes": 82077,
+    "archivedSha256": "229d287b8771ae6ef39b727f91f8da945b1ae26021caeae7d007263b97fbf245"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-restored-20261003\\bookshelf-player-build-pla-4b936-nd-keeps-it-after-Save-Load\\loaded-worker-snapshot.json",
+    "archived": "restored/006-loaded-worker-snapshot.json",
+    "sourceBytes": 82077,
+    "sourceSha256": "1023b59c8c2ef9f4d59c2d3fb494db15be51920d9ee9e07c77b8a2de222da263",
+    "archivedBytes": 82077,
+    "archivedSha256": "1023b59c8c2ef9f4d59c2d3fb494db15be51920d9ee9e07c77b8a2de222da263"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-restored-20261003\\bookshelf-player-build-pla-4b936-nd-keeps-it-after-Save-Load\\physical-hardware-loaded-fullhd.png",
+    "archived": "restored/007-physical-hardware-loaded-fullhd.png",
+    "sourceBytes": 279889,
+    "sourceSha256": "807dbfaa38a12413be2b99905175be10771fbba97e1ba6afa2b928c3b06e2edd",
+    "archivedBytes": 279889,
+    "archivedSha256": "807dbfaa38a12413be2b99905175be10771fbba97e1ba6afa2b928c3b06e2edd"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-restored-20261003\\bookshelf-player-build-pla-f0356-nd-keeps-it-after-Save-Load\\bookshelf-loaded-fullhd.png",
+    "archived": "restored/008-bookshelf-loaded-fullhd.png",
+    "sourceBytes": 1473788,
+    "sourceSha256": "6a5fa1401911e79ff7216888c474a4629ad4c92277db71509191f58fcbad56f3",
+    "archivedBytes": 1473788,
+    "archivedSha256": "6a5fa1401911e79ff7216888c474a4629ad4c92277db71509191f58fcbad56f3"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-restored-20261003\\bookshelf-player-build-pla-f0356-nd-keeps-it-after-Save-Load\\bookshelf-worker-and-save-evidence.json",
+    "archived": "restored/009-bookshelf-worker-and-save-evidence.json",
+    "sourceBytes": 415,
+    "sourceSha256": "4d88f13bdd0a2cef12f78f8ef7afaba284f744bcb8e2bd2020b192adf54b08d6",
+    "archivedBytes": 415,
+    "archivedSha256": "4d88f13bdd0a2cef12f78f8ef7afaba284f744bcb8e2bd2020b192adf54b08d6"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-restored-20261003\\bookshelf-player-build-pla-f0356-nd-keeps-it-after-Save-Load\\bookshelf-worker-completed-fullhd.png",
+    "archived": "restored/010-bookshelf-worker-completed-fullhd.png",
+    "sourceBytes": 1507687,
+    "sourceSha256": "66e0f86889a350acb43d07b6e64058320c07bd7ae682706628e2e200c08a9b3b",
+    "archivedBytes": 1507687,
+    "archivedSha256": "66e0f86889a350acb43d07b6e64058320c07bd7ae682706628e2e200c08a9b3b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-restored-20261003\\bookshelf-player-build-pla-f0356-nd-keeps-it-after-Save-Load\\completed-worker-snapshot.json",
+    "archived": "restored/011-completed-worker-snapshot.json",
+    "sourceBytes": 82165,
+    "sourceSha256": "a9f0edf5f033b462eefdc3baebd31713e4b80aef1772fc23fde2edf6c64ef961",
+    "archivedBytes": 82165,
+    "archivedSha256": "a9f0edf5f033b462eefdc3baebd31713e4b80aef1772fc23fde2edf6c64ef961"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-restored-20261003\\bookshelf-player-build-pla-f0356-nd-keeps-it-after-Save-Load\\loaded-worker-snapshot.json",
+    "archived": "restored/012-loaded-worker-snapshot.json",
+    "sourceBytes": 82165,
+    "sourceSha256": "7acc35b825cc77e698ac0a5a532392096c06dc9085f9a132df13bbb04631a2f7",
+    "archivedBytes": 82165,
+    "archivedSha256": "7acc35b825cc77e698ac0a5a532392096c06dc9085f9a132df13bbb04631a2f7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-restored-20261003\\bookshelf-player-build-pla-f0356-nd-keeps-it-after-Save-Load\\physical-hardware-loaded-fullhd.png",
+    "archived": "restored/013-physical-hardware-loaded-fullhd.png",
+    "sourceBytes": 315725,
+    "sourceSha256": "c857c0178a6bcbca80d566e86079420a17d3376485fc9144b8bc55e23dff0c53",
+    "archivedBytes": 315725,
+    "archivedSha256": "c857c0178a6bcbca80d566e86079420a17d3376485fc9144b8bc55e23dff0c53"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-restored-20261003\\room-template-renderer-sta-04dc9-plan-after-old-worker-reply\\stationary-current-preview-after-old-reply.png",
+    "archived": "restored/014-stationary-current-preview-after-old-reply.png",
+    "sourceBytes": 257828,
+    "sourceSha256": "7dde3fc2108d7344f72e65cbc905b97d4e6bb5a2a36151dfc2413be1f2c1fdd7",
+    "archivedBytes": 257828,
+    "archivedSha256": "7dde3fc2108d7344f72e65cbc905b97d4e6bb5a2a36151dfc2413be1f2c1fdd7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-restored-20261003\\room-template-renderer-sta-04dc9-plan-after-old-worker-reply\\stationary-first-click-submitted-current-origin.png",
+    "archived": "restored/015-stationary-first-click-submitted-current-origin.png",
+    "sourceBytes": 282229,
+    "sourceSha256": "a87334a5da18aea4623b890309524895af4581ed5f05bc5da0c5d1546c538b3e",
+    "archivedBytes": 282229,
+    "archivedSha256": "a87334a5da18aea4623b890309524895af4581ed5f05bc5da0c5d1546c538b3e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-restored-20261003\\room-template-renderer-sta-35acb-plan-after-old-worker-reply\\stationary-current-preview-after-old-reply.png",
+    "archived": "restored/016-stationary-current-preview-after-old-reply.png",
+    "sourceBytes": 288423,
+    "sourceSha256": "82776ee8e2f3debe72a008de98cb146f468e77b675f334847cc2ef4b9dd478a5",
+    "archivedBytes": 288423,
+    "archivedSha256": "82776ee8e2f3debe72a008de98cb146f468e77b675f334847cc2ef4b9dd478a5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-restored-20261003\\room-template-renderer-sta-35acb-plan-after-old-worker-reply\\stationary-first-click-submitted-current-origin.png",
+    "archived": "restored/017-stationary-first-click-submitted-current-origin.png",
+    "sourceBytes": 293755,
+    "sourceSha256": "c47f58f8190045bc9bbf728849271c18e74bf4af90deab3cb3acc31a95b72b4e",
+    "archivedBytes": 293755,
+    "archivedSha256": "c47f58f8190045bc9bbf728849271c18e74bf4af90deab3cb3acc31a95b72b4e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-restored-20261003\\room-template-renderer-sta-53bea-plan-after-old-worker-reply\\stationary-current-preview-after-old-reply.png",
+    "archived": "restored/018-stationary-current-preview-after-old-reply.png",
+    "sourceBytes": 880403,
+    "sourceSha256": "a3a4c09e7ef3b807bcafe7eab62f41f849288588c2743ae53d7d35e3f0432db8",
+    "archivedBytes": 880403,
+    "archivedSha256": "a3a4c09e7ef3b807bcafe7eab62f41f849288588c2743ae53d7d35e3f0432db8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-restored-20261003\\room-template-renderer-sta-53bea-plan-after-old-worker-reply\\stationary-first-click-submitted-current-origin.png",
+    "archived": "restored/019-stationary-first-click-submitted-current-origin.png",
+    "sourceBytes": 951964,
+    "sourceSha256": "077aecf0754f5ca744700862d25ac9011b08fb9648f41f484cc87331c86854f6",
+    "archivedBytes": 951964,
+    "archivedSha256": "077aecf0754f5ca744700862d25ac9011b08fb9648f41f484cc87331c86854f6"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-restored-20261003\\room-template-renderer-sta-67f41-plan-after-old-worker-reply\\stationary-current-preview-after-old-reply.png",
+    "archived": "restored/020-stationary-current-preview-after-old-reply.png",
+    "sourceBytes": 257595,
+    "sourceSha256": "9307044d1d02ab580719ced9cc32d1b7546f59226bbfc148a4cbf0a0dc0862df",
+    "archivedBytes": 257595,
+    "archivedSha256": "9307044d1d02ab580719ced9cc32d1b7546f59226bbfc148a4cbf0a0dc0862df"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-restored-20261003\\room-template-renderer-sta-67f41-plan-after-old-worker-reply\\stationary-first-click-submitted-current-origin.png",
+    "archived": "restored/021-stationary-first-click-submitted-current-origin.png",
+    "sourceBytes": 281614,
+    "sourceSha256": "642f494134a4cf7445d5a475ee33d7f4d7c97a82ed9ccd8cb2cb44b9b4a106e7",
+    "archivedBytes": 281614,
+    "archivedSha256": "642f494134a4cf7445d5a475ee33d7f4d7c97a82ed9ccd8cb2cb44b9b4a106e7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-restored-20261003\\room-template-renderer-sta-6d37d-plan-after-old-worker-reply\\stationary-current-preview-after-old-reply.png",
+    "archived": "restored/022-stationary-current-preview-after-old-reply.png",
+    "sourceBytes": 1688829,
+    "sourceSha256": "95360f1bce060976072875a30c4ede82fa104b53433dbd396c4999b094e4bd98",
+    "archivedBytes": 1688829,
+    "archivedSha256": "95360f1bce060976072875a30c4ede82fa104b53433dbd396c4999b094e4bd98"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-restored-20261003\\room-template-renderer-sta-6d37d-plan-after-old-worker-reply\\stationary-first-click-submitted-current-origin.png",
+    "archived": "restored/023-stationary-first-click-submitted-current-origin.png",
+    "sourceBytes": 1705574,
+    "sourceSha256": "0da6cd241272eb719de319213951d80efcdb4c51cfb78a144903824d2d17efc6",
+    "archivedBytes": 1705574,
+    "archivedSha256": "0da6cd241272eb719de319213951d80efcdb4c51cfb78a144903824d2d17efc6"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-restored-20261003\\room-template-renderer-sta-77a54-plan-after-old-worker-reply\\stationary-current-preview-after-old-reply.png",
+    "archived": "restored/024-stationary-current-preview-after-old-reply.png",
+    "sourceBytes": 1689117,
+    "sourceSha256": "e9950252d3ecde0a07c9555e0575c8a60b8ac5e5a87bcbdf2d75c6bc56c50ec1",
+    "archivedBytes": 1689117,
+    "archivedSha256": "e9950252d3ecde0a07c9555e0575c8a60b8ac5e5a87bcbdf2d75c6bc56c50ec1"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-restored-20261003\\room-template-renderer-sta-77a54-plan-after-old-worker-reply\\stationary-first-click-submitted-current-origin.png",
+    "archived": "restored/025-stationary-first-click-submitted-current-origin.png",
+    "sourceBytes": 1705718,
+    "sourceSha256": "570889fe35b5cf87dcb1a8f06b516cd62791ec45f09522b95434c45e0160ebee",
+    "archivedBytes": 1705718,
+    "archivedSha256": "570889fe35b5cf87dcb1a8f06b516cd62791ec45f09522b95434c45e0160ebee"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-restored-20261003\\room-template-renderer-sta-b779b-plan-after-old-worker-reply\\stationary-current-preview-after-old-reply.png",
+    "archived": "restored/026-stationary-current-preview-after-old-reply.png",
+    "sourceBytes": 880417,
+    "sourceSha256": "c31b3bb68728f57bf021ca201a938130c414168d80b613a73ded3e26d4af9524",
+    "archivedBytes": 880417,
+    "archivedSha256": "c31b3bb68728f57bf021ca201a938130c414168d80b613a73ded3e26d4af9524"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-restored-20261003\\room-template-renderer-sta-b779b-plan-after-old-worker-reply\\stationary-first-click-submitted-current-origin.png",
+    "archived": "restored/027-stationary-first-click-submitted-current-origin.png",
+    "sourceBytes": 953214,
+    "sourceSha256": "e590135ab676ab29d874c14ffd46e617bb878fc4a5df887ae8c67254bdd2bcd8",
+    "archivedBytes": 953214,
+    "archivedSha256": "e590135ab676ab29d874c14ffd46e617bb878fc4a5df887ae8c67254bdd2bcd8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-restored-20261003\\room-template-renderer-sta-db3df-plan-after-old-worker-reply\\stationary-current-preview-after-old-reply.png",
+    "archived": "restored/028-stationary-current-preview-after-old-reply.png",
+    "sourceBytes": 288417,
+    "sourceSha256": "7e96da0e48adc4335eaa5039fed77b95528e9b7209c4135dade2a93929a80b1d",
+    "archivedBytes": 288417,
+    "archivedSha256": "7e96da0e48adc4335eaa5039fed77b95528e9b7209c4135dade2a93929a80b1d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-restored-20261003\\room-template-renderer-sta-db3df-plan-after-old-worker-reply\\stationary-first-click-submitted-current-origin.png",
+    "archived": "restored/029-stationary-first-click-submitted-current-origin.png",
+    "sourceBytes": 293723,
+    "sourceSha256": "34fb5bbaf60eae4193f436754d5f1aef758f6e68375b28692ea7d58a1333f924",
+    "archivedBytes": 293723,
+    "archivedSha256": "34fb5bbaf60eae4193f436754d5f1aef758f6e68375b28692ea7d58a1333f924"
+  }
+]

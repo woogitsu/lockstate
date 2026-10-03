@@ -1,0 +1,615 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-accepted-command-marker-class-audit-20261003
+
+ ❯ tests/integration/accepted-command-marker-class.test.ts (60 tests | 30 failed) 787ms
+   × actual non-changing command after completed template: saved=false surface='dismiss-absent-acknowledgement' 7ms
+   × actual non-changing command after completed template: saved=true surface='dismiss-absent-acknowledgement' 5ms
+   × real accepted command preserves its own history meaning: saved=false type='CancelBuildOrder' 10ms
+   × real accepted command preserves its own history meaning: saved=false type='CancelMaterialPurchase' 5ms
+   × real accepted command preserves its own history meaning: saved=false type='RemoveObject' 51ms
+   × real accepted command preserves its own history meaning: saved=false type='RemoveWall' 7ms
+   × real accepted command preserves its own history meaning: saved=false type='ZoneRoom' 5ms
+   × real accepted command preserves its own history meaning: saved=false type='UnzoneRoom' 4ms
+   × real accepted command preserves its own history meaning: saved=false type='AdmitPrisoner' 44ms
+   × real accepted command preserves its own history meaning: saved=false type='PurchaseMaterials' 4ms
+   × real accepted command preserves its own history meaning: saved=false type='SellMaterials' 4ms
+   × real accepted command preserves its own history meaning: saved=false type='HireStaff' 3ms
+   × real accepted command preserves its own history meaning: saved=false type='ReleaseGuardAssignment' 51ms
+   × real accepted command preserves its own history meaning: saved=false type='DismissStaff' 4ms
+   × real accepted command preserves its own history meaning: saved=false type='DismissAlert' 5ms
+   × real accepted command preserves its own history meaning: saved=false type='EditRegimeBlock' 5ms
+   × real accepted command preserves its own history meaning: saved=true type='CancelBuildOrder' 8ms
+   × real accepted command preserves its own history meaning: saved=true type='CancelMaterialPurchase' 8ms
+   × real accepted command preserves its own history meaning: saved=true type='RemoveObject' 58ms
+   × real accepted command preserves its own history meaning: saved=true type='RemoveWall' 10ms
+   × real accepted command preserves its own history meaning: saved=true type='ZoneRoom' 8ms
+   × real accepted command preserves its own history meaning: saved=true type='UnzoneRoom' 8ms
+   × real accepted command preserves its own history meaning: saved=true type='AdmitPrisoner' 59ms
+   × real accepted command preserves its own history meaning: saved=true type='PurchaseMaterials' 7ms
+   × real accepted command preserves its own history meaning: saved=true type='SellMaterials' 7ms
+   × real accepted command preserves its own history meaning: saved=true type='HireStaff' 8ms
+   × real accepted command preserves its own history meaning: saved=true type='ReleaseGuardAssignment' 65ms
+   × real accepted command preserves its own history meaning: saved=true type='DismissStaff' 8ms
+   × real accepted command preserves its own history meaning: saved=true type='DismissAlert' 8ms
+   × real accepted command preserves its own history meaning: saved=true type='EditRegimeBlock' 7ms
+
+ Test Files  1 failed (1)
+      Tests  30 failed | 30 passed (60)
+   Start at  05:14:29
+   Duration  3.28s (transform 903ms, setup 0ms, import 2.36s, tests 787ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 30 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > actual non-changing command after completed template: saved=false surface='dismiss-absent-acknowledgement'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > actual non-changing command after completed template: saved=true surface='dismiss-absent-acknowledgement'
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ tests/integration/accepted-command-marker-class.test.ts:76:77
+     74|     else expect(runtime.refusals.count).toBe(0);
+     75|     send(runtime, { type: 'Undo' });
+     76|     expect(runtime.prisoners.roomInstances.allByRoomCatalogId('room.ya…
+       |                                                                             ^
+     77|       surface === 'dismiss-absent-acknowledgement' ? 1 : 0,
+     78|     );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/30]⎯
+
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > real accepted command preserves its own history meaning: saved=false type='CancelBuildOrder'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > real accepted command preserves its own history meaning: saved=false type='RemoveWall'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > real accepted command preserves its own history meaning: saved=true type='CancelBuildOrder'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > real accepted command preserves its own history meaning: saved=true type='RemoveWall'
+AssertionError: expected { version: 1, chunkSize: 32, …(2) } to deeply equal { version: 1, chunkSize: 32, …(2) }
+
+- Expected
++ Received
+
+@@ -1,10 +1,10 @@
+  {
+    "chunkSize": 32,
+    "chunks": [
+      {
+-       "contentRevision": 64,
++       "contentRevision": 128,
+        "dirty": true,
+        "geometryRevision": 2,
+        "leftEdge": [
+          [
+            0,
+@@ -27,75 +27,11 @@
+        "x": 0,
+        "y": 0,
+        "zoning": [
+          [
+            0,
+-           165,
+-         ],
+-         [
+-           9,
+-           8,
+-         ],
+-         [
+-           0,
+-           24,
+-         ],
+-         [
+-           9,
+-           8,
+-         ],
+-         [
+-           0,
+-           24,
+-         ],
+-         [
+-           9,
+-           8,
+-         ],
+-         [
+-           0,
+-           24,
+-         ],
+-         [
+-           9,
+-           8,
+-         ],
+-         [
+-           0,
+-           24,
+-         ],
+-         [
+-           9,
+-           8,
+-         ],
+-         [
+-           0,
+-           24,
+-         ],
+-         [
+-           9,
+-           8,
+-         ],
+-         [
+-           0,
+-           24,
+-         ],
+-         [
+-           9,
+-           8,
+-         ],
+-         [
+-           0,
+-           24,
+-         ],
+-         [
+-           9,
+-           8,
+-         ],
+-         [
+-           0,
+-           627,
++           1024,
+          ],
+        ],
+      },
+    ],
+    "ownedChunks": [
+
+ ❯ tests/integration/accepted-command-marker-class.test.ts:194:29
+    192|     send(runtime, { type: 'Undo' });
+    193|     const afterUndo = captureSessionSnapshot(runtime);
+    194|     expect(afterUndo.world).toEqual(accepted.world);
+       |                             ^
+    195|     expect(afterUndo.construction).toEqual(accepted.construction);
+    196|     expect(runtime.placedObjects.getSnapshot()).toEqual(accepted.simul…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/30]⎯
+
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > real accepted command preserves its own history meaning: saved=false type='CancelMaterialPurchase'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > real accepted command preserves its own history meaning: saved=false type='PurchaseMaterials'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > real accepted command preserves its own history meaning: saved=false type='SellMaterials'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > real accepted command preserves its own history meaning: saved=false type='HireStaff'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > real accepted command preserves its own history meaning: saved=false type='DismissStaff'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > real accepted command preserves its own history meaning: saved=false type='EditRegimeBlock'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > real accepted command preserves its own history meaning: saved=true type='CancelMaterialPurchase'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > real accepted command preserves its own history meaning: saved=true type='PurchaseMaterials'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > real accepted command preserves its own history meaning: saved=true type='SellMaterials'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > real accepted command preserves its own history meaning: saved=true type='HireStaff'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > real accepted command preserves its own history meaning: saved=true type='DismissStaff'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > real accepted command preserves its own history meaning: saved=true type='EditRegimeBlock'
+AssertionError: expected { version: 1, chunkSize: 32, …(2) } to deeply equal { version: 1, chunkSize: 32, …(2) }
+
+- Expected
++ Received
+
+@@ -1,10 +1,10 @@
+  {
+    "chunkSize": 32,
+    "chunks": [
+      {
+-       "contentRevision": 64,
++       "contentRevision": 128,
+        "dirty": true,
+        "geometryRevision": 0,
+        "leftEdge": [
+          [
+            0,
+@@ -27,75 +27,11 @@
+        "x": 0,
+        "y": 0,
+        "zoning": [
+          [
+            0,
+-           165,
+-         ],
+-         [
+-           9,
+-           8,
+-         ],
+-         [
+-           0,
+-           24,
+-         ],
+-         [
+-           9,
+-           8,
+-         ],
+-         [
+-           0,
+-           24,
+-         ],
+-         [
+-           9,
+-           8,
+-         ],
+-         [
+-           0,
+-           24,
+-         ],
+-         [
+-           9,
+-           8,
+-         ],
+-         [
+-           0,
+-           24,
+-         ],
+-         [
+-           9,
+-           8,
+-         ],
+-         [
+-           0,
+-           24,
+-         ],
+-         [
+-           9,
+-           8,
+-         ],
+-         [
+-           0,
+-           24,
+-         ],
+-         [
+-           9,
+-           8,
+-         ],
+-         [
+-           0,
+-           24,
+-         ],
+-         [
+-           9,
+-           8,
+-         ],
+-         [
+-           0,
+-           627,
++           1024,
+          ],
+        ],
+      },
+    ],
+    "ownedChunks": [
+
+ ❯ tests/integration/accepted-command-marker-class.test.ts:194:29
+    192|     send(runtime, { type: 'Undo' });
+    193|     const afterUndo = captureSessionSnapshot(runtime);
+    194|     expect(afterUndo.world).toEqual(accepted.world);
+       |                             ^
+    195|     expect(afterUndo.construction).toEqual(accepted.construction);
+    196|     expect(runtime.placedObjects.getSnapshot()).toEqual(accepted.simul…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/30]⎯
+
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > real accepted command preserves its own history meaning: saved=false type='RemoveObject'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > real accepted command preserves its own history meaning: saved=false type='AdmitPrisoner'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > real accepted command preserves its own history meaning: saved=false type='ReleaseGuardAssignment'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > real accepted command preserves its own history meaning: saved=true type='RemoveObject'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > real accepted command preserves its own history meaning: saved=true type='AdmitPrisoner'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > real accepted command preserves its own history meaning: saved=true type='ReleaseGuardAssignment'
+AssertionError: expected { version: 1, chunkSize: 32, …(2) } to deeply equal { version: 1, chunkSize: 32, …(2) }
+
+- Expected
++ Received
+
+@@ -1,10 +1,10 @@
+  {
+    "chunkSize": 32,
+    "chunks": [
+      {
+-       "contentRevision": 74,
++       "contentRevision": 138,
+        "dirty": true,
+        "geometryRevision": 20,
+        "leftEdge": [
+          [
+            0,
+@@ -145,75 +145,11 @@
+        "x": 0,
+        "y": 0,
+        "zoning": [
+          [
+            0,
+-           165,
+-         ],
+-         [
+-           9,
+-           8,
+-         ],
+-         [
+-           0,
+-           24,
+-         ],
+-         [
+-           9,
+-           8,
+-         ],
+-         [
+-           0,
+-           24,
+-         ],
+-         [
+-           9,
+-           8,
+-         ],
+-         [
+-           0,
+-           24,
+-         ],
+-         [
+-           9,
+-           8,
+-         ],
+-         [
+-           0,
+-           24,
+-         ],
+-         [
+-           9,
+-           8,
+-         ],
+-         [
+-           0,
+-           24,
+-         ],
+-         [
+-           9,
+-           8,
+-         ],
+-         [
+-           0,
+-           24,
+-         ],
+-         [
+-           9,
+-           8,
+-         ],
+-         [
+-           0,
+-           24,
+-         ],
+-         [
+-           9,
+-           8,
+-         ],
+-         [
+-           0,
+-           230,
++           627,
+          ],
+          [
+            1,
+            2,
+          ],
+
+ ❯ tests/integration/accepted-command-marker-class.test.ts:194:29
+    192|     send(runtime, { type: 'Undo' });
+    193|     const afterUndo = captureSessionSnapshot(runtime);
+    194|     expect(afterUndo.world).toEqual(accepted.world);
+       |                             ^
+    195|     expect(afterUndo.construction).toEqual(accepted.construction);
+    196|     expect(runtime.placedObjects.getSnapshot()).toEqual(accepted.simul…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/30]⎯
+
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > real accepted command preserves its own history meaning: saved=false type='ZoneRoom'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > real accepted command preserves its own history meaning: saved=false type='DismissAlert'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > real accepted command preserves its own history meaning: saved=true type='ZoneRoom'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > real accepted command preserves its own history meaning: saved=true type='DismissAlert'
+AssertionError: expected { version: 1, chunkSize: 32, …(2) } to deeply equal { version: 1, chunkSize: 32, …(2) }
+
+- Expected
++ Received
+
+@@ -1,10 +1,10 @@
+  {
+    "chunkSize": 32,
+    "chunks": [
+      {
+-       "contentRevision": 128,
++       "contentRevision": 192,
+        "dirty": true,
+        "geometryRevision": 0,
+        "leftEdge": [
+          [
+            0,
+@@ -27,75 +27,11 @@
+        "x": 0,
+        "y": 0,
+        "zoning": [
+          [
+            0,
+-           165,
+-         ],
+-         [
+-           9,
+-           8,
+-         ],
+-         [
+-           0,
+-           24,
+-         ],
+-         [
+-           9,
+-           8,
+-         ],
+-         [
+-           0,
+-           24,
+-         ],
+-         [
+-           9,
+-           8,
+-         ],
+-         [
+-           0,
+-           24,
+-         ],
+-         [
+-           9,
+-           8,
+-         ],
+-         [
+-           0,
+-           24,
+-         ],
+-         [
+-           9,
+-           8,
+-         ],
+-         [
+-           0,
+-           24,
+-         ],
+-         [
+-           9,
+-           8,
+-         ],
+-         [
+-           0,
+-           24,
+-         ],
+-         [
+-           9,
+-           8,
+-         ],
+-         [
+-           0,
+-           24,
+-         ],
+-         [
+-           9,
+-           8,
+-         ],
+-         [
+-           0,
+-           197,
++           594,
+          ],
+          [
+            9,
+            8,
+          ],
+
+ ❯ tests/integration/accepted-command-marker-class.test.ts:194:29
+    192|     send(runtime, { type: 'Undo' });
+    193|     const afterUndo = captureSessionSnapshot(runtime);
+    194|     expect(afterUndo.world).toEqual(accepted.world);
+       |                             ^
+    195|     expect(afterUndo.construction).toEqual(accepted.construction);
+    196|     expect(runtime.placedObjects.getSnapshot()).toEqual(accepted.simul…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/30]⎯
+
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > real accepted command preserves its own history meaning: saved=false type='UnzoneRoom'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > real accepted command preserves its own history meaning: saved=true type='UnzoneRoom'
+AssertionError: expected { version: 1, chunkSize: 32, …(2) } to deeply equal { version: 1, chunkSize: 32, …(2) }
+
+- Expected
++ Received
+
+@@ -1,10 +1,10 @@
+  {
+    "chunkSize": 32,
+    "chunks": [
+      {
+-       "contentRevision": 192,
++       "contentRevision": 256,
+        "dirty": true,
+        "geometryRevision": 0,
+        "leftEdge": [
+          [
+            0,
+@@ -27,75 +27,11 @@
+        "x": 0,
+        "y": 0,
+        "zoning": [
+          [
+            0,
+-           165,
+-         ],
+-         [
+-           9,
+-           8,
+-         ],
+-         [
+-           0,
+-           24,
+-         ],
+-         [
+-           9,
+-           8,
+-         ],
+-         [
+-           0,
+-           24,
+-         ],
+-         [
+-           9,
+-           8,
+-         ],
+-         [
+-           0,
+-           24,
+-         ],
+-         [
+-           9,
+-           8,
+-         ],
+-         [
+-           0,
+-           24,
+-         ],
+-         [
+-           9,
+-           8,
+-         ],
+-         [
+-           0,
+-           24,
+-         ],
+-         [
+-           9,
+-           8,
+-         ],
+-         [
+-           0,
+-           24,
+-         ],
+-         [
+-           9,
+-           8,
+-         ],
+-         [
+-           0,
+-           24,
+-         ],
+-         [
+-           9,
+-           8,
+-         ],
+-         [
+-           0,
+-           627,
++           1024,
+          ],
+        ],
+      },
+    ],
+    "ownedChunks": [
+
+ ❯ tests/integration/accepted-command-marker-class.test.ts:194:29
+    192|     send(runtime, { type: 'Undo' });
+    193|     const afterUndo = captureSessionSnapshot(runtime);
+    194|     expect(afterUndo.world).toEqual(accepted.world);
+       |                             ^
+    195|     expect(afterUndo.construction).toEqual(accepted.construction);
+    196|     expect(runtime.placedObjects.getSnapshot()).toEqual(accepted.simul…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/30]⎯

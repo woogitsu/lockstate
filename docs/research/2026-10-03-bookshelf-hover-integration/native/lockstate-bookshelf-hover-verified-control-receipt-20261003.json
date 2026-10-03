@@ -1,0 +1,26 @@
+﻿{
+    "subject":  "3682ede0917546f2d1a8e398d88bb0a0e30c4095",
+    "branch":  "codex/integrate-bookshelf-hover-20261003",
+    "mappingSha":  "A9EADA806FF523BC9933DA9B7A2E8A731C5A896286E33B0551119D8E389DD2D4",
+    "sceneSha":  "3833259DF5453B44B51181E1B0E34765A8A58B29DBBB08FCFB5E1CC8414823EC",
+    "baselineWorker":  {
+                           "file":  "worker-Ciin5KP5.js",
+                           "bytes":  441796,
+                           "sha":  "5A052E37391AB6FC02F21CD62C39B4540F78006632B7AB333906A69FEF6B9263"
+                       },
+    "negativeWorker":  {
+                           "file":  "worker-Ciin5KP5.js",
+                           "bytes":  441796,
+                           "sha":  "5A052E37391AB6FC02F21CD62C39B4540F78006632B7AB333906A69FEF6B9263"
+                       },
+    "q0NegativeExit":  1,
+    "q1NegativeExit":  1,
+    "restoredMappingSha":  "A9EADA806FF523BC9933DA9B7A2E8A731C5A896286E33B0551119D8E389DD2D4",
+    "restoredSceneSha":  "3833259DF5453B44B51181E1B0E34765A8A58B29DBBB08FCFB5E1CC8414823EC",
+    "restoredWorker":  {
+                           "file":  "worker-Ciin5KP5.js",
+                           "bytes":  441796,
+                           "sha":  "5A052E37391AB6FC02F21CD62C39B4540F78006632B7AB333906A69FEF6B9263"
+                       },
+    "restoredExit":  0
+}

@@ -1,0 +1,29 @@
+const fs = require('fs'), cp = require('child_process');
+const mode = process.argv[2];
+const names = mode === 'neighbors' ? [
+  'tests/integration/occupied-template-refusal-undo-selection.test.ts',
+  'tests/integration/refused-unzone-template-undo.test.ts',
+  'tests/integration/undo-refuses-a-transaction-the-player-did-not-just-create.test.ts',
+  'tests/integration/room-template-redo-admission-atomicity.test.ts',
+  'tests/integration/room-zoning-loop.test.ts',
+  'tests/integration/security-guard-release.test.ts',
+  'tests/integration/staff-hiring-loop.test.ts',
+  'tests/integration/staff-dismissal.test.ts',
+  'tests/integration/prisoner-admission-loop.test.ts',
+  'tests/integration/regime-editing.test.ts',
+  'tests/integration/regime-editing-producer.test.ts',
+  'tests/unit/economy-procurement-sellback.test.ts',
+] : [
+  'tests/foundation/research-index-contract.test.ts',
+  'tests/foundation/documented-wire-schema-membership-contract.test.ts',
+  'tests/foundation/documentation-version-claim-contract.test.ts',
+  'tests/foundation/documentation-source-anchor-contract.test.ts',
+  'tests/foundation/documentation-links-contract.test.ts',
+  'tests/foundation/documentation-commit-citation-contract.test.ts',
+  'tests/foundation/documentation-claims-contract.test.ts',
+  'tests/foundation/documentation-anchor-quotation-contract.test.ts',
+];
+for (const file of names) if (!fs.existsSync(file)) throw new Error(`Missing actual gate: ${file}`);
+const r = cp.spawnSync(process.execPath, ['node_modules/vitest/vitest.mjs', 'run', ...names, '--maxWorkers=2'], { encoding: 'utf8', env: { ...process.env, GIT_NO_LAZY_FETCH: '1' } });
+fs.writeFileSync(`docs/research/2026-10-03-accepted-command-marker-class/${mode}.txt`, r.stdout + r.stderr);
+console.log(r.stdout + r.stderr); process.exitCode = r.status;

@@ -1,0 +1,146 @@
+[
+  {
+    "original": ".last-run.json",
+    "saved": "capture-001.json",
+    "bytes": 96,
+    "sha256": "d8074dd2fede3d594f66bd5302450872a6bfe67da4bf51ef77f95ccb4825ccc1"
+  },
+  {
+    "original": "bookshelf-player-build-pla-4b936-nd-keeps-it-after-Save-Load\\bookshelf-loaded-fullhd.png",
+    "saved": "capture-002.png",
+    "bytes": 1492295,
+    "sha256": "5c12a74068da91f6227fce6ec6a598ed30230edadd519b61ce2f089fdadae7b4"
+  },
+  {
+    "original": "bookshelf-player-build-pla-4b936-nd-keeps-it-after-Save-Load\\bookshelf-worker-and-save-evidence.json",
+    "saved": "capture-003.json",
+    "bytes": 436,
+    "sha256": "20cb7a93d18fb66648f33c46b1c5e5921d47cc210d2948c183b5a181905345e5"
+  },
+  {
+    "original": "bookshelf-player-build-pla-4b936-nd-keeps-it-after-Save-Load\\bookshelf-worker-completed-fullhd.png",
+    "saved": "capture-004.png",
+    "bytes": 1526847,
+    "sha256": "8d9371223aff6a81cb5b237db5ee686235e342dc28966c2188b66005835aa334"
+  },
+  {
+    "original": "bookshelf-player-build-pla-4b936-nd-keeps-it-after-Save-Load\\completed-worker-snapshot.json",
+    "saved": "capture-005.json",
+    "bytes": 82066,
+    "sha256": "ade681c504528b133adbb010d71a63fd8c65ff730df7ea5de5b6d88c5505773e"
+  },
+  {
+    "original": "bookshelf-player-build-pla-4b936-nd-keeps-it-after-Save-Load\\error-context.md",
+    "saved": "capture-006.md",
+    "bytes": 9519,
+    "sha256": "ec8e52799e3dfb6067d64d5b4cde009b2be79674a0e15e01a5dcab91d25523d7"
+  },
+  {
+    "original": "bookshelf-player-build-pla-4b936-nd-keeps-it-after-Save-Load\\failed-fullhd.png",
+    "saved": "capture-007.png",
+    "bytes": 302990,
+    "sha256": "319c10d0feb3e63b0a4565432c92456a65cfe4eed77911f13236f91a5343dda2"
+  },
+  {
+    "original": "bookshelf-player-build-pla-4b936-nd-keeps-it-after-Save-Load\\failed-worker-snapshot.json",
+    "saved": "capture-008.json",
+    "bytes": 82066,
+    "sha256": "b9a67be2f70672bfc06759f59f3ea8618dff6d0183e1bb1f7d727f290cdd36d7"
+  },
+  {
+    "original": "bookshelf-player-build-pla-4b936-nd-keeps-it-after-Save-Load\\loaded-worker-snapshot.json",
+    "saved": "capture-009.json",
+    "bytes": 82066,
+    "sha256": "e6d25d1d00eea42ee5e816e770237193deeac330e8f7395fbb779b2ec27b33c9"
+  },
+  {
+    "original": "bookshelf-player-build-pla-4b936-nd-keeps-it-after-Save-Load\\physical-hardware-loaded-fullhd.png",
+    "saved": "capture-010.png",
+    "bytes": 302990,
+    "sha256": "319c10d0feb3e63b0a4565432c92456a65cfe4eed77911f13236f91a5343dda2"
+  },
+  {
+    "original": "bookshelf-player-build-pla-f0356-nd-keeps-it-after-Save-Load\\bookshelf-loaded-fullhd.png",
+    "saved": "capture-011.png",
+    "bytes": 1473812,
+    "sha256": "e4842ac76d852208e2ea34c1ce4fb78a2b6c0a38e60ed6506e0e2d6f9acffa6a"
+  },
+  {
+    "original": "bookshelf-player-build-pla-f0356-nd-keeps-it-after-Save-Load\\bookshelf-worker-and-save-evidence.json",
+    "saved": "capture-012.json",
+    "bytes": 415,
+    "sha256": "4d88f13bdd0a2cef12f78f8ef7afaba284f744bcb8e2bd2020b192adf54b08d6"
+  },
+  {
+    "original": "bookshelf-player-build-pla-f0356-nd-keeps-it-after-Save-Load\\bookshelf-worker-completed-fullhd.png",
+    "saved": "capture-013.png",
+    "bytes": 1507725,
+    "sha256": "2a8e007f78d12c010eba85831d477a3dbef446be96a8b64f46844f9a9a827d8c"
+  },
+  {
+    "original": "bookshelf-player-build-pla-f0356-nd-keeps-it-after-Save-Load\\completed-worker-snapshot.json",
+    "saved": "capture-014.json",
+    "bytes": 82154,
+    "sha256": "5604e664fe9f73145031748288d00e5c0c08d8da4ae0d241ff9f39319def69e9"
+  },
+  {
+    "original": "bookshelf-player-build-pla-f0356-nd-keeps-it-after-Save-Load\\loaded-worker-snapshot.json",
+    "saved": "capture-015.json",
+    "bytes": 82154,
+    "sha256": "d317fa7d8cd58f96b651a8bac2ca3193f964aea4dd07a244adcf7a029663b926"
+  },
+  {
+    "original": "bookshelf-player-build-pla-f0356-nd-keeps-it-after-Save-Load\\physical-hardware-loaded-fullhd.png",
+    "saved": "capture-016.png",
+    "bytes": 315754,
+    "sha256": "04f3d51a045eeeb429f948e8639392bcc568cdd33d0e68e3e955c0a8bdb3ebaf"
+  },
+  {
+    "original": "room-template-renderer-sta-17388-plan-after-old-worker-reply\\stationary-current-preview-after-old-reply.png",
+    "saved": "capture-017.png",
+    "bytes": 1688804,
+    "sha256": "3ffedea3f5e9900ee6ed236e4b3766d74a0f49d294ddbb7295746e68a1f6ffe6"
+  },
+  {
+    "original": "room-template-renderer-sta-17388-plan-after-old-worker-reply\\stationary-first-click-submitted-current-origin.png",
+    "saved": "capture-018.png",
+    "bytes": 1705717,
+    "sha256": "3e6f768951d6773e06a1529a85d1e4576a78625309d061e32a07d1e1093bd1a4"
+  },
+  {
+    "original": "room-template-renderer-sta-32b07-plan-after-old-worker-reply\\stationary-current-preview-after-old-reply.png",
+    "saved": "capture-019.png",
+    "bytes": 1689075,
+    "sha256": "1dfe88ca6db7baa4425cff7fd7a9267f6fa5101f0ccc8bacfd411d37bf966fd8"
+  },
+  {
+    "original": "room-template-renderer-sta-32b07-plan-after-old-worker-reply\\stationary-first-click-submitted-current-origin.png",
+    "saved": "capture-020.png",
+    "bytes": 1705655,
+    "sha256": "e87922e6b01f2eb0b91ef9d28f13d0d79ecea9108d426e90638b407663f5b72b"
+  },
+  {
+    "original": "room-template-renderer-sta-691c9-plan-after-old-worker-reply\\stationary-current-preview-after-old-reply.png",
+    "saved": "capture-021.png",
+    "bytes": 257873,
+    "sha256": "0541c6c48d2846db589f7b175e945b669ff1331156d960b628b717eced28d283"
+  },
+  {
+    "original": "room-template-renderer-sta-691c9-plan-after-old-worker-reply\\stationary-first-click-submitted-current-origin.png",
+    "saved": "capture-022.png",
+    "bytes": 282405,
+    "sha256": "7d74806f2a34197545d3ed297ab01b2d31bdf4acc024eccdd83588cae6556241"
+  },
+  {
+    "original": "room-template-renderer-sta-ad7b4-plan-after-old-worker-reply\\stationary-current-preview-after-old-reply.png",
+    "saved": "capture-023.png",
+    "bytes": 258038,
+    "sha256": "98729cbd333cc14e989f85c3e32c0e9316d331227928441094443d0500ad6c23"
+  },
+  {
+    "original": "room-template-renderer-sta-ad7b4-plan-after-old-worker-reply\\stationary-first-click-submitted-current-origin.png",
+    "saved": "capture-024.png",
+    "bytes": 282180,
+    "sha256": "f419ed4997a30901110759e3998bb21b04353742cbfdc64b266f0f4e49cba0cb"
+  }
+]
