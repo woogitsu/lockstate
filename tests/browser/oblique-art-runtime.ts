@@ -66,8 +66,9 @@ window.lockstateObliqueArtRuntime = {
   imageWidth: () => (scene as unknown as { assetImages: Phaser.GameObjects.Image[] }).assetImages[0]?.displayWidth,
   imageOriginY: () => (scene as unknown as { assetImages: Phaser.GameObjects.Image[] }).assetImages[0]?.originY,
   fallbackCommands: () => {
-    const graphics = (scene as unknown as { raisedGraphics: Phaser.GameObjects.Graphics }).raisedGraphics;
-    return (graphics as unknown as { commandBuffer: unknown[] }).commandBuffer.length;
+    const privateScene = scene as unknown as { raisedGraphics: Phaser.GameObjects.Graphics; fallbackSolidGraphics: Map<string, Phaser.GameObjects.Graphics> };
+    return [privateScene.raisedGraphics, ...privateScene.fallbackSolidGraphics.values()]
+      .reduce((count, graphics) => count + (graphics as unknown as { commandBuffer: unknown[] }).commandBuffer.length, 0);
   },
   async zoomIn() {
     scene.stepCameraZoom('in');

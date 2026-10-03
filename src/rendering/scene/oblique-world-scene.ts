@@ -99,6 +99,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private assetTextureLoaderRunning = false;
   private assetImages: Phaser.GameObjects.Image[] = [];
   private readonly solidImages = new Map<string, Phaser.GameObjects.Image>();
+  private readonly fallbackSolidGraphics = new Map<string, Phaser.GameObjects.Graphics>();
   private gesture: { pointerId: number; kind: 'build' | 'room' | 'object'; press: WorldPoint; current: WorldPoint } | undefined;
   /** Screen position stays fixed while keyboard/HUD controls change the pose. */
   private hoveredScreenPoint: Point | undefined;
@@ -377,6 +378,8 @@ export class ObliqueWorldScene extends Phaser.Scene {
     };
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.actorImagePool.clear();
+      for (const graphics of this.fallbackSolidGraphics.values()) graphics.destroy();
+      this.fallbackSolidGraphics.clear();
       this.actorTextureKeys.clear();
       window.removeEventListener('keydown', keyDown);
       window.removeEventListener('keyup', keyUp);
@@ -733,6 +736,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.selectPoseTextures(projection);
     raised.clear();
     const visibleActors = new Set<number>();
+    const visibleFallbackSolids = new Set<string>();
     this.actorImagePool.retain(new Set(projection.raised
       .filter((item) => item.kind === 'actor' && item.assetId !== undefined
         && this.catalogs.has(item.assetId)
@@ -785,11 +789,26 @@ export class ObliqueWorldScene extends Phaser.Scene {
         this.solidImages.set(solidKey, image);
         continue;
       }
+      // Missing/loading solids still share the sorted actor/solid order. Keep
+      // one display object per visible fallback; a shared depth1 layer paints
+      // a rear actor through every foreground fallback wall.
+      visibleFallbackSolids.add(solidKey);
+      let fallback = this.fallbackSolidGraphics.get(solidKey);
+      if (fallback === undefined) {
+        fallback = this.add.graphics().setScrollFactor(0);
+        this.fallbackSolidGraphics.set(solidKey, fallback);
+      }
+      fallback.clear().setDepth(2 + 0.9 * index / projection.raised.length);
       for (let side = 0; side < 4; side += 1) {
         const next = (side + 1) % 4;
-        this.fillQuad(raised, [item.footprint[side]!, item.footprint[next]!, item.top[next]!, item.top[side]!], item.sideFill, item.alpha);
+        this.fillQuad(fallback, [item.footprint[side]!, item.footprint[next]!, item.top[next]!, item.top[side]!], item.sideFill, item.alpha);
       }
-      this.fillQuad(raised, item.top, item.topFill, item.alpha);
+      this.fillQuad(fallback, item.top, item.topFill, item.alpha);
+    }
+    for (const [key, graphics] of this.fallbackSolidGraphics) {
+      if (visibleFallbackSolids.has(key)) continue;
+      graphics.destroy();
+      this.fallbackSolidGraphics.delete(key);
     }
     for (const [id, graphics] of this.actorGraphics) {
       if (visibleActors.has(id)) continue;

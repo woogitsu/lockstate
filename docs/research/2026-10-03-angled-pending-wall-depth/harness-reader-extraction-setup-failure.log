@@ -1,0 +1,26 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-angled-cutaway-occupancy-audit-20261003
+
+ ❯ tests/unit/oblique-pending-wall-depth.test.ts (17 tests | 1 failed) 74ms
+   × both actual browser harness readers count the per-solid fallback commands 41ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-pending-wall-depth.test.ts > both actual browser harness readers count the per-solid fallback commands
+SyntaxError: Expected ',', got ';'
+ ❯ tests/unit/oblique-pending-wall-depth.test.ts:184:26
+    182|   const presetMatches = [...preset.matchAll(/fallbackCommands: ([^]*?)…
+    183|   expect(presetMatches).toHaveLength(1);
+    184|   const presetFunction = stripTypeScriptTypes(`function observe(privat…
+       |                          ^
+    185|   const readPreset = new Function('scene',`return (${presetFunction})(…
+    186|   // Twenty recorded vertices in the actual five drawn fallback faces,…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 16 passed (17)
+   Start at  04:25:00
+   Duration  974ms (transform 249ms, setup 0ms, import 758ms, tests 74ms, environment 0ms)
+

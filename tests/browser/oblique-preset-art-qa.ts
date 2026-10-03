@@ -148,6 +148,7 @@ window.lockstatePresetArtQA = {
       solidImages: Map<string, Phaser.GameObjects.Image>;
       actorImagePool: { active: Map<number, Phaser.GameObjects.Image> };
       raisedGraphics: Phaser.GameObjects.Graphics;
+      fallbackSolidGraphics: Map<string, Phaser.GameObjects.Graphics>;
       floorMeshes: Phaser.GameObjects.Mesh2D[];
     };
     return {
@@ -181,7 +182,8 @@ window.lockstatePresetArtQA = {
         return `oblique:${id}:${selected.yawDegrees}:${selected.elevationDegrees}`;
       }),
       imageCount: privateScene.assetImages.length,
-      fallbackCommands: (privateScene.raisedGraphics as unknown as { commandBuffer: unknown[] }).commandBuffer.length,
+      fallbackCommands: [privateScene.raisedGraphics, ...privateScene.fallbackSolidGraphics.values()]
+        .reduce((count, graphics) => count + (graphics as unknown as { commandBuffer: unknown[] }).commandBuffer.length, 0),
     };
   },
 };
