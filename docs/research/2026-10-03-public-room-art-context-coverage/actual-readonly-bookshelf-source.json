@@ -1,0 +1,128 @@
+{
+  "source": "assets/source/blender/furniture.library.bookshelf.angled-detail.blend",
+  "sourceSha256": "ac0dd8e1a3345c3e791934b534d13c2043e9a5a04f85ed7cc9fe965e6716e9b7",
+  "blenderVersion": [
+    5,
+    2,
+    1
+  ],
+  "blenderBuildHash": "9e2066aef7ef",
+  "meshCount": 63,
+  "bounds": {
+    "min": [
+      -0.9750000238418579,
+      -0.5600000023841858,
+      0.0
+    ],
+    "max": [
+      0.9750000238418579,
+      0.4099999964237213,
+      2.0999999046325684
+    ]
+  },
+  "materialGraphs": [
+    {
+      "name": "Material",
+      "sha256": "7fbc4d9a9f1c32b971a6350999cba4e4864f7b092bc5f6e2590ac5a93fbfa613"
+    },
+    {
+      "name": "blue book",
+      "sha256": "429da275ee628dccf7cc5b6c092080d49befcd11aeb0502c1b4e3c7b7f461e91"
+    },
+    {
+      "name": "edge oak",
+      "sha256": "a700118ace408fb769e470a383a424c64d187e04d5693b9305c2b32ce8b1b605"
+    },
+    {
+      "name": "green book",
+      "sha256": "5e0b14cf98af2fc1b68678aa824e2a8a85461f99d4e202fd557b6b7898b3ac52"
+    },
+    {
+      "name": "paper",
+      "sha256": "dc22f14f0daaf6c784e468f528af927c9f29bfdec5fd3ee07c76187167e1c23d"
+    },
+    {
+      "name": "red book",
+      "sha256": "681be5bff95c27c98e7a29d94f5936887f2efd73bc0a78c24561961901a38c82"
+    },
+    {
+      "name": "steel",
+      "sha256": "38f7910a7c1b7d079901672b6677b0a976851304aa3fb3b82cba01e95d65ead9"
+    },
+    {
+      "name": "teal book",
+      "sha256": "210fe740e77bc6495977ac0da698e7f6781f8ec90f6c2932bf9f41e0d559bf9b"
+    },
+    {
+      "name": "warm oak",
+      "sha256": "d0bbfefc6d7618787307ddb23a995787d7568f1e745c7fa54fa920dba95b5db1"
+    }
+  ],
+  "meshEvaluatedPositionSha256": {
+    "angled-library-bookshelf.rear corner joining plate -0.795 0.245": "5af97ab47809986745adb5272c8e8a4972b533aa4ec8457ceb7092f1cab28187",
+    "angled-library-bookshelf.rear corner joining plate -0.795 1.84": "880bb48aa9d0ffd864105aa797c1a31fe351ddfcb3a56a4d1fa40cd04207d108",
+    "angled-library-bookshelf.rear corner joining plate 0.795 0.245": "3ca443b92e23b8ad20c1b159fd1b21902b9facfecb311ecd27578f77523ab071",
+    "angled-library-bookshelf.rear corner joining plate 0.795 1.84": "8fa82bcfeb97782f796dfffe72650dbffa7f43e34e023a4e4394c37fa21d0997",
+    "angled-library-bookshelf.rear corner retaining screw -0.795 0.245 -0.742": "20a44960acfbcd4099b887caa24e9046767d2b01416896ec17b1731f9ab43f16",
+    "angled-library-bookshelf.rear corner retaining screw -0.795 0.245 -0.855": "6d043047c60747a77226f296321e69683d3f542e36810ea92d8729bb41e90b4a",
+    "angled-library-bookshelf.rear corner retaining screw -0.795 1.84 -0.742": "0ffd572da8b3869e8afb90ffba88355f24bd2412d49d29810d5fe7fc21222998",
+    "angled-library-bookshelf.rear corner retaining screw -0.795 1.84 -0.855": "91ba22a9542901c57d0917c3fd0f80c82e95278b8fc5fea7ab5851658f9a5768",
+    "angled-library-bookshelf.rear corner retaining screw 0.795 0.245 0.742": "5ed6207061dd15bf9e535eab74a55e6635d1e1f927eb455f9d9d1754d2d27675",
+    "angled-library-bookshelf.rear corner retaining screw 0.795 0.245 0.855": "0c4c4da247132fbf9f3696bc099d99d0e48f795c5521e1623ffc6696dcf8b12b",
+    "angled-library-bookshelf.rear corner retaining screw 0.795 1.84 0.742": "ca133edf930a65cfa2c95d053d7b6fd9ad6e3a9a559cf956db216315a46ec75f",
+    "angled-library-bookshelf.rear corner retaining screw 0.795 1.84 0.855": "336ac5a44cbe123d835387c777bf034ae9e1015d638cd207808cbebd7fea67d8",
+    "angled-library-bookshelf.shelf bearing fixing 0 -0.875 0.05500000000000001": "81cc530e0871ce4a243e5daa8ecd22ac3e09a6d527c49dffe0dc07d524da733e",
+    "angled-library-bookshelf.shelf bearing fixing 0 -0.875 0.115": "604bc6a5cfa7debdf9317b4a1e6d94336b84f5977116363a7aaf7a266de9762a",
+    "angled-library-bookshelf.shelf bearing fixing 0 0.875 0.05500000000000001": "04f694abeb837c3699f09981e22621a3a0704e9978394b3af049da89b6415cd0",
+    "angled-library-bookshelf.shelf bearing fixing 0 0.875 0.115": "794895f1b9f14da7b1c3c04a575bdfe885c070c57403d15ab932a0793b7b94bb",
+    "angled-library-bookshelf.shelf bearing fixing 1 -0.875 0.915": "83d17990e7e7728b85b01cc0047104a27b6c3f649c4dbb50052e0a18581eacd9",
+    "angled-library-bookshelf.shelf bearing fixing 1 -0.875 0.975": "45a537013c924dbd64d44f253a1313c1fb6692ad0695481c4dcd6365a4e52801",
+    "angled-library-bookshelf.shelf bearing fixing 1 0.875 0.915": "0ea80dd4983ae3fe00e0bfbe4f541e4cafe196faeccd6256eb68cb6379c4662b",
+    "angled-library-bookshelf.shelf bearing fixing 1 0.875 0.975": "de9873cf6dafe25b0ad0e56cdb4880ae30c9ab813738c30ac625c28cc377620f",
+    "angled-library-bookshelf.shelf bearing fixing 2 -0.875 1.795": "70c3f12be923f57244a4900f2d8d42d0bdc0dd3474e22a8831c37bb38f6a5945",
+    "angled-library-bookshelf.shelf bearing fixing 2 -0.875 1.855": "334faedd609e7283969bfe6056ea12936d7c5207ba81ed92c4a00970c3786e0d",
+    "angled-library-bookshelf.shelf bearing fixing 2 0.875 1.795": "ee38fd7bb56a7d4090b22dfcc0a9f7dfe381f7912ea06e5070832b951eec615d",
+    "angled-library-bookshelf.shelf bearing fixing 2 0.875 1.855": "4223afd29a799121064871adc9432143f7c5801c3a8f154f54a417e92ec0bdb5",
+    "angled-library-bookshelf.shelf end horizontal bearing 0 -0.875": "7a489df89cd6af151adfaca51ac682fc78d8c39878ce03252a452b3899477020",
+    "angled-library-bookshelf.shelf end horizontal bearing 0 0.875": "be0d6545242a9ecf3ccdf3373ada90453c64c790d8c6b84a524e18b838eeda15",
+    "angled-library-bookshelf.shelf end horizontal bearing 1 -0.875": "06516a76c53e631af7346162eac3dc32243578816bcb7443ce03f0818a612b80",
+    "angled-library-bookshelf.shelf end horizontal bearing 1 0.875": "bc512ada5a7b19fb9f4dcd7bd2c46c54a4bebf1a268473d86a43cc3184320630",
+    "angled-library-bookshelf.shelf end horizontal bearing 2 -0.875": "9b9257239fdc89291d8eb8396c4378ce10c7824545247c1271520bc40eecbfe0",
+    "angled-library-bookshelf.shelf end horizontal bearing 2 0.875": "b8ea7a6d31b60fd0d75cdf4b77ac9946ebd03c21d3387976b2b11bdf93979365",
+    "angled-library-bookshelf.shelf end vertical bearing 0 -0.875": "5e0174ca6d508581cc38e4631d20dcee3a0b7ec77b53933af034701450de7c21",
+    "angled-library-bookshelf.shelf end vertical bearing 0 0.875": "96709045dd1dce862d6905439d074894ba911a3f76b504df4c759ff881f7f03c",
+    "angled-library-bookshelf.shelf end vertical bearing 1 -0.875": "aaf878e076b16b66100f10fc18be97eecd94c5305f72f8169a58f9f81d282823",
+    "angled-library-bookshelf.shelf end vertical bearing 1 0.875": "d11196b171bb2b872a58207d5a736981ce221fd8c6f849a8c2a9d1d1109b1557",
+    "angled-library-bookshelf.shelf end vertical bearing 2 -0.875": "874c763befe1cad30493de0c16d9d3e46f898422c564282cd35d514253d45905",
+    "angled-library-bookshelf.shelf end vertical bearing 2 0.875": "307b4929e3766c4d74538286fbc50e11d9952c335cc18d4e61389b2db6c90c0d",
+    "back-panel": "0ffbd074dc2e6b44343c1ec80758e4f5885364a0a85678c7a31aa36c741971b4",
+    "book": "566f32b5d0afbfd724ac66a21a8034285afe355696dfc03c486da4ce0a2fa3b1",
+    "book.001": "945b6d5a8bf94bfedaae4f99a8bc9457646ec7067a3f401e88d6c4f4b9819ec1",
+    "book.002": "f3db81bd4ff0040048027a1780f9cd82178c3e0bb3f015d3e15a02107635319f",
+    "book.003": "d4d3edac49355332f019127c474f572823413b5bc26f79501de9d3c730c05836",
+    "book.004": "55e270f9baac2e323ecbe2446a099c6bcc5bfb1a8200cadccf7d95ba9807d82b",
+    "book.005": "0234220d1a4d9d3e951345e6cc4a09e3d6d17cc8597b53bd320f2653c8a99177",
+    "book.006": "6c1b0786a6dbb8c77f53a395bd53e9e7b07db68ad29cd1994dec420258ac26cc",
+    "book.007": "a886c968ea04a51eb4a9c0aebccc02d7db4c96805d16d9e5435e9589c9ce24ad",
+    "book.008": "3f5adbf1a81fdda50dcbe4796051b8e6970de6e745d056dfc718d87130c750a0",
+    "book.009": "b809b8c6c901093d1dc707c1359b256ed7749779ef1d3625f27f23e772ff740b",
+    "book.010": "fe6d685c95681c7119924e44e270bede9e30bdb592ee8b750c445af863b562d1",
+    "book.011": "5f8c561d0b1ca298dc94fe347d3624a7c894347230dbc42ac1f8b8eeaf63fe8f",
+    "book.012": "f7c49ccd827aa8b5bbc81241d8a306f365603ec402c52ff61fd1545751d276d7",
+    "book.013": "86552b4e97c217113ab5eadd924bdb75898ed470a0dec1576da015b466bc81ef",
+    "carcass": "bf8e5dd2488878055d254fb6837b1e327e16f0fdbe5e196cf210c261cffdbc80",
+    "catalogue": "22814f8580a603f0ae06fc10624e740fe838ddd21fdaea843cca793140abc87d",
+    "foot": "613f9644d2a5b71117a93cc65e8ee937cc4f807d83d1e7accdec6a4cffa022a3",
+    "foot.001": "b145e197529b91ba1457a36e09fc3cf728004a0c74fbaba033b14461183ab48c",
+    "shelf": "a847b6ed64e0609c8b1df6e7773b6705aa400871f105cc38abaeb93c9ee5e30a",
+    "shelf.001": "026ab74bdbcfc21927c88edb2e426f514a3798704f44fc7384c6b5a014b276ad",
+    "shelf.002": "0044c6c5a3621d58875b4efdd6ffd27540728327f3847a395737974ca3f1b28b",
+    "side-frame": "c0bf95ad4f79145d0f125c42c3f03c46281bba24a8952e203c64968424190b74",
+    "side-frame.001": "0f94b643051a3d05de82f1bd9f6dfced227405cbbca84fec534314a429f098b3",
+    "steel-divider": "3478427dacc3de6e65b7c154256eb9ce1b41b9e1b770547200836b23366d1a37",
+    "steel-divider.001": "d5251284493c8bbfc127541480eafb683b80082e9878e0678db91489056d4c4e",
+    "steel-divider.002": "78bed62d289836875661d979d2eb3f8a83c1b2ae8105f5a23606d1e709cf1971"
+  },
+  "sourceBytesUnchangedAfterReadOnlyOpen": true,
+  "newRender": false
+}
