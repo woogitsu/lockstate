@@ -1,0 +1,11 @@
+{
+  "source": "src/ui/hud/hud.css",
+  "omittedDeclaration": "--text-heading: var(--command-text-heading);",
+  "beforeSha256": "3a24624308ed9680d82a4ca7ecf82e94dddb9f5b805aeed6b1f6bc30e7ac6a72",
+  "restoredSha256": "3a24624308ed9680d82a4ca7ecf82e94dddb9f5b805aeed6b1f6bc30e7ac6a72",
+  "redExit": 1,
+  "restoredGreenExit": 0,
+  "byteExactRestoration": true,
+  "browserExecuted": false,
+  "buildExecuted": false
+}

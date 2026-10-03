@@ -1,0 +1,18 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: light --text-heading on --surface-commandbar: actual source contrast 1.0000 < 4.5
+    at file:///C:/Users/matma/Documents/Rozw%C3%B3j%20gier/lockstate-modern-hud-hierarchy-paint-draft-20261003/docs/research/2026-10-03-modern-hud-hierarchy-paint-draft/source-proof.mjs:107:5
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:643:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.19.0
