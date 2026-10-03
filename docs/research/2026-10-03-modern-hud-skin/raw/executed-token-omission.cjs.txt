@@ -1,0 +1,8 @@
+﻿const fs=require('node:fs'),cp=require('node:child_process'),crypto=require('node:crypto'),assert=require('node:assert/strict');
+const path='src/ui/tokens.css',raw='docs/research/2026-10-03-modern-hud-skin/raw',original=fs.readFileSync(path),hash=buffer=>crypto.createHash('sha256').update(buffer).digest('hex');
+const args=['node_modules/vitest/vitest.mjs','run','tests/unit/ui-design-tokens.test.ts','--maxWorkers=4'];
+let negative,restored;
+try{const text=original.toString('utf8'),matches=text.match(/^  --surface-panel: [^;]+;\r?\n/gm);assert.equal(matches?.length,2);fs.writeFileSync(path,text.replace(/^  --surface-panel: [^;]+;\r?\n/gm,''));negative=cp.spawnSync(process.execPath,args,{encoding:'utf8'});fs.writeFileSync(raw+'/actual-token-omission.txt',(negative.stdout||'')+(negative.stderr||''));assert.equal(negative.status,1,'missing consumed theme token must fail real guard');}
+finally{fs.writeFileSync(path,original);assert.equal(hash(fs.readFileSync(path)),hash(original));}
+restored=cp.spawnSync(process.execPath,args,{encoding:'utf8'});fs.writeFileSync(raw+'/exact-restored.txt',(restored.stdout||'')+(restored.stderr||''));assert.equal(restored.status,0);
+fs.writeFileSync(raw+'/mutation-receipt.json',JSON.stringify({checkpoint:'0c8623bb8a4c5c098a4123e72845b928a1901002',source:path,mutation:'Remove both consumed surface-panel theme aliases, leave actual component consumers unchanged',negativeExit:negative.status,restoredExit:restored.status,beforeSha256:hash(original),afterSha256:hash(fs.readFileSync(path)),byteExactRestore:true,nativeExecuted:false},null,2));

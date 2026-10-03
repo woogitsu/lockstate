@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-modern-hud-skin-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  76 passed (76)
+   Start at  20:29:41
+   Duration  225ms (transform 36ms, setup 0ms, import 78ms, tests 26ms, environment 0ms)
+

@@ -1,0 +1,20 @@
+﻿const fs=require('node:fs'),cp=require('node:child_process'),assert=require('node:assert/strict');
+const {createRequire}=require('node:module'); const fromVite=createRequire(require.resolve('vite/package.json',{paths:[process.cwd()]}));const postcss=fromVite('postcss');
+const files=['src/styles.css','src/ui/hud/hud.css','src/ui/primitives/primitives.css','src/ui/tokens.css'];
+const skin=new Set(['--surface-panel','--surface-panel-header','--surface-toolbar','--surface-control','--border-panel','--border-toolbar']);
+function geometry(css){const root=postcss.parse(css);const rows=[];root.walkDecls(d=>{
+ if(skin.has(d.prop)||/^(background(?:-.+)?|color|border(?:-(?:top|right|bottom|left))?-color|outline-color|fill|stroke)$/.test(d.prop))return;
+ let value=d.value.replace(/\r\n/g,'\n');if(/^border(?:-(?:top|right|bottom|left))?$/.test(d.prop))value=value.replace(/var\(--border(?:-[a-z]+)?\)/g,'<paint>');
+ const ancestry=[];let p=d.parent;while(p&&p.type!=='root'){ancestry.unshift(p.type==='rule'?p.selector.replace(/\s+/g,' ').trim():('@'+p.name+' '+p.params));p=p.parent;}rows.push([ancestry.join(' > '),d.prop,value,d.important||false]);});return rows;}
+const comparisons=files.map(file=>{const old=cp.execFileSync('git',['show','e93abddb62d1f8a35e5ef94de48abe0c5973c3d3:'+file],{encoding:'utf8'}),now=fs.readFileSync(file,'utf8');assert.deepEqual(geometry(now),geometry(old),file+' geometry/type/focus semantics changed');return{file,nonPaintDeclarations:geometry(now).length,exactEqual:true};});
+const root=postcss.parse(fs.readFileSync('src/ui/tokens.css','utf8'));
+function tokens(theme){const values=new Map();root.walkRules(rule=>{if(!rule.selector.includes(':root')||rule.selector.includes("data-theme='"+(theme==='light'?'dark':'light')+"'"))return;rule.walkDecls(d=>values.set(d.prop,d.value));});return values;}
+function resolve(name,map){const value=map.get(name);if(!value)throw Error('Missing '+name);const ref=/^var\((--[\w-]+)\)$/.exec(value);return ref?resolve(ref[1],map):value;}
+function lum(hex){assert.match(hex,/^#[\da-f]{6}$/i);const rgb=[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4);return rgb[0]*.2126+rgb[1]*.7152+rgb[2]*.0722;}
+function ratio(a,b){const x=lum(a),y=lum(b);return(Math.max(x,y)+.05)/(Math.min(x,y)+.05);}
+const pairs=[];for(const theme of ['light','dark']){const map=tokens(theme);for(const surface of ['--surface-panel','--surface-panel-header','--surface-toolbar','--surface-control'])for(const role of ['--text-heading','--text-body','--text-subtle','--text-muted']){const fg=resolve(role,map),bg=resolve(surface,map),contrast=ratio(fg,bg);assert.ok(contrast>=4.5,`${theme} ${role}/${surface}: ${contrast}`);pairs.push({theme,surface,role,fg,bg,contrast});}}
+const focusPairs=[];for(const theme of ['light','dark']){const map=tokens(theme);for(const surface of ['--surface-panel','--surface-panel-header','--surface-toolbar','--surface-control']){const accent=resolve('--accent',map),bg=resolve(surface,map),contrast=ratio(accent,bg);assert.ok(contrast>=3);focusPairs.push({theme,surface,accent,bg,contrast});}}
+console.log(JSON.stringify({focusPairs,minimumFocusContrast:Math.min(...focusPairs.map(x=>x.contrast)),sourceBase:'e93abddb62d1f8a35e5ef94de48abe0c5973c3d3',comparisons,textPairs:pairs,minimumTextContrast:Math.min(...pairs.map(x=>x.contrast)),nativeExecuted:false},null,2));
+
+
+
