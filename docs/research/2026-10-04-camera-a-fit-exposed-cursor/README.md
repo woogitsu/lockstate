@@ -74,7 +74,10 @@ Existing public alternatives, left for an explicit subsequent route:
 
 ## Verification and execution boundary
 
-App and tools strict types both exit0 (retained raw files). This correction
+App and tools strict types both exit0 (retained raw files). Existing research
+index, documentation claims, published citations and typecheck coverage gates
+all pass32 tests in four files (`doc-contracts.txt`), with unchanged guards.
+This correction
 uses the original root native RED as its reproducer; no mirroring unit test is
 invented and no producer mutation is claimed. No browser/build/server,
 collection or fake distribution was run. Root alone executes the corrected
