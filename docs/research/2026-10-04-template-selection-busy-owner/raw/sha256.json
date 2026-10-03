@@ -1,0 +1,67 @@
+﻿[
+    {
+        "file":  "executed-mutation.cjs.txt",
+        "sha256":  "be44673df85837133eca2184596756ca117dddba8a11eeba4d0366a67afa3f8d",
+        "bytes":  1953
+    },
+    {
+        "file":  "fixed.txt",
+        "sha256":  "5ba6f413bdc1cc479f52680ef03f6365e6c77189d4572165d930a50de80eed81",
+        "bytes":  548
+    },
+    {
+        "file":  "fresh-duplicate-search.json",
+        "sha256":  "a7eb1fd458f667a5f79b755611772b2cba6ed3f9aa873c83ca2b4bc8cfb4c05a",
+        "bytes":  5090
+    },
+    {
+        "file":  "mutation-receipt.json",
+        "sha256":  "72585735132d60d7b2ed0bb5d7fd322ab91c137a0f1846384baf7bad2db5042d",
+        "bytes":  601
+    },
+    {
+        "file":  "neighbors-docs.txt",
+        "sha256":  "e05e9901dd2e35ebd744b8e795201fc06e359e317a57471932fe33c9c75d9b2a",
+        "bytes":  558
+    },
+    {
+        "file":  "omission-arm.txt",
+        "sha256":  "5fe4c13f750f37caaca0fcbe3289339506b28447aeb8c2fa60a69f2869cee59b",
+        "bytes":  1422
+    },
+    {
+        "file":  "omission-select.txt",
+        "sha256":  "ee6261d89e402e351c5bb737c531028f8c5a9da2a25170df5f2aebf302926ee1",
+        "bytes":  1435
+    },
+    {
+        "file":  "original.txt",
+        "sha256":  "d4f780e400ad62da404401a1d172daa209d9eca14b5f4a71b47963627f3aaeb1",
+        "bytes":  3924
+    },
+    {
+        "file":  "original-executed-regression.test.ts.txt",
+        "sha256":  "245a39e744ce48eff7b09acd59bb59f0f79c84c92ecdb173bd93aae4ef885db1",
+        "bytes":  14224
+    },
+    {
+        "file":  "original-with-noop.txt",
+        "sha256":  "e7a34f685a106c11cefabeb4e552b9339181f02238ef099a2d01925887e920bb",
+        "bytes":  3926
+    },
+    {
+        "file":  "restored.txt",
+        "sha256":  "4b9348ba4adbf5d61d23880e137dbdd5461913098777399b9bb6dc2f386f76bc",
+        "bytes":  265
+    },
+    {
+        "file":  "types-app.txt",
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes":  0
+    },
+    {
+        "file":  "types-tools.txt",
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes":  0
+    }
+]

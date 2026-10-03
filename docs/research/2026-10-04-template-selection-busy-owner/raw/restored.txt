@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/ls-template-identity-next-audit-20261004
+
+
+ Test Files  1 passed (1)
+      Tests  12 passed (12)
+   Start at  01:32:04
+   Duration  3.19s (transform 1.08s, setup 0ms, import 2.90s, tests 135ms, environment 0ms)
+

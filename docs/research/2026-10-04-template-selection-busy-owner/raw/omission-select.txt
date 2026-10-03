@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/ls-template-identity-next-audit-20261004
+
+ ❯ tests/unit/ui-room-template-session-preflight.test.ts (12 tests | 1 failed) 144ms
+   × a genuine new selection generation can place before an abandoned old reply and keeps its own busy token 10ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 11 passed (12)
+   Start at  01:31:57
+   Duration  3.20s (transform 1.07s, setup 0ms, import 2.89s, tests 144ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-room-template-session-preflight.test.ts > a genuine new selection generation can place before an abandoned old reply and keeps its own busy token
+AssertionError: new generation must reach its genuine current worker preflight: expected [ { protocolVersion: 1, …(4) } ] to have a length of 2 but got 1
+
+- Expected
++ Received
+
+- 2
++ 1
+
+ ❯ tests/unit/ui-room-template-session-preflight.test.ts:208:98
+    206|   const before = await h.host.capture();
+    207|   try {
+    208|     expect(h.clients[0]!.held, 'new generation must reach its genuine …
+       |                                                                                                  ^
+    209|     h.clients[0]!.emit(h.clients[0]!.held.shift()!);
+    210|     expect(await old).toEqual({ ok: false, reason: 'busy' });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

@@ -1,0 +1,19 @@
+{
+  "sourceCommit": "a0e88a2600ed0a1f25f7876f32c2761f5b73ef8c",
+  "originalSha256": "fe68fa26b95046f3402af7811da4ad982c4a78e6f130f57b9c7a8ab9c185130f",
+  "mutations": [
+    {
+      "method": "select",
+      "exit": 1,
+      "mutatedSha256": "43462af9e3ada32ed913acc3914e75594dabec2a90ec0a679ae8aadc89ba6f49"
+    },
+    {
+      "method": "arm",
+      "exit": 1,
+      "mutatedSha256": "5af980ddec016d60b8e25ccc9c9c890201739717dafce3d0162df1beb145e899"
+    }
+  ],
+  "restoredSha256": "fe68fa26b95046f3402af7811da4ad982c4a78e6f130f57b9c7a8ab9c185130f",
+  "byteExactRestored": true,
+  "restoredExit": 0
+}
