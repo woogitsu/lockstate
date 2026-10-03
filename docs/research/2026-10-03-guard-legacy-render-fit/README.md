@@ -1,0 +1,7 @@
+# Guard historical export fit and studio correction
+
+This follows the immutable Prisoner forensic audit f9f01a5ad8f2effb5c0890cae75f800fa6ae6166: historical producer428cd89e48 applies SpriteRoot.scale=.5/ortho8/radius12 and neutral module studio. Eighteen actual Prisoner replays reproduced all decoded canonical pixels exactly. The initial new Guard wrapper incorrectly borrowed current cook/medic/staff ortho15.5/source-light settings; its raster density was3.225806% larger and lighting differed. Earlier source contacts/69mesh preservation remain valid; the old Guard canonical raster/visibility receipts are historical superseded output, not accepted legacy fit.
+
+Only the Guard dedicated wrapper/producer metadata are corrected. All original68parts/eleven fullgraphs/action curves/eight poses and new rear belt source remain byte-identical (source-identity.json). The original source audit runs before the export-only half-scale transform. A separate actual export guard checks half-scaled evaluated bounds, triangle-interior belt contacts, actual historical root scale/span/studio/target and72camera placements. Shared role exporters, other models, runtime aliases/projection/palette and schemas remain untouched.
+
+Initial direct pinned Blender72pose verification GREEN. Full original canonical72 replay, corrected canonical72 repeat, visual overlays and meaningful exact-restored negative controls are being prepared. Native genuine hired-Guard acceptance remains pending; no browser/server from this worktree.

@@ -1,0 +1,18 @@
+{
+  "originalSourceSha256": "4a900b2d61ad2c7386f48176381a08ee6f796da9d57f096b478f7ba7e42501c7",
+  "dedicatedSourceSha256": "b1f402e1096c49e1ea65c2e7727df2b6c498a77d09fc485679f1dcf72c95b456",
+  "originalAndDedicatedBlendUnchanged": true,
+  "authoredParts": 69,
+  "retainedParts": 68,
+  "graphs": 11,
+  "exportRootScale": 0.5,
+  "orthoScale": 8,
+  "target": [
+    0,
+    0,
+    0
+  ],
+  "nominalPixelsPerTile": 64,
+  "actualSourceGuardAndExportContract72Passed": true,
+  "nativeAcceptancePending": true
+}

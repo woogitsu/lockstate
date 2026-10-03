@@ -115,7 +115,7 @@ def main():
         'evaluatedGeometricNormalAudit':normals_after,'sourceEvaluatedBounds':bounds_before,'addedMeshNames':[NAME],
         'allAuthoredRawMeshes':[raw_record(obj) for obj in sorted(scene.objects,key=lambda o:o.name) if obj.type=='MESH'],
         'actualContactTargets':TARGETS,'actualTriangleInteriorContacts':contacts,
-        'acceptedCamera':{'resolutionPx':[512,512],'orthoScale':15.5,'target':[0,0,0],'pivotPx':[256,256],'nominalPixelsPerTile':64},
+        'acceptedCamera':{'resolutionPx':[512,512],'orthoScale':8,'exportRootScale':.5,'historicalProducerCommit':'428cd89e48cdbb30c2b5dfda4476dec3a2e9cad0','target':[0,0,0],'pivotPx':[256,256],'nominalPixelsPerTile':64},
         'packedImages':[{'name':im.name,'size':list(im.size),'packedSha256':[hashlib.sha256(p.packed_file.data).hexdigest() for p in im.packed_files]} for im in bpy.data.images]}
     pipeline_common.write_text(SOURCE.with_suffix('.provenance.json'),json.dumps(provenance,indent=2)+'\n')
     if ORIGINAL.read_bytes()!=original_bytes:raise ValueError('Original guard source was modified')
