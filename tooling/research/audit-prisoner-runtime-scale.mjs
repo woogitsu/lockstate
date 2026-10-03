@@ -2,7 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
-import Module,{createRequire} from 'node:module';
+import {createRequire} from 'node:module';
 import {fileURLToPath} from 'node:url';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
 const input=path.join(root,'assets/intermediate/prisoner-scale-audit/original-source-and-camera-audit.json');
@@ -36,10 +36,9 @@ function evaluate(node,zoom,nominal){
 }
 const entry=path.join(root,'assets/intermediate/prisoner-scale-audit/actual-projection-entry.ts');
 fs.writeFileSync(entry,"export {TILE_SIZE_PX} from '../../../src/rendering/tile-metrics';\nexport {groundToScreen} from '../../../src/rendering/camera/oblique-projection';\nexport {projectObliqueActors} from '../../../src/rendering/camera/oblique-world-projection';\n");
-const built=await build({input:entry,platform:'node',write:false,output:{format:'cjs'}});
+const built=await build({input:entry,platform:'node',write:false,output:{format:'esm'}});
 assert(built.output.length===1,'Actual projection audit must remain one module');
-const loaded=new Module(entry);loaded.filename=entry;loaded.paths=Module._nodeModulePaths(path.dirname(entry));loaded._compile(built.output[0].code,entry);
-const {TILE_SIZE_PX:tile,groundToScreen,projectObliqueActors}=loaded.exports;
+const {TILE_SIZE_PX:tile,groundToScreen,projectObliqueActors}=await import('data:text/javascript;base64,'+Buffer.from(built.output[0].code).toString('base64'));
 const pose={target:{x:0,y:0},viewport:{width:512,height:512},zoom:1,yawRadians:0,elevationRadians:Math.PI/4};
 const rate=512/15.5;
 const rows=[];
@@ -59,7 +58,7 @@ const headingCases=[];
 for(const [facing,degrees] of [['south',0],['east',90],['north',180],['west',-90]]){
  for(const cameraYaw of [0,90]){
   const actor=projectObliqueActors([{id:1,assetId:'actor.prisoner',tileX:0,tileY:0,deltaX:0,deltaY:0,facing}],{...pose,yawRadians:cameraYaw*Math.PI/180})[0];
-  assert(actor&&Math.abs(actor.assetYawRadians-(cameraYaw-degrees)*Math.PI/180)<1e-10,'Actual world-heading yaw differs');
+  assert(actor&&Math.abs(actor.assetYawRadians-(cameraYaw-Number(degrees))*Math.PI/180)<1e-10,'Actual world-heading yaw differs');
   headingCases.push({worldFacing:facing,cameraYawDegrees:cameraYaw,actualAssetYawDegrees:actor.assetYawRadians*180/Math.PI});
  }
 }

@@ -483,4 +483,4 @@ and it stopped one step short of its own consequence.
   caller in `src/` — the same class as issue #287's two uncalled capabilities,
   three layers deeper.
 | [2026-10-03 Prisoner historical actor camera audit](2026-10-03-prisoner-legacy-camera-audit/README.md) | Is the existing authored actor too small or wrongly oriented, and can the producer be reproduced? | All48parts/eight graphs/eight poses unchanged; eighteen historical rasters pixel-exact and actual scale/projection checked; native pending. |
-| [2026-10-03 Guard historical export fit](2026-10-03-guard-legacy-render-fit/README.md) | Does the new physical Guard preserve the real historical actor camera and studio? | Immutable69-part source retained; corrected half-scale/ortho8/studio guard72GREEN; full export controls and native pending. |
+| [2026-10-03 Guard historical export fit](2026-10-03-guard-legacy-render-fit/README.md) | Does the new physical Guard preserve the real historical actor camera and studio? | Immutable69-part source retained; original72pixels exact, corrected73files repeat,13real controls/TS GREEN; native pending. |

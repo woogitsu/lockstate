@@ -9,7 +9,8 @@ const hash=(bytes:Buffer):string=>createHash('sha256').update(bytes).digest('hex
 
 it('retains the original Guard, actual animation poses and complete packed graphs while connecting its rear belt',()=>{
  const p=JSON.parse(readFileSync(new URL('assets/source/blender/actor.guard.base.angled-detail.provenance.json',root),'utf8')) as {
-  originalSource:string;originalSourceSha256:string;source:string;sourceSha256:string;
+  acceptedCamera:{orthoScale:number;exportRootScale:number;historicalProducerCommit:string};
+ originalSource:string;originalSourceSha256:string;source:string;sourceSha256:string;
   retainedMeshesBefore:unknown[];retainedMeshesAfter:unknown[];retainedMaterialValues:{name:string;canonicalMaterialSha256:string}[];
   allAuthoredRawMeshes:unknown[];addedMeshNames:string[];retainedAnimations:unknown[];
   unusedOriginalGraphsRetainedForStorage:string[];
@@ -33,6 +34,7 @@ it('retains the original Guard, actual animation poses and complete packed graph
  expect(p.retainedAnimations).toHaveLength(4);expect(p.retainedEightAnimationPoses.map(row=>row.frame)).toEqual([1,2,3,4,5,6,7,8]);
  for(const pose of p.retainedEightAnimationPoses){expect(Object.keys(pose.retained)).toHaveLength(68);for(const row of Object.values(pose.retained)){expect(row.evaluatedPositionSha256).toMatch(/^[0-9a-f]{64}$/);expect(row.matrixWorld).toHaveLength(4);}}
  expect(p.authoredEightAnimationPoses.map(row=>row.frame)).toEqual([1,2,3,4,5,6,7,8]);for(const pose of p.authoredEightAnimationPoses)expect(Object.keys(pose.retained)).toHaveLength(69);
+ expect(p.acceptedCamera.orthoScale).toBe(8);expect(p.acceptedCamera.exportRootScale).toBe(.5);expect(p.acceptedCamera.historicalProducerCommit).toBe('428cd89e48cdbb30c2b5dfda4476dec3a2e9cad0');
  const name='physical-guard.rear duty belt band';expect(p.addedMeshNames).toEqual([name]);
  expect(p.actualContactTargets).toEqual({[name]:['Duty belt side.-1','Duty belt side.1','Jumpsuit hips']});
  expect(p.actualTriangleInteriorContacts).toHaveLength(3);
