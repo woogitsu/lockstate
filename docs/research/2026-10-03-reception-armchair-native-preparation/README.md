@@ -31,4 +31,23 @@ Root optional registry: furniture.reception.waiting-armchair => /game-content/ob
 
 Source SHA256 12cd91c54feb1d35603752eb7efe5c6245be190d77aa31d6e6b81121ea18457d. Actual canonical frame /assets/environment/oblique/furniture.reception.waiting-armchair-yaw+60-elev40.4e6ee8fdb156.png SHA256 4e6ee8fdb156be06a9d023f8806d90aede0b12552d048dcdba383c5f68b4cb0d. Existing source+72render evidence lives in ../2026-10-03-reception-waiting-armchair/README.md; no rerender is needed here.
 
-The opt-in public UI recipe and real response-body/decoder evidence helper are the next prepared checkpoint. Actual gameplay placement/drawing, separate visual calibration for BOTH chairs, consumer omission controls and before/after Load screenshots remain pending root's serial native run. No guessed colors, thresholds or ROI.
+## Opt-in public UI route prepared
+
+New tests/browser/native-reception-room.recipe.ts contains three serial cases: actual public Storage+Delivery bootstrap saved through UI to immutable IndexedDB storageState, then q0 and q1 each load that actual capacity save. Only public Build / Room plans / rotation / numeric origins / Place room plan, Fast forward, Pause, Save now, Load, minimap and camera buttons write state. Worker observer sends read-only snapshot/projection requests. All source command owners and whole stopped snapshots remain asserted.
+
+After every Loaded status the recipe checks the PUBLIC Pause button aria-pressed=true and exact whole worker snapshot equality. It never waits for currentClock after Load: the initial installed HUD clock does not imply a later observer broadcast. The sole currentClock check follows actual Fast forward clicks and checks running speed4. Public completion targets are41 for capacity and65 for Reception (orders+completed templates). Before/after Load fullhd and canvas captures belong to the SAME completed room.
+
+Source yaw60 is q0 camera -45 +7*15, q1 -45 +1*15 +90 object orientation. Public Lower camera angle three times clamps elevation20, then Raise twice sets exact40. This reuses the actual canonical camera control (oblique-world-scene initial pose lines196/197, clamp line594; cell-cot-evidence publicHeadboardPose) and requires no private renderer access. The minimap frames tile7,7.
+
+The helper observes ONLY real renderer descriptor/PNG and worker response bodies, terminal200 with redirect evidence, exact frameSHA, PNG header256x256, existing real HTMLImageElement/Blob decoder completion and emitted workerSHA. It pins descriptor fields,72frames and normalized LF textSHA55fa838b7d646a308ce9d97ff2167a2ffbb914aa35d9db3b7544578dab942aea; the receipt also records the exact NETWORK bodySHA (Windows CRLF checkout is95b4e9bcb69dd9e9e8420073b57c943ea77f63117e4ef237101a5db3061d3144). No synthetic image fetch or texture-reader verdict.
+
+Run from integrated root, after registration/mapping and ordinary production build:
+
+```text
+node tooling/research/write-reception-room-native-config.mjs
+node node_modules/@playwright/test/cli.js test --config assets/intermediate/reception-room-native-preparation/playwright.reception.artifact.config.ts
+```
+
+The generator was executed and inspected, without importing the production browser config or launching any browser/server. The generated opt-in config inherits existing timeout60000/expect10000/workers1/retries0 and changes only testMatch/outputDir. No slow or timeout override. Full TypeScript project+tools check passed.
+
+ Actual gameplay placement/drawing, separate visual calibration for BOTH chairs, consumer omission controls and before/after Load screenshots remain pending root's serial native run. No guessed colors, thresholds or ROI.

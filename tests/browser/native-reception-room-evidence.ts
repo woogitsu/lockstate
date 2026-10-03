@@ -109,6 +109,9 @@ export async function observeReceptionNetwork(page: Page) {
       for (const row of rows.filter(row => row.location !== undefined))
         expect(decodeURIComponent(new URL(row.location!, row.url).pathname)).toBe(row.path);
       const body = bodies.get(RECEPTION_ART.descriptor)!;
+      // Git may checkout JSON with CRLF; pin canonical text while the receipt
+      // below preserves SHA256 of the exact network body bytes.
+      expect(createHash('sha256').update(body.toString('utf8').replace(/\r\n/g, '\n')).digest('hex')).toBe(RECEPTION_ART.descriptorCanonicalTextSha256);
       const catalog = JSON.parse(body.toString('utf8')) as NetworkCatalog;
       expect(catalog).toMatchObject({ assetId: RECEPTION_ART.assetId, source: RECEPTION_ART.source,
         sourceSha256: RECEPTION_ART.sourceSha256, resolutionPx: [256, 256], nominalPixelsPerTile: 64,
