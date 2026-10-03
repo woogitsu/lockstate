@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-reception-registration-native-preparation-20261003
+
+·····················
+
+ Test Files  4 passed (4)
+      Tests  21 passed (21)
+   Start at  16:37:48
+   Duration  4.75s (transform 3.15s, setup 0ms, import 6.07s, tests 405ms, environment 0ms)
+
+$ vitest run "tests/integration/native-reception-room-preparation.test.ts" "tests/unit/native-reception-registration-desk-evidence.test.ts" "tests/unit/oblique-reception-registration-desk-context.test.ts" "tests/unit/oblique-reception-chair-context.test.ts" "--reporter=dot"

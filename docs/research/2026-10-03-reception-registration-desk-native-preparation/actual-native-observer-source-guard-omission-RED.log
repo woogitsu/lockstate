@@ -1,0 +1,26 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-reception-registration-native-preparation-20261003
+
+···x·
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 4 passed (5)
+   Start at  16:36:55
+   Duration  528ms (transform 56ms, setup 0ms, import 397ms, tests 15ms, environment 0ms)
+
+[ELIFECYCLE] Test failed. See above for more details.
+$ vitest run "tests/unit/native-reception-registration-desk-evidence.test.ts" "--reporter=dot"
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/native-reception-registration-desk-evidence.test.ts > independent Reception registration desk source/body preparation > rejects a wrong source hash even when the descriptor body and pinned canonical body hash agree
+AssertionError: expected [Function] to throw an error
+ ❯ tests/unit/native-reception-registration-desk-evidence.test.ts:32:99
+     30|     const body = Buffer.from(JSON.stringify(altered, null, 2) + '\n');
+     31|     const matchedBodyPin = { ...art, descriptorCanonicalTextSha256: sh…
+     32|     expect(() => assertReceptionDeliveredArt(matchedBodyPin, body, rea…
+       |                                                                                                   ^
+     33|   });
+     34|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯

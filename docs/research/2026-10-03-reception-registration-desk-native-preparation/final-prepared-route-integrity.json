@@ -1,0 +1,59 @@
+{
+  "base": "09282871d9cf27f2bd222ad936826aa397861ffd",
+  "existingFixtureCompletePrefixExact": true,
+  "recipeActionsAndSaveLoadExact": true,
+  "capacityAndReceptionSnapshotAssertionsExact": true,
+  "protectedGameplayRuntimeConfigFilesCanonicalExact": [
+    "src/content/room-template-catalog.ts",
+    "src/content/room-catalog.ts",
+    "src/content/object-catalog.ts",
+    "src/simulation/construction/definition.ts",
+    "src/rendering/assets/oblique-object-mapping.ts",
+    "public/game-content/oblique-module-registry.v1.json",
+    "tests/integration/native-reception-room-preparation.test.ts",
+    "tests/browser/playwright.artifact.config.ts"
+  ],
+  "preservedResearchRows": 360,
+  "actualLocalTypedCases": 2,
+  "actualFocusedTests": 21,
+  "actualCollectedTests": 3,
+  "browserOrServerStarted": false,
+  "limits": {
+    "timeout": 60000,
+    "expectTimeout": 10000,
+    "workers": 1,
+    "retries": 0
+  },
+  "worker": {
+    "path": "dist/client/assets/worker-CUtL3oKL.js",
+    "bytes": 443793,
+    "sha256": "f9778bf0e8851c22b1eecbbc601e411afb9b052a6620872d0666787c88f8906b"
+  },
+  "actualLocalBuildArtifacts": [
+    {
+      "assetId": "furniture.reception.registration-desk",
+      "descriptorExactBodySha256": "2094a5e7e67c51d5a63380dec27395761a7afd1e425f0089a0d2b2d603efaa4b",
+      "sourceSha256": "be670aa62316c8f8557a1edbed75f3ac87df3ebe4bc78a3958c1e106347bb0dc",
+      "frame": {
+        "yawDegrees": 60,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.reception.registration-desk-yaw+60-elev40.bac55a0b3bac.png",
+        "sha256": "bac55a0b3bacc977eeca707eaf444e58f8661171391a8d1c1d430e521204febe"
+      },
+      "buildDescriptorAndPNGBytesExact": true
+    },
+    {
+      "assetId": "furniture.reception.waiting-armchair",
+      "descriptorExactBodySha256": "95b4e9bcb69dd9e9e8420073b57c943ea77f63117e4ef237101a5db3061d3144",
+      "sourceSha256": "12cd91c54feb1d35603752eb7efe5c6245be190d77aa31d6e6b81121ea18457d",
+      "frame": {
+        "yawDegrees": 60,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.reception.waiting-armchair-yaw+60-elev40.4e6ee8fdb156.png",
+        "sha256": "4e6ee8fdb156be06a9d023f8806d90aede0b12552d048dcdba383c5f68b4cb0d"
+      },
+      "buildDescriptorAndPNGBytesExact": true
+    }
+  ],
+  "nativeVisualAcceptance": "pending root"
+}
