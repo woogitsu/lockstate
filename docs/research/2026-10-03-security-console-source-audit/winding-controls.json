@@ -1,0 +1,34 @@
+{
+  "controls": [
+    {
+      "control": "producer-only-reversed-retained-body-winding",
+      "exitCode": 1,
+      "sourceFilesByteEqualBaseline": true,
+      "vertexBytesChangedByWinding": false
+    },
+    {
+      "control": "loaded-only-reversed-retained-body-winding",
+      "exitCode": 1,
+      "sourceFilesByteEqualBaseline": true,
+      "vertexBytesChangedByWinding": false
+    },
+    {
+      "control": "exact-restored-winding-verify",
+      "exitCode": 0,
+      "sourceFilesByteEqualBaseline": true,
+      "vertexBytesChangedByWinding": null
+    }
+  ],
+  "builderBytesRestored": true,
+  "wrapperBytesRestored": true,
+  "sourceIdentities": [
+    {
+      "path": "assets\\source\\blender\\utility.security-console.variants.blend",
+      "sha256": "7b7c755e96cc460c6afa42d8a5e4a1f44480a21a6483cea122949290848db5d7"
+    },
+    {
+      "path": "assets\\source\\blender\\utility.security-console.angled.blend",
+      "sha256": "5b32b08dfed1b1dad0e79e4dc3f618937f7815f4208594c64b0d7b1c0d81207f"
+    }
+  ]
+}
