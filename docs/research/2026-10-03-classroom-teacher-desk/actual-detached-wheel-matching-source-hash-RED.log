@@ -1,0 +1,27 @@
+00:01.406  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-classroom-teacher-desk-model-20261003\assets\source\blender\furniture.classroom.teacher-desk.blend"
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
+Traceback (most recent call last):
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-classroom-teacher-desk-model-20261003\tooling\blender\render-classroom-teacher-desk-oblique.py", line 99, in <module>
+    exporter.main()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-classroom-teacher-desk-model-20261003\tooling\blender\render-kitchen-fixtures-oblique.py", line 184, in main
+    scene, camera, target = configure(model)
+                            ~~~~~~~~~^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-classroom-teacher-desk-model-20261003\tooling\blender\render-classroom-teacher-desk-oblique.py", line 43, in configure
+    scene, camera, target = shared_configure(model, prepare_source)
+                            ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-classroom-teacher-desk-model-20261003\tooling\blender\render-kitchen-fixtures-oblique.py", line 132, in configure
+    prepare_source(scene, model)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-classroom-teacher-desk-model-20261003\tooling\blender\render-classroom-teacher-desk-oblique.py", line 39, in prepare_source
+    builder.verify_source(scene)
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-classroom-teacher-desk-model-20261003\tooling\blender\build-classroom-teacher-desk.py", line 96, in verify_source
+    contacts = source_contacts(scene, receipt['actualContactPairs'])
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-classroom-teacher-desk-model-20261003\tooling\blender\build-classroom-teacher-desk.py", line 67, in source_contacts
+    raise ValueError(f'Classroom teacher desk actual contact disconnected: {first} / {second}')
+ValueError: Classroom teacher desk actual contact disconnected: Classroom teacher desk.desktop textbook rack base / laminate desktop
+
+Error: script failed, file: 'C:\Users\matma\Documents\Rozwój gier\lockstate-classroom-teacher-desk-model-20261003\tooling\blender\render-classroom-teacher-desk-oblique.py', exiting.
