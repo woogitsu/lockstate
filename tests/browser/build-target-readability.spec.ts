@@ -1,4 +1,4 @@
-import { openCameraControls } from './public-camera-controls';
+import { closeCameraControls, openCameraControls } from './public-camera-controls';
 import {expect,test} from './network-changed-fixture';
 import type {Locator} from './network-changed-fixture';
 async function assertReadable(value:Locator):Promise<void> {
@@ -17,8 +17,12 @@ for(const width of [960,1920,2560]) test(`${width} CSS-pixel actual square targe
   await openCameraControls(page);
   await page.getByRole('button',{name:'New prison',exact:true}).click();
   const view=page.getByRole('combobox',{name:'View',exact:true});await view.selectOption('oblique');await expect(view).toBeEnabled();await expect(view).toHaveValue('oblique');
+  // The expanded public View overlays this narrow viewport's original map
+  // target. Close it after real renderer readiness, before returning to Build.
+  await closeCameraControls(page);
   await page.getByRole('button',{name:'Build',exact:true}).click();await page.locator('.hud-build__arm').click();
   await page.mouse.move(width===960?370:650,250);const target=page.locator('.hud-build__target-value');
+  expect(await page.evaluate(point=>document.elementFromPoint(point.x,point.y)===document.querySelector('#game-root canvas'),{x:width===960?370:650,y:250})).toBe(true);
   await expect(target).toHaveText(/1 whole squares from -?\d+, -?\d+ \| catalogue value 80/);
   await assertReadable(target);
   const fallback=page.locator('.hud-build__arm-hint');const before=await fallback.boundingBox();
