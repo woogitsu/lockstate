@@ -104,6 +104,11 @@ suites pass 11/11: later usable Shower, physical invalidation/permissions and
 Common Room source/descriptor integrity. No final production diff is added
 relative to the imported fixes. Selection and paired V8 correctness are GREEN
 in the measured fixture; the ordinary-full-room cost finding above is unresolved.
+All three relevant simulation files match the reviewed `57814321` producer
+bytes in Git. Importing the later `ce7fa461b9` documentation checkpoint restores
+its missing continuous index row; the final index contract is 5/5 GREEN.
+The earlier index check's sole RED was that omitted imported collection link,
+not this review's canonical row or a product regression.
 The full catalogue audit is not rerun. Browser/server/native rendering are
 owned by the coordinator; raster screenshots and earlier exporter negatives
 cannot establish their integrated runtime correctness.
