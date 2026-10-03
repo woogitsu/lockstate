@@ -1,0 +1,59 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-oblique-empty-asset-demand-audit-20261003
+
+ ❯ tests/unit/oblique-demand-texture-lifecycle.test.ts (8 tests | 2 failed) 15ms
+   × actual projected placed cot, guard and pending cot request their frames; pending wall keeps its existing fallback 5ms
+   × orientation changes select a fresh physical cot pose without showing the old key 1ms
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 6 passed (8)
+   Start at  13:56:40
+   Duration  792ms (transform 239ms, setup 0ms, import 657ms, tests 15ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-demand-texture-lifecycle.test.ts > actual projected placed cot, guard and pending cot request their frames; pending wall keeps its existing fallback
+AssertionError: expected [ { …(2) }, { …(2) } ] to deeply equal [ { …(2) }, { …(2) }, { …(2) } ]
+
+- Expected
++ Received
+
+  [
+    {
+-     "key": "oblique:furniture.cell.cot.single:210:40",
+-     "url": "/assets/environment/oblique/furniture.cell.cot.single-yaw+210-elev40.0c91c0c6372b.png",
++     "key": "oblique:furniture.cell.cot.single:300:40",
++     "url": "/assets/environment/oblique/furniture.cell.cot.single-yaw+300-elev40.faccdd4d94af.png",
+    },
+    {
+-     "key": "oblique:furniture.cell.cot.single:30:40",
+-     "url": "/assets/environment/oblique/furniture.cell.cot.single-yaw+30-elev40.c411cffdd2e9.png",
+-   },
+-   {
+-     "key": "oblique:actor.guard.base:135:45",
+-     "url": "/assets/environment/oblique/actor-guard-yaw+135-elev45.48c8e171af14.png",
++     "key": "oblique:actor.guard.base:-45:45",
++     "url": "/assets/environment/oblique/actor-guard-yaw-45-elev45.c7352a388ac2.png",
+    },
+  ]
+
+ ❯ tests/unit/oblique-demand-texture-lifecycle.test.ts:52:68
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/unit/oblique-demand-texture-lifecycle.test.ts > orientation changes select a fresh physical cot pose without showing the old key
+AssertionError: expected 'oblique:furniture.cell.cot.single:300…' to be undefined
+
+- Expected:
+undefined
+
++ Received:
+"oblique:furniture.cell.cot.single:300:40"
+
+ ❯ tests/unit/oblique-demand-texture-lifecycle.test.ts:58:592
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+

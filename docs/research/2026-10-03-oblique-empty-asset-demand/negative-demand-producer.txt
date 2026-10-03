@@ -1,0 +1,77 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-oblique-empty-asset-demand-audit-20261003
+
+ ❯ tests/unit/oblique-demand-texture-lifecycle.test.ts (8 tests | 4 failed) 18ms
+   × actual projected placed cot, guard and pending cot request their frames; pending wall keeps its existing fallback 6ms
+   × floor and model requests are serialized even when demand precedes descriptor reply 2ms
+   × orientation changes select a fresh physical cot pose without showing the old key 1ms
+   × room-owned chair skin selects the actual classroom catalog after the generic chair loaded 2ms
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 4 passed (8)
+   Start at  13:56:39
+   Duration  795ms (transform 243ms, setup 0ms, import 662ms, tests 18ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-demand-texture-lifecycle.test.ts > actual projected placed cot, guard and pending cot request their frames; pending wall keeps its existing fallback
+AssertionError: expected [ { …(2) } ] to deeply equal [ { …(2) }, { …(2) }, { …(2) } ]
+
+- Expected
++ Received
+
+  [
+    {
+-     "key": "oblique:furniture.cell.cot.single:210:40",
+-     "url": "/assets/environment/oblique/furniture.cell.cot.single-yaw+210-elev40.0c91c0c6372b.png",
+-   },
+-   {
+-     "key": "oblique:furniture.cell.cot.single:30:40",
+-     "url": "/assets/environment/oblique/furniture.cell.cot.single-yaw+30-elev40.c411cffdd2e9.png",
+-   },
+-   {
+-     "key": "oblique:actor.guard.base:135:45",
+-     "url": "/assets/environment/oblique/actor-guard-yaw+135-elev45.48c8e171af14.png",
++     "key": "oblique-floor:floor.linoleum.institutional",
++     "url": "/game-content/source-art/floor.linoleum.institutional.png",
+    },
+  ]
+
+ ❯ tests/unit/oblique-demand-texture-lifecycle.test.ts:52:68
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tests/unit/oblique-demand-texture-lifecycle.test.ts > floor and model requests are serialized even when demand precedes descriptor reply
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ tests/unit/oblique-demand-texture-lifecycle.test.ts:56:28
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  tests/unit/oblique-demand-texture-lifecycle.test.ts > orientation changes select a fresh physical cot pose without showing the old key
+AssertionError: expected undefined to be defined
+ ❯ tests/unit/oblique-demand-texture-lifecycle.test.ts:58:427
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  tests/unit/oblique-demand-texture-lifecycle.test.ts > room-owned chair skin selects the actual classroom catalog after the generic chair loaded
+AssertionError: expected 'oblique-floor:floor.linoleum.institut…' to contain 'furniture.chair.wooden'
+
+Expected: "furniture.chair.wooden"
+Received: "oblique-floor:floor.linoleum.institutional"
+
+ ❯ tests/unit/oblique-demand-texture-lifecycle.test.ts:60:330
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+

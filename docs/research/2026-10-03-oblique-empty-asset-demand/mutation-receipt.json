@@ -1,0 +1,73 @@
+{
+  "fixed": "b9281725ce6ff7452bec9deda2618a9ebd584149",
+  "sourceSha256Before": "ed4a8ae130c039c8f19bd2cf48e6ec924c38f8e9d28e0193cc3222d5bf5d7bce",
+  "results": [
+    {
+      "label": "negative-eager-boot",
+      "exitCode": 1,
+      "summary": [
+        " Test Files  1 failed (1)",
+        "      Tests  1 failed | 7 skipped (8)",
+        "   Duration  861ms (transform 248ms, setup 0ms, import 687ms, tests 7ms, environment 0ms)"
+      ]
+    },
+    {
+      "label": "negative-demand-producer",
+      "exitCode": 1,
+      "summary": [
+        " Test Files  1 failed (1)",
+        "      Tests  4 failed | 4 passed (8)",
+        "   Duration  795ms (transform 243ms, setup 0ms, import 662ms, tests 18ms, environment 0ms)"
+      ]
+    },
+    {
+      "label": "negative-orientation-reader",
+      "exitCode": 1,
+      "summary": [
+        " Test Files  1 failed (1)",
+        "      Tests  2 failed | 6 passed (8)",
+        "   Duration  792ms (transform 239ms, setup 0ms, import 657ms, tests 15ms, environment 0ms)"
+      ]
+    },
+    {
+      "label": "negative-batch-serialization",
+      "exitCode": 1,
+      "summary": [
+        " Test Files  1 failed (1)",
+        "      Tests  1 failed | 7 skipped (8)",
+        "     Errors  1 error",
+        "   Duration  779ms (transform 240ms, setup 0ms, import 655ms, tests 8ms, environment 0ms)"
+      ]
+    },
+    {
+      "label": "negative-shutdown-completion",
+      "exitCode": 1,
+      "summary": [
+        " Test Files  1 failed (1)",
+        "      Tests  1 failed | 7 skipped (8)",
+        "   Duration  775ms (transform 240ms, setup 0ms, import 652ms, tests 6ms, environment 0ms)"
+      ]
+    },
+    {
+      "label": "negative-skin-catalog-reader",
+      "exitCode": 1,
+      "summary": [
+        " Test Files  1 failed (1)",
+        "      Tests  1 failed | 7 skipped (8)",
+        "   Duration  804ms (transform 245ms, setup 0ms, import 670ms, tests 9ms, environment 0ms)"
+      ]
+    }
+  ],
+  "restoration": {
+    "label": "lifecycle-exact-restored",
+    "exitCode": 0,
+    "summary": [
+      " Test Files  1 passed (1)",
+      "      Tests  8 passed (8)",
+      "   Duration  799ms (transform 243ms, setup 0ms, import 671ms, tests 12ms, environment 0ms)"
+    ]
+  },
+  "sourceSha256After": "ed4a8ae130c039c8f19bd2cf48e6ec924c38f8e9d28e0193cc3222d5bf5d7bce",
+  "productionDiff": "",
+  "branch": "codex/oblique-empty-asset-demand-audit-20261003"
+}

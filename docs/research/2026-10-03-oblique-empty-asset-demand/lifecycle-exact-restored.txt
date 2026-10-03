@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-oblique-empty-asset-demand-audit-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+   Start at  13:56:45
+   Duration  799ms (transform 243ms, setup 0ms, import 671ms, tests 12ms, environment 0ms)
+

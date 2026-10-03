@@ -1,0 +1,21 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-oblique-empty-asset-demand-audit-20261003
+
+ ❯ tests/unit/oblique-demand-texture-lifecycle.test.ts (8 tests | 1 failed | 7 skipped) 6ms
+   × shutdown ignores outstanding model completion and never starts queued work 6ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 7 skipped (8)
+   Start at  13:56:43
+   Duration  775ms (transform 240ms, setup 0ms, import 652ms, tests 6ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-demand-texture-lifecycle.test.ts > shutdown ignores outstanding model completion and never starts queued work
+AssertionError: expected "repaint" to be called +0 times, but got 1 times
+ ❯ tests/unit/oblique-demand-texture-lifecycle.test.ts:65:209
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
