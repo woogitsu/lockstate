@@ -84,8 +84,10 @@ executed control is retained byte-for-byte as `.cjs.txt` evidence. Published
 source citations were fetched onto their actual origin tracking refs.
 
 None of these corrections changes gameplay, verification thresholds, browser
-timeouts or retry rules. Fresh full verification and the two new native recipes
-remain pending until their own actual terminal outcomes are archived.
+timeouts or retry rules. At this intermediate correction checkpoint the new
+full verification and native recipes were pending. Their subsequently obtained
+terminal results are recorded below and in the preceding native acceptance
+section.
 
 The repaired full gate at **66fb8df81ce4311437e58191edc11bb89835de17** then
 passes **8441 cases / 707 files**, with two existing skips, both TypeScript
@@ -131,3 +133,24 @@ and terminal serial main CI still govern landing.
 Three agents continue actual north-door full-angle Blender completion, draft
 rotation review and independent construction lifecycle fixes. Root integrates
 and owns one browser/server. Coherent source, proof and plan commits are pushed.
+
+## North-door completion and current final combined gate
+
+The retained genuine Blender north-door assembly now has all 72 source poses:
+24 yaw positions at 15-degree intervals and three elevations. The original nine
+poses, source leaf, frame dependency, accepted alias, prices, collision and
+palette remain unchanged. Original render logs, source/PNG semantic failures,
+exact restoration and dispatch controls are preserved in the
+[north-door completion record](../2026-10-03-interior-north-door-pose-completion/README.md).
+The new public backside observation still requires execution on the fresh
+combined production build; unit or source-image checks are not native acceptance.
+
+Three obsolete browser consumers are repaired without changing product rules:
+the real Door chooser retains West when square-wall placement hides its edge
+chooser; the Guard fixture now buys ten actual perimeter squares with the same
+20 bricks and 800 charge; Category measurement selects the named Category
+combobox instead of the unrelated View control. Original failures and controlled
+reversions are retained in the
+[consumer evidence](../2026-10-03-held-guard-category-consumer-repairs/README.md).
+The fresh complete verification of this combined subject remains pending until
+its actual result and built-client backside screenshots are archived.

@@ -1629,3 +1629,25 @@ continue retained north-door full-angle completion, concrete rotation-control
 review and actual construction lifecycle fixes while root integrates. Each
 coherent result is pushed; top priority remains a genuinely playable adjustable
 camera/full-square/templates/model product in FullHD, not screenshots alone.
+
+### 2026-10-03 stationary placement and retained backside door poses
+
+The real stationary ordinary-object route now passes its entire native case:
+allowed then blocked worker verdicts without physical mouse movement, exact
+secondary-square claim, independently measured blocked tint, Escape, old held
+release rejection on Load/New, fresh placement without rearming, literal owners,
+money and whole paused V8 snapshots. Combined Reception desk and waiting chairs
+pass three actual capacity and q0/q1 purchase/SaveLoad cases; fresh FullHD loaded
+scenes were opened. The complete local gate on66fb8df passes8441cases/707files,
+two existing skips, strict types and the actual production build. Original
+preparation failures remain preserved in the integration record.
+
+The retained north-door Blender assembly now has72 genuine poses, including
+backside135/225 views; original source, nine old poses and accepted alias are
+unchanged. Its real public BasicCell camera/wholeSaveLoad observation and the
+fresh final combined gate are next. Three obsolete browser consumers have been
+corrected with original failures and exact reversion controls retained. No
+unapproved ordinary Rotate UI or V9 history fields enter this delivery. Root
+integrates; three agents continue new genuine art, reviewable rotation UI and
+concrete existing construction bugs. Each coherent checkpoint is pushed and
+the consolidated main PR still requires all exact hosted gates before landing.
