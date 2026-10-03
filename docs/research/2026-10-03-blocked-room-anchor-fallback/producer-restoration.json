@@ -1,0 +1,8 @@
+{
+  "source": "src/simulation/prisoners/action-system.ts",
+  "beforeSha256": "9637d7cb0abccc6873cc4771103e194d73c5bed40ce31f28950b204f31f88ba9",
+  "afterSha256": "9637d7cb0abccc6873cc4771103e194d73c5bed40ce31f28950b204f31f88ba9",
+  "exactByteRestoration": true,
+  "negativeExit": 1,
+  "restoredExit": 0
+}

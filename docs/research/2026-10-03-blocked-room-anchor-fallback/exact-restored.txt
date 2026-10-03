@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-blocked-room-anchor-fallback-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  08:42:52
+   Duration  4.27s (transform 784ms, setup 0ms, import 2.12s, tests 2.04s, environment 0ms)
+
