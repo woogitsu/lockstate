@@ -1,0 +1,63 @@
+{
+  "base": "2102c1700f79f5f5191edfcb3e64bdc571b3e697",
+  "checks": {
+    "strict-source-types": {
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "-b",
+        "--pretty",
+        "false"
+      ],
+      "exitCode": 0,
+      "log": "strict-source-types.log"
+    },
+    "strict-tooling-types": {
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "-b",
+        "tsconfig.tools.json",
+        "--pretty",
+        "false"
+      ],
+      "exitCode": 0,
+      "log": "strict-tooling-types.log"
+    },
+    "final-focused-tests": {
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/unit/native-laundry-linen-rack-evidence.test.ts",
+        "tests/integration/laundry-linen-rack-public-consumer.test.ts",
+        "--reporter=dot"
+      ],
+      "exitCode": 0,
+      "log": "final-focused-tests.log"
+    },
+    "opt-in-collection": {
+      "command": [
+        "node",
+        "node_modules/@playwright/test/cli.js",
+        "test",
+        "--config",
+        "tests/browser/laundry-linen-rack/native.audit.config.ts",
+        "--list"
+      ],
+      "exitCode": 0,
+      "log": "opt-in-collection.log"
+    }
+  },
+  "collectedCases": 3,
+  "collectionOnly": true,
+  "collectionArtifactInput": "existing root dist junction, read-only; no build/client freshness verdict",
+  "browserRun": false,
+  "serverRun": false,
+  "buildRun": false,
+  "caseTimeoutMs": 60000,
+  "expectTimeoutMs": 10000,
+  "workers": 1,
+  "retries": 0,
+  "nativeVisualCalibrationPending": true
+}

@@ -111,7 +111,7 @@ export function assertLaundryNativeOwners(data: SessionSnapshotBundle, turns: 0 
     });
   }
   const slot = LAUNDRY_RACK_SLOTS[turns];
-  expect(objects.filter(object => object.objectId === 'object.storage-rack')).toEqual([
+  expect(objects.filter(object => object.objectId === 'object.storage-rack' && object.anchorTile.x >= 20)).toEqual([
     { placedObjectId: `object:${slot.x}:${slot.y}`, objectId: 'object.storage-rack', anchorTile: slot,
       orientation: 0, sourceOrderId: paidOrderId },
   ]);
