@@ -1,12 +1,11 @@
-import { expect, test } from './network-changed-fixture';
+import { expect, test, type Page, type TestInfo } from './network-changed-fixture';
 import { createRequire } from 'node:module';
-import type { Page, TestInfo } from '@playwright/test';
 import type {} from './oblique-preset-art-qa';
 
 // Playwright already ships this PNG decoder and exports this package subpath.
 // Resolve from the declared @playwright/test dependency, including pnpm's
 // isolated dependency layout; no additional package is needed.
-const requirePlaywright = createRequire(createRequire(import.meta.url).resolve('@playwright/test'));
+const requirePlaywright = createRequire(createRequire(import.meta.url).resolve('@playwright/test/package.json'));
 const { PNG } = requirePlaywright('playwright-core/lib/utilsBundle') as {
   PNG: { sync: { read(buffer: Buffer): { width: number; height: number; data: Buffer } } };
 };
