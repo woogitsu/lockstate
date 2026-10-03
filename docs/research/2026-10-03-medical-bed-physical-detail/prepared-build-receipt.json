@@ -1,0 +1,20 @@
+{
+  "checkpoint": "prepared genuine player fixture, not browser acceptance",
+  "builtAtUtc": "2026-10-03T01:03:39.826794+00:00",
+  "buildCommand": [
+    "node",
+    "scripts/cloudflare-task.mjs",
+    "build",
+    "production"
+  ],
+  "buildExitCode": 0,
+  "worker": {
+    "path": "dist/client/assets/worker-CkJCK9IC.js",
+    "bytes": 438431,
+    "sha256": "ec3ab3962b29af941f5f20213c9da3e06b4c984092c4b5d6e8ba79799324db2b"
+  },
+  "nativeBrowserStarted": false,
+  "nativePaletteCalibration": "pending (historical q0 control retained, q1 source-derived candidate only)",
+  "sourceSha256": "d18a702e585d6e69f15602d9e9f294bc0c539da3f78bf4f48fe1330da286c4fe",
+  "canonicalDescriptorSha256": "ba270bbadd9f4f821f7a0748c2bddc9c23b7e85d494935b3fb317ffc75dc265a"
+}
