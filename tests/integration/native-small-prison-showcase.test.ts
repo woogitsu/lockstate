@@ -9,6 +9,9 @@ import { instantiateRoomTemplateForConstruction } from '../../src/simulation/con
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { PROJECTION_CATALOG } from '../../src/simulation/worker/projection-catalog';
 import { SMALL_PRISON_PLANS, SMALL_PRISON_FIXTURES, SMALL_PRISON_ROOM_IDS, showcaseOwnerId } from '../fixtures/native-small-prison-showcase-plan';
+import { assertShowcaseStage } from '../browser/native-small-prison-showcase-evidence';
+import { groundToScreen } from '../../src/rendering/camera/oblique-projection';
+import { SMALL_PRISON_CAMERA_POSES } from '../fixtures/native-small-prison-showcase-plan';
 
 /** Every placement is an ordinary typed command; deliveries and the actual
  * builder finish it. No snapshots/objects/stock/treasury are injected.
@@ -33,7 +36,8 @@ it('builds the literal four-cell prison within 25k and retains the whole stopped
     expect(projectRoomTemplatePreflight(runtime.roomTemplates, plan.templateId, plan.origin, false, plan.quarterTurns)).toEqual({ ok: true });
     const sequence = runtime.kernel.expectedSequence;
     runtime.kernel.submitCommand(`showcase-${sequence}`, sequence, runtime.kernel.tick, packCommand({
-      type: 'PlaceRoomTemplate', templateId: plan.templateId, origin: plan.origin, quarterTurns: plan.quarterTurns,
+      type: 'PlaceRoomTemplate', templateId: plan.templateId, origin: plan.origin,
+      ...(plan.quarterTurns === 0 ? {} : { quarterTurns: plan.quarterTurns }),
     }));
     expect(runtime.kernel.dispatchDueCommands()).toBe(1);
     const complete = () => runtime.roomTemplates.snapshot().pending.length === 0 && runtime.construction.allOrders().every(o => o.state === 'completed');
@@ -56,6 +60,8 @@ it('builds the literal four-cell prison within 25k and retains the whole stopped
       expect(runtime.construction.allOrders().find(o => o.id === id)).toMatchObject({ definitionId, location: { x, y }, state: 'completed' });
       expect(runtime.construction.allOrders().find(o => o.id === id)!.objectOrientation ?? 0).toBe(orientation);
     }
+    // The browser's read-only consumer is also checked against real kernel data.
+    assertShowcaseStage(captureSessionSnapshot(runtime), index);
   }
   expect(elapsedTicks).toBe(11_981);
   expect(runtime.roomTemplates.snapshot().completed).toHaveLength(7);
@@ -80,4 +86,19 @@ it('builds the literal four-cell prison within 25k and retains the whole stopped
   const loaded = restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle).runtime;
   // No step between captures: every persisted subsystem must survive.
   expect(captureSessionSnapshot(loaded)).toEqual(before);
+  // Production camera math, not a renderer screenshot. These planned bounds
+  // fit the Full HD capture with a conservative two-tile height allowance.
+  // The native run still has to inspect actual HUD occlusion and painted art.
+  for (const pose of SMALL_PRISON_CAMERA_POSES) {
+    for (const x of [3, 28]) for (const y of [5, 30]) for (const z of [0, 2]) {
+      const point = groundToScreen({ x: x * 64, y: y * 64, z: z * 64 }, {
+        target: { x: 15.5 * 64, y: 17.5 * 64 }, viewport: { width: 1920, height: 1080 }, zoom: 0.4096,
+        yawRadians: pose.yawDegrees * Math.PI / 180, elevationRadians: pose.elevationDegrees * Math.PI / 180,
+      });
+      expect(point.x).toBeGreaterThan(300);
+      expect(point.x).toBeLessThan(1750);
+      expect(point.y).toBeGreaterThan(100);
+      expect(point.y).toBeLessThan(1030);
+    }
+  }
 });
