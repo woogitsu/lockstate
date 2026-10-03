@@ -1,0 +1,16 @@
+[
+    {
+        "archived":  "original-complete-suite.txt",
+        "sourceBytes":  176558,
+        "source":  "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-staff-v9-complete-suite-20261003.txt",
+        "sourceSha256":  "3387041d99523251dae02a3448609b16bc72388a163ae135a765e718035053d6",
+        "archivedSha256":  "8378ab70617ffd587614e518c3975cad5d46043825a017497c9f64bbc1807b99"
+    },
+    {
+        "archived":  "original-complete-types.txt",
+        "sourceBytes":  814,
+        "source":  "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-staff-v9-complete-types-20261003.txt",
+        "sourceSha256":  "4dd322c6e94b1fec18f6317a29d377198b6a932ffb6260fc86fa5e86bfcb1f60",
+        "archivedSha256":  "d2010c753d2d731d1facdf85e809e9a14b8eb6338bd8f8f95c675132eaa34645"
+    }
+]

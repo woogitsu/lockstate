@@ -39,7 +39,7 @@ const expected: Record<RoomTemplateId, readonly string[]> = {
     'furniture.classroom.student-chair', 'furniture.classroom.student-chair', 'furniture.classroom.student-chair'],
   'infirmary-basic': ['furniture.medical-bed.variants', 'fixture.medicine-cabinet.variants'],
   'security-office-basic': ['utility.security-console.variants'],
-  'staff-room-basic': ['furniture.office.desk.employee.variants', 'furniture.chair.wooden', 'furniture.chair.wooden'],
+  'staff-room-basic': ['furniture.office.desk.employee.variants', 'furniture.staff-room.padded-chair', 'furniture.staff-room.padded-chair'],
   'storage-room-basic': ['furniture.storage-room.timber-rack', 'furniture.storage-room.timber-rack'],
   'delivery-bay-basic': ['utility.loading-dock-door.variants'],
   'garbage-room-basic': ['fixture.garbage-room.waste-bin', 'fixture.garbage-room.waste-bin'],

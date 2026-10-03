@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-staff-chair-v9-integration-20261003
+
+
+ Test Files  3 passed (3)
+      Tests  201 passed (201)
+   Start at  19:55:16
+   Duration  29.04s (transform 442ms, setup 0ms, import 43.78s, tests 6.69s, environment 0ms)
+

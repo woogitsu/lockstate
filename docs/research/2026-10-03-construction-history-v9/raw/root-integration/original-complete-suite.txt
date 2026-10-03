@@ -1,0 +1,1634 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-staff-chair-v9-integration-20261003
+
+ ❯ tests/integration/room-template-completed-row-access.test.ts (48 tests | 40 failed) 9226ms
+   × keeps actual lower-cell access after 'live completed', square=true mirror=false turn=+0 207ms
+   × keeps actual lower-cell access after 'saved completed', square=true mirror=false turn=+0 196ms
+   × keeps actual lower-cell access after 'saved partial continuation', square=true mirror=false turn=+0 190ms
+   × keeps actual lower-cell access after 'legacy completed save', square=true mirror=false turn=+0 166ms
+   × keeps actual lower-cell access after 'live completed', square=true mirror=false turn=1 152ms
+   × keeps actual lower-cell access after 'saved completed', square=true mirror=false turn=1 191ms
+   × keeps actual lower-cell access after 'saved partial continuation', square=true mirror=false turn=1 205ms
+   × keeps actual lower-cell access after 'legacy completed save', square=true mirror=false turn=1 195ms
+   × keeps actual lower-cell access after 'live completed', square=true mirror=false turn=2 183ms
+   × keeps actual lower-cell access after 'saved completed', square=true mirror=false turn=2 192ms
+   × keeps actual lower-cell access after 'saved partial continuation', square=true mirror=false turn=2 211ms
+   × keeps actual lower-cell access after 'legacy completed save', square=true mirror=false turn=2 196ms
+   × keeps actual lower-cell access after 'live completed', square=true mirror=false turn=3 183ms
+   × keeps actual lower-cell access after 'saved completed', square=true mirror=false turn=3 192ms
+   × keeps actual lower-cell access after 'saved partial continuation', square=true mirror=false turn=3 197ms
+   × keeps actual lower-cell access after 'legacy completed save', square=true mirror=false turn=3 189ms
+   × keeps actual lower-cell access after 'live completed', square=true mirror=true turn=+0 183ms
+   × keeps actual lower-cell access after 'saved completed', square=true mirror=true turn=+0 192ms
+   × keeps actual lower-cell access after 'saved partial continuation', square=true mirror=true turn=+0 203ms
+   × keeps actual lower-cell access after 'legacy completed save', square=true mirror=true turn=+0 191ms
+   × keeps actual lower-cell access after 'live completed', square=true mirror=true turn=1 181ms
+   × keeps actual lower-cell access after 'saved completed', square=true mirror=true turn=1 192ms
+   × keeps actual lower-cell access after 'saved partial continuation', square=true mirror=true turn=1 202ms
+   × keeps actual lower-cell access after 'legacy completed save', square=true mirror=true turn=1 189ms
+   × keeps actual lower-cell access after 'live completed', square=true mirror=true turn=2 181ms
+   × keeps actual lower-cell access after 'saved completed', square=true mirror=true turn=2 190ms
+   × keeps actual lower-cell access after 'saved partial continuation', square=true mirror=true turn=2 191ms
+   × keeps actual lower-cell access after 'legacy completed save', square=true mirror=true turn=2 152ms
+   × keeps actual lower-cell access after 'live completed', square=true mirror=true turn=3 162ms
+   × keeps actual lower-cell access after 'saved completed', square=true mirror=true turn=3 186ms
+   × keeps actual lower-cell access after 'saved partial continuation', square=true mirror=true turn=3 199ms
+   × keeps actual lower-cell access after 'legacy completed save', square=true mirror=true turn=3 189ms
+   × keeps actual lower-cell access after 'saved completed', square=false mirror=false turn=+0 193ms
+   × keeps actual lower-cell access after 'saved completed', square=false mirror=false turn=1 175ms
+   × keeps actual lower-cell access after 'saved completed', square=false mirror=false turn=2 183ms
+   × keeps actual lower-cell access after 'saved completed', square=false mirror=false turn=3 190ms
+   × keeps actual lower-cell access after 'saved completed', square=false mirror=true turn=+0 189ms
+   × keeps actual lower-cell access after 'saved completed', square=false mirror=true turn=1 191ms
+   × keeps actual lower-cell access after 'saved completed', square=false mirror=true turn=2 190ms
+   × keeps actual lower-cell access after 'saved completed', square=false mirror=true turn=3 189ms
+ ❯ tests/integration/room-template-legacy-occupied-history.test.ts (37 tests | 18 failed) 4669ms
+   × keeps occupied legacy row access and readiness through atomic refusal, then releases and redoes the same saved geometry, mirror=false turn=+0 229ms
+   × keeps occupied legacy row access and readiness through atomic refusal, then releases and redoes the same saved geometry, mirror=false turn=1 176ms
+   × keeps occupied legacy row access and readiness through atomic refusal, then releases and redoes the same saved geometry, mirror=false turn=2 165ms
+   × keeps occupied legacy row access and readiness through atomic refusal, then releases and redoes the same saved geometry, mirror=false turn=3 157ms
+   × keeps occupied legacy row access and readiness through atomic refusal, then releases and redoes the same saved geometry, mirror=true turn=+0 152ms
+   × keeps occupied legacy row access and readiness through atomic refusal, then releases and redoes the same saved geometry, mirror=true turn=1 148ms
+   × keeps occupied legacy row access and readiness through atomic refusal, then releases and redoes the same saved geometry, mirror=true turn=2 151ms
+   × keeps occupied legacy row access and readiness through atomic refusal, then releases and redoes the same saved geometry, mirror=true turn=3 159ms
+   × preserves the current recorded occupied-row path, mirror=false 153ms
+   × preserves the current recorded occupied-row path, mirror=true 156ms
+   × relocates a legacy newest-template resident only into the surviving older spare before removing the exact gesture, mirror=false turn=+0 88ms
+   × relocates a legacy newest-template resident only into the surviving older spare before removing the exact gesture, mirror=false turn=1 82ms
+   × relocates a legacy newest-template resident only into the surviving older spare before removing the exact gesture, mirror=false turn=2 81ms
+   × relocates a legacy newest-template resident only into the surviving older spare before removing the exact gesture, mirror=false turn=3 85ms
+   × relocates a legacy newest-template resident only into the surviving older spare before removing the exact gesture, mirror=true turn=+0 89ms
+   × relocates a legacy newest-template resident only into the surviving older spare before removing the exact gesture, mirror=true turn=1 83ms
+   × relocates a legacy newest-template resident only into the surviving older spare before removing the exact gesture, mirror=true turn=2 81ms
+   × relocates a legacy newest-template resident only into the surviving older spare before removing the exact gesture, mirror=true turn=3 80ms
+ ❯ tests/integration/room-template-pending-object-removal.test.ts (16 tests | 2 failed) 2850ms
+   × completed template bed RemoveObject keeps standing-object best-effort removal 49ms
+   × completed template bed RemoveWall keeps standing-object best-effort removal 48ms
+ ❯ tests/integration/room-template-occupied-undo-atomicity.test.ts (18 tests | 18 failed) 1532ms
+   × keeps an occupied completed Cell intact through refused Undo, save and release retry, mirror=false turn=+0 102ms
+   × keeps an occupied completed Cell intact through refused Undo, save and release retry, mirror=false turn=1 72ms
+   × keeps an occupied completed Cell intact through refused Undo, save and release retry, mirror=false turn=2 60ms
+   × keeps an occupied completed Cell intact through refused Undo, save and release retry, mirror=false turn=3 56ms
+   × keeps an occupied completed Cell intact through refused Undo, save and release retry, mirror=true turn=+0 55ms
+   × keeps an occupied completed Cell intact through refused Undo, save and release retry, mirror=true turn=1 53ms
+   × keeps an occupied completed Cell intact through refused Undo, save and release retry, mirror=true turn=2 53ms
+   × keeps an occupied completed Cell intact through refused Undo, save and release retry, mirror=true turn=3 51ms
+   × does not relocate a saved row resident into another Cell of the same removed gesture, mirror=false 180ms
+   × does not relocate a saved row resident into another Cell of the same removed gesture, mirror=true 161ms
+   × relocates to a real older spare Cell before removing the occupied newest template, mirror=false turn=+0 84ms
+   × relocates to a real older spare Cell before removing the occupied newest template, mirror=false turn=1 93ms
+   × relocates to a real older spare Cell before removing the occupied newest template, mirror=false turn=2 86ms
+   × relocates to a real older spare Cell before removing the occupied newest template, mirror=false turn=3 86ms
+   × relocates to a real older spare Cell before removing the occupied newest template, mirror=true turn=+0 86ms
+   × relocates to a real older spare Cell before removing the occupied newest template, mirror=true turn=1 82ms
+   × relocates to a real older spare Cell before removing the occupied newest template, mirror=true turn=2 86ms
+   × relocates to a real older spare Cell before removing the occupied newest template, mirror=true turn=3 85ms
+ ❯ tests/integration/room-template-door-square-run.test.ts (14 tests | 1 failed) 1927ms
+   × protects the actual completed template door without optional completed gesture metadata 135ms
+ ❯ tests/integration/generic-object-template-approach.test.ts (32 tests | 16 failed) 1696ms
+   × generic 'desk-wooden' cannot supersede a completed template approach, turn=+0 mirror=false saved=false legal=false 81ms
+   × generic 'desk-wooden' cannot supersede a completed template approach, turn=+0 mirror=false saved=true legal=false 63ms
+   × generic 'bed-wooden' cannot supersede a completed template approach, turn=1 mirror=false saved=false legal=false 45ms
+   × generic 'bed-wooden' cannot supersede a completed template approach, turn=1 mirror=false saved=true legal=false 48ms
+   × generic 'desk-wooden' cannot supersede a completed template approach, turn=2 mirror=false saved=false legal=false 46ms
+   × generic 'desk-wooden' cannot supersede a completed template approach, turn=2 mirror=false saved=true legal=false 47ms
+   × generic 'bed-wooden' cannot supersede a completed template approach, turn=3 mirror=false saved=false legal=false 45ms
+   × generic 'bed-wooden' cannot supersede a completed template approach, turn=3 mirror=false saved=true legal=false 46ms
+   × generic 'desk-wooden' cannot supersede a completed template approach, turn=+0 mirror=true saved=false legal=false 44ms
+   × generic 'desk-wooden' cannot supersede a completed template approach, turn=+0 mirror=true saved=true legal=false 46ms
+   × generic 'bed-wooden' cannot supersede a completed template approach, turn=1 mirror=true saved=false legal=false 43ms
+   × generic 'bed-wooden' cannot supersede a completed template approach, turn=1 mirror=true saved=true legal=false 46ms
+   × generic 'desk-wooden' cannot supersede a completed template approach, turn=2 mirror=true saved=false legal=false 45ms
+   × generic 'desk-wooden' cannot supersede a completed template approach, turn=2 mirror=true saved=true legal=false 48ms
+   × generic 'bed-wooden' cannot supersede a completed template approach, turn=3 mirror=true saved=false legal=false 41ms
+   × generic 'bed-wooden' cannot supersede a completed template approach, turn=3 mirror=true saved=true legal=false 47ms
+ ❯ tests/integration/pending-template-incoming-object-footprint.test.ts (36 tests | 16 failed) 982ms
+   × pending plan protects incoming 'north' far square: q=+0 mirror=false load=false conflict=true 10ms
+   × pending plan protects incoming 'north' far square: q=+0 mirror=false load=true conflict=true 10ms
+   × pending plan protects incoming 'north' far square: q=1 mirror=true load=false conflict=true 4ms
+   × pending plan protects incoming 'north' far square: q=1 mirror=true load=true conflict=true 7ms
+   × pending plan protects incoming 'north' far square: q=2 mirror=false load=false conflict=true 3ms
+   × pending plan protects incoming 'north' far square: q=2 mirror=false load=true conflict=true 6ms
+   × pending plan protects incoming 'north' far square: q=3 mirror=true load=false conflict=true 3ms
+   × pending plan protects incoming 'north' far square: q=3 mirror=true load=true conflict=true 7ms
+   × pending plan protects incoming 'west' far square: q=+0 mirror=false load=false conflict=true 3ms
+   × pending plan protects incoming 'west' far square: q=+0 mirror=false load=true conflict=true 6ms
+   × pending plan protects incoming 'west' far square: q=1 mirror=true load=false conflict=true 3ms
+   × pending plan protects incoming 'west' far square: q=1 mirror=true load=true conflict=true 6ms
+   × pending plan protects incoming 'west' far square: q=2 mirror=false load=false conflict=true 3ms
+   × pending plan protects incoming 'west' far square: q=2 mirror=false load=true conflict=true 5ms
+   × pending plan protects incoming 'west' far square: q=3 mirror=true load=false conflict=true 3ms
+   × pending plan protects incoming 'west' far square: q=3 mirror=true load=true conflict=true 5ms
+ ❯ tests/integration/pending-square-wall-incoming-object.test.ts (28 tests | 5 failed) 1379ms
+   × paid pending square vs later Bed: type='PlaceBuildOrder' load=false conflict=true 51ms
+   × paid pending square vs later Bed: type='PlaceBuildOrder' load=true conflict=true 48ms
+   × horizontal Desk far tile respects the paid square: type='PlaceBuildOrder' load=false conflict=true 45ms
+   × horizontal Desk far tile respects the paid square: type='PlaceBuildOrder' load=true conflict=true 49ms
+   × partly built square still owns its tile after encoded Load: type='PlaceBuildOrder' conflict=true 46ms
+ ❯ tests/integration/completed-square-incoming-object-footprint.test.ts (20 tests | 4 failed) 1013ms
+   × completed square admits no far-only Bed: q=+0 type='PlaceBuildOrder' load=false conflict=true 51ms
+   × completed square admits no far-only Bed: q=+0 type='PlaceBuildOrder' load=true conflict=true 49ms
+   × completed square admits no far-only Bed: q=1 type='PlaceBuildOrder' load=false conflict=true 42ms
+   × completed square admits no far-only Bed: q=1 type='PlaceBuildOrder' load=true conflict=true 48ms
+ ❯ tests/integration/square-wall-object-footprint.test.ts (26 tests | 22 failed) 947ms
+   × refuses the second tile of an ordinary desk before allocation: live pending 14ms
+   × refuses the second tile of an ordinary desk before allocation: saved pending 14ms
+   × refuses the second tile of an ordinary desk before allocation: saved partial 13ms
+   × refuses the second tile of an ordinary desk before allocation: saved completed 14ms
+   × refuses the second tile of an ordinary desk before allocation: saved partial undone redone 17ms
+   × refuses the second tile of an ordinary desk before allocation: saved completed undone redone 20ms
+   × refuses an actual template desk far tile, completed=false mirror=false turn=+0 58ms
+   × refuses an actual template desk far tile, completed=true mirror=false turn=+0 70ms
+   × refuses an actual template desk far tile, completed=false mirror=false turn=1 50ms
+   × refuses an actual template desk far tile, completed=true mirror=false turn=1 56ms
+   × refuses an actual template desk far tile, completed=false mirror=false turn=2 44ms
+   × refuses an actual template desk far tile, completed=true mirror=false turn=2 54ms
+   × refuses an actual template desk far tile, completed=false mirror=false turn=3 46ms
+   × refuses an actual template desk far tile, completed=true mirror=false turn=3 53ms
+   × refuses an actual template desk far tile, completed=false mirror=true turn=+0 46ms
+   × refuses an actual template desk far tile, completed=true mirror=true turn=+0 51ms
+   × refuses an actual template desk far tile, completed=false mirror=true turn=1 41ms
+   × refuses an actual template desk far tile, completed=true mirror=true turn=1 50ms
+   × refuses an actual template desk far tile, completed=false mirror=true turn=2 45ms
+   × refuses an actual template desk far tile, completed=true mirror=true turn=2 49ms
+   × refuses an actual template desk far tile, completed=false mirror=true turn=3 46ms
+   × refuses an actual template desk far tile, completed=true mirror=true turn=3 51ms
+ ❯ tests/integration/accepted-command-marker-class.test.ts (60 tests | 2 failed) 669ms
+   × actual non-changing command after completed template: saved=false surface='dismiss-absent-acknowledgement' 10ms
+   × actual non-changing command after completed template: saved=true surface='dismiss-absent-acknowledgement' 8ms
+ ❯ tests/integration/completed-template-door-furniture.test.ts (10 tests | 4 failed) 535ms
+   × completed template door vs independent furniture: q=1 mirror=false saved=false legal=false 85ms
+   × completed template door vs independent furniture: q=1 mirror=false saved=true legal=false 59ms
+   × completed template door vs independent furniture: q=3 mirror=true saved=false legal=false 46ms
+   × completed template door vs independent furniture: q=3 mirror=true saved=true legal=false 46ms
+ ❯ tests/integration/room-template-later-wall-approach.test.ts (32 tests | 24 failed) 312ms
+   × preserves 'live pending' Cell against later walls, mirror=false turn=+0 17ms
+   × preserves 'saved pending' Cell against later walls, mirror=false turn=+0 18ms
+   × preserves 'saved partial redone' Cell against later walls, mirror=false turn=+0 35ms
+   × preserves 'live pending' Cell against later walls, mirror=false turn=1 3ms
+   × preserves 'saved pending' Cell against later walls, mirror=false turn=1 6ms
+   × preserves 'saved partial redone' Cell against later walls, mirror=false turn=1 19ms
+   × preserves 'live pending' Cell against later walls, mirror=false turn=2 3ms
+   × preserves 'saved pending' Cell against later walls, mirror=false turn=2 5ms
+   × preserves 'saved partial redone' Cell against later walls, mirror=false turn=2 19ms
+   × preserves 'live pending' Cell against later walls, mirror=false turn=3 2ms
+   × preserves 'saved pending' Cell against later walls, mirror=false turn=3 5ms
+   × preserves 'saved partial redone' Cell against later walls, mirror=false turn=3 18ms
+   × preserves 'live pending' Cell against later walls, mirror=true turn=+0 2ms
+   × preserves 'saved pending' Cell against later walls, mirror=true turn=+0 6ms
+   × preserves 'saved partial redone' Cell against later walls, mirror=true turn=+0 20ms
+   × preserves 'live pending' Cell against later walls, mirror=true turn=1 2ms
+   × preserves 'saved pending' Cell against later walls, mirror=true turn=1 5ms
+   × preserves 'saved partial redone' Cell against later walls, mirror=true turn=1 22ms
+   × preserves 'live pending' Cell against later walls, mirror=true turn=2 2ms
+   × preserves 'saved pending' Cell against later walls, mirror=true turn=2 5ms
+   × preserves 'saved partial redone' Cell against later walls, mirror=true turn=2 16ms
+   × preserves 'live pending' Cell against later walls, mirror=true turn=3 2ms
+   × preserves 'saved pending' Cell against later walls, mirror=true turn=3 4ms
+   × preserves 'saved partial redone' Cell against later walls, mirror=true turn=3 16ms
+ ❯ tests/foundation/documentation-links-contract.test.ts (10 tests | 1 failed) 743ms
+     × resolves every cited path 419ms
+ ❯ tests/unit/public-room-oblique-context-coverage.test.ts (183 tests | 8 failed) 343ms
+     × 'staff-room-basic' q+0 mirror=false retains owners, complete occupied squares and source-local poses 4ms
+     × 'staff-room-basic' q+0 mirror=true retains owners, complete occupied squares and source-local poses 1ms
+     × 'staff-room-basic' q1 mirror=false retains owners, complete occupied squares and source-local poses 1ms
+     × 'staff-room-basic' q1 mirror=true retains owners, complete occupied squares and source-local poses 1ms
+     × 'staff-room-basic' q2 mirror=false retains owners, complete occupied squares and source-local poses 1ms
+     × 'staff-room-basic' q2 mirror=true retains owners, complete occupied squares and source-local poses 1ms
+     × 'staff-room-basic' q3 mirror=false retains owners, complete occupied squares and source-local poses 1ms
+     × 'staff-room-basic' q3 mirror=true retains owners, complete occupied squares and source-local poses 1ms
+ ❯ tests/foundation/documentation-commit-citation-contract.test.ts (8 tests | 1 failed) 26ms
+     × cites only commits this repository publishes, so CI reads the same history a reader can 5ms
+pnpm : 
+At line:8 char:1
++ pnpm --config.verify-deps-before-run=false exec vitest run --maxWorke ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+⎯⎯⎯⎯⎯⎯ Failed Tests 182 ⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/foundation/documentation-commit-citation-contract.test.ts > a commit sha cited in prose names a commit tha
+t exists > cites only commits this repository publishes, so CI reads the same history a reader can
+AssertionError: these cite a commit that exists on this disk and on no ref this repository publishes, so nobody else ca
+n check them and CI cannot either: `fetch-depth: 0` fetches all history for every published branch and tag and nothing 
+more. The usual cause is a sha read out of an agent's own worktree before the coordinator cherry-picked it, which rewri
+tes it -- `git branch -r --contains <sha>` tells you. Cite the commit as published, or record it in UNPUBLISHED_BY_ORIG
+IN with what it is and why the anchor cannot move: expected [ …(10) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/design/2026-09-28-adjustable-camera/README.md:1674 -> 30568432f5",
++   "docs/design/2026-09-28-adjustable-camera/README.md:1683 -> 8e6c7bb502",
++   "docs/research/2026-10-03-construction-history-v9/README.md:6 -> 79a18be1cb",
++   "docs/research/2026-10-03-construction-history-v9/README.md:71 -> f374555e0ffc44c68d34636e2b39a42213080344",
++   "docs/research/2026-10-03-construction-history-v9/README.md:122 -> 2a27081053de07384b515db6957bfb4e7317cb1e",
++   "docs/research/2026-10-03-staff-room-padded-chair/README.md:43 -> 8e6c7bb502",
++   "docs/research/2026-10-03-template-door-furniture/README.md:28 -> 2fab2844a0a2abfaabd038dd5c69f33332be638c",
++   "docs/research/2026-10-03-template-door-furniture/README.md:28 -> 12421a08f10ef49d9f7bb7e6f7640b1cc5f3d5dc",
++   "docs/research/2026-10-03-template-door-furniture/README.md:32 -> 12421a08f1",
++   "docs/research/2026-10-03-template-door-furniture/README.md:46 -> c05140d1ee",
++ ]
+
+ ❯ tests/foundation/documentation-commit-citation-contract.test.ts:748:7
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/182]⎯
+
+ FAIL  tests/foundation/documentation-links-contract.test.ts > every rooted path cited in the documentation is on disk 
+> resolves every cited path
+AssertionError: these documented paths name a file that does not exist: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/research/2026-10-03-construction-history-v9/README.md -> docs/research/2026-10-03-queued-template-cancellatio
+n-load/v9-review-proposal.md",
++ ]
+
+ ❯ tests/foundation/documentation-links-contract.test.ts:416:80
+    414|       .map(cited);
+    415|
+    416|     expect(dangling, 'these documented paths name a file that does not…
+       |                                                                                ^
+    417|   });
+    418| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/182]⎯
+
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > actual non-changing command after completed template: 
+saved=false surface='dismiss-absent-acknowledgement'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > actual non-changing command after completed template: 
+saved=true surface='dismiss-absent-acknowledgement'
+AssertionError: expected { masterSeed: 73, …(5) } to deeply equal { masterSeed: 73, …(5) }
+
+- Expected
++ Received
+
+@@ -2,11 +2,11 @@
+    "construction": {
+      "currentTransaction": [
+        "room-zoning-0",
+      ],
+      "currentTransactionId": "room-zoning-0",
+-     "newerActionThanTheStackTop": false,
++     "newerActionThanTheStackTop": true,
+      "orderRevisions": {},
+      "orders": [],
+      "redoStack": [],
+      "undoStack": [],
+    },
+
+ ❯ tests/integration/accepted-command-marker-class.test.ts:69:19
+     67|     if (candidate !== undefined) send(runtime, candidate);
+     68|     const { kernel: _afterKernel, ...after } = captureSessionSnapshot(…
+     69|     expect(after).toEqual(before);
+       |                   ^
+     70|     if (surface in reasons) {
+     71|       expect(runtime.refusals.count).toBe(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/182]⎯
+
+ FAIL  tests/integration/completed-square-incoming-object-footprint.test.ts > completed square admits no far-only Bed: 
+q=+0 type='PlaceBuildOrder' load=false conflict=true
+ FAIL  tests/integration/completed-square-incoming-object-footprint.test.ts > completed square admits no far-only Bed: 
+q=+0 type='PlaceBuildOrder' load=true conflict=true
+ FAIL  tests/integration/completed-square-incoming-object-footprint.test.ts > completed square admits no far-only Bed: 
+q=1 type='PlaceBuildOrder' load=false conflict=true
+ FAIL  tests/integration/completed-square-incoming-object-footprint.test.ts > completed square admits no far-only Bed: 
+q=1 type='PlaceBuildOrder' load=true conflict=true
+AssertionError: expected { masterSeed: 73, …(5) } to deeply equal { masterSeed: 73, …(5) }
+
+- Expected
++ Received
+
+@@ -23,10 +23,11 @@
+        "room-template-000000000000-2-object-001",
+      ],
+      "currentTransactionId": "room-template-0",
+      "newerActionThanTheStackTop": false,
+      "orderRevisions": {
++       "later-bed": 1,
+        "room-template-000000000000-0-wall-000": 5,
+        "room-template-000000000000-0-wall-001": 5,
+        "room-template-000000000000-0-wall-002": 5,
+        "room-template-000000000000-0-wall-003": 5,
+        "room-template-000000000000-0-wall-004": 5,
+
+ ❯ tests/integration/completed-square-incoming-object-footprint.test.ts:58:10
+     56|         ...after,
+     57|         construction: { ...after.construction, orders: after.construct…
+     58|       }).toEqual(before);
+       |          ^
+     59|       expect(runtime.construction.allOrders().filter(order => order.id…
+     60|       // Load the refused state and ensure the unchanged paid room can…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/182]⎯
+
+ FAIL  tests/integration/completed-template-door-furniture.test.ts > completed template door vs independent furniture: 
+q=1 mirror=false saved=false legal=false
+ FAIL  tests/integration/completed-template-door-furniture.test.ts > completed template door vs independent furniture: 
+q=1 mirror=false saved=true legal=false
+ FAIL  tests/integration/completed-template-door-furniture.test.ts > completed template door vs independent furniture: 
+q=3 mirror=true saved=false legal=false
+ FAIL  tests/integration/completed-template-door-furniture.test.ts > completed template door vs independent furniture: 
+q=3 mirror=true saved=true legal=false
+AssertionError: expected { masterSeed: 73, …(5) } to deeply equal { masterSeed: 73, …(5) }
+
+- Expected
++ Received
+
+@@ -23,10 +23,11 @@
+        "room-template-000000000000-2-object-001",
+      ],
+      "currentTransactionId": "room-template-0",
+      "newerActionThanTheStackTop": false,
+      "orderRevisions": {
++       "later-toilet": 1,
+        "room-template-000000000000-0-wall-000": 5,
+        "room-template-000000000000-0-wall-001": 5,
+        "room-template-000000000000-0-wall-002": 5,
+        "room-template-000000000000-0-wall-003": 5,
+        "room-template-000000000000-0-wall-004": 5,
+
+ ❯ tests/integration/completed-template-door-furniture.test.ts:78:86
+     76|     const { kernel: _afterKernel, ...afterState } = captureSessionSnap…
+     77|     expect({ ...afterState, construction: { ...afterState.construction,
+     78|       orders: afterState.construction.orders.filter(row => row.id !== …
+       |                                                                                      ^
+     79|   });
+     80|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/182]⎯
+
+ FAIL  tests/integration/generic-object-template-approach.test.ts > generic 'desk-wooden' cannot supersede a completed 
+template approach, turn=+0 mirror=false saved=false legal=false
+ FAIL  tests/integration/generic-object-template-approach.test.ts > generic 'desk-wooden' cannot supersede a completed 
+template approach, turn=+0 mirror=false saved=true legal=false
+ FAIL  tests/integration/generic-object-template-approach.test.ts > generic 'bed-wooden' cannot supersede a completed t
+emplate approach, turn=1 mirror=false saved=false legal=false
+ FAIL  tests/integration/generic-object-template-approach.test.ts > generic 'bed-wooden' cannot supersede a completed t
+emplate approach, turn=1 mirror=false saved=true legal=false
+ FAIL  tests/integration/generic-object-template-approach.test.ts > generic 'desk-wooden' cannot supersede a completed 
+template approach, turn=2 mirror=false saved=false legal=false
+ FAIL  tests/integration/generic-object-template-approach.test.ts > generic 'desk-wooden' cannot supersede a completed 
+template approach, turn=2 mirror=false saved=true legal=false
+ FAIL  tests/integration/generic-object-template-approach.test.ts > generic 'bed-wooden' cannot supersede a completed t
+emplate approach, turn=3 mirror=false saved=false legal=false
+ FAIL  tests/integration/generic-object-template-approach.test.ts > generic 'bed-wooden' cannot supersede a completed t
+emplate approach, turn=3 mirror=false saved=true legal=false
+ FAIL  tests/integration/generic-object-template-approach.test.ts > generic 'desk-wooden' cannot supersede a completed 
+template approach, turn=+0 mirror=true saved=false legal=false
+ FAIL  tests/integration/generic-object-template-approach.test.ts > generic 'desk-wooden' cannot supersede a completed 
+template approach, turn=+0 mirror=true saved=true legal=false
+ FAIL  tests/integration/generic-object-template-approach.test.ts > generic 'bed-wooden' cannot supersede a completed t
+emplate approach, turn=1 mirror=true saved=false legal=false
+ FAIL  tests/integration/generic-object-template-approach.test.ts > generic 'bed-wooden' cannot supersede a completed t
+emplate approach, turn=1 mirror=true saved=true legal=false
+ FAIL  tests/integration/generic-object-template-approach.test.ts > generic 'desk-wooden' cannot supersede a completed 
+template approach, turn=2 mirror=true saved=false legal=false
+ FAIL  tests/integration/generic-object-template-approach.test.ts > generic 'desk-wooden' cannot supersede a completed 
+template approach, turn=2 mirror=true saved=true legal=false
+ FAIL  tests/integration/generic-object-template-approach.test.ts > generic 'bed-wooden' cannot supersede a completed t
+emplate approach, turn=3 mirror=true saved=false legal=false
+ FAIL  tests/integration/generic-object-template-approach.test.ts > generic 'bed-wooden' cannot supersede a completed t
+emplate approach, turn=3 mirror=true saved=true legal=false
+AssertionError: expected { masterSeed: 73, …(5) } to deeply equal { masterSeed: 73, …(5) }
+
+- Expected
++ Received
+
+@@ -23,10 +23,11 @@
+        "room-template-000000000000-2-object-001",
+      ],
+      "currentTransactionId": "room-template-0",
+      "newerActionThanTheStackTop": false,
+      "orderRevisions": {
++       "independent-object": 1,
+        "room-template-000000000000-0-wall-000": 5,
+        "room-template-000000000000-0-wall-001": 5,
+        "room-template-000000000000-0-wall-002": 5,
+        "room-template-000000000000-0-wall-003": 5,
+        "room-template-000000000000-0-wall-004": 5,
+
+ ❯ tests/integration/generic-object-template-approach.test.ts:82:150
+     80|   const { kernel: _beforeKernel, ...beforeState } = before;
+     81|   const { kernel: _afterKernel, ...afterState } = captureSessionSnapsh…
+     82|   expect({ ...afterState, construction: { ...afterState.construction, …
+       |                                                                                                               
+                                       ^
+     83| });
+     84|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/182]⎯
+
+ FAIL  tests/integration/pending-square-wall-incoming-object.test.ts > paid pending square vs later Bed: type='PlaceBui
+ldOrder' load=false conflict=true
+ FAIL  tests/integration/pending-square-wall-incoming-object.test.ts > paid pending square vs later Bed: type='PlaceBui
+ldOrder' load=true conflict=true
+AssertionError: expected { masterSeed: 73, …(5) } to deeply equal { masterSeed: 73, …(5) }
+
+- Expected
++ Received
+
+@@ -3,10 +3,11 @@
+      "currentTransaction": [
+        "paid-square",
+      ],
+      "newerActionThanTheStackTop": false,
+      "orderRevisions": {
++       "later-bed": 1,
+        "paid-square": 1,
+        "room-template-000000000000-0-wall-000": 5,
+        "room-template-000000000000-0-wall-001": 5,
+        "room-template-000000000000-0-wall-002": 5,
+        "room-template-000000000000-0-wall-003": 5,
+
+ ❯ tests/integration/pending-square-wall-incoming-object.test.ts:65:98
+     63|       const { kernel: _afterKernel, ...afterGameplay } = after;
+     64|       expect({ ...afterGameplay, construction: { ...afterGameplay.cons…
+     65|         orders: afterGameplay.construction.orders.filter(order => orde…
+       |                                                                                                  ^
+     66|     } else {
+     67|       expect(runtime.construction.getOrder('later-bed')?.state).toBe('…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/182]⎯
+
+ FAIL  tests/integration/pending-square-wall-incoming-object.test.ts > horizontal Desk far tile respects the paid squar
+e: type='PlaceBuildOrder' load=false conflict=true
+ FAIL  tests/integration/pending-square-wall-incoming-object.test.ts > horizontal Desk far tile respects the paid squar
+e: type='PlaceBuildOrder' load=true conflict=true
+AssertionError: expected { masterSeed: 73, …(5) } to deeply equal { masterSeed: 73, …(5) }
+
+- Expected
++ Received
+
+@@ -4,10 +4,11 @@
+        "desk-square",
+      ],
+      "newerActionThanTheStackTop": false,
+      "orderRevisions": {
+        "desk-square": 1,
++       "later-desk": 1,
+        "room-template-000000000000-0-wall-000": 5,
+        "room-template-000000000000-0-wall-001": 5,
+        "room-template-000000000000-0-wall-002": 5,
+        "room-template-000000000000-0-wall-003": 5,
+        "room-template-000000000000-0-wall-004": 5,
+
+ ❯ tests/integration/pending-square-wall-incoming-object.test.ts:89:91
+     87|       const { kernel: _afterKernel, ...after } = captureSessionSnapsho…
+     88|       expect({ ...after, construction: { ...after.construction,
+     89|         orders: after.construction.orders.filter(order => order.id !==…
+       |                                                                                           ^
+     90|     } else {
+     91|       expect(runtime.construction.getOrder('later-desk')?.state).toBe(…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/182]⎯
+
+ FAIL  tests/integration/pending-square-wall-incoming-object.test.ts > partly built square still owns its tile after en
+coded Load: type='PlaceBuildOrder' conflict=true
+AssertionError: expected { masterSeed: 73, …(5) } to deeply equal { masterSeed: 73, …(5) }
+
+- Expected
++ Received
+
+@@ -3,10 +3,11 @@
+      "currentTransaction": [
+        "partial-square",
+      ],
+      "newerActionThanTheStackTop": false,
+      "orderRevisions": {
++       "partial-later-bed": 1,
+        "partial-square": 4,
+        "room-template-000000000000-0-wall-000": 5,
+        "room-template-000000000000-0-wall-001": 5,
+        "room-template-000000000000-0-wall-002": 5,
+        "room-template-000000000000-0-wall-003": 5,
+
+ ❯ tests/integration/pending-square-wall-incoming-object.test.ts:136:98
+    134|       const { kernel: _afterKernel, ...after } = captureSessionSnapsho…
+    135|       expect({ ...after, construction: { ...after.construction,
+    136|         orders: after.construction.orders.filter(order => order.id !==…
+       |                                                                                                  ^
+    137|       finish(runtime);
+    138|       expect(runtime.placedObjects.getSnapshot()).toHaveLength(2);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/182]⎯
+
+ FAIL  tests/integration/pending-template-incoming-object-footprint.test.ts > pending plan protects incoming 'north' fa
+r square: q=+0 mirror=false load=false conflict=true
+ FAIL  tests/integration/pending-template-incoming-object-footprint.test.ts > pending plan protects incoming 'north' fa
+r square: q=+0 mirror=false load=true conflict=true
+ FAIL  tests/integration/pending-template-incoming-object-footprint.test.ts > pending plan protects incoming 'north' fa
+r square: q=1 mirror=true load=false conflict=true
+ FAIL  tests/integration/pending-template-incoming-object-footprint.test.ts > pending plan protects incoming 'north' fa
+r square: q=1 mirror=true load=true conflict=true
+ FAIL  tests/integration/pending-template-incoming-object-footprint.test.ts > pending plan protects incoming 'north' fa
+r square: q=2 mirror=false load=false conflict=true
+ FAIL  tests/integration/pending-template-incoming-object-footprint.test.ts > pending plan protects incoming 'north' fa
+r square: q=2 mirror=false load=true conflict=true
+ FAIL  tests/integration/pending-template-incoming-object-footprint.test.ts > pending plan protects incoming 'north' fa
+r square: q=3 mirror=true load=false conflict=true
+ FAIL  tests/integration/pending-template-incoming-object-footprint.test.ts > pending plan protects incoming 'north' fa
+r square: q=3 mirror=true load=true conflict=true
+ FAIL  tests/integration/pending-template-incoming-object-footprint.test.ts > pending plan protects incoming 'west' far
+ square: q=+0 mirror=false load=false conflict=true
+ FAIL  tests/integration/pending-template-incoming-object-footprint.test.ts > pending plan protects incoming 'west' far
+ square: q=+0 mirror=false load=true conflict=true
+ FAIL  tests/integration/pending-template-incoming-object-footprint.test.ts > pending plan protects incoming 'west' far
+ square: q=1 mirror=true load=false conflict=true
+ FAIL  tests/integration/pending-template-incoming-object-footprint.test.ts > pending plan protects incoming 'west' far
+ square: q=1 mirror=true load=true conflict=true
+ FAIL  tests/integration/pending-template-incoming-object-footprint.test.ts > pending plan protects incoming 'west' far
+ square: q=2 mirror=false load=false conflict=true
+ FAIL  tests/integration/pending-template-incoming-object-footprint.test.ts > pending plan protects incoming 'west' far
+ square: q=2 mirror=false load=true conflict=true
+ FAIL  tests/integration/pending-template-incoming-object-footprint.test.ts > pending plan protects incoming 'west' far
+ square: q=3 mirror=true load=false conflict=true
+ FAIL  tests/integration/pending-template-incoming-object-footprint.test.ts > pending plan protects incoming 'west' far
+ square: q=3 mirror=true load=true conflict=true
+AssertionError: expected { masterSeed: 73, …(5) } to deeply equal { masterSeed: 73, …(5) }
+
+- Expected
++ Received
+
+@@ -21,10 +21,11 @@
+        "room-template-000000000000-1-door-000",
+      ],
+      "currentTransactionId": "room-template-0",
+      "newerActionThanTheStackTop": false,
+      "orderRevisions": {
++       "independent-fixture": 1,
+        "room-template-000000000000-0-wall-000": 1,
+        "room-template-000000000000-0-wall-001": 1,
+        "room-template-000000000000-0-wall-002": 1,
+        "room-template-000000000000-0-wall-003": 1,
+        "room-template-000000000000-0-wall-004": 1,
+
+ ❯ tests/integration/pending-template-incoming-object-footprint.test.ts:76:56
+     74|       // Existing policy retains one diagnostic failed row. Nothing el…
+     75|       // session, paid plan, materials, history or geometry may change.
+     76|       expect(gameplay(runtime, 'independent-fixture')).toEqual(before);
+       |                                                        ^
+     77|       expect(runtime.treasury.balanceMinorUnits).toBe(funds);
+     78|       expect(runtime.construction.allOrders().map(order => [order.id, …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/182]⎯
+
+ FAIL  tests/integration/room-template-completed-row-access.test.ts > keeps actual lower-cell access after 'live comple
+ted', square=true mirror=false turn=+0
+ FAIL  tests/integration/room-template-completed-row-access.test.ts > keeps actual lower-cell access after 'saved compl
+eted', square=true mirror=false turn=+0
+ FAIL  tests/integration/room-template-completed-row-access.test.ts > keeps actual lower-cell access after 'saved parti
+al continuation', square=true mirror=false turn=+0
+ FAIL  tests/integration/room-template-completed-row-access.test.ts > keeps actual lower-cell access after 'legacy comp
+leted save', square=true mirror=false turn=+0
+ FAIL  tests/integration/room-template-completed-row-access.test.ts > keeps actual lower-cell access after 'live comple
+ted', square=true mirror=false turn=1
+ FAIL  tests/integration/room-template-completed-row-access.test.ts > keeps actual lower-cell access after 'saved compl
+eted', square=true mirror=false turn=1
+ FAIL  tests/integration/room-template-completed-row-access.test.ts > keeps actual lower-cell access after 'saved parti
+al continuation', square=true mirror=false turn=1
+ FAIL  tests/integration/room-template-completed-row-access.test.ts > keeps actual lower-cell access after 'legacy comp
+leted save', square=true mirror=false turn=1
+ FAIL  tests/integration/room-template-completed-row-access.test.ts > keeps actual lower-cell access after 'live comple
+ted', square=true mirror=false turn=2
+ FAIL  tests/integration/room-template-completed-row-access.test.ts > keeps actual lower-cell access after 'saved compl
+eted', square=true mirror=false turn=2
+ FAIL  tests/integration/room-template-completed-row-access.test.ts > keeps actual lower-cell access after 'saved parti
+al continuation', square=true mirror=false turn=2
+ FAIL  tests/integration/room-template-completed-row-access.test.ts > keeps actual lower-cell access after 'legacy comp
+leted save', square=true mirror=false turn=2
+ FAIL  tests/integration/room-template-completed-row-access.test.ts > keeps actual lower-cell access after 'live comple
+ted', square=true mirror=false turn=3
+ FAIL  tests/integration/room-template-completed-row-access.test.ts > keeps actual lower-cell access after 'saved compl
+eted', square=true mirror=false turn=3
+ FAIL  tests/integration/room-template-completed-row-access.test.ts > keeps actual lower-cell access after 'saved parti
+al continuation', square=true mirror=false turn=3
+ FAIL  tests/integration/room-template-completed-row-access.test.ts > keeps actual lower-cell access after 'legacy comp
+leted save', square=true mirror=false turn=3
+ FAIL  tests/integration/room-template-completed-row-access.test.ts > keeps actual lower-cell access after 'live comple
+ted', square=true mirror=true turn=+0
+ FAIL  tests/integration/room-template-completed-row-access.test.ts > keeps actual lower-cell access after 'saved compl
+eted', square=true mirror=true turn=+0
+ FAIL  tests/integration/room-template-completed-row-access.test.ts > keeps actual lower-cell access after 'saved parti
+al continuation', square=true mirror=true turn=+0
+ FAIL  tests/integration/room-template-completed-row-access.test.ts > keeps actual lower-cell access after 'legacy comp
+leted save', square=true mirror=true turn=+0
+ FAIL  tests/integration/room-template-completed-row-access.test.ts > keeps actual lower-cell access after 'live comple
+ted', square=true mirror=true turn=1
+ FAIL  tests/integration/room-template-completed-row-access.test.ts > keeps actual lower-cell access after 'saved compl
+eted', square=true mirror=true turn=1
+ FAIL  tests/integration/room-template-completed-row-access.test.ts > keeps actual lower-cell access after 'saved parti
+al continuation', square=true mirror=true turn=1
+ FAIL  tests/integration/room-template-completed-row-access.test.ts > keeps actual lower-cell access after 'legacy comp
+leted save', square=true mirror=true turn=1
+ FAIL  tests/integration/room-template-completed-row-access.test.ts > keeps actual lower-cell access after 'live comple
+ted', square=true mirror=true turn=2
+ FAIL  tests/integration/room-template-completed-row-access.test.ts > keeps actual lower-cell access after 'saved compl
+eted', square=true mirror=true turn=2
+ FAIL  tests/integration/room-template-completed-row-access.test.ts > keeps actual lower-cell access after 'saved parti
+al continuation', square=true mirror=true turn=2
+ FAIL  tests/integration/room-template-completed-row-access.test.ts > keeps actual lower-cell access after 'legacy comp
+leted save', square=true mirror=true turn=2
+ FAIL  tests/integration/room-template-completed-row-access.test.ts > keeps actual lower-cell access after 'live comple
+ted', square=true mirror=true turn=3
+ FAIL  tests/integration/room-template-completed-row-access.test.ts > keeps actual lower-cell access after 'saved compl
+eted', square=true mirror=true turn=3
+ FAIL  tests/integration/room-template-completed-row-access.test.ts > keeps actual lower-cell access after 'saved parti
+al continuation', square=true mirror=true turn=3
+ FAIL  tests/integration/room-template-completed-row-access.test.ts > keeps actual lower-cell access after 'legacy comp
+leted save', square=true mirror=true turn=3
+ FAIL  tests/integration/room-template-completed-row-access.test.ts > keeps actual lower-cell access after 'saved compl
+eted', square=false mirror=false turn=+0
+ FAIL  tests/integration/room-template-completed-row-access.test.ts > keeps actual lower-cell access after 'saved compl
+eted', square=false mirror=false turn=1
+ FAIL  tests/integration/room-template-completed-row-access.test.ts > keeps actual lower-cell access after 'saved compl
+eted', square=false mirror=false turn=2
+ FAIL  tests/integration/room-template-completed-row-access.test.ts > keeps actual lower-cell access after 'saved compl
+eted', square=false mirror=false turn=3
+ FAIL  tests/integration/room-template-completed-row-access.test.ts > keeps actual lower-cell access after 'saved compl
+eted', square=false mirror=true turn=+0
+ FAIL  tests/integration/room-template-completed-row-access.test.ts > keeps actual lower-cell access after 'saved compl
+eted', square=false mirror=true turn=1
+ FAIL  tests/integration/room-template-completed-row-access.test.ts > keeps actual lower-cell access after 'saved compl
+eted', square=false mirror=true turn=2
+ FAIL  tests/integration/room-template-completed-row-access.test.ts > keeps actual lower-cell access after 'saved compl
+eted', square=false mirror=true turn=3
+AssertionError: expected { …(6) } to deeply equal { …(6) }
+
+- Expected
++ Received
+
+@@ -68,10 +68,11 @@
+      "room-template-000000000000-2-object-007",
+    ],
+    "currentTransactionId": "room-template-0",
+    "newerActionThanTheStackTop": false,
+    "orderRevisions": {
++     "doorway-barrier": 1,
+      "room-template-000000000000-0-wall-000": 5,
+      "room-template-000000000000-0-wall-001": 5,
+      "room-template-000000000000-0-wall-002": 5,
+      "room-template-000000000000-0-wall-003": 5,
+      "room-template-000000000000-0-wall-004": 5,
+
+ ❯ tests/integration/room-template-completed-row-access.test.ts:116:24
+    114|   expect(wall).toMatchObject({ state: 'failed', failReason: 'unbuildab…
+    115|   const { orders: _orders, ...afterHistory } = runtime.construction.sn…
+    116|   expect(afterHistory).toEqual(history);
+       |                        ^
+    117|   for (const order of originalOrders) expect(runtime.construction.getO…
+    118|   expect(runtime.treasury.snapshot()).toEqual(funds);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/182]⎯
+
+ FAIL  tests/integration/room-template-door-square-run.test.ts > protects the actual completed template door without op
+tional completed gesture metadata
+AssertionError: expected { …(6) } to deeply equal { …(6) }
+
+- Expected
++ Received
+
+@@ -22,10 +22,11 @@
+      "room-template-000000000002-2-object-001",
+    ],
+    "currentTransactionId": "room-template-2",
+    "newerActionThanTheStackTop": false,
+    "orderRevisions": {
++     "legacy-door-square": 1,
+      "room-template-000000000000-0-wall-000": 5,
+      "room-template-000000000000-0-wall-001": 5,
+      "room-template-000000000000-0-wall-002": 5,
+      "room-template-000000000000-0-wall-003": 5,
+      "room-template-000000000000-0-wall-004": 5,
+
+ ❯ tests/integration/room-template-door-square-run.test.ts:159:24
+    157|   const { orders: _beforeOrders, ...beforeHistory } = before.construct…
+    158|   const { orders: _afterOrders, ...afterHistory } = runtime.constructi…
+    159|   expect(afterHistory).toEqual(beforeHistory);
+       |                        ^
+    160|   expect(captureSessionSnapshot(runtime).world).toEqual(before.world);
+    161|   access(runtime, door, 'legacy after refusal');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/182]⎯
+
+ FAIL  tests/integration/room-template-later-wall-approach.test.ts > preserves 'live pending' Cell against later walls,
+ mirror=false turn=+0
+ FAIL  tests/integration/room-template-later-wall-approach.test.ts > preserves 'saved pending' Cell against later walls
+, mirror=false turn=+0
+ FAIL  tests/integration/room-template-later-wall-approach.test.ts > preserves 'live pending' Cell against later walls,
+ mirror=false turn=1
+ FAIL  tests/integration/room-template-later-wall-approach.test.ts > preserves 'saved pending' Cell against later walls
+, mirror=false turn=1
+ FAIL  tests/integration/room-template-later-wall-approach.test.ts > preserves 'live pending' Cell against later walls,
+ mirror=false turn=2
+ FAIL  tests/integration/room-template-later-wall-approach.test.ts > preserves 'saved pending' Cell against later walls
+, mirror=false turn=2
+ FAIL  tests/integration/room-template-later-wall-approach.test.ts > preserves 'live pending' Cell against later walls,
+ mirror=false turn=3
+ FAIL  tests/integration/room-template-later-wall-approach.test.ts > preserves 'saved pending' Cell against later walls
+, mirror=false turn=3
+ FAIL  tests/integration/room-template-later-wall-approach.test.ts > preserves 'live pending' Cell against later walls,
+ mirror=true turn=+0
+ FAIL  tests/integration/room-template-later-wall-approach.test.ts > preserves 'saved pending' Cell against later walls
+, mirror=true turn=+0
+ FAIL  tests/integration/room-template-later-wall-approach.test.ts > preserves 'live pending' Cell against later walls,
+ mirror=true turn=1
+ FAIL  tests/integration/room-template-later-wall-approach.test.ts > preserves 'saved pending' Cell against later walls
+, mirror=true turn=1
+ FAIL  tests/integration/room-template-later-wall-approach.test.ts > preserves 'live pending' Cell against later walls,
+ mirror=true turn=2
+ FAIL  tests/integration/room-template-later-wall-approach.test.ts > preserves 'saved pending' Cell against later walls
+, mirror=true turn=2
+ FAIL  tests/integration/room-template-later-wall-approach.test.ts > preserves 'live pending' Cell against later walls,
+ mirror=true turn=3
+ FAIL  tests/integration/room-template-later-wall-approach.test.ts > preserves 'saved pending' Cell against later walls
+, mirror=true turn=3
+AssertionError: expected { …(6) } to deeply equal { …(6) }
+
+- Expected
++ Received
+
+@@ -20,10 +20,11 @@
+      "room-template-000000000000-1-door-000",
+    ],
+    "currentTransactionId": "room-template-0",
+    "newerActionThanTheStackTop": false,
+    "orderRevisions": {
++     "later-edge": 1,
+      "room-template-000000000000-0-wall-000": 1,
+      "room-template-000000000000-0-wall-001": 1,
+      "room-template-000000000000-0-wall-002": 1,
+      "room-template-000000000000-0-wall-003": 1,
+      "room-template-000000000000-0-wall-004": 1,
+
+ ❯ tests/integration/room-template-later-wall-approach.test.ts:79:26
+     77|     // placement. It must receive no funding and enter no reversible h…
+     78|     const { orders: _orders, ...afterHistory } = runtime.construction.…
+     79|     expect(afterHistory).toEqual(history);
+       |                          ^
+     80|     for (const order of originalOrders) expect(runtime.construction.ge…
+     81|     expect(runtime.treasury.snapshot()).toEqual(money);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/182]⎯
+
+ FAIL  tests/integration/room-template-later-wall-approach.test.ts > preserves 'saved partial redone' Cell against late
+r walls, mirror=false turn=+0
+ FAIL  tests/integration/room-template-later-wall-approach.test.ts > preserves 'saved partial redone' Cell against late
+r walls, mirror=false turn=1
+ FAIL  tests/integration/room-template-later-wall-approach.test.ts > preserves 'saved partial redone' Cell against late
+r walls, mirror=false turn=2
+ FAIL  tests/integration/room-template-later-wall-approach.test.ts > preserves 'saved partial redone' Cell against late
+r walls, mirror=false turn=3
+ FAIL  tests/integration/room-template-later-wall-approach.test.ts > preserves 'saved partial redone' Cell against late
+r walls, mirror=true turn=+0
+ FAIL  tests/integration/room-template-later-wall-approach.test.ts > preserves 'saved partial redone' Cell against late
+r walls, mirror=true turn=1
+ FAIL  tests/integration/room-template-later-wall-approach.test.ts > preserves 'saved partial redone' Cell against late
+r walls, mirror=true turn=2
+ FAIL  tests/integration/room-template-later-wall-approach.test.ts > preserves 'saved partial redone' Cell against late
+r walls, mirror=true turn=3
+AssertionError: expected { …(4) } to deeply equal { …(4) }
+
+- Expected
++ Received
+
+@@ -1,8 +1,9 @@
+  {
+    "newerActionThanTheStackTop": false,
+    "orderRevisions": {
++     "later-edge": 1,
+      "room-template-000000000000-0-wall-000": 7,
+      "room-template-000000000000-0-wall-001": 5,
+      "room-template-000000000000-0-wall-002": 5,
+      "room-template-000000000000-0-wall-003": 5,
+      "room-template-000000000000-0-wall-004": 5,
+
+ ❯ tests/integration/room-template-later-wall-approach.test.ts:79:26
+     77|     // placement. It must receive no funding and enter no reversible h…
+     78|     const { orders: _orders, ...afterHistory } = runtime.construction.…
+     79|     expect(afterHistory).toEqual(history);
+       |                          ^
+     80|     for (const order of originalOrders) expect(runtime.construction.ge…
+     81|     expect(runtime.treasury.snapshot()).toEqual(money);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/182]⎯
+
+ FAIL  tests/integration/room-template-legacy-occupied-history.test.ts > keeps occupied legacy row access and readiness
+ through atomic refusal, then releases and redoes the same saved geometry, mirror=false turn=+0
+ FAIL  tests/integration/room-template-legacy-occupied-history.test.ts > keeps occupied legacy row access and readiness
+ through atomic refusal, then releases and redoes the same saved geometry, mirror=true turn=+0
+AssertionError: expected { masterSeed: 73, …(5) } to deeply equal { masterSeed: 73, …(5) }
+
+- Expected
++ Received
+
+@@ -1427,15 +1427,10 @@
+    "simulation": {
+      "alerts": {
+        "dismissed": [],
+        "records": [
+          {
+-           "sequence": 4,
+-           "tick": 350,
+-           "type": "construction.order-completed",
+-         },
+-         {
+            "sequence": 5,
+            "tick": 410,
+            "type": "construction.order-completed",
+          },
+          {
+@@ -1751,13 +1746,18 @@
+            },
+            "roomNameKey": "room.cell.name",
+            "sequence": 67,
+            "tick": 3970,
+            "type": "prisoners.housed",
++         },
++         {
++           "sequence": 68,
++           "tick": 3971,
++           "type": "construction.undo-refused-newer-action",
+          },
+        ],
+-       "sequence": 67,
++       "sequence": 68,
+      },
+      "contraband": {
+        "confiscations": [],
+        "informants": [],
+        "intelligence": [],
+
+ ❯ assertRefusedWithoutMutation tests/integration/room-template-legacy-occupied-history.test.ts:65:17
+     63|   // The command sequence advances; every persisted gameplay field mus…
+     64|   // identical, including world planes, live actor state, history and …
+     65|   expect(after).toEqual(before);
+       |                 ^
+     66|   expect(runtime.treasury.snapshot()).toEqual(funds);
+     67|   expect(runtime.refusals.last).toMatchObject({ reason: 'unzone.room-o…
+ ❯ tests/integration/room-template-legacy-occupied-history.test.ts:104:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/182]⎯
+
+ FAIL  tests/integration/room-template-legacy-occupied-history.test.ts > keeps occupied legacy row access and readiness
+ through atomic refusal, then releases and redoes the same saved geometry, mirror=false turn=1
+ FAIL  tests/integration/room-template-legacy-occupied-history.test.ts > keeps occupied legacy row access and readiness
+ through atomic refusal, then releases and redoes the same saved geometry, mirror=false turn=2
+ FAIL  tests/integration/room-template-legacy-occupied-history.test.ts > keeps occupied legacy row access and readiness
+ through atomic refusal, then releases and redoes the same saved geometry, mirror=false turn=3
+ FAIL  tests/integration/room-template-legacy-occupied-history.test.ts > keeps occupied legacy row access and readiness
+ through atomic refusal, then releases and redoes the same saved geometry, mirror=true turn=1
+ FAIL  tests/integration/room-template-legacy-occupied-history.test.ts > keeps occupied legacy row access and readiness
+ through atomic refusal, then releases and redoes the same saved geometry, mirror=true turn=2
+ FAIL  tests/integration/room-template-legacy-occupied-history.test.ts > keeps occupied legacy row access and readiness
+ through atomic refusal, then releases and redoes the same saved geometry, mirror=true turn=3
+AssertionError: expected { masterSeed: 73, …(5) } to deeply equal { masterSeed: 73, …(5) }
+
+- Expected
++ Received
+
+@@ -1435,15 +1435,10 @@
+    "simulation": {
+      "alerts": {
+        "dismissed": [],
+        "records": [
+          {
+-           "sequence": 4,
+-           "tick": 350,
+-           "type": "construction.order-completed",
+-         },
+-         {
+            "sequence": 5,
+            "tick": 410,
+            "type": "construction.order-completed",
+          },
+          {
+@@ -1759,13 +1754,18 @@
+            },
+            "roomNameKey": "room.cell.name",
+            "sequence": 67,
+            "tick": 3970,
+            "type": "prisoners.housed",
++         },
++         {
++           "sequence": 68,
++           "tick": 3971,
++           "type": "construction.undo-refused-newer-action",
+          },
+        ],
+-       "sequence": 67,
++       "sequence": 68,
+      },
+      "contraband": {
+        "confiscations": [],
+        "informants": [],
+        "intelligence": [],
+
+ ❯ assertRefusedWithoutMutation tests/integration/room-template-legacy-occupied-history.test.ts:65:17
+     63|   // The command sequence advances; every persisted gameplay field mus…
+     64|   // identical, including world planes, live actor state, history and …
+     65|   expect(after).toEqual(before);
+       |                 ^
+     66|   expect(runtime.treasury.snapshot()).toEqual(funds);
+     67|   expect(runtime.refusals.last).toMatchObject({ reason: 'unzone.room-o…
+ ❯ tests/integration/room-template-legacy-occupied-history.test.ts:104:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/182]⎯
+
+ FAIL  tests/integration/room-template-legacy-occupied-history.test.ts > preserves the current recorded occupied-row pa
+th, mirror=false
+ FAIL  tests/integration/room-template-legacy-occupied-history.test.ts > preserves the current recorded occupied-row pa
+th, mirror=true
+AssertionError: expected { masterSeed: 73, …(5) } to deeply equal { masterSeed: 73, …(5) }
+
+- Expected
++ Received
+
+@@ -1435,15 +1435,10 @@
+    "simulation": {
+      "alerts": {
+        "dismissed": [],
+        "records": [
+          {
+-           "sequence": 4,
+-           "tick": 350,
+-           "type": "construction.order-completed",
+-         },
+-         {
+            "sequence": 5,
+            "tick": 410,
+            "type": "construction.order-completed",
+          },
+          {
+@@ -1759,13 +1754,18 @@
+            },
+            "roomNameKey": "room.cell.name",
+            "sequence": 67,
+            "tick": 3970,
+            "type": "prisoners.housed",
++         },
++         {
++           "sequence": 68,
++           "tick": 3971,
++           "type": "construction.undo-refused-newer-action",
+          },
+        ],
+-       "sequence": 67,
++       "sequence": 68,
+      },
+      "contraband": {
+        "confiscations": [],
+        "informants": [],
+        "intelligence": [],
+
+ ❯ assertRefusedWithoutMutation tests/integration/room-template-legacy-occupied-history.test.ts:65:17
+     63|   // The command sequence advances; every persisted gameplay field mus…
+     64|   // identical, including world planes, live actor state, history and …
+     65|   expect(after).toEqual(before);
+       |                 ^
+     66|   expect(runtime.treasury.snapshot()).toEqual(funds);
+     67|   expect(runtime.refusals.last).toMatchObject({ reason: 'unzone.room-o…
+ ❯ tests/integration/room-template-legacy-occupied-history.test.ts:131:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/182]⎯
+
+ FAIL  tests/integration/room-template-legacy-occupied-history.test.ts > relocates a legacy newest-template resident on
+ly into the surviving older spare before removing the exact gesture, mirror=false turn=+0
+ FAIL  tests/integration/room-template-legacy-occupied-history.test.ts > relocates a legacy newest-template resident on
+ly into the surviving older spare before removing the exact gesture, mirror=false turn=2
+ FAIL  tests/integration/room-template-legacy-occupied-history.test.ts > relocates a legacy newest-template resident on
+ly into the surviving older spare before removing the exact gesture, mirror=true turn=+0
+ FAIL  tests/integration/room-template-legacy-occupied-history.test.ts > relocates a legacy newest-template resident on
+ly into the surviving older spare before removing the exact gesture, mirror=true turn=2
+AssertionError: expected { instanceId: 'room.cell:11:11', …(9) } to be undefined
+
+- Expected:
+undefined
+
++ Received:
+{
+  "anchorTile": {
+    "x": 11,
+    "y": 11,
+  },
+  "concurrentUseCapacity": 2,
+  "concurrentUseCapacityByCapability": [
+    [
+      "sanitation",
+      1,
+    ],
+    [
+      "sleep-surface",
+      1,
+    ],
+  ],
+  "height": 5,
+  "instanceId": "room.cell:11:11",
+  "objectCapabilities": [
+    "sanitation",
+    "sleep-surface",
+  ],
+  "openArea": false,
+  "residentCapacity": 1,
+  "roomCatalogId": "room.cell",
+  "width": 2,
+}
+
+ ❯ tests/integration/room-template-legacy-occupied-history.test.ts:149:59
+    147|   const funds = runtime.treasury.snapshot();
+    148|   send(runtime, { type: 'Undo' });
+    149|   expect(runtime.prisoners.roomInstances.getById(target)).toBeUndefine…
+       |                                                           ^
+    150|   expect(runtime.prisoners.roomInstances.occupantsOf(spare)).toEqual([…
+    151|   expect(runtime.placedObjects.getSnapshot()).toHaveLength(2);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/182]⎯
+
+ FAIL  tests/integration/room-template-legacy-occupied-history.test.ts > relocates a legacy newest-template resident on
+ly into the surviving older spare before removing the exact gesture, mirror=false turn=1
+ FAIL  tests/integration/room-template-legacy-occupied-history.test.ts > relocates a legacy newest-template resident on
+ly into the surviving older spare before removing the exact gesture, mirror=false turn=3
+ FAIL  tests/integration/room-template-legacy-occupied-history.test.ts > relocates a legacy newest-template resident on
+ly into the surviving older spare before removing the exact gesture, mirror=true turn=1
+ FAIL  tests/integration/room-template-legacy-occupied-history.test.ts > relocates a legacy newest-template resident on
+ly into the surviving older spare before removing the exact gesture, mirror=true turn=3
+AssertionError: expected { instanceId: 'room.cell:11:11', …(9) } to be undefined
+
+- Expected:
+undefined
+
++ Received:
+{
+  "anchorTile": {
+    "x": 11,
+    "y": 11,
+  },
+  "concurrentUseCapacity": 2,
+  "concurrentUseCapacityByCapability": [
+    [
+      "sanitation",
+      1,
+    ],
+    [
+      "sleep-surface",
+      1,
+    ],
+  ],
+  "height": 2,
+  "instanceId": "room.cell:11:11",
+  "objectCapabilities": [
+    "sanitation",
+    "sleep-surface",
+  ],
+  "openArea": false,
+  "residentCapacity": 1,
+  "roomCatalogId": "room.cell",
+  "width": 5,
+}
+
+ ❯ tests/integration/room-template-legacy-occupied-history.test.ts:149:59
+    147|   const funds = runtime.treasury.snapshot();
+    148|   send(runtime, { type: 'Undo' });
+    149|   expect(runtime.prisoners.roomInstances.getById(target)).toBeUndefine…
+       |                                                           ^
+    150|   expect(runtime.prisoners.roomInstances.occupantsOf(spare)).toEqual([…
+    151|   expect(runtime.placedObjects.getSnapshot()).toHaveLength(2);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/182]⎯
+
+ FAIL  tests/integration/room-template-occupied-undo-atomicity.test.ts > keeps an occupied completed Cell intact throug
+h refused Undo, save and release retry, mirror=false turn=+0
+ FAIL  tests/integration/room-template-occupied-undo-atomicity.test.ts > keeps an occupied completed Cell intact throug
+h refused Undo, save and release retry, mirror=true turn=+0
+AssertionError: expected { masterSeed: 73, …(5) } to deeply equal { masterSeed: 73, …(5) }
+
+- Expected
++ Received
+
+@@ -577,12 +577,17 @@
+            "roomNameKey": "room.cell.name",
+            "sequence": 21,
+            "tick": 1390,
+            "type": "prisoners.housed",
+          },
++         {
++           "sequence": 22,
++           "tick": 1391,
++           "type": "construction.undo-refused-newer-action",
++         },
+        ],
+-       "sequence": 21,
++       "sequence": 22,
+      },
+      "contraband": {
+        "confiscations": [],
+        "informants": [],
+        "intelligence": [],
+
+ ❯ assertRefusedWithoutMutation tests/integration/room-template-occupied-undo-atomicity.test.ts:62:17
+     60|   // The command sequence advances; every persisted gameplay field mus…
+     61|   // identical, including world planes, live actor state, history and …
+     62|   expect(after).toEqual(before);
+       |                 ^
+     63|   expect(runtime.treasury.snapshot()).toEqual(funds);
+     64|   expect(runtime.refusals.last).toMatchObject({ reason: 'unzone.room-o…
+ ❯ tests/integration/room-template-occupied-undo-atomicity.test.ts:76:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/182]⎯
+
+ FAIL  tests/integration/room-template-occupied-undo-atomicity.test.ts > keeps an occupied completed Cell intact throug
+h refused Undo, save and release retry, mirror=false turn=1
+ FAIL  tests/integration/room-template-occupied-undo-atomicity.test.ts > keeps an occupied completed Cell intact throug
+h refused Undo, save and release retry, mirror=false turn=2
+ FAIL  tests/integration/room-template-occupied-undo-atomicity.test.ts > keeps an occupied completed Cell intact throug
+h refused Undo, save and release retry, mirror=false turn=3
+ FAIL  tests/integration/room-template-occupied-undo-atomicity.test.ts > keeps an occupied completed Cell intact throug
+h refused Undo, save and release retry, mirror=true turn=1
+ FAIL  tests/integration/room-template-occupied-undo-atomicity.test.ts > keeps an occupied completed Cell intact throug
+h refused Undo, save and release retry, mirror=true turn=2
+ FAIL  tests/integration/room-template-occupied-undo-atomicity.test.ts > keeps an occupied completed Cell intact throug
+h refused Undo, save and release retry, mirror=true turn=3
+AssertionError: expected { masterSeed: 73, …(5) } to deeply equal { masterSeed: 73, …(5) }
+
+- Expected
++ Received
+
+@@ -579,12 +579,17 @@
+            "roomNameKey": "room.cell.name",
+            "sequence": 21,
+            "tick": 1390,
+            "type": "prisoners.housed",
+          },
++         {
++           "sequence": 22,
++           "tick": 1391,
++           "type": "construction.undo-refused-newer-action",
++         },
+        ],
+-       "sequence": 21,
++       "sequence": 22,
+      },
+      "contraband": {
+        "confiscations": [],
+        "informants": [],
+        "intelligence": [],
+
+ ❯ assertRefusedWithoutMutation tests/integration/room-template-occupied-undo-atomicity.test.ts:62:17
+     60|   // The command sequence advances; every persisted gameplay field mus…
+     61|   // identical, including world planes, live actor state, history and …
+     62|   expect(after).toEqual(before);
+       |                 ^
+     63|   expect(runtime.treasury.snapshot()).toEqual(funds);
+     64|   expect(runtime.refusals.last).toMatchObject({ reason: 'unzone.room-o…
+ ❯ tests/integration/room-template-occupied-undo-atomicity.test.ts:76:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/182]⎯
+
+ FAIL  tests/integration/room-template-occupied-undo-atomicity.test.ts > does not relocate a saved row resident into an
+other Cell of the same removed gesture, mirror=false
+ FAIL  tests/integration/room-template-occupied-undo-atomicity.test.ts > does not relocate a saved row resident into an
+other Cell of the same removed gesture, mirror=true
+AssertionError: expected { masterSeed: 73, …(5) } to deeply equal { masterSeed: 73, …(5) }
+
+- Expected
++ Received
+
+@@ -1435,15 +1435,10 @@
+    "simulation": {
+      "alerts": {
+        "dismissed": [],
+        "records": [
+          {
+-           "sequence": 4,
+-           "tick": 350,
+-           "type": "construction.order-completed",
+-         },
+-         {
+            "sequence": 5,
+            "tick": 410,
+            "type": "construction.order-completed",
+          },
+          {
+@@ -1759,13 +1754,18 @@
+            },
+            "roomNameKey": "room.cell.name",
+            "sequence": 67,
+            "tick": 3970,
+            "type": "prisoners.housed",
++         },
++         {
++           "sequence": 68,
++           "tick": 3971,
++           "type": "construction.undo-refused-newer-action",
+          },
+        ],
+-       "sequence": 67,
++       "sequence": 68,
+      },
+      "contraband": {
+        "confiscations": [],
+        "informants": [],
+        "intelligence": [],
+
+ ❯ assertRefusedWithoutMutation tests/integration/room-template-occupied-undo-atomicity.test.ts:62:17
+     60|   // The command sequence advances; every persisted gameplay field mus…
+     61|   // identical, including world planes, live actor state, history and …
+     62|   expect(after).toEqual(before);
+       |                 ^
+     63|   expect(runtime.treasury.snapshot()).toEqual(funds);
+     64|   expect(runtime.refusals.last).toMatchObject({ reason: 'unzone.room-o…
+ ❯ tests/integration/room-template-occupied-undo-atomicity.test.ts:110:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/182]⎯
+
+ FAIL  tests/integration/room-template-occupied-undo-atomicity.test.ts > relocates to a real older spare Cell before re
+moving the occupied newest template, mirror=false turn=+0
+ FAIL  tests/integration/room-template-occupied-undo-atomicity.test.ts > relocates to a real older spare Cell before re
+moving the occupied newest template, mirror=false turn=2
+ FAIL  tests/integration/room-template-occupied-undo-atomicity.test.ts > relocates to a real older spare Cell before re
+moving the occupied newest template, mirror=true turn=+0
+ FAIL  tests/integration/room-template-occupied-undo-atomicity.test.ts > relocates to a real older spare Cell before re
+moving the occupied newest template, mirror=true turn=2
+AssertionError: expected { instanceId: 'room.cell:11:11', …(9) } to be undefined
+
+- Expected:
+undefined
+
++ Received:
+{
+  "anchorTile": {
+    "x": 11,
+    "y": 11,
+  },
+  "concurrentUseCapacity": 2,
+  "concurrentUseCapacityByCapability": [
+    [
+      "sanitation",
+      1,
+    ],
+    [
+      "sleep-surface",
+      1,
+    ],
+  ],
+  "height": 5,
+  "instanceId": "room.cell:11:11",
+  "objectCapabilities": [
+    "sanitation",
+    "sleep-surface",
+  ],
+  "openArea": false,
+  "residentCapacity": 1,
+  "roomCatalogId": "room.cell",
+  "width": 2,
+}
+
+ ❯ tests/integration/room-template-occupied-undo-atomicity.test.ts:131:59
+    129|   const funds = runtime.treasury.snapshot();
+    130|   send(runtime, { type: 'Undo' });
+    131|   expect(runtime.prisoners.roomInstances.getById(target)).toBeUndefine…
+       |                                                           ^
+    132|   expect(runtime.prisoners.roomInstances.occupantsOf(spare)).toEqual([…
+    133|   expect(runtime.placedObjects.getSnapshot()).toHaveLength(2);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/182]⎯
+
+ FAIL  tests/integration/room-template-occupied-undo-atomicity.test.ts > relocates to a real older spare Cell before re
+moving the occupied newest template, mirror=false turn=1
+ FAIL  tests/integration/room-template-occupied-undo-atomicity.test.ts > relocates to a real older spare Cell before re
+moving the occupied newest template, mirror=false turn=3
+ FAIL  tests/integration/room-template-occupied-undo-atomicity.test.ts > relocates to a real older spare Cell before re
+moving the occupied newest template, mirror=true turn=1
+ FAIL  tests/integration/room-template-occupied-undo-atomicity.test.ts > relocates to a real older spare Cell before re
+moving the occupied newest template, mirror=true turn=3
+AssertionError: expected { instanceId: 'room.cell:11:11', …(9) } to be undefined
+
+- Expected:
+undefined
+
++ Received:
+{
+  "anchorTile": {
+    "x": 11,
+    "y": 11,
+  },
+  "concurrentUseCapacity": 2,
+  "concurrentUseCapacityByCapability": [
+    [
+      "sanitation",
+      1,
+    ],
+    [
+      "sleep-surface",
+      1,
+    ],
+  ],
+  "height": 2,
+  "instanceId": "room.cell:11:11",
+  "objectCapabilities": [
+    "sanitation",
+    "sleep-surface",
+  ],
+  "openArea": false,
+  "residentCapacity": 1,
+  "roomCatalogId": "room.cell",
+  "width": 5,
+}
+
+ ❯ tests/integration/room-template-occupied-undo-atomicity.test.ts:131:59
+    129|   const funds = runtime.treasury.snapshot();
+    130|   send(runtime, { type: 'Undo' });
+    131|   expect(runtime.prisoners.roomInstances.getById(target)).toBeUndefine…
+       |                                                           ^
+    132|   expect(runtime.prisoners.roomInstances.occupantsOf(spare)).toEqual([…
+    133|   expect(runtime.placedObjects.getSnapshot()).toHaveLength(2);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/182]⎯
+
+ FAIL  tests/integration/room-template-pending-object-removal.test.ts > completed template bed RemoveObject keeps stand
+ing-object best-effort removal
+ FAIL  tests/integration/room-template-pending-object-removal.test.ts > completed template bed RemoveWall keeps standin
+g-object best-effort removal
+AssertionError: expected { orders: [ { …(9) }, …(19) ], …(6) } to deeply equal { orders: [ { …(9) }, …(19) ], …(6) }
+
+- Expected
++ Received
+
+@@ -20,11 +20,11 @@
+      "room-template-000000000000-1-door-000",
+      "room-template-000000000000-2-object-000",
+      "room-template-000000000000-2-object-001",
+    ],
+    "currentTransactionId": "room-template-0",
+-   "newerActionThanTheStackTop": false,
++   "newerActionThanTheStackTop": true,
+    "orderRevisions": {
+      "room-template-000000000000-0-wall-000": 5,
+      "room-template-000000000000-0-wall-001": 5,
+      "room-template-000000000000-0-wall-002": 5,
+      "room-template-000000000000-0-wall-003": 5,
+
+ ❯ tests/integration/room-template-pending-object-removal.test.ts:117:43
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/182]⎯
+
+ FAIL  tests/integration/square-wall-object-footprint.test.ts > refuses the second tile of an ordinary desk before allo
+cation: live pending
+ FAIL  tests/integration/square-wall-object-footprint.test.ts > refuses the second tile of an ordinary desk before allo
+cation: saved pending
+AssertionError: expected { …(6) } to deeply equal { …(6) }
+
+- Expected
++ Received
+
+@@ -4,9 +4,10 @@
+    ],
+    "currentTransactionId": "desk",
+    "newerActionThanTheStackTop": false,
+    "orderRevisions": {
+      "desk": 1,
++     "overlapping-wall": 1,
+    },
+    "redoStack": [],
+    "undoStack": [],
+  }
+
+ ❯ refuseWall tests/integration/square-wall-object-footprint.test.ts:74:24
+     72|   expect(wall).toMatchObject({ state: 'failed', failReason: 'unbuildab…
+     73|   const { orders: _orders, ...afterHistory } = runtime.construction.sn…
+     74|   expect(afterHistory).toEqual(history);
+       |                        ^
+     75|   for (const order of originalOrders) expect(runtime.construction.getO…
+     76|   const after = captureSessionSnapshot(runtime);
+ ❯ tests/integration/square-wall-object-footprint.test.ts:87:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/182]⎯
+
+ FAIL  tests/integration/square-wall-object-footprint.test.ts > refuses the second tile of an ordinary desk before allo
+cation: saved partial
+AssertionError: expected { …(6) } to deeply equal { …(6) }
+
+- Expected
++ Received
+
+@@ -4,9 +4,10 @@
+    ],
+    "currentTransactionId": "desk",
+    "newerActionThanTheStackTop": false,
+    "orderRevisions": {
+      "desk": 4,
++     "overlapping-wall": 1,
+    },
+    "redoStack": [],
+    "undoStack": [],
+  }
+
+ ❯ refuseWall tests/integration/square-wall-object-footprint.test.ts:74:24
+     72|   expect(wall).toMatchObject({ state: 'failed', failReason: 'unbuildab…
+     73|   const { orders: _orders, ...afterHistory } = runtime.construction.sn…
+     74|   expect(afterHistory).toEqual(history);
+       |                        ^
+     75|   for (const order of originalOrders) expect(runtime.construction.getO…
+     76|   const after = captureSessionSnapshot(runtime);
+ ❯ tests/integration/square-wall-object-footprint.test.ts:87:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/182]⎯
+
+ FAIL  tests/integration/square-wall-object-footprint.test.ts > refuses the second tile of an ordinary desk before allo
+cation: saved completed
+AssertionError: expected { …(6) } to deeply equal { …(6) }
+
+- Expected
++ Received
+
+@@ -4,9 +4,10 @@
+    ],
+    "currentTransactionId": "desk",
+    "newerActionThanTheStackTop": false,
+    "orderRevisions": {
+      "desk": 5,
++     "overlapping-wall": 1,
+    },
+    "redoStack": [],
+    "undoStack": [],
+  }
+
+ ❯ refuseWall tests/integration/square-wall-object-footprint.test.ts:74:24
+     72|   expect(wall).toMatchObject({ state: 'failed', failReason: 'unbuildab…
+     73|   const { orders: _orders, ...afterHistory } = runtime.construction.sn…
+     74|   expect(afterHistory).toEqual(history);
+       |                        ^
+     75|   for (const order of originalOrders) expect(runtime.construction.getO…
+     76|   const after = captureSessionSnapshot(runtime);
+ ❯ tests/integration/square-wall-object-footprint.test.ts:87:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/182]⎯
+
+ FAIL  tests/integration/square-wall-object-footprint.test.ts > refuses the second tile of an ordinary desk before allo
+cation: saved partial undone redone
+AssertionError: expected { …(4) } to deeply equal { …(4) }
+
+- Expected
++ Received
+
+@@ -1,9 +1,10 @@
+  {
+    "newerActionThanTheStackTop": false,
+    "orderRevisions": {
+      "desk": 6,
++     "overlapping-wall": 1,
+    },
+    "redoStack": [],
+    "undoStack": [
+      [
+        "desk",
+
+ ❯ refuseWall tests/integration/square-wall-object-footprint.test.ts:74:24
+     72|   expect(wall).toMatchObject({ state: 'failed', failReason: 'unbuildab…
+     73|   const { orders: _orders, ...afterHistory } = runtime.construction.sn…
+     74|   expect(afterHistory).toEqual(history);
+       |                        ^
+     75|   for (const order of originalOrders) expect(runtime.construction.getO…
+     76|   const after = captureSessionSnapshot(runtime);
+ ❯ tests/integration/square-wall-object-footprint.test.ts:87:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/182]⎯
+
+ FAIL  tests/integration/square-wall-object-footprint.test.ts > refuses the second tile of an ordinary desk before allo
+cation: saved completed undone redone
+AssertionError: expected { …(4) } to deeply equal { …(4) }
+
+- Expected
++ Received
+
+@@ -1,9 +1,10 @@
+  {
+    "newerActionThanTheStackTop": false,
+    "orderRevisions": {
+      "desk": 11,
++     "overlapping-wall": 1,
+    },
+    "redoStack": [],
+    "undoStack": [
+      [
+        "desk",
+
+ ❯ refuseWall tests/integration/square-wall-object-footprint.test.ts:74:24
+     72|   expect(wall).toMatchObject({ state: 'failed', failReason: 'unbuildab…
+     73|   const { orders: _orders, ...afterHistory } = runtime.construction.sn…
+     74|   expect(afterHistory).toEqual(history);
+       |                        ^
+     75|   for (const order of originalOrders) expect(runtime.construction.getO…
+     76|   const after = captureSessionSnapshot(runtime);
+ ❯ tests/integration/square-wall-object-footprint.test.ts:87:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/182]⎯
+
+ FAIL  tests/integration/square-wall-object-footprint.test.ts > refuses an actual template desk far tile, completed=fal
+se mirror=false turn=+0
+ FAIL  tests/integration/square-wall-object-footprint.test.ts > refuses an actual template desk far tile, completed=tru
+e mirror=false turn=+0
+ FAIL  tests/integration/square-wall-object-footprint.test.ts > refuses an actual template desk far tile, completed=fal
+se mirror=false turn=1
+ FAIL  tests/integration/square-wall-object-footprint.test.ts > refuses an actual template desk far tile, completed=tru
+e mirror=false turn=1
+ FAIL  tests/integration/square-wall-object-footprint.test.ts > refuses an actual template desk far tile, completed=fal
+se mirror=false turn=2
+ FAIL  tests/integration/square-wall-object-footprint.test.ts > refuses an actual template desk far tile, completed=tru
+e mirror=false turn=2
+ FAIL  tests/integration/square-wall-object-footprint.test.ts > refuses an actual template desk far tile, completed=fal
+se mirror=false turn=3
+ FAIL  tests/integration/square-wall-object-footprint.test.ts > refuses an actual template desk far tile, completed=tru
+e mirror=false turn=3
+ FAIL  tests/integration/square-wall-object-footprint.test.ts > refuses an actual template desk far tile, completed=fal
+se mirror=true turn=+0
+ FAIL  tests/integration/square-wall-object-footprint.test.ts > refuses an actual template desk far tile, completed=tru
+e mirror=true turn=+0
+ FAIL  tests/integration/square-wall-object-footprint.test.ts > refuses an actual template desk far tile, completed=fal
+se mirror=true turn=1
+ FAIL  tests/integration/square-wall-object-footprint.test.ts > refuses an actual template desk far tile, completed=tru
+e mirror=true turn=1
+ FAIL  tests/integration/square-wall-object-footprint.test.ts > refuses an actual template desk far tile, completed=fal
+se mirror=true turn=2
+ FAIL  tests/integration/square-wall-object-footprint.test.ts > refuses an actual template desk far tile, completed=tru
+e mirror=true turn=2
+ FAIL  tests/integration/square-wall-object-footprint.test.ts > refuses an actual template desk far tile, completed=fal
+se mirror=true turn=3
+ FAIL  tests/integration/square-wall-object-footprint.test.ts > refuses an actual template desk far tile, completed=tru
+e mirror=true turn=3
+AssertionError: expected { …(6) } to deeply equal { …(6) }
+
+- Expected
++ Received
+
+@@ -25,10 +25,11 @@
+      "room-template-000000000000-2-object-002",
+    ],
+    "currentTransactionId": "room-template-0",
+    "newerActionThanTheStackTop": false,
+    "orderRevisions": {
++     "overlapping-wall": 1,
+      "room-template-000000000000-0-wall-000": 5,
+      "room-template-000000000000-0-wall-001": 5,
+      "room-template-000000000000-0-wall-002": 5,
+      "room-template-000000000000-0-wall-003": 5,
+      "room-template-000000000000-0-wall-004": 5,
+
+ ❯ refuseWall tests/integration/square-wall-object-footprint.test.ts:74:24
+     72|   expect(wall).toMatchObject({ state: 'failed', failReason: 'unbuildab…
+     73|   const { orders: _orders, ...afterHistory } = runtime.construction.sn…
+     74|   expect(afterHistory).toEqual(history);
+       |                        ^
+     75|   for (const order of originalOrders) expect(runtime.construction.getO…
+     76|   const after = captureSessionSnapshot(runtime);
+ ❯ tests/integration/square-wall-object-footprint.test.ts:115:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/182]⎯
+
+ FAIL  tests/unit/public-room-oblique-context-coverage.test.ts > actual public template consumers reach intended room a
+rt > 'staff-room-basic' q+0 mirror=false retains owners, complete occupied squares and source-local poses
+ FAIL  tests/unit/public-room-oblique-context-coverage.test.ts > actual public template consumers reach intended room a
+rt > 'staff-room-basic' q+0 mirror=true retains owners, complete occupied squares and source-local poses
+ FAIL  tests/unit/public-room-oblique-context-coverage.test.ts > actual public template consumers reach intended room a
+rt > 'staff-room-basic' q1 mirror=false retains owners, complete occupied squares and source-local poses
+ FAIL  tests/unit/public-room-oblique-context-coverage.test.ts > actual public template consumers reach intended room a
+rt > 'staff-room-basic' q1 mirror=true retains owners, complete occupied squares and source-local poses
+ FAIL  tests/unit/public-room-oblique-context-coverage.test.ts > actual public template consumers reach intended room a
+rt > 'staff-room-basic' q2 mirror=false retains owners, complete occupied squares and source-local poses
+ FAIL  tests/unit/public-room-oblique-context-coverage.test.ts > actual public template consumers reach intended room a
+rt > 'staff-room-basic' q2 mirror=true retains owners, complete occupied squares and source-local poses
+ FAIL  tests/unit/public-room-oblique-context-coverage.test.ts > actual public template consumers reach intended room a
+rt > 'staff-room-basic' q3 mirror=false retains owners, complete occupied squares and source-local poses
+ FAIL  tests/unit/public-room-oblique-context-coverage.test.ts > actual public template consumers reach intended room a
+rt > 'staff-room-basic' q3 mirror=true retains owners, complete occupied squares and source-local poses
+AssertionError: staff-room-basic object 1 actual completed context: expected 'furniture.staff-room.padded-chair' to be 
+'furniture.chair.wooden' // Object.is equality
+
+Expected: "furniture.chair.wooden"
+Received: "furniture.staff-room.padded-chair"
+
+ ❯ tests/unit/public-room-oblique-context-coverage.test.ts:77:80
+     75|     for (const [index, object] of plan.objects.entries()) {
+     76|       const solid = projected.raised.find(item => item.id === `${id}:o…
+     77|       expect(solid?.assetId, `${id} object ${index} actual completed c…
+       |                                                                                ^
+     78|       if (solid === undefined || solid.kind !== 'structure') throw new…
+     79|       const zone = rooms.find(room => object.x >= room.anchorTileX && …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/182]⎯
+
+
+ Test Files  16 failed | 701 passed (717)
+      Tests  182 failed | 8361 passed | 2 skipped (8545)
+   Start at  19:36:45
+   Duration  140.72s (transform 11.38s, setup 0ms, import 187.13s, tests 212.05s, environment 36ms)
+

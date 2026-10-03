@@ -4,7 +4,7 @@
 
 On 2026-10-03 the coordinator relayed the owner's direct approval of the
 package in commit `79a18be1cb`,
-`docs/research/2026-10-03-queued-template-cancellation-load/v9-review-proposal.md`:
+[the published V9 review proposal](https://github.com/woogitsu/lockstate/blob/79a18be1cb97f581adc563767e3c5da6a5a55d32/docs/research/2026-10-03-queued-template-cancellation-load/v9-review-proposal.md):
 V9 writes exactly `payload.construction.newerActionThanTheStackTop` and optional
 `payload.construction.orderRevisions`. The former is a boolean, the latter an
 own-key JSON object mapping nonempty order IDs to integers from zero through
@@ -132,3 +132,34 @@ restore refusal reasons. Both strict application/tools typechecks exit0 at the
 same checkpoint. The final documentation gate is20GREEN/3files568ms. These
 terminal logs supplement the explicitly earlier477-test run without claiming a
 second full verification, browser, server, build or native execution.
+
+## Root integration gate: retained initial failures
+
+The combined Staff-chair/template-door/V9 subject is
+`2102c1700f79f5f5191edfcb3e64bdc571b3e697`. Both strict typechecks exited0;
+the complete 717-file run exited1 with182 failures,8361 passes and2 existing
+skips. The chained production build was not reached. Original captured
+[test output](./raw/root-integration/original-complete-suite.txt),
+[typecheck output](./raw/root-integration/original-complete-types.txt) and
+[capture hashes](./raw/root-integration/original-complete-receipt.json)
+are retained. UTF16LE console captures are explicitly converted to UTF8;
+the receipt keeps both original and archived hashes.
+
+The initial gate exposed three distinct integration boundaries. Published
+commit citations were invisible to this checkout's main-only remote fetch
+specification; fetching the actual published owning branches repairs the
+local history view without changing the citation guard. The approval proposal
+exists on its published diagnostic branch, so the reference above now links
+to that immutable GitHub document instead of claiming it is a local file.
+Staff template expectations still named the former ordinary wooden chairs;
+the independently authored expected asset IDs now name both real padded-chair
+consumers while preserving the employee Desk and every other room's mapping.
+
+The remaining failed whole-state comparisons require a separate consumer
+review: V9 now exposes the existing failed-order revision counters and retains
+the existing newer-action marker. Those fields must be asserted explicitly,
+not discarded from protected-state comparisons or reset to recover the old
+Load defect. In particular, occupied Undo fixtures that relied on lost current
+save data must separately prove current V9 refusal and genuine frozen V8
+compatibility. This paragraph records the failing integration gate, not a
+claim of complete test, build or native acceptance.
