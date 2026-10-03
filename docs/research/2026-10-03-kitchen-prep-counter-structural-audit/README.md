@@ -61,12 +61,42 @@ process. Only four selected poses were rendered per invocation; no full export,
 browser or server was started. The second invocation resolved the precise
 worktop surface-contact observation above.
 
-**Next catalog candidate identified.** Existing `object.utility-panel` maps to
+**VERIFIED — next existing catalog candidate inspected.** Existing `object.utility-panel` maps to
 `utility.utility-panel.variants`; its current registry descriptor is
 `/game-content/oblique-utility.utility-panel.v1.json`, referencing the existing
-`utility.utility-panel.angled.blend` source. Its previous dedicated/integrated
-reports are being read before any further source inspection. No utility-panel
-model defect or required change is claimed at this checkpoint.
+`utility.utility-panel.angled.blend` source, SHA-256
+`1bc780cc2e6ab7b25e932652e6e3f1c9e4ce07a63256b340af02bf310e3cf137`.
+The [earlier utility-panel report](../2026-10-02-utility-panel-angled/README.md)
+and [combined integrated acceptance](../2026-10-03-cell-utility-integrated/README.md)
+were read before reopening the source. They already record intentional winding
+correction of all nine retained parts, 27 physical additions, four retained
+materials, source controls and actual normal/rotated UtilityRoom Build/SaveLoad.
+Those existing improvements are preserved.
+
+The [fresh candidate inventory](./next-existing-utility-panel-inventory-and-four-replay.json)
+records all 36 current raw meshes, four complete stored graphs, evaluated
+outward-normal audit, part bounds and selected interior probes. Its actual
+standalone producer accepts the saved source and verifies all four 1×1 occupied
+orientations. Accepted 256×256/scale4/64ppt camera target remains
+`[0.5,0.5,0.5049999952316284]`. World bounds remain
+`[0.0599999726,0.0510000102,0]` to
+`[0.9400000572,0.7700000405,1.0099999905]`.
+Four actual yaws30/120/210/300 at elevation40 reproduce the existing descriptor
+frame hashes exactly; [the candidate sheet](./next-existing-utility-panel-four-yaws.png)
+was opened and inspected. The existing cheeks, monitor, controls, hatch and
+rear cable glands remain visible where the camera exposes them.
+
+The cap lower bound is z=0.9099999666 versus body upper bound z=0.8899999857:
+a 0.0199999809-tile interval, approximately 1.28 nominal pixels. It appears as
+a narrow cap/body reveal in these views and is not a basis for adding tiny
+mounts. Selected strict interior probes at feet/body and cheek/body/front
+returned no witness. The probe examines one overlap midpoint, and beveled
+corner geometry can exclude that midpoint: its rejection does not prove the
+complete triangle surfaces are disjoint. A future full contact investigation
+would need broader surface witnesses and a significant ordinary-view defect.
+No utility-panel source change is justified by this bounded candidate pass.
+Blender process inventory was again 0 before and 0 after one sequential process
+rendering only the four selected poses. Its saved source bytes remain identical.
 
 The weakest claim is that the subpixel shelf-bracket clearance is immaterial
 at other zoom settings or elevations. Four current canonical views establish
