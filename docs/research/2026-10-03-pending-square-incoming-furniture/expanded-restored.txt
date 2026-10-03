@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-pending-square-wall-incoming-object-audit-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  28 passed (28)
+   Start at  02:03:10
+   Duration  3.82s (transform 832ms, setup 0ms, import 2.22s, tests 1.47s, environment 0ms)
+

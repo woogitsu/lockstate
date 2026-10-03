@@ -1,0 +1,124 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-pending-square-wall-incoming-object-audit-20261003
+
+ ❯ tests/integration/pending-square-wall-incoming-object.test.ts (28 tests | 5 failed) 1499ms
+   × paid pending square vs later Bed: type='PlaceObject' load=false conflict=true 52ms
+   × paid pending square vs later Bed: type='PlaceObject' load=true conflict=true 60ms
+   × horizontal Desk far tile respects the paid square: type='PlaceObject' load=false conflict=true 40ms
+   × horizontal Desk far tile respects the paid square: type='PlaceObject' load=true conflict=true 43ms
+   × partly built square still owns its tile after encoded Load: type='PlaceObject' conflict=true 57ms
+node : 
+At line:22 char:2
++  node node_modules/vitest/vitest.mjs run --maxWorkers=2 tests/integra ...
++  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/pending-square-wall-incoming-object.test.ts > paid pending square vs later Bed: type='PlaceObj
+ect' load=false conflict=true
+ FAIL  tests/integration/pending-square-wall-incoming-object.test.ts > paid pending square vs later Bed: type='PlaceObj
+ect' load=true conflict=true
+AssertionError: expected { id: 'later-bed', …(7) } to be undefined
+
+- Expected:
+undefined
+
++ Received:
+{
+  "definitionId": "bed-wooden",
+  "failReason": "unbuildable",
+  "id": "later-bed",
+  "location": {
+    "x": 12,
+    "y": 12,
+  },
+  "materialsAllocated": [],
+  "placementSequence": 2,
+  "progress": 0,
+  "state": "failed",
+}
+
+ ❯ tests/integration/pending-square-wall-incoming-object.test.ts:60:86
+     58|     }
+     59|     if (conflict) {
+     60|       if (type === 'PlaceObject') expect(runtime.construction.getOrder…
+       |                                                                                      ^
+     61|       else expect(runtime.construction.getOrder('later-bed')).toMatchO…
+     62|       const { kernel: _beforeKernel, ...beforeGameplay } = before;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  tests/integration/pending-square-wall-incoming-object.test.ts > horizontal Desk far tile respects the paid squar
+e: type='PlaceObject' load=false conflict=true
+ FAIL  tests/integration/pending-square-wall-incoming-object.test.ts > horizontal Desk far tile respects the paid squar
+e: type='PlaceObject' load=true conflict=true
+AssertionError: expected { id: 'later-desk', …(7) } to be undefined
+
+- Expected:
+undefined
+
++ Received:
+{
+  "definitionId": "desk-wooden",
+  "failReason": "unbuildable",
+  "id": "later-desk",
+  "location": {
+    "x": 11,
+    "y": 13,
+  },
+  "materialsAllocated": [],
+  "placementSequence": 2,
+  "progress": 0,
+  "state": "failed",
+}
+
+ ❯ tests/integration/pending-square-wall-incoming-object.test.ts:85:87
+     83|     send(runtime, { type, orderId: 'later-desk', definitionId: 'desk-w…
+     84|     if (conflict) {
+     85|       if (type === 'PlaceObject') expect(runtime.construction.getOrder…
+       |                                                                                       ^
+     86|       else expect(runtime.construction.getOrder('later-desk')).toMatch…
+     87|       const { kernel: _afterKernel, ...after } = captureSessionSnapsho…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  tests/integration/pending-square-wall-incoming-object.test.ts > partly built square still owns its tile after en
+coded Load: type='PlaceObject' conflict=true
+AssertionError: expected { id: 'partial-later-bed', …(7) } to be undefined
+
+- Expected:
+undefined
+
++ Received:
+{
+  "definitionId": "bed-wooden",
+  "failReason": "unbuildable",
+  "id": "partial-later-bed",
+  "location": {
+    "x": 12,
+    "y": 12,
+  },
+  "materialsAllocated": [],
+  "placementSequence": 2,
+  "progress": 0,
+  "state": "failed",
+}
+
+ ❯ tests/integration/pending-square-wall-incoming-object.test.ts:132:94
+    130|     send(runtime, { type, orderId: 'partial-later-bed', definitionId: …
+    131|     if (conflict) {
+    132|       if (type === 'PlaceObject') expect(runtime.construction.getOrder…
+       |                                                                                              ^
+    133|       else expect(runtime.construction.getOrder('partial-later-bed')).…
+    134|       const { kernel: _afterKernel, ...after } = captureSessionSnapsho…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 23 passed (28)
+   Start at  02:03:05
+   Duration  3.74s (transform 828ms, setup 0ms, import 2.11s, tests 1.50s, environment 0ms)
+
