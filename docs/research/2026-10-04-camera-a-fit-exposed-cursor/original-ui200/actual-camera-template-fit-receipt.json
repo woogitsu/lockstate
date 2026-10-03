@@ -1,0 +1,757 @@
+{
+  "sourceFix": "7654f78f5349dbc4911780560371641260c53cbe",
+  "uiScale": 2,
+  "publicPoseRecipe": "default -45/45, five Rotate camera right and two Raise camera; held sixth turn reaches45/65, not35 degrees",
+  "cameraBefore": {
+    "viewport": {
+      "width": 1920,
+      "height": 1080,
+      "zoom": 1,
+      "uiScale": 2
+    },
+    "presentation": "disclosure",
+    "panel": {
+      "left": 280,
+      "top": 356,
+      "right": 1072,
+      "bottom": 614,
+      "width": 792,
+      "height": 258,
+      "hidden": false,
+      "clientHeight": 256,
+      "scrollHeight": 256,
+      "text": "Top-down\nAngled view\nPan camera left\nPan camera up\nPan camera down\nPan camera right\nRotate camera left\nRotate camera right\nRaise camera angle\nLower camera angle",
+      "display": "flex",
+      "overflowY": "visible",
+      "maxHeight": "none",
+      "minHeight": "0px"
+    },
+    "strip": {
+      "left": 0,
+      "top": 0,
+      "right": 1920,
+      "bottom": 259,
+      "width": 1920,
+      "height": 259,
+      "hidden": false,
+      "clientHeight": 258,
+      "scrollHeight": 258,
+      "text": "LockState.io\nPRE-ALPHA\nv0.0.839 · 21dba6e\nLockstate, PRE-ALPHA build, version 0.0.839, commit 21dba6e.\n0\nPRISONERS\n0\nHIGH RISK\n0\nSTAFF\n0\nCOVERAGE\nCovered\n0\nROOMS\n0\nINCIDENTS\nClear\n0\nCONTRABAND\n25,000\nFUNDS\n0\nEARNED TODAY\nDAY\n1\nThrough the day\n0%\nPause\nPlay at normal speed\nFast forward\nSpeed 1×\nPAUSED\nUndo the last placement\nRedo the last undone placement\nOpen the settings menu",
+      "display": "flex",
+      "overflowY": "visible",
+      "maxHeight": "none",
+      "minHeight": "96px"
+    },
+    "tabs": {
+      "left": 0,
+      "top": 332,
+      "right": 256,
+      "bottom": 1080,
+      "width": 256,
+      "height": 748,
+      "hidden": false,
+      "clientHeight": 748,
+      "scrollHeight": 748,
+      "text": "Hide the sections\nOVERVIEW\nBUILD\nZONES\nMANAGE\nSCHEDULE\nSECURITY",
+      "display": "flex",
+      "overflowY": "visible",
+      "maxHeight": "none",
+      "minHeight": "0px"
+    },
+    "rail": {
+      "left": 1192,
+      "top": 332,
+      "right": 1920,
+      "bottom": 1080,
+      "width": 728,
+      "height": 748,
+      "hidden": false,
+      "clientHeight": 748,
+      "scrollHeight": 748,
+      "text": "Hide the panels\nINTERFACE SCALE\n200%\nTHEME\nSystem\nPRISONS\nNew prison\nSave now\nExport\nImport\nNew Prison (1 gen)\nLoad\nDelete\n\nSaved (generation gen-a32751ed-5790-431b-a288-fedf35299e58).\n\nBuild\nCollapse\nWHAT TO BUILD\nBrick wall\nEverything\nWalls and doors\nFurniture\nCatering\nUtility\nMedical\nSecurity\nPlumbing\nStorage\nPlans\nBrick wall · 80 per square\nSelected\nWooden door · 65 per segment\nBed · 65\nBench · 130\nBookshelf · 130\nChair · 65\nDesk · 130\nDining Table · 195\nExercise station · 80\nFridge · 40\nPrep Counter · 80\nStove · 80\nLoading Dock Door · 195\nUtility Panel · 40\nWashing Machine · 80\nWaste Bin · 40\nMedical Bed · 65\nMedicine Cabinet · 65\nSecurity Console · 80\nShower Head · 40\nToilet · 40\nStorage Rack · 65\nPlace on map\nRemove\nBuy\nWHERE\nPoint at the world\nClick a whole square to place a wall. Drag across squares to lay a run. Two fingers, the middle button or the arrow keys still move the camera.\nENTER COORDINATES",
+      "display": "flex",
+      "overflowY": "hidden",
+      "maxHeight": "none",
+      "minHeight": "0px"
+    },
+    "corner": {
+      "left": 280,
+      "top": 640,
+      "right": 1088,
+      "bottom": 1080,
+      "width": 808,
+      "height": 440,
+      "hidden": false,
+      "clientHeight": 440,
+      "scrollHeight": 440,
+      "text": "ZOOM\nZoom out\nZoom in\nView\nMinimap\nExpand\nALERTS\nNothing was removed — there is no object on that tile, none being built there, and no finished wall there either.\nWarning",
+      "display": "flex",
+      "overflowY": "visible",
+      "maxHeight": "724px",
+      "minHeight": "0px"
+    },
+    "band": {
+      "left": 0,
+      "top": 259,
+      "right": 1920,
+      "bottom": 332,
+      "width": 1920,
+      "height": 73,
+      "hidden": false,
+      "clientHeight": 72,
+      "scrollHeight": 72,
+      "text": "Nothing was removed — there is no object on that tile, none being built there, and no finished wall there either.",
+      "display": "flex",
+      "overflowY": "visible",
+      "maxHeight": "none",
+      "minHeight": "auto"
+    },
+    "alertList": {
+      "left": 297,
+      "top": 918,
+      "right": 1071,
+      "bottom": 1055,
+      "width": 774,
+      "height": 137,
+      "hidden": false,
+      "clientHeight": 137,
+      "scrollHeight": 137,
+      "text": "Nothing was removed — there is no object on that tile, none being built there, and no finished wall there either.\nWarning",
+      "display": "flex",
+      "overflowY": "auto",
+      "maxHeight": "none",
+      "minHeight": "0px"
+    },
+    "alertRows": [
+      {
+        "left": 297,
+        "top": 918,
+        "right": 1071,
+        "bottom": 1055,
+        "width": 774,
+        "height": 137,
+        "text": "Nothing was removed — there is no object on that tile, none being built there, and no finished wall there either.\nWarning"
+      }
+    ],
+    "controls": [
+      {
+        "left": 399.828125,
+        "top": 649,
+        "right": 487.828125,
+        "bottom": 737,
+        "width": 88,
+        "height": 88,
+        "x": 443,
+        "y": 693,
+        "name": "Zoom out",
+        "tap": 88,
+        "reachable": true
+      },
+      {
+        "left": 503.828125,
+        "top": 649,
+        "right": 591.828125,
+        "bottom": 737,
+        "width": 88,
+        "height": 88,
+        "x": 547,
+        "y": 693,
+        "name": "Zoom in",
+        "tap": 88,
+        "reachable": true
+      },
+      {
+        "left": 607.828125,
+        "top": 649,
+        "right": 695.828125,
+        "bottom": 737,
+        "width": 88,
+        "height": 88,
+        "x": 651,
+        "y": 693,
+        "name": "View",
+        "tap": 88,
+        "reachable": true
+      },
+      {
+        "left": 297,
+        "top": 373,
+        "right": 454,
+        "bottom": 461,
+        "width": 157,
+        "height": 88,
+        "x": 375,
+        "y": 417,
+        "name": "View",
+        "tap": 88,
+        "reachable": true
+      },
+      {
+        "left": 470,
+        "top": 373,
+        "right": 558,
+        "bottom": 461,
+        "width": 88,
+        "height": 88,
+        "x": 514,
+        "y": 417,
+        "name": "Pan camera left",
+        "tap": 88,
+        "reachable": true
+      },
+      {
+        "left": 574,
+        "top": 373,
+        "right": 662,
+        "bottom": 461,
+        "width": 88,
+        "height": 88,
+        "x": 618,
+        "y": 417,
+        "name": "Pan camera up",
+        "tap": 88,
+        "reachable": true
+      },
+      {
+        "left": 678,
+        "top": 373,
+        "right": 766,
+        "bottom": 461,
+        "width": 88,
+        "height": 88,
+        "x": 722,
+        "y": 417,
+        "name": "Pan camera down",
+        "tap": 88,
+        "reachable": true
+      },
+      {
+        "left": 782,
+        "top": 373,
+        "right": 870,
+        "bottom": 461,
+        "width": 88,
+        "height": 88,
+        "x": 826,
+        "y": 417,
+        "name": "Pan camera right",
+        "tap": 88,
+        "reachable": true
+      },
+      {
+        "left": 297,
+        "top": 493,
+        "right": 385,
+        "bottom": 581,
+        "width": 88,
+        "height": 88,
+        "x": 341,
+        "y": 537,
+        "name": "Rotate camera left",
+        "tap": 88,
+        "reachable": true
+      },
+      {
+        "left": 401,
+        "top": 493,
+        "right": 489,
+        "bottom": 581,
+        "width": 88,
+        "height": 88,
+        "x": 445,
+        "y": 537,
+        "name": "Rotate camera right",
+        "tap": 88,
+        "reachable": true
+      },
+      {
+        "left": 505,
+        "top": 493,
+        "right": 593,
+        "bottom": 581,
+        "width": 88,
+        "height": 88,
+        "x": 549,
+        "y": 537,
+        "name": "Raise camera angle",
+        "tap": 88,
+        "reachable": true
+      },
+      {
+        "left": 609,
+        "top": 493,
+        "right": 697,
+        "bottom": 581,
+        "width": 88,
+        "height": 88,
+        "x": 653,
+        "y": 537,
+        "name": "Lower camera angle",
+        "tap": 88,
+        "reachable": true
+      }
+    ]
+  },
+  "terminalTrace": {
+    "requests": [
+      {
+        "protocolVersion": 1,
+        "messageId": "7301bbbf-f9b4-493d-b040-f465f73866dc",
+        "kind": "simulation/request-projection",
+        "payload": {
+          "projectionId": "world/room-template-cost",
+          "target": {
+            "kind": "room-template",
+            "templateId": "cell-basic",
+            "origin": {
+              "x": 0,
+              "y": 0
+            }
+          }
+        }
+      },
+      {
+        "protocolVersion": 1,
+        "messageId": "d6733acb-0ed5-450e-aefa-b21e57f110af",
+        "kind": "simulation/request-projection",
+        "payload": {
+          "projectionId": "world/room-template-preflight",
+          "target": {
+            "kind": "room-template",
+            "templateId": "cell-basic",
+            "origin": {
+              "x": 0,
+              "y": 0
+            }
+          }
+        }
+      }
+    ],
+    "replies": [],
+    "workerUrls": [
+      "/assets/worker-CIHTxuxG.js"
+    ],
+    "pointer": [
+      {
+        "type": "pointermove",
+        "x": 1654,
+        "y": 130,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointerdown",
+        "x": 1654,
+        "y": 130,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointerup",
+        "x": 1654,
+        "y": 130,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointermove",
+        "x": 1587.25,
+        "y": 151.5,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointerdown",
+        "x": 1587.25,
+        "y": 151.5,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointerup",
+        "x": 1587.25,
+        "y": 151.5,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointermove",
+        "x": 1520.5,
+        "y": 265.75,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointerdown",
+        "x": 1520.5,
+        "y": 265.75,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointerup",
+        "x": 1520.5,
+        "y": 265.75,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointermove",
+        "x": 1453.75,
+        "y": 287.5,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointerdown",
+        "x": 1453.75,
+        "y": 287.5,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointerup",
+        "x": 1453.75,
+        "y": 287.5,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointermove",
+        "x": 1397.25,
+        "y": 504,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointerdown",
+        "x": 1397.25,
+        "y": 504,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointerup",
+        "x": 1397.25,
+        "y": 504,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointermove",
+        "x": 131.5,
+        "y": 519,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointerdown",
+        "x": 131.5,
+        "y": 519,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointerup",
+        "x": 131.5,
+        "y": 519,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointermove",
+        "x": 1305.030029296875,
+        "y": 709,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointerdown",
+        "x": 1305.030029296875,
+        "y": 709,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointerup",
+        "x": 1305.030029296875,
+        "y": 709,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointermove",
+        "x": 950,
+        "y": 500,
+        "trusted": true,
+        "canvas": true
+      },
+      {
+        "type": "pointerdown",
+        "x": 950,
+        "y": 500,
+        "trusted": true,
+        "canvas": true
+      },
+      {
+        "type": "pointerup",
+        "x": 950,
+        "y": 500,
+        "trusted": true,
+        "canvas": true
+      },
+      {
+        "type": "pointermove",
+        "x": 851.8699951171875,
+        "y": 44,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointerdown",
+        "x": 851.8699951171875,
+        "y": 44,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointerup",
+        "x": 851.8699951171875,
+        "y": 44,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointermove",
+        "x": 755.8699951171875,
+        "y": 44,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointerdown",
+        "x": 755.8699951171875,
+        "y": 44,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointerup",
+        "x": 755.8699951171875,
+        "y": 44,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointermove",
+        "x": 1343.22998046875,
+        "y": 742,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointerdown",
+        "x": 1343.22998046875,
+        "y": 742,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointerup",
+        "x": 1343.22998046875,
+        "y": 742,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointermove",
+        "x": 651,
+        "y": 693,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointerdown",
+        "x": 651,
+        "y": 693,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointerup",
+        "x": 651,
+        "y": 693,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointermove",
+        "x": 375,
+        "y": 417,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointerdown",
+        "x": 375,
+        "y": 417,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointerup",
+        "x": 375,
+        "y": 417,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointermove",
+        "x": 445,
+        "y": 537,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointerdown",
+        "x": 445,
+        "y": 537,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointerup",
+        "x": 445,
+        "y": 537,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointermove",
+        "x": 445,
+        "y": 537,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointerdown",
+        "x": 445,
+        "y": 537,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointerup",
+        "x": 445,
+        "y": 537,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointermove",
+        "x": 445,
+        "y": 537,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointerdown",
+        "x": 445,
+        "y": 537,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointerup",
+        "x": 445,
+        "y": 537,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointermove",
+        "x": 445,
+        "y": 537,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointerdown",
+        "x": 445,
+        "y": 537,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointerup",
+        "x": 445,
+        "y": 537,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointermove",
+        "x": 445,
+        "y": 537,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointerdown",
+        "x": 445,
+        "y": 537,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointerup",
+        "x": 445,
+        "y": 537,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointermove",
+        "x": 549,
+        "y": 537,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointerdown",
+        "x": 549,
+        "y": 537,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointerup",
+        "x": 549,
+        "y": 537,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointermove",
+        "x": 549,
+        "y": 537,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointerdown",
+        "x": 549,
+        "y": 537,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "pointerup",
+        "x": 549,
+        "y": 537,
+        "trusted": true,
+        "canvas": false
+      }
+    ]
+  }
+}

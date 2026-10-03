@@ -1,0 +1,76 @@
+{
+  "subject": "21dba6ee55823ff1283c0b47254ff8d01e2a6ca9",
+  "sourceFile": "src/rendering/camera/oblique-fit.ts",
+  "sourceSha256": "94a420912f000e28d55f2d9327ce38436e9cd19da44c29fef111bedc4a862514",
+  "method": "Read-only Node24 type stripping and invocation of actual production function; no browser/pose injection; translation-independent full7x4 footprint extent",
+  "input": "Original root actual UI200 cameraBefore DOM rectangles",
+  "safe": {
+    "left": 1096,
+    "right": 1184,
+    "top": 340,
+    "bottom": 1072
+  },
+  "cursor": {
+    "x": 1140,
+    "y": 1000
+  },
+  "width": 88,
+  "existingMinimumZoom": 0.2,
+  "rows": [
+    {
+      "yaw": 30,
+      "actualProductionFit": {
+        "mode": "pan-locked",
+        "camera": {
+          "viewport": {
+            "width": 1920,
+            "height": 1080
+          },
+          "target": {
+            "x": -1013.3246997754288,
+            "y": -215.10924547095027
+          },
+          "zoom": 0.2,
+          "yawRadians": 0.5235987755982988,
+          "elevationRadians": 1.1344640137963142
+        },
+        "projectedBounds": {
+          "left": 1088.4020619104572,
+          "top": 665.6056350495113,
+          "right": 1191.5979380895428,
+          "bottom": 746.3943649504887
+        },
+        "requiredZoom": 0.17054945073054117,
+        "fits": false
+      }
+    },
+    {
+      "yaw": 45,
+      "actualProductionFit": {
+        "mode": "pan-locked",
+        "camera": {
+          "viewport": {
+            "width": 1920,
+            "height": 1080
+          },
+          "target": {
+            "x": -1059.967090297092,
+            "y": 116.82511583869325
+          },
+          "zoom": 0.2,
+          "yawRadians": 0.7853981633974483,
+          "elevationRadians": 1.1344640137963142
+        },
+        "projectedBounds": {
+          "left": 1090.219682604467,
+          "top": 660.8837107032725,
+          "right": 1189.7803173955328,
+          "bottom": 751.1162892967275
+        },
+        "requiredZoom": 0.1767766952966369,
+        "fits": false
+      }
+    }
+  ],
+  "nativePostArmResultObtained": false
+}

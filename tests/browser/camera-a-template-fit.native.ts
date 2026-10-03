@@ -132,7 +132,25 @@ for (const uiScale of [1, 2] as const) test(`FullHD publicUI${uiScale * 100} ope
     expect(camera.controls).toHaveLength(12);
     for (const c of camera.controls) { expect(c.width).toBeGreaterThanOrEqual(44 * uiScale); expect(c.height).toBeGreaterThanOrEqual(44 * uiScale); expect(c.reachable).toBe(true); }
     const before = await readV10WholeSnapshot(page, info.outputPath('whole-before-preview.json'));
-    const commandsBefore = await sentCommands(page), cursor = { x: 1000, y: 1000 };
+    const commandsBefore = await sentCommands(page);
+    const cursorSelection = await page.evaluate(() => {
+      const canvas = document.querySelector('#game-root canvas');
+      if (!(canvas instanceof HTMLCanvasElement)) throw Error('Actual game canvas absent');
+      const r = canvas.getBoundingClientRect();
+      const box = (selector: string) => document.querySelector(selector)?.getBoundingClientRect();
+      const left = Math.max(r.left, box('.hud__tabs')?.right ?? r.left, box('.hud__corner')?.right ?? r.left) + 8;
+      const right = Math.min(r.right, box('.hud__rail')?.left ?? r.right) - 8;
+      const top = Math.max(r.top, box('.hud-strip')?.bottom ?? r.top) + 8, bottom = r.bottom - 8;
+      if (right <= left || bottom <= top) throw Error('Actual exposed map corridor absent');
+      const original = { x: 1000, y: 1000 };
+      const originalExposed = original.x >= left && original.x <= right && original.y >= top && original.y <= bottom &&
+        document.elementFromPoint(original.x, original.y) === canvas;
+      const point = originalExposed ? original : { x: (left + right) / 2, y: Math.max(top, Math.min(bottom, r.bottom - 80)) };
+      return { point, corridor: { left, right, top, bottom, width: right - left },
+        retainedOriginalCursor: originalExposed, actualCanvasHit: document.elementFromPoint(point.x, point.y) === canvas };
+    });
+    receipt['cursorSelection'] = cursorSelection;
+    const cursor = cursorSelection.point;
     expect(await page.evaluate(p => document.elementFromPoint(p.x, p.y) === document.querySelector('#game-root canvas'), cursor)).toBe(true);
     await page.mouse.move(cursor.x, cursor.y); await frames(page);
     const open = page.getByRole('button', { name: 'Room plans', exact: true }); await open.focus(); await page.keyboard.press('Enter');
