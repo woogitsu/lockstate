@@ -1,0 +1,129 @@
+node : [2m[WebServer] [22m(node:47340) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:4 char:1
++ node --experimental-transform-types --disable-warning=ExperimentalWar ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m03:32:22 [vite] (client) Re-optimizing dependencies because vite config has changed
+[2m[WebServer] [22m
+[2m[WebServer] [22m  VITE v8.2.2  ready in 391 ms
+[2m[WebServer] [22m
+[2m[WebServer] [22m  ➜  Local:   http://127.0.0.1:5183/
+[2m[WebServer] [22m03:32:27 [vite] (client) [optimizer] scanning dependencies...
+LOCKSTATE_BROWSER_PREWARM_READY elapsedMs=4464
+
+Running 3 tests using 1 worker
+
+(node:62724) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:62724) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m03:32:38 [vite] (client) [console.error] Failed to process file: image "oblique-floor:terrain.conc
+rete.paving"
+[2m[WebServer] [22m03:32:38 [vite] (client) [console.error] Failed to process file: image "oblique-floor:terrain.dirt
+.compacted"
+[2m[WebServer] [22m03:32:38 [vite] (client) [console.error] Failed to process file: image "oblique-floor:terrain.gras
+s.mown"
+[2m[WebServer] [22m03:32:38 [vite] (client) [console.error] Failed to process file: image "oblique-floor:terrain.grav
+el.service_path"
+[2m[WebServer] [22m03:32:38 [vite] (client) [console.error] Failed to process file: image "oblique-floor:terrain.rock
+.bedrock"
+[2m[WebServer] [22m03:32:38 [vite] (client) [console.error] Failed to process file: image "oblique-floor:floor.linole
+um.institutional"
+[2m[WebServer] [22m03:32:38 [vite] (client) [console.error] Failed to process file: image "oblique-floor:floor.kitche
+n.nonslip"
+[2m[WebServer] [22m03:32:38 [vite] (client) [console.error] Failed to process file: image "oblique-floor:floor.cantee
+n.terrazzo"
+[2m[WebServer] [22m03:32:38 [vite] (client) [console.error] Failed to process file: image "oblique-floor:floor.shower
+.ceramic"
+[2m[WebServer] [22m03:32:38 [vite] (client) [console.error] Failed to process file: image "oblique-floor:floor.laundr
+y.nonslip"
+[2m[WebServer] [22m03:32:38 [vite] (client) [console.error] Failed to process file: image "oblique-floor:floor.yard.c
+ompacted-earth"
+[2m[WebServer] [22m03:32:38 [vite] (client) [console.error] Failed to process file: image "oblique-floor:floor.infirm
+ary.vinyl"
+[2m[WebServer] [22m03:32:38 [vite] (client) [console.error] Failed to process file: image "oblique-floor:floor.common
+-room.cork-rubber"
+[2m[WebServer] [22m03:32:38 [vite] (client) [console.error] Failed to process file: image "oblique-floor:floor.classr
+oom.oak-laminate"
+[2m[WebServer] [22m03:32:38 [vite] (client) [console.error] Failed to process file: image "oblique-floor:floor.securi
+ty-office.antistatic"
+[2m[WebServer] [22m03:32:38 [vite] (client) [console.error] Failed to process file: image "oblique-floor:floor.cell.s
+ealed-concrete"
+[2m[WebServer] [22m03:32:38 [vite] (client) [console.error] Failed to process file: image "oblique-floor:floor.staff-
+room.woven-vinyl"
+  ok 1 tests\browser\oblique-camera-new-prison-frame.spec.ts:2:1 › angled camera returns to a newly created prison after panning beyond the old map (7.7s)
+[2m[WebServer] [22m03:32:45 [vite] (client) [console.error] Failed to process file: image "oblique-floor:terrain.dirt
+.compacted"
+[2m[WebServer] [22m03:32:45 [vite] (client) [console.error] Failed to process file: image "oblique-floor:terrain.gras
+s.mown"
+[2m[WebServer] [22m03:32:45 [vite] (client) [console.error] Failed to process file: image "oblique-floor:terrain.conc
+rete.paving"
+[2m[WebServer] [22m03:32:45 [vite] (client) [console.error] Failed to process file: image "oblique-floor:terrain.grav
+el.service_path"
+[2m[WebServer] [22m03:32:45 [vite] (client) [console.error] Failed to process file: image "oblique-floor:terrain.rock
+.bedrock"
+[2m[WebServer] [22m03:32:45 [vite] (client) [console.error] Failed to process file: image "oblique-floor:floor.linole
+um.institutional"
+[2m[WebServer] [22m03:32:45 [vite] (client) [console.error] Failed to process file: image "oblique-floor:floor.kitche
+n.nonslip"
+[2m[WebServer] [22m03:32:45 [vite] (client) [console.error] Failed to process file: image "oblique-floor:floor.cantee
+n.terrazzo"
+[2m[WebServer] [22m03:32:45 [vite] (client) [console.error] Failed to process file: image "oblique-floor:floor.yard.c
+ompacted-earth"
+[2m[WebServer] [22m03:32:45 [vite] (client) [console.error] Failed to process file: image "oblique-floor:floor.shower
+.ceramic"
+[2m[WebServer] [22m03:32:45 [vite] (client) [console.error] Failed to process file: image "oblique-floor:floor.laundr
+y.nonslip"
+[2m[WebServer] [22m03:32:45 [vite] (client) [console.error] Failed to process file: image "oblique-floor:floor.infirm
+ary.vinyl"
+[2m[WebServer] [22m03:32:45 [vite] (client) [console.error] Failed to process file: image "oblique-floor:floor.common
+-room.cork-rubber"
+[2m[WebServer] [22m03:32:45 [vite] (client) [console.error] Failed to process file: image "oblique-floor:floor.classr
+oom.oak-laminate"
+[2m[WebServer] [22m03:32:45 [vite] (client) [console.error] Failed to process file: image "oblique-floor:floor.securi
+ty-office.antistatic"
+[2m[WebServer] [22m03:32:45 [vite] (client) [console.error] Failed to process file: image "oblique-floor:floor.cell.s
+ealed-concrete"
+[2m[WebServer] [22m03:32:45 [vite] (client) [console.error] Failed to process file: image "oblique-floor:floor.staff-
+room.woven-vinyl"
+  ok 2 tests\browser\oblique-hud-roving-camera.spec.ts:3:1 › Full HD oblique camera stays still while Build and Rooms radio groups consume arrows (8.0s)
+[2m[WebServer] [22m03:32:53 [vite] (client) [console.error] Failed to process file: image "oblique-floor:terrain.dirt
+.compacted"
+[2m[WebServer] [22m03:32:53 [vite] (client) [console.error] Failed to process file: image "oblique-floor:terrain.gras
+s.mown"
+[2m[WebServer] [22m03:32:53 [vite] (client) [console.error] Failed to process file: image "oblique-floor:terrain.conc
+rete.paving"
+[2m[WebServer] [22m03:32:53 [vite] (client) [console.error] Failed to process file: image "oblique-floor:terrain.grav
+el.service_path"
+[2m[WebServer] [22m03:32:53 [vite] (client) [console.error] Failed to process file: image "oblique-floor:terrain.rock
+.bedrock"
+[2m[WebServer] [22m03:32:53 [vite] (client) [console.error] Failed to process file: image "oblique-floor:floor.linole
+um.institutional"
+[2m[WebServer] [22m03:32:53 [vite] (client) [console.error] Failed to process file: image "oblique-floor:floor.kitche
+n.nonslip"
+[2m[WebServer] [22m03:32:53 [vite] (client) [console.error] Failed to process file: image "oblique-floor:floor.cantee
+n.terrazzo"
+[2m[WebServer] [22m03:32:53 [vite] (client) [console.error] Failed to process file: image "oblique-floor:floor.yard.c
+ompacted-earth"
+[2m[WebServer] [22m03:32:53 [vite] (client) [console.error] Failed to process file: image "oblique-floor:floor.shower
+.ceramic"
+[2m[WebServer] [22m03:32:53 [vite] (client) [console.error] Failed to process file: image "oblique-floor:floor.laundr
+y.nonslip"
+[2m[WebServer] [22m03:32:53 [vite] (client) [console.error] Failed to process file: image "oblique-floor:floor.infirm
+ary.vinyl"
+[2m[WebServer] [22m03:32:53 [vite] (client) [console.error] Failed to process file: image "oblique-floor:floor.common
+-room.cork-rubber"
+[2m[WebServer] [22m03:32:53 [vite] (client) [console.error] Failed to process file: image "oblique-floor:floor.classr
+oom.oak-laminate"
+[2m[WebServer] [22m03:32:53 [vite] (client) [console.error] Failed to process file: image "oblique-floor:floor.securi
+ty-office.antistatic"
+[2m[WebServer] [22m03:32:53 [vite] (client) [console.error] Failed to process file: image "oblique-floor:floor.cell.s
+ealed-concrete"
+[2m[WebServer] [22m03:32:53 [vite] (client) [console.error] Failed to process file: image "oblique-floor:floor.staff-
+room.woven-vinyl"
+  ok 3 tests\browser\oblique-hud-roving-camera.spec.ts:73:1 › a held world arrow stops panning when focus moves into a Build radio group (5.8s)
+
+  3 passed (37.0s)

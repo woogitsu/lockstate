@@ -1,5 +1,5 @@
-// Pending new-source native acceptance: actual Infirmary construction and Save/Load.
-// The accepted historical q0 bed control is retained; q1 is provisional until actual native PNG inspection.
+// Actual combined native Infirmary Build/Load accepted on bb521c103e, 2026-10-03.
+// Historical q0 control retained; original q1 estimate passed inspected native PNGs unchanged.
 import { writeFile } from 'node:fs/promises';
 import { expect, test as base, type Page } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
@@ -91,9 +91,9 @@ async function bedPalettePixels(page: Page, png: Buffer, quarterTurns: 0 | 1): P
     const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
     const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0);
     // Preserve the accepted original q0 actual-client crop/RGB/>100 control.
-    // q1 is explicitly provisional: colour89,113,120 comes from the actual
-    // new yaw30/elev40 source frame. Open the native FullHD before calibration;
-    // source-preview colour and estimated region are not player acceptance.
+    // q1 colour89,113,120 originated in the authored yaw30/elev40 frame.
+    // The unchanged region/RGB/>100 passed actual bb521c103e Build/Load PNGs;
+    // actual binding removal produced0 pixels, exact restoration312.
     const rects = quarterTurns === 0 ? [[705,425,170,175]] : [[830,350,200,200]];
     const colours = quarterTurns === 0 ? [[79,102,108]] : [[89,113,120]];
     return rects.map((rect, regionIndex) => {

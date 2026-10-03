@@ -1419,3 +1419,23 @@ Native Security/Medical fixtures are routed once through the canonical artifact
 suite. Root now builds this exact integration and queues six actual player
 cases and three source camera regressions with unchanged budgets. First-CI
 repairs retain the original cancelled failure record; fullCI is still pending.
+
+## Security, Medical and camera accepted locally - 2026-10-03
+
+Frozen built subject bb521c103e has six genuine capacity/q0/q1 model cases GREEN,
+exact completed V8 owners and whole paused worker data equal after Save/Load.
+Actual default mapping removals yield2 RED/2 legal capacity controls; finally
+byte-exact source/worker restoration yields4 GREEN. Original palette counts
+Medical866/312 and Security506/1494 remain equal after Load. Actual loaded
+FullHD images were opened. [Published root proof](../../research/2026-10-03-security-medical-integrated/README.md)
+retains raw failures, restored receipts and images. Three native source camera
+cases also pass after all40 existing LFS-rendered runtime entries are hydrated;
+original missing-asset diagnostics remain recorded, with no workflow change.
+
+Next isolated integration: detailed Loading Dock Door, actual four camera pan
+controls with real World/Oblique ground consumers, and #1996 refused-cancellation
+history correction. Three agents refine physical wooden Chair, prepare actual
+native button acceptance, and reproduce genuine admission/routing issues.
+Keep one native browser active; push coherent checkpoints. Full hosted CI,
+serial main and production release remain separate outstanding gates. Neither
+pending protected sharding nor V9 proposal is silently activated.

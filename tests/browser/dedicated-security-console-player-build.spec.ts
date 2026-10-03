@@ -1,5 +1,5 @@
-// Pending new-source native acceptance: actual Security Office construction and Save/Load.
-// Accepted historical q0/q1 display controls are retained; new-source native inspection is pending.
+// Actual combined native Security Office Build/Load accepted on bb521c103e, 2026-10-03.
+// Historical q0/q1 controls retained unchanged; actual producer removal failed and exact restoration passed.
 import { writeFile } from 'node:fs/promises';
 import { expect, test as base, type Page } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
@@ -91,8 +91,8 @@ async function consolePalettePixels(page: Page, png: Buffer, quarterTurns: 0 | 1
     const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
     const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0);
     // Retain the actual accepted old-source q0/q1 crops/predicates and limits.
-    // New source native calibration is pending. Preserve every provisional red
-    // before any correction based on opened completed/loaded FullHD images.
+    // Both unchanged historical controls passed actual bb521c103e Build/Load.
+    // Actual binding removal produced0 q1 pixels, exact restoration1494.
     const rects = quarterTurns === 0 ? [[865,460,50,75]] : [[800,380,360,230]];
     return rects.map((rect, regionIndex) => {
       const pixels = context.getImageData(...rect as [number, number, number, number]).data;

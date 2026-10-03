@@ -1,0 +1,313 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-safe-restore-integration-20261003\\tests\\browser\\playwright.artifact.config.ts",
+    "rootDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-safe-restore-integration-20261003/tests/browser",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/matma/AppData/Local/Temp/lockstate-safe-model-native-mutation-20261003/results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-safe-restore-integration-20261003/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "/(?:production-artifact|rotated-security-console-player-build|infirmary-player-build|room-template-live-orientation|room-plan-dialog-escape|canteen-dining-table-player-build|room-plan-native-picker|shower-head-player-build|live-view-held-native-arrow|wooden-bench-player-build|live-view-native-popup-held-key|hud-separator-held-arrow|wooden-chair-player-build|build-category-native-camera|generic-wooden-rack-player-build|build-category-native-popup-held-key|build-category-native-typeahead|bookshelf-player-build|utility-panel-player-build|hud-layout-menu-fullhd|generic-office-desk-player-build|oblique-build-drag-under-hud|dedicated-kitchen-stove-player-build|live-view-native-mouse-target|oblique-object-area-drag-under-hud|dedicated-kitchen-fridge-player-build|dedicated-kitchen-prep-counter-player-build|room-preview-retained-hover-fit|oblique-square-wall-native-footprint|dedicated-laundry-washing-machine-player-build|camera-wheel-axis-native|oblique-camera-gameout-native|default-waste-bin-player-build|navigation-drawer-escape-native|dedicated-cell-toilet-player-build|dedicated-utility-panel-player-build|room-template-world-camera-origin|dedicated-office-desk-player-build|room-template-renderer-preflight-receipt|dedicated-medicine-cabinet-player-build|dedicated-security-console-player-build|dedicated-medical-bed-player-build)\\.spec\\.ts$/"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 1,
+    "webServer": {
+      "command": "\"C:\\\\Users\\\\matma\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\node\\\\bin\\\\node.exe\" \"C:\\\\Users\\\\matma\\\\Documents\\\\Rozwój gier\\\\lockstate-1382-doc-anchor-2026-09-24\\\\node_modules\\\\.pnpm\\\\vite@8.2.2_@types+node@24.10.1_esbuild@0.28.1\\\\node_modules\\\\vite\\\\bin\\\\vite.js\" preview --port 5184 --strictPort --host 127.0.0.1",
+      "cwd": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-safe-restore-integration-20261003\\",
+      "env": {
+        "CLOUDFLARE_ENV": "production"
+      },
+      "url": "http://127.0.0.1:5184/",
+      "reuseExistingServer": false,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "dedicated-medical-bed-player-build.spec.ts",
+      "file": "dedicated-medical-bed-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player creates actual storage and delivery capacity before detailed medical bed Infirmary",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 43954,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T01:38:47.245Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7b151c297a7a38f864d4-fe4975e598f5010b05fd",
+          "file": "dedicated-medical-bed-player-build.spec.ts",
+          "line": 199,
+          "column": 1
+        },
+        {
+          "title": "player builds Infirmary at quarterTurns1 and retains the authored medical bed headboard palette and anchors after Save/Load",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 43738,
+                  "error": {
+                    "message": "Error: medical bed retained headboard 1 after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m100\u001b[39m\nReceived:   \u001b[31m0\u001b[39m",
+                    "stack": "Error: medical bed retained headboard 1 after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m100\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-safe-restore-integration-20261003\\tests\\browser\\dedicated-medical-bed-player-build.spec.ts:217:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-safe-restore-integration-20261003\\tests\\browser\\dedicated-medical-bed-player-build.spec.ts:216:16",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-safe-restore-integration-20261003\\tests\\browser\\dedicated-medical-bed-player-build.spec.ts",
+                      "column": 6,
+                      "line": 217
+                    },
+                    "snippet": "  215 |   }, null, 2));\n  216 |   beforePixels.forEach((count, index) => expect.soft(count, `medical bed retained headboard ${index + 1} after construction`)\n> 217 |     .toBeGreaterThan(100));\n      |      ^\n  218 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n  219 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();\n  220 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-safe-restore-integration-20261003\\tests\\browser\\dedicated-medical-bed-player-build.spec.ts",
+                        "column": 6,
+                        "line": 217
+                      },
+                      "message": "Error: medical bed retained headboard 1 after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m100\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  215 |   }, null, 2));\n  216 |   beforePixels.forEach((count, index) => expect.soft(count, `medical bed retained headboard ${index + 1} after construction`)\n> 217 |     .toBeGreaterThan(100));\n      |      ^\n  218 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n  219 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();\n  220 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-safe-restore-integration-20261003\\tests\\browser\\dedicated-medical-bed-player-build.spec.ts:217:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-safe-restore-integration-20261003\\tests\\browser\\dedicated-medical-bed-player-build.spec.ts:216:16"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-safe-restore-integration-20261003\\tests\\browser\\dedicated-medical-bed-player-build.spec.ts",
+                        "column": 6,
+                        "line": 233
+                      },
+                      "message": "Error: medical bed retained headboard 1 after Load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m100\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  231 |   const afterPixels = await bedPalettePixels(page, loaded, quarterTurns);\n  232 |   afterPixels.forEach((count, index) => expect.soft(count, `medical bed retained headboard ${index + 1} after Load`)\n> 233 |     .toBeGreaterThan(100));\n      |      ^\n  234 |   expect(afterPixels).toEqual(beforePixels);\n  235 |   const evidencePath = info.outputPath('dedicated-medical-bed-worker-and-save-evidence.json');\n  236 |   await writeFile(evidencePath, JSON.stringify({\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-safe-restore-integration-20261003\\tests\\browser\\dedicated-medical-bed-player-build.spec.ts:233:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-safe-restore-integration-20261003\\tests\\browser\\dedicated-medical-bed-player-build.spec.ts:232:15"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T01:39:31.271Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "dedicated-medical-bed-worker-and-save-evidence",
+                      "contentType": "application/json",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-safe-model-native-mutation-20261003\\results\\dedicated-medical-bed-play-55a65-and-anchors-after-Save-Load\\attachments\\dedicated-medical-bed-worker-and-save-evidence-a6e0fa8ac8de3b71dee0bbfadfe6005c0e56d6d0.json"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-safe-model-native-mutation-20261003\\results\\dedicated-medical-bed-play-55a65-and-anchors-after-Save-Load\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-safe-restore-integration-20261003\\tests\\browser\\dedicated-medical-bed-player-build.spec.ts",
+                    "column": 6,
+                    "line": 217
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "7b151c297a7a38f864d4-e0e6c06fa81c112f3a1e",
+          "file": "dedicated-medical-bed-player-build.spec.ts",
+          "line": 262,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "dedicated-security-console-player-build.spec.ts",
+      "file": "dedicated-security-console-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player creates actual storage and delivery capacity before detailed Security Office",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 43646,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T01:40:15.577Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "62e06e2c669cf68efb87-7c413d9849d6f9bbc993",
+          "file": "dedicated-security-console-player-build.spec.ts",
+          "line": 197,
+          "column": 1
+        },
+        {
+          "title": "player builds Security Office at quarterTurns1 and retains the authored console monitor palette and anchors after Save/Load",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 37494,
+                  "error": {
+                    "message": "Error: console retained monitor 1 after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m200\u001b[39m\nReceived:   \u001b[31m0\u001b[39m",
+                    "stack": "Error: console retained monitor 1 after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m200\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-safe-restore-integration-20261003\\tests\\browser\\dedicated-security-console-player-build.spec.ts:217:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-safe-restore-integration-20261003\\tests\\browser\\dedicated-security-console-player-build.spec.ts:216:16",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-safe-restore-integration-20261003\\tests\\browser\\dedicated-security-console-player-build.spec.ts",
+                      "column": 6,
+                      "line": 217
+                    },
+                    "snippet": "  215 |   }, null, 2));\n  216 |   beforePixels.forEach((count, index) => expect.soft(count, `console retained monitor ${index + 1} after construction`)\n> 217 |     .toBeGreaterThan(quarterTurns === 0 ? 100 : 200));\n      |      ^\n  218 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n  219 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();\n  220 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-safe-restore-integration-20261003\\tests\\browser\\dedicated-security-console-player-build.spec.ts",
+                        "column": 6,
+                        "line": 217
+                      },
+                      "message": "Error: console retained monitor 1 after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m200\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  215 |   }, null, 2));\n  216 |   beforePixels.forEach((count, index) => expect.soft(count, `console retained monitor ${index + 1} after construction`)\n> 217 |     .toBeGreaterThan(quarterTurns === 0 ? 100 : 200));\n      |      ^\n  218 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n  219 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();\n  220 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-safe-restore-integration-20261003\\tests\\browser\\dedicated-security-console-player-build.spec.ts:217:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-safe-restore-integration-20261003\\tests\\browser\\dedicated-security-console-player-build.spec.ts:216:16"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-safe-restore-integration-20261003\\tests\\browser\\dedicated-security-console-player-build.spec.ts",
+                        "column": 6,
+                        "line": 233
+                      },
+                      "message": "Error: console retained monitor 1 after Load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m200\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  231 |   const afterPixels = await consolePalettePixels(page, loaded, quarterTurns);\n  232 |   afterPixels.forEach((count, index) => expect.soft(count, `console retained monitor ${index + 1} after Load`)\n> 233 |     .toBeGreaterThan(quarterTurns === 0 ? 100 : 200));\n      |      ^\n  234 |   expect(afterPixels).toEqual(beforePixels);\n  235 |   const evidencePath = info.outputPath('dedicated-security-console-worker-and-save-evidence.json');\n  236 |   await writeFile(evidencePath, JSON.stringify({\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-safe-restore-integration-20261003\\tests\\browser\\dedicated-security-console-player-build.spec.ts:233:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-safe-restore-integration-20261003\\tests\\browser\\dedicated-security-console-player-build.spec.ts:232:15"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T01:40:59.293Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "dedicated-security-console-worker-and-save-evidence",
+                      "contentType": "application/json",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-safe-model-native-mutation-20261003\\results\\dedicated-security-console-9e650-and-anchors-after-Save-Load\\attachments\\dedicated-security-console-worker-and-save-evidence-79a2ec71ed6a60c1e57fcecb40f9e1d14d81fd59.json"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-safe-model-native-mutation-20261003\\results\\dedicated-security-console-9e650-and-anchors-after-Save-Load\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-safe-restore-integration-20261003\\tests\\browser\\dedicated-security-console-player-build.spec.ts",
+                    "column": 6,
+                    "line": 217
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "62e06e2c669cf68efb87-67b8a6535d0a4b61bac8",
+          "file": "dedicated-security-console-player-build.spec.ts",
+          "line": 260,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-03T01:38:44.790Z",
+    "duration": 172429.683,
+    "expected": 2,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  }
+}
