@@ -1,0 +1,37 @@
+{
+  "actualControls": [
+    {
+      "control": "actual .blend visitor handover counter rigid z+0.35, matched provenance source hash",
+      "mutatedSourceSHA256": "a5ea5637c6efa00d90e355b25cbbc5b505a9c1de1513bd02216f70d6ef157f08",
+      "exitCode": 1,
+      "reason": "Reception registration desk actual contact disconnected: Reception registration desk.raised visitor handover counter / Reception registration desk.visitor-facing registration panel"
+    },
+    {
+      "control": "actual document tray assembly x+.30 overlaps original monitor base; independently proven triangle-interior witness; matched source hash",
+      "mutatedSourceSHA256": "32cfe54bec464f385f7710c45c2cd18622ee1705407588278060bf7000fd0d3a",
+      "exitCode": 1,
+      "reason": "Reception registration desk overlaps retained equipment:"
+    },
+    {
+      "control": "actual producer omits its own dispatch tuple",
+      "exitCode": 1,
+      "reason": "Reception registration desk dedicated producer dispatch changed"
+    },
+    {
+      "control": "actual valid RGBA PNG with opaque corner, matched descriptor hash and filename hash",
+      "badPNG_SHA256": "e0d53de10c1333a716ea591b23035958a6a7cb49eef96968a5f5055b05f363a6",
+      "exitCode": 1,
+      "reason": "Reception registration desk PNG transparent border"
+    }
+  ],
+  "boundedNewRepeatRenderCount": 4,
+  "actualProducerRepeatReceipt": "four-real-producer-repeats.json",
+  "sourceSHA256": "be670aa62316c8f8557a1edbed75f3ac87df3ebe4bc78a3958c1e106347bb0dc",
+  "provenanceSHA256": "cfef0beebb70e62f3c8e7a826911628fafdd922155b99fa4bf88ed49bcd76284",
+  "descriptorSHA256": "95244f4b7b0a244ca7288e5d64bd52b740da307e22b41ba84b0a43cb52c92ea9",
+  "exactSourceProvenanceProducerDescriptorRestoration": true,
+  "all72OwnExportsExactBytePreservation": true,
+  "originalDesk72ExportsAndSharedFilesUnchanged": true,
+  "restoredProducerExitCode": 0,
+  "restoredUnitExitCode": 0
+}

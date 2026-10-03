@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-reception-registration-desk-model-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  15:47:37
+   Duration  669ms (transform 58ms, setup 0ms, import 154ms, tests 402ms, environment 0ms)
+
+$ vitest run "tests/unit/oblique-reception-registration-desk-art.test.ts"

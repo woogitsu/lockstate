@@ -1,0 +1,75 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-reception-registration-desk-model-20261003
+
+ ❯ tests/unit/oblique-reception-registration-desk-context.test.ts (7 tests | 4 failed) 17ms
+     × selects literal completed Reception desk with both retained waiting chairs q0 with their canonical source60/e40 frame 8ms
+     × selects literal completed Reception desk with both retained waiting chairs q1 with their canonical source60/e40 frame 2ms
+     × preserves default/Classroom/Staff desk contexts and refuses any partial occupied footprint 2ms
+     × registers the selected asset once with its real source and complete descriptor 2ms
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 3 passed (7)
+   Start at  15:50:26
+   Duration  676ms (transform 228ms, setup 0ms, import 535ms, tests 17ms, environment 0ms)
+
+[ELIFECYCLE] Test failed. See above for more details.
+$ vitest run "tests/unit/oblique-reception-registration-desk-context.test.ts"
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-reception-registration-desk-context.test.ts > Reception registration ObjectDesk context in the actual world projection > selects literal completed Reception desk with both retained waiting chairs q0 with their canonical source60/e40 frame
+ FAIL  tests/unit/oblique-reception-registration-desk-context.test.ts > Reception registration ObjectDesk context in the actual world projection > selects literal completed Reception desk with both retained waiting chairs q1 with their canonical source60/e40 frame
+AssertionError: actual Reception registration desk context selector: expected 'furniture.office.desk.generic' to be 'furniture.reception.registration-desk' // Object.is equality
+
+Expected: "furniture.reception.registration-desk"
+Received: "furniture.office.desk.generic"
+
+ ❯ tests/unit/oblique-reception-registration-desk-context.test.ts:48:85
+     46|     {
+     47|       const solid = projected.raised.find(item => item.id === structur…
+     48|       expect(solid?.assetId, 'actual Reception registration desk conte…
+       |                                                                                     ^
+     49|       if (solid === undefined) throw new Error('Literal purchased Rece…
+     50|       if(solid.kind==='actor')throw new Error('Desk projected as actor…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tests/unit/oblique-reception-registration-desk-context.test.ts > Reception registration ObjectDesk context in the actual world projection > preserves default/Classroom/Staff desk contexts and refuses any partial occupied footprint
+AssertionError: expected 'furniture.office.desk.generic' to be 'furniture.reception.registration-desk' // Object.is equality
+
+Expected: "furniture.reception.registration-desk"
+Received: "furniture.office.desk.generic"
+
+ ❯ tests/unit/oblique-reception-registration-desk-context.test.ts:83:126
+     81|       [[{...reception,width:3},{...reception,roomCatalogId:'room.infir…
+     82|     ] satisfies [readonly RenderRoom[],RenderStructure,string][]) {
+     83|       expect(projectObliqueWorldFrame(frame([structure],rooms),camera(…
+       |                                                                                                                              ^
+     84|     }
+     85|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  tests/unit/oblique-reception-registration-desk-context.test.ts > Reception registration ObjectDesk context in the actual world projection > registers the selected asset once with its real source and complete descriptor
+AssertionError: actual runtime Reception registration desk registry entry: expected [] to deeply equal [ { …(2) } ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "assetId": "furniture.reception.registration-desk",
+-     "manifest": "/game-content/oblique-furniture-reception-registration-desk.v1.json",
+-   },
+- ]
++ []
+
+ ❯ tests/unit/oblique-reception-registration-desk-context.test.ts:100:82
+     98|     const registry = parseObliqueModuleRegistry(JSON.parse(readFileSyn…
+     99|     const entries = registry.entries.filter(entry => entry.assetId ===…
+    100|     expect(entries, 'actual runtime Reception registration desk regist…
+       |                                                                                  ^
+    101|       manifest: '/game-content/oblique-furniture-reception-registratio…
+    102|     const entry = entries[0];
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
