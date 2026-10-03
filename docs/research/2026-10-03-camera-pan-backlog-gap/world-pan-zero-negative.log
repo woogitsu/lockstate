@@ -1,0 +1,127 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-build-input-gap-20261003
+
+ ❯ tests/unit/camera-pan-ports.test.ts (56 tests | 28 failed) 28ms
+   × World pan 'up' moves exactly128CSSpx at zoom0.5 CSSratio1 4ms
+   × World pan 'down' moves exactly128CSSpx at zoom0.5 CSSratio1 1ms
+   × World pan 'left' moves exactly128CSSpx at zoom0.5 CSSratio1 0ms
+   × World pan 'right' moves exactly128CSSpx at zoom0.5 CSSratio1 0ms
+   × World pan 'up' moves exactly128CSSpx at zoom0.5 CSSratio2 0ms
+   × World pan 'down' moves exactly128CSSpx at zoom0.5 CSSratio2 0ms
+   × World pan 'left' moves exactly128CSSpx at zoom0.5 CSSratio2 0ms
+   × World pan 'right' moves exactly128CSSpx at zoom0.5 CSSratio2 0ms
+   × World pan 'up' moves exactly128CSSpx at zoom1.25 CSSratio1 0ms
+   × World pan 'down' moves exactly128CSSpx at zoom1.25 CSSratio1 0ms
+   × World pan 'left' moves exactly128CSSpx at zoom1.25 CSSratio1 0ms
+   × World pan 'right' moves exactly128CSSpx at zoom1.25 CSSratio1 0ms
+   × World pan 'up' moves exactly128CSSpx at zoom1.25 CSSratio2 0ms
+   × World pan 'down' moves exactly128CSSpx at zoom1.25 CSSratio2 0ms
+   × World pan 'left' moves exactly128CSSpx at zoom1.25 CSSratio2 0ms
+   × World pan 'right' moves exactly128CSSpx at zoom1.25 CSSratio2 0ms
+   × World pan 'up' moves exactly128CSSpx at zoom3 CSSratio1 0ms
+   × World pan 'down' moves exactly128CSSpx at zoom3 CSSratio1 0ms
+   × World pan 'left' moves exactly128CSSpx at zoom3 CSSratio1 0ms
+   × World pan 'right' moves exactly128CSSpx at zoom3 CSSratio1 0ms
+   × World pan 'up' moves exactly128CSSpx at zoom3 CSSratio2 0ms
+   × World pan 'down' moves exactly128CSSpx at zoom3 CSSratio2 0ms
+   × World pan 'left' moves exactly128CSSpx at zoom3 CSSratio2 0ms
+   × World pan 'right' moves exactly128CSSpx at zoom3 CSSratio2 0ms
+   × 'world' pan 'up' refreshes the stationary whole-square Build hover without ordering or changing the tool 6ms
+   × 'world' pan 'down' refreshes the stationary whole-square Build hover without ordering or changing the tool 1ms
+   × 'world' pan 'left' refreshes the stationary whole-square Build hover without ordering or changing the tool 1ms
+   × 'world' pan 'right' refreshes the stationary whole-square Build hover without ordering or changing the tool 1ms
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  28 failed | 33 passed (61)
+   Start at  03:40:20
+   Duration  1.57s (transform 695ms, setup 0ms, import 1.77s, tests 34ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 28 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'up' moves exactly128CSSpx at zoom0.5 CSSratio1
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'up' moves exactly128CSSpx at zoom0.5 CSSratio2
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'up' moves exactly128CSSpx at zoom1.25 CSSratio1
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'up' moves exactly128CSSpx at zoom1.25 CSSratio2
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'up' moves exactly128CSSpx at zoom3 CSSratio1
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'up' moves exactly128CSSpx at zoom3 CSSratio2
+AssertionError: expected +0 to be close to 128, received difference is 128, but expected 0.0005
+ ❯ tests/unit/camera-pan-ports.test.ts:65:40
+     63|   const delta = vector(direction);
+     64|   expect((after.x - before.x) * ratio).toBeCloseTo(-128 * delta.x, 3);
+     65|   expect((after.y - before.y) * ratio).toBeCloseTo(-128 * delta.y, 3);
+       |                                        ^
+     66|   expect(scene.captureCameraView().zoom).toBe(view.zoom);
+     67|   const opposite = { up: 'down', down: 'up', left: 'right', right: 'le…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/28]⎯
+
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'down' moves exactly128CSSpx at zoom0.5 CSSratio1
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'down' moves exactly128CSSpx at zoom0.5 CSSratio2
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'down' moves exactly128CSSpx at zoom1.25 CSSratio1
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'down' moves exactly128CSSpx at zoom1.25 CSSratio2
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'down' moves exactly128CSSpx at zoom3 CSSratio1
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'down' moves exactly128CSSpx at zoom3 CSSratio2
+AssertionError: expected +0 to be close to -128, received difference is 128, but expected 0.0005
+ ❯ tests/unit/camera-pan-ports.test.ts:65:40
+     63|   const delta = vector(direction);
+     64|   expect((after.x - before.x) * ratio).toBeCloseTo(-128 * delta.x, 3);
+     65|   expect((after.y - before.y) * ratio).toBeCloseTo(-128 * delta.y, 3);
+       |                                        ^
+     66|   expect(scene.captureCameraView().zoom).toBe(view.zoom);
+     67|   const opposite = { up: 'down', down: 'up', left: 'right', right: 'le…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/28]⎯
+
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'left' moves exactly128CSSpx at zoom0.5 CSSratio1
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'left' moves exactly128CSSpx at zoom0.5 CSSratio2
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'left' moves exactly128CSSpx at zoom1.25 CSSratio1
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'left' moves exactly128CSSpx at zoom1.25 CSSratio2
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'left' moves exactly128CSSpx at zoom3 CSSratio1
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'left' moves exactly128CSSpx at zoom3 CSSratio2
+AssertionError: expected +0 to be close to 128, received difference is 128, but expected 0.0005
+ ❯ tests/unit/camera-pan-ports.test.ts:64:40
+     62|   const after = camera.matrixCombined.transformPoint(anchor.x, anchor.…
+     63|   const delta = vector(direction);
+     64|   expect((after.x - before.x) * ratio).toBeCloseTo(-128 * delta.x, 3);
+       |                                        ^
+     65|   expect((after.y - before.y) * ratio).toBeCloseTo(-128 * delta.y, 3);
+     66|   expect(scene.captureCameraView().zoom).toBe(view.zoom);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/28]⎯
+
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'right' moves exactly128CSSpx at zoom0.5 CSSratio1
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'right' moves exactly128CSSpx at zoom0.5 CSSratio2
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'right' moves exactly128CSSpx at zoom1.25 CSSratio1
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'right' moves exactly128CSSpx at zoom1.25 CSSratio2
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'right' moves exactly128CSSpx at zoom3 CSSratio1
+ FAIL  tests/unit/camera-pan-ports.test.ts > World pan 'right' moves exactly128CSSpx at zoom3 CSSratio2
+AssertionError: expected +0 to be close to -128, received difference is 128, but expected 0.0005
+ ❯ tests/unit/camera-pan-ports.test.ts:64:40
+     62|   const after = camera.matrixCombined.transformPoint(anchor.x, anchor.…
+     63|   const delta = vector(direction);
+     64|   expect((after.x - before.x) * ratio).toBeCloseTo(-128 * delta.x, 3);
+       |                                        ^
+     65|   expect((after.y - before.y) * ratio).toBeCloseTo(-128 * delta.y, 3);
+     66|   expect(scene.captureCameraView().zoom).toBe(view.zoom);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/28]⎯
+
+ FAIL  tests/unit/camera-pan-ports.test.ts > 'world' pan 'up' refreshes the stationary whole-square Build hover without ordering or changing the tool
+ FAIL  tests/unit/camera-pan-ports.test.ts > 'world' pan 'down' refreshes the stationary whole-square Build hover without ordering or changing the tool
+ FAIL  tests/unit/camera-pan-ports.test.ts > 'world' pan 'left' refreshes the stationary whole-square Build hover without ordering or changing the tool
+ FAIL  tests/unit/camera-pan-ports.test.ts > 'world' pan 'right' refreshes the stationary whole-square Build hover without ordering or changing the tool
+AssertionError: expected { x: 14, y: 10, segments: 1, …(2) } to not deeply equal { x: 14, y: 10, segments: 1, …(2) }
+
+Compared values have no visual difference.
+
+ ❯ tests/unit/camera-pan-ports.test.ts:134:22
+    132|     pan(scene, direction);
+    133|     const next = targets.at(-1)!;
+    134|     expect(next).not.toEqual(old);
+       |                      ^
+    135|     let ground: { x: number; y: number };
+    136|     if (camera !== undefined) { camera.preRender(); ground = camera.ge…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/28]⎯
+

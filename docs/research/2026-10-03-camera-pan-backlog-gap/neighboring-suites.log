@@ -1,0 +1,41 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-build-input-gap-20261003
+
+ ❯ tests/unit/ui-hud-messages.test.ts (13 tests | 1 failed) 133ms
+     × scans every module by name, not just enough of them to clear the floor above 5ms
+
+ Test Files  1 failed | 8 passed (9)
+      Tests  1 failed | 133 passed (134)
+   Start at  03:41:02
+   Duration  3.03s (transform 1.46s, setup 0ms, import 3.76s, tests 770ms, environment 1ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-hud-messages.test.ts > HUD architectural boundaries > scans every module by name, not just enough of them to clear the floor above
+AssertionError: expected [ 'alert-row-label.ts', …(29) ] to deeply equal [ 'alert-row-label.ts', …(28) ]
+
+- Expected
++ Received
+
+@@ -1,8 +1,9 @@
+  [
+    "alert-row-label.ts",
+    "build-panel.ts",
++   "camera-pan-control.ts",
+    "camera-pose-control.ts",
+    "dismiss-arming.ts",
+    "event-band-dwell.ts",
+    "hud-layout.ts",
+    "hud-state.ts",
+
+ ❯ tests/unit/ui-hud-messages.test.ts:478:59
+    476|
+    477|   it('scans every module by name, not just enough of them to clear the…
+    478|     expect(hudFiles.map((path) => basename(path)).sort()).toEqual([...…
+       |                                                           ^
+    479|     expect(primitiveFiles.map((path) => basename(path)).sort()).toEqua…
+    480|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

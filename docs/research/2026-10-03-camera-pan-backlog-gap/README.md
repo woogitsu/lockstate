@@ -84,5 +84,53 @@ The initial feature harness forgot World Camera.preRender after reverse pan,
 causing24 reversal comparisons to read the prior matrix. Correcting that fixture
 before the final feature baseline did not change production. The original
 missing-port failures and final baseline are retained in separate raw logs.
-Source mutations, neighboring checks and built-client native acceptance remain
-pending at this feature checkpoint.
+Source mutations and neighboring checks are recorded below. Built-client native
+acceptance remains pending.
+
+## Load-bearing producers and exact restoration
+
+The following actual production mutations each replaced exactly one unique
+source boundary, sequentially, with original bytes restored in `finally` before
+the restoration run. `producer-mutations.json` retains the file hashes and exit
+codes; each named negative/restored log retains the actual assertions.
+
+| Actual producer mutation | RED | Legal GREEN | Byte-exact restored |
+| --- | ---: | ---: | ---: |
+| Main pan callback disconnected | 2 | 59 | 61 GREEN |
+| World camera step made zero | 28 | 33 | 61 GREEN |
+| Angled camera step made zero | 28 | 33 | 61 GREEN |
+| World stationary preview refresh skipped | 4 | 57 | 61 GREEN |
+| Angled stationary preview refresh skipped | 4 | 57 | 61 GREEN |
+
+The preview negatives leave all48 exact-motion checks passing while rejecting
+the stale whole-square target. Main disconnect fails both real mounted control
+paths while unavailable/preparation controls remain green. This distinguishes
+actual camera movement, matching Build target, and composition reachability.
+
+Nine focused source suites pass **134/134**: new pan, existing interleaved
+navigation, wheel direction/anchoring, gameout lifecycle, View focus/keyboard,
+pose controls, HUD localization boundaries and rendering boundaries. The first
+neighboring run correctly found the newly added HUD module absent from the named
+inventory. Appending `camera-pan-control.ts` to that pinned list fixed the
+inventory without changing any scan or forbidden-import rule. Both raw outputs
+are retained. App/tools TypeScript and strict standalone checking of both new
+test files passed. The production build passed and its Cloudflare output was
+verified; this is a local build, not deployment or hosted availability.
+
+## Native acceptance queued to the coordinator
+
+At real1920×1080, UI100%/200%, in World and Angled: independently hit-test all
+four `.hud-camera-pan button[data-camera-pan-direction]` controls and assert
+actual map/minimap displacement, left/right and up/down reversal, retained
+armed wall definition, whole-square quote/target after keyboard activation with
+a stationary canvas cursor, and zero worker mutations during camera pan. Then
+verify a later physical map click places the shown footprint. Repeat with an
+armed fitted room plan, preserving its approved retained origin and cost across
+camera navigation until genuine physical pointer movement. Keep original test
+budgets and one browser worker. A main callback no-op must fail real movement;
+exact source restoration and rebuilt client must pass the same cases.
+
+No native scenario has run on this branch. In particular134 source checks do
+not establish FullHD200% row bounds, hit targets, worker placement or fitted
+template behavior. The coordinator owns that remaining acceptance and research
+index integration. No existing Issue was closed or new duplicate created.
