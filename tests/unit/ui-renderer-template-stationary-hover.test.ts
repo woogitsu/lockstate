@@ -33,12 +33,13 @@ class ElementStub extends EventTarget {
   style: Record<string, string> = {}; dataset: Record<string, string> = {}; hidden = false;
   children: ElementStub[] = []; attributes = new Map<string, string>(); className = ''; textContent = '';
   namespaceURI = 'http://www.w3.org/2000/svg'; width = 1920; height = 1080; removed = false;
+  rect = { x: 0, y: 0, width: 1920, height: 1080 };
   parentElement: { append: (node: ElementStub) => void } | undefined;
   append(...nodes: ElementStub[]) { this.children.push(...nodes); }
   replaceChildren(...nodes: ElementStub[]) { this.children = nodes; }
   setAttribute(key: string, value: string) { this.attributes.set(key, value); }
   remove() { this.removed = true; }
-  getBoundingClientRect() { return { x: 0, y: 0, left: 0, top: 0, right: this.width, bottom: this.height, width: this.width, height: this.height }; }
+  getBoundingClientRect() { const r = this.rect; return { ...r, left: r.x, top: r.y, right: r.x + r.width, bottom: r.y + r.height }; }
 }
 const source = readFileSync(new URL('../../src/main.ts', import.meta.url), 'utf8');
 const start = source.lastIndexOf('if (roomTemplateTool !== undefined) {');
@@ -78,9 +79,12 @@ function worker() {
 function pointer(canvas: ElementStub, kind: string, x = 900) {
   const event = new Event(kind, { cancelable: true });
   Object.assign(event, { clientX: x, clientY: 460, pointerId: 7, button: 0, buttons: kind === 'pointerdown' ? 1 : 0 });
+  // Mirror the native window-capture phase before canvas capture consumes it.
+  Object.defineProperty(event, 'target', { value: canvas });
+  window.dispatchEvent(event);
   canvas.dispatchEvent(event);
 }
-async function setup(initialMode: 'world' | 'oblique', mirrored: boolean) {
+async function setup(initialMode: 'world' | 'oblique', mirrored: boolean, controls: { uiDuringGap?: boolean; oldRefused?: boolean; changedBounds?: boolean } = {}) {
   const frames: FrameRequestCallback[] = [], layers: ElementStub[] = [];
   const canvas = new ElementStub(); canvas.parentElement = { append: layer => layers.push(layer) };
   vi.stubGlobal('window', new EventTarget());
@@ -92,6 +96,10 @@ async function setup(initialMode: 'world' | 'oblique', mirrored: boolean) {
   Reflect.set(world.cameras, 'main', camera);
   const angled = new ObliqueWorldScene(options);
   Reflect.set(angled, 'pose', { target: { x: 12 * 64, y: 12 * 64 }, viewport: { width: 1920, height: 1080 }, zoom: 1.4, yawRadians: 35 * Math.PI / 180, elevationRadians: 65 * Math.PI / 180 });
+  if (controls.oldRefused) {
+    if (initialMode === 'world') { camera.setScroll(-4 * 64 - 960, -4 * 64 - 540); camera.preRender(); }
+    else Reflect.set(angled, 'pose', { ...angled.cameraPose, target: { x: -4 * 64, y: -4 * 64 } });
+  }
   const actors = worker();
   const tool = new RoomTemplateTool({ preflight: createSimulationRoomTemplatePreflight(actors.channel), quote: createSimulationRoomTemplateQuote(actors.channel),
     place: async request => actors.commands.submit({ type: 'PlaceRoomTemplate', ...request }) });
@@ -105,21 +113,45 @@ async function setup(initialMode: 'world' | 'oblique', mirrored: boolean) {
     (initialMode === 'world' ? world : angled, tool, { querySelector: (selector: string) => selector === 'canvas' ? canvas : undefined }, WorldScene, ObliqueWorldScene,
       RoomTemplatePreviewFitController, installRoomTemplateWorldBridge, screenToGround, groundToScreen, computeObliqueFit, 64, () => undefined,
       { format: (key: string) => key }, (_localizer: unknown, quote: unknown) => JSON.stringify(quote)) as { changed: (value: unknown) => void; withdraw: () => void };
+  let expectedOrigin: { x: number; y: number } | undefined;
+  const independentPick = (scene: WorldScene | ObliqueWorldScene) => {
+    const r = canvas.getBoundingClientRect();
+    const sx = (900 - r.x) * canvas.width / r.width, sy = (460 - r.y) * canvas.height / r.height;
+    if (scene instanceof WorldScene) {
+      // Independently invert the rendered affine matrix, rather than main's picker.
+      const m = scene.cameras.main.matrixCombined; const det = m.a * m.d - m.b * m.c;
+      const x = sx - m.e, y = sy - m.f;
+      return { x: Math.floor((m.d * x - m.c * y) / det / 64), y: Math.floor((-m.b * x + m.a * y) / det / 64) };
+    }
+    const p = scene.cameraPose;
+    const u = (sx - p.viewport.width / 2) / p.zoom;
+    const v = (sy - p.viewport.height / 2) / p.zoom / Math.sin(p.elevationRadians);
+    const c = Math.cos(p.yawRadians), n = Math.sin(p.yawRadians);
+    return { x: Math.floor((p.target.x + u * c + v * n) / 64), y: Math.floor((p.target.y - u * n + v * c) / 64) };
+  };
   const switcher = new LiveRendererSelection({ mode: initialMode, scene: initialMode === 'world' ? world : angled }, {
-    prepare: async mode => mode === 'world' ? world : angled, activate: async () => {}, deactivate: main.withdraw, changed: main.changed, unavailable: error => { throw error; },
+    prepare: async mode => mode === 'world' ? world : angled, activate: async () => {
+      if (controls.changedBounds) canvas.rect = { x: 30, y: 20, width: 960, height: 540 };
+      if (controls.uiDuringGap) {
+        const event = new Event('pointermove');
+        Object.assign(event, { clientX: 100, clientY: 100 });
+        Object.defineProperty(event, 'target', { value: new ElementStub() });
+        window.dispatchEvent(event);
+      }
+    }, deactivate: main.withdraw, changed: value => { expectedOrigin = independentPick(value.scene); main.changed(value); }, unavailable: error => { throw error; },
   });
   const paint = async () => { for (const frame of frames.splice(0)) frame(0); await new Promise<void>(resolve => setImmediate(resolve)); };
   pointer(canvas, 'pointermove'); await paint();
   expect(actors.held).toHaveLength(1);
   const actual = actors.held[0]!;
   expect(actual.kind).toBe('simulation/projection');
-  if (actual.kind === 'simulation/projection') expect(actual.payload.view?.data).toEqual({ ok: true });
+  if (actual.kind === 'simulation/projection') expect(actual.payload.view?.data).toMatchObject({ ok: !controls.oldRefused });
   expect(layers.at(-1)!.hidden).toBe(false);
   expect(layers.at(-1)!.children[0]!.children).toHaveLength(28);
   await switcher.select(initialMode === 'world' ? 'oblique' : 'world');
   actors.release(); await paint(); await paint();
   expect(layers[0]!.removed).toBe(true); expect(tool.isArmed()).toBe(true);
-  return { canvas, tool, actors, layers, paint };
+  return { canvas, tool, actors, layers, paint, expectedOrigin };
 }
 
 for (const initialMode of ['world', 'oblique'] as const) for (const mirrored of [false, true]) {
@@ -127,6 +159,16 @@ for (const initialMode of ['world', 'oblique'] as const) for (const mirrored of 
     const h = await setup(initialMode, mirrored);
     expect(h.layers.at(-1)!.hidden, 'current renderer must show the current armed whole-square plan without physical mouse movement').toBe(false);
     expect(h.layers.at(-1)!.children[0]!.children).toHaveLength(28);
+    expect(h.layers.at(-1)!.dataset.ready).toBe('clear');
+    const requests = h.actors.sent.filter(message => message.kind === 'simulation/request-projection' && message.payload.projectionId === 'world/room-template-preflight');
+    expect(requests.length).toBeGreaterThanOrEqual(2);
+    expect(requests.at(-1)?.payload).toMatchObject({ target: { origin: h.expectedOrigin, quarterTurns: 1, ...(mirrored ? { mirrorX: true } : {}) } });
+    pointer(h.canvas, 'pointerdown'); pointer(h.canvas, 'pointerup');
+    await h.paint(); await h.paint();
+    const commands = h.actors.sent.filter(message => message.kind === 'simulation/submit-command');
+    expect(commands).toHaveLength(1);
+    expect(commands[0]!.payload).toMatchObject({ command: { data: { type: 'PlaceRoomTemplate', origin: h.expectedOrigin, quarterTurns: 1, ...(mirrored ? { mirrorX: true } : {}) } } });
+    expect(h.tool.isArmed()).toBe(false);
   });
   it(`${initialMode}→replacement rotated${mirrored ? '/mirrored' : ''}: physical movement restores current legal preflight and command`, async () => {
     const h = await setup(initialMode, mirrored);
@@ -141,5 +183,29 @@ for (const initialMode of ['world', 'oblique'] as const) for (const mirrored of 
     const message = commands[0]!;
     if (message.kind === 'simulation/submit-command') expect(message.payload.command.data).toMatchObject({ type: 'PlaceRoomTemplate', templateId: 'cell-basic', quarterTurns: 1, ...(mirrored ? { mirrorX: true } : {}) });
     expect(h.tool.isArmed()).toBe(false);
+  });
+}
+
+for (const initialMode of ['world', 'oblique'] as const) for (const mirrored of [false, true]) {
+  it(`${initialMode}?replacement${mirrored ? '/mirrored' : ''}: old real refusal cannot hide or block the newly picked legal plan`, async () => {
+    const h = await setup(initialMode, mirrored, { oldRefused: true });
+    expect(h.layers.at(-1)!.hidden).toBe(false);
+    expect(h.layers.at(-1)!.dataset.ready).toBe('clear');
+    expect(h.layers.at(-1)!.children[0]!.children).toHaveLength(28);
+    expect(h.actors.sent.filter(message => message.kind === 'simulation/submit-command')).toHaveLength(0);
+  });
+  it(`${initialMode}?replacement${mirrored ? '/mirrored' : ''}: real UI movement while bridges are withdrawn invalidates physical hover`, async () => {
+    const h = await setup(initialMode, mirrored, { uiDuringGap: true });
+    expect(h.layers.at(-1)!.hidden).toBe(true);
+    expect(h.actors.sent.filter(message => message.kind === 'simulation/request-projection' && message.payload.projectionId === 'world/room-template-preflight')).toHaveLength(1);
+    expect(h.actors.sent.filter(message => message.kind === 'simulation/submit-command')).toHaveLength(0);
+    pointer(h.canvas, 'pointermove', 902); await h.paint(); await h.paint();
+    expect(h.layers.at(-1)!.hidden).toBe(false); expect(h.layers.at(-1)!.dataset.ready).toBe('clear');
+  });
+  it(`${initialMode}?replacement${mirrored ? '/mirrored' : ''}: current canvas bounds convert retained physical coordinates anew`, async () => {
+    const h = await setup(initialMode, mirrored, { changedBounds: true });
+    expect(h.layers.at(-1)!.hidden).toBe(false); expect(h.layers.at(-1)!.dataset.ready).toBe('clear');
+    const requests = h.actors.sent.filter(message => message.kind === 'simulation/request-projection' && message.payload.projectionId === 'world/room-template-preflight');
+    expect(requests.at(-1)?.payload).toMatchObject({ target: { origin: h.expectedOrigin } });
   });
 }

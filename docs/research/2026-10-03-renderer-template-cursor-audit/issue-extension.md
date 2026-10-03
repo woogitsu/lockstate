@@ -1,0 +1,9 @@
+Remaining renderer-replacement boundary in this retained canvas-hover family, source proof only (native acceptance pending).
+
+Fresh reads of #1923, #1951 and #1908 distinguish the existing within-one-bridge keyboard rearming fix and accepted-command receipt fix from this missing renderer handoff. The actual main ghost installation/changed callback replaces the bridge, whose genuine map-hover memory was instance-local. With the rotated Basic cell still armed and a genuine read-only worker reply delayed across World?Angled replacement, the new ghost remained hidden until a physical pointer movement.
+
+Published original diagnostic: 9643890ef5bd476a3388cd86fc7d6cc58b78fa5f, branch codex/hud-renderer-template-cursor-audit-20261003. Real production classes, Phaser Camera, actual preflight/quote ports and SimulationWorkerStateMachine: four stationary direction/mirror cases RED, four physical-movement placement controls GREEN. This is registered source/worker proof, not native browser evidence.
+
+The granted scoped main/bridge correction retains only physical canvas client coordinates, clears them on real UI movement/blur even while bridges are withdrawn, and derives a fresh origin/fit/preflight/quote in the replacement renderer. No old origin/verdict/cost/fit state is copied. Expanded original source:12 RED/8 legal controls. Fixed:20 GREEN. Actual producer omission:12 RED/8 GREEN; UI-invalidation producer mutation:4 RED/16 GREEN. Both restored byte-exact, final20 GREEN. Focused neighbors43 GREEN and strict diagnostic TypeScript exit0. Genuine old out-of-bounds refusals and changed current canvas bounds are included.
+
+Evidence: docs/research/2026-10-03-renderer-template-cursor-audit/. ROOT owns the queued dedicated native acceptance; this comment does not claim UI100/200% or browser completion and does not close the issue.

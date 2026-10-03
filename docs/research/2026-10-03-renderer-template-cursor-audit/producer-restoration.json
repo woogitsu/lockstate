@@ -1,0 +1,33 @@
+{
+  "runs": [
+    {
+      "name": "original-expanded-12red-8controls",
+      "exitCode": 1
+    },
+    {
+      "name": "fixed-expanded-20green",
+      "exitCode": 0
+    },
+    {
+      "name": "handoff-producer-negative",
+      "exitCode": 1
+    },
+    {
+      "name": "handoff-exact-restored-20green",
+      "exitCode": 0
+    },
+    {
+      "name": "ui-invalidation-producer-negative",
+      "exitCode": 1
+    },
+    {
+      "name": "final-exact-restored-20green",
+      "exitCode": 0
+    }
+  ],
+  "exactRestored": true,
+  "sourceSHA256": {
+    "src/main.ts": "3833259df5453b44b51181e1b0e34765a8a58b29dbbb08fcfb5e1cc8414823ec",
+    "src/ui/room-template-world-bridge.ts": "1dc6e7483c0331863383b82fe13b2f634a06287bfab2aa613a0b61ea95c6b5a0"
+  }
+}
