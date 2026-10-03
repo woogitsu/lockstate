@@ -102,7 +102,10 @@ has not been honoured here.
 
 **RE-READ 2026-09-16 AGAINST `e044a3e8`, AND THE HEADLINE IS THAT THIS
 DOCUMENT'S OWN DECISION HAS SHIPPED.** `expectedRevision` is on
-`cancelBuildOrderSchema` (`src/simulation/protocol/commands.ts:77`);
+`cancelBuildOrderSchema` (historical `commands.ts:77` at `e044a3e8`;
+current published #2027 checkpoint `6e882a7f8e` at
+`src/simulation/protocol/commands.ts:81`,
+`expectedRevision: z.string().refine(isOrderRevision)`);
 `ConstructionSystem.revisionOf` and the private `setState` Decision §3 asks for
 both exist (`src/simulation/construction/system.ts:1440`, `:1458`); the handler
 refuses on a mismatch (`src/simulation/construction/handler.ts:177-180`); the

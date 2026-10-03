@@ -1,0 +1,136 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/ls-build-command-gameplay-fix-20261004
+
+ ❯ tests/integration/construction-empty-order-id.test.ts (17 tests | 12 failed) 104ms
+   × PlaceBuildOrder refuses an empty live ID before funds, world, order, history or ledger mutation 14ms
+   × PlaceBuildOrder rejects an empty current producer ID 1ms
+   × V1 preserves both opaque empty-ID queued inputs through Load, then refuses before authoritative mutation 11ms
+   × V2 preserves both opaque empty-ID queued inputs through Load, then refuses before authoritative mutation 9ms
+   × V3 preserves both opaque empty-ID queued inputs through Load, then refuses before authoritative mutation 5ms
+   × V4 preserves both opaque empty-ID queued inputs through Load, then refuses before authoritative mutation 6ms
+   × V5 preserves both opaque empty-ID queued inputs through Load, then refuses before authoritative mutation 6ms
+   × V6 preserves both opaque empty-ID queued inputs through Load, then refuses before authoritative mutation 7ms
+   × V7 preserves both opaque empty-ID queued inputs through Load, then refuses before authoritative mutation 4ms
+   × V8 preserves both opaque empty-ID queued inputs through Load, then refuses before authoritative mutation 4ms
+   × V9 preserves both opaque empty-ID queued inputs through Load, then refuses before authoritative mutation 3ms
+   × V10 preserves both opaque empty-ID queued inputs through Load, then refuses before authoritative mutation 2ms
+
+ Test Files  1 failed (1)
+      Tests  12 failed | 5 passed (17)
+   Start at  01:04:46
+   Duration  2.83s (transform 956ms, setup 0ms, import 2.58s, tests 104ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 12 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/construction-empty-order-id.test.ts > PlaceBuildOrder refuses an empty live ID before funds, world, order, history or ledger mutation
+AssertionError: expected { orders: [ { id: '', …(7) } ], …(5) } to strictly equal { orders: [], …(4) }
+
+- Expected
++ Received
+
+  {
++   "currentTransaction": [
++     "",
++   ],
+    "newerActionThanTheStackTop": false,
+-   "orderRevisions": {},
+-   "orders": [],
++   "orderRevisions": {
++     "": "1",
++   },
++   "orders": [
++     {
++       "definitionId": "wall-brick",
++       "footprint": "square",
++       "id": "",
++       "location": {
++         "x": 3,
++         "y": 3,
++       },
++       "materialsAllocated": [],
++       "placementSequence": 0,
++       "progress": 0,
++       "state": "approved",
++     },
++   ],
+    "redoStack": [],
+    "undoStack": [],
+  }
+
+ ❯ tests/integration/construction-empty-order-id.test.ts:43:32
+     41|     submit(runtime, raw(command));
+     42|     const after = captureSessionSnapshot(runtime);
+     43|     expect(after.construction).toStrictEqual(before.construction);
+       |                                ^
+     44|     expect(after.world).toStrictEqual(before.world);
+     45|     expect(after.simulation).toStrictEqual(before.simulation);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/12]⎯
+
+ FAIL  tests/integration/construction-empty-order-id.test.ts > PlaceBuildOrder rejects an empty current producer ID
+AssertionError: expected [Function] to throw an error
+ ❯ tests/integration/construction-empty-order-id.test.ts:60:40
+     58|   });
+     59|   it(`${command.type} rejects an empty current producer ID`, () => {
+     60|     expect(() => packCommand(command)).toThrow();
+       |                                        ^
+     61|   });
+     62| }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/12]⎯
+
+ FAIL  tests/integration/construction-empty-order-id.test.ts > V1 preserves both opaque empty-ID queued inputs through Load, then refuses before authoritative mutation
+ FAIL  tests/integration/construction-empty-order-id.test.ts > V2 preserves both opaque empty-ID queued inputs through Load, then refuses before authoritative mutation
+ FAIL  tests/integration/construction-empty-order-id.test.ts > V3 preserves both opaque empty-ID queued inputs through Load, then refuses before authoritative mutation
+ FAIL  tests/integration/construction-empty-order-id.test.ts > V4 preserves both opaque empty-ID queued inputs through Load, then refuses before authoritative mutation
+ FAIL  tests/integration/construction-empty-order-id.test.ts > V5 preserves both opaque empty-ID queued inputs through Load, then refuses before authoritative mutation
+ FAIL  tests/integration/construction-empty-order-id.test.ts > V6 preserves both opaque empty-ID queued inputs through Load, then refuses before authoritative mutation
+ FAIL  tests/integration/construction-empty-order-id.test.ts > V7 preserves both opaque empty-ID queued inputs through Load, then refuses before authoritative mutation
+ FAIL  tests/integration/construction-empty-order-id.test.ts > V8 preserves both opaque empty-ID queued inputs through Load, then refuses before authoritative mutation
+ FAIL  tests/integration/construction-empty-order-id.test.ts > V9 preserves both opaque empty-ID queued inputs through Load, then refuses before authoritative mutation
+ FAIL  tests/integration/construction-empty-order-id.test.ts > V10 preserves both opaque empty-ID queued inputs through Load, then refuses before authoritative mutation
+AssertionError: expected { orders: [ { id: '', …(7) } ], …(5) } to strictly equal { orders: [], …(4) }
+
+- Expected
++ Received
+
+  {
++   "currentTransaction": [
++     "",
++   ],
+    "newerActionThanTheStackTop": false,
+-   "orderRevisions": {},
+-   "orders": [],
++   "orderRevisions": {
++     "": "1",
++   },
++   "orders": [
++     {
++       "definitionId": "wall-brick",
++       "footprint": "square",
++       "id": "",
++       "location": {
++         "x": 3,
++         "y": 3,
++       },
++       "materialsAllocated": [],
++       "placementSequence": 0,
++       "progress": 0,
++       "state": "approved",
++     },
++   ],
+    "redoStack": [],
+    "undoStack": [],
+  }
+
+ ❯ tests/integration/construction-empty-order-id.test.ts:89:32
+     87|     expect(restored.kernel.dispatchDueCommands()).toBe(2);
+     88|     const after = captureSessionSnapshot(restored);
+     89|     expect(after.construction).toStrictEqual(before.construction);
+       |                                ^
+     90|     expect(after.world).toStrictEqual(before.world);
+     91|     expect(after.simulation).toStrictEqual(before.simulation);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/12]⎯
+
