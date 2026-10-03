@@ -74,7 +74,7 @@ import {
   SecuritySectorRegistry,
   type DeploymentSchedule,
 } from '../security';
-import { chunkCoordinate, tileCoordinate, type ChunkPosition, type TilePosition } from '../world/coordinates';
+import { chunkCoordinate, tileCoordinate, tileKey, type ChunkPosition, type TilePosition } from '../world/coordinates';
 import { SparseWorld } from '../world/sparse-world';
 
 /** Well-known container id every session's `ConstructionSystem` draws build materials from -- session/scenario setup deposits into it (directly, or via delivery jobs from other containers) to make construction orders actually wait for and consume real materials (issue #25). */
@@ -841,7 +841,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
         if (prisoners.entityStore.isIndexAlive(index)) return true;
       }
       return false;
-    });
+    }, (tile) => navigation.getGraph().tileToRegion.has(tileKey(tile)));
   const procurement = new ProcurementSystem(treasury, constructionMaterials, deliveryCarryRoute);
   /*
    * The treasury is the third argument since #703 ruling 12: an order is funded
