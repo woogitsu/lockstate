@@ -1,0 +1,153 @@
+[
+  {
+    "url": "http://127.0.0.1:5365/assets/worker-B7O437Ej.js",
+    "path": "/assets/worker-B7O437Ej.js",
+    "status": 200,
+    "sha256": "e9dd4ad13275d5337dbb3bf34717937356dd1477adbcbbd280e3d66aa8058ace",
+    "bytes": 442888
+  },
+  {
+    "url": "http://127.0.0.1:5365/game-content/oblique-furniture-classroom-student-chair.v1.json",
+    "path": "/game-content/oblique-furniture-classroom-student-chair.v1.json",
+    "status": 200,
+    "sha256": "0d4d7bf93053166e2e7d47f56ac6aed6fac4ff041badf4c0298f5707e9f6471c",
+    "bytes": 20014
+  },
+  {
+    "url": "http://127.0.0.1:5365/game-content/oblique-furniture-classroom-teacher-desk.v1.json",
+    "path": "/game-content/oblique-furniture-classroom-teacher-desk.v1.json",
+    "status": 200,
+    "sha256": "701d89104a0ed18b5750a1ffabb9dfb7fa389504b0e80495d671a67797ddb4ff",
+    "bytes": 19954
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.classroom.student-chair-yaw+30-elev40.10a8c51e74df.png",
+    "path": "/assets/environment/oblique/furniture.classroom.student-chair-yaw+30-elev40.10a8c51e74df.png",
+    "status": 307,
+    "location": "/assets/environment/oblique/furniture.classroom.student-chair-yaw%2B30-elev40.10a8c51e74df.png"
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.classroom.student-chair-yaw%2B30-elev40.10a8c51e74df.png",
+    "path": "/assets/environment/oblique/furniture.classroom.student-chair-yaw+30-elev40.10a8c51e74df.png",
+    "status": 200,
+    "sha256": "10a8c51e74df7961204d10b30c5edd28ae37c36b55718305e545120d0cb89456",
+    "bytes": 7880
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+300-elev40.63ce4baba5e5.png",
+    "path": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+300-elev40.63ce4baba5e5.png",
+    "status": 307,
+    "location": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw%2B300-elev40.63ce4baba5e5.png"
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.classroom.teacher-desk-yaw%2B300-elev40.63ce4baba5e5.png",
+    "path": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+300-elev40.63ce4baba5e5.png",
+    "status": 200,
+    "sha256": "63ce4baba5e51423a4b320b914454bfeeaf0e7c392e42b18c6fad6524e71959b",
+    "bytes": 8076
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.classroom.student-chair-yaw+60-elev40.eb690a439214.png",
+    "path": "/assets/environment/oblique/furniture.classroom.student-chair-yaw+60-elev40.eb690a439214.png",
+    "status": 307,
+    "location": "/assets/environment/oblique/furniture.classroom.student-chair-yaw%2B60-elev40.eb690a439214.png"
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+330-elev40.ba2ac295ff47.png",
+    "path": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+330-elev40.ba2ac295ff47.png",
+    "status": 307,
+    "location": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw%2B330-elev40.ba2ac295ff47.png"
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.classroom.student-chair-yaw%2B60-elev40.eb690a439214.png",
+    "path": "/assets/environment/oblique/furniture.classroom.student-chair-yaw+60-elev40.eb690a439214.png",
+    "status": 200,
+    "sha256": "eb690a4392146a594fa1b692a2dc0b28b881820e541a7125f7f112c474c50260",
+    "bytes": 7414
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.classroom.teacher-desk-yaw%2B330-elev40.ba2ac295ff47.png",
+    "path": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+330-elev40.ba2ac295ff47.png",
+    "status": 200,
+    "sha256": "ba2ac295ff4768d9762e183e909c773ca5e3b64ef2004a7f5382631c4ae1f565",
+    "bytes": 7197
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+00-elev40.bb94fc55cad0.png",
+    "path": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+00-elev40.bb94fc55cad0.png",
+    "status": 307,
+    "location": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw%2B00-elev40.bb94fc55cad0.png"
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.classroom.teacher-desk-yaw%2B00-elev40.bb94fc55cad0.png",
+    "path": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+00-elev40.bb94fc55cad0.png",
+    "status": 200,
+    "sha256": "bb94fc55cad0f375633797993cc0d87c399dbe5cb9ebc1158dd2976e0e1f0de8",
+    "bytes": 3657
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.classroom.student-chair-yaw+90-elev40.abf39e897e3e.png",
+    "path": "/assets/environment/oblique/furniture.classroom.student-chair-yaw+90-elev40.abf39e897e3e.png",
+    "status": 307,
+    "location": "/assets/environment/oblique/furniture.classroom.student-chair-yaw%2B90-elev40.abf39e897e3e.png"
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.classroom.student-chair-yaw%2B90-elev40.abf39e897e3e.png",
+    "path": "/assets/environment/oblique/furniture.classroom.student-chair-yaw+90-elev40.abf39e897e3e.png",
+    "status": 200,
+    "sha256": "abf39e897e3e0ff32e55e44e226e0bb6e60f834573df8023227d112a3040e7e3",
+    "bytes": 3625
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.classroom.student-chair-yaw+120-elev40.7f94bcfb2f8f.png",
+    "path": "/assets/environment/oblique/furniture.classroom.student-chair-yaw+120-elev40.7f94bcfb2f8f.png",
+    "status": 307,
+    "location": "/assets/environment/oblique/furniture.classroom.student-chair-yaw%2B120-elev40.7f94bcfb2f8f.png"
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+30-elev40.d25e7cf7d25f.png",
+    "path": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+30-elev40.d25e7cf7d25f.png",
+    "status": 307,
+    "location": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw%2B30-elev40.d25e7cf7d25f.png"
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.classroom.teacher-desk-yaw%2B30-elev40.d25e7cf7d25f.png",
+    "path": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+30-elev40.d25e7cf7d25f.png",
+    "status": 200,
+    "sha256": "d25e7cf7d25faadf2ca1f413f1d117e03e5de6726cd52501c9f2d738e6580783",
+    "bytes": 7551
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.classroom.student-chair-yaw%2B120-elev40.7f94bcfb2f8f.png",
+    "path": "/assets/environment/oblique/furniture.classroom.student-chair-yaw+120-elev40.7f94bcfb2f8f.png",
+    "status": 200,
+    "sha256": "7f94bcfb2f8fd2486cc45924221aa3bcb7c29d4472019f0e6c65e1a759518144",
+    "bytes": 7052
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.classroom.student-chair-yaw+150-elev40.1da832419795.png",
+    "path": "/assets/environment/oblique/furniture.classroom.student-chair-yaw+150-elev40.1da832419795.png",
+    "status": 307,
+    "location": "/assets/environment/oblique/furniture.classroom.student-chair-yaw%2B150-elev40.1da832419795.png"
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+60-elev40.721cae760da7.png",
+    "path": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+60-elev40.721cae760da7.png",
+    "status": 307,
+    "location": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw%2B60-elev40.721cae760da7.png"
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.classroom.student-chair-yaw%2B150-elev40.1da832419795.png",
+    "path": "/assets/environment/oblique/furniture.classroom.student-chair-yaw+150-elev40.1da832419795.png",
+    "status": 200,
+    "sha256": "1da832419795e08cf8062eea139ddcc9e34bcbbdcf4e5b76ed74024326420479",
+    "bytes": 6369
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.classroom.teacher-desk-yaw%2B60-elev40.721cae760da7.png",
+    "path": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+60-elev40.721cae760da7.png",
+    "status": 200,
+    "sha256": "721cae760da76bdb6830e99255ee7e9c01c0d1733735621b419a62997094a561",
+    "bytes": 7707
+  }
+]

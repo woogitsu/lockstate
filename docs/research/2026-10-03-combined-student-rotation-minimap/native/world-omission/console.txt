@@ -1,0 +1,63 @@
+pnpm : [2m[WebServer] [22m(node:57592) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At C:\Users\matma\AppData\Local\Temp\lockstate-world-control-driver-20261003.ps1:22 char:2
++  pnpm --config.verify-deps-before-run=false exec playwright test --co ...
++  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 1 test using 1 worker
+
+(node:49028) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:49028) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 docs\research\2026-10-03-world-roving-native-prep\world-roving-held-arrow.native.ts:3:1 › World: a held arrow stops after a real Build/Rooms radio click and a fresh world arrow still moves (4.6s)
+
+
+  1) docs\research\2026-10-03-world-roving-native-prep\world-roving-held-arrow.native.ts:3:1 › World: a held arrow stops after a real Build/Rooms radio click and a fresh world arrow still moves 
+
+    Error: Build radio focus must stop the held arrow before keyup
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 2[39m
+    [31m+ Received  + 2[39m
+
+    [2m  Object {[22m
+    [32m-   "height": 52.7344,[39m
+    [31m+   "height": 51.954,[39m
+    [2m    "left": 3.125,[22m
+    [32m-   "top": 39.2572,[39m
+    [31m+   "top": 48.046,[39m
+    [2m    "width": 93.75,[22m
+    [2m  }[22m
+
+      45 |       });
+      46 |       await page.screenshot({ path: testInfo.outputPath(`${group.toLowerCase()}-radio-held-world-arrow.png`) });
+    > 47 |       expect(afterHold, `${group} radio focus must stop the held arrow before keyup`).toEqual(atRadio);
+         |                                                                                       ^
+      48 |     } finally {
+      49 |       await page.keyboard.up('ArrowDown');
+      50 |     }
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-common-room-connectivity-integration-20261003\docs\research\2026-10-03-world-roving-native-prep\world-roving-held-arrow.native.ts:47:87
+
+    Error Context: test-results\world-roving-native\world-roving-held-arrow.na-9a6be-esh-world-arrow-still-moves\error-context.md
+
+  1 failed
+    docs\research\2026-10-03-world-roving-native-prep\world-roving-held-arrow.native.ts:3:1 › World: a held arrow stops after a real Build/Rooms radio click and a fresh world arrow still moves 

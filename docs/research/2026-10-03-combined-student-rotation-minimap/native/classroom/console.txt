@@ -1,0 +1,35 @@
+playwright.CMD : [2m[WebServer] [22m(node:7360) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env b
+eing set.
+At line:2 char:385
++ ... 003.json'); & ./node_modules/.bin/playwright.cmd test --config tests/ ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 3 tests using 1 worker
+
+(node:57984) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:57984) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\native-classroom-desk.recipe.ts:116:1 › 01 public Storage/Delivery bootstrap for Classroom construction and separately bought desk (42.9s)
+  ok 2 tests\browser\native-classroom-desk.recipe.ts:158:29 › Classroom plan q0: genuine separate130 desk quote, orientation0 owner and whole paused Save/Load (59.2s)
+  ok 3 tests\browser\native-classroom-desk.recipe.ts:158:29 › Classroom plan q1: genuine separate130 desk quote, orientation0 owner and whole paused Save/Load (59.1s)
+
+  3 passed (2.7m)

@@ -1,0 +1,23 @@
+[
+  {
+    "source": "lockstate-combined-student-rotation-minimap-repaired-verify-20261003.txt",
+    "destination": "repaired-verify.txt",
+    "sourceSha256": "90eb794e69cb61b9c307b1c6454aaf4af440c4936666509f9ef3b765199ea0a1",
+    "archivedSha256": "ebcaebd934a3fdc71cb256120a13ec1949c929c77c40856cb9d9863f5a8aa827",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "lockstate-world-negative-build-aborted-on-warning-20261003.txt",
+    "destination": "native/world-control/first-driver-build-warning.txt",
+    "sourceSha256": "64d8cb225e9aff15d66edd99c6c95d319abbe0246cbd4ba0ea67a483baaaaf56",
+    "archivedSha256": "53bfde7bddca7908b3e4ec602bad38a078cdb68aef6b9ea9b0f8f6923179c76f",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "lockstate-world-negative-build-20261003.txt",
+    "destination": "native/world-control/actual-negative-build.txt",
+    "sourceSha256": "bc43854c8d90f01a9c9f06072185f44706717330aa4a2479f505d333c50e96aa",
+    "archivedSha256": "4afdd74293a0a3928f9abf10e302b2a09acf43946edc5692dacb826951abb704",
+    "conversion": "UTF16LE console to UTF8"
+  }
+]

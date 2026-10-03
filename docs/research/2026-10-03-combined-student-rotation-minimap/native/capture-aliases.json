@@ -1,0 +1,415 @@
+[
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-combined-minimap-native-20261003.json",
+    "archived": "minimap/report.json",
+    "sourceBytes": 3638,
+    "sourceSha256": "bb214c7ef7283249b847257cd7dbe518acbcf81f1366301a4f4b05b208e1b7d6",
+    "archivedBytes": 3638,
+    "archivedSha256": "bb214c7ef7283249b847257cd7dbe518acbcf81f1366301a4f4b05b208e1b7d6"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-combined-minimap-native-20261003.txt",
+    "archived": "minimap/console.txt",
+    "sourceBytes": 3612,
+    "sourceSha256": "e5f84eb2b1690d9fea26290e8581c022de45f6c028ee042dbd3cdc34b1771188",
+    "archivedBytes": 1809,
+    "archivedSha256": "aa7f2e26924b4c93e2542df467170be1e4bee9aeb41865e1cc3dc80041060b7d",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-combined-minimap-native-20261003\\minimap-dom.png",
+    "archived": "minimap/001-minimap-dom.png",
+    "sourceBytes": 95221,
+    "sourceSha256": "73958ccfc8052feaff116bb077780be18a856b02092b785990ed9f2cd6773c50",
+    "archivedBytes": 95221,
+    "archivedSha256": "73958ccfc8052feaff116bb077780be18a856b02092b785990ed9f2cd6773c50"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-combined-minimap-native-20261003\\minimap-identity-receipt.json",
+    "archived": "minimap/002-minimap-identity-receipt.json",
+    "sourceBytes": 176325,
+    "sourceSha256": "9d55d27983c3aa666e2b91e9532f81325411d5ef821cb2e72d8e192534dbbb63",
+    "archivedBytes": 176325,
+    "archivedSha256": "9d55d27983c3aa666e2b91e9532f81325411d5ef821cb2e72d8e192534dbbb63"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-combined-native-20261003.json",
+    "archived": "classroom/report.json",
+    "sourceBytes": 5900,
+    "sourceSha256": "0aa5df6fbe7fefd93f4bddbe941fa2c90252a2437c4b94ae95b2b2185073279e",
+    "archivedBytes": 5900,
+    "archivedSha256": "0aa5df6fbe7fefd93f4bddbe941fa2c90252a2437c4b94ae95b2b2185073279e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-combined-native-20261003.txt",
+    "archived": "classroom/console.txt",
+    "sourceBytes": 4312,
+    "sourceSha256": "160376f7a283551c324ccb07d4f2e3dd79c78a36f72face5d65192cf5bc80bd3",
+    "archivedBytes": 2163,
+    "archivedSha256": "bb01057da0d945c5cd157f4b4320997083b54a8e06cbdbc084f829c05349190c",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-combined-native-20261003\\.last-run.json",
+    "archived": "classroom/001-.last-run.json",
+    "sourceBytes": 45,
+    "sourceSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "archivedBytes": 45,
+    "archivedSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-combined-native-20261003\\native-classroom-desk.reci-aca5e--and-separately-bought-desk\\actual-capacity-whole-paused.json",
+    "archived": "classroom/002-actual-capacity-whole-paused.json",
+    "sourceBytes": 54464,
+    "sourceSha256": "86430f691d34db52caebf6b3844c8c75e4a6941d0d0b0420ec5e16ff8e30c0e9",
+    "archivedBytes": 54464,
+    "archivedSha256": "86430f691d34db52caebf6b3844c8c75e4a6941d0d0b0420ec5e16ff8e30c0e9"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-combined-native-20261003\\native-classroom-desk.reci-da1c3--and-whole-paused-Save-Load\\actual-classroom-desk-after-load-canvas.png",
+    "archived": "classroom/003-actual-classroom-desk-after-load-canvas.png",
+    "sourceBytes": 1541701,
+    "sourceSha256": "1440786dfe2d76bd093b663df5963eef9ade5ffe8942ffe8dc4ee9ae5bfaae3a",
+    "archivedBytes": 1541701,
+    "archivedSha256": "1440786dfe2d76bd093b663df5963eef9ade5ffe8942ffe8dc4ee9ae5bfaae3a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-combined-native-20261003\\native-classroom-desk.reci-da1c3--and-whole-paused-Save-Load\\actual-classroom-desk-after-load-fullhd.png",
+    "archived": "classroom/004-actual-classroom-desk-after-load-fullhd.png",
+    "sourceBytes": 1541701,
+    "sourceSha256": "1440786dfe2d76bd093b663df5963eef9ade5ffe8942ffe8dc4ee9ae5bfaae3a",
+    "archivedBytes": 1541701,
+    "archivedSha256": "1440786dfe2d76bd093b663df5963eef9ade5ffe8942ffe8dc4ee9ae5bfaae3a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-combined-native-20261003\\native-classroom-desk.reci-da1c3--and-whole-paused-Save-Load\\actual-classroom-desk-before-save-canvas.png",
+    "archived": "classroom/005-actual-classroom-desk-before-save-canvas.png",
+    "sourceBytes": 1580213,
+    "sourceSha256": "76a7ddf573f07176425e2e7443de06562e39e2f8f4ce4d65929d42af2efd04e5",
+    "archivedBytes": 1580213,
+    "archivedSha256": "76a7ddf573f07176425e2e7443de06562e39e2f8f4ce4d65929d42af2efd04e5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-combined-native-20261003\\native-classroom-desk.reci-da1c3--and-whole-paused-Save-Load\\actual-classroom-desk-before-save-fullhd.png",
+    "archived": "classroom/006-actual-classroom-desk-before-save-fullhd.png",
+    "sourceBytes": 1580213,
+    "sourceSha256": "76a7ddf573f07176425e2e7443de06562e39e2f8f4ce4d65929d42af2efd04e5",
+    "archivedBytes": 1580213,
+    "archivedSha256": "76a7ddf573f07176425e2e7443de06562e39e2f8f4ce4d65929d42af2efd04e5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-combined-native-20261003\\native-classroom-desk.reci-da1c3--and-whole-paused-Save-Load\\actual-classroom-desk-prepared-route-receipt.json",
+    "archived": "classroom/007-actual-classroom-desk-prepared-route-receipt.json",
+    "sourceBytes": 298256,
+    "sourceSha256": "1e8d1c17df840b7b8294e91d3f68f4c2340d44e6bec634b85a84014637865f61",
+    "archivedBytes": 298256,
+    "archivedSha256": "1e8d1c17df840b7b8294e91d3f68f4c2340d44e6bec634b85a84014637865f61"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-combined-native-20261003\\native-classroom-desk.reci-da1c3--and-whole-paused-Save-Load\\actual-classroom-desk-whole-paused-after-load.json",
+    "archived": "classroom/008-actual-classroom-desk-whole-paused-after-load.json",
+    "sourceBytes": 83286,
+    "sourceSha256": "6a3ae4df95f26b1017c90353cf92876c0253fb0591ce24186c1c7131115ad9af",
+    "archivedBytes": 83286,
+    "archivedSha256": "6a3ae4df95f26b1017c90353cf92876c0253fb0591ce24186c1c7131115ad9af"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-combined-native-20261003\\native-classroom-desk.reci-da1c3--and-whole-paused-Save-Load\\actual-classroom-plan-queued.json",
+    "archived": "classroom/009-actual-classroom-plan-queued.json",
+    "sourceBytes": 65767,
+    "sourceSha256": "93ca1dabb6867c212d053a0b80d47bbc0cfd70d94a58db94bd2287452ade12b8",
+    "archivedBytes": 65767,
+    "archivedSha256": "93ca1dabb6867c212d053a0b80d47bbc0cfd70d94a58db94bd2287452ade12b8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-combined-native-20261003\\native-classroom-desk.reci-da1c3--and-whole-paused-Save-Load\\actual-completed-original-classroom-before-desk.json",
+    "archived": "classroom/010-actual-completed-original-classroom-before-desk.json",
+    "sourceBytes": 82215,
+    "sourceSha256": "55970c58b852db71996c1cffb859e510dc3a5c3dba7501e9db7b1d5f15beaae1",
+    "archivedBytes": 82215,
+    "archivedSha256": "55970c58b852db71996c1cffb859e510dc3a5c3dba7501e9db7b1d5f15beaae1"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-combined-native-20261003\\native-classroom-desk.reci-da1c3--and-whole-paused-Save-Load\\actual-separate-desk-completed-whole-paused.json",
+    "archived": "classroom/011-actual-separate-desk-completed-whole-paused.json",
+    "sourceBytes": 83286,
+    "sourceSha256": "72d0fd5b1f880bad7e237d2ab7d6f55d1545de5fbedbadc6e91814a9df11189a",
+    "archivedBytes": 83286,
+    "archivedSha256": "72d0fd5b1f880bad7e237d2ab7d6f55d1545de5fbedbadc6e91814a9df11189a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-combined-native-20261003\\native-classroom-desk.reci-da1c3--and-whole-paused-Save-Load\\actual-separate-desk-two-plank130-purchase-quote.png",
+    "archived": "classroom/012-actual-separate-desk-two-plank130-purchase-quote.png",
+    "sourceBytes": 1639731,
+    "sourceSha256": "a62c3fefeda7eaeafa32f0fcf6f235a32fb8468252e00c9463c3c09b8aa71623",
+    "archivedBytes": 1639731,
+    "archivedSha256": "a62c3fefeda7eaeafa32f0fcf6f235a32fb8468252e00c9463c3c09b8aa71623"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-combined-native-20261003\\native-classroom-desk.reci-da1c3--and-whole-paused-Save-Load\\classroom-desk-actual-network-and-decoder-receipt.json",
+    "archived": "classroom/013-classroom-desk-actual-network-and-decoder-receipt.json",
+    "sourceBytes": 72900,
+    "sourceSha256": "2a684610edbb0b8a2e1fab6a12168d3f3e5cf8116bd1ee10e0a079a89586b423",
+    "archivedBytes": 72900,
+    "archivedSha256": "2a684610edbb0b8a2e1fab6a12168d3f3e5cf8116bd1ee10e0a079a89586b423"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-combined-native-20261003\\native-classroom-desk.reci-da1c3--and-whole-paused-Save-Load\\classroom-desk-actual-network.json",
+    "archived": "classroom/014-classroom-desk-actual-network.json",
+    "sourceBytes": 8273,
+    "sourceSha256": "124e946c6796240fa8a3132d7d38917edcb9810a97c2e5438f601563123b0f13",
+    "archivedBytes": 8273,
+    "archivedSha256": "124e946c6796240fa8a3132d7d38917edcb9810a97c2e5438f601563123b0f13"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-combined-native-20261003\\native-classroom-desk.reci-da1c3--and-whole-paused-Save-Load\\classroom-desk-actual200-source60-elev40.png",
+    "archived": "classroom/015-classroom-desk-actual200-source60-elev40.png",
+    "sourceBytes": 7707,
+    "sourceSha256": "721cae760da76bdb6830e99255ee7e9c01c0d1733735621b419a62997094a561",
+    "archivedBytes": 7707,
+    "archivedSha256": "721cae760da76bdb6830e99255ee7e9c01c0d1733735621b419a62997094a561"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-combined-native-20261003\\native-classroom-desk.reci-da1c3--and-whole-paused-Save-Load\\classroom-student-chair-actual200-frame.png",
+    "archived": "classroom/016-classroom-student-chair-actual200-frame.png",
+    "sourceBytes": 7414,
+    "sourceSha256": "eb690a4392146a594fa1b692a2dc0b28b881820e541a7125f7f112c474c50260",
+    "archivedBytes": 7414,
+    "archivedSha256": "eb690a4392146a594fa1b692a2dc0b28b881820e541a7125f7f112c474c50260"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-combined-native-20261003\\native-classroom-desk.reci-ee20e--and-whole-paused-Save-Load\\actual-classroom-desk-after-load-canvas.png",
+    "archived": "classroom/017-actual-classroom-desk-after-load-canvas.png",
+    "sourceBytes": 1532012,
+    "sourceSha256": "992b10d3cf5bb1b9acf37dda64242173bc424e6fec446c043fac42b266b70b56",
+    "archivedBytes": 1532012,
+    "archivedSha256": "992b10d3cf5bb1b9acf37dda64242173bc424e6fec446c043fac42b266b70b56"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-combined-native-20261003\\native-classroom-desk.reci-ee20e--and-whole-paused-Save-Load\\actual-classroom-desk-after-load-fullhd.png",
+    "archived": "classroom/018-actual-classroom-desk-after-load-fullhd.png",
+    "sourceBytes": 1532012,
+    "sourceSha256": "992b10d3cf5bb1b9acf37dda64242173bc424e6fec446c043fac42b266b70b56",
+    "archivedBytes": 1532012,
+    "archivedSha256": "992b10d3cf5bb1b9acf37dda64242173bc424e6fec446c043fac42b266b70b56"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-combined-native-20261003\\native-classroom-desk.reci-ee20e--and-whole-paused-Save-Load\\actual-classroom-desk-before-save-canvas.png",
+    "archived": "classroom/019-actual-classroom-desk-before-save-canvas.png",
+    "sourceBytes": 1569219,
+    "sourceSha256": "39456f2b394422e355d6f87a8ada8acfe3f5d5406ac0304625aae9eea7b3a56a",
+    "archivedBytes": 1569219,
+    "archivedSha256": "39456f2b394422e355d6f87a8ada8acfe3f5d5406ac0304625aae9eea7b3a56a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-combined-native-20261003\\native-classroom-desk.reci-ee20e--and-whole-paused-Save-Load\\actual-classroom-desk-before-save-fullhd.png",
+    "archived": "classroom/020-actual-classroom-desk-before-save-fullhd.png",
+    "sourceBytes": 1569219,
+    "sourceSha256": "39456f2b394422e355d6f87a8ada8acfe3f5d5406ac0304625aae9eea7b3a56a",
+    "archivedBytes": 1569219,
+    "archivedSha256": "39456f2b394422e355d6f87a8ada8acfe3f5d5406ac0304625aae9eea7b3a56a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-combined-native-20261003\\native-classroom-desk.reci-ee20e--and-whole-paused-Save-Load\\actual-classroom-desk-prepared-route-receipt.json",
+    "archived": "classroom/021-actual-classroom-desk-prepared-route-receipt.json",
+    "sourceBytes": 301144,
+    "sourceSha256": "5ec146510fa7bd054cc36dffda18c64275a01ff285a3472bbf745978370f45e5",
+    "archivedBytes": 301144,
+    "archivedSha256": "5ec146510fa7bd054cc36dffda18c64275a01ff285a3472bbf745978370f45e5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-combined-native-20261003\\native-classroom-desk.reci-ee20e--and-whole-paused-Save-Load\\actual-classroom-desk-whole-paused-after-load.json",
+    "archived": "classroom/022-actual-classroom-desk-whole-paused-after-load.json",
+    "sourceBytes": 83197,
+    "sourceSha256": "65268d4adcffbfe51b93501574063f3d70c9dfca2f84b58f564df3c9b858201e",
+    "archivedBytes": 83197,
+    "archivedSha256": "65268d4adcffbfe51b93501574063f3d70c9dfca2f84b58f564df3c9b858201e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-combined-native-20261003\\native-classroom-desk.reci-ee20e--and-whole-paused-Save-Load\\actual-classroom-plan-queued.json",
+    "archived": "classroom/023-actual-classroom-plan-queued.json",
+    "sourceBytes": 65801,
+    "sourceSha256": "819fe83d71a1e0282c71790b1b972c1d4d132b89fb1482c121fa6ef9865a3f88",
+    "archivedBytes": 65801,
+    "archivedSha256": "819fe83d71a1e0282c71790b1b972c1d4d132b89fb1482c121fa6ef9865a3f88"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-combined-native-20261003\\native-classroom-desk.reci-ee20e--and-whole-paused-Save-Load\\actual-completed-original-classroom-before-desk.json",
+    "archived": "classroom/024-actual-completed-original-classroom-before-desk.json",
+    "sourceBytes": 82126,
+    "sourceSha256": "f97824ad48e77d08b89921523e3c26ba63d803309caa6bb2a3eb1b44fc5d3af6",
+    "archivedBytes": 82126,
+    "archivedSha256": "f97824ad48e77d08b89921523e3c26ba63d803309caa6bb2a3eb1b44fc5d3af6"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-combined-native-20261003\\native-classroom-desk.reci-ee20e--and-whole-paused-Save-Load\\actual-separate-desk-completed-whole-paused.json",
+    "archived": "classroom/025-actual-separate-desk-completed-whole-paused.json",
+    "sourceBytes": 83197,
+    "sourceSha256": "2e6e6fbd4a3399cdf495bb2c48956e20af058b9a086cd5e0ec1d05b2724940a9",
+    "archivedBytes": 83197,
+    "archivedSha256": "2e6e6fbd4a3399cdf495bb2c48956e20af058b9a086cd5e0ec1d05b2724940a9"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-combined-native-20261003\\native-classroom-desk.reci-ee20e--and-whole-paused-Save-Load\\actual-separate-desk-two-plank130-purchase-quote.png",
+    "archived": "classroom/026-actual-separate-desk-two-plank130-purchase-quote.png",
+    "sourceBytes": 1635866,
+    "sourceSha256": "15f74d36846a6cc7ae1810cda3eee1b89a2739279dfb542aad2c6b0eb8a0479f",
+    "archivedBytes": 1635866,
+    "archivedSha256": "15f74d36846a6cc7ae1810cda3eee1b89a2739279dfb542aad2c6b0eb8a0479f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-combined-native-20261003\\native-classroom-desk.reci-ee20e--and-whole-paused-Save-Load\\classroom-desk-actual-network-and-decoder-receipt.json",
+    "archived": "classroom/027-classroom-desk-actual-network-and-decoder-receipt.json",
+    "sourceBytes": 75766,
+    "sourceSha256": "1f98e1fa20823398c90e97dc7ff0cbcc3957c336da822c568e9374871b6a1c35",
+    "archivedBytes": 75766,
+    "archivedSha256": "1f98e1fa20823398c90e97dc7ff0cbcc3957c336da822c568e9374871b6a1c35"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-combined-native-20261003\\native-classroom-desk.reci-ee20e--and-whole-paused-Save-Load\\classroom-desk-actual-network.json",
+    "archived": "classroom/028-classroom-desk-actual-network.json",
+    "sourceBytes": 8273,
+    "sourceSha256": "9b36745b687e2a10109e60cc96d89798929d671fb1c5a7e0f72768da8b83a2bc",
+    "archivedBytes": 8273,
+    "archivedSha256": "9b36745b687e2a10109e60cc96d89798929d671fb1c5a7e0f72768da8b83a2bc"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-combined-native-20261003\\native-classroom-desk.reci-ee20e--and-whole-paused-Save-Load\\classroom-desk-actual200-source60-elev40.png",
+    "archived": "classroom/029-classroom-desk-actual200-source60-elev40.png",
+    "sourceBytes": 7707,
+    "sourceSha256": "721cae760da76bdb6830e99255ee7e9c01c0d1733735621b419a62997094a561",
+    "archivedBytes": 7707,
+    "archivedSha256": "721cae760da76bdb6830e99255ee7e9c01c0d1733735621b419a62997094a561"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-combined-native-20261003\\native-classroom-desk.reci-ee20e--and-whole-paused-Save-Load\\classroom-student-chair-actual200-frame.png",
+    "archived": "classroom/030-classroom-student-chair-actual200-frame.png",
+    "sourceBytes": 6369,
+    "sourceSha256": "1da832419795e08cf8062eea139ddcc9e34bcbbdcf4e5b76ed74024326420479",
+    "archivedBytes": 6369,
+    "archivedSha256": "1da832419795e08cf8062eea139ddcc9e34bcbbdcf4e5b76ed74024326420479"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-world-roving-positive-20261003.json",
+    "archived": "world-original/report.json",
+    "sourceBytes": 5342,
+    "sourceSha256": "558500db69cb8443584aa2c7a7f31e4c0938b2f89ca133ad61b83acfad86d6c8",
+    "archivedBytes": 5342,
+    "archivedSha256": "558500db69cb8443584aa2c7a7f31e4c0938b2f89ca133ad61b83acfad86d6c8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-world-roving-positive-20261003.txt",
+    "archived": "world-original/console.txt",
+    "sourceBytes": 3724,
+    "sourceSha256": "9239cad6767c814e16e46e56ea676753a40e056251c1a874cc6ac3c807cc795c",
+    "archivedBytes": 1865,
+    "archivedSha256": "e1c3ffe6828de3e67c4f766af5a9ecd8584f5aaf6d7d804d0a9ae66a8a9889e2",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-world-roving-positive-20261003\\.last-run.json",
+    "archived": "world-original/001-.last-run.json",
+    "sourceBytes": 45,
+    "sourceSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "archivedBytes": 45,
+    "archivedSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-world-roving-positive-20261003\\world-roving-held-arrow.na-9a6be-esh-world-arrow-still-moves\\build-radio-held-world-arrow.png",
+    "archived": "world-original/002-build-radio-held-world-arrow.png",
+    "sourceBytes": 221384,
+    "sourceSha256": "490d604737c6cfb65f64bfe979111d90fe424904800388afd29e2ff83e6356c7",
+    "archivedBytes": 221384,
+    "archivedSha256": "490d604737c6cfb65f64bfe979111d90fe424904800388afd29e2ff83e6356c7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-world-roving-positive-20261003\\world-roving-held-arrow.na-9a6be-esh-world-arrow-still-moves\\rooms-radio-held-world-arrow.png",
+    "archived": "world-original/003-rooms-radio-held-world-arrow.png",
+    "sourceBytes": 195937,
+    "sourceSha256": "ef5f003dd2f5c372ed0e58bb994e58da4574da8dd4ffee383cb3df6f034788bc",
+    "archivedBytes": 195937,
+    "archivedSha256": "ef5f003dd2f5c372ed0e58bb994e58da4574da8dd4ffee383cb3df6f034788bc"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-world-roving-negative-20261003.json",
+    "archived": "world-omission/report.json",
+    "sourceBytes": 9409,
+    "sourceSha256": "72a24bfc73fd20ded0483b16a11133479b555d693eb2cc88c83e160ec6ba4973",
+    "archivedBytes": 9409,
+    "archivedSha256": "72a24bfc73fd20ded0483b16a11133479b555d693eb2cc88c83e160ec6ba4973"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-world-roving-negative-20261003.txt",
+    "archived": "world-omission/console.txt",
+    "sourceBytes": 7204,
+    "sourceSha256": "0de290ca95a7a7a6c5272f6e953e14ac3932d918123a541830a100c5b9373801",
+    "archivedBytes": 3610,
+    "archivedSha256": "03ee4543797fd630d6e813cf7695f2335cc141236f9556ca102444974b175664",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-world-roving-negative-20261003\\.last-run.json",
+    "archived": "world-omission/001-.last-run.json",
+    "sourceBytes": 96,
+    "sourceSha256": "83489e1ac03861a95b16c079c19c0e5a79f2d097297ea86a0d904d14f63622dd",
+    "archivedBytes": 96,
+    "archivedSha256": "83489e1ac03861a95b16c079c19c0e5a79f2d097297ea86a0d904d14f63622dd"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-world-roving-negative-20261003\\world-roving-held-arrow.na-9a6be-esh-world-arrow-still-moves\\build-radio-held-world-arrow.png",
+    "archived": "world-omission/002-build-radio-held-world-arrow.png",
+    "sourceBytes": 211905,
+    "sourceSha256": "b012c93fd296b7afa33291575b8d2e0d95a0b4068fbef45933097835f786f998",
+    "archivedBytes": 211905,
+    "archivedSha256": "b012c93fd296b7afa33291575b8d2e0d95a0b4068fbef45933097835f786f998"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-world-roving-negative-20261003\\world-roving-held-arrow.na-9a6be-esh-world-arrow-still-moves\\error-context.md",
+    "archived": "world-omission/003-error-context.md",
+    "sourceBytes": 12828,
+    "sourceSha256": "6c1a7971bbcd6e2cd4ac200b60e41b367d886888b4bc4c38685142ccebb0377c",
+    "archivedBytes": 12828,
+    "archivedSha256": "6c1a7971bbcd6e2cd4ac200b60e41b367d886888b4bc4c38685142ccebb0377c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-world-roving-restored-20261003.json",
+    "archived": "world-restored/report.json",
+    "sourceBytes": 5338,
+    "sourceSha256": "35dce169c34f02d5ca47abde0edb25ea8910a2777a86e2d91b0886536faecafa",
+    "archivedBytes": 5338,
+    "archivedSha256": "35dce169c34f02d5ca47abde0edb25ea8910a2777a86e2d91b0886536faecafa"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-world-roving-restored-20261003.txt",
+    "archived": "world-restored/console.txt",
+    "sourceBytes": 3830,
+    "sourceSha256": "650371bc30711115a9846cb8cf7645351edc09e3d775d1d85c3c980e0acab716",
+    "archivedBytes": 1918,
+    "archivedSha256": "b86161a4f9670ee52daa32b71d3e101702ec7708290faa05b4dc284e895fbfea",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-world-roving-restored-20261003\\.last-run.json",
+    "archived": "world-restored/001-.last-run.json",
+    "sourceBytes": 45,
+    "sourceSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "archivedBytes": 45,
+    "archivedSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-world-roving-restored-20261003\\world-roving-held-arrow.na-9a6be-esh-world-arrow-still-moves\\build-radio-held-world-arrow.png",
+    "archived": "world-restored/002-build-radio-held-world-arrow.png",
+    "sourceBytes": 221251,
+    "sourceSha256": "730de34b137d368b82e36536ccb9f7625756cf5ac8084f440861712f2fb5c753",
+    "archivedBytes": 221251,
+    "archivedSha256": "730de34b137d368b82e36536ccb9f7625756cf5ac8084f440861712f2fb5c753"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-world-roving-restored-20261003\\world-roving-held-arrow.na-9a6be-esh-world-arrow-still-moves\\rooms-radio-held-world-arrow.png",
+    "archived": "world-restored/003-rooms-radio-held-world-arrow.png",
+    "sourceBytes": 197048,
+    "sourceSha256": "4327755a51b88bf38d80c8a5bf479cdfbb694c6c65e6eaa007b03f5c1966d67e",
+    "archivedBytes": 197048,
+    "archivedSha256": "4327755a51b88bf38d80c8a5bf479cdfbb694c6c65e6eaa007b03f5c1966d67e"
+  }
+]

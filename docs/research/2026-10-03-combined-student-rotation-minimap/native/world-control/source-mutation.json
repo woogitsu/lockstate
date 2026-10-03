@@ -1,0 +1,5 @@
+{
+  "originalSha256": "32bcdd5657a53bd7e754976c1cd00b6d2b1cc1e37afbb7edb085f4633a26b454",
+  "mutantSha256": "cf9ba0857334ba19ecc2e9f2b3888e60678e3f67c87c75602d70dbe1ac12ea00",
+  "mutation": "omit only real World grouped-radio arrow release"
+}
