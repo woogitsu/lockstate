@@ -1,5 +1,6 @@
 import { expect, test, type Page } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
+import { observeUnroundedMinimapViewport, minimapGroundReference, type MinimapViewportPercent } from './minimap-unrounded-reference';
 
 interface Target { templateId: string; origin: { x: number; y: number } }
 interface Receipt { target: Target; ok: boolean }
@@ -38,6 +39,7 @@ async function observePreflight(page: Page): Promise<void> {
 for (const uiScale of [1, 2]) test(`World FullHD ${uiScale * 100}% zoomed room-plan corners and actual placement share the picked ground`, async ({ page }, testInfo) => {
   await installTee(page);
   await observePreflight(page);
+  await page.addInitScript(observeUnroundedMinimapViewport);
   await page.addInitScript(scale => {
     localStorage.setItem('lockstate.settings.accessibility', JSON.stringify({ version: 1, reducedMotion: false, uiScale: scale }));
   }, uiScale);
@@ -68,7 +70,10 @@ for (const uiScale of [1, 2]) test(`World FullHD ${uiScale * 100}% zoomed room-p
   expect(chosen.ok).toBe(true);
   expect(chosen.target.templateId).toBe('cell-basic');
 
-  // This separate HUD channel emits actual visible ground bounds. Its
+  // This separate HUD channel emits actual visible ground bounds. Observe its
+  // original percentage assignment before native CSSOM decimal serialization;
+  // CSS readback is retained independently below, never a precise world oracle.
+  // Its
   // producer is independently checked against real Camera.getWorldPoint.
   // Compare the real SVG with that channel and with the physical pointer;
   // neither observation calls the main forward callback as its reference.
@@ -78,13 +83,14 @@ for (const uiScale of [1, 2]) test(`World FullHD ${uiScale * 100}% zoomed room-p
     const viewport = document.querySelector<HTMLElement>('.hud-minimap__viewport')!;
     const box = canvas.getBoundingClientRect();
     const fraction = (key: 'left' | 'top' | 'width' | 'height') => parseFloat(viewport.style[key]) / 100;
+    const unrounded = (Reflect.get(window, 'unroundedMinimapViewport') as () => MinimapViewportPercent)();
     const polygons = [...document.querySelectorAll<SVGPolygonElement>('.room-template-world-ghost polygon')];
     const points = polygons.flatMap(polygon => [...polygon.points].map(p => {
       const shown = new DOMPoint(p.x, p.y).matrixTransform(polygon.getScreenCTM()!);
       return { x: shown.x, y: shown.y };
     }));
     return { canvas: { width: canvas.width, height: canvas.height, left: box.left, top: box.top, widthCss: box.width, heightCss: box.height },
-      map: { width: map.width, height: map.height }, left: fraction('left'), top: fraction('top'), width: fraction('width'), height: fraction('height'),
+      map: { width: map.width, height: map.height }, left: fraction('left'), top: fraction('top'), width: fraction('width'), height: fraction('height'), unrounded,
       first: [...polygons[0]!.points].map(p => { const shown = new DOMPoint(p.x, p.y).matrixTransform(polygons[0]!.getScreenCTM()!); return { x: shown.x, y: shown.y }; }),
       bounds: { left: Math.min(...points.map(p => p.x)), right: Math.max(...points.map(p => p.x)), top: Math.min(...points.map(p => p.y)), bottom: Math.max(...points.map(p => p.y)) } };
   });
@@ -93,18 +99,17 @@ for (const uiScale of [1, 2]) test(`World FullHD ${uiScale * 100}% zoomed room-p
   expect(measured.top).toBeGreaterThan(0);
   expect(measured.left + measured.width).toBeLessThan(1);
   expect(measured.top + measured.height).toBeLessThan(1);
-  const zoomX = measured.canvas.width / (measured.width * measured.map.width * 64);
-  const zoomY = measured.canvas.height / (measured.height * measured.map.height * 64);
+  expect(measured.canvas.width / (measured.width * measured.map.width * 64)).toBeCloseTo(1.25, 5);
+  expect(measured.canvas.height / (measured.height * measured.map.height * 64)).toBeCloseTo(1.25, 5);
+  const { zoomX, zoomY, screen } = minimapGroundReference(measured.canvas, measured.map, measured.unrounded);
   expect(zoomX).toBeCloseTo(1.25, 5); expect(zoomY).toBeCloseTo(1.25, 5);
-  const visible = { left: measured.left * 32 * 64, top: measured.top * 32 * 64 };
-  const screen = (x: number, y: number) => ({
-    x: measured.canvas.left + (x * 64 - visible.left) * zoomX * measured.canvas.widthCss / measured.canvas.width,
-    y: measured.canvas.top + (y * 64 - visible.top) * zoomY * measured.canvas.heightCss / measured.canvas.height,
-  });
+  // Display serialization must remain faithful at its own percentage precision.
+  for (const field of ['left', 'top', 'width', 'height'] as const) expect(measured[field] * 100).toBeCloseTo(measured.unrounded[field], 3);
   const { x, y } = chosen.target.origin;
   const expected = [screen(x, y), screen(x + 4, y), screen(x + 4, y + 7), screen(x, y + 7)];
   const actual = [{ x: measured.bounds.left, y: measured.bounds.top }, { x: measured.bounds.right, y: measured.bounds.top },
     { x: measured.bounds.right, y: measured.bounds.bottom }, { x: measured.bounds.left, y: measured.bounds.bottom }];
+  console.log('WORLD_ROOM_PLAN_CAMERA_REFERENCE', JSON.stringify({ uiScale, chosen, measured, zoomX, zoomY, expected, actual }));
   for (let i = 0; i < 4; i++) {
     expect(actual[i]!.x).toBeCloseTo(expected[i]!.x, 3);
     expect(actual[i]!.y).toBeCloseTo(expected[i]!.y, 3);

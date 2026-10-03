@@ -1,0 +1,13 @@
+{
+  "sourceHead": "282f6413443d784e588ff4c5ec43095796e0244a",
+  "originalArtifactJsonSha256": "2c1f1a2e79119168e9bc6aba0b6d3c56ed53adb2bde427095a138676c5c3c86e",
+  "fixtureSha256": "0ac96dd6ceeb366610b331ecb65382e6f2a9ef89e0db517473eebd113391dbd7",
+  "uniqueMatch": 1,
+  "mutation": {
+    "original": "record[field] = parseFloat(value);",
+    "replacement": "record[field] = parseFloat(Reflect.get(this, field) as string);"
+  },
+  "fixtureByteExactRestored": true,
+  "productionFilesChanged": false,
+  "nativeCorrectedRun": "pending root exclusive browser"
+}
