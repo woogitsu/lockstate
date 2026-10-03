@@ -371,6 +371,8 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 | [2026-10-03 Kitchen fridge physical fixings](./2026-10-03-kitchen-fridge-physical-fixings/README.md) | Can missing hinge/handle retaining hardware be authored while preserving all 73 current parts and six full shader graphs? | Retained73parts/6graphs;97parts/8082outward faces,24contacts/unchanged1x1;73/73repeat,22actualcontrols restoredGREEN,6unitPASS/1optionalSKIP,TS/productionbuild0; new-source native acceptance pending. |
 | [2026-10-03 Kitchen stove physical joints](./2026-10-03-kitchen-stove-physical-joints/README.md) | Do real grate feet connect both sides of the measured collar gaps while preserving the80part source? | Retained80parts/6graphs;96parts/5876outwardfaces/32triangle-interior contacts,unchanged2x1;73/73repeat,24actualcontrols restoredGREEN,6unitPASS/1optionalSKIP,TS/productionbuild0; new-source native acceptance pending. |
 
+| [2026-10-03 public hired Guard native preparation](./2026-10-03-public-hired-guard-native-preparation/README.md) | Does genuine Staff hiring retain exact Guard identity, whole paused Save/Load and real decoded authored body? | Packed command/transport restore and10existing source controls GREEN; public FullHD fixture1case collected, no browser run. Rear hardware calibration HOLD pending corrected historical raster; private bound texture unobserved. |
+
 ### Findings from the first four records that changed a decision
 
 Recorded here because each contradicted something the project believed, and a
