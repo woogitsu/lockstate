@@ -100,3 +100,16 @@ it('keeps the ordinary above-corner fit and follows actual World/Angled height c
   expect(s.panel.style).toMatchObject({ left: '280px', top: '356px', width: '792px' });
   expect(s.zoom.children).toEqual([s.trigger]);
 });
+
+it('review draft derives only the 200% corner budget from the real notice bottom and viewport', () => {
+  const s = setup('disclosure', true, true);
+  Object.defineProperty(window, 'innerHeight', { value: 1080, configurable: true });
+  document.documentElement.dataset['uiScaleStep'] = '200';
+  s.scale(2); s.strip.bounds.bottom = 259; s.notice.bounds.bottom = 332;
+  ObserverStub.latest.callback();
+  expect(s.corner.style.maxHeight).toBe('724px');
+  s.notice.bounds.bottom = 380; ObserverStub.latest.callback();
+  expect(s.corner.style.maxHeight).toBe('676px');
+  document.documentElement.dataset['uiScaleStep'] = '100'; s.scale(1);
+  ObserverStub.latest.callback(); expect(s.corner.style.maxHeight).toBe('');
+});
