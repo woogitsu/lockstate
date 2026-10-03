@@ -55,6 +55,12 @@ four workers. Initial strict preparation errors (transfer overload, optional
 projection view and SVG narrowing) are retained with corrected output. These
 are preparation errors, not product failures or native results.
 
+Existing browser selection/partition plus research index/claims controls pass30
+cases; published commit citations pass8 after refreshing the actual published
+producer branch ref. The initial combined1 RED/37 GREEN was that stale local
+ref for the published base, retained without a contract exemption or foreign
+file edit. Raw initial/static and final citation outputs are in native-preparation.
+
 The dedicated opt-in config inherits the actual artifact server and its build
 existence guard,60s case/10s expect/one worker/zero retries. It selects only this
 new `.native.ts`; no shared matcher or other native consumer changes.
