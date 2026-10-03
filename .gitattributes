@@ -34,3 +34,4 @@ assets/rendered/**/*.png filter=lfs diff=lfs merge=lfs -text
 *.sql text eol=lf
 *.sh text eol=lf
 *.mjs text eol=lf
+docs/research/2026-10-03-bookshelf-hover-integration/native/**/*.png filter=lfs diff=lfs merge=lfs -text

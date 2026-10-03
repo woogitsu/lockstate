@@ -1,0 +1,189 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\playwright.artifact.config.ts",
+    "rootDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-bookshelf-hover-integration-20261003/tests/browser",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/matma/AppData/Local/Temp/lockstate-bookshelf-hover-verified-control-q1-negative-20261003",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-bookshelf-hover-integration-20261003/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "/(?:production-artifact|rotated-security-console-player-build|infirmary-player-build|room-template-live-orientation|room-plan-dialog-escape|canteen-dining-table-player-build|room-plan-native-picker|shower-head-player-build|live-view-held-native-arrow|wooden-bench-player-build|live-view-native-popup-held-key|hud-separator-held-arrow|wooden-chair-player-build|build-category-native-camera|generic-wooden-rack-player-build|build-category-native-popup-held-key|build-category-native-typeahead|bookshelf-player-build|utility-panel-player-build|hud-layout-menu-fullhd|generic-office-desk-player-build|oblique-build-drag-under-hud|dedicated-kitchen-stove-player-build|live-view-native-mouse-target|oblique-object-area-drag-under-hud|dedicated-kitchen-fridge-player-build|dedicated-kitchen-prep-counter-player-build|room-preview-retained-hover-fit|oblique-square-wall-native-footprint|dedicated-laundry-washing-machine-player-build|camera-wheel-axis-native|oblique-camera-gameout-native|default-waste-bin-player-build|navigation-drawer-escape-native|dedicated-cell-toilet-player-build|dedicated-utility-panel-player-build|room-template-world-camera-origin|dedicated-office-desk-player-build|room-template-renderer-preflight-receipt|dedicated-medicine-cabinet-player-build|dedicated-security-console-player-build|dedicated-medical-bed-player-build|dedicated-loading-dock-door-player-build|dedicated-camera-pan-player|oblique-pending-wall-player|room-template-renderer-stationary-hover)\\.spec\\.ts$/"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 1,
+    "webServer": {
+      "command": "\"C:\\\\Users\\\\matma\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\node\\\\bin\\\\node.exe\" \"C:\\\\Users\\\\matma\\\\Documents\\\\Rozwój gier\\\\lockstate-1382-doc-anchor-2026-09-24\\\\node_modules\\\\.pnpm\\\\vite@8.2.2_@types+node@24.10.1_esbuild@0.28.1\\\\node_modules\\\\vite\\\\bin\\\\vite.js\" preview --port 5184 --strictPort --host 127.0.0.1",
+      "cwd": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\",
+      "env": {
+        "CLOUDFLARE_ENV": "production"
+      },
+      "url": "http://127.0.0.1:5184/",
+      "reuseExistingServer": false,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "bookshelf-player-build.spec.ts",
+      "file": "bookshelf-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player creates storage and delivery capacity before Classroom",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 43515,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T04:17:36.332Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "cc4b308bbdc33c47e837-e2052e940ed785947b1f",
+          "file": "bookshelf-player-build.spec.ts",
+          "line": 159,
+          "column": 1
+        },
+        {
+          "title": "player builds the bookshelf in Classroom at quarterTurns1 and keeps it after Save/Load",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 49479,
+                  "error": {
+                    "message": "Error: authored book spines after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m100\u001b[39m\nReceived:   \u001b[31m0\u001b[39m",
+                    "stack": "Error: authored book spines after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m100\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\bookshelf-player-build.spec.ts:172:72",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\bookshelf-player-build.spec.ts",
+                      "column": 72,
+                      "line": 172
+                    },
+                    "snippet": "  170 |   assertOwnedObjectOrders(completedData, 'object.bookshelf', 'bookshelf-wooden', owned);\n  171 |   const beforePixels = await authoredBookPixels(page, completed, quarterTurns);\n> 172 |   expect.soft(beforePixels, 'authored book spines after construction').toBeGreaterThan(100);\n      |                                                                        ^\n  173 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n  174 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();\n  175 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\bookshelf-player-build.spec.ts",
+                        "column": 72,
+                        "line": 172
+                      },
+                      "message": "Error: authored book spines after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m100\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  170 |   assertOwnedObjectOrders(completedData, 'object.bookshelf', 'bookshelf-wooden', owned);\n  171 |   const beforePixels = await authoredBookPixels(page, completed, quarterTurns);\n> 172 |   expect.soft(beforePixels, 'authored book spines after construction').toBeGreaterThan(100);\n      |                                                                        ^\n  173 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n  174 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();\n  175 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\bookshelf-player-build.spec.ts:172:72"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\bookshelf-player-build.spec.ts",
+                        "column": 63,
+                        "line": 186
+                      },
+                      "message": "Error: authored book spines after Load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m100\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  184 |   expect(loadedData).toEqual(completedData);\n  185 |   const afterPixels = await authoredBookPixels(page, loaded, quarterTurns);\n> 186 |   expect.soft(afterPixels, 'authored book spines after Load').toBeGreaterThan(100);\n      |                                                               ^\n  187 |   expect(afterPixels).toBe(beforePixels);\n  188 |   await writeFile(info.outputPath('bookshelf-worker-and-save-evidence.json'), JSON.stringify({ quarterTurns, owned, beforePixels, afterPixels,\n  189 |     commands: (await sentCommands(page)).filter(command => command.type === 'PlaceRoomTemplate') }, null, 2));\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\bookshelf-player-build.spec.ts:186:63"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T04:18:19.912Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q1-negative-20261003\\bookshelf-player-build-pla-4b936-nd-keeps-it-after-Save-Load\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\bookshelf-player-build.spec.ts",
+                    "column": 72,
+                    "line": 172
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "cc4b308bbdc33c47e837-fe1c6280b65c68fd492c",
+          "file": "bookshelf-player-build.spec.ts",
+          "line": 222,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-03T04:17:33.884Z",
+    "duration": 96177.53,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}
