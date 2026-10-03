@@ -1,0 +1,16 @@
+00:01.157  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-modern-retained-material-lighting-draft-20261003\assets\source\blender\draft.laundry.linen-rack.soft-light.blend"
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
+Traceback (most recent call last):
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-modern-retained-material-lighting-draft-20261003\tooling\blender\render-modern-retained-material-draft.py", line 196, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-modern-retained-material-lighting-draft-20261003\tooling\blender\render-modern-retained-material-draft.py", line 138, in main
+    verify_presentation(scene, scene.camera, target, before)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-modern-retained-material-lighting-draft-20261003\tooling\blender\render-modern-retained-material-draft.py", line 84, in verify_presentation
+    raise ValueError('Modern draft changed actual64px-per-tile camera/footprint target')
+ValueError: Modern draft changed actual64px-per-tile camera/footprint target
+
+Error: script failed, file: 'C:\Users\matma\Documents\Rozwój gier\lockstate-modern-retained-material-lighting-draft-20261003\tooling\blender\render-modern-retained-material-draft.py', exiting.

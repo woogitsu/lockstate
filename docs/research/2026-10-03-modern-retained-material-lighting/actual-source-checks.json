@@ -1,0 +1,51 @@
+{
+  "checks": {
+    "final-focused-tests": {
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/unit/modern-retained-material-draft-art.test.ts",
+        "tests/unit/oblique-laundry-linen-rack-art.test.ts",
+        "tests/determinism/art-pipeline-determinism.test.ts",
+        "--reporter=dot"
+      ],
+      "exitCode": 0,
+      "log": "final-focused-tests.log"
+    },
+    "strict-source-types": {
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "-b",
+        "--pretty",
+        "false"
+      ],
+      "exitCode": 0,
+      "log": "strict-source-types.log"
+    },
+    "strict-tooling-types": {
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "-b",
+        "tsconfig.tools.json",
+        "--pretty",
+        "false"
+      ],
+      "exitCode": 0,
+      "log": "strict-tooling-types.log"
+    }
+  },
+  "focusedTestsPassed": 9,
+  "genericLiveBlenderOnPATHSkipped": 1,
+  "actualPinnedBlenderControlsRun": true,
+  "normalDistanceMaximumRoundoffAfterExistingMinCornerTranslation": 4.176981747150421e-07,
+  "beforeAfterLightingPhysicalRecordsExactlyEqual": true,
+  "savedDraftVerifiedByActualBlender": true,
+  "full72Run": false,
+  "nativeRun": false,
+  "buildRun": false,
+  "serverRun": false,
+  "ownerReferenceReviewPending": true
+}
