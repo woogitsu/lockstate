@@ -1,0 +1,33 @@
+{
+  "controls": [
+    {
+      "label": "actual-context-omission-red",
+      "exitCode": 1,
+      "expectedRed": true
+    },
+    {
+      "label": "exact-context-restore-green",
+      "exitCode": 0,
+      "expectedRed": false
+    },
+    {
+      "label": "actual-registry-omission-red",
+      "exitCode": 1,
+      "expectedRed": true
+    },
+    {
+      "label": "exact-registry-restore-green",
+      "exitCode": 0,
+      "expectedRed": false
+    }
+  ],
+  "protectedBefore": {
+    "src/rendering/assets/oblique-object-mapping.ts": "34f91286673acf653e05a1431d4a4dd3c0e192445f5046a509589dd2e730baa6",
+    "public/game-content/oblique-module-registry.v1.json": "ebfb523f2a5f14bf8ef4a61ff56aea39262d4e1dc3f7de9c5c6f29820e3e66bb"
+  },
+  "protectedAfter": {
+    "src/rendering/assets/oblique-object-mapping.ts": "34f91286673acf653e05a1431d4a4dd3c0e192445f5046a509589dd2e730baa6",
+    "public/game-content/oblique-module-registry.v1.json": "ebfb523f2a5f14bf8ef4a61ff56aea39262d4e1dc3f7de9c5c6f29820e3e66bb"
+  },
+  "exactRestore": true
+}

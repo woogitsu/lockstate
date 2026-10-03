@@ -13,3 +13,7 @@ Retain actual current `furniture.chair.wooden.angled-detail.blend`: 52 meshes, f
 Front: original exposed timber/steel perimeter around charcoal seat pad. Back: full lumbar pad attaches to retained walnut rail and original dark inset; retained rear uprights/fasteners stay visible. Footprint remains 1?1 and source bounds/camera target/scale remain byte-for-byte numeric contracts.
 
 Own new builder, source, provenance, exporter, descriptor/72 genuine PNGs and dedicated structural/consumer tests. After source proof: registry entry and only `room.staff-room/object.chair` context. Preserve default wooden chair, Classroom/Reception chairs, all 20 templates, gameplay costs/collision/save. Actual source, dispatch and hash-valid PNG mutation RED?exact restore GREEN required. Serial Blender 5.2.1 thread1. No browser/server/build/fullverify; root owns those surfaces. Native acceptance remains pending.
+
+## Completed state
+
+Source checkpoint pushed dd3c66125a. Genuine72, four real repeats, semantic/dispatch/hash-validPNG and context/registry exact-restore controls completed. Runtime Staff-only integration and strict typed gates GREEN. Native/network/pixel acceptance remains root-owned and pending; no build/fullverify/browser run.

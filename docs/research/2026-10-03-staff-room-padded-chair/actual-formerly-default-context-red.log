@@ -1,0 +1,83 @@
+pnpm : $ vitest run "tests/unit/oblique-staff-room-padded-chair-context.test.ts" "--reporter=dot"
+At line:38 char:1
++ pnpm --config.verify-deps-before-run=false test tests/unit/oblique-st ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...--reporter=dot":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-functional-angled-model-next-20261003
+
+xx····xx
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-staff-room-padded-chair-context.test.ts > Staff Room ObjectChair context in the actual world
+projection > selects BOTH literal completed Staff Room chairs q0 with their canonical source60/e40 frame
+ FAIL  tests/unit/oblique-staff-room-padded-chair-context.test.ts > Staff Room ObjectChair context in the actual world
+projection > selects BOTH literal completed Staff Room chairs q1 with their canonical source60/e40 frame
+AssertionError: actual Staff Room chair context selector: expected 'furniture.chair.wooden' to be 'furniture.staff-room
+.padded-chair' // Object.is equality
+
+Expected: "furniture.staff-room.padded-chair"
+Received: "furniture.chair.wooden"
+
+ ❯ tests/unit/oblique-staff-room-padded-chair-context.test.ts:49:74
+     47|     for (const structure of structures) {
+     48|       const solid = projected.raised.find(item => item.id === structur…
+     49|       expect(solid?.assetId, 'actual Staff Room chair context selector…
+       |                                                                          ^
+     50|       if (solid === undefined) throw new Error('Literal purchased Staf…
+     51|       const selected = selectObliqueModuleFrame(catalog, { yawRadians:…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tests/unit/oblique-staff-room-padded-chair-context.test.ts > Staff Room ObjectChair context in the actual world
+projection > uses the entire occupied footprint and never aggregates two adjacent rooms
+AssertionError: expected 'furniture.chair.wooden' to be 'furniture.staff-room.padded-chair' // Object.is equality
+
+Expected: "furniture.staff-room.padded-chair"
+Received: "furniture.chair.wooden"
+
+ ❯ tests/unit/oblique-staff-room-padded-chair-context.test.ts:92:103
+     90|
+     91|   it('uses the entire occupied footprint and never aggregates two adja…
+     92|     expect(obliqueAssetIdForPlacedObject('object.chair', 8, 8, { width…
+       |                                                                                                       ^
+     93|     expect(obliqueAssetIdForPlacedObject('object.chair', 8, 8, { width…
+     94|     expect(obliqueAssetIdForPlacedObject('object.chair', 8, 8, { width…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  tests/unit/oblique-staff-room-padded-chair-context.test.ts > Staff Room ObjectChair context in the actual world
+projection > registers the selected asset once with its real source and complete descriptor
+AssertionError: actual runtime Staff Room registry entry: expected [] to deeply equal [ { …(2) } ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "assetId": "furniture.staff-room.padded-chair",
+-     "manifest": "/game-content/oblique-furniture-staff-room-padded-chair.v1.json",
+-   },
+- ]
++ []
+
+ ❯ tests/unit/oblique-staff-room-padded-chair-context.test.ts:102:65
+    100|     const registry = parseObliqueModuleRegistry(JSON.parse(readFileSyn…
+    101|     const entries = registry.entries.filter(entry => entry.assetId ===…
+    102|     expect(entries, 'actual runtime Staff Room registry entry').toEqua…
+       |                                                                 ^
+    103|       manifest: '/game-content/oblique-furniture-staff-room-padded-cha…
+    104|     const entry = entries[0];
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 4 passed (8)
+   Start at  18:11:53
+   Duration  731ms (transform 262ms, setup 0ms, import 593ms, tests 15ms, environment 0ms)
+
+[ELIFECYCLE] Test failed. See above for more details.

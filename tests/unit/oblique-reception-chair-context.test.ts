@@ -67,7 +67,7 @@ describe('Reception ObjectChair context in the actual world projection', () => {
     for (const [rooms, structure, expected] of [
       [[], chair(), 'furniture.chair.wooden'],
       [[{ ...reception, instanceId: 'room.classroom:5:5', roomCatalogId: 'room.classroom' }], chair(), 'furniture.classroom.student-chair'],
-      [[{ ...reception, instanceId: 'room.staff-room:5:5', roomCatalogId: 'room.staff-room' }], chair(), 'furniture.chair.wooden'],
+      [[{ ...reception, instanceId: 'room.staff-room:5:5', roomCatalogId: 'room.staff-room' }], chair(), 'furniture.staff-room.padded-chair'],
       [[reception], chair(4, 6), 'furniture.chair.wooden'],
       [[reception], chair(9, 6), 'furniture.chair.wooden'],
       [[reception], chair(5, 4), 'furniture.chair.wooden'],

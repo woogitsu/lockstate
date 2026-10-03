@@ -1,0 +1,18 @@
+pnpm : $ vitest run "tests/unit/oblique-staff-room-padded-chair-art.test.ts" "tests/unit/oblique-staff-room-padded-chai
+r-context.test.ts" "tests/unit/oblique-reception-chair-context.test.ts" "tests/unit/oblique-classroom-student-chair-con
+text.test.ts" "tests/unit/oblique-staff-room-desk-art.test.ts" "--reporter=dot"
+At line:14 char:1
++ pnpm --config.verify-deps-before-run=false test tests/unit/oblique-st ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...--reporter=dot":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-functional-angled-model-next-20261003
+
+····························
+
+ Test Files  5 passed (5)
+      Tests  28 passed (28)
+   Start at  18:12:38
+   Duration  1.58s (transform 1.71s, setup 0ms, import 3.39s, tests 1.37s, environment 0ms)

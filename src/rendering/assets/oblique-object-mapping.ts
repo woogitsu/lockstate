@@ -58,6 +58,7 @@ const ROOM_VISUAL_VARIANTS: readonly {
   }) },
   { roomCatalogId: 'room.staff-room', objectAssets: Object.freeze({
     'object.desk': 'furniture.office.desk.employee.variants',
+    'object.chair': 'furniture.staff-room.padded-chair',
   }) },
 ]);
 
