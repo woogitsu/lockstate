@@ -1,0 +1,13 @@
+{
+  "subject": "7411151a6c847cb4bbb1375d6bb704002eb18671",
+  "source": "src/ui/hud/hud.css",
+  "omitted": "only the actual new resting-unselected-template-card rule",
+  "beforeSha256": "9c2b7d3053898e3abf92867c8d6119e439e02b5ee7c85735713e70030fe816ce",
+  "restoredSha256": "9c2b7d3053898e3abf92867c8d6119e439e02b5ee7c85735713e70030fe816ce",
+  "redExit": 1,
+  "restoredGreenExit": 0,
+  "byteExactRestoration": true,
+  "restoredTestCommand": "node node_modules/vitest/vitest.mjs run tests/unit/ui-template-card-paint.test.ts tests/unit/ui-design-tokens.test.ts tests/unit/ui-theme.test.ts --maxWorkers=4",
+  "browserExecuted": false,
+  "buildExecuted": false
+}

@@ -1,0 +1,91 @@
+{
+  "subject": "7411151a6c847cb4bbb1375d6bb704002eb18671",
+  "kind": "actual-source state-paint ratios; not computed browser style",
+  "rows": [
+    {
+      "theme": "light",
+      "state": "secondary action hover",
+      "foreground": "--text-heading",
+      "background": "--surface-active",
+      "ratio": 12.138355252636666,
+      "required": 4.5
+    },
+    {
+      "theme": "light",
+      "state": "icon hover",
+      "foreground": "--text-heading",
+      "background": "--surface-overlay",
+      "ratio": 12.899711177722596,
+      "required": 4.5
+    },
+    {
+      "theme": "light",
+      "state": "template selected",
+      "foreground": "--accent",
+      "background": "--surface-sunken",
+      "ratio": 4.714641376492655,
+      "required": 4.5
+    },
+    {
+      "theme": "light",
+      "state": "template hover/active/focus base paint",
+      "foreground": "--text-body",
+      "background": "--surface-sunken",
+      "ratio": 11.032761039576286,
+      "required": 4.5
+    },
+    {
+      "theme": "light",
+      "state": "template unselected resting parent",
+      "foreground": "--text-body",
+      "background": "--surface-panel",
+      "ratio": 12.005450698249838,
+      "required": 4.5
+    },
+    {
+      "theme": "dark",
+      "state": "secondary action hover",
+      "foreground": "--text-heading",
+      "background": "--surface-active",
+      "ratio": 9.508771395818696,
+      "required": 4.5
+    },
+    {
+      "theme": "dark",
+      "state": "icon hover",
+      "foreground": "--text-heading",
+      "background": "--surface-overlay",
+      "ratio": 11.619232996806627,
+      "required": 4.5
+    },
+    {
+      "theme": "dark",
+      "state": "template selected",
+      "foreground": "--accent",
+      "background": "--surface-sunken",
+      "ratio": 10.995912747506457,
+      "required": 4.5
+    },
+    {
+      "theme": "dark",
+      "state": "template hover/active/focus base paint",
+      "foreground": "--text-body",
+      "background": "--surface-sunken",
+      "ratio": 14.40637787649019,
+      "required": 4.5
+    },
+    {
+      "theme": "dark",
+      "state": "template unselected resting parent",
+      "foreground": "--text-body",
+      "background": "--surface-panel",
+      "ratio": 13.492088471739809,
+      "required": 4.5
+    }
+  ],
+  "minimumTextContrast": 4.714641376492655,
+  "disabledState": "Original action opacity0.5 and icon muted/transparent producers unchanged; no enabled-text floor claimed for unavailable controls.",
+  "nativeFocus": "Original native modal focus is untouched; this source reading does not measure its rendered ring.",
+  "browserExecuted": false,
+  "buildExecuted": false
+}
