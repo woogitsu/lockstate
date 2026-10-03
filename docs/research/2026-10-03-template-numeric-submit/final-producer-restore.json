@@ -1,0 +1,21 @@
+{
+  "subject": "1b1681fb712936532d9b5e3f2c2a402e7cf318cd",
+  "producer": "src/ui/hud/room-template-preview.ts",
+  "sha256Before": "25f90ad451f43d4a62ab22fa2bc8f2cc6c70799499994669b728cd279400f2bb",
+  "results": [
+    {
+      "name": "accepted-owner-omission",
+      "negativeExit": 1,
+      "restoredExit": 0,
+      "byteExact": true,
+      "sha256": "25f90ad451f43d4a62ab22fa2bc8f2cc6c70799499994669b728cd279400f2bb"
+    },
+    {
+      "name": "selection-guard-omission",
+      "negativeExit": 1,
+      "restoredExit": 0,
+      "byteExact": true,
+      "sha256": "25f90ad451f43d4a62ab22fa2bc8f2cc6c70799499994669b728cd279400f2bb"
+    }
+  ]
+}
