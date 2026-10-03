@@ -249,14 +249,15 @@ export interface HudWorldRoomSource {
  * content the HUD does not hold -- the *anchor* is the whole of what the
  * simulation needs, and it derives the footprint from the object catalogue.
  *
- * No orientation, because nothing can produce one: the rotate control that
- * decision 5 describes needs an input action phase 1 does not ship, and a field
- * the interface always sets to the same value would be a field with no reader.
+ * The owner selected the #2019 individual-object Rotate control on 2026-10-03.
+ * Optional quarterTurns carries that public choice; omitted legacy placements
+ * retain orientation0. The worker derives and validates the rotated footprint.
  */
 export interface HudObjectPlacement {
   readonly definitionId: string;
   readonly x: number;
   readonly y: number;
+  readonly quarterTurns?: 0 | 1 | 2 | 3;
 }
 
 /**
@@ -553,6 +554,7 @@ export type HudIntent =
       readonly armed: boolean;
       readonly definitionId: string | undefined;
       readonly removing: boolean;
+      readonly quarterTurns?: 0 | 1 | 2 | 3;
     }
   /**
    * The player asked to reverse, or reapply, the last thing they did (#261).
@@ -2361,7 +2363,8 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       }
       if (intent.placesObject) {
         dispatchCommand(
-          { kind: 'place-object', definitionId: intent.definitionId, x: intent.x, y: intent.y },
+          { kind: 'place-object', definitionId: intent.definitionId, x: intent.x, y: intent.y,
+            ...(intent.quarterTurns === undefined ? {} : { quarterTurns: intent.quarterTurns }) },
           buildPanel.submitControl,
         );
         return;
@@ -2385,10 +2388,11 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
         buildPanel.submitControl,
       );
     },
-    onArm: (armed, definitionId, removing) => {
+    onArm: (armed, definitionId, removing, quarterTurns) => {
       runReported(
         'arm-build-tool',
-        () => options.onIntent?.({ kind: 'arm-build-tool', armed, definitionId, removing }),
+        () => options.onIntent?.({ kind: 'arm-build-tool', armed, definitionId, removing,
+          ...(quarterTurns === undefined ? {} : { quarterTurns }) }),
         reportError,
       );
     },
@@ -2813,7 +2817,8 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       });
       return;
     }
-    dispatchCommand({ kind: 'place-object', definitionId: gesture.definitionId, x: gesture.x, y: gesture.y });
+    dispatchCommand({ kind: 'place-object', definitionId: gesture.definitionId, x: gesture.x, y: gesture.y,
+      ...(gesture.quarterTurns === undefined ? {} : { quarterTurns: gesture.quarterTurns }) });
   });
 
   /*

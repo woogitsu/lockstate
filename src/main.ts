@@ -3060,7 +3060,10 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           const footprint = intent.definitionId === undefined ? undefined : objectFootprintOf(intent.definitionId);
           if (footprint !== undefined && intent.definitionId !== undefined) {
             tool?.setArmed(false);
-            objects?.setArmed(intent.armed, { definitionId: intent.definitionId, footprint, removing: false });
+            objects?.setArmed(intent.armed, { definitionId: intent.definitionId, footprint, removing: false,
+              quarterTurns: intent.quarterTurns ?? 0 });
+            // A changed orientation invalidates an earlier held canvas press.
+            worldScene.refreshObjectToolPreview();
             return;
           }
           objects?.setArmed(false, { removing: false });
@@ -3477,6 +3480,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
             definitionId: intent.definitionId,
             x: intent.x,
             y: intent.y,
+            ...(intent.quarterTurns === undefined ? {} : { quarterTurns: intent.quarterTurns }),
           });
           return;
 
