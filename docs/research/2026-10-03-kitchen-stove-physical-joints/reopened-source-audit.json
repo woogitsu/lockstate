@@ -1,0 +1,1291 @@
+{
+  "sourceSha256": "2a912331e9c20a35ea417c25d371cf89a5f80092c3f066504c7b792cb1a042a2",
+  "actual96RawMeshesExactlyMatch": true,
+  "allSixFullGraphsMatch": true,
+  "allActualEvaluatedPositionHashesMatch": true,
+  "actualContactTargets": [
+    {
+      "shoe": "physical-kitchen-stove.east-west grate shoe 0 -1",
+      "retainedTarget": "angled-stove.burner collar 0",
+      "actualInteriorWitness": [
+        -0.6240000128746033,
+        -0.16500000655651093,
+        1.4600000381469727
+      ],
+      "overlappingDepth": 0.016000032424926758
+    },
+    {
+      "shoe": "physical-kitchen-stove.east-west grate shoe 0 -1",
+      "retainedTarget": "angled-stove.pot support east-west 0",
+      "actualInteriorWitness": [
+        -0.6240000128746033,
+        -0.16500000655651093,
+        1.4790000915527344
+      ],
+      "overlappingDepth": 0.010000109672546387
+    },
+    {
+      "shoe": "physical-kitchen-stove.east-west grate shoe 0 1",
+      "retainedTarget": "angled-stove.burner collar 0",
+      "actualInteriorWitness": [
+        -0.2759999930858612,
+        -0.16500000655651093,
+        1.4600000381469727
+      ],
+      "overlappingDepth": 0.016000032424926758
+    },
+    {
+      "shoe": "physical-kitchen-stove.east-west grate shoe 0 1",
+      "retainedTarget": "angled-stove.pot support east-west 0",
+      "actualInteriorWitness": [
+        -0.2759999930858612,
+        -0.16500000655651093,
+        1.4790000915527344
+      ],
+      "overlappingDepth": 0.010000109672546387
+    },
+    {
+      "shoe": "physical-kitchen-stove.east-west grate shoe 1 -1",
+      "retainedTarget": "angled-stove.burner collar 1",
+      "actualInteriorWitness": [
+        -0.6240000128746033,
+        0.15000000596046448,
+        1.4600000381469727
+      ],
+      "overlappingDepth": 0.016000032424926758
+    },
+    {
+      "shoe": "physical-kitchen-stove.east-west grate shoe 1 -1",
+      "retainedTarget": "angled-stove.pot support east-west 1",
+      "actualInteriorWitness": [
+        -0.6240000128746033,
+        0.15000000596046448,
+        1.4790000915527344
+      ],
+      "overlappingDepth": 0.010000109672546387
+    },
+    {
+      "shoe": "physical-kitchen-stove.east-west grate shoe 1 1",
+      "retainedTarget": "angled-stove.burner collar 1",
+      "actualInteriorWitness": [
+        -0.2759999930858612,
+        0.15000000596046448,
+        1.4600000381469727
+      ],
+      "overlappingDepth": 0.016000032424926758
+    },
+    {
+      "shoe": "physical-kitchen-stove.east-west grate shoe 1 1",
+      "retainedTarget": "angled-stove.pot support east-west 1",
+      "actualInteriorWitness": [
+        -0.2759999930858612,
+        0.15000000596046448,
+        1.4790000915527344
+      ],
+      "overlappingDepth": 0.010000109672546387
+    },
+    {
+      "shoe": "physical-kitchen-stove.east-west grate shoe 2 -1",
+      "retainedTarget": "angled-stove.burner collar 2",
+      "actualInteriorWitness": [
+        0.2759999930858612,
+        -0.16500000655651093,
+        1.4600000381469727
+      ],
+      "overlappingDepth": 0.016000032424926758
+    },
+    {
+      "shoe": "physical-kitchen-stove.east-west grate shoe 2 -1",
+      "retainedTarget": "angled-stove.pot support east-west 2",
+      "actualInteriorWitness": [
+        0.2759999930858612,
+        -0.16500000655651093,
+        1.4790000915527344
+      ],
+      "overlappingDepth": 0.010000109672546387
+    },
+    {
+      "shoe": "physical-kitchen-stove.east-west grate shoe 2 1",
+      "retainedTarget": "angled-stove.burner collar 2",
+      "actualInteriorWitness": [
+        0.6240000128746033,
+        -0.16500000655651093,
+        1.4600000381469727
+      ],
+      "overlappingDepth": 0.016000032424926758
+    },
+    {
+      "shoe": "physical-kitchen-stove.east-west grate shoe 2 1",
+      "retainedTarget": "angled-stove.pot support east-west 2",
+      "actualInteriorWitness": [
+        0.6240000128746033,
+        -0.16500000655651093,
+        1.4790000915527344
+      ],
+      "overlappingDepth": 0.010000109672546387
+    },
+    {
+      "shoe": "physical-kitchen-stove.east-west grate shoe 3 -1",
+      "retainedTarget": "angled-stove.burner collar 3",
+      "actualInteriorWitness": [
+        0.2759999930858612,
+        0.15000000596046448,
+        1.4600000381469727
+      ],
+      "overlappingDepth": 0.016000032424926758
+    },
+    {
+      "shoe": "physical-kitchen-stove.east-west grate shoe 3 -1",
+      "retainedTarget": "angled-stove.pot support east-west 3",
+      "actualInteriorWitness": [
+        0.2759999930858612,
+        0.15000000596046448,
+        1.4790000915527344
+      ],
+      "overlappingDepth": 0.010000109672546387
+    },
+    {
+      "shoe": "physical-kitchen-stove.east-west grate shoe 3 1",
+      "retainedTarget": "angled-stove.burner collar 3",
+      "actualInteriorWitness": [
+        0.6240000128746033,
+        0.15000000596046448,
+        1.4600000381469727
+      ],
+      "overlappingDepth": 0.016000032424926758
+    },
+    {
+      "shoe": "physical-kitchen-stove.east-west grate shoe 3 1",
+      "retainedTarget": "angled-stove.pot support east-west 3",
+      "actualInteriorWitness": [
+        0.6240000128746033,
+        0.15000000596046448,
+        1.4790000915527344
+      ],
+      "overlappingDepth": 0.010000109672546387
+    },
+    {
+      "shoe": "physical-kitchen-stove.north-south grate shoe 0 -1",
+      "retainedTarget": "angled-stove.burner collar 0",
+      "actualInteriorWitness": [
+        -0.44999998807907104,
+        -0.3019999861717224,
+        1.4600000381469727
+      ],
+      "overlappingDepth": 0.016000032424926758
+    },
+    {
+      "shoe": "physical-kitchen-stove.north-south grate shoe 0 -1",
+      "retainedTarget": "angled-stove.pot support north-south 0",
+      "actualInteriorWitness": [
+        -0.44999998807907104,
+        -0.3019999861717224,
+        1.4800000190734863
+      ],
+      "overlappingDepth": 0.00800013542175293
+    },
+    {
+      "shoe": "physical-kitchen-stove.north-south grate shoe 0 1",
+      "retainedTarget": "angled-stove.burner collar 0",
+      "actualInteriorWitness": [
+        -0.44999998807907104,
+        -0.02800000086426735,
+        1.4600000381469727
+      ],
+      "overlappingDepth": 0.016000032424926758
+    },
+    {
+      "shoe": "physical-kitchen-stove.north-south grate shoe 0 1",
+      "retainedTarget": "angled-stove.pot support north-south 0",
+      "actualInteriorWitness": [
+        -0.44999998807907104,
+        -0.02800000086426735,
+        1.4800000190734863
+      ],
+      "overlappingDepth": 0.00800013542175293
+    },
+    {
+      "shoe": "physical-kitchen-stove.north-south grate shoe 1 -1",
+      "retainedTarget": "angled-stove.burner collar 1",
+      "actualInteriorWitness": [
+        -0.44999998807907104,
+        0.013000000268220901,
+        1.4600000381469727
+      ],
+      "overlappingDepth": 0.016000032424926758
+    },
+    {
+      "shoe": "physical-kitchen-stove.north-south grate shoe 1 -1",
+      "retainedTarget": "angled-stove.pot support north-south 1",
+      "actualInteriorWitness": [
+        -0.44999998807907104,
+        0.013000000268220901,
+        1.4800000190734863
+      ],
+      "overlappingDepth": 0.00800013542175293
+    },
+    {
+      "shoe": "physical-kitchen-stove.north-south grate shoe 1 1",
+      "retainedTarget": "angled-stove.burner collar 1",
+      "actualInteriorWitness": [
+        -0.44999998807907104,
+        0.28700000047683716,
+        1.4600000381469727
+      ],
+      "overlappingDepth": 0.016000032424926758
+    },
+    {
+      "shoe": "physical-kitchen-stove.north-south grate shoe 1 1",
+      "retainedTarget": "angled-stove.pot support north-south 1",
+      "actualInteriorWitness": [
+        -0.44999998807907104,
+        0.28700000047683716,
+        1.4800000190734863
+      ],
+      "overlappingDepth": 0.00800013542175293
+    },
+    {
+      "shoe": "physical-kitchen-stove.north-south grate shoe 2 -1",
+      "retainedTarget": "angled-stove.burner collar 2",
+      "actualInteriorWitness": [
+        0.44999998807907104,
+        -0.3019999861717224,
+        1.4600000381469727
+      ],
+      "overlappingDepth": 0.016000032424926758
+    },
+    {
+      "shoe": "physical-kitchen-stove.north-south grate shoe 2 -1",
+      "retainedTarget": "angled-stove.pot support north-south 2",
+      "actualInteriorWitness": [
+        0.44999998807907104,
+        -0.3019999861717224,
+        1.4800000190734863
+      ],
+      "overlappingDepth": 0.00800013542175293
+    },
+    {
+      "shoe": "physical-kitchen-stove.north-south grate shoe 2 1",
+      "retainedTarget": "angled-stove.burner collar 2",
+      "actualInteriorWitness": [
+        0.44999998807907104,
+        -0.02800000086426735,
+        1.4600000381469727
+      ],
+      "overlappingDepth": 0.016000032424926758
+    },
+    {
+      "shoe": "physical-kitchen-stove.north-south grate shoe 2 1",
+      "retainedTarget": "angled-stove.pot support north-south 2",
+      "actualInteriorWitness": [
+        0.44999998807907104,
+        -0.02800000086426735,
+        1.4800000190734863
+      ],
+      "overlappingDepth": 0.00800013542175293
+    },
+    {
+      "shoe": "physical-kitchen-stove.north-south grate shoe 3 -1",
+      "retainedTarget": "angled-stove.burner collar 3",
+      "actualInteriorWitness": [
+        0.44999998807907104,
+        0.013000000268220901,
+        1.4600000381469727
+      ],
+      "overlappingDepth": 0.016000032424926758
+    },
+    {
+      "shoe": "physical-kitchen-stove.north-south grate shoe 3 -1",
+      "retainedTarget": "angled-stove.pot support north-south 3",
+      "actualInteriorWitness": [
+        0.44999998807907104,
+        0.013000000268220901,
+        1.4800000190734863
+      ],
+      "overlappingDepth": 0.00800013542175293
+    },
+    {
+      "shoe": "physical-kitchen-stove.north-south grate shoe 3 1",
+      "retainedTarget": "angled-stove.burner collar 3",
+      "actualInteriorWitness": [
+        0.44999998807907104,
+        0.28700000047683716,
+        1.4600000381469727
+      ],
+      "overlappingDepth": 0.016000032424926758
+    },
+    {
+      "shoe": "physical-kitchen-stove.north-south grate shoe 3 1",
+      "retainedTarget": "angled-stove.pot support north-south 3",
+      "actualInteriorWitness": [
+        0.44999998807907104,
+        0.28700000047683716,
+        1.4800000190734863
+      ],
+      "overlappingDepth": 0.00800013542175293
+    }
+  ],
+  "evaluatedNormalAudit": [
+    {
+      "name": "angled-stove.burner collar 0",
+      "evaluatedVertices": 128,
+      "evaluatedPolygons": 128,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 128,
+      "minimumOutwardNormalDistance": 0.013000010512769222,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.burner collar 1",
+      "evaluatedVertices": 128,
+      "evaluatedPolygons": 128,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 128,
+      "minimumOutwardNormalDistance": 0.013000010512769222,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.burner collar 2",
+      "evaluatedVertices": 128,
+      "evaluatedPolygons": 128,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 128,
+      "minimumOutwardNormalDistance": 0.013000010512769222,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.burner collar 3",
+      "evaluatedVertices": 128,
+      "evaluatedPolygons": 128,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 128,
+      "minimumOutwardNormalDistance": 0.013000010512769222,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.control knob index 0",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.0034998655319213867,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.control knob index 1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.00349995493888855,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.control knob index 2",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.00349995493888855,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.control knob index 3",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.0034999996423721313,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.control knob index 4",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.0034999847412109375,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.control knob index 5",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.0034998059272766113,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.oven hinge 0 0.3",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.011499941349029541,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.oven hinge 0 0.91",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.011499941349029541,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.oven hinge 1 0.3",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.011499941349029541,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.oven hinge 1 0.91",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.011499941349029541,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.oven seal horizontal 0 0.415",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.004499852657318115,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.oven seal horizontal 0 0.905",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.004499852657318115,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.oven seal horizontal 1 0.415",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.004499852657318115,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.oven seal horizontal 1 0.905",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.004499852657318115,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.oven seal vertical 0 -1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.004499852657318115,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.oven seal vertical 0 1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.004499852657318115,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.oven seal vertical 1 -1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.004499852657318115,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.oven seal vertical 1 1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.004499852657318115,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.pot support east-west 0",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.01199999451637268,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.pot support east-west 1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.01199999451637268,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.pot support east-west 2",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.01199999451637268,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.pot support east-west 3",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.01199999451637268,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.pot support north-south 0",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.011999904178082943,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.pot support north-south 1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.011999905109405518,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.pot support north-south 2",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.011999874375760555,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.pot support north-south 3",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.01199987530708313,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.rolled splash lip",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.014999866485595703,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.side vent louvre -1 0",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.0040000081062316895,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.side vent louvre -1 1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.003999948501586914,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.side vent louvre -1 2",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.0040000081062316895,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.side vent louvre -1 3",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.0040000081062316895,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.side vent louvre -1 4",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.003999948501586914,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.side vent louvre 1 0",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.0040000081062316895,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.side vent louvre 1 1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.003999948501586914,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.side vent louvre 1 2",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.0040000081062316895,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.side vent louvre 1 3",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.0040000081062316895,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.side vent louvre 1 4",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.003999948501586914,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.side vent recess -1 0",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.003999531269073486,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.side vent recess -1 1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.003999531269073486,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.side vent recess -1 2",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.003999531269073486,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.side vent recess -1 3",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.003999531269073486,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.side vent recess -1 4",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.003999531269073486,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.side vent recess 1 0",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.003999888896942139,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.side vent recess 1 1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.003999888896942139,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.side vent recess 1 2",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.003999888896942139,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.side vent recess 1 3",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.003999888896942139,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-stove.side vent recess 1 4",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.003999888896942139,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "burner",
+      "evaluatedVertices": 96,
+      "evaluatedPolygons": 50,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 50,
+      "minimumOutwardNormalDistance": 0.034999966621398926,
+      "inwardPolygons": 0,
+      "transformDeterminant": 0.6749999523162842
+    },
+    {
+      "name": "burner-hot",
+      "evaluatedVertices": 64,
+      "evaluatedPolygons": 34,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 34,
+      "minimumOutwardNormalDistance": 0.008999228477478027,
+      "inwardPolygons": 0,
+      "transformDeterminant": 0.6749999523162842
+    },
+    {
+      "name": "burner-hot.001",
+      "evaluatedVertices": 64,
+      "evaluatedPolygons": 34,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 34,
+      "minimumOutwardNormalDistance": 0.008999228477478027,
+      "inwardPolygons": 0,
+      "transformDeterminant": 0.6749999523162842
+    },
+    {
+      "name": "burner-hot.002",
+      "evaluatedVertices": 64,
+      "evaluatedPolygons": 34,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 34,
+      "minimumOutwardNormalDistance": 0.008999228477478027,
+      "inwardPolygons": 0,
+      "transformDeterminant": 0.6749999523162842
+    },
+    {
+      "name": "burner-hot.003",
+      "evaluatedVertices": 64,
+      "evaluatedPolygons": 34,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 34,
+      "minimumOutwardNormalDistance": 0.008999228477478027,
+      "inwardPolygons": 0,
+      "transformDeterminant": 0.6749999523162842
+    },
+    {
+      "name": "burner.001",
+      "evaluatedVertices": 96,
+      "evaluatedPolygons": 50,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 50,
+      "minimumOutwardNormalDistance": 0.03499996289610863,
+      "inwardPolygons": 0,
+      "transformDeterminant": 0.6749999523162842
+    },
+    {
+      "name": "burner.002",
+      "evaluatedVertices": 96,
+      "evaluatedPolygons": 50,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 50,
+      "minimumOutwardNormalDistance": 0.034999966621398926,
+      "inwardPolygons": 0,
+      "transformDeterminant": 0.6749999523162842
+    },
+    {
+      "name": "burner.003",
+      "evaluatedVertices": 96,
+      "evaluatedPolygons": 50,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 50,
+      "minimumOutwardNormalDistance": 0.034999966621398926,
+      "inwardPolygons": 0,
+      "transformDeterminant": 0.6749999523162842
+    },
+    {
+      "name": "control-knob",
+      "evaluatedVertices": 48,
+      "evaluatedPolygons": 26,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 26,
+      "minimumOutwardNormalDistance": 0.013125032186508179,
+      "inwardPolygons": 0,
+      "transformDeterminant": 0.6749999523162842
+    },
+    {
+      "name": "control-knob.001",
+      "evaluatedVertices": 48,
+      "evaluatedPolygons": 26,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 26,
+      "minimumOutwardNormalDistance": 0.013125032186508179,
+      "inwardPolygons": 0,
+      "transformDeterminant": 0.6749999523162842
+    },
+    {
+      "name": "control-knob.002",
+      "evaluatedVertices": 48,
+      "evaluatedPolygons": 26,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 26,
+      "minimumOutwardNormalDistance": 0.013125032186508179,
+      "inwardPolygons": 0,
+      "transformDeterminant": 0.6749999523162842
+    },
+    {
+      "name": "control-knob.003",
+      "evaluatedVertices": 48,
+      "evaluatedPolygons": 26,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 26,
+      "minimumOutwardNormalDistance": 0.013125032186508179,
+      "inwardPolygons": 0,
+      "transformDeterminant": 0.6749999523162842
+    },
+    {
+      "name": "control-knob.004",
+      "evaluatedVertices": 48,
+      "evaluatedPolygons": 26,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 26,
+      "minimumOutwardNormalDistance": 0.013125032186508179,
+      "inwardPolygons": 0,
+      "transformDeterminant": 0.6749999523162842
+    },
+    {
+      "name": "control-knob.005",
+      "evaluatedVertices": 48,
+      "evaluatedPolygons": 26,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 26,
+      "minimumOutwardNormalDistance": 0.013125031255185604,
+      "inwardPolygons": 0,
+      "transformDeterminant": 0.6749999523162842
+    },
+    {
+      "name": "control-rail",
+      "evaluatedVertices": 96,
+      "evaluatedPolygons": 98,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 98,
+      "minimumOutwardNormalDistance": 0.03749993443489075,
+      "inwardPolygons": 0,
+      "transformDeterminant": 0.6749999523162842
+    },
+    {
+      "name": "foot",
+      "evaluatedVertices": 96,
+      "evaluatedPolygons": 98,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 98,
+      "minimumOutwardNormalDistance": 0.04999997094273567,
+      "inwardPolygons": 0,
+      "transformDeterminant": 0.6749999523162842
+    },
+    {
+      "name": "foot.001",
+      "evaluatedVertices": 96,
+      "evaluatedPolygons": 98,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 98,
+      "minimumOutwardNormalDistance": 0.04999997094273567,
+      "inwardPolygons": 0,
+      "transformDeterminant": 0.6749999523162842
+    },
+    {
+      "name": "foot.002",
+      "evaluatedVertices": 96,
+      "evaluatedPolygons": 98,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 98,
+      "minimumOutwardNormalDistance": 0.04999997094273567,
+      "inwardPolygons": 0,
+      "transformDeterminant": 0.6749999523162842
+    },
+    {
+      "name": "foot.003",
+      "evaluatedVertices": 96,
+      "evaluatedPolygons": 98,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 98,
+      "minimumOutwardNormalDistance": 0.04999997094273567,
+      "inwardPolygons": 0,
+      "transformDeterminant": 0.6749999523162842
+    },
+    {
+      "name": "handle",
+      "evaluatedVertices": 96,
+      "evaluatedPolygons": 98,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 98,
+      "minimumOutwardNormalDistance": 0.02249985933303833,
+      "inwardPolygons": 0,
+      "transformDeterminant": 0.6749999523162842
+    },
+    {
+      "name": "handle.001",
+      "evaluatedVertices": 96,
+      "evaluatedPolygons": 98,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 98,
+      "minimumOutwardNormalDistance": 0.02249985933303833,
+      "inwardPolygons": 0,
+      "transformDeterminant": 0.6749999523162842
+    },
+    {
+      "name": "oven-door",
+      "evaluatedVertices": 96,
+      "evaluatedPolygons": 98,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 98,
+      "minimumOutwardNormalDistance": 0.03749993443489075,
+      "inwardPolygons": 0,
+      "transformDeterminant": 0.6749999523162842
+    },
+    {
+      "name": "oven-door.001",
+      "evaluatedVertices": 96,
+      "evaluatedPolygons": 98,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 98,
+      "minimumOutwardNormalDistance": 0.03749993443489075,
+      "inwardPolygons": 0,
+      "transformDeterminant": 0.6749999523162842
+    },
+    {
+      "name": "oven-window",
+      "evaluatedVertices": 96,
+      "evaluatedPolygons": 98,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 98,
+      "minimumOutwardNormalDistance": 0.014999925158917904,
+      "inwardPolygons": 0,
+      "transformDeterminant": 0.6749999523162842
+    },
+    {
+      "name": "oven-window.001",
+      "evaluatedVertices": 96,
+      "evaluatedPolygons": 98,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 98,
+      "minimumOutwardNormalDistance": 0.014999925158917904,
+      "inwardPolygons": 0,
+      "transformDeterminant": 0.6749999523162842
+    },
+    {
+      "name": "physical-kitchen-stove.east-west grate shoe 0 -1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.009999871253967285,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "physical-kitchen-stove.east-west grate shoe 0 1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.00999993085861206,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "physical-kitchen-stove.east-west grate shoe 1 -1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.009999871253967285,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "physical-kitchen-stove.east-west grate shoe 1 1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.00999993085861206,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "physical-kitchen-stove.east-west grate shoe 2 -1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.009999871253967285,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "physical-kitchen-stove.east-west grate shoe 2 1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.009999990463256836,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "physical-kitchen-stove.east-west grate shoe 3 -1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.009999871253967285,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "physical-kitchen-stove.east-west grate shoe 3 1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.009999990463256836,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "physical-kitchen-stove.north-south grate shoe 0 -1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.009999990463256836,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "physical-kitchen-stove.north-south grate shoe 0 1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.009999990463256836,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "physical-kitchen-stove.north-south grate shoe 1 -1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.009999990463256836,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "physical-kitchen-stove.north-south grate shoe 1 1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.009999990463256836,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "physical-kitchen-stove.north-south grate shoe 2 -1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.009999960660934448,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "physical-kitchen-stove.north-south grate shoe 2 1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.009999960660934448,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "physical-kitchen-stove.north-south grate shoe 3 -1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.009999960660934448,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "physical-kitchen-stove.north-south grate shoe 3 1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.009999960660934448,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "rear-splash",
+      "evaluatedVertices": 96,
+      "evaluatedPolygons": 98,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 98,
+      "minimumOutwardNormalDistance": 0.04499991238117218,
+      "inwardPolygons": 0,
+      "transformDeterminant": 0.6749999523162842
+    },
+    {
+      "name": "status-light",
+      "evaluatedVertices": 96,
+      "evaluatedPolygons": 98,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 98,
+      "minimumOutwardNormalDistance": 0.014999926090240479,
+      "inwardPolygons": 0,
+      "transformDeterminant": 0.6749999523162842
+    },
+    {
+      "name": "steel-deck",
+      "evaluatedVertices": 96,
+      "evaluatedPolygons": 98,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 98,
+      "minimumOutwardNormalDistance": 0.07999944686889648,
+      "inwardPolygons": 0,
+      "transformDeterminant": 0.6749999523162842
+    },
+    {
+      "name": "stove-body",
+      "evaluatedVertices": 96,
+      "evaluatedPolygons": 98,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 98,
+      "minimumOutwardNormalDistance": 0.32999998331069946,
+      "inwardPolygons": 0,
+      "transformDeterminant": 0.6749999523162842
+    }
+  ],
+  "nativeBrowserStarted": false
+}
