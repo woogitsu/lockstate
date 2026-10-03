@@ -1,0 +1,19 @@
+{
+  "sourceCommit": "bd850f86d616bb7367096b23cee381940bd1b259",
+  "typecheckExitCode": 0,
+  "focusedFinalUnit": {
+    "filesPassed": 3,
+    "testsPassed": 7,
+    "testsSkipped": 1
+  },
+  "productionBuildExitCode": 0,
+  "worker": {
+    "path": "dist/client/assets/worker-DUaWOoHo.js",
+    "bytes": 438431,
+    "sha256": "011d223479fae8b42a4f5fe7a2921b5b88d6d3bf2c83da0e534615e434c5a413"
+  },
+  "sourceSha256": "600d62b3b5708081445b6ba84b5f38fc8534922f6a128b448e1585c97e95c212",
+  "descriptorSha256": "2463369e2bd785c2edee78a46d0e7cdcdbb9efac9b4de097e56af5bae4461e2f",
+  "nativeBrowserStarted": false,
+  "serverStarted": false
+}
