@@ -2,6 +2,8 @@
 
 Obtained 2026-10-03. Isolated branch `codex/v9-active-revision-limit-audit-20261003`, exact base `4074c305ba69aa920074fb7f02bae45730a0327e` (production identical to integrated `2102c1700f79f5f5191edfcb3e64bdc571b3e697`). No production, format, wire, copy, tariff or budget change. This is diagnostic evidence and must not be imported as a GREEN fix.
 
+Fresh deduplicated [Issue #2025](https://github.com/woogitsu/lockstate/issues/2025) carries the [exact review text](./issue-body.md). The original diagnostic checkpoint is `ff504a35a9cabe375dc2014dae2a144bc6887776`.
+
 ## Genuine reproduction
 
 The probe buys a brick square at (3,3) through packed `PlaceBuildOrder` in the actual seed73 runtime. One genuine tick leaves the actual order `materials-pending` and treasury24,920. A V9 envelope captured from that runtime sets only this existing order's approved revision field to `Number.MAX_SAFE_INTEGER` (9,007,199,254,740,991). `createSaveEnvelope` validates it and computes its actual checksum; JSON encode/decode and actual runtime restoration accept it. There are no planted orders, world/entity changes or simulation verdicts.
@@ -41,3 +43,5 @@ The existing stale-cancellation message means a token mismatch; it would not tru
 Saturation alone loses stale-token distinction after the first exhausted transition. Wrapping/resetting can equal an old queued token. A smaller decoder ceiling contradicts the explicit approved upper bound and only postpones exhaustion; a terminal MAX row can later be targeted by Undo/Redo/removal. None is applied here. The legal untouched-terminal control demonstrates a narrow unchanged-state boundary, not immunity from future actions.
 
 No browser/server/build/full-suite or production mutation was performed. No performance claim. Original failures, exact executed inert probes and successful controls are retained for review.
+
+Final own research-index contract: **5 GREEN,2.28s** ([raw](./raw/index-terminal.txt)). [Issue readback](./raw/issue-readback.json) verifies the actual persisted proposal; [raw-file SHA256 manifest](./raw/sha256.json) records the evidence bytes at publication. Other documentation gates were not rerun for this evidence-only addition; the prior exact-base record already reports its inherited absent proposal citation, repaired separately by the coordinator.

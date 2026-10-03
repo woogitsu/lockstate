@@ -1,0 +1,54 @@
+﻿{
+    "source":  "4074c305ba69aa920074fb7f02bae45730a0327e",
+    "diagnosticCommit":  "ff504a35a9cabe375dc2014dae2a144bc6887776",
+    "measuredFailed":  2,
+    "measuredLegalPassed":  2,
+    "protocolPassed":  1,
+    "protocolUnselected":  4,
+    "productionChanged":  false,
+    "nativeExecuted":  false,
+    "producerMutationExecuted":  false,
+    "indexExit":  0,
+    "files":  [
+                  {
+                      "file":  "executed-probe.test.ts.txt",
+                      "sha256":  "0b0eeba197f3137b3a614e5654a229b68d17afb00b4b0df2e9401889ad3628ed"
+                  },
+                  {
+                      "file":  "executed-protocol-measured.test.ts.txt",
+                      "sha256":  "67c139372dab8aec91a34e9b822b592abd69b25d3800d292b941d9a8baae0736"
+                  },
+                  {
+                      "file":  "executed-protocol-probe.test.ts.txt",
+                      "sha256":  "b37ab04421fac3b2addecc6a38a2dc0fd8a0fe7c28941ec528e05f98664e4ebc"
+                  },
+                  {
+                      "file":  "fresh-duplicate-search.json",
+                      "sha256":  "afc34739b2d07f2ae84215d8496240f01a042415f05935bc85a74771cf53caf2"
+                  },
+                  {
+                      "file":  "index-terminal.txt",
+                      "sha256":  "a2865e9f4535971e0cc29ddf566b8776bd6001c80a20b10281e4813adda11c2e"
+                  },
+                  {
+                      "file":  "issue-readback.json",
+                      "sha256":  "61c504ca8a39a6bc103391d1b8afc04186ab7c7b67b5586dab3850438e418f8f"
+                  },
+                  {
+                      "file":  "measured-two-red-two-legal.txt",
+                      "sha256":  "554655d0e52b1d63ca096bccb1586a59656679463e1811807271f256a8b4e141"
+                  },
+                  {
+                      "file":  "original-fixture-error.txt",
+                      "sha256":  "3a0c2c82b1dd792cebe5c2627f6803ebda51183962c30cc0d2b7de2f256b5871"
+                  },
+                  {
+                      "file":  "protocol-boundary.txt",
+                      "sha256":  "774bbc6d7bf21df781158e3c8a06a687f231a65b7d2c55200d9ce13352fa5806"
+                  },
+                  {
+                      "file":  "protocol-measured.txt",
+                      "sha256":  "86f01d7cb42b3c460741638c0a1674f638a954d6e14857cc41a7aa2836745177"
+                  }
+              ]
+}
