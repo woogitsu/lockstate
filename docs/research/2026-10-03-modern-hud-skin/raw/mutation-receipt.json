@@ -1,0 +1,11 @@
+{
+  "checkpoint": "0c8623bb8a4c5c098a4123e72845b928a1901002",
+  "source": "src/ui/tokens.css",
+  "mutation": "Remove both consumed surface-panel theme aliases, leave actual component consumers unchanged",
+  "negativeExit": 1,
+  "restoredExit": 0,
+  "beforeSha256": "efc918d3c32b1b18f9a5c22891e15e24b86b9b82d83d1b3a88bd13bf74ad318c",
+  "afterSha256": "efc918d3c32b1b18f9a5c22891e15e24b86b9b82d83d1b3a88bd13bf74ad318c",
+  "byteExactRestore": true,
+  "nativeExecuted": false
+}

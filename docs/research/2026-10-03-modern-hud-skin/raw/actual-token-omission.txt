@@ -1,0 +1,73 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-modern-hud-skin-20261003
+
+ ❯ tests/unit/ui-design-tokens.test.ts (76 tests | 3 failed) 24ms
+     × C:\Users\matma\Documents\Rozwój gier\lockstate-modern-hud-skin-20261003\src\ui\hud\hud.css uses only tokens that exist 4ms
+     × C:\Users\matma\Documents\Rozwój gier\lockstate-modern-hud-skin-20261003\src\ui\primitives\primitives.css uses only tokens that exist 2ms
+     × C:\Users\matma\Documents\Rozwój gier\lockstate-modern-hud-skin-20261003\src\styles.css uses only tokens that exist 0ms
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 73 passed (76)
+   Start at  20:29:40
+   Duration  223ms (transform 34ms, setup 0ms, import 77ms, tests 24ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-design-tokens.test.ts > components reference only the semantic layer > C:\Users\matma\Documents\Rozwój gier\lockstate-modern-hud-skin-20261003\src\ui\hud\hud.css uses only tokens that exist
+AssertionError: --surface-panel is used in C:\Users\matma\Documents\Rozwój gier\lockstate-modern-hud-skin-20261003\src\ui\hud\hud.css but not declared in tokens.css: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/ui-design-tokens.test.ts:793:102
+    791|     const source = stylesheetRules(path);
+    792|     for (const match of source.matchAll(/var\((--[a-z0-9-]+)/g)) {
+    793|       expect(tokens.has(match[1]!), `${match[1]} is used in ${path} bu…
+       |                                                                                                      ^
+    794|     }
+    795|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  tests/unit/ui-design-tokens.test.ts > components reference only the semantic layer > C:\Users\matma\Documents\Rozwój gier\lockstate-modern-hud-skin-20261003\src\ui\primitives\primitives.css uses only tokens that exist
+AssertionError: --surface-panel is used in C:\Users\matma\Documents\Rozwój gier\lockstate-modern-hud-skin-20261003\src\ui\primitives\primitives.css but not declared in tokens.css: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/ui-design-tokens.test.ts:793:102
+    791|     const source = stylesheetRules(path);
+    792|     for (const match of source.matchAll(/var\((--[a-z0-9-]+)/g)) {
+    793|       expect(tokens.has(match[1]!), `${match[1]} is used in ${path} bu…
+       |                                                                                                      ^
+    794|     }
+    795|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  tests/unit/ui-design-tokens.test.ts > components reference only the semantic layer > C:\Users\matma\Documents\Rozwój gier\lockstate-modern-hud-skin-20261003\src\styles.css uses only tokens that exist
+AssertionError: --surface-panel is used in C:\Users\matma\Documents\Rozwój gier\lockstate-modern-hud-skin-20261003\src\styles.css but not declared in tokens.css: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/ui-design-tokens.test.ts:793:102
+    791|     const source = stylesheetRules(path);
+    792|     for (const match of source.matchAll(/var\((--[a-z0-9-]+)/g)) {
+    793|       expect(tokens.has(match[1]!), `${match[1]} is used in ${path} bu…
+       |                                                                                                      ^
+    794|     }
+    795|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
