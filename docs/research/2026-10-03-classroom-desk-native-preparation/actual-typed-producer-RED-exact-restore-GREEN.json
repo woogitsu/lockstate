@@ -1,0 +1,15 @@
+{
+  "actualProducer": "src/simulation/objects/object-placement-service.ts",
+  "actualMutation": "force actual separately placed desk createBuildOrder to orientation1; public command retains no invented rotation",
+  "redReason": "actual public desk order is forced to orientation1 although the ordinary command and literal oracle require orientation0",
+  "redExitCode": 1,
+  "bothCasesReachedRED": true,
+  "exactProducerByteRestoration": true,
+  "producerSHA256": "a8f4c1f932f7659e3a0880a89dfcece2df1375c0582eab2406eb384c3bec6c1c",
+  "restoredGreenExitCode": 0,
+  "ordinaryTypedCasesPassed": 2,
+  "wholeV8RoundtripCheckedForBoth": true,
+  "artSourceDescriptor72FramesRegistryMappingUnchanged": true,
+  "browserOrServerStarted": false,
+  "BlenderOrSourceArtMutatorStarted": false
+}
