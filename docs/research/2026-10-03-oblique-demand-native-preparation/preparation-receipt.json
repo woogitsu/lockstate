@@ -1,0 +1,72 @@
+﻿{
+    "preparedSource":  "8727228d538bf2fb1a0644c1b09f3bc988008321",
+    "prepCommit":  "d3fe5a8e2de5b0a06d4a4e67b2ee483f0451a310",
+    "productionDiff":  {
+
+                       },
+    "browserLaunched":  false,
+    "serverLaunched":  false,
+    "nativeExecuted":  false,
+    "strictAppExit":  0,
+    "strictToolsExit":  0,
+    "frozenSchemaControls":  4,
+    "productionBuildExit":  0,
+    "collectedTests":  3,
+    "collectedFiles":  1,
+    "documentationPassedTests":  23,
+    "documentationPassedFiles":  3,
+    "retainedOriginalFixtureError":  "TS2783 duplicate CDP type log tag corrected to event; original output retained",
+    "limits":  [
+                   "Skipped LFS smudging: build/collection do not prove usable hydrated PNGs",
+                   "No private bound texture evidence",
+                   "Turned screenshot calibration pending",
+                   "No native latency or hosted improvement claim"
+               ],
+    "preparedFiles":  [
+                          {
+                              "path":  "tests/browser/oblique-demand-frozen-assets.ts",
+                              "sha256":  "4427e28037716425d690a06ef1887622e0472aa1d3b569d4f50c7f3caa51e92d"
+                          },
+                          {
+                              "path":  "tests/browser/oblique-demand-loading.profile.config.ts",
+                              "sha256":  "0f469d4a9535cd970dffa217a33bb6731c085cd51d25102124a39f00af61ecf3"
+                          },
+                          {
+                              "path":  "tests/browser/oblique-demand-loading.profile.ts",
+                              "sha256":  "9b6e9b10b31de4a80379344effb4f8a2412667637d4e314b62af02c7d1d0126c"
+                          },
+                          {
+                              "path":  "tests/browser/oblique-demand-native-observers.ts",
+                              "sha256":  "13db3a5ed27bcde2486cd0591135aa87c9933f44ea7116ca24c2cecf2c84c95e"
+                          },
+                          {
+                              "path":  "tests/unit/oblique-demand-native-frozen-subject.test.ts",
+                              "sha256":  "e87d39cdcb0d67f183c6fdb6bd6eef731cd45ab4f01f6ad47ec2bdd9b5efa3b9"
+                          }
+                      ],
+    "localCompilation":  {
+                             "root":  "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-oblique-demand-native-prep-20261003\\dist\\client",
+                             "scripts":  [
+                                             {
+                                                 "path":  "assets\\catalog-DwDh8vBS.js",
+                                                 "bytes":  86212,
+                                                 "sha256":  "c2561fbc63fb3c411b80a7ff7a122f8684ef76cd73d4d3b32d2651046260f4c1"
+                                             },
+                                             {
+                                                 "path":  "assets\\index-DG44L-cH.js",
+                                                 "bytes":  1933106,
+                                                 "sha256":  "07817e376e30d9ce027c8cf586207da69d991b98606c3024756c22d369fc7ece"
+                                             },
+                                             {
+                                                 "path":  "assets\\pl-catalog-CiWtCsu8.js",
+                                                 "bytes":  51260,
+                                                 "sha256":  "ee614829f4b2b1221082adbfe90a1ba72cb086a72b28aa2892a7fb34e3cbb998"
+                                             },
+                                             {
+                                                 "path":  "assets\\worker-ZoROEaJT.js",
+                                                 "bytes":  442752,
+                                                 "sha256":  "7ecf14dd26adb0db16c7adbd4f97b92ffe4f1b547be533fad3b326108e8a900a"
+                                             }
+                                         ]
+                         }
+}
