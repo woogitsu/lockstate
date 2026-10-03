@@ -1651,3 +1651,20 @@ unapproved ordinary Rotate UI or V9 history fields enter this delivery. Root
 integrates; three agents continue new genuine art, reviewable rotation UI and
 concrete existing construction bugs. Each coherent checkpoint is pushed and
 the consolidated main PR still requires all exact hosted gates before landing.
+
+The final frozen63f8288product now passes strict types, the complete8448case
+suite/708files/two existing skips with four local test workers, actual production
+build and the asset gate. Three real BasicCell capacity/q0/q1native cases pass,
+including actual north-door back135/225poses, genuine source/loader bodies and
+whole paused Save/Load. Root opened both fresh FullHD backside frames. Original
+default-worker scan timeouts remain published; no case budget is raised.
+
+Separate new work is already on GitHub: the retained52part Staff chair gains
+two connected pads and72genuine Blender poses; #2023 forbids a separately
+purchased object on an owned template door square. The owner has now approved
+V9 with construction.newerActionThanTheStackTop and construction.orderRevisions,
+older-save data retained/defaultfalse andempty map, copy/refunds unchanged.
+These followups do not silently change the frozen graphics product. Three
+agents continue Staff native preparation/new models, actual corrected rotation
+UI measurements and the approved V9 implementation while root submits and
+integrates the actual game. Hosted exact-head and serial main gates still apply.

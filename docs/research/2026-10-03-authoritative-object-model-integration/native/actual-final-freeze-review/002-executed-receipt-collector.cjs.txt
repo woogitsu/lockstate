@@ -1,0 +1,22 @@
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),cp=require('node:child_process');
+const root=path.resolve(process.argv[2]),temp=process.env.TEMP;
+const subject='63f8288f1386f6ac4194c189e1888e5b261a501d';
+if(cp.execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim()!==subject)throw Error('unexpected freeze');
+const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
+const out=path.join(temp,'lockstate-final-angled-proof-receipt-20261003');fs.mkdirSync(out,{recursive:true});
+const report=JSON.parse(fs.readFileSync(path.join(temp,'lockstate-north-door-final-combined-native-20261003.json'),'utf8'));
+if(report.stats.expected!==3||report.stats.unexpected!==0||report.stats.skipped!==0)throw Error('native statistics differ');
+const cases=[];function walk(suites){for(const s of suites??[]){for(const spec of s.specs??[])for(const t of spec.tests??[])cases.push({title:spec.title,status:t.status,results:t.results.map(r=>({status:r.status,durationMs:r.duration,errors:r.errors}))});walk(s.suites);}}walk(report.suites);
+const shots=report.suites.flatMap(()=>[]);
+const dir=path.join(root,'assets/intermediate/interior-north-door-native/cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD');
+for(const name of ['north-door-camera135-source135-elev45.png','north-door-camera225-source-135-elev45.png']){const b=fs.readFileSync(path.join(dir,name));shots.push({name,sha256:sha(b),bytes:b.length,width:b.readUInt32BE(16),height:b.readUInt32BE(20),rootViewed:true});}
+const reviewBase='C:/Users/matma/AppData/Local/Temp/lockstate-root63-release-review-20261003';
+const reviewFiles=[];
+for(const ext of ['.cjs','.json','.initial-relative-source-resolution-error.json']){
+ const source=reviewBase+ext;
+ if(!fs.existsSync(source))throw Error('missing independent review '+source);
+ const name='independent-release-review'+(ext==='.cjs'?'.cjs.txt':ext);const b=fs.readFileSync(source);fs.writeFileSync(path.join(out,name),b);reviewFiles.push({source,archive:name,sha256:sha(b),bytes:b.length});
+}
+const receipt={subject,baseMain:'6d25ebd896c76fb09c2d387185eb1bd8b2a48b8d',version:'0.0.839',verification:{typecheckExit:0,completeSuiteExit:0,productionBuildExit:0,passingCases:8448,passingFiles:708,existingSkips:2,localMaxWorkers:4,commands:['pnpm --config.verify-deps-before-run=false typecheck','pnpm --config.verify-deps-before-run=false exec vitest run --maxWorkers=4','node scripts/cloudflare-task.mjs build production'],canonicalEarlierFailuresRetained:true,caseTimeoutMs:5000},assetCatalog:{exit:0,actorClipAtlases:10,renderedEntries:40},native:{config:'tests/browser/native-interior-north-door.audit.config.ts',port:5365,workers:1,retries:0,caseTimeoutMs:60000,expectTimeoutMs:10000,stats:report.stats,cases,shots,publicCameraRightClicks:[12,6,6],wholePausedEqualityAtBothBacksidesAndFullTurn:true,boundTextureIntrospection:false,calibratedConsumerPixelFloor:false,visualReview:'Both actual FullHD native frames opened by root. Cell door frame and rear leaf, bed, connected toilet and full-square walls visibly follow the genuine camera rotation. No new pixel threshold or private binding assertion is inferred.'},reviewFiles,release:'all same-head hosted jobs, mergeability and serial main still required; unapproved individual rotation/global layout excluded; newly approved V9 is a separate followup'};
+fs.writeFileSync(path.join(out,'actual-freeze-receipt.json'),JSON.stringify(receipt,null,2)+'\n');
+fs.copyFileSync(__filename,path.join(out,'executed-receipt-collector.cjs.txt'));console.log(JSON.stringify({subject,nativeCases:cases.length,reviewFiles:reviewFiles.length,shots:shots.length,out}));

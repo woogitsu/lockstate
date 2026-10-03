@@ -681,5 +681,209 @@
     "sourceSha256": "94035cba4389a853da2abb70a857ab9064156c8f07a95402909526b31f745a8b",
     "archivedBytes": 2244,
     "archivedSha256": "94035cba4389a853da2abb70a857ab9064156c8f07a95402909526b31f745a8b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-complete-angled-integration-final-verify-scanned-once-20261003.txt",
+    "archived": "original-final-default-source-scan-timeout/console.txt",
+    "sourceBytes": 3930,
+    "sourceSha256": "6a0c814537eef28b21bf2a37a333e9aecb9b86e6881724e2721a8fc79d296d14",
+    "archivedBytes": 2052,
+    "archivedSha256": "9ef1a9e300cfca08eb277541ce7bd47eb0e27dc92faab2b4eb5cf6fab6442e48",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-complete-angled-integration-final-bounded-workers-20261003.txt",
+    "archived": "complete-final-stage-green/console.txt",
+    "sourceBytes": 5864,
+    "sourceSha256": "5c6e07f2553fd55f16088eaa2c31102f26c886ed276e693b5a1d31a7c32d9cbe",
+    "archivedBytes": 2956,
+    "archivedSha256": "d80e5607200b94ec4c85391895b3353838df3846712728dfe9df6352ca84fe0d",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-final-angled-asset-catalog-20261003.txt",
+    "archived": "asset-catalog-green/console.txt",
+    "sourceBytes": 1298,
+    "sourceSha256": "8f3bcfdfa44b4b7cefbb01be3fe80e22036144420571f6e4b568bd92e15da9bc",
+    "archivedBytes": 649,
+    "archivedSha256": "fc6b072e1b84836d6d51fdccdf698123f09837fa3158a638685e4f1e17d72a54",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-north-door-final-combined-native-20261003.json",
+    "archived": "north-door-three-green/report.json",
+    "sourceBytes": 7423,
+    "sourceSha256": "5c8b4495a9c835de791d8a2e858bb8d173e6011968697950b16ce5a372a80925",
+    "archivedBytes": 7423,
+    "archivedSha256": "5c8b4495a9c835de791d8a2e858bb8d173e6011968697950b16ce5a372a80925"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-north-door-final-combined-native-20261003.txt",
+    "archived": "north-door-three-green/console.txt",
+    "sourceBytes": 4192,
+    "sourceSha256": "b6fdfe32e14c70c541e382f854f44d59c03419f90203ee8019c3ab5c42c96cca",
+    "archivedBytes": 2103,
+    "archivedSha256": "92d12ad0712b60f8156db6b10bc1653d95c3f80afd8f2e4b6ebacf3523df5839",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-north-door-final-combined-native-20261003\\.last-run.json",
+    "archived": "north-door-three-green/001-.last-run.json",
+    "sourceBytes": 45,
+    "sourceSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "archivedBytes": 45,
+    "archivedSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-north-door-final-combined-native-20261003\\cell-cot-player-build-play-30d8c--after-Save-Load-at-Full-HD\\attachments\\cell-cot-owner-loader-save-evidence-7247ff3ac9c0eed173236151b8523cd5119c6e38.json",
+    "archived": "north-door-three-green/002-cell-cot-owner-loader-save-evidence-7247ff3ac9c0eed173236151b852.json",
+    "sourceBytes": 169259,
+    "sourceSha256": "51a45bd785ddd0da969a3b0e351ff7b467eb3b3c304bcccd94bb3fd4f222f3be",
+    "archivedBytes": 169259,
+    "archivedSha256": "51a45bd785ddd0da969a3b0e351ff7b467eb3b3c304bcccd94bb3fd4f222f3be"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-north-door-final-combined-native-20261003\\cell-cot-player-build-play-30d8c--after-Save-Load-at-Full-HD\\cell-cot-headboard-pending-calibration-fullhd.png",
+    "archived": "north-door-three-green/003-cell-cot-headboard-pending-calibration-fullhd.png",
+    "sourceBytes": 1499648,
+    "sourceSha256": "f95528c64171aa6009d36a984f3d63e22b4dbffb8d0396ef67e423fabe7503bf",
+    "archivedBytes": 1499648,
+    "archivedSha256": "f95528c64171aa6009d36a984f3d63e22b4dbffb8d0396ef67e423fabe7503bf"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-north-door-final-combined-native-20261003\\cell-cot-player-build-play-30d8c--after-Save-Load-at-Full-HD\\cell-cot-loaded-fullhd.png",
+    "archived": "north-door-three-green/004-cell-cot-loaded-fullhd.png",
+    "sourceBytes": 1374426,
+    "sourceSha256": "9bab0456cc3fd3fd6fe1c352f35d50750d9580ac41f80d79a8ea5b01340d5a07",
+    "archivedBytes": 1374426,
+    "archivedSha256": "9bab0456cc3fd3fd6fe1c352f35d50750d9580ac41f80d79a8ea5b01340d5a07"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-north-door-final-combined-native-20261003\\cell-cot-player-build-play-30d8c--after-Save-Load-at-Full-HD\\cell-cot-owner-loader-save-evidence.json",
+    "archived": "north-door-three-green/005-cell-cot-owner-loader-save-evidence.json",
+    "sourceBytes": 169259,
+    "sourceSha256": "51a45bd785ddd0da969a3b0e351ff7b467eb3b3c304bcccd94bb3fd4f222f3be",
+    "archivedBytes": 169259,
+    "archivedSha256": "51a45bd785ddd0da969a3b0e351ff7b467eb3b3c304bcccd94bb3fd4f222f3be"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-north-door-final-combined-native-20261003\\cell-cot-player-build-play-30d8c--after-Save-Load-at-Full-HD\\cell-cot-worker-completed-fullhd.png",
+    "archived": "north-door-three-green/006-cell-cot-worker-completed-fullhd.png",
+    "sourceBytes": 1405931,
+    "sourceSha256": "70d2cc46ee5f6d12d5c8f2a9e92be54c2411af913441674446734e9128572dbe",
+    "archivedBytes": 1405931,
+    "archivedSha256": "70d2cc46ee5f6d12d5c8f2a9e92be54c2411af913441674446734e9128572dbe"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-north-door-final-combined-native-20261003\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\attachments\\cell-cot-owner-loader-save-evidence-d803f19fa1bf055fbb6a95af667ca7add6319fb4.json",
+    "archived": "north-door-three-green/007-cell-cot-owner-loader-save-evidence-d803f19fa1bf055fbb6a95af667c.json",
+    "sourceBytes": 216597,
+    "sourceSha256": "73f262eaddba91325a07e6a0ecdbdd1989dd9a2db929916b08f4ac790daf1921",
+    "archivedBytes": 216597,
+    "archivedSha256": "73f262eaddba91325a07e6a0ecdbdd1989dd9a2db929916b08f4ac790daf1921"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-north-door-final-combined-native-20261003\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\attachments\\north-door-public-backside-loader-evidence-418f0d4a9fc9841d3692302d0aefcbefbf56c964.json",
+    "archived": "north-door-three-green/008-north-door-public-backside-loader-evidence-418f0d4a9fc9841d36923.json",
+    "sourceBytes": 148996,
+    "sourceSha256": "804e5990a8571709e74a27b43b6161f2516ffeeab79f746ce70249e679040444",
+    "archivedBytes": 148996,
+    "archivedSha256": "804e5990a8571709e74a27b43b6161f2516ffeeab79f746ce70249e679040444"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-north-door-final-combined-native-20261003\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\cell-cot-headboard-pending-calibration-fullhd.png",
+    "archived": "north-door-three-green/009-cell-cot-headboard-pending-calibration-fullhd.png",
+    "sourceBytes": 1596717,
+    "sourceSha256": "5203faee347dbc80d17cadb81dcadd4634f439f957bd9cbd14ac0a81e3d89f6d",
+    "archivedBytes": 1596717,
+    "archivedSha256": "5203faee347dbc80d17cadb81dcadd4634f439f957bd9cbd14ac0a81e3d89f6d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-north-door-final-combined-native-20261003\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\cell-cot-loaded-fullhd.png",
+    "archived": "north-door-three-green/010-cell-cot-loaded-fullhd.png",
+    "sourceBytes": 1430263,
+    "sourceSha256": "fc7cc6dfe2c784be3d48b3a884aea556a304266fb62a1a25bcd1675594cbd711",
+    "archivedBytes": 1430263,
+    "archivedSha256": "fc7cc6dfe2c784be3d48b3a884aea556a304266fb62a1a25bcd1675594cbd711"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-north-door-final-combined-native-20261003\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\cell-cot-owner-loader-save-evidence.json",
+    "archived": "north-door-three-green/011-cell-cot-owner-loader-save-evidence.json",
+    "sourceBytes": 216597,
+    "sourceSha256": "73f262eaddba91325a07e6a0ecdbdd1989dd9a2db929916b08f4ac790daf1921",
+    "archivedBytes": 216597,
+    "archivedSha256": "73f262eaddba91325a07e6a0ecdbdd1989dd9a2db929916b08f4ac790daf1921"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-north-door-final-combined-native-20261003\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\cell-cot-worker-completed-fullhd.png",
+    "archived": "north-door-three-green/012-cell-cot-worker-completed-fullhd.png",
+    "sourceBytes": 1460795,
+    "sourceSha256": "1b089e86f18436612681f585fb528ecdb2ee853331acc83fb7f34fcf347af414",
+    "archivedBytes": 1460795,
+    "archivedSha256": "1b089e86f18436612681f585fb528ecdb2ee853331acc83fb7f34fcf347af414"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-north-door-final-combined-native-20261003\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\north-door-camera135-source135-elev45.png",
+    "archived": "north-door-three-green/013-north-door-camera135-source135-elev45.png",
+    "sourceBytes": 1445661,
+    "sourceSha256": "66807bb8d64c1bd7a55fc35fd551716f04dd290c3f2b8a58a0c25e22b443aeda",
+    "archivedBytes": 1445661,
+    "archivedSha256": "66807bb8d64c1bd7a55fc35fd551716f04dd290c3f2b8a58a0c25e22b443aeda"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-north-door-final-combined-native-20261003\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\north-door-camera225-source-135-elev45.png",
+    "archived": "north-door-three-green/014-north-door-camera225-source-135-elev45.png",
+    "sourceBytes": 1479037,
+    "sourceSha256": "c8823ffca9dd5a6c4340ec001b7d869b7bc36a52b70479e189e1d94c39db988f",
+    "archivedBytes": 1479037,
+    "archivedSha256": "c8823ffca9dd5a6c4340ec001b7d869b7bc36a52b70479e189e1d94c39db988f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-north-door-final-combined-native-20261003\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\north-door-public-backside-loader-evidence.json",
+    "archived": "north-door-three-green/015-north-door-public-backside-loader-evidence.json",
+    "sourceBytes": 148996,
+    "sourceSha256": "804e5990a8571709e74a27b43b6161f2516ffeeab79f746ce70249e679040444",
+    "archivedBytes": 148996,
+    "archivedSha256": "804e5990a8571709e74a27b43b6161f2516ffeeab79f746ce70249e679040444"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-final-angled-proof-receipt-20261003\\actual-freeze-receipt.json",
+    "archived": "actual-final-freeze-review/001-actual-freeze-receipt.json",
+    "sourceBytes": 4141,
+    "sourceSha256": "aa129617178add1452277775c601ca20fbd5127844416ec3d8b824796ad9ff99",
+    "archivedBytes": 4141,
+    "archivedSha256": "aa129617178add1452277775c601ca20fbd5127844416ec3d8b824796ad9ff99"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-final-angled-proof-receipt-20261003\\executed-receipt-collector.cjs.txt",
+    "archived": "actual-final-freeze-review/002-executed-receipt-collector.cjs.txt",
+    "sourceBytes": 3675,
+    "sourceSha256": "f3802a8bacd371009fbcf6536e25eede7f2053c963f0b5e10dbd53e5f24bea45",
+    "archivedBytes": 3675,
+    "archivedSha256": "f3802a8bacd371009fbcf6536e25eede7f2053c963f0b5e10dbd53e5f24bea45"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-final-angled-proof-receipt-20261003\\independent-release-review.cjs.txt",
+    "archived": "actual-final-freeze-review/003-independent-release-review.cjs.txt",
+    "sourceBytes": 4665,
+    "sourceSha256": "c8b0ec11bba4cbcfebb534e3f0a51775fe8b6e22191fa06ea33635e970a46e87",
+    "archivedBytes": 4665,
+    "archivedSha256": "c8b0ec11bba4cbcfebb534e3f0a51775fe8b6e22191fa06ea33635e970a46e87"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-final-angled-proof-receipt-20261003\\independent-release-review.initial-relative-source-resolution-error.json",
+    "archived": "actual-final-freeze-review/004-independent-release-review.initial-relative-source-resolution-er.json",
+    "sourceBytes": 14234,
+    "sourceSha256": "751862f44709e3fe43971f854d769ec139c4d7128ed9347fc64ae30e03a642cd",
+    "archivedBytes": 14234,
+    "archivedSha256": "751862f44709e3fe43971f854d769ec139c4d7128ed9347fc64ae30e03a642cd"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-final-angled-proof-receipt-20261003\\independent-release-review.json",
+    "archived": "actual-final-freeze-review/005-independent-release-review.json",
+    "sourceBytes": 11572,
+    "sourceSha256": "79182d524d5fd4d00fc4692b2860bc6a157a285e5f2b2370a7f129c1f7b7fc3c",
+    "archivedBytes": 11572,
+    "archivedSha256": "79182d524d5fd4d00fc4692b2860bc6a157a285e5f2b2370a7f129c1f7b7fc3c"
   }
 ]

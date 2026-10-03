@@ -1,0 +1,58 @@
+pnpm : $ tsc -b --pretty false && tsc -b tsconfig.tools.json --pretty false
+At line:2 char:329
++ ... 61003.txt'; pnpm --config.verify-deps-before-run=false typecheck *> $ ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ tsc -b --pret... --pretty false:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-common-room-connectivity-integration-20261003
+
+
+ Test Files  708 passed (708)
+      Tests  8448 passed | 2 skipped (8450)
+   Start at  18:17:27
+   Duration  96.26s (transform 8.22s, setup 0ms, import 111.47s, tests 190.94s, environment 35ms)
+
+vite v8.2.2 building lockstate_development environment for production...
+transforming...
+✓ 92 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/lockstate_development/.vite/manifest.json    0.15 kB │ gzip:  0.11 kB
+dist/lockstate_development/wrangler.json          1.63 kB │ gzip:  0.80 kB
+dist/lockstate_development/index.js             289.15 kB │ gzip: 76.65 kB
+
+✓ built in 35ms
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 497 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/client/.assetsignore                      0.02 kB
+dist/client/index.html                         1.71 kB │ gzip:   0.87 kB
+dist/client/assets/worker-BeLUuQwZ.js        443.79 kB
+dist/client/assets/index-5ZA72Oh0.css         83.36 kB │ gzip:  12.75 kB
+dist/client/assets/pl-catalog-DQ0PXWG1.js     51.26 kB │ gzip:  14.82 kB
+dist/client/assets/catalog-lZH0TBdb.js        86.41 kB │ gzip:  23.73 kB
+dist/client/assets/index-CIJwJeFB.js       1,936.93 kB │ gzip: 512.87 kB
+
+✓ built in 5.40s
+node : [plugin builtin:vite-reporter] 
+At line:2 char:703
++ ... testExit }; node scripts/cloudflare-task.mjs build production *>> $lo ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([plugin builtin:vite-reporter] :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeS
+plitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[33m[PLUGIN_TIMINGS] [0mYour build spent 95% of 5.4s inside plugin hooks (5.1s).
+Measured inside the callback, so queue time is excluded and time the callback itself awaited is not:
+  - vite:prepare-out-dir renderStart (81%, 4.4s, 1 call)
+See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+
+Verified Cloudflare production output: dist\lockstate_development\wrangler.json -> dist\client

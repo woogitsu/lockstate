@@ -173,3 +173,43 @@ and5000ms case budget. Actual refusalSchema member omission still produces
 citation and wire contracts together pass12cases. This is a scoped filesystem
 work repair, not a relaxed schema or gameplay check. Original timeout, executed
 producer control and exact-restoration hashes are preserved alongside it.
+
+## Actual final combined verification and north-door native acceptance
+
+The unchanged product subject **63f8288f1386f6ac4194c189e1888e5b261a501d**
+passes both strict TypeScript projects, the complete8448case/708file suite with
+two existing skips, and the real Cloudflare production build. Local execution
+limits the complete Vitest suite to four workers; case limits and assertions
+stay unchanged. The preceding default-worker run's5000ms source-filesystem-scan
+timeout is also retained, not overwritten or reported as success. This local
+sequence is not a claim that hosted default-worker CI has already succeeded.
+The asset gate separately validates10actor clip atlases and40rendered entries.
+
+The opt-in north-door config then passes all three genuine built-client cases
+on that exact63f product: capacity bootstrap42.5s, q0BasicCell59.3s and
+q1BasicCell37.3s. Original60s/expect10s, workers1/retries0 remain unchanged.
+The real q0 completed owner at21,11 has the authored north edge. Public camera
+buttons move the loaded cell through135/e45 and225/e45, decoding the exact
+new+135/−135canonical bodies in the actual loader. Whole paused snapshots stay
+equal at both backside poses and after the full24-click turn; both original
+cell ownership, costs and Save/Load routes pass.
+
+Root opened both actual1920×1080screenshots: frame/rear door leaf, retained cot,
+connected toilet and square walls visibly follow the turn. Raw observer flags
+remain honest: no private texture-binding introspection or calibrated new
+consumer pixel floor is asserted. The original screenshots, full worker state,
+response bodies/hashes, loader results, native JSON and actual source subject
+are preserved under `native/north-door-three-green`; local full-stage output,
+asset result and independent release review are preserved beside it.
+
+Independent review of the exact63f source finds main6d25as ancestor, no new
+package/deployment topology, no public individual Rotate or unapproved global
+layout, and only the approved14-line Blender hydration workflow delta.
+All4976descriptor frame/source references match published LFS OIDs; that Git
+inventory check is not separately claimed as upload, hydration or native proof.
+
+The owner subsequently approved V9 and the two history fields for #1985/#2021.
+Implementation proceeds on a separate branch with data-preserving older-save
+migrations and unchanged copy/refunds. That later acceptance does not insert
+V9 into the frozen63f graphics subject. The next consolidated own PR must still
+obtain every exact hosted job, mergeability and terminal serial main success.

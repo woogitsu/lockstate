@@ -1,0 +1,373 @@
+{
+  "subject": "63f8288f1386f6ac4194c189e1888e5b261a501d",
+  "main": "6d25ebd896c76fb09c2d387185eb1bd8b2a48b8d",
+  "changedGroups": {
+    ".github": 1,
+    "src/content": 7,
+    "src/input": 2,
+    "src/main.ts": 1,
+    "src/persistence": 2,
+    "src/rendering": 25,
+    "src/simulation": 32,
+    "src/ui": 23
+  },
+  "catalogCount": 69,
+  "mappedObjectAndActorIds": 36,
+  "uniqueFrames": 4905,
+  "declaredSourceReferences": 71,
+  "lfsPointerReferencesChecked": 4976,
+  "inlineReferencesChecked": 0,
+  "errors": [],
+  "catalogs": [
+    {
+      "assetId": "furniture.yard.exercise-station",
+      "manifest": "/game-content/oblique-furniture.yard-exercise-station.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "furniture.common-room.upholstered-bench",
+      "manifest": "/game-content/oblique-furniture.common-room-bench.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "furniture.classroom.school-chair",
+      "manifest": "/game-content/oblique-furniture.classroom-chair.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "furniture.classroom.student-chair",
+      "manifest": "/game-content/oblique-furniture-classroom-student-chair.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "furniture.cell.cot.single",
+      "manifest": "/game-content/oblique-furniture.cell-cot.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "furniture.storage-room.timber-rack",
+      "manifest": "/game-content/oblique-furniture.storage-room-rack.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "wall.interior.module.full",
+      "manifest": "/game-content/oblique-modules.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "wall.interior.module.west.full",
+      "manifest": "/game-content/oblique-wall-west.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "wall.interior.module.cutaway",
+      "manifest": "/game-content/oblique-wall-cutaway.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "wall.interior.module.west.cutaway",
+      "manifest": "/game-content/oblique-wall-west-cutaway.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "furniture.cell.bed.single.variants",
+      "manifest": "/game-content/oblique-cell-bed.v1.json",
+      "poses": 9
+    },
+    {
+      "assetId": "door.interior.open.full",
+      "manifest": "/game-content/oblique-cell-door-open.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "door.interior.open.cutaway",
+      "manifest": "/game-content/oblique-cell-door-north-cutaway.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "door.interior.open.west.full",
+      "manifest": "/game-content/oblique-cell-door-west-full.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "door.interior.open.west.cutaway",
+      "manifest": "/game-content/oblique-cell-door-west-cutaway.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "fixture.cell.toilet_sink",
+      "manifest": "/game-content/oblique-cell-toilet.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "furniture.storage.rack.wooden",
+      "manifest": "/game-content/oblique-cell-storage-rack.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "furniture.chair.wooden",
+      "manifest": "/game-content/oblique-cell-chair.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "floor.cell.sealed-concrete",
+      "manifest": "/game-content/oblique-floor-cell.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "floor.linoleum.institutional",
+      "manifest": "/game-content/oblique-floor-corridor.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "floor.canteen.terrazzo",
+      "manifest": "/game-content/oblique-floor-canteen.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "actor.prisoner.base",
+      "manifest": "/game-content/oblique-actor-prisoner.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "actor.guard.base",
+      "manifest": "/game-content/oblique-actor-guard.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "actor.cook.base",
+      "manifest": "/game-content/oblique-actor-cook.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "actor.medic.base",
+      "manifest": "/game-content/oblique-actor-medic.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "actor.staff.base",
+      "manifest": "/game-content/oblique-actor-staff.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "wall.interior.corner.inner.north-west.full",
+      "manifest": "/game-content/oblique-wall-corner-north-west-full.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "wall.interior.corner.inner.north-west.cutaway",
+      "manifest": "/game-content/oblique-wall-corner-north-west-cutaway.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "floor.shower.ceramic",
+      "manifest": "/game-content/oblique-floor-shower.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "fixture.shower.head",
+      "manifest": "/game-content/oblique-shower-head.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "door.shower.privacy.open.full",
+      "manifest": "/game-content/oblique-shower-privacy-door-full.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "door.shower.privacy.open.cutaway",
+      "manifest": "/game-content/oblique-shower-privacy-door-cutaway.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "floor.terrain.dirt",
+      "manifest": "/game-content/oblique-floor-terrain-dirt.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "floor.terrain.grass",
+      "manifest": "/game-content/oblique-floor-terrain-grass.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "floor.terrain.dirt-grass.edge.north",
+      "manifest": "/game-content/oblique-floor-dirt-grass-edge-north.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "floor.terrain.dirt-grass.edge.east",
+      "manifest": "/game-content/oblique-floor-dirt-grass-edge-east.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "floor.terrain.dirt-grass.edge.south",
+      "manifest": "/game-content/oblique-floor-dirt-grass-edge-south.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "floor.terrain.dirt-grass.edge.west",
+      "manifest": "/game-content/oblique-floor-dirt-grass-edge-west.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "wall.interior.corner.inner.north-east.full",
+      "manifest": "/game-content/oblique-wall-corner-north-east-full.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "wall.interior.corner.inner.north-east.cutaway",
+      "manifest": "/game-content/oblique-wall-corner-north-east-cutaway.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "wall.interior.corner.inner.south-east.full",
+      "manifest": "/game-content/oblique-wall-corner-south-east-full.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "wall.interior.corner.inner.south-east.cutaway",
+      "manifest": "/game-content/oblique-wall-corner-south-east-cutaway.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "wall.interior.junction.t.west.full",
+      "manifest": "/game-content/oblique-wall-junction-t-west-full.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "wall.interior.junction.t.west.cutaway",
+      "manifest": "/game-content/oblique-wall-junction-t-west-cutaway.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "wall.square.brick.full",
+      "manifest": "/game-content/oblique-square-brick-full-wall.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "wall.square.brick.low",
+      "manifest": "/game-content/oblique-square-brick-low-wall.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "furniture.dining.table.wooden",
+      "manifest": "/game-content/oblique-furniture.canteen-dining-table.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "furniture.corridor.bench.variants",
+      "manifest": "/game-content/oblique-canteen-bench.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "floor.reception.linoleum",
+      "manifest": "/game-content/oblique-floor-reception.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "furniture.office.desk.employee.variants",
+      "manifest": "/game-content/oblique-reception-employee-desk.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "furniture.medical-bed.variants",
+      "manifest": "/game-content/oblique-furniture.medical-bed.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "fixture.medicine-cabinet.variants",
+      "manifest": "/game-content/oblique-fixture.medicine-cabinet.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "utility.security-console.variants",
+      "manifest": "/game-content/oblique-utility.security-console.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "utility.loading-dock-door.variants",
+      "manifest": "/game-content/oblique-utility.loading-dock-door.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "utility.utility-panel.variants",
+      "manifest": "/game-content/oblique-utility.utility-panel.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "furniture.library.bookshelf.variants",
+      "manifest": "/game-content/oblique-furniture.library-bookshelf.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "furniture.kitchen.stove.variants",
+      "manifest": "/game-content/oblique-furniture.kitchen-stove.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "furniture.kitchen.prep-counter.variants",
+      "manifest": "/game-content/oblique-furniture.kitchen-prep-counter.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "furniture.kitchen.fridge.variants",
+      "manifest": "/game-content/oblique-furniture.kitchen-fridge.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "utility.washing-machine.variants",
+      "manifest": "/game-content/oblique-utility.washing-machine.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "fixture.cell.waste_bin",
+      "manifest": "/game-content/oblique-fixture-cell-waste-bin.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "furniture.office.desk.generic",
+      "manifest": "/game-content/oblique-furniture-office-desk-generic.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "fixture.cell.sink.handwash",
+      "manifest": "/game-content/oblique-fixture-cell-sink-handwash.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "furniture.yard.steel-bench",
+      "manifest": "/game-content/oblique-furniture.yard-steel-bench.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "fixture.yard.steel-waste-bin",
+      "manifest": "/game-content/oblique-fixture.yard-steel-waste-bin.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "fixture.garbage-room.waste-bin",
+      "manifest": "/game-content/oblique-fixture.garbage-room-waste-bin.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "furniture.classroom.teacher-desk",
+      "manifest": "/game-content/oblique-furniture-classroom-teacher-desk.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "furniture.reception.waiting-armchair",
+      "manifest": "/game-content/oblique-furniture-reception-waiting-armchair.v1.json",
+      "poses": 72
+    },
+    {
+      "assetId": "furniture.reception.registration-desk",
+      "manifest": "/game-content/oblique-furniture-reception-registration-desk.v1.json",
+      "poses": 72
+    }
+  ],
+  "limits": [
+    "Read-only Git integrity audit; no render/build/browser/native execution.",
+    "LFS pointer OIDs compared to published descriptor SHA, not local hydration or GPU upload.",
+    "Physical art size/pixels are covered by earlier separately recorded native proof, not revalidated here."
+  ]
+}
