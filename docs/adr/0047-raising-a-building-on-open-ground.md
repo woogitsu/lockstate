@@ -261,16 +261,23 @@ feature with a reader and no producer.
 ### Walls, doors and the build queue
 
 - A wall is an edge value. `finalizeConstruction`
-  (`src/simulation/construction/system.ts:1983`, `finalizeConstruction`) writes it through `writeEdge`
+  (`src/simulation/construction/system.ts:2160`, `finalizeConstruction`) writes it through `writeEdge`
   (`:2031`, called at `:1934`), which calls `setTopEdge`/`setLeftEdge` and
   therefore bumps `geometryRevision`.
 - `BuildableCategory` is `'wall' | 'object' | 'utility'`
   (`src/simulation/construction/definition.ts:6`). `wall-brick` is the only
   `'wall'`; a door is an `'object'` row carrying `placesDoor`.
 - Cancelling a `completed` order reverses its geometry
-  (`src/simulation/construction/system.ts:1193`, `revertConstruction`, defined at
-  `:2203`), rewriting the edge from any other completed order that still claims
+  (`src/simulation/construction/system.ts:1203`, `revertConstruction`, defined at
+  `:2213`), rewriting the edge from any other completed order that still claims
   it rather than clearing it.
+- **Pending ordinary square amendment at checkpoint c1bb11b5b0.** The previous
+  `system.ts:1983`, `:1193` and `:2203` indications remain historical before
+  the ten-line pending-square claim reader. The completion anchor now names the
+  actual `private finalizeConstruction` declaration, rather than the prior
+  nearby comment; cancellation still quotes `revertConstruction` and the
+  reversal declaration `private revertConstruction`. The service buildability
+  and outside-room fragments precede its new claimed-square loop and did not move.
 - **Completed-square footprint amendment at checkpoint f8c2957af1.** The previous
   `system.ts:1982`, `:1192`, `:2202` and `object-placement-service.ts:551`
   indications remain historical before the one-line expanded predicates in both
@@ -300,7 +307,7 @@ feature with a reader and no producer.
   and `:1966` coordinates are historical indications, retained here rather than
   erased. The current cancellation call is `revertConstruction` above; its
   implementation is `private revertConstruction` at
-  `src/simulation/construction/system.ts:2203`. The earlier numbered span had
+  `src/simulation/construction/system.ts:2213`. The earlier numbered span had
   already drifted into a comment, so the amended anchor names the actual call.
   **Occupied-template source amendment at checkpoint 322cb5e5a4:** the previous
   `system.ts:1120` and `:2092` coordinates remain historical indications before

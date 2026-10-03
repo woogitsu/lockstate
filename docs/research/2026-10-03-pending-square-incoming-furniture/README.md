@@ -1,4 +1,4 @@
-﻿# Pending ordinary square wall versus a later furniture footprint
+# Pending ordinary square wall versus a later furniture footprint
 
 Actual source checkpoint9b847445c101e9a8554b5539ea072d79aa42865d,2026-10-03. Own branch codex/pending-square-wall-incoming-object-audit-20261003. Offline packed commands in a genuine runtime; no browser or hosted CI claim.
 
@@ -32,4 +32,24 @@ System's existing incoming object footprint loop now reads nonterminal square cl
 
 On the entire extended test, real System pending-square producer disconnection gives [5RED/23GREEN](./expanded-system-negative.txt),1.44s/3.76s. Real service pending-square producer disconnection gives [5RED/23GREEN](./expanded-placement-negative.txt),1.50s/3.74s. Exact bytes restored in finally; original source hashes match the earlier immutable restore receipt and both committed source files have zero diff. [Restored28GREEN](./expanded-restored.txt),1.47s/3.82s. Every conflicting admission compares immutable gameplay pre/post, allowing only dispatch progress and the existing failed PBO diagnostic row; no treasury/history/world/original-order mutation.
 
-[483 neighbouring tests/13filesGREEN](./neighbours.txt),23.84s/two workers. Exact files are pending-square-wall-incoming-object, completed-square-incoming-object-footprint, pending-template-incoming-object-footprint, template-deferred-history-order, room-template-command-reservation, room-template-session, room-template-redo, room-template-rotated-history, room-template-replacement-order-ownership, build-order-object-collision-boundary, generic-object-footprint-admission, square-wall-object-footprint and object-placement-loop (their repository paths appear in the reproducible run above). Both application/tools TypeScript GREEN. [Production buildGREEN](./build.txt),6.10s, existing plugin/chunk warnings retained. Source leases released; narrow live-anchor documentation gate closure follows. No browser/hosted CI acceptance.
+[483 neighbouring tests/13filesGREEN](./neighbours.txt),23.84s/two workers. Exact files are pending-square-wall-incoming-object, completed-square-incoming-object-footprint, pending-template-incoming-object-footprint, template-deferred-history-order, room-template-command-reservation, room-template-session, room-template-redo, room-template-rotated-history, room-template-replacement-order-ownership, build-order-object-collision-boundary, generic-object-footprint-admission, square-wall-object-footprint and object-placement-loop (integration files live under tests/integration; room-template-command-reservation, room-template-session and room-template-redo live under tests/unit). Both application/tools TypeScript GREEN. [Production buildGREEN](./build.txt),6.10s, existing plugin/chunk warnings retained. Source leases released; narrow live-anchor documentation gate closure follows. No browser/hosted CI acceptance.
+
+## Terminal documentation closure
+
+Initial doc gate60GREEN/2RED (24.73s): the new record needed its own index row, and the System reader shifted an ADR0047/ADRindex live quotation beyond the unchanged tolerance. [Original output](./docs-initial.txt) retained. Approved exact live-coordinate correction preserves all prior1651/1990 historical checkpoints. Completion now cites the actual finalizeConstruction declaration; cancellation/orderedOrders/reversal retain their existing quoted fragments at current coordinates. WORLD's existing admits/buildability coordinates and service outside-room coordinates precede the added loops and did not move; they were opened and intentionally need no correction. No guard/budget/tolerance change. [Terminal62GREEN/eightfiles](./docs-terminal.txt),14.61s. Both production sources remain committed/diff0; source/docs leases released.
+
+Exact483-test neighboring paths:
+
+- tests/integration/pending-square-wall-incoming-object.test.ts
+- tests/integration/completed-square-incoming-object-footprint.test.ts
+- tests/integration/pending-template-incoming-object-footprint.test.ts
+- tests/integration/template-deferred-history-order.test.ts
+- tests/unit/room-template-command-reservation.test.ts
+- tests/unit/room-template-session.test.ts
+- tests/unit/room-template-redo.test.ts
+- tests/integration/room-template-rotated-history.test.ts
+- tests/integration/room-template-replacement-order-ownership.test.ts
+- tests/integration/build-order-object-collision-boundary.test.ts
+- tests/integration/generic-object-footprint-admission.test.ts
+- tests/integration/square-wall-object-footprint.test.ts
+- tests/integration/object-placement-loop.test.ts

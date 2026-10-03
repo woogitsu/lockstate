@@ -1,0 +1,71 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-pending-square-wall-incoming-object-audit-20261003
+
+ ❯ tests/foundation/research-index-contract.test.ts (5 tests | 1 failed) 61ms
+     × names every collection of records that lives in a subdirectory 39ms
+ ❯ tests/foundation/documentation-anchor-quotation-contract.test.ts (12 tests | 1 failed) 10ms
+     × adds no unverified anchor to any document beyond its pinned budget 4ms
+node : 
+At line:6 char:1
++ node node_modules/vitest/vitest.mjs run --maxWorkers=2 tests/foundati ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/foundation/documentation-anchor-quotation-contract.test.ts > rooted src/ and tests/ anchors in the documen
+tation carry a checkable quoted fragment > adds no unverified anchor to any document beyond its pinned budget
+AssertionError: these documents cite code by a line number nothing can check: expected [ …(2) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/adr/0047-raising-a-building-on-open-ground.md: 16 anchors into src/ or tests/ carry no quoted fragment that o
+ccurs within 3 lines of them, against a budget of 15. Quote the code beside the anchor -- `file.ts:123`, `theSymbolOnTh
+atLine` -- rather than raising the budget.",
++   "docs/adr/README.md: 15 anchors into src/ or tests/ carry no quoted fragment that occurs within 3 lines of them, ag
+ainst a budget of 14. Quote the code beside the anchor -- `file.ts:123`, `theSymbolOnThatLine` -- rather than raising t
+he budget.",
++ ]
+
+ ❯ tests/foundation/documentation-anchor-quotation-contract.test.ts:984:82
+
+ Test Files  2 failed | 6 passed (8)
+      Tests  2 failed | 60 passed (62)
+   Start at  02:04:12
+   Duration  24.73s (transform 146ms, setup 0ms, import 32.56s, tests 4.97s, environment 0ms)
+
+    982|     }
+    983|
+    984|     expect(over, 'these documents cite code by a line number nothing c…
+       |                                                                                  ^
+    985|   });
+    986|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/foundation/research-index-contract.test.ts > research index contract > names every collection of records t
+hat lives in a subdirectory
+AssertionError: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/research/2026-10-03-pending-square-incoming-furniture/ holds records the index neither rows nor links to",
++ ]
+
+ ❯ tests/foundation/research-index-contract.test.ts:195:21
+    193|       );
+    194|
+    195|     expect(unnamed).toEqual([]);
+       |                     ^
+    196|   });
+    197|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
