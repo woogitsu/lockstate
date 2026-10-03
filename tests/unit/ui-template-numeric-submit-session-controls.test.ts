@@ -44,8 +44,9 @@ const end = source.indexOf('\n      },', start);
 if (start < 0 || end < 0) throw Error('Real worker availability callback missing');
 const callback = stripTypeScriptTypes(source.slice(start, end + '\n      }'.length).replace(/^onWorkerAvailability: /, ''), { mode: 'strip' });
 function availability(tool: RoomTemplateTool, scene: WorldScene | ObliqueWorldScene) {
-  return new Function('roomTemplateTool', 'worldScene', 'ObliqueWorldScene', 'hud', 'SIMULATION_UNAVAILABLE_NOTICE', 'crashReporter', `return (${callback});`)
-    (tool, scene, ObliqueWorldScene, { setUnavailable() {} }, 'unavailable', undefined) as (available: boolean) => void;
+  // This template-only fixture mounts no ObjectTool; bind its optional slot explicitly.
+  return new Function('roomTemplateTool', 'objectTool', 'worldScene', 'ObliqueWorldScene', 'hud', 'SIMULATION_UNAVAILABLE_NOTICE', 'crashReporter', `return (${callback});`)
+    (tool, undefined, scene, ObliqueWorldScene, { setUnavailable() {} }, 'unavailable', undefined) as (available: boolean) => void;
 }
 afterEach(() => {vi.useRealTimers();vi.unstubAllGlobals();});
 vi.mock('phaser',()=>({default:{Scene:class{readonly cameras={main:{width:1920,height:1080}};readonly scale={displayScale:{x:1,y:1}};}}}));

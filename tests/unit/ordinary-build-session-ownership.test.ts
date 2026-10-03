@@ -85,14 +85,14 @@ const hudSource = readFileSync(new URL('../../src/ui/hud/hud.ts', import.meta.ur
 const unavailable = hudSource.match(/function setUnavailable\(notice: HudUnavailableNotice \| undefined\): void (\{[\s\S]*?\r?\n  \})/);
 if (unavailable === null) throw Error('Actual HUD unavailable callback absent');
 const hud = { setUnavailable: new Function('unavailable', 'unavailableText', 't', `return notice => ${unavailable[1]};`)({ hidden: false }, { textContent: '' }, (key: string) => key) };
-function worker() {
+function worker(objectTool: ObjectTool) {
   const clients: InProcessClient[] = [];
   const channel = new SimulationWorkerChannel(() => { const client = new InProcessClient(); clients.push(client); return client as unknown as SimulationClient; });
   channel.open(); const commands = new SimulationCommandSender(channel);
   let activeScene: WorldScene | ObliqueWorldScene | undefined;
   const host = new WorkerPerSessionHost(channel, { onWorkerAvailability: available => {
-    const apply = new Function('roomTemplateTool', 'worldScene', 'ObliqueWorldScene', 'hud', 'SIMULATION_UNAVAILABLE_NOTICE', 'crashReporter', `return (${boundary});`)
-      (undefined, activeScene, ObliqueWorldScene, hud, { labelKey: 'unavailable' }, undefined) as (available: boolean) => void;
+    const apply = new Function('roomTemplateTool', 'objectTool', 'worldScene', 'ObliqueWorldScene', 'hud', 'SIMULATION_UNAVAILABLE_NOTICE', 'crashReporter', `return (${boundary});`)
+      (undefined, objectTool, activeScene, ObliqueWorldScene, hud, { labelKey: 'unavailable' }, undefined) as (available: boolean) => void;
     apply(available);
   } });
   return { commands, clients, host, setScene: (scene: WorldScene | ObliqueWorldScene) => { activeScene = scene; },
@@ -102,7 +102,8 @@ function worker() {
 type Tool = 'wall' | 'object' | 'room';
 async function setup(mode: 'world' | 'oblique', selected: Tool) {
   vi.stubGlobal('window', new EventTarget()); vi.stubGlobal('document', { activeElement: null });
-  const actors = worker(); const wall = new BuildTool(), object = new ObjectTool(), room = new RoomTool();
+  const wall = new BuildTool(), object = new ObjectTool(), room = new RoomTool();
+  const actors = worker(object);
   wall.setArmed(selected === 'wall', 'wall-brick', true);
   object.setArmed(selected === 'object', { definitionId: 'bed-wooden', footprint: { width: 1, height: 2 } });
   room.setArmed(selected === 'room', { roomId: 'room.yard' });
@@ -146,6 +147,10 @@ for (const mode of ['world', 'oblique'] as const) for (const operation of ['new'
       expect(h.pointer.primaryDown).toBe(true);
       if (operation === 'new') await h.actors.host.startNew(74); else await h.actors.host.startFromSnapshot(saved);
       const before = await h.actors.host.capture();
+      // The actual replacement callback resets aim, while the public selection stays armed.
+      expect(h.tools.object.isArmed()).toBe(tool === 'object');
+      expect(h.tools.object.selectedDefinitionId).toBe('bed-wooden');
+      expect(h.tools.object.footprint()).toEqual(tool === 'object' ? { width: 1, height: 2 } : undefined);
       expect(h.actors.clients).toHaveLength(2); expect(h.actors.clients[0]!.terminated).toBe(true);
       h.mouse('up', 0, 0, 940);
       const after = await h.actors.host.capture();
