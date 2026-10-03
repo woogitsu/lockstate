@@ -1,0 +1,379 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-canteen-arms-native-20261003
+
+ ❯ tests/foundation/research-index-contract.test.ts (5 tests | 2 failed) 1420ms
+     × names every collection of records that lives in a subdirectory 1398ms
+     × keeps every row inside the one table 4ms
+ ❯ tests/foundation/documentation-links-contract.test.ts (10 tests | 2 failed) 677ms
+     × resolves every link target 59ms
+     × resolves every cited path 405ms
+
+ Test Files  2 failed (2)
+      Tests  4 failed | 11 passed (15)
+   Start at  06:51:05
+   Duration  11.66s (transform 54ms, setup 0ms, import 10.88s, tests 2.10s, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/foundation/documentation-links-contract.test.ts > every relative markdown link points at a file that exists > resolves every link target
+AssertionError: these markdown links name a file that does not exist: expected [ …(2) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/research/2026-10-02-utility-panel-angled/native-player-acceptance.md -> q0",
++   "docs/research/2026-10-02-utility-panel-angled/native-player-acceptance.md -> q1",
++ ]
+
+ ❯ tests/foundation/documentation-links-contract.test.ts:127:76
+    125|       .map(({ source, target }) => `${source} -> ${target}`);
+    126|
+    127|     expect(broken, 'these markdown links name a file that does not exi…
+       |                                                                            ^
+    128|   });
+    129| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tests/foundation/documentation-links-contract.test.ts > every rooted path cited in the documentation is on disk > resolves every cited path
+AssertionError: these documented paths name a file that does not exist: expected [ …(2) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/research/2026-10-02-kitchen-stove-angled/README.md -> public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+300-elev40.1c60dccb6ab8.png",
++   "docs/research/2026-10-02-kitchen-stove-angled/README.md -> public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+30-elev40.e654758736c0.png",
++ ]
+
+ ❯ tests/foundation/documentation-links-contract.test.ts:416:80
+    414|       .map(cited);
+    415|
+    416|     expect(dangling, 'these documented paths name a file that does not…
+       |                                                                                ^
+    417|   });
+    418| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  tests/foundation/research-index-contract.test.ts > research index contract > names every collection of records that lives in a subdirectory
+AssertionError: expected [ …(10) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/research/2026-10-03-generic-rack-physical-detail/ holds records the index neither rows nor links to",
++   "docs/research/2026-10-03-library-bookshelf-physical-detail/ holds records the index neither rows nor links to",
++   "docs/research/2026-10-03-loading-dock-physical-detail/ holds records the index neither rows nor links to",
++   "docs/research/2026-10-03-loading-dock-player-preparation/ holds records the index neither rows nor links to",
++   "docs/research/2026-10-03-medical-bed-physical-detail/ holds records the index neither rows nor links to",
++   "docs/research/2026-10-03-medicine-cabinet-physical-detail/ holds records the index neither rows nor links to",
++   "docs/research/2026-10-03-next-wooden-chair-physical-detail/ holds records the index neither rows nor links to",
++   "docs/research/2026-10-03-office-desk-physical-detail/ holds records the index neither rows nor links to",
++   "docs/research/2026-10-03-shower-head-physical-detail/ holds records the index neither rows nor links to",
++   "docs/research/2026-10-03-wooden-chair-physical-detail/ holds records the index neither rows nor links to",
++ ]
+
+ ❯ tests/foundation/research-index-contract.test.ts:195:21
+    193|       );
+    194|
+    195|     expect(unnamed).toEqual([]);
+       |                     ^
+    196|   });
+    197|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  tests/foundation/research-index-contract.test.ts > research index contract > keeps every row inside the one table
+AssertionError: a row sits outside the table. The index appends at one point and that point is the end of the table, not the end of the file: expected [ …(267) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "row \"2026-10-03 combined Cell Utility and World camera\" is at line 104, outside the table that runs to line 102",
++   "row \"2026-10-02 dedicated Cell toilet\" is at line 105, outside the table that runs to line 102",
++   "row \"2026-10-02 dedicated Utility panel\" is at line 106, outside the table that runs to line 102",
++   "row \"2026-10-03 pending square incoming furniture\" is at line 107, outside the table that runs to line 102",
++   "row \"2026-10-03 completed square incoming footprint\" is at line 108, outside the table that runs to line 102",
++   "row \"2026-10-03 deferred template history\" is at line 109, outside the table that runs to line 102",
++   "row \"2026-10-03 pending template incoming footprint\" is at line 110, outside the table that runs to line 102",
++   "row \"2026-10-03 combined Bin and drawer\" is at line 111, outside the table that runs to line 102",
++   "row \"2026-10-03 template Redo over later zoning\" is at line 112, outside the table that runs to line 102",
++   "row \"2026-10-02 dedicated Laundry washer\" is at line 113, outside the table that runs to line 102",
++   "row \"2026-10-02 combined walls and ownership\" is at line 114, outside the table that runs to line 102",
++   "row \"2026-10-02 generic wooden rack alignment\" is at line 115, outside the table that runs to line 102",
++   "row \"2026-10-02 wooden chair alignment\" is at line 116, outside the table that runs to line 102",
++   "row \"2026-10-02 legacy occupied template history\" is at line 117, outside the table that runs to line 102",
++   "row \"2026-10-02 occupied template Undo\" is at line 118, outside the table that runs to line 102",
++   "row \"2026-10-02 room-template economy transitions\" is at line 119, outside the table that runs to line 102",
++   "row \"2026-10-02 held Build camera preview\" is at line 120, outside the table that runs to line 102",
++   "row \"2026-10-02 angled touch navigation\" is at line 121, outside the table that runs to line 102",
++   "row \"2026-10-02 live view keyboard focus\" is at line 122, outside the table that runs to line 102",
++   "row \"2026-10-02 oblique Load Room and Object\" is at line 123, outside the table that runs to line 102",
++   "row \"2026-10-02 angled ground band audit\" is at line 124, outside the table that runs to line 102",
++   "row \"2026-10-02 oblique wheel anchor\" is at line 125, outside the table that runs to line 102",
++   "row \"2026-10-02 oblique mixed mouse buttons\" is at line 126, outside the table that runs to line 102",
++   "row \"2026-10-02 Build target readability\" is at line 127, outside the table that runs to line 102",
++   "row \"2026-10-02 wheel anchor on main\" is at line 128, outside the table that runs to line 102",
++   "row \"2026-08-25 room zoning gesture\" is at line 129, outside the table that runs to line 102",
++   "row \"2026-08-25 room occupancy\" is at line 130, outside the table that runs to line 102",
++   "row \"2026-08-25 economy rate\" is at line 131, outside the table that runs to line 102",
++   "row \"2026-08-26 failure modes\" is at line 132, outside the table that runs to line 102",
++   "row \"2026-08-26 repository audit\" is at line 133, outside the table that runs to line 102",
++   "row \"2026-08-28 risk tier and income\" is at line 134, outside the table that runs to line 102",
++   "row \"2026-08-28 navigation tick budget\" is at line 135, outside the table that runs to line 102",
++   "row \"2026-08-29 sentence length at admission\" is at line 136, outside the table that runs to line 102",
++   "row \"2026-08-29 playtest: ordering and the second room\" is at line 137, outside the table that runs to line 102",
++   "row \"2026-08-29 coverage provisions the safety need\" is at line 138, outside the table that runs to line 102",
++   "row \"2026-08-28 drawing guards\" is at line 139, outside the table that runs to line 102",
++   "row \"2026-08-29 what a day actually pays\" is at line 140, outside the table that runs to line 102",
++   "row \"2026-08-29 mouse playtest\" is at line 141, outside the table that runs to line 102",
++   "row \"2026-08-30 the naive route\" is at line 142, outside the table that runs to line 102",
++   "row \"2026-08-29 a prison that cannot buy its first bed\" is at line 143, outside the table that runs to line 102",
++   "row \"2026-08-30 authored content with no producer\" is at line 144, outside the table that runs to line 102",
++   "row \"2026-08-30 what the game never says\" is at line 145, outside the table that runs to line 102",
++   "row \"2026-08-30 what a classification can reach\" is at line 146, outside the table that runs to line 102",
++   "row \"2026-08-30 what stays readable under the pseudo-locale\" is at line 147, outside the table that runs to line 102",
++   "row \"2026-08-30 how a second catalogue reaches a running page\" is at line 148, outside the table that runs to line 102",
++   "row \"2026-08-30 candidate Polish translations\" is at line 149, outside the table that runs to line 102",
++   "row \"2026-08-30 which word for a prisoner\" is at line 150, outside the table that runs to line 102",
++   "row \"2026-08-30 what the whole economy costs\" is at line 151, outside the table that runs to line 102",
++   "row \"2026-08-30 tier three at intake\" is at line 152, outside the table that runs to line 102",
++   "row \"2026-08-30 both shapes, measured together\" is at line 153, outside the table that runs to line 102",
++   "row \"2026-08-30 playing main after fifteen changes\" is at line 154, outside the table that runs to line 102",
++   "row \"2026-08-30 the waste multiplier\" is at line 155, outside the table that runs to line 102",
++   "row \"2026-08-30 a wall that buys itself\" is at line 156, outside the table that runs to line 102",
++   "row \"2026-08-30 two subsystems with no entrance\" is at line 157, outside the table that runs to line 102",
++   "row \"2026-08-30 what an escape says\" is at line 158, outside the table that runs to line 102",
++   "row \"2026-08-30 playing into the lock\" is at line 159, outside the table that runs to line 102",
++   "row \"2026-08-31 playing the nine changes\" is at line 160, outside the table that runs to line 102",
++   "row \"2026-08-31 what a reload keeps and what it says\" is at line 161, outside the table that runs to line 102",
++   "row \"2026-08-31 playing the twelve\" is at line 162, outside the table that runs to line 102",
++   "row \"2026-09-01 playing after the rulings\" is at line 163, outside the table that runs to line 102",
++   "row \"2026-09-01 the measurements that were owed\" is at line 164, outside the table that runs to line 102",
++   "row \"2026-09-01 what survives a reload\" is at line 165, outside the table that runs to line 102",
++   "row \"2026-09-01 playing the people surface\" is at line 166, outside the table that runs to line 102",
++   "row \"2026-09-01 are the risk tiers reachable\" is at line 167, outside the table that runs to line 102",
++   "row \"2026-09-02 the first five minutes\" is at line 168, outside the table that runs to line 102",
++   "row \"2026-09-02 playing the world view\" is at line 169, outside the table that runs to line 102",
++   "row \"2026-09-02 playing the clock\" is at line 170, outside the table that runs to line 102",
++   "row \"2026-09-02 playing what landed today\" is at line 171, outside the table that runs to line 102",
++   "row \"2026-09-02 the open issue backlog\" is at line 172, outside the table that runs to line 102",
++   "row \"2026-09-02 where a guard stands\" is at line 173, outside the table that runs to line 102",
++   "row \"2026-09-02 the gates that cannot fail\" is at line 174, outside the table that runs to line 102",
++   "row \"2026-09-02 post and carry, replayed\" is at line 175, outside the table that runs to line 102",
++   "row \"2026-09-02 release an off-post guard\" is at line 176, outside the table that runs to line 102",
++   "row \"2026-09-02 the unit gates that cannot fail\" is at line 177, outside the table that runs to line 102",
++   "row \"2026-09-02 what ruling five would cost\" is at line 178, outside the table that runs to line 102",
++   "row \"2026-09-02 audit the absence claims\" is at line 179, outside the table that runs to line 102",
++   "row \"2026-09-02 classifying 475 branches without trusting ancestry\" is at line 180, outside the table that runs to line 102",
++   "row \"2026-09-02 playing incidents and response\" is at line 181, outside the table that runs to line 102",
++   "row \"2026-09-02 what Cancel does not say\" is at line 182, outside the table that runs to line 102",
++   "row \"2026-09-03 what Cancel actually gives back\" is at line 183, outside the table that runs to line 102",
++   "row \"2026-09-02 intake shortfall and a Medium badge\" is at line 184, outside the table that runs to line 102",
++   "row \"2026-09-02 what does not survive a reload\" is at line 185, outside the table that runs to line 102",
++   "row \"2026-09-02 accepted ADRs against main\" is at line 186, outside the table that runs to line 102",
++   "row \"2026-09-02 five audit claims reverified\" is at line 187, outside the table that runs to line 102",
++   "row \"2026-09-03 what the owner still owes\" is at line 188, outside the table that runs to line 102",
++   "row \"2026-09-03 does the errand walk\" is at line 189, outside the table that runs to line 102",
++   "row \"2026-09-03 does building feel good\" is at line 190, outside the table that runs to line 102",
++   "row \"2026-09-03 can a player read this\" is at line 191, outside the table that runs to line 102",
++   "row \"2026-09-04 can this prison fail\" is at line 192, outside the table that runs to line 102",
++   "row \"2026-09-04 does anyone answer an incident\" is at line 193, outside the table that runs to line 102",
++   "row \"2026-09-04 what the game shows nobody\" is at line 194, outside the table that runs to line 102",
++   "row \"2026-09-04 the first ten minutes\" is at line 195, outside the table that runs to line 102",
++   "row \"2026-09-04 does a prison come back\" is at line 196, outside the table that runs to line 102",
++   "row \"2026-09-04 is there a way back\" is at line 197, outside the table that runs to line 102",
++   "row \"2026-09-04 is there anything to do\" is at line 198, outside the table that runs to line 102",
++   "row \"2026-09-04 a tablet and nothing else\" is at line 199, outside the table that runs to line 102",
++   "row \"2026-09-04 can I see my prison\" is at line 200, outside the table that runs to line 102",
++   "row \"2026-09-04 hour two\" is at line 201, outside the table that runs to line 102",
++   "row \"2026-09-04 the misplay\" is at line 202, outside the table that runs to line 102",
++   "row \"2026-09-04 many prisons\" is at line 203, outside the table that runs to line 102",
++   "row \"2026-09-04 why they stack\" is at line 204, outside the table that runs to line 102",
++   "row \"2026-09-04 what to do next\" is at line 205, outside the table that runs to line 102",
++   "row \"2026-09-04 what the game acknowledges\" is at line 206, outside the table that runs to line 102",
++   "row \"2026-09-04 what pressure there is\" is at line 207, outside the table that runs to line 102",
++   "row \"2026-09-04 what pressure there is at fifty\" is at line 208, outside the table that runs to line 102",
++   "row \"2026-09-04 the five-tester round, audited\" is at line 209, outside the table that runs to line 102",
++   "row \"2026-09-05 where the yard incentive breaks\" is at line 210, outside the table that runs to line 102",
++   "row \"2026-09-05 does the game say there is no door\" is at line 211, outside the table that runs to line 102",
++   "row \"2026-09-05 where the shower runs out\" is at line 212, outside the table that runs to line 102",
++   "row \"2026-09-05 what a guard short costs\" is at line 213, outside the table that runs to line 102",
++   "row \"2026-08-22 architecture pattern audit\" is at line 214, outside the table that runs to line 102",
++   "row \"2026-08-29 design search corpus\" is at line 215, outside the table that runs to line 102",
++   "row \"2026-08-30 does a prison survive being reopened\" is at line 216, outside the table that runs to line 102",
++   "row \"2026-08-30 pricing the way out\" is at line 217, outside the table that runs to line 102",
++   "row \"2026-09-01 playing the rooms surface\" is at line 218, outside the table that runs to line 102",
++   "row \"2026-09-01 what the funds chip promises\" is at line 219, outside the table that runs to line 102",
++   "row \"2026-09-01 what act six never reached\" is at line 220, outside the table that runs to line 102",
++   "row \"2026-09-01 what the corner and strip cost\" is at line 221, outside the table that runs to line 102",
++   "row \"2026-09-01 copy variants for the owner\" is at line 222, outside the table that runs to line 102",
++   "row \"2026-09-05 what a sweep costs the response\" is at line 223, outside the table that runs to line 102",
++   "row \"2026-09-05 what the world shows\" is at line 224, outside the table that runs to line 102",
++   "row \"2026-09-06 the first furnished cell\" is at line 225, outside the table that runs to line 102",
++   "row \"2026-09-06 what a finished door is drawn as\" is at line 226, outside the table that runs to line 102",
++   "row \"2026-09-06 can you name the room\" is at line 227, outside the table that runs to line 102",
++   "row \"2026-09-11 are the four cheap readers cheap\" is at line 228, outside the table that runs to line 102",
++   "row \"2026-09-11 does unreachable show in the world\" is at line 229, outside the table that runs to line 102",
++   "row \"2026-09-13 every HUD surface and where the five sections put it\" is at line 230, outside the table that runs to line 102",
++   "row \"2026-09-13 what an undo window for a deleted prison costs\" is at line 231, outside the table that runs to line 102",
++   "row \"2026-09-13 what the saves panel may say\" is at line 232, outside the table that runs to line 102",
++   "row \"2026-09-14 stage 6 language gap\" is at line 233, outside the table that runs to line 102",
++   "row \"2026-09-14 the mechanical navigation move\" is at line 234, outside the table that runs to line 102",
++   "row \"2026-09-14 what stage 5 checked and what it found\" is at line 235, outside the table that runs to line 102",
++   "row \"2026-09-14 the Polish catalogue\" is at line 236, outside the table that runs to line 102",
++   "row \"2026-09-14 where #88's three minutes go\" is at line 237, outside the table that runs to line 102",
++   "row \"2026-09-15 what stage 8 accepted and what it did not\" is at line 238, outside the table that runs to line 102",
++   "row \"2026-09-15 three decisions that have been waiting on the owner\" is at line 239, outside the table that runs to line 102",
++   "row \"2026-09-15 what `main` never published\" is at line 240, outside the table that runs to line 102",
++   "row \"2026-09-15 the cold start on five sections\" is at line 241, outside the table that runs to line 102",
++   "row \"2026-09-16 what option F does not cover\" is at line 242, outside the table that runs to line 102",
++   "row \"2026-09-16 what a neglected prison is told\" is at line 243, outside the table that runs to line 102",
++   "row \"2026-09-15 the `Proposed` ADR census\" is at line 244, outside the table that runs to line 102",
++   "row \"2026-09-17 is the open issue list an index\" is at line 245, outside the table that runs to line 102",
++   "row \"2026-09-17 is the runner loss a population\" is at line 246, outside the table that runs to line 102",
++   "row \"2026-09-19 what the owner is actually being asked\" is at line 247, outside the table that runs to line 102",
++   "row \"2026-09-19 one merge, two version numbers\" is at line 248, outside the table that runs to line 102",
++   "row \"2026-09-21 what stage 7's first glob request would have to name\" is at line 249, outside the table that runs to line 102",
++   "row \"2026-09-24 HUD overhaul visual brief\" is at line 250, outside the table that runs to line 102",
++   "row \"2026-09-23 stage 7 first Blender batch\" is at line 251, outside the table that runs to line 102",
++   "row \"2026-09-25 incident threshold and containment #975\" is at line 252, outside the table that runs to line 102",
++   "row \"2026-09-27 square construction and room templates\" is at line 253, outside the table that runs to line 102",
++   "row \"2026-10-02 room-template dependency main refresh\" is at line 254, outside the table that runs to line 102",
++   "row \"2026-10-02 room-plan control sweep\" is at line 255, outside the table that runs to line 102",
++   "row \"2026-10-02 registered canteen calibration\" is at line 256, outside the table that runs to line 102",
++   "row \"2026-10-02 camera pointer cancellation\" is at line 257, outside the table that runs to line 102",
++   "row \"2026-10-01 native Windows build argv\" is at line 258, outside the table that runs to line 102",
++   "row \"2026-10-02 pending room-plan reopen\" is at line 259, outside the table that runs to line 102",
++   "row \"2026-10-02 room-plan legend shapes\" is at line 260, outside the table that runs to line 102",
++   "row \"2026-10-02 selected-plan fixture diagram\" is at line 261, outside the table that runs to line 102",
++   "row \"2026-10-02 room-plan fixture miniatures\" is at line 262, outside the table that runs to line 102",
++   "row \"2026-10-02 held camera arrow and HUD radio focus\" is at line 263, outside the table that runs to line 102",
++   "row \"2026-10-02 room preview across prison sessions\" is at line 264, outside the table that runs to line 102",
++   "row \"2026-10-02 shallow-angle room-plan picking\" is at line 265, outside the table that runs to line 102",
++   "row \"2026-10-01 integrated square walls\" is at line 266, outside the table that runs to line 102",
++   "row \"2026-10-01 room plan world mouse\" is at line 267, outside the table that runs to line 102",
++   "row \"2026-10-01 Yard history\" is at line 268, outside the table that runs to line 102",
++   "row \"2026-10-01 room plan cards\" is at line 269, outside the table that runs to line 102",
++   "row \"2026-10-01 oblique preset art\" is at line 270, outside the table that runs to line 102",
++   "row \"2026-10-01 room plan quote\" is at line 271, outside the table that runs to line 102",
++   "row \"2026-10-01 coordinate independence\" is at line 272, outside the table that runs to line 102",
++   "row \"2026-10-01 actor wall depth\" is at line 273, outside the table that runs to line 102",
++   "row \"2026-10-01 stationary template cursor\" is at line 274, outside the table that runs to line 102",
++   "row \"2026-10-01 exact oblique floor art\" is at line 275, outside the table that runs to line 102",
++   "row \"2026-10-01 square brick wall detail\" is at line 276, outside the table that runs to line 102",
++   "row \"2026-10-02 authored oblique actors\" is at line 277, outside the table that runs to line 102",
++   "row \"2026-10-02 paused actor Save/Load\" is at line 278, outside the table that runs to line 102",
++   "row \"2026-10-02 paused actor sub-tile position\" is at line 279, outside the table that runs to line 102",
++   "row \"2026-10-02 actor boundaries and pending entrances\" is at line 280, outside the table that runs to line 102",
++   "row \"2026-10-02 entrance history and preflight\" is at line 281, outside the table that runs to line 102",
++   "row \"2026-10-02 compact camera controls\" is at line 282, outside the table that runs to line 102",
++   "row \"2026-10-02 catalogue keyboard\" is at line 283, outside the table that runs to line 102",
++   "row \"2026-10-02 placement status revision\" is at line 284, outside the table that runs to line 102",
++   "row \"2026-10-02 canteen calibration\" is at line 285, outside the table that runs to line 102",
++   "row \"2026-10-02 Yard exercise station art draft\" is at line 286, outside the table that runs to line 102",
++   "row \"2026-10-02 outdoor steel bench art draft\" is at line 287, outside the table that runs to line 102",
++   "row \"2026-10-02 outdoor steel waste-bin art draft\" is at line 288, outside the table that runs to line 102",
++   "row \"2026-10-02 authored Build thumbnails\" is at line 289, outside the table that runs to line 102",
++   "row \"2026-10-02 exercise station player build\" is at line 290, outside the table that runs to line 102",
++   "row \"2026-10-02 camera pointer cancellation\" is at line 291, outside the table that runs to line 102",
++   "row \"2026-10-02 object occupied dimensions\" is at line 292, outside the table that runs to line 102",
++   "row \"2026-10-02 oblique role actors\" is at line 293, outside the table that runs to line 102",
++   "row \"2026-10-02 native modal keyboard\" is at line 294, outside the table that runs to line 102",
++   "row \"2026-10-02 keyboard template rearm\" is at line 295, outside the table that runs to line 102",
++   "row \"2026-10-02 template tooltip clearance\" is at line 296, outside the table that runs to line 102",
++   "row \"2026-10-02 actor facing\" is at line 297, outside the table that runs to line 102",
++   "row \"2026-10-02 room-template quarter turns\" is at line 298, outside the table that runs to line 102",
++   "row \"2026-10-02 first Cell delivery bootstrap\" is at line 299, outside the table that runs to line 102",
++   "row \"2026-10-02 Common Room bench art\" is at line 300, outside the table that runs to line 102",
++   "row \"2026-10-02 Classroom chair art\" is at line 301, outside the table that runs to line 102",
++   "row \"2026-10-02 oblique session camera\" is at line 302, outside the table that runs to line 102",
++   "row \"2026-10-02 Storage Room rack art\" is at line 303, outside the table that runs to line 102",
++   "row \"2026-10-02 oblique Load gesture\" is at line 304, outside the table that runs to line 102",
++   "row \"2026-10-02 oblique middle pan\" is at line 305, outside the table that runs to line 102",
++   "row \"2026-10-02 Cell cot art\" is at line 306, outside the table that runs to line 102",
++   "row \"2026-10-02 legacy remaps and angled camera controls\" is at line 307, outside the table that runs to line 102",
++   "row \"2026-10-02 square-aligned dense toilet\" is at line 308, outside the table that runs to line 102",
++   "row \"2026-10-02 Staff Room desk\" is at line 309, outside the table that runs to line 102",
++   "row \"2026-10-02 Kitchen square fixtures\" is at line 310, outside the table that runs to line 102",
++   "row \"2026-10-02 first square clock hint\" is at line 311, outside the table that runs to line 102",
++   "row \"2026-10-02 Layout menu Escape and placement\" is at line 312, outside the table that runs to line 102",
++   "row \"2026-10-02 pending Delivery Bay readiness\" is at line 313, outside the table that runs to line 102",
++   "row \"2026-10-02 room-plan rotation UI\" is at line 314, outside the table that runs to line 102",
++   "row \"2026-10-02 authoritative room-template rotation\" is at line 315, outside the table that runs to line 102",
++   "row \"2026-10-02 rotated template collision atomicity\" is at line 316, outside the table that runs to line 102",
++   "row \"2026-10-02 rotated console player rendering\" is at line 317, outside the table that runs to line 102",
++   "row \"2026-10-02 room-plan Layout Escape\" is at line 318, outside the table that runs to line 102",
++   "row \"2026-10-02 room-plan quote visibility\" is at line 319, outside the table that runs to line 102",
++   "row \"2026-10-02 artifact suite routing\" is at line 320, outside the table that runs to line 102",
++   "row \"2026-10-02 Infirmary export and player acceptance\" is at line 321, outside the table that runs to line 102",
++   "row \"2026-10-02 room-plan live orientation\" is at line 322, outside the table that runs to line 102",
++   "row \"2026-10-02 native room-plan dialog Escape\" is at line 323, outside the table that runs to line 102",
++   "row \"2026-10-02 Canteen dining-table alignment\" is at line 324, outside the table that runs to line 102",
++   "row \"2026-10-02 room-plan native picker held key\" is at line 325, outside the table that runs to line 102",
++   "row \"2026-10-02 handwash sink alignment\" is at line 326, outside the table that runs to line 102",
++   "row \"2026-10-02 shower head alignment\" is at line 327, outside the table that runs to line 102",
++   "row \"2026-10-02 wall entrance atomicity\" is at line 328, outside the table that runs to line 102",
++   "row \"2026-10-02 later wall against pending entrance\" is at line 329, outside the table that runs to line 102",
++   "row \"2026-10-02 adjacent plan entrance atomicity\" is at line 330, outside the table that runs to line 102",
++   "row \"2026-10-02 completed room furniture approach\" is at line 331, outside the table that runs to line 102",
++   "row \"2026-10-02 native View arrow ownership\" is at line 332, outside the table that runs to line 102",
++   "row \"2026-10-02 completed row doorway access\" is at line 333, outside the table that runs to line 102",
++   "row \"2026-10-02 wooden bench alignment\" is at line 334, outside the table that runs to line 102",
++   "row \"2026-10-02 native View popup held key\" is at line 335, outside the table that runs to line 102",
++   "row \"2026-10-02 HUD separator keyboard ownership\" is at line 336, outside the table that runs to line 102",
++   "row \"2026-10-02 native Build Category keyboard ownership\" is at line 337, outside the table that runs to line 102",
++   "row \"2026-10-02 completed template adjacency\" is at line 338, outside the table that runs to line 102",
++   "row \"2026-10-02 native Category popup held key\" is at line 339, outside the table that runs to line 102",
++   "row \"2026-10-02 square wall object footprint\" is at line 340, outside the table that runs to line 102",
++   "row \"2026-10-02 native Category typeahead camera\" is at line 341, outside the table that runs to line 102",
++   "row \"2026-10-02 occupied template cancellation\" is at line 342, outside the table that runs to line 102",
++   "row \"2026-10-02 generic office desk alignment\" is at line 343, outside the table that runs to line 102",
++   "row \"2026-10-02 angled Build drag beneath HUD\" is at line 344, outside the table that runs to line 102",
++   "row \"2026-10-02 template Cancel refund preview\" is at line 345, outside the table that runs to line 102",
++   "row \"2026-10-02 template manual door removal\" is at line 346, outside the table that runs to line 102",
++   "row \"2026-10-02 dedicated angled Kitchen stove\" is at line 347, outside the table that runs to line 102",
++   "row \"2026-10-02 native object and area HUD drags\" is at line 348, outside the table that runs to line 102",
++   "row \"2026-10-02 native View mouse target\" is at line 349, outside the table that runs to line 102",
++   "row \"2026-10-02 saved pending template fixture removal\" is at line 350, outside the table that runs to line 102",
++   "row \"2026-10-02 dedicated angled Kitchen fridge\" is at line 351, outside the table that runs to line 102",
++   "row \"Retained keyboard hover and fitted confirmation, 2026-10-02\" is at line 352, outside the table that runs to line 102",
++   "row \"2026-10-02 generic object build footprint\" is at line 353, outside the table that runs to line 102",
++   "row \"2026-10-02 object footprint admission\" is at line 354, outside the table that runs to line 102",
++   "row \"2026-10-02 dedicated angled Kitchen prep counter\" is at line 355, outside the table that runs to line 102",
++   "row \"2026-10-02 placed object owner decision\" is at line 356, outside the table that runs to line 102",
++   "row \"2026-10-02 native square-wall footprint\" is at line 357, outside the table that runs to line 102",
++   "row \"2026-10-02 horizontal wheel camera diagnostic\" is at line 358, outside the table that runs to line 102",
++   "row \"2026-10-02 canvas-exit camera cancellation\" is at line 359, outside the table that runs to line 102",
++   "row \"2026-10-02 angled pointer transform audit\" is at line 360, outside the table that runs to line 102",
++   "row \"2026-10-02 removed or rebuilt template render identity\" is at line 361, outside the table that runs to line 102",
++   "row \"2026-10-03 integrated Laundry and camera native acceptance\" is at line 362, outside the table that runs to line 102",
++   "row \"2026-10-03 navigation drawer Escape\" is at line 363, outside the table that runs to line 102",
++   "row \"2026-10-03 World room-plan camera projector\" is at line 364, outside the table that runs to line 102",
++   "row \"2026-10-03 World minimap visible bounds\" is at line 365, outside the table that runs to line 102",
++   "row \"2026-10-03 renderer replacement room-plan receipt\" is at line 366, outside the table that runs to line 102",
++   "row \"2026-10-02 aligned default waste bin\" is at line 367, outside the table that runs to line 102",
++   "row \"2026-10-03 Kitchen fridge physical fixings\" is at line 368, outside the table that runs to line 102",
++   "row \"2026-10-03 Kitchen stove physical joints\" is at line 369, outside the table that runs to line 102",
++   "row \"2026-10-03 Canteen table arms native preparation\" is at line 370, outside the table that runs to line 102",
++ ]
+
+ ❯ tests/foundation/research-index-contract.test.ts:223:7
+    221|       stranded,
+    222|       'a row sits outside the table. The index appends at one point an…
+    223|     ).toEqual([]);
+       |       ^
+    224|   });
+    225| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
