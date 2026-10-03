@@ -30,3 +30,11 @@ The native test retains CSS readback and all original map bounds, CSS-derived zo
 - app/tools TypeScript and standalone strict TypeScript of all three changed test files: GREEN.
 
 `receipt.json` contains original report and restored fixture hashes, unique mutation strings and restoration result. No production producer was mutated in this scope. Initial standalone TypeScript invocation needed the installed TypeScript7 `--ignoreConfig` switch; the corrected invocation passed. Artifact collection was blocked by the intentionally absent build in this new test-only worktree; no build/server/browser was launched. Root owns the frozen existing built client and the corrected two-case native run.
+
+## Actual CSSOM compatibility correction
+
+Root's native descriptor inventory directly confirms `style.top = "10.15625%"` reads back `10.1562%`. It also shows configurable own data properties on the CSS declaration, no matching accessors on CSSStyleDeclaration.prototype, and the real style getter on HTMLElement.prototype. The first corrected native attempt failed both cases because the initial observer required nonexistent prototype accessors; those test-instrumentation failures are retained in `initial-observer-native-two-results.json`. They are not production defects or native GREEN evidence.
+
+The observer now wraps **only** `.hud-minimap__viewport` through the existing HTMLElement style getter. Every native getter/write receives its original receiver; each assignment is forwarded once with the unchanged string. Real-style/proxy WeakMaps provide stable identity. Other elements get their original style unchanged. Native CSSOM methods bind to the real style receiver and retain stable method identity. Observation uses the original real style record, not the proxy as a synthetic ground reference.
+
+The offline destination now reproduces the confirmed own-data-property/exotic-write shape. Thirteen focused cases pass, including stable proxy, unrelated-element identity, native receiver and original-write-once controls. Strict changed-test TypeScript passes. Corrected native two-case acceptance is pending root's next run.
