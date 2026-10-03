@@ -11,6 +11,14 @@ MANIFEST=ROOT/'public/game-content/oblique-furniture-laundry-linen-rack.v1.json'
 BLENDER=os.environ.get('LOCKSTATE_BLENDER',r'C:\Program Files\Blender Foundation\Blender 5.2\blender.exe')
 CLI=[BLENDER,'--background','--factory-startup','--threads','1','--python-exit-code','1']
 sha=lambda b:hashlib.sha256(b).hexdigest()
+def run_unit(label,red=False):
+ node=Path(os.environ['USERPROFILE'])/'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe'
+ r=subprocess.run([str(node),'node_modules/vitest/vitest.mjs','run','tests/unit/oblique-laundry-linen-rack-art.test.ts','--reporter=dot'],cwd=ROOT,capture_output=True,timeout=30)
+ out=(r.stdout+r.stderr).decode('utf-8',errors='replace')
+ (REPORT/(label+'.log')).write_text('\n'.join(line.rstrip()for line in out.splitlines()).rstrip()+'\n',encoding='utf-8',newline='\n')
+ if (red and(r.returncode==0 or 'AssertionError'not in out))or(not red and r.returncode):raise AssertionError(label+'\n'+out)
+ print(label,'RED'if red else'GREEN',r.returncode,flush=True)
+ return {'label':label,'exitCode':r.returncode,'expectedRed':red}
 def run(label,script=PRODUCER,args=(),error=None):
  r=subprocess.run(CLI+['--python',str(script),'--',*args],cwd=ROOT,capture_output=True,timeout=60)
  out=(r.stdout+r.stderr).decode('utf-8',errors='replace')
@@ -24,6 +32,8 @@ def main():
  protected={SOURCE,PRODUCER,ROOT/'tooling/blender/build-laundry-linen-rack.py',SOURCE.with_suffix('.provenance.json'),ROOT/'assets/source/blender/furniture.storage.rack.wooden.angled-detail.blend',ROOT/'public/game-content/oblique-module-registry.v1.json',ROOT/'src/rendering/assets/oblique-object-mapping.ts'}
  if not source_only:
   catalog=json.loads(MANIFEST.read_text());protected.add(MANIFEST);protected.update(ROOT/'public'/f['image'].lstrip('/') for f in catalog['frames'])
+  old_manifest=ROOT/'public/game-content/oblique-cell-storage-rack.v1.json';protected.add(old_manifest)
+  old_catalog=json.loads(old_manifest.read_text());protected.update(ROOT/'public'/f['image'].lstrip('/')for f in old_catalog['frames'])
  before={p.relative_to(ROOT).as_posix():sha(p.read_bytes())for p in sorted(protected)};receipt={'controls':[],'protectedBefore':before}
  source_bytes=SOURCE.read_bytes();producer_bytes=PRODUCER.read_bytes()
  try:
@@ -34,8 +44,10 @@ def main():
    receipt['actualMutantSourceSha256']=sha(SOURCE.read_bytes())
    if receipt['actualMutantSourceSha256']==sha(source_bytes):raise AssertionError('Actual source did not mutate')
    receipt['controls'].append(run('actual-disconnected-source-red',args=('--verify',),error='Laundry linen rack actual contact disconnected'))
+   if not source_only:receipt['controls'].append(run_unit('actual-model-integrity-unit-red',True))
   finally:SOURCE.write_bytes(source_bytes)
   receipt['controls'].append(run('exact-source-restore-green',args=('--verify',)))
+  if not source_only:receipt['controls'].append(run_unit('exact-model-integrity-unit-restore-green'))
   try:
    text=producer_bytes.decode().replace("ASSET_ID = 'furniture.laundry.linen-rack'","ASSET_ID = 'furniture.storage.rack.wooden'")
    if text==producer_bytes.decode():raise AssertionError('Real producer dispatch did not mutate')

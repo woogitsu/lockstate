@@ -1,0 +1,37 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-kitchen-laundry-functional-detail-20261003
+
+·xx
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  2 failed | 1 passed (3)
+   Start at  19:43:12
+   Duration  2.66s (transform 830ms, setup 0ms, import 2.25s, tests 326ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/laundry-linen-rack-public-consumer.test.ts > buys a separate orientation0 rack inside actual public Laundry q0, retains both washers and whole V8
+ FAIL  tests/integration/laundry-linen-rack-public-consumer.test.ts > buys a separate orientation0 rack inside actual public Laundry q1, retains both washers and whole V8
+AssertionError: expected [] to deeply equal [ { …(2) } ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "assetId": "furniture.laundry.linen-rack",
+-     "manifest": "/game-content/oblique-furniture-laundry-linen-rack.v1.json",
+-   },
+- ]
++ []
+
+ ❯ tests/integration/laundry-linen-rack-public-consumer.test.ts:70:19
+     68|   const registry = parseObliqueModuleRegistry(JSON.parse(readFileSync(…
+     69|   const entries = registry.entries.filter(entry => entry.assetId === s…
+     70|   expect(entries).toEqual([{ assetId: 'furniture.laundry.linen-rack', …
+       |                   ^
+     71|   const catalog = parseObliqueModuleCatalog(JSON.parse(readFileSync(ne…
+     72|   expect(catalog.sourceSha256).toBe('779d11f79c28b8049ccd3371d840c75b5…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯

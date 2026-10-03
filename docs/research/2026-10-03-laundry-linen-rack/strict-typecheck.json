@@ -1,0 +1,24 @@
+{
+  "commands": [
+    [
+      "node",
+      "node_modules/typescript/bin/tsc",
+      "-b",
+      "--pretty",
+      "false"
+    ],
+    [
+      "node",
+      "node_modules/typescript/bin/tsc",
+      "-b",
+      "tsconfig.tools.json",
+      "--pretty",
+      "false"
+    ]
+  ],
+  "actualExitCodes": [
+    0,
+    0
+  ],
+  "browserBuildNativeRun": false
+}
