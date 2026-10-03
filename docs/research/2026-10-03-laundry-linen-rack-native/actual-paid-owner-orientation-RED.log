@@ -1,0 +1,72 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-laundry-linen-rack-native-prep-20261003
+
+··xx
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 2 passed (4)
+   Start at  20:11:10
+   Duration  1.13s (transform 269ms, setup 0ms, import 995ms, tests 18ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/native-laundry-linen-rack-evidence.test.ts > requires both literal original washer owners and the independently paid Laundry q0 rack
+Error: expect(received).toEqual(expected) // deep equality
+
+- Expected  - 1
++ Received  + 1
+
+@@ -3,10 +3,10 @@
+      "anchorTile": Object {
+        "x": 21,
+        "y": 8,
+      },
+      "objectId": "object.storage-rack",
+-     "orientation": 1,
++     "orientation": 0,
+      "placedObjectId": "object:21:8",
+      "sourceOrderId": "laundry-individual-linen-rack",
+    },
+  ]
+ ❯ Proxy.<anonymous> ../lockstate-1382-doc-anchor-2026-09-24/node_modules/.pnpm/playwright@1.56.1/node_modules/playwright/lib/matchers/expect.js:221:24
+ ❯ assertLaundryNativeOwners tests/browser/laundry-linen-rack/native-evidence.ts:114:108
+    112|   }
+    113|   const slot = LAUNDRY_RACK_SLOTS[turns];
+    114|   expect(objects.filter(object => object.objectId === 'object.storage-…
+       |                                                                                                            ^
+    115|     { placedObjectId: `object:${slot.x}:${slot.y}`, objectId: 'object.…
+    116|       orientation: 1, sourceOrderId: paidOrderId },
+ ❯ tests/unit/native-laundry-linen-rack-evidence.test.ts:34:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/unit/native-laundry-linen-rack-evidence.test.ts > requires both literal original washer owners and the independently paid Laundry q1 rack
+Error: expect(received).toEqual(expected) // deep equality
+
+- Expected  - 1
++ Received  + 1
+
+@@ -3,10 +3,10 @@
+      "anchorTile": Object {
+        "x": 22,
+        "y": 6,
+      },
+      "objectId": "object.storage-rack",
+-     "orientation": 1,
++     "orientation": 0,
+      "placedObjectId": "object:22:6",
+      "sourceOrderId": "laundry-individual-linen-rack",
+    },
+  ]
+ ❯ Proxy.<anonymous> ../lockstate-1382-doc-anchor-2026-09-24/node_modules/.pnpm/playwright@1.56.1/node_modules/playwright/lib/matchers/expect.js:221:24
+ ❯ assertLaundryNativeOwners tests/browser/laundry-linen-rack/native-evidence.ts:114:108
+    112|   }
+    113|   const slot = LAUNDRY_RACK_SLOTS[turns];
+    114|   expect(objects.filter(object => object.objectId === 'object.storage-…
+       |                                                                                                            ^
+    115|     { placedObjectId: `object:${slot.x}:${slot.y}`, objectId: 'object.…
+    116|       orientation: 1, sourceOrderId: paidOrderId },
+ ❯ tests/unit/native-laundry-linen-rack-evidence.test.ts:34:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯

@@ -1,0 +1,39 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-laundry-linen-rack-native-prep-20261003
+
+x···
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 3 passed (4)
+   Start at  20:11:07
+   Duration  1.18s (transform 272ms, setup 0ms, import 1.03s, tests 20ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/native-laundry-linen-rack-evidence.test.ts > accepts independently pinned real source/descriptor/PNG using the native observer assertions
+Error: expect(received).toMatchObject(expected)
+
+- Expected  - 1
++ Received  + 1
+
+@@ -13,7 +13,7 @@
+    "resolutionPx": Array [
+      256,
+      256,
+    ],
+    "source": "assets/source/blender/furniture.laundry.linen-rack.blend",
+-   "sourceSha256": "0000000000000000000000000000000000000000000000000000000000000000",
++   "sourceSha256": "779d11f79c28b8049ccd3371d840c75b52cd153439f3882e28c593d05dd964ec",
+  }
+ ❯ Proxy.<anonymous> ../lockstate-1382-doc-anchor-2026-09-24/node_modules/.pnpm/playwright@1.56.1/node_modules/playwright/lib/matchers/expect.js:221:24
+ ❯ assertLaundryDeliveredArt tests/browser/laundry-linen-rack/native-evidence.ts:15:19
+     13|   expect(createHash('sha256').update(descriptor.toString('utf8').repla…
+     14|   const catalog = parseObliqueModuleCatalog(JSON.parse(descriptor.toSt…
+     15|   expect(catalog).toMatchObject({ assetId: art.assetId, source: art.so…
+       |                   ^
+     16|     resolutionPx: [256, 256], nominalPixelsPerTile: 64, pivotPx: [128,…
+     17|   expect(catalog.frames).toHaveLength(72);
+ ❯ tests/unit/native-laundry-linen-rack-evidence.test.ts:14:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯

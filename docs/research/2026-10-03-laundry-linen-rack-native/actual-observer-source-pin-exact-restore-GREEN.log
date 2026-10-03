@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-laundry-linen-rack-native-prep-20261003
+
+····
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  20:11:08
+   Duration  1.12s (transform 267ms, setup 0ms, import 985ms, tests 19ms, environment 0ms)
