@@ -1,0 +1,22 @@
+[
+  {
+    "yawDegrees": 45,
+    "elevationDegrees": 40,
+    "differentActualRGBApixels": 32
+  },
+  {
+    "yawDegrees": 105,
+    "elevationDegrees": 40,
+    "differentActualRGBApixels": 32
+  },
+  {
+    "yawDegrees": -75,
+    "elevationDegrees": 40,
+    "differentActualRGBApixels": 0
+  },
+  {
+    "yawDegrees": -135,
+    "elevationDegrees": 40,
+    "differentActualRGBApixels": 11
+  }
+]
