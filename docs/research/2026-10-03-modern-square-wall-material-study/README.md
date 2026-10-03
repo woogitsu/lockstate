@@ -71,8 +71,24 @@ Recommended next bounded draft: explicitly transfer each existing approved
 diffuse color and roughness into that same material's Principled inputs in a
 separate retained source, keep topology/modifiers/footprint and original graphs
 archived, then compare these same two poses and a genuine joined modular run.
-This recommendation introduces no new color. Current task preserves graphs
-literally; synchronization is pending root review, with no global adoption.
+This recommendation introduces no new color. After this literal comparison,
+root explicitly approved a separate variant synchronizing **only** these two
+existing material values into Principled inputs. That variant follows next;
+this archived literal comparison and original source remain unchanged.
+
+## Actual negative controls and restoration
+
+[Actual saved-source controls](actual-saved-draft-controls.json) record three
+genuine Blender writes of this owned draft: cap displacement, directional key
+omission and halved camera span. The real producer rejected each saved mutant
+(exit1), then accepted each exact restored source (exit0). All2641 protected
+source/frame/runtime files were byte exact after restoration. A saved-source
+first-pose repeat was byte exact to the original Cycles body, with actual
+render output in [the repeat receipt](actual-saved-repeat.json).
+
+Focused wall/catalog/pipeline suites:9passed/1optional generic Blender-on-PATH
+live test skipped. Actual pinned Blender CLI controls and renders ran separately;
+the skip is not claimed as Blender proof. No native acceptance claim.
 
 No runtime source/descriptor/registry/context/alias,18room palette, floor art,
 world picking, gameplay, copy, save or UI change. No browser/server/build/native

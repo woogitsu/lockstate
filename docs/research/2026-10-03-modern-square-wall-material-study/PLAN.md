@@ -15,13 +15,18 @@ owns browser/build/native and Staff acceptance; HUD owns public View helper.
 3. **Complete:** genuine Workbench/Cycles renders at yaw−45/e45 and135/e45,
    original512RGBA/ortho8/64pixels-per-tile/target(.5,.5,0). Both actual before
    renders match released Workbench bodies byte for byte. Save separate draft.
-4. **Next:** exercise actual saved cap displacement, light omission and wrong
-   camera span; observe rejection then exact original draft restoration.
-5. **Pending review:** current literal shader graphs all have default grey
+4. **Complete:** actual saved cap displacement, light omission and wrong
+   camera span each produced real guard RED; exact original draft restoration
+   produced GREEN. One independent saved-source Cycles repeat was byte exact.
+   All2641 protected source/frame/runtime files remain exact.
+5. **Literal draft finding:** current shader graphs all have default grey
    Base Color0.8, despite distinct authored viewport colors. Literal Cycles
    preserves graphs but loses intended masonry palette differentiation.
-   A later adoption needs an explicit approved material-value synchronization
-   decision and join comparison; no full72 or runtime adoption in this draft.
+   Root explicitly approved a separate synchronization variant: transfer only
+   existing diffuseRGBA and roughness into Principled inputs, retain every other
+   graph field/geometry/material and the literal draft. Next: two genuine same
+   pose samples, joined-module review, then integrate only if visibly better.
+   No full72 or runtime adoption has occurred at this checkpoint.
 
 Directional SUN radiance is independent of tile position. The finite area-light
 profile approved for isolated furniture is not reused for tiled wall modules.

@@ -149,6 +149,18 @@ def main():
         verify(bpy.context.scene, json.loads(receipt_path.read_text(encoding='utf-8')))
         print('ACTUAL_SAVED_WALL59_GRAPH9_CAMERA64_DIRECTIONAL_GREEN', flush=True)
         return
+    if '--repeat-saved-first-pose' in sys.argv:
+        bpy.ops.wm.open_mainfile(filepath=str(DRAFT))
+        scene = bpy.context.scene
+        receipt = json.loads(receipt_path.read_text(encoding='utf-8'))
+        verify(scene, receipt)
+        frame = render(scene, scene.camera, 'repeat-cycles-literal-graphs', *POSES[0])
+        expected = next(row for row in receipt['frames'] if row['stage'] == 'after-cycles-literal-graphs' and row['yawDegrees'] == POSES[0][0])
+        if frame['sha256'] != expected['sha256']:
+            raise ValueError('Saved genuine wall sample repeat differs from original Cycles body')
+        pipeline_common.write_text(REPORT / 'actual-saved-repeat.json', json.dumps(frame, indent=2) + '\n')
+        print('ACTUAL_SAVED_WALL_SAMPLE_REPEAT_BYTE_EXACT', flush=True)
+        return
     if '--mutate-saved-geometry' in sys.argv or '--mutate-saved-light' in sys.argv or '--mutate-saved-camera' in sys.argv:
         bpy.ops.wm.open_mainfile(filepath=str(DRAFT))
         if '--mutate-saved-geometry' in sys.argv:
