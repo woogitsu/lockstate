@@ -1,0 +1,92 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-cell-cot-material-observer-20261004
+
+ ❯ tests/unit/cell-cot-material-observer.test.ts (10 tests | 4 failed) 827ms
+     × preserves immutable21d actual q0 old72 RED and recognizes1033 source-colored pixels above the unchanged700 floor 90ms
+     × rejects all genuine whole-body frames in oblique-cell-bed.v1.json 18ms
+     × rejects all genuine whole-body frames in oblique-reception-employee-desk.v1.json 5ms
+     × rejects all genuine whole-body frames in oblique-furniture-office-desk-generic.v1.json 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/cell-cot-material-observer.test.ts > retained Cot material observer: source-derived exact colors, original native ROI and floor > preserves immutable21d actual q0 old72 RED and recognizes1033 source-colored pixels above the unchanged700 floor
+AssertionError: expected 72 to be 1033 // Object.is equality
+
+- Expected
++ Received
+
+- 1033
++ 72
+
+ ❯ tests/unit/cell-cot-material-observer.test.ts:77:44
+     75|     const evidence=cotBlanketMaterialEvidence(png);
+     76|     expect(evidence.originalOchreRangePixels).toBe(72);expect(evidence…
+     77|     expect(evidence.authoredBlanketPixels).toBe(1033);expect(evidence.…
+       |                                            ^
+     78|     expect(evidence.projectedGraphiteRgbPixels).toBe(19);expect(eviden…
+     79|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tests/unit/cell-cot-material-observer.test.ts > retained Cot material observer: source-derived exact colors, original native ROI and floor > rejects all genuine whole-body frames in oblique-cell-bed.v1.json
+AssertionError: /assets/environment/oblique/cell-bed-yaw-45-elev65.914d7d5022ed.png: expected 3 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 3
+
+ ❯ tests/unit/cell-cot-material-observer.test.ts:89:93
+     87|       const png=bytes(`public${frame.image}`);expect(sha(png),frame.im…
+     88|       const bitmap=decodeStaffMaterialPng(png);
+     89|       expect(cotAuthoredBlanketPixels(bitmap,[0,0,bitmap.width,bitmap.…
+       |                                                                                             ^
+     90|     }
+     91|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  tests/unit/cell-cot-material-observer.test.ts > retained Cot material observer: source-derived exact colors, original native ROI and floor > rejects all genuine whole-body frames in oblique-reception-employee-desk.v1.json
+AssertionError: /assets/environment/oblique/furniture.office.desk.employee.variants-yaw+00-elev20.14b7d133262a.png: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/unit/cell-cot-material-observer.test.ts:89:93
+     87|       const png=bytes(`public${frame.image}`);expect(sha(png),frame.im…
+     88|       const bitmap=decodeStaffMaterialPng(png);
+     89|       expect(cotAuthoredBlanketPixels(bitmap,[0,0,bitmap.width,bitmap.…
+       |                                                                                             ^
+     90|     }
+     91|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  tests/unit/cell-cot-material-observer.test.ts > retained Cot material observer: source-derived exact colors, original native ROI and floor > rejects all genuine whole-body frames in oblique-furniture-office-desk-generic.v1.json
+AssertionError: /assets/environment/oblique/furniture.office.desk.generic-yaw+00-elev20.8114f2826c80.png: expected 226 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 226
+
+ ❯ tests/unit/cell-cot-material-observer.test.ts:89:93
+     87|       const png=bytes(`public${frame.image}`);expect(sha(png),frame.im…
+     88|       const bitmap=decodeStaffMaterialPng(png);
+     89|       expect(cotAuthoredBlanketPixels(bitmap,[0,0,bitmap.width,bitmap.…
+       |                                                                                             ^
+     90|     }
+     91|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 6 passed (10)
+   Start at  01:35:56
+   Duration  1.08s (transform 42ms, setup 0ms, import 127ms, tests 827ms, environment 0ms)

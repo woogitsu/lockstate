@@ -16,4 +16,12 @@ Steel evidence remains distinct: the saved source retains15 powder-coated graphi
 
 ## Boundary
 
-This is a reproducible source/native measurement and planned observer correction, not a native GREEN or Save/Load result. Dedicated negative controls, actual observer RED/restore and strict checks follow in the next checkpoint. Root alone runs the built-client acceptance route.
+This is a reproducible source/native measurement and planned observer correction, not a native GREEN or Save/Load result. Dedicated controls are complete: all369 actual whole-body Cell floor, full/cutaway wall, default bed and two desk families count zero; the actual unrotated Cell floor also counts zero. The previous range reintroduced into the actual observer causes four RED tests (including genuine screenshot72 and old bed/desk false positives). Omitting the material predicate causes eight RED tests. Exact byte restoration passes27 tests in four focused/neighbor suites. Strict app and tools type checks each exit zero. Root alone runs the built-client acceptance route.
+
+## Discovery and actual execution boundary
+
+No native rerun, browser, server or build was performed. The existing genuine root artifact config already selects the three serial cot cases with60-second cases,10-second expectations, one worker and zero retries. This isolated worktree intentionally has no `dist/`; the artifact config checks for a genuine build before discovery. Root requested no additional collection config. An initial temporary source-only discovery attempt found zero tests and was discarded; its failed log is retained, not described as collection acceptance.
+
+## Actual observer correction
+
+`tests/browser/cell-cot-material-observer.ts` decodes the genuine screenshot bytes through the existing lossless PNG decoder. It counts only opaque exact source RGB keys in the original rectangle. The browser spec calls it before and after Save/Load, each with the unchanged >700 assertion. Legacy range counts and diagnostic source graphite RGB counts are saved separately. All public construction actions, cost/owners, complete paused worker equality, canonical HTTP response/hash and genuine Blob decode gates remain unchanged.
