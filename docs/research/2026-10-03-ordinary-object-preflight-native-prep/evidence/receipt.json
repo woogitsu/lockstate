@@ -1,0 +1,40 @@
+{
+    "source":  "0133444974a5d14dcf0884c7162f940cd09fbee8",
+    "browserStarted":  false,
+    "collectedTests":  1,
+    "serverStarted":  false,
+    "typesExit":  0,
+    "sha256":  [
+                   {
+                       "sha256":  "4a34dee1398f2db74baddb68bbd2810bd8cbb3b421b781de2c88b1e2f7bc12f6",
+                       "path":  "docs/research/2026-10-03-ordinary-object-preflight-native-prep/evidence/types.raw.txt"
+                   },
+                   {
+                       "sha256":  "913d053155362dd71e2c1f91ff283738dab25591ac084818d453ab3718ff43ce",
+                       "path":  "docs/research/2026-10-03-ordinary-object-preflight-native-prep/evidence/build.raw.txt"
+                   },
+                   {
+                       "sha256":  "7e757724c29a76bdf072c2288f452acb3f0ab5e326377d3c192dd028ee3ce561",
+                       "path":  "docs/research/2026-10-03-ordinary-object-preflight-native-prep/evidence/collection.raw.txt"
+                   },
+                   {
+                       "sha256":  "ed2b3f578d0df1d340809343636dfba27e02f9c206c35e09c747733515d4db58",
+                       "path":  "dist/client/index.html"
+                   },
+                   {
+                       "sha256":  "9e045f99ee46667b27aaaf40963202b6e5155e0fb34db892089fa70c4e368229",
+                       "path":  "dist/client/assets/index-DwcJ3gCk.js"
+                   },
+                   {
+                       "sha256":  "e67a9ca78a9565378935e7182baede5a2e3371d9398085cb4321fbbf757b945f",
+                       "path":  "dist/client/assets/worker-DWeFp7Xn.js"
+                   },
+                   {
+                       "sha256":  "d8b20ae31e777325ca042bdd0418d9295c0102b14f4d138fc78387b1cabfc65d",
+                       "path":  "dist/client/assets/index-5ZA72Oh0.css"
+                   }
+               ],
+    "nativeExecuted":  false,
+    "buildExit":  0,
+    "collectionExit":  0
+}
