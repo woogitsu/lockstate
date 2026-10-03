@@ -1,0 +1,28 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-wooden-bench-ground-mounts-20261003
+
+x·
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  19:07:58
+   Duration  813ms (transform 62ms, setup 0ms, import 174ms, tests 521ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-wooden-bench-ground-mounts-integrity.test.ts > retains all 42 authored bench parts and nine full graphs with four real leg-to-floor mounting shoes
+AssertionError: expected '601cb740dfafa6011a6fe07469cccf02b3e88…' to be '8518e5d755352f6511bcb4f2165674e1bca44…' // Object.is equality
+
+Expected: "8518e5d755352f6511bcb4f2165674e1bca44f918f945e7c5cfa09b60ba05986"
+Received: "601cb740dfafa6011a6fe07469cccf02b3e8824b2ca07f130280a78efaba7e26"
+
+ ❯ tests/unit/oblique-wooden-bench-ground-mounts-integrity.test.ts:32:61
+     30|   expect(sourceHash(readFileSync(new URL(p.originalSource, root)))).to…
+     31|   expect(p.sourceSha256).toBe('8518e5d755352f6511bcb4f2165674e1bca44f9…
+     32|   expect(sourceHash(readFileSync(new URL(p.source, root)))).toBe(p.sou…
+       |                                                             ^
+     33|   const old = JSON.parse(readFileSync(new URL('assets/source/blender/f…
+     34|     allAuthoredRawMeshes: Mesh[]; retainedMaterialValues: unknown[]; a…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯

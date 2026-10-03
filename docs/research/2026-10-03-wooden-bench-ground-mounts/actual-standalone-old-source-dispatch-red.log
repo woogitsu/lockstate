@@ -1,0 +1,23 @@
+00:01.157  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-wooden-bench-ground-mounts-20261003\assets\source\blender\furniture.corridor.bench.grounded-detail.blend"
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
+Traceback (most recent call last):
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-wooden-bench-ground-mounts-20261003\tooling\blender\render-wooden-bench-oblique.py", line 132, in <module>
+    _, camera, target = configure(model)
+                        ~~~~~~~~~^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-wooden-bench-ground-mounts-20261003\tooling\blender\render-wooden-bench-oblique.py", line 77, in configure
+    return bench_crossrail_exporter().configure(model)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-wooden-bench-ground-mounts-20261003\tooling\blender\render-wooden-bench-crossrails-oblique.py", line 29, in configure
+    scene,camera,target=configure_shared(model,prepare_source);p=json.loads(PROVENANCE.read_text());bounds=audit.bounds(scene)
+                        ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-wooden-bench-ground-mounts-20261003\tooling\blender\render-kitchen-fixtures-oblique.py", line 132, in configure
+    prepare_source(scene, model)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-wooden-bench-ground-mounts-20261003\tooling\blender\render-wooden-bench-crossrails-oblique.py", line 15, in prepare_source
+    if model[1]!=Path(p['source']).name:raise ValueError('Bench producer dispatch source changed')
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: Bench producer dispatch source changed
+
+Error: script failed, file: 'C:\Users\matma\Documents\Rozwój gier\lockstate-wooden-bench-ground-mounts-20261003\tooling\blender\render-wooden-bench-oblique.py', exiting.

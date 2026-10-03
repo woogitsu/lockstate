@@ -62,7 +62,9 @@ it('consumes the detailed default through the existing descriptor and decodes ev
   expect(defaultObjectRegistry.getById('object.bench')!.footprint).toEqual({width:2,height:1});
   const catalog = parseObliqueModuleCatalog(JSON.parse(readFileSync(new URL('public/game-content/oblique-canteen-bench.v1.json', root), 'utf8')));
   expect(catalog.assetId).toBe('furniture.corridor.bench.variants');
-  expect(catalog.source).toBe(provenance.source); expect(catalog.sourceSha256).toBe(provenance.sourceSha256);
+  const ground = JSON.parse(readFileSync(new URL('assets/source/blender/furniture.corridor.bench.grounded-detail.provenance.json', root), 'utf8')) as { source: string; sourceSha256: string; originalSource: string; originalSourceSha256: string };
+  expect(ground.originalSource).toBe(provenance.source); expect(ground.originalSourceSha256).toBe(provenance.sourceSha256);
+  expect(catalog.source).toBe(ground.source); expect(catalog.sourceSha256).toBe(ground.sourceSha256);
   expect(catalog.resolutionPx).toEqual([256,256]); expect(catalog.pivotPx).toEqual([128,128]);
   expect(catalog.nominalPixelsPerTile).toBe(64); expect(catalog.cameraTargetTiles).toEqual([1,.5,.44325]);
   expect(catalog.frames).toHaveLength(72);

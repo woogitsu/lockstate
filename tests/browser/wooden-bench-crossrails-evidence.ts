@@ -39,9 +39,9 @@ export function assertBenchProducer(data: BenchSnapshotData, quarterTurns: 0 | 1
 }
 
 const descriptorPath = '/game-content/oblique-canteen-bench.v1.json';
-const sourceSha256 = '4b174ad498260ac3c736d2b4d78fb1f566cface5bab81d513fb2e00a4568ab81';
-const exposedFrame = '/assets/environment/oblique/furniture.corridor.bench.variants-yaw+60-elev40.845cd9e2698f.png';
-const exposedSha256 = '845cd9e2698f21575a73b74f7087261bf9e303250b5ea90201441bc696b0e1da';
+const sourceSha256 = '8518e5d755352f6511bcb4f2165674e1bca44f918f945e7c5cfa09b60ba05986';
+const exposedFrame = '/assets/environment/oblique/furniture.corridor.bench.variants-yaw+60-elev40.b2399fd4b40d.png';
+const exposedSha256 = 'b2399fd4b40d565ea877fc4af39be18468d191cd5faf5f95bb00c6519c00096a';
 const sha = (body: Buffer): string => createHash('sha256').update(body).digest('hex');
 interface NetworkRow {
   url: string; decodedPath: string; status: number; location?: string; sha256?: string;
@@ -99,7 +99,7 @@ export function observeBenchNetwork(page: Page) {
       await Promise.all(pending);
       const catalog = JSON.parse(bodies.get(descriptorPath)!.toString('utf8')) as BenchCatalog;
       expect(catalog.assetId).toBe('furniture.corridor.bench.variants');
-      expect(catalog.source).toBe('assets/source/blender/furniture.corridor.bench.angled-detail.blend');
+      expect(catalog.source).toBe('assets/source/blender/furniture.corridor.bench.grounded-detail.blend');
       expect(catalog.sourceSha256).toBe(sourceSha256);
       expect(catalog.resolutionPx).toEqual([256,256]); expect(catalog.pivotPx).toEqual([128,128]);
       expect(catalog.cameraTargetTiles).toEqual([1,.5,.44325]); expect(catalog.nominalPixelsPerTile).toBe(64);

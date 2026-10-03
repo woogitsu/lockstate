@@ -1,4 +1,4 @@
-00:01.203  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-wooden-bench-ground-mounts-20261003\assets\source\blender\furniture.corridor.bench.grounded-detail.blend"
+00:01.125  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-wooden-bench-ground-mounts-20261003\assets\source\blender\furniture.corridor.bench.grounded-detail.blend"
 BENCH_GROUND_MOUNTS_SOURCE_GREEN 46 parts/42 retained/9 graphs/8 ground +6 retained tie contacts
 KITCHEN_BOUNDS furniture.corridor.bench.variants [0.03200053423643112, 0.025000154972076416, 0.0] [1.9679994583129883, 0.9749998450279236, 0.8865000009536743]
 BENCH_GROUND_MOUNTS_VERIFY_GREEN source/semantic contacts/72 cameras/four occupied turns

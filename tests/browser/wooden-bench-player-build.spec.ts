@@ -1,4 +1,4 @@
-// Pending native acceptance of the connected Bench source; historical crops/colour/minima retained.
+// Pending native acceptance of the complete floor-mounted Bench source; historical crops/colour/minima retained.
 import { writeFile } from 'node:fs/promises';
 import { expect, test as base, type Page } from './network-changed-fixture';
 import { installTee, sentCommands, currentClock } from './playtest-harness';
@@ -207,7 +207,9 @@ test(`player builds Holding Cell at quarterTurns${quarterTurns} and retains auth
   await minimap.click({ position: { x: bounds.width * 23 / 32, y: bounds.height * 8 / 32 } });
   await page.mouse.move(1300, 700);
   const loaded = await page.screenshot({ path: info.outputPath('wooden-bench-loaded-fullhd.png') });
-  await expect.poll(() => currentClock(page)).toMatchObject({ mode: 'paused' });
+  // Loaded installs the initial clock without a later broadcast. Public Pause
+  // and the complete worker snapshot below prove the paused roundtrip.
+  await expect(page.getByRole('button', { name: 'Pause', exact: true })).toHaveAttribute('aria-pressed', 'true');
   const loadedData = await recordBenchSnapshot(page, info.outputPath('bench-loaded-whole-paused-worker-snapshot.json'));
   assertBenchProducer(loadedData, quarterTurns);
   expect(loadedData).toEqual(completedData);
