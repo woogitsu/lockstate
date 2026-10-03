@@ -54,7 +54,7 @@ producer omissions, each **1 RED / 6 controls**, actual CLI collection of
 restoration followed by **59 GREEN / 3 files**.
 
 The [prior receipt](./prior-producer-restoration-receipt.json) is retained with
-its original subject and timestamps. Its raw logs and executed recipes are
+its original subject. Its raw logs and executed recipes are
 [published at the exact predecessor](https://github.com/woogitsu/lockstate/tree/cee3eac48870e9038fee1fe13059d30f50d7c057/docs/design/2026-10-02-browser-ci-sharding/activation/room-plan-release).
 Per the coordinator's explicit instruction, those six identical mutation loops
 were not repeated here. Fresh collection and preservation checks above belong
@@ -64,3 +64,20 @@ hosted CI is still required after the coordinator transfers the candidate.
 
 All executed helpers lived in this agent's TEMP directory; archived `.cjs.txt`
 and `.mjs.txt` files are inert evidence, not runnable repository probes.
+
+## Final handoff gates
+
+The independent [preservation receipt](./final-preservation-receipt.json)
+confirms the full workflow prefix through verification/assets is byte-equal
+to the frozen release after canonical checkout line endings; all **194 physical
+spec files** have exactly one suite owner. Existing configs, package/lockfile,
+wrapper/signature/fixture are unchanged from #1972, and activation weights and
+the original main baseline are unchanged from the approved split.
+
+Final [links/citations](./docs-final.txt): **18 GREEN / 2 files**, with lazy Git
+fetch disabled. The already published own/predecessor branches were fetched by
+exact names because this shared checkout's fetch configuration contains only
+`main`; no configuration, allowlist or guard was changed. The production and
+player-source diff outside the authorized CI split is empty. No new source
+conflict occurred. The coordinator must transfer this candidate and obtain its
+complete hosted CI result before treating the release as verified.
