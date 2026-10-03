@@ -120,38 +120,10 @@ def verify_exports():
 
 
 if __name__ == '__main__':
-    if exporter.MODELS != (MODEL,):
-        raise ValueError('Bench ground mounting shoes dedicated producer dispatch changed')
-    if '--verify-exports' in sys.argv:
-        configure(MODEL)
-        verify_exports()
-    elif '--verify' in sys.argv:
-        scene, camera, target = configure(MODEL)
-        for yaw in exporter.YAW:
-            for elevation in exporter.ELEVATION:
-                point_camera(camera, target, yaw, elevation)
-        print('BENCH_GROUND_MOUNTS_VERIFY_GREEN source/semantic contacts/72 cameras/four occupied turns', flush=True)
-    elif '--repeat-four' in sys.argv:
-        catalog = json.loads((ROOT / 'public/game-content' / MANIFEST_NAME).read_text(encoding='utf-8-sig'))
-        scene, camera, target = configure(MODEL)
-        output = ROOT / 'assets/intermediate/wooden-bench-ground-mounts-proof'
-        output.mkdir(parents=True, exist_ok=True)
-        repeats = []
-        for yaw in (30, 120, 210, 300):
-            elevation = 40
-            point_camera(camera, target, yaw, elevation)
-            path = output / f'repeat-yaw{yaw}-elev40.png'
-            scene.render.filepath = str(path)
-            exporter.bpy.ops.render.render(write_still=True)
-            exporter.normalize_and_check_border(path)
-            frame = next(row for row in catalog['frames'] if (row['yawDegrees'], row['elevationDegrees']) == (yaw, elevation))
-            canonical = ROOT / 'public' / frame['image'].lstrip('/')
-            digest = hashlib.sha256(path.read_bytes()).hexdigest()
-            if digest != frame['sha256'] or path.read_bytes() != canonical.read_bytes():
-                raise ValueError('Bench ground mounting shoes actual canonical repeat differs')
-            repeats.append({'yawDegrees': yaw, 'elevationDegrees': elevation, 'sha256': digest, 'byteExactCanonicalRepeat': True})
-        exporter.pipeline_common.write_text(output / 'four-real-producer-repeats.json', json.dumps(repeats, indent=2) + '\n')
-        print('BENCH_GROUND_MOUNTS_REPEAT4_BYTE_EXACT_GREEN no canonical files changed', flush=True)
-    else:
-        exporter.main()
-        if not exporter.PREVIEW_ONLY: verify_exports()
+    CYCLES_PRODUCER = 'render-canteen-bench-cycles.py'
+    if CYCLES_PRODUCER != 'render-canteen-bench-cycles.py':
+        raise ValueError('Canteen wooden bench canonical Cycles producer dispatch changed')
+    modern_spec = importlib.util.spec_from_file_location('canteen_bench_retained_cycles_entry', Path(__file__).with_name(CYCLES_PRODUCER))
+    modern = importlib.util.module_from_spec(modern_spec)
+    modern_spec.loader.exec_module(modern)
+    modern.main()

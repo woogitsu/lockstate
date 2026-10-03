@@ -22,8 +22,8 @@ function registeredCatalog() {
   expect(entries).toEqual([{ assetId, manifest: '/game-content/oblique-canteen-bench.v1.json' }]);
   const entry = entries[0]!;
   const catalog = parseObliqueModuleCatalog(json(entry.manifest.slice(1)));
-  expect(catalog.source).toBe('assets/source/blender/furniture.corridor.bench.grounded-detail.blend');
-  expect(catalog.sourceSha256).toBe('8518e5d755352f6511bcb4f2165674e1bca44f918f945e7c5cfa09b60ba05986');
+  expect(catalog.source).toBe('assets/source/blender/furniture.corridor.bench.soft-light.blend');
+  expect(catalog.sourceSha256).toBe('b4e5ca9317c74e0f8182937658c0a3f7026f114fcb7e1661101628cbd75c4e94');
   expect(obliqueCatalogForObject('object.bench', new Map([[catalog.assetId, catalog]]))).toBe(catalog);
   return catalog;
 }
@@ -53,8 +53,8 @@ describe('existing completed bench consumers select the genuinely grounded retai
       if (solid === undefined) throw new Error('Real planned bench consumer absent');
       const selected = selectObliqueModuleFrame(catalog, { yawRadians: solid.assetYawRadians ?? camera.yawRadians, elevationRadians: camera.elevationRadians });
       expect(selected).toEqual({ yawDegrees: 60, elevationDegrees: 40,
-        image: '/assets/environment/oblique/furniture.corridor.bench.variants-yaw+60-elev40.b2399fd4b40d.png',
-        sha256: 'b2399fd4b40d565ea877fc4af39be18468d191cd5faf5f95bb00c6519c00096a' });
+        image: '/assets/environment/oblique/furniture.corridor.bench.variants-yaw+60-elev40.5ad7afdb520e.png',
+        sha256: '5ad7afdb520ed6cb58c5dd87e652a5e7165d7095d593b48708f40746bc90ac8f' });
       expect(createHash('sha256').update(readFileSync(new URL(selected.image.slice(1), publicRoot))).digest('hex')).toBe(selected.sha256);
     }
     expect(JSON.stringify({ structures, rooms: frame.rooms })).toBe(original);

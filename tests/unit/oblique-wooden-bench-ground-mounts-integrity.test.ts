@@ -70,7 +70,10 @@ it('retains all 42 authored bench parts and nine full graphs with four real leg-
 
 it('selects the complete grounded source and decodes every genuine canonical body, retaining all previous 72 images', () => {
   const catalog = parseObliqueModuleCatalog(JSON.parse(readFileSync(new URL('public/game-content/oblique-canteen-bench.v1.json', root), 'utf8')));
-  expect(catalog.assetId).toBe('furniture.corridor.bench.variants'); expect(catalog.source).toBe(p.source); expect(catalog.sourceSha256).toBe(p.sourceSha256);
+  expect(catalog.assetId).toBe('furniture.corridor.bench.variants'); const soft = JSON.parse(readFileSync(new URL('assets/source/blender/furniture.corridor.bench.soft-light.provenance.json', root), 'utf8')) as {source:string;sourceSha256:string;retainedSource:string;retainedSourceSha256:string};
+  expect(soft.retainedSource).toBe(p.source); expect(soft.retainedSourceSha256).toBe(p.sourceSha256);
+  expect(catalog.source).toBe(soft.source); expect(catalog.sourceSha256).toBe('b4e5ca9317c74e0f8182937658c0a3f7026f114fcb7e1661101628cbd75c4e94');
+  expect(hash(readFileSync(new URL(soft.source, root)))).toBe(catalog.sourceSha256); expect(soft.sourceSha256).toBe(catalog.sourceSha256);
   expect(catalog.resolutionPx).toEqual([256, 256]); expect(catalog.pivotPx).toEqual([128, 128]);
   expect(catalog.nominalPixelsPerTile).toBe(64); expect(catalog.cameraTargetTiles).toEqual([1, .5, .44325]);
   expect(catalog.yawDegrees).toEqual(Array.from({ length: 12 }, (_, index) => index * 30));

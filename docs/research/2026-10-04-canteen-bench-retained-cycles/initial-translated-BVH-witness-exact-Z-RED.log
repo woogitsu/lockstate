@@ -1,0 +1,38 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-canteen-bench-cycles-20261004
+
+··································································x······························-··········
+node :
+At line:5 char:1
++ node node_modules/vitest/vitest.mjs run tests/unit/canteen-bench-reta ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/canteen-bench-retained-cycles-production.test.ts > preserves all46 authored bench parts/nine full gra
+phs/14 triangle contacts and the whole 2x1 bench using actual saved soft shaders
+AssertionError: expected 0.04134554788470268 to be 0.04134555160999298 // Object.is equality
+
+- Expected
++ Received
+
+- 0.04134555160999298
++ 0.04134554788470268
+
+ ❯ tests/unit/canteen-bench-retained-cycles-production.test.ts:39:53
+     37|     expect(actual.actualTriangleInteriorWitness[0]).toBeCloseTo(retain…
+     38|     expect(actual.actualTriangleInteriorWitness[1]).toBeCloseTo(retain…
+     39|     expect(actual.actualTriangleInteriorWitness[2]).toBe(retained.actu…
+       |                                                     ^
+     40|   }
+     41|   expect(soft.physicalAssembly.actualLowerTieContacts).toHaveLength(6);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 14 passed (15)
+      Tests  1 failed | 106 passed | 1 skipped (108)
+   Start at  01:11:16
+   Duration  1.23s (transform 941ms, setup 0ms, import 3.42s, tests 3.33s, environment 1ms)
