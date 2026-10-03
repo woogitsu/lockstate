@@ -26,7 +26,7 @@ function pending(mirrorX: boolean) {
   runtime.kernel.step();
   const order = runtime.construction.allOrders()[0]!;
   expect(order.state).toBe('materials-pending');
-  expect(runtime.construction.revisionOf(order.id)).toBeGreaterThan(0);
+  expect(BigInt(runtime.construction.revisionOf(order.id))).toBeGreaterThan(0n);
   return { runtime, orderId: order.id };
 }
 
@@ -64,7 +64,7 @@ it.each([false, true].flatMap(mirrorX => [false, true].map(load => ({ mirrorX, l
   const original = pending(mirrorX);
   const pair = { ...original, runtime: load ? reload(original.runtime) : original.runtime };
   const before = captureSessionSnapshot(pair.runtime), funds = pair.runtime.treasury.balanceMinorUnits;
-  send(pair.runtime, { type: 'CancelBuildOrder', orderId: pair.orderId, expectedRevision: 0 });
+  send(pair.runtime, { type: 'CancelBuildOrder', orderId: pair.orderId, expectedRevision: '0' });
   expect(pair.runtime.refusals.last?.reason).toBe('cancel-build-order.stale-cancellation');
   expect(captureSessionSnapshot(pair.runtime).construction).toEqual(before.construction);
   expect(captureSessionSnapshot(pair.runtime).simulation?.roomTemplates).toEqual(before.simulation?.roomTemplates);

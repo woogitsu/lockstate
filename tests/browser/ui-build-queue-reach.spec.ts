@@ -100,7 +100,7 @@ function order(index: number, state: HudBuildQueueViewModel['orders'][number]['s
     // pressed at all, not what the press then pays. The refusal's own
     // behaviour is measured in
     // `tests/integration/construction-cancel-order-stale-revision.test.ts`.
-    revision: 1,
+    revision: '1',
   };
 }
 
@@ -468,7 +468,7 @@ test.describe('every queued order has a control a player can reach', () => {
       // fixture publishes 1, so the press carries 1 -- asserted whole rather
       // than loosened to a substring, because the shape of what a press sends
       // is exactly what this file is for.
-      .toEqual([JSON.stringify({ kind: 'cancel-build-order', orderId: last, revision: 1 })]);
+      .toEqual([JSON.stringify({ kind: 'cancel-build-order', orderId: last, revision: '1' })]);
 
     // One order, and not an undo. `Undo` takes the whole run back and is the
     // control #862 measured as the only one a player had for eleven of these.
